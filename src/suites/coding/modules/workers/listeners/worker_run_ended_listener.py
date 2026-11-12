@@ -80,7 +80,6 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
         return operation.name.finished_nudge(self.numbers.number(AGENT_MODEL_NAME, operation.worker_id), process.id)
 
     def update_nudge(self, operation: WorkerOperation, process: Process) -> Nudge:
-        """The line of an update follows how it ended, not its exit code: one that clashes ends with exit code 0."""
         worker = self.numbers.number(AGENT_MODEL_NAME, operation.worker_id)
         if operation.update_result is UpdateResult.CONFLICTS:
             return WORKER_OPERATION_UPDATE_CONFLICT.nudge(worker=worker, output=process.id)

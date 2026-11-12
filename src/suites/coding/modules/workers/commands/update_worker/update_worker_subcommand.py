@@ -18,9 +18,9 @@ MAIN_AGENT_ORDER = "the main agent orders the update"
 
 
 class UpdateWorkerSubcommand(Subcommand[Command[object], UpdateOutcome]):
-    """`journal worker update`: brings the worker's worktree up to the base branch it was cut from, keeping its
-    uncommitted changes; queued behind a command of the worker that still runs. The main agent names a worker to order
-    its update as the merger does; a worker updates only its own worktree."""
+    """`journal worker update`: brings the worker's worktree up to the base branch it was cut from, keeping
+    its uncommitted changes; queued behind a command of the worker that still runs. The main agent names a
+    worker to order its update as the merger does; a worker updates only its own worktree."""
 
     cli_name = "worker"
     name = "update"

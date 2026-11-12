@@ -10,8 +10,9 @@ from suites.coding.modules.workers.support.merger_visits import MergerVisits
 
 
 class LeaveWorkerBehindHandler(Handler[LeaveWorkerBehind, None]):
-    """Leaves the worker alone: closes its check as left with the reason and the merger visit, so the handled line does
-    not come back; the worker hears nothing, and a later look checks it again only once it fell further behind."""
+    """Leaves the worker alone: closes its check as left with the reason and the merger visit, so the handled
+    line does not come back; the worker hears nothing, and a later look checks it again only once it fell
+    further behind."""
 
     command = LeaveWorkerBehind
     disabled_scopes = [ActorScope]

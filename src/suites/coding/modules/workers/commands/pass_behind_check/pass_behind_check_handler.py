@@ -14,9 +14,9 @@ from suites.coding.modules.workers.support.merger_visits import MergerVisits
 
 
 class PassBehindCheckHandler(Handler[PassBehindCheck, None]):
-    """Hands a worker behind its base to the main agent: moves the check to passed with the merger and the reason,
-    touches no state of the worktree, closes the merger visit and names the check to the main agent, whose show
-    gives the reason and whose merger behind gives the facts."""
+    """Hands a worker behind its base to the main agent: moves the check to passed with the merger and the
+    reason, touches no state of the worktree, closes the merger visit and names the check to the main agent,
+    whose show gives the reason and whose merger behind gives the facts."""
 
     command = PassBehindCheck
     disabled_scopes = [ActorScope]

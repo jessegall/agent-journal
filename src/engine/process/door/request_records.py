@@ -9,11 +9,11 @@ REFUSED_HOOK_EXIT_CODE = 2
 
 
 class RequestRecords:
-    """Keeps a process row for each hook, journal command and viewer request that comes in, from its start to its
-    end. A command that raises ends with the exit code of its error, and the error goes on. A row that cannot be
-    written is reported and never changes the answer. With no processes module installed nothing is kept; the
-    processes module binds the rows. The console names the agent or person a command comes from once it found
-    them, since the command's scope is closed by the time its row is kept."""
+    """Keeps a process row for each hook, journal command and viewer request that comes in, from its start to
+    its end. A command that raises ends with the exit code of its error, and the error goes on. A row that
+    cannot be written is reported and never changes the answer. With no processes module installed nothing is
+    kept; the processes module binds the rows. The console names the agent or person a command comes from once
+    it found them, since the command's scope is closed by the time its row is kept."""
 
     caller: tuple[Actor, int | None] | None = None
 

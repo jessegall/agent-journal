@@ -27,11 +27,11 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 class CheckpointRunner(CheckpointRuns):
     """Starts the tests of a reached checkpoint in the background runner proof tests use, in the checkout
-    CheckpointFolders names, made whenever a proof or a test is to run: each committed proof of the window by its
-    own command, the checkpoint's own test, with the test paths a merger deferred left out or added, and the
-    selected run over the files the window changed. An early
-    run starts only the committed proofs. A reach whose tests were started is not started again. With no owner
-    the own test and the selected run are not run. A run with no test passes at once, as the core's runs do."""
+    CheckpointFolders names, made whenever a proof or a test is to run: each committed proof of the window by
+    its own command, the checkpoint's own test, with the test paths a merger deferred left out or added, and
+    the selected run over the files the window changed. An early run starts only the committed proofs. A reach
+    whose tests were started is not started again. With no owner the own test and the selected run are not
+    run. A run with no test passes at once, as the core's runs do."""
 
     def __init__(self, proofs: ProofQuery, repository: Repository, bus: Bus, git: WorktreeGit, environments: EnvironmentRows, settings: SettingValues, rows: EventRows,
                  results: CheckpointResults, deferrals: PhaseTestDeferrals, folders: CheckpointFolders, starts: WorkerRunStarts) -> None:

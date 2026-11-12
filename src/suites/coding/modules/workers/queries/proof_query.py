@@ -15,9 +15,9 @@ PROOF_PAGE_ROWS = 50
 
 
 class ProofQuery(Query[Proof]):
-    """Reads proofs, with the proofs of one worktree and those waiting for a check by name. The proofs of a task
-    are those of the newest worktree that proved each point: a proof an older worktree made for the same point is
-    replaced, so a short one there no longer fails a checkpoint."""
+    """Reads proofs, with the proofs of one worktree and those waiting for a check by name. The proofs of a
+    task are those of the newest worktree that proved each point: a proof an older worktree made for the same
+    point is replaced, so a short one there no longer fails a checkpoint."""
 
     def __init__(self, database: Database, tables: Tables, kept: KeptRows) -> None:
         super().__init__(database, tables, Proof)

@@ -11,8 +11,9 @@ from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 
 
 class RecordFailedUpdateHandler(Handler[RecordFailedUpdate, None]):
-    """Notes a failed update on the checks it was meant to settle, which stay open, and leaves the merger one line
-    with the worker and the reason, the stash the changes wait in included, so it can advise or pass the worker on."""
+    """Notes a failed update on the checks it was meant to settle, which stay open, and leaves the merger one
+    line with the worker and the reason, the stash the changes wait in included, so it can advise or pass the
+    worker on."""
 
     command = RecordFailedUpdate
     disabled_scopes = [ActorScope]

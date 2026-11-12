@@ -13,11 +13,10 @@ MOST_LISTED_TASKS = 5
 class AvailableWork:
     """Reads the work the main agent can act on under its workflow controls: a task reserved for it always
     reaches it, and with auto mode on it is handed the next eligible task; while it may send workers and a
-    worker can start, open tasks that nobody is assigned can be delegated; with keep going on, no worker
-    able to start and the main agent allowed to write code, it is handed the next task in the hand-out order to
-    work itself; a task it already holds is never
-    offered again. It also says whether the agent's stop compacts its context, which no unfinished task holds
-    back."""
+    worker can start, open tasks that nobody is assigned can be delegated; with keep going on, no worker able
+    to start and the main agent allowed to write code, it is handed the next task in the hand-out order to
+    work itself; a task it already holds is never offered again. It also says whether the agent's stop
+    compacts its context, which no unfinished task holds back."""
 
     def __init__(self, options: CodingMainOptions, next_task: NextTask, tasks: TaskQuery, places: WorkerPlaces) -> None:
         self.options, self.next_task, self.tasks, self.places = options, next_task, tasks, places

@@ -20,10 +20,10 @@ from suites.coding.modules.workers.support.behind_checks import BehindChecks
 
 
 class BehindWorktrees:
-    """Looks, once the minutes between looks have passed, at how far each cut worktree of an environment is behind
-    its base branch, and opens a check for one far enough behind. A worktree whose count fails is logged and the
-    look goes on with the others. The worktrees one look leaves to the merger start it once. Each tick also reminds
-    the workers of an ordered update they have not run."""
+    """Looks, once the minutes between looks have passed, at how far each cut worktree of an environment is
+    behind its base branch, and opens a check for one far enough behind. A worktree whose count fails is
+    logged and the look goes on with the others. The worktrees one look leaves to the merger start it once.
+    Each tick also reminds the workers of an ordered update they have not run."""
 
     def __call__(self, container: Container) -> None:
         cut = (row for row in container.get(WorktreeQuery).all_worktrees() if row.state is WorktreeState.CUT)

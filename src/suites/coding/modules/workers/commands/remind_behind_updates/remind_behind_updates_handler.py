@@ -24,11 +24,11 @@ CLASH_LINES = (CLASH_OPEN, CLASH_STILL_OPEN)
 
 
 class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
-    """Reminds a worker whose ordered update waits the set minutes since the order or its last reminder, up to the set
-    number of reminders, and then tells the merger once that the worker has not run it. A paused or stopped worker is not
-    reminded and its wait starts again, so the order waits until it is back; the worktree's owner, also after a
-    takeover, is the one reminded. Markers an update left open past the wait go to the merger, first to
-    advise the worker, then to pass it."""
+    """Reminds a worker whose ordered update waits the set minutes since the order or its last reminder, up to
+    the set number of reminders, and then tells the merger once that the worker has not run it. A paused or
+    stopped worker is not reminded and its wait starts again, so the order waits until it is back; the
+    worktree's owner, also after a takeover, is the one reminded. Markers an update left open past the wait go
+    to the merger, first to advise the worker, then to pass it."""
 
     command = RemindBehindUpdates
     disabled_scopes = [ActorScope]
@@ -53,8 +53,6 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
                 self.clash_still_open(check, context)
 
     def clash_still_open(self, check: WorktreeBehindCheck, context: Context) -> None:
-        """Tells the merger of markers an update left open past the wait: first to advise the worker once, then, when
-        they are still open after another wait, to pass it to the main agent."""
         worktree = self.rows.required(Worktree, check.worktree_id)
         if not self.git.conflict_files(worktree):
             return

@@ -27,7 +27,6 @@ class WorkerOperationQuery(Query[WorkerOperation]):
         return self.filter(worker_id=worker_id).matching(Minimum("ended_at", cutoff.text)).exists()
 
     def runs_before(self, worker_id: int, process_id: int) -> bool:
-        """Whether a command of the worker accepted before this one has not ended yet."""
         return any(operation.process_id < process_id for operation in self.filter(worker_id=worker_id).matching(IsNull("ended_at")).all_rows())
 
     def check_available(self, worker_id: int, process_id: int | None = None) -> None:

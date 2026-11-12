@@ -11,9 +11,9 @@ from core.modules import DEFAULT_MODULES
 
 
 class HookWriter:
-    """Records the hook runner the install chose, for the journal's own settings files of every agent program, and
-    imports the project hooks of every program into the managed store; it writes no hook of the journal into the
-    project."""
+    """Records the hook runner the install chose, for the journal's own settings files of every agent program,
+    and imports the project hooks of every program into the managed store; it writes no hook of the journal
+    into the project."""
 
     def __init__(self, root: Path) -> None:
         self.root = root

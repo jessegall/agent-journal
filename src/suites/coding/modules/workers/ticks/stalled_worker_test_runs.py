@@ -33,7 +33,6 @@ class StalledWorkerTestRuns:
 
     @staticmethod
     def record_ended(container: Container, running: list[Proof], environments: dict[int, int]) -> None:
-        """Records a running test the end of its process left running, as when a listener after the end failed."""
         if not running:
             return
         current = container.get(Clock).timestamp()

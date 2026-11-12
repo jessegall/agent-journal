@@ -149,8 +149,6 @@ class Database:
         self.collected_large_reads.append(error)
 
     def report_cut(self, sql: str, limit: int) -> None:
-        """Keeps a report of a read the query builder cut at its limit, once per statement and calling line; a cut
-        never fails a command."""
         if self.collected_large_reads is None:
             return
         report = ReadCutError.cut(limit, sql)

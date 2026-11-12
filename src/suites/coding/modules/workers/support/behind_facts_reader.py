@@ -9,9 +9,9 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
 class BehindFactsReader:
-    """Reads the facts of a worktree behind its base branch, changing nothing: the files the new base commits and
-    the worker both changed are the overlap; the other base files in the folders of the worker's files are listed
-    apart and never counted as overlap."""
+    """Reads the facts of a worktree behind its base branch, changing nothing: the files the new base commits
+    and the worker both changed are the overlap; the other base files in the folders of the worker's files are
+    listed apart and never counted as overlap."""
 
     def __init__(self, git: WorktreeGit, queries: Queries) -> None:
         self.git, self.queries = git, queries

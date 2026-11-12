@@ -12,9 +12,9 @@ class WorkerCompaction:
     """Compacts a worker past the context limit by resuming its session on the compaction line before its next
     job, because a worker's program runs in print mode and takes no typed lines. Each such run is a compaction
     row, so a restart of the journal loses nothing: a run is going while its row has no wake recorded, and a
-    line whose compaction left the token count as it was is not given again, so the worker starts over instead.
-    A worker that reached the limit at worker next is told to stop before it works on its next task; that is
-    kept only until its next launch."""
+    line whose compaction left the token count as it was is not given again, so the worker starts over
+    instead. A worker that reached the limit at worker next is told to stop before it works on its next task;
+    that is kept only until its next launch."""
 
     def __init__(self, limit_check: ContextLimitCheck, providers: Providers, compactions: ContextCompactions) -> None:
         self.limit_check, self.providers, self.compactions = limit_check, providers, compactions

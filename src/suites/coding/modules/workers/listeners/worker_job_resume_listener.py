@@ -14,8 +14,8 @@ from engine.event.updated import Updated
 
 class WorkerJobResumeListener(CommitListener[AgentEnded | Updated[Agent]]):
     """A worker that ends with a job still waiting, sent after its last stop, resumes for that job; one a
-    person or another agent stopped stays ended, with its job waiting. Recording the process of a start, or that
-    a start failed, is no reason to start again."""
+    person or another agent stopped stays ended, with its job waiting. Recording the process of a start, or
+    that a start failed, is no reason to start again."""
 
     name = "workers.worker-ended-with-job"
     disabled_scopes = [ActorScope]

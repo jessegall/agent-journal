@@ -53,7 +53,6 @@ class WorktreeQuery(Query[Worktree], KeptRowChanges[Worktree]):
         return self.with_removed().filter(session_agent_id=agent_id).matching(Minimum("merged_at", earliest_at.text)).exists()
 
     def merged_among(self, agent_ids: Sequence[int]) -> tuple[Worktree, ...]:
-        """The worktrees of these agents that a merge took work from, a whole one or a part."""
         worktrees = self.with_removed().matching(Among("session_agent_id", agent_ids)).all_rows()
         return tuple(worktree for worktree in worktrees if worktree.merged_at is not None or worktree.merged_task_ids)
 

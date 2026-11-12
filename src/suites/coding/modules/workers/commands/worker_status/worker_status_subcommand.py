@@ -89,7 +89,6 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
         return "the merger" if agent.profile == MERGER_PROFILE else AgentLabel.from_agent(agent).text
 
     def held_by_others(self, worker_id: int) -> tuple[Task, ...]:
-        """The worker's assigned tasks another agent has started, which it can neither prove nor commit."""
         return tuple(task for task in self.tasks.assignee_tasks(worker_id).filter(state=TaskState.STARTED).oldest().all_rows(TASK_PAGE_ROWS) if task.holder_id not in (None, worker_id))
 
     def unit_line(self, worker_id: int, worktree_id: int) -> str:

@@ -8,9 +8,9 @@ from engine.process.door.run_group import RunGroup
 
 
 class RunnerProgram:
-    """Runs an admitted program to its end in a process group of its own. Any run past its limit, a quick one too, is
-    stopped with its whole group and fails naming its command. A run whose request reads its lines hands each on as
-    it is printed."""
+    """Runs an admitted program to its end in a process group of its own. Any run past its limit, a quick one
+    too, is stopped with its whole group and fails naming its command. A run whose request reads its lines
+    hands each on as it is printed."""
 
     def run(self, placed: PlacedRun) -> Execution:
         request = placed.request

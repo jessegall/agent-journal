@@ -22,7 +22,8 @@ PROJECT_PREFIX = "project-"
 
 class ProgramSettingsBackup:
     """Copies the person's own settings files of an agent program into the journal's backups, private to their
-    owner, only when they changed since the newest copy; it keeps the first copy and the newest 20 of each file."""
+    owner, only when they changed since the newest copy; it keeps the first copy and the newest 20 of each
+    file."""
 
     def __init__(self, home: JournalHome, log: SystemLogWriter, clock: Clock) -> None:
         self.home, self.log, self.clock = home, log, clock
