@@ -10,7 +10,7 @@ PROJECT_ACTOR_ID = 4
 
 
 def reader(name: str, creator_id: int = CORE_ACTOR_ID) -> Reader:
-    return Reader(name=name, type=ReaderType.LINES, commands="x*", creator_id=creator_id)
+    return Reader(name=name, type=ReaderType.PATTERN, commands="x*", creator_id=creator_id)
 
 
 @pytest.mark.parametrize("row, edited, retires", [
