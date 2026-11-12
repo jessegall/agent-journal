@@ -1,7 +1,10 @@
 from collections.abc import Callable
+import shlex
 from typing import TextIO
 
 from engine.caller.caller_request import CallerRequest
+from engine.enums.process_kind import ProcessKind
+from engine.process.request_records import RequestRecords
 from engine.cli.console import USAGE_CODE, Console
 from engine.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
 from engine.cli.module_add_line import MODULE_ADDITION_ARGUMENTS, ModuleAddLine
@@ -67,7 +70,7 @@ class LineRun:
             with container.get(RequestWatch).watching_without_refusal(argv):
                 if argv[:2] == MODULE_REMOVAL_ARGUMENTS:
                     return container.get(ModuleRemoveLine).run(argv, request, stream)
-                return container.get(Console).requested_run(argv, request, stream)
+                return container.get(RequestRecords).recorded(ProcessKind.JOURNAL, shlex.join(["journal", *argv]), lambda: container.get(Console).requested_run(argv, request, stream))
         finally:
             cost = tools.cost(start_points)
             if cost is not None:
