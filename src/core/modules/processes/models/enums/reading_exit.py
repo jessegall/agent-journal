@@ -5,6 +5,7 @@ class ReadingExit(StrEnum):
     """A way an agent gets past what the engine asks of it."""
 
     COMPLY = "comply"
+    COUNT_TESTS = "count the tests"
     SKIP_WITH_REASON = "skip with a reason"
     DECLARE_UNREADABLE = "declare unreadable"
     READ_OUTPUT = "read the output"

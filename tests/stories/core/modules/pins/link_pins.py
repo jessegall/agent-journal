@@ -42,8 +42,21 @@ def with_shop_remote(story):
     return story
 
 
-def test_a_pull_request_pins_itself_once_and_a_closed_pin_stays_closed(new_story):
-    story = with_shop_remote(new_story(fixture=UserJoined))
+def as_worktree_with_an_included_alias_remote(story):
+    """The project folder is a git worktree: its .git file points into the main checkout, whose config includes a
+    file that names the remote through an ssh host alias."""
+    common = story.home.project_folder.parent / "main-checkout" / ".git"
+    pointed = common / "worktrees" / "project"
+    pointed.mkdir(parents=True, exist_ok=True)
+    (pointed / "commondir").write_text("../..\n")
+    (common / "config").write_text('[core]\n\tbare = false\n[include]\n\tpath = remotes.conf\n')
+    (common / "remotes.conf").write_text('[remote "origin"]\n\turl = git@github-work:shop/cart.git\n')
+    (story.home.project_folder / ".git").write_text(f"gitdir: {pointed}\n")
+    return story
+
+
+def test_a_pull_request_of_a_worktree_whose_remote_is_an_included_host_alias_pins_itself_once_and_a_closed_pin_stays_closed(new_story):
+    story = as_worktree_with_an_included_alias_remote(new_story(fixture=UserJoined))
     address = "https://github.com/shop/cart/pull/4"
     expect_absent_pin_lines(story.hook("s-1", shell_call("gh pr create", f"{address}\n")))
     story.expect_text("pin list --environment main", "Pull request 4", address, actor=story.user)

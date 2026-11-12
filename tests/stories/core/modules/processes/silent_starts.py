@@ -18,7 +18,7 @@ GOLANG_TESTS = "go test ./..."
 GOLANG_START = HookSamples.shell(GOLANG_TESTS, ShellPart("go", CommandCategory.TEST_RUN, ["test", "./..."]))
 GOLANG_OUTPUT = "=== RUN   TestCart\n--- PASS: TestCart (30.00s)\n=== RUN   TestTotal\n--- PASS: TestTotal (40.00s)\nok  \tcart\t70.0s\n"
 PERCENT_OUTPUT = "[1/4] compiling\n[2/4] compiling\n[3/4] compiling\n[4/4] compiling\n"
-PROCESS_RULE = "processes.silent-start"
+PROCESS_RULE = "processes.reading"
 TRIED = "the build prints nothing a reader can count"
 SKIP = f'refusal skip {PROCESS_RULE} --reason "the build prints nothing it can count" --environment main'
 

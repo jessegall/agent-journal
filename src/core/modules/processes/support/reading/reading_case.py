@@ -35,6 +35,8 @@ class ReadingCase:
     reader_layer: ReaderLayer | None
     reader_judgement: ReaderJudgement | None
     reader_is_default: bool
+    reader_failed: bool
+    count_missing: bool
     draft_fits: bool
     output: OutputFacts | None
     runs_without_change: int
@@ -49,7 +51,12 @@ class ReadingCase:
     @property
     def is_not_needed(self) -> bool:
         return (not self.category.has_reader or self.has_asking_flag or self.is_plugin_run or self.was_rejected
-                or self.is_short_success)
+                or self.is_short_success or self.is_no_sample)
+
+    @property
+    def is_no_sample(self) -> bool:
+        """A run killed part way, or one that failed as it started, shows nothing a reader should read."""
+        return self.output is not None and (self.output.was_cut_short or (self.output.start_crashed and self.exit_code not in (None, 0)))
 
     @property
     def was_rejected(self) -> bool:
@@ -67,11 +74,15 @@ class ReadingCase:
     def unreadable_reason(self) -> UnreadableReason | None:
         if self.has_unreadable_mark:
             return UnreadableReason.DECLARED
-        if self.output is None:
-            return None
-        if self.output.unreadable_reason is not None:
-            return self.output.unreadable_reason
-        return UnreadableReason.INTERACTIVE if self.output.ends_on_prompt and self.cadence_state.has_no_growth else None
+        return self.measured_unreadable_reason
+
+    @property
+    def measured_unreadable_reason(self) -> UnreadableReason | None:
+        """Why no reader can read this output, from its measures alone: sizes, newlines, NUL bytes, carriage returns
+        and a prompt the run stopped growing on, never the words it printed."""
+        if self.moment is ReadingMoment.END:
+            return OutputFacts.reason_at_end(self.output)
+        return OutputFacts.measured_reason(self.output, self.cadence_state)
 
     def exits_for(self, level: PressureLevel) -> tuple[ReadingExit, ...]:
         return level.exits if self.classification_known else (*level.exits, ReadingExit.CLASSIFY)

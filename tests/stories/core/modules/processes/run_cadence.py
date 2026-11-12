@@ -6,8 +6,8 @@ from engine.enums.actor_type import ActorType
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.chat.support.mark_samples import expect_marks_text
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
-from tests.stories.core.modules.processes.support.cadence_probe import (TICK, TOOL_USE, HelperBesideWorker, agent_run, cadence_lines, cadence_tick,
-                                                                       expect_told, has_cadence_record, kept_lines, owned_run, printed, running_run,
+from tests.stories.core.modules.processes.support.cadence_probe import (TICK, HelperBesideWorker, agent_run, cadence_lines, cadence_tick,
+                                                                       expect_told, has_cadence_record, kept_lines, owned_run, printed, running_run, side_run,
                                                                        tick_named, ticks, told, waiting_run, worker_agent)
 from tests.stories.core.modules.processes.background import SavedBuildMoved, SilentVitestRun, expect_streaming_line, expect_without_hint
 from tests.stories.core.modules.processes.hang_watch import HANG_SECONDS, ActiveBuild, expect_looks, started_tree, watch_tick
@@ -167,7 +167,7 @@ def test_a_silent_run_is_told_again_only_after_ten_minutes_at_most_three_times_a
     second = kept_lines(story).count(NOT_STREAMING)
     ticks(story, 1260)
     story.expect_rows((first, second, kept_lines(story).count(NOT_STREAMING)) == (1, 2, 3), detail=kept_lines(story))
-    story.expect_hook_refusal(MAIN, TOOL_USE, f"output {process.id} printed nothing for")
+    story.expect_hook_refusal(MAIN, HookSamples.edit("cart.py"), f"output {process.id} printed nothing for")
     started_tree(story, 12.0)
     story.advance(timedelta(seconds=HANG_SECONDS + 10))
     watch_tick(story)
@@ -191,6 +191,18 @@ def test_a_run_that_ended_and_a_run_that_was_stopped_are_told_nothing(new_story)
     end_run(story, ended, "")
     ticks(story, 60)
     story.expect_rows(NOT_STREAMING not in kept_lines(story), detail=kept_lines(story))
+
+
+def test_plugin_person_and_lookup_runs_are_never_judged_while_a_started_test_is(new_story):
+    story = install_runner(new_story(fixture=UserBuilder))
+    skipped = [side_run(story, story.user, "make deploy", CommandCategory.BUILD), side_run(story, story.agent, "make lint", CommandCategory.CHECK, plugin="sample"),
+               *(side_run(story, story.agent, line, category) for line, category in (("grep -rn cart src", CommandCategory.SEARCH), ("cat notes", CommandCategory.READ),
+                                                                                      ("sed -i s/a/b/ notes", CommandCategory.EDIT), ("journal task list", CommandCategory.JOURNAL)))]
+    judged = side_run(story, story.agent, "pytest tests/first.py", CommandCategory.TEST_RUN)
+    titled(story, judged, "Running the first tests")
+    ticks(story, 60)
+    lines = "\n".join(told(story, MAIN))
+    story.expect_rows(f"output {judged.id} printed nothing" in lines, *(f"output {process.id} printed nothing" not in lines for process in skipped), detail=lines)
 
 
 def test_a_workers_queued_run_is_told_nothing_while_its_running_one_is(new_story):

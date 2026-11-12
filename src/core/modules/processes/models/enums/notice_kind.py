@@ -12,6 +12,12 @@ class NoticeKind(StrEnum):
     SPARSE = "sparse"
     FROZEN = "frozen"
 
+    @property
+    def is_about_reading(self) -> bool:
+        """Whether the notice is about how the output can be read, which a mark of the command as unreadable
+        silences; a run that stopped writing or seems stuck is told whatever its mark."""
+        return self in (NoticeKind.NO_OUTPUT, NoticeKind.SPARSE)
+
     @classmethod
     def of(cls, state: CadenceState) -> "NoticeKind | None":
         match state:

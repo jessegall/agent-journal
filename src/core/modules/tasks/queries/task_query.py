@@ -12,6 +12,7 @@ from engine.query.conditions.among import Among
 from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.less import Less
 from engine.query.query import Query
+from engine.query.kept_row_changes import KeptRowChanges
 from engine.query.condition import Condition
 from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.query.select import Select
@@ -29,7 +30,7 @@ FOLLOWED_PLAN_STATES = ("approved", "started")
 
 TASK_PAGE_ROWS = 50
 
-class TaskQuery(Query[Task]):
+class TaskQuery(Query[Task], KeptRowChanges[Task]):
     """Reads tasks with named filters. The open tasks assigned to an actor are that actor's work, and the open
     tasks assigned to nobody are free; both are read from the assignments table."""
 
@@ -67,13 +68,7 @@ class TaskQuery(Query[Task]):
     def free(self) -> Self:
         return self.open_tasks().matching(Unassigned(Task))
 
-    def remember(self, task: Task) -> None:
-        self.replace_cached(task, tuple([task]))
-
-    def remove(self, task: Task) -> None:
-        self.replace_cached(task, ())
-
-    def replace_cached(self, task: Task, present: tuple[Task, ...]) -> None:
+    def update_kept(self, task: Task, present: tuple[Task, ...]) -> None:
         started = [row for row in present if row.state is TaskState.STARTED]
         def with_started(tasks: tuple[Task, ...]) -> tuple[Task, ...]:
             return self.newest_current([row for row in tasks if row.id != task.id] + started)

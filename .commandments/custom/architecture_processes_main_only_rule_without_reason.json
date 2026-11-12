@@ -1,0 +1,69 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "extendsAny": "DriverRule"
+            },
+            {
+                "fileMatches": "(^|/)core/modules/(processes|aliases)/rules/"
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "identifier"
+                        },
+                        {
+                            "name": "roles"
+                        },
+                        {
+                            "of": "parent",
+                            "all": [
+                                {
+                                    "is": "assignment"
+                                },
+                                {
+                                    "descendant": {
+                                        "name": "MAIN"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "not": {
+                    "descendant": {
+                        "all": [
+                            {
+                                "is": "identifier"
+                            },
+                            {
+                                "name": "main_only_because"
+                            },
+                            {
+                                "is": "assignment",
+                                "of": "parent"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "main-only-rule-without-reason",
+        "description": "A rule is limited to the main agent and says no reason, which is how helpers and workers lost the streaming notices.",
+        "rule": "Add the class attribute main_only_because with one line, or let the rule answer every role.",
+        "skill": "processes-architecture"
+    }
+}

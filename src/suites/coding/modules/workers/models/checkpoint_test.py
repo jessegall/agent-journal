@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.model.model import Model
-from suites.coding.modules.workers.models.affected_test import AffectedTestState
+from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 
 
 RUNNING_STATES = (AffectedTestState.PICKING, AffectedTestState.TESTING)

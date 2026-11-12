@@ -14,6 +14,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story import Story
 from tests.stories.core.modules.aliases.saved_commands import BuildSaved, read_hook
+from tests.stories.core.modules.processes.support.cadence_probe import cadence_tick
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, parts_started
 from tests.stories.support.story_checks import expect_value
 
@@ -42,7 +43,10 @@ def edited_alias(story: Story, line: str = EDITED_LINE) -> None:
 
 
 def test_a_silent_saved_command_is_named_by_its_alias_and_told_its_next_run_shows_the_fix(new_story):
-    story = silent_run(new_story)
+    story = install_runner(new_story(fixture=BuildSaved))
+    moved_run(story, RUN, category=CommandCategory.BUILD)
+    story.advance(timedelta(seconds=30))
+    cadence_tick(story)
     story.expect_hook_allowed("s-1", READ_NOTES, SILENT_LINE)
 
 
@@ -101,5 +105,6 @@ def test_a_silent_go_test_over_several_packages_is_told_why_and_how_to_fix_it(ne
     process = story.container.get(Bus).run(StartProcess(story.agent.id, None, line, "/work/main", "zsh", CommandCategory.TEST_RUN, 30, tuple([part])), story.agent, environment_id=1)
     parts_started(story, process)
     story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
-    story.advance(timedelta(seconds=31))
+    story.advance(timedelta(seconds=30))
+    cadence_tick(story)
     story.expect_hook_allowed("s-1", READ_NOTES, PACKAGES_LINE)

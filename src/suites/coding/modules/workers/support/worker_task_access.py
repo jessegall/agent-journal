@@ -21,8 +21,13 @@ class WorkerTaskAccess:
     def is_holder(task: Task, worker_id: int) -> bool:
         return task.state is TaskState.STARTED and task.holder_id == worker_id
 
+    @staticmethod
+    def is_held_by_another(task: Task, worker_id: int) -> bool:
+        """Whether another agent has the task started, so no proof or commit of this worker takes it."""
+        return task.state is TaskState.STARTED and task.holder_id not in (None, worker_id)
+
     def refusal(self, task: Task, worker_id: int) -> Refusal:
-        if task.state is TaskState.STARTED and task.holder_id not in (None, worker_id):
+        if WorkerTaskAccess.is_held_by_another(task, worker_id):
             holder = AgentLabel.from_agent(self.queries.query(Agent).find(task.holder_id))
             return Refusal(f"task {task.id} is held by {holder.text}", AskTopic.GENERAL.hint(WORKER_TASKS_HINT))
         if worker_id not in (self.assignments.actor(task), task.holder_id):

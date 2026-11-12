@@ -24,7 +24,7 @@ TEST_OUTPUT = b"collected 3 items\n\n===== 3 passed in 0.10s =====\n"
 
 MAIN_BUILD = ReadingCase(command_key="custom-build run", category=CommandCategory.BUILD, classification_known=True, has_asking_flag=False,
                          output_hidden=False, is_saved_command=False, is_plugin_run=False, moment=ReadingMoment.START, age_seconds=0,
-                         run_state=ProcessState.RUNNING, cadence_state=CadenceState.STREAMING, exit_code=None, reader_layer=None, reader_judgement=None, reader_is_default=False,
+                         run_state=ProcessState.RUNNING, cadence_state=CadenceState.STREAMING, exit_code=None, reader_layer=None, reader_judgement=None, reader_is_default=False, reader_failed=False, count_missing=False,
                          draft_fits=False, output=None, runs_without_change=0, request_is_waiting=False, was_skipped=False, has_unreadable_mark=False,
                          role_must_have_reader=False, role_may_write_readers=True, role_uses_saved_commands=True, readers_forced=True)
 WORKER_BUILD = replace(MAIN_BUILD, role_must_have_reader=True, role_uses_saved_commands=False)
@@ -65,6 +65,8 @@ TABLE = {
     "worker after 2 runs": (replace(WORKER_BUILD, runs_without_change=2), (ReaderState.MISSING, ReaderAction.REQUIRE, PressureLevel.PREVENT, PREVENT)),
     "skipped after 3 runs": (replace(ended(MAIN_BUILD), runs_without_change=3, was_skipped=True), (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
     "redirected line": (replace(MAIN_BUILD, output_hidden=True), (ReaderState.MISSING, ReaderAction.NOTHING, PressureLevel.PREVENT, PREVENT)),
+    "suitable reader without the count a worker needs": (replace(with_reader(ended(WORKER_BUILD), ReaderJudgement()), count_missing=True),
+                                                         (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
     "unknown command": (replace(ended(MAIN_BUILD), category=CommandCategory.UNKNOWN, classification_known=False),
                         (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, (*SUGGEST, ReadingExit.CLASSIFY))),
 }
@@ -81,6 +83,7 @@ def test_the_decision_of_each_case(case, expected):
     (replace(WORKER_BUILD, request_is_waiting=True), ReasonCode.REQUEST_WAITING),
     (ended(MAIN_BUILD), ReasonCode.READER_MISSING),
     (replace(ended(MAIN_BUILD), draft_fits=True), ReasonCode.DRAFT_FITS),
-], ids=["redirected", "request waiting", "reader missing", "draft fits"])
+    (replace(with_reader(ended(WORKER_BUILD), ReaderJudgement()), count_missing=True), ReasonCode.COUNT_MISSING),
+], ids=["redirected", "request waiting", "reader missing", "draft fits", "count missing"])
 def test_the_reason_of_a_pressing_decision(case, reason):
     assert ReadingDecider().decide(case).reason is reason

@@ -2,16 +2,20 @@ from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
 from engine.command.context import Context
-from core.modules.processes.commands.support.part_spec import PartSpec
-from core.modules.processes.models.reader import Reader
+from core.modules.processes.models.process_part import ProcessPart
 
 
 class RunCounts:
     """A suite's optional command listings that count a run before it starts, and the suite's say on what a
     missing or poor reader must be asked for."""
 
-    def reader_reason(self, process: Process, spec: PartSpec, reader: Reader | None, reason: str) -> str:
-        return reason
+    def count_missing(self, process: Process, part: ProcessPart) -> bool:
+        """Whether the suite must count the tests of this part before it runs and no reader can count them."""
+        return False
+
+    def asks_beyond_counts(self) -> bool:
+        """Whether a missing or poor reader opens a request for any reason, or only for a missing count."""
+        return True
 
     def line(self, process: Process) -> str:
         return ""
