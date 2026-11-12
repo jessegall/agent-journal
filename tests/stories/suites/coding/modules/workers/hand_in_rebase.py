@@ -1,11 +1,6 @@
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 import json
 from concurrent.futures import ThreadPoolExecutor
-from engine.process.door.execution_gate import ExecutionGate
-from engine.process.door.process_executor import ProcessExecutor
-from engine.process.door.run_placement import RunPlacement
-from engine.process.door.runner_program import RunnerProgram
-from suites.coding.modules.workers.support.worker_folder_runs import WorkerFolderRuns
 
 import pytest
 
@@ -198,10 +193,8 @@ def test_two_worktrees_rebasing_at_once_each_keep_their_own_files(new_story):
     sibling = sibling_worker(story, repository)
     repository.changed(worker.id, "notes.py", "NOTE = 1\n")
     worktrees = [story.container.get(Queries).query(Worktree).filter(session_agent_id=agent.id).first() for agent in (worker, sibling)]
-    unrecorded = ProcessExecutor(RunPlacement(), story.container.get(RunnerProgram), story.container.get(ExecutionGate))
-    git = WorktreeGit(story.container.get(WorkerFolderRuns), unrecorded)
     with ThreadPoolExecutor(2) as pool:
-        list(pool.map(git.rebase, worktrees))
+        list(pool.map(story.container.get(WorktreeGit).rebase, worktrees))
 
     worker_folder, sibling_folder = repository.worktree_folder(worker.id), repository.worktree_folder(sibling.id)
     story.expect_rows((worker_folder / "notes.py").exists(), not (worker_folder / "sibling.py").exists())

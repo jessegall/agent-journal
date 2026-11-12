@@ -1,6 +1,5 @@
 from collections.abc import Callable
 
-from engine.command.context import Context
 from engine.enums.process_kind import ProcessKind
 
 
@@ -8,7 +7,7 @@ class RequestRecords:
     """Keeps a process row for each hook, journal command and viewer request that comes in, from its start to its
     end. With no processes module installed nothing is kept; the processes module binds the rows."""
 
-    def recorded_hook(self, agent_id: int, line: str, exit_code: int, context: Context) -> None:
+    def recorded_hook(self, agent_id: int, environment_id: int, line: str, exit_code: int) -> None:
         return None
 
     def recorded(self, kind: ProcessKind, line: str, answer: Callable[[], int]) -> int:

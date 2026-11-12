@@ -108,7 +108,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         if refusing:
             self.system_log.write(LogLevel.INFORMATION, f"stop {call.id} {AgentLabel.from_agent(agent).text} refused: {'; '.join(refusing)}"[:LOG_LINE_CHARACTERS])
         self.nudges.write(agent.id, answers, context)
-        self.request_records.recorded_hook(agent.id, f"{command.event.program} {command.event.event.value}", 2 if answers.refusal else 0, context)
+        self.request_records.recorded_hook(agent.id, agent.environment_id, f"{command.event.program} {command.event.event.value}", 2 if answers.refusal else 0)
         self.required_commands.open(agent.id, answers.delivered_nudges, context)
         self.timing.stamp("call_saved")
         for row in handed_lines.rows:
