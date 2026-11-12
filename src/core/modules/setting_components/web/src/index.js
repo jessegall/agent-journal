@@ -24,6 +24,8 @@ import SettingUsageBar from "./SettingUsageBar.vue";
 export {CUSTOM_PRESET, currentPreset} from "./currentPreset.js";
 export {itemsOfLines, listItems, listLines, sentList, shownList} from "./listText.js";
 export {CHANGED_WORD, SOURCE_WORDS} from "./sourceWords.js";
+export {numberRuleProblem, ruleOf} from "./numberRule.js";
+export {useSettingsDraft} from "./useSettingsDraft.js";
 export {filledPercent, isFull, overPercent} from "./usageFull.js";
 
 // the setting components a settings screen draws a setting with: one entry for each value of the SettingComponent enum

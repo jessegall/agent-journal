@@ -75,3 +75,16 @@ def test_a_valid_request_on_a_current_reading_writes_every_change():
     store = RecordingStore()
     handler(store).handle(ApplySettingScreen("work", "r1", (("a", "5"),)), CONTEXT)
     assert store.written == [("a", 5)]
+
+
+def test_a_request_may_carry_a_further_screen_and_writes_the_changes_of_both_together():
+    store = RecordingStore()
+    handler(store).handle(ApplySettingScreen("work", "r1", (("a", "5"),), (("tests", "r1"),)), CONTEXT)
+    assert store.written == [("a", 5)]
+
+
+def test_a_further_screen_read_at_another_revision_writes_nothing():
+    store = RecordingStore()
+    with pytest.raises(Refusal) as refusal:
+        handler(store).handle(ApplySettingScreen("work", "r1", (("a", "5"),), (("tests", "r0"),)), CONTEXT)
+    assert store.written == [] and "tests" in refusal.value.text

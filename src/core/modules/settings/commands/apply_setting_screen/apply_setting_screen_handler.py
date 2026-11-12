@@ -8,9 +8,9 @@ from core.modules.settings.support.setting_screen import ScreenReading, SettingS
 
 
 class ApplySettingScreenHandler(Handler[ApplySettingScreen, ScreenReading]):
-    """Changes the named settings of a screen in one step: all of them or none. A change to a setting that is not
-    on the screen, a value its declaration refuses, or a reading that has changed since it was read refuses the
-    whole request and writes nothing."""
+    """Changes the named settings of a screen, and of the further screens the request names, in one step: all of
+    them or none. A change to a setting that is on none of the screens, a value its declaration refuses, or a
+    reading that has changed since it was read refuses the whole request and writes nothing."""
 
     command = ApplySettingScreen
 
@@ -18,9 +18,11 @@ class ApplySettingScreenHandler(Handler[ApplySettingScreen, ScreenReading]):
         self.screens, self.declared, self.changes = screens, declared, changes
 
     def handle(self, command: ApplySettingScreen, context: Context) -> ScreenReading:
-        if command.revision != self.screens.read(command.screen).revision:
-            raise Refusal(f"the settings of {command.screen} changed since you read them", f"run journal setting-screen show {command.screen} and apply again")
-        shown = {node.key for node in self.screens.read(command.screen).nodes}
+        readings = [(self.screens.read(screen), revision) for screen, revision in ((command.screen, command.revision), *command.also)]
+        for reading, revision in readings:
+            if revision != reading.revision:
+                raise Refusal(f"the settings of {reading.screen} changed since you read them", f"run journal setting-screen show {reading.screen} and apply again")
+        shown = {node.key for reading, _ in readings for node in reading.nodes}
         stray = [key for key, _ in command.changes if key not in shown]
         if stray:
             raise Refusal(f"{', '.join(stray)} is not on the screen {command.screen}", f"journal setting-screen show {command.screen} lists its settings")
