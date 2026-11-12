@@ -200,6 +200,7 @@ from core.modules.drivers.rules.native_subagent_rule import NativeSubagentRule
 from core.modules.drivers.rules.private_corpus_rule import PrivateCorpusRule
 from core.modules.drivers.rules.panic_file_rule import PanicFileRule
 from core.modules.drivers.ticks.panic_watch import PanicWatch
+from core.modules.drivers.ticks.held_session_wake import HeldSessionWake
 from core.modules.drivers.models.nudge_record import NudgeRecord
 from core.modules.drivers.migrations.m004_nudge_records import NudgeRecordsMigration
 from core.modules.drivers.migrations.m028_read_indexes import ReadIndexesMigration
@@ -256,7 +257,7 @@ class DriversModule(Module):
     overlays = [PausedOverlay]
     marks = [*BYPASS_MARKS, *DISPATCH_MARKS, *COMPACTION_MARKS]
     performance_tools = [HookCostTool]
-    tick_handlers = [TickHandler(TickInterval(seconds=3), InterruptedAgentWake(), "interrupted agents"), TickHandler(TickInterval(seconds=60), AgentTicks(), "agent ticks", starts_immediately=True), TickHandler(TickInterval(seconds=60), EndSilentHelpersTick(), "silent helpers"), TickHandler(TickInterval(seconds=60), CompactionFaultsTick(), "compaction faults"), TickHandler(TickInterval(seconds=2), PanicWatch(), "panic watch"),
+    tick_handlers = [TickHandler(TickInterval(seconds=3), InterruptedAgentWake(), "interrupted agents"), TickHandler(TickInterval(seconds=60), AgentTicks(), "agent ticks", starts_immediately=True), TickHandler(TickInterval(seconds=60), EndSilentHelpersTick(), "silent helpers"), TickHandler(TickInterval(seconds=60), CompactionFaultsTick(), "compaction faults"), TickHandler(TickInterval(seconds=2), PanicWatch(), "panic watch"), TickHandler(TickInterval(seconds=5), HeldSessionWake(), "held session wake"),
                      TickHandler(TickInterval(seconds=24 * 60 * 60), HookPruning(), "hook pruning", starts_immediately=True),
                      TickHandler(TickInterval(seconds=60), EventPruning(), "event pruning")]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed]
