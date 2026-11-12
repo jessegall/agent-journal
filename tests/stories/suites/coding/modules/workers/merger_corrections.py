@@ -63,12 +63,11 @@ def failed_checkpoint(new_story, monkeypatch, output: str, *failing_lines: str) 
 
 
 def merge_again(worker: StoryWorker) -> None:
-    """The main agent merges the task that was handed in again and answers the important line of its deferral."""
-    number = agent_number(worker.story, worker.worker.id)
+    """The task handed in again changed nothing, so its branch has no commit ahead of the base: the ask takes it
+    in as merged with no merge to run, and the worker is left with no worktree."""
     asked_for_merge(worker.story, worker.worker)
-    worker.story.run(f"worker logs {number}", actor=worker.story.agent)
-    worker.story.expect_success(f'worker merge --wait {number} --read-important "the merger deferred its failing test paths"', actor=worker.story.agent)
     worker.story.run_listeners()
+    worker.story.expect_text(f"worker status {agent_number(worker.story, worker.worker.id)}", "idle with no worktree", actor=worker.story.agent)
 
 
 @pytest.fixture

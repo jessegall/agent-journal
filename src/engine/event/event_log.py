@@ -16,6 +16,7 @@ from engine.model.model import Model
 from engine.model.tables import Tables
 
 HIDDEN = "hidden"
+ENVIRONMENT_COLUMN = "environment_id"
 
 PAGE_SIZE_EVENTS = 50
 REGISTRY_SYNC_EVENT = "registry.sync"
@@ -40,10 +41,17 @@ class EventLog:
         self.tables = tables
         self.table = BookkeepingTable(database, "events", "event")
 
+    def row_environment_id(self, row: Model, context: Context) -> int | None:
+        """The environment a change belongs to: the row's own, also for a row that keeps one without being scoped,
+        such as a setting of the whole project, which has none; else the environment the change was made in."""
+        if isinstance(row, EnvironmentScoped) or self.tables.table(type(row)).has_column(ENVIRONMENT_COLUMN):
+            return getattr(row, ENVIRONMENT_COLUMN)
+        return context.environment_id
+
     def write(self, change: Change[Model], skipped_guards: frozenset[str]) -> int:
         context, row = change.context, change.row
         return self.table.insert({
-            "actor_id": context.actor.id, "environment_id": row.environment_id if isinstance(row, EnvironmentScoped) else context.environment_id, "row_id": row.id, "name": change.event,
+            "actor_id": context.actor.id, "environment_id": self.row_environment_id(row, context), "row_id": row.id, "name": change.event,
             "row_table": self.tables.table(type(change.row)).name, "command": context.command.label(), "cause_id": context.cause_id,
             "skipped_guards": json.dumps(sorted(skipped_guards)), "data": json.dumps(self.data(change)), "created_at": context.timestamp.text,
         })

@@ -47,8 +47,14 @@ def test_a_page_trust_stops_holding_when_the_module_code_changes(new_story):
     window = window_story(new_story)
     window.story.expect_success("window trust notes --environment main", actor=window.story.user)
     window.story.expect_success(PERMISSIONS, "component_trusted: True", actor=window.story.user)
+    from engine.registry.registry import Registry
+    from engine.database.database import Database
+    before = Registry.read(window.story.container.get(Database)).module_fingerprints.get("notes")
     with window.module_code_changed():
-        window.story.expect_success(PERMISSIONS, "component_trusted: False", actor=window.story.user)
+        after = Registry.read(window.story.container.get(Database)).module_fingerprints.get("notes")
+        listed = window.story.home.module_list.read_text()
+        held = window.story.run(PERMISSIONS, actor=window.story.user).output_text
+        assert False, f"DEBUG before={before} after={after} list={listed} permissions={held}"
 
 
 def test_removing_a_module_deletes_the_permissions_given_to_its_windows(new_story):
