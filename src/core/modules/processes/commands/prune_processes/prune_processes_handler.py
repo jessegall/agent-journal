@@ -31,8 +31,7 @@ class PruneProcessesHandler(Handler[PruneProcesses, int]):
         if excess_count <= 0:
             return 0
         processes = ended.ordered("ended_at", "id").limited(min(excess_count, PROCESS_BATCH_COUNT))
-        for process in processes:
-            self.repository.delete(process, context)
+        self.repository.delete_many_stored(processes, context)
         return len(processes)
 
     def prune_request_runs(self, context: Context) -> None:

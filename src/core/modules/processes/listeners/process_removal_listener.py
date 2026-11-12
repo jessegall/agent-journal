@@ -1,6 +1,8 @@
+from collections.abc import Sequence
 from dataclasses import replace
 
 from engine.listener.deletion_listener import DeletionListener
+from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.processes.models.process import Process
@@ -18,7 +20,9 @@ class ProcessRemovalListener(DeletionListener[Deleted[Process]]):
         self.queries, self.repository = queries, repository
 
     def handle(self, event: Deleted[Process], context: Context) -> None:
-        process = event.row
-        requests = tuple(self.queries.query(ReaderRequest).filter(sample_process_id=process.id).all_rows())
+        self.handle_many([event], context)
+
+    def handle_many(self, events: Sequence[Deleted[Process]], context: Context) -> None:
+        requests = tuple(self.queries.query(ReaderRequest).matching(Among("sample_process_id", [event.row.id for event in events])).all_rows())
         for request in requests:
             self.repository.save(replace(request, sample_process_id=None), context)
