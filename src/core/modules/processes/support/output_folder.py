@@ -75,6 +75,9 @@ class OutputFolder:
     def pid(self, process_id: int) -> int | None:
         return self.number(process_id, PID_FILE)
 
+    def pid_path(self, process_id: int) -> Path:
+        return self.home.folder / FOLDER_NAME / str(process_id) / PID_FILE
+
     def write_status(self, process_id: int, position: int, exit_code: int) -> None:
         self.write_number(process_id, f"{position}.status", exit_code)
 

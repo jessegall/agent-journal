@@ -13,7 +13,7 @@ from engine.subcommand.output import Output
 from engine.subcommand.overview_command import OverviewCommand
 from engine.subcommand.overview_reads import OverviewReads
 from engine.subcommand.read_subcommand import ReadSubcommand
-from engine.subcommand.subcommand import Subcommand
+from engine.subcommand.subcommand import SUCCESS_CODE, Subcommand
 from engine.cli.agent_number_arguments import AgentNumberArguments
 from engine.cli.line_parser import LineParser
 from engine.cli.subcommand_lookup import AnySubcommand
@@ -46,7 +46,7 @@ from engine.scope.scopes import Scopes
 from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from engine.process.door.request_records import RequestRecords
 
-SUCCESS_CODE, REFUSED_CODE, USAGE_CODE, ERROR_CODE = 0, 1, 2, 3
+REFUSED_CODE, USAGE_CODE, ERROR_CODE = 1, 2, 3
 HELP_FLAGS = ("--help", "-h")
 
 
@@ -195,8 +195,7 @@ class Console:
         self.note_overview(subcommand, arguments, caller)
         self.run_commit_listeners(argv)
         with self.scopes.read_scope(subcommand.disabled_scopes, caller.read_actor_id, environment_id):
-            subcommand.after_listeners(value, output)
-        return SUCCESS_CODE
+            return subcommand.after_listeners(value, output)
 
     def check_overview(self, subcommand: AnySubcommand, arguments: Namespace, caller: Caller) -> None:
         if isinstance(subcommand, OverviewCommand):
