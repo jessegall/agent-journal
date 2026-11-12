@@ -6,6 +6,9 @@ from engine.errors.refusal import Refusal
 from engine.log.system_log_writer import SystemLogWriter
 from engine.scope.scopes import Scopes
 from engine.time.clock import Clock
+from engine.setting.setting_values import SettingValues
+from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.commands.announce_behind_checks.announce_behind_checks import AnnounceBehindChecks
 from suites.coding.modules.workers.commands.check_worktree_behind.check_worktree_behind import CheckWorktreeBehind
 from suites.coding.modules.workers.models.enums.behind_route import BehindRoute
@@ -31,7 +34,15 @@ class BehindWorktrees:
             container.get(Bus).run(RecordBehindLook(), Actor.core(), environment_id=environment_id)
             for_merger = tuple(worktree_id for worktree_id, route in routes.items() if route is BehindRoute.MERGER)
             if for_merger:
-                container.get(Bus).run(AnnounceBehindChecks(for_merger), Actor.core(), environment_id=environment_id)
+                self.announced(container, for_merger, environment_id)
+
+    @staticmethod
+    def announced(container: Container, worktree_ids: tuple[int, ...], environment_id: int) -> None:
+        lines = container.get(Bus).run(AnnounceBehindChecks(worktree_ids), Actor.core(), environment_id=environment_id)
+        with container.get(Scopes).opened(None, environment_id):
+            merger_on = container.get(SettingValues).flag(MERGER_ENABLED)
+        if merger_on:
+            container.get(Bus).run(StartMerger(lines[0], container.get(Clock).timestamp()), Actor.core(), environment_id=environment_id)
 
     @staticmethod
     def checked(container: Container, worktree_id: int, environment_id: int) -> BehindRoute:

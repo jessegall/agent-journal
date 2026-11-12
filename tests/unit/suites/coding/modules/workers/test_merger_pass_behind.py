@@ -15,7 +15,7 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.support.behind_decisions import BehindDecisions
 from suites.coding.modules.workers.support.behind_nudges import BEHIND_CHOICES, BEHIND_PASSED
 from tests.unit.suites.coding.modules.workers.test_behind_check_closing import WORKTREE
-from tests.unit.suites.coding.modules.workers.test_check_worktree_behind import Bus, Lines, Rows, Settings
+from tests.unit.suites.coding.modules.workers.test_check_worktree_behind import Lines, Rows, Settings
 from tests.unit.suites.coding.modules.workers.test_check_worktree_behind import Queries as NoChecks
 from tests.unit.suites.coding.modules.workers.test_merger_update_subcommand import MERGER, WORKER, Agents, Checks, Numbers, Repository, Visits, Worktrees
 
@@ -62,7 +62,7 @@ def test_a_passed_check_goes_to_the_main_agent_with_its_facts_and_no_worktree_st
 
 def test_with_the_merger_off_the_line_reaches_the_main_agent_and_names_the_three_choices():
     inbox = Lines()
-    AnnounceBehindChecksHandler(Rows(), NoChecks(), inbox, Settings(merger=False), Bus(), Numbers()).handle(AnnounceBehindChecks((1,)), SimpleNamespace(timestamp=None))
+    AnnounceBehindChecksHandler(Rows(), NoChecks(), inbox, Settings(merger=False), Numbers()).handle(AnnounceBehindChecks((1,)), SimpleNamespace(timestamp=None))
     text = inbox.sent[0].text
     assert inbox.sent[0].key == BEHIND_CHOICES.key
     assert all(choice in text for choice in ("journal worker update 999", "journal merger leave 999 --why", "journal merger pass 999"))

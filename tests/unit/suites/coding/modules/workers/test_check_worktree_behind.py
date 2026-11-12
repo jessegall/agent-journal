@@ -1,6 +1,11 @@
+from contextlib import nullcontext
 from dataclasses import replace
 
 from engine.actor.actor import Actor
+from engine.command.bus import Bus as CommandBus
+from engine.scope.scopes import Scopes
+from engine.setting.setting_values import SettingValues
+from engine.time.clock import Clock
 from suites.coding.modules.workers.commands.announce_behind_checks.announce_behind_checks import AnnounceBehindChecks
 from suites.coding.modules.workers.commands.announce_behind_checks.announce_behind_checks_handler import AnnounceBehindChecksHandler
 from suites.coding.modules.workers.commands.check_worktree_behind.check_worktree_behind import CheckWorktreeBehind
@@ -12,6 +17,7 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.behind_nudges import BEHIND_FOR_MAIN_AGENT, FAST_FORWARDED
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED, UPDATE_TO_MAIN_COMMITS
+from suites.coding.modules.workers.ticks.behind_worktrees import BehindWorktrees
 
 TIP = "0123456789abcdef"
 
@@ -151,17 +157,43 @@ class Queries:
         return None
 
 
-def announced(merger_on: bool) -> tuple[Lines, Bus]:
-    inbox, bus = Lines(), Bus()
-    AnnounceBehindChecksHandler(Rows(), Queries(), inbox, Settings(merger=merger_on), bus, Numbers()).handle(AnnounceBehindChecks((1, 2, 3, 4, 5)), Context())
-    return inbox, bus
+def announced(merger_on: bool) -> tuple[Lines, tuple[object, ...]]:
+    inbox = Lines()
+    lines = AnnounceBehindChecksHandler(Rows(), Queries(), inbox, Settings(merger=merger_on), Numbers()).handle(AnnounceBehindChecks((1, 2, 3, 4, 5)), Context())
+    return inbox, lines
 
 
-def test_five_worktrees_of_one_look_leave_five_lines_and_start_the_merger_once():
-    inbox, bus = announced(True)
-    assert (len(inbox.sent), [type(command) for command in bus.dispatched]) == (5, [StartMerger])
+def test_five_worktrees_of_one_look_leave_five_lines_for_the_merger():
+    inbox, lines = announced(True)
+    assert (len(inbox.sent), len(lines)) == (5, 5)
 
 
-def test_with_the_merger_off_the_lines_go_to_the_inbox_and_no_merger_starts():
-    inbox, bus = announced(False)
-    assert (len(inbox.sent), bus.dispatched) == (5, [])
+class LookBus:
+    def __init__(self) -> None:
+        self.ran: list[object] = []
+
+    def run(self, command, actor, environment_id=None):
+        self.ran.append(command)
+        return ("the first line",) if isinstance(command, AnnounceBehindChecks) else None
+
+
+class OpenScopes:
+    def opened(self, actor_id, environment_id=None):
+        return nullcontext()
+
+
+class LookContainer:
+    def __init__(self, merger_on: bool) -> None:
+        self.bus = LookBus()
+        self.instances = {CommandBus: self.bus, Scopes: OpenScopes(), SettingValues: Settings(merger=merger_on), Clock: Clock()}
+
+    def get(self, kind):
+        return self.instances[kind]
+
+
+def test_one_look_starts_the_merger_once_for_all_its_worktrees_and_none_with_the_merger_off():
+    on, off = LookContainer(True), LookContainer(False)
+    BehindWorktrees.announced(on, (1, 2, 3, 4, 5), 1)
+    BehindWorktrees.announced(off, (1, 2, 3, 4, 5), 1)
+    assert [type(command) for command in on.bus.ran] == [AnnounceBehindChecks, StartMerger]
+    assert [type(command) for command in off.bus.ran] == [AnnounceBehindChecks]
