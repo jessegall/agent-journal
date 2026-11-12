@@ -84,6 +84,10 @@ class WorktreeBehindCheck(EnvironmentScoped, Model):
         move = BehindCheckLifecycle.remind_clash if self.state is BehindCheckState.CONFLICTED else BehindCheckLifecycle.remind
         return self.taken(move, reminders=self.reminders + 1)
 
+    def held(self) -> "WorktreeBehindCheck":
+        """Starts the wait for the update again, for a worker that was paused or stopped while it ran."""
+        return self.taken(BehindCheckLifecycle.hold)
+
     def may_be_passed(self) -> bool:
         return self.state in PASSABLE_STATES
 

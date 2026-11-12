@@ -20,6 +20,7 @@ class BehindCheckLifecycle(Lifecycle):
     conflict = Move("conflict", [State.ORDERED], State.CONFLICTED)
     remind = Move("remind", [State.ORDERED], State.ORDERED)
     remind_clash = Move("remind_clash", [State.CONFLICTED], State.CONFLICTED)
+    hold = Move("hold", [State.ORDERED], State.ORDERED)
     note_open_failure = Move("note_open_failure", [State.OPEN], State.OPEN)
     note_ordered_failure = Move("note_ordered_failure", [State.ORDERED], State.ORDERED)
     end = Move("end", [State.OPEN, State.ORDERED, State.CONFLICTED, State.PASSED, State.LEFT], State.GONE)

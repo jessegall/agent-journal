@@ -25,8 +25,9 @@ CLASH_LINES = (CLASH_OPEN, CLASH_STILL_OPEN)
 
 class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
     """Reminds a worker whose ordered update waits the set minutes since the order or its last reminder, up to the set
-    number of reminders, and then tells the merger once that the worker has not run it. A paused worker is not
-    reminded; it waits with the paused line. Markers an update left open past the wait go to the merger, first to
+    number of reminders, and then tells the merger once that the worker has not run it. A paused or stopped worker is not
+    reminded and its wait starts again, so the order waits until it is back; the worktree's owner, also after a
+    takeover, is the one reminded. Markers an update left open past the wait go to the merger, first to
     advise the worker, then to pass it."""
 
     command = RemindBehindUpdates
@@ -39,12 +40,14 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
         wait = timedelta(minutes=self.settings.number(UPDATE_WAIT_MINUTES))
         limit = self.settings.number(UPDATE_REMINDERS)
         for check in self.queries.query(WorktreeBehindCheck).filter(state=BehindCheckState.ORDERED).all_rows():
-            if check.reminders > limit or context.timestamp.value - check.updated_at.value < wait:
+            if check.reminders > limit:
                 continue
             worktree = self.rows.required(Worktree, check.worktree_id)
-            if self.rows.required(Agent, worktree.session_agent_id).paused_at is not None:
-                continue
-            self.remind(check, worktree, limit, context)
+            worker = self.rows.required(Agent, worktree.session_agent_id)
+            if worker.paused_at is not None or worker.ended_at is not None:
+                self.repository.save_change(check, check.held(), context)
+            elif context.timestamp.value - check.updated_at.value >= wait:
+                self.remind(check, worktree, limit, context)
         for check in self.queries.query(WorktreeBehindCheck).filter(state=BehindCheckState.CONFLICTED).all_rows():
             if check.reminders < len(CLASH_LINES) and context.timestamp.value - check.updated_at.value >= wait:
                 self.clash_still_open(check, context)

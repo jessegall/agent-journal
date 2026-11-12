@@ -40,7 +40,7 @@ class Rows:
         self.paused = paused
 
     def required(self, model: type, row_id: int):
-        return WORKTREE if model.__name__ == "Worktree" else SimpleNamespace(paused_at=ORDERED_AT if self.paused else None)
+        return WORKTREE if model.__name__ == "Worktree" else SimpleNamespace(paused_at=ORDERED_AT if self.paused else None, ended_at=None)
 
 
 class Settings:
