@@ -22,6 +22,8 @@ class EscalationCounter:
         self.decisions, self.readers, self.resets = decisions, readers, resets
 
     def runs_without_change(self, command_keys: Sequence[str]) -> dict[str, int]:
+        """The count of each command, from one read of the newest ended runs of all of them: up to RUNS_READ runs
+        a command, so a command that runs far less often than the others may count fewer runs than it had."""
         keys = tuple(dict.fromkeys(command_keys))
         ended = self.decisions.matching(Among("command_key", keys)).filter(moment=ReadingMoment.END).descending("decided_at", "id").limit(RUNS_READ * len(keys), "the newest ended runs of each command counted").get()
         rows = {key: [row for row in ended if row.command_key == key][:RUNS_READ] for key in keys}
