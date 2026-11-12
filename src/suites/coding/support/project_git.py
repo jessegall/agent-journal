@@ -5,8 +5,9 @@ import shutil
 from pathlib import Path
 
 from engine.enums.process_kind import ProcessKind
-from engine.process.execution_request import ExecutionRequest
-from engine.process.process_executor import ProcessExecutor
+from engine.errors.run_time_limit_error import RunTimeLimitError
+from engine.process.door.execution_request import ExecutionRequest
+from engine.process.door.process_executor import ProcessExecutor
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.scope.scopes import Scopes
@@ -37,7 +38,7 @@ class ProjectGit:
         folder = Path(self.queries.query(Environment).find(environment_id).folder)
         try:
             finished = self.executor.execute(ExecutionRequest(command, folder, ProcessKind.QUICK, COMMAND_LIMIT_SECONDS))
-        except OSError:
+        except (OSError, RunTimeLimitError):
             return None
         return finished.stdout if finished.succeeded else None
 

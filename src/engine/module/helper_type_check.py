@@ -4,10 +4,10 @@ from dataclasses import fields
 
 from engine.enums.access import Access
 from engine.agent.agent_roster import AgentRoster
-from engine.agent.agent_group_book import AgentGroupBook
+from engine.agent.groups.agent_group_book import AgentGroupBook
 from engine.helper_type.helper_type import HelperType
 from engine.profile.agent_profile import AgentProfile
-from engine.agent.agent_group_entry import AgentGroupEntry
+from engine.agent.groups.agent_group_entry import AgentGroupEntry
 from engine.helper_type.helper_type_book import MAIN_KEY, HelperTypeBook
 from engine.module.module import Module
 from engine.module.suite_list import SuiteList

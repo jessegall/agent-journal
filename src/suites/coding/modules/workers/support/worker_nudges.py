@@ -21,7 +21,7 @@ MERGE_WAITS = NudgeDeclaration("workers.merge_waits", NudgeType.STEERING, 'the m
 WORKER_TASK = NudgeDeclaration("workers.worker_holds_task", NudgeType.STEERING, 'worker:{worker} has task:{task}')
 
 WORKER_UNMERGED = NudgeDeclaration("workers.worker_unmerged", NudgeType.STEERING, 'worker:{worker} committed {tasks}, unmerged: {action}', interval=Interval(Seconds(300)), turn_limited=False, wakes_agent=True,
-                                  plural_text='workers {worker} delivered {tasks}, unmerged: {action}', id_field="worker")
+                                  plural_text='workers {worker} committed {tasks}, unmerged: {action}', id_field="worker")
 WORKER_UNMERGED_DUE = NudgeDeclaration("workers.worker_unmerged_due", NudgeType.STEERING, 'worker:{worker} committed {tasks}, unmerged: {action}', interval=Interval(Seconds(300)), turn_limited=False, wakes_agent=True, required_command="journal worker merge {worker}")
 
 WORKER_LIMIT_RAISED = NudgeDeclaration("workers.limit_raised", NudgeType.STEERING, 'worker limit is now {limit}: {workers} workers out, {count} open tasks not delegated; hand out more', turn_limited=False)

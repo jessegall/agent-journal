@@ -11,6 +11,7 @@ from core.modules.plans.models.plan_task import PlanTask
 from core.modules.tasks.migrations.m001_tasks import TasksTablesMigration
 from core.modules.assignments.migrations.m001_assignments import AssignmentsTableMigration
 from core.modules.tasks.migrations.m007_task_delegated_to import TaskDelegationMigration
+from core.modules.tasks.migrations.m019_task_complexity import TaskComplexityMigration
 from core.modules.tasks.models.open_dependency import OpenDependency
 
 PLAN_COUNT = 2000
@@ -42,7 +43,7 @@ class ViewTiming:
 
     def __init__(self) -> None:
         self.connection = sqlite3.connect(":memory:")
-        for statement in (*TasksTablesMigration.statements, *TaskDelegationMigration.statements, *AssignmentsTableMigration.statements, *PlansTablesMigration.statements, *CheckpointsMigration.statements[:-1], *(f"CREATE VIEW {name} AS {select}" for name, select in VIEWS)):
+        for statement in (*TasksTablesMigration.statements, *TaskDelegationMigration.statements, *TaskComplexityMigration.statements, *AssignmentsTableMigration.statements, *PlansTablesMigration.statements, *CheckpointsMigration.statements[:-1], *(f"CREATE VIEW {name} AS {select}" for name, select in VIEWS)):
             self.connection.execute(statement)
         self.fill()
 

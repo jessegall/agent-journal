@@ -1,6 +1,6 @@
 from collections.abc import Iterator, Sequence
 
-from engine.agent.agent_group_entry import AgentGroupEntry
+from engine.agent.groups.agent_group_entry import AgentGroupEntry
 
 
 class AgentGroupBook:
