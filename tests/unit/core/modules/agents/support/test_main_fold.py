@@ -87,3 +87,16 @@ def test_a_clash_keeps_the_row_its_rule_chooses_and_records_the_rest(clashing):
 def test_a_clash_on_a_model_and_id_pair_is_settled_the_same_way(clashing):
     MainFold(Database.configured(clashing)).run(FOLDS, FOLDED_AT)
     assert [tuple(row) for row in clashing.execute("SELECT id, source_id, target_id FROM links ORDER BY id")] == [(1, 7, 3), (3, 8, 3)]
+
+
+MARKS = """
+    CREATE TABLE memory_marks (id INTEGER PRIMARY KEY, session_agent_id INTEGER REFERENCES agents (id), state TEXT);
+    CREATE UNIQUE INDEX memory_marks_one_open ON memory_marks (session_agent_id) WHERE state = 'open';
+    INSERT INTO memory_marks VALUES (1, 1, 'closed'), (2, 2, 'closed'), (3, 3, 'open'), (4, 1, 'open');
+"""
+
+
+def test_a_partial_unique_index_settles_only_the_rows_it_guards(connection):
+    connection.executescript(MARKS)
+    MainFold(Database.configured(connection)).run(FOLDS, FOLDED_AT)
+    assert [tuple(row) for row in connection.execute("SELECT id, session_agent_id, state FROM memory_marks ORDER BY id")] == [(1, 3, "closed"), (2, 3, "closed"), (3, 3, "open")]
