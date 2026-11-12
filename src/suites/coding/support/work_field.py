@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from core.modules.settings.support.current_value import CurrentValue
+
 
 @dataclass(frozen=True)
 class WorkField:
@@ -11,7 +13,7 @@ class WorkField:
     title: str
     description: str
     type: str
-    value: object
+    value: CurrentValue
     source: str
     choices: tuple[int | str, ...] = ()
     badge: str = ""
