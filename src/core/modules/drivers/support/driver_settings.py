@@ -16,7 +16,7 @@ DRIVERS_SETTINGS = [
     SettingValue("hook-wait-seconds", "Tool call wait", "Seconds to wait for the journal before allowing a tool call without checks.", SettingType.NUMBER, default=5, scope=SettingScope.PROJECT),
     SettingValue("block-card-seconds", "Hold before Blocked", "Seconds the journal holds an agent before its card shows Blocked, unless its task is blocked.", SettingType.NUMBER, default=120,
                  scope=SettingScope.PROJECT),
-    SettingValue("hook-call-days", "Call record days", "How many days the journal keeps the record of each call from the agent program.", SettingType.NUMBER, default=30,
+    SettingValue("hook-call-days", "Call record days", "How many days the journal keeps the record of each call from the agent program.", SettingType.NUMBER, default=3,
                  scope=SettingScope.PROJECT),
     SettingValue("event-hours", "Activity history hours", "How many hours the journal keeps the history of commands and tool calls. Older history is deleted.", SettingType.NUMBER, default=24,
                  scope=SettingScope.PROJECT),
