@@ -14,6 +14,17 @@ from engine.provider.session_start import SessionStart
 from engine.private.private_folder import PrivateFolder
 from engine.private.server_keys import ServerKeys
 from core.modules.codex.providers.codex_provider import CodexProvider
+from engine.provider.model_efforts import ModelEfforts
+
+
+class EffortSettings:
+    """The Codex effort entries a person set."""
+
+    def __init__(self, *entries: str) -> None:
+        self.entries = entries
+
+    def texts(self, key: str) -> tuple[str, ...]:
+        return self.entries
 
 
 def test_project_hook_files_include_codex_hooks():
@@ -28,7 +39,7 @@ VARIABLES = {"JOURNAL_ENV": "main"}
 
 @pytest.fixture
 def provider(tmp_path: Path) -> CodexProvider:
-    return CodexProvider(ProgramFolders(), ServerKeys(PrivateFolder(JournalHome(tmp_path / ".journal"))))
+    return CodexProvider(ProgramFolders(), ServerKeys(PrivateFolder(JournalHome(tmp_path / ".journal"))), ModelEfforts(EffortSettings()))
 
 
 def test_a_session_runs_codex_with_its_model_and_names_no_session_of_its_own(provider):
@@ -112,3 +123,13 @@ def test_a_session_resumes_only_in_the_folder_it_started_in(provider, tmp_path, 
     assert provider.session_matches_folder(project, "thread")
     assert not provider.session_matches_folder(tmp_path / "other", "thread")
     assert not provider.session_matches_folder(project, "launch-name-only")
+
+
+def test_a_model_with_an_effort_entry_starts_at_it_and_a_launch_that_names_one_keeps_its_own(tmp_path):
+    provider = CodexProvider(ProgramFolders(), ServerKeys(PrivateFolder(JournalHome(tmp_path / ".journal"))), ModelEfforts(EffortSettings("sol:high")))
+    session = provider.session_command(Launch(ROOT, FOLDER, "gpt-6.1-sol", "launch-1", ResumedSession("t-1"), VARIABLES))
+    named = provider.session_command(Launch(ROOT, FOLDER, "gpt-6.1-sol", "launch-2", ResumedSession("t-1"), VARIABLES, effort="low"))
+    helper = provider.helper_command(HelperLaunch(ROOT, FOLDER, "gpt-6.1-sol", "worker-7", ResumedSession("t-2"), VARIABLES, brief="Write the tests"))
+    other = provider.helper_command(HelperLaunch(ROOT, FOLDER, "gpt-6.1-mini", "worker-8", ResumedSession("t-3"), VARIABLES, brief="Write the tests"))
+    efforts = [[argument for argument in command.arguments if "model_reasoning_effort" in argument] for command in (session, named, helper, other)]
+    assert efforts == [["model_reasoning_effort=high"], [], ["model_reasoning_effort=high"], []]

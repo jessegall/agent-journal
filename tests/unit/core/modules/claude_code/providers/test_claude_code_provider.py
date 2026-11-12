@@ -1,4 +1,6 @@
 import json
+from core.modules.claude_code.support.claude_code_settings import DEFAULT_MODEL_EFFORTS
+from engine.provider.model_efforts import ModelEfforts
 from pathlib import Path
 
 import pytest
@@ -17,6 +19,13 @@ from core.modules.claude_code.providers.claude_code_provider import CONFIG_VARIA
 from core.modules.claude_code.providers.support.claude_folder_name import ClaudeFolderName
 
 
+
+class EffortSettings:
+    """The Claude Code effort entries as shipped."""
+
+    def texts(self, key: str) -> tuple[str, ...]:
+        return DEFAULT_MODEL_EFFORTS
+
 def test_project_hook_files_include_shared_and_local_settings():
     assert ClaudeCodeProvider.hook_files == (Path(".claude/settings.json"), Path(".claude/settings.local.json"))
 
@@ -30,13 +39,13 @@ VARIABLES = {"JOURNAL_ENV": "main"}
 
 @pytest.fixture
 def provider(tmp_path: Path) -> ClaudeCodeProvider:
-    return ClaudeCodeProvider(ProgramFolders(), ServerKeys(PrivateFolder(JournalHome(tmp_path / ".journal"))))
+    return ClaudeCodeProvider(ProgramFolders(), ServerKeys(PrivateFolder(JournalHome(tmp_path / ".journal"))), ModelEfforts(EffortSettings()))
 
 
 def test_a_session_runs_claude_with_its_model_and_its_new_session_id(provider):
     command = provider.session_command(Launch(ROOT, FOLDER, "sonnet", "launch-1", SessionStart("s-1"), VARIABLES))
     assert (list(command.arguments), command.folder, dict(command.variables), command.session) == (
-        ["claude", "--model", "sonnet", "--effort", "medium", "--dangerously-skip-permissions", "--session-id", "s-1"], FOLDER, VARIABLES, "s-1")
+        ["claude", "--model", "sonnet", "--effort", "high", "--dangerously-skip-permissions", "--session-id", "s-1"], FOLDER, VARIABLES, "s-1")
 
 
 def test_a_session_starts_on_opus_and_the_person_s_own_flags_win(provider):
@@ -54,7 +63,7 @@ def test_a_resumed_session_runs_claude_with_resume(provider):
 
 def test_a_helper_runs_its_brief_without_a_terminal_and_prints_stream_json(provider):
     command = provider.helper_command(HelperLaunch(ROOT, FOLDER, "sonnet", "worker-7", SessionStart("s-2"), VARIABLES, brief="Write the tests"))
-    assert list(command.arguments) == ["claude", "-p", "Write the tests", "--model", "sonnet", "--effort", "medium", "--dangerously-skip-permissions", "--output-format",
+    assert list(command.arguments) == ["claude", "-p", "Write the tests", "--model", "sonnet", "--effort", "high", "--dangerously-skip-permissions", "--output-format",
                                        "stream-json", "--verbose", "--session-id", "s-2"]
 
 
@@ -101,3 +110,9 @@ def test_a_session_found_under_another_project_does_not_resume_here(provider, tm
     assert provider.transcript(project, "thread") == transcript
     assert not provider.session_matches_folder(project, "thread")
     assert provider.session_matches_folder(session_folder, "thread")
+
+
+
+def test_opus_starts_at_medium_and_sonnet_at_high_by_default():
+    provider = ClaudeCodeProvider(ProgramFolders(), None, ModelEfforts(EffortSettings()))
+    assert (provider.effort("claude-opus-5-5"), provider.effort("opus"), provider.effort("sonnet"), provider.effort("haiku")) == ("medium", "medium", "high", "high")

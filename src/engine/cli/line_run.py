@@ -64,7 +64,7 @@ class LineRun:
         tools = container.get(PerformanceTools)
         start_points = tools.begin()
         try:
-            with container.get(RequestWatch).watching(argv):
+            with container.get(RequestWatch).watching_without_refusal(argv):
                 if argv[:2] == MODULE_REMOVAL_ARGUMENTS:
                     return container.get(ModuleRemoveLine).run(argv, request, stream)
                 return container.get(Console).requested_run(argv, request, stream)
@@ -81,7 +81,7 @@ class LineRun:
             stream.write(f"{error}\n")
             return USAGE_CODE
         try:
-            with container.get(RequestWatch).watching(argv):
+            with container.get(RequestWatch).watching_without_refusal(argv):
                 return container.get(Console).run(argv, checked_caller(container), stream)
         finally:
             self.close(container, argv)

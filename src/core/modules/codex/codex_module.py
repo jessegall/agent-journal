@@ -1,5 +1,6 @@
 from engine.module.module import Module
 from core.modules.codex.providers.codex_provider import CodexProvider
+from core.modules.codex.support.codex_settings import CODEX_SETTINGS
 
 
 class CodexModule(Module):
@@ -10,3 +11,4 @@ class CodexModule(Module):
     move_reason = "version 4 had no table for an agent program"
     requires_core = ">=5,<6"
     providers = [CodexProvider]
+    settings = CODEX_SETTINGS
