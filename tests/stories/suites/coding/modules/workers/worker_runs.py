@@ -209,3 +209,31 @@ def test_a_worker_no_launcher_runs_is_refused_a_stop_and_keeps_its_tasks(new_sto
 def expect_requests_launcher_2(launcher, number, expected) -> None:
     actual = launcher.requests[-number]
     assert actual == expected, actual
+
+
+def test_a_worker_is_not_held_until_it_watches_a_run_of_its_own(new_story):
+    story, worker, run, _ = worker_with_background_run(new_story)
+    story.expect_absent(f"agent-block list --agent {worker.id}", f"moved to the background", actor=story.agent)
+    story.expect_success("queue list --environment 1 --json", actor=story.agent)
+    story.expect_success("process list --limit 5", actor=story.agent)
+
+
+def test_a_worker_that_stopped_is_told_when_its_run_ends_by_a_job_that_starts_it_again(new_story):
+    story, worker, run, bus = worker_with_background_run(new_story)
+    story.run(f"agent end {worker.id}", actor=worker)
+    story.run_listeners()
+    story.expect_text(f"process show {run.id}", "state: background", actor=story.agent)
+    bus.run(EndProcess(run.id, 0, 10, 1), worker, environment_id=1)
+    story.expect_text(f"agent-line list --agent {worker.id}", f"your run {run.id} ended", "workers.worker-job")
+    story.expect_text("task show 1", "state: started", actor=story.agent)
+    story.expect_success("worker-worktree list --json", actor=story.agent)
+
+
+def test_a_worker_that_stopped_with_a_run_going_is_not_told_to_carry_on_and_shows_no_stop_mark(new_story):
+    story, worker, _, _ = worker_with_background_run(new_story)
+    story.run(f"agent end {worker.id}", actor=worker)
+    story.run_listeners()
+    story.expect_absent(f"agent-line list --agent {worker.id}", "you ended with tasks left")
+    story.expect_absent("chat-mark list --environment 1", "stopped with")
+    story.expect_success(f"agent show {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success("message list --limit 5", actor=story.agent)
