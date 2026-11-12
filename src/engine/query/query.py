@@ -83,6 +83,7 @@ class Query(Generic[M]):
         return [row_index[row_id] for row_id in row_ids]
 
     def filter(self, **values: object) -> Self:
+        """The old name of where for columns that equal values; new code writes where."""
         return self.where(**values)
 
     def where(self, *comparison: object, **values: object) -> Self:

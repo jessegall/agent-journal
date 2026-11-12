@@ -83,6 +83,7 @@ A suite is a set of drivers for one sort of work, with the modules it lists. An 
 | Answer a hook | A driver rule that only answers; it runs no command | `architecture_drivers_rule_runs_a_command` |
 | Read or write a file | `FileAccess.shared()` in `src/engine/file/file_access.py` | `FileReadsDetector`, `FileWritesDetector` |
 | SQL | Built with the query builder; SQL text only in `src/engine/database`, `src/engine/query` and migrations | `architecture_queries_sql_text_in_a_builder`, `architecture_queries_statement_outside_the_builder` |
+| Read rows | `queries.query(Model)` with where, order_by and take or limit; get() returns at most 50 rows, a named limit at most 1000, and every row only through every_row(reason), listed in `tests/snapshots/every_row_reads.txt` | `tests/unit/test_every_row_reads.py`, `tests/unit/test_no_unbounded_reads.py` |
 | The time | The clock of `src/engine/time` | `architecture_core_wall_clock_outside_clock` |
 | A line in the system log | `SystemLogWriter` | `architecture_core_log_outside_system_log_writer` |
 | A line to an agent | The nudger; a nudge names a row and carries no data of it | `architecture_nudges_agent_line_outside_nudger`, `architecture_nudges_command_in_a_nudge` |
