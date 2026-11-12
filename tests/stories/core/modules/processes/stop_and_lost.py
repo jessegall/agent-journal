@@ -11,12 +11,13 @@ from engine.command.bus import Bus
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
+from server.work.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_handler, expect_poll_second, expect_value_4
 
 GROUP_END_SECONDS = 5
 
-ORPHAN_LINE = "process 1 was lost: its shell is gone"
+ORPHAN_LINE = "Process 1 was lost: its shell is gone"
 
 
 def test_a_stop_kills_the_group_of_the_runner_and_ends_a_wait_on_the_process(new_story):
@@ -251,6 +252,25 @@ def test_a_run_the_runner_reported_first_is_passed_over_and_the_others_still_end
     handler.commands = stale_commands
     expect_handler(handler, story, True)
     story.expect_success(f"process show {second.id}", "state: finished", actor=story.agent)
+
+
+def test_a_start_ends_each_run_marked_running_whose_process_is_gone_and_leaves_one_whose_process_lives(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    lost, alive = start_process(story, "make build"), start_process(story, "make test")
+    ended_program = subprocess.Popen(["true"])
+    ended_program.wait()
+    living = subprocess.Popen(["sleep", "60"], start_new_session=True)
+    try:
+        folder = story.container.get(OutputFolder)
+        folder.write_pid(lost.id, ended_program.pid)
+        folder.write_pid(alive.id, living.pid)
+        BootingWork().run(story.container)
+        story.run_listeners()
+        story.expect_success(f"process show {lost.id}", "state: orphaned", actor=story.agent)
+        story.expect_success(f"process show {alive.id}", "state: running", actor=story.agent)
+    finally:
+        living.kill()
+        living.wait()
 
 
 def expect_end_recovery(story, expected) -> None:

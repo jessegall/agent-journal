@@ -1,3 +1,5 @@
+from engine.actor.actor import Actor
+from engine.enums.actor_type import ActorType
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from tests.stories.suites.coding.modules.workers.support.phase_steps import single_task_worker, unplanned_group_worker
@@ -14,7 +16,8 @@ def test_a_helper_whose_worktree_is_not_cut_takes_no_task(new_story):
 
 def test_a_person_assignee_skips_the_agent_only_checks(new_story):
     story = new_story(fixture=OpenTaskBuilder)
-    story.expect_success(f"assign task 1 --to {story.user.id} --environment main", actor=story.user)
+    user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.expect_success(f"assign task 1 --to {user.id} --environment main", actor=user)
     story.expect_text("task info 1", "state: open", actor=story.agent)
 
 
