@@ -4,6 +4,7 @@ from engine.caller.caller import Caller
 from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.commands.make_proof.make_proof import MakeProof
+from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.waiting_proofs import WaitingProofs
@@ -16,8 +17,8 @@ class MakeProofSubcommand(Subcommand[MakeProof, Proof]):
     name = "make"
     outward = True
 
-    def __init__(self, proofs: ProofQuery) -> None:
-        self.proofs = proofs
+    def __init__(self, proofs: ProofQuery, tasks: TaskQuery) -> None:
+        self.proofs, self.tasks = proofs, tasks
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("point", type=int)
@@ -30,4 +31,5 @@ class MakeProofSubcommand(Subcommand[MakeProof, Proof]):
 
     def write_output(self, value: Proof, output: Output) -> None:
         super().write_output(value, output)
-        output.line(WaitingProofs(tuple(self.proofs.waiting_proofs(value.worktree_id).all_rows())).text())
+        held = {task.id for task in self.tasks.started_tasks(value.creator_id)}
+        output.line(WaitingProofs(tuple(proof for proof in self.proofs.waiting_proofs(value.worktree_id).all_rows() if proof.task_id in held)).text())

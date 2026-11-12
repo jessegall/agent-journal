@@ -163,7 +163,8 @@ An open question lets you stop; the answer wakes you. Going on with other work e
 
 - `journal worker status` shows your started tasks and these lists: Tasks held (started, with the points that have no
   proof yet), Tasks staged (every point proved: the next commit takes them), Tasks waiting for tests (committed), Tasks
-  you may start, and Tasks blocked with the reason. The main agent can name a worker with
+  you may start, Tasks blocked with the reason, and Tasks someone else holds (in your unit, but started by another
+  agent or a person: ask about them). The main agent can name a worker with
   `journal worker status <number>`. Use `--page` and `--limit` for longer lists, or `--json` for structured output.
 - `journal proof points --agent <number>` lists the points of your task's brief.
 - Prove each one with `journal proof make <point> --task <task> "<file:line, and the test>" --test "<command>"`: the journal runs that
