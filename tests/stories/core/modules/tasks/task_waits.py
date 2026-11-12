@@ -146,7 +146,7 @@ def test_an_idle_agent_is_typed_that_its_task_opened_and_the_line_is_not_said_tw
     story.advance(timedelta(seconds=31))
     story.run('task cancel 2 --reason "no"')
     story.run_listeners()
-    story.expect_rows(entered == [(story.agent.id, "[journal] task:1 is open again: what it waited on has ended"), (story.agent.id, "[journal] wait:1 is over")], detail=str(entered))
+    story.expect_rows(entered == [(story.agent.id, "[journal] task:1 is open again: what it waited on has ended"), (story.agent.id, "[journal] wait:1 is over: continue")], detail=str(entered))
     story.expect_text(f"agent-line list --agent {story.agent.id} --state entered", "task:1 is open again")
 
 

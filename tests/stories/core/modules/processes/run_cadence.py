@@ -72,7 +72,7 @@ def test_a_sparse_pytest_run_keeps_running_and_after_printing_often_is_told_only
     process = moved_run(story, SLOW_TESTS, CommandCategory.TEST_RUN)
     titled(story, process, "Running the slow tests")
     ticks(story, 120, process, every=50)
-    expect_told(story, MAIN, f"Output {process.id} prints about once every 50 seconds, so no reader can follow it: run pytest without -q")
+    expect_told(story, MAIN, f"Output {process.id} prints about once every 50s, too sparse for a reader: run pytest without -q")
     story.expect_text(f"process show {process.id}", "state: background", actor=story.agent)
     ticks(story, 80, process, every=10)
     quiet = cadence_lines(told(story, MAIN))
@@ -97,8 +97,8 @@ def test_a_helpers_and_a_workers_runs_that_print_nothing_for_30_seconds_are_told
     build = agent_run(story, worker, "make build", CommandCategory.BUILD)
     titled(story, build, "Building the worker branch", Actor(worker.id, ActorType.AGENT))
     ticks(story, 30, build)
-    expect_told(story, helper.session, f"output {scan.id} printed nothing for 30s, so it is not streaming: it may hold its output back")
-    expect_told(story, worker.session, f"output {build.id} printed nothing for 30s, so it is not streaming: make it print its steps")
+    expect_told(story, helper.session, f"Output {scan.id} printed nothing for 30s, so it is not streaming: it may hold its output back")
+    expect_told(story, worker.session, f"Output {build.id} printed nothing for 30s, so it is not streaming: make it print its steps")
 
 
 def test_only_a_silent_go_test_over_several_packages_is_told_and_runs_printing_lines_or_a_progress_bar_never_are(new_story):
@@ -114,7 +114,7 @@ def test_only_a_silent_go_test_over_several_packages_is_told_and_runs_printing_l
         printed(story, bar, bar_text)
         ticks(story, 10, lines, every=10, text="compiled one more file\n" * 10)
         heard += cadence_lines(told(story, MAIN))
-    story.expect_rows(len(heard) == 1, f"output {silent.id} printed nothing for 30s, so it is not streaming: run one package at a time, or go test -p 1" in heard[0],
+    story.expect_rows(len(heard) == 1, f"Output {silent.id} printed nothing for 30s, so it is not streaming: run one package at a time, or go test -p 1" in heard[0],
                       detail="\n".join(heard))
 
 
@@ -202,7 +202,7 @@ def test_plugin_person_and_lookup_runs_are_never_judged_while_a_started_test_is(
     titled(story, judged, "Running the first tests")
     ticks(story, 60)
     lines = "\n".join(told(story, MAIN))
-    story.expect_rows(f"output {judged.id} printed nothing" in lines, *(f"Output {process.id} printed nothing" not in lines for process in skipped), detail=lines)
+    story.expect_rows(f"Output {judged.id} printed nothing" in lines, *(f"Output {process.id} printed nothing" not in lines for process in skipped), detail=lines)
 
 
 def test_a_workers_queued_run_is_told_nothing_while_its_running_one_is(new_story):
@@ -214,7 +214,7 @@ def test_a_workers_queued_run_is_told_nothing_while_its_running_one_is(new_story
     queued = waiting_run(story, worker, "pytest tests/web -q")
     ticks(story, 30)
     lines = told(story, worker.session)
-    story.expect_rows(any(f"output {running.id} printed nothing" in line for line in lines), not any(f"output {queued.id} " in line for line in lines), detail="\n".join(lines))
+    story.expect_rows(any(f"Output {running.id} printed nothing" in line for line in lines), not any(f"output {queued.id} " in line for line in lines), detail="\n".join(lines))
 
 
 def test_a_person_entering_zero_or_a_negative_sparse_seconds_is_refused_and_nothing_changes(new_story):

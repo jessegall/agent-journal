@@ -78,7 +78,7 @@ def test_a_saved_command_can_set_its_timeout_at_start(new_story):
 def test_an_invalid_saved_command_timeout_refuses_the_run(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
     story.expect_success('alias add cart-build "make package" --category build', actor=story.agent)
-    story.expect_hook_refusal("s-1", saved_timeout("0s"), "duration")
+    story.expect_hook_refusal("s-1", saved_timeout("0s"), "Invalid --timeout")
     story.expect_rows(not story.container.get(Queries).query(Process).exists())
 
 

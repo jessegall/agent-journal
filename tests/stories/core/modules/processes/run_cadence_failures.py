@@ -66,7 +66,7 @@ def test_a_run_that_cannot_be_read_is_logged_by_the_tick_and_the_others_are_stil
     titled(story, sound, "Building the sound files")
     folder_made_a_file(story, broken)
     ticks(story, 30)
-    story.expect_rows(f"output {sound.id} printed nothing for 30s" in kept_lines(story), f"output {broken.id} " not in kept_lines(story), detail=kept_lines(story))
+    story.expect_rows(f"Output {sound.id} printed nothing for 30s" in kept_lines(story), f"output {broken.id} " not in kept_lines(story), detail=kept_lines(story))
     story.expect_text("developer system-logs --level warning", f"cadence watch: output {broken.id} could not be read", actor=story.user)
 
 
@@ -92,5 +92,5 @@ def test_two_environments_judge_their_runs_by_their_own_thresholds(new_story):
     ticks(story, 30)
     early = kept_lines(story, other.id, story.user)
     ticks(story, 30)
-    story.expect_rows(f"output {here.id} printed nothing for 30s" in kept_lines(story), f"output {there.id} " not in early,
-                      f"output {there.id} printed nothing for 60 seconds" in kept_lines(story, other.id, story.user), detail=kept_lines(story, other.id, story.user))
+    story.expect_rows(f"Output {here.id} printed nothing for 30s" in kept_lines(story), f"output {there.id} " not in early,
+                      f"Output {there.id} printed nothing for 60 seconds" in kept_lines(story, other.id, story.user), detail=kept_lines(story, other.id, story.user))
