@@ -34,6 +34,12 @@ class ProcessRowWrapper(RequestRecords):
         process = self.rows.required(Process, row_id)
         self.bus.run(EndProcess(row_id, exit_code, 0, 0), Actor.core(), environment_id=process.environment_id)
 
+    def ended_now(self, kind: ProcessKind, line: str, exit_code: int) -> None:
+        agent = self.owner_agent()
+        if agent is None:
+            return
+        self.bus.run(RecordRequestRun(agent.id, kind, line, exit_code), Actor.core(), environment_id=agent.environment_id)
+
     def recorded_hook(self, agent_id: int, line: str, exit_code: int, context: Context) -> None:
         self.bus.dispatch(RecordRequestRun(agent_id, ProcessKind.HOOK, line, exit_code), replace(context, environment_id=self.agents.find(agent_id).environment_id))
 

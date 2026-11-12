@@ -18,10 +18,12 @@ class RequestRecords:
         return None
 
     def recorded(self, kind: ProcessKind, line: str, answer: Callable[[], int]) -> int:
-        row_id = self.begun(kind, line)
         exit_code = 1
         try:
             exit_code = answer()
         finally:
-            self.ended(row_id, exit_code)
+            self.ended_now(kind, line, exit_code)
         return exit_code
+
+    def ended_now(self, kind: ProcessKind, line: str, exit_code: int) -> None:
+        return None
