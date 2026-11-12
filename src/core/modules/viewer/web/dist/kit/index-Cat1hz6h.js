@@ -5408,7 +5408,7 @@ const Bv = /* @__PURE__ */ Object.assign({ name: "SkeletonParts" }, {
   }
 }, lo = /* @__PURE__ */ U(Nv, [["__scopeId", "data-v-52f66b64"]]), Qi = {
   runningTool: 500,
-  agentCommand: 5e3,
+  agentCommand: 500,
   planCard: 3e3,
   openPanel: 5e3,
   documentWithNoEvents: 6e4,
@@ -14444,7 +14444,7 @@ function eA(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const tA = du(() => import("./VoiceFigure-D3RLZpmd.js").then((e) => e.V)), nA = "1.2.0", aA = "3.5";
+const tA = du(() => import("./VoiceFigure-wwrz2Cgu.js").then((e) => e.V)), nA = "1.2.0", aA = "3.5";
 export {
   eh as $,
   Ee as A,
