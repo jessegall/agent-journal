@@ -20,13 +20,11 @@ const context = useWindow();
 const {rows: reports} = context.props.reports;
 context.state["reports.agent"] = String(props.row.number);
 const isReader = computed(() => props.row.access === "read-only");
-const retired = computed(() => Boolean(props.row.retired_at) || props.row.state === "retired");
 const tabOrder = ["tasks", "transcript", "terminal", "file-feed", "processes", "reports", "memories"];
-const cardTabs = computed(() => {
-    const tabs = retired.value ? context.tabs.filter((item) => ["reports", "transcript", "memories"].includes(item.key)) : isReader.value ? context.tabs.filter((item) => ["reports", "transcript", "terminal", "processes", "memories"].includes(item.key)) : [...context.tabs];
-    return tabs.sort((one, two) => (tabOrder.indexOf(one.key) < 0 ? tabOrder.length : tabOrder.indexOf(one.key)) - (tabOrder.indexOf(two.key) < 0 ? tabOrder.length : tabOrder.indexOf(two.key)));
-});
-const firstTab = () => isReader.value || retired.value ? cardTabs.value.find((item) => item.key === "transcript") : cardTabs.value[0];
+const cardTabs = computed(() => [...context.tabs].sort((one, two) => (tabOrder.indexOf(one.key) < 0 ? tabOrder.length : tabOrder.indexOf(one.key)) - (tabOrder.indexOf(two.key) < 0 ? tabOrder.length : tabOrder.indexOf(two.key))));
+const isRetired = computed(() => Boolean(props.row.retired_at) || props.row.state === "retired");
+// an agent that only reads, or is retired, opens on what it said; the others on their tasks
+const firstTab = () => isReader.value || isRetired.value ? cardTabs.value.find((item) => item.key === "transcript") : cardTabs.value[0];
 const tab = ref(firstTab());
 watch(tab, (value) => { context.state.tab = value?.key ?? ""; }, {immediate: true});
 onUnmounted(() => { context.state.tab = ""; });
@@ -53,8 +51,6 @@ watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true
     <div class="agent-more" data-agent-more @click.stop>
         <AgentLastingFacts :row="row" />
         <template v-if="row.retirement_reason"><p class="agent-summary" data-agent-retirement-reason>Retirement reason: {{ row.retirement_reason }}</p></template>
-        <template v-if="row.resume_reason"><p class="agent-summary" data-agent-resume-reason>{{ row.resume_reason }}</p></template>
-                <template v-if="showsCommand"><AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" /></template>
                 <template v-if="endedReason"><p class="agent-ended-reason" data-agent-ended-reason>{{ endedReason }}</p></template>
                 <InnerTabs class="agent-tabs" :tabs="cardTabs" :active="tab" :answer="{tasks: tasks.length, reports: row.report_count ?? reports.length, memories: row.memory_count ?? 0}" @choose="tab = $event" />
                 <TabBody class="agent-tab-body" :tab="tab" :data-agent-tab-body="tab?.key">
@@ -93,6 +89,7 @@ watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true
                         </template>
                     </SwitchCase>
                 </TabBody>
+                <template v-if="showsCommand"><AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" /></template>
     </div>
 </template>
 
@@ -101,7 +98,7 @@ watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true
 .agent-summary { margin: 8px 14px; color: var(--text-2); font-size: 12px; white-space: pre-wrap; }
 .agent-report { padding: 8px 14px; border: 0; border-bottom: 1px solid var(--border-inner); background: transparent; color: var(--text); text-align: left; white-space: pre-wrap; cursor: pointer; }
 .agent-ended-reason { margin: 4px 0; color: var(--danger, var(--text)); }
-.agent-command { width: 100%; max-width: 100%; overflow: hidden; padding: 6px var(--agent-padding); border-bottom: 1px solid var(--border-inner); }
+.agent-command { flex: none; width: 100%; max-width: 100%; overflow: hidden; padding: 6px var(--agent-padding); border-top: 1px solid var(--border-inner); background: var(--side); }
 .agent-tab-body { position: relative; display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; overflow-x: hidden; overflow-y: auto; contain: inline-size; }
 .agent-tab-body:not([data-agent-tab-body="tasks"]) > :deep(*) { flex: 1; min-height: 0; }
 .agent-tab-body :deep(.row-list-row) { padding: 8px 14px; border-bottom: 1px solid var(--border-inner); }

@@ -6,6 +6,11 @@ const STAGES = {started: {words: "started"}, testing: {words: "being tested"}, b
 const counted = (tasks) => tasks.filter((task) => task.state !== "cancelled");
 const inState = (tasks, state) => tasks.filter((task) => task.state === state).length;
 
+const TITLE_WORDS = 5;
+
+// the short title of a helper's job: the one its sender gave, else the first words of the job
+export const shortJobTitle = (title, job) => title || job.split(/\s+/).slice(0, TITLE_WORDS).join(" ");
+
 export function taskLine({tasks, inHand, perHour}) {
     const all = counted(tasks);
     const done = inState(all, "completed");

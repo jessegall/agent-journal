@@ -51,7 +51,7 @@ class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
         if waiting_ask is not None:
             self.repository.save_change(waiting_ask, waiting_ask.moved(MergeAskLifecycle.merge), context)
         merged = replace(worktree.merge(context.timestamp, context.actor), commit_before_merge=command.commit_before_merge, commit_after_merge=command.commit_after_merge,
-                         merged_task_ids=",".join(str(delivered.id) for delivered in delivered_tasks))
+                         merged_task_ids=worktree.with_merged([delivered.id for delivered in delivered_tasks]))
         return MergeOutcome(self.repository.save_change(worktree, merged, context), ())
 
     def delivered_tasks(self, worktree: Worktree, task: Task) -> list[Task]:

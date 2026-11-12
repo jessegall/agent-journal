@@ -9,12 +9,12 @@ AGENT_CARDS_SELECT = (
     "SELECT agents.id, agents.number, agents.environment_id, agents.session, agents.role, agents.access, agents.program, agents.program_model, agents.profile, agents.given_name, agents.paused_at, agents.usage_limit_ends_at, agents.ended_at, agents.retired_at, agents.retirement_reason,"
     " (SELECT tasks.id FROM tasks WHERE tasks.holder_id = agents.id AND tasks.state = 'started' ORDER BY tasks.id DESC LIMIT 1) AS started_task_id,"
     " coalesce((SELECT tasks.title FROM tasks WHERE tasks.holder_id = agents.id AND tasks.state = 'started' ORDER BY tasks.id DESC LIMIT 1), '') AS started_task_title,"
-    " (SELECT json_group_array(json_object('id', listed.id, 'title', listed.title, 'state', listed.state,"
+    " (SELECT json_group_array(json_object('id', listed.id, 'title', listed.title, 'state', listed.state, 'closed_at', listed.closed_at,"
     " 'plan_id', task_plan.id, 'plan_title', task_plan.title)) FROM ("
-    "SELECT tasks.id, tasks.title, tasks.state, 0 AS part FROM tasks WHERE agents.role != 'main' AND tasks.holder_id = agents.id AND coalesce(" + TASK_ACTOR_SQL + ", 0) != agents.id"
-    " UNION ALL SELECT tasks.id, tasks.title, tasks.state, 0 AS part FROM tasks WHERE agents.role = 'main' AND tasks.id ="
+    "SELECT tasks.id, tasks.title, tasks.state, coalesce(tasks.closed_at, '') AS closed_at, 0 AS part FROM tasks WHERE agents.role != 'main' AND tasks.holder_id = agents.id AND coalesce(" + TASK_ACTOR_SQL + ", 0) != agents.id"
+    " UNION ALL SELECT tasks.id, tasks.title, tasks.state, coalesce(tasks.closed_at, '') AS closed_at, 0 AS part FROM tasks WHERE agents.role = 'main' AND tasks.id ="
     " (SELECT started.id FROM tasks AS started WHERE started.holder_id = agents.id AND started.state = 'started' ORDER BY started.id DESC LIMIT 1)"
-    " UNION ALL SELECT tasks.id, tasks.title, tasks.state, 1 AS part FROM tasks WHERE tasks.id IN " + AGENT_TASK_IDS_SQL +
+    " UNION ALL SELECT tasks.id, tasks.title, tasks.state, coalesce(tasks.closed_at, '') AS closed_at, 1 AS part FROM tasks WHERE tasks.id IN " + AGENT_TASK_IDS_SQL +
     " ORDER BY part, id) AS listed"
     " LEFT JOIN phase_tasks ON phase_tasks.task_id = listed.id LEFT JOIN phases ON phases.id = phase_tasks.phase_id"
     " LEFT JOIN plans AS task_plan ON task_plan.id = phases.plan_id) AS tasks,"
