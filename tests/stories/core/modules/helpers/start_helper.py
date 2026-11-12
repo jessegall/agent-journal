@@ -169,7 +169,7 @@ def test_a_failed_launch_ends_the_helper_and_tells_the_parent(new_story):
     story.run_listeners()
     launcher.drain_requests()
     story.expect_text(f"agent show {agent_number(story, helper_id)}", "ended_at: 20")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, helper_id)} could not start")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, helper_id)} failed to start")
 
 
 def test_a_helper_with_no_hook_after_a_minute_ends_and_the_parent_is_told(new_story):
@@ -179,7 +179,7 @@ def test_a_helper_with_no_hook_after_a_minute_ends_and_the_parent_is_told(new_st
     story.hook("s-1", HookSamples.tick())
     story.run_listeners()
     story.expect_text(f"agent show {agent_number(story, helper_id)}", "ended_at: 20")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, helper_id)} could not start")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, helper_id)} failed to start")
 
 
 def test_a_helper_that_sent_a_hook_stays(new_story):
@@ -222,7 +222,7 @@ def test_a_profile_that_uses_its_program_if_possible_starts_on_the_other_one_and
     story.run_listeners()
     launcher.drain_requests()
     launcher.server.close()
-    story.expect_rows(answer["program"] == "codex", answer["note"] == "claude could not start (claude is not installed here: install claude or name another program), so it runs on codex")
+    story.expect_rows(answer["program"] == "codex", answer["note"] == "claude failed to start (claude is not installed here: install claude or name another program), so it runs on codex")
     story.expect_success(f"agent show {agent_number(story, answer['id'])}", "program: codex", "program_model: gpt-6.1-sol")
 
 

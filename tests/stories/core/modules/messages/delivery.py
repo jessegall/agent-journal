@@ -414,7 +414,7 @@ def test_a_message_with_an_image_tells_the_agent_to_look_at_it(image_message):
     story = image_message
     story.container.get(Database).connection.execute("UPDATE messages SET files = ? WHERE id = 1", ['["shot.png", "notes.txt"]'])
     lines = story.hook("s-1", READ_MESSAGE_HOOK).lines
-    expect_lines_5('message:1 has an image "shot.png": tag it with what it shows', lines)
+    expect_lines_5('message:1 has image "shot.png": tag it with what it shows', lines)
     expect_absent_notes_lines("notes.txt", "attaches an image", lines)
 
 

@@ -22,7 +22,7 @@ def test_a_person_stopping_a_run_tells_the_agent_its_output_is_kept(new_story):
     story = new_story(fixture=UserBuilder)
     process = moved_run(story, "make build")
     story.expect_success(f"output stop {process.id}", actor=story.user)
-    expect_value(f"output {process.id} was stopped part way: {KEPT}" in agent_lines(story), True)
+    expect_value(f"Output {process.id} was stopped partway: {KEPT}, read what it printed so far" in agent_lines(story), True)
 
 
 def test_an_agent_stopping_its_own_run_is_told_its_output_is_kept(new_story):
@@ -30,7 +30,7 @@ def test_an_agent_stopping_its_own_run_is_told_its_output_is_kept(new_story):
     process = moved_run(story, "make package")
     story.advance(timedelta(seconds=3))
     story.expect_success(f"output stop {process.id}", actor=story.agent)
-    expect_value(f"output {process.id} was stopped part way: {KEPT}" in agent_lines(story), True)
+    expect_value(f"Output {process.id} was stopped partway: {KEPT}, read what it printed so far" in agent_lines(story), True)
 
 
 def test_the_journal_stopping_a_run_for_its_timeout_tells_the_agent_its_output_is_kept(new_story):
@@ -39,4 +39,4 @@ def test_the_journal_stopping_a_run_for_its_timeout_tells_the_agent_its_output_i
     story.expect_success(f"output timeout {process.id} 2m", actor=story.agent)
     story.advance(timedelta(seconds=121))
     timeout_tick(story)
-    expect_value(f"output {process.id} timed out after 120 seconds and was stopped: {KEPT}" in agent_lines(story), True)
+    expect_value(f"Output {process.id} timed out after 120s and was stopped: {KEPT}" in agent_lines(story), True)

@@ -35,7 +35,7 @@ def test_a_python_run_that_prints_nothing_for_30_seconds_is_told_it_is_not_strea
     expect_without_hint(story)
     story.advance(FIRST_OUTPUT)
     cadence_tick(story)
-    expect_streaming_line(story, f"output {process.id} printed nothing for 30s, so it is not streaming: it may hold its output back: print with flush=True, or run it with python3 -u")
+    expect_streaming_line(story, f"Output {process.id} printed nothing for 30s, so it is not streaming: it may hold its output back: print with flush=True, or run it with python3 -u")
 
 
 def test_a_silent_test_gets_its_hint_once_and_again_when_it_stops_printing(new_story):
@@ -52,7 +52,7 @@ def test_a_silent_test_gets_its_hint_once_and_again_when_it_stops_printing(new_s
     for _ in range(STOPPED_WRITING // TICK):
         story.advance(TICK)
         cadence_tick(story)
-    expect_streaming_line(story, f"output {process.id} has written nothing for 120s and is still running: run vitest with --reporter=verbose")
+    expect_streaming_line(story, f"Output {process.id} has written nothing for 120s and is still running: run vitest with --reporter=verbose")
 
 
 def test_a_silent_saved_command_is_told_to_fix_its_alias(new_story):
@@ -72,12 +72,12 @@ def test_a_sparse_pytest_run_keeps_running_and_after_printing_often_is_told_only
     process = moved_run(story, SLOW_TESTS, CommandCategory.TEST_RUN)
     titled(story, process, "Running the slow tests")
     ticks(story, 120, process, every=50)
-    expect_told(story, MAIN, f"output {process.id} prints about once every 50 seconds, so no reader can follow it: run pytest without -q")
+    expect_told(story, MAIN, f"Output {process.id} prints about once every 50 seconds, so no reader can follow it: run pytest without -q")
     story.expect_text(f"process show {process.id}", "state: background", actor=story.agent)
     ticks(story, 80, process, every=10)
     quiet = cadence_lines(told(story, MAIN))
     ticks(story, 120, process)
-    expect_told(story, MAIN, f"output {process.id} has written nothing for 120s and is still running")
+    expect_told(story, MAIN, f"Output {process.id} has written nothing for 120s and is still running")
     story.expect_rows(quiet == [], detail="\n".join(quiet))
 
 
@@ -87,7 +87,7 @@ def test_a_read_only_helper_is_told_its_own_run_is_sparse(new_story):
     process = agent_run(story, helper, "pytest tests/search -q", CommandCategory.TEST_RUN)
     titled(story, process, "Running the search tests", Actor(helper.id, ActorType.AGENT))
     ticks(story, 120, process, every=40)
-    expect_told(story, helper.session, f"output {process.id} prints about once every 40 seconds, so no reader can follow it")
+    expect_told(story, helper.session, f"Output {process.id} prints about once every 40 seconds, so no reader can follow it")
 
 
 def test_a_helpers_and_a_workers_runs_that_print_nothing_for_30_seconds_are_told_they_do_not_stream(new_story):
@@ -138,7 +138,7 @@ def test_a_waiting_agent_has_the_sparse_line_kept_without_a_wake_until_its_next_
     story.hook(MAIN, HookSamples.stop())
     ticks(story, 120, process, every=60)
     story.expect_text(f"agent-line list --agent {story.agent.id} --json", "prints about once every 60s", '"wakes_agent": false', actor=story.agent)
-    expect_told(story, MAIN, f"output {process.id} prints about once every 60s")
+    expect_told(story, MAIN, f"Output {process.id} prints about once every 60s")
 
 
 def test_a_busy_agent_is_told_the_sparse_line_once_with_its_next_tool_use(new_story):
@@ -167,7 +167,7 @@ def test_a_silent_run_is_told_again_only_after_ten_minutes_at_most_three_times_a
     second = kept_lines(story).count(NOT_STREAMING)
     ticks(story, 1260)
     story.expect_rows((first, second, kept_lines(story).count(NOT_STREAMING)) == (1, 2, 3), detail=kept_lines(story))
-    story.expect_hook_refusal(MAIN, HookSamples.edit("cart.py"), f"output {process.id} printed nothing for")
+    story.expect_hook_refusal(MAIN, HookSamples.edit("cart.py"), f"Output {process.id} printed nothing for")
     started_tree(story, 12.0)
     story.advance(timedelta(seconds=HANG_SECONDS + 10))
     watch_tick(story)
@@ -202,7 +202,7 @@ def test_plugin_person_and_lookup_runs_are_never_judged_while_a_started_test_is(
     titled(story, judged, "Running the first tests")
     ticks(story, 60)
     lines = "\n".join(told(story, MAIN))
-    story.expect_rows(f"output {judged.id} printed nothing" in lines, *(f"output {process.id} printed nothing" not in lines for process in skipped), detail=lines)
+    story.expect_rows(f"output {judged.id} printed nothing" in lines, *(f"Output {process.id} printed nothing" not in lines for process in skipped), detail=lines)
 
 
 def test_a_workers_queued_run_is_told_nothing_while_its_running_one_is(new_story):
@@ -230,7 +230,7 @@ def test_a_run_another_agent_owns_tells_the_agent_of_its_session(new_story):
     process = owned_run(story, worker, "make bundle")
     titled(story, process, "Building the bundle")
     ticks(story, 30)
-    expect_told(story, MAIN, f"output {process.id} printed nothing for 30s")
+    expect_told(story, MAIN, f"Output {process.id} printed nothing for 30s")
     story.expect_rows(cadence_lines(told(story, worker.session)) == [])
 
 
@@ -239,7 +239,7 @@ def test_a_long_script_of_no_known_type_is_told_to_print_its_steps_and_its_card_
     process = moved_run(story, "zsh tools/move.sh")
     titled(story, process, "Moving the files")
     ticks(story, 30)
-    expect_told(story, MAIN, f"output {process.id} printed nothing for 30s, so it is not streaming: make it print its steps")
+    expect_told(story, MAIN, f"Output {process.id} printed nothing for 30s, so it is not streaming: make it print its steps")
     story.expect_success('reader add move-files --commands "zsh tools/move.sh*" --lines "moved" --progress "\\[([0-9]+)/([0-9]+)\\]"', actor=story.agent)
     printed(story, process, "[3/17] moved a.txt\n")
     tick_named(story, "read running outputs")

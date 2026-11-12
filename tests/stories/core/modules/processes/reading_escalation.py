@@ -94,7 +94,7 @@ def test_a_person_lifts_a_silent_run_hold_and_the_agent_is_told_and_works_on(new
     story = install_runner(new_story(fixture=UserBuilder))
     process = moved_run(story, "make bundle", CommandCategory.BUILD)
     story.advance(timedelta(seconds=HANG_SECONDS + 1))
-    story.expect_hook_refusal("s-1", EDIT, f"output {process.id} printed nothing for")
+    story.expect_hook_refusal("s-1", EDIT, f"Output {process.id} printed nothing for")
     story.expect_success("process holds", f"hold on output {process.id}: read it; stop it; a user releases it", actor=story.agent)
     story.expect_refusal(f"process lift-hold {agent_number(story, story.agent.id)} --environment main", "only a user lifts a hold", actor=story.agent)
     story.expect_success(f"process lift-hold {agent_number(story, story.agent.id)} --environment main", "1 holds lifted", actor=story.user)
