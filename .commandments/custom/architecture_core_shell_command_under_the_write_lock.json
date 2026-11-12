@@ -9,15 +9,29 @@
             },
             {
                 "any": [
-                    {"nameMatches": "^subprocess(\\.|$)"},
-                    {"descendant": {"nameMatches": "^subprocess(\\.|$)"}}
+                    {
+                        "nameMatches": "^subprocess(\\.|$)"
+                    },
+                    {
+                        "descendant": {
+                            "nameMatches": "^subprocess(\\.|$)"
+                        }
+                    },
+                    {
+                        "nameMatches": "^engine\\.process\\.(process_executor|execution_request)$"
+                    },
+                    {
+                        "descendant": {
+                            "nameMatches": "^(ProcessExecutor|ExecutionRequest)$"
+                        }
+                    }
                 ]
             }
         ]
     },
     "sin": {
         "name": "shell-command-under-the-write-lock",
-        "description": "A handler, rule or listener starts a program, so every hook and command waits on it while it holds the write lock.",
+        "description": "A handler, rule or listener starts a program, by subprocess or through the door, so every hook and command waits on it while it holds the write lock.",
         "rule": "A handler and a rule run in a write transaction and a hook waits on them: run a program on a server thread or before the transaction, as DueCheckRuns and RunCheckSubcommand do, and record its result in a short command.",
         "skill": "plain-code-words"
     }

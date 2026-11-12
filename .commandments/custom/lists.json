@@ -1475,5 +1475,31 @@
         "STALLED_RUN",
         "SILENT_SAVED_RUN",
         "SILENT_SAVED_PACKAGES"
+    ],
+    "outside_starts": [
+        "engine/process/runner_program.py",
+        "core/modules/processes/support/queued_process_launch.py",
+        "install/update/install_journal.py",
+        "install/update/chat_update_steps.py",
+        "install/hook/hook_switch.py",
+        "server/handover/successor_start.py",
+        "engine/serving/launcher_replacement.py",
+        "engine/cli/shell_handoff.py",
+        "engine/caller/process_table.py",
+        "engine/process/leftover_process.py",
+        "engine/sandbox/shell_sandbox.py",
+        "engine/git/hook_files_git.py",
+        "tunnels/tunler/support/tunler_client.py",
+        "tunnels/tunler/support/tunler_installer.py",
+        "core/modules/agents/support/launcher_service.py",
+        "core/modules/demo/support/demo_scratch.py",
+        "core/modules/plugins/support/login_path.py",
+        "core/modules/plugins/support/plugin_command_runner.py",
+        "core/modules/plugins/support/plugin_program.py",
+        "core/modules/plugins/support/plugin_services.py",
+        "core/modules/processes/support/group_cpu_time.py",
+        "core/modules/processes/support/reader_run.py",
+        "core/modules/tools/support/graphify_tool.py",
+        "core/modules/triggers/support/trigger_action_process.py"
     ]
 }

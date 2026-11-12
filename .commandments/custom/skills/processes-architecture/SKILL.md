@@ -34,6 +34,9 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
   `BlockUntil` in the processes module, or a refusal with a reading declaration (`READER_BLOCK`, `READING_PREVENTED`,
   `SILENT_START_REFUSED`, `REDIRECTED_RUN`...). The enforcer is the only code that presses and states the exits; the
   silent-run hold keeps its own rule and the alias rules keep their own refusals.
+- **`program-started-outside-the-door`** - a file under src starts a program itself (subprocess, os.system,
+  os.exec or spawn, pty.spawn, asyncio.create_subprocess) instead of `ProcessExecutor.execute(ExecutionRequest(...))`.
+  A file that must is named in `OUTSIDE_STARTS` with its reason and in the `outside_starts` list.
 - **`reading-nudge-outside-the-notices`** - a rule, a listener or a tick says a reading or cadence notice itself (a
   declaration of the `reading_declarations` list). `ReadingNotices` and `WarnCadenceHandler` are the only senders.
 - **`main-only-rule-without-reason`** - a rule of the processes or aliases module is limited to the main agent with
