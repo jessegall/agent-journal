@@ -22,8 +22,9 @@ const isLoaded = computed(() => loaded().every(Boolean));
 const draft = useSettingsDraft({
     run: (line) => view.run(line),
     reload: async () => {
-        await Promise.all([...Object.values(SCREEN_KEYS).map((key) => view.reload(key)), view.reload("limits")]);
-        draft.load(loaded());
+        const typeOpened = "type-screen.type" in view.state;
+        await Promise.all([...Object.values(SCREEN_KEYS).map((key) => view.reload(key)), view.reload("limits"), ...(typeOpened ? [view.reload("type-screen")] : [])]);
+        draft.load([...loaded(), ...(typeOpened ? [view.props["type-screen"].data.value] : [])]);
     },
 });
 watch(loaded, (screens) => { if (screens.every(Boolean)) draft.load(screens); }, {immediate: true});
