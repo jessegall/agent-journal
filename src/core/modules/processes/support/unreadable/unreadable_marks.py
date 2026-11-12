@@ -8,6 +8,8 @@ from core.modules.processes.models.enums.unreadable_reason import UnreadableReas
 from core.modules.processes.models.unreadable_mark import UnreadableMark
 from core.modules.processes.queries.unreadable_mark_query import UnreadableMarkQuery
 
+MARKS_OF_WORDS_REASON = "Every mark of the leading words of the commands in hand, lifted or not, so the newest mark of each word is found."
+
 FEWEST_NOTE_WORDS = 3
 MOST_LEADING_WORDS = 8
 
@@ -40,7 +42,7 @@ class UnreadableMarks:
         covering = {command: UnreadableMarks.covering_words(command) for command in dict.fromkeys(commands)}
         words = sorted({word for leading in covering.values() for word in leading})
         newest: dict[str, Timestamp] = {}
-        for mark in (self.marks.of_words(words).all_rows() if words else []):
+        for mark in (self.marks.of_words(words).every_row(MARKS_OF_WORDS_REASON) if words else []):
             made_at = mark.creation_timestamp()
             if mark.words not in newest or made_at > newest[mark.words]:
                 newest[mark.words] = made_at

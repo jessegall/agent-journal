@@ -1,38 +1,79 @@
-HOOK_REQUEST_ROWS_SELECT = """
-SELECT id,
-       json_extract(payload, '$.received_at') AS received_at,
-       json_extract(payload, '$.program') AS program,
-       CAST(coalesce(nullif(json_extract(payload, '$.agent'), ''), '0') AS INTEGER) AS agent_id,
-       CASE json_extract(payload, '$.role') WHEN 'viewer' THEN 'viewer' WHEN 'cli' THEN 'command line' ELSE 'hook' END AS category,
-       CASE
-           WHEN coalesce(json_extract(payload, '$.body.event'), '') || ' ' LIKE 'process part-start %'
-             OR coalesce(json_extract(payload, '$.body.event'), '') || ' ' LIKE 'process part-end %'
-             OR coalesce(json_extract(payload, '$.body.event'), '') || ' ' LIKE 'process end %'
-             OR coalesce(json_extract(payload, '$.body.event'), '') || ' ' LIKE 'process start %'
-             OR coalesce(json_extract(payload, '$.body.event'), '') || ' ' LIKE 'process sandbox %' THEN 'process bookkeeping'
-           WHEN instr(coalesce(json_extract(payload, '$.body.event'), ''), ' ') > 0 THEN substr(json_extract(payload, '$.body.event'), 1, instr(json_extract(payload, '$.body.event'), ' ') - 1)
-           ELSE coalesce(json_extract(payload, '$.body.event'), json_extract(payload, '$.body.hook_event_name'), 'hook')
-       END AS family,
-       payload -> '$.headers' AS headers_json,
-       payload -> '$.body' AS body_json,
-       json_extract(payload, '$.duration_ms') AS duration_ms,
-       coalesce(json_extract(payload, '$.queued_ms'), 0) AS queued_ms,
-       CASE json_extract(payload, '$.role')
-           WHEN 'viewer' THEN 'Viewer'
-           WHEN 'cli' THEN 'Command line'
-           ELSE coalesce((SELECT json_extract(value, '$.label')
-                          || CASE WHEN coalesce(json_extract(payload, '$.agent'), '') <> ''
-                                  THEN ' ' || json_extract(payload, '$.agent') ELSE '' END
-                          FROM registry, json_each(registry.entries, '$.helper_types')
-                          WHERE json_extract(value, '$.key') = json_extract(payload, '$.role')), 'Main agent')
-       END AS sender,
-       json_extract(payload, '$.outcome') AS outcome,
-       coalesce(json_extract(payload, '$.body.event'), json_extract(payload, '$.body.hook_event_name'), 'hook') AS event,
-       coalesce(json_extract(payload, '$.body.tool.name'), json_extract(payload, '$.body.tool_name'), '') AS tool,
-       coalesce(json_array_length(payload, '$.body.tool.shell.parts'), 0) AS part_count,
-       substr(json_extract(payload, '$.received_at'), 1, 10) AS day,
-       substr(json_extract(payload, '$.received_at'), 12, 12) AS time,
-       lag(substr(json_extract(payload, '$.received_at'), 1, 10)) OVER (ORDER BY id DESC)
-           IS NOT substr(json_extract(payload, '$.received_at'), 1, 10) AS day_start
-FROM hook_requests
-"""
+from engine.query.condition_join import ConditionJoin
+from engine.query.conditions.any_of import AnyOf
+from engine.query.enums.comparison_operator import ComparisonOperator
+from engine.query.enums.sql_function import SqlFunction
+from engine.query.expressions.aliased import Aliased
+from engine.query.expressions.case_when import CaseWhen
+from engine.query.expressions.cast_integer import CastInteger
+from engine.query.expressions.column import Column
+from engine.query.expressions.comparison import Comparison
+from engine.query.expressions.concat import Concat
+from engine.query.expressions.expression import Expression
+from engine.query.expressions.function_call import FunctionCall
+from engine.query.expressions.json_each import JsonEach
+from engine.query.expressions.json_path import JsonPath
+from engine.query.expressions.lag import Lag
+from engine.query.expressions.literal import Literal
+from engine.query.expressions.scalar_subselect import ScalarSubselect
+from engine.query.expressions.subtraction import Subtraction
+from engine.query.order import Order
+from engine.query.select import Select
+
+BOOKKEEPING_EVENTS = ("process part-start %", "process part-end %", "process end %", "process start %", "process sandbox %")
+
+
+def payload(path: str, column: str = "payload") -> FunctionCall:
+    """The value at a path of the request's JSON payload."""
+    return FunctionCall(SqlFunction.JSON_EXTRACT, [Column(column), Literal(path)])
+
+
+def first_of(*expressions: Expression) -> FunctionCall:
+    return FunctionCall(SqlFunction.COALESCE, list(expressions))
+
+
+def role_is(role: str) -> Comparison:
+    return Comparison(payload("$.role"), ComparisonOperator.EQUAL, Literal(role))
+
+
+def text_part(start: int, length: Expression) -> FunctionCall:
+    return FunctionCall(SqlFunction.SUBSTR, [payload("$.received_at"), Literal(start), length])
+
+
+EVENT = payload("$.body.event")
+EVENT_TEXT = first_of(EVENT, Literal(""))
+SPACE_AT = FunctionCall(SqlFunction.INSTR, [EVENT, Literal(" ")])
+EVENT_NAME = first_of(EVENT, payload("$.body.hook_event_name"), Literal("hook"))
+DAY = text_part(1, Literal(10))
+AGENT = payload("$.agent")
+HELPER_LABEL = ScalarSubselect(
+    Select("registry").selecting(Concat([payload("$.label", "value"), CaseWhen(
+        [(Comparison(first_of(AGENT, Literal("")), ComparisonOperator.NOT_EQUAL, Literal("")), Concat([Literal(" "), AGENT]))], Literal(""))]))
+    .joined(ConditionJoin(JsonEach(Column("registry.entries"), "$.helper_types")))
+    .matching(Comparison(payload("$.key", "value"), ComparisonOperator.EQUAL, payload("$.role"))))
+
+HOOK_REQUEST_ROWS_SELECT = Select("hook_requests").selecting(
+    Column("id"),
+    Aliased(payload("$.received_at"), "received_at"),
+    Aliased(payload("$.program"), "program"),
+    Aliased(CastInteger(first_of(FunctionCall(SqlFunction.NULLIF, [AGENT, Literal("")]), Literal("0"))), "agent_id"),
+    Aliased(CaseWhen([(role_is("viewer"), Literal("viewer")), (role_is("cli"), Literal("command line"))], Literal("hook")), "category"),
+    Aliased(CaseWhen([
+        (AnyOf([Comparison(Concat([EVENT_TEXT, Literal(" ")]), ComparisonOperator.LIKE, Literal(event)) for event in BOOKKEEPING_EVENTS]),
+         Literal("process bookkeeping")),
+        (Comparison(FunctionCall(SqlFunction.INSTR, [EVENT_TEXT, Literal(" ")]), ComparisonOperator.GREATER, Literal(0)),
+         FunctionCall(SqlFunction.SUBSTR, [EVENT, Literal(1), Subtraction(SPACE_AT, Literal(1))])),
+    ], EVENT_NAME), "family"),
+    Aliased(JsonPath(Column("payload"), "$.headers"), "headers_json"),
+    Aliased(JsonPath(Column("payload"), "$.body"), "body_json"),
+    Aliased(payload("$.duration_ms"), "duration_ms"),
+    Aliased(first_of(payload("$.queued_ms"), Literal(0)), "queued_ms"),
+    Aliased(CaseWhen([(role_is("viewer"), Literal("Viewer")), (role_is("cli"), Literal("Command line"))], first_of(HELPER_LABEL, Literal("Main agent"))),
+            "sender"),
+    Aliased(payload("$.outcome"), "outcome"),
+    Aliased(EVENT_NAME, "event"),
+    Aliased(first_of(payload("$.body.tool.name"), payload("$.body.tool_name"), Literal("")), "tool"),
+    Aliased(first_of(FunctionCall(SqlFunction.JSON_ARRAY_LENGTH, [Column("payload"), Literal("$.body.tool.shell.parts")]), Literal(0)), "part_count"),
+    Aliased(DAY, "day"),
+    Aliased(text_part(12, Literal(12)), "time"),
+    Aliased(Comparison(Lag(DAY, Order("id", True)), ComparisonOperator.IS_NOT, DAY), "day_start"),
+).view_sql()
