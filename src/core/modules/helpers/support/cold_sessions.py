@@ -12,7 +12,6 @@ from core.modules.agents.commands.replace_agent_session.replace_agent_session im
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PERCENT, COLD_SESSION_MINUTES
-from core.modules.settings.bindings.support.context_caps import ContextCaps
 from core.modules.helpers.errors.stale_session_error import StaleSessionError
 from engine.setting.setting_values import SettingValues
 from core.modules.agents.support.agent_conversations import AgentConversations
@@ -33,8 +32,8 @@ class ColdSessions:
     started keeps that session: it is launched, not replaced again. A helper whose conversation is missing from
     its folder starts over too, and its new session is told the earlier conversation is unavailable."""
 
-    def __init__(self, queries: Queries, clock: Clock, providers: Providers, home: JournalHome, settings: SettingValues, bus: Bus, share: ContextShare, rows: EventRows, sessions: AgentSessions, conversations: AgentConversations, caps: ContextCaps) -> None:
-        self.conversations, self.caps = conversations, caps
+    def __init__(self, queries: Queries, clock: Clock, providers: Providers, home: JournalHome, settings: SettingValues, bus: Bus, share: ContextShare, rows: EventRows, sessions: AgentSessions, conversations: AgentConversations) -> None:
+        self.conversations = conversations
         self.queries, self.clock, self.providers, self.home, self.settings, self.bus, self.share, self.rows = queries, clock, providers, home, settings, bus, share, rows
         self.sessions = sessions
 
@@ -70,7 +69,7 @@ class ColdSessions:
             raise StaleSessionError(f"{AgentLabel.from_agent(agent).text} was about to resume session {agent.session}, whose last message is more than an hour old")
 
     def exceeds_context_limit(self, agent: Agent) -> bool:
-        cap = self.caps.tokens(agent.role, agent.profile)
+        cap = self.share.cap(agent.role, agent.profile)
         return cap is not None and (self.providers.context_tokens(agent.program, self.home, agent.session) or 0) >= cap
 
     def is_cold(self, agent: Agent) -> bool:
@@ -82,4 +81,4 @@ class ColdSessions:
             return False
         if not activity.is_inactive(self.clock.timestamp(), minutes * MINUTE_SECONDS):
             return False
-        return (self.share.percent(agent.program, agent.session) or 0) >= percent
+        return (self.share.percent_of(agent) or 0) >= percent

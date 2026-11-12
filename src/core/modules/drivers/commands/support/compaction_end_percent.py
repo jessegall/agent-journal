@@ -55,7 +55,7 @@ class CompactionEndPercent:
             if tokens is not None:
                 self.mark(agent, False, context)
             return
-        percent = self.share.percent(event.program, event.session)
+        percent = self.share.percent_of(agent)
         if percent is None or percent >= start.context_percent:
             return
         self.mark(agent, False, context)

@@ -2,7 +2,9 @@ import json
 import os
 
 from engine.journal.journal_home import JournalHome
-from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS, ContextShare
+from engine.query.queries import Queries
+from core.modules.agents.models.agent import Agent
+from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_KINDS, CONTEXT_LIMIT_TOKENS, ContextShare
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value
@@ -46,6 +48,14 @@ def test_a_status_file_that_changes_during_a_hook_is_read_once_and_gives_both_nu
 
     monkeypatch.setattr(JournalHome, "status_file", status_file_race)
     with story.repeated_work.request():
-        usage = story.container.get(ContextShare).usage("claude", "s-1")
+        usage = story.container.get(ContextShare).usage_within("claude", "s-1", None)
     expect_value((usage.percent, usage.used_tokens), (WINDOW_PERCENT, USED_TOKENS))
     expect_value(len(requested), 1)
+
+
+def test_the_card_and_every_other_read_give_the_percent_of_the_agents_own_cap(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success(f"setting set {CONTEXT_LIMIT_KINDS} main:300000 --project", actor=story.user)
+    row = reported(story, "true", 400000)
+    agent = story.container.get(Queries).query(Agent).first()
+    expect_value((agent.role, row["context_percent"], story.container.get(ContextShare).percent_of(agent)), ("main", 82, 82))
