@@ -159,6 +159,10 @@ class JournalHome:
         return self.program_folder(program) / "settings.json"
 
     @property
+    def program_settings_switch(self) -> Path:
+        return self.programs_folder / "switched-at"
+
+    @property
     def program_settings_backups(self) -> Path:
         return self.folder / "backups" / "program-settings"
 

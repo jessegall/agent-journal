@@ -70,6 +70,8 @@ from core.modules.agents.rules.unused_launcher_rule import UnusedLauncherRule
 from core.modules.agents.commands.check_agent_programs.check_agent_programs_handler import CheckAgentProgramsHandler
 from core.modules.agents.ticks.agent_reconcile import AgentReconcile
 from core.modules.agents.ticks.program_settings_tick import ProgramSettingsTick
+from core.modules.agents.support.agent_program_sessions import AgentProgramSessions
+from engine.agent.program_sessions import ProgramSessions
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from core.modules.agents.commands.start_agent_program.start_agent_program_handler import StartAgentProgramHandler
@@ -160,7 +162,7 @@ class AgentsModule(Module):
     driver_rules = [UnusedLauncherRule]
     handlers = [StopUnusedLauncherHandler, CheckAgentProgramsHandler, StartAgentProgramHandler, StopAgentProgramHandler, HaltAgentHandler, EndAgentHaltHandler, ReplaceAgentSessionHandler, WarnInstructionImportsHandler, RemoveInstructionImportHandler, RecordAgentInterruptHandler, SetAgentUsageLimitHandler, RetireAgentHandler, EndReplacedMainHandler, RecordAgentProcessHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]
     subcommands = [RemoveInstructionImportSubcommand, RecordAgentInterruptSubcommand, RetireAgentSubcommand, ShowMainAgentsSubcommand, MainSessionsSubcommand, AgentSessionsSubcommand, AgentStandingSubcommand, StartAgentProgramSubcommand, StopAgentProgramSubcommand, ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, AgentPeopleSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand]
-    bindings = {ProgramTransport: LocalLauncherTransport, CallerResolver: AgentCallerResolver, AgentCheckouts: AgentProjectCheckouts, AgentRoleReader: AgentRoleRows, RowNumbers: AgentRowNumbers}
+    bindings = {ProgramSessions: AgentProgramSessions, ProgramTransport: LocalLauncherTransport, CallerResolver: AgentCallerResolver, AgentCheckouts: AgentProjectCheckouts, AgentRoleReader: AgentRoleRows, RowNumbers: AgentRowNumbers}
     windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, skeleton=AGENTS_AGENTS_SKELETON, search=WindowSearch(AgentSearcher, "Search the agents"), icon=WindowIcon.AGENT, reads=["agent show", *CARD_READS], runs=["setting set", "message send", "helper send", "helper stop", "agent retire", "agent driver", "agent pause", "agent stop"], events=CARD_EVENTS, tabs=CARD_TABS, keys=CARD_KEYS),
                WindowDeclaration("agents.helpers", "Helpers", "helpers.js", WindowLoading.COMPONENT, skeleton=AGENTS_HELPERS_SKELETON, icon=WindowIcon.SUBAGENT, shows=WindowShows.SELECTED_AGENT, search=WindowSearch(AgentSearcher, "Search the agents"), reads=CARD_READS, runs=["setting set", "message send", "helper send", "helper stop", "agent retire", "agent driver"],
                                  events=CARD_EVENTS, tabs=CARD_TABS, keys=CARD_KEYS),

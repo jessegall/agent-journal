@@ -85,10 +85,12 @@ def test_a_launch_is_refused_when_the_settings_cannot_be_written(new_story):
     ProgramHooks.store(claude_person_file(), {"env": {"A": "1"}})
     person_before = (claude_person_file().read_bytes(), claude_person_file().stat().st_mtime_ns)
     (story.home.folder / "programs").write_text("a file where the folder belongs")
-    outcome = story.run(f'program command claude "{story.home.project_folder}" --launch launch-1')
+    outcome = story.run(f'program manage claude "{story.home.project_folder}"')
     story.expect_rows(outcome.code == 1, "the journal could not write its Claude Code settings: " in outcome.output_text,
                       "; nothing was started" in outcome.output_text, "--settings" not in outcome.output_text,
                       (claude_person_file().read_bytes(), claude_person_file().stat().st_mtime_ns) == person_before)
+    (story.home.folder / "programs").unlink()
+    story.expect_text(f'program command claude "{story.home.project_folder}" --launch launch-2', "--settings")
 
 
 def test_an_upgrade_from_an_older_journal_writes_the_files_at_once(new_story):

@@ -100,6 +100,7 @@ class ClaudeCodeProvider(Provider):
     hook_file = HookFile(Path(".claude/settings.local.json"), {})
     hook_files = (Path(".claude/settings.json"), Path(".claude/settings.local.json"))
     session_variable = "CLAUDE_CODE_SESSION_ID"
+    writes_project_hooks = False
     markers = ["CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SHELL_PREFIX"]
     compacts_headless = True
     controls = (ControlGroup("model", "Model", tuple(ControlChoice(value, label, f"/model {value}") for value, label in MODEL_CHOICES)),
@@ -222,7 +223,6 @@ class ClaudeCodeProvider(Provider):
         return [str(block.get("text", "")) for block in blocks if is_mapping(block) and block.get("type") == "text"]
 
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
-        ProgramHooks.hooks(type(self), folder).write(runner, root)
         self.folder_trusted(folder)
 
     def folder_trusted(self, folder: Path) -> None:
@@ -252,8 +252,11 @@ class ClaudeCodeProvider(Provider):
             return None
         return {str(key): value for key, value in parsed.items()} if is_mapping(parsed) else None
 
+    def journal_hook_file(self, folder: Path) -> Path:
+        return JournalHome(folder / JOURNAL_FOLDER).program_settings_file(self.name)
+
     def hook_trust(self, project: Path) -> HookTrust:
-        return HookTrust.READY if ProgramHooks.hooks(type(self), project).is_complete() else HookTrust.UNWRITTEN
+        return HookTrust.READY if ProgramHooks.journal(type(self), self.journal_hook_file(project)).is_complete() else HookTrust.UNWRITTEN
 
     def context_percent(self, home: JournalHome, session: str) -> int | None:
         return self.context_window(home, session).used_percentage

@@ -137,7 +137,8 @@ def test_launch_hands_the_launcher_the_program_in_the_environments_folder_under_
     story.expect_text("agent launch claude --environment main", "started main agent", actor=story.user)
     launcher.drain_requests()
     request = launcher.requests[0]
-    story.expect_rows(request["environment"] == "main", request["session"].startswith("launch-"), request["command"][0].endswith("claude"), request["variables"]["JOURNAL_LAUNCH"] == request["session"])
+    story.expect_rows(request["environment"] == "main", request["session"].startswith("launch-"), request["command"][0].endswith("claude"), request["variables"]["JOURNAL_LAUNCH"] == request["session"],
+                      request["command"][1:5] == ["--settings", str(story.home.project_folder / ".journal" / "programs" / "claude" / "settings.json"), "--setting-sources", "project"])
 
 
 def test_launch_with_no_launcher_is_refused_and_keeps_no_row(new_story):

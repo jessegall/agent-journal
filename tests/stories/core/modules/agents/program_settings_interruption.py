@@ -14,6 +14,7 @@ from engine.errors.refusal import Refusal
 from engine.file.file_access import FileAccess
 from engine.provider.program_hooks import ProgramHooks
 from engine.provider.program_settings_sync import ProgramSettingsSync
+from engine.provider.program_settings_writer import ProgramSettingsWriter
 from tests.stories.core.support.fixtures import MainEnvironment
 
 
@@ -33,9 +34,10 @@ def manage(story, program: str) -> None:
 def test_two_launches_at_once_write_the_same_file_safely(new_story):
     story = new_story(fixture=MainEnvironment)
     sync = story.container.get(ProgramSettingsSync)
+    settings = sync.settings("claude")
     with ThreadPoolExecutor(max_workers=2) as launches:
-        list(launches.map(lambda number: sync.prepare("claude"), range(2)))
-    expected_text = sync.settings("claude").files[0].text
+        list(launches.map(lambda number: ProgramSettingsWriter(story.home).write(settings), range(2)))
+    expected_text = settings.files[0].text
     story.expect_rows(claude_file(story).read_text() == expected_text, json.loads(claude_file(story).read_text())["permissions"]["defaultMode"] == "bypassPermissions")
 
 

@@ -26,8 +26,8 @@ def assert_imported(root: Path):
         settings = ProgramHooks.read(root / name)
         assert settings["permissions"] == {"allow": ["Bash(ls)"]}
         assert ProgramHooks.partitioned(settings["hooks"]).commands == []
-    for name in FILES[1:]:
-        assert ProgramHooks.read(root / name)["hooks"]["PreToolUse"][0]["hooks"][0]["timeout"] == 690
+    assert ProgramHooks.read(root / FILES[2])["hooks"]["PreToolUse"][0]["hooks"][0]["timeout"] == 690
+    assert ProgramHooks.partitioned(ProgramHooks.read(root / FILES[1]).get("hooks")).journal == {}
 
 
 def binary_runner(root: Path):
@@ -81,7 +81,7 @@ def test_upgrade_with_only_shared_claude_settings_installs_a_runner_before_impor
     HookSwitch(tmp_path).switch()
     hooks = ManagedHooks(JournalHome(tmp_path / ".journal")).all()
     assert len(hooks) == 1 and hooks[0].command == "shared-check"
-    assert (tmp_path / FILES[1]).is_file()
+    assert not (tmp_path / FILES[1]).exists()
     assert (tmp_path / ".journal/version-4/hooks" / FILES[0]).read_bytes() == original
     assert not (tmp_path / FILES[2]).exists()
 
@@ -96,7 +96,7 @@ def test_version_four_restore_returns_disabled_hooks_and_keeps_new_hooks(tmp_pat
     store = ManagedHooks(home)
     hook = store.all()[0]
     store.changed(hook.id, ManagedState.DISABLED, hook.timeout)
-    path = tmp_path / FILES[1]
+    path = tmp_path / FILES[2]
     settings = ProgramHooks.read(path)
     settings["hooks"]["PreToolUse"].append({"matcher": "Bash", "hooks": [{"type": "command", "command": "new-check"}]})
     ProgramHooks.store(path, settings)

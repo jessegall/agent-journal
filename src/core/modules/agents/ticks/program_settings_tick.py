@@ -24,6 +24,7 @@ class ProgramSettingsTick:
     def __init__(self) -> None:
         self.has_prepared = False
         self.shown_unreadable: tuple[Path, ...] = ()
+        self.shown_held: tuple[str, ...] = ()
 
     def __call__(self, container: Container) -> None:
         sync = container.get(ProgramSettingsSync)
@@ -34,7 +35,15 @@ class ProgramSettingsTick:
         unreadable = sync.unreadable_person_files()
         if unreadable != self.shown_unreadable:
             self.shown_unreadable = unreadable
-            self.show_unreadable(container, unreadable)
+            for path in unreadable:
+                self.show(container, ShowMark(ProgramSettingsMarkType.PROGRAM_SETTINGS, ProgramSettingsMarkVariant.UNREADABLE_PERSON_FILE,
+                                              f"unreadable-person-file:{path}:{path.stat().st_mtime_ns}",
+                                              f"Your settings file {path} could not be read, so the journal carries none of its settings into its own",
+                                              outcome=MarkOutcome.FAILED))
+        held = sync.held_cleanups()
+        if held != self.shown_held:
+            self.show_held(container, held or self.shown_held, ended=not held)
+            self.shown_held = held
 
     def update(self, sync: ProgramSettingsSync) -> None:
         if self.has_prepared:
@@ -43,11 +52,15 @@ class ProgramSettingsTick:
         sync.prepare_all()
         self.has_prepared = True
 
+    def show_held(self, container: Container, programs: tuple[str, ...], ended: bool) -> None:
+        names = ", ".join(programs)
+        text = (f"The journal took its old hooks out of the project files of {names}" if ended else
+                f"The journal keeps its old hooks in the project files of {names} until the sessions started before the switch end")
+        self.show(container, ShowMark(ProgramSettingsMarkType.PROGRAM_SETTINGS, ProgramSettingsMarkVariant.HELD_PROJECT_HOOKS, f"held-project-hooks:{names}",
+                                      text, ended=ended))
+
     @staticmethod
-    def show_unreadable(container: Container, unreadable: tuple[Path, ...]) -> None:
+    def show(container: Container, mark: ShowMark) -> None:
         bus, actor = container.get(Bus), container.get(ModuleActors).actor(AGENTS_MODULE)
-        for path in unreadable:
-            mark = ShowMark(ProgramSettingsMarkType.PROGRAM_SETTINGS, ProgramSettingsMarkVariant.UNREADABLE_PERSON_FILE, f"unreadable-person-file:{path}:{path.stat().st_mtime_ns}",
-                            f"Your settings file {path} could not be read, so the journal carries none of its settings into its own", outcome=MarkOutcome.FAILED)
-            for environment in container.get(Queries).query(Environment).all_rows():
-                bus.run(mark, actor, environment_id=environment.id)
+        for environment in container.get(Queries).query(Environment).all_rows():
+            bus.run(mark, actor, environment_id=environment.id)

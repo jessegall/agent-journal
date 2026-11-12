@@ -2,7 +2,10 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 
+from engine.agent.program_sessions import ProgramSessions
 from engine.errors.refusal import Refusal
+from engine.file.file_access import FileAccess
+from engine.file.private_folders import PrivateFolders
 from engine.file.kept_bytes import KeptBytes
 from engine.journal.journal_home import JournalHome
 from engine.provider.managed_hooks import ManagedHooks
@@ -10,7 +13,10 @@ from engine.provider.program_hooks import JOURNAL_MARKS
 from engine.provider.program_settings import ProgramSettings
 from engine.provider.program_settings_backup import ProgramSettingsBackup
 from engine.provider.program_settings_writer import ProgramSettingsWriter
+from engine.provider.project_hook_cleanup import ProjectHookCleanup
 from engine.provider.providers import Providers
+from engine.time.clock import Clock
+from engine.time.timestamp import Timestamp
 
 WORKTREE_PATTERN = "*/*"
 SHELL_RUNNER_MARK = JOURNAL_MARKS[1]
@@ -18,11 +24,14 @@ SHELL_RUNNER_MARK = JOURNAL_MARKS[1]
 
 class ProgramSettingsSync:
     """Brings the journal's own settings files of each agent program up to date: before a launch and at server
-    start it first backs up the person's own files, and on a tick it only writes the journal's."""
+    start it first backs up the person's own files, and on a tick it only writes the journal's. It takes the
+    journal's old entries out of the project files of a program that no longer keeps them there, once no session
+    of that program that started before the switch still runs."""
 
     def __init__(self, home: JournalHome, providers: Providers, managed: ManagedHooks, writer: ProgramSettingsWriter,
-                 backup: ProgramSettingsBackup) -> None:
+                 backup: ProgramSettingsBackup, cleanup: ProjectHookCleanup, sessions: ProgramSessions, clock: Clock) -> None:
         self.home, self.providers, self.managed, self.writer, self.backup = home, providers, managed, writer, backup
+        self.cleanup, self.sessions, self.clock = cleanup, sessions, clock
 
     def settings(self, program: str) -> ProgramSettings:
         provider = self.providers.provider(program)
@@ -47,12 +56,35 @@ class ProgramSettingsSync:
         settings = self.settings(program)
         with self.refused_on_failure(program):
             self.backup.backed_up(settings)
+            self.clean_project_files(program)
             return self.writer.write(settings)
 
     def write(self, program: str) -> tuple[Path, ...]:
         settings = self.settings(program)
         with self.refused_on_failure(program):
+            self.clean_project_files(program)
             return self.writer.write(settings)
+
+    def clean_project_files(self, program: str) -> None:
+        provider = self.providers.provider(program)
+        if provider.writes_project_hooks or self.is_cleanup_held(program):
+            return
+        for folder in self.folders():
+            self.cleanup.cleaned(provider, folder)
+
+    def is_cleanup_held(self, program: str) -> bool:
+        return self.sessions.has_session_started_before(program, self.switched_at())
+
+    def held_cleanups(self) -> tuple[str, ...]:
+        return tuple(provider.name for provider in self.providers.all() if not provider.writes_project_hooks and self.is_cleanup_held(provider.name)
+                     and any(self.cleanup.has_journal_entries(provider, folder) for folder in self.folders()))
+
+    def switched_at(self) -> Timestamp:
+        switch = self.home.program_settings_switch
+        if not switch.is_file():
+            PrivateFolders.made(switch.parent)
+            FileAccess.shared().write(switch, f"{self.clock.timestamp().text}\n")
+        return Timestamp.parsed(KeptBytes.read(switch).decode().strip())
 
     def unreadable_person_files(self) -> tuple[Path, ...]:
         return tuple(path for provider in self.providers.all() for path in self.settings(provider.name).unreadable_person_files)

@@ -26,9 +26,9 @@ class HelperPrograms:
     def checked(self, program: str, folder: Path) -> None:
         self.installed(program)
         provider = self.providers.provider(program)
-        hooks = ProgramHooks.hooks(type(provider), folder)
+        hooks = ProgramHooks.journal(type(provider), provider.journal_hook_file(folder))
         provider.folder_trusted(folder)
         hooks_ready = hooks.is_complete() and hooks.names_root(self.home.project_folder) and provider.hook_trust(folder) is HookTrust.READY
-        if hooks_ready:
+        if hooks_ready or not provider.writes_project_hooks:
             return
         hooks.write(f'"{self.home.hook_runner}"', self.home.project_folder, self.managed.all())

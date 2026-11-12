@@ -18,11 +18,11 @@ def test_a_program_that_is_not_installed_is_refused(new_story, tmp_path, monkeyp
         programs(story).checked("claude", tmp_path)
 
 
-def test_a_folder_with_no_hooks_gets_the_program_s_hooks(new_story, tmp_path, monkeypatch):
+def test_a_claude_folder_gets_no_hook_file_of_the_journal(new_story, tmp_path, monkeypatch):
     story = new_story(fixture=BuilderStarted)
     monkeypatch.setattr(shutil, "which", lambda name: name)
     programs(story).checked("claude", tmp_path)
-    story.expect_rows((tmp_path / ".claude" / "settings.local.json").is_file())
+    story.expect_rows(not (tmp_path / ".claude" / "settings.local.json").exists())
 
 
 def test_a_program_trusts_the_hooks_the_journal_writes(new_story, tmp_path, monkeypatch):

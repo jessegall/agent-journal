@@ -30,6 +30,7 @@ def test_a_person_who_asks_for_prompts_gets_no_skip_flag(new_story):
     story = new_story(fixture=MainEnvironment)
     folder = project_folder(story)
     story.expect_absent(f"program command claude {folder} --launch launch-1 --ask-prompts", "--dangerously-skip-permissions")
+    story.expect_text(f"program command claude {folder} --launch launch-1 --ask-prompts", "--permission-mode\ndefault")
 
 
 def test_a_program_no_module_provides_is_refused_naming_it(new_story):

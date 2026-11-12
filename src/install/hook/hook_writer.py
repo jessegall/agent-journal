@@ -12,20 +12,21 @@ from core.modules import DEFAULT_MODULES
 
 
 class HookWriter:
-    """Writes the hooks of every agent program the journal ships into a project, each calling the given hook
-    runner, and records that runner for the journal's own settings files; an upgrade touches only the programs
-    whose hook file the project already has."""
+    """Writes the hooks of each agent program the journal ships that still keeps them in the project, each calling
+    the given hook runner, imports the project hooks of every program, and records that runner for the journal's own
+    settings files; an upgrade touches only the programs whose hook file the project already has."""
 
     def __init__(self, root: Path) -> None:
         self.root = root
         self.providers = [provider for module in DEFAULT_MODULES for provider in module.providers]
-        self.programs = [ProgramHooks.hooks(provider, root) for provider in self.providers]
+        self.writing_providers = [provider for provider in self.providers if provider.writes_project_hooks]
+        self.programs = [ProgramHooks.hooks(provider, root) for provider in self.writing_providers]
 
-    def write(self, runner: str, is_upgrade: bool = False) -> None:
+    def write(self, runner: str, is_upgrade: bool = False) -> list[ProgramHooks]:
         self.record_runner(runner)
         managed = self.managed()
         installed_programs: list[ProgramHooks] = []
-        for provider, program in zip(self.providers, self.programs, strict=True):
+        for provider, program in zip(self.writing_providers, self.programs, strict=True):
             if is_upgrade and not any((self.root / name).is_file() for name in (*provider.hook_files, provider.hook_file.path)):
                 continue
             program.write(runner, self.root, managed)
@@ -34,6 +35,7 @@ class HookWriter:
         if imported != managed:
             for program in installed_programs:
                 program.write(runner, self.root, imported)
+        return installed_programs
 
     def import_hooks(self, runner: str) -> list[ManagedHook]:
         if shlex.split(runner) != [str(self.root / ".journal/bin/journal-hook")]:

@@ -7,11 +7,19 @@ from engine.journal.journal_home import JournalHome
 from engine.private.private_folder import PrivateFolder
 from engine.private.server_keys import ServerKeys
 from engine.provider.managed_hook import ManagedHook
+from engine.provider.model_efforts import ModelEfforts
 from engine.provider.program_folders import ProgramFolders
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 
 RUNNER = '"/work/journal/.journal/bin/journal-hook"'
 PERSON_HOOK = {"matcher": "Bash", "hooks": [{"type": "command", "command": "my-linter"}]}
+
+
+class NoEffortSettings:
+    """Effort settings with no entry a person set."""
+
+    def texts(self, key: str) -> tuple[str, ...]:
+        return ()
 
 
 @pytest.fixture
@@ -21,7 +29,7 @@ def home(tmp_path: Path) -> JournalHome:
 
 @pytest.fixture
 def provider(home: JournalHome) -> ClaudeCodeProvider:
-    return ClaudeCodeProvider(ProgramFolders(), ServerKeys(PrivateFolder(home)))
+    return ClaudeCodeProvider(ProgramFolders(), ServerKeys(PrivateFolder(home)), ModelEfforts(NoEffortSettings()))
 
 
 def journal_file(provider: ClaudeCodeProvider, home: JournalHome, managed: tuple[ManagedHook, ...] = ()) -> dict[str, object]:

@@ -9,6 +9,7 @@ from engine.enums.hook_trust import HookTrust
 from engine.journal.journal_home import JournalHome
 from engine.private.private_folder import PrivateFolder
 from engine.private.server_keys import ServerKeys
+from engine.provider.model_efforts import ModelEfforts
 from engine.provider.program_folders import ProgramFolders
 from engine.provider.program_settings import ProgramSettings
 from engine.provider.program_settings_writer import ProgramSettingsWriter
@@ -37,6 +38,13 @@ trust_level = "trusted"
 """
 
 
+class NoEffortSettings:
+    """Effort settings with no entry a person set."""
+
+    def texts(self, key: str) -> tuple[str, ...]:
+        return ()
+
+
 @pytest.fixture
 def home(tmp_path: Path) -> JournalHome:
     return JournalHome(tmp_path / "project" / ".journal")
@@ -44,7 +52,7 @@ def home(tmp_path: Path) -> JournalHome:
 
 @pytest.fixture
 def provider(home: JournalHome) -> CodexProvider:
-    return CodexProvider(ProgramFolders(), ServerKeys(PrivateFolder(home)))
+    return CodexProvider(ProgramFolders(), ServerKeys(PrivateFolder(home)), ModelEfforts(NoEffortSettings()))
 
 
 @pytest.fixture

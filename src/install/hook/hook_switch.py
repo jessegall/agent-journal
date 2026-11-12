@@ -31,9 +31,11 @@ class HookSwitch:
                 kept.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(self.root / name, kept)
         runner = self.runner()
-        writer = HookWriter(self.root)
-        writer.write(runner, is_upgrade=True)
-        return [f"the hooks of {', '.join(str(name) for name in present)} call {runner}; the old files are in {self.saved}"]
+        installed = HookWriter(self.root).write(runner, is_upgrade=True)
+        named = [str(program.path.relative_to(self.root)) for program in installed]
+        if not named:
+            return [f"Claude Code and Codex start on the journal's own settings in .journal/programs, whose hooks call {runner}; the old files are in {self.saved}"]
+        return [f"the hooks of {', '.join(named)} call {runner}; the old files are in {self.saved}"]
 
     def restore(self) -> list[str]:
         (self.root / VERSION_FOUR_SWITCH).parent.mkdir(parents=True, exist_ok=True)

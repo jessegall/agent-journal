@@ -65,6 +65,7 @@ class Provider(ABC):
     hook_file: ClassVar[HookFile]
     hook_files: ClassVar[tuple[Path, ...]] = ()
     worktree_hook_files: ClassVar[tuple[Path, ...]] = ()
+    writes_project_hooks: ClassVar[bool] = True
     controls: ClassVar[Sequence[ControlGroup]] = ()
     compacts_headless: ClassVar[bool] = False
     session_variable: ClassVar[str]
@@ -220,6 +221,9 @@ class Provider(ABC):
 
     def session_temp_folders(self, project: Path) -> Mapping[str, Path]:
         return {}
+
+    def journal_hook_file(self, folder: Path) -> Path:
+        return folder / self.hook_file.path
 
     @classmethod
     def hook_settings(cls, runner: str, root: Path) -> Mapping[str, object]:

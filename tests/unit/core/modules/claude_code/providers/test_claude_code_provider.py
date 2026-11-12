@@ -5,6 +5,11 @@ from pathlib import Path
 
 import pytest
 
+from engine.enums.hook_trust import HookTrust
+from engine.provider.program_hooks import ProgramHooks
+
+from engine.errors.refusal import Refusal
+
 from engine.provider.session_line import SessionLine
 from engine.driver.hook_event import HookEvent
 from engine.provider.helper_launch import HelperLaunch
@@ -35,6 +40,7 @@ PREPARED = HOOK_FOLDER / "programs" / "testdata" / "prepared" / "claude"
 STOP_EXAMPLE = HOOK_FOLDER / "event" / "testdata" / "schema" / "stop.json"
 ROOT, FOLDER = Path("/work/journal"), Path("/work/app")
 VARIABLES = {"JOURNAL_ENV": "main"}
+SETTINGS = ["--settings", str(ROOT / ".journal" / "programs" / "claude" / "settings.json"), "--setting-sources", "project"]
 
 
 @pytest.fixture
@@ -45,15 +51,15 @@ def provider(tmp_path: Path) -> ClaudeCodeProvider:
 def test_a_session_runs_claude_with_its_model_and_its_new_session_id(provider):
     command = provider.session_command(Launch(ROOT, FOLDER, "sonnet", "launch-1", SessionStart("s-1"), VARIABLES))
     assert (list(command.arguments), command.folder, dict(command.variables), command.session) == (
-        ["claude", "--model", "sonnet", "--effort", "high", "--dangerously-skip-permissions", "--session-id", "s-1"], FOLDER, VARIABLES, "s-1")
+        ["claude", *SETTINGS, "--model", "sonnet", "--effort", "high", "--dangerously-skip-permissions", "--session-id", "s-1"], FOLDER, VARIABLES, "s-1")
 
 
 def test_a_session_starts_on_opus_and_the_person_s_own_flags_win(provider):
     assert provider.session_model() == "opus"
     given = Launch(ROOT, FOLDER, "opus", "launch-1", SessionStart("s-1"), VARIABLES, program_arguments=("--model", "sonnet", "--effort=low"))
-    assert list(provider.session_command(given).arguments) == ["claude", "--dangerously-skip-permissions", "--model", "sonnet", "--effort=low", "--session-id", "s-1"]
+    assert list(provider.session_command(given).arguments) == ["claude", *SETTINGS, "--dangerously-skip-permissions", "--model", "sonnet", "--effort=low", "--session-id", "s-1"]
     effort_launch = Launch(ROOT, FOLDER, "opus", "launch-1", SessionStart("s-1"), VARIABLES, program_arguments=("--effort", "low"))
-    assert list(provider.session_command(effort_launch).arguments) == ["claude", "--model", "opus", "--dangerously-skip-permissions", "--effort", "low", "--session-id", "s-1"]
+    assert list(provider.session_command(effort_launch).arguments) == ["claude", *SETTINGS, "--model", "opus", "--dangerously-skip-permissions", "--effort", "low", "--session-id", "s-1"]
 
 
 def test_a_resumed_session_runs_claude_with_resume(provider):
@@ -63,7 +69,7 @@ def test_a_resumed_session_runs_claude_with_resume(provider):
 
 def test_a_helper_runs_its_brief_without_a_terminal_and_prints_stream_json(provider):
     command = provider.helper_command(HelperLaunch(ROOT, FOLDER, "sonnet", "worker-7", SessionStart("s-2"), VARIABLES, brief="Write the tests"))
-    assert list(command.arguments) == ["claude", "-p", "Write the tests", "--model", "sonnet", "--effort", "high", "--dangerously-skip-permissions", "--output-format",
+    assert list(command.arguments) == ["claude", *SETTINGS, "-p", "Write the tests", "--model", "sonnet", "--effort", "high", "--dangerously-skip-permissions", "--output-format",
                                        "stream-json", "--verbose", "--session-id", "s-2"]
 
 
@@ -94,11 +100,9 @@ def test_the_context_percent_is_read_from_the_file_the_status_line_keeps_for_the
     assert (provider.context_percent(home, "s-1"), provider.context_percent(home, "s-2")) == (55, None)
 
 
-def test_the_hook_file_runs_the_hook_program_as_the_status_line(provider, tmp_path):
+def test_a_prepared_folder_gets_no_hook_file_of_the_journal(provider, tmp_path):
     provider.folder_prepared(tmp_path, tmp_path, '"/p/.journal/bin/journal-hook"')
-    settings = json.loads((tmp_path / ".claude" / "settings.local.json").read_text())
-    assert settings["statusLine"] == {"type": "command", "command": f'"/p/.journal/bin/journal-hook" --status "{tmp_path}"', "padding": 0}
-    assert settings["autoMemoryEnabled"] is False
+    assert not (tmp_path / ".claude" / "settings.local.json").exists()
 
 
 def test_a_session_found_under_another_project_does_not_resume_here(provider, tmp_path, monkeypatch):
@@ -116,3 +120,45 @@ def test_a_session_found_under_another_project_does_not_resume_here(provider, tm
 def test_opus_starts_at_medium_and_sonnet_at_high_by_default():
     provider = ClaudeCodeProvider(ProgramFolders(), None, ModelEfforts(EffortSettings()))
     assert (provider.effort("claude-opus-5-5"), provider.effort("opus"), provider.effort("sonnet"), provider.effort("haiku")) == ("medium", "medium", "high", "high")
+
+
+def test_a_session_command_carries_the_journal_settings_and_the_project_source(provider):
+    arguments = list(provider.session_command(Launch(ROOT, FOLDER, "sonnet", "launch-1", SessionStart("s-1"), VARIABLES)).arguments)
+    assert arguments[1:5] == SETTINGS
+    assert Path(arguments[2]).is_absolute()
+    assert "user" not in arguments and "local" not in arguments
+
+
+def test_a_helper_command_carries_the_journal_settings_and_the_project_source(provider):
+    arguments = list(provider.helper_command(HelperLaunch(ROOT, FOLDER, "sonnet", "worker-7", SessionStart("s-2"), VARIABLES, brief="Go")).arguments)
+    assert arguments[1:5] == SETTINGS
+
+
+@pytest.mark.parametrize("given", [("--settings", "/tmp/mine.json"), ("--settings=/tmp/mine.json",)])
+def test_a_person_settings_flag_is_refused(provider, given):
+    with pytest.raises(Refusal, match="the journal launches Claude Code on its own settings; --settings and --setting-sources cannot be given"):
+        provider.session_command(Launch(ROOT, FOLDER, "opus", "launch-1", SessionStart("s-1"), VARIABLES, program_arguments=given))
+
+
+@pytest.mark.parametrize("given", [("--setting-sources", "user,project"), ("--setting-sources=user",)])
+def test_a_person_setting_sources_flag_is_refused(provider, given):
+    with pytest.raises(Refusal, match="--settings and --setting-sources cannot be given") as refusal:
+        provider.session_command(Launch(ROOT, FOLDER, "opus", "launch-1", SessionStart("s-1"), VARIABLES, program_arguments=given))
+    assert refusal.value.suggestion == "launch without them: the journal writes the settings itself"
+
+
+def test_ask_prompts_gives_permission_mode_default(provider):
+    arguments = list(provider.session_command(Launch(ROOT, FOLDER, "opus", "launch-1", SessionStart("s-1"), VARIABLES, skip_prompts=False)).arguments)
+    assert "--dangerously-skip-permissions" not in arguments
+    assert arguments[arguments.index("--permission-mode") + 1] == "default"
+
+
+def test_hook_trust_is_ready_when_the_journal_file_holds_every_event(provider, tmp_path):
+    ProgramHooks.journal(ClaudeCodeProvider, provider.journal_hook_file(tmp_path)).write("journal-hook", tmp_path)
+    assert provider.journal_hook_file(tmp_path) == tmp_path / ".journal" / "programs" / "claude" / "settings.json"
+    assert provider.hook_trust(tmp_path) is HookTrust.READY
+
+
+def test_hook_trust_is_unwritten_when_only_the_local_project_file_holds_them(provider, tmp_path):
+    ProgramHooks.hooks(ClaudeCodeProvider, tmp_path).write("journal-hook", tmp_path)
+    assert provider.hook_trust(tmp_path) is HookTrust.UNWRITTEN

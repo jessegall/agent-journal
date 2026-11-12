@@ -33,7 +33,8 @@ def test_the_binary_for_the_machine_is_installed_and_both_programs_call_it_by_it
     binary = project / ".journal" / "bin" / "journal-hook"
     assert run.returncode == 0, run.stderr
     assert binary.read_text() == STARTS
-    assert hook_commands(project / ".claude" / "settings.local.json") == {f'"{binary}" claude "{project}"'}
+    assert not (project / ".claude" / "settings.local.json").exists()
+    assert (project / ".journal" / "hooks" / "runner").read_text() == f'"{binary}"\n'
     assert hook_commands(project / ".codex" / "hooks.json") == {f'"{binary}" codex "{project}"'}
 
 
@@ -52,7 +53,8 @@ def test_a_platform_no_binary_is_built_for_falls_back_to_hook_sh_and_says_so(tmp
     project = tmp_path / "project"
     run = installed(project, release(tmp_path / "release"), platform="plan9/amd64")
     assert run.returncode == 0 and "no journal-hook is built for plan9/amd64" in run.stdout
-    assert hook_commands(project / ".claude" / "settings.local.json") == fallback_commands(project, "claude")
+    assert not (project / ".claude" / "settings.local.json").exists()
+    assert (project / ".journal" / "hooks" / "runner").read_text() == f'sh "{project}/.journal/hooks/hook.sh"\n'
     assert (project / ".journal" / "hooks" / "hook.sh").is_file()
 
 
