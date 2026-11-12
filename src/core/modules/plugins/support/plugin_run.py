@@ -51,4 +51,4 @@ class PluginRun:
     def call(self, request: PluginRunRequest) -> PluginCall:
         plugin, manifest = request.runnable.plugin, request.runnable.manifest
         return PluginCall(manifest, request.event, request.environment, request.timestamp, self.settings.values(plugin, manifest, request.environment), request.agent_id,
-                          request.file_checkout, request.form, request.script, hook_waits=request.hook_waits, facts=request.facts)
+                          request.file_checkout, request.form, request.script, hook_waits=request.hook_waits, facts=request.facts, events=request.events)

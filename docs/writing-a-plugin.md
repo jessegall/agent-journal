@@ -94,6 +94,7 @@ A script gets one line of JSON on its input:
 - `window_ms`: the limit this call runs under, or null for no limit.
 - `checkout`: the checkout of the agent, with `type`, `root`, `project_root`, `branch`, `base_branch`, `base_commit` and `exists`.
 - `config`: `{"version": <n>}`, for a plugin that declares a config; read the document again when the version is newer than your copy.
+- `events`: only on a held event of a tool step. The held events of one hook that one script judges within one limit, such as `tool_starting` and the `command_starting` of each part of a shell line, come in one run: `event` and `data` are the first, and `events` lists every one, each with its `event` and `data`. The one answer counts for all of them.
 - `data`: for a script named by key, `form`, `final`, `log_name`, `event_id`, `actor`, `command`, `cause_id`, `row`, `old_row` and `changed`. A hidden field reads as hidden. An event about a file also has `file`.
 
 The rules of this line:
