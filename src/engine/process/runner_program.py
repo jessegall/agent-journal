@@ -14,7 +14,7 @@ class RunnerProgram:
     def run(self, placed: PlacedRun, placement: RunPlacement) -> Execution:
         request = placed.request
         child = subprocess.Popen(list(request.line), cwd=request.folder, stdin=subprocess.PIPE if request.stdin is not None else subprocess.DEVNULL,
-                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=None if request.variables is None else dict(request.variables))
         try:
             stdout, stderr = child.communicate(request.stdin, timeout=request.limit_seconds)
         except subprocess.TimeoutExpired as error:

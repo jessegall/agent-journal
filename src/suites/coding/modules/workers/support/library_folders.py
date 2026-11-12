@@ -1,6 +1,9 @@
+from engine.enums.process_kind import ProcessKind
+from engine.errors.run_time_limit_error import RunTimeLimitError
+from engine.process.execution_request import ExecutionRequest
+from engine.process.process_executor import ProcessExecutor
 from engine.file.file_access import FileAccess
 import shutil
-import subprocess
 import sys
 from collections.abc import Sequence
 from pathlib import Path
@@ -17,8 +20,8 @@ class LibraryFolders:
     """Gives a worktree the environment's library folders, each linked or copied, and keeps every one out of
     git."""
 
-    def __init__(self, git: WorktreeGit) -> None:
-        self.git = git
+    def __init__(self, git: WorktreeGit, executor: ProcessExecutor) -> None:
+        self.git, self.executor = git, executor
 
     def check(self, folder: str, names: Sequence[str]) -> None:
         root = Path(folder).resolve()
@@ -47,10 +50,10 @@ class LibraryFolders:
     def copy(self, source: Path, target: Path) -> None:
         program = MAC_COPY if sys.platform == "darwin" else LINUX_COPY
         try:
-            finished = subprocess.run([*program, str(source), str(target)], capture_output=True, text=True, timeout=COPY_LIMIT_SECONDS, check=False)
-        except subprocess.TimeoutExpired as timeout:
+            finished = self.executor.execute(ExecutionRequest([*program, str(source), str(target)], source.parent, ProcessKind.SHELL, COPY_LIMIT_SECONDS))
+        except RunTimeLimitError as timeout:
             raise Refusal(f"copying {source} took longer than {COPY_LIMIT_SECONDS} seconds", "link it with --library-link instead") from timeout
-        if finished.returncode != 0:
+        if not finished.succeeded:
             raise Refusal(f"copying {source} failed", finished.stderr.strip())
 
     def exclude(self, target: str, names: Sequence[str]) -> None:
