@@ -11,7 +11,7 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.driver.tool import Tool
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
-from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
+from core.modules.drivers.commands.close_agent_blocks.close_agent_blocks import CloseAgentBlocks
 from core.modules.drivers.models.agent_block import AgentBlock, OPEN_BLOCKS_REASON
 from engine.enums.tool_type import ToolType
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
@@ -46,7 +46,7 @@ class AgentBlockRule(DriverRule):
         tool_uses = dict(zip([block.id for block in counted_blocks], counts))
         active_blocks = [block for block in waiting_blocks if block.is_active(tool_uses.get(block.id, 0), hook.timestamp)]
         tool = hook.event.tool
-        closing = [CloseAgentBlock(block.id) for block in finished_blocks]
+        closing = [CloseAgentBlocks(tuple(block.id for block in finished_blocks))] if finished_blocks else []
         refused_blocks = [block for block in active_blocks if tool is not None and self.refuses(block, tool)]
         if refused_blocks:
             return RuleAnswer.refused(Nudge(refused_blocks[0].nudge_key, NudgeType.REFUSAL, refused_blocks[0].nudge_text.replace("{block}", str(refused_blocks[0].id)))).running_unrefused(*closing)
@@ -56,6 +56,7 @@ class AgentBlockRule(DriverRule):
     def finished(self, blocks: Sequence[AgentBlock], hook: AgentHook) -> list[AgentBlock]:
         answers: dict[tuple[str, str, str], bool] = {}
         finished_blocks: list[AgentBlock] = []
+        self.conditions.prepare([(block.condition_name, block.condition_text) for block in blocks], self.container)
         for block in blocks:
             condition = (block.condition_name, block.condition_text, block.creation_timestamp().text)
             if condition not in answers:
