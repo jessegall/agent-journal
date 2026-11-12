@@ -2,7 +2,6 @@ from collections.abc import Iterator
 import contextlib
 import re
 import sqlite3
-from pathlib import Path
 
 import pytest
 
@@ -18,8 +17,6 @@ thirty-two rows in every table, with values chosen so each branch of the views' 
 compared with the rows of its old text. The rules of the tables are dropped first, so a seed row may hold any state
 a view tells apart, not only the state a new row starts in."""
 
-ROOT = Path(__file__).resolve().parents[3]
-VIEWS_LISTED = ROOT / "tests" / "snapshots" / "sql_views_listed.txt"
 SEED_ROWS = 32
 NULL_EVERY = 3
 TABLES = Statement("SELECT name, sql FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name",
@@ -105,10 +102,9 @@ def sorted_rows(database: Database, sql: str) -> list[tuple[object, ...]]:
     return sorted((tuple(row) for row in database.connection.execute(sql)), key=repr)
 
 
-def test_the_old_views_are_kept_for_every_view_and_the_views_list_exists(database):
+def test_the_old_views_are_kept_for_every_view(database):
     created = {row[0] for row in database.connection.execute("SELECT name FROM sqlite_master WHERE type = 'view'")}
     assert sorted(created) == sorted(OLD_VIEWS)
-    assert VIEWS_LISTED.is_file()
 
 
 @pytest.mark.parametrize("view", sorted(OLD_VIEWS))

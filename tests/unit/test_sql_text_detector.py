@@ -15,7 +15,6 @@ TEXT_RULE = "architecture_queries_sql_text_in_a_builder"
 CALL_RULE = "architecture_queries_statement_outside_the_builder"
 OLD_RULES = ("architecture_core_sql_outside_database_layer", "architecture_queries_sql_condition_outside_conditions")
 SKILL = "sql-in-the-database-layer"
-VIEWS_SNAPSHOT = ROOT / "tests" / "snapshots" / "sql_views_listed.txt"
 QUERY_FILE = "src/core/modules/aliases/queries/alias_query.py"
 KINDS = ["name = ?", "closed_at IS NULL", "holder_id IS NOT NULL", "id IN (1, 2)", "title LIKE ?", "id ORDER BY priority", "state GROUP BY state",
          "id LIMIT 5", "tasks JOIN agents ON agents.id = tasks.holder_id", "EXISTS(SELECT 1 FROM task_waits)", "SELECT id FROM tasks"]
@@ -51,19 +50,6 @@ def proved(tmp_path: Path, rule_name: str, samples: dict[str, str]) -> str:
 
 def flagged_text(text: str) -> str:
     return f'# @sin {TEXT_RULE}\nSQL = "{text}"\n# @righteous {TEXT_RULE}\nWORDS = "a task to start"\n'
-
-
-def views_pattern() -> str:
-    return next(step["fileMatches"] for step in rule(TEXT_RULE)["find"]["reject"] if "views" in step.get("fileMatches", ""))
-
-
-def listed_views() -> list[str]:
-    """The views.py files the detector lets keep their SQL text, read from its alternation of module names."""
-    pattern = views_pattern()
-    modules = re.search(r"core/modules/\(([a-z_|]+)\)", pattern)[1].split("|")
-    suites = re.findall(r"suites/(\w+)/modules/(\w+)", pattern)
-    return sorted([f"src/core/modules/{module}/models/support/views.py" for module in modules]
-                  + [f"src/suites/{suite}/modules/{module}/models/support/views.py" for suite, module in suites])
 
 
 def test_a_where_text_in_a_module_query_class_is_flagged(tmp_path):
@@ -131,25 +117,15 @@ def test_migrations_are_exempt(tmp_path):
 ''', "src/core/modules/tasks/queries/task_reads.py": flagged_text("priority IS NULL")})
 
 
-def test_a_listed_view_passes_and_an_unlisted_view_is_flagged(tmp_path):
-    proved(tmp_path, TEXT_RULE, {listed_views()[0]: f'''# @righteous {TEXT_RULE}
-OPEN_SELECT = "SELECT id FROM tasks WHERE closed_at IS NULL"
-''', "src/core/modules/example/models/support/views.py": f'''# @sin {TEXT_RULE}
+def test_a_views_file_with_sql_text_is_flagged(tmp_path):
+    proved(tmp_path, TEXT_RULE, {"src/core/modules/tasks/models/support/views.py": f'''# @sin {TEXT_RULE}
 OPEN_SELECT = "SELECT id FROM tasks WHERE closed_at IS NULL"
 '''})
 
 
-def test_the_list_of_views_names_only_files_that_exist():
-    assert [path for path in listed_views() if not (ROOT / path).is_file()] == []
-
-
-def test_the_list_of_views_can_only_shrink():
-    assert sorted(set(listed_views()) - set(VIEWS_SNAPSHOT.read_text().split())) == [], "a view leaves the list; it is never added: build it with the builder"
-
-
-def test_both_detectors_exempt_the_same_views():
-    call_views = next(step["fileMatches"] for step in rule(CALL_RULE)["find"]["reject"] if "views" in step.get("fileMatches", ""))
-    assert call_views == views_pattern()
+def test_no_view_is_exempt():
+    patterns = [step.get("fileMatches", "") for name in (TEXT_RULE, CALL_RULE) for step in rule(name)["find"]["reject"]]
+    assert [pattern for pattern in patterns if "views" in pattern] == []
 
 
 def test_prose_that_looks_like_sql_is_not_flagged(tmp_path):

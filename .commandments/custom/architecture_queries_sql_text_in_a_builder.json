@@ -31,9 +31,6 @@
                 "fileMatches": "(^|/)migrations/"
             },
             {
-                "fileMatches": "(^|/)src/(core/modules/(dumps|sequences|documents|aliases|reviews|waits))/models/support/views\\.py$"
-            },
-            {
                 "fileMatches": "(^|/)src/core/modules/(agents/conditions/current_session_rows|documents/conditions/(first_link_counterpart|link_target_counts|work_context_messages|work_context_seeds|link_endpoint_columns|work_context_reference_columns)|drivers/conditions/(agent_family|foreign_hook)|plans/conditions/(checkpoint_limit|earliest_unfinished_phase)|processes/queries/conditions/(reader_sample_queries|watch_progress_due)|tasks/conditions/dependency_chain|messages/conditions/message_text_segment)\\.py$"
             },
             {
