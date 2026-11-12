@@ -6,16 +6,16 @@ from tests.stories.core.modules.processes.support.reading_case_samples import ST
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 BUILD = "custom-build run"
-BUILD_OUTPUT = "".join(f"compiled module {number}\n" for number in range(400))
-BUILD_READER = 'reader add builds --commands "custom-build*" --title "Custom builds" --lines "built" --summary "built"'
+BUILD_OUTPUT = "".join(f"compiled module {number}\n" for number in range(400)) + "error: missing header cart.h\n"
+BUILD_READER = 'reader add builds --commands "custom-build*" --title "Custom builds" --lines "^error" --summary "^error: (.+)"'
 UNREADABLE = 'reader unreadable "custom-build" --reason "it only redraws a progress bar"'
 
 
 def ended_builds(story, count: int) -> None:
-    """Runs the build count times with no reader, each ended with its output whole and its end decision kept."""
+    """Runs the build count times with no reader, each failing so it needs one, ended with its output whole and its end decision kept."""
     for _ in range(count):
         process = start_process(story, BUILD, category=CommandCategory.BUILD)
-        end_run(story, process, BUILD_OUTPUT)
+        end_run(story, process, BUILD_OUTPUT, exit_code=1)
         story.container.get(Bus).run(StoreEndDecisions(process.id), story.agent, environment_id=1)
 
 
