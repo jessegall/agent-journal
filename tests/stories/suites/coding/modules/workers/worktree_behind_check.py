@@ -156,7 +156,7 @@ def s10_an_open_check_is_not_doubled(story, repository, worker: Actor) -> None:
 def s12_a_worktree_with_nothing_of_its_own_moves_with_no_merger(story, repository, worker: Actor) -> None:
     base_commits(repository, 3)
     look(story)
-    story.expect_text(f"agent-line list --agent {worker.id}", f"your worktree moved to {ENVIRONMENT_BRANCH} at", "nothing of yours was touched", actor=worker)
+    story.expect_text(f"agent-line list --agent {worker.id}", "your worktree moved up to its base branch; nothing of yours was touched", actor=worker)
     story.expect_rows(behind_lines(story) == [], detail=str(behind_lines(story)))
 
 

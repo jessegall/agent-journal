@@ -2,6 +2,9 @@ from dataclasses import dataclass
 
 from engine.command.command import Command
 
+ENDED_RUN_NOTE = "failed: journal output read of process {process}"
+GONE_RUN_NOTE = "lost: process {process} is gone with no result recorded"
+
 
 @dataclass(frozen=True)
 class RecordWorkerTest(Command[None]):

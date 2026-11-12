@@ -49,14 +49,14 @@ def s15_another_area_is_left_alone_and_the_worker_is_not_woken(story, repository
     both_change(repository, worker, "src/core/modules/plans/plan_rows.py", "src/viewer/board.ts")
     look(story)
     story.expect_success(f'merger leave {agent_number(story, worker.id)} --why "only the viewer moved"', actor=merger(story))
-    story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.LEFT], "The base branch moved" not in worker_lines(story, worker), detail=str(checks(story)))
+    story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.LEFT], "Your base branch moved" not in worker_lines(story, worker), detail=str(checks(story)))
 
 
 def s16_an_overlap_is_ordered_and_the_worker_is_woken_with_the_order(story, repository, worker: Actor) -> None:
     both_change(repository, worker, "plan_checkpoints.py", "plan_checkpoints.py")
     look(story)
     story.expect_success(f'merger update {agent_number(story, worker.id)} --why "plan_checkpoints.py moved on both sides"', actor=merger(story))
-    story.expect_rows("The base branch moved 1 commits and touches plan_checkpoints.py you work on" in worker_lines(story, worker), detail=worker_lines(story, worker))
+    story.expect_rows("Your base branch moved 1 commits. Run journal worker update" in worker_lines(story, worker), detail=worker_lines(story, worker))
 
 
 def s17_a_sibling_file_is_same_folder_and_not_overlap(story, repository, worker: Actor) -> None:
@@ -64,7 +64,7 @@ def s17_a_sibling_file_is_same_folder_and_not_overlap(story, repository, worker:
     story.expect_text(f"merger behind {agent_number(story, worker.id)}", "Overlap: none", "Same folder, not overlap: shop/tax.py", actor=merger(story))
 
 
-def s18_a_large_update_for_a_small_model_is_passed_with_its_facts(story, repository, worker: Actor) -> None:
+def s18_a_large_update_for_a_small_model_is_passed_and_the_main_agent_reads_its_reason_and_facts(story, repository, worker: Actor) -> None:
     base = checkout_of(repository, ENVIRONMENT_BRANCH)
     for number in range(MANY_FILES):
         (repository.worktree_folder(worker.id) / f"part_{number}.py").write_text("WORKER = 1\n")
@@ -75,7 +75,10 @@ def s18_a_large_update_for_a_small_model_is_passed_with_its_facts(story, reposit
     repository.git("commit", "-m", "The base changes many parts", folder=base)
     look(story)
     story.expect_success(f'merger pass {agent_number(story, worker.id)} "it is too large for a small model"', actor=merger(story))
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"{MANY_FILES} files overlap, model haiku: the merger thinks it is too large for a small model")
+    check = checks(story)[0]
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"journal behind-check show {check.id}, journal merger behind {agent_number(story, worker.id)}")
+    story.expect_text(f"behind-check show {check.id}", "it is too large for a small model")
+    story.expect_text(f"merger behind {agent_number(story, worker.id)}", f"part_{MANY_FILES - 1}.py", "haiku")
     state = story.run(f"worker-worktree list --json").output_text
     story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.PASSED], WorktreeState.CUT.value in state, detail=state)
 
@@ -106,11 +109,11 @@ def s23_with_the_merger_off_the_main_agent_gets_the_check_and_its_choices(story,
     both_change(repository, worker, "plan_checkpoints.py", "plan_checkpoints.py")
     look(story)
     number = agent_number(story, worker.id)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"journal worker update {number}", f"journal merger leave {number} --why", f"journal merger pass {number}")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"journal merger behind {number}, then worker update, merger leave or pass")
 
 
 CASES: list[tuple[str, Callable[..., None]]] = [(DISPATCH, s15_another_area_is_left_alone_and_the_worker_is_not_woken), (DISPATCH, s16_an_overlap_is_ordered_and_the_worker_is_woken_with_the_order),
-                                                (DISPATCH, s17_a_sibling_file_is_same_folder_and_not_overlap), (HAIKU_DISPATCH, s18_a_large_update_for_a_small_model_is_passed_with_its_facts),
+                                                (DISPATCH, s17_a_sibling_file_is_same_folder_and_not_overlap), (HAIKU_DISPATCH, s18_a_large_update_for_a_small_model_is_passed_and_the_main_agent_reads_its_reason_and_facts),
                                                 (DISPATCH, s20_worker_status_shows_the_decision), (DISPATCH, s21_an_agent_with_no_worktree_is_refused),
                                                 (DISPATCH, s22_a_closed_check_cannot_be_left_again), (DISPATCH, s23_with_the_merger_off_the_main_agent_gets_the_check_and_its_choices)]
 

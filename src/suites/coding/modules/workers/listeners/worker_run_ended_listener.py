@@ -8,7 +8,6 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from suites.coding.modules.workers.models.enums.worker_operation_name import (WorkerOperationName, WORKER_OPERATION_NEXT, WORKER_OPERATION_TESTS, WORKER_OPERATION_CONFLICT, WORKER_OPERATION_PAUSED,
                                                                              WORKER_OPERATION_UPDATED, WORKER_OPERATION_UPDATE_CONFLICT, WORKER_OPERATION_UPDATE_FAILED)
 from suites.coding.modules.workers.models.enums.update_result import UpdateResult
-from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
@@ -37,8 +36,8 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
     name = "workers.run-ended"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, nudger: Nudger, stop: WorkerStop, queries: Queries, repository: Repository, proof_queue: WorkerProofQueue, numbers: RowNumbers, git: WorktreeGit) -> None:
-        self.numbers, self.git = numbers, git
+    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, nudger: Nudger, stop: WorkerStop, queries: Queries, repository: Repository, proof_queue: WorkerProofQueue, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.queries, self.repository, self.proof_queue = queries, repository, proof_queue
         self.agents, self.worktrees, self.nudger, self.stop = agents, worktrees, nudger, stop
 
@@ -84,8 +83,7 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
         """The line of an update follows how it ended, not its exit code: one that clashes ends with exit code 0."""
         worker = self.numbers.number(AGENT_MODEL_NAME, operation.worker_id)
         if operation.update_result is UpdateResult.CONFLICTS:
-            worktree = self.worktrees.required_worker_worktree(operation.worker_id)
-            return WORKER_OPERATION_UPDATE_CONFLICT.nudge(worker=worker, files=", ".join(self.git.conflict_files(worktree)), output=process.id)
+            return WORKER_OPERATION_UPDATE_CONFLICT.nudge(worker=worker, output=process.id)
         if operation.update_result is None or process.exit_code != 0:
             return WORKER_OPERATION_UPDATE_FAILED.nudge(worker=worker, output=process.id)
         return WORKER_OPERATION_UPDATED.nudge(worker=worker, output=process.id)

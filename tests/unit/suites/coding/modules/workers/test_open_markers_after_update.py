@@ -31,8 +31,8 @@ def test_markers_still_open_after_the_wait_reach_the_merger_once_to_advise_then_
 
 
 def test_the_lines_name_the_files_and_the_command_to_run():
-    assert "markers open in cart.py, tax.py" in CLASH_OPEN.nudge(worker=4, files="cart.py, tax.py").text
-    assert "journal merger pass 4" in CLASH_STILL_OPEN.nudge(worker=4, files="cart.py").text
+    assert "journal merger advise 4" in CLASH_OPEN.nudge(worker=4).text
+    assert "journal merger pass 4" in CLASH_STILL_OPEN.nudge(worker=4).text
 
 
 def test_settled_markers_tell_the_merger_nothing():

@@ -9,7 +9,6 @@ from suites.coding.modules.workers.commands.pass_behind_check.pass_behind_check 
 from suites.coding.modules.workers.commands.pass_behind_check.pass_behind_check_handler import PassBehindCheckHandler
 from suites.coding.modules.workers.commands.return_worker.return_worker import ReturnWorker
 from suites.coding.modules.workers.commands.return_worker.return_worker_subcommand import ReturnWorkerSubcommand
-from suites.coding.modules.workers.models.behind_facts import BehindFacts
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState as State
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.support.behind_decisions import BehindDecisions
@@ -44,25 +43,19 @@ def test_pass_on_a_cut_worktree_with_a_check_takes_the_behind_path_and_a_deliver
     assert (type(routed(WorktreeState.CUT, True)), type(routed(WorktreeState.DELIVERED, True)), type(routed(WorktreeState.CUT, False))) == (PassBehindCheck, ReturnWorker, ReturnWorker)
 
 
-class Reader:
-    def read(self, worktree, worker) -> BehindFacts:
-        return BehindFacts("version-5", 25, (), (), tuple(f"f{number}.py" for number in range(40)), (), 900, False, "claude", "haiku")
-
-
-def test_a_passed_check_goes_to_the_main_agent_with_its_facts_and_no_worktree_state_moves():
+def test_a_passed_check_goes_to_the_main_agent_by_its_number_and_no_worktree_state_moves():
     repository, visits, main_line = Repository(), Visits(), Lines()
-    handler = PassBehindCheckHandler(Agents(), BehindDecisions(Worktrees(), Checks(State.OPEN), Numbers()), Reader(), Checks(State.OPEN), repository, visits, main_line, Numbers())
+    handler = PassBehindCheckHandler(Agents(), BehindDecisions(Worktrees(), Checks(State.OPEN), Numbers()), repository, visits, main_line, Numbers())
     command = PassBehindCheck(WORKER, "it is too large")
-    handler.prepare(command, Actor(MERGER, ActorType.AGENT))
     handler.handle(command, SimpleNamespace(actor=Actor(MERGER, ActorType.AGENT)))
     assert [(row.state, row.decided_by) for row in repository.saved] == [(State.PASSED, MERGER)] and visits.closed == 1
     assert main_line.sent[0].key == BEHIND_PASSED.key
-    assert "is 25 behind version-5, 40 files overlap, model haiku: the merger thinks it is too large" in main_line.sent[0].text
+    assert f"journal behind-check show {repository.saved[0].id}, journal merger behind 999" in main_line.sent[0].text
 
 
-def test_with_the_merger_off_the_line_reaches_the_main_agent_and_names_the_three_choices():
+def test_with_the_merger_off_the_line_reaches_the_main_agent_and_names_the_facts_and_the_three_choices():
     inbox = Lines()
     AnnounceBehindChecksHandler(Rows(), NoChecks(), inbox, Settings(merger=False), Numbers()).handle(AnnounceBehindChecks((1,)), SimpleNamespace(timestamp=None))
     text = inbox.sent[0].text
     assert inbox.sent[0].key == BEHIND_CHOICES.key
-    assert all(choice in text for choice in ("journal worker update 999", "journal merger leave 999 --why", "journal merger pass 999"))
+    assert all(choice in text for choice in ("journal merger behind 999", "worker update", "merger leave", "pass"))

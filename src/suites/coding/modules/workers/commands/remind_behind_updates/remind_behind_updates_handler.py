@@ -56,16 +56,15 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
         """Tells the merger of markers an update left open past the wait: first to advise the worker once, then, when
         they are still open after another wait, to pass it to the main agent."""
         worktree = self.rows.required(Worktree, check.worktree_id)
-        files = self.git.conflict_files(worktree)
-        if not files:
+        if not self.git.conflict_files(worktree):
             return
         worker = self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)
-        self.inbox.send_nudge(CLASH_LINES[check.reminders].nudge(worker=worker, files=", ".join(files)), BEHIND_SOURCE, context)
+        self.inbox.send_nudge(CLASH_LINES[check.reminders].nudge(worker=worker), BEHIND_SOURCE, context)
         self.repository.save_change(check, check.reminded(), context)
 
     def remind(self, check: WorktreeBehindCheck, worktree: Worktree, limit: int, context: Context) -> None:
         if check.reminders < limit:
-            self.nudger.send(worktree.session_agent_id, UPDATE_REMINDER, BEHIND_SOURCE, context, count=check.behind, base=worktree.base_branch)
+            self.nudger.send(worktree.session_agent_id, UPDATE_REMINDER, BEHIND_SOURCE, context, count=check.behind)
         else:
             self.inbox.send_nudge(UPDATE_NOT_RUN.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)), BEHIND_SOURCE, context)
         self.repository.save_change(check, check.reminded(), context)

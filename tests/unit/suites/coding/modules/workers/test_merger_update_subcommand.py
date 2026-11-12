@@ -105,12 +105,12 @@ def ordered_by(actor_id: int, checks: Checks, worktrees: Worktrees | None = None
     return repository, visits, nudger
 
 
-def test_the_merger_orders_the_update_with_who_and_why_and_the_worker_is_woken_with_the_shared_files():
+def test_the_merger_orders_the_update_with_who_and_why_and_the_worker_is_woken_with_how_far_its_base_moved():
     repository, visits, nudger = ordered_by(MERGER, Checks(State.OPEN))
     check = repository.saved[0]
     assert (check.state, check.decided_by, check.reason, visits.closed) == (State.ORDERED, MERGER, "cart.py is changed on both sides", 1)
     worker, declaration, fields = nudger.sent[0]
-    assert (worker, declaration, fields) == (WORKER, UPDATE_ORDERED, {"count": 4, "files": "src/cart.py, src/tax.py"})
+    assert (worker, declaration, fields) == (WORKER, UPDATE_ORDERED, {"count": 4})
     assert "Run journal worker update when you are at a stopping point." in UPDATE_ORDERED.nudge(**fields).text
 
 
