@@ -1,4 +1,5 @@
 import subprocess
+from engine.agent.agent_checkouts import AgentCheckouts
 from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.module.module_actors import ModuleActors
@@ -14,11 +15,11 @@ from core.modules.triggers.models.support.trigger_extra_action import TriggerExt
 class TriggerActionProcess:
     """Starts a trigger action through the journal runner in its chosen folder."""
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, runner: RunnerBinary) -> None:
-        self.bus, self.actors, self.queries, self.runner = bus, actors, queries, runner
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, runner: RunnerBinary, checkouts: AgentCheckouts) -> None:
+        self.bus, self.actors, self.queries, self.runner, self.checkouts = bus, actors, queries, runner, checkouts
 
     def start(self, action: TriggerExtraAction, event: LoggedEvent) -> None:
         agent = self.queries.query(Agent).find(event.actor_id)
         process = self.bus.run(StartTriggerAction(event.row_id, agent.id, action), self.actors.actor("journal.core.triggers"), cause_id=event.id, environment_id=agent.environment_id)
-        line = RunnerLine.build(self.runner.path, process.id, ForegroundRun(0, True), process.line, agent.session)
+        line = RunnerLine.build(self.runner.path, process.id, ForegroundRun(0, True), process.line, agent.session, self.checkouts.checkout(agent.id))
         subprocess.Popen(["sh", "-c", line], cwd=process.folder, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
