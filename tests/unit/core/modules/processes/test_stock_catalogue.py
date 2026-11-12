@@ -1,5 +1,3 @@
-import pytest
-
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.stock_reader import STOCK_READERS
 from core.modules.processes.support.streaming_hints import STREAMING_HINTS
@@ -24,33 +22,29 @@ TOOLS_WITHOUT_STOCK_READER = {
     "*python*": "any Python program: there is no one output a reader could know",
 }
 SAMPLES_STILL_MISSING = (
-    "pytest", "vitest", "dotnet-test", "phpunit", "cargo-nextest", "go-build", "go-vet", "make", "gcc", "cmake", "ruby-minitest", "rspec", "mix-test", "bun-test",
-    "swift-test", "swift-build", "dotnet-build", "maven", "gradle", "webpack", "php-lint", "mypy", "ruff", "prove", "zig-test", "crystal-spec", "ginkgo",
-    "meson-test", "deno-test", "dart-test", "flutter-test", "dune-test", "cabal-test", "scala-cli-test", "sbt-test", "ng-test", "pio-test", "hatch-test", "tox",
-    "nox", "dbt-test", "dbt", "cabal-build", "stack-build", "sbt-build", "ng-build", "hatch-build", "buck2-build", "pants-package", "pio-run", "turbo", "nx",
-    "moon", "packer", "terraform", "curl", "wget", "docker-pull", "composer-install", "bundle-install", "gem-install", "uv-install", "yarn-install",
-    "pnpm-install", "brew-install", "git-clone", "ctest", "bazel-test",
+    "go-build", "go-vet", "make", "gcc", "cmake", "swift-build", "dotnet-build", "maven", "gradle", "webpack", "php-lint", "mypy", "ruff", "dbt",
+    "cabal-build", "stack-build", "sbt-build", "ng-build", "hatch-build", "buck2-build", "pants-package", "pio-run", "turbo", "nx", "moon", "packer",
+    "terraform", "curl", "wget", "docker-pull", "composer-install", "bundle-install", "gem-install", "uv-install", "yarn-install", "pnpm-install",
+    "brew-install", "git-clone",
 )
 HINT_PATTERNS = tuple(pattern for patterns, _ in STREAMING_HINTS for pattern in patterns.split(","))
 
 
-@pytest.mark.parametrize("reader", STOCK_READERS, ids=[reader.name for reader in STOCK_READERS])
-def test_every_stock_reader_has_a_recorded_sample_or_is_listed_as_missing(reader):
+def test_every_stock_reader_has_a_recorded_sample_or_is_listed_as_missing():
     names = {sample.name for sample in STOCK_SAMPLES}
-    assert (reader.name in names) != (reader.name in SAMPLES_STILL_MISSING)
+    assert [reader.name for reader in STOCK_READERS if (reader.name in names) == (reader.name in SAMPLES_STILL_MISSING)] == []
 
 
 def test_the_list_of_missing_samples_names_only_stock_readers():
     assert set(SAMPLES_STILL_MISSING) <= {reader.name for reader in STOCK_READERS} and len(SAMPLES_STILL_MISSING) == len(set(SAMPLES_STILL_MISSING))
 
 
-@pytest.mark.parametrize("sample", STOCK_SAMPLES, ids=[sample.name for sample in STOCK_SAMPLES])
-def test_every_sample_says_where_its_output_came_from_and_has_a_stock_reader(sample):
-    assert sample.source.strip() and sample.output.strip() and sample.name in {reader.name for reader in STOCK_READERS}
+def test_every_sample_says_where_its_output_came_from_and_has_a_stock_reader():
+    readers = {reader.name for reader in STOCK_READERS}
+    assert [sample.name for sample in STOCK_SAMPLES if not (sample.source.strip() and sample.output.strip() and sample.name in readers)] == []
 
 
-@pytest.mark.parametrize("pattern", HINT_PATTERNS)
-def test_every_tool_with_a_streaming_hint_has_a_stock_reader_or_says_why_not(pattern):
-    example = HINT_EXAMPLES[pattern]
-    has_reader = any(ReaderSelection.matches(reader.commands, example) for reader in STOCK_READERS)
-    assert has_reader != (pattern in TOOLS_WITHOUT_STOCK_READER), example
+def test_every_tool_with_a_streaming_hint_has_a_stock_reader_or_says_why_not():
+    wrong = [pattern for pattern in HINT_PATTERNS
+             if any(ReaderSelection.matches(reader.commands, HINT_EXAMPLES[pattern]) for reader in STOCK_READERS) == (pattern in TOOLS_WITHOUT_STOCK_READER)]
+    assert wrong == []
