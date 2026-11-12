@@ -7,7 +7,7 @@ from engine.driver.shell_line import ShellLine
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.processes.models.enums.reading_moment import ReadingMoment
 from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
-from core.modules.processes.support.decisions.escalation_counter import EscalationCounter
+from core.modules.processes.support.decisions.command_run_counts import CommandRunCounts
 from core.modules.processes.support.decisions.reading_decider import PREVENT_AFTER_RUNS
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_nudges import REDIRECTED_RUN, READING_PREVENTED, SILENT_START_FIXED, SILENT_START_READY, SILENT_START_REFUSED, SILENT_START_TAUGHT
@@ -33,8 +33,8 @@ class ReadingEnforcer:
     that ended twice without a good reader is refused its next start with every exit stated. A command marked
     unreadable is asked nothing, and a command that takes an exit always passes."""
 
-    def __init__(self, runs: SilentStartRuns, folder: OutputFolder, readers: ReaderRows, marks: UnreadableMarks, counter: EscalationCounter, decisions: ReadingDecisionQuery) -> None:
-        self.runs, self.folder, self.readers, self.marks, self.counter, self.decisions = runs, folder, readers, marks, counter, decisions
+    def __init__(self, runs: SilentStartRuns, folder: OutputFolder, readers: ReaderRows, marks: UnreadableMarks, run_counts: CommandRunCounts, decisions: ReadingDecisionQuery) -> None:
+        self.runs, self.folder, self.readers, self.marks, self.run_counts, self.decisions = runs, folder, readers, marks, run_counts, decisions
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
@@ -69,7 +69,7 @@ class ReadingEnforcer:
             return RuleAnswer.with_nudges(self.taught(name, runs[0]))
         if len(runs) > 1 and runs[0].shows_percent and runs[1].is_silent:
             return RuleAnswer.with_nudges(SILENT_START_FIXED.nudge(name=name))
-        if self.counter.runs_without_change([name])[name] >= PREVENT_AFTER_RUNS:
+        if self.run_counts.runs_without_reader([name])[name] >= PREVENT_AFTER_RUNS:
             return self.prevented(name)
         return RuleAnswer.allowed()
 

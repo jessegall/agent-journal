@@ -10,4 +10,5 @@ class CommandRunCountsMigration(Migration):
     statements = (
         "CREATE TABLE command_run_counts (id INTEGER PRIMARY KEY, command_key TEXT NOT NULL UNIQUE,"
         " runs_without_reader INTEGER NOT NULL DEFAULT 0 CHECK (runs_without_reader >= 0)," + COMMON + ") STRICT",
+        "CREATE INDEX command_run_counts_counting ON command_run_counts(runs_without_reader)",
     )
