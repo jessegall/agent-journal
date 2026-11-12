@@ -14,6 +14,7 @@ from core.modules.drivers.support.driver_settings import DAYS_SETTING
 
 BATCH_ROWS = 500
 MOST_BATCHES = 20
+FREED_PAGES = 5000
 
 
 class HookPruning:
@@ -30,5 +31,6 @@ class HookPruning:
             if next_id == last_id:
                 break
             last_id = next_id
+        database.release_free_pages(FREED_PAGES)
         container.get(Bus).run(PruneTempFolders(), Actor.core())
         container.get(Bus).run(PruneRuntimeFolders(), Actor.core())

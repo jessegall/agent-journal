@@ -7,6 +7,8 @@ from engine.setting.setting_values import SettingValues
 from engine.time.clock import Clock
 from core.modules.drivers.commands.prune_events.prune_events_handler import WINDOW_IDS, PruneEventsHandler
 
+FREED_PAGES = 200
+
 
 class EventPruning:
     """Every few seconds one small window of event ids is pruned in a short write of its own, going on from where
@@ -22,3 +24,4 @@ class EventPruning:
             self.after_id = log.oldest_id() - 1
         with container.get(Database).transaction():
             _, self.after_id = log.prune(handler.expiring_tables(), handler.cutoff(container.get(Clock).timestamp()), self.after_id, WINDOW_IDS)
+        container.get(Database).release_free_pages(FREED_PAGES)
