@@ -7,7 +7,6 @@ from engine.caller.caller_request import CallerRequest
 from engine.cli.alias_options import AliasOptions
 from engine.cli.shell_aliases import ShellAliases
 from engine.checkout.checkout import Checkout
-from engine.enums.checkout_type import CheckoutType
 from engine.cli.shell_run import ShellRun
 from engine.journal.journal_home import JournalHome
 from core.modules.aliases.models.alias import Alias
@@ -21,8 +20,8 @@ JOURNAL_FOLDER_PREFIX = ".journal/"
 
 class AliasShellAliases(ShellAliases):
     """Expands aliases with quoted arguments, declared access and paths from the journal folder, runs an agent
-    that works in its own worktree in that worktree, and tells the command which checkout it runs in, so it
-    needs no git call to learn its root, branch or base. A plugin's alias also gets the environment's name
+    that works in a separate copy of the project in that copy, and tells the command which checkout it runs in, so it
+    needs no version control call to learn its root, branch or base. A plugin's alias also gets the environment's name
     and settings file."""
 
     def __init__(self, aliases: AliasQuery, access: AliasAccess, names: AliasNames, home: JournalHome, checkouts: AgentCheckouts, plugin_variables: PluginAliasVariables) -> None:
@@ -35,7 +34,7 @@ class AliasShellAliases(ShellAliases):
             return None
         self.access.check(alias, caller)
         checkout = self.caller_checkout(caller)
-        folder = str(checkout.root) if checkout.checkout_type is CheckoutType.WORKTREE and checkout.exists else request.folder
+        folder = str(checkout.root) if checkout.checkout_type.is_separate_copy and checkout.exists else request.folder
         return ShellRun(self.resolved_line(alias.shell_line(argv[1:])), {**request.variables, **checkout.variables(), **self.plugin_values(alias, caller), **alias.variable_values()}, folder)
 
     def plugin_values(self, alias: Alias, caller: Caller) -> dict[str, str]:

@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -16,6 +16,7 @@ class ExecutionRequest:
     limit_seconds: float
     title: str = ""
     stdin: str | None = None
+    variables: Mapping[str, str] | None = None
 
     @property
     def text(self) -> str:

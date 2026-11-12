@@ -16,8 +16,11 @@ class ReadingDecisions:
     def __init__(self, decisions: ReadingDecisionQuery, repository: Repository) -> None:
         self.decisions, self.repository = decisions, repository
 
-    def store(self, process: Process, part: ProcessPart, moment: ReadingMoment, decision: ReadingDecision, context: Context) -> ReadingDecisionRow:
-        stored = self.decisions.for_process(process.id).filter(part_position=part.position, moment=moment).first()
+    def kept(self, process: Process, moment: ReadingMoment) -> dict[int, ReadingDecisionRow]:
+        """The kept decision of each part of a run at one moment, by the part's position, in one read."""
+        return {row.part_position: row for row in self.decisions.for_process(process.id).filter(moment=moment).all_rows()}
+
+    def store(self, process: Process, part: ProcessPart, moment: ReadingMoment, decision: ReadingDecision, stored: ReadingDecisionRow | None, context: Context) -> ReadingDecisionRow:
         values = {"state": decision.state, "action": decision.action, "level": decision.level, "reason": decision.reason, "decided_at": context.timestamp}
         if stored is not None:
             return self.repository.update(stored, context, **values)

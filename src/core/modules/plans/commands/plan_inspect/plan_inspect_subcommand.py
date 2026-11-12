@@ -5,6 +5,7 @@ from engine.query.queries import Queries
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
+from core.modules.plans.models.plan_progress import PlanProgress
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.plan_assignee import PlanAssignee
 from core.modules.plans.support.plan_inspection import PlanInspection
@@ -30,8 +31,9 @@ class PlanInspectSubcommand(ReadSubcommand[PlanInspection]):
         assignee_id = PlanAssignee.agent_id(plan)
         assignee = self.queries.query(Agent).find(assignee_id) if assignee_id is not None else None
         blocker_ids = tuple(wait.blocker_id for wait in self.waits.open_waits(plan.id))
-        return PlanInspection(plan, self.outlines.outline(arguments.plan_id), assignee, blocker_ids)
+        return PlanInspection(plan, self.outlines.outline(arguments.plan_id), assignee, blocker_ids, self.queries.query(PlanProgress).find(plan.id).complexity)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PlanInspection):
-            output.write(f"plan {value.plan.id}: {value.plan.title}, {len(value.outline.phases)} phases", value.json())
+            complexity = "" if value.complexity is None else f", complexity {value.complexity}"
+            output.write(f"plan {value.plan.id}: {value.plan.title}, {len(value.outline.phases)} phases{complexity}", value.json())

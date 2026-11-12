@@ -11,7 +11,7 @@ UNCHOOSABLE = (CommandCategory.UNKNOWN, CommandCategory.JOURNAL)
 @dataclass(frozen=True, kw_only=True)
 class CommandType(Model):
     """The type an agent gave a command the journal could not classify, by the command's leading words, such as
-    scripts/dev go test as a test run; every later command starting with those words is of that type."""
+    scripts/dev go test as a long-running type; every later command starting with those words is of that type."""
 
     model_name = "command_type"
     cli_name = "command-type"
@@ -24,4 +24,4 @@ class CommandType(Model):
         if not shlex.split(self.words):
             raise Refusal("a command type is the command's leading words", "name its program and first arguments")
         if self.category in UNCHOOSABLE:
-            raise Refusal(f"a command is not classified as {self.category.value}", "choose the type it is, such as test run, build or check")
+            raise Refusal(f"a command is not classified as {self.category.value}", "choose the type it is: journal command-type make --help lists the types")

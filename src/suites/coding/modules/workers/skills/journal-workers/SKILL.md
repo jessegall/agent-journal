@@ -28,6 +28,11 @@ stays kept on the same agent number and session until retired.
 - `journal worker dispatch <task> [<task> ...] --tier general` starts a worker on the tasks; `--profile` is a checked worker profile, journal-worker by default, whose text the worker starts from. `--tier fast|general|strongest` chooses the model of the selected program; with no tier, the profile chooses it. `--model <model>` names one exact model (`--name` shows on its card). It starts its tasks itself, several at once if it likes, and commits them as it proves them, with no report in
   between; outside a plan the journal runs the tests of each commit and tells you when the last passes. `--library-link <folder>` links a folder such as
   `.venv` into its worktree and `--library-copy <folder>` copies it. `--program <program>` names the agent program.
+- Each dispatched worker gets the test commands the journal finds in the project's manifests (package.json, pyproject.toml,
+  go.mod, composer.json, Cargo.toml and the like, never in a library folder), read again at every dispatch, with a person's
+  `preset-test-commands` setting in place of a found one of the same name. `journal worker presets` lists the manifests,
+  their languages and those commands. Add `--test-command <name>=<command>` only for a command they lack; with none found
+  or preset, an agent's dispatch names at least one.
 - `journal worker dispatch --plan <plan> [--phase <phase>] --tier strongest` hands a worker the available tasks of an approved or
   started plan, or of one phase of it, in the plan's order. Use `journal worker send <number> --plan <plan> [--phase <phase>]`
   to give the same work to a kept worker. The plan is assigned to the worker and shows so on the plan and on the agent. The worker works it to its end, asks for the merge itself with `journal worker ask-merge`, and you hear from it at the merge. A dispatch or send of several tasks is one unit in the same way.
@@ -190,6 +195,8 @@ An open question lets you stop; the answer wakes you. Going on with other work e
   and a failure comes back to you first: fix it before you go on. You may go on working meanwhile: your later edits do not change the result.
 - When a test fails, its task is yours again and its proof is short: fix it, show the proof again with
   `journal proof make` and commit again. Only what failed runs again.
+- Your test commands are those the journal found in the project's manifests and the ones your dispatch named;
+  `journal worker presets` lists the found ones. For a command you lack, ask with `journal worker ask --about tests`.
 - Run a test yourself only if you really need it. Each worker has three test commands between two commits by default,
   set by `worker-phase-test-runs`. Each counted command says how many remain. A fourth is refused; only then ask with
   `journal worker ask --about tests`. A granted line runs with `journal helper run` and does not use the allowance. The

@@ -6,7 +6,7 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.query.conditions.greater import Greater
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.processes.support.process_nudges import FAILED_FULL_RUN
+from suites.coding.support.coding_nudges import FAILED_FULL_RUN
 
 
 class FailedFullRunRule(DriverRule):

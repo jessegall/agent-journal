@@ -500,3 +500,15 @@ def test_a_worker_the_merger_passes_on_is_named_to_the_main_agent_with_its_merge
     story.advance(timedelta(minutes=15))
     story.tick("s-1")
     story.expect_rows(story.run(main_lines).output_text.count(f"worker:{agent_number(story, worker.id)} delivered") > first)
+
+
+def test_the_merger_started_by_an_ended_main_session_tells_the_main_agent_that_runs_now(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    merger = Actor(story.new_row_id(f"agent start s-merger claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
+    story.expect_success(f"agent end {story.agent.id}", actor=story.user)
+    running_main = Actor(story.new_row_id("agent start s-new-main claude main --environment main"), ActorType.AGENT)
+    story.expect_success('merger tell "Worker 4 asks which reader to keep" --tried "Read the brief" --option "The first" --option "The second" --recommend "The first"', actor=merger)
+    message = story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).first()
+    line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=running_main.id).newest().first()
+    story.expect_rows(message is not None, line is not None and f"in message:{message.id}" in line.text, detail=str(line))
+    story.expect_text(f"message read {message.id}", "Worker 4 asks which reader to keep", actor=running_main)

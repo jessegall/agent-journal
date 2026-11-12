@@ -1,5 +1,5 @@
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 
 from engine.driver.interval import Interval
 from engine.driver.nudge import Nudge
@@ -16,7 +16,8 @@ CUT_END_CHARACTERS = 60
 
 @dataclass(frozen=True)
 class NudgeDeclaration:
-    """An agent message template with delivery rules and text limits; declared path fields stay whole."""
+    """An agent message template with delivery rules and text limits; declared path fields stay whole. A text per
+    agent role, where one is declared, takes the place of the default text for an agent of that role."""
 
     key: str
     type: NudgeType
@@ -30,6 +31,7 @@ class NudgeDeclaration:
     repeats_without_hook: bool = False
     id_field: str | None = None
     full_text: bool = False
+    role_texts: Mapping[str, str] = field(default_factory=dict[str, str])
 
     @property
     def limit(self) -> int:

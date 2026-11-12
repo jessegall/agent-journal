@@ -11,7 +11,7 @@ from core.modules.aliases.models.alias import Alias
 
 class AddAliasSubcommand(Subcommand[AddAlias, Alias]):
     """`journal alias add <name> "<line>" [--reader <name>] [--about <text>] [--env NAME=value ...]
-    [--background] [--agents] [--category "test run"]`."""
+    [--background] [--agents] [--category <command type>]`."""
 
     cli_name = "alias"
     name = "add"

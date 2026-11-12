@@ -10,20 +10,20 @@ from tests.stories.core.support.fixtures import MainEnvironment
 
 def test_membership_in_an_unknown_suite_is_refused(new_story):
     story = new_story(fixture=MainEnvironment)
-    story.expect_sync_refusal(f"{PATH}:UnknownSuiteModule",
+    story.expect_sync_refusal(f"{PATH}:UnknownSuiteModuleJoining",
                              "module acme.unknown is part of suite absent: install the module that ships it first")
 
 
 def test_a_member_must_depend_on_the_module_that_ships_its_suite(new_story):
     story = new_story(fixture=MainEnvironment)
-    story.expect_sync_refusal(f"{PATH}:MissingDependencyModule",
+    story.expect_sync_refusal(f"{PATH}:MissingDependencyModuleJoining",
                              "module acme.independent is part of suite coding of module journal.suites.coding, "
                              "which it does not depend on")
 
 
 def test_the_registry_keeps_joined_and_shipped_suites(new_story):
-    story = new_story(f"{PATH}:SuiteModule", fixture=MainEnvironment)
-    story.expect_sync_success(f"{PATH}:MemberModule")
+    story = new_story(f"{PATH}:SuiteModuleJoining", f"{PATH}:AcmeSuiteOfSuiteModule", fixture=MainEnvironment)
+    story.expect_sync_success(f"{PATH}:MemberModuleJoining")
     registry = Registry.read(story.container.get(Database))
     story.expect_rows(registry.module_suites["acme.suite"] == ("coding", "acme"),
                       registry.module_suites["acme.member"] == tuple(["acme"]),
@@ -34,7 +34,7 @@ def test_the_registry_keeps_joined_and_shipped_suites(new_story):
 
 
 def test_a_suite_module_cannot_be_removed_while_another_module_names_it_as_parent(new_story):
-    story = new_story(f"{PATH}:SuiteModule", f"{PATH}:MemberModule", fixture=MainEnvironment)
+    story = new_story(f"{PATH}:SuiteModuleJoining", f"{PATH}:AcmeSuiteOfSuiteModule", f"{PATH}:MemberModuleJoining", fixture=MainEnvironment)
     database = story.container.get(Database)
     listed = story.home.module_list.read_text()
     stored_rows = tuple(database.connection.iterdump())

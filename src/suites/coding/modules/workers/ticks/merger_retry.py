@@ -12,6 +12,7 @@ from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.commands.return_unhandled_merger_lines.return_unhandled_merger_lines import ReturnUnhandledMergerLines
+from suites.coding.modules.workers.commands.close_taken_in_worktree.close_taken_in_worktree import CloseTakenInWorktree
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.models.merger_line import MergerLine
@@ -25,7 +26,8 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 class MergerRetry:
     """Wakes an idle merger when the next worker can be merged or a line waits unread for it. A merger whose
-    program is at a usage limit is left alone until the limit ends."""
+    program is at a usage limit is left alone until the limit ends. A worker whose branch has no commit ahead of
+    its base is closed as merged without the merger."""
 
     def __call__(self, container: Container) -> None:
         worktrees = container.get(WorktreeQuery).all_worktrees()
@@ -70,6 +72,8 @@ class MergerRetry:
         return bool(program) and container.get(ProgramLockdown).lockdown(program).is_active
 
     def retry(self, container: Container, worktree: Worktree) -> None:
+        if container.get(SettingValues).flag(MERGER_ENABLED) and container.get(Bus).run(CloseTakenInWorktree(worktree.id), Actor.core(), environment_id=worktree.environment_id):
+            return
         if not self.is_merger_idle(container):
             return
         environment = container.get(EnvironmentRows).find(worktree.environment_id)

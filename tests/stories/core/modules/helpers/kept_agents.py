@@ -2,6 +2,7 @@ from engine.enums.occupant import Occupant
 from tests.stories.core.support.agent_labels import agent_number
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
+from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from engine.sandbox.shell_sandbox import ShellSandbox
@@ -317,3 +318,17 @@ def test_the_agent_mix_counts_the_jobs_and_the_idle_agents_of_each_model(new_sto
     story = new_story(fixture=ReportedHelper)
     helper = helper_agent(story)
     story.expect_text("agent mix", f"journal-researcher, {helper.program_model}: jobs 1, kept 1, idle", actor=story.agent)
+
+
+def test_an_idle_helper_on_another_model_is_not_reused_and_a_start_on_its_own_model_is(new_story, monkeypatch):
+    story = new_story(fixture=EndedHelper)
+    helper = helper_agent(story)
+    resumable_session(story, helper, monkeypatch)
+    other_model = "opus" if helper.program_model != "opus" else "sonnet"
+    launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"started 703\n", request_count=2)
+    story.expect_refusal(f'helper start journal-researcher --model {helper.program_model} --brief "Read src/queue.py" --environment main', f"helper {agent_number(story, helper.id)} is idle", actor=story.agent)
+    started = story.new_row_id(f'helper start journal-researcher --model {other_model} --brief "Read src/tax.py" --environment main', actor=story.agent)
+    launcher.drain_requests()
+    launcher.server.close()
+    story.home.socket("launcher").unlink()
+    story.expect_rows(started != helper.id, story.row(Agent, started).program_model == other_model, detail=f"{started} {helper.id}")

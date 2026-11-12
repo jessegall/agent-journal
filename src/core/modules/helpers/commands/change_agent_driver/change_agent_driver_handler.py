@@ -16,7 +16,7 @@ from core.modules.helpers.support.program_change_access import ProgramChangeAcce
 
 class ChangeAgentDriverHandler(Handler[ChangeAgentDriver, Agent]):
     """Gives a stopped agent a new session on the program and model named, when its profile allows the model.
-    The session it had is closed in its history as a driver change; its number, memories, tasks, worktree and
+    The session it had is closed in its history as a driver change; its number, memories, tasks, checkout and
     limits stay, and its next job or launch starts the new program."""
 
     command = ChangeAgentDriver

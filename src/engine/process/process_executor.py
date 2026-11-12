@@ -18,7 +18,7 @@ class ProcessExecutor:
 
     def execute(self, request: ExecutionRequest) -> Execution:
         placed = self.placement.placed(request)
-        self.gate.opened()
+        self.gate.opened(self.placement, placed)
         try:
             execution = self.runner.run(placed, self.placement)
         except RunTimeLimitError as error:

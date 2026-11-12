@@ -18,4 +18,7 @@ UNFINISHED_TASKS = NudgeDeclaration("coding.unfinished_tasks", NudgeType.REFUSAL
 INTRODUCTION_NUDGE = NudgeDeclaration("coding.introduce_yourself", NudgeType.STEERING, "introduce yourself in the chat in one or two lines, then ask what to do unless the user has already asked")
 WAITING_ITEMS = NudgeDeclaration("coding.waiting_items", NudgeType.STEERING, "waiting for you: {items}")
 WORKER_FULL_TEST_RUN = NudgeDeclaration("coding.worker_full_test_run", NudgeType.REFUSAL, 'a worker runs only the tests of what it changed, never the whole suite: name the test files. ' + AskTopic.TOOL.question_line(), turn_limited=False, full_text=True)
-CODING_NUDGES = [WORKER_FULL_TEST_RUN, INTRODUCTION_NUDGE, WAITING_ITEMS, WORKER_TASK_STARTED, WORKER_TASK_UNSTARTED, WORKER_GIT_BAN, WORKER_COMMAND_TYPE, MAIN_HELPER_BAN, MAIN_CODE_EDIT_REFUSED, TASK_ASSIGNMENT, OPEN_TASKS_WAIT, FREE_WORKER_PLACE, UNFINISHED_TASKS]
+GIT_RESTRICTION = NudgeDeclaration("drivers.no_git", NudgeType.SAFETY_REFUSAL, "this driver runs no git commands")
+FULL_TEST_RESTRICTION = NudgeDeclaration("drivers.no_full_test_run", NudgeType.SAFETY_REFUSAL, "run the tests of the changed files; name the test files instead of running the whole suite", turn_limited=False)
+FAILED_FULL_RUN = NudgeDeclaration("processes.failed_full_run", NudgeType.REFUSAL, "your last full test run failed: re-run the failed tests by name first", turn_limited=False)
+CODING_NUDGES = [GIT_RESTRICTION, FULL_TEST_RESTRICTION, FAILED_FULL_RUN, WORKER_FULL_TEST_RUN, INTRODUCTION_NUDGE, WAITING_ITEMS, WORKER_TASK_STARTED, WORKER_TASK_UNSTARTED, WORKER_GIT_BAN, WORKER_COMMAND_TYPE, MAIN_HELPER_BAN, MAIN_CODE_EDIT_REFUSED, TASK_ASSIGNMENT, OPEN_TASKS_WAIT, FREE_WORKER_PLACE, UNFINISHED_TASKS]

@@ -167,11 +167,8 @@ func SaveAnswers(home string, answers map[string]string) error {
 	return os.WriteFile(AnswersFile(home), content, 0o600)
 }
 
-// ProgramCommand is the command line that starts the program on the choice, as the program's provider in the
-// journal builds it: its conversation, its prompts, its launch name and the arguments the person gave. Each argument
-// is one line of the answer, so one holding a space stays whole.
-// ProgramCommand is the command line that starts an agent program, and the variables its launch must carry, such as
-// the journal's own CODEX_HOME.
+// ProgramCommand is the command line that starts an agent program, as the program's provider in the journal builds
+// it, and the variables its launch must carry, such as the journal's own CODEX_HOME.
 type ProgramCommand struct {
 	Arguments []string          `json:"arguments"`
 	Variables map[string]string `json:"variables"`

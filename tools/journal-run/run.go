@@ -160,13 +160,18 @@ func StartCutting(options Options, parts int) {
 	_ = command.Start()
 }
 
-// ScanFiles leaves the hook program behind to look for the files the line changed, which no tool call waits for.
+// ScanFiles leaves the hook program behind to look for the files the line changed, which no tool call waits for; a
+// first scan of the project counts each file modified since the line's script was written.
 func ScanFiles(options Options) {
 	folder, err := os.Getwd()
 	if err != nil {
 		return
 	}
-	command := exec.Command(filepath.Join(options.Home, "bin", "journal-hook"), "--file-scan", options.Home, "--process", strconv.Itoa(options.Process), folder)
+	arguments := []string{"--file-scan", options.Home, "--process", strconv.Itoa(options.Process), folder}
+	if facts, err := os.Stat(NewFolder(options.Home, options.Process).Script()); err == nil {
+		arguments = append(arguments, strconv.FormatInt(facts.ModTime().UnixNano(), 10))
+	}
+	command := exec.Command(filepath.Join(options.Home, "bin", "journal-hook"), arguments...)
 	command.Env = journalEnvironment(options.Home)
 	command.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 	_ = command.Start()

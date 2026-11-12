@@ -11,6 +11,10 @@ import shutil
 from pathlib import Path, PurePosixPath
 
 from engine.file.conflict_files import ConflictFiles
+from engine.enums.process_kind import ProcessKind
+from engine.errors.run_time_limit_error import RunTimeLimitError
+from engine.process.execution_request import ExecutionRequest
+from engine.process.process_executor import ProcessExecutor
 from engine.instruction.instruction_imports import INSTRUCTION_FILES
 from engine.errors.refusal import Refusal
 from core.modules.environments.models.environment import Environment
@@ -57,8 +61,8 @@ class WorktreeGit:
     a drop. Tests run in a detached checkout of their own, of a worktree's commit or of the head of the
     environment's branch, so no checkout anybody works in is moved."""
 
-    def __init__(self, runs: WorkerFolderRuns) -> None:
-        self.runs = runs
+    def __init__(self, runs: WorkerFolderRuns, executor: ProcessExecutor) -> None:
+        self.runs, self.executor = runs, executor
 
     def tip(self, folder: str, branch: str) -> str:
         revision = self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}")
@@ -262,10 +266,10 @@ class WorktreeGit:
         if linked:
             modules.symlink_to(base_modules.resolve(), target_is_directory=True)
         try:
-            finished = subprocess.run(["npm", "run", "build"], cwd=viewer, capture_output=True, text=True, timeout=BUILD_LIMIT_SECONDS, check=False)
-            if finished.returncode != 0:
+            finished = self.executor.execute(ExecutionRequest(["npm", "run", "build"], viewer, ProcessKind.SHELL, BUILD_LIMIT_SECONDS))
+            if not finished.succeeded:
                 raise Refusal("the web build failed", (finished.stderr or finished.stdout).strip())
-        except subprocess.TimeoutExpired as timeout:
+        except RunTimeLimitError as timeout:
             raise Refusal("the web build exceeded its time limit", "fix the build in the worker's worktree, then merge again") from timeout
         finally:
             if linked:
@@ -540,7 +544,10 @@ class WorktreeGit:
         return finished
 
     def git(self, folder: str, limit_seconds: int, *arguments: str) -> subprocess.CompletedProcess[str]:
+        line = ["git", "-C", folder, *arguments]
+        kind = ProcessKind.QUICK if limit_seconds <= GIT_LIMIT_SECONDS else ProcessKind.MERGE
         try:
-            return subprocess.run(["git", "-C", folder, *arguments], capture_output=True, text=True, timeout=limit_seconds, check=False)
-        except subprocess.TimeoutExpired as timeout:
+            done = self.executor.execute(ExecutionRequest(line, Path(folder), kind, limit_seconds))
+            return subprocess.CompletedProcess(line, done.exit_code, done.stdout, done.stderr)
+        except RunTimeLimitError as timeout:
             raise Refusal(f"git {' '.join(arguments[:2])} took longer than {limit_seconds} seconds in {folder}", "run it again once the folder is free") from timeout

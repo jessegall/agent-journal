@@ -1,5 +1,5 @@
 from suites.coding.support.coding_nudges import WORKER_GIT_BAN
-from core.modules.drivers.rules.no_git_rule import NoGitRule
+from suites.coding.rules.no_git_rule import NoGitRule
 
 
 class WorkerGitRule(NoGitRule):

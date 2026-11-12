@@ -18,7 +18,7 @@ class Alias(Model):
     """A word of the project's own for a shell line: `journal <name> [args]` runs the line with the arguments
     in place of {args}, or after it, with its variables set; its reader reads the output, and a background
     one moves to the background at once, and one with a category is held to the turn of that type of
-    command, such as the test run. A saved command whose run printed nothing for 30 seconds is silent_at
+    command, such as a long-running type. A saved command whose run printed nothing for 30 seconds is silent_at
     that moment and held: its next run is refused until its line is edited (fixed_at), and the mark clears
     when a run of the edited line prints."""
 

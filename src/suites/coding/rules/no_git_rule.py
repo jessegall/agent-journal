@@ -1,5 +1,5 @@
 from core.modules.drivers.rules.denied_programs_rule import DeniedProgramsRule
-from core.modules.drivers.support.access_nudges import GIT_RESTRICTION
+from suites.coding.support.coding_nudges import GIT_RESTRICTION
 
 
 class NoGitRule(DeniedProgramsRule):

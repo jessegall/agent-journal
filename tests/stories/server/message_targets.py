@@ -72,7 +72,7 @@ def targeted_chat(new_story, monkeypatch):
 def end_turn(story, agent):
     row = story.row(Agent, agent.id)
     if row.role == "worker":
-        story.expect_success(f"agent interrupted {agent.id}")
+        story.hook(row.session, HookSamples.edit("cart.py").with_fields(event="post_tool_use_failure").with_raw({"is_interrupt": True}))
         return
     story.expect_hook_allowed(row.session, HookSamples.stop())
 

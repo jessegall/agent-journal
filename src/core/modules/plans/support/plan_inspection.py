@@ -13,12 +13,14 @@ from core.modules.plans.support.plan_outline import PlanOutline
 @dataclass(frozen=True)
 class PlanInspection:
     """What the plan inspector draws: the plan, its phases and tasks, how far it has come and the phase it is
-    in, a line on how each checkpoint stands, and the plans it waits on while blocked."""
+    in, a line on how each checkpoint stands, the plans it waits on while blocked, and the average complexity of
+    its scored tasks."""
 
     plan: Plan
     outline: PlanOutline
     assignee: Agent | None = None
     blocker_ids: tuple[int, ...] = ()
+    complexity: float | None = None
 
     def current_phase(self) -> int:
         if self.plan.state != PlanState.STARTED:
@@ -37,4 +39,4 @@ class PlanInspection:
         return {"id": self.plan.id, "title": self.plan.title, "brief": self.plan.brief, "state": self.plan.state.value, "reason": self.plan.reason,
                 "total": len(tasks), "finished": sum(task.is_closed() for task in tasks), "current_phase": self.current_phase(), "document_id": self.plan.document_id,
                 "assignee": self.assignee_json(), "blocker_ids": list(self.blocker_ids), "delegated": bool(agents), "agents": [agent.json() for agent in agents], "phases": [phase.json() for phase in self.outline.phases],
-                "checkpoint_lines": list(self.outline.checkpoint_lines)}
+                "checkpoint_lines": list(self.outline.checkpoint_lines), "complexity": self.complexity}

@@ -16,7 +16,6 @@ from engine.database.migration import Migration
 from engine.driver.driver import Driver
 from engine.driver.driver_rule import DriverRule
 from engine.driver.overlay import Overlay
-from engine.module.suite import Suite
 from engine.guard.guard import Guard
 from engine.listener.commit.commit_listener import CommitListener
 from engine.listener.deletion_listener import DeletionListener
@@ -59,7 +58,6 @@ class Module:
     requires_core: ClassVar[str]
     dependencies: ClassVar[list[str]] = []
     step_conditions: ClassVar[list[type[StepCondition]]] = []
-    parent_suite: ClassVar[str | None] = None
     models: ClassVar[list[ModelDeclaration]] = []
     migrations: ClassVar[list[type[Migration]]] = []
     views: ClassVar[list[type[ViewModel]]] = []
@@ -72,7 +70,6 @@ class Module:
     declared_plugin_events: ClassVar[list[str]] = []
     removal: ClassVar[type[Migration] | None] = None
     bindings: ClassVar[dict[type, type]] = {}
-    suites: ClassVar[list[type[Suite]]] = []
     drivers: ClassVar[list[type[Driver]]] = []
     overlays: ClassVar[list[type[Overlay]]] = []
     driver_rules: ClassVar[list[type[DriverRule]]] = []

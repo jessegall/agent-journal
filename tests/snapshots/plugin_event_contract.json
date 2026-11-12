@@ -9484,6 +9484,47 @@
       "tests_passed_at"
     ]
   },
+  "suites.coding.workers.worker_worktree.review_logs_cut": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "commit_count",
+      "commit_short_id",
+      "commit_task_ids",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "libraries_dropped_at",
+      "library_copies",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merge_ready_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "returned_at",
+      "route_reason",
+      "session_agent_id",
+      "starts_program",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
   "suites.coding.workers.worker_worktree.rework": {
     "forms": [
       "commit",

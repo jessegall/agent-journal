@@ -46,6 +46,6 @@ def test_an_unregistered_role_cannot_start(new_story):
 
 def test_a_suite_registers_a_helper_type_through_the_module_funnel(new_story):
     story = new_story(fixture=MainEnvironment)
-    story.expect_sync_success(f"{MODULES}:SuiteRegistersHelperType")
+    story.expect_sync_success(f"{MODULES}:HelperTypeSuiteOfSuiteRegistersHelperType")
     book = story.container.get(HelperTypeBook)
     story.expect_rows(book.find("suite-clerk").module == "sample.clerk", book.is_helper("suite-clerk"))
