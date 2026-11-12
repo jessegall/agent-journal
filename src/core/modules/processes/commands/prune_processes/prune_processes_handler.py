@@ -9,6 +9,7 @@ from core.modules.processes.support.process_settings import ProcessSettings
 
 PROCESS_BATCH_COUNT = 200
 REQUEST_RUN_BATCH_COUNT = 500
+REQUEST_RUN_BATCHES = 20
 
 
 class PruneProcessesHandler(Handler[PruneProcesses, int]):
@@ -35,6 +36,11 @@ class PruneProcessesHandler(Handler[PruneProcesses, int]):
         return len(processes)
 
     def prune_request_runs(self, context: Context) -> None:
+        """Removes old request rows a batch at a time until a batch comes back short, at most REQUEST_RUN_BATCHES
+        batches a run, so a busy journal removes more rows than it writes between two runs."""
         days = max(1, self.settings.integer(ProcessSetting.REQUEST_RUN_DAYS))
-        old = self.request_runs.ended_before(context.timestamp, days).ordered("ended_at", "id").limited(REQUEST_RUN_BATCH_COUNT)
-        self.repository.delete_many_stored(old, context)
+        for _ in range(REQUEST_RUN_BATCHES):
+            old = self.request_runs.ended_before(context.timestamp, days).ordered("ended_at", "id").limited(REQUEST_RUN_BATCH_COUNT)
+            self.repository.delete_many_stored(old, context)
+            if len(old) < REQUEST_RUN_BATCH_COUNT:
+                return

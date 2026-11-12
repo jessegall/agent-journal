@@ -58,7 +58,7 @@ class HookEndpoint:
 
     def answer(self, data: object, program: str, headers: Mapping[str, str]) -> HookReply:
         started_at = perf_counter()
-        sender = HookSender.parsed(data, self.context.hook_limit_seconds, self.context.agent_hook_limit_seconds)
+        sender = HookSender.parsed(data, self.context.hook_limit_seconds, self.context.agent_hook_limit_seconds, self.context.stop_limit_seconds)
         files = ServerFiles(self.context.home)
         if not files.phase().runs_programs:
             files.hold_session(sender.session)

@@ -37,6 +37,7 @@ class ServerContext:
     door: JournalDoor
     hook_limit_seconds: float = HOOK_LIMIT_SECONDS
     agent_hook_limit_seconds: float = AGENT_HOOK_LIMIT_SECONDS
+    stop_limit_seconds: float = STOP_LIMIT_SECONDS
     transcript_entries: TranscriptEntries = field(default_factory=TranscriptEntries)
 
     @property
