@@ -61,7 +61,9 @@ class WorktreeQuery(Query[Worktree], KeptRowChanges[Worktree]):
         return list(self.kept.scoped_read(self.table.name, lambda: tuple(self.oldest().all_rows()), "removed_at IS NULL", name="workers.open_worktrees"))
 
     def folder_worktrees(self, folders: Sequence[str]) -> tuple[Worktree, ...]:
-        return tuple(self.with_removed().matching(Among("folder", folders)).oldest().all_rows())
+        marks = ", ".join("?" for _ in folders)
+        return self.kept.scoped_read(self.table.name, lambda: tuple(self.with_removed().matching(Among("folder", folders)).oldest().all_rows()),
+                                     f"folder IN ({marks})", list(folders), name="workers.folder_worktrees")
 
     def all_worktrees(self) -> tuple[Worktree, ...]:
         return self.kept.scoped_read(self.table.name, lambda: tuple(self.with_removed().oldest().all_rows()), name="workers.all_worktrees")

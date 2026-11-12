@@ -132,6 +132,8 @@ class PluginProgram:
         checkout = call.file_checkout or self.granted_checkout(call) or facts.checkout
         fields = {"v": LINE_VERSION, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "agent": call.agent_id, "role": facts.role, "window_ms": limit_ms,
                   "skills": list(facts.skills), "checkout": checkout.values() if checkout is not None else {}, "settings": dict(call.settings), "data": dict(call.event.data)}
+        if call.events:
+            fields["events"] = [{"event": event.name, "data": dict(event.data)} for event in call.events]
         if call.manifest.config is not None:
             fields["config"] = {"version": self.plugins.find_name(call.manifest.name).config_version}
         return json.dumps(fields)

@@ -1,6 +1,9 @@
+from engine.database.kept_rows import KeptRows
 from engine.event.moved import Moved
 from engine.command.context import Context
 from engine.listener.save_listener import SaveListener
+from engine.query.conditions.has_value import HasValue
+from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.drivers.models.agent_line import AgentLine
@@ -9,23 +12,35 @@ from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSo
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 
+UNSTARTED = "started_at IS NULL AND source_line_id IS NOT NULL"
+UNSTARTED_NAME = "workers.unstarted_task_sources"
+
 
 class WorkerJobSourceListener(SaveListener[Moved[AgentLine]]):
-    """Activates a follow-up's source when its worker receives it for the current task."""
+    """Activates a follow-up's source when its worker receives it for the current task. The sources not yet started
+    are read once for every line a hook delivers."""
 
     name = "workers.job-source"
     moves = [AgentLineLifecycle.deliver, AgentLineLifecycle.enter]
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, repository: Repository) -> None:
-        self.queries, self.worktrees, self.repository = queries, worktrees, repository
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, repository: Repository, kept: KeptRows) -> None:
+        self.queries, self.worktrees, self.repository, self.kept = queries, worktrees, repository, kept
 
     def handle(self, event: Moved[AgentLine], context: Context) -> None:
         if event.row.source != WORKER_JOB_SOURCE:
             return
-        source = self.queries.query(WorkerTaskSource).filter(source_line_id=event.row.id).first()
-        if source is None or source.started_at is not None:
+        source = next((unstarted for unstarted in self.unstarted() if unstarted.source_line_id == event.row.id), None)
+        if source is None:
             return
         worktree = self.worktrees.worker_worktree(event.row.session_agent_id)
         if worktree is None or worktree.id != source.worktree_id or worktree.task_id != source.task_id:
             return
         self.repository.update(source, context, started_at=context.timestamp)
+        self.kept.scoped_update(self.table(), lambda sources: tuple(unstarted for unstarted in sources if unstarted.id != source.id), UNSTARTED, name=UNSTARTED_NAME)
+
+    def unstarted(self) -> tuple[WorkerTaskSource, ...]:
+        return self.kept.scoped_read(self.table(), lambda: tuple(self.queries.query(WorkerTaskSource).matching(IsNull("started_at")).matching(HasValue("source_line_id")).all_rows()),
+                                     UNSTARTED, name=UNSTARTED_NAME)
+
+    def table(self) -> str:
+        return self.queries.query(WorkerTaskSource).table.name

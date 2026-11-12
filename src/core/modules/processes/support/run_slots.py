@@ -36,6 +36,8 @@ class RunSlots:
     def grant(self, context: Context) -> None:
         queued = [process for process in self.running() if process.queued_at is not None]
         parts = self.admission.waiting_parts(queued)
+        self.rows.prepare(Process, [waiting.id for waiting in queued])
+        self.rows.prepare(Agent,[waiting.session_agent_id for waiting in queued])
         for waiting in queued:
             agent = self.rows.required(Agent, waiting.session_agent_id)
             needs_slot = self.admission.needs_slot(waiting, agent)
