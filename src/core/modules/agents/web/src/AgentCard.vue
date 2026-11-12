@@ -1,6 +1,6 @@
 <script setup>
-import {computed} from "vue";
-import {age, perHour, peekRef, seenWords, sinceWords, AgentTip, Btn, Icon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
+import {computed, ref} from "vue";
+import {age, perHour, seenWords, sinceWords, AgentTip, Btn, Icon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
 import AgentActions from "./AgentActions.vue";
 import AgentCardDetails from "./AgentCardDetails.vue";
 import AgentStatusDot from "./AgentStatusDot.vue";
@@ -16,6 +16,7 @@ const STANDING_WORDS = {running: "Working", starting: "Starting", stopping: "Sto
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, open: Boolean});
 const emit = defineEmits(["toggle"]);
 const now = useNow();
+const menuOpen = ref(false);
 const title = computed(() => {
     if (props.facts?.profile_title) return props.facts.profile_title;
     if (props.facts?.profile) return props.facts.profile;
@@ -70,12 +71,7 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
             <template v-if="open">
                 <span class="agent-title" data-agent-title data-agent-motion>{{ openTitle }}</span>
                 <span class="agent-name" data-agent-name data-agent-motion>{{ facts?.given_name || row.id }}</span>
-                <template v-if="!row.ended_at && !retired">
-                    <span class="agent-head-actions" data-agent-head-actions>
-                        <AgentActions :row="row" :held="dotState === 'blocked'" />
-                        <Btn variant="ghost" small data-agent-inspector @click.stop="peekRef(`agents:${row.id}`)">Open inspector</Btn>
-                    </span>
-                </template>
+                <Btn variant="ghost" small class="agent-menu-button" data-agent-menu :aria-expanded="menuOpen" @click.stop="menuOpen = !menuOpen">Actions</Btn>
             </template>
             <template v-else>
                 <AgentTip :agent-id="row.id" :label="title" class="agent-who">
@@ -85,6 +81,7 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
                 <Icon class="agent-chevron" name="chevronRight" :size="12" />
             </template>
         </div>
+        <template v-if="open && menuOpen"><div class="agent-menu" data-agent-menu-panel><AgentActions :row="row" :held="dotState === 'blocked'" /></div></template>
         <template v-if="!open">
             <span class="agent-line">
                 <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
@@ -215,6 +212,8 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
 .agent-card.open .agent-head { gap: 9px; padding: 7px 36px 7px 8px; border-bottom: 1px solid var(--border-inner); background: var(--side); }
 .agent-card.open .agent-title { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
 .agent-who { display: inline-flex; gap: 6px; align-items: baseline; min-width: 0; }
+.agent-menu-button { margin-left: auto; }
+.agent-menu { padding: 8px 14px; border-bottom: 1px solid var(--border-inner); background: var(--side); }
 .agent-live { background: var(--bg-2); }
 .agent-live-fact { flex: none; color: var(--text-3); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 </style>

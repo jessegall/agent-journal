@@ -60,7 +60,7 @@ class ReportingRequestWatch(RequestWatch):
 
     def report_large_reads(self, argv: list[str]) -> None:
         large_reads, self.database.collected_large_reads = self.database.collected_large_reads or [], None
-        for finding in self.reported.unreported([RepeatedFinding(f"large read {error}", str(error)) for error in large_reads]):
+        for finding in self.reported.unreported([RepeatedFinding(f"large read {error.sql}", str(error), error.count) for error in large_reads]):
             self.errors.reported(argv, ReadLimitError(finding.text))
 
     def report_repeated_lines(self, repeated: RepeatedLines) -> None:

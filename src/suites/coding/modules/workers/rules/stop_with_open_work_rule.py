@@ -7,6 +7,7 @@ from core.modules.tasks.commands.start_task.start_task import StartTask
 from suites.coding.modules.workers.support.available_work import AvailableWork
 from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
 from suites.coding.modules.workers.support.main_agent_work import MainAgentWork
+from suites.coding.support.next_task import NextTask
 from suites.coding.support.stop_notices import FREE_PLACE_TEXT, UNFINISHED_TASKS_TEXT, StopNotices
 from suites.coding.support.coding_nudges import FREE_WORKER_PLACE, OPEN_TASKS_WAIT, TASK_ASSIGNMENT, UNFINISHED_TASKS
 
@@ -25,8 +26,8 @@ class StopWithOpenWorkRule(DriverRule):
     roles = [AgentRole.MAIN]
     single_action_refusal = "A main agent that stops is handed the next task when it may work on it, and is held back while a task can"
 
-    def __init__(self, work: AvailableWork, options: CodingMainOptions, notices: StopNotices, unfinished_work: MainAgentWork) -> None:
-        self.work, self.options, self.notices, self.unfinished_work = work, options, notices, unfinished_work
+    def __init__(self, work: AvailableWork, options: CodingMainOptions, notices: StopNotices, unfinished_work: MainAgentWork, assigner: NextTask) -> None:
+        self.work, self.options, self.notices, self.unfinished_work, self.assigner = work, options, notices, unfinished_work, assigner
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         available = self.work.answer(hook.agent_id)
@@ -43,7 +44,7 @@ class StopWithOpenWorkRule(DriverRule):
     def unfinished_answer(self, hook: AgentHook) -> RuleAnswer:
         if self.work.is_stop_compacting(hook.agent_id):
             return RuleAnswer.allowed("this stop compacts the context of the main agent")
-        task_ids = self.unfinished_work.unfinished_tasks([hook.agent_id]).get(hook.agent_id, ())
+        task_ids = self.assigner.own_tasks([hook.agent_id]).get(hook.agent_id, ())
         if task_ids and hook.agent_id not in self.unfinished_work.waiting_agents([hook.agent_id], hook.timestamp):
             notice = UNFINISHED_TASKS.nudge(tasks=", ".join(str(task_id) for task_id in task_ids))
             if not self.notices.has_notice(hook.agent_id, notice.text, UNFINISHED_TASKS_TEXT):

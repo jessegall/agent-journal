@@ -110,3 +110,11 @@ def expect_type_target_model(database, text, expected) -> None:
 def expect_type_mark_family(marks, expected) -> None:
     actual = [(mark.type, mark.family, mark.group, mark.shipped) for mark in marks]
     assert actual == expected, actual
+
+
+def test_a_person_marks_a_recorded_error_solved_and_it_leaves_the_list(new_story):
+    story = new_story(EXCEPTION_SAMPLE, fixture=UserJoined)
+    story.run("chat-mark fail", environment_id=1)
+    story.expect_text("journal-exception list", "RuntimeError")
+    story.expect_success("journal-exception solve 1", actor=story.user)
+    story.expect_no_text("journal-exception list", "RuntimeError")

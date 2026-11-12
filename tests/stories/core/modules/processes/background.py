@@ -380,3 +380,11 @@ def expect_updated_input_hook_without(story, text, text_2, text_3, text_4, expec
 def expect_updated_input_hook_with(story, text, text_2, text_3, text_4, expected) -> None:
     actual = str(story.hook(text, HookSamples.shell(text_2, ShellPart(text_3, CommandCategory.PROCESS, [text_4]))).updated_input)
     assert expected in actual, actual
+
+
+def test_a_hook_checks_the_blocks_of_twelve_ended_moved_runs_reading_their_processes_once(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    for number in range(12):
+        end_run(story, moved_run(story, f"make test{number}", category=CommandCategory.TEST_RUN), TESTS_REPORT, exit_code=1)
+    with story.repeated_work.request():
+        story.hook("s-1", READ_NOTES)

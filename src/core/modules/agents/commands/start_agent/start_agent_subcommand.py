@@ -28,4 +28,4 @@ class StartAgentSubcommand(Subcommand[StartAgent, Agent]):
         parser.add_argument("--process-started-at", type=Timestamp.parsed)
 
     def command(self, arguments: Namespace, caller: Caller) -> StartAgent:
-        return StartAgent(arguments.session, arguments.program, arguments.role, arguments.parent, arguments.pid, arguments.process_started_at)
+        return StartAgent(arguments.session, arguments.program, arguments.role, arguments.parent, arguments.pid, arguments.process_started_at, is_announced=True)

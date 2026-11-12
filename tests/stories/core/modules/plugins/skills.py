@@ -144,7 +144,7 @@ def test_s44_a_skill_the_plugin_does_not_publish_is_ignored(new_story):
 
 
 @pytest.mark.real_git
-def test_disabling_a_plugin_unlinks_a_worktree_skill_without_removing_its_target(new_story, tmp_path):
+def test_removing_a_plugin_unlinks_a_worktree_skill_without_removing_its_target(new_story, tmp_path):
     story = installed_story(new_story)
     repository_environment(story)
     story.expect_success('task make "Fix the cart" --environment main', actor=story.agent)
@@ -157,5 +157,18 @@ def test_disabling_a_plugin_unlinks_a_worktree_skill_without_removing_its_target
     link = Path(worktree.folder) / ".claude" / "skills" / "linked-rules"
     link.parent.mkdir(parents=True, exist_ok=True)
     link.symlink_to(target, target_is_directory=True)
-    story.expect_success("plugin disable sample", actor=story.user)
+    story.expect_success("plugin remove sample", actor=story.user)
     story.expect_rows(not link.is_symlink(), skill.read_text().endswith("Keep this.\n"))
+
+
+def published_skill_folders(story) -> list[Path]:
+    return [root / "sample-rules" for root in (story.home.folder.parent / ".claude" / "skills", story.home.folder.parent / ".agents" / "skills")]
+
+
+def test_disabling_a_plugin_keeps_the_skills_it_published_and_removing_it_removes_them(new_story):
+    story = installed_story(new_story)
+    story.expect_rows(all((folder / "SKILL.md").is_file() for folder in published_skill_folders(story)))
+    story.expect_success("plugin disable sample", actor=story.user)
+    story.expect_rows(all((folder / "SKILL.md").is_file() for folder in published_skill_folders(story)))
+    story.expect_success("plugin remove sample", actor=story.user)
+    story.expect_rows(not any(folder.exists() for folder in published_skill_folders(story)))

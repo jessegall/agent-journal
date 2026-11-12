@@ -1,6 +1,9 @@
 import re
+from collections.abc import Sequence
 
+from engine.container.container import Container
 from engine.driver.block_check import BlockCheck
+from engine.listener.rows.event_rows import EventRows
 from engine.driver.block_condition import BlockCondition
 from engine.enums.tool_type import ToolType
 from engine.provider.providers import Providers
@@ -22,8 +25,12 @@ class OutputMonitored(BlockCondition):
 
     name = "output-monitored"
 
+    @classmethod
+    def prepare(cls, texts: Sequence[str], container: Container) -> None:
+        container.get(EventRows).prepare(Process, [int(text) for text in texts])
+
     def is_true(self, check: BlockCheck) -> bool:
-        process = check.container.get(Queries).query(Process).find(int(self.text))
+        process = check.container.get(EventRows).required(Process, int(self.text))
         return self.is_watched(check) or process.state not in RUNNING_STATES or self.has_active_monitor(check, process)
 
     def has_active_monitor(self, check: BlockCheck, process: Process) -> bool:
