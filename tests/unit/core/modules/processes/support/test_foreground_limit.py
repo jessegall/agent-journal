@@ -115,9 +115,9 @@ def test_a_pipe_that_ran_after_a_long_command_sends_no_quick_test_to_the_backgro
     assert not decided.background
 
 
-def test_file_commands_move_at_once_after_a_long_run():
+def test_file_commands_never_go_to_the_background_even_after_a_long_run():
     decided = limit(excess=True).decide(line(part("grep", CommandCategory.SEARCH), part("cut", CommandCategory.READ), part("sed", CommandCategory.EDIT)), 1)
-    assert decided.background
+    assert (decided.seconds, decided.background) == (0, False)
 
 
 def test_any_other_line_gets_the_foreground_seconds_and_fewer_while_a_message_waits():

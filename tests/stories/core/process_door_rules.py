@@ -1,5 +1,5 @@
 from engine.serving.server_files import ServerFiles
-from engine.serving.server_phase import ServerPhase
+from engine.enums.server_phase import ServerPhase
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 

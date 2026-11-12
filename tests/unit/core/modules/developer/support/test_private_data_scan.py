@@ -47,7 +47,7 @@ def test_a_finding_names_the_file_line_and_category_and_never_the_text():
     assert finding.text == "a.txt, line 1: an email address"
 
 
-@pytest.mark.parametrize("line", ['journal-path-begin:/home/.nvm/bin', 'layouts = {"home@notes.orchestrator": 1}', "@pytest.fixture", "see@AGENTS.md", '"/home/example/x"'])
+@pytest.mark.parametrize("line", ['journal-path-begin:/home/.nvm/bin', 'layouts = {"home@notes.orchestrator": 1}', "@pytest.fixture", "see@AGENTS.md", '"/home/example/x"', "url = git@github.com:shop/cart.git"])
 def test_what_only_looks_like_private_data_is_not_a_finding(line):
     assert list(PrivateDataScan().categories(line)) == []
 
