@@ -101,3 +101,14 @@ def test_a_main_agent_that_wrote_many_messages_since_an_answered_report_is_check
     limit_reads(story)
     story.expect_absent_hook_line("s-1", EDIT, "answer message 2")
     story.expect_rows(story.story_rows(JournalException) == (), detail=str(story.story_rows(JournalException)))
+
+
+def test_a_report_read_before_the_main_agent_started_again_waits_on_no_reply_after_the_restart(new_story):
+    story = beside_story(new_story)
+    story.expect_success(f'message send "The cart is done" --to agent:{agent_number(story, story.agent.id)}', actor=story.helper)
+    story.expect_success("message read 1", actor=story.agent)
+    story.expect_hook_allowed("s-1", VIEW_LINE, "answer message 1 before you go on")
+    story.advance(timedelta(minutes=5))
+    story.hook("s-1", HookSamples.session_start())
+    story.advance(timedelta(seconds=30))
+    story.expect_absent_hook_line("s-1", EDIT, "answer message 1")
