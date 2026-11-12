@@ -33,12 +33,12 @@ class PassBehindCheckHandler(Handler[PassBehindCheck, None]):
         self.facts = BehindFacts("", 0, (), (), (), (), 0, False, "", "")
 
     def prepare(self, command: PassBehindCheck, actor: Actor) -> None:
-        worktree, _ = self.decisions.decidable(command.worker_id)
+        worktree, _ = self.decisions.passable(command.worker_id)
         self.facts = self.reader.read(worktree, self.queries.query(Agent).find(command.worker_id))
 
     def handle(self, command: PassBehindCheck, context: Context) -> None:
         merger = require_merger(self.agents, context)
-        _, check = self.decisions.decidable(command.worker_id)
+        _, check = self.decisions.passable(command.worker_id)
         self.repository.save_change(check, check.passed(merger.id, command.reason), context)
         self.visits.close_newest(context)
         worker = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)

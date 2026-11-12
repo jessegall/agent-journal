@@ -14,7 +14,7 @@ def check(state: State = State.OPEN) -> WorktreeBehindCheck:
 MOVES = {
     State.OPEN: {"ordered": State.ORDERED, "left": State.LEFT, "passed": State.PASSED, "updated": State.UPDATED, "gone": State.GONE},
     State.ORDERED: {"updated": State.UPDATED, "conflicted": State.CONFLICTED, "passed": State.PASSED, "gone": State.GONE, "reminded": State.ORDERED},
-    State.CONFLICTED: {"updated": State.UPDATED, "passed": State.PASSED, "gone": State.GONE},
+    State.CONFLICTED: {"updated": State.UPDATED, "passed": State.PASSED, "gone": State.GONE, "reminded": State.CONFLICTED},
     State.PASSED: {"ordered": State.ORDERED, "left": State.LEFT, "gone": State.GONE},
     State.LEFT: {"gone": State.GONE},
     State.UPDATED: {},

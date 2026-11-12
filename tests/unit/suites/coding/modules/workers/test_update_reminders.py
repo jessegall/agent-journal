@@ -62,6 +62,11 @@ class Lines:
         self.sent.append(nudge.key)
 
 
+class NoMarkers:
+    def conflict_files(self, worktree) -> tuple[str, ...]:
+        return ()
+
+
 class Numbers:
     def number(self, model: str, row_id: int) -> int:
         return 4
@@ -69,7 +74,7 @@ class Numbers:
 
 def run_at(minutes: list[int], store: Store | None = None, paused: bool = False, reminders: int = 2) -> tuple[list[object], list[object], Store]:
     store, nudger, inbox = store or Store(), Lines(), Lines()
-    handler = RemindBehindUpdatesHandler(store, Rows(paused), store, Settings(reminders), nudger, inbox, Numbers())
+    handler = RemindBehindUpdatesHandler(store, Rows(paused), store, Settings(reminders), nudger, inbox, Numbers(), NoMarkers())
     for minute in minutes:
         handler.handle(RemindBehindUpdates(), SimpleNamespace(timestamp=Timestamp(ORDERED_AT + timedelta(minutes=minute))))
     return nudger.sent, inbox.sent, store

@@ -8,6 +8,7 @@ from suites.coding.modules.workers.models.enums.behind_check_state import Behind
 from suites.coding.modules.workers.models.lifecycles.behind_check_lifecycle import BehindCheckLifecycle
 
 DECIDING_STATES = (BehindCheckState.OPEN, BehindCheckState.PASSED)
+PASSABLE_STATES = (BehindCheckState.OPEN, BehindCheckState.ORDERED, BehindCheckState.CONFLICTED)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -80,7 +81,11 @@ class WorktreeBehindCheck(EnvironmentScoped, Model):
         return self.taken(move, failure=reason)
 
     def reminded(self) -> "WorktreeBehindCheck":
-        return self.taken(BehindCheckLifecycle.remind, reminders=self.reminders + 1)
+        move = BehindCheckLifecycle.remind_clash if self.state is BehindCheckState.CONFLICTED else BehindCheckLifecycle.remind
+        return self.taken(move, reminders=self.reminders + 1)
+
+    def may_be_passed(self) -> bool:
+        return self.state in PASSABLE_STATES
 
     def taken(self, move: Move, **values: object) -> "WorktreeBehindCheck":
         if self.state not in move.sources:

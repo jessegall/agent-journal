@@ -20,4 +20,8 @@ UPDATE_REMINDER = NudgeDeclaration("workers.worktree_update_reminder", NudgeType
     "reminder: run journal worker update when you are at a stopping point; {count} commits behind {base}", turn_limited=False, wakes_agent=True)
 UPDATE_NOT_RUN = NudgeDeclaration("workers.worktree_update_not_run", NudgeType.STEERING,
     "worker:{worker} has not run the ordered update", turn_limited=False, wakes_agent=True)
-BEHIND_NUDGES = [UPDATE_REMINDER, UPDATE_NOT_RUN, FAST_FORWARDED, BEHIND_FOR_MERGER, BEHIND_FOR_MAIN_AGENT, UPDATE_FAILED_FOR_MERGER, UPDATE_ORDERED, BEHIND_PASSED, BEHIND_CHOICES]
+CLASH_OPEN = NudgeDeclaration("workers.worktree_clash_open", NudgeType.STEERING,
+    "worker:{worker} update left markers open in {files}: read them and advise it once with journal merger advise {worker}", turn_limited=False, wakes_agent=True, full_text=True)
+CLASH_STILL_OPEN = NudgeDeclaration("workers.worktree_clash_still_open", NudgeType.STEERING,
+    "worker:{worker} still has markers in {files} after your advice: pass it with journal merger pass {worker}, naming the files and what was tried", turn_limited=False, wakes_agent=True, full_text=True)
+BEHIND_NUDGES = [CLASH_OPEN, CLASH_STILL_OPEN, UPDATE_REMINDER, UPDATE_NOT_RUN, FAST_FORWARDED, BEHIND_FOR_MERGER, BEHIND_FOR_MAIN_AGENT, UPDATE_FAILED_FOR_MERGER, UPDATE_ORDERED, BEHIND_PASSED, BEHIND_CHOICES]
