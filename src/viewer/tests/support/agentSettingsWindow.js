@@ -125,3 +125,9 @@ export async function mountAgentSettings({readOnly = false, unreadable = false, 
     await settle();
     return {element, runs, reads};
 }
+
+// opens one tab of the agent settings and lets it settle
+export async function chooseTab(element, tab) {
+    element.querySelector(`[data-tab=${tab}]`).click();
+    await settle();
+}

@@ -17,6 +17,7 @@ class RuleOutcome:
     outcome: str
     answer: RuleAnswer | None = None
     line: str = ""
+    milliseconds: int = 0
 
     @classmethod
     def answered(cls, answer: RuleAnswer) -> "RuleOutcome":

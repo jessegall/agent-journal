@@ -28,7 +28,6 @@ class OpenDocHandler(Handler[OpenDoc, OpenDocument]):
         if opened is not None:
             agent = self.queries.query(Agent).filter(id=opened.author_id).first()
             author = self.queries.query(ActorRecord).find(opened.author_id)
-            name = agent.given_name if agent is not None and agent.given_name else author.name
-            opener = f"{AgentLabel.from_agent(agent).text} ({name})" if agent is not None else name
+            opener = AgentLabel.from_agent(agent).text if agent is not None else author.name
             raise Refusal(f"doc {command.doc_id} is open by {opener}; wait for its author to close it")
         return self.repository.save(OpenDocument(doc_id=command.doc_id, author_id=context.actor.id), context)

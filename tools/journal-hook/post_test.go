@@ -338,3 +338,19 @@ func TestOnlyAMainAgentsHookGoesOnWithoutTheJournal(t *testing.T) {
 		}
 	}
 }
+
+func TestAStopAskedAgainCountsItsRetriesInTheRequest(t *testing.T) {
+	root := project(t, "8431")
+	var retries []string
+	transport := fakeTransport(func(request *http.Request) (*http.Response, error) {
+		retries = append(retries, request.Header.Get("X-Journal-Retries"))
+		if len(retries) < 3 {
+			return nil, errors.New("connection refused")
+		}
+		return answer(200, `{"decision":"block"}`)(request)
+	})
+	postedUntilAnswered(sample(root, "stop"), transport, time.Unix(1793395000, 0), time.Second, time.Millisecond)
+	if strings.Join(retries, ",") != ",1,2" {
+		t.Fatalf("the retry counts of the three asks were %q", retries)
+	}
+}

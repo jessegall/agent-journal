@@ -1,12 +1,6 @@
 import {expect, test} from "vitest";
 import {SettingNumberField} from "@journal/setting-components";
-import {drawnSettingComponent} from "./support/settingComponent.js";
-
-const typed = (field, text) => {
-    const input = field.element.querySelector("input");
-    input.value = text;
-    input.dispatchEvent(new Event("input"));
-};
+import {drawnSettingComponent, typedInto as typed} from "./support/settingComponent.js";
 
 test("typing a number emits what was typed", () => {
     const field = drawnSettingComponent(SettingNumberField, {modelValue: 3});

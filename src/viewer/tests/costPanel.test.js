@@ -23,7 +23,7 @@ test("the cost dropdown says it is the predicted API price and not what a plan c
 test("the cost dropdown breaks the cost down by model and by agent, the dearest first, leaving out an agent with no cost", async () => {
     const element = await mounted(CostPanel, context({"usage show": {ok: true, value: USAGE}}, 1));
     expect(texts(element, "[data-cost-model]")).toEqual(["Opus 5.5 $1052.50", "Sonnet 5.5 $15.75"]);
-    expect(texts(element, "[data-cost-agent]")).toEqual(["main 1 $1052.50", "worker 7 $12.25", "worker 9 $3.50"]);
+    expect(texts(element, "[data-cost-agent]")).toEqual(["Main agent $1052.50", "Worker 7 $12.25", "Worker 9 $3.50"]);
 });
 
 test("the cost dropdown adds helpers up by profile, leaving out an agent with no profile or no cost", async () => {

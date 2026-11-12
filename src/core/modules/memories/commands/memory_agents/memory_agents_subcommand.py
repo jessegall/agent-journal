@@ -17,7 +17,7 @@ from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.memories.models.memory_holder import MemoryHolder
 from core.modules.memories.support.memory_holder_row import MemoryHolderRow
 
-NAME_COLUMNS = ("given_name", "role", "CAST(agent_id AS TEXT)")
+NAME_COLUMNS = ("name", "role", "CAST(agent_id AS TEXT)")
 
 
 class MemoryAgentsSubcommand(ReadSubcommand[Page[MemoryHolderRow]]):
@@ -55,4 +55,4 @@ class MemoryAgentsSubcommand(ReadSubcommand[Page[MemoryHolderRow]]):
         if arguments.name.split():
             query = query.matching(ContainsEvery(NAME_COLUMNS, arguments.name.split()))
         page = query.descending("agent_id").page(arguments.page, arguments.limit)
-        return Page(tuple(MemoryHolderRow.built(holder, self.types) for holder in page.rows), page.number, page.size, page.total)
+        return Page(tuple(MemoryHolderRow.built(holder) for holder in page.rows), page.number, page.size, page.total)

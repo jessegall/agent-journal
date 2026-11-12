@@ -27,15 +27,19 @@ const isRunning = (row) => row.state === "running" || row.state === "background"
                 </div>
             </template>
         </RowList>
-        <section v-if="standingMarks.length" class="marks" data-unreadable-marks>
-            <h3>Commands no reader can read</h3>
-            <p v-for="mark in standingMarks" :key="mark.id" class="mark" data-unreadable-mark>
-                <span class="line">{{ mark.words }}</span>
-                <span class="why">Why: {{ stateLabel('unreadable_mark', mark.reason) }}</span>
-                <span class="who">Marked by: {{ mark.creator_id }}</span>
-                <span v-if="mark.note" class="note">{{ mark.note }}</span>
-            </p>
-        </section>
+        <template v-if="standingMarks.length">
+            <section class="marks" data-unreadable-marks>
+                <h3>Commands no reader can read</h3>
+                <template v-for="mark in standingMarks" :key="mark.id">
+                    <p class="mark" data-unreadable-mark>
+                        <span class="line">{{ mark.words }}</span>
+                        <span class="why">Why: {{ stateLabel('unreadable_mark', mark.reason) }}</span>
+                        <span class="who">Marked by: {{ mark.creator_id }}</span>
+                        <template v-if="mark.note"><span class="note">{{ mark.note }}</span></template>
+                    </p>
+                </template>
+            </section>
+        </template>
     </WindowRoom>
 </template>
 

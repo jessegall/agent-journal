@@ -27,8 +27,11 @@ class Checkout:
     def copy_checkout(cls, folder: Path, project_folder: Path, branch: str, base_branch: str, base_commit: str, exists: bool) -> "Checkout":
         return cls(CheckoutType.WORKTREE, folder.resolve(), project_folder.resolve(), branch, base_branch, base_commit, exists)
 
+    def root_variables(self) -> dict[str, str]:
+        return {"JOURNAL_CHECKOUT_ROOT": str(self.root), "JOURNAL_PROJECT_ROOT": str(self.project_root)}
+
     def variables(self) -> dict[str, str]:
-        return {"JOURNAL_CHECKOUT_TYPE": self.checkout_type.value, "JOURNAL_CHECKOUT_ROOT": str(self.root), "JOURNAL_PROJECT_ROOT": str(self.project_root),
+        return {"JOURNAL_CHECKOUT_TYPE": self.checkout_type.value, **self.root_variables(),
                 "JOURNAL_BRANCH": self.branch, "JOURNAL_BASE_BRANCH": self.base_branch, "JOURNAL_BASE_COMMIT": self.base_commit}
 
     def values(self) -> dict[str, object]:

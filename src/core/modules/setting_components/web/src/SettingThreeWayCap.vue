@@ -1,5 +1,6 @@
 <script setup>
 import {computed} from "vue";
+import {SwitchCase} from "@journal/window-kit";
 import SettingChoiceField from "./SettingChoiceField.vue";
 import SettingSegments from "./SettingSegments.vue";
 
@@ -26,15 +27,17 @@ function choose(mode) {
 <template>
     <div class="setting-three-way">
         <SettingSegments :model-value="mode" :options="MODES" :disabled="disabled" @update:model-value="choose" />
-        <template v-if="mode === 'kind'">
-            <span class="line" data-cap-line>{{ kindText }}</span>
-        </template>
-        <template v-else-if="mode === 'own'">
-            <SettingChoiceField :model-value="ownSize" :choices="sizes" :disabled="disabled" data-cap-own @update:model-value="(size) => emit('change', {mode: 'own', size})" />
-        </template>
-        <template v-else>
-            <span class="line" data-cap-line>This type is never compacted at a size</span>
-        </template>
+        <SwitchCase :value="mode">
+            <template #kind>
+                <span class="line" data-cap-line>{{ kindText }}</span>
+            </template>
+            <template #own>
+                <SettingChoiceField :model-value="ownSize" :choices="sizes" :disabled="disabled" data-cap-own @update:model-value="(size) => emit('change', {mode: 'own', size})" />
+            </template>
+            <template #none>
+                <span class="line" data-cap-line>This type is never compacted at a size</span>
+            </template>
+        </SwitchCase>
     </div>
 </template>
 

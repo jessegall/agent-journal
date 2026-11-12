@@ -54,7 +54,8 @@ class PluginProgram:
         manifest = call.manifest
         folder = self.folders.code(manifest.name)
         self.write_settings(manifest.name, call.settings, call.environment)
-        line = self.line(call, limit_ms)
+        checkout, facts = self.checkout_and_facts(call)
+        line = self.line_of(call, limit_ms, checkout, facts)
         if call.form is not EventForm.COMMIT:
             self.scripts.keep_line(manifest.name, line)
         explicit_service = call.script.removeprefix(SERVICE_PREFIX) if call.script.startswith(SERVICE_PREFIX) else ""
@@ -69,13 +70,13 @@ class PluginProgram:
             raise PluginFaultError(f"its service {explicit_service} is not answering")
         if self.scripts.server_stopped:
             raise PluginStoppedError(ScriptStop.SERVER)
-        return self.program_answer(call, program, line, limit_ms, wait_callback)
+        return self.program_answer(call, program, line, limit_ms, wait_callback, checkout)
 
-    def program_answer(self, call: PluginCall, program: str, line: str, limit_ms: int | None, wait_callback: Callable[[], None] | None) -> PluginAnswer:
+    def program_answer(self, call: PluginCall, program: str, line: str, limit_ms: int | None, wait_callback: Callable[[], None] | None, checkout: Checkout | None) -> PluginAnswer:
         manifest = call.manifest
         folder = self.folders.code(manifest.name)
         try:
-            process = subprocess.Popen([str(folder / program)], cwd=folder, env=self.environment(manifest.name, call.environment), stdin=subprocess.PIPE,
+            process = subprocess.Popen([str(folder / program)], cwd=folder, env={**self.environment(manifest.name, call.environment), **(checkout.root_variables() if checkout is not None else {})}, stdin=subprocess.PIPE,
                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True)
         except OSError as error:
             raise PluginFaultError(f"{program} could not start: {error.strerror}") from None
@@ -127,9 +128,15 @@ class PluginProgram:
             return None
         return Checkout.project_checkout(Path(environment.folder), environment.branch)
 
-    def line(self, call: PluginCall, limit_ms: int | None) -> str:
+    def checkout_and_facts(self, call: PluginCall) -> tuple[Checkout | None, AgentFacts]:
         facts = call.facts if call.facts is not None else self.facts(call.agent_id, call.file_checkout)
-        checkout = call.file_checkout or self.granted_checkout(call) or facts.checkout
+        return call.file_checkout or self.granted_checkout(call) or facts.checkout, facts
+
+    def line(self, call: PluginCall, limit_ms: int | None) -> str:
+        checkout, facts = self.checkout_and_facts(call)
+        return self.line_of(call, limit_ms, checkout, facts)
+
+    def line_of(self, call: PluginCall, limit_ms: int | None, checkout: Checkout | None, facts: AgentFacts) -> str:
         fields = {"v": LINE_VERSION, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "agent": call.agent_id, "role": facts.role, "window_ms": limit_ms,
                   "skills": list(facts.skills), "checkout": checkout.values() if checkout is not None else {}, "settings": dict(call.settings), "data": dict(call.event.data)}
         if call.events:

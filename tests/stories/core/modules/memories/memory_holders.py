@@ -43,7 +43,7 @@ def test_one_read_names_each_agent_that_holds_a_memory_with_its_counts(new_story
     started_agent(story, "s-10")
     with story.repeated_work.request():
         read = holders(story)
-    story.expect_rows([(row["agent_id"], row["role"], row["name"], row["active_memories"], row["removed_memories"]) for row in read["rows"]] == [(worker.id, "worker", f"Worker {worker.id}", 1, 0)])
+    story.expect_rows([(row["agent_id"], row["role"], row["name"], row["active_memories"], row["removed_memories"]) for row in read["rows"]] == [(worker.id, "worker", f"Worker {agent_number(story, worker.id)}", 1, 0)])
     story.expect_rows(read["total"] == 1)
 
 
@@ -74,7 +74,7 @@ def test_ended_agents_come_newest_first(new_story):
     worker_memory(story, "s-10", "Second worker's memory", second)
     story.expect_success(f"agent end {second.id}", actor=story.user)
     story.expect_success(f"agent end {read_agent(story, 's-9').id}", actor=story.user)
-    story.expect_rows(names(story) == [f"Worker {second.id}", f"Worker {read_agent(story, 's-9').id}"])
+    story.expect_rows(names(story) == [f"Worker {agent_number(story, second.id)}", f"Worker {agent_number(story, read_agent(story, 's-9').id)}"])
 
 
 def test_the_agents_are_paged(new_story):
@@ -101,8 +101,8 @@ def test_agents_are_found_by_a_word_of_their_name_or_number(new_story):
     worker = read_agent(story, "s-9")
     helper = started_agent(story, "s-10", "helper")
     worker_memory(story, "s-10", "A helper's note", helper)
-    story.expect_rows(names(story, f"--name worker") == [f"Worker {worker.id}"])
-    story.expect_rows(names(story, f"--name {helper.id}") == [f"Read-only helper {helper.id}"])
+    story.expect_rows(names(story, f"--name worker") == [f"Worker {agent_number(story, worker.id)}"])
+    story.expect_rows(names(story, f"--name {helper.id}") == [f"Helper {agent_number(story, helper.id)}"])
     story.expect_rows(names(story, "--name nobody") == [])
 
 
@@ -110,8 +110,8 @@ def test_the_agents_of_a_page_of_memories_are_read_together_by_number(new_story)
     story = new_story(fixture=MainAndWorkerMemories)
     second_agent = started_agent(story, "s-10")
     worker_memory(story, "s-10", "Another note", second_agent)
-    story.expect_rows(names(story, f"--agents {agent_number(story, second_agent.id)} {agent_number(story, read_agent(story, 's-9').id)}") == [f"Worker {second_agent.id}", f"Worker {read_agent(story, 's-9').id}"])
-    story.expect_rows(names(story, f"--agents {agent_number(story, second_agent.id)}") == [f"Worker {second_agent.id}"])
+    story.expect_rows(names(story, f"--agents {agent_number(story, second_agent.id)} {agent_number(story, read_agent(story, 's-9').id)}") == [f"Worker {agent_number(story, second_agent.id)}", f"Worker {agent_number(story, read_agent(story, 's-9').id)}"])
+    story.expect_rows(names(story, f"--agents {agent_number(story, second_agent.id)}") == [f"Worker {agent_number(story, second_agent.id)}"])
 
 
 def test_agents_are_listed_for_one_environment_or_for_all(new_story):
@@ -119,8 +119,8 @@ def test_agents_are_listed_for_one_environment_or_for_all(new_story):
     story.expect_success("environment make staging /work/staging")
     staging = Actor(story.new_row_id("agent start s-20 claude worker --environment staging"), read_agent(story, "s-9").type)
     story.run('memory make "Staging has no queue" --environment staging', actor=staging)
-    story.expect_rows(names(story, "--environment staging") == [f"Worker {staging.id}"])
-    story.expect_rows(names(story, "--environment main") == [f"Worker {read_agent(story, 's-9').id}"])
+    story.expect_rows(names(story, "--environment staging") == [f"Worker {agent_number(story, staging.id)}"])
+    story.expect_rows(names(story, "--environment main") == [f"Worker {agent_number(story, read_agent(story, 's-9').id)}"])
     story.use_fixture_environment(None)
     story.expect_rows(len(names(story)) == 2)
 

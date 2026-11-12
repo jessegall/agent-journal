@@ -117,6 +117,7 @@ type delivery struct {
 	role        string
 	firing      string
 	firedAtMs   int64
+	retries     int
 	body        []byte
 	limit       time.Duration
 	timing      *timing.Timing
@@ -211,6 +212,10 @@ func postedUntilAnswered(outgoing delivery, transport http.RoundTripper, firedTi
 	status, answer := posted(outgoing, transport)
 	for status != http.StatusOK && time.Since(began) < window {
 		time.Sleep(pause)
+		outgoing.retries++
+		if outgoing.onSocket() {
+			outgoing.timing.Stamp(fmt.Sprintf("go_stop_retry_%d", outgoing.retries))
+		}
 		stamped(outgoing, firedTime)
 		status, answer = posted(outgoing, transport)
 	}
@@ -248,6 +253,9 @@ func posted(outgoing delivery, transport http.RoundTripper) (int, []byte) {
 		"X-Journal-Hook-Id":     outgoing.firing,
 	} {
 		request.Header.Set(name, value)
+	}
+	if outgoing.retries > 0 {
+		request.Header.Set("X-Journal-Retries", strconv.Itoa(outgoing.retries))
 	}
 	if outgoing.onSocket() {
 		outgoing.timing.Stamp("go_sent")

@@ -1,10 +1,12 @@
+from engine.agent.agent_name_sql import agent_name_sql
+
 ACTIVE_MEMORIES_SELECT = (
     "SELECT memories.id AS memory_id, memories.environment_id, memories.agent_id, memories.text, memories.weight"
     " FROM memories WHERE memories.state = 'active' AND memories.weight > 0"
 )
 
 MEMORY_HOLDERS_SELECT = (
-    "SELECT agents.id AS agent_id, agents.environment_id, agents.role, agents.given_name, agents.created_at AS started_at, agents.ended_at,"
+    "SELECT agents.id AS agent_id, agents.environment_id, agents.role, " + agent_name_sql("agents") + " AS name, agents.created_at AS started_at, agents.ended_at,"
     " counts.active_memories, counts.removed_memories FROM agents JOIN (SELECT agent_id, sum(state = 'active') AS active_memories,"
     " sum(state = 'removed') AS removed_memories FROM memories WHERE agent_id IS NOT NULL GROUP BY agent_id) AS counts ON counts.agent_id = agents.id"
 )
