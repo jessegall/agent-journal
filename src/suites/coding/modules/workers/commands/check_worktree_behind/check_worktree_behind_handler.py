@@ -40,8 +40,12 @@ class CheckWorktreeBehindHandler(Handler[CheckWorktreeBehind, BehindRoute]):
         self.tip = self.git.tip(worktree.folder, worktree.base_branch)
         self.behind = self.git.behind_tip(worktree, self.tip)
         self.moved = False
-        if self.checks.opens(worktree, self.behind) and self.operations.active(worktree.session_agent_id) is None and not self.git.has_own_work(worktree):
+        if self.may_fast_forward(worktree):
             self.moved = self.git.fast_forward(worktree, self.tip)
+
+    def may_fast_forward(self, worktree: Worktree) -> bool:
+        is_idle = self.operations.active(worktree.session_agent_id) is None
+        return self.checks.opens(worktree, self.behind) and is_idle and not self.git.has_own_work(worktree)
 
     def handle(self, command: CheckWorktreeBehind, context: Context) -> BehindRoute:
         worktree = self.rows.required(Worktree, command.worktree_id)

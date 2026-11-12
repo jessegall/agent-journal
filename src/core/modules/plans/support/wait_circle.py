@@ -43,9 +43,10 @@ class WaitCircle:
         while frontier and waiter not in parents:
             reached = []
             for node, after in self.next_nodes(frontier):
-                if after not in parents:
-                    parents[after] = node
-                    reached.append(after)
+                if after in parents:
+                    continue
+                parents[after] = node
+                reached.append(after)
             frontier = reached
         if waiter not in parents:
             return ()

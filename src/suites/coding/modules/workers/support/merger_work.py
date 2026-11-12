@@ -20,5 +20,5 @@ class MergerWork:
         waiting_ids = self.merge_ask.waiting_worktree_ids()
         return next((row for row in self.worktrees.open_worktrees() if row.is_merge_ready or row.id in waiting_ids), None)
 
-    def waits(self) -> bool:
+    def has_waiting_work(self) -> bool:
         return bool(self.unread_lines()) or self.next_worktree() is not None

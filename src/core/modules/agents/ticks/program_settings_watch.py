@@ -68,6 +68,9 @@ class ProgramSettingsWatch:
             self.show(container, ShowMark(ProgramSettingsMarkType.PROGRAM_SETTINGS, ProgramSettingsMarkVariant.PUT_BACK, change.key, change.text,
                                           outcome=MarkOutcome.FAILED))
 
+    def link_was_put_back(self, path: Path) -> bool:
+        return path.is_symlink() or (self.has_prepared and not path.exists())
+
     def outside_changes(self, container: Container, settings: ProgramSettings, title: str) -> list[OutsideChange]:
         writer, backup = container.get(ProgramSettingsWriter), container.get(ProgramSettingsBackup)
         recorded = writer.recorded_digests()
@@ -76,7 +79,7 @@ class ProgramSettingsWatch:
         put_back = f"The journal's {title} settings were changed outside the journal and were put back"
         for path in writer.differences(settings):
             if path in settings.links:
-                if path.is_symlink() or (self.has_prepared and not path.exists()):
+                if self.link_was_put_back(path):
                     changes.append(OutsideChange(f"put-back:{path}:link", f"{put_back}: the link {path} was made again."))
                 continue
             if not path.is_file():

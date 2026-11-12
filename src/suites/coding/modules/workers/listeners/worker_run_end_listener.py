@@ -43,5 +43,8 @@ class WorkerRunEndListener(CommitListener[Moved[CheckpointReach]]):
         self.bus.run(StartWorkerRuns(worktree.id, worktree.commit_short_id), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)
         if event.row.state is CheckpointState.PASSED:
             self.bus.run(WakeWaitingWorker(worktree.session_agent_id, event.row.phase_id), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)
-        if event.row.state is CheckpointState.PASSED and worktree.is_merge_ready and self.settings.flag(MERGER_ENABLED) and not self.runs.holds_merge(worktree.id):
+        if event.row.state is CheckpointState.PASSED and self.starts_merger(worktree):
             self.bus.run(StartMerger(self.lines.nudge(worktree), worktree.merge_ready_at), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)
+
+    def starts_merger(self, worktree: Worktree) -> bool:
+        return worktree.is_merge_ready and self.settings.flag(MERGER_ENABLED) and not self.runs.holds_merge(worktree.id)

@@ -55,4 +55,6 @@ class WorkerUnfinishedTasks:
     def names(tasks: tuple[Task, ...]) -> str:
         shown = ", ".join(f"task:{task.id}" for task in tasks[:NAMED_TASKS])
         hidden = len(tasks) - NAMED_TASKS
-        return f"{shown} and {hidden} more {'task' if hidden == 1 else 'tasks'}" if hidden > 0 else shown
+        if hidden <= 0:
+            return shown
+        return f"{shown} and {hidden} more {'task' if hidden == 1 else 'tasks'}"

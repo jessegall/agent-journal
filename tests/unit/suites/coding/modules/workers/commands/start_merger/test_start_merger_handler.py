@@ -39,7 +39,7 @@ class RecordingBus:
 def commands_of_a_start(kept) -> list[object]:
     bus = RecordingBus()
     agents = SimpleNamespace(main_agent=lambda: SimpleNamespace(id=1))
-    StartMergerHandler(KeptMergerQuery(kept), bus, agents, SimpleNamespace(), SimpleNamespace(waits=lambda: True)).handle(StartMerger("a worker handed in"), CONTEXT)
+    StartMergerHandler(KeptMergerQuery(kept), bus, agents, SimpleNamespace(), SimpleNamespace(has_waiting_work=lambda: True)).handle(StartMerger("a worker handed in"), CONTEXT)
     return bus.commands
 
 
