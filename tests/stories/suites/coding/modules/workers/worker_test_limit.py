@@ -1,3 +1,4 @@
+from dataclasses import replace
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
 import pytest
 from pathlib import Path
@@ -89,7 +90,7 @@ def test_a_run_under_the_limit_and_a_limit_of_zero_go_on(limited_run, limit, cou
     story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.RUNNING)
 
 
-def test_the_tests_of_a_proof_are_not_limited(new_story):
+def test_a_run_the_journal_starts_for_no_task_such_as_a_checkpoint_is_not_limited(new_story):
     story = new_story(fixture=TestLimitSetup)
     worker = reader_worker(story)
     actor = Actor.core()
@@ -97,6 +98,19 @@ def test_the_tests_of_a_proof_are_not_limited(new_story):
     story.container.get(OutputFolder).write_output(process.id, 1, "collected 100 items\n")
     OutputReading()(story.container)
     story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.RUNNING)
+
+
+def test_a_proof_naming_whole_story_folders_over_the_limit_is_stopped_with_its_count(new_story):
+    story = new_story(fixture=TestLimitSetup)
+    worker = reader_worker(story)
+    task_id = story.new_row_id('task make "Cart totals" --brief "Prove the cart totals" --environment main', actor=story.agent)
+    start = StartProcess.single_part(worker.id, "pytest tests/stories/core tests/stories/suites", "/work", CommandCategory.TEST_RUN, 30)
+    process = story.container.get(Bus).run(replace(start, owner_agent_id=worker.id, task_id=task_id), Actor.core(), environment_id=1)
+    story.container.get(OutputFolder).write_output(process.id, 1, "collected 300 items\n")
+    OutputReading()(story.container)
+    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.STOPPED)
+    lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=worker.id, source="processes.worker-test-limit").all_rows())
+    story.expect_rows(len(lines) == 1, "300 tests" in lines[0].text, "limit 5" in lines[0].text, detail=str([line.text for line in lines]))
 
 
 def test_stopping_from_the_output_tick_keeps_the_count_and_ends_the_output(limited_run):

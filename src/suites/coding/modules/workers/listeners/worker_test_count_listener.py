@@ -39,7 +39,7 @@ class WorkerTestCountListener(SaveListener[Changed[Output]]):
         if event.old_row is not None and event.old_row.test_count == output.test_count:
             return
         process = self.rows.required(Process, output.process_id)
-        if process.state not in RUNNING_STATES or process.creator_id != process.session_agent_id:
+        if process.state not in RUNNING_STATES or not process.is_agents_own_work:
             return
         agent = self.rows.required(Agent, process.session_agent_id)
         limit = self.settings.number(WORKER_TEST_LIMIT)

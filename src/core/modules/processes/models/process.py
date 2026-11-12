@@ -78,6 +78,12 @@ class Process(EnvironmentScoped, Model):
         return self.state is ProcessState.FINISHED and self.exit_code == 0
 
     @property
+    def is_agents_own_work(self) -> bool:
+        """The agent of the session ran it, or the journal ran it for one of that agent's tasks, such as a proof's
+        test; a run for no task that the journal started, such as a checkpoint's, is not."""
+        return self.creator_id == self.session_agent_id or self.task_id is not None
+
+    @property
     def takes_part_in_queue(self) -> bool:
         return self.is_queue_run or self.slot_assigned or self.queued_at is not None
 
