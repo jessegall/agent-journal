@@ -56,6 +56,10 @@ class RuleAnswer:
         return answer.running(BlockUntil(hook.agent_id, nudge, condition))
 
     @classmethod
+    def refused_for_each(cls, nudges: Sequence[Nudge]) -> "RuleAnswer":
+        return cls(refusal="\n".join(nudge.text for nudge in nudges), nudges=tuple(nudges), last=True)
+
+    @classmethod
     def refused_with_block(cls, hook: AgentHook, nudge: Nudge, condition: BlockCondition) -> "RuleAnswer":
         return cls.refused(nudge).running(BlockUntil(hook.agent_id, nudge, condition))
 

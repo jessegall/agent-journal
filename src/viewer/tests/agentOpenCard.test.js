@@ -55,6 +55,20 @@ test("the opened agent card has no row of buttons and pads transcript rows", asy
     expect(transcript).toMatch(/\.transcript :deep\(\.row-list-row\)\s*\{\s*padding:\s*8px 14px/);
 });
 
+test("one menu button in the head opens the actions of every kind of agent, and the actions are in the menu only", async () => {
+    for (const role of ["worker", "helper", "merger"]) {
+        const row = {...AGENTS[2], role, number: 5, ended_at: "2026-11-01T10:00:00Z", job_command: ["worker", "send"], job_task_flag: "--task"};
+        const element = await mounted({render: () => h(AgentCard, {row, facts: {tasks: []}, open: true})}, {...context({}), tabs: TABS});
+        expect(element.querySelectorAll("[data-agent-menu]")).toHaveLength(1);
+        expect(element.querySelector("[data-agent-send-job]")).toBeNull();
+        element.querySelector("[data-agent-menu]").click();
+        await settle();
+        const menu = element.querySelector("[data-agent-menu-panel]");
+        for (const name of ["history", "send-job", "driver", "retire"]) expect(menu.querySelector(`[data-agent-${name}]`)).not.toBeNull();
+        document.body.innerHTML = "";
+    }
+});
+
 test("the opened agent card shows the plan allowance its facts carry in the information bar", async () => {
     const windows = [{title: "5 hours", used_percent: 30, reset_epoch_seconds: 1793545200}];
     const element = await mounted({render: () => h(AgentCard, {row: AGENTS[2], facts: {tasks: [], windows}, open: true})}, {...context({}), tabs: TABS});

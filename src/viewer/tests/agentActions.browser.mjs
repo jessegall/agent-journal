@@ -13,6 +13,11 @@ try {
     await helperCard.click();
     await helperCard.locator('[data-agent-tab-body]').waitFor();
     assert.equal(await helperCard.locator(BUTTONS).count(), 0);
+    await helperCard.locator('[data-agent-menu]').click();
+    await helperCard.locator('[data-agent-send-job]').waitFor();
+    for (const name of ["history", "driver", "retire"]) assert.equal(await helperCard.locator(`[data-agent-${name}]`).count(), 1);
+    await helperCard.locator('[data-agent-menu]').click();
+    assert.equal(await helperCard.locator(BUTTONS).count(), 0);
     const tabs = await helperCard.locator('[data-tab]').evaluateAll((items) => items.map((tab) => tab.dataset.tab));
     assert.ok(tabs.length > 3);
     for (const colorScheme of ["light", "dark"]) {

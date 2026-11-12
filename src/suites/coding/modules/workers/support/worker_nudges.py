@@ -12,7 +12,7 @@ APPROVED_PLAN_WAIT = NudgeDeclaration("workers.approved_plan_wait", NudgeType.RE
 
 HELPER_INACTIVE = NudgeDeclaration("workers.helper_inactive", NudgeType.STEERING, '{name}:{agent} has used no tool for {minutes} minutes{queue}: {action}', turn_limited=False, wakes_agent=True)
 MAIN_WORKERS_REFUSED = NudgeDeclaration("workers.main_sends_no_workers", NudgeType.REFUSAL, 'the main agent sends no workers here: {then}')
-PROOF_CHECK = NudgeDeclaration("workers.check_the_proof", NudgeType.REFUSAL, 'worker:{worker} delivered task:{task}, proofs {proofs}')
+PROOF_CHECK = NudgeDeclaration("workers.check_the_proof", NudgeType.REFUSAL, 'worker:{worker} committed task:{task}, proofs {proofs}')
 WORKER_UNSTARTED = NudgeDeclaration("workers.unstarted", NudgeType.STEERING, 'worker:{worker} made no call in {seconds} seconds', interval=Interval(Seconds(600)), turn_limited=False, wakes_agent=True,
                                    plural_text='workers {worker} made no call in {seconds} seconds', id_field="worker")
 PROOF_WAITS = NudgeDeclaration("workers.proof_waits", NudgeType.STEERING, 'worker:{worker} waits on your check, proofs {proofs}', turn_limited=False, wakes_agent=True)
@@ -20,9 +20,9 @@ MERGE_WAITS = NudgeDeclaration("workers.merge_waits", NudgeType.STEERING, 'the m
                               plural_text='the merges of workers {worker} wait for the checkout of environment {environment} to return to {branch}', id_field="worker")
 WORKER_TASK = NudgeDeclaration("workers.worker_holds_task", NudgeType.STEERING, 'worker:{worker} has task:{task}')
 
-WORKER_UNMERGED = NudgeDeclaration("workers.worker_unmerged", NudgeType.STEERING, 'worker:{worker} delivered {tasks}, unmerged: {action}', interval=Interval(Seconds(300)), turn_limited=False, wakes_agent=True,
+WORKER_UNMERGED = NudgeDeclaration("workers.worker_unmerged", NudgeType.STEERING, 'worker:{worker} committed {tasks}, unmerged: {action}', interval=Interval(Seconds(300)), turn_limited=False, wakes_agent=True,
                                   plural_text='workers {worker} delivered {tasks}, unmerged: {action}', id_field="worker")
-WORKER_UNMERGED_DUE = NudgeDeclaration("workers.worker_unmerged_due", NudgeType.STEERING, 'worker:{worker} delivered {tasks}, unmerged: {action}', interval=Interval(Seconds(300)), turn_limited=False, wakes_agent=True, required_command="journal worker merge {worker}")
+WORKER_UNMERGED_DUE = NudgeDeclaration("workers.worker_unmerged_due", NudgeType.STEERING, 'worker:{worker} committed {tasks}, unmerged: {action}', interval=Interval(Seconds(300)), turn_limited=False, wakes_agent=True, required_command="journal worker merge {worker}")
 
 WORKER_LIMIT_RAISED = NudgeDeclaration("workers.limit_raised", NudgeType.STEERING, 'worker limit is now {limit}: {workers} workers out, {count} open tasks not delegated; hand out more', turn_limited=False)
 
