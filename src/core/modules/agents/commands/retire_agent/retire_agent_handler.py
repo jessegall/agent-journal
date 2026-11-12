@@ -6,7 +6,6 @@ from engine.command.handler import Handler
 from engine.container.container import Container
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from engine.registry.registry import Registry
 from engine.repository.repository import Repository
 from core.modules.agents.commands.retire_agent.retire_agent import RetireAgent
@@ -16,9 +15,9 @@ from core.modules.agents.support.agent_label import AgentLabel
 
 
 class RetireAgentHandler(Handler[RetireAgent, Agent]):
-    """Retires an agent that has ended and holds nothing. A person retires it directly; an agent that asks,
-    its parent and the main agent included, waits for a person to accept. The suite that owns the agent's
-    type says what still holds it."""
+    """Retires an agent that has ended and holds nothing. A person or the main agent retires it directly, since
+    managing agents is the main agent's job; any other agent is refused. The suite that owns the agent's type
+    says what still holds it."""
 
     command = RetireAgent
 
@@ -32,8 +31,8 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
         block = roster.retire_block(agent) if roster is not None else ""
         if block:
             raise Refusal(block)
-        if actor.is_agent():
-            raise UserApprovalRefusal(f"Retire {AgentLabel.from_agent(agent).text}{self.parent_text(agent)}?", command=command, request_reason=command.reason.strip())
+        if actor.is_agent() and self.queries.query(Agent).find(actor.id).role != AgentRole.MAIN:
+            raise Refusal(f"only a person or the main agent retires {AgentLabel.from_agent(agent).text}", "ask the main agent to retire it")
         if roster is not None:
             roster.release(agent, actor)
 
@@ -44,11 +43,6 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
         if roster is not None:
             roster.release_pending_work(agent, context)
         return self.repository.save(agent.retired(context.timestamp, command.reason.strip(), context.actor.id), context)
-
-    def parent_text(self, agent: Agent) -> str:
-        if agent.parent_id is None:
-            return ""
-        return f", which belongs to {AgentLabel.from_agent(self.queries.query(Agent).find(agent.parent_id)).text}"
 
     def check_state(self, agent: Agent, reason: str) -> None:
         if not reason.strip():

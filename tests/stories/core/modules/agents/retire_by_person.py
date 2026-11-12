@@ -26,21 +26,10 @@ def helper_rows(story) -> list[Agent]:
     return list(story.story_rows(Agent, role="helper"))
 
 
-def test_the_main_agent_that_retires_its_helper_asks_a_person_and_the_helper_stays_when_the_person_refuses(ended):
+def test_the_main_agent_retires_its_ended_helper_at_once_with_no_approval(ended):
     helper = helper_agent(ended)
-    ended.expect_refusal(RETIRE.format(number=helper.number), "A person was asked in the dock", actor=ended.agent)
-    requested = approval_requests(ended)
-    ended.expect_rows(len(requested) == 1, helper_agent(ended).retired_at is None, detail=str(requested))
-    ended.expect_text(f"approval show {requested[0].id}", f"helper {helper.number}", actor=ended.user)
-    ended.expect_success(f"approval refuse {requested[0].id}", actor=ended.user)
-    ended.expect_rows(helper_agent(ended).retired_at is None)
-
-
-def test_a_helper_the_main_agent_asked_to_retire_is_retired_once_a_person_accepts(ended):
-    helper = helper_agent(ended)
-    ended.expect_refusal(RETIRE.format(number=helper.number), "A person was asked in the dock", actor=ended.agent)
-    ended.expect_success(f"approval accept {approval_requests(ended)[0].id} --environment main", actor=ended.user)
-    ended.expect_rows(helper_agent(ended).retired_at is not None)
+    ended.expect_success(RETIRE.format(number=helper.number), actor=ended.agent)
+    ended.expect_rows(helper_agent(ended).retired_at is not None, approval_requests(ended) == [])
 
 
 def test_a_person_retires_an_ended_helper_in_the_viewer_and_its_number_and_memories_stay(ended):
