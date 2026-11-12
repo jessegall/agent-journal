@@ -5,6 +5,7 @@ from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from engine.enums.actor_type import ActorType
+from engine.enums.agent_role import AgentRole
 from engine.caller.process_chain import ProcessChain
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -54,13 +55,13 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
         started = self.agents.session(command.session)
         if started is not None and started.ended_at is None:
             raise Refusal(f"session {command.session} has started already", "journal agent list shows the agents")
-        if started is not None:
+        main = self.agents.numbered_main(context.environment_id) if command.is_main_session else None
+        if started is not None and not self.is_older_main_row(started, main):
             self.check_resume(started, command, context.environment_id)
             self.sessions.reopened(started.id, context)
             if command.pid is None:
                 return self.dispatcher.open_row(started, context)
             return self.dispatcher.record_process(started, self.process(command), context)
-        main = self.agents.numbered_main(context.environment_id) if command.is_main_session else None
         if main is not None:
             return self.on_main_row(main, command, context)
         actor = self.repository.save(ActorRecord(type=ActorType.AGENT, name=command.session, creator_id=context.actor.id), context)
@@ -75,6 +76,10 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
             created = self.numbered(agent, context)
         self.sessions.started(created, context)
         return created
+
+    @staticmethod
+    def is_older_main_row(started: Agent, main: Agent | None) -> bool:
+        return main is not None and started.role == AgentRole.MAIN and started.id != main.id
 
     def on_main_row(self, main: Agent, command: StartAgent, context: Context) -> Agent:
         stopped = main if main.ended_at is not None else self.single_main.ended_session(main, context)

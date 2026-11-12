@@ -11,6 +11,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.queries.agent_query import AgentQuery
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
+SESSION_ROWS = 5
 RUNNING_AGENTS_REASON = "The agents that have not ended, which the running programs bound; every reader of a request shares this one kept load."
 
 
@@ -23,8 +24,12 @@ class AgentRows:
 
     def session(self, session: str) -> Agent | None:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
-            return self.kept.read("agents", lambda: self.queries.query(Agent).filter(session=session).first(),
+            return self.kept.read("agents", lambda: AgentRows.session_holder(self.queries.query(Agent).filter(session=session).newest().limited(SESSION_ROWS)),
                                   "session = ?", [session], name="agents.session")
+
+    @staticmethod
+    def session_holder(rows: list[Agent]) -> Agent | None:
+        return next((row for row in rows if row.ended_at is None), rows[0] if rows else None)
 
     def launch_row(self, launch_name: str) -> Agent | None:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
