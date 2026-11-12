@@ -242,7 +242,7 @@ def test_a_nearly_full_worker_is_not_offered(new_story, monkeypatch):
     dispatched_worker(story, f"worker dispatch --test-command python=pytest --model sonnet {task_id}")
 
 
-def test_an_approved_plan_does_not_hold_a_stop_when_no_new_worker_can_start(new_story):
+def test_with_no_new_worker_able_to_start_a_main_agent_that_keeps_going_takes_an_approved_plans_task_itself(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.expect_success("setting set journal.suites.coding.workers.worker-kept-limit 1 --environment main", actor=story.user)
@@ -255,7 +255,7 @@ def test_an_approved_plan_does_not_hold_a_stop_when_no_new_worker_can_start(new_
     story.expect_success(f"plan ready {plan_id}", actor=story.agent)
     person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"plan approve {plan_id} --environment main", actor=person)
-    story.expect_hook_allowed("s-1", HookSamples.sample("stop"))
+    story.expect_hook_refusal("s-1", HookSamples.sample("stop"), "is yours now")
 
 
 

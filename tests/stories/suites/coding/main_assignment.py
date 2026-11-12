@@ -1,9 +1,16 @@
+from datetime import timedelta
+
 from tests.stories.core.support.agent_labels import agent_number
 from engine.database.database import READ_LIMIT_ROWS, Database
 from core.modules.chat.models.journal_exception import JournalException
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
+from engine.query.queries import Queries
+from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.queries.hook_call_query import IDLE_LIMIT_SECONDS
 from suites.coding.modules.workers.support.available_work import AvailableWork
+from suites.coding.modules.workers.commands.wake_idle_main_agent.wake_idle_main_agent_handler import WAKE_SOURCE
+from suites.coding.modules.workers.ticks.idle_main_agent_wake import IdleMainAgentWake
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from tests.stories.suites.coding.support.main_controls_fixture import scope_line
 from tests.stories.support.story_checks import expect_value
@@ -48,17 +55,36 @@ def test_s01_the_main_driver_hands_the_open_task_to_a_stopping_main_agent_when_a
     story.expect_hook_refusal("s-1", HookSamples.stop(), "is yours now")
 
 
-def test_s02_the_main_driver_holds_a_stop_while_a_task_can_go_to_a_worker_and_keep_going_is_on(new_story):
+def test_s02_s10_keep_going_holds_a_stop_while_a_task_can_go_to_a_worker_and_hands_it_over_once_no_worker_can_start(new_story):
     story = main_story(new_story)
     story.expect_success(f"setting set {AUTO} off --environment main")
     story.expect_success(f"setting set {CONTINUE_SETTING} on --environment main")
     story.expect_hook_refusal("s-1", HookSamples.stop(), "open tasks wait")
+    story.expect_success(f"setting set {WORKER_LIMIT} 0 --environment main")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "is yours now")
 
 
-def test_s08_the_main_driver_holds_a_stop_once_for_a_free_worker_place_when_keep_going_is_off(new_story):
+def waking_lines(story) -> list[str]:
+    IdleMainAgentWake()(story.container)
+    return [line.text for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, source=WAKE_SOURCE).oldest().all_rows()]
+
+
+def test_s08_the_main_driver_holds_a_stop_once_for_a_free_worker_place_when_keep_going_is_off_and_never_wakes_it(new_story):
     story = new_story(fixture=KeepGoingOffMain)
     story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker and a place is free")
     story.expect_hook_allowed("s-1", HookSamples.stop())
+    expect_value(waking_lines(story), [])
+
+
+def test_turning_keep_going_on_wakes_the_idle_main_agent_once_for_a_free_place_and_again_to_take_the_task_itself(new_story):
+    story = new_story(fixture=KeepGoingOffMain)
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker and a place is free")
+    story.expect_success(f"setting set {CONTINUE_SETTING} on --environment main")
+    story.advance(timedelta(seconds=IDLE_LIMIT_SECONDS + 1))
+    first, again = waking_lines(story), waking_lines(story)
+    story.expect_success(f"setting set {WORKER_LIMIT} 0 --environment main")
+    last = waking_lines(story)
+    story.expect_rows(len(first) == 1, "can go to a worker and a place is free" in first[0], again == first, len(last) == 2, "is yours now" in last[-1], detail=str(last))
 
 
 def test_the_free_place_notice_comes_back_when_another_task_can_go_to_a_worker(new_story):
@@ -66,14 +92,6 @@ def test_the_free_place_notice_comes_back_when_another_task_can_go_to_a_worker(n
     story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker and a place is free")
     story.expect_success('task make "Another task" --brief "A second task that a worker can take"', actor=story.agent)
     story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker and a place is free")
-    story.expect_hook_allowed("s-1", HookSamples.stop())
-
-
-def test_s10_the_main_driver_lets_the_main_agent_stop_when_no_worker_can_start(new_story):
-    story = main_story(new_story)
-    story.expect_success(f"setting set {WORKER_LIMIT} 0 --environment main")
-    story.expect_success(f"setting set {AUTO} off --environment main")
-    story.expect_success(f"setting set {CONTINUE_SETTING} on --environment main")
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
