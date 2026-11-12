@@ -1,3 +1,4 @@
+import re
 from dataclasses import replace
 
 from engine.actor.actor import Actor
@@ -9,6 +10,7 @@ from engine.driver.conditions.time_reached import TimeReached
 from engine.driver.interval import Interval
 from engine.driver.nudge import Nudge
 from engine.driver.part import Part
+from engine.driver.shell_line import ShellLine
 from engine.driver.rule_answer import RuleAnswer
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
@@ -31,7 +33,7 @@ from core.modules.processes.queries.reading_decision_query import ReadingDecisio
 from core.modules.processes.support.decisions.escalation_counter import EscalationCounter
 from core.modules.processes.support.decisions.reading_decider import PREVENT_AFTER_RUNS
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.processes.support.process_nudges import (READER_BLOCK, READER_REQUEST_COUNTDOWN, READER_REQUEST_REFUSAL, READER_REQUEST_SPAN,
+from core.modules.processes.support.process_nudges import (REDIRECTED_RUN, READER_BLOCK, READER_REQUEST_COUNTDOWN, READER_REQUEST_REFUSAL, READER_REQUEST_SPAN,
                                                           READING_PREVENTED, SILENT_START_FIXED, SILENT_START_READY, SILENT_START_REFUSED, SILENT_START_TAUGHT)
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
@@ -45,6 +47,7 @@ EXIT_COMMANDS = ("output read", "output peek", "output page", "output stop", "re
 UNKNOWN_SHAPE = "none of the known ones"
 MISSING_TOTAL_TEXT = "states no total, so the command must print one first"
 SILENT_RUN_LIMIT_COUNT = 2
+STANDARD_OUTPUT_REDIRECT = re.compile(r"(?:1?>>?|&>>?)\s*[^&\s]")
 
 
 class ReadingEnforcer:
@@ -67,12 +70,21 @@ class ReadingEnforcer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is None or shell.parse_error or ReadingEnforcer.answers_exit(hook):
             return RuleAnswer.allowed()
+        redirected = list(dict.fromkeys(part.program for part in shell.parts if self.is_redirected(part, shell)))
+        if redirected:
+            return RuleAnswer.refused(REDIRECTED_RUN.nudge(programs=', '.join(redirected)))
         names = tuple(dict.fromkeys(SilentStartRuns.name(part.text, part.program, part.classification.category) for part in shell.parts if self.is_watched(part)))
         answers = [self.answer_name(name) for name in names if not self.marks.excuses(name)]
         refused = next((answer for answer in answers if answer.refusal), None)
         if refused is not None:
             return refused
         return RuleAnswer.with_nudges(*(nudge for answer in answers for nudge in answer.nudges))
+
+    @staticmethod
+    def is_redirected(part: Part, shell: ShellLine) -> bool:
+        """Whether a test run, a build or a check of the line sends its output to a file or to /dev/null, which no
+        reader would see; its exit is to run it without the redirect."""
+        return part.classification.category.is_watched and any(redirect in part.text and STANDARD_OUTPUT_REDIRECT.match(redirect) for redirect in shell.redirects)
 
     @staticmethod
     def is_watched(part: Part) -> bool:
