@@ -7,8 +7,8 @@ from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.request_run_query import RequestRunQuery
 from core.modules.processes.support.process_settings import ProcessSettings
 
-PROCESS_BATCH_COUNT = 200
-REQUEST_RUN_BATCH_COUNT = 500
+PROCESS_BATCH_COUNT = 50
+REQUEST_RUN_BATCH_COUNT = 50
 REQUEST_RUN_BATCHES = 20
 
 
