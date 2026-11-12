@@ -5,8 +5,8 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.journal.journal_home import JournalHome
 from core.modules.tools.commands.refresh_tool.refresh_tool import RefreshTool
-from core.modules.tools.support.graph_files import GraphFiles
-from core.modules.tools.support.graph_status import GraphStatus
+from core.modules.tools.support.graph.graph_files import GraphFiles
+from core.modules.tools.support.graph.graph_status import GraphStatus
 from core.modules.tools.support.tool_catalogue import ToolCatalogue
 from core.modules.tools.support.tools import Tools
 

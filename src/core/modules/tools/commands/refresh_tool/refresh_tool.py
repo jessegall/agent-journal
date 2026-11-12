@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from core.modules.tools.support.graph_status import GraphStatus
+from core.modules.tools.support.graph.graph_status import GraphStatus
 
 
 @dataclass(frozen=True)

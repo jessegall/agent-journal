@@ -45,6 +45,7 @@ from core.modules.codex.providers.support.codex_journal_config import CodexJourn
 from engine.provider.managed_hook import ManagedHook
 from engine.provider.program_settings import ProgramSettings, SettingsFile
 from core.modules.codex.models.enums.codex_hook_event import CodexHookEvent
+from engine.journal.journal_home import JOURNAL_FOLDER
 
 HOME_VARIABLE = "CODEX_HOME"
 DEVELOPER_ROLE = "developer"
@@ -54,7 +55,6 @@ PERSON_LINKS = ("auth.json", "sessions", "history.jsonl")
 PERSON_STATE = ("state_5.sqlite", "thread_history_1.sqlite", "session_index.jsonl", "rules", "skills", "plugins")
 PERSON_FOLDER = ".codex"
 PROGRAMS_FOLDER = "programs"
-JOURNAL_FOLDER = ".journal"
 ASK_PROMPTS = ["-c", 'approval_policy="on-request"', "-c", 'sandbox_mode="workspace-write"']
 
 

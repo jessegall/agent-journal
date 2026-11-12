@@ -3926,6 +3926,57 @@
       "task_ids"
     ]
   },
+  "core.plans.checkpoint_review.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "creator_id",
+      "environment_id",
+      "phase_id",
+      "plan_id",
+      "program",
+      "program_model",
+      "reviewer_id"
+    ]
+  },
+  "core.plans.checkpoint_review.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "creator_id",
+      "environment_id",
+      "phase_id",
+      "plan_id",
+      "program",
+      "program_model",
+      "reviewer_id"
+    ]
+  },
+  "core.plans.checkpoint_review.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "creator_id",
+      "environment_id",
+      "phase_id",
+      "plan_id",
+      "program",
+      "program_model",
+      "reviewer_id"
+    ]
+  },
   "core.plans.phase.created": {
     "forms": [
       "commit",
@@ -8715,6 +8766,7 @@
       "source_unavailable",
       "source_version",
       "started_at",
+      "update_result",
       "worker_id"
     ]
   },
@@ -8738,6 +8790,7 @@
       "source_unavailable",
       "source_version",
       "started_at",
+      "update_result",
       "worker_id"
     ]
   },
@@ -8761,6 +8814,7 @@
       "source_unavailable",
       "source_version",
       "started_at",
+      "update_result",
       "worker_id"
     ]
   },
@@ -9878,6 +9932,291 @@
       "task_count",
       "task_id",
       "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worktree_behind_check.bring_up_to_date": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_tip",
+      "behind",
+      "decided_by",
+      "environment_id",
+      "failure",
+      "reason",
+      "reminders",
+      "state",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worktree_behind_check.conflict": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_tip",
+      "behind",
+      "decided_by",
+      "environment_id",
+      "failure",
+      "reason",
+      "reminders",
+      "state",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worktree_behind_check.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_tip",
+      "behind",
+      "decided_by",
+      "environment_id",
+      "failure",
+      "reason",
+      "reminders",
+      "state",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worktree_behind_check.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_tip",
+      "behind",
+      "decided_by",
+      "environment_id",
+      "failure",
+      "reason",
+      "reminders",
+      "state",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worktree_behind_check.end": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_tip",
+      "behind",
+      "decided_by",
+      "environment_id",
+      "failure",
+      "reason",
+      "reminders",
+      "state",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worktree_behind_check.hold": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_tip",
+      "behind",
+      "decided_by",
+      "environment_id",
+      "failure",
+      "reason",
+      "reminders",
+      "state",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worktree_behind_check.leave": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_tip",
+      "behind",
+      "decided_by",
+      "environment_id",
+      "failure",
+      "reason",
+      "reminders",
+      "state",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worktree_behind_check.note_open_failure": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_tip",
+      "behind",
+      "decided_by",
+      "environment_id",
+      "failure",
+      "reason",
+      "reminders",
+      "state",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worktree_behind_check.note_ordered_failure": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_tip",
+      "behind",
+      "decided_by",
+      "environment_id",
+      "failure",
+      "reason",
+      "reminders",
+      "state",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worktree_behind_check.order": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_tip",
+      "behind",
+      "decided_by",
+      "environment_id",
+      "failure",
+      "reason",
+      "reminders",
+      "state",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worktree_behind_check.pass_on": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_tip",
+      "behind",
+      "decided_by",
+      "environment_id",
+      "failure",
+      "reason",
+      "reminders",
+      "state",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worktree_behind_check.remind": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_tip",
+      "behind",
+      "decided_by",
+      "environment_id",
+      "failure",
+      "reason",
+      "reminders",
+      "state",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worktree_behind_check.remind_clash": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_tip",
+      "behind",
+      "decided_by",
+      "environment_id",
+      "failure",
+      "reason",
+      "reminders",
+      "state",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worktree_behind_check.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_tip",
+      "behind",
+      "decided_by",
+      "environment_id",
+      "failure",
+      "reason",
+      "reminders",
+      "state",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worktree_behind_look.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "environment_id",
+      "looked_at"
+    ]
+  },
+  "suites.coding.workers.worktree_behind_look.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "environment_id",
+      "looked_at"
+    ]
+  },
+  "suites.coding.workers.worktree_behind_look.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "environment_id",
+      "looked_at"
     ]
   },
   "suites.coding.workers.worktree_reach.created": {

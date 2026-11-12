@@ -7,8 +7,8 @@ from engine.driver.tool import Tool
 from engine.enums.hook_event_name import HookEventName
 from engine.journal.journal_home import JournalHome
 from core.modules.agents.support.program_settings_nudges import PROGRAM_SETTINGS_BAN
+from engine.journal.journal_home import JOURNAL_FOLDER
 
-JOURNAL_FOLDER = ".journal"
 
 
 class ProgramSettingsRule(DriverRule):

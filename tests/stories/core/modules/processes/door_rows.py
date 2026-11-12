@@ -1,5 +1,4 @@
 import threading
-import time
 from pathlib import Path
 
 from engine.enums.process_kind import ProcessKind
@@ -56,7 +55,7 @@ def test_a_door_run_waits_while_the_journal_starts_and_runs_once_it_is_ready(new
     finished: list[str] = []
     run = threading.Thread(target=lambda: finished.append(story.container.get(ProcessExecutor).execute(ExecutionRequest(["echo", "ran"], tmp_path, ProcessKind.QUICK, 5)).stdout))
     run.start()
-    time.sleep(WAIT_LOOK_SECONDS)
+    run.join(WAIT_LOOK_SECONDS)
     held_while_starting = run.is_alive() and not finished
     files.clear_restart()
     run.join(TICK_JOIN_SECONDS)

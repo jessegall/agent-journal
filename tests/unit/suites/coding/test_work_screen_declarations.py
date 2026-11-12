@@ -11,6 +11,7 @@ WORK = {
     "Taking on work": ["auto-mode", "main-writes-code"],
     "Workers": ["main-dispatches-workers", "continue-while-delegatable", "merger-on", "main-agent-may-merge"],
     "Other helpers": ["main-starts-read-only-helpers", "designer-enabled"],
+    "Keeping worktrees up to date": ["keep-worktrees-up-to-date", "behind-commits-to-check", "behind-check-minutes", "behind-recheck-commits", "update-to-main-commits", "update-wait-minutes", "update-reminders", "check-history-days"],
     "Approvals": ["accept-every-approval", "skips-need-approval"],
 }
 TESTS = {
