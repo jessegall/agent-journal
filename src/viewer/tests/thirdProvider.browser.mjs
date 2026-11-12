@@ -23,7 +23,7 @@ try {
     await picker.locator("[data-drop-head]").click();
     await page.locator('[data-drop-item="sample-fast"]').click();
     assert.match(await panel.innerText(), /The parent program/);
-    assert.match(await panel.innerText(), /The least expensive model/);
+    assert.match(await panel.innerText(), /chosen at start/);
     await page.screenshot({path: new URL("../../../.journal/third-provider-browser.png", import.meta.url).pathname});
     await page.locator("[data-profile-save]").click();
     await page.locator("[data-profile-notice]").filter({hasText: "sample-browser saved"}).waitFor();
