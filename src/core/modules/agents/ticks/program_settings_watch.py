@@ -25,6 +25,11 @@ from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.environments.models.environment import Environment
 
 
+SWITCH_KEY = "program-settings-switch"
+SWITCH_TEXT = ("The journal now starts Claude Code and Codex on its own settings in .journal/programs, written again at every start; "
+               "your own settings files are backed up in .journal/backups/program-settings and left as they are.")
+
+
 class ProgramSettingsWatch:
     """Keeps the journal's own settings files of each agent program as the journal writes them: at server start it
     backs up the person's own files first, and on every tick it puts back a file or link changed outside the journal,
@@ -44,6 +49,8 @@ class ProgramSettingsWatch:
                 self.watched(container, sync, provider.name)
             except (OSError, Refusal) as error:
                 log.write(LogLevel.WARNING, f"the journal's {provider.title} settings could not be put back: {error}")
+        if not self.has_prepared:
+            self.show(container, ShowMark(ProgramSettingsMarkType.PROGRAM_SETTINGS, ProgramSettingsMarkVariant.SWITCHED, SWITCH_KEY, SWITCH_TEXT))
         self.has_prepared = True
         self.show_person_files(container, sync)
 

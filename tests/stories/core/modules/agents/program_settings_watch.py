@@ -105,3 +105,10 @@ def test_a_file_with_no_recorded_digest_is_kept_before_it_is_put_back_and_twenty
         changed_from_outside(settings_file, f'{{"change": {number}}}\n')
         watch(story.container)
     story.expect_rows(first_texts == ['{"unrecorded": true}\n'], len(rejected_copies(story, "claude", "settings.json")) == 20)
+
+
+def test_the_person_is_told_once_that_the_journal_starts_its_programs_on_its_own_settings(new_story):
+    story = new_story(fixture=MainEnvironment)
+    ProgramSettingsWatch()(story.container)
+    ProgramSettingsWatch()(story.container)
+    story.expect_rows(marks_text(story).count("The journal now starts Claude Code and Codex on its own settings in .journal/programs") == 1)

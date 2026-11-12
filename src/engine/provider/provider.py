@@ -65,6 +65,7 @@ class Provider(ABC):
     hook_file: ClassVar[HookFile]
     hook_files: ClassVar[tuple[Path, ...]] = ()
     worktree_hook_files: ClassVar[tuple[Path, ...]] = ()
+    person_file_note: ClassVar[str] = ""
     controls: ClassVar[Sequence[ControlGroup]] = ()
     compacts_headless: ClassVar[bool] = False
     session_variable: ClassVar[str]

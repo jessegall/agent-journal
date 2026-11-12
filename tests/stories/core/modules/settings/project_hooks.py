@@ -1,4 +1,7 @@
 import json
+import os
+import subprocess
+from pathlib import Path
 
 from engine.provider.managed_hooks import ManagedHooks
 from engine.provider.program_hooks import ProgramHooks
@@ -40,7 +43,8 @@ def test_the_project_hooks_query_reports_every_kind_without_importing_pending_en
     expect_changed_last_history_managed(data, None)
     expect_effects_hook_managed_with(data, "can_refuse")
     expect_command_entry_pending(data, ["pending-check"])
-    expect_reason_entry_unmanaged(data, {"This entry is not a command.", "User-level files are listed without changes."})
+    expect_reason_entry_unmanaged(data, {"This entry is not a command.", "Written by the journal at every start and read-only; changes are put back.",
+                                         *(entry["reason"] for entry in data["unmanaged"] if entry["reason"].startswith("Not read by journal launches; "))})
     expect_row(data, fallback=True)
     expect_bytes_source(user_file, user_bytes)
     expect_value_12(story, 1)
@@ -89,3 +93,38 @@ def expect_journal_hooks_listed(data) -> None:
     actual = {(entry['program'], entry['source']) for entry in data['journal']}
     assert any(program == 'claude' and source.endswith('programs/claude/settings.json') for program, source in actual), actual
     assert all(entry['timeout'] > 0 for entry in data['journal']), data['journal']
+
+
+def page_reasons(story) -> dict[str, list[str]]:
+    data = json.loads(story.run("managed-hook list --json").output_text)
+    reasons: dict[str, list[str]] = {}
+    for entry in data["unmanaged"]:
+        reasons.setdefault(entry["source"], []).append(entry["reason"])
+    return reasons
+
+
+def test_the_hooks_page_names_the_person_s_backup_the_model_note_and_the_journal_s_own_files(new_story):
+    story = new_story(fixture=UserJoined)
+    person_settings = Path(os.environ["CLAUDE_CONFIG_DIR"]) / "settings.json"
+    ProgramHooks.store(person_settings, {"env": {"A": "1"}})
+    story.expect_text(f'program command claude "{story.home.project_folder}" --launch launch-1', "--settings")
+    reasons = page_reasons(story)
+    newest = sorted((story.home.folder / "backups" / "program-settings" / "claude").glob("*-settings.json"))[-1]
+    journal_file = str((story.home.folder / "programs" / "claude" / "settings.json").resolve().relative_to(story.home.project_folder))
+    story.expect_rows(reasons[str(person_settings)] == [f"Not read by journal launches; backed up at {newest} ({newest.name.split('-', 1)[0]}). "
+                                                        "Claude Code itself may save a /model or /config choice in this file; the journal does not."],
+                      reasons[journal_file] == ["Written by the journal at every start and read-only; changes are put back."])
+
+
+def test_a_hook_in_a_tracked_project_file_is_shown_as_still_running(new_story):
+    story = new_story(fixture=UserJoined)
+    root = story.home.project_folder
+    shared = root / ".claude" / "settings.json"
+    ProgramHooks.store(shared, {"hooks": {"PreToolUse": [{"matcher": "Bash", "hooks": [{"type": "command", "command": "tracked-check"}]}]}})
+    for line in (["init", "-q"], ["add", ".claude/settings.json"], ["-c", "user.name=Ada", "-c", "user.email=ada@example.com", "commit", "-q", "-m", "hooks"]):
+        subprocess.run(["git", *line], cwd=root, check=True, capture_output=True)
+    reasons = page_reasons(story)
+    shown_before_the_scan = "tracked-check" in shared.read_text()
+    story.expect_text("managed-hook scan", "managed hooks: 1")
+    story.expect_rows(shown_before_the_scan,
+                      "This hook is in a tracked project file and still runs in journal launches." in reasons[".claude/settings.json"])

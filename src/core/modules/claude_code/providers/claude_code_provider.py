@@ -100,6 +100,7 @@ class ClaudeCodeProvider(Provider):
     hook_file = HookFile(Path(".claude/settings.local.json"), {})
     hook_files = (Path(".claude/settings.json"), Path(".claude/settings.local.json"))
     session_variable = "CLAUDE_CODE_SESSION_ID"
+    person_file_note = "Claude Code itself may save a /model or /config choice in this file; the journal does not."
     markers = ["CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SHELL_PREFIX"]
     compacts_headless = True
     controls = (ControlGroup("model", "Model", tuple(ControlChoice(value, label, f"/model {value}") for value, label in MODEL_CHOICES)),

@@ -10,7 +10,6 @@ from engine.provider.provider import Provider
 from engine.provider.providers import Providers
 from engine.provider.program_settings_sync import ProgramSettingsSync
 from engine.provider.program_settings_backup import ProgramSettingsBackup
-from engine.git.hook_files_git import HookFilesGit
 from engine.types.type_guards import is_list, is_mapping
 from core.modules.settings.support.journal_hook import JournalHook
 from core.modules.settings.support.managed_hook_item import ManagedHookItem
@@ -18,8 +17,6 @@ from core.modules.settings.support.project_hook_list import ProjectHookList
 from core.modules.settings.support.unmanaged_hook import UnmanagedHook
 
 
-CLAUDE_PROGRAM = "claude"
-PERSON_SETTINGS_NOTE = "Claude Code itself may save a /model or /config choice in this file; the journal does not."
 TRACKED_REASON = "This hook is in a tracked project file and still runs in journal launches."
 JOURNAL_FILE_REASON = "Written by the journal at every start and read-only; changes are put back."
 
@@ -59,13 +56,12 @@ class ProjectHooks:
         newest = self.backup.newest(provider.name, path.name)
         stamp = newest.name.split("-", 1)[0] if newest is not None else ""
         backed_up = f"backed up at {newest} ({stamp})." if newest is not None else "it is backed up at the next start."
-        model_note = f" {PERSON_SETTINGS_NOTE}" if path == provider.user_hook_files()[0] and provider.name == CLAUDE_PROGRAM else ""
-        return f"Not read by journal launches; {backed_up}{model_note}"
+        program_note = f" {provider.person_file_note}" if provider.person_file_note and path == provider.user_hook_files()[0] else ""
+        return f"Not read by journal launches; {backed_up}{program_note}"
 
     def tracked(self, provider: Provider, manager: HookManager) -> list[UnmanagedHook]:
         root = self.home.project_folder
-        return [UnmanagedHook(provider.name, hook.source, hook.event, TRACKED_REASON) for hook in manager.unmanaged(type(provider), root)
-                if hook.tracked and not HookFilesGit(root).skip_worktree(Path(hook.source))]
+        return [UnmanagedHook(provider.name, hook.source, hook.event, TRACKED_REASON) for hook in manager.unmanaged(type(provider), root) if hook.tracked]
 
     def journal_files(self, provider: Provider) -> list[UnmanagedHook]:
         root = self.home.project_folder
