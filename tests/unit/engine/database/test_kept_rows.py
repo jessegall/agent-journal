@@ -216,3 +216,19 @@ def test_a_read_kept_for_its_owner_gives_each_scope_its_own_rows_and_loads_each_
     database.update(Statement("UPDATE notes SET text = 'Changed', version = version + 1"))
     assert [read_as(owner)[0] for owner in (worker, everyone)] == ["Changed", "Changed"]
     assert loads == [worker, everyone, worker, everyone]
+
+
+def test_a_read_across_tables_is_read_again_after_a_write_to_any_of_them_in_the_same_request(database):
+    database.update(Statement("CREATE TABLE places (id INTEGER PRIMARY KEY, version INTEGER NOT NULL, updated_at TEXT NOT NULL, note_id INTEGER NOT NULL) STRICT"))
+    database.insert(Statement("INSERT INTO places VALUES (1, 1, '2026', 1)"))
+    kept = KeptRows(database)
+    tables = (("notes", Statement("1 = 1")), ("places", Statement("1 = 1")))
+
+    def loaded():
+        return tuple(row[0] for row in database.rows(Statement("SELECT note_id FROM places ORDER BY id")))
+
+    first = kept.read_across(tables, loaded, name="note-places")
+    with database.transaction():
+        database.update(Statement("UPDATE places SET note_id = 2, version = 2 WHERE id = 1"))
+        moved = kept.read_across(tables, loaded, name="note-places")
+    assert (first, moved) == ((1,), (2,))

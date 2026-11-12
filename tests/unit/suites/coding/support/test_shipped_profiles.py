@@ -1,5 +1,9 @@
+from pathlib import Path
+
 from engine.enums.occupant import Occupant
-from suites.coding.support.shipped_profiles import HELPER_PROFILES
+from suites.coding.drivers.worker.worker_driver import WorkerDriver
+from suites.coding.support.profile_commands import WORKER_COMMANDS
+from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_PROFILES, WORKER_RULES
 
 MERGER = next(profile for profile in HELPER_PROFILES if profile.name == "journal-merger")
 PLAN_REVIEWER = next(profile for profile in HELPER_PROFILES if profile.name == "journal-plan-reviewer")
@@ -20,3 +24,9 @@ def test_the_merger_keeps_its_program_choice():
 def test_the_plan_reviewer_gets_a_new_session_at_each_launch_and_is_told_to_write_no_memories():
     assert PLAN_REVIEWER.occupant is Occupant.LAUNCH_ROTATION
     assert "Write no memories" in PLAN_REVIEWER.body
+
+
+def test_no_shipped_worker_text_names_a_program_of_one_project():
+    skill = (Path(__file__).resolve().parents[5] / "src/suites/coding/modules/workers/skills/journal-workers/SKILL.md").read_text()
+    shipped = [*(profile.body for profile in (*HELPER_PROFILES, *WORKER_PROFILES)), *WorkerDriver.opening_lines, WORKER_COMMANDS, WORKER_RULES, skill]
+    assert not [text for text in shipped if "python3" in text]

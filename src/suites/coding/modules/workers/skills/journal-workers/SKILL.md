@@ -11,7 +11,7 @@ stays kept on the same agent number and session until retired.
 ## As the one who sends
 
 - Read each task to delegate with `journal task info <n>`, not its whole brief: open the brief only when the title and facts are not enough.
-  Every worker dispatch names its model with `--model <model>`, or `--model default` for the profile's own, or a `--tier`; a dispatch with none is refused. Choose the least expensive model that reliably fits the work (the journal's law L1); inheriting your own model is not a choice. A worker writes code, so it never runs on the fast tier.
+  Every worker dispatch names its model with `--model <model>`, or `--model default` for the profile's own, or a `--tier`; a dispatch with none is refused. Each start chooses the least expensive model that reliably fits the work (the journal's law L1); inheriting your own model is not a choice. A worker writes code, so it never runs on the fast tier.
 - Choose the profile from what the job is, before the model. A job that only reads goes to a read-only helper, never a worker:
   research and checks to `journal-researcher`, a review to `journal-code-reviewer`, tracing a fault to `journal-debugger`, a
   design to `journal-planner`. A job that writes goes to a worker: `journal-medior` for a change the brief states,
@@ -207,7 +207,6 @@ An open question lets you stop; the answer wakes you. Going on with other work e
 - A run that moves to the background is watched for you, so you need no Monitor: go on working and hear of its end on your
   next tool call, or stop and be started again when it ends.
 - Git is not yours to run: the journal commits your work.
-- Use python3 for Python commands.
 - `journal skill write` publishes the declared skill files into the project's .claude/skills and .agents/skills;
   it does not load a skill for you. Use the Skill tool on Claude Code or read the SKILL.md path on Codex.
 - `journal module sync` updates the module registry and applies pending schema migrations. These are maintenance

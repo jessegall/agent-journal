@@ -3,22 +3,22 @@ from core.modules.drivers.support.context_compactions import ContextCompactions
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.support.current_context_window import CurrentContextWindow
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ACTION, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_GROWTH_PERCENT, CONTEXT_LIMIT_HARD_TOKENS
-from core.modules.settings.bindings.support.context_caps import ContextCaps
+from core.modules.settings.bindings.support.context_share import ContextShare
 from engine.setting.setting_values import SettingValues
 from core.modules.tasks.queries.task_query import TaskQuery
 
 
 class ContextLimitCheck:
     """Says how many tokens an agent's context holds once the context limit is on and the agent's own size, read
-    from ContextCaps, makes a compaction due, on a reading written after its newest compaction, and whether the
+    from ContextShare, makes a compaction due, on a reading written after its newest compaction, and whether the
     agent's next stop compacts it: it does unless it holds a task to finish first and is under the second limit. Whether a
     size is due is asked of the compactions, never compared here. An agent asked to compact is not asked a
     second time for three minutes, whichever rule asks: the typed line can wait in the program until the
     agent pauses."""
 
-    def __init__(self, settings: SettingValues, agents: AgentRows, current_window: CurrentContextWindow, tasks: TaskQuery, compactions: ContextCompactions, caps: ContextCaps) -> None:
+    def __init__(self, settings: SettingValues, agents: AgentRows, current_window: CurrentContextWindow, tasks: TaskQuery, compactions: ContextCompactions, share: ContextShare) -> None:
         self.settings, self.agents, self.current_window, self.tasks = settings, agents, current_window, tasks
-        self.compactions, self.caps = compactions, caps
+        self.compactions, self.share = compactions, share
 
     def is_compaction_requested(self, agent_id: int, timestamp: Timestamp) -> bool:
         return self.compactions.blocks_request(agent_id, timestamp)
@@ -28,7 +28,7 @@ class ContextLimitCheck:
 
     def tokens(self, agent_id: int) -> int | None:
         agent = self.agents.find(agent_id)
-        cap = self.caps.tokens(agent.role, agent.profile)
+        cap = self.share.cap(agent.role, agent.profile)
         if cap is None:
             return None
         tokens = self.current_window.window(agent).total_input_tokens

@@ -45,6 +45,7 @@ class ServerFiles:
         self.restart_mark = home.restart_mark
         self.start_mark = home.folder / "server-starting"
         self.tunnel_pid_file = home.folder / "tunnel.pid"
+        self.held_sessions_file = home.folder / "held-sessions"
         self.lock_file: IO[str] | None = None
         self.opened_lock = ExitStack()
 
@@ -126,6 +127,17 @@ class ServerFiles:
             return time.time() - mark.stat().st_mtime < MARK_FRESH_SECONDS
         except FileNotFoundError:
             return False
+
+    def hold_session(self, session: str) -> None:
+        with FileAccess.shared().writer(self.held_sessions_file, "a") as held:
+            held.write(session + "\n")
+
+    def released_sessions(self) -> tuple[str, ...]:
+        if not self.held_sessions_file.exists():
+            return ()
+        sessions = tuple(dict.fromkeys(line for line in FileAccess.shared().read(self.held_sessions_file).splitlines() if line))
+        self.held_sessions_file.unlink()
+        return sessions
 
     def mark_maintenance(self) -> None:
         FileAccess.shared().write(self.maintenance, str(os.getpid()))

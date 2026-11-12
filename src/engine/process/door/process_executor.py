@@ -1,6 +1,7 @@
 from dataclasses import replace
 
 from engine.errors.run_time_limit_error import RunTimeLimitError
+from engine.log.error_log import ErrorLog
 from engine.process.door.execution import Execution
 from engine.process.door.execution_gate import ExecutionGate
 from engine.process.door.execution_request import ExecutionRequest
@@ -16,24 +17,25 @@ class ProcessExecutor:
     while the server starts or updates, the runner runs it, and its end is recorded, also when it fails or passes
     its time limit."""
 
-    def __init__(self, placement: RunPlacement, runner: RunnerProgram, gate: ExecutionGate) -> None:
-        self.placement, self.runner, self.gate = placement, runner, gate
+    def __init__(self, placement: RunPlacement, runner: RunnerProgram, gate: ExecutionGate, errors: ErrorLog) -> None:
+        self.placement, self.runner, self.gate, self.errors = placement, runner, gate, errors
 
     def execute(self, request: ExecutionRequest) -> Execution:
         placed = self.placement.placed(request)
         self.gate.opened()
         try:
-            execution = self.runner.run(placed, self.placement)
+            execution = self.runner.run(placed)
         except RunTimeLimitError as error:
-            self.placement.ended(placed, Execution(placed.process_id, TIME_LIMIT_EXIT_CODE, "", str(error)))
+            self.recorded(placed, Execution(placed.process_id, TIME_LIMIT_EXIT_CODE, "", str(error)))
             raise
         except BaseException:
-            self.placement.ended(placed, Execution(placed.process_id, 1, "", "the run failed to start"))
+            self.recorded(placed, Execution(placed.process_id, 1, "", "the run failed to start"))
             raise
         return replace(execution, process_id=self.recorded(placed, execution))
 
     def recorded(self, placed: PlacedRun, execution: Execution) -> int | None:
         try:
             return self.placement.ended(placed, execution)
-        except Exception:
+        except Exception as failure:
+            self.errors.recorded(["record-run", placed.request.text], failure, None)
             return None

@@ -21,6 +21,8 @@ MODULES = "tests.stories.core.modules.profiles.support.profile_modules"
     ("MissingDefault", "default profile missing-profile is not registered"),
     ("WrongDefaultType", "default profile module-reader has type helper, not clerk"),
     ("LegacyProfiles", "register profiles on the module, not the suite"),
+    ("MissingBase", "profile module-reader names the base no-such-base, which no module registers"),
+    ("LoopingBases", "the bases of profile module-reader lead back to it: module-reader -> module-writer -> module-reader"),
 ])
 def test_sync_refuses_invalid_profile_declarations_without_changing_the_registry(new_story, module, message):
     story = new_story()
@@ -66,3 +68,13 @@ def test_a_third_party_module_brings_a_type_a_driver_and_a_profile(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_sync_success(f"{MODULES}:ClerkModuleJoining")
     story.expect_text("profile list", "sample-clerk", "clerk")
+
+
+def test_a_change_to_the_base_reaches_a_profile_built_on_it_with_its_own_lines_added_after(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_sync_success(f"{MODULES}:BasedProfiles")
+    based = Registry.read(story.container.get(Database)).profile("sample-based").profile
+    story.expect_rows(based.body == "Read the files.\n\nAnswer in one line.", based.model == "opus", based.skills == ("journal",), based.base == "sample-base")
+    story.expect_sync_success(f"{MODULES}:ChangedBase")
+    based = Registry.read(story.container.get(Database)).profile("sample-based").profile
+    story.expect_rows(based.body == "Read the files twice.\n\nAnswer in one line.")

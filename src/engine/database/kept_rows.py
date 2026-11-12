@@ -13,7 +13,8 @@ KEPT_ROW_COUNT = 20000
 
 
 class KeptRows:
-    """Caches scoped reads and refreshes them when their database data changes. A read whose rows depend on
+    """Caches scoped reads and refreshes them when their database data changes, also a read that spans several
+    tables. A read whose rows depend on
     the agent that asks is kept with owner_read, apart for each agent and environment of the scope in force."""
 
     def __init__(self, database: Database) -> None:
@@ -27,6 +28,11 @@ class KeptRows:
 
     def owner_read(self, table: str, loader: Callable[[], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> T:
         return self.read(table, loader, condition, parameters, name=f"{name}:{self.database.row_owner}")
+
+    def read_across(self, tables: Sequence[tuple[str, Statement]], loader: Callable[[], T], *, name: str) -> T:
+        signatures = tuple(self.signature_read(table, condition.sql, condition.parameters) for table, condition in tables)
+        key = "|".join(self.key(table, condition.sql, condition.parameters, name) for table, condition in tables)
+        return self.kept_value(key, lambda _signature: loader(), Statement.all_joined(signatures, " UNION ALL "))
 
     def read_matching_signature(self, table: str, loader: Callable[[Signature], T], *, name: str) -> T:
         return self.kept_value(self.key(table, "1 = 1", (), name), loader, self.signature_read(table, "1 = 1", ()))
