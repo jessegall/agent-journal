@@ -17,6 +17,7 @@ try {
     const panel = page.locator("[data-profile-panel]");
     await panel.locator("#profile-name").fill("sample-browser");
     await panel.locator("#profile-description").fill("Checks the third program");
+    await panel.locator('[data-tab="model"]').click();
     await panel.getByRole("radio", {name: "Sample program", exact: true}).click();
     const picker = panel.locator('[data-profile-model="sample"]');
     await picker.locator("[data-drop-head]").click();
