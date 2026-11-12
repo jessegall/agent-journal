@@ -1,3 +1,5 @@
+import json
+
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries
@@ -28,10 +30,13 @@ def test_a_main_agent_messages_its_own_helper_and_the_helper_is_told_the_message
     story.expect_rows(message.is_chat_visible is False)
 
 
-def test_a_helper_messages_its_main_agent(new_story):
+def test_a_helper_messages_its_main_agent_by_the_number_agent_main_gives(new_story):
     story = new_story(fixture=StartedHelper)
     helper = helper_actor(story)
-    story.expect_success(f'message send "The total is wrong" --to agent:{agent_number(story, story.agent.id)} --environment main', actor=helper)
+    main = json.loads(story.run("agent main --environment main --json", actor=helper).output_text)
+    story.expect_rows(main["number"] == agent_number(story, story.agent.id), main["id"] == story.agent.id, detail=str(main))
+    story.expect_text("agent main --environment main", f"agent:{main['number']}, session", f"row id {story.agent.id}", actor=helper)
+    story.expect_success(f'message send "The total is wrong" --to agent:{main["number"]} --environment main', actor=helper)
     message = sender_name(story, helper.id)
     story.expect_text(LINES.format(agent=story.agent.id), f"agent:{agent_number(story, helper.id)} reports in message:{message.id}")
     story.expect_text(f"message read {message.id}", "The total is wrong", actor=story.agent)
