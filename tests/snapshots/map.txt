@@ -2,6 +2,7 @@ engine  The building blocks every module stands on; it imports no module.
   contract
     actor  Who acts on the journal: the actor a command carries, and the check that an actor is a person.
     agent  What the engine knows of agents: groups, roles, policy, checkouts and where an agent may write.
+    area  The marker every engine area folder declares itself with: what the area is for and who may import it.
     bookkeeping  The read commands of the event log and the refusal log.
     caller  Who runs a command line: the caller, its request and the chain of processes it came through.
     chat  Declarations of chat marks, their buttons and docked items.
@@ -48,7 +49,6 @@ engine  The building blocks every module stands on; it imports no module.
     setting  Settings: declarations, rules, groups and the reading of values.
     skill  Skills: declarations, contents, digests and the shape a skill must have.
     subcommand  Subcommands: arguments, output and how rows and values are printed.
-    tasks  Events for several tasks changing together.
     template  The declaration of a template.
     text  Text helpers: explanations, search terms and digests.
     ticker  Timed handlers: which are due and how often one runs.
