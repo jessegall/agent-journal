@@ -66,7 +66,7 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
         self.timing.stamp("prepare_hooks")
         skill_files = self.skills.place(Path(command.folder))
         self.timing.stamp("prepare_skills")
-        graph_files = self.tools.worktree_graph(command.source, command.folder)
+        graph_files = self.tools.worktree_outputs(command.source, command.folder)
         self.timing.stamp("prepare_tool_graph")
         self.libraries.exclude(command.folder, [*skill_files, *graph_files])
         self.instruction_files.write(command.folder, command.profile)

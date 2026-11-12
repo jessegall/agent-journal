@@ -19,7 +19,6 @@ from engine.query.query import Query
 from core.modules.drivers.models.support.views import tool_use_counts_select
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
-from engine.driver.search_category import CODE, GRAPHIFY
 
 STOPS_READ = 20
 MOST_DISPLAYED_PARTS = 500
@@ -101,14 +100,6 @@ class HookCallQuery(Query[HookCall]):
     def next_turn_event(self, agent_id: int, cutoff_at: Timestamp) -> HookCall | None:
         events = (HookEventName.PROMPT, HookEventName.STOP, *TOOL_HOOKS)
         return self.agent(agent_id).matching(Among("hook", events)).matching(Greater("created_at", cutoff_at.text)).oldest().first()
-
-    def code_searches_after_graphify(self, agent_id: int, tool_uses: int) -> int:
-        count = 0
-        for call in self.newest_calls(agent_id, HookEventName.PRE_TOOL_USE, tool_uses):
-            if call.search_category == GRAPHIFY:
-                break
-            count += call.search_category == CODE
-        return count
 
     def has_tool_hook_after(self, agent_id: int, cutoff_at: Timestamp) -> bool:
         return self.agent(agent_id).matching(Among("hook", TOOL_HOOKS)).matching(Greater("created_at", cutoff_at.text)).exists()

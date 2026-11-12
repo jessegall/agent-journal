@@ -53,6 +53,14 @@ from suites.coding.drivers.main.main_driver import MainDriver
 from suites.coding.support.coding_settings import CODING_SETTINGS
 from suites.coding.listeners.full_test_run_listener import FullTestRunListener
 from suites.coding.rules.failed_full_run_rule import FailedFullRunRule
+from suites.coding.rules.graphify_search_rule import GraphifySearchRule
+from suites.coding.listeners.graphify_hook_removal_listener import GraphifyHookRemovalListener
+from suites.coding.support.graphify_nudges import TOOL_NUDGES
+from suites.coding.support.graphify_settings import GRAPHIFY_SETTING_VALUES
+from suites.coding.support.graphify_tool import GRAPHIFY
+from suites.coding.bindings.coding_tool_runners import CodingToolRunners
+from suites.coding.migrations.m010_graphify_setting_keys import GraphifySettingKeysMigration
+from core.modules.tools.support.tool_runners import ToolRunners
 from suites.coding.support.full_run_nudges import TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN
 from suites.coding.support.skeletons import CODING_GIT_SKELETON, CODING_FILES_SKELETON, CODING_WORK_MODE_SKELETON, CODING_AGENT_SETTINGS_SKELETON, CODING_FILE_FEED_SKELETON, CODING_FILE_EDITS_SKELETON, CODING_TERMINAL_SKELETON
 
@@ -69,7 +77,7 @@ class CodingModule(Module):
     agent_groups = [AgentGroup("workers", "Workers", "worker"), AgentGroup("merger", "Merger", "helper", tuple(["journal-merger"])),
                     AgentGroup("designer", "Designer", "helper", tuple(["journal-designer"])), AgentGroup("helpers", "Helpers", "helper")]
     templates = CODING_TEMPLATES
-    nudges = [*CODING_NUDGES, TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN]
+    nudges = [*CODING_NUDGES, TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN, *TOOL_NUDGES]
     seeders = [CodingSeeder]
     window_extensions = [*(WindowExtension(name, reads=["file-edit list"], runs=["agent type"], events=["file_edit.create"],
                                           keys=[WindowKey("agent-edits.*", "file-edit list --agent {id}", arguments=["limit", "before-id", "after-id"], page_size=50),
@@ -79,19 +87,21 @@ class CodingModule(Module):
                          WindowExtension("viewer.shell", reads=["git-overview current"], keys=[WindowKey("branch", "git-overview current", reload_seconds=30)]),
                          WindowExtension("plugins.plugins", links={"files": "coding.files"})]
     requires_core = ">=5,<6"
-    settings = CODING_SETTINGS
+    settings = [*CODING_SETTINGS, *GRAPHIFY_SETTING_VALUES]
     moves = [FileEditsMove, ViewerLayoutsMove, CodingSettingsMove]
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.assignments", "journal.core.plans", "journal.core.settings", "journal.core.setting-requests", "journal.core.viewer", "journal.core.plugins", "journal.core.processes", "journal.core.messages", "journal.core.questions", "journal.core.helpers"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.assignments", "journal.core.plans", "journal.core.settings", "journal.core.setting-requests", "journal.core.viewer", "journal.core.plugins", "journal.core.processes", "journal.core.messages", "journal.core.questions", "journal.core.helpers", "journal.core.tools"]
     drivers = [MainDriver, HelperDriver, WorkerDriver]
-    skills = [SkillDeclaration("journal-plan-dispatch", "Send a functional designer and then a planner to make the plan; read it when the user asks for a plan", keywords=("plan", "roadmap"), types=["main"]),
+    skills = [SkillDeclaration("journal-graphify", "Find code through the project's knowledge graph with graphify query, explain and path, using names from the code instead of questions; read it before you search the code while Graphify is on", keywords=["graphify"], required_setting=GRAPHIFY.settings_key),
+              SkillDeclaration("journal-plan-dispatch", "Send a functional designer and then a planner to make the plan; read it when the user asks for a plan", keywords=("plan", "roadmap"), types=["main"]),
               SkillDeclaration("journal-functional-design", "Write a functional design of user stories, code examples and the phases in order; read it before you write one"),
               SkillDeclaration("journal-user-stories", "Write user stories for any system design from every angle, and group them into story books; read it before you write stories or a functional design", keywords=("user story", "user stories", "story book")),
               SkillDeclaration("journal-work-modes", "Work as the main agent of the coding suite from its work controls; read it when auto mode, the presets, read-only helpers or the worker limit come up", keywords=("builder", "orchestrator", "auto mode", "work mode"), types=["main"])]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
-    migrations = [HelperRequestKeysMigration, HelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration, PruneFileEditsMigration]
+    migrations = [HelperRequestKeysMigration, HelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration, PruneFileEditsMigration, GraphifySettingKeysMigration]
     handlers = [RecordFileEditHandler, RecordFileChangesHandler]
-    driver_rules = [WaitingItemsRule, IntroductionRule, FailedFullRunRule]
-    listeners = [FullTestRunListener]
+    driver_rules = [WaitingItemsRule, IntroductionRule, FailedFullRunRule, GraphifySearchRule]
+    listeners = [FullTestRunListener, GraphifyHookRemovalListener]
+    bindings = {ToolRunners: CodingToolRunners}
     subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand, FileEditFileSubcommand, RecordFileChangesSubcommand]
     windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, skeleton=CODING_GIT_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"],
                                  keys=[WindowKey("branches", "git-overview branches", arguments=["skip", "limit"]),

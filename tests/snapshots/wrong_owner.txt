@@ -44,7 +44,6 @@
 4: src/core/modules/settings/support/undeclared_settings.py: collects more than 3 classes, functions and values
 4: src/core/modules/skills/support/skill_nudges.py: collects more than 3 classes, functions and values
 4: src/core/modules/tasks/support/task_nudges.py: collects more than 3 classes, functions and values
-4: src/core/modules/tools/support/tool_nudges.py: collects more than 3 classes, functions and values
 4: src/core/modules/transcriptions/support/transcription_nudges.py: collects more than 3 classes, functions and values
 4: src/core/modules/voices/support/voices_settings.py: collects more than 3 classes, functions and values
 4: src/suites/coding/modules/workers/support/merger_nudges.py: collects more than 3 classes, functions and values

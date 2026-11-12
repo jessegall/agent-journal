@@ -4,12 +4,12 @@ from engine.provider.managed_hook import ManagedHook
 from engine.provider.managed_hooks import ManagedHooks
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.hook_agents import hook_agent
-from tests.stories.core.modules.tools.graphify_searches import graphify_enabled
+from tests.stories.suites.coding.graphify_searches import graphify_enabled
 from tests.stories.core.support.fixtures import UserJoined
 
 __all__ = ["graphify_enabled"]
 
-SKILL = Path("src/core/modules/tools/skills/journal-graphify/SKILL.md")
+SKILL = Path("src/suites/coding/skills/journal-graphify/SKILL.md")
 GUARD_COMMAND = "graphify hook-guard search"
 CHECK_COMMAND = "/Users/someone/.local/bin/graphify hook-check"
 SESSION = "s-graphify"

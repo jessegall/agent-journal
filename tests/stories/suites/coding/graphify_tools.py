@@ -2,7 +2,7 @@ import json
 
 from engine.provider.managed_hooks import ManagedHooks
 from core.modules.tools.support.tools import Tools
-from tests.stories.core.modules.tools.support.graphify_repo import COMMAND_SETTING, INSTALL_SETTING, GraphifyRepo
+from tests.stories.suites.coding.support.graphify_repo import COMMAND_SETTING, INSTALL_SETTING, GraphifyRepo
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
 
@@ -102,9 +102,9 @@ def test_a_new_worktree_gets_a_copy_of_the_graph_files_without_the_cache_only_wh
     (source / "graphify-out/cache/chunk.json").write_text("cached")
     target.mkdir()
     tools = story.container.get(Tools)
-    story.expect_rows(tools.worktree_graph(str(source), str(target)) == [], not (target / "graphify-out").exists())
+    story.expect_rows(tools.worktree_outputs(str(source), str(target)) == [], not (target / "graphify-out").exists())
     story.expect_success("tool on graphify", actor=story.user)
-    story.expect_rows(tools.worktree_graph(str(source), str(target)) == ["graphify-out"], (target / "graphify-out/graph.json").read_text() == "graph",
+    story.expect_rows(tools.worktree_outputs(str(source), str(target)) == ["graphify-out"], (target / "graphify-out/graph.json").read_text() == "graph",
                       not (target / "graphify-out/.journal-running").exists(), not (target / "graphify-out/.rebuild.lock").exists(),
                       not (target / "graphify-out/cache").exists())
 
@@ -116,7 +116,7 @@ def test_a_removed_worktree_folder_is_not_made_again_for_the_graph(new_story, tm
     (source / "graphify-out").mkdir(parents=True)
     (source / "graphify-out/graph.json").write_text("graph")
     story.expect_success("tool on graphify", actor=story.user)
-    story.expect_rows(story.container.get(Tools).worktree_graph(str(source), str(target)) == [], not target.exists())
+    story.expect_rows(story.container.get(Tools).worktree_outputs(str(source), str(target)) == [], not target.exists())
 
 
 def test_the_tools_window_is_a_project_page_that_reads_the_list_and_runs_its_buttons(new_story):
