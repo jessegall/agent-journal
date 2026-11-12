@@ -8,6 +8,7 @@ from engine.actor.actor import CORE_ACTOR_ID
 from engine.event.event_log import EventLog
 from engine.time.clock import Clock
 from engine.container.container import Container
+from engine.database.auto_vacuum_upgrade import AutoVacuumUpgrade
 from engine.database.database import Database
 from engine.module.journal_container import sync_modules, synced_container
 from engine.journal.journal_home import JournalHome
@@ -143,6 +144,7 @@ class UpgradeJournal:
                 text = UpgradeText(report)
                 lines.extend([*text.table("what moved"), *text.lines()])
                 self.finish(container, report, lines)
+                AutoVacuumUpgrade(container.get(Database)).run(lines.append)
         finally:
             container.get(Database).close()
         retired = VersionFourFiles(self.home.folder).retire()
