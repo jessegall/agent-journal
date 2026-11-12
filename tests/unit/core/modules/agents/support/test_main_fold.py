@@ -60,3 +60,30 @@ def test_a_mismatch_rolls_everything_back(connection):
     assert connection.execute("SELECT count(*) FROM agents").fetchone()[0] == 5
     assert connection.execute("SELECT count(*) FROM agent_folds").fetchone()[0] == 0
     assert connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
+
+
+CLASHES = """
+    CREATE TABLE task_reads (id INTEGER PRIMARY KEY, session_agent_id INTEGER REFERENCES agents (id), creator_id INTEGER REFERENCES actors (id), task_id INTEGER,
+        read_at TEXT, UNIQUE (session_agent_id, task_id));
+    CREATE TABLE links (id INTEGER PRIMARY KEY, source_model TEXT, source_id INTEGER, target_model TEXT, target_id INTEGER, link_type TEXT,
+        UNIQUE (source_model, source_id, target_model, target_id, link_type));
+    INSERT INTO task_reads VALUES (1, 1, 1, 50, '2026-01-01'), (2, 3, 3, 50, '2026-02-01'), (3, 2, 2, 51, '2026-01-05');
+    INSERT INTO links VALUES (1, 'message', 7, 'agent', 1, 'about'), (2, 'message', 7, 'agent', 3, 'about'), (3, 'message', 8, 'agent', 2, 'about');
+"""
+
+
+@pytest.fixture
+def clashing(connection):
+    connection.executescript(CLASHES)
+    return connection
+
+
+def test_a_clash_keeps_the_row_its_rule_chooses_and_records_the_rest(clashing):
+    MainFold(Database.configured(clashing)).run(FOLDS, FOLDED_AT)
+    assert clashing.execute("SELECT id, session_agent_id, task_id FROM task_reads ORDER BY id").fetchall() == [(2, 3, 50), (3, 3, 51)]
+    assert clashing.execute("SELECT table_name, rule FROM agent_fold_rows").fetchall() == [("task_reads", "keep the latest read"), ("links", "keep the oldest")]
+
+
+def test_a_clash_on_a_model_and_id_pair_is_settled_the_same_way(clashing):
+    MainFold(Database.configured(clashing)).run(FOLDS, FOLDED_AT)
+    assert clashing.execute("SELECT id, source_id, target_id FROM links ORDER BY id").fetchall() == [(1, 7, 3), (3, 8, 3)]

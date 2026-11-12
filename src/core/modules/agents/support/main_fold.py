@@ -38,10 +38,10 @@ class FoldCounts:
         earlier_before, earlier_after = self.references.get(name, (0, 0))
         self.references[name] = (earlier_before + before, earlier_after + after)
 
-    def add_removed(self, table: str, reference: str, rule: str, count: int) -> None:
-        for name in (table, reference):
-            self.removed[name] = self.removed.get(name, 0) + count
-        self.rules[f"{table}: {rule}"] = self.rules.get(f"{table}: {rule}", 0) + count
+    def add_removed(self, table: str, references: list[str], rule: str) -> None:
+        for name in (table, *references):
+            self.removed[name] = self.removed.get(name, 0) + 1
+        self.rules[f"{table}: {rule}"] = self.rules.get(f"{table}: {rule}", 0) + 1
 
     def mismatches(self, folded_count: int) -> list[str]:
         moved = [f"{name}: {before} before, {after} after" for name, (before, after) in self.references.items()
@@ -126,20 +126,27 @@ class MainFold:
         for table, key in self.rewrite.unique_keys():
             if table in FOLD_TABLES:
                 continue
-            for column, model_column, name in MainFold.agent_parts(columns, table, key):
+            for column, model_column in MainFold.agent_parts(columns, table, key):
                 for group in self.clashing_groups(fold, table, key, column, model_column):
                     settled = FoldClashRules.settled(table, group, fold.survivor.id, column)
                     for removed in settled.removed:
                         self.database.update(Statement(FOLD_ROW_RECORD, [fold.environment_id, fold_id, table, json.dumps(removed, default=str),
                                                                          settled.rule, folded_at, folded_at]))
+                        counts.add_removed(table, MainFold.references_held(columns, table, removed, fold), settled.rule)
                     self.rewrite.delete_past_state_rule(table, [int(row["id"]) for row in settled.removed])
-                    counts.add_removed(table, name, settled.rule, len(settled.removed))
 
     @staticmethod
-    def agent_parts(columns: AgentColumns, table: str, key: tuple[str, ...]) -> list[tuple[str, str | None, str]]:
-        plain = [(column, None, f"{table}.{column}") for owner, column in columns.plain if owner == table and column in key]
-        pairs = [(id_column, model_column, f"{table}.{model_column}/{id_column}") for owner, model_column, id_column in columns.pairs
-                 if owner == table and model_column in key and id_column in key]
+    def agent_parts(columns: AgentColumns, table: str, key: tuple[str, ...]) -> list[tuple[str, str | None]]:
+        plain = [(column, None) for owner, column in columns.plain if owner == table and column in key]
+        pairs = [(id_column, model_column) for owner, model_column, id_column in columns.pairs if owner == table and model_column in key and id_column in key]
+        return plain + pairs
+
+    @staticmethod
+    def references_held(columns: AgentColumns, table: str, row: dict[str, object], fold: EnvironmentFold) -> list[str]:
+        ids = {fold.survivor.id, *(agent.id for agent in fold.folded)}
+        plain = [f"{table}.{column}" for owner, column in columns.plain if owner == table and row[column] in ids]
+        pairs = [f"{table}.{model_column}/{id_column}" for owner, model_column, id_column in columns.pairs
+                 if owner == table and row[model_column] in AGENT_MODEL_NAMES and row[id_column] in ids]
         return plain + pairs
 
     def clashing_groups(self, fold: EnvironmentFold, table: str, key: tuple[str, ...], column: str, model_column: str | None) -> list[list[dict[str, object]]]:
