@@ -34,3 +34,4 @@ def test_waiting_for_the_person_is_off_until_turned_on_and_an_agent_cannot_turn_
     assert screens.value("work", WAIT) is False
     screens.save({WAIT: "on"}, "work")
     assert screens.value("work", WAIT) is True
+    story.expect_text(f"setting show {WAIT} --environment main", "value:", actor=story.user)

@@ -291,6 +291,14 @@ class OutputFolder:
     def replace_reader_lines(self, process_id: int, lines: list[str]) -> None:
         self.write(process_id, READER_LINES_FILE, "".join(f"{line}\n" for line in lines))
 
+    def head_output(self, process_id: int, characters: int) -> str:
+        text = ""
+        for position in range(1, len(self.part_texts(process_id)) + 1):
+            if len(text) >= characters:
+                break
+            text += self.part_head(process_id, position, characters - len(text)).decode("utf-8", errors="ignore")
+        return ColourCodes.removed(text)
+
     def all_output(self, process_id: int) -> str:
         return ColourCodes.removed("".join(self.output(process_id, position) for position in range(1, len(self.part_texts(process_id)) + 1)))
 

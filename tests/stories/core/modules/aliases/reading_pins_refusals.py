@@ -10,3 +10,5 @@ UNKNOWN_RUN = HookSamples.shell("scripts/dev go test ./cli/judge/", ShellPart("s
 def test_a_workers_command_of_unknown_type_is_refused_by_its_driver_and_not_asked_to_be_classified(new_story):
     story = new_story(fixture=ForcedReaders)
     story.expect_hook_refusal("s-reader", UNKNOWN_RUN, "a worker here runs no unknown command")
+    story.expect_hook_refusal("s-reader", PYTHON_SCRIPT, "a worker here runs no process command")
+    story.expect_success("refusal list", actor=story.agent)

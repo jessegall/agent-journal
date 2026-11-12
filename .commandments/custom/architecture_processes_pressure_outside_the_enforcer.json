@@ -59,7 +59,7 @@
                 "testCode": true
             },
             {
-                "fileMatches": "(^|/)core/modules/processes/support/(reading/reading_enforcer|reading_notices/exit_texts)\\.py$"
+                "fileMatches": "(^|/)core/modules/processes/support/(reading/(reading_enforcer|reader_request_blocks)|reading_notices/exit_texts)\\.py$"
             },
             {
                 "fileMatches": "(^|/)core/modules/processes/listeners/background_run_watch_listener\\.py$"

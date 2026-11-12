@@ -81,6 +81,9 @@ def test_a_switched_off_plugin_hears_nothing(new_story):
     story = installed_story(new_story)
     story.run("plugin disable sample", actor=story.user)
     story.expect_hook_allowed("s-1", REMOVAL_SAMPLE)
+    story.expect_text("plugin list", "sample", "off", actor=story.user)
+    story.run("plugin enable sample", actor=story.user)
+    story.expect_hook_refusal("s-1", REMOVAL_SAMPLE, "plugin:")
 
 
 def test_a_queue_file_that_is_not_json_is_set_aside_as_the_plugins_fault_and_the_next_line_still_arrives(new_story):

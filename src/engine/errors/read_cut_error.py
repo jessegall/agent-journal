@@ -1,6 +1,6 @@
 import traceback
 
-ENGINE_FOLDERS = ("/engine/query/", "/engine/database/", "/engine/errors/")
+ENGINE_FOLDERS = ("/src/engine/query/", "/src/engine/database/", "/src/engine/errors/")
 
 
 class ReadCutError(AssertionError):

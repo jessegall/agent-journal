@@ -35,6 +35,7 @@ def test_a_message_ranks_above_a_process_that_holds_the_same_words(new_story):
     start_process(story, "make cart", limit_seconds=0)
     story.run('message send "Fix the cart first" --environment main', actor=story.user)
     story.expect_ordered_lines('search find cart', "message ", "process ", actor=story.agent)
+    story.expect_text('search find cart --model process', "process 1: make cart", actor=story.agent)
 
 
 def test_hits_of_every_model_come_newest_first(new_story):

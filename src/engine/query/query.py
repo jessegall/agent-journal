@@ -99,6 +99,8 @@ class Query(Generic[M]):
         return query.with_removed() if ROW_KEY in values else query
 
     def compared(self, *comparison: object) -> Condition:
+        if len(comparison) not in (2, 3):
+            raise UnknownOperatorError(f"where takes a column and a value, or a column, an operator and a value; operators: {' '.join(OPERATORS)}")
         column, operator, value = (comparison[0], "=", comparison[1]) if len(comparison) == 2 else comparison
         if operator not in OPERATORS:
             raise UnknownOperatorError(f"unknown operator {operator}; use one of {' '.join(OPERATORS)}")
@@ -258,8 +260,10 @@ class Query(Generic[M]):
             select = select.named(Query.checked_limit(size))
         return Page(tuple(self.rows(select)), number, size, self.count())
 
-    def limit(self, rows: int) -> Self:
-        """Names how many rows get() returns, from 1 to the most a read may name."""
+    def limit(self, rows: int, reason: str) -> Self:
+        """Names how many rows get() returns, from 1 to the most a read may name, and why a read needs that many."""
+        if not reason.strip():
+            raise QueryLimitError("say why the read needs that many rows")
         return self.with_select(self.select.sliced(Query.checked_limit(rows), 0))
 
     def get(self) -> list[M]:

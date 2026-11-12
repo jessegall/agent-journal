@@ -1,4 +1,5 @@
 from engine.enums.command_category import CommandCategory
+from tests.stories.core.support.agent_labels import agent_number
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.hang_watch import MISSING_GROUP, FakeGroupCpuTime, watch_tick
@@ -62,3 +63,6 @@ def test_a_workers_long_silent_build_is_told_and_warned_but_never_asked_the_five
     story.expect_rows(any(f"output {build.id} printed nothing for 30 seconds" in line for line in lines),
                       any(f"output {build.id} printed nothing for 150 s and uses no processor time" in line for line in lines),
                       not any("still runs after" in line for line in lines), detail="\n".join(lines))
+    story.expect_success(f"process show {build.id}", actor=story.agent)
+    story.expect_success(f"process-part list --process {build.id}", actor=story.agent)
+    story.expect_success(f"process holds --agent {agent_number(story, worker.id)}", actor=story.agent)
