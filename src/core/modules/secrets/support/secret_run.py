@@ -1,4 +1,8 @@
 from engine.journal.journal_home import JournalHome
+from engine.enums.process_kind import ProcessKind
+from engine.errors.run_time_limit_error import RunTimeLimitError
+from engine.process.execution_request import ExecutionRequest
+from engine.process.process_executor import ProcessExecutor
 from engine.errors.refusal import Refusal
 from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.secrets.models.secret import Secret
@@ -11,7 +15,6 @@ from pathlib import Path
 import os
 import re
 import shutil
-import subprocess
 import tempfile
 
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
@@ -25,8 +28,8 @@ class SecretRun:
     the project with a throwaway home, nothing of the agent's environment and a limit of 120 seconds, given
     the value on its input or in its variables, and its output returned with every value masked."""
 
-    def __init__(self, home: JournalHome, folder: PrivateFolder, values: SecretValues) -> None:
-        self.home, self.folder, self.values = home, folder, values
+    def __init__(self, home: JournalHome, folder: PrivateFolder, values: SecretValues, executor: ProcessExecutor) -> None:
+        self.home, self.folder, self.values, self.executor = home, folder, values, executor
 
     def run(self, secret: Secret, command: list[str], template: str, as_variables: bool) -> SecretRunOutcome:
         program = self.program(secret, command)
@@ -43,13 +46,13 @@ class SecretRun:
         home = tempfile.mkdtemp(prefix="run-", dir=runs)
         try:
             environment = {"PATH": self.search_path(), "LANG": os.environ.get("LANG", "C.UTF-8"), **dict.fromkeys(HOME_VARIABLES, home), **variables}
-            finished = subprocess.run([program, *command[1:]], input=f"{stdin_text}\n".encode(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=environment,
-                                      cwd=self.home.project_folder, timeout=LIMIT_SECONDS)
-        except subprocess.TimeoutExpired as late:
+            finished = self.executor.execute(ExecutionRequest([program, *command[1:]], self.home.project_folder, ProcessKind.SHELL, LIMIT_SECONDS,
+                                                              stdin=f"{stdin_text}\n", variables=environment))
+        except RunTimeLimitError as late:
             raise Refusal(f"{command[0]} ran past {LIMIT_SECONDS} seconds and was stopped", "give a secret to a program that finishes sooner") from late
         finally:
             shutil.rmtree(home, ignore_errors=True)
-        return SecretRunOutcome(command[0], finished.returncode, OutputMask(self.values.hidden_values()).masked(finished.stdout).decode(errors="replace"))
+        return SecretRunOutcome(command[0], finished.exit_code, OutputMask(self.values.hidden_values()).masked((finished.stdout + finished.stderr).encode()).decode(errors="replace"))
 
     def program(self, secret: Secret, command: list[str]) -> str:
         if not command:

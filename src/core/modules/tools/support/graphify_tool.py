@@ -2,6 +2,10 @@ import os
 import shlex
 import shutil
 import subprocess
+from engine.enums.process_kind import ProcessKind
+from engine.errors.run_time_limit_error import RunTimeLimitError
+from engine.process.execution_request import ExecutionRequest
+from engine.process.process_executor import ProcessExecutor
 from dataclasses import replace
 from pathlib import Path
 
@@ -29,8 +33,8 @@ class GraphifyTool:
     """Graphify as the journal runs it: installed with its install command, and refreshing one folder's graph
     in the background with its incremental update, never two at once for the folder."""
 
-    def __init__(self, settings: SettingValues, clock: Clock) -> None:
-        self.settings, self.clock = settings, clock
+    def __init__(self, settings: SettingValues, clock: Clock, executor: ProcessExecutor) -> None:
+        self.settings, self.clock, self.executor = settings, clock, executor
 
     def command(self) -> list[str]:
         return shlex.split(self.settings.project.text(ToolSetting.GRAPHIFY_COMMAND.key))
@@ -46,15 +50,14 @@ class GraphifyTool:
         self.run_install(line, folder)
         self.run_install([*self.command(), "install"], folder)
 
-    @staticmethod
-    def run_install(line: list[str], folder: Path) -> None:
+    def run_install(self, line: list[str], folder: Path) -> None:
         try:
-            outcome = subprocess.run(line, cwd=folder, capture_output=True, text=True, timeout=INSTALL_LIMIT_SECONDS, check=False)
-        except (OSError, subprocess.TimeoutExpired) as error:
+            outcome = self.executor.execute(ExecutionRequest(line, folder, ProcessKind.SHELL, INSTALL_LIMIT_SECONDS))
+        except (OSError, RunTimeLimitError) as error:
             raise Refusal(f"installing Graphify failed: {error}") from error
-        if outcome.returncode != 0:
+        if not outcome.succeeded:
             detail = (outcome.stderr or outcome.stdout).strip().splitlines()
-            raise Refusal(f"installing Graphify failed: {detail[-1] if detail else f'exit code {outcome.returncode}'}")
+            raise Refusal(f"installing Graphify failed: {detail[-1] if detail else f'exit code {outcome.exit_code}'}")
 
     def head(self, folder: Path) -> str:
         try:

@@ -1,0 +1,28 @@
+from engine.process.outside_start import OutsideStart
+
+OUTSIDE_STARTS = (
+    OutsideStart("src/engine/process/runner_program.py", "the door itself: the one place the executor starts a program"),
+    OutsideStart("src/core/modules/processes/support/queued_process_launch.py", "starts the Go runner of an agent's shell line, which writes that line's own process row in the one queue"),
+    OutsideStart("src/install/update/install_journal.py", "the installer runs while the server is stopped for the update, inside the pause; there is no door to go through"),
+    OutsideStart("src/install/update/chat_update_steps.py", "an installer step reports its progress while the server is stopped, inside the pause"),
+    OutsideStart("src/install/hook/hook_switch.py", "the installer checks the hook program it is about to switch to, inside the pause"),
+    OutsideStart("src/server/handover/successor_start.py", "starts the next server during a handover, inside the pause the door is held by"),
+    OutsideStart("src/engine/serving/launcher_replacement.py", "replaces the launcher during an update, inside the pause"),
+    OutsideStart("src/engine/cli/shell_handoff.py", "hands the person's terminal to a shell line of their own, outside any server request"),
+    OutsideStart("src/engine/caller/process_table.py", "reads ps to find which agent a request comes from, before the request has a scope or an owner to give a row to"),
+    OutsideStart("src/engine/process/leftover_process.py", "reads ps for a process group left by a server that stopped, at start before the queue runs"),
+    OutsideStart("src/engine/sandbox/shell_sandbox.py", "checks once whether the sandbox program works, while the journal is installed or started"),
+    OutsideStart("src/engine/git/hook_files_git.py", "built per folder by HookManager without a container; plan 1120 removes the project hook files these calls keep"),
+    OutsideStart("src/tunnels/tunler/support/tunler_client.py", "the tunnel program is started to keep running for the viewer, a kept service and not a run with an end"),
+    OutsideStart("src/tunnels/tunler/support/tunler_installer.py", "installs the tunnel program with the journal, before a server runs"),
+    OutsideStart("src/core/modules/agents/support/launcher_service.py", "starts the launcher service, a detached program that keeps running, not a run with an end"),
+    OutsideStart("src/core/modules/demo/support/demo_scratch.py", "the demo runs its own scratch journal with its own home and server, apart from this queue"),
+    OutsideStart("src/core/modules/plugins/support/login_path.py", "reads the login shell's PATH once for plugin programs, also from the installer before a server exists"),
+    OutsideStart("src/core/modules/plugins/support/plugin_command_runner.py", "starts the Go runner of journal plugin run, which writes the run's own process row in the one queue under its kind"),
+    OutsideStart("src/core/modules/plugins/support/plugin_program.py", "a plugin event script streams its answer within milliseconds on a hook; kept in the plugin's own record and out of the queue by design"),
+    OutsideStart("src/core/modules/plugins/support/plugin_services.py", "a plugin service is started once and kept running, not a run with an end"),
+    OutsideStart("src/core/modules/processes/support/group_cpu_time.py", "a ps read inside the clock tick every second; a row for each would be the journal's own bookkeeping"),
+    OutsideStart("src/core/modules/processes/support/reader_run.py", "a reader script runs inside the clock tick for every running output; a row for each would be the journal's own bookkeeping"),
+    OutsideStart("src/core/modules/tools/support/graphify_tool.py", "its HEAD read runs on every clock tick and its refresh is a detached background job; the install goes through the door"),
+    OutsideStart("src/core/modules/triggers/support/trigger_action_process.py", "starts a trigger's action detached, to keep running after the request ends"),
+)

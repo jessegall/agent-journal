@@ -1,5 +1,8 @@
 import json
-import subprocess
+from engine.enums.process_kind import ProcessKind
+from engine.errors.run_time_limit_error import RunTimeLimitError
+from engine.process.execution_request import ExecutionRequest
+from engine.process.process_executor import ProcessExecutor
 from dataclasses import asdict
 
 from engine.event.created import Created
@@ -13,13 +16,16 @@ from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.support.saved_command_check import SavedCommandCheck
 
 
+CONFLICT_LIMIT_SECONDS = 10
+
+
 class SavedCommandGuard(Guard[Created[Alias] | Updated[Alias]]):
     """A test or build program has one saved command per working folder."""
 
     name = "aliases.saved-command-program"
 
-    def __init__(self, aliases: AliasQuery, home: JournalHome) -> None:
-        self.aliases, self.home = aliases, home
+    def __init__(self, aliases: AliasQuery, home: JournalHome, executor: ProcessExecutor) -> None:
+        self.aliases, self.home, self.executor = aliases, home, executor
 
     def check(self, event: Created[Alias] | Updated[Alias], context: Context) -> None:
         alias = event.row
@@ -31,7 +37,9 @@ class SavedCommandGuard(Guard[Created[Alias] | Updated[Alias]]):
         if not saved:
             return
         check = SavedCommandCheck(alias.line, saved)
-        finished = subprocess.run([str(self.home.folder / "bin" / "journal-hook"), "--saved-command-conflict", str(self.home.folder / "command_table.json")],
-                                  input=json.dumps(asdict(check)), capture_output=True, text=True, timeout=10, check=True)
+        finished = self.executor.execute(ExecutionRequest([str(self.home.folder / "bin" / "journal-hook"), "--saved-command-conflict", str(self.home.folder / "command_table.json")],
+                                                          self.home.folder, ProcessKind.QUICK, CONFLICT_LIMIT_SECONDS, stdin=json.dumps(asdict(check))))
+        if not finished.succeeded:
+            raise Refusal("the saved-command check could not run", finished.stderr.strip())
         if finished.stdout:
             raise Refusal(f"this program and target already use journal {finished.stdout}", f"run journal {finished.stdout} with the test or build arguments")
