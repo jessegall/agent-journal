@@ -1,5 +1,6 @@
 import json
 
+from suites.coding.support.main_options import BUILDER, ORCHESTRATOR
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 AUTO = "journal.suites.coding.auto-mode"
@@ -55,3 +56,16 @@ def test_s45_an_agent_cannot_apply_a_preset_or_a_change_and_nothing_changes(new_
 def shown_fields(story) -> dict[str, dict[str, object]]:
     shown = json.loads(story.run("work-settings show --environment main --json", story.user).output_text)
     return {row["key"]: row for row in shown["fields"]}
+
+
+def test_the_work_settings_read_carries_the_presets_with_the_value_each_gives_each_control(new_story):
+    story = new_story(fixture=UserBuilder)
+    shown = json.loads(story.run("work-settings show --environment main --json", story.user).output_text)
+    presets = {preset["key"]: preset for preset in shown["presets"]}
+    assert list(presets) == ["builder", "orchestrator"]
+    assert [preset["name"] for preset in presets.values()] == ["Builder", "Orchestrator"]
+    assert all(preset["line"] for preset in presets.values())
+    assert [value for value in presets["builder"]["values"].values()] == list(BUILDER)
+    assert [value for value in presets["orchestrator"]["values"].values()] == list(ORCHESTRATOR)
+    assert list(presets["builder"]["values"]) == [switch["key"] for switch in shown["switches"]]
+    assert all(switch["title"] for switch in shown["switches"])

@@ -11,7 +11,7 @@ const emit = defineEmits(["fill"]);
             <span class="line">{{ line }}</span>
         </div>
         <template v-if="canFill">
-            <button type="button" :disabled="disabled" data-preset-fill @click="emit('fill')">Fill in</button>
+            <button type="button" :disabled="disabled" data-preset-fill @click="emit('fill')">Fill in {{ name }}</button>
         </template>
     </article>
 </template>

@@ -148,3 +148,15 @@ test("after a save the draft holds what the screens say now and has no change", 
     expect(draft.stale.value).toBe(false);
     expect(draft.value("limit")).toBe("5");
 });
+
+test("values filled together are sent even for a setting that is hidden, and a reset forgets them", async () => {
+    const {draft, run} = drafted();
+    draft.fill({auto: false, nested: "9", unknown: true});
+    expect(draft.visible("nested")).toBe(false);
+    expect(draft.changes().map((change) => change.key)).toEqual(["auto", "nested"]);
+    await draft.apply();
+    expect(run).toHaveBeenCalledWith(["setting-screen", "apply", "work", "--revision", "w1", "auto=off", "nested=9"]);
+    draft.reset();
+    draft.set("auto", false);
+    expect(draft.changes().map((change) => change.key)).toEqual(["auto"]);
+});

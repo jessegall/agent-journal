@@ -30,6 +30,7 @@ function worded(node, value) {
 // journal; reload reads the screens again and gives them to load.
 export function useSettingsDraft({run, reload}) {
     const draft = reactive({});
+    const pinned = reactive({});
     const base = ref([]);
     const latest = ref([]);
     const failure = ref("");
@@ -44,7 +45,7 @@ export function useSettingsDraft({run, reload}) {
         const node = nodeOf(key);
         return node !== undefined && !same(draft[key], drafted(node));
     };
-    const changedNodes = computed(() => nodes.value.filter((node) => visible(node.key) && isChanged(node.key)));
+    const changedNodes = computed(() => nodes.value.filter((node) => (visible(node.key) || pinned[node.key]) && isChanged(node.key)));
     const dirty = computed(() => changedNodes.value.length > 0);
     const stale = computed(() => dirty.value && revisions(base.value) !== revisions(latest.value));
 
@@ -62,6 +63,7 @@ export function useSettingsDraft({run, reload}) {
     function rebase() {
         base.value = latest.value;
         for (const key of Object.keys(draft)) delete draft[key];
+        for (const key of Object.keys(pinned)) delete pinned[key];
         for (const node of nodes.value) draft[node.key] = drafted(node);
         failure.value = "";
     }
@@ -96,5 +98,14 @@ export function useSettingsDraft({run, reload}) {
         return true;
     }
 
-    return {draft, load, value: (key) => draft[key], set: (key, value) => { draft[key] = value; }, isChanged, changes, errors, visible, dirty, stale, canSave, reason, pending, failure, apply, reset: rebase};
+    // values given together, such as a preset: each is kept in the request even while the setting it belongs to is hidden
+    function fill(values) {
+        for (const [key, value] of Object.entries(values)) {
+            if (!(key in draft)) continue;
+            draft[key] = value;
+            pinned[key] = true;
+        }
+    }
+
+    return {draft, load, fill, value: (key) => draft[key], set: (key, value) => { draft[key] = value; }, isChanged, changes, errors, visible, dirty, stale, canSave, reason, pending, failure, apply, reset: rebase};
 }

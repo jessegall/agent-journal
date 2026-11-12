@@ -1,50 +1,6 @@
-import {afterEach, expect, test} from "vitest";
-import {createApp, h} from "vue";
-import {WINDOW_CONTEXT} from "@journal/window-kit";
-import AgentSettings from "../../suites/coding/web/src/AgentSettings.vue";
-import {context as windowContext, settle as settled} from "./support/windowContext.js";
-
-const AUTO = "journal.suites.coding.auto-mode";
-const SENDS = "journal.suites.coding.workers.main-dispatches-workers";
-const LIMIT = "journal.suites.coding.tests.example";
-const KEYS = {
-    "work-screen": {line: "setting-screen show work", events: ["setting.*"]},
-    "tests-screen": {line: "setting-screen show tests", events: ["setting.*"]},
-    "advanced-screen": {line: "setting-screen show advanced", events: ["setting.*"]},
-    limits: {line: "agent limits", tab: "agents", events: ["agent.*", "setting.*"]},
-};
-const RULE = JSON.stringify({rule: "number", minimum: 0, integer: true, maximum: null, exclusive: false});
-const node = (key, kind, value, extra = {}) => ({key, kind, component: kind === "flag" ? "toggle" : kind, section: "A section", parent: null, title: `Title of ${key}`, description: "", value, default: value, source: "default", choices: [], rule: "", requires: [], read_only: true, ...extra});
-const screens = () => ({
-    work: {screen: "work", revision: "w1", nodes: [node(AUTO, "flag", true), node(SENDS, "flag", true)]},
-    tests: {screen: "tests", revision: "t1", nodes: [node(LIMIT, "number", 3, {rule: RULE})]},
-    advanced: {screen: "advanced", revision: "a1", nodes: [node("journal.core.helpers.example", "flag", false, {section: "Another section"})]},
-});
-
-const mounted = [];
-afterEach(() => mounted.splice(0).forEach(({app, element}) => { app.unmount(); element.remove(); }));
-
-async function mount({readOnly = false} = {}) {
-    const runs = [];
-    const answers = screens();
-    const context = {
-        ...windowContext({}, null, KEYS),
-        environment: "main",
-        readOnly,
-        read: async (line) => (line.startsWith("setting-screen show") ? {ok: true, value: answers[line.split(" ")[2]]} : {ok: true, value: {rows: []}}),
-        run: async (line) => (runs.push(line), {ok: true}),
-        follow: () => {},
-        open: () => {},
-        option: () => ({value: null}),
-    };
-    const element = document.createElement("div");
-    document.body.append(element);
-    const app = createApp({setup: () => () => h(AgentSettings), provide: {[WINDOW_CONTEXT]: context}});
-    mounted.push({app, element});
-    app.mount(element);
-    await settled();
-    return {element, runs};
-}
+import {expect, test} from "vitest";
+import {AUTO, LIMIT, SENDS, mountAgentSettings as mount} from "./support/agentSettingsWindow.js";
+import {settle as settled} from "./support/windowContext.js";
 
 const control = (element, key) => element.querySelector(`[data-setting="${key}"]`);
 const tabs = (element) => [...element.querySelectorAll("[role=tab]")].map((tab) => tab.textContent.trim());

@@ -15,7 +15,7 @@ test("a card has no Fill in button unless it is asked for", () => {
 test("the Fill in button asks to fill the form with the preset", () => {
     const card = drawnSettingComponent(SettingPresetCard, {name: "Builder", line: "A line.", canFill: true});
     const button = card.element.querySelector("[data-preset-fill]");
-    expect(button.textContent).toBe("Fill in");
+    expect(button.textContent).toBe("Fill in Builder");
     button.click();
     expect(card.emitted.fill).toHaveLength(1);
 });
