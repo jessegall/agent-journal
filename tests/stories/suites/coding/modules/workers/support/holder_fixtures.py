@@ -9,37 +9,34 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import D
 TWO_TASK_DISPATCH = "worker dispatch --test-command python=pytest --model sonnet 1 2"
 
 
-def dispatched(story: Story) -> Actor:
-    """The worker the fixture dispatched, which the story keeps as its helper."""
-    return story.helper
+def second_task_story(new_story) -> Story:
+    """The orchestrator's repository, which a cached fixture cannot hold, and a second open task, Second job."""
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository_environment(story)
+    story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
+    return story
 
 
-class SecondTaskOrchestrator(StoryFixture):
-    """The orchestrator's repository is set up and a second task, Second job, is open."""
-
-    parent = OpenTaskOrchestrator
-
-    def steps(self, story: Story) -> None:
-        repository_environment(story)
-        story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
+def worker_on_first_task(new_story) -> Story:
+    """One worker, story.worker, was sent task 1 and started it; task 2 is open and nobody's."""
+    story = second_task_story(new_story)
+    story.worker = Actor(story.new_row_id(DISPATCH, actor=story.agent), ActorType.AGENT)
+    return story
 
 
-class WorkerOnFirstTask(StoryFixture):
-    """One worker, story.helper, was sent task 1 and started it; task 2 is open and nobody's."""
-
-    parent = SecondTaskOrchestrator
-
-    def steps(self, story: Story) -> None:
-        story.helper = Actor(story.new_row_id(DISPATCH, actor=story.agent), ActorType.AGENT)
+def worker_on_two_tasks(new_story) -> Story:
+    """One worker, story.worker, was sent tasks 1 and 2 and started task 1."""
+    story = second_task_story(new_story)
+    story.worker = Actor(story.new_row_id(TWO_TASK_DISPATCH, actor=story.agent), ActorType.AGENT)
+    return story
 
 
-class WorkerOnTwoTasks(StoryFixture):
-    """One worker, story.helper, was sent tasks 1 and 2 and started task 1."""
-
-    parent = SecondTaskOrchestrator
-
-    def steps(self, story: Story) -> None:
-        story.helper = Actor(story.new_row_id(TWO_TASK_DISPATCH, actor=story.agent), ActorType.AGENT)
+def free_third_task(new_story) -> Story:
+    """Beside the worker on tasks 1 and 2, task 3 is open and nobody's, and Ada is a person of the journal: story.user."""
+    story = worker_on_two_tasks(new_story)
+    story.run('task make "Third job" --brief "Do the third job" --environment main', actor=story.agent)
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    return story
 
 
 class UpgradedTasks(StoryFixture):
@@ -49,13 +46,3 @@ class UpgradedTasks(StoryFixture):
 
     def steps(self, story: Story) -> None:
         run_task_assignments_migration(story)
-
-
-class FreeThirdTask(StoryFixture):
-    """Beside the worker on tasks 1 and 2, task 3 is open and nobody's, and Ada is a person of the journal: story.user."""
-
-    parent = WorkerOnTwoTasks
-
-    def steps(self, story: Story) -> None:
-        story.run('task make "Third job" --brief "Do the third job" --environment main', actor=story.agent)
-        story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)

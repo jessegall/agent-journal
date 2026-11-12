@@ -42,7 +42,6 @@ class Task(EnvironmentScoped, Model, StateHolder, Assignable):
     started_at: Timestamp | None = None
     focused_at: Timestamp | None = None
     closed_at: Timestamp | None = None
-    delegated_to: int | None = None
     independence_reason: str = ""
 
     def __post_init__(self) -> None:

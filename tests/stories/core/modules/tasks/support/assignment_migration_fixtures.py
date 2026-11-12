@@ -7,6 +7,8 @@ from engine.enums.actor_type import ActorType
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from core.modules.tasks.migrations.m025_task_assignments import TaskAssignmentsMigration
+from core.modules.tasks.tasks_module import TasksModule
+from core.modules.tasks.migrations.m026_drop_task_delegation import DropTaskDelegationMigration
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 WORKER_START = "agent start s-2 claude worker --environment main"
@@ -37,14 +39,29 @@ class TasksWithOldAssignments(StoryFixture):
 
 
 def run_task_assignments_migration(story: Story) -> None:
-    """Brings the tasks to what an older journal held, with the delegation in the column alone, and runs the
-    migration that copies the column. The column is written directly, as the migration reads it and no command
-    of today leaves it in that older state."""
+    """Brings the tasks to what an older journal held, with the delegation in the column alone, runs the
+    migration that copies the column, then the one that drops it again. The column is made and written directly,
+    as the migration reads it and no command of today leaves a journal in that older state."""
     for task_id in range(1, len(TASK_TITLES) + 1):
         story.expect_success(f"unassign task {task_id} --environment main", actor=story.user)
     database = story.container.get(Database)
-    database.update(Statement("UPDATE tasks SET delegated_to = NULL"))
+    database.update(Statement("ALTER TABLE tasks ADD COLUMN delegated_to INTEGER"))
     database.update(Statement(f"UPDATE tasks SET delegated_to = {worker(story).id} WHERE id IN ({', '.join(str(task_id) for task_id in DELEGATED_TASKS)})"))
     database.update(Statement(f"UPDATE tasks SET delegated_to = {MISSING_ACTOR_ID} WHERE id = {MISSING_ACTOR_TASK}"))
-    for statement in TaskAssignmentsMigration.statements:
+    for statement in (*TaskAssignmentsMigration.statements, *DropTaskDelegationMigration.statements):
         database.update(Statement(statement))
+
+
+class TasksBeforeColumnRemoval(StoryFixture):
+    """The tasks of TasksWithOldAssignments as a journal kept them before the assignments table: tasks 1 and 2
+    delegated to the worker in the column delegated_to, and the migrations that copy and drop the column not run."""
+
+    parent = TasksWithOldAssignments
+
+    def steps(self, story: Story) -> None:
+        for task_id in range(1, len(TASK_TITLES) + 1):
+            story.expect_success(f"unassign task {task_id} --environment main", actor=story.user)
+        database = story.container.get(Database)
+        database.update(Statement("ALTER TABLE tasks ADD COLUMN delegated_to INTEGER"))
+        database.update(Statement(f"UPDATE tasks SET delegated_to = {worker(story).id} WHERE id IN ({', '.join(str(task_id) for task_id in DELEGATED_TASKS)})"))
+        database.update(Statement("DELETE FROM migrations WHERE module = ? AND number IN (?, ?)", [TasksModule.name, TaskAssignmentsMigration.number, DropTaskDelegationMigration.number]))

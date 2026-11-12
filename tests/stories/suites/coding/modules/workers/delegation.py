@@ -1,3 +1,4 @@
+from tests.stories.core.modules.tasks.support.holder_assignee_check import task_assignees
 from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from tests.stories.core.support.agent_labels import agent_number
 from core.modules.agents.models.agent import Agent
@@ -136,11 +137,12 @@ def delegated(new_story):
 
 
 
-def test_a_task_is_not_assigned_to_who_holds_it_or_when_it_has_ended(delegated):
+def test_assigning_a_task_to_who_holds_it_changes_nothing_and_an_ended_task_is_not_assigned(delegated):
     story, _, worker = delegated
-    story.expect_refusal(f"task assign 1 --to {agent_number(story, worker.id)}", "nothing to move", actor=story.agent)
+    story.expect_success(f"task assign 1 --to {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_text("task show 1", "state: started", f"holder_id: {worker.id}", actor=story.agent)
     story.run('task cancel 2 --reason "no"', actor=story.agent)
-    story.expect_refusal(f"task assign 2 --to {agent_number(story, story.agent.id)}", "only an open, blocked or started task moves", actor=story.agent)
+    story.expect_refusal(f"task assign 2 --to {agent_number(story, story.agent.id)}", "only an unfinished task moves", actor=story.agent)
 
 
 def test_a_comment_on_a_task_with_no_worker_tells_no_worker_and_links_none(new_story):
@@ -186,9 +188,8 @@ def test_a_dispatch_on_a_file_an_ended_worker_changed_is_refused_naming_it(new_s
 def test_several_tasks_go_to_one_worker_and_only_the_first_starts(new_story):
     story, _, worker = delegated_story(new_story)
     story.expect_text("task show 1", "state: started", actor=story.agent)
-    story.expect_text("task info 1", f"assigned to: agent {worker.id}", actor=story.agent)
     story.expect_text("task show 2", "state: open", actor=story.agent)
-    story.expect_text("task info 2", f"assigned to: agent {worker.id}", actor=story.agent)
+    story.expect_rows(task_assignees(story).get(1) == [worker.id], task_assignees(story).get(2) == [worker.id], detail=str(task_assignees(story)))
 
 
 def test_the_last_delivery_delivers_the_worktree_and_the_merge_closes_every_task(new_story):

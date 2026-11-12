@@ -5,7 +5,7 @@ from engine.enums.actor_type import ActorType
 
 from tests.stories.core.modules.tasks.support.holder_assignee_check import assert_holders_are_assignees, task_assignees
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.support.holder_fixtures import FreeThirdTask, dispatched
+from tests.stories.suites.coding.modules.workers.support.holder_fixtures import free_third_task
 
 FREE_TASK = 3
 WAITING_TASK = 2
@@ -13,9 +13,7 @@ WAITING_TASK = 2
 
 @pytest.fixture
 def free_task(new_story):
-    story = new_story(fixture=FreeThirdTask)
-    story.worker = dispatched(story)
-    return story
+    return free_third_task(new_story)
 
 
 def worker_label(story) -> str:

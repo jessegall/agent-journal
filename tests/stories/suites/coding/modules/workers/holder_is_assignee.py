@@ -1,9 +1,6 @@
-from core.modules.tasks.migrations.m025_task_assignments import TaskAssignmentsMigration
-from engine.database.database import Database
-from engine.database.statement import Statement
 from tests.stories.core.modules.tasks.support.holder_assignee_check import assert_holders_are_assignees, task_assignees
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.support.holder_fixtures import UpgradedTasks, WorkerOnFirstTask, WorkerOnTwoTasks, dispatched
+from tests.stories.suites.coding.modules.workers.support.holder_fixtures import UpgradedTasks, worker_on_first_task, worker_on_two_tasks
 
 HELD_UNASSIGNED_TASK = 3
 
@@ -14,8 +11,8 @@ def expect_assignee(story, task_id: int, actor_id: int) -> None:
 
 
 def test_a_task_a_worker_holds_shows_the_worker_in_the_window_task_info_and_task_list(new_story):
-    story = new_story(fixture=WorkerOnTwoTasks)
-    worker = dispatched(story)
+    story = worker_on_two_tasks(new_story)
+    worker = story.worker
     story.expect_success("task test 1", actor=worker)
     assert_holders_are_assignees(story)
     expect_assignee(story, 1, worker.id)
@@ -28,8 +25,8 @@ def test_a_task_a_worker_holds_shows_the_worker_in_the_window_task_info_and_task
 
 
 def test_the_main_agent_parks_a_task_then_moves_it_to_worker_734_and_it_never_shows_the_main_agent(new_story):
-    story = new_story(fixture=WorkerOnFirstTask)
-    worker = dispatched(story)
+    story = worker_on_first_task(new_story)
+    worker = story.worker
     story.expect_success("task start 2", actor=story.agent)
     assert_holders_are_assignees(story)
     story.expect_success(f"task assign 2 --to {agent_number(story, worker.id)}", actor=story.agent)
@@ -40,8 +37,8 @@ def test_the_main_agent_parks_a_task_then_moves_it_to_worker_734_and_it_never_sh
 
 
 def test_assigning_a_blocked_task_held_by_x_to_y_clears_the_hold_and_the_task_stays_blocked_and_shows_y(new_story):
-    story = new_story(fixture=WorkerOnFirstTask)
-    worker = dispatched(story)
+    story = worker_on_first_task(new_story)
+    worker = story.worker
     story.expect_success("task start 2", actor=story.agent)
     story.expect_success('task block 2 --reason "waits for the price list"', actor=story.agent)
     assert_holders_are_assignees(story)
@@ -60,8 +57,8 @@ def test_no_listener_or_backfill_assigns_a_task_because_it_holds_it(new_story):
 
 
 def test_path_1_a_blocked_task_cannot_be_assigned_away_while_the_old_holder_stays(new_story):
-    story = new_story(fixture=WorkerOnTwoTasks)
-    worker = dispatched(story)
+    story = worker_on_two_tasks(new_story)
+    worker = story.worker
     story.expect_success('task block 1 --reason "the database is down"', actor=worker)
     assert_holders_are_assignees(story)
     story.expect_success(f"task assign 1 --to {agent_number(story, story.agent.id)}", actor=story.agent)
@@ -72,8 +69,8 @@ def test_path_1_a_blocked_task_cannot_be_assigned_away_while_the_old_holder_stay
 
 
 def test_path_2_an_agent_cannot_start_a_task_queued_for_another_worker(new_story):
-    story = new_story(fixture=WorkerOnTwoTasks)
-    worker = dispatched(story)
+    story = worker_on_two_tasks(new_story)
+    worker = story.worker
     story.expect_refusal("task start 2", f"task 2 is assigned to worker {agent_number(story, worker.id)}", actor=story.agent)
     assert_holders_are_assignees(story)
     expect_assignee(story, 2, worker.id)
@@ -81,7 +78,5 @@ def test_path_2_an_agent_cannot_start_a_task_queued_for_another_worker(new_story
 
 def test_path_3_a_migration_never_assigns_by_holder_id(new_story):
     story = new_story(fixture=UpgradedTasks)
-    database = story.container.get(Database)
-    for statement in TaskAssignmentsMigration.statements:
-        database.update(Statement(statement))
     story.expect_rows(HELD_UNASSIGNED_TASK not in task_assignees(story), detail=str(task_assignees(story)))
+    story.expect_text(f"task show {HELD_UNASSIGNED_TASK}", "state: started", actor=story.agent)

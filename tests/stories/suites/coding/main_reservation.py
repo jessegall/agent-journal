@@ -51,13 +51,13 @@ def test_a_reserved_task_reaches_a_stopping_main_agent_with_auto_mode_off(new_st
     story.expect_text("task show 1", "state: started", f"holder_id: {story.agent.id}", actor=story.agent)
 
 
-def test_an_open_task_stays_with_auto_mode_while_a_reservation_ends_when_the_main_agent_starts_it(new_story):
+def test_an_open_task_stays_with_auto_mode_and_stays_assigned_when_the_main_agent_starts_it(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     expect_value(assigned_task(story), None)
     story.expect_success(f"task assign 1 --to {agent_number(story, story.agent.id)}", actor=story.agent)
     expect_value(assigned_task(story).id, 1)
     story.expect_success("task start 1", actor=story.agent)
-    story.expect_text("task info 1", "assigned to: nobody", actor=story.agent)
+    story.expect_text("task info 1", f"assigned to: agent {story.agent.id}", actor=story.agent)
     story.expect_text("task show 1", f"holder_id: {story.agent.id}", actor=story.agent)
 
 
