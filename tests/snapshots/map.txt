@@ -2,6 +2,7 @@ engine  The building blocks every module stands on; it imports no module.
   contract
     actor  Who acts on the journal: the actor a command carries, and the check that an actor is a person.
     agent  What the engine knows of agents: groups, roles, policy, checkouts and where an agent may write.
+    area  The marker every engine area folder declares itself with: what the area is for and who may import it.
     bookkeeping  The read commands of the event log and the refusal log.
     caller  Who runs a command line: the caller, its request and the chain of processes it came through.
     chat  Declarations of chat marks, their buttons and docked items.
@@ -48,7 +49,6 @@ engine  The building blocks every module stands on; it imports no module.
     setting  Settings: declarations, rules, groups and the reading of values.
     skill  Skills: declarations, contents, digests and the shape a skill must have.
     subcommand  Subcommands: arguments, output and how rows and values are printed.
-    tasks  Events for several tasks changing together.
     template  The declaration of a template.
     text  Text helpers: explanations, search terms and digests.
     ticker  Timed handlers: which are due and how often one runs.
@@ -107,7 +107,7 @@ core  The modules that come with every journal.
   suggestions  Adds suggestions the journal offers the person once, shown as a chat mark the person accepts or declines. Needs: journal.core.actors, journal.core.environments, journal.core.chat.
   tasks  Adds tasks, units of work current by an agent, with their log lines and dependencies, and the rules that keep an agent at its task. Needs: journal.core.actors, journal.core.environments, journal.core.agents, journal.core.drivers, journal.core.chat, journal.core.docking, journal.core.settings, journal.core.assignments.
   templates  Adds templates: reusable shapes for tasks, plans and critiques, and the testing template a plan runs at each phase end. Needs: journal.core.actors, journal.core.drivers, journal.core.messages, journal.core.documents, journal.core.plans, journal.core.agents, journal.core.skills.
-  tools  Adds the tools the journal supports, starting with Graphify: a card for each on the Tools page to install, turn on or off and refresh, and a managed hook, held for every agent program while a tool is on, that refreshes Graphify's graph in the background after each new commit. Needs: journal.core.actors, journal.core.settings, journal.core.drivers.
+  tools  Adds the tools the loaded suites ship: a card for each on the Tools page to install, turn on or off and refresh, and a managed hook, held for every agent program while a tool is on, that refreshes the tool's output in the background after each new commit. Each tool comes from the suite that binds ToolRunners. Needs: journal.core.actors, journal.core.settings, journal.core.drivers.
   transcriptions  Adds transcriptions: transcripts kept in the project, pasted or fetched, which an agent turns into summaries and other rows linked back to them, and the Transcriptions page. Needs: journal.core.actors, journal.core.environments, journal.core.agents, journal.core.drivers, journal.core.tasks, journal.core.documents, journal.core.mcp.
   triggers  Adds triggers: a phrase in the user's words or in a tool call, or a time, gives the agent a text or refuses. Needs: journal.core.actors, journal.core.agents, journal.core.chat, journal.core.drivers, journal.core.settings, journal.core.processes, journal.core.skills.
   tunnel  Chooses the tunnel through which a phone or a share link reaches this computer, and ships none by default. Needs: journal.core.settings.

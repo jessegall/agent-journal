@@ -48,7 +48,7 @@ def test_443_the_map_command_prints_seven_top_folders_with_one_line_for_every_on
 def test_444_the_engine_areas_show_contract_areas_first_and_internal_ones_after_with_one_line_for_every_area(new_story):
     story = new_story()
     lines = top_folder_lines("engine")
-    areas = sorted(folder.name for folder in (SOURCE / "engine").iterdir() if folder.is_dir() and folder.name not in ("__pycache__", "errors", "enums"))
+    areas = sorted(folder.name for folder in (SOURCE / "engine").iterdir() if folder.is_dir() and folder.name not in ("__pycache__", "errors", "enums") and not CodeMap.holds_only_caches(folder))
     shown = [line.split("  ")[2] for line in lines if line.startswith("    ")]
     story.expect_rows(lines.index("  contract") < lines.index("  internal"), sorted(shown) == areas, detail=str(sorted(set(areas) ^ set(shown))))
     story.expect_rows(all(len(line.strip().split("  ", 1)) == 2 for line in lines if line.startswith("    ")), detail="an area line has no summary")
@@ -124,3 +124,10 @@ def test_the_map_write_is_refused_in_a_checkout_with_no_snapshots_folder(new_sto
     story = new_story(fixture=UserJoined)
     small_tree(story.home.project_folder)
     story.expect_refusal("map --write", "has no tests/snapshots folder to save the map in", actor=story.user)
+
+
+def test_a_folder_left_with_only_its_cache_after_a_move_is_no_line_of_the_map(new_story, tmp_path):
+    story = new_story()
+    source = small_tree(tmp_path)
+    (source / "engine" / "ledger" / "__pycache__").mkdir(parents=True)
+    expect_value(CodeMap(source, FileAccess.shared()).lines(), ["engine  " + TOP_FOLDERS["engine"], "  contract", "    clock  Tells the time."])
