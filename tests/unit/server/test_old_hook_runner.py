@@ -8,13 +8,20 @@ from unittest.mock import ANY, Mock
 import pytest
 
 from engine.driver.errors.old_hook_runner_error import OldHookRunnerError
+from engine.time.clock import Clock
 from server.endpoints.hook_endpoint import HookEndpoint
 from server.enums.queue_priority import QueuePriority
 
 
+def journal_home(folder: Path) -> JournalHome:
+    home = JournalHome(folder / ".journal")
+    home.folder.mkdir()
+    return home
+
+
 @pytest.mark.parametrize("event,refused", [("stop", True), ("pre_tool_use", False)])
-def test_an_old_hook_runner_gets_an_immediate_unchecked_answer(event, refused):
-    context = SimpleNamespace(home=JournalHome(Path('/nonexistent-journal-home') / '.journal'), hook_database=SimpleNamespace(used=lambda priority, limit, owner, request: nullcontext()), hook_limit_seconds=1, agent_hook_limit_seconds=1, stop_limit_seconds=1,
+def test_an_old_hook_runner_gets_an_immediate_unchecked_answer(event, refused, tmp_path):
+    context = SimpleNamespace(home=journal_home(tmp_path), hook_database=SimpleNamespace(used=lambda priority, limit, owner, request: nullcontext()), hook_limit_seconds=1, agent_hook_limit_seconds=1, stop_limit_seconds=1, clock=Clock(),
                               listener_thread=SimpleNamespace(wake=Mock()))
     endpoint = HookEndpoint(Mock(), context)
     endpoint.routed_answer = Mock(side_effect=OldHookRunnerError.detected())
@@ -25,9 +32,9 @@ def test_an_old_hook_runner_gets_an_immediate_unchecked_answer(event, refused):
 
 
 @pytest.mark.parametrize("role,priority,limit", [("worker", QueuePriority.AGENT_HOOK, 45), ("helper", QueuePriority.AGENT_HOOK, 45), ("main", QueuePriority.MAIN_AGENT_HOOK, 1), (None, QueuePriority.MAIN_AGENT_HOOK, 1)])
-def test_a_hook_takes_its_place_in_the_queue_by_its_role(role, priority, limit):
+def test_a_hook_takes_its_place_in_the_queue_by_its_role(role, priority, limit, tmp_path):
     used = Mock(return_value=nullcontext())
-    context = SimpleNamespace(home=JournalHome(Path('/nonexistent-journal-home') / '.journal'), hook_database=SimpleNamespace(used=used), hook_limit_seconds=1, agent_hook_limit_seconds=45, stop_limit_seconds=1,
+    context = SimpleNamespace(home=journal_home(tmp_path), hook_database=SimpleNamespace(used=used), hook_limit_seconds=1, agent_hook_limit_seconds=45, stop_limit_seconds=1, clock=Clock(),
                               listener_thread=SimpleNamespace(wake=Mock()))
     endpoint = HookEndpoint(Mock(), context)
     endpoint.routed_answer = Mock(side_effect=OldHookRunnerError.detected())
