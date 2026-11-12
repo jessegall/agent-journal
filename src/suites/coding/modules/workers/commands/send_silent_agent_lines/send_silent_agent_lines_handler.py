@@ -30,6 +30,7 @@ from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_M
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
+from suites.coding.support.next_task import NextTask
 
 CHECKED_AGENTS_REASON = "One activity row for each running agent and each worker that is not retired, which the agent limits bound."
 from engine.query.conditions.prefix import Prefix
@@ -48,8 +49,9 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
     disabled_scopes = [ActorScope]
 
     def __init__(self, home: JournalHome, queries: Queries, settings: SettingValues,
-                 work: MainAgentWork, nudger: Nudger, bus: Bus, stop: WorkerStop, main_line: MainAgentLine, places: WorkerPlaces, task_query: TaskQuery, agent_rows: AgentRows, inbox: MergerInbox, questions: WorkerQuestions) -> None:
-        self.task_query, self.agent_rows, self.inbox, self.questions = task_query, agent_rows, inbox, questions
+                 work: MainAgentWork, nudger: Nudger, bus: Bus, stop: WorkerStop, main_line: MainAgentLine, places: WorkerPlaces, task_query: TaskQuery, agent_rows: AgentRows, inbox: MergerInbox, questions: WorkerQuestions, assigner: NextTask) -> None:
+        self.assigner = assigner
+        self.task_query,self.agent_rows, self.inbox, self.questions = task_query, agent_rows, inbox, questions
         self.home, self.queries, self.settings = home, queries, settings
         self.work, self.nudger, self.bus, self.stop, self.main_line, self.places = work, nudger, bus, stop, main_line, places
 
@@ -57,7 +59,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         agents = tuple(agent for agent in self.checked_agents() if agent.halted_at is None)
         agent_ids = tuple(agent.id for agent in agents)
         activities = {row.id: row for row in self.queries.query(AgentActivity).matching(Among("id", agent_ids)).full_table(CHECKED_AGENTS_REASON).all_rows()}
-        working = set(self.work.unfinished_tasks(agent_ids))
+        working = set(self.assigner.own_tasks(agent_ids))
         tasks_remain = self.task_query.delegation_candidates().exists()
         worktrees = tuple(self.queries.query(Worktree).all_rows())
         workers = {row.session_agent_id for row in worktrees}

@@ -26,7 +26,7 @@ AGENT_CARDS_SELECT = (
     " coalesce(dispatch.description, '') AS job_description, coalesce(dispatch.instruction, '') AS job_instruction,"
     " coalesce(current_job.description, '') AS helper_job_description, coalesce(current_job.brief, '') AS helper_job_brief, coalesce(current_job.title, '') AS helper_job_title,"
     " coalesce(nullif(current_job.program, ''), agents.program) AS helper_job_program, current_job.new_session AS helper_job_new_session,"
-    " (current_job.id IS NOT NULL AND current_job.ended_at IS NULL) AS is_helper_job_open,"
+    " (current_job.id IS NOT NULL AND current_job.started_at IS NOT NULL AND current_job.ended_at IS NULL) AS is_helper_job_open,"
     f" json_extract(agents.metadata, '$.\"{DRIVERS_MODULE}\".{COMPACTION_ENDED_AT}') AS compaction_ended_at,"
     " (SELECT count(*) FROM agent_sessions WHERE agent_sessions.session_agent_id = agents.id) AS session_count,"
     " (SELECT agent_sessions.end_reason FROM agent_sessions WHERE agent_sessions.session_agent_id = agents.id AND agent_sessions.session != agents.session"

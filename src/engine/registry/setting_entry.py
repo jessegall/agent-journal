@@ -4,6 +4,7 @@ from typing import Any
 
 from engine.setting.setting_declaration import GROUP_TYPE, SettingDefault
 from engine.setting.setting_rule_text import SettingRuleText
+from engine.enums.setting_component import SettingComponent
 from engine.enums.setting_type import SettingType
 from engine.setting.setting_value import SettingValue
 
@@ -32,11 +33,17 @@ class SettingEntry:
     rule: str = ""
     requires_main_agent: bool = False
     required_settings: Sequence[str] = ()
+    screen: str = ""
+    section: str = ""
+    component: str = ""
 
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "SettingEntry":
         return cls(stored["key"], stored["module"], stored["parent"], stored["title"], stored["description"], stored["type"], stored["default"],
-                   stored["secret"], stored["scope"], tuple(stored["choices"]), stored["toggleable"], stored["enabled"], stored.get("target", ""), stored.get("person_set", False), stored.get("rule", ""), stored.get("requires_main_agent", False), tuple(stored.get("required_settings", ())))
+                   stored["secret"], stored["scope"], tuple(stored["choices"]), stored["toggleable"], stored["enabled"], stored.get("target", ""), stored.get("person_set", False), stored.get("rule", ""), stored.get("requires_main_agent", False), tuple(stored.get("required_settings", ())), stored.get("screen", ""), stored.get("section", ""), stored.get("component", ""))
+
+    def drawn_by(self) -> SettingComponent:
+        return SettingComponent(self.component) if self.component else SettingComponent.default_for(SettingType(self.type))
 
     def problems(self, value: object) -> list[str]:
         return list(SettingRuleText().problems(self.rule, self.key, value))

@@ -163,4 +163,4 @@ class AgentHookRoute(HookRoute):
         environment = self.queries.query(Environment).filter(name=event.environment).first()
         if environment is None:
             return None
-        return self.bus.run(StartAgent(event.session, event.program, role, parent_id), Actor.core(), environment_id=environment.id)
+        return self.bus.run(StartAgent(event.session, event.program, role, parent_id, is_announced=True), Actor.core(), environment_id=environment.id)

@@ -86,7 +86,7 @@ class AgentDispatcher:
         if self.has_program(agent):
             return StandingState.RUNNING
         recorded = agent.standing
-        if recorded is not StandingState.RUNNING or agent.is_main:
+        if recorded is not StandingState.RUNNING or agent.is_main or agent.announced_at is not None:
             return recorded
         return StandingState.STARTING if agent.launched_at is not None else StandingState.UNSTARTED
 

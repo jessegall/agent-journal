@@ -59,6 +59,7 @@ class Agent(EnvironmentScoped, Model):
     usage_limit_ends_at: Timestamp | None = None
     interrupted_at: Timestamp | None = None
     launched_at: Timestamp | None = None
+    announced_at: Timestamp | None = None
     halted_at: Timestamp | None = None
     launch_failed_at: Timestamp | None = None
 
@@ -126,7 +127,7 @@ class Agent(EnvironmentScoped, Model):
             return StandingState.FAILED
         if self.ended_at is not None:
             return StandingState.ENDED
-        if self.is_main or self.pid is not None or self.launched_at is not None:
+        if self.is_main or self.pid is not None or self.launched_at is not None or self.announced_at is not None:
             return StandingState.RUNNING
         return StandingState.UNSTARTED
 

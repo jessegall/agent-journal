@@ -13,7 +13,8 @@ class SettingDeclaration:
     description, its type (group or reference for a node that is no value), default, scope and choices,
     whether it is a secret or a value an agent may set, for a group whether it can be switched off, for a
     reference the group it places, whether only a person may change it, and the text of the rule its value
-    must follow."""
+    must follow. It also says where it is drawn, by the screen and the section it sits in and the component
+    that draws it; a component left empty is the one its type gets."""
 
     title: str
     description: str
@@ -29,3 +30,6 @@ class SettingDeclaration:
     rule: str = ""
     requires_main_agent: bool = False
     required_settings: Sequence[str] = ()
+    screen: str = ""
+    section: str = ""
+    component: str = ""

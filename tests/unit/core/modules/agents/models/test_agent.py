@@ -32,3 +32,10 @@ def test_the_standing_a_row_records_is_read_without_a_launcher():
         Agent(id=46, creator_id=1, session="s-7", program="claude", role="helper", number=6, pid=700), agent("main", 1),
         agent("helper", 7, moment), Agent(id=47, creator_id=1, session="s-8", program="claude", role="helper", number=8, ended_at=moment, launch_failed_at=moment))]
     assert recorded == ["never_started", "running", "running", "running", "ended", "failed"]
+
+
+def test_a_session_that_announced_itself_reads_running_and_a_helper_not_yet_launched_reads_never_started():
+    moment = Timestamp.parsed("2026-01-01T00:00:00+00:00")
+    announced = Agent(id=48, creator_id=1, session="s-9", program="claude", role="helper", number=9, announced_at=moment)
+    unlaunched = Agent(id=49, creator_id=1, session="s-10", program="claude", role="helper", number=10)
+    assert [announced.standing.value, unlaunched.standing.value] == ["running", "never_started"]
