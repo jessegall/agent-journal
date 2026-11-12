@@ -2,6 +2,7 @@ from types import SimpleNamespace
 
 from core.modules.processes.commands.send_reading_notices.send_reading_notices import SendReadingNotices
 from core.modules.processes.commands.send_reading_notices.send_reading_notices_handler import SendReadingNoticesHandler
+from core.modules.processes.support.run_visibility import RunVisibility
 
 MERGE = SimpleNamespace(id=3, session_agent_id=2, is_journal_merge=True)
 
@@ -21,5 +22,5 @@ class MergeRows:
 
 
 def test_a_merge_the_journal_ran_itself_gets_no_reading_notice_and_reads_no_part():
-    handler = SendReadingNoticesHandler(MergeRows(), NoReads(), NoReads(), NoReads(), NoReads(), NoReads())
+    handler = SendReadingNoticesHandler(MergeRows(), NoReads(), RunVisibility(NoReads(), NoReads()), NoReads(), NoReads(), NoReads())
     handler.handle(SendReadingNotices(MERGE.id), NoReads())

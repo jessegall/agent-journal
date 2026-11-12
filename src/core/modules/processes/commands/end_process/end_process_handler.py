@@ -30,10 +30,7 @@ class EndProcessHandler(Handler[EndProcess, Process]):
         return ended
 
     def failed_test_code(self, process: Process) -> int:
-        """The exit code of a test part that failed while its line still ended well; a merge the journal ran
-        itself has one part, whose code the line already gave."""
-        if process.is_journal_merge:
-            return 0
-        parts = self.visibility.parts(process.id)
+        """The exit code of a test part that failed while its line still ended well."""
+        parts = self.visibility.shown_parts(process)
         return next((part.exit_code for part in parts if part.category.is_long_running and part.exit_code), 0)
 

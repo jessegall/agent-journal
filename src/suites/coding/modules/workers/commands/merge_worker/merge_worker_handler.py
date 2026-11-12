@@ -90,13 +90,17 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         refusal = self.refused_merge(worktree, environment, commit_before_merge, context)
         if refusal:
             return MergeOutcome(self.rows.required(Worktree, worktree.id), (), refusal)
-        self.git.merge(environment.folder, worktree, f"task {task.id}: {task.title}, from {AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text}")
+        self.git.merge(environment.folder, worktree, f"{self.merged_name(worktree, task)}: {task.title}, from {AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text}")
         commit_after_merge = self.git.tip(environment.folder, worktree.base_branch)
         followup = self.followups.record_followup(worktree, environment.folder, commit_before_merge, commit_after_merge, context)
         if followup is not None:
             return self.finished_merge(worktree, environment, followup, command, context)
         merge_outcome = self.bus.run_with_context(RecordWorktreeMerge(worktree.id, (), commit_before_merge, commit_after_merge), context)
         return self.removed(environment, merge_outcome.worktree, context)
+
+    def merged_name(self, worktree: Worktree, task: Task) -> str:
+        merged = [task_id for task_id in self.units.unit(worktree.session_agent_id).task_ids if task_id not in worktree.merged_tasks()] or [task.id]
+        return f"{'task' if len(merged) == 1 else 'tasks'} {', '.join(str(task_id) for task_id in merged)}"
 
     def finished_merge(self, worktree: Worktree, environment: Environment, followup: MergeFollowup, command: MergeWorker, context: Context) -> MergeOutcome:
         self.followups.run(followup, command.reconciled, context)
