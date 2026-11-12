@@ -1,3 +1,4 @@
+import ChangeFoot from "./ChangeFoot.vue";
 import SettingBackPath from "./SettingBackPath.vue";
 import SettingBanner from "./SettingBanner.vue";
 import SettingChoiceField from "./SettingChoiceField.vue";
@@ -19,6 +20,7 @@ import SettingSegments from "./SettingSegments.vue";
 import SettingTextField from "./SettingTextField.vue";
 import SettingThreeWayCap from "./SettingThreeWayCap.vue";
 import SettingToggle from "./SettingToggle.vue";
+import SettingsScreen from "./SettingsScreen.vue";
 import SettingUsageBar from "./SettingUsageBar.vue";
 
 export {CUSTOM_PRESET, currentPreset} from "./currentPreset.js";
@@ -28,22 +30,12 @@ export {numberRuleProblem, ruleOf} from "./numberRule.js";
 export {useSettingsDraft} from "./useSettingsDraft.js";
 export {filledPercent, isFull, overPercent} from "./usageFull.js";
 
-// the setting components a settings screen draws a setting with: one entry for each value of the SettingComponent enum
-// (src/engine/enums/setting_component.py), found by that value
-export const settingComponents = Object.freeze({
-    "toggle": SettingToggle,
-    "number": SettingNumberField,
-    "choice": SettingChoiceField,
-    "entry-list": SettingEntryList,
-    "number-list": SettingNumberList,
-    "text": SettingTextField,
-    "keyed-cap-table": SettingKeyedCapTable,
-    "three-way-cap": SettingThreeWayCap,
-    "per-type-override": SettingPerTypeOverrideRow,
-});
+export {resolveSettingComponent, settingComponents} from "./registry.js";
+export {componentNameOf, hasComponent, sectionKeyOf, sectionsOf} from "./sections.js";
 
 // the pieces around the settings, which no setting names
 export {
+    ChangeFoot,
     SettingBackPath,
     SettingBanner,
     SettingChoiceField,
@@ -66,9 +58,5 @@ export {
     SettingThreeWayCap,
     SettingToggle,
     SettingUsageBar,
+    SettingsScreen,
 };
-
-export function resolveSettingComponent(name) {
-    if (!Object.hasOwn(settingComponents, name)) throw new Error(`no setting component is named "${name}"`);
-    return settingComponents[name];
-}

@@ -3,7 +3,7 @@ from pathlib import Path
 
 from engine.enums.setting_component import SettingComponent
 
-REGISTRY_FILE = Path(__file__).resolve().parents[5] / "src" / "core" / "modules" / "setting_components" / "web" / "src" / "index.js"
+REGISTRY_FILE = Path(__file__).resolve().parents[5] / "src" / "core" / "modules" / "setting_components" / "web" / "src" / "registry.js"
 REGISTRY_KEY = re.compile(r'^\s+"([a-z-]+)":', re.MULTILINE)
 
 
