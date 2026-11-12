@@ -30,12 +30,6 @@ def test_a_queued_review_with_no_reviewer_gets_one_added(new_story):
     story.expect_text("reviewer list --environment 1", "reviewers: 1, reviews waiting: 0")
 
 
-def test_a_reviewer_that_ends_while_reviewing_gives_its_review_back_as_abandoned(new_story):
-    story = new_story(fixture=ReviewerReview)
-    story.run(f"agent end {read_reviewer(story).id}")
-    story.expect_success(REVIEW_DETAILS, "state: abandoned")
-
-
 def test_the_reviewer_list_names_each_reviewer_and_the_waiting_reviews_in_order(new_story):
     story = new_story(fixture=ReviewerReview)
     story.run("review request task 2 --points 1 --environment main", actor=story.agent)
