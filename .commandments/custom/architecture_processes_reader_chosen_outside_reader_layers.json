@@ -13,24 +13,22 @@
                 ]
             },
             {
-                "argument": {
-                    "descendant": {
-                        "all": [
-                            {
-                                "is": "member-access"
-                            },
-                            {
-                                "nameIn": [
-                                    "id",
-                                    "is_default"
-                                ]
-                            },
-                            {
-                                "of": "receiver",
-                                "nameMatches": "^readers?$"
-                            }
-                        ]
-                    }
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "member-access"
+                        },
+                        {
+                            "nameIn": [
+                                "id",
+                                "is_default"
+                            ]
+                        },
+                        {
+                            "of": "receiver",
+                            "nameMatches": "^readers?$"
+                        }
+                    ]
                 }
             },
             {

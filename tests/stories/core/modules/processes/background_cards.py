@@ -34,11 +34,11 @@ def moved(story: Story, process: Process) -> Process:
 
 
 def docked(story: Story, session: str = "s-1") -> list[str]:
-    """The agent stops, the dock seconds pass, and its next hooks, a stop and a tool use, dock a long run: the
+    """The agent stops, the dock seconds pass, and its next hooks, two stops and a tool use, dock a long run: the
     lines said at those hooks."""
     story.hook(session, HookSamples.stop())
     story.advance(DOCK_SECONDS)
-    lines = [*story.hook(session, HookSamples.stop()).lines, *story.hook(session, READ).lines]
+    lines = [line for hook in (HookSamples.stop(), HookSamples.stop(), READ) for line in story.hook(session, hook).lines]
     story.run_listeners()
     return lines
 
@@ -73,7 +73,7 @@ def test_a_helpers_background_run_gets_the_card_and_the_title_ask(new_story):
     process = worker_run(story, "python3 build_site.py", CommandCategory.BUILD)
     story.container.get(Bus).run(MoveProcess(process.id), worker, environment_id=1)
     lines = docked(story, "s-reader")
-    story.expect_text(MARKS, f"process:{process.id}", actor=story.user)
+    story.expect_text(DOCK, "processes.output", f"Output {process.id}", actor=story.user)
     expect_value_line(lines, RUN_NAME.nudge(process=process.id).text)
 
 
@@ -87,16 +87,17 @@ def test_a_run_moved_by_the_foreground_limit_keeps_its_card_and_its_title_ask(ma
     expect_value_line(lines, RUN_NAME.nudge(process=process.id).text)
 
 
-def test_a_read_that_moved_a_quick_read_and_a_plugin_run_never_show_a_card(main_story):
+def test_a_plugin_run_a_read_that_moved_and_a_quick_read_never_show_a_card(main_story):
+    main_story.expect_absent(DOCK, "processes.output", actor=main_story.user)
+    plugin = side_run(main_story, main_story.agent, "make lint", CommandCategory.CHECK, plugin="sample")
+    docked(main_story)
+    main_story.expect_absent(MARKS, f"process:{plugin.id}", actor=main_story.user)
     quick = started_run(main_story, "cat small.log", CommandCategory.READ)
     end_run(main_story, quick, "line\n")
     slow = moved(main_story, started_run(main_story, "grep -r cart logs", CommandCategory.SEARCH))
     docked(main_story)
     main_story.expect_absent(MARKS, f"process:{slow.id}", actor=main_story.user)
     main_story.expect_absent(MARKS, f"process:{quick.id}", actor=main_story.user)
-    plugin = side_run(main_story, main_story.agent, "make lint", CommandCategory.CHECK, plugin="sample")
-    docked(main_story)
-    main_story.expect_absent(MARKS, f"process:{plugin.id}", actor=main_story.user)
 
 
 def test_the_open_list_shows_a_background_run_that_the_running_state_leaves_out(main_story):

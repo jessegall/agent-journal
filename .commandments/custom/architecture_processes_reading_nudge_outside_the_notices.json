@@ -18,9 +18,23 @@
                         ]
                     },
                     {
-                        "argument": {
-                            "nameMatches": "^(${reading_declarations})$"
-                        }
+                        "all": [
+                            {
+                                "name": "send"
+                            },
+                            {
+                                "descendant": {
+                                    "all": [
+                                        {
+                                            "is": "identifier"
+                                        },
+                                        {
+                                            "nameMatches": "^(${reading_declarations})$"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
                     }
                 ]
             },
