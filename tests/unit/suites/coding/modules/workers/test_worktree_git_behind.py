@@ -15,7 +15,7 @@ OTHER_BRANCH = "workers/other"
 def cut_worktree(tmp_path, base_branch: str = BASE_BRANCH, name: str = "worktree", branch: str = WORKER_BRANCH) -> tuple[SampleRepository, Worktree]:
     repository = SampleRepository(tmp_path / "repository")
     if not repository.folder.exists():
-        repository.folder.mkdir()
+        repository.folder.mkdir(parents=True)
         repository.git("init", "--initial-branch", BASE_BRANCH)
         repository.committed("cart.py", "TOTAL = 0\n", "The cart")
     folder = tmp_path / name

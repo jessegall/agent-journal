@@ -7,6 +7,7 @@ from pathlib import Path, PurePosixPath
 from engine.errors.refusal import Refusal
 from engine.enums.file_status import FileStatus
 from core.modules.environments.models.environment import Environment
+from suites.coding.modules.workers.models.base_commit import BaseCommit
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.task_branch_commit import TaskBranchCommit
 from suites.coding.modules.workers.support.worker_folder_runs import WorkerFolderRuns
@@ -64,6 +65,28 @@ class MemoryWorktreeGit(WorktreeGit):
         if not self.history.has_branch(branch):
             raise Refusal(f"branch {branch} does not exist in {folder}", "make it there, or name another with journal environment edit <name> --branch <branch>")
         return self.history.branches[branch]
+
+    def behind(self, worktree: Worktree) -> int:
+        return len(self.base_changes(worktree))
+
+    def base_changes(self, worktree: Worktree) -> tuple[BaseCommit, ...]:
+        head = self.history.branches[self.history.folder_branch(Path(worktree.folder))]
+        commit = self.history.commits[self.tip(worktree.folder, worktree.base_branch)]
+        changes: list[BaseCommit] = []
+        while not self.history.is_ancestor(commit.id, head):
+            first_parent = self.history.commits[commit.parents[0]]
+            own_merge = len(commit.parents) > 1 and self.history.is_ancestor(commit.parents[1], head)
+            if not own_merge:
+                changed = tuple(sorted(TreeChanges(first_parent.tree, commit.tree).names()))
+                changes.append(BaseCommit(commit.id[:10], commit.message.splitlines()[0], changed))
+            commit = first_parent
+        return tuple(changes)
+
+    def overlap_lines(self, worktree: Worktree, names: tuple[str, ...]) -> int:
+        head = self.history.branches[self.history.folder_branch(Path(worktree.folder))]
+        base = self.tip(worktree.folder, worktree.base_branch)
+        start, end = self.history.commits[self.history.merge_base(head, base)].tree, self.history.commits[base].tree
+        return sum(len(set(start.get(name, "").splitlines()) ^ set(end.get(name, "").splitlines())) for name in names)
 
     def cut(self, folder: str, worktree: Worktree, start: str) -> None:
         path = Path(worktree.folder)

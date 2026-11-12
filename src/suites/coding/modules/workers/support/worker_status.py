@@ -32,6 +32,7 @@ class WorkerStatus:
     question_lines: tuple[str, ...]
     standing: StandingState
     unit_line: str
+    behind_line: str
 
     @property
     def blocked_tasks(self) -> tuple[Task, ...]:

@@ -325,6 +325,16 @@ class WorktreeGit:
                 changes.append(BaseCommit.parsed(short_id, subject, names))
         return tuple(changes)
 
+    def overlap_lines(self, worktree: Worktree, names: tuple[str, ...]) -> int:
+        """How many lines the base branch changed, since the worktree was cut from it, in these files."""
+        if not names:
+            return 0
+        base = self.tip(worktree.folder, worktree.base_branch)
+        start = self.merge_base(worktree.folder, base, "HEAD")
+        listing = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--numstat", start, base, "--", *names).stdout
+        counts = (line.split("\t")[:2] for line in listing.splitlines() if line)
+        return sum(int(added) + int(deleted) for added, deleted in counts if added.isdigit() and deleted.isdigit())
+
     def is_own_merge(self, worktree: Worktree, parents: list[str]) -> bool:
         return len(parents) > 1 and self.is_ancestor(worktree.folder, parents[1], "HEAD")
 

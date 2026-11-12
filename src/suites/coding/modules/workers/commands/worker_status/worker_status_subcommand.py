@@ -1,5 +1,7 @@
 from suites.coding.modules.workers.support.work_units import WorkUnits
 from suites.coding.modules.workers.support.worktree_runs import WorktreeRuns
+from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS
 from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
@@ -37,8 +39,8 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
     cli_name = "worker"
     name = "status"
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, unread_skills: UnreadSkills, files: SkillFiles, resume: WorkerResume, guidance: WorkerGuidance, numbers: RowNumbers, questions: WorkerQuestions, tasks: TaskQuery, open_tasks: WorkerOpenTasks, units: WorkUnits, runs: WorktreeRuns) -> None:
-        self.tasks, self.open_tasks, self.units, self.runs = tasks, open_tasks, units, runs
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, unread_skills: UnreadSkills, files: SkillFiles, resume: WorkerResume, guidance: WorkerGuidance, numbers: RowNumbers, questions: WorkerQuestions, tasks: TaskQuery, open_tasks: WorkerOpenTasks, units: WorkUnits, runs: WorktreeRuns, git: WorktreeGit) -> None:
+        self.tasks, self.open_tasks, self.units, self.runs, self.git = tasks, open_tasks, units, runs, git
         self.questions = questions
         self.numbers = numbers
         self.guidance = guidance
@@ -67,7 +69,13 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
         point = self.guidance.point(worker_id)
         waiting_tasks = tuple(self.tasks.assignee_tasks(worker_id).filter(state=TaskState.TESTING).oldest().all_rows(TASK_PAGE_ROWS))
         return WorkerStatus(worker_id, worker.number, worktree, current_task, self.tasks.started_tasks(worker_id), point.round.required_staging(), waiting_tasks, self.open_tasks.startable(point.round), tests, assignments, skills, worker.program, self.resume.program_state(worker) if worker.ended_at is not None else None, point, worker.paused_at is not None, self.questions.status_lines(worker_id), worker.standing,
-                            self.unit_line(worker_id, worktree.id))
+                            self.unit_line(worker_id, worktree.id), self.behind_line(worktree))
+
+    def behind_line(self, worktree: Worktree) -> str:
+        try:
+            return f"{self.git.behind(worktree)} behind {worktree.base_branch}"
+        except Refusal as refusal:
+            return f"behind {worktree.base_branch} unknown: {refusal.reason}"
 
     def unit_line(self, worker_id: int, worktree_id: int) -> str:
         return " ".join(line for line in (self.units.unit(worker_id).status_line, self.runs.passed_text(worktree_id)) if line)
@@ -89,7 +97,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
             return
         pause_lines = [f"Paused: it takes no job until journal agent resume {value.worker_number}"] if value.is_paused else []
         unit_lines = [value.unit_line] if value.unit_line else []
-        lines = [value.point.line, *unit_lines, *value.question_lines, f"Point: {value.point.step}", f"Own test runs left: {value.runs_text}", f"Worker: {value.worker_number}", f"Worktree: {value.worktree.folder} on branch {value.worktree.branch}, cut from {value.worktree.base_branch}", *pause_lines, f"Current task: {value.current_task.id} ({value.current_task.state}) {value.current_task.title}",
+        lines = [value.point.line, *unit_lines, *value.question_lines, f"Point: {value.point.step}", f"Own test runs left: {value.runs_text}", f"Worker: {value.worker_number}", f"Worktree: {value.worktree.folder} on branch {value.worktree.branch}, cut from {value.worktree.base_branch}", value.behind_line, *pause_lines, f"Current task: {value.current_task.id} ({value.current_task.state}) {value.current_task.title}",
                  f"Tasks started: {len(value.started_tasks)}", *(f"  task {task.id}: {task.title}" for task in value.started_tasks), *value.group_lines(),
                  f"Tests waiting: {value.tests.total}", *(f"  proof {proof.id} ({proof.state}): {proof.test_command}" for proof in value.tests.rows),
                  f"Assignments remaining: {value.assignments.total}", *(f"  task {task.id} ({task.state}): {task.title}" for task in value.assignments.rows),
@@ -105,7 +113,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
                                    "staged": [output.values(task) for task in value.staging.ready], "waiting": [output.values(task) for task in value.waiting_tasks],
                                    "startable": [output.values(task) for task in value.startable_tasks], "blocked": [output.values(task) for task in value.blocked_tasks],
                                    "tests": self.page_json(value.tests, output), "assignments": self.page_json(value.assignments, output),
-                                   "program": value.program, "program_state": value.program_state.listed() if value.program_state is not None else None, "paused": value.is_paused, "questions": list(value.question_lines), "standing": value.standing.value, "unit": value.unit_line}
+                                   "program": value.program, "program_state": value.program_state.listed() if value.program_state is not None else None, "paused": value.is_paused, "questions": list(value.question_lines), "standing": value.standing.value, "unit": value.unit_line, "behind": value.behind_line}
         output.write("\n".join(lines), data)
 
     def page_json(self, page: Page[Proof] | Page[Task], output: Output) -> WorkerStatusPageJson:
