@@ -10,7 +10,8 @@ from collections.abc import Sequence
 
 
 class DeletedRowLinkListener(DeletionListener[Changed[Model]]):
-    """Removes links at either end of any deleted rows, inside their deletion transaction; the links go together, so their own deletion reads the links of all of them at once."""
+    """Removes links at either end of any deleted rows, inside their deletion transaction; the links go
+    together, so their own deletion reads the links of all of them at once."""
 
     name = "documents.deleted-row-links"
 

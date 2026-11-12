@@ -12,8 +12,9 @@ from engine.errors.refusal import Refusal
 
 class HelperPrograms:
     """Makes sure a program can run under the journal's rules in a folder: it is installed, the journal's own
-    settings of the program hold its hooks, trusted and naming the project root where the journal's server runs
-    even in a separate copy of the project, and the folder itself is trusted, so no person has to accept either."""
+    settings of the program hold its hooks, trusted and naming the project root where the journal's server
+    runs even in a separate copy of the project, and the folder itself is trusted, so no person has to
+    accept either."""
 
     def __init__(self, home: JournalHome, providers: Providers, sync: ProgramSettingsSync) -> None:
         self.home, self.providers, self.sync = home, providers, sync

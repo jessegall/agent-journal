@@ -9,9 +9,9 @@ from engine.subcommand.read_subcommand import ReadSubcommand
 
 
 class ProgramTrustSubcommand(ReadSubcommand[HookTrust]):
-    """`journal program trust <program> <folder>`: whether the program runs the journal's hooks, for the launcher.
-    The hooks are in the journal's own settings of the program, the same for every folder; the launcher still names
-    the folder it starts in."""
+    """`journal program trust <program> <folder>`: whether the program runs the journal's hooks, for the
+    launcher. The hooks are in the journal's own settings of the program, the same for every folder; the
+    launcher still names the folder it starts in."""
 
     cli_name = "program"
     name = "trust"

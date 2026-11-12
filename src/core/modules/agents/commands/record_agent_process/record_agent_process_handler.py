@@ -8,9 +8,9 @@ from core.modules.agents.models.agent import Agent
 
 
 class RecordAgentProcessHandler(Handler[RecordAgentProcess, Agent]):
-    """Writes the process the launcher started an agent's program in, with the start the process table reads for
-    it: the row opens again and the record of an earlier failed launch goes. The dispatcher's launcher runs this
-    command; nothing else records a launch."""
+    """Writes the process the launcher started an agent's program in, with the start the process table reads
+    for it: the row opens again and the record of an earlier failed launch goes. The dispatcher's launcher
+    runs this command; nothing else records a launch."""
 
     command = RecordAgentProcess
 

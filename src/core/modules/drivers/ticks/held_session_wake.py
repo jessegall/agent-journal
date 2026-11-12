@@ -10,7 +10,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.send_journal_started_line.send_journal_started_line import SendJournalStartedLine
 
 
-class HeldSessionWake:
+class ReleasedSessionWake:
     """Once the server is ready again, wakes every agent whose hook the journal held while it started or updated,
     also a hook held after the booting round: a round moves the held sessions aside and the next round wakes them,
     so a session held during the move is woken too."""

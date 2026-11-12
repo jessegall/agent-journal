@@ -46,15 +46,15 @@ def hook_row_line(event: HookEvent) -> str:
 
 class AgentHookRoute(HookRoute):
     """Stops every hook but a session end of a program that is locked down at a usage limit, before anything
-    else: no agent is looked up or started, no rule is asked and no hook call is recorded. Otherwise answers a
-    hook as the agent that sent it: finds its open agent by session, then by the launch name it
-    was started under, saving the real session on it when it is a main agent or runs a program that does not
-    take a session from the journal, starts the main agent at its session's first hook, gives back the stored
-    answer of a hook sent twice, refuses the tools of a program whose agent has ended and asks the launcher to
-    stop it, refuses the tools of a session its agent replaced with a newer one, which never starts an agent
-    and never takes its agent back, and lets through, without a record, a hook from an unknown agent when the
-    event does not require an agent check. The row of a recorded hook is kept once its call is committed; a tick
-    that brought nothing keeps none."""
+    else: no agent is looked up or started, no rule is asked and no hook call is recorded. Otherwise answers
+    a hook as the agent that sent it: finds its open agent by session, then by the launch name it was
+    started under, saving the real session on it when it is a main agent or runs a program that does not
+    take a session from the journal, starts the main agent at its session's first hook, gives back the
+    stored answer of a hook sent twice, refuses the tools of a program whose agent has ended and asks the
+    launcher to stop it, refuses the tools of a session its agent replaced with a newer one, which never
+    starts an agent and never takes its agent back, and lets through, without a record, a hook from an
+    unknown agent when the event does not require an agent check. The row of a recorded hook is kept once
+    its call is committed; a tick that brought nothing keeps none."""
 
     def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, rule_answers: HookRuleAnswers, request_values: RequestValues, clock: Clock, providers: Providers, lockdown: ProgramLockdown, sessions: AgentSessions, request_records: RequestRecords) -> None:
         self.lockdown, self.sessions, self.request_records = lockdown, sessions, request_records

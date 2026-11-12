@@ -14,9 +14,9 @@ from core.modules.drivers.support.safeguards_stop import SafeguardsStop
 
 
 class SafeguardsStopRule(DriverRule):
-    """A turn the model's safeguards ended with an API error wakes its agent once to go on with its work; when the
-    next turn is ended the same way, the chat says so with the error's details and request id, and the agent is
-    not woken again until a turn of it ends on its own."""
+    """A turn the model's safeguards ended with an API error wakes its agent once to go on with its work; when
+    the next turn is ended the same way, the chat says so with the error's details and request id, and the
+    agent is not woken again until a turn of it ends on its own."""
 
     name = "drivers.safeguards-stop"
     hook = HookEventName.STOP_FAILURE
@@ -27,14 +27,14 @@ class SafeguardsStopRule(DriverRule):
         self.queries, self.hook_calls = queries, hook_calls
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        stop = SafeguardsStop.of(hook.event)
+        stop = SafeguardsStop.read(hook.event)
         if stop is None:
             return RuleAnswer.allowed()
-        if self.is_woken_without_a_finished_turn(hook.agent_id):
+        if self.is_woken_before_turn_ends(hook.agent_id):
             return RuleAnswer.allowed().running(ReportSafeguardsStop(hook.agent_id, stop.details, stop.request_id))
         return RuleAnswer.allowed().running(WakeSafeguardsStoppedAgent(hook.agent_id))
 
-    def is_woken_without_a_finished_turn(self, agent_id: int) -> bool:
+    def is_woken_before_turn_ends(self, agent_id: int) -> bool:
         wake = self.queries.query(AgentLine).filter(session_agent_id=agent_id, source=WAKE_SOURCE).newest().first()
         if wake is None:
             return False

@@ -78,7 +78,6 @@ class AgentRows:
         return max(self.running_main_agents(), key=lambda agent: agent.id, default=None)
 
     def environment_main_agent(self, environment_id: int) -> Agent | None:
-        """The newest running main agent of that environment, never one of another environment."""
         running = [agent for agent in self.running_main_agents() if agent.environment_id == environment_id]
         return max(running, key=lambda agent: agent.id, default=None)
 

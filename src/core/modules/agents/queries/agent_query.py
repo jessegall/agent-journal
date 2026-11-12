@@ -18,5 +18,5 @@ class AgentQuery(Query[Agent]):
     def running(self) -> Self:
         return self.matching(IsNull("ended_at"))
 
-    def started_before(self, moment: Timestamp) -> Self:
-        return self.matching(Less("created_at", moment.text))
+    def created_earlier(self, cutoff: Timestamp) -> Self:
+        return self.matching(Less("created_at", cutoff.text))

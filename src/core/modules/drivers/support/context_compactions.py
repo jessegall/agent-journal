@@ -23,9 +23,9 @@ class ContextCompactions:
     second one while the first is open: started, or requested less than the retry time ago. A request whose
     line never started by then is given up, and the next request takes its place. The hooks move the newest
     row as the program starts and ends the compaction; a compaction the journal did not ask for gets its row
-    at its first hook, and a row still open when the program's session ends or starts anew is given up. An agent
-    has one open row at most, kept by the table itself: of two callers asking in the same second, the second one
-    is refused naming the first's row. The wake after a compaction is recorded on its row."""
+    at its first hook, and a row still open when the program's session ends or starts anew is given up. An
+    agent has one open row at most, kept by the table itself: of two callers asking in the same second, the
+    second one is refused naming the first's row. The wake after a compaction is recorded on its row."""
 
     def __init__(self, queries: Queries, repository: Repository, kept: KeptRows) -> None:
         self.queries, self.repository, self.kept = queries, repository, kept

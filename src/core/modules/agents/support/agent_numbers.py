@@ -2,7 +2,7 @@ from engine.query.queries import Queries
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import MAIN_NUMBER, MAIN_ROLE, Agent
 
-FIRST_OTHER_NUMBER = 2
+FIRST_NON_MAIN_NUMBER = 2
 
 
 class AgentNumbers:
@@ -18,4 +18,4 @@ class AgentNumbers:
             if role == MAIN_ROLE and not agents.filter(number=MAIN_NUMBER).exists():
                 return MAIN_NUMBER
             highest = agents.descending("number").first()
-        return FIRST_OTHER_NUMBER if highest is None else max(FIRST_OTHER_NUMBER, highest.number + 1)
+        return FIRST_NON_MAIN_NUMBER if highest is None else max(FIRST_NON_MAIN_NUMBER, highest.number + 1)

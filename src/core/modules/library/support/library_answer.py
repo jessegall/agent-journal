@@ -12,7 +12,7 @@ class LibraryAnswer:
         return isinstance(value, dict)
 
     @staticmethod
-    def is_text_or_number(value: object) -> TypeIs[str | int | float]:
+    def is_scalar(value: object) -> TypeIs[str | int | float]:
         return isinstance(value, (str, int, float))
 
     @staticmethod
@@ -23,7 +23,7 @@ class LibraryAnswer:
 
     @staticmethod
     def number(value: object) -> int:
-        if not LibraryAnswer.is_text_or_number(value):
+        if not LibraryAnswer.is_scalar(value):
             raise LibraryUnreachableError.unreadable()
         return int(value)
 

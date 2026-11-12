@@ -15,9 +15,9 @@ START_MEMORIES_REASON = "A session start gives its agent every active memory it 
 
 
 class StartMemoriesListener(CommitListener[SessionStarted]):
-    """Records the memories a session start gave its agent after the hook has answered, heaviest first, so a hook
-    costs the same however many memories the project holds; one a keyword gave first is not given again. A retired
-    agent is given none: its memories stay readable and reach no session."""
+    """Records the memories a session start gave its agent after the hook has answered, heaviest first, so a
+    hook costs the same however many memories the project holds; one a keyword gave first is not given
+    again. A retired agent is given none: its memories stay readable and reach no session."""
 
     name = "memories.start-memories"
 

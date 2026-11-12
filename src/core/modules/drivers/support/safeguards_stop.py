@@ -16,7 +16,7 @@ class SafeguardsStop:
     request_id: str | None
 
     @classmethod
-    def of(cls, event: HookEvent) -> "SafeguardsStop | None":
+    def read(cls, event: HookEvent) -> "SafeguardsStop | None":
         details = " ".join(value.strip() for value in (event.raw.get(field) for field in ERROR_FIELDS) if isinstance(value, str) and value.strip())
         if SAFEGUARDS_WORD not in details.lower():
             return None

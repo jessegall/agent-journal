@@ -21,11 +21,12 @@ FIRST_PROMPT = "[journal] the journal started this session: follow its opening l
 
 class ProgramCommandSubcommand(ReadSubcommand[list[str] | dict[str, object]]):
     """`journal program command <program> <folder> --launch <name> [--resume <session>] [--ask-prompts]
-    [--program-argument=<argument>]... [--format lines|json]`: the command line that starts the program in the
-    folder, as its provider builds it, for the launcher: one argument a line, or with --format json the arguments
-    and the variables the launch must carry. A program that needs variables refuses the plain form, which an older
-    launcher asks for. A resumed session keeps the model and effort it last ran with. It starts the program's
-    first turn with the journal's first prompt, unless the person gave arguments of their own."""
+    [--program-argument=<argument>]... [--format lines|json]`: the command line that starts the program in
+    the folder, as its provider builds it, for the launcher: one argument a line, or with --format json the
+    arguments and the variables the launch must carry. A program that needs variables refuses the plain
+    form, which an older launcher asks for. A resumed session keeps the model and effort it last ran with.
+    It starts the program's first turn with the journal's first prompt, unless the person gave arguments of
+    their own."""
 
     cli_name = "program"
     name = "command"

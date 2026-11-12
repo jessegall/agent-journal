@@ -9,9 +9,9 @@ from core.modules.assignments.errors.unassignable_model_refusal import Unassigna
 
 class AssignableRows:
     """Finds the row a command names by the command line name of its model and its id, among the models that
-    declare themselves assignable; any other model is refused with the names of those that can be assigned. It also finds the parent rows
-    of a row, the rows of the models that declare the row's model among their children, and the parent and
-    child that a link row joins."""
+    declare themselves assignable; any other model is refused with the names of those that can be assigned.
+    It also finds the parent rows of a row, the rows of the models that declare the row's model among their
+    children, and the parent and child that a link row joins."""
 
     def __init__(self, registry: Registry, queries: Queries) -> None:
         self.registry, self.queries = registry, queries

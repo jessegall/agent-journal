@@ -55,13 +55,13 @@ PERSON_LINKS = ("auth.json", "sessions", "history.jsonl")
 PERSON_STATE = ("state_5.sqlite", "thread_history_1.sqlite", "session_index.jsonl", "rules", "skills", "plugins")
 PERSON_FOLDER = ".codex"
 PROGRAMS_FOLDER = "programs"
-ASK_PROMPTS = ["-c", 'approval_policy="on-request"', "-c", 'sandbox_mode="workspace-write"']
+APPROVAL_ON_REQUEST_ARGUMENTS = ["-c", 'approval_policy="on-request"', "-c", 'sandbox_mode="workspace-write"']
 
 
 class CodexProvider(Provider):
     """OpenAI's Codex: hooks and their trust in the journal's own Codex folder, passed as CODEX_HOME, rollouts
-    under that folder's sessions link to the person's, and a session it names itself, which the first hook brings;
-    a main session starts with the MCP servers' keys in its environment."""
+    under that folder's sessions link to the person's, and a session it names itself, which the first hook
+    brings; a main session starts with the MCP servers' keys in its environment."""
 
     name = "codex"
     title = "Codex"
@@ -114,7 +114,7 @@ class CodexProvider(Provider):
         return replace(super().with_profile_model(profile, model), codex_model=model)
 
     def session_command(self, launch: Launch) -> LaunchCommand:
-        permission = ["--dangerously-bypass-approvals-and-sandbox"] if launch.skip_prompts else ASK_PROMPTS
+        permission = ["--dangerously-bypass-approvals-and-sandbox"] if launch.skip_prompts else APPROVAL_ON_REQUEST_ARGUMENTS
         model = [] if launch.names_flag("-m") or launch.names_flag("--model") else ["-m", launch.model]
         effort = [] if launch.effort else self.effort_arguments(launch.model)
         arguments = [self.executable, "--no-daemon", *model, *effort, *permission, *self.journal_instructions(launch.folder), *launch.program_arguments, *launch.session.arguments(self), *launch.prompt_arguments]
@@ -214,7 +214,7 @@ class CodexProvider(Provider):
         return TranscriptAuthor.row(position, JOURNAL_AUTHOR if role == DEVELOPER_ROLE else role, shown, fields.get("timestamp") if is_mapping(fields) else "")
 
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
-        """The sync of the journal's own Codex folder trusts the folder."""
+        pass
 
     def journal_hook_file(self, home: JournalHome) -> Path:
         return home.program_folder(self.name) / "hooks.json"

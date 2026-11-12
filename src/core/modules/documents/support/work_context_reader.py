@@ -267,11 +267,11 @@ class WorkContextReader:
     def author(self, message: Message, actor: ActorRecord | None) -> str:
         if message.type is MessageType.JOURNAL:
             return "Journal"
-        by_agent = message.type is MessageType.AGENT
-        if actor is None or actor.type is not (ActorType.AGENT if by_agent else ActorType.USER):
-            return "Agent (identity unavailable)" if by_agent else "Person (identity unavailable)"
+        is_agent_message = message.type is MessageType.AGENT
+        if actor is None or actor.type is not (ActorType.AGENT if is_agent_message else ActorType.USER):
+            return "Agent (identity unavailable)" if is_agent_message else "Person (identity unavailable)"
         name = " ".join(actor.name.split())
-        return f"Agent {name}" if by_agent else name
+        return f"Agent {name}" if is_agent_message else name
 
     def attachment_previews(self, message: Message, command: str, page: int, budget: int) -> tuple[WorkContextAttachment, ...]:
         if message.type is MessageType.JOURNAL:

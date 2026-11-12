@@ -20,9 +20,9 @@ JOURNAL_FOLDER_PREFIX = ".journal/"
 
 class AliasShellAliases(ShellAliases):
     """Expands aliases with quoted arguments, declared access and paths from the journal folder, runs an agent
-    that works in a separate copy of the project in that copy, and tells the command which checkout it runs in, so it
-    needs no version control call to learn its root, branch or base. A plugin's alias also gets the environment's name
-    and settings file."""
+    that works in a separate copy of the project in that copy, and tells the command which checkout it runs
+    in, so it needs no version control call to learn its root, branch or base. A plugin's alias also gets
+    the environment's name and settings file."""
 
     def __init__(self, aliases: AliasQuery, access: AliasAccess, names: AliasNames, home: JournalHome, checkouts: AgentCheckouts, plugin_variables: PluginAliasVariables) -> None:
         self.aliases, self.access, self.names, self.home, self.checkouts = aliases, access, names, home, checkouts

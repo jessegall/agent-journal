@@ -10,8 +10,8 @@ from core.modules.drivers.events.session_started import SessionStarted
 
 
 class ManageHooksListener(CommitListener[SessionStarted]):
-    """Imports project hooks added since the program was launched, after the session start has answered, so version control and
-    file edits never run inside a hook."""
+    """Imports project hooks added since the program was launched, after the session start has answered, so
+    version control and file edits never run inside a hook."""
 
     name = "drivers.manage-hooks"
 

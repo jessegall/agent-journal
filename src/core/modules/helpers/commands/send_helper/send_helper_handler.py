@@ -87,7 +87,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
         if not helper.profile:
             return start
         occupant = self.profiles.effective(helper.profile).occupant
-        idle = [reviewer for reviewer in self.kept.idle_of_profile(helper.profile, occupant) if not self.reviewed(reviewer, plan_id)]
+        idle = [reviewer for reviewer in self.kept.idle_profile_helpers(helper.profile, occupant) if not self.reviewed(reviewer, plan_id)]
         if not idle:
             return start
         return f'journal helper send {idle[0].number} "<job>" --plan {plan_id} gives it to an idle reviewer that has not, or {start}'

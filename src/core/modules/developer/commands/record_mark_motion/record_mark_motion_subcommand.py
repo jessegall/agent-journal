@@ -6,7 +6,8 @@ from core.modules.developer.commands.record_mark_motion.record_mark_motion impor
 
 
 class RecordMarkMotionSubcommand(Subcommand[RecordMarkMotion, None]):
-    """`journal developer record-mark-motion <recordings>`: the viewer keeps the recordings of its marks' motion, a JSON array."""
+    """`journal developer record-mark-motion <recordings>`: the viewer keeps the recordings of its marks'
+    motion, a JSON array."""
 
     cli_name = "developer"
     name = "record-mark-motion"

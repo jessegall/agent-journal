@@ -22,8 +22,8 @@ INSTRUCTION_CHARACTERS = 200
 
 
 class ReviewerStart:
-    """Starts a read-only reviewer: its agent on a session of its own, and, for a reviewer that has a brief to work on,
-    the job that starts its program on that brief."""
+    """Starts a read-only reviewer: its agent on a session of its own, and, for a reviewer that has a brief to
+    work on, the job that starts its program on that brief."""
 
     def __init__(self, bus: Bus, repository: Repository) -> None:
         self.bus, self.repository = bus, repository

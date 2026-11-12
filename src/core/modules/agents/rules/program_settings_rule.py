@@ -27,12 +27,12 @@ class ProgramSettingsRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
-        if tool is None or not any(spelling in text for text in self.written_texts(tool) for spelling in self.spellings()):
+        if tool is None or not any(spelling in text for text in self.tool_write_texts(tool) for spelling in self.spellings()):
             return RuleAnswer.allowed()
         return RuleAnswer.refused(PROGRAM_SETTINGS_BAN.nudge())
 
     @staticmethod
-    def written_texts(tool: Tool) -> tuple[str, ...]:
+    def tool_write_texts(tool: Tool) -> tuple[str, ...]:
         files = tool.files if tool.category.writes_files else ()
         if tool.shell is None:
             return files
@@ -47,5 +47,5 @@ class ProgramSettingsRule(DriverRule):
         person_home = str(Path.home())
         markers = tuple(f"{JOURNAL_FOLDER}/{path.relative_to(self.home.folder)}" for path in self.protected_paths())
         folders = {spelled for path in self.protected_paths() for spelled in (str(path), str(path.resolve()))}
-        at_home = [folder for folder in folders if folder.startswith(f"{person_home}/")]
-        return (*markers, *folders, *(folder.replace(person_home, "~", 1) for folder in at_home), *(folder.replace(person_home, "$HOME", 1) for folder in at_home))
+        home_folders = [folder for folder in folders if folder.startswith(f"{person_home}/")]
+        return (*markers, *folders, *(folder.replace(person_home, "~", 1) for folder in home_folders), *(folder.replace(person_home, "$HOME", 1) for folder in home_folders))

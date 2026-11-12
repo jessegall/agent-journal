@@ -8,7 +8,7 @@ from textwrap import dedent
 from engine.types.type_guards import is_mapping
 from core.modules.codex.providers.support.codex_trust import CodexTrust
 
-CARRIED_CONFIG = ("model_provider", "model_providers")
+PERSON_CONFIG_KEYS = ("model_provider", "model_providers")
 CONFIG_HEADER = dedent("""\
     # Written by the journal at every start; changes are put back.
     approval_policy = "never"
@@ -19,7 +19,7 @@ TRUSTED_PROJECT = 'trust_level = "trusted"'
 
 @dataclass(frozen=True)
 class CodexJournalConfig:
-    """The config.toml the journal writes whole for Codex: bypass, the model providers carried from the person's
+    """The config.toml the journal writes whole for Codex: bypass, the model providers copied from the person's
     config, the folders Codex trusts and the trusted hashes of the journal's hooks."""
 
     person_config: bytes
@@ -28,12 +28,12 @@ class CodexJournalConfig:
     hooks: Mapping[str, list[object]]
 
     def text(self) -> str:
-        return "\n".join([CONFIG_HEADER, *self.carried_sections(), *self.project_sections(), *self.trust_sections()])
+        return "\n".join([CONFIG_HEADER, *self.person_sections(), *self.project_sections(), *self.trust_sections()])
 
-    def carried_sections(self) -> list[str]:
-        carried = {key: value for key, value in self.person_settings().items() if key in CARRIED_CONFIG}
-        lines = "".join(f"{json.dumps(key)} = {json.dumps(value)}\n" for key, value in carried.items() if not is_mapping(value))
-        tables = [self.tables((key,), value) for key, value in carried.items() if is_mapping(value)]
+    def person_sections(self) -> list[str]:
+        person_values = {key: value for key, value in self.person_settings().items() if key in PERSON_CONFIG_KEYS}
+        lines = "".join(f"{json.dumps(key)} = {json.dumps(value)}\n" for key, value in person_values.items() if not is_mapping(value))
+        tables = [self.tables((key,), value) for key, value in person_values.items() if is_mapping(value)]
         return [lines, *tables] if lines else tables
 
     def project_sections(self) -> list[str]:

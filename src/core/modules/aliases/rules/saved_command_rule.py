@@ -68,7 +68,7 @@ class SavedCommandRule(DriverRule):
         exact = self.aliases.first_beginning(part.text, category)
         if exact:
             return SAVED_COMMAND_DIRECT.nudge(name=exact.name)
-        if self.aliases.of_category(category).exists():
+        if self.aliases.with_category(category).exists():
             return SAVED_COMMAND_CHOICES.nudge(category=category.value)
         if role == HelperRole.HELPER:
             return SAVED_COMMAND_HELPER.nudge(category=category.value)

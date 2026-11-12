@@ -32,9 +32,10 @@ COMPACTION_LIMIT_SECONDS = 600
 
 
 class HookCallQuery(Query[HookCall]):
-    """Reads hook calls, with the questions the drivers module's rules ask of an agent's recent hooks. An agent is
-    between turns when its last turn hook ended the turn, it was interrupted, or it came back from a compaction a
-    person or the journal started, which leaves it at an empty prompt; an automatic compaction goes on with its turn."""
+    """Reads hook calls, with the questions the drivers module's rules ask of an agent's recent hooks.
+    An agent is between turns when its last turn hook ended the turn, it was interrupted, or it came
+    back from a compaction a person or the journal started, which leaves it at an empty prompt; an
+    automatic compaction goes on with its turn."""
 
     def __init__(self, database: Database, tables: Tables, kept: KeptRows) -> None:
         super().__init__(database, tables, HookCall)
@@ -117,9 +118,9 @@ class HookCallQuery(Query[HookCall]):
         call = self.latest_turn_call(agent_id)
         if call is None:
             return False
-        return call.creation_timestamp().elapsed_seconds(checked_at) >= IDLE_LIMIT_SECONDS or self.is_between_turns(agent_id)
+        return call.creation_timestamp().elapsed_seconds(checked_at) >= IDLE_LIMIT_SECONDS or self.has_ended_turn(agent_id)
 
-    def is_between_turns(self, agent_id: int) -> bool:
+    def has_ended_turn(self, agent_id: int) -> bool:
         call = self.latest_turn_call(agent_id)
         if call is None:
             return False

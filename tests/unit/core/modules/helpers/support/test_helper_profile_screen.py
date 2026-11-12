@@ -1,4 +1,4 @@
-from core.modules.helpers.support.helper_profile_screen import EVERY_PROFILE, OWN_VALUE, HelperProfileScreen
+from core.modules.helpers.support.helper_profile_screen import ALL_PROFILES_SOURCE, PROFILE_VALUE_SOURCE, HelperProfileScreen
 from core.modules.helpers.support.helper_settings import (CONTEXT_LIMIT_PROFILES, CONTEXT_LIMIT_TOKENS, HELPER_KEPT_LIMIT, HELPER_MAX_COST, HELPER_MAX_MINUTES, HELPER_PROFILE_LIMITS,
                                                           HELPER_RUN_LIMIT)
 from core.modules.settings.support.current_setting import CurrentSetting
@@ -22,21 +22,21 @@ def nodes(values: dict[str, object]) -> dict[str, object]:
 
 def test_a_profile_without_its_own_limits_shows_the_value_of_every_profile():
     found = nodes({HELPER_RUN_LIMIT: 4, HELPER_KEPT_LIMIT: 8, HELPER_PROFILE_LIMITS: ()})
-    assert (found[HELPER_RUN_LIMIT].source, found[HELPER_RUN_LIMIT].value, found[HELPER_KEPT_LIMIT].value) == (EVERY_PROFILE, 4, 8)
+    assert (found[HELPER_RUN_LIMIT].source, found[HELPER_RUN_LIMIT].value, found[HELPER_KEPT_LIMIT].value) == (ALL_PROFILES_SOURCE, 4, 8)
 
 
 def test_a_profile_with_its_own_limits_shows_them_as_its_own_value():
     found = nodes({HELPER_RUN_LIMIT: 4, HELPER_KEPT_LIMIT: 8, HELPER_PROFILE_LIMITS: ("journal-researcher:1:3", "journal-planner:2:2")})
-    assert (found[HELPER_RUN_LIMIT].source, found[HELPER_RUN_LIMIT].value, found[HELPER_KEPT_LIMIT].value) == (OWN_VALUE, 1, 3)
+    assert (found[HELPER_RUN_LIMIT].source, found[HELPER_RUN_LIMIT].value, found[HELPER_KEPT_LIMIT].value) == (PROFILE_VALUE_SOURCE, 1, 3)
 
 
 def test_changing_the_value_of_every_profile_leaves_the_own_value_of_a_profile_unchanged():
     own = ("journal-researcher:1:3",)
     before = nodes({HELPER_RUN_LIMIT: 4, HELPER_KEPT_LIMIT: 8, HELPER_PROFILE_LIMITS: own})
     after = nodes({HELPER_RUN_LIMIT: 9, HELPER_KEPT_LIMIT: 20, HELPER_PROFILE_LIMITS: own})
-    assert (before[HELPER_RUN_LIMIT].value, after[HELPER_RUN_LIMIT].value, after[HELPER_RUN_LIMIT].source) == (1, 1, OWN_VALUE)
+    assert (before[HELPER_RUN_LIMIT].value, after[HELPER_RUN_LIMIT].value, after[HELPER_RUN_LIMIT].source) == (1, 1, PROFILE_VALUE_SOURCE)
 
 
 def test_a_profile_cap_of_its_own_replaces_the_default_cap_and_says_so():
     found = nodes({CONTEXT_LIMIT_TOKENS: 400000, CONTEXT_LIMIT_PROFILES: ("journal-researcher:150000",)})
-    assert (found[CONTEXT_LIMIT_TOKENS].value, found[CONTEXT_LIMIT_TOKENS].source, found[CONTEXT_LIMIT_TOKENS].component) == (150000, OWN_VALUE, "three-way-cap")
+    assert (found[CONTEXT_LIMIT_TOKENS].value, found[CONTEXT_LIMIT_TOKENS].source, found[CONTEXT_LIMIT_TOKENS].component) == (150000, PROFILE_VALUE_SOURCE, "three-way-cap")

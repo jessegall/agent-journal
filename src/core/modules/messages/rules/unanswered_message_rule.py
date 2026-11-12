@@ -25,13 +25,15 @@ NEWEST_AGENT_MESSAGES = 50
 
 
 class UnansweredMessageRule(DriverRule):
-    """A message an agent has read and not answered, whoever sent it but the journal, is named before each tool call,
-    and after ten calls tool calls wait for the answer; a journal message line and the task a message asks for always go through,
-    since they are the answer; a prompt typed in the terminal is answered in the terminal. Only messages read since
-    the agent's current session began or since its last message wait on it: earlier sessions handled the older ones. A
-    message from an agent that has ended waits on no reply, and of the messages from running agents only the newest
-    50 are checked: an unanswered one holds the agent after ten tool calls, so older ones were answered. The start of
-    the current session is compared inside the message read, so it costs no read of its own."""
+    """A message an agent has read and not answered, whoever sent it but the journal, is named before
+    each tool call, and after ten calls tool calls wait for the answer; a journal message line and
+    the task a message asks for always go through, since they are the answer; a prompt typed in the
+    terminal is answered in the terminal. Only messages read since the agent's current session began
+    or since its last message wait on it: earlier sessions handled the older ones. A message from an
+    agent that has ended waits on no reply, and of the messages from running agents only the newest
+    50 are checked: an unanswered one holds the agent after ten tool calls, so older ones were
+    answered. The start of the current session is compared inside the message read, so it costs no
+    read of its own."""
 
     name = "messages.unanswered"
     hook = HookEventName.PRE_TOOL_USE

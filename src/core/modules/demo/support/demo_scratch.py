@@ -23,9 +23,9 @@ SOURCE = Path(__file__).resolve().parents[4]  # the src folder
 
 
 class DemoScratch:
-    """A scratch journal in a folder of its own with its own copy of the code: modules synced, the demo
-    seeded by `journal demo seed`, and a server started on it; its viewer listens on a port the system
-    picks, which is checked to be none of 8420 to 8429. A demo started for a process stops when that process ends."""
+    """A scratch journal in a folder of its own with its own copy of the code: modules synced, the demo seeded
+    by `journal demo seed`, and a server started on it; its viewer listens on a port the system picks, which
+    is checked to be none of 8420 to 8429. A demo started for a process stops when that process ends."""
 
     def __init__(self, parent: Path | None = None, owner_pid: int | None = None) -> None:
         self.owner_pid = owner_pid

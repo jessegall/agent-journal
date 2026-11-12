@@ -31,16 +31,17 @@ SWITCH_TEXT = ("The journal now starts Claude Code and Codex on its own settings
 
 
 class ProgramSettingsWatch:
-    """Keeps the journal's own settings files of each agent program as the journal writes them: at server start it
-    backs up the person's own files first, and on every tick it puts back a file or link changed outside the journal,
-    keeps the changed bytes as a rejected copy and shows one chat mark for each change. A Codex login the program
-    refreshed by putting a new file in place of its link is moved to the person's folder and linked again. A failure is
-    logged, never raised, and a person's settings file it cannot read or parse is shown once in the chat."""
+    """Keeps the journal's own settings files of each agent program as the journal writes them: at
+    server start it backs up the person's own files first, and on every tick it puts back a file or
+    link changed outside the journal, keeps the changed bytes as a rejected copy and shows one chat
+    mark for each change. A Codex login the program refreshed by putting a new file in place of its
+    link is moved to the person's folder and linked again. A failure is logged, never raised, and a
+    person's settings file it cannot read or parse is shown once in the chat."""
 
     def __init__(self) -> None:
         self.has_prepared = False
         self.shown_unreadable: tuple[Path, ...] = ()
-        self.shown_held: tuple[str, ...] = ()
+        self.shown_waiting: tuple[str, ...] = ()
 
     def __call__(self, container: Container) -> None:
         sync, log = container.get(ProgramSettingsSync), container.get(SystemLogWriter)
@@ -50,14 +51,14 @@ class ProgramSettingsWatch:
             except (OSError, Refusal) as error:
                 log.write(LogLevel.WARNING, f"the journal's {provider.title} settings could not be put back: {error}")
         if not self.has_prepared:
-            self.show(container, ShowMark(ProgramSettingsMarkType.PROGRAM_SETTINGS, ProgramSettingsMarkVariant.SWITCHED, SWITCH_KEY, SWITCH_TEXT))
+            self.show(container, ShowMark(ProgramSettingsMarkType.PROGRAM_SETTINGS, ProgramSettingsMarkVariant.PROGRAM_SWITCH, SWITCH_KEY, SWITCH_TEXT))
         self.has_prepared = True
         self.show_person_files(container, sync)
 
     def watched(self, container: Container, sync: ProgramSettingsSync, program: str) -> None:
         settings = sync.settings(program)
         title = container.get(Providers).provider(program).title
-        changes = self.outside_changes(container, settings, title)
+        changes = self.external_changes(container, settings, title)
         self.keep_replaced_links(settings)
         if self.has_prepared:
             sync.write(program)
@@ -65,33 +66,33 @@ class ProgramSettingsWatch:
             sync.prepare(program)
         for change in changes:
             container.get(SystemLogWriter).write(LogLevel.WARNING, change.text)
-            self.show(container, ShowMark(ProgramSettingsMarkType.PROGRAM_SETTINGS, ProgramSettingsMarkVariant.PUT_BACK, change.key, change.text,
+            self.show(container, ShowMark(ProgramSettingsMarkType.PROGRAM_SETTINGS, ProgramSettingsMarkVariant.RESTORED, change.key, change.text,
                                           outcome=MarkOutcome.FAILED))
 
-    def outside_changes(self, container: Container, settings: ProgramSettings, title: str) -> list[OutsideChange]:
+    def external_changes(self, container: Container, settings: ProgramSettings, title: str) -> list[OutsideChange]:
         writer, backup = container.get(ProgramSettingsWriter), container.get(ProgramSettingsBackup)
         recorded = writer.recorded_digests()
         files = {file.path: file for file in settings.files}
         changes: list[OutsideChange] = []
-        put_back = f"The journal's {title} settings were changed outside the journal and were put back"
+        restored_notice = f"The journal's {title} settings were changed outside the journal and were put back"
         for path in writer.differences(settings):
             if path in settings.links:
                 if path.is_symlink() or (self.has_prepared and not path.exists()):
-                    changes.append(OutsideChange(f"put-back:{path}:link", f"{put_back}: the link {path} was made again."))
+                    changes.append(OutsideChange(f"put-back:{path}:link", f"{restored_notice}: the link {path} was made again."))
                 continue
             if not path.is_file():
                 if str(path) not in recorded:
                     continue
-                changes.append(OutsideChange(f"put-back:{path}:deleted", f"{put_back}: {path} was deleted and is written again."))
+                changes.append(OutsideChange(f"put-back:{path}:deleted", f"{restored_notice}: {path} was deleted and is written again."))
                 continue
             data = KeptBytes.read(path)
             digest = hashlib.sha256(data).hexdigest()
             if recorded.get(str(path)) == digest:
                 if stat.S_IMODE(path.stat().st_mode) != files[path].mode:
-                    changes.append(OutsideChange(f"put-back:{path}:mode:{digest}", f"{put_back}: {path} was made writable and is read-only again."))
+                    changes.append(OutsideChange(f"put-back:{path}:mode:{digest}", f"{restored_notice}: {path} was made writable and is read-only again."))
                 continue
             copy = backup.rejected(settings.program, path, data)
-            changes.append(OutsideChange(f"put-back:{path}:{digest}", f"{put_back}. The changed copy is kept at {copy}."))
+            changes.append(OutsideChange(f"put-back:{path}:{digest}", f"{restored_notice}. The changed copy is kept at {copy}."))
         return changes
 
     @staticmethod
@@ -112,16 +113,16 @@ class ProgramSettingsWatch:
                                               f"unreadable-person-file:{path}:{path.stat().st_mtime_ns}",
                                               f"Your settings file {path} could not be read, so the journal carries none of its settings into its own",
                                               outcome=MarkOutcome.FAILED))
-        held = sync.held_cleanups()
-        if held != self.shown_held:
-            self.show_held(container, held or self.shown_held, ended=not held)
-            self.shown_held = held
+        waiting_cleanups = sync.held_cleanups()
+        if waiting_cleanups != self.shown_waiting:
+            self.show_waiting_cleanups(container, waiting_cleanups or self.shown_waiting, ended=not waiting_cleanups)
+            self.shown_waiting = waiting_cleanups
 
-    def show_held(self, container: Container, programs: tuple[str, ...], ended: bool) -> None:
+    def show_waiting_cleanups(self, container: Container, programs: tuple[str, ...], ended: bool) -> None:
         names = ", ".join(programs)
         text = (f"The journal took its old hooks out of the project files of {names}" if ended else
                 f"The journal keeps its old hooks in the project files of {names} until the sessions started before the switch end")
-        self.show(container, ShowMark(ProgramSettingsMarkType.PROGRAM_SETTINGS, ProgramSettingsMarkVariant.HELD_PROJECT_HOOKS, f"held-project-hooks:{names}",
+        self.show(container, ShowMark(ProgramSettingsMarkType.PROGRAM_SETTINGS, ProgramSettingsMarkVariant.PROJECT_HOOKS_WAITING, f"held-project-hooks:{names}",
                                       text, ended=ended))
 
     @staticmethod

@@ -23,8 +23,8 @@ class AliasQuery(Query[Alias]):
     def with_name(self, name: str) -> Self:
         return self.filter(name=name)
 
-    def of_category(self, category: CommandCategory) -> Self:
+    def with_category(self, category: CommandCategory) -> Self:
         return self.filter(category=category)
 
     def first_beginning(self, command: str, category: CommandCategory) -> Alias | None:
-        return next((alias for alias in self.of_category(category).oldest().all_rows(ALIAS_PAGE_ROWS) if alias.begins(command)), None)
+        return next((alias for alias in self.with_category(category).oldest().all_rows(ALIAS_PAGE_ROWS) if alias.begins(command)), None)
