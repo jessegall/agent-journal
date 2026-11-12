@@ -1,3 +1,5 @@
+from datetime import timedelta
+from engine.model.prunable import Prunable
 from dataclasses import dataclass
 
 from engine.actor.actor import Actor
@@ -9,9 +11,11 @@ from core.modules.docking.models.lifecycles.dock_item_lifecycle import DockItemL
 
 
 @dataclass(frozen=True, kw_only=True)
-class DockItem(SessionBound, Model):
+class DockItem(Prunable, SessionBound, Model):
     """One item docked above the chat: an item of a type a module declared, about one row it points at and
     never copies, kept by a user or leaving by itself once its row ends."""
+
+    kept_for = timedelta(days=3)
 
     model_name = "dock_item"
     cli_name = "dock-item"

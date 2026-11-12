@@ -1,12 +1,16 @@
+from datetime import timedelta
+from engine.model.prunable import Prunable
 from dataclasses import dataclass
 
 from engine.model.model import Model
 
 
 @dataclass(frozen=True, kw_only=True)
-class JournalException(Model):
+class JournalException(Prunable, Model):
     """One exception the journal met in its own work: where it happened, what went wrong, and the environment it
     happened for, if one is known. The error log file keeps the trace."""
+
+    kept_for = timedelta(days=7)
 
     shared_rows = True
 

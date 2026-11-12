@@ -1,3 +1,6 @@
+from datetime import timedelta
+from engine.model.prunable import Prunable
+from engine.query.conditions.among import Among
 from dataclasses import dataclass
 
 from engine.actor.actor import Actor
@@ -9,12 +12,16 @@ from engine.time.timestamp import Timestamp
 from core.modules.chat.models.enums.chat_mark_state import ChatMarkState
 from core.modules.chat.models.lifecycles.chat_mark_lifecycle import ChatMarkLifecycle
 
+PRUNABLE_MARK_STATES = (ChatMarkState.SHOWN, ChatMarkState.ENDED)
+
 
 @dataclass(frozen=True, kw_only=True)
-class ChatMark(EnvironmentScoped, SessionBound, Model):
+class ChatMark(Prunable, EnvironmentScoped, SessionBound, Model):
     """One mark in an environment's chat, of a type a module declared: its words, the row it is about, how it
     stands, and, for a mark that follows a process, whether it still runs. Its lines are kept one to a line of
     text."""
+
+    kept_for = timedelta(days=3)
 
     model_name = "chat_mark"
     cli_name = "chat-mark"
@@ -42,3 +49,6 @@ class ChatMark(EnvironmentScoped, SessionBound, Model):
     def end(self, timestamp: Timestamp, actor: Actor) -> "ChatMark":
         return self.moved(ChatMarkLifecycle.end, ended_at=timestamp)
 
+    @classmethod
+    def prunable(cls, query, now):
+        return super().prunable(query, now).matching(Among("state", PRUNABLE_MARK_STATES))

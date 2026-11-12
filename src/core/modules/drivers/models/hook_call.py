@@ -1,3 +1,9 @@
+from datetime import timedelta
+from engine.model.prunable import Prunable
+from engine.query.conditions.excluding import Excluding
+from engine.query.conditions.is_null import IsNull
+from engine.query.conditions.subquery_match import SubqueryMatch
+from engine.query.select import Select
 from collections.abc import Mapping
 from dataclasses import dataclass
 
@@ -29,9 +35,11 @@ HOOK_CHANGE_NAMES: dict[str, str] = {HookEventName.COMPACT: COMPACTION, HookEven
 
 
 @dataclass(frozen=True, kw_only=True)
-class HookCall(EnvironmentScoped, Model):
+class HookCall(Prunable, EnvironmentScoped, Model):
     """One hook an agent program sent, or one tick on which a rule spoke, with the driver that answered and
     its answer; the rules asked, the layers and any command dropped are in its metadata."""
+
+    kept_for = timedelta(days=3)
 
     change_names = (COMPACTION, SESSION_START, PROMPT, STOP_ALLOWED, STOP_REFUSED)
     model_name = "hook_call"
@@ -176,3 +184,8 @@ class HookCall(EnvironmentScoped, Model):
     def text_values(self, key: str) -> tuple[str, ...]:
         values = self.metadata.module_part(DRIVERS_MODULE).get(key, [])
         return tuple(map(str, values)) if is_list(values) else ()
+
+    @classmethod
+    def prunable(cls, query, now):
+        lines = Select("agent_lines").matching(Excluding(IsNull("hook_call_id"))).column("hook_call_id")
+        return super().prunable(query, now).matching(SubqueryMatch("id", lines, negated=True))

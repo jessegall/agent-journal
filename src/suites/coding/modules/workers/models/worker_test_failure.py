@@ -1,3 +1,5 @@
+from datetime import timedelta
+from engine.model.prunable import Prunable
 from dataclasses import dataclass
 
 from engine.model.model import Model
@@ -5,8 +7,10 @@ from suites.coding.modules.workers.models.enums.failed_test_source import Failed
 
 
 @dataclass(frozen=True, kw_only=True)
-class WorkerTestFailure(Model):
+class WorkerTestFailure(Prunable, Model):
     """One failed hand-in or one failed test a worker ran itself, on one task."""
+
+    kept_for = timedelta(days=7)
 
     model_name = "worker_test_failure"
     cli_name = "worker-test-failure"

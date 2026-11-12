@@ -1,3 +1,5 @@
+from datetime import timedelta
+from engine.model.prunable import Prunable
 from dataclasses import dataclass
 
 from engine.model.model import Model
@@ -10,9 +12,11 @@ from core.modules.processes.models.enums.reason_code import ReasonCode
 
 
 @dataclass(frozen=True, kw_only=True)
-class ReadingDecisionRow(Model):
+class ReadingDecisionRow(Prunable, Model):
     """The engine's decision about the reader of one part of a run at one moment, kept so hooks read it and do
     not decide again."""
+
+    kept_for = timedelta(days=7)
 
     model_name = "reading_decision"
     cli_name = "reading-decision"
