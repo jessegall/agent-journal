@@ -10,10 +10,11 @@ from core.modules.processes.support.reading.catalogue_audit import AUDIT_SOURCE,
 
 
 class SendReadersNoticeHandler(Handler[SendReadersNotice, None]):
-    """Tells each main agent, without blocking it, what the reader audit finds: the readers that lack required
-    fields, the readers that picked no line of their last outputs, the commands agents marked unreadable, the commands of read-only helpers that ended
-    without a proper reader, and the stock readers an edit froze that fell behind the shipped ones, said once for each change of the shipped one: the
-    row then keeps the digest of the entry it was told about."""
+    """Tells each main agent, without blocking it, what the reader audit finds: the readers that lack
+    required fields, the readers that picked no line of their last outputs, the commands agents
+    marked unreadable, the commands of read-only helpers that ended without a proper reader, and the
+    stock readers an edit froze that fell behind the shipped ones, said once for each change of the
+    shipped one: the row then keeps the digest of the entry it was told about."""
 
     command = SendReadersNotice
 

@@ -59,7 +59,7 @@ def test_printing_again_lets_the_stuck_warning_come_again_and_keeps_the_other_ki
     record, _ = notices(tmp_path)
     record.recorded(4, NoticeKind.NO_OUTPUT, 100.0)
     record.recorded(4, NoticeKind.FROZEN, 150.0)
-    record.printed_again(4)
+    record.clear_frozen(4)
     assert (record.allowed(4, NoticeKind.FROZEN, 160.0), record.allowed(4, NoticeKind.NO_OUTPUT, 160.0)) == (True, False)
 
 

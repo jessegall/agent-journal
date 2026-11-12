@@ -7,9 +7,9 @@ from core.modules.processes.support.streaming_hints import StreamingHints
 
 
 class CadenceNudges:
-    """Picks the declaration of a cadence notice and its values: the output, the seconds and the hint of the
-    command's tool, or the alias and the seconds for a saved command that printed nothing. No text of the output
-    or of the command goes into a notice."""
+    """Picks the declaration of a cadence notice and its values: the output, the seconds and the hint
+    of the command's tool, or the alias and the seconds for a saved command that printed nothing. No
+    text of the output or of the command goes into a notice."""
 
     @staticmethod
     def notice(kind: NoticeKind, process: Process, part: ProcessPart, seconds: int, limit: int) -> CadenceNotice:

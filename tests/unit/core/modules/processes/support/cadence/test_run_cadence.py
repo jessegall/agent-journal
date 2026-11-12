@@ -8,7 +8,7 @@ LIMITS = CadenceLimits(first_output_seconds=30, stopped_writing_seconds=120, spa
 
 
 def cadence(age: float, growths: tuple[float, ...] = ()) -> RunCadence:
-    return RunCadence(age=age, now=age, growths=growths, limits=LIMITS)
+    return RunCadence(age=age, clock_seconds=age, growths=growths, limits=LIMITS)
 
 
 @pytest.mark.parametrize("run, state", [

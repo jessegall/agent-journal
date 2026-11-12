@@ -15,9 +15,9 @@ PRUNED_AT_ONCE = 50
 
 
 class RecordRequestRunsHandler(Handler[RecordRequestRuns, None]):
-    """Writes a request row for each logged entry, as a run of its agent or of the environment's main agent, and
-    removes up to 50 of the environment's rows older than the days they are kept; it runs every few seconds while
-    requests come in, so the rows are pruned as fast as they grow."""
+    """Writes a request row for each logged entry, as a run of its agent or of the environment's main
+    agent, and removes up to 50 of the environment's rows older than the days they are kept; it runs
+    every few seconds while requests come in, so the rows are pruned as fast as they grow."""
 
     command = RecordRequestRuns
 

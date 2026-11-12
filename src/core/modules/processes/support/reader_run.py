@@ -82,6 +82,5 @@ class ReaderRun:
 
     @staticmethod
     def has_failed(reader: Reader, lines: Sequence[str]) -> bool:
-        """Whether the script of a reader failed on an output, which leaves one line that says so in its lines."""
         return reader.type is ReaderType.SCRIPT and any(line.startswith(f"{ReaderRun.failure_start(reader)} did not finish within")
                                                         or line.startswith(f"{ReaderRun.failure_start(reader)} could not run") for line in lines)

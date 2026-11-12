@@ -13,19 +13,19 @@ from core.modules.tasks.models.task_wait import TaskWait
 
 TASK = "task"
 PLAN = "plan"
-TARGET_KINDS = {"tasks": TASK, "plans": PLAN}
+TARGET_TYPES = {"tasks": TASK, "plans": PLAN}
 
 
 @dataclass(frozen=True)
 class WaitNode:
     """A task or a plan in the waits that hold work back."""
 
-    kind: str
+    node_type: str
     row_id: int
 
     @property
     def text(self) -> str:
-        return f"{self.kind} {self.row_id}"
+        return f"{self.node_type} {self.row_id}"
 
 
 class WaitCircle:
@@ -35,7 +35,7 @@ class WaitCircle:
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def closed_by(self, waiter: WaitNode, target: WaitNode) -> tuple[WaitNode, ...]:
+    def find_circle(self, waiter: WaitNode, target: WaitNode) -> tuple[WaitNode, ...]:
         if waiter == target:
             return ()
         parents: dict[WaitNode, WaitNode | None] = {target: None}
@@ -56,25 +56,25 @@ class WaitCircle:
 
     def next_nodes(self, frontier: Iterable[WaitNode]) -> list[tuple[WaitNode, WaitNode]]:
         nodes = tuple(frontier)
-        task_ids = {node.row_id: node for node in nodes if node.kind == TASK}
-        plan_ids = {node.row_id: node for node in nodes if node.kind == PLAN}
-        found: list[tuple[WaitNode, WaitNode]] = []
+        task_ids = {node.row_id: node for node in nodes if node.node_type == TASK}
+        plan_ids = {node.row_id: node for node in nodes if node.node_type == PLAN}
+        edges: list[tuple[WaitNode, WaitNode]] = []
         if task_ids:
             for edge in self.queries.query(TaskEdge).matching(Among("task_id", list(task_ids))).all_rows():
-                found.append((task_ids[edge.task_id], WaitNode(TASK, edge.blocker_id)))
+                edges.append((task_ids[edge.task_id], WaitNode(TASK, edge.blocker_id)))
             for wait in self.queries.query(TaskWait).matching(Among("task_id", list(task_ids))).matching(IsNull("ended_at")).all_rows():
-                kind, _, row_id = wait.target.partition(":")
-                if kind in TARGET_KINDS and row_id.isdigit():
-                    found.append((task_ids[wait.task_id], WaitNode(TARGET_KINDS[kind], int(row_id))))
+                node_type, _, row_id = wait.target.partition(":")
+                if node_type in TARGET_TYPES and row_id.isdigit():
+                    edges.append((task_ids[wait.task_id], WaitNode(TARGET_TYPES[node_type], int(row_id))))
         if plan_ids:
             for wait in self.queries.query(PlanWait).matching(Among("plan_id", list(plan_ids))).matching(IsNull("ended_at")).all_rows():
-                found.append((plan_ids[wait.plan_id], WaitNode(PLAN, wait.blocker_id)))
+                edges.append((plan_ids[wait.plan_id], WaitNode(PLAN, wait.blocker_id)))
             for place in self.queries.query(PlanTask).matching(Among("plan_id", list(plan_ids))).matching(Among("state", list(UNFINISHED_STATES))).all_rows():
-                found.append((plan_ids[place.plan_id], WaitNode(TASK, place.task_id)))
-        return found
+                edges.append((plan_ids[place.plan_id], WaitNode(TASK, place.task_id)))
+        return edges
 
     def refuse_circle(self, waiter: WaitNode, target: WaitNode) -> None:
-        circle = self.closed_by(waiter, target)
+        circle = self.find_circle(waiter, target)
         if circle:
             raise Refusal(f"this wait would never end, it closes a circle: {' -> '.join(node.text for node in circle)}",
                           "end one of the waits in that circle first")

@@ -12,9 +12,9 @@ from core.modules.processes.ticks.hang_watch import CPU_FILE
 
 
 class HeldRuns:
-    """Finds the run of an agent that printed nothing for the hang time since its last output or the last time
-    the agent read it; an agent whose session ended is held by nothing. The processor time is told from the file
-    the hang watch keeps in the run's folder."""
+    """Finds the run of an agent that printed nothing for the hang time since its last output or the
+    last time the agent read it; an agent whose session ended is held by nothing. The processor time
+    is told from the file the hang watch keeps in the run's folder."""
 
     def __init__(self, processes: ProcessQuery, folder: OutputFolder, settings: ProcessSettings, silences: RunSilences, rows: EventRows) -> None:
         self.processes, self.folder, self.settings, self.silences, self.rows = processes, folder, settings, silences, rows

@@ -8,9 +8,9 @@ from core.modules.processes.support.process_settings import ProcessSettings
 
 
 class ReadAdvice:
-    """The one advice for an agent of any role that read all of an output: the reader that already reads it, else
-    the flags that read part of a large one; a short output read whole says nothing. Each line repeats only after
-    the interval of its declaration."""
+    """The one advice for an agent of any role that read all of an output: the reader that already
+    reads it, else the flags that read part of a large one; a short output read whole says nothing.
+    Each line repeats only after the interval of its declaration."""
 
     def __init__(self, rows: EventRows, settings: ProcessSettings) -> None:
         self.rows, self.settings = rows, settings

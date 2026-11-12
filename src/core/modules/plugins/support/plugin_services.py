@@ -77,12 +77,12 @@ class PluginServices:
         if key in processes.paused:
             return False
         is_condition_due = key not in processes.skipped or self.clock.timestamp().value - processes.skipped[key].value > CONDITION_RECHECK
-        return is_condition_due and processes.retries.is_due(key, self.clock.timestamp().value)
+        return is_condition_due and processes.retries.may_retry(key, self.clock.timestamp().value)
 
     def keep(self, processes: ServiceProcesses, key: tuple[str, str], folder: Path, service: ManifestService, manifest: PluginManifest, digest: str) -> list[str]:
         process = processes.running.get(key)
         if process is not None and process.running():
-            processes.retries.steady(key, self.clock.timestamp().value)
+            processes.retries.forget_steady(key, self.clock.timestamp().value)
             return []
         if process is not None and (service.restart is ServiceRestart.STOPPED_END or (service.restart is ServiceRestart.FAILED_END and process.exit_code() == 0)):
             return []
@@ -91,7 +91,7 @@ class PluginServices:
             self.system_log.write(LogLevel.WARNING, f"plugin {key[0]} service {key[1]} restarted after exit {process.exit_code()}")
             processes.running.pop(key)
             faults.extend(self.failure(processes, key, service, f"it ended with exit {process.exit_code()}"))
-            if not processes.retries.is_due(key, self.clock.timestamp().value):
+            if not processes.retries.may_retry(key, self.clock.timestamp().value):
                 return faults
         program, pid_file = str(folder / service.command[0]), self.sockets.pid(*key)
         environment = self.environment(key, manifest)
@@ -111,7 +111,7 @@ class PluginServices:
             except OSError as error:
                 self.system_log.write(LogLevel.WARNING, f"plugin {key[0]} service {key[1]} could not start: {error}")
                 return [*faults, *self.failure(processes, key, service, f"it could not start: {error}")]
-        processes.retries.started(key, self.clock.timestamp().value)
+        processes.retries.record_start(key, self.clock.timestamp().value)
         return faults
 
     def condition_check(self, processes: ServiceProcesses, key: tuple[str, str], folder: Path, service: ManifestService, environment: dict[str, str]) -> ConditionCheck:
@@ -136,7 +136,7 @@ class PluginServices:
             yield
 
     def failure(self, processes: ServiceProcesses, key: tuple[str, str], service: ManifestService, reason: str) -> list[str]:
-        is_repeated_failure = processes.retries.failed(key, self.clock.timestamp().value)
+        is_repeated_failure = processes.retries.record_failure(key, self.clock.timestamp().value)
         return [f"its service {service.name} keeps failing to run: {reason}"] if is_repeated_failure else []
 
     def start(self, processes: ServiceProcesses, key: tuple[str, str], folder: Path, service: ManifestService, manifest: PluginManifest, digest: str, environment: dict[str, str]) -> None:

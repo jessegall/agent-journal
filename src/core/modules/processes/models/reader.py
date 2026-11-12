@@ -40,8 +40,6 @@ class Reader(Model):
 
     @property
     def is_stock(self) -> bool:
-        """Whether the core wrote this row from a shipped stock entry: the core made it and it keeps the digest of
-        that entry. A person's reader is never stock, though a person's actor number may equal the core's."""
         return self.creator_id == CORE_ACTOR_ID and bool(self.shipped_digest)
 
     def has_counted_steps(self) -> bool:

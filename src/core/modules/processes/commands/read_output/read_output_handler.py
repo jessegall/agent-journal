@@ -27,7 +27,7 @@ class ReadOutputHandler(Handler[ReadOutput, OutputLines]):
         lines = self.texts.lines(context.actor, command)
         self.repeats.note(command, context.actor, context.timestamp.text)
         if context.actor.type is ActorType.AGENT and not self.repeats.has_ended(command.process_id):
-            self.looks.answered(command.process_id, context.timestamp.value.timestamp())
+            self.looks.record_answer(command.process_id, context.timestamp.value.timestamp())
         kept = self.outputs.process_output(command.process_id)
         if kept is not None and kept.state is OutputState.KEPT:
             values: dict[str, object] = {}

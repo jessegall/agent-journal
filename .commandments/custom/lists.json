@@ -1254,7 +1254,7 @@
         "Replace",
         "Return",
         "Wake",
-        "Warn", "Solve"],
+        "Warn", "Solve", "Log", "Lift", "Mark"],
     "mark_types": [
         "messages.thought",
         "messages.filed",

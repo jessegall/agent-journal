@@ -18,8 +18,6 @@ class ReadingDecisions:
         self.decisions, self.repository, self.kept_rows = decisions, repository, kept
 
     def kept(self, process: Process, moment: ReadingMoment) -> dict[int, ReadingDecisionRow]:
-        """The kept decision of each part of a run at one moment, by the part's position, read again only after the
-        decisions of that run changed, so storing and telling them read once."""
         rows = self.kept_rows.read("reading_decisions", lambda: tuple(self.decisions.for_process(process.id).filter(moment=moment).all_rows()),
                                    "process_id = ? AND moment = ?", [process.id, moment.value], name="processes.kept_decisions")
         return {row.part_position: row for row in rows}

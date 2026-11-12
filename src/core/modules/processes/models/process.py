@@ -73,7 +73,6 @@ class Process(EnvironmentScoped, Model):
 
     @property
     def succeeded(self) -> bool:
-        """The run finished with exit code 0."""
         return self.state is ProcessState.FINISHED and self.exit_code == 0
 
     @property
@@ -90,7 +89,6 @@ class Process(EnvironmentScoped, Model):
 
     @property
     def is_journal_merge(self) -> bool:
-        """A merge the journal ran itself through its door, which no reader of a line of an agent judges."""
         return self.kind == ProcessKind.MERGE.value
 
     def finish(self, timestamp: Timestamp, actor: Actor, exit_code: int) -> "Process":

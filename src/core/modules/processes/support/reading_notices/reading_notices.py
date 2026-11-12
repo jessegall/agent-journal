@@ -41,9 +41,9 @@ SHELL_TERMS = frozenset(("journal", "set", "for", "while", "until", "if", "case"
 
 
 class ReadingNotices:
-    """The lines that tell an agent, when a run it moved to the background ended, how to read such a run better: a
-    saved command that failed silently, a reader to draft, and what the reader of the run missed. Only an agent that
-    may write readers is told how to read better."""
+    """The lines that tell an agent, when a run it moved to the background ended, how to read such a
+    run better: a saved command that failed silently, a reader to draft, and what the reader of the
+    run missed. Only an agent that may write readers is told how to read better."""
 
     def __init__(self, readers: ReaderQuery, judge: ReaderJudge, writers: ReaderWriters, rows: EventRows, decisions: ReadingDecisions) -> None:
         self.readers, self.judge, self.writers, self.rows, self.decisions = readers, judge, writers, rows, decisions
@@ -62,8 +62,6 @@ class ReadingNotices:
 
     @staticmethod
     def mark_nudges(process: Process, changes: tuple[UnreadableMark, ...]) -> tuple[Nudge, ...]:
-        """The one line about each mark made or lifted at the end of a run: a lifted mark names its command, a mark
-        the engine made names the output, and a declared mark names its command."""
         return tuple(UNREADABLE_LIFTED.nudge(name=mark.words) if mark.lifted_at is not None
                      else UNREADABLE_DECLARED.nudge(name=mark.words) if mark.reason is UnreadableReason.DECLARED
                      else MARK_NUDGES[mark.reason].nudge(output=process.id) for mark in changes)

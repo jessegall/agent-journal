@@ -27,11 +27,12 @@ STANDARD_OUTPUT_REDIRECT = re.compile(r"(?:1?>>?|&>>?)\s*[^&\s]")
 
 
 class ReadingEnforcer:
-    """The one place that presses an agent about reading, at the start of a command, by its command key: after one
-    silent run it teaches the shape found, after two it refuses the start until a reader is made or changed or the
-    agent skips once with a reason, and says once that progress shows when a later run does; any other command
-    that ended twice without a good reader is refused its next start with every exit stated. A command marked
-    unreadable is asked nothing, and a command that takes an exit always passes."""
+    """The one place that presses an agent about reading, at the start of a command, by its command
+    key: after one silent run it teaches the shape found, after two it refuses the start until a
+    reader is made or changed or the agent skips once with a reason, and says once that progress
+    shows when a later run does; any other command that ended twice without a good reader is refused
+    its next start with every exit stated. A command marked unreadable is asked nothing, and a
+    command that takes an exit always passes."""
 
     def __init__(self, runs: SilentStartRuns, folder: OutputFolder, readers: ReaderRows, marks: UnreadableMarks, counter: EscalationCounter, decisions: ReadingDecisionQuery) -> None:
         self.runs, self.folder, self.readers, self.marks, self.counter, self.decisions = runs, folder, readers, marks, counter, decisions
@@ -52,8 +53,6 @@ class ReadingEnforcer:
 
     @staticmethod
     def is_redirected(part: Part, shell: ShellLine) -> bool:
-        """Whether a test run, a build or a check of the line sends its output to a file or to /dev/null, which no
-        reader would see; its exit is to run it without the redirect."""
         return part.classification.category.is_watched and any(redirect in part.text and STANDARD_OUTPUT_REDIRECT.match(redirect) for redirect in shell.redirects)
 
     @staticmethod
@@ -74,7 +73,6 @@ class ReadingEnforcer:
         return RuleAnswer.allowed()
 
     def shape(self, run: SilentRun) -> RunShape | None:
-        """The shape of a run's output, found in the first characters a shape is looked for in, so a long output is never read whole."""
         return RunShapes.found(self.folder.head_output(run.process.id, INSPECTED_CHARACTERS))
 
     def taught(self, name: str, run: SilentRun) -> Nudge:
@@ -92,8 +90,6 @@ class ReadingEnforcer:
         return RuleAnswer(refusal=refused.text, nudges=(refused, ready), last=True)
 
     def prevented(self, name: str) -> RuleAnswer:
-        """The start of a command that ended twice without a good reader is refused, naming the last of those runs
-        and every exit of a prevent."""
         last = self.decisions.for_command_key(name).filter(moment=ReadingMoment.END).descending("decided_at", "id").first()
         output = last.process_id if last is not None else 0
         return RuleAnswer.refused(READING_PREVENTED.nudge(output=output, name=name))
@@ -104,7 +100,5 @@ class ReadingEnforcer:
 
     @staticmethod
     def answers_exit(hook: AgentHook) -> bool:
-        """Whether the hook runs only commands that take an exit: reading or stopping the run, writing or marking a
-        reader, skipping, or saying what type a command is."""
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         return shell is not None and shell.is_journal_command_line(*EXIT_COMMANDS)

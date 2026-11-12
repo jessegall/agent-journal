@@ -10,11 +10,9 @@ class RunCounts:
     missing or poor reader must be asked for."""
 
     def count_missing(self, process: Process, part: ProcessPart) -> bool:
-        """Whether the suite must count the tests of this part before it runs and no reader can count them."""
         return False
 
     def asks_beyond_counts(self) -> bool:
-        """Whether a missing or poor reader opens a request for any reason, or only for a missing count."""
         return True
 
     def line(self, process: Process) -> str:

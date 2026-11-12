@@ -20,7 +20,6 @@ class RunSilences:
         return int(process.creation_timestamp().elapsed_seconds(timestamp))
 
     def printed_nothing(self, part: ProcessPart) -> bool:
-        """Whether a part of a run has written no byte of output."""
         return not self.folder.part_bytes(part.process_id, part.position)
 
     def unread_seconds(self, process: Process, timestamp: Timestamp) -> int:

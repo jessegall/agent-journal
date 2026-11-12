@@ -13,10 +13,11 @@ NO_CAP = "none"
 
 
 class ContextShare:
-    """How full an agent's context is, in percent, and the size it is measured against. The size is the context
-    size at which that agent is compacted: the entry for its helper type, else the entry for its kind of agent, else
-    the size set for every agent; none while the context limit is off or an entry says none. The percent is of that
-    size while there is one and it comes sooner than the program's window, otherwise of the window."""
+    """How full an agent's context is, in percent, and the size it is measured against. The size is the
+    context size at which that agent is compacted: the entry for its helper type, else the entry for
+    its kind of agent, else the size set for every agent; none while the context limit is off or an
+    entry says none. The percent is of that size while there is one and it comes sooner than the
+    program's window, otherwise of the window."""
 
     def __init__(self, settings: SettingValues, providers: Providers, home: JournalHome) -> None:
         self.settings, self.providers, self.home = settings, providers, home

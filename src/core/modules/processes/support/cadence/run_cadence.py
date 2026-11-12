@@ -13,7 +13,7 @@ class RunCadence:
     enough, nothing yet, nothing after it last printed, or too seldom for a reader to follow."""
 
     age: float
-    now: float
+    clock_seconds: float
     growths: tuple[float, ...]
     limits: CadenceLimits
 
@@ -22,7 +22,7 @@ class RunCadence:
             return CadenceState.STREAMING
         if not self.growths:
             return CadenceState.NO_OUTPUT
-        if self.now - self.growths[-1] >= self.limits.stopped_writing_seconds:
+        if self.clock_seconds - self.growths[-1] >= self.limits.stopped_writing_seconds:
             return CadenceState.STOPPED_WRITING
         if self.age >= SPARSE_AFTER_SECONDS and self.average_pause() >= self.limits.sparse_seconds:
             return CadenceState.SPARSE
