@@ -5,6 +5,7 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.event.event_log import EventLog
 from engine.database.database import Database
 from core.modules.profiles.support.profile_files import ProfileFiles
+from core.modules.drivers.support.reviewer_start import REVIEWER_PROFILE
 from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_PROFILES
 
 from engine.testing.examples.hook_samples import HookSamples
@@ -16,7 +17,7 @@ from engine.registry.registry import Registry
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
-SHIPPED_PROFILES = (*HELPER_PROFILES, *WORKER_PROFILES)
+SHIPPED_PROFILES = (*HELPER_PROFILES, *WORKER_PROFILES, REVIEWER_PROFILE)
 
 SAVE_PROFILE = 'profile save critic --description "Reads a change and says what is wrong" --body "Read the diff." --reason needed'
 
@@ -63,14 +64,14 @@ def test_a_module_sync_writes_the_journals_own_profiles(profiles_missing):
     with story.container.get(Database).transaction():
         story.container.get(EventLog).write_registry_sync(CORE_ACTOR_ID, "a new fingerprint", story.clock.timestamp().text)
     story.run_listeners()
-    expect_file_agents_folder(story, "journal-senior.md")
+    expect_file_agents_folder(story, "journal-worker-senior.md")
 
 
 def test_the_journals_start_writes_its_own_profiles(profiles_missing):
     story = profiles_missing
     BootingWork().run(story.container)
     story.run_listeners()
-    expect_file_agents_folder(story, "journal-senior.md")
+    expect_file_agents_folder(story, "journal-worker-senior.md")
 
 
 def test_a_shipped_profile_names_its_own_model_for_each_program_whatever_the_setting_says(new_story):
@@ -78,7 +79,7 @@ def test_a_shipped_profile_names_its_own_model_for_each_program_whatever_the_set
     story.expect_success("setting set journal.core.profiles.model-claude haiku --project", actor=story.user)
     story.container.get(ProfileFiles).publish()
     expect_agents_folder_journal_with(story, "journal-researcher.md", "model: sonnet")
-    expect_agents_folder_journal_with(story, "journal-senior.md", "model: opus")
+    expect_agents_folder_journal_with(story, "journal-worker-senior.md", "model: opus")
     expect_profile_model(SHIPPED_PROFILES)
 
 

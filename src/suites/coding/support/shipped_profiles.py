@@ -69,12 +69,12 @@ HELPER_PROFILES = [
 ]
 
 WORKER_PROFILES = [
-    AgentProfile("journal-senior", "A worker for a job that needs judgement: a design inside the code, a hard fault, a change across many files. Writes, on Opus.",
+    AgentProfile("journal-worker-senior", "A worker for a job that needs judgement: a design inside the code, a hard fault, a change across many files. Writes, on Opus.",
                  "You are a senior worker on one bounded job that needs judgement. Weigh the ways to do it against the code as it is, choose the one that fits it, and say in your report why.",
                  base="journal-worker", title="Senior", agent_type="worker", tier=ModelTier.STRONGEST, model="opus", codex_model="gpt-6.1-sol"),
-    AgentProfile("journal-medior", "A worker for a job whose shape is defined: a change the brief states, tests to write, a rename. Writes, on Sonnet.",
+    AgentProfile("journal-worker-medior", "A worker for a job whose shape is defined: a change the brief states, tests to write, a rename. Writes, on Sonnet.",
                  "You are a medium worker on one bounded job whose shape the brief defines. Do what it says and no more; where it leaves a choice undecided, choose the simplest one and name it in your report.",
                  base="journal-worker", title="Medior", agent_type="worker", tier=ModelTier.GENERAL, model="sonnet", codex_model="gpt-6.1-terra"),
     AgentProfile("journal-worker", "Works the task, the tasks or the plan assigned to it", f"Read journal task overview for the current task before changing files; follow task context continuations for omitted source material. Use journal task --help for its commands. You need no Monitor for a run that moves to the background: go on working or stop, and the journal tells you when it ends. {WORKER_RULES}{READ_COMMANDS}{WORKER_COMMANDS}",
-                 title="Worker", agent_type="worker", tier=ModelTier.GENERAL, model="sonnet", codex_model="gpt-6.1-terra", skills=WORKER_SKILLS),
+                 title="Worker", agent_type="worker", is_base=True, tier=ModelTier.GENERAL, model="sonnet", codex_model="gpt-6.1-terra", skills=WORKER_SKILLS),
 ]

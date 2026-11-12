@@ -112,7 +112,7 @@ def test_a_start_with_no_model_anywhere_is_refused_naming_the_flag(new_story):
 @pytest.mark.parametrize("line, reason", [
     (f"{START} --program codex --model not-a-model", "may run"),
     ('helper start nobody --brief "Read" --environment main', "journal profile list"),
-    ('helper start journal-senior --brief "Read" --environment main', "journal-senior is a Worker: use journal worker dispatch"),
+    ('helper start journal-worker-senior --brief "Read" --environment main', "journal-worker-senior is a Worker: use journal worker dispatch"),
     (f'helper start journal-researcher --brief "{"x" * 100001}" --environment main', "journal doc make"),
 ], ids=["model", "profile", "worker profile", "long brief"])
 def test_a_refused_start_leaves_no_row(new_story, line, reason):

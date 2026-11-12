@@ -1,7 +1,7 @@
-if (!document.getElementById("window-styles-b6ec42e86479")) { const style = document.createElement("style"); style.id = "window-styles-b6ec42e86479"; style.textContent = ".rules-page[data-v-02b61d8d]{display:flex;flex-direction:column;gap:8px}.rules-refusal[data-v-02b61d8d]{margin:0;color:var(--danger);font-size:12.5px}.rule[data-v-02b61d8d]{display:flex;flex:1;flex-wrap:wrap;gap:8px;align-items:center;min-width:0;padding:4px 0}.rule-text[data-v-02b61d8d]{flex:1 1 240px;min-width:0}.rule-state[data-v-02b61d8d]{color:var(--warn);font-size:12px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-7a3cfba7a5e1")) { const style = document.createElement("style"); style.id = "window-styles-7a3cfba7a5e1"; style.textContent = ".rules-page[data-v-870924d3]{display:flex;flex-direction:column;gap:8px}.rules-refusal[data-v-870924d3]{margin:0;color:var(--danger);font-size:12.5px}.rule[data-v-870924d3]{display:flex;flex:1;flex-wrap:wrap;gap:8px;align-items:center;min-width:0;padding:4px 0}.rule-text[data-v-870924d3]{flex:1 1 240px;min-width:0}.rule-state[data-v-870924d3]{color:var(--warn);font-size:12px}\n"; document.head.appendChild(style); }
 import { computed as B, ref as D, openBlock as s, createBlock as y, unref as o, withCtx as r, createElementVNode as n, createElementBlock as R, toDisplayString as g, createCommentVNode as O, createVNode as m, Fragment as P, createTextVNode as v } from "vue";
-import { useWindow as V, WindowRoom as b, RowList as T, Btn as _ } from "@journal/window-kit";
-const $ = (d, u) => {
+import { useWindow as V, WindowRoom as T, RowList as $, Btn as _ } from "@journal/window-kit";
+const b = (d, u) => {
   const a = d.__vccOpts || d;
   for (const [i, c] of u)
     a[i] = c;
@@ -19,11 +19,11 @@ const $ = (d, u) => {
       const t = await a.run(["rule", l, String(e.id)]);
       p.value = t.ok ? "" : t.error, t.ok && N();
     }
-    return (l, e) => (s(), y(o(b), null, {
+    return (l, e) => (s(), y(o(T), null, {
       default: r(() => [
         n("div", A, [
           p.value ? (s(), R("p", W, g(p.value), 1)) : O("", !0),
-          m(o(T), {
+          m(o($), {
             rows: w.value,
             failure: o(c),
             loaded: o(C),
@@ -81,7 +81,7 @@ const $ = (d, u) => {
       _: 1
     }));
   }
-}, j = /* @__PURE__ */ $(I, [["__scopeId", "data-v-02b61d8d"]]);
+}, j = /* @__PURE__ */ b(I, [["__scopeId", "data-v-870924d3"]]);
 export {
   j as default
 };

@@ -155,6 +155,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     def worker_profile(self, name: str) -> AgentProfile:
         worker_type = self.types.find(CodingHelperRole.WORKER)
         profile = self.profiles.effective(name or worker_type.default_profile)
+        self.profiles.refuse_base(profile)
         if profile.agent_type != worker_type.key:
             raise Refusal(f"{profile.name} is a {self.types.find(profile.agent_type).label}: journal helper start runs it")
         return profile

@@ -15,10 +15,10 @@ def test_a_senior_runs_on_sol_on_codex_as_on_opus_on_claude():
 
 
 def expect_journal_senior_models(item, expected) -> None:
-    actual = item['journal-senior']
+    actual = item['journal-worker-senior']
     assert actual == expected, actual
 
 
 def expect_journal_medior_models(item, expected) -> None:
-    actual = item['journal-medior']
+    actual = item['journal-worker-medior']
     assert actual == expected, actual

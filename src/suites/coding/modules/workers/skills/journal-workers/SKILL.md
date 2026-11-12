@@ -14,8 +14,8 @@ stays kept on the same agent number and session until retired.
   Every worker dispatch names its model with `--model <model>`, or `--model default` for the profile's own; a dispatch without `--model` is refused, also with a `--tier`. Each start chooses the least expensive model that reliably fits the work (the journal's law L1); inheriting your own model is not a choice. A worker writes code, so it never runs on the fast tier.
 - Choose the profile from what the job is, before the model. A job that only reads goes to a read-only helper, never a worker:
   research and checks to `journal-researcher`, a review to `journal-code-reviewer`, tracing a fault to `journal-debugger`, a
-  design to `journal-planner`. A job that writes goes to a worker: `journal-medior` for a change the brief states,
-  `journal-senior` for one that needs judgement. A task titled check, find out or investigate is a reading job. Never send a
+  design to `journal-planner`. A job that writes goes to a worker: `journal-worker-medior` for a change the brief states,
+  `journal-worker-senior` for one that needs judgement. A task titled check, find out or investigate is a reading job. Never send a
   task to a worker only to clear the notice that a place is free: say why not instead.
 - Choose the model first: the least expensive one that fits the job. Reuse a kept worker only when it is on that model,
   and never because a stronger one happens to be there. When no kept worker on that model is idle and no place is free,

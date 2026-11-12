@@ -482,7 +482,7 @@ class WorkersModule(Module):
     name = "journal.suites.coding.workers"
     profiles = WORKER_PROFILES
     helper_types = [HelperType("worker", "Worker", access=Access.WRITING, separate_folder=True,
-                             default_profile="journal-worker", start_line="journal worker dispatch", roster=WorkerRoster, run_limit_key=WORKER_RUN_LIMIT, kept_limit_key=WORKER_KEPT_LIMIT, job_command=("worker", "send"), job_task_flag="--task", line="Writes the code of a task in a worktree of its own.")]
+                             default_profile="journal-worker-medior", start_line="journal worker dispatch", roster=WorkerRoster, run_limit_key=WORKER_RUN_LIMIT, kept_limit_key=WORKER_KEPT_LIMIT, job_command=("worker", "send"), job_task_flag="--task", line="Writes the code of a task in a worktree of its own.")]
     templates = WORKER_TEMPLATES
     window_extensions = [*(WindowExtension(name, reads=["proof list", "worker waits", "worker progress"], runs=["worker send"],
                                           events=["proof.*", "worker_worktree.*"],

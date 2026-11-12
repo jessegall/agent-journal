@@ -49,3 +49,12 @@ def test_bases_that_lead_back_to_the_profile_are_refused():
 def test_a_profile_sets_a_setting_back_to_its_default_over_its_base_by_naming_it():
     child = built(BASE, AgentProfile("child", "Child", "Own.", base="base", default_fields=("model", "tier")))["child"]
     assert (child.model, child.tier, child.skills) == ("", None, ("journal", "journal-tasks"))
+
+
+def test_a_profile_requires_every_skill_its_base_requires_and_its_own_on_top():
+    base = AgentProfile("base", "The shared body", "Shared lines.", skills=("journal", "journal-tasks"), required_skills=("journal",), is_base=True)
+    child = AgentProfile("child", "Child", "Own lines.", base="base", skills=("journal", "journal-tasks"), required_skills=("journal-tasks",))
+    profiles = built(base, child)
+    assert profiles["child"].required_skills == ("journal", "journal-tasks")
+    assert profiles["child"].is_base is False
+    assert profiles["base"].is_base is True

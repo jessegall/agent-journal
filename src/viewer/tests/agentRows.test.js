@@ -274,7 +274,7 @@ test("a worker with a started task does not say it waits for its tests", async (
 });
 
 test("a profile title is shown beside the role on its agent card", async () => {
-    const element = await drawn([{...FACTS[0], profile: "journal-medior", profile_title: "Medior"}], {}, WORKER_ROWS);
+    const element = await drawn([{...FACTS[0], profile: "journal-worker-medior", profile_title: "Medior"}], {}, WORKER_ROWS);
     expect(cardOf(element, 2).querySelector("[data-agent-title]").textContent).toBe("Worker");
     expect(cardOf(element, 2).querySelector("[data-agent-name]").textContent).toBe("Medior · worker 2");
 });

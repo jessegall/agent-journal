@@ -49,6 +49,11 @@ class ProfileFiles:
     def registered(self, name: str) -> AgentProfile | None:
         return next((profile for profile in self.module_profiles if profile.name == name), None)
 
+    def refuse_base(self, profile: AgentProfile) -> None:
+        if profile.is_base:
+            extending = sorted(listed.name for listed in self.listed() if isinstance(listed, AgentProfile) and listed.base == profile.name)
+            raise Refusal(f"{profile.name} is a base profile: it is not dispatched on its own", f"use a profile that extends it: {', '.join(extending)}")
+
     def has(self, name: str) -> bool:
         return bool(PROFILE_NAME.fullmatch(name)) and (self.registered(name) is not None or self.path(name).is_file())
 

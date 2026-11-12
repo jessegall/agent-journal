@@ -50,7 +50,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         parser.add_argument("--program", default="", help="the agent program the worker runs; the dispatching agent's own when not commands")
         parser.add_argument("--tier", type=ModelTier.automatic, choices=[ModelTier.FAST, ModelTier.GENERAL, ModelTier.STRONGEST], default=None)
         parser.add_argument("--model", default=None, help="the model it runs on, or default for the profile's own: journal worker models lists them")
-        parser.add_argument("--profile", default="", help="the worker profile it starts from, else journal-worker")
+        parser.add_argument("--profile", default="", help="the worker profile it starts from, else journal-worker-medior")
         parser.add_argument("--fresh", default="", metavar="REASON", help="start a new worker though a stopped one could take the task, and why")
         parser.add_argument("--name", default="", help="the worker's name on its card")
         parser.add_argument("--no-program", action="store_true", help="a user only: cut the worktree and start no program")

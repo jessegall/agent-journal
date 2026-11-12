@@ -41,4 +41,5 @@ class ProfileBases:
         base = self.on_base(self.profiles[profile.base])
         inherited = {name: getattr(base, name) for name in INHERITED_FIELDS if name not in profile.default_fields and getattr(profile, name) == getattr(UNSET, name)}
         body = "\n\n".join(part for part in (base.body.strip(), profile.body.strip()) if part)
-        return replace(profile, body=body, **inherited)
+        required = tuple(dict.fromkeys((*base.required_skills, *profile.required_skills)))
+        return replace(profile, body=body, **{**inherited, "required_skills": required})

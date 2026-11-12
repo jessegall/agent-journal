@@ -55,6 +55,7 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
         if len(command.brief) > BRIEF_LIMIT_CHARACTERS:
             raise Refusal(f"a brief is at most {BRIEF_LIMIT_CHARACTERS} characters", "put the text in journal doc make and name the document in the brief")
         profile = self.profiles.effective(command.profile)
+        self.profiles.refuse_base(profile)
         agent_type = self.types.find(profile.agent_type)
         if agent_type.start_line:
             raise Refusal(f"{profile.name} is a {agent_type.label}: use {agent_type.start_line}")

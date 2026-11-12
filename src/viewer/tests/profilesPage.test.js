@@ -129,6 +129,12 @@ test("the panel shows the stored conversation choice of a helper profile, and pi
     expect(saved.slice(saved.indexOf("--occupant"), saved.indexOf("--occupant") + 2)).toEqual(["--occupant", "each-launch"]);
 });
 
+test("a base profile shows a Base badge and the profiles that extend it show none", async () => {
+    await drawn([RESEARCHER, {...BUILDER, name: "journal-worker", is_base: true}, {...BUILDER, name: "journal-worker-medior", is_base: false}]);
+    const badged = [...host.querySelectorAll("[data-profile]")].filter((row) => row.querySelector("[data-profile-base]")).map((row) => row.dataset.profile);
+    expect(badged).toEqual(["journal-worker"]);
+});
+
 test("a worker profile shows no conversation choice and its save names no occupant", async () => {
     const lines = await drawn();
     await open("builder");

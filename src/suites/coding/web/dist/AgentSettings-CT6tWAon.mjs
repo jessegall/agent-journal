@@ -1,7 +1,7 @@
 import { openBlock as u, createElementBlock as $, createElementVNode as m, Fragment as te, renderList as fe, createBlock as S, unref as s, createVNode as k, withModifiers as Se, withCtx as h, createTextVNode as M, ref as C, computed as c, onMounted as H, toDisplayString as B, createCommentVNode as A, normalizeClass as pe, watch as ne, nextTick as Oe, renderSlot as $e, onBeforeUnmount as Ce } from "vue";
 import { TextInput as Ae, Btn as D, useWindow as Y, useNow as Te, agentTitle as xe, age as Ne, agentNumber as Ee, TabBody as Re, SwitchCase as ve, WindowRoom as _e, InnerTabs as Ie } from "@journal/window-kit";
 import { SettingPresetCard as oe, SettingPresetCompareTable as Pe, SettingEmptyState as Be, isFull as re, SettingBackPath as je, SettingPerTypeOverrideRow as le, SettingsScreen as me, SettingRow as Le, SettingThreeWayCap as qe, SettingBanner as Fe, SettingHelperTypeTable as Me, sectionsOf as Ue, SettingSectionList as We, useSettingsDraft as De, currentPreset as Ve, SettingPresetBand as Ke, FindBox as ze, ChangeFoot as He } from "@journal/setting-components";
-import { _ as q } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+import { _ as q } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
 const Ye = {
   class: "page",
   "data-agent-settings-presets": ""
@@ -44,7 +44,7 @@ const Ye = {
       ])
     ]));
   }
-}, et = /* @__PURE__ */ q(Qe, [["__scopeId", "data-v-cf40939d"]]), tt = { class: "action-buttons" }, nt = {
+}, et = /* @__PURE__ */ q(Qe, [["__scopeId", "data-v-0d0e399d"]]), tt = { class: "action-buttons" }, nt = {
   __name: "AgentRetireForm",
   props: { reason: String, pending: Boolean },
   emits: ["submit", "cancel", "update:reason"],
@@ -86,7 +86,7 @@ const Ye = {
       ])
     ], 32));
   }
-}, at = /* @__PURE__ */ q(nt, [["__scopeId", "data-v-92de7dd6"]]), st = {
+}, at = /* @__PURE__ */ q(nt, [["__scopeId", "data-v-818a34c9"]]), st = {
   class: "type-agents",
   "data-type-agents": ""
 }, ot = { class: "models" }, rt = ["data-count-agent"], lt = { class: "person-text" }, it = {
@@ -191,7 +191,7 @@ const Ye = {
       E.value ? (u(), $("p", it, B(E.value), 1)) : R.value ? (u(), $("p", dt, B(R.value), 1)) : A("", !0)
     ]));
   }
-}, ct = /* @__PURE__ */ q(ut, [["__scopeId", "data-v-67f17bfa"]]), F = "journal.core.helpers", ft = `${F}.context-limit-on`, ae = `${F}.context-limit-tokens`, ye = `${F}.context-limit-kinds`, V = `${F}.context-limit-profiles`, Z = `${F}.read-only-helper-profile-limits`, pt = `${F}.read-only-helper-run-limit`, vt = `${F}.read-only-helper-kept-limit`, mt = "none", ge = (e) => `${e / 1e3}k`, ke = (e) => {
+}, ct = /* @__PURE__ */ q(ut, [["__scopeId", "data-v-77081f39"]]), F = "journal.core.helpers", ft = `${F}.context-limit-on`, ae = `${F}.context-limit-tokens`, ye = `${F}.context-limit-kinds`, V = `${F}.context-limit-profiles`, Z = `${F}.read-only-helper-profile-limits`, pt = `${F}.read-only-helper-run-limit`, vt = `${F}.read-only-helper-kept-limit`, mt = "none", ge = (e) => `${e / 1e3}k`, ke = (e) => {
   const l = e.lastIndexOf(":");
   return { name: e.slice(0, l).trim(), value: e.slice(l + 1).trim() };
 }, z = (e, l) => {
@@ -322,7 +322,7 @@ const bt = {
       ])
     ]));
   }
-}, Ct = /* @__PURE__ */ q($t, [["__scopeId", "data-v-51bee498"]]), At = {
+}, Ct = /* @__PURE__ */ q($t, [["__scopeId", "data-v-12fb5c41"]]), At = {
   class: "agents",
   "data-agent-settings-agents": ""
 }, Tt = {
@@ -353,7 +353,7 @@ const bt = {
       }, null, 8, ["rows"]))
     ]));
   }
-}, xt = /* @__PURE__ */ q(Tt, [["__scopeId", "data-v-05cc036a"]]), Nt = { class: "screen" }, Et = { class: "rail" }, Rt = {
+}, xt = /* @__PURE__ */ q(Tt, [["__scopeId", "data-v-c7e6716c"]]), Nt = { class: "screen" }, Et = { class: "rail" }, Rt = {
   __name: "AgentSettingsScreen",
   props: { nodes: { type: Array, required: !0 }, draft: { type: Object, required: !0 }, readOnly: { type: Boolean, default: !1 }, extras: { type: Object, default: () => ({}) }, found: { type: String, default: "" } },
   setup(e) {
@@ -390,7 +390,7 @@ const bt = {
       ], 512)
     ]));
   }
-}, Q = /* @__PURE__ */ q(Rt, [["__scopeId", "data-v-1cab27ca"]]), _t = {
+}, Q = /* @__PURE__ */ q(Rt, [["__scopeId", "data-v-ab3a8dd5"]]), _t = {
   key: 0,
   class: "hint",
   "data-work-hint": ""
@@ -575,7 +575,7 @@ const bt = {
       _: 1
     }));
   }
-}, Ht = /* @__PURE__ */ q(Wt, [["__scopeId", "data-v-d342f429"]]);
+}, Ht = /* @__PURE__ */ q(Wt, [["__scopeId", "data-v-d7950420"]]);
 export {
   Ht as A
 };

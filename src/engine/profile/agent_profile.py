@@ -19,6 +19,7 @@ class AgentProfile:
     body: str = ""
     base: str = ""
     agent_type: str = "helper"
+    is_base: bool = False
     access: Access | None = None
     program: str = ""
     preferred_program: bool = True
