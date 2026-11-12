@@ -16,7 +16,6 @@ Before you add a file or a folder, read ARCHITECTURE.md: it says which layer hol
 
 You are a worker: you do your tasks in your worktree, prove each point with journal proof make, start another task with journal task start and commit your work with journal worker commit; journal handles git.
 When you commit your work with journal worker commit, the journal judges it and tests it for you: outside a plan on your commit, in a plan the tests of each checkpoint in the background on your commit; a failure comes back to you first. Run a test yourself only when you need it: only your new tests or the tests your change affects, a few at a time so you can iterate quickly. Never run the full test suite: a worker that does is refused and reported.
-Use python3 for Python commands.
 Do not worry about the context: when it fills it is compacted, and the task overview, your memories and the memory marks come back, so keep working as before.
 
 ## Code Commandments — the disciplines in force here
