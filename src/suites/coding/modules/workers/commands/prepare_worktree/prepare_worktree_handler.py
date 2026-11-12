@@ -9,6 +9,7 @@ from engine.provider.hook_manager import HookManager
 from engine.driver.driver_rule import DriverRule
 from engine.provider.managed_hooks import ManagedHooks
 from engine.provider.providers import Providers
+from engine.provider.program_settings_sync import ProgramSettingsSync
 from engine.setting.setting_values import SettingValues
 from engine.performance.timing import Timing
 from core.modules.skills.support.skill_files import SkillFiles
@@ -31,11 +32,11 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
 
     def __init__(self, environment_names: EnvironmentNames, settings: SettingValues, git: WorktreeGit, libraries: LibraryFolders, commands: WorktreeCommands,
                  skills: SkillFiles, home: JournalHome, managed: ManagedHooks, providers: Providers, instruction_files: WorkerInstructionFiles, tools: Tools,
-                 timing: Timing) -> None:
+                 timing: Timing, sync: ProgramSettingsSync) -> None:
         self.instruction_files, self.tools, self.timing = instruction_files, tools, timing
         self.environment_names, self.settings, self.git, self.libraries, self.commands = environment_names, settings, git, libraries, commands
         self.skills = skills
-        self.home, self.managed, self.providers = home, managed, providers
+        self.home, self.managed, self.providers, self.sync = home, managed, providers, sync
 
     def place_program_hooks(self, command: PrepareWorktree) -> None:
         for provider in self.providers.all():
@@ -46,7 +47,6 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
                 target = Path(command.folder) / file
                 target.parent.mkdir(parents=True, exist_ok=True)
                 ProgramHooks.store(target, ProgramHooks.read(source))
-                provider.hooks_copied(source, target)
                 self.libraries.exclude(command.folder, [str(file)])
 
     def handle(self, command: PrepareWorktree, context: Context) -> None:
@@ -63,6 +63,8 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
         manager = HookManager(self.home.project_folder, self.managed, rules)
         for provider in self.providers.all():
             manager.import_hooks(type(provider), Path(command.folder))
+        for provider in self.providers.all():
+            self.sync.prepare(provider.name)
         self.timing.stamp("prepare_hooks")
         skill_files = self.skills.place(Path(command.folder))
         self.timing.stamp("prepare_skills")

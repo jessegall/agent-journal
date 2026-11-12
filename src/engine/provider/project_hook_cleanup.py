@@ -29,5 +29,4 @@ class ProjectHookCleanup:
         self.backup.project_copied(provider.name, path)
         kept = {key: value for key, value in settings.items() if key != HOOKS_KEY and not (key == STATUS_LINE_KEY and has_status_line)}
         ProgramHooks.store(path, {**kept, HOOKS_KEY: parts.native} if parts.native else kept)
-        provider.hooks_rewritten(path, settings.get(HOOKS_KEY), parts.native)
         return True

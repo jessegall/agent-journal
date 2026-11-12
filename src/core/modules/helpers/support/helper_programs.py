@@ -29,6 +29,6 @@ class HelperPrograms:
         hooks = ProgramHooks.journal(type(provider), provider.journal_hook_file(folder))
         provider.folder_trusted(folder)
         hooks_ready = hooks.is_complete() and hooks.names_root(self.home.project_folder) and provider.hook_trust(folder) is HookTrust.READY
-        if hooks_ready or not provider.writes_project_hooks:
+        if hooks_ready:
             return
-        hooks.write(f'"{self.home.hook_runner}"', self.home.project_folder, self.managed.all())
+        raise Refusal(f"the journal could not write the hooks of {program}", f"run journal program manage {program} {folder} and look at the server log")

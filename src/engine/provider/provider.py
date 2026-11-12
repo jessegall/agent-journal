@@ -65,7 +65,6 @@ class Provider(ABC):
     hook_file: ClassVar[HookFile]
     hook_files: ClassVar[tuple[Path, ...]] = ()
     worktree_hook_files: ClassVar[tuple[Path, ...]] = ()
-    writes_project_hooks: ClassVar[bool] = True
     controls: ClassVar[Sequence[ControlGroup]] = ()
     compacts_headless: ClassVar[bool] = False
     session_variable: ClassVar[str]
@@ -173,18 +172,6 @@ class Provider(ABC):
 
     @abstractmethod
     def hook_trust(self, project: Path) -> HookTrust: ...
-
-    @classmethod
-    def hooks_rewritten(cls, path: Path, original_hooks: object, updated_hooks: object) -> None:
-        pass
-
-    @classmethod
-    def record_hook_write(cls, path: Path, hooks: Mapping[str, object]) -> None:
-        pass
-
-    @classmethod
-    def hooks_copied(cls, source: Path, target: Path) -> None:
-        pass
 
     def user_hook_files(self) -> tuple[Path, ...]:
         return ()

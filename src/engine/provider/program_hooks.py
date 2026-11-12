@@ -51,8 +51,6 @@ class ProgramHooks:
             hooks.setdefault(event, []).extend(blocks)
         provider_settings: Mapping[str, object] = self.provider.hook_settings(runner, root) if self.provider else {}
         self.store(self.path, {**settings, **provider_settings, "hooks": {event: blocks for event, blocks in hooks.items() if blocks}})
-        if self.provider is not None:
-            self.provider.record_hook_write(self.path, hooks)
 
     def entry_timeout(self, event: str, managed: Sequence[ManagedHook]) -> int:
         longest = max((hook.timeout for hook in managed if hook.program == self.program and hook.event == event), default=0)
