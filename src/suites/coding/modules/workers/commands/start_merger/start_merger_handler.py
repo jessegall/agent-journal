@@ -17,6 +17,7 @@ from engine.query.conditions.minimum import Minimum
 from core.modules.helpers.commands.send_helper.send_helper import SendHelper
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 from suites.coding.modules.workers.support.merger_nudges import MERGER_JOB, MERGER_PROFILE, MERGER_SOURCE
+from suites.coding.modules.workers.support.merger_work import MergerWork
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
 
 
@@ -29,10 +30,12 @@ class StartMergerHandler(Handler[StartMerger, None]):
     command = StartMerger
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, bus: Bus, agents: AgentRows, main_line: MainAgentLine) -> None:
-        self.queries, self.bus, self.agents, self.main_line = queries, bus, agents, main_line
+    def __init__(self, queries: Queries, bus: Bus, agents: AgentRows, main_line: MainAgentLine, work: MergerWork) -> None:
+        self.queries, self.bus, self.agents, self.main_line, self.work = queries, bus, agents, main_line, work
 
     def handle(self, command: StartMerger, context: Context) -> None:
+        if not self.work.waits():
+            return
         main_agent = self.agents.main_agent()
         try:
             if main_agent is None:

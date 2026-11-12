@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.process.execution import Execution
 from engine.process.execution_gate import ExecutionGate
@@ -27,5 +29,5 @@ class ProcessExecutor:
         except BaseException:
             self.placement.ended(placed, Execution(placed.process_id, 1, "", "the run failed to start"))
             raise
-        self.placement.ended(placed, execution)
-        return execution
+        row_id = self.placement.ended(placed, execution)
+        return replace(execution, process_id=row_id if row_id is not None else execution.process_id)
