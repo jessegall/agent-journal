@@ -1,6 +1,7 @@
 from collections import defaultdict
 from collections.abc import Sequence
 
+from engine.actor.actor import CORE_ACTOR_ID
 from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
 from engine.query.conditions.among import Among
@@ -16,6 +17,9 @@ from core.modules.processes.queries.unreadable_mark_query import UnreadableMarkQ
 from engine.time.timestamp import Timestamp
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.reader_rows import ReaderRows
+from core.modules.processes.support.reading.stock_reader_edits import StockReaderEdits
+from core.modules.processes.support.stock_digest import StockDigest
+from core.modules.processes.support.stock_reader import STOCK_READERS
 
 AUDIT_SOURCE = "processes.readers-at-start"
 REPAIR_AFTER_OUTPUTS = 3
@@ -26,11 +30,19 @@ class CatalogueAudit:
     """What the main agent hears of the readers when its session starts: the readers that lack required fields, by
     the judge every reader is judged by, the readers that picked no line of their last outputs, and the runs of
     agents that may not write readers whose end was decided without a proper reader since the main agent last heard
-    the audit. Only a main agent writes readers."""
+    the audit, and the stock readers an edit froze that fell behind the shipped ones. Only a main agent writes readers."""
 
     def __init__(self, reader_rows: ReaderRows, judge: ReaderJudge, decisions: ReadingDecisionQuery, queries: Queries, outputs: OutputQuery,
-                 marks: UnreadableMarkQuery) -> None:
+                 marks: UnreadableMarkQuery, edits: StockReaderEdits) -> None:
         self.reader_rows, self.judge, self.decisions, self.queries, self.outputs, self.marks = reader_rows, judge, decisions, queries, outputs, marks
+        self.edits = edits
+
+    def readers_behind(self) -> tuple[tuple[Reader, str], ...]:
+        """The stock rows an edit froze whose shipped entry changed since: each with the digest of the entry now."""
+        stock_rows = {reader.name: reader for reader in self.reader_rows.all() if reader.creator_id == CORE_ACTOR_ID}
+        edited = self.edits.edited_ids(stock_rows.values())
+        return tuple((stock_rows[stock.name], StockDigest.of(stock)) for stock in STOCK_READERS
+                     if stock.name in stock_rows and stock_rows[stock.name].id in edited and stock_rows[stock.name].shipped_digest != StockDigest.of(stock))
 
     def fields_missing_count(self) -> int:
         readers = self.reader_rows.all()
