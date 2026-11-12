@@ -13,13 +13,13 @@
                             },
                             {
                                 "of": "receiver",
-                                "textMatches": "^(?:${reading_declarations})$"
+                                "nameMatches": "^(${reading_declarations})$"
                             }
                         ]
                     },
                     {
                         "argument": {
-                            "textMatches": "^(?:${reading_declarations})$"
+                            "nameMatches": "^(${reading_declarations})$"
                         }
                     }
                 ]
