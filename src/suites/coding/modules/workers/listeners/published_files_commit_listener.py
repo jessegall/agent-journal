@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from engine.event.file_publishing import FilePublishing
 from engine.event.logged_event import LoggedEvent
 from engine.listener.commit.commit_listener import CommitListener
@@ -8,17 +10,23 @@ PUBLISHED_FOLDERS = (".claude/agents", ".codex/agents", ".agents/profiles", ".cl
 
 
 class PublishedFilesCommitListener(CommitListener[FilePublishing]):
-    """Commits the profile and skill copies the journal writes into each environment's checkout, once it has
-    written them, when the folder is a git work tree on the environment's branch, so a merge never meets
-    them as uncommitted work."""
+    """Commits the profile and skill copies the journal writes into each environment's checkout, once for all
+    the publishing of one round, when the folder is a git work tree on the environment's branch, so a merge
+    never meets them as uncommitted work."""
 
     name = "workers.published-files-commit"
     run_order = 10
 
     def __init__(self, environments: EnvironmentRows, git: WorktreeGit) -> None:
         self.environments, self.git = environments, git
+        self.last_event_id: int | None = None
+
+    def prepare(self, events: Sequence[LoggedEvent]) -> None:
+        self.last_event_id = events[-1].id if events else None
 
     def handle(self, event: FilePublishing, logged: LoggedEvent) -> None:
+        if logged.id != self.last_event_id:
+            return
         checkouts = {(environment.folder, environment.branch) for environment in self.environments.all() if not environment.test}
         for folder, branch in sorted(checkouts):
             if self.git.is_current_branch(folder, branch):
