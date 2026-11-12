@@ -10,7 +10,7 @@ from engine.testing.stories.story import Story
 from tests.stories.support.program_states import bind_ready_programs
 from tests.stories.suites.coding.modules.workers.support.memory_git.git_choice import REAL_GIT
 
-pytest_plugins = ["engine.testing.stories.pytest_plugin"]
+pytest_plugins = ["engine.testing.pytest_plugin"]
 STORY_SUPPORT_FOLDER = "support"
 REAL_PROGRAM_FLAG = "--real-program"
 REAL_PROGRAM_MARK = "real_program"
