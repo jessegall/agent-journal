@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from engine.provider.context_window import ContextWindow
+from engine.time.timestamp import Timestamp
 from engine.types.type_guards import is_mapping
 from core.modules.usage.support.plan_window import PlanWindow
 
@@ -21,6 +22,7 @@ class SessionStatus:
     context_tokens: int | None = None
     context_limit_tokens: int | None = None
     context_window_tokens: int | None = None
+    read_at: Timestamp | None = None
 
     @classmethod
     def reported(cls, report: object) -> "SessionStatus":

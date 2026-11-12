@@ -1,6 +1,7 @@
 from engine.file.file_access import FileAccess
 from engine.file.versions.file_version import FileVersion
 import json
+from dataclasses import replace
 import shutil
 from collections.abc import Sequence
 from collections.abc import Mapping
@@ -80,4 +81,4 @@ class StatusFiles:
 
     @staticmethod
     def kept_status(path: Path, version: FileVersion) -> SessionStatus:
-        return SessionStatus.reported(StatusFileFields.read(path, version))
+        return replace(SessionStatus.reported(StatusFileFields.read(path, version)), read_at=version.modified_timestamp())

@@ -21,6 +21,9 @@ class Providers:
     def session_effort(self, program: str, home: JournalHome, session: str) -> str:
         return self.provider(program).session_effort(home, session)
 
+    def effort(self, program: str, model: str) -> str:
+        return self.provider(program).effort(model)
+
     def reported_model(self, program: str, home: JournalHome, session: str) -> str:
         return self.provider(program).reported_model(home, session)
 
