@@ -12192,6 +12192,7 @@ const Fx = ["title"], Wx = {
                   "data-queue-empty": _.section.type
                 }, v(_.section.empty), 9, U8)) : (r(), F(Ht, {
                   key: 2,
+                  class: "sticky-band",
                   icon: _.section.icon,
                   count: _.section.rows.length,
                   "data-queue-heading": _.section.type
@@ -12216,7 +12217,7 @@ const Fx = ["title"], Wx = {
       ])
     ]));
   }
-}, KC = /* @__PURE__ */ U(G8, [["__scopeId", "data-v-15ae3e36"]]), V8 = {
+}, KC = /* @__PURE__ */ U(G8, [["__scopeId", "data-v-3f01ced0"]]), V8 = {
   key: 0,
   class: "inspector-links",
   "data-inspector-links": ""
@@ -14442,7 +14443,7 @@ function eA(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const tA = du(() => import("./VoiceFigure-Dr7a78Kw.js").then((e) => e.V)), nA = "1.2.0", aA = "3.5";
+const tA = du(() => import("./VoiceFigure-B5dOI204.js").then((e) => e.V)), nA = "1.2.0", aA = "3.5";
 export {
   eh as $,
   Ee as A,

@@ -57,7 +57,7 @@ onMounted(load);
                     <template v-for="item in items" :key="item.key">
                         <template v-if="item.run"><ProcessQueueRun :run="item.run" :environment="queue.environment_name" :position="item.position" :read="read" :expanded="open.includes(item.run.id)" @toggle="toggle(item.run.id)" /></template>
                         <template v-else-if="item.empty"><p class="empty" :data-queue-empty="item.section.type">{{ item.section.empty }}</p></template>
-                        <template v-else><ProcessQueueBand :icon="item.section.icon" :count="item.section.rows.length" :data-queue-heading="item.section.type">{{ item.section.heading }}</ProcessQueueBand></template>
+                        <template v-else><ProcessQueueBand class="sticky-band" :icon="item.section.icon" :count="item.section.rows.length" :data-queue-heading="item.section.type">{{ item.section.heading }}</ProcessQueueBand></template>
                     </template>
                 </TransitionGroup>
                 <template v-if="hasOlder"><button type="button" class="older" data-queue-older @click="showOlder">Show older commands</button></template>
@@ -75,6 +75,7 @@ h1 { margin: 0; color: var(--text); font-size: 11.5px; font-weight: 600; letter-
 .lead { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-3); font-size: 12px; line-height: 1.5; }
 .scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
 .queue-list { position: relative; border-top: 1px solid var(--border); }
+.sticky-band { position: sticky; top: 0; z-index: 1; }
 .empty { margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--bg); color: var(--text-3); font-size: 12px; }
 .failure { padding: 10px 14px; color: var(--danger); font-size: 12px; }
 .older { display: block; width: 100%; padding: 10px 14px; border: 0; background: none; color: var(--text-2); font: inherit; font-size: 12px; cursor: pointer; }
