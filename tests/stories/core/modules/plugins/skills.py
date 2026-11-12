@@ -165,10 +165,10 @@ def published_skill_folders(story) -> list[Path]:
     return [root / "sample-rules" for root in (story.home.folder.parent / ".claude" / "skills", story.home.folder.parent / ".agents" / "skills")]
 
 
-def test_disabling_a_plugin_keeps_the_skills_it_published_and_removing_it_removes_them(new_story):
+def test_disabling_a_plugin_withdraws_the_skills_it_published_and_enabling_it_publishes_them_again(new_story):
     story = installed_story(new_story)
-    story.expect_rows(all((folder / "SKILL.md").is_file() for folder in published_skill_folders(story)))
+    story.expect_rows(all((folder / "SKILL.md").is_file() for folder in published_skill_folders(story)), detail="published at install")
     story.expect_success("plugin disable sample", actor=story.user)
-    story.expect_rows(all((folder / "SKILL.md").is_file() for folder in published_skill_folders(story)))
-    story.expect_success("plugin remove sample", actor=story.user)
-    story.expect_rows(not any(folder.exists() for folder in published_skill_folders(story)))
+    story.expect_rows(not any(folder.exists() for folder in published_skill_folders(story)), detail="withdrawn once disabled")
+    story.expect_success("plugin enable sample", actor=story.user)
+    story.expect_rows(all((folder / "SKILL.md").is_file() for folder in published_skill_folders(story)), detail="published again once enabled")
