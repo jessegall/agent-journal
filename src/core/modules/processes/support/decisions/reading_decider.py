@@ -3,7 +3,7 @@ from core.modules.processes.models.enums.reader_action import ReaderAction
 from core.modules.processes.models.enums.reader_state import ReaderState
 from core.modules.processes.models.enums.reading_moment import ReadingMoment
 from core.modules.processes.models.enums.reason_code import ReasonCode
-from core.modules.processes.support.reading.reading_case import ReadingCase
+from core.modules.processes.support.decisions.reading_case import ReadingCase
 from core.modules.processes.support.decisions.reading_decision import ReadingDecision
 
 PREVENT_AFTER_RUNS = 2

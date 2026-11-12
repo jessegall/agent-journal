@@ -27,9 +27,9 @@ from core.modules.processes.support.reader_writers import ReaderWriters
 from core.modules.processes.support.cadence.run_cadences import RunCadences
 from core.modules.processes.support.decisions.escalation_counter import EscalationCounter
 from core.modules.processes.support.decisions.escalation_resets import EscalationResets
-from core.modules.processes.support.reading.output_facts import SAMPLE_BYTES, OutputFacts
+from core.modules.processes.support.decisions.output_facts import SAMPLE_BYTES, OutputFacts
 from core.modules.processes.models.enums.reader_layer import ReaderLayer
-from core.modules.processes.support.reading.reading_case import ReadingCase
+from core.modules.processes.support.decisions.reading_case import ReadingCase
 from core.modules.processes.support.run_counts import RunCounts
 from core.modules.processes.support.silent_start_runs import SilentStartRuns
 

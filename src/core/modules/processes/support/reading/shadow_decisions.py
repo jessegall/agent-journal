@@ -10,7 +10,7 @@ from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reading_decision_row import ReadingDecisionRow
 from core.modules.processes.support.decisions.reading_decider import ReadingDecider
 from core.modules.processes.support.decisions.reading_decisions import ReadingDecisions
-from core.modules.processes.support.reading.reading_case import ReadingCase
+from core.modules.processes.support.decisions.reading_case import ReadingCase
 from core.modules.processes.support.reading.reading_facts import ReadingFacts
 
 

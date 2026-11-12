@@ -18,7 +18,7 @@ from core.modules.processes.support.reader_requests import ReaderRequests
 from core.modules.processes.support.run_slots import RunSlots
 from core.modules.processes.support.part_visibility import PartVisibility
 from core.modules.processes.models.enums.reading_moment import ReadingMoment
-from core.modules.processes.support.decisions.shadow_decisions import ShadowDecisions
+from core.modules.processes.support.reading.shadow_decisions import ShadowDecisions
 
 
 class StartProcessHandler(Handler[StartProcess, Process]):
