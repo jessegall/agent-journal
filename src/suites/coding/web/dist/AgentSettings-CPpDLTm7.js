@@ -161,7 +161,7 @@ function de(t, l, e) {
   const o = e ? H(t(K), e) : void 0;
   if (o !== void 0) return { text: ue(o), where: "Own value", own: !0 };
   const i = H(t(ye), l);
-  return i !== void 0 ? { text: ue(i), where: "Set for its kind", own: !1 } : { text: ge(Number(t(se))), where: "Set for every agent", own: !1 };
+  return i !== void 0 ? { text: ue(i), where: "Set for its type", own: !1 } : { text: ge(Number(t(se))), where: "Set for every agent", own: !1 };
 }
 const ut = (t) => t > 0 ? t : null, dt = { worker: "workers" }, z = "merger", ce = "designer";
 function pe(t, l, e, o, i, p = {}) {
@@ -331,7 +331,7 @@ const ft = {
         i[1] || (i[1] = v("b", null, "What is a preset?", -1))
       ]),
       v("div", Ot, [
-        i[2] || (i[2] = v("p", { class: "lead" }, "A preset is a set of eight switches and nothing more. It is not a kind of agent: the main agent is the same program under every preset, and a preset only fills in the switches below. Nothing is saved until you press Save.", -1)),
+        i[2] || (i[2] = v("p", { class: "lead" }, "A preset is a set of eight switches and nothing more. It is not a type of agent: the main agent is the same program under every preset, and a preset only fills in the switches below. Nothing is saved until you press Save.", -1)),
         v("div", _t, [
           (d(!0), O(te, null, fe(t.presets, (p) => (d(), $(a(ie), {
             key: p.key,
@@ -353,7 +353,7 @@ const ft = {
       ])
     ]));
   }
-}, Tt = /* @__PURE__ */ F(At, [["__scopeId", "data-v-2cf94460"]]), Nt = { class: "screen" }, xt = { class: "rail" }, Rt = {
+}, Tt = /* @__PURE__ */ F(At, [["__scopeId", "data-v-cf40939d"]]), Nt = { class: "screen" }, xt = { class: "rail" }, Rt = {
   __name: "AgentSettingsScreen",
   props: { nodes: { type: Array, required: !0 }, draft: { type: Object, required: !0 }, readOnly: { type: Boolean, default: !1 }, extras: { type: Object, default: () => ({}) }, found: { type: String, default: "" } },
   setup(t) {
