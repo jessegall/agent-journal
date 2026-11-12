@@ -69,7 +69,7 @@ class PhaseSeed(Seed):
 
 
 class TaskSeed(Seed):
-    """A finished task assigned to a seeded agent: most are completed, some cancelled. The work still open in an
+    """A finished task, which TaskAssignmentSeed assigns to a seeded agent: most are completed, some cancelled. The work still open in an
     environment is the story's own, so a story that looks at the open work of its environment sees only its own."""
 
     table = "tasks"
@@ -77,7 +77,7 @@ class TaskSeed(Seed):
     def columns(self, index: int, facts: SeedFacts) -> dict[str, object]:
         state = TASK_STATES[index % len(TASK_STATES)]
         return {"environment_id": facts.environment_id, "creator_id": CORE_ACTOR_ID, "title": f"Seeded task {index + 1}", "brief": "A task of the seed; done when it is done.",
-                "state": state, "delegated_to": facts.row_id("agents", index), "outcome": "done" if state == "completed" else "",
+                "state": state, "outcome": "done" if state == "completed" else "",
                 "reason": "no longer needed" if state == "cancelled" else "", "closed_at": facts.timestamp, "complexity": index % 5 + 1}
 
 

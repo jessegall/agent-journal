@@ -6,7 +6,6 @@ from engine.model.prunable import Prunable
 from engine.model.tables import Tables
 from engine.query.queries import Queries
 from engine.registry.registry import Registry
-from engine.time.clock import Clock
 
 BATCH_ROWS = 500
 MOST_BATCHES = 20
@@ -21,10 +20,10 @@ class RowPruning:
 
     def __call__(self, container: Container) -> None:
         database, queries, tables = container.get(Database), container.get(Queries), container.get(Tables)
-        rows, now = PrunedRows(database), container.get(Clock).timestamp()
+        rows = PrunedRows(database)
         for model in RowPruning.prunable_models(container.get(Registry)):
             for _ in range(MOST_BATCHES):
-                ids = [int(str(row_id)) for row_id in model.prunable(queries.query(model).with_removed(), now).oldest().limit(BATCH_ROWS, BATCH_REASON).pluck("id")]
+                ids = [int(str(row_id)) for row_id in model.prunable(queries.query(model).with_removed(), tables.table(model).name).oldest().limit(BATCH_ROWS, BATCH_REASON).pluck("id")]
                 if not ids:
                     break
                 with database.transaction():

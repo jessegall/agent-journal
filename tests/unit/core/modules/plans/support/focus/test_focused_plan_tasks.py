@@ -5,14 +5,14 @@ from core.modules.plans.support.focus.focused_plan_tasks import FocusedPlanTasks
 from core.modules.plans.support.focus.plan_work import PlanWork
 from core.modules.plans.support.unblockers.unblocker import Unblocker
 from core.modules.plans.support.unblockers.unblockers import Unblockers
-from engine.query.conditions.is_null import IsNull
+from core.modules.assignments.queries.conditions.unassigned import Unassigned
 from engine.scope.actor_scope import ActorScope
 
 AGENT = SimpleNamespace(id=4, environment_id=2)
-TASKS = {task_id: SimpleNamespace(id=task_id, priority=100, delegated_to=None) for task_id in (1, 2, 9)}
-TASKS[20] = SimpleNamespace(id=20, priority=100, delegated_to=4)
-TASKS[21] = SimpleNamespace(id=21, priority=100, delegated_to=None)
-TASKS[22] = SimpleNamespace(id=22, priority=200, delegated_to=None)
+TASKS = {task_id: SimpleNamespace(id=task_id, priority=100, assignee_id=None) for task_id in (1, 2, 9)}
+TASKS[20] = SimpleNamespace(id=20, priority=100, assignee_id=4)
+TASKS[21] = SimpleNamespace(id=21, priority=100, assignee_id=None)
+TASKS[22] = SimpleNamespace(id=22, priority=200, assignee_id=None)
 
 
 class OpenedScopes:
@@ -33,8 +33,8 @@ class TaskRows:
         return TASKS[task_id]
 
     def matching(self, condition):
-        if isinstance(condition, IsNull):
-            return TaskRows([task for task in self.tasks if task.delegated_to is None])
+        if isinstance(condition, Unassigned):
+            return TaskRows([task for task in self.tasks if task.assignee_id is None])
         return TaskRows([task for task in self.tasks if task.id in condition.values])
 
     def all_rows(self):

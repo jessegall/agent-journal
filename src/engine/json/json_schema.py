@@ -6,6 +6,7 @@ from engine.errors.refusal import Refusal
 from engine.types.type_guards import is_list, is_mapping, is_number, is_text_mapping
 
 DEFINITIONS = "$defs"
+PROPERTIES = "properties"
 REFERENCE_PREFIX = "#/$defs/"
 IGNORED_KEYWORDS = frozenset(("title", "description", "$schema", "default", "examples", "$comment", DEFINITIONS))
 TYPE_CHECKS: Mapping[str, Callable[[object], bool]] = {
@@ -68,7 +69,7 @@ class JsonSchema:
     def additional_properties(self, rule: object, schema: Mapping[str, object], value: object, pointer: str) -> list[str]:
         if not is_mapping(value):
             return []
-        properties = schema.get("properties")
+        properties = schema.get(PROPERTIES)
         declared: Mapping[object, object] = properties if is_mapping(properties) else {}
         return [problem for name, inner in value.items() if name not in declared for problem in self.checked(rule, inner, f"{pointer}/{name}")]
 
@@ -128,7 +129,7 @@ class JsonSchema:
 
 
 KEYWORDS: Mapping[str, Callable[[JsonSchema, object, Mapping[str, object], object, str], list[str]]] = {
-    "$ref": JsonSchema.reference, "type": JsonSchema.type_rule, "properties": JsonSchema.properties, "required": JsonSchema.required,
+    "$ref": JsonSchema.reference, "type": JsonSchema.type_rule, PROPERTIES: JsonSchema.properties, "required": JsonSchema.required,
     "additionalProperties": JsonSchema.additional_properties, "items": JsonSchema.items, "enum": JsonSchema.enum, "const": JsonSchema.const,
     "anyOf": JsonSchema.matches_alternative, "minLength": JsonSchema.min_length, "minimum": JsonSchema.minimum, "pattern": JsonSchema.pattern,
     "propertyNames": JsonSchema.property_names, "uniqueItems": JsonSchema.unique_items, "minProperties": JsonSchema.min_properties,

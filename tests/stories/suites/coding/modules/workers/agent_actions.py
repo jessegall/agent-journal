@@ -1,3 +1,4 @@
+from tests.stories.core.modules.tasks.support.holder_assignee_check import assignee_of
 import pytest
 
 from engine.query.queries import Queries
@@ -36,10 +37,10 @@ def test_an_idle_worker_takes_an_open_task_through_the_agents_window(agent_task_
     server.story.expect_rows(row["job_task_flag"] == "--task" and row["resume_reason"] is None)
     line(["worker", "send", str(worker), "--task", str(task)])
     assigned = server.story.container.get(Queries).query(Task).find(task)
-    server.story.expect_rows(assigned.delegated_to == worker)
+    server.story.expect_rows(assignee_of(server.story, assigned) == worker)
 
 
 def test_the_worker_task_picker_in_light_and_dark(agent_task_server):
     server, _, worker, task = agent_task_server
     expect_browser(server, "agentTask.browser.mjs", [str(worker), str(task), "/tmp/worker-675-agent-task"])
-    server.story.expect_rows(server.story.container.get(Queries).query(Task).find(task).delegated_to == worker)
+    server.story.expect_rows(assignee_of(server.story, server.story.container.get(Queries).query(Task).find(task)) == worker)

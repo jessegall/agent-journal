@@ -129,14 +129,14 @@ def test_a_worker_is_not_given_a_task_of_a_plan(worker_command):
     story.expect_success('phase make --plan 1 "Print" --goal "Receipts print"', actor=story.agent)
     story.expect_success('task make "Print the receipt" --brief "Print it" --complexity 2 --phase 1', actor=story.agent)
     story.expect_success("worker commit --wait --differences none", actor=worker)
-    story.expect_no_text("task show 2", f"delegated_to: {worker.id}", actor=story.agent)
+    story.expect_no_text("task info 2", f"assigned to: agent {worker.id}", actor=story.agent)
 
 
 def test_a_worker_is_not_given_a_task_with_no_complexity(worker_command):
     story, _, worker, _ = worker_command
     story.expect_success('task make "Print the receipt" --brief "Print it" --environment main', actor=story.agent)
     story.expect_success("worker commit --wait --differences none", actor=worker)
-    story.expect_no_text("task show 2", f"delegated_to: {worker.id}", actor=story.agent)
+    story.expect_no_text("task info 2", f"assigned to: agent {worker.id}", actor=story.agent)
 
 
 def test_a_worker_is_given_the_most_urgent_free_task(worker_command):
@@ -144,8 +144,8 @@ def test_a_worker_is_given_the_most_urgent_free_task(worker_command):
     story.expect_success('task make "Print the receipt" --brief "Print it" --complexity 2 --environment main', actor=story.agent)
     story.expect_success('task make "Weigh the parcel" --brief "Weigh it" --complexity 2 --priority high --environment main', actor=story.agent)
     story.expect_success("worker commit --wait --differences none", actor=worker)
-    story.expect_text("task show 3", f"delegated_to: {worker.id}", actor=story.agent)
-    story.expect_no_text("task show 2", f"delegated_to: {worker.id}", actor=story.agent)
+    story.expect_text("task info 3", f"assigned to: agent {worker.id}", actor=story.agent)
+    story.expect_no_text("task info 2", f"assigned to: agent {worker.id}", actor=story.agent)
 
 
 def test_a_worker_that_still_has_an_open_task_of_its_own_is_given_no_free_task(worker_command):
@@ -154,14 +154,14 @@ def test_a_worker_that_still_has_an_open_task_of_its_own_is_given_no_free_task(w
     story.expect_success('task make "Weigh the parcel" --brief "Weigh it" --complexity 2 --environment main', actor=story.agent)
     story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task 3", actor=story.agent)
     story.expect_success("worker commit --wait --differences none", actor=worker)
-    story.expect_no_text("task show 2", f"delegated_to: {worker.id}", actor=story.agent)
+    story.expect_no_text("task info 2", f"assigned to: agent {worker.id}", actor=story.agent)
 
 
 def test_a_worker_is_not_given_a_free_task_of_complexity_four(worker_command):
     story, _, worker, _ = worker_command
     story.expect_success('task make "Print the receipt" --brief "Print it" --complexity 4 --environment main', actor=story.agent)
     story.expect_success("worker commit --wait --differences none", actor=worker)
-    story.expect_no_text("task show 2", f"delegated_to: {worker.id}", actor=story.agent)
+    story.expect_no_text("task info 2", f"assigned to: agent {worker.id}", actor=story.agent)
 
 
 def test_a_worker_is_not_given_a_task_that_waits_on_another(worker_command):
@@ -170,7 +170,7 @@ def test_a_worker_is_not_given_a_task_that_waits_on_another(worker_command):
     story.expect_success('task make "Weigh the parcel" --brief "Weigh it" --complexity 4 --environment main', actor=story.agent)
     story.expect_success("task depend 2 --on 3", actor=story.agent)
     story.expect_success("worker commit --wait --differences none", actor=worker)
-    story.expect_no_text("task show 2", f"delegated_to: {worker.id}", actor=story.agent)
+    story.expect_no_text("task info 2", f"assigned to: agent {worker.id}", actor=story.agent)
 
 
 def test_a_worker_is_not_given_a_task_reserved_for_the_main_agent(worker_command):
@@ -178,4 +178,4 @@ def test_a_worker_is_not_given_a_task_reserved_for_the_main_agent(worker_command
     story.expect_success('task make "Print the receipt" --brief "Print it" --complexity 2 --environment main', actor=story.agent)
     story.expect_success(f"task assign 2 --to {agent_number(story, story.agent.id)}", actor=story.agent)
     story.expect_success("worker commit --wait --differences none", actor=worker)
-    story.expect_text("task show 2", f"delegated_to: {story.agent.id}", actor=story.agent)
+    story.expect_text("task info 2", f"assigned to: agent {story.agent.id}", actor=story.agent)

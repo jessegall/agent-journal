@@ -1,4 +1,3 @@
-from datetime import timedelta
 from engine.model.prunable import Prunable
 from dataclasses import dataclass
 
@@ -10,7 +9,7 @@ from core.modules.memories.models.enums.delivery_cause import DeliveryCause
 class MemoryDelivery(Prunable, Model):
     """One delivery of a memory to an agent, and why."""
 
-    kept_for = timedelta(days=3)
+    kept_rows = 10000
 
     model_name = "memory_delivery"
     cli_name = "memory-delivery"

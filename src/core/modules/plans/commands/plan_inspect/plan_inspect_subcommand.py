@@ -4,10 +4,9 @@ from engine.caller.caller import Caller
 from engine.query.queries import Queries
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
-from core.modules.agents.models.agent import Agent
 from core.modules.plans.models.plan_progress import PlanProgress
 from core.modules.plans.models.plan import Plan
-from core.modules.plans.support.plan_assignee import PlanAssignee
+from core.modules.assignments.support.assignments import Assignments
 from core.modules.plans.support.plan_inspection import PlanInspection
 from core.modules.plans.support.plan_outlines import PlanOutlines
 from core.modules.plans.support.plan_waits import PlanWaits
@@ -20,16 +19,15 @@ class PlanInspectSubcommand(ReadSubcommand[PlanInspection]):
     cli_name = "plan"
     name = "inspect"
 
-    def __init__(self, queries: Queries, outlines: PlanOutlines, waits: PlanWaits) -> None:
-        self.queries, self.outlines, self.waits = queries, outlines, waits
+    def __init__(self, queries: Queries, outlines: PlanOutlines, waits: PlanWaits, assignments: Assignments) -> None:
+        self.queries, self.outlines, self.waits, self.assignments = queries, outlines, waits, assignments
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("plan_id", type=int)
 
     def read(self, arguments: Namespace, caller: Caller) -> PlanInspection:
         plan = self.queries.query(Plan).find(arguments.plan_id)
-        assignee_id = PlanAssignee.agent_id(plan)
-        assignee = self.queries.query(Agent).find(assignee_id) if assignee_id is not None else None
+        assignee = self.assignments.agent(plan)
         blocker_ids = tuple(wait.blocker_id for wait in self.waits.open_waits(plan.id))
         return PlanInspection(plan, self.outlines.outline(arguments.plan_id), assignee, blocker_ids, self.queries.query(PlanProgress).find(plan.id).complexity)
 

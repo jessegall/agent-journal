@@ -24,4 +24,4 @@ class OutlinePhase:
     @staticmethod
     def task_json(task: OutlineTask) -> PlanPhaseTaskJsonRecord:
         return {"id": task.id, "title": task.title, "state": task.state, "priority": task.priority, "complexity": task.complexity, "tags": list(task.tags), "reason": task.reason, "automatic": task.automatic,
-                "assigned_actor_id": task.delegated_to, "is_main_assignee": task.main_delegate, "helper_id": task.helper_id, "helper_name": task.helper_name, "helper_main": task.helper_main}
+                "assigned_actor_id": task.assignee_id, "is_main_assignee": task.main_delegate, "helper_id": task.helper_id, "helper_name": task.helper_name, "helper_main": task.helper_main}

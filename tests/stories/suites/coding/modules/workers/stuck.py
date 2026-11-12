@@ -138,7 +138,7 @@ def test_a_worker_a_person_stops_loses_its_tasks_and_is_not_started_again(new_st
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.expect_success(f"agent stop {agent_number(story, worker.id)}", f"stopped {agent_label(story, worker.id)}", actor=user)
-    story.expect_no_text(lines.TASK_DETAILS, f"delegated_to: {worker.id}")
+    story.expect_no_text("task info 1", f"assigned to: agent {worker.id}")
     story.expect_no_text(f"agent-line list --agent {worker.id}", "you ended with tasks left")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "ended with task:1 left")
 
@@ -154,8 +154,9 @@ def test_a_stopped_worker_keeps_its_task_in_testing_and_loses_the_one_queued_whi
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.expect_success(f"agent stop {agent_number(story, worker.id)}", actor=user)
-    story.expect_text(lines.TASK_DETAILS, "state: testing", f"delegated_to: {worker.id}")
-    story.expect_no_text(lines.SECOND_TASK_DETAILS, "delegated_to")
+    story.expect_text(lines.TASK_DETAILS, "state: testing")
+    story.expect_text("task info 1", f"assigned to: agent {worker.id}")
+    story.expect_text("task info 2", "assigned to: nobody")
 
 
 def test_a_worker_that_ends_with_only_a_queued_task_has_it_named_to_the_main_agent(new_story):

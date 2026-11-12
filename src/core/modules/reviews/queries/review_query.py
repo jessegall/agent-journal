@@ -4,6 +4,7 @@ from engine.database.database import Database
 from engine.model.tables import Tables
 from engine.query.conditions.among import Among
 from engine.query.query import Query
+from core.modules.assignments.queries.conditions.assignee_among import AssigneeAmong
 from core.modules.reviews.models.enums.review_state import ReviewState
 from core.modules.reviews.models.review import Review
 
@@ -29,4 +30,4 @@ class ReviewQuery(Query[Review]):
         return self.filter(state=ReviewState.REVIEWING)
 
     def reviewer(self, reviewer_id: int) -> Self:
-        return self.filter(reviewer_id=reviewer_id)
+        return self.matching(AssigneeAmong(Review, tuple([reviewer_id])))

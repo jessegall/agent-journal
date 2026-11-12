@@ -27,7 +27,7 @@ class PlanOutlineTask(ViewModel):
     tags: tuple[str, ...]
     reason: str
     automatic: bool
-    delegated_to: int | None
+    assignee_id: int | None
     main_delegate: bool
     helper_id: int | None
     helper_name: str | None

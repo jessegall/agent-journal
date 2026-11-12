@@ -30,7 +30,9 @@ class WorkerTaskAssignees(TaskAssignees):
             raise Refusal(f"{AgentLabel.from_agent(agent).text} is a {agent.role} and takes no task", "only the main agent and a worker with a cut worktree take a task")
 
     def check_reassignment(self, task: Task) -> None:
-        if task.holder_id is None or self.assignments.actor(task) != task.holder_id or self.next_task.following(task.holder_id) is not None:
+        if task.holder_id is None or self.assignments.actor(task) != task.holder_id or self.worktrees.worker_worktree(task.holder_id) is None:
+            return
+        if self.next_task.following(task.holder_id) is not None:
             return
         if self.tasks.holder(task.holder_id).filter(state=TaskState.TESTING).exists():
             return

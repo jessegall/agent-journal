@@ -9,6 +9,7 @@ const row = context.option("row");
 const key = computed(() => `reviews.${row.value.id}`);
 const reviews = computed(() => context.props[key.value].rows.value);
 const shown = computed(() => reviews.value.filter((review) => review.subject_model === PLAN_SUBJECT));
+const reviewers = computed(() => new Map(context.props.reviewers.rows.value.map((assignment) => [assignment.subject_id, assignment.actor_id])));
 const label = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 
 watch(key, (name) => context.reload(name), {immediate: true});
@@ -21,7 +22,7 @@ watch(key, (name) => context.reload(name), {immediate: true});
                 <template v-for="review in shown" :key="review.id">
                     <li data-plan-review>
                         <div class="head">
-                            <span>Review {{ review.id }}<template v-if="review.reviewer_id"> · reviewer {{ review.reviewer_id }}</template></span>
+                            <span>Review {{ review.id }}<template v-if="reviewers.has(review.id)"> · reviewer {{ reviewers.get(review.id) }}</template></span>
                             <span class="state">{{ label(review.state) }}</span>
                         </div>
                         <template v-if="review.report">

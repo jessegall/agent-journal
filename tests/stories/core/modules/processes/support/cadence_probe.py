@@ -19,7 +19,8 @@ from core.modules.processes.commands.start_process.start_process import StartPro
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.models.process import Process
-from core.modules.processes.support.cadence.cadence_log import CADENCE_FILE, TICK_SECONDS, CadenceLog
+from core.modules.processes.support.cadence.cadence_line import TICK_SECONDS
+from core.modules.processes.support.cadence.cadence_log import CADENCE_FILE, CadenceLog
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.group_cpu_time import GroupCpuTime
 from core.modules.processes.support.output_folder import OutputFolder

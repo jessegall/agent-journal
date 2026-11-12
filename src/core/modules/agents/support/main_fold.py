@@ -121,11 +121,11 @@ class MainFold:
         return int(self.database.rows(Statement(FOLD_RECORD, values))[0]["id"])
 
     def settle_clashes(self, fold: EnvironmentFold, columns: AgentColumns, counts: FoldCounts, fold_id: int, folded_at: str) -> None:
-        for table, key in self.rewrite.unique_keys():
+        for table, key, guarded in self.rewrite.unique_keys():
             if table in FOLD_TABLES:
                 continue
             for column, model_column in MainFold.agent_parts(columns, table, key):
-                for group in self.clashing_groups(fold, table, key, column, model_column):
+                for group in self.clashing_groups(fold, table, key, column, model_column, guarded):
                     settled = FoldClashRules.settled(table, group, fold.survivor.id, column)
                     for removed in settled.removed:
                         self.database.update(Statement(FOLD_ROW_RECORD, [fold.environment_id, fold_id, table, json.dumps(removed, default=str),
@@ -147,10 +147,10 @@ class MainFold:
                  if owner == table and row[model_column] in AGENT_MODEL_NAMES and row[id_column] in ids]
         return plain + pairs
 
-    def clashing_groups(self, fold: EnvironmentFold, table: str, key: tuple[str, ...], column: str, model_column: str | None) -> list[list[dict[str, object]]]:
+    def clashing_groups(self, fold: EnvironmentFold, table: str, key: tuple[str, ...], column: str, model_column: str | None, guarded: str) -> list[list[dict[str, object]]]:
         folded_ids = {agent.id for agent in fold.folded}
         groups: dict[tuple[object, ...], list[dict[str, object]]] = {}
-        for row in self.rewrite.rows(table, column, [*folded_ids, fold.survivor.id]):
+        for row in self.rewrite.guarded_rows(table, column, [*folded_ids, fold.survivor.id], guarded):
             if model_column is not None and row[model_column] not in AGENT_MODEL_NAMES:
                 continue
             folded_key = tuple(fold.survivor.id if name == column and row[name] in folded_ids else row[name] for name in key)

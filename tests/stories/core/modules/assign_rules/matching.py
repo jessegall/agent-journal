@@ -1,3 +1,4 @@
+from tests.stories.core.modules.tasks.support.holder_assignee_check import assignee_of
 import pytest
 
 from engine.actor.actor import Actor
@@ -105,7 +106,7 @@ def test_the_first_matching_rule_by_position_is_recorded_and_nothing_is_assigned
     first = insert_rule(rule_story, 1)
     decision = decide(rule_story)
     task = rule_story.container.get(Queries).query(Task).find(TASK_ID)
-    rule_story.expect_rows(decision.outcome is DecisionOutcome.DRY_RUN, decision.rule_id == first, task.delegated_to is None)
+    rule_story.expect_rows(decision.outcome is DecisionOutcome.DRY_RUN, decision.rule_id == first, assignee_of(rule_story, task) is None)
 
 
 def test_a_disabled_rule_is_not_used(rule_story):

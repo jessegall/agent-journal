@@ -8,7 +8,8 @@ from core.modules.tasks.models.task import Task
 
 
 class AssignTaskSubcommand(Subcommand[AssignTask, Task]):
-    """Assigns a task to the agent named by journal task assign."""
+    """`journal task assign <task> --to <agent>`: gives a task to the agent named, as journal assign task does. Only
+    a user or the main agent assigns."""
 
     cli_name = "task"
     name = "assign"
@@ -16,7 +17,7 @@ class AssignTaskSubcommand(Subcommand[AssignTask, Task]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("task_id", type=int)
-        parser.add_argument("--to", dest="agent_id", type=AgentNumber, required=True)
+        parser.add_argument("--to", dest="actor_id", type=AgentNumber, required=True)
 
     def command(self, arguments: Namespace, caller: Caller) -> AssignTask:
-        return AssignTask(arguments.task_id, arguments.agent_id)
+        return AssignTask(arguments.task_id, arguments.actor_id)

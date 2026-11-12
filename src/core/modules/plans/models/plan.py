@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 from engine.actor.actor import Actor
+from engine.enums.actor_count import ActorCount
+from engine.model.assignable import Assignable
+from engine.model.children import Children
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
 from engine.model.state_holder import StateHolder
@@ -7,18 +10,22 @@ from engine.time.timestamp import Timestamp
 from core.modules.tasks.models.task import check_title
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
+from core.modules.plans.models.phase import Phase
 
 
 @dataclass(frozen=True, kw_only=True)
-class Plan(EnvironmentScoped, Model, StateHolder):
+class Plan(EnvironmentScoped, Model, StateHolder, Assignable):
     """A goal reached by tasks placed in ordered phases; it is made ready, approved by a user, then
-    followed. Its design document, when it has one, is linked to it."""
+    followed. Its design document, when it has one, is linked to it. One actor holds a plan, and its
+    assignment also assigns its phases and through them their tasks."""
 
     model_name = "plan"
     cli_name = "plan"
     search_fields = ["title", "brief"]
     lifecycle = PlanLifecycle
     added_state_moves = tuple([PlanLifecycle.cancel])
+    takes_actors = ActorCount.SINGLE
+    assigns = tuple([Children(Phase, "plan_id")])
 
     environment_id: int = 0
     creator_id: int

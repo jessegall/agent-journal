@@ -8,7 +8,9 @@ class ReadCutError(AssertionError):
 
     @classmethod
     def cut(cls, limit: int, sql: str) -> "ReadCutError":
-        return cls(f"read cut at {limit} rows: {sql} (from {ReadCutError.calling_line()})")
+        error = cls(f"read cut at {limit} rows: {sql} (from {ReadCutError.calling_line()})")
+        error.count, error.sql = limit, sql
+        return error
 
     @staticmethod
     def calling_line() -> str:

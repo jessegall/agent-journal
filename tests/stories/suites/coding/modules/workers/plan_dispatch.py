@@ -35,7 +35,7 @@ def test_a_dispatch_for_a_phase_hands_the_worker_that_phases_open_tasks_in_plan_
     expect_agents(board, (True, [(1, True), (2, True), (3, True)]))
     expect_queued(read_outline(story), 2, worker.id)
     story.expect_text("task show 4", "state: open", actor=story.agent)
-    story.expect_text(f"task show 2", f"delegated_to: {worker.id}", actor=story.agent)
+    story.expect_text(f"task info 2", f"assigned to: agent {worker.id}", actor=story.agent)
 
 
 def test_a_dispatch_for_a_whole_plan_hands_the_worker_every_open_task_phase_by_phase(new_story, monkeypatch):

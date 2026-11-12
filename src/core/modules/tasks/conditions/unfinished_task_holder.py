@@ -8,9 +8,10 @@ UNFINISHED_WORK_STATES = (TaskState.OPEN, TaskState.STARTED, TaskState.TESTING)
 
 @dataclass(frozen=True)
 class UnfinishedTaskHolder:
-    """Matches agents that an open, started or testing task is delegated to."""
+    """Matches agents that an open, started or testing task is assigned to."""
 
     def statement(self) -> Statement:
         marks = ", ".join("?" for _ in UNFINISHED_WORK_STATES)
-        return Statement(f"id IN (SELECT delegated_to FROM tasks WHERE closed_at IS NULL AND delegated_to IS NOT NULL AND state IN ({marks}))",
+        return Statement("id IN (SELECT assignments.actor_id FROM assignments JOIN tasks ON tasks.id = assignments.subject_id"
+                         f" WHERE assignments.subject_model = 'task' AND tasks.closed_at IS NULL AND tasks.state IN ({marks}))",
                          [state.value for state in UNFINISHED_WORK_STATES])

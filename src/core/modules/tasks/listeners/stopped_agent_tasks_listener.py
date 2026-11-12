@@ -2,7 +2,7 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.listener.save_listener import SaveListener
 from core.modules.agents.events.agent_stopped import AgentStopped
-from core.modules.tasks.commands.clear_delegated_tasks.clear_delegated_tasks import ClearDelegatedTasks
+from core.modules.tasks.commands.unassign_agent_tasks.unassign_agent_tasks import UnassignAgentTasks
 
 
 class StoppedAgentTasksListener(SaveListener[AgentStopped]):
@@ -14,4 +14,4 @@ class StoppedAgentTasksListener(SaveListener[AgentStopped]):
         self.bus = bus
 
     def handle(self, event: AgentStopped, context: Context) -> None:
-        self.bus.dispatch(ClearDelegatedTasks(event.row.session_agent_id), context)
+        self.bus.dispatch(UnassignAgentTasks(event.row.session_agent_id), context)

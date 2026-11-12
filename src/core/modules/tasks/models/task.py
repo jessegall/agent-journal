@@ -1,7 +1,6 @@
 from dataclasses import dataclass, replace
 from engine.actor.actor import Actor
 from engine.enums.actor_count import ActorCount
-from engine.enums.actor_type import ActorType
 from engine.model.assignable import Assignable
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
@@ -43,7 +42,6 @@ class Task(EnvironmentScoped, Model, StateHolder, Assignable):
     started_at: Timestamp | None = None
     focused_at: Timestamp | None = None
     closed_at: Timestamp | None = None
-    delegated_to: int | None = None
     independence_reason: str = ""
 
     def __post_init__(self) -> None:
@@ -55,8 +53,7 @@ class Task(EnvironmentScoped, Model, StateHolder, Assignable):
         return self.state in WORKING_STATES and self.holder_id not in (None, actor_id)
 
     def start(self, timestamp: Timestamp, actor: Actor) -> "Task":
-        delegate_id = actor.id if self.delegated_to is None and actor.type is ActorType.AGENT else self.delegated_to
-        return self.moved(TaskLifecycle.start, holder_id=actor.id, started_at=timestamp, delegated_to=delegate_id)
+        return self.moved(TaskLifecycle.start, holder_id=actor.id, started_at=timestamp)
 
     def focused(self, timestamp: Timestamp | None) -> "Task":
         return replace(self, focused_at=timestamp)
@@ -72,6 +69,9 @@ class Task(EnvironmentScoped, Model, StateHolder, Assignable):
 
     def release(self, timestamp: Timestamp, actor: Actor, reason: str) -> "Task":
         return self.moved(TaskLifecycle.release, reason=reason, holder_id=None)
+
+    def drop_hold(self, timestamp: Timestamp, actor: Actor, reason: str) -> "Task":
+        return self.moved(TaskLifecycle.drop_hold, reason=reason, holder_id=None)
 
     def reopen(self, timestamp: Timestamp, actor: Actor) -> "Task":
         return self.moved(TaskLifecycle.reopen, closed_at=None, outcome="", reason="")

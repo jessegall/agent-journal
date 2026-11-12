@@ -38,7 +38,7 @@ class AliasShellAliases(ShellAliases):
         return ShellRun(self.resolved_line(alias.shell_line(argv[1:])), {**request.variables, **checkout.variables(), **self.plugin_values(alias, caller), **alias.variable_values()}, folder)
 
     def plugin_values(self, alias: Alias, caller: Caller) -> dict[str, str]:
-        return self.plugin_variables.variables(alias.plugin_id, caller.environment_id) if alias.plugin_id is not None else {}
+        return self.plugin_variables.run_settings(alias.plugin_id, caller.environment_id).variables() if alias.plugin_id is not None else {}
 
     def caller_checkout(self, caller: Caller) -> Checkout:
         if caller.actor.type is ActorType.AGENT:

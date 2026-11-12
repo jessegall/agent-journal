@@ -23,6 +23,7 @@ from core.modules.drivers.models.hook_call import HookCall
 from core.modules.usage.support.compaction import Compaction
 from core.modules.usage.support.environment_usage import EnvironmentUsage
 from core.modules.usage.support.session_status import SessionStatus
+from engine.provider.context_window import ContextWindow
 from core.modules.usage.support.status_files import StatusFiles
 from core.modules.agents.queries.agent_query import AgentQuery
 from core.modules.agents.support.agent_label import AgentLabel
@@ -61,8 +62,10 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
         status = self.files.status(agent.session)
         usage = self.share.usage_of(agent)
         if self.current_window.is_unknown(agent):
-            return replace(status, context_percent=None, context_tokens=None)
-        return replace(status, context_percent=usage.percent, context_tokens=usage.used_tokens, context_limit_tokens=usage.limit_tokens, context_window_tokens=usage.window_tokens) if status.context_percent is not None else status
+            return replace(status, context=replace(status.context, used_percentage=None, total_input_tokens=None))
+        if status.context.used_percentage is None:
+            return status
+        return replace(status, context=ContextWindow(usage.percent, usage.used_tokens, status.context.read_at, usage.window_tokens), context_limit_tokens=usage.limit_tokens)
 
     @staticmethod
     def ended_helpers(agents: Query[Agent], opened: tuple[Agent, ...]) -> tuple[Agent, ...]:
@@ -78,7 +81,7 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
         lines = [self.agent_line(agent, status) for agent, status in value.agents]
         lines.append(f"plan: {'; '.join(window.line for window in value.windows)}" if value.windows else "plan: no limits reported yet")
         lines.append(f"cost of the open sessions: ${value.cost_dollars:.2f}")
-        output.write("\n".join(lines), {"agents": [{**output.values(agent), "work_status": pending.get(agent.id), "last_compacted_at": compactions[agent.id].started_at if agent.id in compactions else None, "last_compaction": compactions[agent.id].json() if agent.id in compactions else None, "context_change": context_changes[agent.id].json() if agent.id in context_changes else None, "context_unknown": self.current_window.is_unknown(agent), "model": status.model, "effort": status.effort, "context_percent": status.context_percent, "context_tokens": status.context_tokens, "context_limit_tokens": status.context_limit_tokens, "context_window_tokens": status.context_window_tokens,
+        output.write("\n".join(lines), {"agents": [{**output.values(agent), "work_status": pending.get(agent.id), "last_compacted_at": compactions[agent.id].started_at if agent.id in compactions else None, "last_compaction": compactions[agent.id].json() if agent.id in compactions else None, "context_change": context_changes[agent.id].json() if agent.id in context_changes else None, "context_unknown": self.current_window.is_unknown(agent), "model": status.model, "effort": status.effort, "context_percent": status.context.used_percentage, "context_tokens": status.context.total_input_tokens, "context_limit_tokens": status.context_limit_tokens, "context_window_tokens": status.context.window_size_tokens,
                                                     "cost_dollars": status.cost_dollars} for agent, status in value.agents],
                                         "windows": [output.values(window) for window in value.windows], "cost_dollars": value.cost_dollars,
                                         "lockdowns": self.lockdowns([agent for agent, _ in value.agents])})
@@ -98,5 +101,5 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
         start = f"{AgentLabel.from_agent(agent).text}  {agent.session}  {agent.program}"
         if not status.is_reported:
             return f"{start}  nothing reported yet"
-        context = f"  context {status.context_percent}%" if status.context_percent is not None else ""
+        context = f"  context {status.context.used_percentage}%" if status.context.used_percentage is not None else ""
         return f"{start}  {status.model or 'model not reported'}{context}  {'cost not known' if status.cost_dollars is None else f'cost ${status.cost_dollars:.2f}'}"

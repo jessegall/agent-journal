@@ -1,102 +1,47 @@
 import json
-from engine.enums.occupant import INDEPENDENT_OCCUPANTS, Occupant
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 
 from engine.enums.access import Access
 from engine.enums.model_tier import ModelTier
-from engine.profile.agent_profile import KEPT_AGENTS_TEXT
+from engine.enums.occupant import Occupant
 from engine.errors.refusal import Refusal
 from engine.types.type_guards import is_list, is_mapping, is_tuple
-from core.modules.profiles.support.profile_fields import ProfileFields
 from core.modules.profiles.support.profile_text import ProfileText
 
 OCCUPANT_REFUSAL_TEXT = "occupant must be continue, when-cold or each-launch"
 
 FIELD_NAMES = {"type": "agent_type", "kind": "agent_type", "moved-from": "source_digest", "could-write": "legacy_writing"}
 FILE_NAMES = {"agent_type": "type", "source_digest": "moved-from", "legacy_writing": "could-write"}
+OVERLAID_FIELDS = ("title", "description", "body", "access", "program", "preferred_program", "fallback_programs", "model", "codex_model", "program_models", "uses_project_instructions", "injections", "tier", "mcp_tools", "writable_folders", "skills", "required_skills", "occupant")
 
 
 class ProfileFormat:
-    """Reads the journal's small front matter format without interpreting YAML."""
+    """Reads and writes the journal's small front matter format without interpreting YAML."""
 
     @staticmethod
-    def fields(text: str) -> ProfileFields:
-        source = ProfileFormat.header(text)
-        raw = source.fields
-        fields = ProfileFields()
-        ProfileFormat.copy_text_fields(raw, fields)
+    def settings(source: ProfileText) -> dict[str, object]:
+        values = {name: read(source.fields[name]) for name, read in SETTING_READERS.items() if name in source.fields}
         if source.body:
-            fields["body"] = source.body
-        if "access" in raw:
-            fields["access"] = Access(raw["access"])
-        if "tier" in raw:
-            fields["tier"] = None if raw["tier"] in ("", "null") else ModelTier.automatic(raw["tier"])
-        if fields.get("model") == "inherit":
-            fields["model"] = ""
-        if fields.get("codex_model") == "inherit":
-            fields["codex_model"] = ""
-        if fields.get("agent_type") == "subagent":
-            fields["agent_type"] = "helper"
-        if "reuse" in raw:
-            raise Refusal(KEPT_AGENTS_TEXT, "remove the reuse line: the occupant line sets when a session is replaced")
-        if "occupant" in raw:
-            fields["occupant"] = ProfileFormat.occupant(str(raw["occupant"]))
-        if "independent" in raw:
-            fields["occupant"] = ProfileFormat.agreed_occupant(fields, INDEPENDENT_OCCUPANTS[ProfileFormat.switch("independent", raw["independent"])])
-        if "preferred_program" in raw:
-            fields["preferred_program"] = ProfileFormat.switch("preferred_program", raw["preferred_program"])
-        if "uses_project_instructions" in raw:
-            fields["uses_project_instructions"] = ProfileFormat.switch("uses_project_instructions", raw["uses_project_instructions"])
-        if "program_models" in raw:
-            fields["program_models"] = ProfileFormat.program_models(raw["program_models"])
-        if "fallback_programs" in raw:
-            fields["fallback_programs"] = ProfileFormat.tools(raw["fallback_programs"])
-        if "injections" in raw:
-            fields["injections"] = ProfileFormat.injections(raw["injections"])
-        if "mcp_tools" in raw:
-            fields["mcp_tools"] = ProfileFormat.tools(raw["mcp_tools"])
-        if "writable_folders" in raw:
-            fields["writable_folders"] = ProfileFormat.tools(raw["writable_folders"])
-        if "skills" in raw:
-            fields["skills"] = ProfileFormat.tools(raw["skills"])
-        if "required_skills" in raw:
-            fields["required_skills"] = ProfileFormat.tools(raw["required_skills"])
-        return fields
-
-    @staticmethod
-    def copy_text_fields(raw: Mapping[str, str], fields: ProfileFields) -> None:
-        if "name" in raw:
-            fields["name"] = raw["name"]
-        if "title" in raw:
-            fields["title"] = raw["title"]
-        if "description" in raw:
-            fields["description"] = raw["description"]
-        if "body" in raw:
-            fields["body"] = raw["body"]
-        if "agent_type" in raw:
-            fields["agent_type"] = raw["agent_type"]
-        if "program" in raw:
-            fields["program"] = raw["program"]
-        if "model" in raw:
-            fields["model"] = raw["model"]
-        if "codex_model" in raw:
-            fields["codex_model"] = raw["codex_model"]
-        if "module" in raw:
-            fields["module"] = raw["module"]
-        if "module_text" in raw:
-            fields["module_text"] = raw["module_text"]
-        if "source_digest" in raw:
-            fields["source_digest"] = raw["source_digest"]
-        if "legacy_writing" in raw:
-            fields["legacy_writing"] = raw["legacy_writing"]
-        if "tools" in raw:
-            fields["tools"] = raw["tools"]
+            values["body"] = source.body
+        return {name: values[name] for name in OVERLAID_FIELDS if name in values}
 
     @staticmethod
     def switch(name: str, value: str) -> bool:
         if value not in ("true", "false"):
             raise Refusal(f"{name.replace('_', '-')} must be true or false")
         return value == "true"
+
+    @staticmethod
+    def model(value: str) -> str:
+        return "" if value == "inherit" else value
+
+    @staticmethod
+    def tier(value: str) -> ModelTier | None:
+        return None if value in ("", "null") else ModelTier.automatic(value)
+
+    @staticmethod
+    def agent_type(value: str) -> str:
+        return "helper" if value == "subagent" else value
 
     @staticmethod
     def program_models(value: str) -> dict[str, str]:
@@ -164,13 +109,17 @@ class ProfileFormat:
         return Occupant(word)
 
     @staticmethod
-    def agreed_occupant(fields: ProfileFields, independent_occupant: Occupant) -> Occupant:
-        occupant = fields.get("occupant", independent_occupant)
-        if occupant is not independent_occupant:
-            raise Refusal(f"occupant {occupant.value} and the independent line disagree", "remove the independent line")
-        return occupant
+    def text(lines: Mapping[str, object], body: str) -> str:
+        header = "\n".join(f"{FILE_NAMES.get(name, name.replace('_', '-'))}: {json.dumps(value, ensure_ascii=False)}" for name, value in lines.items())
+        return f"---\n{header}\n---\n\n{body}\n"
 
-    @staticmethod
-    def text(fields: Mapping[str, object]) -> str:
-        header = "\n".join(f"{FILE_NAMES.get(name, name.replace('_', '-'))}: {json.dumps(value, ensure_ascii=False)}" for name, value in fields.items() if name != "body" or value == "")
-        return f"---\n{header}\n---\n\n{fields.get('body', '')}\n"
+
+SETTING_READERS: Mapping[str, Callable[[str], object]] = {
+    "title": str, "description": str, "body": str, "access": Access, "program": str,
+    "preferred_program": lambda value: ProfileFormat.switch("preferred_program", value),
+    "fallback_programs": ProfileFormat.tools, "model": ProfileFormat.model, "codex_model": ProfileFormat.model,
+    "program_models": ProfileFormat.program_models,
+    "uses_project_instructions": lambda value: ProfileFormat.switch("uses_project_instructions", value),
+    "injections": ProfileFormat.injections, "tier": ProfileFormat.tier, "mcp_tools": ProfileFormat.tools,
+    "writable_folders": ProfileFormat.tools, "skills": ProfileFormat.tools, "required_skills": ProfileFormat.tools,
+}

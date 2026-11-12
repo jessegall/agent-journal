@@ -47,7 +47,7 @@ def test_a_helper_of_agent_one_keeps_its_parent_and_its_report_reaches_the_new_s
     story.expect_text(f"message read {helper_report(story).id}", "The cart adds tax twice.", actor=session_agent)
 
 
-def test_a_task_delegated_to_agent_one_stays_delegated_after_a_new_main_session(new_story):
+def test_a_task_assigned_to_agent_one_stays_assigned_after_a_new_main_session(new_story):
     story = new_story(fixture=UserBuilder)
     task = story.new_row_id('task make "Count the till" --brief "Count it and say the sum" --environment main', actor=story.user)
     story.expect_success(f"task assign {task} --to 1 --environment main", actor=story.user)

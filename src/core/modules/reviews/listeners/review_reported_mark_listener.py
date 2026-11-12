@@ -7,6 +7,7 @@ from engine.listener.commit.commit_listener import CommitListener
 from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
+from core.modules.assignments.support.assignments import Assignments
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.reviews.listeners.reviewer_ended_listener import MODULE_NAME
 from core.modules.reviews.models.enums.review_mark_type import ReviewMarkType
@@ -25,8 +26,8 @@ class ReviewReportedMarkListener(CommitListener[Moved[Review]]):
     moves = (ReviewLifecycle.approve, ReviewLifecycle.reject, ReviewLifecycle.leave_undecided)
     disabled_scopes = [ActorScope]
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries) -> None:
-        self.bus, self.actors, self.queries = bus, actors, queries
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, assignments: Assignments) -> None:
+        self.bus, self.actors, self.queries, self.assignments = bus, actors, queries, assignments
 
     def handle(self, event: Moved[Review], logged: LoggedEvent) -> None:
         if event.move is None:
@@ -35,6 +36,6 @@ class ReviewReportedMarkListener(CommitListener[Moved[Review]]):
         review = event.row
         key = f"{variant.value}:{review.id}:{logged.id}"
         self.bus.run(ShowMark(ReviewMarkType.REVIEW, variant, key,
-                              f"Reviewer {review.reviewer_id} reports on {review.subject_model} {review.subject_id}: {review.report}", agent_id=review.requester_id,
+                              f"Reviewer {self.assignments.actor(review)} reports on {review.subject_model} {review.subject_id}: {review.report}", agent_id=review.requester_id,
                               row_model="review", row_id=review.id, outcome=outcome, ended=True),
                      self.actors.actor(MODULE_NAME), cause_id=logged.id)

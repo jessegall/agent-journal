@@ -311,7 +311,7 @@ def test_a_passed_checkpoint_keeps_the_later_phase_closed_until_a_person_approve
     story.expect_success(WAIT_FOR_PERSON, actor=story.user)
     pass_reach(story, 1)
     story.expect_rows(rows(story, PASSES) == [], rows(story, REACHES)[0]["state"] == "passed", detail=str(rows(story, PASSES)))
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "later phases open once a person approves it on the plan card")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "later phases open once a user approves it on the plan card")
     story.expect_text(OUTLINE, "checkpoint of phase 3: tests passed, waits for a user", actor=story.user)
     story.expect_refusal(APPROVE, "only a user approves a checkpoint", actor=story.agent)
     story.expect_success(APPROVE, "checkpoint phase 3 approved", actor=story.user)

@@ -22,7 +22,8 @@ HOLDER_STATES = (TaskState.STARTED, TaskState.TESTING)
 @dataclass(frozen=True)
 class UnblockerFacts:
     """Everything read about the tasks at the end of a plan's waits, for one asking agent. It says for each of
-    them why it cannot be handed out to that agent, or that it can."""
+    them why it cannot be handed out to that agent, or that it can. The assignees are the actor each assigned task is
+    assigned to, by task."""
 
     asker: Agent
     takeable_ids: frozenset[int]
@@ -31,6 +32,7 @@ class UnblockerFacts:
     plan_rows: Mapping[int, Sequence[PlanTask]]
     waits: Mapping[int, Sequence[TaskWait]]
     agents: Mapping[int, Agent]
+    assignees: Mapping[int, int]
 
     def waiting_line(self, task: Task) -> WaitingLine | None:
         if task.state in HOLDER_STATES:
@@ -62,8 +64,8 @@ class UnblockerFacts:
         return "which waits on something that is no task" if waits else "which is blocked with a reason"
 
     def assignee_text(self, task: Task) -> str:
-        assignee = self.agents.get(task.delegated_to) if task.delegated_to is not None else None
-        return "which is not assigned to you" if assignee is None else f"which is reserved for {AgentLabel.from_agent(assignee).text}"
+        assignee = self.agents.get(self.assignees[task.id]) if task.id in self.assignees else None
+        return "which is not assigned to you" if assignee is None else f"which is assigned to {AgentLabel.from_agent(assignee).text}"
 
     def plan_line(self, task: Task, place: PlanTask) -> WaitingLine | None:
         plan = self.plans[place.plan_id]

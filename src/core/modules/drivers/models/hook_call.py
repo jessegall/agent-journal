@@ -1,4 +1,3 @@
-from datetime import timedelta
 from engine.model.prunable import Prunable
 from engine.query.conditions.excluding import Excluding
 from engine.query.conditions.is_null import IsNull
@@ -39,7 +38,7 @@ class HookCall(Prunable, EnvironmentScoped, Model):
     """One hook an agent program sent, or one tick on which a rule spoke, with the driver that answered and
     its answer; the rules asked, the layers and any command dropped are in its metadata."""
 
-    kept_for = timedelta(days=3)
+    kept_rows = 50000
 
     change_names = (COMPACTION, SESSION_START, PROMPT, STOP_ALLOWED, STOP_REFUSED)
     model_name = "hook_call"
@@ -186,6 +185,6 @@ class HookCall(Prunable, EnvironmentScoped, Model):
         return tuple(map(str, values)) if is_list(values) else ()
 
     @classmethod
-    def prunable(cls, query, now):
+    def prunable(cls, query, table):
         lines = Select("agent_lines").matching(Excluding(IsNull("hook_call_id"))).column("hook_call_id")
-        return super().prunable(query, now).matching(SubqueryMatch("id", lines, negated=True))
+        return super().prunable(query, table).matching(SubqueryMatch("id", lines, negated=True))

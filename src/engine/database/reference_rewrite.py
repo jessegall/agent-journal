@@ -5,13 +5,16 @@ from engine.database.statement import Statement
 
 SCHEMA_REASON = "The fold of main agents walks the rows that hold a folded agent, once, in one transaction."
 STATE_DELETE_RULE_SUFFIX = "_rule_state_delete"
-UNIQUE_INDEXES = Statement("SELECT tables.name AS table_name, indexes.name AS index_name FROM sqlite_master AS tables, pragma_index_list(tables.name) AS indexes"
+UNIQUE_INDEXES = Statement("SELECT tables.name AS table_name, indexes.name AS index_name, indexes.partial AS partial,"
+                           " (SELECT sql FROM sqlite_master WHERE type = 'index' AND name = indexes.name) AS index_sql"
+                           " FROM sqlite_master AS tables, pragma_index_list(tables.name) AS indexes"
                            " WHERE tables.type = 'table' AND indexes.\"unique\" = 1 AND indexes.origin != 'pk'", scan_reason=SCHEMA_REASON)
+WHERE_WORD = " WHERE "
 
 
 class ReferenceRewrite:
     """Reads, rewrites and removes the rows that hold an agent id in named columns, for the fold of main agents;
-    the table and column names come from the live schema, never from a person."""
+    the table and column names come from the live schema, never from a user."""
 
     def __init__(self, database: Database) -> None:
         self.database = database
@@ -52,12 +55,17 @@ class ReferenceRewrite:
             self.database.update(Statement(saved[0]["sql"]))
         return removed
 
-    def unique_keys(self) -> list[tuple[str, tuple[str, ...]]]:
+    def unique_keys(self) -> list[tuple[str, tuple[str, ...], str]]:
         found = []
         for index in self.database.rows(UNIQUE_INDEXES):
             columns = self.database.rows(Statement(f'SELECT name FROM pragma_index_info("{index["index_name"]}")', scan_reason=SCHEMA_REASON))
-            found.append((index["table_name"], tuple(str(column["name"]) for column in columns if column["name"] is not None)))
+            guarded = str(index["index_sql"]).split(WHERE_WORD, 1)[1] if index["partial"] else "1 = 1"
+            found.append((index["table_name"], tuple(str(column["name"]) for column in columns if column["name"] is not None), guarded))
         return found
+
+    def guarded_rows(self, table: str, column: str, ids: list[int], guarded: str) -> list[dict[str, object]]:
+        found = self.database.rows(Statement(f'SELECT * FROM "{table}" WHERE "{column}" IN ({self.marks(ids)}) AND ({guarded})', list(ids), scan_reason=SCHEMA_REASON))
+        return [dict(row) for row in found]
 
     def table_counts(self, tables: list[str]) -> dict[str, int]:
         return {table: int(self.database.rows(Statement(f'SELECT count(*) AS n FROM "{table}"', scan_reason=SCHEMA_REASON))[0]["n"]) for table in tables}
