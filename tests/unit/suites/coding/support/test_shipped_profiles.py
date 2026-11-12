@@ -34,3 +34,7 @@ def test_no_shipped_worker_text_names_a_program_of_one_project():
 
 def test_the_rules_every_worker_reads_name_journal_worker_update():
     assert "journal worker update" in WORKER_RULES
+
+
+def test_the_merger_prompt_names_the_commands_for_a_worktree_behind_its_base():
+    assert all(command in MERGER.body for command in ("journal merger behind <worker>", "journal merger leave <worker> --why", "journal merger update <worker> --why", "journal merger pass <worker>"))
