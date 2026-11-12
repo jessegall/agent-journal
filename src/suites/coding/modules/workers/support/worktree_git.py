@@ -19,6 +19,7 @@ from engine.instruction.instruction_imports import INSTRUCTION_FILES
 from engine.errors.refusal import Refusal
 from core.modules.environments.models.environment import Environment
 from suites.coding.models.enums.ask_topic import AskTopic
+from suites.coding.modules.workers.models.base_commit import BaseCommit
 from suites.coding.modules.workers.models.worktree import Worktree
 from engine.enums.file_status import FileStatus
 from suites.coding.modules.workers.support.commit_subject import subject_search
@@ -41,6 +42,9 @@ HASHED_BUILT_FILE = re.compile(r"(.+)-[\w-]{8}\.[^.]+")
 NAME_SEPARATOR = "\0"
 COMMIT_SEPARATOR = "\x1e"
 COMMIT_FORMAT = "--format=%h%x00%B%x1e"
+# A base commit: its record separator, then short id, parents and subject split by the unit separator, then its files.
+BASE_COMMIT_FORMAT = "--format=%x1e%h%x1f%P%x1f%s%x1f"
+FIELD_SEPARATOR = "\x1f"
 SHORT_ID_CHARACTERS = 10
 SHORT_COMMIT_FLAG = f"--abbrev={SHORT_ID_CHARACTERS}"
 # With -M -z a rename is three fields: status, old name, new name.
@@ -298,6 +302,31 @@ class WorktreeGit:
             for name in skipped_names:
                 FileAccess.shared().replace(kept[name], Path(folder) / name)
                 self.git(folder, GIT_LIMIT_SECONDS, "update-index", "--skip-worktree", "--", name)
+
+    def behind(self, worktree: Worktree) -> int:
+        """How many first-parent commits of the base branch the worktree lacks: a merged worker counts once, the
+        worktree's own commits never count, nor does a merge into the base of the worktree's own earlier commits."""
+        base = self.tip(worktree.folder, worktree.base_branch)
+        listing = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-list", "--first-parent", "--parents", f"HEAD..{base}").stdout
+        return sum(1 for line in listing.splitlines() if line and not self.is_own_merge(worktree, line.split()[1:]))
+
+    def base_changes(self, worktree: Worktree) -> tuple[BaseCommit, ...]:
+        """The first-parent commits of the base branch the worktree lacks, each with the files it changed."""
+        base = self.tip(worktree.folder, worktree.base_branch)
+        start = self.merge_base(worktree.folder, base, "HEAD")
+        listing = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "log", "--first-parent", "-m", "--name-only", "-z", SHORT_COMMIT_FLAG, BASE_COMMIT_FORMAT, f"{start}..{base}").stdout
+        changes = []
+        for record in listing.split(COMMIT_SEPARATOR):
+            fields = record.split(FIELD_SEPARATOR)
+            if len(fields) < 4:
+                continue
+            short_id, parents, subject, names = fields[0].strip(NAME_SEPARATOR + "\n"), fields[1].split(), fields[2], FIELD_SEPARATOR.join(fields[3:])
+            if not self.is_own_merge(worktree, parents):
+                changes.append(BaseCommit.parsed(short_id, subject, names))
+        return tuple(changes)
+
+    def is_own_merge(self, worktree: Worktree, parents: list[str]) -> bool:
+        return len(parents) > 1 and self.is_ancestor(worktree.folder, parents[1], "HEAD")
 
     def rebase(self, worktree: Worktree) -> bool:
         stash = self.stash(worktree)
