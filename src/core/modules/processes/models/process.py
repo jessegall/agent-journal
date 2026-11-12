@@ -72,6 +72,11 @@ class Process(EnvironmentScoped, Model):
         return f"{minutes} min {seconds} s" if seconds else f"{minutes} min"
 
     @property
+    def succeeded(self) -> bool:
+        """The run finished with exit code 0."""
+        return self.state is ProcessState.FINISHED and self.exit_code == 0
+
+    @property
     def takes_part_in_queue(self) -> bool:
         return self.is_queue_run or self.slot_assigned or self.queued_at is not None
 

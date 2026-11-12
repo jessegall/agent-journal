@@ -376,3 +376,41 @@ def test_a_queued_proof_whose_runner_never_started_is_launched_again_and_counts(
     story.expect_text("proof show 1", "state: running", actor=story.agent)
     ended(story, started[0], 0)
     story.expect_text("proof show 1", "state: checked", actor=story.agent)
+
+
+def ended_with_nothing_recorded(story, monkeypatch, process_id: int, code: int) -> None:
+    """The process ends while the listener that records its test does not run, as when a listener before it failed."""
+    from suites.coding.modules.workers.listeners.worker_test_listener import WorkerTestListener
+    with monkeypatch.context() as failed_listener:
+        failed_listener.setattr(WorkerTestListener, "ended", lambda listener, process, logged: None)
+        ended(story, process_id, code)
+    story.expect_text("proof show 1", "state: running", actor=story.agent)
+
+
+def stalled_tick(story) -> None:
+    from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
+    StalledWorkerTestRuns()(story.container)
+    story.run_listeners()
+
+
+@pytest.fixture
+def unrecorded_end(new_story, monkeypatch):
+    story, _, _, started = queued_story(new_story, monkeypatch)
+    ended_with_nothing_recorded(story, monkeypatch, started[0], 0)
+    return story, started[0]
+
+
+def test_a_running_proof_whose_process_ended_with_nothing_recorded_is_recorded_by_the_tick_after_a_minute(unrecorded_end):
+    story, _ = unrecorded_end
+    stalled_tick(story)
+    story.expect_text("proof show 1", "state: running", actor=story.agent)
+    story.advance(timedelta(minutes=2))
+    stalled_tick(story)
+    story.expect_text("proof show 1", "state: checked", actor=story.agent)
+
+
+def test_a_running_proof_whose_process_is_gone_leaves_running_as_lost(unrecorded_end):
+    story, process_id = unrecorded_end
+    story.expect_success(f"process delete {process_id}", actor=story.user)
+    stalled_tick(story)
+    story.expect_text("proof show 1", "state: short", f"lost: process {process_id} is gone with no result recorded", actor=story.agent)

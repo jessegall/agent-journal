@@ -12,10 +12,9 @@ from engine.listener.rows.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.query.conditions.among import Among
 from core.modules.agents.models.agent import Agent
-from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
-from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test import RecordWorkerTest
+from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test import ENDED_RUN_NOTE, RecordWorkerTest
 from suites.coding.modules.workers.commands.queue_worker_tests.start_worker_tests import StartWorkerTests
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.proof import Proof
@@ -75,14 +74,14 @@ class WorkerTestListener(CommitListener[Moved[Proof] | Moved[Process] | Created[
             return
         proofs = [proof for proof in self.proofs.test_rows() if proof.process_id == process.id and proof.state is ProofState.RUNNING]
         if proofs:
-            passed = process.state is ProcessState.FINISHED and process.exit_code == 0
-            self.bus.run(RecordWorkerTest(proofs[0].id, passed, f"failed: journal output read of process {process.id}"), Actor.core(), cause_id=logged.id)
+            passed = process.succeeded
+            self.bus.run(RecordWorkerTest(proofs[0].id, passed, ENDED_RUN_NOTE.format(process=process.id)), Actor.core(), cause_id=logged.id)
             self.start_next(logged)
-        elif process.category is CommandCategory.TEST_RUN and (process.state is not ProcessState.FINISHED or process.exit_code != 0):
+        elif process.category is CommandCategory.TEST_RUN and not process.succeeded:
             self.record_failed_run(process, logged)
         first_answer = self.queries.query(AffectedTest).filter(process_id=process.id).matching(Among("state", (AffectedTestState.PICKING, AffectedTestState.TESTING))).first()
         if first_answer is not None:
-            passed = process.state is ProcessState.FINISHED and process.exit_code == 0
+            passed = process.succeeded
             self.bus.run(RecordAffectedTest(first_answer.id, process.id, passed), Actor.core(), cause_id=logged.id)
 
     def record_failed_run(self, process: Process, logged: LoggedEvent) -> None:
