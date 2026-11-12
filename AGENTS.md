@@ -38,3 +38,5 @@ again rather than working from memory, since a compaction drops it silently.
 
 **Leave it cleaner than you found it.** A finding on code you touch, or read past while working, is
 yours to resolve at its source.
+
+@JOURNAL.md
