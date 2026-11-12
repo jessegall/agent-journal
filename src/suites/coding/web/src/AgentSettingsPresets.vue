@@ -16,7 +16,7 @@ const CUSTOM_LINE = "Any other mix of the eight switches. The form shows Custom 
             <b>What is a preset?</b>
         </div>
         <div class="body">
-            <p class="lead">A preset is a set of eight switches and nothing more. It is not a kind of agent: the main agent is the same program under every preset, and a preset only fills in the switches below. Nothing is saved until you press Save.</p>
+            <p class="lead">A preset is a set of eight switches and nothing more. It is not a type of agent: the main agent is the same program under every preset, and a preset only fills in the switches below. Nothing is saved until you press Save.</p>
             <div class="cards">
                 <template v-for="preset in presets" :key="preset.key">
                     <SettingPresetCard :name="preset.name" :line="preset.line" :can-fill="!readOnly" @fill="emit('fill', preset.key)" />

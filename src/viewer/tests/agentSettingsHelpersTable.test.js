@@ -39,7 +39,7 @@ test("the Helpers tab says how many types are at a limit", async () => {
 test("the context cap column says the value and where it comes from", async () => {
     const {element} = await helpers();
     const cap = (key) => [...row(element, key).querySelectorAll(".cap > span, .cap small")].map((part) => part.textContent);
-    expect(cap("worker")).toEqual(["200k", "Set for its kind"]);
+    expect(cap("worker")).toEqual(["200k", "Set for its type"]);
     expect(cap("helper:journal-researcher")).toEqual(["150k", "Own value"]);
     expect(cap("helper:journal-designer")).toEqual(["400k", "Set for every agent"]);
 });

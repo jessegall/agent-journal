@@ -45,7 +45,7 @@ test("the screen of a type shows its cap as one of three choices over the entry 
     const {element} = await typeScreen("helper:journal-designer");
     const row = element.querySelector("[data-context-cap]");
     expect(row.querySelector('[data-segment="kind"]').getAttribute("aria-checked")).toBe("true");
-    expect(row.querySelector("[data-cap-line]").textContent).toBe("400k for its kind, set in Advanced");
+    expect(row.querySelector("[data-cap-line]").textContent).toBe("400k for its type, set in Advanced");
 });
 
 test("choosing its own cap on the screen of a type writes the entry of the profile in the same request and the Helpers table shows it as Own value", async () => {

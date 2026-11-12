@@ -79,7 +79,7 @@ test("the page says a preset is eight switches and no kind of agent, with a card
     await settled();
     const page = element.querySelector("[data-agent-settings-presets]");
     expect(page.textContent).toContain("A preset is a set of eight switches and nothing more");
-    expect(page.textContent).toContain("not a kind of agent");
+    expect(page.textContent).toContain("not a type of agent");
     expect(page.textContent).toContain("the same program under every preset");
     expect([...page.querySelectorAll(".setting-preset-card strong")].map((name) => name.textContent)).toEqual(["Builder", "Orchestrator", "Custom"]);
     expect([...page.querySelectorAll("th")].map((cell) => cell.textContent)).toEqual(["Switch", "Builder", "Orchestrator", "Now"]);

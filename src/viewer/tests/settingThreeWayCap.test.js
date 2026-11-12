@@ -7,8 +7,8 @@ const cap = (props) => drawnSettingComponent(SettingThreeWayCap, {sizes: SIZES, 
 const line = (drawn) => drawn.element.querySelector("[data-cap-line]").textContent;
 
 test("the mode of its kind shows the size of its kind and says it is set in Advanced", () => {
-    expect(line(cap({mode: "kind"}))).toBe("400k for its kind, set in Advanced");
-    expect(line(cap({mode: "kind", kindValue: null}))).toBe("No cap for its kind, set in Advanced");
+    expect(line(cap({mode: "kind"}))).toBe("400k for its type, set in Advanced");
+    expect(line(cap({mode: "kind", kindValue: null}))).toBe("No cap for its type, set in Advanced");
 });
 
 test("the mode of its own cap shows a size to choose, the own size when there is one", () => {
