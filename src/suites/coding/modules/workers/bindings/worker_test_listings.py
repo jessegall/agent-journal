@@ -20,8 +20,7 @@ from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.run_visibility import RunVisibility
 from core.modules.processes.commands.stop_process.stop_process import StopProcess
 from engine.driver.nudger import Nudger
-from core.modules.processes.models.enums.reading_exit import ReadingExit
-from core.modules.processes.support.reading.exit_texts import ExitTexts
+from core.modules.processes.commands.request_count_reader.request_count_reader import RequestCountReader
 from suites.coding.modules.workers.support.worker_test_limit_nudges import TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE
 from suites.coding.modules.workers.support.part_test_listing import PartTestListing
 
@@ -81,9 +80,9 @@ class WorkerTestListings(RunCounts):
             return
         if not self.requires_count(process, agent) or (status is None and not self.has_listing(process, agent, self.outputs.process_output(process.id))):
             return
-        self.nudger.send(process.session_agent_id, TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE, context, output=process.id,
-                         exits=ExitTexts.listed((ReadingExit.COUNT_TESTS,), "", process.id))
         self.bus.dispatch(StopProcess(process.id), context)
+        request = self.bus.dispatch(RequestCountReader(process.id), context)
+        self.nudger.send(process.session_agent_id, TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE, context, output=process.id, request=request)
 
     def counting_reader(self, part: ProcessPart, output: Output | None, readers: tuple[Reader, ...]) -> Reader | None:
         first_answer = self.reader(part, output, readers)

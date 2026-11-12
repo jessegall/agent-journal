@@ -127,12 +127,11 @@ def test_the_main_agent_is_still_refused_a_raw_test_line(forced):
     forced.expect_hook_refusal(MAIN, HookSamples.tool_use("Bash", ToolType.SHELL, [], None, shell=shell), "alias")
 
 
-def test_a_worker_is_never_refused_or_taught_after_silent_runs(busy_worker):
+def test_a_worker_after_two_silent_runs_is_refused_its_start_like_every_role(busy_worker):
     silent_worker_run(busy_worker, "custom-build run")
     silent_worker_run(busy_worker, "custom-build run")
     sample = HookSamples.shell("custom-build run", ShellPart("custom-build", CommandCategory.BUILD, ["run"]))
-    busy_worker.expect_hook_allowed(WORKER, sample)
-    busy_worker.expect_rows(not any("reader" in line for line in hook_lines(busy_worker, WORKER, sample)))
+    busy_worker.expect_hook_refusal(WORKER, sample, "custom-build run ran silent twice")
 
 
 def test_a_long_worker_run_is_asked_for_a_title_like_a_main_agents_and_asked_for_no_reader(readers_disabled):

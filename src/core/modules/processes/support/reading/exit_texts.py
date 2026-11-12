@@ -14,8 +14,8 @@ class ExitText:
 
 EXIT_TEXTS: dict[ReadingExit, ExitText] = {
     ReadingExit.COMPLY: ExitText("add or fix the reader", "journal reader add {name}"),
-    ReadingExit.COUNT_TESTS: ExitText("add a reader that counts the tests, and the next run starts",
-                                      'journal reader add <name> --commands "<command>*" --count "<pattern of the count>" --count-command "<a command that lists the tests>"'),
+    ReadingExit.COUNT_TESTS: ExitText("save a reader that counts the tests for your reader request {name}, and the next run starts",
+                                      "journal reader draft {name} --save, with --count and --count-command"),
     ReadingExit.SKIP_WITH_REASON: ExitText("skip this one start and say why", "journal refusal skip processes.reading --reason '<why>'"),
     ReadingExit.DECLARE_UNREADABLE: ExitText("mark the command unreadable", 'journal reader unreadable "{name}" --reason "<why>"'),
     ReadingExit.READ_OUTPUT: ExitText("read it", "journal output read {output}"),
@@ -37,7 +37,8 @@ class ExitTexts:
 
     @staticmethod
     def said(text: ExitText, name: str, output: int) -> str:
-        return f"{text.sentence}: {text.command.format(name=name, output=output)}" if text.command else text.sentence
+        sentence = text.sentence.format(name=name, output=output)
+        return f"{sentence}: {text.command.format(name=name, output=output)}" if text.command else sentence
 
     @staticmethod
     def sentences(exits: Sequence[ReadingExit]) -> str:

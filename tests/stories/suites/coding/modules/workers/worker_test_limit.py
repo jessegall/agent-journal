@@ -178,7 +178,7 @@ def test_a_listing_without_a_known_count_stops_the_run(limited_run, status):
     lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=process.session_agent_id, source="processes.worker-test-limit").all_rows())
     story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.STOPPED,
                       len(lines) == 1, "could not count" in lines[0].text)
-    story.expect_rows("add a reader that counts the tests" in lines[0].text, "--count-command" in lines[0].text, "--about tests" in lines[0].text, detail=lines[0].text)
+    story.expect_rows("save a reader that counts the tests" in lines[0].text, "journal reader draft" in lines[0].text, "--about tests" in lines[0].text, detail=lines[0].text)
 
 
 def test_a_worker_stopped_for_an_unknown_count_adds_a_counting_reader_and_its_next_run_starts(new_story):
