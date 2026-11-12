@@ -23,7 +23,7 @@ from core.modules.skills.support.profile_skills import ProfileSkills
 
 class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
     """Saves a personal profile or changes to a registered profile. Only a person or the main agent may: a
-    helper or a worker is refused before anything is read or written."""
+    helper of any type is refused before anything is read or written."""
 
     cli_name = "profile"
     name = "save"

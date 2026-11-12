@@ -29,7 +29,7 @@ class StartWorkerRunsHandler(Handler[StartWorkerRuns, tuple[CheckpointReach, ...
         for window in self.windows.completed_by(worktree):
             if window.checkpoint_id in run_phase_ids:
                 continue
-            reach = self.checkpoints.reach_worker(window.plan_id, window.checkpoint_id, window.task_ids, context)
+            reach = self.checkpoints.reach_agent_commit(window.plan_id, window.checkpoint_id, window.task_ids, context)
             if reach is None:
                 continue
             self.repository.save(WorktreeReach(reach_id=reach.id, worktree_id=worktree.id, phase_id=window.checkpoint_id, commit_id=command.commit_id), context)

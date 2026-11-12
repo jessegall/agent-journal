@@ -26,7 +26,7 @@ class StartHelperSubcommand(Subcommand[StartHelper, HelperStarted]):
         parser.add_argument("--brief", required=True)
         parser.add_argument("--program", default="")
         parser.add_argument("--tier", type=ModelTier.automatic, choices=[ModelTier.FAST, ModelTier.GENERAL, ModelTier.STRONGEST], default=None)
-        parser.add_argument("--model", default=None, help="the model it runs on, or default for the profile's own: journal worker models lists them")
+        parser.add_argument("--model", default=None, help="the model it runs on, or default for the profile's own")
         parser.add_argument("--name", default="")
         parser.add_argument("--plan", type=int, default=None, help="the plan this helper reviews")
         parser.add_argument("--title", default="", help="a short title for the job, shown in the agent list")

@@ -5,7 +5,7 @@ from engine.query.queries import Queries
 from core.modules.drivers.conditions.agent_family import AgentFamily
 from core.modules.drivers.models.agent_activity import AgentActivity
 
-OPEN_FAMILY_REASON = "The open agents of one family, which the worker and helper limits bound; every rule of the hook reads them from this one load."
+OPEN_FAMILY_REASON = "The open agents of one family, which the agent limits bound; every rule of the hook reads them from this one load."
 
 
 class AgentActivities:

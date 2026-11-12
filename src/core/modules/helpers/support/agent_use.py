@@ -15,7 +15,7 @@ from engine.setting.setting_values import SettingValues
 
 DAY_SECONDS = 86400
 MAX_IDLE_AGENTS = 4
-KEPT_AGENTS_REASON = "The helpers and workers that are not retired, which the kept limit of each agent type bounds."
+KEPT_AGENTS_REASON = "The helpers of every type that are not retired, which the kept limit of each agent type bounds."
 
 
 class AgentUse:
