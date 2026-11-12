@@ -1,4 +1,4 @@
-if (!document.getElementById("window-styles-543270109478")) { const style = document.createElement("style"); style.id = "window-styles-543270109478"; style.textContent = ".helper-start[data-v-b7ce6c5e]{display:grid;gap:12px;padding:0 0 20px;margin-bottom:20px;border-bottom:1px solid var(--border-2)}h3[data-v-b7ce6c5e]{margin:0;font-size:14px;font-weight:600}.field[data-v-b7ce6c5e]{display:grid;gap:4px}.field>span[data-v-b7ce6c5e]{color:var(--text-2);font-size:12px;font-weight:500}.reason[data-v-b7ce6c5e],.notice[data-v-b7ce6c5e]{margin:0;color:var(--text-3);font-size:12px;line-height:1.5;overflow-wrap:anywhere}.idle-helper[data-v-b7ce6c5e]{display:flex;align-items:center;justify-content:space-between;gap:12px}.profile-panel-tab[data-v-d2636dd4]{display:flex;flex-direction:column;gap:14px}.profile-panel-reason[data-v-d2636dd4]{margin:0;color:var(--text-3);font-size:12px}.profile-panel-tab[data-v-9096240d]{display:flex;flex-direction:column;gap:14px}.profile-panel-models[data-v-9096240d]{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.profile-skill[data-v-dede0178]{display:flex;gap:10px;align-items:flex-start;padding:10px 12px}.profile-skill+.profile-skill[data-v-dede0178]{border-top:1px solid var(--border)}.profile-skill-text[data-v-dede0178]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}.profile-skill-head[data-v-dede0178]{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.profile-skill-name[data-v-dede0178]{color:var(--text);font-size:13px}.profile-skill.off .profile-skill-name[data-v-dede0178]{color:var(--text-3)}.profile-skill-own[data-v-dede0178]{padding:0 5px;border:1px solid var(--border-2);border-radius:5px;color:var(--text-3);font-size:10px}.profile-skill-about[data-v-dede0178]{display:-webkit-box;overflow:hidden;color:var(--text-3);font-size:12px;-webkit-box-orient:vertical;-webkit-line-clamp:2}.profile-skill-end[data-v-dede0178]{display:flex;flex:none;justify-content:flex-end;min-width:84px}.profile-skill-locked[data-v-dede0178]{max-width:130px;color:var(--text-3);font-size:11.5px;text-align:right}@media(max-width:640px){.profile-skill[data-v-dede0178]{flex-wrap:wrap}.profile-skill-end[data-v-dede0178]{justify-content:flex-start;width:100%;padding-left:38px}}.profile-skills[data-v-83427ac3]{display:flex;flex-direction:column;gap:10px}.profile-skills-line[data-v-83427ac3]{display:flex;gap:12px;align-items:baseline;justify-content:space-between}.profile-skills-help[data-v-83427ac3],.profile-skills-count[data-v-83427ac3],.profile-skills-note[data-v-83427ac3]{margin:0;color:var(--text-3);font-size:12px}.profile-skills-card[data-v-83427ac3]{border:1px solid var(--border);border-radius:8px;background:var(--bg-2)}.profile-skills-skeleton[data-v-83427ac3],.profile-skills-note[data-v-83427ac3]{padding:10px 12px}.profile-panel[data-v-0053a524],.profile-panel-tab[data-v-0053a524]{display:flex;flex-direction:column;gap:14px}.profile-panel-meta[data-v-0053a524]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}.profile-panel-name[data-v-0053a524]{color:var(--text-3);font-size:12px}.profile-panel-tag[data-v-0053a524]{padding:0 5px;border:1px solid var(--border-2);border-radius:5px;color:var(--text-3);font-size:10px}.profile-panel-changed[data-v-0053a524]{display:flex;gap:10px;align-items:center;justify-content:space-between}.profile-panel-reason[data-v-0053a524],.profile-panel-unsaved[data-v-0053a524]{margin:0;color:var(--text-3);font-size:12px}.profile-panel-grow[data-v-0053a524]{flex:1}.profiles[data-v-6849adc7]{padding:0 0 40px}.bar[data-v-6849adc7]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-6849adc7]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-6849adc7]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-6849adc7]{color:var(--danger)}.empty[data-v-6849adc7]{margin:40px auto;max-width:480px}.rows[data-v-6849adc7]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-6849adc7]{text-align:left}.profile-meta[data-v-6849adc7]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-6849adc7]{color:var(--text-2)}.profile-used[data-v-6849adc7]{color:var(--text-3);white-space:nowrap}.profile-warning[data-v-6849adc7]{color:var(--tone-warn)}.profile-used.never[data-v-6849adc7]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-6849adc7]{flex:1 1 100%}.profile-meta[data-v-6849adc7]{display:none}}.profile-base[data-v-6849adc7]{padding:1px 7px;border:1px solid var(--border-2);border-radius:6px;color:var(--text-2);font-size:11px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-5a1074db9fdb")) { const style = document.createElement("style"); style.id = "window-styles-5a1074db9fdb"; style.textContent = ".helper-start[data-v-382ed53a]{display:grid;gap:12px;padding:0 0 20px;margin-bottom:20px;border-bottom:1px solid var(--border-2)}h3[data-v-382ed53a]{margin:0;font-size:14px;font-weight:600}.field[data-v-382ed53a]{display:grid;gap:4px}.field>span[data-v-382ed53a]{color:var(--text-2);font-size:12px;font-weight:500}.reason[data-v-382ed53a],.notice[data-v-382ed53a]{margin:0;color:var(--text-3);font-size:12px;line-height:1.5;overflow-wrap:anywhere}.idle-helper[data-v-382ed53a]{display:flex;align-items:center;justify-content:space-between;gap:12px}.profile-panel-tab[data-v-29dafd7a]{display:flex;flex-direction:column;gap:14px}.profile-panel-reason[data-v-29dafd7a]{margin:0;color:var(--text-3);font-size:12px}.profile-panel-tab[data-v-06548598]{display:flex;flex-direction:column;gap:14px}.profile-panel-models[data-v-06548598]{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.profile-skill[data-v-da955a19]{display:flex;gap:10px;align-items:flex-start;padding:10px 12px}.profile-skill+.profile-skill[data-v-da955a19]{border-top:1px solid var(--border)}.profile-skill-text[data-v-da955a19]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}.profile-skill-head[data-v-da955a19]{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.profile-skill-name[data-v-da955a19]{color:var(--text);font-size:13px}.profile-skill.off .profile-skill-name[data-v-da955a19]{color:var(--text-3)}.profile-skill-own[data-v-da955a19]{padding:0 5px;border:1px solid var(--border-2);border-radius:5px;color:var(--text-3);font-size:10px}.profile-skill-about[data-v-da955a19]{display:-webkit-box;overflow:hidden;color:var(--text-3);font-size:12px;-webkit-box-orient:vertical;-webkit-line-clamp:2}.profile-skill-end[data-v-da955a19]{display:flex;flex:none;justify-content:flex-end;min-width:84px}.profile-skill-locked[data-v-da955a19]{max-width:130px;color:var(--text-3);font-size:11.5px;text-align:right}@media(max-width:640px){.profile-skill[data-v-da955a19]{flex-wrap:wrap}.profile-skill-end[data-v-da955a19]{justify-content:flex-start;width:100%;padding-left:38px}}.profile-skills[data-v-5fb78afd]{display:flex;flex-direction:column;gap:10px}.profile-skills-line[data-v-5fb78afd]{display:flex;gap:12px;align-items:baseline;justify-content:space-between}.profile-skills-help[data-v-5fb78afd],.profile-skills-count[data-v-5fb78afd],.profile-skills-note[data-v-5fb78afd]{margin:0;color:var(--text-3);font-size:12px}.profile-skills-card[data-v-5fb78afd]{border:1px solid var(--border);border-radius:8px;background:var(--bg-2)}.profile-skills-skeleton[data-v-5fb78afd],.profile-skills-note[data-v-5fb78afd]{padding:10px 12px}.profile-panel[data-v-37c5760c],.profile-panel-tab[data-v-37c5760c]{display:flex;flex-direction:column;gap:14px}.profile-panel-meta[data-v-37c5760c]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}.profile-panel-name[data-v-37c5760c]{color:var(--text-3);font-size:12px}.profile-panel-tag[data-v-37c5760c]{padding:0 5px;border:1px solid var(--border-2);border-radius:5px;color:var(--text-3);font-size:10px}.profile-panel-changed[data-v-37c5760c]{display:flex;gap:10px;align-items:center;justify-content:space-between}.profile-panel-reason[data-v-37c5760c],.profile-panel-unsaved[data-v-37c5760c]{margin:0;color:var(--text-3);font-size:12px}.profile-panel-grow[data-v-37c5760c]{flex:1}.profiles[data-v-83684cee]{padding:0 0 40px}.bar[data-v-83684cee]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-83684cee]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-83684cee]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-83684cee]{color:var(--danger)}.empty[data-v-83684cee]{margin:40px auto;max-width:480px}.rows[data-v-83684cee]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-83684cee]{text-align:left}.profile-meta[data-v-83684cee]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-83684cee]{color:var(--text-2)}.profile-used[data-v-83684cee]{color:var(--text-3);white-space:nowrap}.profile-warning[data-v-83684cee]{color:var(--tone-warn)}.profile-used.never[data-v-83684cee]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-83684cee]{flex:1 1 100%}.profile-meta[data-v-83684cee]{display:none}}.profile-base[data-v-83684cee]{padding:1px 7px;border:1px solid var(--border-2);border-radius:6px;color:var(--text-2);font-size:11px}\n"; document.head.appendChild(style); }
 import { ref as I, computed as C, watch as Q, openBlock as l, createElementBlock as i, withModifiers as ce, createElementVNode as y, createVNode as u, unref as e, withDirectives as H, Fragment as W, renderList as F, toDisplayString as T, vModelSelect as ve, withCtx as v, createTextVNode as M, createCommentVNode as b, useModel as ie, createBlock as q, mergeModels as ue, normalizeClass as de, renderSlot as me, vShow as K } from "vue";
 import { useWindow as ae, TextArea as oe, Btn as L, TextInput as X, FormField as O, Segmented as J, ModelPicker as ye, Switch as re, matchesSearch as pe, SearchBar as fe, Notice as Y, SkeletonLine as ke, SidePanel as ge, DiffCard as he, InnerTabs as be, TabBody as _e, EmptyState as te, ListRow as we, ago as $e } from "@journal/window-kit";
 const z = (t, x) => {
@@ -125,7 +125,7 @@ const z = (t, x) => {
       P.value ? (l(), i("p", je, T(P.value), 1)) : b("", !0)
     ], 32));
   }
-}, Ne = /* @__PURE__ */ z(Re, [["__scopeId", "data-v-b7ce6c5e"]]), Be = {
+}, Ne = /* @__PURE__ */ z(Re, [["__scopeId", "data-v-382ed53a"]]), Be = {
   class: "profile-panel-tab",
   "data-profile-tab": "about"
 }, Oe = {
@@ -249,7 +249,7 @@ const z = (t, x) => {
       ]);
     };
   }
-}, Ve = /* @__PURE__ */ z(We, [["__scopeId", "data-v-d2636dd4"]]), Le = {
+}, Ve = /* @__PURE__ */ z(We, [["__scopeId", "data-v-29dafd7a"]]), Le = {
   class: "profile-panel-tab",
   "data-profile-tab": "model"
 }, Ue = { class: "profile-panel-models" }, Fe = {
@@ -346,7 +346,7 @@ const z = (t, x) => {
       ])
     ]));
   }
-}, De = /* @__PURE__ */ z(Fe, [["__scopeId", "data-v-9096240d"]]), ze = ["data-profile-skill"], Ge = { class: "profile-skill-text" }, He = { class: "profile-skill-head" }, Je = { class: "profile-skill-name" }, Ke = {
+}, De = /* @__PURE__ */ z(Fe, [["__scopeId", "data-v-06548598"]]), ze = ["data-profile-skill"], Ge = { class: "profile-skill-text" }, He = { class: "profile-skill-head" }, Je = { class: "profile-skill-name" }, Ke = {
   key: 0,
   class: "profile-skill-own",
   "data-profile-skill-own": ""
@@ -395,7 +395,7 @@ const z = (t, x) => {
       ])
     ], 10, ze));
   }
-}, el = /* @__PURE__ */ z(Ze, [["__scopeId", "data-v-dede0178"]]), ll = {
+}, el = /* @__PURE__ */ z(Ze, [["__scopeId", "data-v-da955a19"]]), ll = {
   class: "profile-skills",
   "data-profile-skills": ""
 }, tl = { class: "profile-skills-line" }, al = {
@@ -481,7 +481,7 @@ const z = (t, x) => {
       ]))
     ]));
   }
-}, pl = /* @__PURE__ */ z(dl, [["__scopeId", "data-v-83427ac3"]]), fl = {
+}, pl = /* @__PURE__ */ z(dl, [["__scopeId", "data-v-5fb78afd"]]), fl = {
   key: 0,
   class: "profile-panel-meta",
   "data-profile-meta": ""
@@ -740,7 +740,7 @@ const z = (t, x) => {
       _: 3
     }, 8, ["title", "abstract"]));
   }
-}, ql = /* @__PURE__ */ z(Cl, [["__scopeId", "data-v-0053a524"]]), Il = {
+}, ql = /* @__PURE__ */ z(Cl, [["__scopeId", "data-v-37c5760c"]]), Il = {
   class: "profiles",
   "data-profiles": ""
 }, Pl = {
@@ -912,7 +912,7 @@ const z = (t, x) => {
       }, 8, ["notice", "failure", "programs", "types", "profile", "used"])) : b("", !0)
     ]));
   }
-}, Vl = /* @__PURE__ */ z(El, [["__scopeId", "data-v-6849adc7"]]);
+}, Vl = /* @__PURE__ */ z(El, [["__scopeId", "data-v-83684cee"]]);
 export {
   Vl as default
 };

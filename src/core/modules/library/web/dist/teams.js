@@ -1,4 +1,4 @@
-if (!document.getElementById("window-styles-06d357c6521a")) { const style = document.createElement("style"); style.id = "window-styles-06d357c6521a"; style.textContent = ".library[data-v-e8b8f5f0]{display:flex;flex-direction:column;gap:10px}.library-row[data-v-e8b8f5f0]{display:flex;align-items:center;gap:10px;padding:6px 0}.library-open[data-v-e8b8f5f0]{display:flex;flex:1;flex-direction:column;gap:2px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.library-title[data-v-e8b8f5f0]{font-weight:600}.library-abstract[data-v-e8b8f5f0],.library-excerpt[data-v-e8b8f5f0],.library-facts[data-v-e8b8f5f0],.library-here[data-v-e8b8f5f0]{color:var(--text-3);font-size:12px}.library-failure[data-v-e8b8f5f0],.library-warning[data-v-e8b8f5f0]{margin:0;color:var(--danger);font-size:13px}.library-fields dt[data-v-e8b8f5f0]{margin-top:8px;color:var(--text-3);font-size:12px}.library-fields dd[data-v-e8b8f5f0]{margin:2px 0 0;white-space:pre-wrap}.library-versions[data-v-e8b8f5f0]{padding:0;list-style:none}.library-versions li[data-v-e8b8f5f0]{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0;font-size:13px}.connect[data-v-c80072d8]{display:flex;flex-direction:column;gap:12px;max-width:420px}.connect-lead[data-v-c80072d8]{margin:0;color:var(--text-2);font-size:13px}.connect-failure[data-v-c80072d8]{margin:0;color:var(--danger);font-size:13px}.compare[data-v-4ed17c46]{display:flex;flex-direction:column;gap:10px}.compare-help[data-v-4ed17c46]{margin:0;color:var(--text-3);font-size:12px}.copy[data-v-3fc49ef4]{display:flex;flex-direction:column;gap:3px;padding:8px 0}.copy-title[data-v-3fc49ef4]{font-weight:600}.copy-facts[data-v-3fc49ef4],.copy-line[data-v-3fc49ef4]{color:var(--text-3);font-size:12px}.copy-buttons[data-v-3fc49ef4]{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.copies[data-v-0af30610]{display:flex;flex-direction:column;gap:10px}.copies-share[data-v-0af30610]{display:flex;align-items:flex-end;gap:8px}.copies-list[data-v-0af30610]{margin:0;padding:0;list-style:none}.copies-failure[data-v-0af30610]{margin:0;color:var(--danger);font-size:13px}.copies-empty[data-v-0af30610]{margin:0;color:var(--text-3);font-size:13px}.person[data-v-4a453da6]{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 0}.person-name[data-v-4a453da6]{min-width:120px;font-weight:600}.person-facts[data-v-4a453da6],.person-tokens[data-v-4a453da6]{color:var(--text-3);font-size:12px}.person-tokens[data-v-4a453da6]{flex-basis:100%;margin:0;padding:0 0 0 16px;list-style:none}.person-tokens li[data-v-4a453da6]{display:flex;align-items:center;gap:10px;padding:2px 0}.person-failure[data-v-4a453da6]{flex-basis:100%;margin:0;color:var(--danger);font-size:13px}.people[data-v-1c77317b]{display:flex;flex-direction:column;gap:10px}.people-add[data-v-1c77317b]{display:flex;align-items:flex-end;gap:10px}.people-token[data-v-1c77317b]{margin:0;font-family:var(--mono);font-size:12px;word-break:break-all}.people-failure[data-v-1c77317b]{margin:0;color:var(--danger);font-size:13px}.teams[data-v-6dc2c629]{display:flex;flex-direction:column;gap:10px}.teams-top[data-v-6dc2c629]{display:flex;align-items:center;justify-content:space-between}.teams-title[data-v-6dc2c629]{margin:0;font-size:16px}.teams-header[data-v-6dc2c629]{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--text-2);font-size:13px}.teams-failure[data-v-6dc2c629],.teams-stopped[data-v-6dc2c629]{margin:0;color:var(--danger);font-size:13px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-51b19fb13648")) { const style = document.createElement("style"); style.id = "window-styles-51b19fb13648"; style.textContent = ".library[data-v-d545fd69]{display:flex;flex-direction:column;gap:10px}.library-row[data-v-d545fd69]{display:flex;align-items:center;gap:10px;padding:6px 0}.library-open[data-v-d545fd69]{display:flex;flex:1;flex-direction:column;gap:2px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.library-title[data-v-d545fd69]{font-weight:600}.library-abstract[data-v-d545fd69],.library-excerpt[data-v-d545fd69],.library-facts[data-v-d545fd69],.library-here[data-v-d545fd69]{color:var(--text-3);font-size:12px}.library-failure[data-v-d545fd69],.library-warning[data-v-d545fd69]{margin:0;color:var(--danger);font-size:13px}.library-fields dt[data-v-d545fd69]{margin-top:8px;color:var(--text-3);font-size:12px}.library-fields dd[data-v-d545fd69]{margin:2px 0 0;white-space:pre-wrap}.library-versions[data-v-d545fd69]{padding:0;list-style:none}.library-versions li[data-v-d545fd69]{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0;font-size:13px}.connect[data-v-b69f5dd5]{display:flex;flex-direction:column;gap:12px;max-width:420px}.connect-lead[data-v-b69f5dd5]{margin:0;color:var(--text-2);font-size:13px}.connect-failure[data-v-b69f5dd5]{margin:0;color:var(--danger);font-size:13px}.compare[data-v-a6494d43]{display:flex;flex-direction:column;gap:10px}.compare-help[data-v-a6494d43]{margin:0;color:var(--text-3);font-size:12px}.copy[data-v-43694882]{display:flex;flex-direction:column;gap:3px;padding:8px 0}.copy-title[data-v-43694882]{font-weight:600}.copy-facts[data-v-43694882],.copy-line[data-v-43694882]{color:var(--text-3);font-size:12px}.copy-buttons[data-v-43694882]{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.copies[data-v-cec02783]{display:flex;flex-direction:column;gap:10px}.copies-share[data-v-cec02783]{display:flex;align-items:flex-end;gap:8px}.copies-list[data-v-cec02783]{margin:0;padding:0;list-style:none}.copies-failure[data-v-cec02783]{margin:0;color:var(--danger);font-size:13px}.copies-empty[data-v-cec02783]{margin:0;color:var(--text-3);font-size:13px}.person[data-v-21161250]{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 0}.person-name[data-v-21161250]{min-width:120px;font-weight:600}.person-facts[data-v-21161250],.person-tokens[data-v-21161250]{color:var(--text-3);font-size:12px}.person-tokens[data-v-21161250]{flex-basis:100%;margin:0;padding:0 0 0 16px;list-style:none}.person-tokens li[data-v-21161250]{display:flex;align-items:center;gap:10px;padding:2px 0}.person-failure[data-v-21161250]{flex-basis:100%;margin:0;color:var(--danger);font-size:13px}.people[data-v-ebd0ab68]{display:flex;flex-direction:column;gap:10px}.people-add[data-v-ebd0ab68]{display:flex;align-items:flex-end;gap:10px}.people-token[data-v-ebd0ab68]{margin:0;font-family:var(--mono);font-size:12px;word-break:break-all}.people-failure[data-v-ebd0ab68]{margin:0;color:var(--danger);font-size:13px}.teams[data-v-57a8733b]{display:flex;flex-direction:column;gap:10px}.teams-top[data-v-57a8733b]{display:flex;align-items:center;justify-content:space-between}.teams-title[data-v-57a8733b]{margin:0;font-size:16px}.teams-header[data-v-57a8733b]{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--text-2);font-size:13px}.teams-failure[data-v-57a8733b],.teams-stopped[data-v-57a8733b]{margin:0;color:var(--danger);font-size:13px}\n"; document.head.appendChild(style); }
 import { ref as T, watch as J, openBlock as a, createElementBlock as n, createVNode as g, unref as e, toDisplayString as v, createCommentVNode as S, createElementVNode as f, withCtx as C, createTextVNode as V, createBlock as A, Fragment as j, renderList as P, withModifiers as F, computed as q } from "vue";
 import { useWindow as N, useRunLine as D, SearchBar as ae, Segmented as G, Btn as O, RowList as Q, TimeAgo as M, SidePanel as X, FormField as U, TextInput as Y, DiffCard as te, WindowRoom as le, SwitchCase as re } from "@journal/window-kit";
 const I = (p, x) => {
@@ -241,7 +241,7 @@ const I = (p, x) => {
       }, 8, ["title"])) : S("", !0)
     ]));
   }
-}, $e = /* @__PURE__ */ I(Se, [["__scopeId", "data-v-e8b8f5f0"]]), Ce = {
+}, $e = /* @__PURE__ */ I(Se, [["__scopeId", "data-v-d545fd69"]]), Ce = {
   key: 0,
   class: "connect-failure",
   role: "alert",
@@ -312,7 +312,7 @@ const I = (p, x) => {
       }, 8, ["busy", "disabled"])
     ], 32));
   }
-}, xe = /* @__PURE__ */ I(we, [["__scopeId", "data-v-c80072d8"]]);
+}, xe = /* @__PURE__ */ I(we, [["__scopeId", "data-v-b69f5dd5"]]);
 function Re(p, x) {
   const h = p === "" ? [] : p.split(`
 `), t = x === "" ? [] : x.split(`
@@ -354,7 +354,7 @@ const Te = {
       }, null, 8, ["path", "added", "removed", "at", "rows"]))), 128))
     ]));
   }
-}, Oe = /* @__PURE__ */ I(Ve, [["__scopeId", "data-v-4ed17c46"]]), Ae = ["data-library-copy", "data-status"], je = { class: "copy-title" }, Ee = {
+}, Oe = /* @__PURE__ */ I(Ve, [["__scopeId", "data-v-a6494d43"]]), Ae = ["data-library-copy", "data-status"], je = { class: "copy-title" }, Ee = {
   class: "copy-facts",
   "data-copy-facts": ""
 }, qe = { class: "copy-buttons" }, Ie = {
@@ -412,7 +412,7 @@ const Te = {
       ])
     ], 8, Ae));
   }
-}, Pe = /* @__PURE__ */ I(Ie, [["__scopeId", "data-v-3fc49ef4"]]), Be = {
+}, Pe = /* @__PURE__ */ I(Ie, [["__scopeId", "data-v-43694882"]]), Be = {
   class: "copies",
   "data-library-copies": ""
 }, Ne = {
@@ -548,7 +548,7 @@ const Te = {
       }, 8, ["title"])) : S("", !0)
     ]));
   }
-}, Ke = /* @__PURE__ */ I(Fe, [["__scopeId", "data-v-0af30610"]]), He = ["data-people-user"], ze = { class: "person-name" }, Je = {
+}, Ke = /* @__PURE__ */ I(Fe, [["__scopeId", "data-v-cec02783"]]), He = ["data-people-user"], ze = { class: "person-name" }, Je = {
   key: 0,
   class: "person-facts",
   "data-people-removed": ""
@@ -641,7 +641,7 @@ const Te = {
       ])) : S("", !0)
     ], 8, He));
   }
-}, ta = /* @__PURE__ */ I(aa, [["__scopeId", "data-v-4a453da6"]]), la = {
+}, ta = /* @__PURE__ */ I(aa, [["__scopeId", "data-v-21161250"]]), la = {
   class: "people",
   "data-library-people": ""
 }, ra = {
@@ -728,7 +728,7 @@ const Te = {
       ]);
     };
   }
-}, oa = /* @__PURE__ */ I(na, [["__scopeId", "data-v-1c77317b"]]), ia = {
+}, oa = /* @__PURE__ */ I(na, [["__scopeId", "data-v-ebd0ab68"]]), ia = {
   class: "teams",
   "data-teams": ""
 }, da = { class: "teams-top" }, ua = {
@@ -854,7 +854,7 @@ const Te = {
       _: 1
     }));
   }
-}, ga = /* @__PURE__ */ I(ha, [["__scopeId", "data-v-6dc2c629"]]);
+}, ga = /* @__PURE__ */ I(ha, [["__scopeId", "data-v-57a8733b"]]);
 export {
   ga as default
 };

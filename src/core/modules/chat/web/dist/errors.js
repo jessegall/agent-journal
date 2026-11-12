@@ -1,10 +1,10 @@
-if (!document.getElementById("window-styles-fc37daf3cfa7")) { const style = document.createElement("style"); style.id = "window-styles-fc37daf3cfa7"; style.textContent = ".error[data-v-3577a147]{padding:10px 16px;border-bottom:1px solid var(--border-inner)}.head[data-v-3577a147]{display:flex;gap:10px;align-items:center;font-size:12.5px}.place[data-v-3577a147]{flex:1;min-width:0;overflow:hidden;color:var(--text-3);text-overflow:ellipsis;white-space:nowrap}.message[data-v-3577a147]{margin:4px 0 0;color:var(--text-2);font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}.failure[data-v-3577a147]{padding:10px 16px;color:var(--danger);font-size:12px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-d686e2c44148")) { const style = document.createElement("style"); style.id = "window-styles-d686e2c44148"; style.textContent = ".error[data-v-09c8de51]{padding:10px 16px;border-bottom:1px solid var(--border-inner)}.head[data-v-09c8de51]{display:flex;gap:10px;align-items:center;font-size:12.5px}.place[data-v-09c8de51]{flex:1;min-width:0;overflow:hidden;color:var(--text-3);text-overflow:ellipsis;white-space:nowrap}.message[data-v-09c8de51]{margin:4px 0 0;color:var(--text-2);font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}.failure[data-v-09c8de51]{padding:10px 16px;color:var(--danger);font-size:12px}\n"; document.head.appendChild(style); }
 import { openBlock as o, createBlock as m, unref as e, withCtx as u, createElementBlock as p, toDisplayString as d, createTextVNode as f, createCommentVNode as h, Fragment as x, renderList as y, createElementVNode as n, createVNode as v } from "vue";
 import { useWindow as E, WindowRoom as N, EmptyState as B, TimeAgo as C, Btn as S, removed as V } from "@journal/window-kit";
 const R = (l, c) => {
   const t = l.__vccOpts || l;
-  for (const [a, i] of c)
-    t[a] = i;
+  for (const [s, i] of c)
+    t[s] = i;
   return t;
 }, T = {
   key: 0,
@@ -20,14 +20,14 @@ const R = (l, c) => {
 }, F = {
   __name: "ErrorRows",
   setup(l) {
-    const c = E(), { rows: t, failure: a, loaded: i, act: g } = c.props.errors, k = (_) => g(["journal-exception", "solve", String(_.id)], V(_.id));
-    return (_, s) => (o(), m(e(N), { padding: "0" }, {
+    const c = E(), { rows: t, failure: s, loaded: i, act: g } = c.props.errors, k = (_) => g(["journal-exception", "solve", String(_.id)], V(_.id));
+    return (_, a) => (o(), m(e(N), { padding: "0" }, {
       default: u(() => [
-        e(a) ? (o(), p("p", T, d(e(a)), 1)) : e(i) && !e(t).length ? (o(), m(e(B), {
+        e(s) ? (o(), p("p", T, d(e(s)), 1)) : e(i) && !e(t).length ? (o(), m(e(B), {
           key: 1,
           title: "No errors"
         }, {
-          default: u(() => [...s[0] || (s[0] = [
+          default: u(() => [...a[0] || (a[0] = [
             f("The journal has recorded no error that is not solved.", -1)
           ])]),
           _: 1
@@ -49,7 +49,7 @@ const R = (l, c) => {
               "data-error-solved": "",
               onClick: (I) => k(r)
             }, {
-              default: u(() => [...s[1] || (s[1] = [
+              default: u(() => [...a[1] || (a[1] = [
                 f("Solved", -1)
               ])]),
               _: 1
@@ -61,7 +61,7 @@ const R = (l, c) => {
       _: 1
     }));
   }
-}, $ = /* @__PURE__ */ R(F, [["__scopeId", "data-v-3577a147"]]);
+}, $ = /* @__PURE__ */ R(F, [["__scopeId", "data-v-09c8de51"]]);
 export {
   $ as default
 };

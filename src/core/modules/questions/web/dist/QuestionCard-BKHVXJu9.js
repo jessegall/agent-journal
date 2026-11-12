@@ -1,6 +1,6 @@
 import { openBlock as t, createElementBlock as o, Fragment as u, createVNode as d, unref as c, withCtx as C, createTextVNode as w, toDisplayString as r, ref as h, normalizeClass as Q, createElementVNode as i, createCommentVNode as m, renderList as T, withModifiers as O, createBlock as R } from "vue";
 import { Btn as $, useWindow as I, TimeAgo as U, peekRef as j, TextInput as N } from "@journal/window-kit";
-import { _ as z } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+import { _ as z } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const S = {
   __name: "QuestionActions",
   props: { elaborated: Boolean },
@@ -177,7 +177,7 @@ const S = {
       k.value ? (t(), o("p", te, r(k.value), 1)) : m("", !0)
     ], 10, D));
   }
-}, ie = /* @__PURE__ */ z(oe, [["__scopeId", "data-v-6cf624e5"]]);
+}, ie = /* @__PURE__ */ z(oe, [["__scopeId", "data-v-0664ac9b"]]);
 export {
   ie as Q
 };
