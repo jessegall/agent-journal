@@ -73,7 +73,7 @@ test("the journal's own hooks are listed with their program, event, file and tim
 
 test("a project with no journal hooks says so", async () => {
     const {element} = await drawn({data: {...DATA, journal: []}});
-    expect(element.textContent).toContain("No journal hooks");
+    expect(element.textContent).toContain("The journal has set no hooks here");
 });
 
 test("managed entries keep list order and show controls, effects and recent outcomes", async () => {

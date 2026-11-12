@@ -3,7 +3,7 @@ import {SettingHelperTypeTable} from "@journal/setting-components";
 import {drawnSettingComponent} from "./support/settingComponent.js";
 
 const ROWS = [
-    {key: "researcher", name: "Researcher", line: "Reads and reports.", running: 1, runLimit: 4, kept: 3, keptLimit: 8, cap: {text: "400k", where: "Set for its kind", own: false}},
+    {key: "researcher", name: "Researcher", line: "Reads and reports.", running: 1, runLimit: 4, kept: 3, keptLimit: 8, cap: {text: "400k", where: "Set for its type", own: false}},
     {key: "planner", name: "Planner", line: "Designs a change.", running: 4, runLimit: 4, kept: 2, keptLimit: null, cap: {text: "150k", where: "Own cap", own: true}},
 ];
 const table = () => drawnSettingComponent(SettingHelperTypeTable, {rows: ROWS});
@@ -17,7 +17,7 @@ test("a row shows the type, what it does, its counts against their limits and it
     expect(row.querySelector(".name").textContent).toBe("Researcher");
     expect(row.querySelector(".line").textContent).toBe("Reads and reports.");
     expect([...row.querySelectorAll(".words")].map((words) => words.textContent.trim())).toEqual(["1 of 4", "3 of 8"]);
-    expect(row.querySelector(".cap small").textContent).toBe("Set for its kind");
+    expect(row.querySelector(".cap small").textContent).toBe("Set for its type");
 });
 
 test("a type at its running limit says full and a type with no kept limit shows its count alone", () => {

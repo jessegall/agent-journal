@@ -14,8 +14,8 @@ const props = defineProps({
 });
 const emit = defineEmits(["change"]);
 
-const MODES = [{value: "kind", label: "Cap of its kind"}, {value: "own", label: "Its own cap"}, {value: "none", label: "No cap"}];
-const kindText = computed(() => (props.kindValue === null ? "No cap for its kind, set in Advanced" : `${props.kindValue / 1000}k for its kind, set in Advanced`));
+const MODES = [{value: "kind", label: "Same cap as its type"}, {value: "own", label: "A separate cap"}, {value: "none", label: "No cap"}];
+const kindText = computed(() => (props.kindValue === null ? "No cap for its type, set in Advanced" : `${props.kindValue / 1000}k for its type, set in Advanced`));
 const ownSize = computed(() => props.ownValue ?? props.sizes[0]);
 
 function choose(mode) {
