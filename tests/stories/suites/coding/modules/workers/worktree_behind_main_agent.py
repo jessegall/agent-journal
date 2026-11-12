@@ -100,7 +100,7 @@ def g60_a_worker_naming_another_worker_is_refused(story, repository, worker: Act
     story.expect_refusal(f"worker update {agent_number(story, story.agent.id)}", "a worker updates only its own worktree", actor=worker)
 
 
-CASES: list[Callable[..., None]] = [s42_markers_still_open_after_the_wait_reach_the_merger_to_advise_once, s43_advice_that_did_not_help_is_passed_to_the_main_agent_with_the_files,
+CASES: list[Callable[..., None]] = [s42_markers_still_open_after_the_wait_reach_the_merger_to_advise_once, s43_advice_that_did_not_help_is_passed_to_the_main_agent_with_the_reason,
                                     s45_the_main_agent_orders_the_update_as_the_merger_would, s46_the_main_agent_leaves_a_passed_worker_alone,
                                     s47_releasing_the_worker_closes_its_open_check_as_gone, s48_no_step_of_an_update_asks_the_person_anything,
                                     f52_an_ordered_update_not_run_is_reminded_twice_then_the_merger_hears, g60_a_worker_naming_another_worker_is_refused]
