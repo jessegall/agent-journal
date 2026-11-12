@@ -14,7 +14,7 @@ from core.modules.processes.commands.record_request_run.record_request_run impor
 
 class ProcessRowWrapper(RequestRecords):
     """Wraps a hook, journal command or viewer request in its process row: one insert when it comes in and its end
-    when it answers, as a run of the agent it works for, or of the environment's main agent for a person. Such a
+    when it answers, as a run of the agent it works for, or of the running main agent of its own environment for a person; a request with no environment, such as a viewer line before it opens its scope, keeps no row. Such a
     row is priority 0: it takes no place, never moves to the background and gives no output number."""
 
     def __init__(self, bus: Bus, database: Database, agents: AgentRows, rows: EventRows) -> None:
@@ -36,7 +36,4 @@ class ProcessRowWrapper(RequestRecords):
         self.bus.dispatch(RecordRequestRun(agent_id, ProcessKind.HOOK, line, exit_code), context)
 
     def owner_agent(self) -> Agent | None:
-        owner = self.database.row_owner
-        if owner is not None and owner.stored_agent_id is not None:
-            return self.agents.find(owner.stored_agent_id)
-        return self.agents.main_agent()
+        return self.agents.run_owner(self.database.row_owner)
