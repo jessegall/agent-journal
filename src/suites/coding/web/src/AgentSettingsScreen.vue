@@ -1,13 +1,15 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, nextTick, ref, watch} from "vue";
 import {SettingSectionList, SettingsScreen, sectionsOf} from "@journal/setting-components";
 
 // one long tab of the agent settings: the sections of the screen in a list on its left, and the screen drawn from
 // the settings that declare it
-const props = defineProps({nodes: {type: Array, required: true}, draft: {type: Object, required: true}, readOnly: {type: Boolean, default: false}, extras: {type: Object, default: () => ({})}});
+const props = defineProps({nodes: {type: Array, required: true}, draft: {type: Object, required: true}, readOnly: {type: Boolean, default: false}, extras: {type: Object, default: () => ({})}, found: {type: String, default: ""}});
 
 const scroll = ref(null);
 const sections = computed(() => sectionsOf(props.nodes));
+// a setting that was found is brought into view in the middle of the screen
+watch(() => props.found, (key) => key && nextTick(() => scroll.value?.querySelector(`[data-setting="${key}"]`)?.scrollIntoView({block: "center"})), {immediate: true, flush: "post"});
 const jump = (key) => scroll.value?.querySelector(`[data-section="${key}"]`)?.scrollIntoView({block: "start", behavior: "smooth"});
 </script>
 
@@ -18,7 +20,7 @@ const jump = (key) => scroll.value?.querySelector(`[data-section="${key}"]`)?.sc
         </nav>
         <div ref="scroll" class="content">
             <slot name="before" />
-            <SettingsScreen :nodes="nodes" :draft="draft" :read-only="readOnly" :extras="extras" />
+            <SettingsScreen :nodes="nodes" :draft="draft" :read-only="readOnly" :extras="extras" :found="found" />
         </div>
     </div>
 </template>

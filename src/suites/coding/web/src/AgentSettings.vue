@@ -1,7 +1,7 @@
 <script setup>
-import {computed, ref, watch} from "vue";
+import {computed, onBeforeUnmount, ref, watch} from "vue";
 import {InnerTabs, SwitchCase, TabBody, WindowRoom, useWindow} from "@journal/window-kit";
-import {ChangeFoot, SettingPresetBand, currentPreset, useSettingsDraft} from "@journal/setting-components";
+import {ChangeFoot, FindBox, SettingPresetBand, currentPreset, useSettingsDraft} from "@journal/setting-components";
 import AgentSettingsAgents from "./AgentSettingsAgents.vue";
 import AgentSettingsPresets from "./AgentSettingsPresets.vue";
 import AgentSettingsScreen from "./AgentSettingsScreen.vue";
@@ -39,6 +39,23 @@ const form = computed(() => Object.fromEntries(switches.value.map((entry) => [en
 const current = computed(() => currentPreset(form.value, presets.value));
 const fill = (key) => draft.fill(presets.value.find((preset) => preset.key === key).values);
 
+// Find a setting: opens the tab the setting lives on, brings its row into view and marks it for a moment
+const MARK_MILLISECONDS = 1200;
+const index = computed(() => view.props.find.data.value?.rows ?? []);
+const found = ref("");
+let marking = null;
+const tabOf = (screen) => (screen.startsWith("helper-type") ? "agents" : screen);
+
+function openFound(entry) {
+    page.value = "main";
+    pick({key: tabOf(entry.screen)});
+    found.value = entry.key;
+    clearTimeout(marking);
+    marking = setTimeout(() => { found.value = ""; }, MARK_MILLISECONDS);
+}
+
+onBeforeUnmount(() => clearTimeout(marking));
+
 function pick(entry) {
     tab.value = entry.key;
     view.state.tab = entry.key === "agents" ? "agents" : "";
@@ -54,7 +71,9 @@ function pick(entry) {
                         <span class="env" data-settings-environment>{{ view.environment }}</span>
                     </div>
                     <template v-if="presets.length">
-                        <SettingPresetBand :presets="presets" :current="current" :disabled="view.readOnly" @pick="fill" @open-page="page = 'presets'" />
+                        <SettingPresetBand :presets="presets" :current="current" :disabled="view.readOnly" @pick="fill" @open-page="page = 'presets'">
+                            <FindBox :index="index" @pick="openFound" />
+                        </SettingPresetBand>
                     </template>
                     <div class="settings-bar"><InnerTabs :tabs="tabs" :active="active" @choose="pick" /></div>
                     <template v-if="view.readOnly">
@@ -65,7 +84,7 @@ function pick(entry) {
                             <SwitchCase :value="tab">
                                 <template #work>
                                     <template v-if="isLoaded">
-                                        <AgentSettingsScreen key="work" :nodes="nodesOf('work')" :draft="draft" :read-only="view.readOnly" data-agent-settings-work>
+                                        <AgentSettingsScreen key="work" :nodes="nodesOf('work')" :draft="draft" :read-only="view.readOnly" :found="found" data-agent-settings-work>
                                             <template #before>
                                                 <template v-if="nothingStarts">
                                                     <p class="hint" data-work-hint>With Auto off and no workers, nothing starts the work: a person starts tasks or turns one of them on.</p>
@@ -79,12 +98,12 @@ function pick(entry) {
                                 </template>
                                 <template #tests>
                                     <template v-if="isLoaded">
-                                        <AgentSettingsScreen key="tests" :nodes="nodesOf('tests')" :draft="draft" :read-only="view.readOnly" data-agent-settings-tests />
+                                        <AgentSettingsScreen key="tests" :nodes="nodesOf('tests')" :draft="draft" :read-only="view.readOnly" :found="found" data-agent-settings-tests />
                                     </template>
                                 </template>
                                 <template #advanced>
                                     <template v-if="isLoaded">
-                                        <AgentSettingsScreen key="advanced" :nodes="nodesOf('advanced')" :draft="draft" :read-only="view.readOnly" data-agent-settings-advanced />
+                                        <AgentSettingsScreen key="advanced" :nodes="nodesOf('advanced')" :draft="draft" :read-only="view.readOnly" :found="found" data-agent-settings-advanced />
                                     </template>
                                 </template>
                             </SwitchCase>

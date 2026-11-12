@@ -15,6 +15,7 @@ const props = defineProps({
     draft: {type: Object, required: true},
     readOnly: {type: Boolean, default: false},
     extras: {type: Object, default: () => ({})},
+    found: {type: String, default: ""},
 });
 
 const name = computed(() => componentNameOf(props.node));
@@ -30,7 +31,7 @@ const given = computed(() => ({
 
 <template>
     <template v-if="known">
-        <SettingRow :label="node.title" :help="node.description" :source="node.source" :changed="draft.isChanged(node.key)" :error="draft.errors(node.key)" :data-setting="node.key">
+        <SettingRow :label="node.title" :help="node.description" :source="node.source" :changed="draft.isChanged(node.key)" :error="draft.errors(node.key)" :found="found === node.key" :data-setting="node.key">
             <component :is="settingComponents[name]" v-bind="given" :model-value="draft.value(node.key)" :disabled="readOnly" @update:model-value="draft.set(node.key, $event)" />
         </SettingRow>
     </template>
@@ -40,7 +41,7 @@ const given = computed(() => ({
     <template v-if="children.length">
         <SettingNestedGroup :shown="draft.value(node.key) !== false">
             <template v-for="child in children" :key="child.key">
-                <SettingsNodeRow :node="child" :nodes="nodes" :draft="draft" :read-only="readOnly" :extras="extras" />
+                <SettingsNodeRow :node="child" :nodes="nodes" :draft="draft" :read-only="readOnly" :extras="extras" :found="found" />
             </template>
         </SettingNestedGroup>
     </template>

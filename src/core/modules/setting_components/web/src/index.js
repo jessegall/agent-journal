@@ -1,4 +1,5 @@
 import ChangeFoot from "./ChangeFoot.vue";
+import FindBox from "./FindBox.vue";
 import SettingBackPath from "./SettingBackPath.vue";
 import SettingBanner from "./SettingBanner.vue";
 import SettingChoiceField from "./SettingChoiceField.vue";
@@ -36,6 +37,7 @@ export {componentNameOf, hasComponent, sectionKeyOf, sectionsOf} from "./section
 // the pieces around the settings, which no setting names
 export {
     ChangeFoot,
+    FindBox,
     SettingBackPath,
     SettingBanner,
     SettingChoiceField,

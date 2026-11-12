@@ -10,13 +10,14 @@ const props = defineProps({
     source: {type: String, default: ""},
     changed: {type: Boolean, default: false},
     error: {type: String, default: ""},
+    found: {type: Boolean, default: false},
 });
 const sourceText = computed(() => (props.changed ? CHANGED_WORD : SOURCE_WORDS[props.source] ?? ""));
 const showsSource = computed(() => props.changed || Boolean(props.source));
 </script>
 
 <template>
-    <div :class="['setting-row', {flat: !showsSource}]">
+    <div :class="['setting-row', {flat: !showsSource, found}]">
         <div class="text">
             <span class="lab">
                 {{ label }}
@@ -41,6 +42,7 @@ const showsSource = computed(() => props.changed || Boolean(props.source));
 <style scoped>
 .setting-row { display: grid; grid-template-columns: minmax(0, 1fr) 230px 140px; gap: 6px 18px; align-items: center; padding: 11px 0; border-top: 1px solid var(--border); }
 .setting-row.flat { grid-template-columns: minmax(0, 1fr) 230px; }
+.setting-row.found { background: var(--accent-dim); box-shadow: 0 0 0 6px var(--accent-dim); border-radius: 6px; }
 .text { min-width: 0; }
 .lab { display: flex; align-items: center; gap: 7px; color: var(--text); font-size: 12.8px; }
 .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex: none; }

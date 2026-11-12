@@ -12,6 +12,7 @@ const props = defineProps({
     draft: {type: Object, required: true},
     readOnly: {type: Boolean, default: false},
     extras: {type: Object, default: () => ({})},
+    found: {type: String, default: ""},
 });
 
 const keys = computed(() => new Set(props.nodes.map((node) => node.key)));
@@ -24,7 +25,7 @@ const sections = computed(() => sectionsOf(props.nodes).map((section) => ({...se
         <template v-for="section in sections" :key="section.key">
             <SettingSection :section-key="section.key" :title="section.title">
                 <template v-for="node in section.nodes" :key="node.key">
-                    <SettingsNodeRow :node="node" :nodes="nodes" :draft="draft" :read-only="readOnly" :extras="extras" />
+                    <SettingsNodeRow :node="node" :nodes="nodes" :draft="draft" :read-only="readOnly" :extras="extras" :found="found" />
                 </template>
             </SettingSection>
         </template>
