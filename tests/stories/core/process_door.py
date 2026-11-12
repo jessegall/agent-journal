@@ -165,7 +165,7 @@ def owned_run(story, owner: RowOwner, request: ExecutionRequest):
     return story.container.get(ProcessExecutor).execute(request)
 
 
-def test_a_paused_agent_starts_no_run_that_takes_a_place_until_it_is_resumed_and_other_agents_go_on(new_story):
+def test_a_paused_agent_or_main_agent_starts_no_run_that_takes_a_place_until_it_is_resumed_and_other_agents_go_on(new_story):
     story = new_story(fixture=UserJoined)
     worker = RowOwner(story.new_row_id("agent start s-paused claude worker --environment main"), 1)
     story.run(f"agent pause {agent_number(story, worker.agent)}", actor=story.user)
@@ -177,11 +177,7 @@ def test_a_paused_agent_starts_no_run_that_takes_a_place_until_it_is_resumed_and
     main_while_worker_paused = owned_run(story, RowOwner(MAIN_AGENT, 1), shell)
     story.run(f"agent resume {agent_number(story, worker.agent)}", actor=story.user)
     resumed = owned_run(story, worker, shell)
-    story.expect_rows(quick_while_paused.exit_code == 0, main_while_worker_paused.exit_code == 0, resumed.exit_code == 0)
-
-
-def test_a_paused_main_agent_starts_no_run_that_takes_a_place(new_story):
-    story = new_story(fixture=UserJoined)
     story.run(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
     with pytest.raises(Refusal, match="your agent is paused"):
-        owned_run(story, RowOwner(MAIN_AGENT, 1), ExecutionRequest(["sh", "-c", "exit 0"], story.home.project_folder, ProcessKind.SHELL, 10))
+        owned_run(story, RowOwner(MAIN_AGENT, 1), shell)
+    story.expect_rows(quick_while_paused.exit_code == 0, main_while_worker_paused.exit_code == 0, resumed.exit_code == 0)
