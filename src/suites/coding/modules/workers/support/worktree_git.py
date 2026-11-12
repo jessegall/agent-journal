@@ -54,6 +54,8 @@ SKIP_WORKTREE_MARK = "S "
 UNTRACKED_STATUS = "?? "
 PUBLISHED_FOLDERS = (".claude", ".agents")
 
+BRANCH_CHANGES = frozenset({"merge", "rebase", "checkout", "switch", "worktree", "stash", "reset", "commit", "cherry-pick", "revert", "branch", "pull", "push", "clone", "am", "apply", "restore", "clean"})
+
 
 class WorktreeGit:
     """Runs timed Git operations on worker branches and worktrees. Every worktree of a project shares one
@@ -545,7 +547,7 @@ class WorktreeGit:
 
     def git(self, folder: str, limit_seconds: int, *arguments: str) -> subprocess.CompletedProcess[str]:
         line = ["git", "-C", folder, *arguments]
-        kind = ProcessKind.QUICK if limit_seconds <= GIT_LIMIT_SECONDS else ProcessKind.MERGE
+        kind = ProcessKind.MERGE if arguments and arguments[0] in BRANCH_CHANGES else ProcessKind.QUICK
         try:
             done = self.executor.execute(ExecutionRequest(line, Path(folder), kind, limit_seconds))
             return subprocess.CompletedProcess(line, done.exit_code, done.stdout, done.stderr)
