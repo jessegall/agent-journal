@@ -129,5 +129,8 @@ class EventLog:
     def newest_id(self) -> int:
         return self.table.newest_id()
 
-    def prune(self, row_tables: Sequence[str], cutoff_at: str, limit: int) -> int:
-        return self.table.delete_passed(row_tables, cutoff_at, limit)
+    def prune(self, kept: int, after_id: int, window: int) -> tuple[int, int]:
+        return self.table.delete_past_newest(kept, after_id, window)
+
+    def oldest_id(self) -> int:
+        return self.table.oldest_id()

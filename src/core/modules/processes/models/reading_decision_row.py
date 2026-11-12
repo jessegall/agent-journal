@@ -15,7 +15,6 @@ class ReadingDecisionRow(Model):
     not decide again."""
 
     model_name = "reading_decision"
-    events_expire = True
     cli_name = "reading-decision"
 
     process_id: int

@@ -80,7 +80,12 @@ class BookkeepingTable:
     def id_span(self) -> int:
         return self.database.rows(Statement(f"SELECT coalesce(max(id) - min(id) + 1, 0) FROM {self.table}"))[0][0]
 
-    def delete_passed(self, row_tables: Sequence[str], cutoff_at: str, limit: int) -> int:
-        marks = ", ".join("?" for _ in row_tables)
-        return self.database.update(Statement(f"DELETE FROM {self.table} WHERE id IN (SELECT id FROM {self.table} NOT INDEXED WHERE row_table IN ({marks}) AND created_at < ?"
-                                              f" AND id <= (SELECT coalesce(min(event_id), 0) FROM listener_cursors) ORDER BY id LIMIT ?)", (*row_tables, cutoff_at, limit)))
+    def delete_past_newest(self, kept: int, after_id: int, window: int) -> tuple[int, int]:
+        end = self.database.rows(Statement(f"SELECT min(?, (SELECT coalesce(min(event_id), 0) FROM listener_cursors),"
+                                           f" (SELECT coalesce(max(id), 0) FROM {self.table}) - ?) AS end", (after_id + window, kept)))[0]["end"]
+        if end <= after_id:
+            return 0, after_id
+        return self.database.update(Statement(f"DELETE FROM {self.table} WHERE id > ? AND id <= ?", (after_id, end))), int(end)
+
+    def oldest_id(self) -> int:
+        return int(self.database.rows(Statement(f"SELECT coalesce(min(id), 1) AS id FROM {self.table}"))[0]["id"])

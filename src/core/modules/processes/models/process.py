@@ -22,7 +22,6 @@ class Process(EnvironmentScoped, Model):
     it, its foreground limit, and how it ended; its id is the output number the agent reads."""
 
     model_name = "process"
-    events_expire = True
     shared_rows = True
     cli_name = "process"
     search_fields = ["line"]
