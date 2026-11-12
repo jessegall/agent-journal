@@ -1,6 +1,6 @@
-from core.modules.assignments.models.support.views import ASSIGNED_ROW_IDS_SQL
+from core.modules.assignments.models.support.views import assigned_row_ids
 
-SESSION_AGENT_TASK_IDS_SQL = ASSIGNED_ROW_IDS_SQL.format(model="task", actor_id="processes.session_agent_id")
+SESSION_AGENT_TASK_IDS_SQL = "(" + assigned_row_ids("task", "processes.session_agent_id").view_sql() + ")"
 PROCESS_ROWS_SELECT = "SELECT id, environment_id, session_agent_id, line, state FROM processes"
 
 PROCESS_QUEUE_ROWS_SELECT = """

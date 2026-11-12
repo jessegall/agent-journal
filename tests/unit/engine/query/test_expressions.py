@@ -3,6 +3,7 @@ import pytest
 from engine.query.condition_join import ConditionJoin
 from engine.query.conditions.among import Among
 from engine.query.conditions.equal import Equal
+from engine.query.conditions.excluding import Excluding
 from engine.query.conditions.exists import Exists
 from engine.query.enums.comparison_operator import ComparisonOperator
 from engine.query.enums.sql_function import SqlFunction
@@ -21,7 +22,6 @@ from engine.query.expressions.json_list import JsonList
 from engine.query.expressions.json_path import JsonPath
 from engine.query.expressions.lag import Lag
 from engine.query.expressions.literal import Literal
-from engine.query.expressions.negation import Negation
 from engine.query.expressions.scalar_subselect import ScalarSubselect
 from engine.query.order import Order
 from engine.query.select import Select
@@ -56,7 +56,7 @@ def test_text_joined_end_to_end():
 
 def test_a_comparison_and_its_opposite():
     assert Comparison(Column("agents.role"), ComparisonOperator.EQUAL, Literal("main")).sql() == "(agents.role = 'main')"
-    assert Negation(Equal("state", "open")).sql() == "NOT (state = 'open')"
+    assert Inlined(Excluding(Equal("state", "open"))).text() == "NOT (state = 'open')"
 
 
 def test_a_condition_is_written_with_its_values_in_place():
