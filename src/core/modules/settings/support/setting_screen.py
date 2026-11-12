@@ -37,6 +37,10 @@ class ScreenReading:
     revision: str
     nodes: tuple[ScreenNode, ...]
 
+    @staticmethod
+    def revision_of(nodes: tuple[ScreenNode, ...]) -> str:
+        return hashlib.sha256(repr([(node.key, node.value, node.source) for node in nodes]).encode()).hexdigest()[:12]
+
 
 class SettingScreen:
     """Reads the settings that declare one screen as nodes, grouped by section in the order the sections are
@@ -49,8 +53,7 @@ class SettingScreen:
         entries = tuple(entry for entry in self.declared.all() if entry.screen == screen and entry.type != REFERENCE_TYPE)
         sections = list(dict.fromkeys(entry.section for entry in entries))
         nodes = tuple(self.node(entry) for entry in sorted(entries, key=lambda entry: sections.index(entry.section)))
-        revision = hashlib.sha256(repr([(node.key, node.value, node.source) for node in nodes]).encode()).hexdigest()[:12]
-        return ScreenReading(screen, revision, nodes)
+        return ScreenReading(screen, ScreenReading.revision_of(nodes), nodes)
 
     def node(self, entry: SettingEntry) -> ScreenNode:
         current = self.reader.current(entry.key)

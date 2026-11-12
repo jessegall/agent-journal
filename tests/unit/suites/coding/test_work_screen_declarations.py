@@ -66,3 +66,15 @@ def test_the_context_size_per_kind_is_a_keyed_cap_table_and_per_helper_type_is_o
 def test_the_settings_of_a_helper_type_screen_are_not_on_advanced():
     on_advanced = {value.key for value in DECLARED if value.screen == "advanced"}
     assert on_advanced.isdisjoint({"worker-run-limit", "worker-kept-limit", "worker-idle-hours", "worker-batch-size", "most-open-tasks"})
+
+
+def test_the_workers_screen_holds_its_settings_and_no_merger_setting():
+    screens = {value.key: value.screen for value in DECLARED}
+    workers = sorted(key for key, screen in screens.items() if screen == "helper-type.workers")
+    assert workers == sorted(["worker-run-limit", "worker-kept-limit", "worker-batch-size", "most-open-tasks", "workers-start-read-only-helpers", "idle-worker-minutes", "worker-idle-hours"])
+    assert "merger-wait-minutes" not in workers
+
+
+def test_the_merger_screen_holds_the_waits_questions_and_commands_of_the_merger():
+    merger = sorted(value.key for value in DECLARED if value.screen == "helper-type.merger")
+    assert merger == sorted(["merger-wait-minutes", "ask-answer-minutes", "ask-pass-on-minutes", "ask-visits-limit", "most-merger-messages-per-group", "merger-commands"])
