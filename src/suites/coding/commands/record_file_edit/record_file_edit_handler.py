@@ -28,7 +28,6 @@ class RecordFileEditHandler(Handler[RecordFileEdit, FileEdit]):
         return str(Path(path).relative_to(folder)) if Path(path).is_relative_to(folder) else path
 
     def handle(self, command: RecordFileEdit, context: Context) -> FileEdit:
-        saved = self.repository.save(FileEdit(session_agent_id=command.agent_id, creator_id=context.actor.id,
+        return self.repository.save(FileEdit(session_agent_id=command.agent_id, creator_id=context.actor.id,
                                              path=self.relative_path(command.diff.path, context.required_environment_id()), added=command.diff.lines_added, removed=command.diff.lines_removed, rows=json.dumps(command.rows),
                                              edit_type=EDITED if command.diff.existed else NEW_FILE), context)
-        return saved
