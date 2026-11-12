@@ -155,8 +155,8 @@ class MemoryWorktreeGit(WorktreeGit):
         self.moved_files(worktree.folder, branch_tip.tree, tree)
         return ()
 
-    def siblings(self, worktree: Worktree, path: str) -> list[str]:
-        return [committed for committed in self.committed_tree(worktree.folder) if str(Path(committed).parent) == str(Path(path).parent)]
+    def tracked_files(self, worktree: Worktree, folders: set[str]) -> list[str]:
+        return [committed for committed in self.committed_tree(worktree.folder) if any(committed.startswith(folder) for folder in folders)]
 
     def refuse_deleted_built_files(self, worktree: Worktree, changes: WorktreeChanges) -> None:
         if any(change.deleted_under(BUILT_FOLDER) for change in changes.changes):

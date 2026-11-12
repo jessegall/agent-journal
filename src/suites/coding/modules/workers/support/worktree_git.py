@@ -222,12 +222,12 @@ class WorktreeGit:
     def built_folders(self, files: list[str]) -> tuple[str, ...]:
         return tuple(sorted({path.split(BUILT_FOLDER, 1)[0] + "/web/dist" for path in files if BUILT_FOLDER in path}))
 
-    def is_rebuilt(self, worktree: Worktree, path: str) -> bool:
-        name = self.built_name(path)
-        return name is not None and name in {self.built_name(sibling) for sibling in self.siblings(worktree, path)}
+    def tracked_files(self, worktree: Worktree, folders: set[str]) -> list[str]:
+        return self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", *sorted(folders)).stdout.splitlines()
 
-    def siblings(self, worktree: Worktree, path: str) -> list[str]:
-        return self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", str(Path(path).parent)).stdout.splitlines()
+    def is_rebuilt(self, path: str, tracked: list[str]) -> bool:
+        name, folder = self.built_name(path), str(Path(path).parent)
+        return name is not None and name in {self.built_name(sibling) for sibling in tracked if str(Path(sibling).parent) == folder}
 
     @staticmethod
     def built_name(path: str) -> str | None:
@@ -236,7 +236,10 @@ class WorktreeGit:
 
     def refuse_deleted_built_files(self, worktree: Worktree, changes: WorktreeChanges) -> None:
         deleted = [change.relative for change in changes.changes if change.deleted_under(BUILT_FOLDER)]
-        kept = [path for path in deleted if self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", path.split(BUILT_FOLDER, 1)[0]).stdout.strip() and not self.is_rebuilt(worktree, path)]
+        if not deleted:
+            return
+        tracked = self.tracked_files(worktree, {path.split(BUILT_FOLDER, 1)[0] for path in deleted})
+        kept = [path for path in deleted if any(file.startswith(path.split(BUILT_FOLDER, 1)[0]) for file in tracked) and not self.is_rebuilt(path, tracked)]
         if kept:
             raise Refusal(f"it deletes {len(kept)} built files under web/dist while their sources stay, such as {kept[0]}",
                           AskTopic.TOOL.hint("build them again with npm --prefix src/viewer run build, then commit again"))
