@@ -28,14 +28,14 @@ def test_a_second_dispatch_counts_only_its_tasks_from_its_worktree_start(new_sto
     expect_row(progress, finished_at=None)
 
 
-def test_a_report_and_a_correction_keep_the_worktree_progress(new_story):
+def test_a_correction_takes_its_task_out_of_the_done_count_and_keeps_the_rest_of_the_progress(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     initial_progress = story.run("worker progress --environment main --json", actor=story.agent).output_text
-    expect_row(json.loads(initial_progress)["rows"][0], task_count=1)
+    expect_row(json.loads(initial_progress)["rows"][0], task_count=1, completed_count=1)
     story.advance(timedelta(hours=1))
     story.expect_success('worker report "The proof is ready"', actor=worker)
     story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Correct the total"', actor=story.agent)
     current_progress = story.run("worker progress --environment main --json", actor=story.agent).output_text
-    expect_value_5(current_progress, json.loads(initial_progress))
+    expect_value_5(current_progress, {"rows": [{**json.loads(initial_progress)["rows"][0], "completed_count": 0}]})

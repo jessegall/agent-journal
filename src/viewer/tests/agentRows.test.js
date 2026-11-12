@@ -624,6 +624,14 @@ test("a worker's count tooltip gives its pace only after a task is completed, an
     expect(cardOf(element, 4).querySelector("[data-agent-list-pace]")).toBeNull();
 });
 
+test("a task in testing counts toward a worker's pace like a completed one", async () => {
+    const started = "2026-11-01T08:00:00Z";
+    const tasks = [{id: 1, title: "One", state: "completed"}, {id: 2, title: "Two", state: "testing"}, {id: 3, title: "Three", state: "started"}];
+    const workers = [{id: 4, number: 4, session: "paced", program: "claude", role: "worker", created_at: started, ended_at: "2026-11-01T10:00:00Z", facts: {job_enabled: true, tasks}}];
+    const element = await mounted(AgentRows, context({"agent cards --options": agentFilterOptions, "agent cards": page(workers), "worker progress": page([])}), {empty: "No agents yet"});
+    expect(cardOf(element, 4).querySelector("[data-agent-count] [role='tooltip']").textContent).toContain("About 1 an hour.");
+});
+
 test("a worker shows its worktree task on its task line", async () => {
     const row = {id: 4, number: 4, role: "worker", state: "running", ended_at: null};
     const tasks = [{id: 1, title: "Current task", state: "started"}, {id: 2, title: "Blocked task", state: "blocked"}];

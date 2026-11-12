@@ -53,7 +53,7 @@ def test_a_third_party_window_draws_its_own_slot_and_a_press_runs_after_the_prom
 def test_story_5_a_person_holds_a_task_and_an_agent_is_refused(third_party):
     story = third_party.story
     story.expect_success('task make "Fix the cart" --environment main', actor=story.user)
-    story.expect_refusal("task hold 1", "comes from a module the journal does not ship", actor=story.agent)
+    story.expect_refusal('task hold 1 --reason "the cart needs a legal look"', "A person was asked in the dock", actor=story.agent)
     story.expect_success("task hold 1", actor=story.user)
     story.expect_text("task show 1", "state: legal-hold", actor=story.user)
     story.expect_success("task release-hold 1", actor=story.user)
@@ -68,17 +68,21 @@ def test_story_8_the_modules_removal_leaves_the_row_in_its_fallback_state(third_
     expect_value(answer.exit_code, 0)
     story.expect_rows(story.synced()[0] == 0)
     story.expect_text("task show 1", "state: open", actor=story.user)
+    story.expect_no_text("module list", "acme.legal", actor=story.user)
+    story.expect_text("task list --state open", "Fix the cart", actor=story.user)
 
 
 def test_story_9_a_module_whose_entry_vanishes_leaves_the_row_in_its_fallback_state_and_says_so(third_party):
     story = third_party.story
     story.expect_success('task make "Fix the totals" --environment main', actor=story.user)
+    story.expect_success('task make "Fix the tax" --environment main', actor=story.user)
     story.expect_success("task hold 1", actor=story.user)
+    story.expect_success("task hold 2", actor=story.user)
     listed = story.home.module_list
     listed.write_text(json.dumps([path for path in json.loads(listed.read_text()) if "acme_legal" not in path]))
     code, report = story.synced()
-    story.expect_rows(code == 0, "1 task rows left the state legal-hold and are open" in report)
-    story.expect_text("task show 1", "state: open", actor=story.user)
+    story.expect_rows(code == 0, "2 task rows left the state legal-hold and are open" in report)
+    story.expect_text("task show 2", "state: open", actor=story.user)
 
 
 def test_another_suite_hides_templates_and_buttons_but_keeps_commands(third_party, third_party_cookie):
