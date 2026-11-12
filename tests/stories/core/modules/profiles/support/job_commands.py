@@ -88,7 +88,7 @@ def expect_helper_commands(story) -> None:
     run_helper_command(story, "journal-planner", 'phase make --plan 1 "Totals" --goal "Totals use cents"')
     run_helper_command(story, "journal-planner", 'task make "Use cents" --brief "Store integer cents" --environment main')
     run_helper_command(story, "journal-researcher", 'report make "Cart findings" --abstract "Totals" --body "Totals use cents."')
-    run_helper_command(story, "journal-researcher", 'doc make "Cart evidence" --abstract "Totals" --body "The cart stores cents."')
+    run_helper_command(story, "journal-researcher", 'report list')
     run_helper_command(story, "journal-plan-reviewer", "plan outline 1")
     run_helper_command(story, "journal-debugger", "task show 1")
     run_helper_command(story, "code-reviewer", 'report make "Cents review" --abstract "Totals" --body "Totals use integer cents."')
