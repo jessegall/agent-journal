@@ -4,6 +4,7 @@ from engine.actor.actor import Actor
 from engine.enums.sandbox_level import SandboxLevel
 from engine.enums.command_category import CommandCategory
 from engine.model.environment_scoped import EnvironmentScoped
+from engine.enums.process_kind import ProcessKind
 from engine.model.model import Model
 from engine.time.timestamp import MINUTE_SECONDS, Timestamp
 from engine.time.duration import Duration
@@ -71,6 +72,11 @@ class Process(EnvironmentScoped, Model):
         return f"{minutes} min {seconds} s" if seconds else f"{minutes} min"
 
     @property
+    def succeeded(self) -> bool:
+        """The run finished with exit code 0."""
+        return self.state is ProcessState.FINISHED and self.exit_code == 0
+
+    @property
     def takes_part_in_queue(self) -> bool:
         return self.is_queue_run or self.slot_assigned or self.queued_at is not None
 
@@ -81,6 +87,11 @@ class Process(EnvironmentScoped, Model):
 
     def background(self, timestamp: Timestamp, actor: Actor) -> "Process":
         return self.moved(ProcessLifecycle.background, moved_at=timestamp)
+
+    @property
+    def is_journal_merge(self) -> bool:
+        """A merge the journal ran itself through its door, which no reader of a line of an agent judges."""
+        return self.kind == ProcessKind.MERGE.value
 
     def finish(self, timestamp: Timestamp, actor: Actor, exit_code: int) -> "Process":
         return self.moved(ProcessLifecycle.finish, exit_code=exit_code, ended_at=timestamp, queued_at=None, slot_assigned=False, progress=FINISHED_PROGRESS)

@@ -23,8 +23,10 @@ From the root of your project, with Python 3.14 or newer and the release's `inst
 
     sh install.sh
 
-This makes `.journal/version-5.db`, copies the code into `.journal/src` and writes the hooks of Claude Code
-(`.claude/settings.local.json`) and Codex (`.codex/hooks.json`). It starts nothing. Run the same line again and it
+This makes `.journal/version-5.db` and copies the code into `.journal/src`. The journal starts Claude Code and Codex on
+settings of its own, `.journal/programs/claude/settings.json` and the Codex folder `.journal/programs/codex`, which hold
+its hooks and are written again at every start; your own `~/.claude` and `~/.codex` settings are backed up in
+`.journal/backups/program-settings` and left as they are. It starts nothing. Run the same line again and it
 says it is installed and changes nothing. A project that holds a version 4 journal is left as it is and told to
 upgrade (see below).
 

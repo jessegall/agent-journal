@@ -33,7 +33,7 @@ PLAN_COMMANDS = (
     "A phase with one task needs a reason when you run journal plan ready: --skip-guard plans.one-task-phase --skip-reason \"<why>\". "
     "Read the skill journal-planning before you make a plan or a phase, and the skill journal-plan-review-applying before you work a report of reviews into a plan. "
     "Building a plan starts for you when you make a plan, and you may run journal plan edit, journal phase edit, journal task edit and journal plan ready on a plan you made. "
-    "Only the user runs journal plan approve; prepare the plan and mark it ready for that approval. "
+    "Only the user runs journal plan approve and journal plan approve-checkpoint; prepare the plan and mark it ready for that approval. "
     "The phase actions are journal phase make, journal phase edit, journal phase list, journal phase show, "
     "journal phase move, journal phase place and journal phase delete. "
     "The task actions are journal task make, journal task edit, journal task list, journal task show, "

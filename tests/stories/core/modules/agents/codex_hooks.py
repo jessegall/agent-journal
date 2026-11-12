@@ -1,24 +1,25 @@
-from tests.stories.core.support.agent_labels import agent_number
+import os
 from pathlib import Path
 from typing import NamedTuple
 
 import pytest
 
 from engine.provider.program_hooks import ProgramHooks
-from engine.provider.providers import Providers
 from engine.testing.stories.story import Story
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.codex.providers.codex_provider import CodexProvider
-from install.hook.hook_writer import HookWriter
 from tests.stories.core.modules.helpers.program_split import helper_split_story
 from tests.stories.core.modules.helpers.start_helper import START, started
+from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.program_split import real_program_checks
+
+PERSON_CONFIG = 'model = "gpt-6.1-sol"\n'
 
 
 class CodexHookProject(NamedTuple):
     story: Story
     folder: Path
-    config: Path
+    person_config: Path
 
 
 @pytest.fixture
@@ -26,49 +27,34 @@ def codex_project(helper_split_story, tmp_path, monkeypatch):
     story = helper_split_story
     monkeypatch.setattr('shutil.which', lambda name: name)
     real_program_checks(story)
-    config = story.container.get(Providers).provider('codex').trust_record().config_file
-    config.parent.mkdir(parents=True, exist_ok=True)
-    config.write_text('model = "gpt-6.1-sol"\n')
-    return CodexHookProject(story, tmp_path / 'helper-project', config)
+    person_config = Path(os.environ['CODEX_HOME']) / 'config.toml'
+    person_config.parent.mkdir(parents=True, exist_ok=True)
+    person_config.write_text(PERSON_CONFIG)
+    return CodexHookProject(story, tmp_path / 'helper-project', person_config)
 
 
-@pytest.fixture
-def installed_codex_project(codex_project):
-    _, folder, _ = codex_project
-    HookWriter(folder).write(f'"{folder}/.journal/bin/journal-hook"')
-    return codex_project
+def journal_hooks(story) -> ProgramHooks:
+    return ProgramHooks.journal(CodexProvider, story.home.folder / 'programs' / 'codex' / 'hooks.json')
 
 
-@pytest.mark.parametrize('upgrade', [False, True])
-def test_an_install_trusts_generated_hooks_and_a_codex_helper_starts(codex_project, upgrade):
-    story, folder, config = codex_project
-    if upgrade:
-        ProgramHooks.hooks(CodexProvider, folder).write('old/journal-hook', folder)
-        config.write_text(config.read_text().replace('sha256:', 'stale:'))
-        story.expect_success(f'program trust codex "{folder}"', 'changed')
-    HookWriter(folder).write(f'"{folder}/.journal/bin/journal-hook"', is_upgrade=upgrade)
-    story.expect_success(f'program trust codex "{folder}"', 'ready')
+def test_a_codex_helper_starts_on_the_journal_s_trusted_folder_and_the_person_config_stays(codex_project):
+    story, folder, person_config = codex_project
     helper, _ = started(story, f'{START} --program codex --model gpt-6.1-sol')
     story.expect_text(f'agent show {agent_number(story, helper)}', 'program: codex')
-    story.expect_rows('model = "gpt-6.1-sol"' in config.read_text())
+    story.expect_success(f'program trust codex "{folder}"', 'ready')
+    story.expect_rows(person_config.read_text() == PERSON_CONFIG, journal_hooks(story).is_complete())
 
 
-def test_an_agent_cannot_trust_a_foreign_hook_file_by_reading_its_trust(installed_codex_project, tmp_path):
-    story, folder, config = installed_codex_project
-    foreign = tmp_path / 'foreign'
-    ProgramHooks.store(foreign / CodexProvider.hook_file.path, ProgramHooks.hooks(CodexProvider, folder).settings())
-    story.expect_success(f'program trust codex "{foreign}"', 'untrusted', actor=story.agent)
-    story.expect_success(f'environment edit 1 --folder "{foreign}"')
-    FakeLauncher.listening(story.home.socket('launcher'))
-    story.expect_success(f'{START} --program codex --model gpt-6.1-sol', actor=story.agent)
-
-
-def test_a_foreign_edit_is_not_approved_when_an_agent_asks_to_start(installed_codex_project):
-    story, folder, config = installed_codex_project
-    hooks = ProgramHooks.hooks(CodexProvider, folder)
+def test_a_foreign_edit_of_the_journal_s_hooks_is_changed_until_the_next_start_writes_them_again(codex_project):
+    story, folder, _ = codex_project
+    started(story, f'{START} --program codex --model gpt-6.1-sol')
+    hooks = journal_hooks(story)
     settings = hooks.settings()
     settings['hooks']['PreToolUse'][0]['hooks'][0]['command'] += ' --foreign'
+    hooks.path.chmod(0o644)
     ProgramHooks.store(hooks.path, settings)
+    story.expect_success(f'program trust codex "{folder}"', 'changed', actor=story.agent)
     FakeLauncher.listening(story.home.socket('launcher'))
     story.expect_success(f'{START} --program codex --model gpt-6.1-sol', actor=story.agent)
     story.expect_success(f'program trust codex "{folder}"', 'ready', actor=story.agent)
+    story.expect_rows('--foreign' not in hooks.path.read_text())

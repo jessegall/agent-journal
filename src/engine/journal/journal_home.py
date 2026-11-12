@@ -136,6 +136,40 @@ class JournalHome:
     def managed_hooks_file(self) -> Path:
         return self.folder / "hooks" / "managed.json"
 
+    @property
+    def worktrees_folder(self) -> Path:
+        return self.folder / "worktrees"
+
+    @property
+    def hook_runner(self) -> Path:
+        return self.folder / "bin" / "journal-hook"
+
+    @property
+    def hook_runner_choice(self) -> Path:
+        return self.folder / "hooks" / "runner"
+
+    @property
+    def programs_folder(self) -> Path:
+        return self.folder / "programs"
+
+    def program_folder(self, program: str) -> Path:
+        return self.programs_folder / program
+
+    def program_settings_file(self, program: str) -> Path:
+        return self.program_folder(program) / "settings.json"
+
+    @property
+    def program_settings_switch(self) -> Path:
+        return self.programs_folder / "switched-at"
+
+    @property
+    def program_settings_backups(self) -> Path:
+        return self.folder / "backups" / "program-settings"
+
+    @property
+    def program_settings_digests(self) -> Path:
+        return self.folder / "runtime" / "program-settings.json"
+
     def terminal_file(self, agent_id: int) -> Path:
         return self.folder / "runtime" / "terminals" / f"{agent_id}.log"
 

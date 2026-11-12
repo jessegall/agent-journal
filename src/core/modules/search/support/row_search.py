@@ -51,10 +51,16 @@ class RowSearch:
         return hits
 
     def closest(self, terms: Sequence[str], search_models: Sequence[type[Model]]) -> SearchResult:
-        enough = (len(terms) + 1) // 2
-        rows = [row for model in search_models for row in self.searchable(model).matching(ContainsMost(model.search_fields, terms, enough)).newest().limited(HIT_LIMIT_ROWS)]
-        hits = [SearchHit.matched(row, terms) for row in rows]
-        ranked = sorted(hits, key=lambda hit: (-hit.matched_terms, -hit.rank, -hit.created_at.value.timestamp()))
+        """Reads the rows holding the most words first, then those holding one fewer, and so on down to half of them,
+        until enough rows are read, so an older row holding more of the words is not left out by newer ones holding fewer."""
+        hits: dict[tuple[str, int], SearchHit] = {}
+        for words in range(len(terms) - 1, (len(terms) + 1) // 2 - 1, -1):
+            for model in search_models:
+                for row in self.searchable(model).matching(ContainsMost(model.search_fields, terms, words)).newest().limited(HIT_LIMIT_ROWS):
+                    hits.setdefault((row.cli_name, row.id), SearchHit.matched(row, terms))
+            if len(hits) >= HIT_LIMIT_ROWS:
+                break
+        ranked = sorted(hits.values(), key=lambda hit: (-hit.matched_terms, -hit.rank, -hit.created_at.value.timestamp()))
         return SearchResult(terms, ranked[:HIT_LIMIT_ROWS], len(ranked), is_closest=True)
 
     def searchable(self, model: type[Model]) -> Query[Model]:

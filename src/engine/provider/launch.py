@@ -2,6 +2,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from engine.errors.refusal import Refusal
 from engine.provider.session_start import SessionStart
 
 
@@ -30,3 +31,8 @@ class Launch:
 
     def names_flag(self, flag: str) -> bool:
         return any(argument == flag or argument.startswith(f"{flag}=") for argument in self.program_arguments)
+
+    def refuse_flags(self, title: str, *flags: str) -> None:
+        if any(self.names_flag(flag) for flag in flags):
+            raise Refusal(f"the journal launches {title} on its own settings; {' and '.join(flags)} cannot be given",
+                          "launch without them: the journal writes the settings itself")

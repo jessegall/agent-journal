@@ -19,7 +19,9 @@ from engine.instruction.instruction_imports import INSTRUCTION_FILES
 from engine.errors.refusal import Refusal
 from core.modules.environments.models.environment import Environment
 from suites.coding.models.enums.ask_topic import AskTopic
+from suites.coding.modules.workers.models.base_commit import BaseCommit
 from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.models.worktree_update import WorktreeUpdate
 from engine.enums.file_status import FileStatus
 from suites.coding.modules.workers.support.commit_subject import subject_search
 from suites.coding.modules.workers.support.task_branch_commit import TaskBranchCommit
@@ -41,6 +43,9 @@ HASHED_BUILT_FILE = re.compile(r"(.+)-[\w-]{8}\.[^.]+")
 NAME_SEPARATOR = "\0"
 COMMIT_SEPARATOR = "\x1e"
 COMMIT_FORMAT = "--format=%h%x00%B%x1e"
+# A base commit: its record separator, then short id, parents and subject split by the unit separator, then its files.
+BASE_COMMIT_FORMAT = "--format=%x1e%h%x1f%P%x1f%s%x1f"
+FIELD_SEPARATOR = "\x1f"
 SHORT_ID_CHARACTERS = 10
 SHORT_COMMIT_FLAG = f"--abbrev={SHORT_ID_CHARACTERS}"
 # With -M -z a rename is three fields: status, old name, new name.
@@ -139,10 +144,15 @@ class WorktreeGit:
 
     def restore_skipped_files(self, folder: str) -> None:
         """A reset leaves a tracked file marked skip-worktree as it is, so a test checkout lifts every mark and brings the files back."""
-        skipped = [line[len(SKIP_WORKTREE_MARK):] for line in self.checked(folder, GIT_LIMIT_SECONDS, "ls-files", "-v").stdout.splitlines() if line.startswith(SKIP_WORKTREE_MARK)]
+        skipped = self.skipped_files(folder)
         if skipped:
             self.checked(folder, GIT_LIMIT_SECONDS, "update-index", "--no-skip-worktree", "--", *skipped)
             self.checked(folder, GIT_LIMIT_SECONDS, "restore", "--", *skipped)
+
+    def skipped_files(self, folder: str, *paths: str) -> list[str]:
+        """The tracked files, or those among the paths, whose index entry is marked skip-worktree; names are read split on NUL, so a name git would quote is read whole."""
+        listing = self.checked(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "-z", *(("--", *paths) if paths else ())).stdout
+        return [record[len(SKIP_WORKTREE_MARK):] for record in listing.split(NAME_SEPARATOR) if record.startswith(SKIP_WORKTREE_MARK)]
 
     @staticmethod
     def test_folder(worktree: Worktree) -> str:
@@ -294,7 +304,7 @@ class WorktreeGit:
 
     @contextmanager
     def without_instruction_files(self, folder: str) -> Generator[None]:
-        skipped_names = [line[len(SKIP_WORKTREE_MARK):] for line in self.git(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "--", *INSTRUCTION_FILES).stdout.splitlines() if line.startswith(SKIP_WORKTREE_MARK)]
+        skipped_names = self.skipped_files(folder, *INSTRUCTION_FILES)
         kept = {name: self.git_folder(folder) / f"{name}.kept" for name in skipped_names}
         for name in skipped_names:
             FileAccess.shared().replace(Path(folder) / name, kept[name])
@@ -306,6 +316,80 @@ class WorktreeGit:
             for name in skipped_names:
                 FileAccess.shared().replace(kept[name], Path(folder) / name)
                 self.git(folder, GIT_LIMIT_SECONDS, "update-index", "--skip-worktree", "--", name)
+
+    def behind(self, worktree: Worktree) -> int:
+        """How many first-parent commits of the base branch the worktree lacks: a merged worker counts once, the
+        worktree's own commits never count, nor does a merge into the base of the worktree's own earlier commits."""
+        return self.behind_tip(worktree, self.tip(worktree.folder, worktree.base_branch))
+
+    def behind_tip(self, worktree: Worktree, base: str) -> int:
+        listing = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-list", "--first-parent", "--parents", f"HEAD..{base}").stdout
+        return sum(1 for line in listing.splitlines() if line and not self.is_own_merge(worktree, line.split()[1:]))
+
+    def base_changes(self, worktree: Worktree, base: str) -> tuple[BaseCommit, ...]:
+        """The first-parent commits up to the base tip that the worktree lacks, each with the files it changed."""
+        start = self.merge_base(worktree.folder, base, "HEAD")
+        listing = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "log", "--first-parent", "-m", "--name-only", "-z", SHORT_COMMIT_FLAG, BASE_COMMIT_FORMAT, f"{start}..{base}").stdout
+        changes = []
+        for record in listing.split(COMMIT_SEPARATOR):
+            fields = record.split(FIELD_SEPARATOR)
+            if len(fields) < 4:
+                continue
+            short_id, parents, subject, names = fields[0].strip(NAME_SEPARATOR + "\n"), fields[1].split(), fields[2], FIELD_SEPARATOR.join(fields[3:])
+            if not self.is_own_merge(worktree, parents):
+                changes.append(BaseCommit.parsed(short_id, subject, names))
+        return tuple(changes)
+
+    def overlap_lines(self, worktree: Worktree, names: tuple[str, ...], base: str) -> int:
+        """How many lines the base changed up to its tip, since the worktree was cut from it, in these files."""
+        if not names:
+            return 0
+        start = self.merge_base(worktree.folder, base, "HEAD")
+        listing = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--numstat", start, base, "--", *names).stdout
+        counts = (line.split("\t")[:2] for line in listing.splitlines() if line)
+        return sum(int(added) + int(deleted) for added, deleted in counts if added.isdigit() and deleted.isdigit())
+
+    def has_own_work(self, worktree: Worktree) -> bool:
+        """Whether the worktree holds a commit of its own past its base or a change not committed yet."""
+        own = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-list", "--count", f"{worktree.base_branch}..HEAD").stdout.strip()
+        return own != "0" or bool(self.uncommitted_files(worktree.folder))
+
+    def fast_forward(self, worktree: Worktree, tip: str) -> bool:
+        """Moves a worktree with nothing of its own onto the base tip, never by a rebase or a merge commit; answers
+        whether git could."""
+        return self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "merge", "--ff-only", tip).returncode == 0
+
+    def is_own_merge(self, worktree: Worktree, parents: list[str]) -> bool:
+        return len(parents) > 1 and self.is_ancestor(worktree.folder, parents[1], "HEAD")
+
+    def update(self, worktree: Worktree) -> WorktreeUpdate:
+        """Brings the worktree up to its base branch, keeping the worker's uncommitted changes: a rebase, and when it
+        clashes a merge of the base into the stashed, clean tree. A clean merge gets the changes back; a conflicting
+        one leaves its markers and keeps the changes in their stash, since a stash does not apply over unmerged paths."""
+        self.restore_stashes(worktree)
+        self.refuse_conflicts(worktree)
+        if self.is_merging(worktree.folder):
+            raise Refusal("a merge is in progress, settle it and commit first", AskTopic.CONFLICT.hint("an update would start a second merge inside it"))
+        tip = self.tip(worktree.folder, worktree.base_branch)
+        if self.is_ancestor(worktree.folder, tip, "HEAD"):
+            return WorktreeUpdate.current(tip)
+        if self.rebase(worktree):
+            return WorktreeUpdate(tip)
+        return self.merged_update(worktree, tip)
+
+    def merged_update(self, worktree: Worktree, tip: str) -> WorktreeUpdate:
+        stash = self.stash(worktree)
+        try:
+            conflicts = self.sync(worktree)
+        except Refusal:
+            if stash:
+                self.unstash(worktree, stash)
+            raise
+        if conflicts:
+            return WorktreeUpdate(tip, conflicts, stash)
+        if stash:
+            self.unstash(worktree, stash)
+        return WorktreeUpdate(tip)
 
     def rebase(self, worktree: Worktree) -> bool:
         stash = self.stash(worktree)
@@ -354,7 +438,7 @@ class WorktreeGit:
         applied = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "apply", stash).returncode == 0
         has_markers = bool(self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.strip())
         if not applied and not has_markers and not self.head_contains(worktree.folder, stash):
-            raise Refusal(f"after the rebase, git stash apply failed for the uncommitted changes of the worker", AskTopic.CONFLICT.hint(f"they stay in its stash {stash}: the worker applies them"))
+            raise Refusal(f"after the rebase, git stash apply failed for the uncommitted changes of the worker", AskTopic.CONFLICT.hint(f"they stay in its stash {stash}: apply them with git stash apply {stash}"))
         with self.stash_stack_lock(worktree):
             entries = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H %gd").stdout.splitlines()
             for entry in (line.split() for line in entries):

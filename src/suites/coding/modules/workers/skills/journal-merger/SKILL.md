@@ -33,6 +33,18 @@ A line from `journal worker ask` holds the worker's point, its last refusal, its
 | A worker's question, with its line number and its facts | The facts under the question in `journal merger next` | Answer it with `journal merger answer <line> "<text>"`: the worker is woken with your words. An answer is not held back by the advice limits. A question you leave is shown to you again, and after two readings or half an hour the journal passes it on. |
 | A question that only the main agent can settle | Whether a command in your reach or an answer could settle it | `journal merger tell "<what>" --tried "<what you tried>" --option "<one>" --option "<two>" --recommend "<your choice>" --worker <number>`, once: while the main agent has it, a second tell about that worker is refused. |
 | You are stuck: a command of yours fails or refuses for a reason of the journal, not of the worker, such as journal merger next failing | The refusal or the failure text | Tell the main agent at once with `journal merger tell`, naming what fails and what you tried. Never wait on it and never stop silently. |
+| A worktree is behind its base and works in another area | `journal merger behind <number>`: the new base commits, the worker files and the overlap | `journal merger leave <number> --why "<why it does not matter>"`: the worker is not disturbed and is looked at again once it falls further behind. |
+| A worktree is behind its base and overlaps the worker's files | `journal merger behind <number>` | `journal merger update <number> --why "<what overlaps>"`: the worker is told to run journal worker update at its next stopping point. |
+| The update is large or risky for the worker's model | `journal merger behind <number>`, weighed as below | `journal merger pass <number> "<why>"`: the main agent decides. |
+| A worker has not run an ordered update | The order in the line and the worker's status | Remind it once with `journal merger advise <number> "<text>"`, then pass it. |
+| A worker could not settle the conflicts of an update | The clashing files in its line | Advise it once on the clash, then pass it. |
 | A real need only a person can meet, such as a machine with root | Whether a command in reach could do it | Ask the main agent, step 3 of the ladder. |
+
+## A worktree behind its base
+
+How large or risky an update is stays your judgment; no number decides it. Weigh it larger when many of the worker's
+files overlap the new base commits, when files the worker uses were renamed or moved, when an interface the worker calls
+changed, and when a worker on a small model, such as Haiku, would face more than a handful of clashing files. After
+each decision write one memory with `journal memory make`: the worker, how far behind it was, what you decided and why.
 
 When a case comes up that no entry covers, go down the ladder, then add the case to this file afterwards in words, as a new entry.

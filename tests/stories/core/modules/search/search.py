@@ -1,5 +1,6 @@
 from engine.database.database import Database
 from tests.stories.core.modules.processes.support.process_samples import start_process
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_endswith_authorization, expect_startswith_listed, expect_value_with, expect_value_without, expect_visited_limit
 
@@ -20,6 +21,15 @@ def test_a_search_no_row_fully_matches_shows_the_rows_with_most_words_and_says_w
     output = story.run('search find installed plan 1124 by mistake', actor=story.agent).output_text
     story.expect_rows("these hold most of them, the closest first" in output, "task 1: Install plan 1124 for the cart [holds: installed, plan, 1124]" in output, "task 2:" not in output, detail=output)
     story.expect_ordered_lines('search find installed plan 1124 by mistake', "message 1: Plan 1124 installed by accident [holds: installed, plan, 1124, by]", "task 1: ", actor=story.agent)
+
+
+def test_an_older_row_holding_more_of_the_words_is_shown_though_forty_newer_rows_hold_fewer(new_story):
+    story = new_story(fixture=UserBuilder)
+    story.run('task make "Alpha beta gamma only" --environment main', actor=story.user)
+    for number in range(45):
+        story.run(f'task make "Alpha beta number {number}" --environment main', actor=story.user)
+    output = story.run('search find alpha beta gamma delta', actor=story.agent).output_text
+    story.expect_rows("task 1: Alpha beta gamma only [holds: alpha, beta, gamma]" in output, detail=output)
 
 
 def test_a_process_whose_only_match_is_a_search_command_is_left_out(new_story):

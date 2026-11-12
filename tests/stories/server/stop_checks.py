@@ -55,11 +55,11 @@ def test_an_approved_plan_waiting_to_start_checks_worker_capacity(new_story, pla
         server.viewer_line_value(cookie, {"line": ["plan", "approve", "1"], "environment": "main", "window": "messages.chat"})
         record = stop_record(server)
         check = next(check for check in record["stop_checks"] if check["rule"] == "workers.approved-plan-at-stop")
-        story.expect_rows(record["answer"] == answer, check["outcome"] == answer, detail=f"{record['answer']}: {check}")
+        story.expect_rows(check["outcome"] == answer, detail=f"{record['answer']}: {check}")
         if places:
-            story.expect_rows("plan:1 is approved" in record["refusal"], "start it, then assign its work" in check["reason"])
+            story.expect_rows(record["answer"] == "refused", "plan:1 is approved" in record["refusal"], "start it, then assign its work" in check["reason"])
         else:
-            story.expect_rows(check["reason"] == "no new worker can start")
+            story.expect_rows(check["reason"] == "no new worker can start", "is yours now" in record["refusal"], detail=record["refusal"])
 
 
 def test_a_diagnostic_check_does_not_start_a_task_after_a_plan_refuses_stop(new_story):

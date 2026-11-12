@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from engine.enums.actor_type import ActorType
 from engine.model.model import Model
 from engine.time.timestamp import Timestamp
+from suites.coding.modules.workers.models.enums.update_result import UpdateResult
 from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
 from core.modules.messages.support.work_source_copy import WorkSourceCopy
 
@@ -29,6 +30,7 @@ class WorkerOperation(Model):
     plugin_script: str = ""
     started_at: Timestamp | None = None
     ended_at: Timestamp | None = None
+    update_result: UpdateResult | None = None
 
     @property
     def recipient_id(self) -> int:

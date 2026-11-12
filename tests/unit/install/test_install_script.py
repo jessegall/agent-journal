@@ -1,5 +1,4 @@
 import hashlib
-import json
 import os
 import subprocess
 from pathlib import Path
@@ -20,11 +19,7 @@ def release(folder: Path, program: str = STARTS, listed_checksum: str | None = N
 def installed(project: Path, release_folder: Path, platform: str = "linux/amd64") -> subprocess.CompletedProcess[str]:
     project.mkdir(exist_ok=True)
     environment = {**os.environ, "JOURNAL_RELEASE_URL": release_folder.as_uri(), "JOURNAL_PLATFORM": platform}
-    return subprocess.run(["sh", str(INSTALL)], cwd=project, env=environment, capture_output=True, text=True, timeout=30)
-
-
-def hook_commands(path: Path) -> set[str]:
-    return {hook["command"] for blocks in json.loads(path.read_text())["hooks"].values() for block in blocks for hook in block["hooks"]}
+    return subprocess.run(["sh", str(INSTALL)], cwd=project, env=environment, capture_output=True, text=True, timeout=120)
 
 
 def test_the_binary_for_the_machine_is_installed_and_both_programs_call_it_by_its_full_path(tmp_path):
@@ -33,8 +28,9 @@ def test_the_binary_for_the_machine_is_installed_and_both_programs_call_it_by_it
     binary = project / ".journal" / "bin" / "journal-hook"
     assert run.returncode == 0, run.stderr
     assert binary.read_text() == STARTS
-    assert hook_commands(project / ".claude" / "settings.local.json") == {f'"{binary}" claude "{project}"'}
-    assert hook_commands(project / ".codex" / "hooks.json") == {f'"{binary}" codex "{project}"'}
+    assert not (project / ".claude" / "settings.local.json").exists()
+    assert (project / ".journal" / "hooks" / "runner").read_text() == f'"{binary}"\n'
+    assert not (project / ".codex" / "hooks.json").exists()
 
 
 def test_a_binary_whose_checksum_differs_from_the_release_is_not_installed(tmp_path):
@@ -44,15 +40,12 @@ def test_a_binary_whose_checksum_differs_from_the_release_is_not_installed(tmp_p
     assert not (project / ".journal" / "bin" / "journal-hook").exists() and not (project / ".claude").exists()
 
 
-def fallback_commands(project: Path, program: str) -> set[str]:
-    return {f'sh "{project}/.journal/hooks/hook.sh" {program} "{project}"'}
-
-
 def test_a_platform_no_binary_is_built_for_falls_back_to_hook_sh_and_says_so(tmp_path):
     project = tmp_path / "project"
     run = installed(project, release(tmp_path / "release"), platform="plan9/amd64")
     assert run.returncode == 0 and "no journal-hook is built for plan9/amd64" in run.stdout
-    assert hook_commands(project / ".claude" / "settings.local.json") == fallback_commands(project, "claude")
+    assert not (project / ".claude" / "settings.local.json").exists()
+    assert (project / ".journal" / "hooks" / "runner").read_text() == f'sh "{project}/.journal/hooks/hook.sh"\n'
     assert (project / ".journal" / "hooks" / "hook.sh").is_file()
 
 
@@ -60,7 +53,8 @@ def test_a_binary_that_does_not_start_falls_back_to_hook_sh_for_both_programs(tm
     project = tmp_path / "project"
     run = installed(project, release(tmp_path / "release", program="#!/bin/sh\nexit 1\n"))
     assert run.returncode == 0 and "does not start on this machine" in run.stdout
-    assert hook_commands(project / ".codex" / "hooks.json") == fallback_commands(project, "codex")
+    assert (project / ".journal" / "hooks" / "runner").read_text() == f'sh "{project}/.journal/hooks/hook.sh"\n'
+    assert not (project / ".codex" / "hooks.json").exists()
 
 
 def test_a_release_without_the_binary_falls_back_to_hook_sh(tmp_path):

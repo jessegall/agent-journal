@@ -3,9 +3,6 @@ import shutil
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.journal.journal_home import JournalHome
-from engine.provider.managed_hooks import ManagedHooks
-from engine.provider.providers import Providers
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.server_client import server_story
@@ -44,7 +41,7 @@ def test_the_settings_window_saves_the_models_left_with_the_line_it_sends(new_st
 def test_a_worker_for_a_program_that_is_not_installed_is_refused_before_any_worktree_is_cut(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
-    story.container.bind(HelperPrograms, HelperPrograms(story.container.get(JournalHome), story.container.get(Providers), story.container.get(ManagedHooks)))
+    story.container.bind(HelperPrograms, story.container.constructed(HelperPrograms))
     monkeypatch.setattr(shutil, "which", lambda name: None)
     story.expect_refusal(DISPATCH, "claude is not installed here", actor=story.agent)
     story.expect_success("worker-worktree list", "nothing found")

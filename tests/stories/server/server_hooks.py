@@ -1,7 +1,11 @@
-from server.hook import hook_sender
 from tests.stories.server.support.server_fixtures import task_server
 
 import pytest
+
+from engine.file.file_access import FileAccess
+from engine.serving.server_files import ServerFiles
+from core.modules.processes.support.request_log import RequestLog
+from core.modules.processes.support.request_log_entry import RequestLogEntry
 
 import json
 import os
@@ -18,13 +22,12 @@ from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from tests.stories.core.support.fixtures import ThreeTasks, UserJoined
-from tests.stories.server.support.server_client import expect_timing_lines, server_story
+from tests.stories.server.support.server_client import STORY_HOOK_LIMIT_SECONDS, STORY_STOP_LIMIT_SECONDS, expect_timing_lines, server_story
 from engine.testing.expectations.expect_row import expect_row
 
 RAW_HEADERS = {"X-Journal-Request-At": "1793395000123", "X-Journal-Hook-Id": "7731-1793395000123", "X-Journal-Actor": "agent", "X-Journal-Env": "main"}
 SCHEMA_EXAMPLES = Path(__file__).resolve().parents[3] / "tools" / "journal-hook" / "event" / "testdata" / "schema"
 
-STORY_STOP_LIMIT_SECONDS = 3.5
 
 
 def example(name: str) -> object:
@@ -85,8 +88,7 @@ def test_a_hook_resent_under_its_firing_gets_its_stored_answer(lead_server):
     story.expect_hook_answer("/hook", lead_stop("server-2"), 200, '"hook_call_id": 2')
 
 
-def test_a_stop_that_waits_past_its_limit_on_a_busy_database_is_held(lead_server, monkeypatch):
-    monkeypatch.setattr(hook_sender, "STOP_LIMIT_SECONDS", STORY_STOP_LIMIT_SECONDS)
+def test_a_stop_that_waits_past_its_limit_on_a_busy_database_is_held(lead_server):
     started = lead_server.story
     story = lead_server
     writer = sqlite3.connect(started.home.database, timeout=1)
@@ -104,10 +106,14 @@ def test_a_claude_stop_posted_as_a_prepared_object_is_refused_as_the_builder_dec
     story.story.expect_success(lines.SECOND_HOOK_CALL, "driver: coding.main", "answer: refused")
 
 
-def test_a_stop_that_waits_past_its_limit_for_another_hook_is_held(lead_server, monkeypatch):
-    monkeypatch.setattr(hook_sender, "STOP_LIMIT_SECONDS", STORY_STOP_LIMIT_SECONDS)
+def test_a_stop_that_waits_past_its_own_longer_limit_for_another_hook_is_held(lead_server):
     story = lead_server
-    story.expect_locked_hook_answer(lead_stop("server-4"), "the journal could not check this stop and holds it")
+    story.expect_locked_hook_answer(lead_stop("server-4"), "the journal could not check this stop and holds it", STORY_STOP_LIMIT_SECONDS + 1)
+
+
+def test_a_stop_waits_past_the_hook_limit_for_another_hook_and_is_checked(lead_server):
+    story = lead_server
+    story.expect_locked_hook_answer(lead_stop("server-6"), '"hook_call_id"', (STORY_HOOK_LIMIT_SECONDS + STORY_STOP_LIMIT_SECONDS) / 2)
 
 
 @pytest.mark.parametrize("role", ["worker", "helper"])
@@ -160,3 +166,11 @@ def lead_server(new_story):
 def builder_server(new_story):
     with server_story(new_story(fixture=OpenTaskBuilder)) as story:
         yield story
+
+
+def test_a_hook_held_while_the_journal_starts_keeps_its_row_under_its_session(lead_server):
+    home = lead_server.story.home
+    FileAccess.shared().write(ServerFiles(home).start_mark, "starting")
+    lead_server.expect_hook_answer("/hook", lead_stop("server-7"), 200, '"refusal"')
+    logged = [RequestLogEntry.parsed(line) for line in FileAccess.shared().read(RequestLog(home, FileAccess.shared()).path).splitlines() if line]
+    lead_server.story.expect_rows(any(entry.session == "s-1" and entry.exit_code == 2 and entry.environment_id is None for entry in logged), detail=str(logged))

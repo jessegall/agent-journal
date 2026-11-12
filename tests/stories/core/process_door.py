@@ -53,11 +53,12 @@ def test_each_hook_leaves_one_ended_request_row_of_the_hook_kind_and_no_process_
 
 def test_a_quick_run_through_the_door_is_logged_and_the_tick_writes_one_ended_request_row(new_story):
     story = new_story(fixture=BuilderStarted)
+    processes_before = story.container.get(Queries).query(Process).count()
     execution = door_run(story, ExecutionRequest(["echo", "done"], story.home.project_folder, ProcessKind.QUICK, 10))
     logged_only = runs_of_kind(story, ProcessKind.QUICK)
     logged_rows_written(story)
     rows = runs_of_kind(story, ProcessKind.QUICK)
-    story.expect_rows(execution.stdout == "done\n", logged_only == [], len(rows) == 1, rows[0].exit_code == 0, detail=str(rows))
+    story.expect_rows(execution.stdout == "done\n", logged_only == [], len(rows) == 1, rows[0].exit_code == 0, story.container.get(Queries).query(Process).count() == processes_before, detail=str(rows))
 
 
 def test_a_failing_run_through_the_door_keeps_its_code(new_story):

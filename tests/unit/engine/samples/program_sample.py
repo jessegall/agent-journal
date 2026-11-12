@@ -7,6 +7,7 @@ from engine.provider.helper_launch import HelperLaunch
 from engine.provider.helper_outcome import HelperOutcome
 from engine.provider.hook_file import HookFile
 from engine.enums.hook_trust import HookTrust
+from engine.journal.journal_home import JournalHome
 from engine.provider.launch import Launch
 from engine.provider.launch_command import LaunchCommand
 from engine.provider.provider import Provider
@@ -56,5 +57,5 @@ class SampleProgram(Provider):
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
         return None
 
-    def hook_trust(self, project: Path) -> HookTrust:
+    def journal_trust(self, home: JournalHome) -> HookTrust:
         return HookTrust.READY

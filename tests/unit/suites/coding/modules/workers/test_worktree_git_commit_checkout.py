@@ -37,3 +37,16 @@ def test_an_existing_test_checkout_gets_back_a_tracked_file_marked_skip_worktree
     git.commit_checkout(worktree, first)
     assert Path(checkout, "cart.py").read_text() == "TOTAL = 0\n"
     assert repository.git("ls-files", "-v", folder=Path(checkout)).stdout.startswith("H cart.py")
+
+
+def test_a_skipped_file_with_a_name_git_would_quote_is_brought_back_whole(tmp_path):
+    repository, folder = worker_checkout(tmp_path)
+    repository.committed("café notes.py", "NOTES = 1\n", "Notes with an accent")
+    tip = repository.tip("base")
+    worktree = worktree_row(repository, folder, tip)
+    git = WorktreeGit(None, plain_executor())
+    checkout = git.commit_checkout(worktree, tip)
+    repository.git("update-index", "--skip-worktree", "café notes.py", folder=Path(checkout))
+    Path(checkout, "café notes.py").unlink()
+    git.restore_skipped_files(checkout)
+    assert Path(checkout, "café notes.py").read_text() == "NOTES = 1\n"

@@ -5,7 +5,7 @@ PLAN_FINISHED = NudgeDeclaration("plans.plan_finished", NudgeType.STEERING, "pla
 PHASE_FINISHED = NudgeDeclaration("plans.phase_finished", NudgeType.STEERING, "plan {plan}: phase {phase} done", turn_limited=False)
 CHECKPOINT_REACHED = NudgeDeclaration("plans.checkpoint_reached", NudgeType.STEERING, "plan {plan}: phase {phase} done, a checkpoint: the phases after it wait for its tests", turn_limited=False)
 CHECKPOINT_FINISHED = NudgeDeclaration("plans.checkpoint_finished", NudgeType.STEERING, "plan {plan}: the tests of checkpoint phase {phase} passed, the phases after it are open: tell the user", turn_limited=False)
-CHECKPOINT_AWAITS_APPROVAL = NudgeDeclaration("plans.checkpoint_awaits_approval", NudgeType.STEERING, "plan {plan}: the tests of checkpoint phase {phase} passed, the phases after it stay closed until a person approves it on the plan card", turn_limited=False)
+CHECKPOINT_AWAITS_APPROVAL = NudgeDeclaration("plans.checkpoint_awaits_approval", NudgeType.STEERING, "plan {plan}: checkpoint phase {phase} passed its tests; later phases open once a person approves it on the plan card", turn_limited=False)
 PLAN_STALLED = NudgeDeclaration("plans.plan_stalled", NudgeType.NOTICE, "plan {plan}: no task can start; {count} wait or are blocked{waits}", turn_limited=False)
 FOCUS_SUGGESTED = NudgeDeclaration("plans.focus_suggested", NudgeType.NOTICE, "plans {plans} are started; your focus is plan {focus}, the default", turn_limited=False)
 UNFOCUSED_TASK = NudgeDeclaration("plans.unfocused_task", NudgeType.NOTICE, "task {task} is of plan {plan}; your focus is plan {focus}", turn_limited=False)

@@ -20,6 +20,12 @@ WORKER_OPERATION_COMMITTED = NudgeDeclaration("workers.operation_committed", Nud
     'worker:{worker} committed its work: output {output}', turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_STARTED = NudgeDeclaration("workers.operation_started", NudgeType.STEERING,
     'worker:{worker} started its next task: output {output}', turn_limited=False, wakes_agent=True)
+WORKER_OPERATION_UPDATED = NudgeDeclaration("workers.operation_updated", NudgeType.STEERING,
+    'worker:{worker} is up to date: output {output}', turn_limited=False, wakes_agent=True)
+WORKER_OPERATION_UPDATE_CONFLICT = NudgeDeclaration("workers.operation_update_conflict", NudgeType.STEERING,
+    'worker:{worker} update clashes: output {output}; settle the conflict markers, then commit', turn_limited=False, wakes_agent=True)
+WORKER_OPERATION_UPDATE_FAILED = NudgeDeclaration("workers.operation_update_failed", NudgeType.STEERING,
+    'worker:{worker} update failed and changed nothing: output {output}', turn_limited=False, wakes_agent=True)
 
 
 class WorkerOperationName(StrEnum):
@@ -27,6 +33,7 @@ class WorkerOperationName(StrEnum):
     COMMIT = "commit"
     JOB = "send"
     MERGE = "merge"
+    UPDATE = "update"
 
     @property
     def is_handoff(self) -> bool:
@@ -42,3 +49,5 @@ class WorkerOperationName(StrEnum):
                 return WORKER_OPERATION_STARTED.nudge(worker=worker_number, output=process_id)
             case self.COMMIT:
                 return WORKER_OPERATION_COMMITTED.nudge(worker=worker_number, output=process_id)
+            case self.UPDATE:
+                return WORKER_OPERATION_UPDATED.nudge(worker=worker_number, output=process_id)

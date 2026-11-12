@@ -64,3 +64,11 @@ def test_a_worker_whose_process_ended_with_no_task_left_is_not_named(ended_with_
     story.expect_success('task cancel 1 --reason "The receipt is no longer needed"', actor=story.agent)
     story.tick(MAIN_SESSION)
     story.expect_rows(stopped_lines(story) == [], detail=str(stopped_lines(story)))
+
+
+def test_a_stopped_worker_is_not_named_while_workers_are_switched_off(ended_with_work):
+    story = ended_with_work.story
+    story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 0 --environment main", actor=story.user)
+    story.tick(MAIN_SESSION)
+    story.expect_rows(stopped_lines(story) == [], detail=str(stopped_lines(story)))
+

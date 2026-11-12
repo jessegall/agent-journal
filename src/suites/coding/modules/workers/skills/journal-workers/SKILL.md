@@ -181,6 +181,9 @@ An open question lets you stop; the answer wakes you. Going on with other work e
 - `journal worker commit --differences "<what>"` judges and commits, in one commit, every started task whose points
   are all proved. Say in `--differences` only what you did other than the task's brief asked or left out of it, never
   what you did. When you followed the brief, `--differences none`.
+- `journal worker update` brings your worktree up to the base branch it was cut from and keeps your uncommitted
+  changes. Run it when you are told your base branch moved, or at a stopping point, never in the middle of an edit, and
+  edit no file until it ends. When it clashes, read the clashing files and settle their markers before your next commit.
 - A task already built needs no change: prove each point with where it is, and commit with `--differences "<why no change was needed>"`.
   With `--differences none`, a commit that changed nothing is refused. The main agent reads your line.
 - A commit is never a merge, and nothing limits commits. It takes every started task whose points are all proved and
