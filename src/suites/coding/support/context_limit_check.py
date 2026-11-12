@@ -3,7 +3,7 @@ from core.modules.drivers.support.context_compactions import ContextCompactions
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.support.current_context_window import CurrentContextWindow
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ACTION, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_GROWTH_PERCENT, CONTEXT_LIMIT_HARD_TOKENS
-from core.modules.helpers.support.context_caps import ContextCaps
+from core.modules.settings.bindings.support.context_caps import ContextCaps
 from engine.setting.setting_values import SettingValues
 from core.modules.tasks.queries.task_query import TaskQuery
 
@@ -28,7 +28,7 @@ class ContextLimitCheck:
 
     def tokens(self, agent_id: int) -> int | None:
         agent = self.agents.find(agent_id)
-        cap = self.caps.tokens(agent)
+        cap = self.caps.tokens(agent.role, agent.profile)
         if cap is None:
             return None
         tokens = self.current_window.window(agent).total_input_tokens
