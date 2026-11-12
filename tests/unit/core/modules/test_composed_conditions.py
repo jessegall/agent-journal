@@ -1,3 +1,11 @@
+from core.modules.documents.conditions.context_message_type import ContextMessageType
+from core.modules.documents.conditions.excludes_plan import ExcludesPlan
+from core.modules.documents.conditions.link_counterparts import LinkCounterparts
+from core.modules.documents.conditions.link_scope import LinkScope
+from core.modules.documents.conditions.link_target import LinkTarget
+from core.modules.documents.models.enums.link_side import LinkSide
+from core.modules.documents.references.row_ref import RowRef
+from engine.query.select import Select
 from core.modules.agents.conditions.active_agent_rows import ActiveAgentRows
 from core.modules.agents.conditions.kept_agent_rows import KeptAgentRows
 from core.modules.agents.conditions.main_agent_rows import MainAgentRows
@@ -86,3 +94,13 @@ def test_process_driver_and_suite_conditions_write_the_statements_they_wrote_by_
     assert said(TaskWaitCommandFailure()) == ("(instr(last_output, ?) > 0 OR instr(last_output, ?) > 0)", ["not found", "syntax error"])
     assert said(IntervalPassed("2026")) == ("(interval_minutes > ? AND (last_run_at IS NULL OR datetime(last_run_at, '+' || interval_minutes || ' minutes') <= datetime(?)))", [0, "2026"])
     assert said(ProofTaskTesting())[0] == "EXISTS (SELECT 1 FROM tasks WHERE tasks.id = proofs.task_id AND tasks.state = ?)"
+
+
+def test_document_conditions_write_the_statements_they_wrote_by_hand():
+    task, doc = RowRef("task", 3), RowRef("doc", 4)
+    assert said(LinkCounterparts(task, (doc,))) == ("(((source_model = ? AND source_id = ? AND target_model = ? AND target_id = ?) OR (target_model = ? AND target_id = ? AND source_model = ? AND source_id = ?)))", ["task", 3, "doc", 4, "task", 3, "doc", 4])
+    assert said(LinkCounterparts(task, ())) == ("0", [])
+    assert said(LinkScope(task, LinkSide.ROW)) == ("((source_model = ? AND source_id = ?) OR (target_model = ? AND target_id = ?))", ["task", 3, "task", 3])
+    assert said(ExcludesPlan(RowRef("plan", 2)))[1] == [2, "task", "task", 2, "phase", "phase"]
+    assert said(LinkTarget(task, "doc")) == ("(((source_model = ? AND source_id = ?) AND target_model = ?) OR (NOT ((source_model = ? AND source_id = ?)) AND source_model = ?))", ["task", 3, "doc", "task", 3, "doc"])
+    assert said(ContextMessageType(Select("actors").column("id"))) == ("(type IN (?, ?, ?) OR (type = ? AND creator_id IN (SELECT id FROM actors)))", ["user", "comment", "agent", "journal"])
