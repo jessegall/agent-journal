@@ -1,3 +1,4 @@
+import json
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from datetime import timedelta
 from engine.enums.hook_answer import HookAnswer
@@ -74,3 +75,12 @@ def expect_day_start(row) -> None:
 def expect_number_firing_body(log, expected) -> None:
     actual = [(row.number, row.body['firing']) for row in log.read()]
     assert actual == expected, actual
+
+
+def test_the_window_lists_more_requests_than_the_read_limit_when_the_log_keeps_them(new_story):
+    story = logging_story(new_story, size=60)
+    log = story.container.get(HookRequestLog)
+    for firing in range(60):
+        log.record("claude", HEADERS, {"firing": firing}, 1, HookAnswer.ALLOWED)
+    answer = story.run("developer hook-requests --json", actor=story.user)
+    story.expect_rows(answer.code == 0, len(json.loads(answer.output_text)["rows"]) == 60, detail=answer.output_text[:300])
