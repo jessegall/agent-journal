@@ -2,6 +2,8 @@
 import { computed, nextTick, ref, watch, unref } from "vue";
 import {
   Icon,
+  MenuItem,
+  MenuPanel,
   SkeletonLine,
   afterSkeletonMinimum,
   useNow,
@@ -116,13 +118,19 @@ async function load() {
 
 watch(opened, (open) => open && load());
 
-// the agent that ran the run is asked to draw a reader: the journal opens its request and posts one chat message from the person, and the button goes
+// the agent that ran the run is asked to draw a reader: the journal opens its request and posts one chat message from the person, and the menu item goes
 const asked = ref(false);
 async function askForReader() {
   const answer = await view.run(["output", "ask-reader", String(item.value?.target_id)]);
   if (answer?.ok !== false) asked.value = true;
 }
 const canAskForReader = computed(() => !asked.value && !run.value?.reader_requested && !run.value?.reads_progress && !ended.value);
+const reportAnchor = ref(null);
+const reportOpen = ref(false);
+async function reportWith(action) {
+  reportOpen.value = false;
+  await action();
+}
 // a person marks the command of the run as one no reader can read, or lifts that mark; the agent is told, and the card reads again
 async function markRun(subcommand) {
   const answer = await view.run(["output", subcommand, String(item.value?.target_id)]);
@@ -223,15 +231,18 @@ usePoll(load, isRunning, () =>
               @scroll="pages.loadEarlier($event.target)"
               >{{ lines.length ? lines.join("\n") : "No output yet" }}</pre>
             <p v-if="run?.reading_text" class="output-dock-reading" data-output-reading>{{ run.reading_text }}</p>
-            <p v-if="run?.markable" class="output-dock-marks">
-              <button v-if="run.marked_words" type="button" class="output-dock-mark" data-output-mark-readable @click="markRun('readable')">Mark as readable</button>
-              <button v-else type="button" class="output-dock-mark" data-output-mark-unreadable @click="markRun('unreadable')">Mark as not readable</button>
-            </p>
-            <template v-if="!lines.length && canAskForReader"
-              ><button type="button" class="output-dock-reader" data-output-reader-ask @click="askForReader">
-                Ask the agent to draw a reader
-              </button></template
-            >
+            <template v-if="canAskForReader || run?.markable">
+              <button ref="reportAnchor" type="button" class="output-dock-report" data-output-report title="Report a problem with this output" aria-label="Report a problem with this output" :aria-expanded="reportOpen" @click="reportOpen = !reportOpen"><Icon name="warn" :size="14" /></button>
+              <template v-if="reportOpen">
+                <MenuPanel :anchor="reportAnchor" :min-width="190" data-output-report-menu @close="reportOpen = false">
+                  <template v-if="canAskForReader"><MenuItem data-output-reader-ask @click="reportWith(askForReader)">Ask for a better reader</MenuItem></template>
+                  <template v-if="run?.markable">
+                    <template v-if="run.marked_words"><MenuItem data-output-mark-readable @click="reportWith(() => markRun('readable'))">Mark as readable</MenuItem></template>
+                    <template v-else><MenuItem data-output-mark-unreadable @click="reportWith(() => markRun('unreadable'))">Mark as unreadable</MenuItem></template>
+                  </template>
+                </MenuPanel>
+              </template>
+            </template>
           </div>
         </template>
       </div>
@@ -367,37 +378,25 @@ usePoll(load, isRunning, () =>
 .output-dock-box {
   position: relative;
 }
-.output-dock-reader {
+.output-dock-report {
   position: absolute;
   top: 6px;
   right: 14px;
-  padding: 2px 8px;
-  border: 1px solid var(--border-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
   border-radius: 6px;
   background: none;
-  color: var(--text-2);
-  font: inherit;
-  font-size: 12px;
+  color: var(--text-3);
   cursor: pointer;
 }
-.output-dock-reader:hover {
+.output-dock-report:hover {
   background: var(--hover);
-}
-.output-dock-marks {
-  margin: 4px 14px;
-}
-.output-dock-mark {
-  padding: 2px 8px;
-  border: 1px solid var(--border-2);
-  border-radius: 6px;
-  background: none;
-  color: var(--text-2);
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
-}
-.output-dock-mark:hover {
-  background: var(--hover);
+  color: var(--text);
 }
 .output-dock-loading {
   padding: 8px 14px 8px 36px;

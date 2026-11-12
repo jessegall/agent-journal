@@ -15,7 +15,7 @@ afterEach(() => (document.body.innerHTML = ""));
 
 const TABS = [{key: "open", label: "Open", read: "plan board", count_field: "open_total"}, {key: "closed", label: "Closed", read: "plan board --closed", count_field: "closed_total"}];
 const AGENTS = [{id: 12, name: "Lady Lovelace", task_id: 1, task_title: "Cart"}, {id: 12, name: "Lady Lovelace", task_id: 2, task_title: "Tax"}];
-const card = (id, agents, working = []) => ({id, title: `Plan ${id}`, state: "started", task_count: 4, completed_count: 0, current_phase: 1, delegated: agents.length > 0, agents, working});
+const card = (id, agents, working = [], assignee = null) => ({id, title: `Plan ${id}`, state: "started", task_count: 4, completed_count: 0, current_phase: 1, delegated: agents.length > 0, agents, working, assignee});
 
 const TWO = [...AGENTS, {id: 13, name: "Grace Hopper", task_id: 3, task_title: "Print"}];
 
@@ -35,6 +35,13 @@ test("a plan card shows the plan, its bar and who has it, in one row for none, o
     several.querySelector("[data-plan-agents-list]").click();
     await settle();
     expect([...document.body.querySelectorAll("[data-plan-agents-menu] [data-plan-agent]")].map((agent) => agent.textContent.trim())).toEqual(["Lady Lovelace", "Grace Hopper"]);
+});
+
+test("a plan card names its assigned agent alone, without a label", async () => {
+    const window = planWindowContext({"plan board": {ok: true, value: {open_total: 1, closed_total: 0, plans: [card(1, [], [], {id: 897, name: "Agent 897", main: false})]}}});
+    const element = await mounted(PlanCards, {...window, tabs: TABS});
+    expect(element.querySelector("[data-plan-assignee]").textContent.trim()).toBe("Agent 897");
+    expect(element.querySelector("[data-plan-agents]").textContent).not.toContain("Works this plan");
 });
 
 test("a plan's dock card lists each agent working on the plan once, above its phases", async () => {

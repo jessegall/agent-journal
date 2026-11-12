@@ -3940,6 +3940,7 @@
       "plan_id",
       "program",
       "program_model",
+      "report",
       "reviewer_id"
     ]
   },
@@ -3957,6 +3958,7 @@
       "plan_id",
       "program",
       "program_model",
+      "report",
       "reviewer_id"
     ]
   },
@@ -3974,6 +3976,7 @@
       "plan_id",
       "program",
       "program_model",
+      "report",
       "reviewer_id"
     ]
   },

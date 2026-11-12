@@ -7,7 +7,7 @@ from engine.model.model import Model
 @dataclass(frozen=True, kw_only=True)
 class CheckpointReview(EnvironmentScoped, Model):
     """The review a checkpoint started when its tests passed: a read-only reviewer agent, the program and the model
-    it was started on, and what it was asked to compare."""
+    it was started on, what it was asked to compare and, once it has reported, its report."""
 
     model_name = "checkpoint_review"
     cli_name = "checkpoint-review"
@@ -20,3 +20,7 @@ class CheckpointReview(EnvironmentScoped, Model):
     program: str
     program_model: str
     brief: str
+    report: str = ""
+
+    def reported(self, report: str) -> "CheckpointReview":
+        return self.changed(report=report)

@@ -4,6 +4,10 @@ import json
 import pytest
 
 from engine.actor.actor import Actor
+from engine.query.queries import Queries
+from engine.testing.examples.hook_samples import HookSamples
+from core.modules.agents.models.agent import Agent
+from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.plans.commands.start_checkpoint_run.start_checkpoint_run_handler import StartCheckpointRunHandler
 from engine.database.database import Database
 from engine.database.statement import Statement
@@ -321,14 +325,40 @@ QUICK_REVIEW = "setting set journal.core.plans.checkpoints.quick-review true --e
 REVIEWS = "checkpoint-review list --json --oldest --environment main"
 
 
-def test_a_passed_checkpoint_starts_its_read_only_reviewer_on_the_sonnet_model_the_setting_names(new_story):
+def stop_with_report(text: str):
+    stop = HookSamples.stop()
+    return stop.with_raw({**stop.body["raw"], "last_assistant_message": text})
+
+
+def test_a_passed_checkpoint_launches_its_read_only_reviewer_on_the_sonnet_model_and_keeps_its_report(new_story):
     story = new_story(fixture=ReachedCheckpoint)
     story.expect_success(QUICK_REVIEW, actor=story.user)
     story.expect_rows(rows(story, REVIEWS) == [], detail="no review before the tests pass")
+    launcher = FakeLauncher.listening(story.home.socket("launcher"), request_count=2)
     pass_reach(story, 1)
+    launcher.drain_requests()
+    launcher.server.close()
     review = rows(story, REVIEWS)[0]
-    story.expect_rows((review["plan_id"], review["phase_id"], review["program"], review["program_model"]) == (1, 3, "claude", "sonnet"), detail=str(review))
+    story.expect_rows((review["plan_id"], review["phase_id"], review["program"], review["program_model"], review["report"]) == (1, 3, "claude", "sonnet", ""), detail=str(review))
     story.expect_text(f"agent show {agent_number(story, review['reviewer_id'])}", "role: reviewer", "access: read", "program_model: sonnet", actor=story.user)
+    assert len(launcher.starts) == 1, str(launcher.requests)
+    command = " ".join(launcher.starts[0]["command"])
+    story.expect_rows("sonnet" in command, "phase Check of plan 1" in command, detail=command)
+    reviewer = story.container.get(Queries).query(Agent).find(review["reviewer_id"])
+    story.hook(reviewer.session, stop_with_report("Matches the brief; the polish step is missing."))
+    story.run_listeners()
+    story.expect_rows(rows(story, REVIEWS)[0]["report"] == "Matches the brief; the polish step is missing.", detail=str(rows(story, REVIEWS)))
+
+
+def test_two_checkpoint_reviews_get_sessions_of_their_own(new_story):
+    story = new_story(fixture=FirstOfTwoReached)
+    story.expect_success(QUICK_REVIEW, actor=story.user)
+    pass_reach(story, 1)
+    close(story, 2)
+    pass_reach(story, 2)
+    reviewers = [row["reviewer_id"] for row in rows(story, REVIEWS)]
+    sessions = {story.container.get(Queries).query(Agent).find(reviewer).session for reviewer in reviewers}
+    story.expect_rows(len(reviewers) == 2, len(sessions) == 2, detail=str(reviewers))
 
 
 def test_a_checkpoint_with_the_review_off_starts_no_reviewer(new_story):

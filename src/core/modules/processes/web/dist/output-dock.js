@@ -1,241 +1,282 @@
-if (!document.getElementById("window-styles-6378533cdb0c")) { const style = document.createElement("style"); style.id = "window-styles-6378533cdb0c"; style.textContent = ".output-dock-inner[data-v-af3fc177]{min-height:0;overflow:hidden}.output-dock-state[data-v-af3fc177]{display:flex;flex:none;justify-content:center;width:14px;color:var(--tone)}.output-dock-ring[data-v-af3fc177]{width:10px;height:10px;border:1.5px solid color-mix(in srgb,var(--tone) 30%,transparent);border-top-color:var(--tone);border-radius:50%;animation:output-spin-af3fc177 .9s linear infinite}@keyframes output-spin-af3fc177{to{transform:rotate(360deg)}}.output-dock-pending[data-v-af3fc177]{display:inline-flex;align-items:center;flex:none;gap:3px}.output-dock-pending i[data-v-af3fc177]{width:4px;height:4px;border-radius:50%;background:var(--text-3);animation:output-pending-af3fc177 1.2s ease-in-out infinite}.output-dock-pending i[data-v-af3fc177]:nth-child(2){animation-delay:.2s}.output-dock-pending i[data-v-af3fc177]:nth-child(3){animation-delay:.4s}@keyframes output-pending-af3fc177{0%,60%,to{opacity:.3}30%{opacity:1}}@media(prefers-reduced-motion:reduce){.output-dock-pending i[data-v-af3fc177]{animation:none}}.output-dock-title[data-v-af3fc177]{flex:1;font-size:13px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.output-dock-figure[data-v-af3fc177]{flex:none;color:var(--text-3);font-size:11.5px;font-variant-numeric:tabular-nums}.output-dock-percent[data-v-af3fc177]{flex:none;align-self:center;width:32px;height:4px;margin-right:6px;overflow:hidden;border-radius:2px;background:var(--hover)}.output-dock-percent i[data-v-af3fc177]{display:block;height:100%}.output-dock-terminal[data-v-af3fc177]{overflow:auto;max-height:min(280px,calc(40cqh - 72px));margin:0;padding:8px 14px 8px 36px;background:var(--term);color:var(--text-2);font-family:var(--mono, monospace);font-size:11px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.output-dock-bar[data-v-af3fc177]{position:absolute;right:0;bottom:0;left:0;height:2px;border-radius:1px;background:var(--border);overflow:hidden}.output-dock-fill[data-v-af3fc177]{height:100%;transition:width .4s ease}.output-dock-box[data-v-af3fc177]{position:relative}.output-dock-reader[data-v-af3fc177]{position:absolute;top:6px;right:14px;padding:2px 8px;border:1px solid var(--border-2);border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:12px;cursor:pointer}.output-dock-reader[data-v-af3fc177]:hover{background:var(--hover)}.output-dock-marks[data-v-af3fc177]{margin:4px 14px}.output-dock-mark[data-v-af3fc177]{padding:2px 8px;border:1px solid var(--border-2);border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:12px;cursor:pointer}.output-dock-mark[data-v-af3fc177]:hover{background:var(--hover)}.output-dock-loading[data-v-af3fc177]{padding:8px 14px 8px 36px;height:60px;background:var(--term)}.output-dock-terminal[data-v-af3fc177]{animation:output-fade-af3fc177 .22s var(--ease) .32s backwards}@keyframes output-fade-af3fc177{0%{opacity:0}}@media(prefers-reduced-motion:reduce){.output-dock-terminal[data-v-af3fc177]{animation-duration:.1s;animation-delay:0ms}}.output[data-v-8c713a5e]{display:flex;flex-direction:column;height:100%;min-height:0}.bar[data-v-8c713a5e]{display:flex;align-items:baseline;gap:8px;padding:8px 12px;font-size:12px}.line[data-v-8c713a5e]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-8c713a5e]{border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}.text[data-v-8c713a5e]{margin:0;padding:0 12px 12px;font-size:12px;line-height:1.5;white-space:pre-wrap}.run[data-v-03b5ad2c]{display:flex;flex:1;align-items:baseline;gap:8px;font-size:12px}.state[data-v-03b5ad2c]{flex:none;min-width:64px;color:var(--text-3)}.state.failed[data-v-03b5ad2c],.state.lost[data-v-03b5ad2c]{color:var(--red, #d4574b)}.line[data-v-03b5ad2c]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.marks[data-v-03b5ad2c]{padding:8px 12px;font-size:12px}.marks h3[data-v-03b5ad2c]{margin:0 0 4px;font-size:12px;color:var(--text-2)}.mark[data-v-03b5ad2c]{display:flex;gap:8px;margin:2px 0}.why[data-v-03b5ad2c],.who[data-v-03b5ad2c],.note[data-v-03b5ad2c]{flex:none;color:var(--text-3)}button[data-v-03b5ad2c]{flex:none;border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
-import { computed as u, unref as a, ref as L, watch as q, openBlock as n, createElementBlock as r, createBlock as k, Teleport as y, createElementVNode as s, normalizeStyle as T, toDisplayString as _, createCommentVNode as i, createTextVNode as G, nextTick as ot } from "vue";
-import { useWindow as nt, useDockCard as st, useOutputPages as ut, useNow as rt, usePoll as lt, Icon as dt, SkeletonLine as it, afterSkeletonMinimum as ct } from "@journal/window-kit";
-import { _ as pt } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const vt = {
+if (!document.getElementById("window-styles-0f32988b6c02")) { const style = document.createElement("style"); style.id = "window-styles-0f32988b6c02"; style.textContent = ".output-dock-inner[data-v-d8a4079e]{min-height:0;overflow:hidden}.output-dock-state[data-v-d8a4079e]{display:flex;flex:none;justify-content:center;width:14px;color:var(--tone)}.output-dock-ring[data-v-d8a4079e]{width:10px;height:10px;border:1.5px solid color-mix(in srgb,var(--tone) 30%,transparent);border-top-color:var(--tone);border-radius:50%;animation:output-spin-d8a4079e .9s linear infinite}@keyframes output-spin-d8a4079e{to{transform:rotate(360deg)}}.output-dock-pending[data-v-d8a4079e]{display:inline-flex;align-items:center;flex:none;gap:3px}.output-dock-pending i[data-v-d8a4079e]{width:4px;height:4px;border-radius:50%;background:var(--text-3);animation:output-pending-d8a4079e 1.2s ease-in-out infinite}.output-dock-pending i[data-v-d8a4079e]:nth-child(2){animation-delay:.2s}.output-dock-pending i[data-v-d8a4079e]:nth-child(3){animation-delay:.4s}@keyframes output-pending-d8a4079e{0%,60%,to{opacity:.3}30%{opacity:1}}@media(prefers-reduced-motion:reduce){.output-dock-pending i[data-v-d8a4079e]{animation:none}}.output-dock-title[data-v-d8a4079e]{flex:1;font-size:13px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.output-dock-figure[data-v-d8a4079e]{flex:none;color:var(--text-3);font-size:11.5px;font-variant-numeric:tabular-nums}.output-dock-percent[data-v-d8a4079e]{flex:none;align-self:center;width:32px;height:4px;margin-right:6px;overflow:hidden;border-radius:2px;background:var(--hover)}.output-dock-percent i[data-v-d8a4079e]{display:block;height:100%}.output-dock-terminal[data-v-d8a4079e]{overflow:auto;max-height:min(280px,calc(40cqh - 72px));margin:0;padding:8px 14px 8px 36px;background:var(--term);color:var(--text-2);font-family:var(--mono, monospace);font-size:11px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.output-dock-bar[data-v-d8a4079e]{position:absolute;right:0;bottom:0;left:0;height:2px;border-radius:1px;background:var(--border);overflow:hidden}.output-dock-fill[data-v-d8a4079e]{height:100%;transition:width .4s ease}.output-dock-box[data-v-d8a4079e]{position:relative}.output-dock-report[data-v-d8a4079e]{position:absolute;top:6px;right:14px;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;padding:0;border:0;border-radius:6px;background:none;color:var(--text-3);cursor:pointer}.output-dock-report[data-v-d8a4079e]:hover{background:var(--hover);color:var(--text)}.output-dock-loading[data-v-d8a4079e]{padding:8px 14px 8px 36px;height:60px;background:var(--term)}.output-dock-terminal[data-v-d8a4079e]{animation:output-fade-d8a4079e .22s var(--ease) .32s backwards}@keyframes output-fade-d8a4079e{0%{opacity:0}}@media(prefers-reduced-motion:reduce){.output-dock-terminal[data-v-d8a4079e]{animation-duration:.1s;animation-delay:0ms}}.output[data-v-8c713a5e]{display:flex;flex-direction:column;height:100%;min-height:0}.bar[data-v-8c713a5e]{display:flex;align-items:baseline;gap:8px;padding:8px 12px;font-size:12px}.line[data-v-8c713a5e]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-8c713a5e]{border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}.text[data-v-8c713a5e]{margin:0;padding:0 12px 12px;font-size:12px;line-height:1.5;white-space:pre-wrap}.run[data-v-03b5ad2c]{display:flex;flex:1;align-items:baseline;gap:8px;font-size:12px}.state[data-v-03b5ad2c]{flex:none;min-width:64px;color:var(--text-3)}.state.failed[data-v-03b5ad2c],.state.lost[data-v-03b5ad2c]{color:var(--red, #d4574b)}.line[data-v-03b5ad2c]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.marks[data-v-03b5ad2c]{padding:8px 12px;font-size:12px}.marks h3[data-v-03b5ad2c]{margin:0 0 4px;font-size:12px;color:var(--text-2)}.mark[data-v-03b5ad2c]{display:flex;gap:8px;margin:2px 0}.why[data-v-03b5ad2c],.who[data-v-03b5ad2c],.note[data-v-03b5ad2c]{flex:none;color:var(--text-3)}button[data-v-03b5ad2c]{flex:none;border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+import { computed as s, unref as a, ref as h, watch as Z, openBlock as n, createElementBlock as p, createBlock as r, Teleport as S, createElementVNode as u, normalizeStyle as A, toDisplayString as m, createCommentVNode as l, createTextVNode as N, Fragment as ee, createVNode as pe, withCtx as D, nextTick as ce } from "vue";
+import { useWindow as ve, useDockCard as ke, useOutputPages as ge, useNow as fe, usePoll as _e, Icon as te, SkeletonLine as me, MenuPanel as be, MenuItem as F, afterSkeletonMinimum as ye } from "@journal/window-kit";
+import { _ as we } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+const he = {
   class: "output-dock",
   "data-output-dock": ""
-}, kt = ["data-state"], gt = {
+}, Se = ["data-state"], Ne = {
   key: 0,
   class: "output-dock-ring"
-}, _t = ["title"], ft = ["data-figure-bar", "data-figure-began"], mt = ["data-figure-progress"], bt = { "data-output-steps": "" }, yt = { "data-output-progress": "" }, ht = ["title", "aria-label"], wt = {
+}, xe = ["title"], $e = ["data-figure-bar", "data-figure-began"], Me = ["data-figure-progress"], Oe = { "data-output-steps": "" }, Ce = { "data-output-progress": "" }, De = ["title", "aria-label"], Ee = {
   key: 1,
   class: "output-dock-figure"
-}, St = { class: "output-dock-more" }, Nt = { class: "output-dock-inner" }, xt = {
+}, Ie = { class: "output-dock-more" }, Le = { class: "output-dock-inner" }, Te = {
   key: 1,
   class: "output-dock-box"
-}, Dt = {
+}, Pe = {
   key: 0,
   class: "output-dock-reading",
   "data-output-reading": ""
-}, Ot = {
-  key: 1,
-  class: "output-dock-marks"
-}, Mt = 2e3, $t = 5e3, Et = 24, Ct = {
+}, Re = ["aria-expanded"], Ae = 2e3, Fe = 5e3, Ve = 24, ze = {
   __name: "OutputDock",
-  setup(It) {
-    const D = {
+  setup(Be) {
+    const E = {
       running: "var(--tone-work)",
       good: "var(--tone-good)",
       bad: "var(--danger)",
       stopped: "var(--text-3)"
-    }, X = {
+    }, ae = {
       running: "terminal",
       good: "tick",
       bad: "cross",
       stopped: "stop"
-    }, J = {
+    }, oe = {
       running: "running",
       background: "running",
       finished: "good",
       failed: "bad",
       stopped: "stopped",
       orphaned: "stopped"
-    }, d = nt(), O = st(), f = d.option("row"), h = d.option("head"), g = d.option("foot"), P = d.option("time"), K = d.option("folded"), Q = d.option("collapsed"), o = O.data, w = ut(
-      O.readOutput,
+    }, i = ve(), I = ke(), b = i.option("row"), x = i.option("head"), g = i.option("foot"), V = i.option("time"), ne = i.option("folded"), ue = i.option("collapsed"), o = I.data, $ = ge(
+      I.readOutput,
       () => {
-        var e;
-        return (e = f.value) == null ? void 0 : e.target_id;
+        var t;
+        return (t = b.value) == null ? void 0 : t.target_id;
       }
-    ), M = w.lines, $ = u(() => !a(K)), v = L(null), R = L(!1), U = rt(), c = u(() => {
-      var e;
-      return J[(e = o.value) == null ? void 0 : e.state] ?? "running";
-    }), E = () => c.value === "running", p = u(() => c.value !== "running"), C = u(() => {
-      var e;
-      return Number(((e = o.value) == null ? void 0 : e.progress) ?? 0) / 100;
-    }), Y = u(
-      () => p.value ? "100%" : `${Math.round(C.value * 100)}%`
-    ), Z = u(
+    ), z = $.lines, L = s(() => !a(ne)), k = h(null), B = h(!1), se = fe(), c = s(() => {
+      var t;
+      return oe[(t = o.value) == null ? void 0 : t.state] ?? "running";
+    }), T = () => c.value === "running", v = s(() => c.value !== "running"), P = s(() => {
+      var t;
+      return Number(((t = o.value) == null ? void 0 : t.progress) ?? 0) / 100;
+    }), re = s(
+      () => v.value ? "100%" : `${Math.round(P.value * 100)}%`
+    ), le = s(
       () => {
-        var e;
-        return (e = o.value) != null && e.created_at ? Date.parse(o.value.created_at) / 1e3 : 0;
+        var t;
+        return (t = o.value) != null && t.created_at ? Date.parse(o.value.created_at) / 1e3 : 0;
       }
-    ), S = u(() => {
-      var t;
-      if (!a(Q)) return "";
-      if (p.value) return c.value === "good" ? "100%" : "";
-      const e = Math.round(Number(((t = o.value) == null ? void 0 : t.progress) ?? 0));
-      return e > 0 ? `${e}%` : "";
-    }), N = u(() => {
-      var e, t;
-      return !((e = o.value) != null && e.steps_passed) && !((t = o.value) != null && t.steps_failed) ? "" : o.value.steps_failed ? `${o.value.steps_passed} passed, ${o.value.steps_failed} failed` : `${o.value.steps_passed} passed`;
-    }), A = u(() => {
-      var t;
-      if (N.value || p.value) return "";
-      const e = Math.round(Number(((t = o.value) == null ? void 0 : t.progress) ?? 0));
-      return e > 0 ? `${e}%` : "";
-    }), tt = u(() => {
-      var l;
-      if (!((l = o.value) != null && l.created_at)) return "";
-      const e = o.value.ended_at ? Date.parse(o.value.ended_at) : U.value, t = Math.max(
+    ), M = s(() => {
+      var e;
+      if (!a(ue)) return "";
+      if (v.value) return c.value === "good" ? "100%" : "";
+      const t = Math.round(Number(((e = o.value) == null ? void 0 : e.progress) ?? 0));
+      return t > 0 ? `${t}%` : "";
+    }), O = s(() => {
+      var t, e;
+      return !((t = o.value) != null && t.steps_passed) && !((e = o.value) != null && e.steps_failed) ? "" : o.value.steps_failed ? `${o.value.steps_passed} passed, ${o.value.steps_failed} failed` : `${o.value.steps_passed} passed`;
+    }), H = s(() => {
+      var e;
+      if (O.value || v.value) return "";
+      const t = Math.round(Number(((e = o.value) == null ? void 0 : e.progress) ?? 0));
+      return t > 0 ? `${t}%` : "";
+    }), de = s(() => {
+      var d;
+      if (!((d = o.value) != null && d.created_at)) return "";
+      const t = o.value.ended_at ? Date.parse(o.value.ended_at) : se.value, e = Math.max(
         0,
-        Math.round((e - Date.parse(o.value.created_at)) / 1e3)
+        Math.round((t - Date.parse(o.value.created_at)) / 1e3)
       );
-      return t >= 60 ? `${Math.floor(t / 60)}m ${t % 60}s` : `${t}s`;
+      return e >= 60 ? `${Math.floor(e / 60)}m ${e % 60}s` : `${e}s`;
     });
-    async function m() {
-      var b;
-      if (!((b = f.value) == null ? void 0 : b.target_id) || (await O.reload(), !$.value)) return;
-      const t = v.value, l = !t || t.scrollHeight - t.scrollTop - t.clientHeight < Et, x = performance.now();
-      await w.follow(), ct(x, async () => {
-        R.value = !0, await ot(), l && v.value && (v.value.scrollTop = v.value.scrollHeight), v.value && w.feed.drawn(v.value);
+    async function y() {
+      var w;
+      if (!((w = b.value) == null ? void 0 : w.target_id) || (await I.reload(), !L.value)) return;
+      const e = k.value, d = !e || e.scrollHeight - e.scrollTop - e.clientHeight < Ve, C = performance.now();
+      await $.follow(), ye(C, async () => {
+        B.value = !0, await ce(), d && k.value && (k.value.scrollTop = k.value.scrollHeight), k.value && $.feed.drawn(k.value);
       });
     }
-    q($, (e) => e && m());
-    const F = L(!1);
-    async function et() {
-      var t;
-      const e = await d.run(["output", "ask-reader", String((t = f.value) == null ? void 0 : t.target_id)]);
-      (e == null ? void 0 : e.ok) !== !1 && (F.value = !0);
+    Z(L, (t) => t && y());
+    const W = h(!1);
+    async function ie() {
+      var e;
+      const t = await i.run(["output", "ask-reader", String((e = b.value) == null ? void 0 : e.target_id)]);
+      (t == null ? void 0 : t.ok) !== !1 && (W.value = !0);
     }
-    const at = u(() => {
-      var e, t;
-      return !F.value && !((e = o.value) != null && e.reader_requested) && !((t = o.value) != null && t.reads_progress) && !p.value;
-    });
-    async function B(e) {
-      var l;
-      const t = await d.run(["output", e, String((l = f.value) == null ? void 0 : l.target_id)]);
-      (t == null ? void 0 : t.ok) !== !1 && m();
+    const j = s(() => {
+      var t, e;
+      return !W.value && !((t = o.value) != null && t.reader_requested) && !((e = o.value) != null && e.reads_progress) && !v.value;
+    }), q = h(null), f = h(!1);
+    async function R(t) {
+      f.value = !1, await t();
     }
-    return q(p, (e) => e && m()), d.follow(
+    async function G(t) {
+      var d;
+      const e = await i.run(["output", t, String((d = b.value) == null ? void 0 : d.target_id)]);
+      (e == null ? void 0 : e.ok) !== !1 && y();
+    }
+    return Z(v, (t) => t && y()), i.follow(
       ["process.*"],
-      (e) => {
-        var t;
-        return e.row_id === ((t = f.value) == null ? void 0 : t.target_id) && m();
+      (t) => {
+        var e;
+        return t.row_id === ((e = b.value) == null ? void 0 : e.target_id) && y();
       }
-    ), lt(
-      m,
-      E,
-      () => $.value ? Mt : $t
-    ), (e, t) => {
-      var l, x, b, H, V, z, W, j;
-      return n(), r("div", vt, [
-        ((l = a(h)) == null ? void 0 : l.value) ?? a(h) ? (n(), k(y, {
+    ), _e(
+      y,
+      T,
+      () => L.value ? Ae : Fe
+    ), (t, e) => {
+      var d, C, w, X, J, K, Q, U;
+      return n(), p("div", he, [
+        ((d = a(x)) == null ? void 0 : d.value) ?? a(x) ? (n(), r(S, {
           key: 0,
-          to: ((x = a(h)) == null ? void 0 : x.value) ?? a(h)
+          to: ((C = a(x)) == null ? void 0 : C.value) ?? a(x)
         }, [
-          s("span", {
+          u("span", {
             class: "output-dock-state",
             "data-state": c.value,
-            style: T({ "--tone": D[c.value] })
+            style: A({ "--tone": E[c.value] })
           }, [
-            E() ? (n(), r("span", gt)) : (n(), k(a(dt), {
+            T() ? (n(), p("span", Ne)) : (n(), r(a(te), {
               key: 1,
-              name: X[c.value],
+              name: ae[c.value],
               size: 14
             }, null, 8, ["name"]))
-          ], 12, kt),
-          s("span", {
+          ], 12, Se),
+          u("span", {
             class: "output-dock-title",
-            title: ((b = a(o)) == null ? void 0 : b.title) || ((H = a(o)) == null ? void 0 : H.line)
-          }, _(((V = a(o)) == null ? void 0 : V.title) || ((z = a(o)) == null ? void 0 : z.line)), 9, _t),
-          C.value > 0 || p.value ? (n(), r("div", {
+            title: ((w = a(o)) == null ? void 0 : w.title) || ((X = a(o)) == null ? void 0 : X.line)
+          }, m(((J = a(o)) == null ? void 0 : J.title) || ((K = a(o)) == null ? void 0 : K.line)), 9, xe),
+          P.value > 0 || v.value ? (n(), p("div", {
             key: 0,
             class: "output-dock-bar",
-            "data-figure-bar": p.value ? c.value : "",
-            "data-figure-began": Z.value
+            "data-figure-bar": v.value ? c.value : "",
+            "data-figure-began": le.value
           }, [
-            s("div", {
+            u("div", {
               class: "output-dock-fill",
-              style: T({ width: Y.value, background: D[c.value] }),
-              "data-figure-progress": p.value ? null : ""
-            }, null, 12, mt)
-          ], 8, ft)) : i("", !0)
-        ], 8, ["to"])) : i("", !0),
-        a(a(g)) && E() && !C.value && !N.value ? (n(), k(y, {
+              style: A({ width: re.value, background: E[c.value] }),
+              "data-figure-progress": v.value ? null : ""
+            }, null, 12, Me)
+          ], 8, $e)) : l("", !0)
+        ], 8, ["to"])) : l("", !0),
+        a(a(g)) && T() && !P.value && !O.value ? (n(), r(S, {
           key: 1,
           to: a(a(g))
         }, [
-          t[3] || (t[3] = s("span", {
+          e[6] || (e[6] = u("span", {
             class: "output-dock-pending",
             "data-output-pending": "",
             "aria-label": "Pending"
           }, [
-            s("i"),
-            s("i"),
-            s("i")
+            u("i"),
+            u("i"),
+            u("i")
           ], -1))
-        ], 8, ["to"])) : i("", !0),
-        a(a(g)) && N.value ? (n(), k(y, {
+        ], 8, ["to"])) : l("", !0),
+        a(a(g)) && O.value ? (n(), r(S, {
           key: 2,
           to: a(a(g))
         }, [
-          s("span", bt, [
-            t[4] || (t[4] = G("Steps: ", -1)),
-            s("b", null, _(N.value), 1)
+          u("span", Oe, [
+            e[7] || (e[7] = N("Steps: ", -1)),
+            u("b", null, m(O.value), 1)
           ])
-        ], 8, ["to"])) : i("", !0),
-        a(a(g)) && A.value ? (n(), k(y, {
+        ], 8, ["to"])) : l("", !0),
+        a(a(g)) && H.value ? (n(), r(S, {
           key: 3,
           to: a(a(g))
         }, [
-          s("span", yt, [
-            t[5] || (t[5] = G("Progress: ", -1)),
-            s("b", null, _(A.value), 1)
+          u("span", Ce, [
+            e[8] || (e[8] = N("Progress: ", -1)),
+            u("b", null, m(H.value), 1)
           ])
-        ], 8, ["to"])) : i("", !0),
-        a(a(P)) ? (n(), k(y, {
+        ], 8, ["to"])) : l("", !0),
+        a(a(V)) ? (n(), r(S, {
           key: 4,
-          to: a(a(P))
+          to: a(a(V))
         }, [
-          S.value ? (n(), r("span", {
+          M.value ? (n(), p("span", {
             key: 0,
             class: "output-dock-percent",
             "data-output-percent": "",
             role: "img",
-            title: S.value,
-            "aria-label": S.value
+            title: M.value,
+            "aria-label": M.value
           }, [
-            s("i", {
-              style: T({ width: S.value, background: D.running })
+            u("i", {
+              style: A({ width: M.value, background: E.running })
             }, null, 4)
-          ], 8, ht)) : (n(), r("span", wt, _(tt.value), 1))
-        ], 8, ["to"])) : i("", !0),
-        s("div", St, [
-          s("div", Nt, [
-            R.value ? (n(), r("div", xt, [
-              s("pre", {
+          ], 8, De)) : (n(), p("span", Ee, m(de.value), 1))
+        ], 8, ["to"])) : l("", !0),
+        u("div", Ie, [
+          u("div", Le, [
+            B.value ? (n(), p("div", Te, [
+              u("pre", {
                 ref_key: "terminal",
-                ref: v,
+                ref: k,
                 class: "output-dock-terminal",
                 "data-output-terminal": "",
-                onScroll: t[0] || (t[0] = (I) => a(w).loadEarlier(I.target))
-              }, _(a(M).length ? a(M).join(`
+                onScroll: e[0] || (e[0] = (_) => a($).loadEarlier(_.target))
+              }, m(a(z).length ? a(z).join(`
 `) : "No output yet"), 545),
-              (W = a(o)) != null && W.reading_text ? (n(), r("p", Dt, _(a(o).reading_text), 1)) : i("", !0),
-              (j = a(o)) != null && j.markable ? (n(), r("p", Ot, [
-                a(o).marked_words ? (n(), r("button", {
+              (Q = a(o)) != null && Q.reading_text ? (n(), p("p", Pe, m(a(o).reading_text), 1)) : l("", !0),
+              j.value || (U = a(o)) != null && U.markable ? (n(), p(ee, { key: 1 }, [
+                u("button", {
+                  ref_key: "reportAnchor",
+                  ref: q,
+                  type: "button",
+                  class: "output-dock-report",
+                  "data-output-report": "",
+                  title: "Report a problem with this output",
+                  "aria-label": "Report a problem with this output",
+                  "aria-expanded": f.value,
+                  onClick: e[1] || (e[1] = (_) => f.value = !f.value)
+                }, [
+                  pe(a(te), {
+                    name: "warn",
+                    size: 14
+                  })
+                ], 8, Re),
+                f.value ? (n(), r(a(be), {
                   key: 0,
-                  type: "button",
-                  class: "output-dock-mark",
-                  "data-output-mark-readable": "",
-                  onClick: t[1] || (t[1] = (I) => B("readable"))
-                }, "Mark as readable")) : (n(), r("button", {
-                  key: 1,
-                  type: "button",
-                  class: "output-dock-mark",
-                  "data-output-mark-unreadable": "",
-                  onClick: t[2] || (t[2] = (I) => B("unreadable"))
-                }, "Mark as not readable"))
-              ])) : i("", !0),
-              !a(M).length && at.value ? (n(), r("button", {
-                key: 2,
-                type: "button",
-                class: "output-dock-reader",
-                "data-output-reader-ask": "",
-                onClick: et
-              }, " Ask the agent to draw a reader ")) : i("", !0)
-            ])) : (n(), k(a(it), {
+                  anchor: q.value,
+                  "min-width": 190,
+                  "data-output-report-menu": "",
+                  onClose: e[5] || (e[5] = (_) => f.value = !1)
+                }, {
+                  default: D(() => {
+                    var _;
+                    return [
+                      j.value ? (n(), r(a(F), {
+                        key: 0,
+                        "data-output-reader-ask": "",
+                        onClick: e[2] || (e[2] = (Y) => R(ie))
+                      }, {
+                        default: D(() => [...e[9] || (e[9] = [
+                          N("Ask for a better reader", -1)
+                        ])]),
+                        _: 1
+                      })) : l("", !0),
+                      (_ = a(o)) != null && _.markable ? (n(), p(ee, { key: 1 }, [
+                        a(o).marked_words ? (n(), r(a(F), {
+                          key: 0,
+                          "data-output-mark-readable": "",
+                          onClick: e[3] || (e[3] = (Y) => R(() => G("readable")))
+                        }, {
+                          default: D(() => [...e[10] || (e[10] = [
+                            N("Mark as readable", -1)
+                          ])]),
+                          _: 1
+                        })) : (n(), r(a(F), {
+                          key: 1,
+                          "data-output-mark-unreadable": "",
+                          onClick: e[4] || (e[4] = (Y) => R(() => G("unreadable")))
+                        }, {
+                          default: D(() => [...e[11] || (e[11] = [
+                            N("Mark as unreadable", -1)
+                          ])]),
+                          _: 1
+                        }))
+                      ], 64)) : l("", !0)
+                    ];
+                  }),
+                  _: 1
+                }, 8, ["anchor"])) : l("", !0)
+              ], 64)) : l("", !0)
+            ])) : (n(), r(a(me), {
               key: 0,
               class: "output-dock-loading",
               bars: [
@@ -248,7 +289,7 @@ const vt = {
       ]);
     };
   }
-}, Rt = /* @__PURE__ */ pt(Ct, [["__scopeId", "data-v-af3fc177"]]);
+}, qe = /* @__PURE__ */ we(ze, [["__scopeId", "data-v-d8a4079e"]]);
 export {
-  Rt as default
+  qe as default
 };
