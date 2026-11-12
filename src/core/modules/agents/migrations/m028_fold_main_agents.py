@@ -1,5 +1,4 @@
 import sqlite3
-from pathlib import Path
 
 from engine.database.database import Database
 from engine.database.errors.migration_deferred_error import MigrationDeferred
@@ -14,7 +13,6 @@ from core.modules.agents.support.fold_copy import FoldCopy
 from core.modules.agents.support.main_fold import MainFold
 from core.modules.agents.support.main_fold_plan import EnvironmentFold
 
-DATABASE_FILE = Statement("PRAGMA database_list")
 ONE_MAIN_INDEX = Statement("CREATE UNIQUE INDEX IF NOT EXISTS agents_one_main ON agents (environment_id) WHERE role = 'main'")
 
 
@@ -37,7 +35,7 @@ class FoldMainAgentsMigration(RebuildMigration):
     @staticmethod
     def fold(database: Database, fold: MainFold, folds: tuple[EnvironmentFold, ...]) -> None:
         clock = Clock()
-        home = JournalHome(Path(database.rows(DATABASE_FILE)[0][2]).parent)
+        home = JournalHome(database.file().parent)
         log = SystemLogWriter(home, clock)
         try:
             copy = FoldCopy.before_attempt(database, home)

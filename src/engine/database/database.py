@@ -60,12 +60,17 @@ class Database:
         database.set_busy_timeout(BUSY_TIMEOUT_SECONDS)
         return database
 
+    def file(self) -> Path:
+        return Path(self.connection.execute("PRAGMA database_list").fetchone()[2])
+
     def backup_to(self, target: Path) -> None:
+        source = sqlite3.connect(f"{self.file().as_uri()}?mode=ro", uri=True)
         copy = sqlite3.connect(target)
         try:
-            self.connection.backup(copy)
+            source.backup(copy)
         finally:
             copy.close()
+            source.close()
 
     def release_free_pages(self, pages: int) -> None:
         self.connection.execute(f"PRAGMA incremental_vacuum({int(pages)})").fetchall()
