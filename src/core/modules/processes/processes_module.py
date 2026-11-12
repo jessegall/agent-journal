@@ -86,7 +86,6 @@ from core.modules.processes.support.process_searcher import ProcessSearcher
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_extension import WindowExtension
 from engine.viewer.window_key import WindowKey
-from engine.viewer.window_extension import WindowExtension
 from engine.viewer.window_tab import WindowTab
 from engine.enums.key_loading import KeyLoading
 from engine.enums.window_icon import WindowIcon
