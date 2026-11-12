@@ -1,8 +1,8 @@
 from engine.row.metadata import Metadata
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.errors.plan_approval_error import PlanApprovalError
+from core.modules.plans.support.plan_settings import MODULE_KEY
 
-MODULE_KEY = "journal.core.plans"
 MESSAGE_KEY = "approval_message_id"
 
 

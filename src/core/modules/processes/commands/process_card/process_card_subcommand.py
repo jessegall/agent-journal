@@ -10,12 +10,12 @@ from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
-from core.modules.processes.support.reading.reading_card_text import ReadingCardText
+from core.modules.processes.support.reading_notices.reading_card_text import ReadingCardText
 from core.modules.processes.support.process_card import ProcessCard
 from core.modules.processes.support.run_title import RunTitle
 from core.modules.processes.support.run_visibility import RunVisibility
 from core.modules.processes.support.reading.run_command_words import RunCommandWords
-from core.modules.processes.support.reading.unreadable_marks import UnreadableMarks
+from core.modules.processes.support.unreadable.unreadable_marks import UnreadableMarks
 
 
 class ProcessCardSubcommand(ReadSubcommand[ProcessCard]):

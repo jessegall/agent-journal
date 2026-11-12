@@ -27,7 +27,7 @@ class SearchResult:
     def lines(self) -> list[str]:
         if not self.hits and not self.library.entries:
             return [f"nothing here holds all of: {' '.join(self.terms)}", *self.library_notice()]
-        shown = [f"no row holds all of: {', '.join(self.terms)}, these hold most of them, the closest first", *(hit.line() for hit in self.hits)] if self.is_closest else [hit.line() for hit in self.hits]
+        shown = [f"no row holds all of: {', '.join(self.terms)}, these hold most of them, the closest first", *(hit.line_with_words() for hit in self.hits)] if self.is_closest else [hit.line() for hit in self.hits]
         if self.total > len(self.hits) and not self.is_closest:
             shown.append(f"{self.total} rows hold all of: {', '.join(self.terms)}, the newest {len(self.hits)} are shown")
         return [*shown, *(hit.line() for hit in self.library.entries), *self.library_notice()]

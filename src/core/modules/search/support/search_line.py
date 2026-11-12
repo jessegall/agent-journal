@@ -2,7 +2,7 @@ import shlex
 from dataclasses import dataclass
 
 COMMAND = ("journal", "search", "find")
-MODEL_FLAG = "--model"
+MODEL_FILTER_FLAG = "--model"
 
 
 @dataclass(frozen=True)
@@ -24,10 +24,10 @@ class SearchLine:
         models: list[str] = []
         arguments = iter(tokens[len(COMMAND):])
         for word in arguments:
-            if word == MODEL_FLAG:
+            if word == MODEL_FILTER_FLAG:
                 models.extend(name for name in next(arguments, "").split(",") if name)
-            elif word.startswith(f"{MODEL_FLAG}="):
-                models.extend(name for name in word.removeprefix(f"{MODEL_FLAG}=").split(",") if name)
+            elif word.startswith(f"{MODEL_FILTER_FLAG}="):
+                models.extend(name for name in word.removeprefix(f"{MODEL_FILTER_FLAG}=").split(",") if name)
             else:
                 terms.append(word)
         return cls(tuple(terms), tuple(models)) if terms else None

@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from core.modules.processes.commands.mark_unreadable.mark_unreadable import MarkUnreadable
 from core.modules.processes.models.unreadable_mark import UnreadableMark
-from core.modules.processes.support.reading.unreadable_marks import UnreadableMarks
+from core.modules.processes.support.unreadable.unreadable_marks import UnreadableMarks
 
 
 class MarkUnreadableHandler(Handler[MarkUnreadable, UnreadableMark]):

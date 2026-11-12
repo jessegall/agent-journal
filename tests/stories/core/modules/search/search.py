@@ -12,6 +12,16 @@ def test_a_word_matches_by_its_stem_so_hours_finds_two_hourly(new_story):
     story.expect_text('search find reviewer two hours', "task 1: The two-hourly reviewer", actor=story.agent)
 
 
+def test_a_search_no_row_fully_matches_shows_the_rows_with_most_words_and_says_which_words_each_holds(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('task make "Install plan 1124 for the cart" --environment main', actor=story.user)
+    story.run('task make "Fix the till" --environment main', actor=story.user)
+    story.run('message send "Plan 1124 installed by accident" --environment main', actor=story.user)
+    output = story.run('search find installed plan 1124 by mistake', actor=story.agent).output_text
+    story.expect_rows("these hold most of them, the closest first" in output, "task 1: Install plan 1124 for the cart [holds: installed, plan, 1124]" in output, "task 2:" not in output, detail=output)
+    story.expect_ordered_lines('search find installed plan 1124 by mistake', "message 1: Plan 1124 installed by accident [holds: installed, plan, 1124, by]", "task 1: ", actor=story.agent)
+
+
 def test_a_process_whose_only_match_is_a_search_command_is_left_out(new_story):
     story = new_story(fixture=UserJoined)
     start_process(story, "journal search find cart", limit_seconds=0)

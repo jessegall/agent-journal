@@ -14,7 +14,10 @@ SOURCE = Path(__file__).resolve().parents[4] / "src"
 SKIPPED_FOLDERS = ("dist", "migrations", "__pycache__", "node_modules")
 
 # a declared setting nothing reads yet, with the task that gives it a reader or removes it
-UNREAD_SETTINGS: dict[str, str] = {}
+UNREAD_SETTINGS: dict[str, str] = {
+    "journal.core.plans.checkpoints.review-model": "declared for the checkpoint screen; task 9325 makes the checkpoint review start on it",
+    "journal.core.plans.checkpoints.wait-for-person": "declared for the checkpoint screen; task 9325 makes a worker wait at a checkpoint on it",
+}
 
 
 @dataclass(frozen=True)

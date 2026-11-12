@@ -1,10 +1,10 @@
 import hashlib
 import json
 
+from engine.skill.skill_digest import DIGEST_CHARACTERS
 from core.modules.processes.support.reading.stock_reader_edits import READER_FIELDS
 from core.modules.processes.support.stock_reader import StockReader
 
-DIGEST_CHARACTERS = 12
 
 
 class StockDigest:

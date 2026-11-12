@@ -23,7 +23,7 @@ from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.reader_demands import ReaderDemands
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.run_counts import RunCounts
-from core.modules.processes.support.reading.unreadable_marks import UnreadableMarks
+from core.modules.processes.support.unreadable.unreadable_marks import UnreadableMarks
 
 
 COUNT_MISSING_REASON = "no reader counts the tests of {command}"
