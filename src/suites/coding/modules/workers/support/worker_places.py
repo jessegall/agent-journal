@@ -8,6 +8,7 @@ from engine.time.timestamp import Timestamp
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
+from engine.listener.rows.event_rows import EventRows
 from engine.scope.actor_scope import ActorScope
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
@@ -27,14 +28,14 @@ KEPT_NAMES_SHOWN = 5
 class WorkerPlaces:
     """Counts processes, starts in progress and delivered work against the worker limit."""
 
-    def __init__(self, agents: AgentRows, queries: Queries, limits: AgentTypeLimits, kept: KeptRows, clock: Clock, scopes: Scopes, work: AgentWork) -> None:
-        self.work = work
+    def __init__(self, agents: AgentRows, queries: Queries, limits: AgentTypeLimits, kept: KeptRows, clock: Clock, scopes: Scopes, work: AgentWork, rows: EventRows) -> None:
+        self.work, self.rows = work, rows
         self.agents, self.queries, self.limits, self.kept, self.clock, self.scopes = agents, queries, limits, kept, clock, scopes
 
     def running(self) -> tuple[Agent, ...]:
         running = self.agents.running(CodingHelperRole.WORKER)
         pending_ids = tuple(self.work.pending())
-        pending = self.kept.scoped_current(lambda: tuple(self.queries.query(Agent).find_many(pending_ids)), name=f"workers.pending_agents:{pending_ids}")
+        pending = tuple(self.rows.required_index(Agent, pending_ids).values())
         return tuple({worker.id: worker for worker in (*running, *pending)}.values())
 
     def kept_workers(self) -> tuple[Agent, ...]:

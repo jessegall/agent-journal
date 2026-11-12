@@ -111,9 +111,10 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         statuses = self.usage.statuses(page.rows)
         account = self.usage.files.plan_windows(statuses)
         sandboxes = self.usage.sandbox.sandboxed_among(tuple(agents.values()))
+        merges = self.usage.merged_work(page.rows)
         return Page(tuple(AgentListingState(**vars(row), state=states.get(row.id, AgentListState.RETIRED), standing=agents[row.id].standing.value,
                                            resume_reason=self.resume_reason(agents[row.id], *locations[row.id]) if row.id in idle else None,
-                                           facts=self.usage.facts(row, policy, titles, pending.get(row.id), statuses[row.session], account, sandboxes[row.id]).json(),
+                                           facts=self.usage.facts(row, policy, titles, pending.get(row.id), statuses[row.session], account, sandboxes[row.id], merges.get(row.id)).json(),
                                            job_command=job_commands.get(row.role, ()),
                                            job_task_flag=task_flags.get(row.role, "")) for row in page.rows),
                     page.number, page.size, page.total)

@@ -32,8 +32,7 @@ class RepeatReads:
             return
         if not self.has_ended(command.process_id):
             if self.folder.read_mark(command.process_id, self.running_mark(context.actor)) and not self.is_held(command.process_id, context):
-                advice = MAIN_POLL_ADVICE if self.queries.query(Agent).find(context.actor.id).role == AgentRole.MAIN else HELPER_POLL_ADVICE
-                raise Refusal(f"output {command.process_id} is still running and you read it already: stop polling it", advice.format(process=command.process_id))
+                raise Refusal(f"output {command.process_id} is still running and you read it already: stop polling it", self.poll_advice(context.actor).format(process=command.process_id))
             return
         if command.is_repeat_allowed:
             return
@@ -48,6 +47,11 @@ class RepeatReads:
         else:
             self.folder.write_read_mark(command.process_id, self.running_mark(actor), read_at)
             self.folder.write_read_mark(command.process_id, LOOKED_MARK, read_at)
+
+    def poll_advice(self, actor: Actor) -> str:
+        if self.queries.query(Agent).find(actor.id).role == AgentRole.MAIN:
+            return MAIN_POLL_ADVICE
+        return HELPER_POLL_ADVICE
 
     def is_held(self, process_id: int, context: Context) -> bool:
         held_run = self.held_runs.found(context.actor.id, context.timestamp)

@@ -10,14 +10,18 @@ const windows = computed(() => usage.value?.windows ?? []);
 // the limits a person sets on the allowance: each counts a window of the plan, fixed or as a budget from now
 const limits = computed(() => view.props.limits?.rows?.value ?? []);
 const program = computed(() => usage.value?.agents?.[0]?.program ?? "claude");
-const kind = ref("5 hours");
+// the limits a window of the plan can carry: the use within one clock hour is counted on the 5 hour window
+const LIMITS_OF_WINDOW = {"5 hours": ["5 hours", "hour"], "7 days": ["7 days"]};
+const kinds = computed(() => windows.value.flatMap((plan) => LIMITS_OF_WINDOW[plan.title] ?? []));
+const picked = ref("");
+const kind = computed({get: () => (kinds.value.includes(picked.value) ? picked.value : kinds.value[0] ?? ""), set: (value) => { picked.value = value; }});
 const mode = ref("fixed");
 const percent = ref("50");
 const {refusal: limitFailure, run} = useRunLine(() => view.reload("limits"));
 
 async function setLimit() {
     const number = Number(percent.value);
-    if (view.readOnly || !(number > 0 && number <= 100)) { limitFailure.value = "Use a percent from 1 to 100."; return; }
+    if (view.readOnly || !kind.value || !(number > 0 && number <= 100)) { limitFailure.value = "Use a percent from 1 to 100."; return; }
     await run(["usage-limit", "set", program.value, kind.value, mode.value, String(number)]);
 }
 
@@ -44,7 +48,7 @@ const reset = (seconds) => `Starts again ${new Date(seconds * 1000).toLocaleStri
         </template>
         <div class="limit-form" data-usage-limit-form>
             <p class="current">Stop the agents at your own limit</p>
-            <select v-model="kind" aria-label="Window the limit counts"><option>5 hours</option><option>7 days</option><option>hour</option></select>
+            <select v-model="kind" aria-label="Window the limit counts"><template v-for="option in kinds" :key="option"><option>{{ option }}</option></template></select>
             <select v-model="mode" aria-label="Type of limit"><option value="fixed">halt at</option><option value="budget">halt after more than</option></select>
             <TextInput v-model="percent" class="percent" type="number" min="1" max="100" aria-label="Percent of the window" />
             <Btn small @click="setLimit">Set limit</Btn>

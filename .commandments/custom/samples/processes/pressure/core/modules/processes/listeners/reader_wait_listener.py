@@ -1,5 +1,5 @@
 from engine.listener.commit.commit_listener import CommitListener
-from core.modules.drivers.commands.block_until.block_until import BlockUntil
+from engine.driver.block_until import BlockUntil
 
 
 class ReaderWaitListener(CommitListener):

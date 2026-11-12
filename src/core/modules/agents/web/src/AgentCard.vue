@@ -1,8 +1,8 @@
 <script setup>
 import {computed} from "vue";
-import {age, peekRef, perHour, seenWords, sinceWords, AgentTip, Btn, Icon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
-import AgentCardDetails from "./AgentCardDetails.vue";
+import {age, perHour, seenWords, sinceWords, AgentTip, Icon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
 import AgentActions from "./AgentActions.vue";
+import AgentCardDetails from "./AgentCardDetails.vue";
 import AgentStatusDot from "./AgentStatusDot.vue";
 import AgentTaskLine from "./AgentTaskLine.vue";
 import InformationBar from "../../../../../viewer/src/shell/InformationBar.vue";
@@ -63,19 +63,20 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
 
 <template>
     <div :class="['agent-card', {open}]" :data-agent-open="row.id" :aria-expanded="open" :role="open ? undefined : 'button'" :tabindex="open ? undefined : 0" @click="!open && emit('toggle')" @keydown.enter.self.prevent="!open && emit('toggle')" @keydown.space.self.prevent="!open && emit('toggle')">
-        <AgentTip :agent-id="row.id" :label="title" class="agent-head">
+        <div class="agent-head" data-agent-head>
             <template v-if="open"><button type="button" class="agent-back" title="Back" aria-label="Back" @click.stop="emit('toggle')"><Icon name="chevronRight" facing="left" :size="14" /></button></template>
-            <span class="agent-title" data-agent-title data-agent-motion>{{ open ? openTitle : title }}</span>
-            <span class="agent-name" data-agent-name data-agent-motion>{{ facts?.given_name || row.id }}</span>
-            <template v-if="!open"><Icon class="agent-chevron" name="chevronRight" :size="12" /></template>
             <template v-if="open">
-                <span class="agent-head-actions" data-agent-head-actions>
-                    <AgentActions :row="row" :held="dotState === 'blocked'" />
-                    <Btn variant="ghost" small data-agent-inspector @click.stop="peekRef(`agents:${row.id}`)">Open inspector</Btn>
-                    <template v-if="row.role === 'helper' && (!row.ended_at || facts?.helper_job_open)"><Btn variant="ghost" small data-helper-stop @click.stop="context.run(['helper', 'stop', String(row.number)])">{{ row.ended_at ? "End job" : "Stop" }}</Btn></template>
-                </span>
+                <span class="agent-title" data-agent-title data-agent-motion>{{ openTitle }}</span>
+                <span class="agent-name" data-agent-name data-agent-motion>{{ facts?.given_name || row.id }}</span>
             </template>
-        </AgentTip>
+            <template v-else>
+                <AgentTip :agent-id="row.id" :label="title" class="agent-who">
+                    <span class="agent-title" data-agent-title data-agent-motion>{{ title }}</span>
+                    <span class="agent-name" data-agent-name data-agent-motion>{{ facts?.given_name || row.id }}</span>
+                </AgentTip>
+                <Icon class="agent-chevron" name="chevronRight" :size="12" />
+            </template>
+        </div>
         <template v-if="!open">
             <span class="agent-line">
                 <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
@@ -92,6 +93,7 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
         </template>
         <template v-if="!open"><AgentTaskLine :tasks="tasks" :in-hand="row.role !== 'helper' && facts?.job_enabled ? jobTask || null : null" :job="row.role === 'helper' ? job : ''" :job-title="row.role === 'helper' ? facts?.helper_job_title || '' : ''" :job-launch="row.role === 'helper' ? jobLaunch : ''" :per-hour="rate" /></template>
         <AgentStatusDot :state="dotState" :doing="statusWords" :since="statusSince" :seen="statusSeen" />
+        <template v-if="open && !retired"><AgentActions :row="row" :held="dotState === 'blocked'" /></template>
         <template v-if="open"><AgentCardDetails :row="row" :facts="facts" :progress="progress" :wait-reason="waitReason" :tasks="tasks" :stopped-with-work="stoppedWithWork" :open="open" /></template>
     </div>
 </template>
@@ -205,7 +207,7 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
 .agent-card.open { padding: 0; gap: 0; cursor: default; }
 .agent-card.open .agent-head { gap: 9px; padding: 7px 36px 7px 8px; border-bottom: 1px solid var(--border-inner); background: var(--side); }
 .agent-card.open .agent-title { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
-.agent-head-actions { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; justify-content: flex-end; margin-left: auto; }
+.agent-who { display: inline-flex; gap: 6px; align-items: baseline; min-width: 0; }
 .agent-live { background: var(--bg-2); }
 .agent-live-fact { flex: none; color: var(--text-3); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 </style>

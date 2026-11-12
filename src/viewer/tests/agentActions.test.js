@@ -106,7 +106,7 @@ test("an unavailable session can be retired but cannot be sent a job", async () 
     expect(element.querySelector("[data-agent-retire]").disabled).toBe(false);
 });
 
-test("a retired card offers only its transcript and no composer", async () => {
+test("a retired card keeps the same tabs as any card and has no composer", async () => {
     const row = reactive({...helper, retired_at: null, access: "writing", program: "claude"});
     const held = {...context({"agent transcript": page([])}), tabs: [{key: "tasks", label: "Tasks"}, {key: "transcript", label: "Transcript"}, {key: "terminal", label: "Terminal"}]};
     const element = await mounted({render: () => h(AgentCard, {row, facts: {tasks: []}, open: true})}, held);
@@ -114,7 +114,7 @@ test("a retired card offers only its transcript and no composer", async () => {
     row.state = "retired";
     row.retired_at = "2026-11-02T10:00:00Z";
     await settle();
-    expect([...element.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["transcript"]);
+    expect([...element.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["tasks", "transcript", "terminal"]);
     expect(element.querySelector("[data-agent-retire], [data-agent-send-job], [data-agent-driver]")).toBeNull();
     expect(element.querySelector("textarea")).toBeNull();
 });

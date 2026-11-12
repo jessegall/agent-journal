@@ -72,6 +72,13 @@ class Worktree(Removable, EnvironmentScoped, Model):
     def merge(self, timestamp: Timestamp, actor: Actor) -> "Worktree":
         return self.moved(WorktreeLifecycle.merge, merged_at=timestamp)
 
+    def part_merged(self, task_ids: Sequence[int]) -> "Worktree":
+        move = WorktreeLifecycle.merge_part_delivered if self.state is WorktreeState.DELIVERED else WorktreeLifecycle.merge_part_cut
+        return self.moved(move, merged_task_ids=self.with_merged(task_ids))
+
+    def with_merged(self, task_ids: Sequence[int]) -> str:
+        return ",".join(str(task_id) for task_id in (*self.merged_tasks(), *task_ids))
+
     def remove(self, timestamp: Timestamp, actor: Actor) -> "Worktree":
         return self.moved(WorktreeLifecycle.remove, removed_at=timestamp)
 

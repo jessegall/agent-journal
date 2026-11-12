@@ -1,5 +1,5 @@
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.drivers.commands.block_until.block_until import BlockUntil
+from engine.driver.block_until import BlockUntil
 from core.modules.processes.support.process_nudges import READER_BLOCK
 
 

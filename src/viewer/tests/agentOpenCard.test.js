@@ -45,14 +45,12 @@ const cardOf = (element, id) => element.querySelector(`[data-agent-open="${id}"]
 const cards = (element) => [...element.querySelectorAll("[data-agent-open]")].map((card) => Number(card.dataset.agentOpen));
 const band = (element) => element.querySelector("[data-agents-held]");
 
-test("the opened agent card places its actions in the title bar and pads transcript rows", async () => {
+test("the opened agent card has no row of buttons and pads transcript rows", async () => {
     const row = {...AGENTS[2], ended_at: "2026-11-01T10:00:00Z", job_command: ["worker", "send"], job_task_flag: "--task"};
     const element = await mounted({render: () => h(AgentCard, {row, facts: {tasks: []}, open: true})}, {...context({}), tabs: TABS});
-    const actions = element.querySelector("[data-agent-head-actions]");
-    expect(actions.querySelector("[data-agent-send-job]")).not.toBeNull();
-    expect(actions.querySelector("[data-agent-retire]")).not.toBeNull();
-    expect(actions.querySelector("[data-agent-inspector]")).not.toBeNull();
-    expect(element.querySelector("[data-information-bar] [data-agent-head-actions]")).toBeNull();
+    for (const name of ["head-actions", "send-job", "retire", "inspector", "history", "driver"]) expect(element.querySelector(`[data-agent-${name}]`)).toBeNull();
+    expect(element.querySelector("[data-helper-stop]")).toBeNull();
+    expect(element.querySelector("[data-agent-head] .agent-back")).not.toBeNull();
     const transcript = readFileSync(resolve(__dirname, "../../core/modules/agents/web/src/TranscriptRows.vue"), "utf8");
     expect(transcript).toMatch(/\.transcript :deep\(\.row-list-row\)\s*\{\s*padding:\s*8px 14px/);
 });
@@ -107,7 +105,31 @@ test("a retired agent card has no live bar", async () => {
     const row = {...AGENTS[2], number: 770, ended_at: "2026-11-01T10:00:00Z", retired_at: "2026-11-02T10:00:00Z"};
     const element = await mounted({render: () => h(AgentCard, {row, facts: {tasks: []}, open: true})}, {...context({}), tabs: TABS});
     expect(element.querySelector("[data-information-bar]")).toBeNull();
-    expect(element.querySelector("[data-agent-head-actions]")).not.toBeNull();
+    expect(element.querySelector("[data-agent-head-actions]")).toBeNull();
+});
+
+test("a worker, a helper, a reader and a retired agent open the same tabs", async () => {
+    const tabsOf = async (row) => {
+        const element = await mounted({render: () => h(AgentCard, {row, facts: {tasks: []}, open: true})}, {...context({}), tabs: TABS});
+        const keys = [...element.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab);
+        document.body.innerHTML = "";
+        return keys;
+    };
+    const worker = await tabsOf({...AGENTS[2], role: "worker", access: "writing"});
+    expect(worker.length).toBeGreaterThan(3);
+    expect(await tabsOf({...AGENTS[2], role: "helper", access: "read-only"})).toEqual(worker);
+    expect(await tabsOf({...AGENTS[2], role: "merger", access: "read-only"})).toEqual(worker);
+    expect(await tabsOf({...AGENTS[2], retired_at: "2026-11-02T10:00:00Z", ended_at: "2026-11-01T10:00:00Z"})).toEqual(worker);
+});
+
+test("the agent hover card is on the name of a closed card only, and an open card has none", async () => {
+    const closed = await mounted({render: () => h(AgentCard, {row: AGENTS[2], facts: {tasks: []}})}, {...context({}), tabs: TABS});
+    expect(closed.querySelectorAll("[data-agent-tip]")).toHaveLength(1);
+    expect(closed.querySelector("[data-agent-tip] [data-agent-title]")).not.toBeNull();
+    expect(closed.querySelector("[data-agent-head]").hasAttribute("data-agent-tip")).toBe(false);
+    document.body.innerHTML = "";
+    const open = await mounted({render: () => h(AgentCard, {row: AGENTS[2], facts: {tasks: []}, open: true})}, {...context({}), tabs: TABS});
+    expect(open.querySelector("[data-agent-tip]")).toBeNull();
 });
 
 test("every card is listed and there is no band while none is open", async () => {

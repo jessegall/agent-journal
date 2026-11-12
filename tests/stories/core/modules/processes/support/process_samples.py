@@ -28,10 +28,14 @@ BYTES_SHORT = 12
 
 
 def start_process(story: Story, line: str = "make test && echo done", piped: bool = False, limit_seconds: int = 30, category: CommandCategory | None = None) -> Process:
+    return start_process_of(story, story.agent, line, piped, limit_seconds, category)
+
+
+def start_process_of(story: Story, owner: Actor, line: str, piped: bool = False, limit_seconds: int = 30, category: CommandCategory | None = None) -> Process:
     texts = [text.strip() for text in line.split("&&")]
     parts = tuple(PartSpec(text, text.split()[0], piped and index == 0, sample_category(text, category)) for index, text in enumerate(texts))
-    command = StartProcess(story.agent.id, None, line, "/work/main", "zsh", (category or (CommandCategory.JOURNAL if line.startswith("journal ") else CommandCategory.UNKNOWN)), limit_seconds, parts)
-    return story.container.get(Bus).run(command, story.agent, environment_id=1)
+    command = StartProcess(owner.id, None, line, "/work/main", "zsh", (category or (CommandCategory.JOURNAL if line.startswith("journal ") else CommandCategory.UNKNOWN)), limit_seconds, parts)
+    return story.container.get(Bus).run(command, owner, environment_id=1)
 
 
 def sample_category(text: str, category: CommandCategory | None) -> CommandCategory:
@@ -107,6 +111,13 @@ def started_run(story: Story, line: str = "make test && echo done", category: Co
 def moved_run(story: Story, line: str = "make build", category: CommandCategory | None = None) -> Process:
     process = started_run(story, line, category)
     story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
+    return process
+
+
+def moved_run_of(story: Story, owner: Actor, line: str, category: CommandCategory | None = None) -> Process:
+    process = start_process_of(story, owner, line, category=category)
+    parts_started(story, process)
+    story.container.get(Bus).run(MoveProcess(process.id), owner, environment_id=1)
     return process
 
 

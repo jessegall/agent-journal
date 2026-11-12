@@ -6,6 +6,7 @@ from engine.model.tables import Tables
 from engine.query.query import Query
 from engine.query.kept_row_changes import KeptRowChanges
 from engine.query.conditions.among import Among
+from engine.query.conditions.greater import Greater
 from engine.query.conditions.less import Less
 from engine.query.conditions.minimum import Minimum
 from engine.time.timestamp import Timestamp
@@ -51,6 +52,12 @@ class WorktreeQuery(Query[Worktree], KeptRowChanges[Worktree]):
 
     def has_merge(self, agent_id: int, earliest_at: Timestamp) -> bool:
         return self.with_removed().filter(session_agent_id=agent_id).matching(Minimum("merged_at", earliest_at.text)).exists()
+
+    def merged_among(self, agent_ids: Sequence[int]) -> tuple[Worktree, ...]:
+        """The worktrees of these agents that a merge took work from, a whole one or a part."""
+        whole = self.with_removed().matching(Among("session_agent_id", agent_ids)).matching(Greater("merged_at", ""))
+        part = self.with_removed().matching(Among("session_agent_id", agent_ids)).matching(Greater("merged_task_ids", ""))
+        return tuple({worktree.id: worktree for worktree in (*whole.all_rows(), *part.all_rows())}.values())
 
     def open_worktrees(self) -> list[Worktree]:
         return list(self.kept.scoped_read(self.table.name, lambda: tuple(self.oldest().all_rows()), "removed_at IS NULL", name="workers.open_worktrees"))

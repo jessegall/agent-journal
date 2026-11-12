@@ -34,10 +34,12 @@ class RunSlots:
         self.kind_limits = kind_limits
 
     def grant(self, context: Context) -> None:
-        for waiting in [process for process in self.running() if process.queued_at is not None]:
+        queued = [process for process in self.running() if process.queued_at is not None]
+        parts = self.admission.waiting_parts(queued)
+        for waiting in queued:
             agent = self.rows.required(Agent, waiting.session_agent_id)
             needs_slot = self.admission.needs_slot(waiting, agent)
-            if not self.admission.may_start(waiting, agent, self.clock.timestamp()) or self.is_kind_full(waiting):
+            if not self.admission.may_start(waiting, agent, parts[waiting.id], self.clock.timestamp()) or self.is_kind_full(waiting):
                 continue
             process = self.rows.required(Process, waiting.id)
             used_slots = sum(self.admission.uses_slot(run) for run in self.running() if run.queued_at is None)

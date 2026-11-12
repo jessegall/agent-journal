@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from engine.enums.command_category import CommandCategory
 from engine.query.queries import Queries
 from engine.enums.agent_role import AgentRole
@@ -7,6 +9,7 @@ from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.models.process import Process
+from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.support.run_visibility import RunVisibility
 
@@ -29,8 +32,10 @@ class RunAdmission:
         return (process.is_queue_run and self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS)
                 and self.queries.query(Agent).find(process.session_agent_id).role == AgentRole.MAIN)
 
-    def may_start(self, process: Process, agent: Agent, current_time: Timestamp) -> bool:
-        parts = self.visibility.parts(process.id)
+    def waiting_parts(self, waiting: Sequence[Process]) -> dict[int, tuple[ProcessPart, ...]]:
+        return self.visibility.processes_parts(tuple(process.id for process in waiting))
+
+    def may_start(self, process: Process, agent: Agent, parts: Sequence[ProcessPart], current_time: Timestamp) -> bool:
         if not parts:
             return False
         if not self.needs_slot(process, agent):

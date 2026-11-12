@@ -34,7 +34,7 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.helpers.start_helper import START, started
 from tests.stories.core.modules.helpers.helper_jobs import resumable_session
 from tests.stories.core.modules.usage.support.status_files import save_status_file
-from tests.stories.suites.coding.modules.workers.program_choice import failed_worker_story
+from tests.stories.suites.coding.modules.workers.program_choice import failed_worker_story, worker_starts
 from tests.stories.suites.coding.modules.workers.worker_routes import delivered_worker_story, merged_worker_story
 from tests.stories.suites.coding.modules.workers.support.program_split import (
     SAMPLE_MODULE, SPLIT, dispatch, exit_program, expect_program, new_task, outage,
@@ -61,11 +61,11 @@ def test_nothing_set_ignores_readiness(split_story, agent_role, cause):
 
 def test_worker_returns_when_its_program_is_back(failed_worker_story):
     story, worker, launcher = failed_worker_story
-    story.expect_rows(len(launcher.requests) == 1)
+    story.expect_rows(len(worker_starts(launcher, worker)) == 1, detail=str(worker_starts(launcher, worker)))
     story.advance(timedelta(minutes=15, seconds=1))
     WorkerResumeRetry()(story.container)
     story.run_listeners()
-    story.expect_rows(len(launcher.requests) == 2, launcher.requests[-1]['agent_id'] == worker.id)
+    story.expect_rows(len(worker_starts(launcher, worker)) == 2, detail=str(worker_starts(launcher, worker)))
     story.expect_text(f'agent-line list --agent {story.agent.id}', 'back', f'{worker.id}')
 
 
@@ -182,10 +182,6 @@ def test_helper_send_on_an_out_program_says_until_when(outage_helper_story):
     story, helper_id, ends_at = outage_helper_story
     story.expect_refusal(f'helper send {agent_number(story, helper_id)} "Read the listener"', ends_at, actor=story.agent)
     story.expect_text(f'agent show {agent_number(story, helper_id)}', 'ended_at:')
-
-
-def test_helper_send_on_an_out_program_says_until_when_reuse_names_it(outage_helper_story):
-    story, helper_id, ends_at = outage_helper_story
     story.expect_refusal(START, ends_at, actor=story.agent)
     story.expect_rows(f'journal helper send {agent_number(story, helper_id)}' in story.results[-1].output_text)
 
@@ -245,9 +241,13 @@ def test_mark_a_program_out_invalid_values_are_refused(split_story, program, end
 def test_profile_with_tools_stays_on_its_program(split_story, split_viewer):
     story = split_story
     split_viewer.value('profiles.profiles', ['profile', 'save', 'tool-reader', '--description', 'Reads the design', '--body', 'Read the design.', '--model', 'sonnet', '--mcp-tools', 'mcp__design__read'])
+    split_viewer.value('profiles.profiles', ['profile', 'save', 'codex-tools', '--description', 'Reads the design', '--body', 'Read the design.', '--program', 'codex', '--model', 'gpt-6.1-terra', '--mcp-tools', 'mcp__design__read'])
     set_split(story, 'codex 100,claude 0', viewer=split_viewer)
     helper_id, _ = started(story, 'helper start tool-reader --brief "Read the design" --environment main')
     story.expect_text(f'agent show {agent_number(story, helper_id)}', 'program: claude')
+    set_split(story, 'claude 100,codex 0', viewer=split_viewer)
+    named_id, _ = started(story, 'helper start codex-tools --brief "Read the design" --environment main')
+    story.expect_text(f'agent show {agent_number(story, named_id)}', 'program: codex')
 
 
 def test_profile_with_tools_stays_on_its_program_for_a_worker(split_story, split_viewer):
@@ -255,14 +255,6 @@ def test_profile_with_tools_stays_on_its_program_for_a_worker(split_story, split
     split_viewer.value('profiles.profiles', ['profile', 'save', 'tool-worker', '--type', 'worker', '--description', 'Writes the design', '--body', 'Write the design.', '--model', 'sonnet', '--mcp-tools', 'mcp__design__read'])
     set_split(story, 'codex 100,claude 0', viewer=split_viewer)
     expect_program(story, dispatch(story, flags='--profile tool-worker'), 'claude')
-
-
-def test_profile_with_tools_stays_on_its_program_when_the_profile_names_one(split_story, split_viewer):
-    story = split_story
-    split_viewer.value('profiles.profiles', ['profile', 'save', 'codex-tools', '--description', 'Reads the design', '--body', 'Read the design.', '--program', 'codex', '--model', 'gpt-6.1-terra', '--mcp-tools', 'mcp__design__read'])
-    set_split(story, 'claude 100,codex 0', viewer=split_viewer)
-    helper_id, _ = started(story, 'helper start codex-tools --brief "Read the design" --environment main')
-    story.expect_text(f'agent show {agent_number(story, helper_id)}', 'program: codex')
 
 
 def test_read_only_helper_tags_only_when_making_a_task(split_story):
@@ -336,19 +328,19 @@ def test_only_a_person_changes_the_split(split_story):
     story.expect_refusal(f'setting set {SPLIT} "claude 50,codex 50" --project', 'person', actor=story.agent)
     story.expect_success(f'setting request {SPLIT} "claude 50,codex 50" --reason "Share new work evenly" --project --environment main', actor=story.agent)
     story.run_listeners()
-    story.expect_text('chat-mark list --json', 'split')
-    story.expect_text('question show 1', 'claude', 'codex')
+    story.expect_text('approval show 1', 'Program split', 'claude', 'codex', 'state: open')
     story.expect_absent(f'setting show {SPLIT}', 'claude 50')
 
 
 @pytest.mark.parametrize('role', ['worker', 'helper'])
-@pytest.mark.parametrize('line', ['worker-route make --program codex --tags protected --environment main',
-                                 'provider-outage make codex "out of credit" --ends-at 2026-11-01T09:00:00+00:00',
-                                 f'setting set {SPLIT} "claude 50,codex 50" --project'])
-def test_only_a_person_changes_the_split_child_agents_cannot_write(split_story, role, line):
+@pytest.mark.parametrize('line,refusal', [('worker-route make --program codex --tags protected --environment main', None),
+                                          ('provider-outage make codex "out of credit" --ends-at 2026-11-01T09:00:00+00:00', None),
+                                          (f'setting set {SPLIT} "claude 50,codex 50" --project', 'an approval needs a reason')])
+def test_only_a_person_changes_the_split_child_agents_cannot_write(split_story, role, line, refusal):
     story = split_story
     child = Actor(story.new_row_id(f'agent start child-session claude {role} --parent {story.agent.id} --environment main'), ActorType.AGENT)
-    story.expect_refusal(line, role, actor=child)
+    story.expect_refusal(line, refusal or role, actor=child)
+    story.expect_absent(f'setting show {SPLIT}', 'claude 50')
     story.expect_text('worker-route list --environment main', 'nothing found')
     story.expect_text('provider-outage list', 'nothing found')
 
