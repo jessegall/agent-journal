@@ -48,7 +48,9 @@ class AgentBlock(Prunable, Model):
     countdown_limit: int = COUNTDOWN_TOOL_USES
 
     def is_finished(self, conditions: BlockConditions, hook: AgentHook, container: Container) -> bool:
-        return conditions.built(self.condition_name, self.condition_text).is_true(BlockCheck(hook, self.creation_timestamp(), container))
+        """The block's condition holds, or the row it waits on is gone, so it could never hold."""
+        condition = conditions.built(self.condition_name, self.condition_text)
+        return not condition.has_target(container) or condition.is_true(BlockCheck(hook, self.creation_timestamp(), container))
 
     def is_active(self, tool_uses: int, timestamp: Timestamp) -> bool:
         if self.blocks_stop:

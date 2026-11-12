@@ -30,5 +30,9 @@ class BlockCondition:
     def prepare(cls, texts: Sequence[str], container: Container) -> None:
         return None
 
+    def has_target(self, container: Container) -> bool:
+        """Whether the row the condition waits on exists; a block on a missing one could never close."""
+        return True
+
     def is_true(self, check: BlockCheck) -> bool:
         raise NotImplementedError
