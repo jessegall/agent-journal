@@ -4,6 +4,7 @@ from engine.time.clock import Clock
 from engine.database.database import Database
 from engine.database.migration import Migration
 from engine.database.rebuild_migration import RebuildMigration
+from engine.database.errors.migration_deferred_error import MigrationDeferred
 from engine.database.errors.schema_mismatch_error import SchemaMismatchError
 from engine.model.view_model import ViewModel
 from engine.database.statement import Statement
@@ -27,7 +28,10 @@ class Schema:
         run_names: list[str] = []
         for module in ordered:
             for migration in self.pending(module, applied):
-                self.run_one(module.module, migration)
+                try:
+                    self.run_one(module.module, migration)
+                except MigrationDeferred:
+                    continue
                 run_names.append(f"{module.module} {migration.number}")
         return run_names
 

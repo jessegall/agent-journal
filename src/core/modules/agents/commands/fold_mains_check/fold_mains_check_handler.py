@@ -23,11 +23,11 @@ class FoldMainsCheckHandler(Handler[FoldMainsCheck, str]):
 
     command = FoldMainsCheck
 
-    def __init__(self, home: JournalHome, bus: Bus) -> None:
-        self.home, self.bus = home, bus
+    def __init__(self, home: JournalHome, database: Database, bus: Bus) -> None:
+        self.home, self.database, self.bus = home, database, bus
 
     def handle(self, command: FoldMainsCheck, context: Context) -> str:
-        copy = Database.configured(sqlite3.connect(FoldCopy.written(self.home, context.timestamp), autocommit=True))
+        copy = Database.configured(sqlite3.connect(FoldCopy.for_check(self.database, self.home, context.timestamp), autocommit=True))
         try:
             started = time.monotonic()
             fold = MainFold(copy)
