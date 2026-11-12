@@ -1,4 +1,3 @@
-from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from dataclasses import dataclass
 
 import pytest
@@ -6,6 +5,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.messages.models.message import Message
+from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.checkpoint_failures import end_run, expect_returned, print_output
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import branch_runs_only, CART_COMMAND, PASSES, REACHES, commit_tasks, merge, rows, run_lines
