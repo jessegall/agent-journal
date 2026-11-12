@@ -307,13 +307,14 @@ class WorktreeGit:
     def behind(self, worktree: Worktree) -> int:
         """How many first-parent commits of the base branch the worktree lacks: a merged worker counts once, the
         worktree's own commits never count, nor does a merge into the base of the worktree's own earlier commits."""
-        base = self.tip(worktree.folder, worktree.base_branch)
+        return self.behind_tip(worktree, self.tip(worktree.folder, worktree.base_branch))
+
+    def behind_tip(self, worktree: Worktree, base: str) -> int:
         listing = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-list", "--first-parent", "--parents", f"HEAD..{base}").stdout
         return sum(1 for line in listing.splitlines() if line and not self.is_own_merge(worktree, line.split()[1:]))
 
-    def base_changes(self, worktree: Worktree) -> tuple[BaseCommit, ...]:
-        """The first-parent commits of the base branch the worktree lacks, each with the files it changed."""
-        base = self.tip(worktree.folder, worktree.base_branch)
+    def base_changes(self, worktree: Worktree, base: str) -> tuple[BaseCommit, ...]:
+        """The first-parent commits up to the base tip that the worktree lacks, each with the files it changed."""
         start = self.merge_base(worktree.folder, base, "HEAD")
         listing = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "log", "--first-parent", "-m", "--name-only", "-z", SHORT_COMMIT_FLAG, BASE_COMMIT_FORMAT, f"{start}..{base}").stdout
         changes = []
@@ -326,11 +327,10 @@ class WorktreeGit:
                 changes.append(BaseCommit.parsed(short_id, subject, names))
         return tuple(changes)
 
-    def overlap_lines(self, worktree: Worktree, names: tuple[str, ...]) -> int:
-        """How many lines the base branch changed, since the worktree was cut from it, in these files."""
+    def overlap_lines(self, worktree: Worktree, names: tuple[str, ...], base: str) -> int:
+        """How many lines the base changed up to its tip, since the worktree was cut from it, in these files."""
         if not names:
             return 0
-        base = self.tip(worktree.folder, worktree.base_branch)
         start = self.merge_base(worktree.folder, base, "HEAD")
         listing = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--numstat", start, base, "--", *names).stdout
         counts = (line.split("\t")[:2] for line in listing.splitlines() if line)

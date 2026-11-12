@@ -66,12 +66,12 @@ class MemoryWorktreeGit(WorktreeGit):
             raise Refusal(f"branch {branch} does not exist in {folder}", "make it there, or name another with journal environment edit <name> --branch <branch>")
         return self.history.branches[branch]
 
-    def behind(self, worktree: Worktree) -> int:
-        return len(self.base_changes(worktree))
+    def behind_tip(self, worktree: Worktree, base: str) -> int:
+        return len(self.base_changes(worktree, base))
 
-    def base_changes(self, worktree: Worktree) -> tuple[BaseCommit, ...]:
+    def base_changes(self, worktree: Worktree, base: str) -> tuple[BaseCommit, ...]:
         head = self.history.branches[self.history.folder_branch(Path(worktree.folder))]
-        commit = self.history.commits[self.tip(worktree.folder, worktree.base_branch)]
+        commit = self.history.commits[base]
         changes: list[BaseCommit] = []
         while not self.history.is_ancestor(commit.id, head):
             first_parent = self.history.commits[commit.parents[0]]
@@ -82,9 +82,8 @@ class MemoryWorktreeGit(WorktreeGit):
             commit = first_parent
         return tuple(changes)
 
-    def overlap_lines(self, worktree: Worktree, names: tuple[str, ...]) -> int:
+    def overlap_lines(self, worktree: Worktree, names: tuple[str, ...], base: str) -> int:
         head = self.history.branches[self.history.folder_branch(Path(worktree.folder))]
-        base = self.tip(worktree.folder, worktree.base_branch)
         start, end = self.history.commits[self.history.merge_base(head, base)].tree, self.history.commits[base].tree
         return sum(len(set(start.get(name, "").splitlines()) ^ set(end.get(name, "").splitlines())) for name in names)
 

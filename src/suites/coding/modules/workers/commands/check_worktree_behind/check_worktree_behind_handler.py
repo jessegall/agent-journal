@@ -38,7 +38,7 @@ class CheckWorktreeBehindHandler(Handler[CheckWorktreeBehind, BehindRoute]):
     def prepare(self, command: CheckWorktreeBehind, actor: Actor) -> None:
         worktree = self.rows.required(Worktree, command.worktree_id)
         self.tip = self.git.tip(worktree.folder, worktree.base_branch)
-        self.behind = self.git.behind(worktree)
+        self.behind = self.git.behind_tip(worktree, self.tip)
         self.moved = False
         if self.checks.opens(worktree, self.behind) and self.operations.active(worktree.session_agent_id) is None and not self.git.has_own_work(worktree):
             self.moved = self.git.fast_forward(worktree, self.tip)

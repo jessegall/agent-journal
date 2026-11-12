@@ -61,6 +61,10 @@ class Repository:
     def __init__(self) -> None:
         self.saved: list[WorktreeBehindCheck] = []
 
+    def save(self, row, context):
+        self.saved.append(row)
+        return row
+
     def save_change(self, row, changed, context):
         self.saved.append(changed)
         return changed
@@ -84,7 +88,7 @@ class Nudger:
 
 class Reader:
     def read(self, worktree, worker):
-        return SimpleNamespace(overlap=("src/cart.py", "src/tax.py"))
+        return SimpleNamespace(overlap=("src/cart.py", "src/tax.py"), behind=4, base_tip="abc")
 
 
 def handler(checks: Checks, worktrees: Worktrees | None = None) -> tuple[OrderWorkerUpdateHandler, Repository, Visits, Nudger]:

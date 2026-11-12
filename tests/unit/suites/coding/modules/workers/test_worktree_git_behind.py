@@ -88,10 +88,10 @@ def test_a_deleted_base_branch_is_refused_and_never_counted_as_nothing_behind(tm
 
 def test_base_changes_lists_the_files_of_each_base_commit_merges_included(tmp_path):
     repository, worktree = cut_worktree(tmp_path)
-    assert git().base_changes(worktree) == ()
+    assert git().base_changes(worktree, repository.tip("base")) == ()
     repository.committed("tax.py", "TAX = 1\n", "Tax on the base")
     merged_branch(repository, OTHER_BRANCH, 2)
-    changes = git().base_changes(worktree)
+    changes = git().base_changes(worktree, repository.tip("base"))
     assert [(change.subject, change.files) for change in changes] == [
         (f"Merge {OTHER_BRANCH}", ("workers_other_0.py", "workers_other_1.py")),
         ("Tax on the base", ("tax.py",)),

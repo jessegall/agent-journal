@@ -8,6 +8,8 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
+NO_OPEN_CHECK = "no open check for this worker"
+
 
 class BehindDecisions:
     """Finds the check of a worker that waits for a decision: its worktree in this environment and its open check,
@@ -24,10 +26,17 @@ class BehindDecisions:
         return self.found(worker_id, WorktreeBehindCheck.may_be_passed)
 
     def found(self, worker_id: int, wanted: Callable[[WorktreeBehindCheck], bool]) -> tuple[Worktree, WorktreeBehindCheck]:
+        worktree = self.worktree(worker_id)
+        check = self.check(worktree, wanted)
+        if check is None:
+            raise Refusal(NO_OPEN_CHECK, "journal merger behind <worker> shows how far it is behind")
+        return worktree, check
+
+    def worktree(self, worker_id: int) -> Worktree:
         worktree = self.worktrees.worker_worktree(worker_id)
         if worktree is None:
             raise Refusal(f"no {AgentLabel.from_row_id(worker_id, self.numbers, 'worker').text} with a worktree in this environment")
-        check = next((row for row in self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).newest().all_rows() if wanted(row)), None)
-        if check is None:
-            raise Refusal("no open check for this worker", "journal merger behind <worker> shows how far it is behind")
-        return worktree, check
+        return worktree
+
+    def check(self, worktree: Worktree, wanted: Callable[[WorktreeBehindCheck], bool]) -> WorktreeBehindCheck | None:
+        return next((row for row in self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).newest().all_rows() if wanted(row)), None)

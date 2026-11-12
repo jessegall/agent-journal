@@ -17,15 +17,16 @@ class BehindFactsReader:
         self.git, self.queries = git, queries
 
     def read(self, worktree: Worktree, worker: Agent) -> BehindFacts:
-        commits = self.git.base_changes(worktree)
+        tip = self.git.tip(worktree.folder, worktree.base_branch)
+        commits = self.git.base_changes(worktree, tip)
         worker_files = self.git.worker_files(worktree)
         base_files = tuple(dict.fromkeys(name for commit in commits for name in commit.files))
         overlap = tuple(name for name in base_files if name in worker_files)
         folders = {str(PurePosixPath(name).parent) for name in worker_files}
         same_folder = tuple(name for name in base_files if name not in overlap and str(PurePosixPath(name).parent) in folders)
         uncommitted = bool(self.git.uncommitted_files(worktree.folder))
-        return BehindFacts(worktree.base_branch, self.git.behind(worktree), commits, worker_files, overlap, same_folder, self.git.overlap_lines(worktree, overlap),
-                           uncommitted, worker.program, worker.program_model, self.earlier_decisions(worktree))
+        return BehindFacts(worktree.base_branch, self.git.behind_tip(worktree, tip), commits, worker_files, overlap, same_folder, self.git.overlap_lines(worktree, overlap, tip),
+                           uncommitted, worker.program, worker.program_model, self.earlier_decisions(worktree), tip)
 
     def earlier_decisions(self, worktree: Worktree) -> tuple[str, ...]:
         checks = self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).oldest().all_rows()

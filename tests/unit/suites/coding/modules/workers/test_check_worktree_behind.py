@@ -39,7 +39,7 @@ class Git:
     def tip(self, folder: str, branch: str) -> str:
         return TIP
 
-    def behind(self, worktree: Worktree) -> int:
+    def behind_tip(self, worktree: Worktree, base: str) -> int:
         return self.count
 
     def has_own_work(self, worktree: Worktree) -> bool:

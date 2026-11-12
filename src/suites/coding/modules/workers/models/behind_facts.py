@@ -7,8 +7,8 @@ from suites.coding.modules.workers.models.base_commit import BaseCommit
 class BehindFacts:
     """What one look at a worktree that fell behind its base branch reads: how far behind, the new base commits,
     the worker's own files, the files both changed, the other base files in the worker's folders, how many lines
-    the base changed in the shared files, whether the worker has uncommitted work, its program and model, and the
-    earlier decisions about it."""
+    the base changed in the shared files, whether the worker has uncommitted work, its program and model, the
+    earlier decisions about it, and the base tip it was read at."""
 
     base_branch: str
     behind: int
@@ -21,6 +21,7 @@ class BehindFacts:
     program: str
     model: str
     earlier_decisions: tuple[str, ...] = ()
+    base_tip: str = ""
 
     def lines(self) -> list[str]:
         return [f"{self.behind} behind {self.base_branch}",
