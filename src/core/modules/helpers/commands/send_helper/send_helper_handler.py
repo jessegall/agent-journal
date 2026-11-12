@@ -43,10 +43,9 @@ class SendHelperHandler(Handler[SendHelper, int]):
 
     def handle(self, command: SendHelper, context: Context) -> int:
         helper = self.reach.checked_helper(command.helper_id, context.actor, context.command)
-        jobs = self.jobs.helper_jobs(helper.id)
-        if not jobs:
+        last_job = self.jobs.last_job(helper.id)
+        if last_job is None:
             raise Refusal(f"{AgentLabel.from_agent(helper).text} has no job to go on from", "journal helper start starts a new one")
-        last_job = jobs[-1]
         if command.review_plan_id is not None and self.reviewed(helper, command.review_plan_id):
             raise Refusal(f"{AgentLabel.from_agent(helper).text} reviewed plan {command.review_plan_id} already", self.other_reviewer_step(helper, command.review_plan_id))
         is_idle = helper.ended_at is not None and last_job.ended_at is not None
@@ -80,7 +79,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
         return helper.id
 
     def reviewed(self, helper: Agent, plan_id: int) -> bool:
-        return any(job.review_plan_id == plan_id for job in self.jobs.helper_jobs(helper.id))
+        return self.jobs.has_reviewed(helper.id, plan_id)
 
     def other_reviewer_step(self, helper: Agent, plan_id: int) -> str:
         start = f'journal helper start {helper.profile} --plan {plan_id} --fresh "<why>" starts another reviewer'
