@@ -59,7 +59,7 @@ test("a hidden window's events wait, and it hears one refresh when it shows agai
     expect(heard).toEqual(["refresh", "task.done"]);
 });
 
-test("a page window of a module the journal does not ship shows how to trust its module until the person trusts it", async () => {
+test("a page window of a module the journal does not ship shows how to trust its module until the user trusts it", async () => {
     const page = {name: "pages.board", module: "pages", title: "Board", entry_url: "/modules/pages/board.js?v=1", line: "", loading: "component", reads: [], runs: [], events: [], unavailable_reason: "", allowed: false};
     const catalogue = new WindowCatalogue(async () => ({windows: [page]}));
     const access = {window: "pages.board", reads_allowed: "", reads_missing: "", runs_allowed: "", runs_missing: "", component_trusted: false, agents: [], windows: []};

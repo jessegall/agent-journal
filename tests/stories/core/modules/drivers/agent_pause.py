@@ -100,7 +100,7 @@ def test_a_helper_of_a_paused_agent_cannot_resume_it(new_story):
 def test_a_paused_agent_cannot_resume_itself_and_the_user_resumes_it(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
-    story.expect_refusal(f"agent resume {agent_number(story, story.agent.id)} --reason needed", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(f"agent resume {agent_number(story, story.agent.id)} --reason needed", "A user was asked in the dock", actor=story.agent)
     story.expect_success(f"agent resume {agent_number(story, story.agent.id)}", actor=story.user)
 
 

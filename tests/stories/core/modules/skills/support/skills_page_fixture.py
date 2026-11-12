@@ -8,7 +8,7 @@ from tests.stories.core.support.fixtures import UserJoined
 
 
 class SkillsPageReady(StoryFixture):
-    """A person and an agent with journal, plugin and project skills available."""
+    """A user and an agent with journal, plugin and project skills available."""
 
     parent = UserJoined
 
@@ -21,7 +21,7 @@ class SkillsPageReady(StoryFixture):
 
 
 class SkillTriggerReady(StoryFixture):
-    """A skill trigger for the word cart, made by a person."""
+    """A skill trigger for the word cart, made by a user."""
 
     parent = SkillsPageReady
 

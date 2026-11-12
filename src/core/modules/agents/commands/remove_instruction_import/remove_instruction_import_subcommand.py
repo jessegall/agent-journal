@@ -7,7 +7,7 @@ from core.modules.agents.commands.remove_instruction_import.remove_instruction_i
 
 
 class RemoveInstructionImportSubcommand(Subcommand[RemoveInstructionImport, str]):
-    """`journal instruction-import remove <file> <imported>`: the line a person accepts on the approval card."""
+    """`journal instruction-import remove <file> <imported>`: the line a user accepts on the approval card."""
 
     cli_name = "instruction-import"
     name = "remove"

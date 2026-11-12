@@ -6,7 +6,7 @@ from core.modules.drivers.models.enums.compaction_notice_type import CompactionN
 
 @dataclass(frozen=True, kw_only=True)
 class ContextCompactionNotice(Model):
-    """One thing a person was told about one compaction that went wrong, told once and shown in the chat."""
+    """One thing a user was told about one compaction that went wrong, told once and shown in the chat."""
 
     model_name = "context_compaction_notice"
     cli_name = "context-compaction-notice"

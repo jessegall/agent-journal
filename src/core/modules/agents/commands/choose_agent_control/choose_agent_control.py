@@ -8,7 +8,7 @@ from core.modules.agents.support.context_change_requests import PERSON_REASON
 @dataclass(frozen=True)
 class ChooseAgentControl(Command[Agent]):
     """Applies one choice of the agent bar to a running agent's program, by typing the line the program takes
-    for it. A choice that compacts or clears the context carries why it is asked: a person, unless a rule says
+    for it. A choice that compacts or clears the context carries why it is asked: a user, unless a rule says
     otherwise."""
 
     lock = False

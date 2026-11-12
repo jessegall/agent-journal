@@ -7,7 +7,7 @@ from core.modules.accounts.models.enums.person_factor_type import PersonFactorTy
 
 @dataclass(frozen=True, kw_only=True)
 class PersonFactor(Model):
-    """A passkey or an authenticator app a person proves a second time with at login."""
+    """A passkey or an authenticator app a user proves a second time with at login."""
 
     model_name = "person_factor"
     cli_name = "person-factor"

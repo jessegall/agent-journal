@@ -12,7 +12,7 @@ class SettingDeclaration:
     """What a node of a settings tree declares about itself, before it has a key: its title and
     description, its type (group or reference for a node that is no value), default, scope and choices,
     whether it is a secret or a value an agent may set, for a group whether it can be switched off, for a
-    reference the group it places, whether only a person may change it, and the text of the rule its value
+    reference the group it places, whether only a user may change it, and the text of the rule its value
     must follow. It also says where it is drawn, by the screen and the section it sits in and the component
     that draws it; a component left empty is the one its type gets."""
 

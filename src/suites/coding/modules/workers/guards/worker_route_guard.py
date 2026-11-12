@@ -13,8 +13,8 @@ from suites.coding.modules.workers.support.worker_route_request import WorkerRou
 
 
 class WorkerRouteGuard(Guard[Created[Assignment]]):
-    """Holds a task given to a worker to its ready program, with a person's exception. A task its own holder
-    is given, one given as a worktree is cut, and one given to a person pass."""
+    """Holds a task given to a worker to its ready program, with a user's exception. A task its own holder
+    is given, one given as a worktree is cut, and one given to a user pass."""
 
     name = ROUTE_GUARD
 

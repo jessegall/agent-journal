@@ -22,7 +22,7 @@ EXIT_TEXTS: dict[ReadingExit, ExitText] = {
     ReadingExit.STOP_RUN: ExitText("stop it", "journal output stop {output}"),
     ReadingExit.CLASSIFY: ExitText("say what type the command is", 'journal command-type make "{name}" "<type>"'),
     ReadingExit.EXPIRES: ExitText("wait until the block expires"),
-    ReadingExit.PERSON_RELEASES: ExitText("a person releases it"),
+    ReadingExit.PERSON_RELEASES: ExitText("a user releases it"),
     ReadingExit.MAIN_AGENT_HELPS: ExitText("ask the main agent for help"),
 }
 

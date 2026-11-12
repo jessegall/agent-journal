@@ -14,7 +14,7 @@ const PHONE_WORKER = "/viewer/phone-sw.js";
 // a page's reads and runs through the shell's own window
 export const shellReader = (environment) => (line) => lineResult(SHELL_WINDOW, line, environment);
 
-// who the cookie acts for, as GET /api/session answers it: its type (person, phone or share) and the person; the page start and the
+// who the cookie acts for, as GET /api/session answers it: its type (person, phone or share) and the user; the page start and the
 // windows both ask, so the answer is kept for the length of the page
 let sessionAnswer = null;
 export const readSession = () => {

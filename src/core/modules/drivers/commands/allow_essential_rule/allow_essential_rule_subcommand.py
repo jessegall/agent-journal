@@ -7,7 +7,7 @@ from core.modules.settings.models.setting import Setting
 
 
 class AllowEssentialRuleSubcommand(Subcommand[AllowEssentialRule, Setting]):
-    """`journal driver allow-essential <rule>`: a person allows a rule its module marks essential."""
+    """`journal driver allow-essential <rule>`: a user allows a rule its module marks essential."""
 
     cli_name = "driver"
     name = "allow-essential"

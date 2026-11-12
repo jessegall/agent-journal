@@ -5,7 +5,7 @@ from engine.database.statement import Statement
 
 @dataclass(frozen=True)
 class NonHelperRows:
-    """Matches rows created by a main agent or a person."""
+    """Matches rows created by a main agent or a user."""
 
     def statement(self) -> Statement:
         return Statement("creator_id NOT IN (SELECT id FROM agents WHERE role <> 'main')")

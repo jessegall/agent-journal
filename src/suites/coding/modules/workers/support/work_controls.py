@@ -16,7 +16,7 @@ from suites.coding.support.work_settings import WorkPreset, WorkSettings
 
 class WorkControls:
     """Reads the seven workflow controls and changes them together: every change is checked before
-    any is written, and a change made from a reading that has since changed is refused, so a person
+    any is written, and a change made from a reading that has since changed is refused, so a user
     never overwrites what they did not see."""
 
     def __init__(self, options: CodingMainOptions, declared: SettingCatalogue, changes: SettingChanges, reader: SettingReader) -> None:

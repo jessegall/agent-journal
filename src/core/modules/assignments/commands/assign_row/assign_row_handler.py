@@ -9,7 +9,7 @@ from core.modules.assignments.support.assignments import Assignments
 
 
 class AssignRowHandler(Handler[AssignRow, Cascade]):
-    """Gives the named row to the actor and answers with what was assigned and what was left as it was. A person or
+    """Gives the named row to the actor and answers with what was assigned and what was left as it was. A user or
     the main agent runs it."""
 
     command = AssignRow

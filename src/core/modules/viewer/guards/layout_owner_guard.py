@@ -5,11 +5,11 @@ from engine.event.changed import Changed
 
 
 class LayoutOwnerGuard(PersonRowGuard[Changed[ViewerLayout]]):
-    """Refuses a layout written by anyone but the person it is for, so no agent or other person arranges
+    """Refuses a layout written by anyone but the user it is for, so no agent or other user arranges
     someone's pages."""
 
     name = "viewer.layout-owner"
-    refusal = Refusal("this layout belongs to another person")
+    refusal = Refusal("this layout belongs to another user")
     question = "Change this saved layout?"
 
     def person_id(self, event: Changed[ViewerLayout]) -> int:

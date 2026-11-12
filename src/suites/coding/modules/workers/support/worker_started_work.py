@@ -21,7 +21,7 @@ from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 class WorkerStartedWork:
     """The stopped workers that hold started work or an open assigned task they can go on with and have no job
-    waiting, which nothing else resumes: not one whose tests wait, not one a person or another agent stopped,
+    waiting, which nothing else resumes: not one whose tests wait, not one a user or another agent stopped,
     and not one that was told to go on as often as the worker resume limit allows with no task moved since."""
 
     def __init__(self, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, bus: Bus, guidance: WorkerGuidance, settings: SettingValues, tasks: TaskQuery) -> None:

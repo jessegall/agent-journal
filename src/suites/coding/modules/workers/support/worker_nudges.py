@@ -79,7 +79,7 @@ WORKER_PROOF_SHORT = NudgeDeclaration("workers.proof_short", NudgeType.STEERING,
 WORKER_ASKING_STOPPED = NudgeDeclaration("workers.asking_stopped", NudgeType.STEERING, 'worker:{worker} is stopped and nothing will start it: its question has no answer, {tasks}', interval=Interval(Seconds(1800)), turn_limited=False, wakes_agent=True)
 WORKER_PROCESS_ENDED = NudgeDeclaration("workers.process_ended", NudgeType.STEERING, 'worker:{worker} is stopped and nothing will start it: its process ended, {tasks}', interval=Interval(Seconds(300)), turn_limited=False, wakes_agent=True)
 WORKER_LIMIT_STOPPED = NudgeDeclaration("workers.limit_stopped", NudgeType.STEERING, 'worker:{worker} is stopped and nothing will start it: it kept stopping, {tasks}', interval=Interval(Seconds(1800)), turn_limited=False, wakes_agent=True)
-WORKER_TASK_BLOCKED = NudgeDeclaration("workers.task_blocked", NudgeType.STEERING, 'worker:{worker} blocked task:{task}: only you or the person can unblock it', turn_limited=False, wakes_agent=True)
+WORKER_TASK_BLOCKED = NudgeDeclaration("workers.task_blocked", NudgeType.STEERING, 'worker:{worker} blocked task:{task}: only you or the user can unblock it', turn_limited=False, wakes_agent=True)
 BLOCKED_WORKER_TASK = NudgeDeclaration("workers.own_task_blocked", NudgeType.STEERING, 'task:{task} was blocked', turn_limited=False)
 
 WORKER_REFUSAL_INTERVAL = Interval(Seconds(600))

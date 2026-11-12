@@ -21,7 +21,7 @@ TABLE = "questions"
 
 
 class QuestionsMove(VersionFourMove):
-    """Carries version 4's questions, with their answers, to the agents whose sessions wrote them; one a person's
+    """Carries version 4's questions, with their answers, to the agents whose sessions wrote them; one a user's
     row signed, which version 3's questions are, goes to the environment's newest main agent."""
 
     name = "questions"

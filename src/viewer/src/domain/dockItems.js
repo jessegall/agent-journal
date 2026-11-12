@@ -2,13 +2,13 @@
 
 export const MOST_DOCKED_RUNS = 6;
 
-// a run is an item whose type leaves by itself after its row ends; any other is a row docked for as long as the person keeps it
+// a run is an item whose type leaves by itself after its row ends; any other is a row docked for as long as the user keeps it
 export const isRunItem = (item, declarationOf) => (declarationOf(item.type)?.leaves_after_seconds || 0) > 0;
 
 // the moment a row's stored leave time falls, in seconds, the unit of the viewer's clock
 export const leaveSeconds = (item) => Date.parse(item.leaves_at) / 1000;
 
-// whether an item closes by itself: it has a leave time and the person has not kept it
+// whether an item closes by itself: it has a leave time and the user has not kept it
 export const isLeaving = (item) => Boolean(item.leaves_at && !item.kept);
 
 // whether an item is docked at a moment, in seconds: docked, and either not leaving, not yet due, or held under the pointer

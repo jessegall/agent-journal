@@ -13,7 +13,7 @@ from core.modules.skills.support.plugin_skill_removal import PluginSkillRemoval
 
 
 class SwitchOffChangedPluginHandler(Handler[SwitchOffChangedPlugin, Plugin]):
-    """Saves the plugin switched off, its digest kept, so it stays off until the person switches it on, and says
+    """Saves the plugin switched off, its digest kept, so it stays off until the user switches it on, and says
     so in the chat."""
 
     command = SwitchOffChangedPlugin

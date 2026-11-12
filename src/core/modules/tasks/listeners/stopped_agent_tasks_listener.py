@@ -6,7 +6,7 @@ from core.modules.tasks.commands.clear_delegated_tasks.clear_delegated_tasks imp
 
 
 class StoppedAgentTasksListener(SaveListener[AgentStopped]):
-    """Hands back the open and started tasks of an agent a person or an agent stopped, in the same change."""
+    """Hands back the open and started tasks of an agent a user or an agent stopped, in the same change."""
 
     name = "tasks.stopped-agent-tasks"
 

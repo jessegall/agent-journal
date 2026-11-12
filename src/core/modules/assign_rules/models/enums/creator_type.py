@@ -2,7 +2,7 @@ from enum import StrEnum
 
 
 class CreatorType(StrEnum):
-    """Who made a task: a person, the main agent, a helper of any kind, or the journal itself."""
+    """Who made a task: a user, the main agent, a helper of any kind, or the journal itself."""
 
     PERSON = "person"
     MAIN_AGENT = "main_agent"

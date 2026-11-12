@@ -6,7 +6,7 @@ from suites.coding.modules.workers.models.enums.stop_reading import StopReading
 @dataclass(frozen=True)
 class StopFacts:
     """What is known about a worker at the end of a turn with tasks left, and the one reading that follows:
-    a person's stop first, then work that still goes, a failed launch, a stop nobody resumes, the resume
+    a user's stop first, then work that still goes, a failed launch, a stop nobody resumes, the resume
     limit, and a resume with the program ready or still starting. At the resume limit the main agent gets
     one line; a later stop with no task moved since is a repeat that sends none. A second line names
     the tasks of a started plan whose work is committed, since their code is not merged."""

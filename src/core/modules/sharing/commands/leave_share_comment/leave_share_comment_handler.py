@@ -23,7 +23,7 @@ WINDOW_MINUTES = 10
 
 class LeaveShareCommentHandler(Handler[LeaveShareComment, ShareComment]):
     """Keeps a visitor's comment on a link that takes them and tells the chat, as the journal's words and
-    never the person's; only the viewer brings one in, and a link takes ten in ten minutes."""
+    never the user's; only the viewer brings one in, and a link takes ten in ten minutes."""
 
     command = LeaveShareComment
 

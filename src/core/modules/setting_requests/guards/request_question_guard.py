@@ -10,7 +10,7 @@ from core.modules.setting_requests.models.setting_request import SettingRequest
 
 
 class RequestQuestionGuard(Guard[Changed[Question]]):
-    """Only a person answers or edits a question that asks to change a setting; the agent that asked may close it."""
+    """Only a user answers or edits a question that asks to change a setting; the agent that asked may close it."""
 
     name = "setting-requests.person-answers"
     is_safety = True
@@ -22,4 +22,4 @@ class RequestQuestionGuard(Guard[Changed[Question]]):
         if context.actor.type is not ActorType.AGENT or event.row.state is QuestionState.CLOSED:
             return
         if self.queries.query(SettingRequest).filter(question_id=event.row.id).exists():
-            raise Refusal(f"a person was asked to decide question {event.row.id} in the dock")
+            raise Refusal(f"a user was asked to decide question {event.row.id} in the dock")

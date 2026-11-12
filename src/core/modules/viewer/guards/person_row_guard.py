@@ -10,15 +10,15 @@ from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 
 
 class PersonRowGuard(Guard[E]):
-    """Refuses a viewer row of a person's own, a layout, a person's preset or a window permission, written by
-    anyone but the person it is for; each subclass names its model and its refusal."""
+    """Refuses a viewer row of a user's own, a layout, a user's preset or a window permission, written by
+    anyone but the user it is for; each subclass names its model and its refusal."""
 
     refusal: ClassVar[Refusal]
     question: ClassVar[str] = "Allow this change?"
     is_safety = True
 
     def person_id(self, event: E) -> int:
-        raise NotImplementedError(f"{type(self).__name__} names no person")
+        raise NotImplementedError(f"{type(self).__name__} names no user")
 
     def check(self, event: E, context: Context) -> None:
         person_id = self.person_id(event)

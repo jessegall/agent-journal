@@ -249,7 +249,7 @@ class WorkContextReader:
         if message is None:
             raise Refusal("this message is not available in the requested context", "use its context page or ancestry continuation")
         if message.type is MessageType.JOURNAL:
-            raise Refusal("this journal record is a reference, not a person request", f"journal message show {message.id}")
+            raise Refusal("this journal record is a reference, not a user request", f"journal message show {message.id}")
         if request.attachment is not None:
             data = self.files.read_attached(message, request.attachment)
             caption = MessageCaptions.decoded(message).get(request.attachment, "")
@@ -274,7 +274,7 @@ class WorkContextReader:
             return "Journal"
         is_agent_message = message.type is MessageType.AGENT
         if actor is None or actor.type is not (ActorType.AGENT if is_agent_message else ActorType.USER):
-            return "Agent (identity unavailable)" if is_agent_message else "Person (identity unavailable)"
+            return "Agent (identity unavailable)" if is_agent_message else "User (identity unavailable)"
         name = " ".join(actor.name.split())
         return f"Agent {name}" if is_agent_message else name
 

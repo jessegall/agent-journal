@@ -82,7 +82,7 @@ def test_a_person_starts_a_stopped_check_and_the_next_due_round_runs_it(new_stor
 
 def test_an_agent_is_refused_when_it_starts_a_stopped_check(new_story):
     story = new_story(fixture=StoppedCheck)
-    story.expect_refusal("check start 1 --reason needed", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal("check start 1 --reason needed", "A user was asked in the dock", actor=story.agent)
     story.expect_refusal("check run 1", "check 1 is stopped", actor=story.user)
 
 

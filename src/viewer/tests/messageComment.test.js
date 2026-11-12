@@ -37,7 +37,7 @@ test("a plain message of the user has neither the header nor the comment look", 
     expect(element.querySelector(".message-card").classList.contains("comment")).toBe(false);
 });
 
-test.each([["plan:1099", "Comment on plan 1099", "plans:1099"], ["doc:12", "Comment on document 12", "docs:12"]])("a comment or critique request on %s is a person's bubble with a link to it", async (commentedRow, header, opened) => {
+test.each([["plan:1099", "Comment on plan 1099", "plans:1099"], ["doc:12", "Comment on document 12", "docs:12"]])("a comment or critique request on %s is a user's bubble with a link to it", async (commentedRow, header, opened) => {
     const element = drawn({...COMMENT, commented_row: commentedRow, text: "Please have 2 agents give plan 1099 a normal read"});
     expect(element.querySelector("[data-message-comment]").textContent.trim()).toBe(header);
     expect(element.querySelector("[data-message]").dataset.from).toBe("user");

@@ -7,7 +7,7 @@ from core.modules.library.support.new_library_user import NewLibraryUser
 
 
 class AddLibraryUserHandler(Handler[AddLibraryUser, NewLibraryUser]):
-    """Asks the server to add a user with no write lock held; only a person adds, and the server asks for an admin."""
+    """Asks the server to add a user with no write lock held; only a user adds, and the server asks for an admin."""
 
     command = AddLibraryUser
 

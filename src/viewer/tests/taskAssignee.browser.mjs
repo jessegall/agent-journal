@@ -13,7 +13,7 @@ try {
         await page.screenshot({path: `${shot}-failed.png`});
         throw new Error(`${error.message}\n${await page.locator("body").innerText()}`);
     });
-    // task 1 is the main agent's, task 2 a worker's, task 3 a person's and task 4 nobody's; none is started
+    // task 1 is the main agent's, task 2 a worker's, task 3 a user's and task 4 nobody's; none is started
     assert.equal(await icons(1).locator("[data-task-agent] [data-agent-main-icon]").count(), 1);
     assert.equal(await icons(2).locator("[data-task-agent] [data-icon='agent']").count(), 1);
     assert.equal(await icons(2).locator("[data-task-agent]").getAttribute("aria-label"), `Worker ${workerId}`);
@@ -27,7 +27,7 @@ try {
     }
     await page.screenshot({path: `${shot}.png`});
     await icons(3).locator("[data-task-person]").click();
-    assert.equal(await page.locator("[data-inspector]").count(), 0, "a click on a person opens nothing");
+    assert.equal(await page.locator("[data-inspector]").count(), 0, "a click on a user opens nothing");
     await icons(2).locator("[data-task-agent]").click();
     await page.locator("[data-inspector]").waitFor({timeout: 10000});
 } finally {

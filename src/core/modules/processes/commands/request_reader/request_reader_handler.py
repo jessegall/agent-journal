@@ -19,7 +19,7 @@ MESSAGE = "Output {output} has no reader that gives its progress, and its box is
 
 
 class RequestReaderHandler(Handler[RequestReader, ReaderRequest]):
-    """Opens the reader request of a run's visible command and posts one chat message, from the person, to the
+    """Opens the reader request of a run's visible command and posts one chat message, from the user, to the
     agent that ran it, naming the output and the request; the part keeps the request, which is how the card
     knows the agent was asked."""
 
@@ -30,14 +30,14 @@ class RequestReaderHandler(Handler[RequestReader, ReaderRequest]):
 
     def handle(self, command: RequestReader, context: Context) -> ReaderRequest:
         if context.actor.type is not ActorType.USER:
-            raise Refusal("only a person asks for a reader this way", "an agent draws a reader with journal reader draft")
+            raise Refusal("only a user asks for a reader this way", "an agent draws a reader with journal reader draft")
         process = self.processes.find(command.process_id)
         parts = list(self.parts.process(process.id).all_rows())
         part = next((part for part in parts if part.category.is_watched), parts[0] if parts else None)
         if part is None or part.reader_request_id is not None:
             raise Refusal(f"output {process.id} has no command to draw a reader for, or one was asked already")
         spec = PartSpec(part.text, part.program, category=part.category, command=part.command)
-        request_id = self.requests.open_request(process, spec, "a person asked for a reader because the box of the output is empty", process.id, context)
+        request_id = self.requests.open_request(process, spec, "a user asked for a reader because the box of the output is empty", process.id, context)
         self.repository.save(replace(part, reader_request_id=request_id), context)
         self.bus.dispatch(SendMessage(MESSAGE.format(output=process.id, request=request_id), target_agent_id=process.session_agent_id), context)
         return self.opened.find(request_id)

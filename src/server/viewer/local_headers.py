@@ -5,7 +5,7 @@ from server.viewer.answer_headers import AnswerHeaders
 
 
 class LocalHeaders(AnswerHeaders):
-    """The headers of a journal on a person's own machine: no added header and a plain cookie."""
+    """The headers of a journal on a user's own machine: no added header and a plain cookie."""
 
     def common_headers(self) -> Mapping[str, str]:
         return MappingProxyType({})

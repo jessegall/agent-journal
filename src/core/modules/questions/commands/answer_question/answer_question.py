@@ -7,7 +7,7 @@ from core.modules.questions.models.question import Question
 
 @dataclass(frozen=True)
 class AnswerQuestion(MoveCommand[Question]):
-    """Records the answer and its person message on an open question."""
+    """Records the answer and its user message on an open question."""
 
     move = QuestionLifecycle.answer
     answer: str

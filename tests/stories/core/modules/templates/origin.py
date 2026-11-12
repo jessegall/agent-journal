@@ -11,7 +11,7 @@ def template_story(installed_review):
     return installed_review
 
 
-@pytest.mark.parametrize("module, origin", [("acme.review", "Module: acme.review"), ("", "Written by a person")])
+@pytest.mark.parametrize("module, origin", [("acme.review", "Module: acme.review"), ("", "Written by a user")])
 @pytest.mark.parametrize("command", ["list", "show"])
 def test_templates_with_the_same_title_name_their_origin(template_story, module, origin, command):
     story = template_story

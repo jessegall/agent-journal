@@ -52,7 +52,7 @@ def test_a_worker_with_a_task_queued_and_none_started_is_refused_its_stop(new_st
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     worker = dispatched_worker(story, f"{DISPATCH} 2")
     session = worker_session(story, worker)
-    story.expect_success('task block 1 --reason "waits on a person"', actor=worker)
+    story.expect_success('task block 1 --reason "waits on a user"', actor=worker)
     story.expect_hook_refusal(session, HookSamples.stop(), "Task 2 is not finished")
 
 
@@ -164,7 +164,7 @@ def test_a_worker_that_ends_with_only_a_queued_task_has_it_named_to_the_main_age
     set_resume_limit(story.container, 0)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     worker = dispatched_worker(story, f"{DISPATCH} 2")
-    story.expect_success('task block 1 --reason "waits on a person"', actor=worker)
+    story.expect_success('task block 1 --reason "waits on a user"', actor=worker)
     story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
@@ -179,7 +179,7 @@ def test_a_queued_task_waiting_on_an_open_task_is_not_next_in_the_queue(new_stor
     story.expect_success("task depend 2 --on 3", actor=story.agent)
     worker = dispatched_worker(story, f"{DISPATCH} 2")
     session = worker_session(story, worker)
-    story.expect_success('task block 1 --reason "waits on a person"', actor=worker)
+    story.expect_success('task block 1 --reason "waits on a user"', actor=worker)
     story.expect_hook_allowed(session, HookSamples.stop())
 
 

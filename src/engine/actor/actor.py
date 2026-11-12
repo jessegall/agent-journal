@@ -5,7 +5,7 @@ from engine.enums.actor_type import ActorType
 CORE_ACTOR_ID = 1
 @dataclass(frozen=True)
 class Actor:
-    """Someone or something that makes a change: a person, an agent, a module or the core."""
+    """Someone or something that makes a change: a user, an agent, a module or the core."""
 
     id: int
     type: ActorType

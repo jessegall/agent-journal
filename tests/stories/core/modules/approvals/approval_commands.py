@@ -16,13 +16,13 @@ from tests.stories.suites.coding.modules.workers.support.program_split import vi
 
 
 class ResumeRequested(StoryFixture):
-    """A person paused the agent, and the agent asked to be resumed, so the dock holds the question."""
+    """A user paused the agent, and the agent asked to be resumed, so the dock holds the question."""
 
     parent = UserJoined
 
     def steps(self, story: Story) -> None:
         story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
-        story.expect_refusal(f"agent resume {agent_number(story, story.agent.id)} --reason needed", "A person was asked in the dock", actor=story.agent)
+        story.expect_refusal(f"agent resume {agent_number(story, story.agent.id)} --reason needed", "A user was asked in the dock", actor=story.agent)
 
 
 @pytest.fixture
@@ -64,7 +64,7 @@ def test_a_refused_card_runs_nothing(resume_approval):
 
 def test_the_same_attempt_again_keeps_one_open_card(resume_approval):
     story, approval = resume_approval
-    story.expect_refusal(f"agent resume {agent_number(story, story.agent.id)} --reason needed", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(f"agent resume {agent_number(story, story.agent.id)} --reason needed", "A user was asked in the dock", actor=story.agent)
     story.expect_rows(len(approvals(story)) == 1)
 
 

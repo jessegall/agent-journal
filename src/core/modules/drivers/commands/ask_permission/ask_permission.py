@@ -6,7 +6,7 @@ from core.modules.drivers.models.permission_request import PermissionRequest
 
 @dataclass(frozen=True)
 class AskPermission(Command[PermissionRequest]):
-    """Asks for leave to do one thing, the command or file named, with the reason; a person is asked when the
+    """Asks for leave to do one thing, the command or file named, with the reason; a user is asked when the
     action needs one."""
 
     action: str

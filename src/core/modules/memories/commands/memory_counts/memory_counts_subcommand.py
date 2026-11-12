@@ -14,7 +14,7 @@ from core.modules.memories.support.memory_counts import MemoryCounts
 
 
 class MemoryCountsSubcommand(ReadSubcommand[MemoryCounts]):
-    """Reads active memory counts for a person."""
+    """Reads active memory counts for a user."""
 
     cli_name = "memory"
     name = "counts"

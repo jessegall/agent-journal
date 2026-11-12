@@ -6,7 +6,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 
 
 class ThreeStartedPlans(StoryFixture):
-    """Plans 1, 2 and 3 are started in main by the person."""
+    """Plans 1, 2 and 3 are started in main by the user."""
 
     parent = UserBuilder
 

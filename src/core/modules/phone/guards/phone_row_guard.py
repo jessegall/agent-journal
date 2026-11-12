@@ -25,4 +25,4 @@ class PhoneRowGuard(Guard[Changed[Phone]]):
             return
         if is_owner_change and actor.type is ActorType.AGENT:
             raise UserApprovalRefusal(f"Unpair phone {event.row.id}?", required_person_id=event.row.person_id, command=context.command)
-        raise Refusal("a paired phone belongs to its person and can only be paired by the viewer")
+        raise Refusal("a paired phone belongs to its user and can only be paired by the viewer")

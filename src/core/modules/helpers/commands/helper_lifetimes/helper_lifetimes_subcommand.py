@@ -9,7 +9,7 @@ from core.modules.helpers.support.profile_job_costs import ProfileJobCosts
 
 class HelperLifetimesSubcommand(ReadSubcommand[ProfileJobCosts]):
     """`journal helper lifetimes <profile> --environment <name>`: how many jobs of the profile began a new program
-    session and how many resumed one, with the mean cost of a job of each, so a person can compare them."""
+    session and how many resumed one, with the mean cost of a job of each, so a user can compare them."""
 
     cli_name = "helper"
     name = "lifetimes"

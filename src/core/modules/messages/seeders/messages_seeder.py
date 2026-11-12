@@ -3,7 +3,7 @@ from engine.seed.seeder import Seeder
 
 
 class MessagesSeeder(Seeder):
-    """Makes messages back and forth between the person and the main agent, the last one with a reaction."""
+    """Makes messages back and forth between the user and the main agent, the last one with a reaction."""
 
     def seed(self, demo: Demo) -> None:
         user, main = demo.people["user"], demo.people["main"]

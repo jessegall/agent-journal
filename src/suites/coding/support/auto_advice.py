@@ -16,4 +16,4 @@ class AutoAdvice:
     def without_workers(self) -> str:
         if self.settings.flag(WRITES_CODE_SETTING):
             return "main-dispatches-workers is off, so do the task yourself"
-        return "the main agent writes no code here either: ask a person to allow workers"
+        return "the main agent writes no code here either: ask a user to allow workers"

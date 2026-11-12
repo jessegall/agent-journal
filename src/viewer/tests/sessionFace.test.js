@@ -38,7 +38,7 @@ test("the shell shows the face of the session it was opened with", async () => {
     expect((await shell({type: "person", person_id: 1}, DESKTOP_WIDTH)).querySelector(".window-shell").dataset.face).toBe("person");
 });
 
-test("a person on a narrow screen keeps the person face and gets the stacked panes", async () => {
+test("a user on a narrow screen keeps the user face and gets the stacked panes", async () => {
     const element = await shell({type: "person", person_id: 1}, NARROW_WIDTH);
     expect(element.querySelector(".window-shell").dataset.face).toBe("person");
     expect(element.querySelector(".pane-grid.stacked")).not.toBeNull();

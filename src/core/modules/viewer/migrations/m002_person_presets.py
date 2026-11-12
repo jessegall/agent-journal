@@ -2,7 +2,7 @@ from engine.database.migration import Migration
 
 
 class PersonPresetsMigration(Migration):
-    """Creates the table of the layouts each person saved as a preset, per environment and page."""
+    """Creates the table of the layouts each user saved as a preset, per environment and page."""
 
     number = 2
     statements = (

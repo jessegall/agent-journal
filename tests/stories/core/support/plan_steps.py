@@ -19,7 +19,7 @@ def ready_plan(story: Story, plan_id: int = 1, actor: Actor | None = None) -> No
 
 
 def started_plan(story: Story, plan_id: int, title: str) -> int:
-    """Makes plan plan_id, with one phase and two tasks, and starts it as the person; returns its first task."""
+    """Makes plan plan_id, with one phase and two tasks, and starts it as the user; returns its first task."""
     story.run(f'plan make "{title}" --environment main', actor=story.user)
     story.expect_success(f'phase make --plan {plan_id} "Build"', actor=story.user)
     task_ids = [story.new_row_id(f'task make "{title} task {number}" --environment main', actor=story.user) for number in (1, 2)]

@@ -11,7 +11,7 @@ const shapeOf = (...windows) => ({tabs: windows, active: windows[0]});
 const layoutOf = (...windows) => arranged(fresh(), shapeOf(...windows)).layout;
 const firstPane = (layout) => Object.values(layout.panes)[0];
 
-// a person's saved layout on a fake server, with its version, that refuses a save over a newer version
+// a user's saved layout on a fake server, with its version, that refuses a save over a newer version
 function server(layout = null) {
     return {layout, version: layout ? 1 : null, saves: []};
 }
@@ -38,7 +38,7 @@ function store({copies = {}, stored = server(), shape = null, windows = [CHAT, T
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
 
-test("the tab copy is kept under the environment, the person, the suite, page and driver", async () => {
+test("the tab copy is kept under the environment, the user, the suite, page and driver", async () => {
     const {layouts, copies} = store({shape: shapeOf("messages.chat")});
     await layouts.load(KEY);
     layouts.replace(layoutOf("tasks.tasks"));
@@ -54,7 +54,7 @@ test("two people on one browser each load their own tab copy", async () => {
     expect([firstPane(first.layouts.layout.value).tabs, firstPane(second.layouts.layout.value).tabs]).toEqual([["tasks.tasks"], ["messages.chat"]]);
 });
 
-test("the browser tab's copy comes first, then the person's saved layout, then the suite's", async () => {
+test("the browser tab's copy comes first, then the user's saved layout, then the suite's", async () => {
     const copy = layoutOf("tasks.tasks");
     const saved = layoutOf("messages.chat", "tasks.tasks");
     const first = store({copies: {[COPY_KEY]: copy}, stored: server(saved), shape: shapeOf("messages.chat")});
@@ -138,11 +138,11 @@ test("of two tabs saving one layout, the second's save over a newer version load
 });
 
 test("a save the server refuses keeps the tab copy and shows the refusal", async () => {
-    const {layouts, copies} = store({shape: shapeOf("messages.chat"), refusal: "only a person keeps a layout"});
+    const {layouts, copies} = store({shape: shapeOf("messages.chat"), refusal: "only a user keeps a layout"});
     await layouts.load(KEY);
     layouts.replace(layoutOf("tasks.tasks"));
     await vi.advanceTimersByTimeAsync(SAVE_DELAY_MS);
-    expect(layouts.refusal.value).toBe("only a person keeps a layout");
+    expect(layouts.refusal.value).toBe("only a user keeps a layout");
     expect(firstPane(copies[COPY_KEY]).tabs).toEqual(["tasks.tasks"]);
 });
 
@@ -172,7 +172,7 @@ test("switching builder, orchestrator and worker mid-save flushes each pending s
     expect(firstPane(layouts.layout.value).tabs[0]).toBe("messages.chat");
 });
 
-test("a change made while the layout loads is not saved over the person's layout", async () => {
+test("a change made while the layout loads is not saved over the user's layout", async () => {
     const stored = server(layoutOf("messages.chat", "tasks.tasks"));
     const {layouts} = store({stored});
     const loading = layouts.load(KEY);

@@ -6,7 +6,7 @@ from core.modules.processes.models.enums.reader_layer import ReaderLayer
 
 class ReaderLayers:
     """Orders the readers that match a command: project before plugin before stock, the default first inside a
-    layer, then the newest. A stock reader a person or an agent edited counts as a project reader."""
+    layer, then the newest. A stock reader a user or an agent edited counts as a project reader."""
 
     def __init__(self, edited_stock_ids: frozenset[int]) -> None:
         self.edited_stock_ids = edited_stock_ids

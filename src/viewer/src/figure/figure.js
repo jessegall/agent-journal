@@ -730,7 +730,7 @@ const WALK_STRIDE = [GAIT.length, GAIT.planted, GAIT.clearance];
 const DEPART_TURN = 0.14;
 const SEAT_LIFT = 0.2;
 // sitting on an edge, how far each thigh is raised from hanging, so it slopes down a little over the edge from the hips, and how far each
-// knee bends, so the shins hang straight down past the edge, as a person sits on a wall with the legs loose; and how far each thigh turns out
+// knee bends, so the shins hang straight down past the edge, as a user sits on a wall with the legs loose; and how far each thigh turns out
 // from straight ahead, the knees forward and apart and the feet hanging apart under them, so a figure seated facing the viewer shows its
 // thighs, which pointing straight at the viewer would vanish and leave it short-legged, unless its clip keeps the knees together (Posing
 // kneesTogether), as on the swing or at the telephone beside it

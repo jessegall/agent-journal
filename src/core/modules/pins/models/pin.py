@@ -14,7 +14,7 @@ COMMAND = re.compile(r"^!\s*\S")
 
 @dataclass(frozen=True, kw_only=True)
 class Pin(EnvironmentScoped, Model):
-    """A link pinned above an environment's chat for the person to open on their return: an outside address, a
+    """A link pinned above an environment's chat for the user to open on their return: an outside address, a
     row of the journal or a command written ! <command> that its button runs in the agent's terminal, with the
     words on its button, until it is closed."""
 

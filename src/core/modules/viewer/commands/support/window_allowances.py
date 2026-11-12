@@ -8,7 +8,7 @@ from core.modules.viewer.models.enums.window_permission_type import WindowPermis
 
 
 class WindowAllowances:
-    """What one person allowed in one environment: the lines of a window's reads or runs, and whether a
+    """What one user allowed in one environment: the lines of a window's reads or runs, and whether a
     module's code is trusted in the page, which holds only at the code fingerprint it was trusted at."""
 
     def __init__(self, queries: Queries, registry: Registry, kept: KeptRows) -> None:

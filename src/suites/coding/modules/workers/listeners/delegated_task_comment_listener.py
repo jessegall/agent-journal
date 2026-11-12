@@ -23,7 +23,7 @@ SOURCE = "workers.delegated-task-comment"
 
 
 class DelegatedTaskCommentListener(SaveListener[Created[Link]]):
-    """A person's comment on a task delegated to a worker goes to the worker as a job, and the comment is
+    """A user's comment on a task delegated to a worker goes to the worker as a job, and the comment is
     linked to that worker so the chat shows where it went; the main agent, which reads the comment as a
     message, is told the worker has it too, so it decides who acts on it."""
 

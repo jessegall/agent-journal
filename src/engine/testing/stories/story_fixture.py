@@ -14,7 +14,7 @@ class StoryFixture:
     """A named starting state for stories: the fixture it builds on, the steps that make its state, and what
     that state must be; it is built once per run and copied for every story that starts from it. Its source
     is read when the class is defined, so a file changed during a run does not ask for another template. The
-    environment it names is the one a person's line of a story on it runs in, unless the line names another;
+    environment it names is the one a user's line of a story on it runs in, unless the line names another;
     a fixture with several environments names SEVERAL_ENVIRONMENTS, and each line names its own."""
 
     parent: ClassVar[type["StoryFixture"] | None] = None

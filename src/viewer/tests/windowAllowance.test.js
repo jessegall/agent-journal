@@ -14,7 +14,7 @@ test("a window's permissions say what it was allowed and which lines are still m
     expect(permissions.missing).toEqual(["plan list", "task start"]);
 });
 
-test("ask shows the missing reads, then the missing runs, and allows each type the person agrees to", async () => {
+test("ask shows the missing reads, then the missing runs, and allows each type the user agrees to", async () => {
     const lines = [];
     const prompts = new AllowancePrompts(async (line) => {
         lines.push(line);
@@ -30,7 +30,7 @@ test("ask shows the missing reads, then the missing runs, and allows each type t
     expect(lines).toEqual(["window allow notes.board --type reads", "window allow notes.board --type runs"]);
 });
 
-test("ask stops at the first type the person declines and allows nothing more", async () => {
+test("ask stops at the first type the user declines and allows nothing more", async () => {
     const lines = [];
     const prompts = new AllowancePrompts(async (line) => lines.push(line));
     const asked = prompts.ask("Notes board", access);

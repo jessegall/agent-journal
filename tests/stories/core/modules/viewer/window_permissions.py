@@ -12,14 +12,14 @@ def window_story(new_story) -> WindowStory:
 
 def test_an_agent_cannot_give_a_window_permission(new_story):
     window = window_story(new_story)
-    window.story.expect_refusal(ALLOW_READS, "A person was asked in the dock", actor=window.story.agent)
+    window.story.expect_refusal(ALLOW_READS, "A user was asked in the dock", actor=window.story.agent)
 
 
 def test_a_person_cannot_give_a_window_permission_for_another(new_story):
     window = window_story(new_story)
     bob = window.new_person("Bob")
     line = f"window-permission make {bob.id} notes.board reads --lines '[\"task list\"]' --environment main"
-    window.story.expect_refusal(line, "these permissions belong to another person", actor=window.story.user)
+    window.story.expect_refusal(line, "these permissions belong to another user", actor=window.story.user)
 
 
 def test_an_allowance_another_person_gave_lets_the_window_read_nothing_for_you(new_story):

@@ -2,7 +2,7 @@ from engine.database.migration import Migration
 
 
 class UsageLimitsMigration(Migration):
-    """Records the limits a person sets on a program's plan allowance."""
+    """Records the limits a user sets on a program's plan allowance."""
 
     number = 6
     statements = [

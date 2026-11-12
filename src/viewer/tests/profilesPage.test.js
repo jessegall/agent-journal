@@ -207,12 +207,12 @@ test("a name with a space cannot be saved", async () => {
 });
 
 test("an agent's save is refused, which the page says in words and the panel stays open", async () => {
-    await drawn([RESEARCHER], async () => ({ok: false, error: "only a person saves a profile, since it says what an agent may do"}));
+    await drawn([RESEARCHER], async () => ({ok: false, error: "only a user saves a profile, since it says what an agent may do"}));
     await open("journal-researcher");
     await type(panel().querySelector("#profile-description"), "Changed");
     document.querySelector("[data-profile-save]").click();
     await settle();
-    expect(host.querySelector("[data-profile-failure]").textContent).toContain("only a person saves a profile");
+    expect(host.querySelector("[data-profile-failure]").textContent).toContain("only a user saves a profile");
     expect(panel()).not.toBeNull();
 });
 
@@ -414,10 +414,10 @@ test("a new profile has no skill list yet and says to save first", async () => {
 });
 
 test("a failed save is shown inside the panel, not only behind it", async () => {
-    await drawn([RESEARCHER], async (line) => (line[1] === "save" ? {ok: false, error: "only a person saves a profile"} : {ok: true, value: null}));
+    await drawn([RESEARCHER], async (line) => (line[1] === "save" ? {ok: false, error: "only a user saves a profile"} : {ok: true, value: null}));
     await open("journal-researcher");
     await type(document.querySelector("#profile-title"), "Researcher");
     document.querySelector("[data-profile-save]").click();
     await settle();
-    expect(panel().querySelector("[data-profile-panel-failure]").textContent).toContain("only a person saves a profile");
+    expect(panel().querySelector("[data-profile-panel-failure]").textContent).toContain("only a user saves a profile");
 });

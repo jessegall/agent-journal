@@ -22,7 +22,7 @@ ENDED_STATES = (PlanState.COMPLETED, PlanState.CANCELLED)
 class AssignPlanHandler(Handler[AssignPlan, Plan]):
     """Keeps the agent a plan is assigned to on the plan and moves the open and blocked tasks of the plan or
     of one phase to it; with no agent named they are left free for the main agent to pick. A phase changes
-    only its own tasks, never who the plan is assigned to. A person or a main agent may assign a plan, a
+    only its own tasks, never who the plan is assigned to. A user or a main agent may assign a plan, a
     helper may not."""
 
     command = AssignPlan

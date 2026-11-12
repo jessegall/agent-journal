@@ -14,7 +14,7 @@ REF = re.compile(r"^([a-z_]+):(\d+)$")
 
 
 class RowRefs:
-    """Turns what a person writes for a row, its model or its table and a number (task:12 or tasks:12), into
+    """Turns what a user writes for a row, its model or its table and a number (task:12 or tasks:12), into
     the row's model and number, through the models the installed modules declare."""
 
     def __init__(self, registry: Registry, tables: Tables, queries: Queries) -> None:

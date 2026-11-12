@@ -6,7 +6,7 @@ from core.modules.approvals.models.approval_request import ApprovalRequest
 
 @dataclass(frozen=True)
 class RequestSetting(Command[ApprovalRequest]):
-    """Asks a person to change a setting only a person may change, with the reason the agent gives."""
+    """Asks a user to change a setting only a user may change, with the reason the agent gives."""
 
     key: str
     text: str

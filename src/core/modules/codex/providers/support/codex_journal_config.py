@@ -19,7 +19,7 @@ TRUSTED_PROJECT = 'trust_level = "trusted"'
 
 @dataclass(frozen=True)
 class CodexJournalConfig:
-    """The config.toml the journal writes whole for Codex: bypass, the model providers copied from the person's
+    """The config.toml the journal writes whole for Codex: bypass, the model providers copied from the user's
     config, the folders Codex trusts and the trusted hashes of the journal's hooks."""
 
     person_config: bytes

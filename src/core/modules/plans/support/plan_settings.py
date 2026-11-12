@@ -19,7 +19,7 @@ PLAN_SETTINGS = [
                      SettingType.CHOICE, default=REVIEW_MODELS[0], choices=REVIEW_MODELS, person_set=True, required_settings=[QUICK_REVIEW_SETTING], screen="work", section=CHECKPOINTS_SECTION),
         SettingValue("command", "Command to run at a checkpoint", "A command such as the whole test suite or a build; the plan goes on only when it passes. Empty runs nothing.",
                      SettingType.TEXT, default="", person_set=True, screen="work", section=CHECKPOINTS_SECTION),
-        SettingValue("wait-for-person", "Wait for the person at a checkpoint", "The agent working the plan stops at the checkpoint and goes on once a person approves it on the plan card.",
+        SettingValue("wait-for-person", "Wait for the user at a checkpoint", "The agent working the plan stops at the checkpoint and goes on once a user approves it on the plan card.",
                      SettingType.FLAG, default=False, person_set=True, screen="work", section=CHECKPOINTS_SECTION),
     ]),
 ]

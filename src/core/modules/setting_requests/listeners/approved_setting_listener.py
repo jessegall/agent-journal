@@ -15,7 +15,7 @@ from core.modules.settings.commands.set_setting.set_setting import SetSetting
 
 
 class ApprovedSettingListener(CommitListener[Moved[Question]]):
-    """Applies a requested setting once a person approves its question, with that person as the actor."""
+    """Applies a requested setting once a user approves its question, with that user as the actor."""
 
     name = "setting-requests.approved"
     moves = (QuestionLifecycle.answer, QuestionLifecycle.close)

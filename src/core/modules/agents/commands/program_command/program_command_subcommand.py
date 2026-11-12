@@ -25,7 +25,7 @@ class ProgramCommandSubcommand(ReadSubcommand[list[str] | dict[str, object]]):
     the folder, as its provider builds it, for the launcher: one argument a line, or with --format json the
     arguments and the variables the launch must carry. A program that needs variables refuses the plain
     form, which an older launcher asks for. A resumed session keeps the model and effort it last ran with.
-    It starts the program's first turn with the journal's first prompt, unless the person gave arguments of
+    It starts the program's first turn with the journal's first prompt, unless the user gave arguments of
     their own."""
 
     cli_name = "program"

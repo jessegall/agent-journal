@@ -8,7 +8,7 @@ from core.modules.settings.support.setting_lines import SettingLines
 @dataclass(frozen=True)
 class SettingTreeRow:
     """One setting or group as the settings window draws it: what it is, where it sits, what it holds now as
-    shown to a person, and where that came from; a secret's value is never in it."""
+    shown to a user, and where that came from; a secret's value is never in it."""
 
     key: str
     module: str

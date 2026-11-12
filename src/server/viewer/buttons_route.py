@@ -15,7 +15,7 @@ from server.errors.unknown_environment_error import UnknownEnvironmentError
 
 
 class ButtonsRoute:
-    """Lists active buttons and the command lines a person has yet to allow."""
+    """Lists active buttons and the command lines a user has yet to allow."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home

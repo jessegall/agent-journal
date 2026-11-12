@@ -84,7 +84,7 @@ def test_a_shipped_profile_names_its_own_model_for_each_program_whatever_the_set
 
 def test_only_a_person_can_save_a_profile_and_its_effective_model_is_listed(new_story):
     story = new_story(fixture=UserBuilder)
-    story.expect_refusal(SAVE_PROFILE, "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(SAVE_PROFILE, "A user was asked in the dock", actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).first()
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(request.id)])

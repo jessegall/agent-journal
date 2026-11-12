@@ -14,7 +14,7 @@ class ChooseWorkSourceSubcommand(Subcommand[ChooseWorkSource, MessageWorkSource]
 
     cli_name = "message"
     name = "work-from"
-    help = "Select an addressed person request, including an older read request. Routine reads preserve it; reply and work-from switch it."
+    help = "Select an addressed user request, including an older read request. Routine reads preserve it; reply and work-from switch it."
 
     def __init__(self, numbers: RowNumbers) -> None:
         self.numbers = numbers

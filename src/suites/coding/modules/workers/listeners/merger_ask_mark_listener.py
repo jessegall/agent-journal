@@ -12,7 +12,7 @@ from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
 
 
 class MergerAskMarkListener(MarkListener[Created[Message]]):
-    """A question to the main agent about a stuck worker shows in the chat, so a person can see that it was
+    """A question to the main agent about a stuck worker shows in the chat, so a user can see that it was
     asked and who wrote it: the merger, or the journal itself when no merger settled the worker's questions
     in time."""
 

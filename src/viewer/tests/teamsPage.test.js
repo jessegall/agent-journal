@@ -173,7 +173,7 @@ test("an admin brings back a removed item from its panel", async () => {
     expect(result.lines).toEqual([["library", "restore", "doc", "12"]]);
 });
 
-test("a person who may write shares an item by its type and number, and sees the warning", async () => {
+test("a user who may write shares an item by its type and number, and sees the warning", async () => {
     const result = window({});
     result.run = async (line) => {
         result.lines.push(line);

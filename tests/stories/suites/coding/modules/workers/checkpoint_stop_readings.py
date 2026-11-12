@@ -92,7 +92,7 @@ def test_a_stopped_worker_whose_run_goes_on_past_the_minutes_set_on_the_workers_
     ended(story)
     story.advance(timedelta(minutes=4))
     StoppedWorkerRuns()(story.container)
-    story.expect_rows(stopped_run_lines(story) == (), detail="the minutes a person set have not gone by")
+    story.expect_rows(stopped_run_lines(story) == (), detail="the minutes a user set have not gone by")
     story.advance(timedelta(minutes=2))
     StoppedWorkerRuns()(story.container)
     StoppedWorkerRuns()(story.container)

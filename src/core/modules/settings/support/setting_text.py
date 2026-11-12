@@ -10,7 +10,7 @@ FLAG_TEXTS = {"on": True, "true": True, "yes": True, "off": False, "false": Fals
 
 
 class SettingText:
-    """Turns the text a person types after journal setting set into a value of the setting's type, or refuses
+    """Turns the text a user types after journal setting set into a value of the setting's type, or refuses
     it. A list is items split on commas, or a JSON list when an item itself holds a comma."""
 
     def value(self, entry: SettingEntry, text: str) -> str | int | float | bool | tuple[str, ...] | tuple[int, ...]:

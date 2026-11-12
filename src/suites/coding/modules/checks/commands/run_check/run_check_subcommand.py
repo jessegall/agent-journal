@@ -30,7 +30,7 @@ class RunCheckSubcommand(Subcommand[RecordCheckRun, Check]):
     def command(self, arguments: Namespace, caller: Caller) -> RecordCheckRun:
         check = self.checks.find(arguments.id)
         if check.stopped:
-            raise Refusal(f"check {check.id} is stopped", "a person starts it first, then it runs")
+            raise Refusal(f"check {check.id} is stopped", "a user starts it first, then it runs")
         outcome = self.runner.run(check.command, CheckProgress(self.bus, check.id).read_line)
         return RecordCheckRun(check.id, outcome.passed, outcome.output)
 

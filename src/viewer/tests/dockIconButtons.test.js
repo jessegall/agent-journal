@@ -64,7 +64,7 @@ test("pressing the stop icon runs the stop line", async () => {
     expect(lines).toEqual([["output", "stop", "3"]]);
 });
 
-test("a card that waits for a person is kept for good and shows no pin", () => {
+test("a card that waits for a user is kept for good and shows no pin", () => {
     const item = {id: 4, type: "approvals.request", target_model: "approval", target_id: 16, kept: true};
     const actions = dockButtons(item, {type: "approvals.request", needs_user: true, buttons: [], reads: ["approval pending"]}).map((button) => button.action);
     expect(actions).not.toContain("keep");

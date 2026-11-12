@@ -2,7 +2,7 @@ from enum import StrEnum
 
 
 class UsageLimitWindow(StrEnum):
-    """What a person's usage limit counts: the plan's 5-hour window, its 7-day window, or the 5-hour window's
+    """What a user's usage limit counts: the plan's 5-hour window, its 7-day window, or the 5-hour window's
     use within one clock hour."""
 
     FIVE_HOURS = "5 hours"

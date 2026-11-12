@@ -55,7 +55,7 @@ def test_a_person_sets_both_agent_limits_for_the_selected_environment(agent_limi
 def test_an_agent_cannot_change_either_number(agent_limits_server):
     server, cookie = agent_limits_server
     for key in (RUN, KEPT):
-        server.story.expect_refusal(f'setting set {key} 9 --environment main --reason "more room for helpers"', "A person was asked", actor=server.story.agent)
+        server.story.expect_refusal(f'setting set {key} 9 --environment main --reason "more room for helpers"', "A user was asked", actor=server.story.agent)
     worker = next(row for row in line(server, cookie, ["agent", "limits"])["rows"] if row["key"] == "worker")
     server.story.expect_rows(worker["run_limit"] == 1 and worker["kept_limit"] == 0)
 
@@ -84,7 +84,7 @@ def test_a_person_sets_one_profiles_counts_through_the_profile_screen_route(agen
 
 def test_an_agent_cannot_set_a_profiles_counts(agent_limits_server):
     server, cookie = agent_limits_server
-    server.story.expect_refusal("agent profile-limits helper journal-researcher --running 9 --kept 9 --environment main --reason \"fewer\"", "A person was asked", actor=server.story.agent)
+    server.story.expect_refusal("agent profile-limits helper journal-researcher --running 9 --kept 9 --environment main --reason \"fewer\"", "A user was asked", actor=server.story.agent)
     helper = next(row for row in line(server, cookie, ["agent", "limits"])["rows"] if row["key"] == "helper")
     profile = next(row for row in helper["profiles"] if row["profile"] == "journal-researcher")
     server.story.expect_rows((profile["run_limit"], profile["kept_limit"]) == (2, 3))

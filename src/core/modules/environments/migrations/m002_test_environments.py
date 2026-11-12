@@ -2,7 +2,7 @@ from engine.database.migration import Migration
 
 
 class TestEnvironmentsMigration(Migration):
-    """An environment can be marked as a test one, and a person can grant one agent from another environment the
+    """An environment can be marked as a test one, and a user can grant one agent from another environment the
     right to work in it."""
 
     number = 2

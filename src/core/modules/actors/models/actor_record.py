@@ -6,7 +6,7 @@ from engine.model.model import Model
 
 @dataclass(frozen=True, kw_only=True)
 class ActorRecord(Model):
-    """A row of the actors table: a person, an agent, a module or the core, unique by type and name. The Actor
+    """A row of the actors table: a user, an agent, a module or the core, unique by type and name. The Actor
     value in the engine is what a command carries; this is the row it points to."""
 
     model_name = "actor"

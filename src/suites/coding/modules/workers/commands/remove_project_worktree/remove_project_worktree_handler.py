@@ -10,7 +10,7 @@ from engine.cli.row_numbers import RowNumbers
 
 
 class RemoveProjectWorktreeHandler(Handler[RemoveProjectWorktree, str]):
-    """Removes the folder for a person, keeping its branch; the main checkout, a worker's worktree and one an
+    """Removes the folder for a user, keeping its branch; the main checkout, a worker's worktree and one an
     agent runs in stay, and git refuses one with changes."""
 
     runs_once = True

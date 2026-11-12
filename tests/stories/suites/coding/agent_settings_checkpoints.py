@@ -30,7 +30,7 @@ def test_turning_the_review_on_and_choosing_a_model_saves_both_and_the_screen_gi
 def test_waiting_for_the_person_is_off_until_turned_on_and_an_agent_cannot_turn_it_on(modal):
     story, screens = modal
     assert screens.value("work", WAIT) is False
-    story.expect_refusal(f"setting set {WAIT} on --environment main --reason 'a story asks'", "A person was asked", actor=story.agent)
+    story.expect_refusal(f"setting set {WAIT} on --environment main --reason 'a story asks'", "A user was asked", actor=story.agent)
     assert screens.value("work", WAIT) is False
     screens.save({WAIT: "on"}, "work")
     assert screens.value("work", WAIT) is True

@@ -10,7 +10,7 @@ from suites.coding.modules.checks.support.check_columns import CheckColumns
 class CheckLibraryShare(LibraryShare[Check]):
     """A check is sent as its title, command, brief and interval; its results stay here. It arrives
     stopped, since its command runs on this computer. While it is started, a changed command waits for a
-    person, and the command that person read goes on running."""
+    person, and the command that user read goes on running."""
 
     name = "check"
     model = Check

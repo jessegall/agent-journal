@@ -140,7 +140,7 @@ def test_retire_permissions(new_story):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     story.expect_refusal(f"agent retire {agent_number(story, story.agent.id)} {REASON}", "main agent is not retired", actor=story.agent)
-    story.expect_refusal(f"agent retire {agent_number(story, helper.id)} {REASON}", "only a person or the main agent retires", actor=Actor(helper.id, ActorType.AGENT))
+    story.expect_refusal(f"agent retire {agent_number(story, helper.id)} {REASON}", "only a user or the main agent retires", actor=Actor(helper.id, ActorType.AGENT))
     story.expect_success(f"agent retire {agent_number(story, helper.id)} {REASON}", actor=story.user)
 
 
@@ -197,7 +197,7 @@ def test_at_the_kept_maximum_a_new_start_is_refused_naming_the_idle_helper_and_t
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     story.expect_success('setting set journal.core.helpers.read-only-helper-profile-limits \'["journal-researcher:4:1"]\' --project', actor=story.user)
-    expect_start_refused(story, f"send the job to idle helper {agent_number(story, helper.id)}, or ask the person to retire one")
+    expect_start_refused(story, f"send the job to idle helper {agent_number(story, helper.id)}, or ask the user to retire one")
 
 
 def test_launches_in_flight_count(new_story, monkeypatch):
@@ -311,7 +311,7 @@ def test_refusals_fit_and_a_kept_limit_with_all_running_says_to_ask_the_person(n
     outcome = story.run("helper start journal-researcher --brief 'Read src/other.py' --environment main", actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()
-    story.expect_rows("ask the person to retire one" in outcome.output_text, "send the job" not in outcome.output_text, max(len(line) for line in outcome.output_text.splitlines()) <= 120)
+    story.expect_rows("ask the user to retire one" in outcome.output_text, "send the job" not in outcome.output_text, max(len(line) for line in outcome.output_text.splitlines()) <= 120)
 
 
 def test_the_agent_mix_counts_the_jobs_and_the_idle_agents_of_each_model(new_story):

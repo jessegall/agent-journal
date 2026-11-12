@@ -6,7 +6,7 @@ from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 
 @dataclass(frozen=True)
 class CheckApprovalWorks(Command[None]):
-    """Tries the action an approval would run, as the person who would accept it, and keeps nothing."""
+    """Tries the action an approval would run, as the user who would accept it, and keeps nothing."""
 
     lock = False
 

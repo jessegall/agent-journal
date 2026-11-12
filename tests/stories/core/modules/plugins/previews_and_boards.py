@@ -186,7 +186,7 @@ def test_an_upgrade_preview_shows_the_diff_of_the_files_it_changes(new_story):
 def test_a_failed_setup_leaves_the_old_code(new_story):
     story = installed_plugin(new_story)
     (story.folder / "journal-plugin.json").write_text(json.dumps({**MANIFEST, "version": "1.3.0", "setup": [{"name": "broken", "run": "false"}]}))
-    story.expect_refusal("plugin upgrade standup --yes --reason 'a story asks'", "A person was asked", actor=story.agent)
+    story.expect_refusal("plugin upgrade standup --yes --reason 'a story asks'", "A user was asked", actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).first()
     with viewer_client(story) as viewer:
         viewer.refusal("messages.chat", ["approval", "accept", str(request.id)], "broken")

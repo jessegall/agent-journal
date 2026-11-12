@@ -5,7 +5,7 @@ const familyKey = (family) => `show-${family}`;
 // the part of a window's menu that lists the marks one by one, which the menu keeps behind a fold
 export const MARKS_SECTION = "marks";
 
-// a toggle per family the modules declare, shown until the person hides it
+// a toggle per family the modules declare, shown until the user hides it
 function familyOptions(declarations) {
     const families = new Map(declarations.map((declaration) => [declaration.family, declaration.family_title]));
     return [...families].map(([family, title]) => ({control: "toggle", key: familyKey(family), label: title, default: true, section: MARKS_SECTION}));

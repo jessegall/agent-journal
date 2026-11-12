@@ -5,7 +5,7 @@ from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
 from tests.stories.suites.coding.modules.workers.support.program_split import dispatch, expect_program, new_task, split_story
 
 GUARD = "workers.model-fits-complexity"
-SKIP_REASON = "The person asked for the strongest model on it"
+SKIP_REASON = "The user asked for the strongest model on it"
 
 
 def easy_task(story):

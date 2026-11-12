@@ -20,7 +20,7 @@ def ended(new_story):
 
 
 def cards(person, *flags: str, environment: str = "main") -> dict:
-    """The page of agent cards a person reads in the agents window of one environment, main agent included."""
+    """The page of agent cards a user reads in the agents window of one environment, main agent included."""
     return person.server.viewer_line_value(person.cookie, {"window": WINDOW, "environment": environment, "line": ["agent", "cards", "--include-main", *flags, "--json"]})
 
 

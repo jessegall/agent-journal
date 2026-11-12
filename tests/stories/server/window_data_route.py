@@ -25,7 +25,7 @@ def window_data(server, cookie: str, keys: str = "", window: str = WINDOW, query
 
 
 class MessageChat(StoryFixture):
-    """A person and a message in the chat."""
+    """A user and a message in the chat."""
 
     parent = UserJoined
 

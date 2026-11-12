@@ -41,7 +41,7 @@ def test_without_yes_an_install_only_shows_what_it_would_install(new_story):
 
 def test_an_agent_proposes_a_plugin_and_the_user_installs_it(new_story):
     story = plugin_story(new_story)
-    story.expect_refusal(f'plugin propose {story.plugin_folder} --why "judges the code" --reason needed', "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(f'plugin propose {story.plugin_folder} --why "judges the code" --reason needed', "A user was asked in the dock", actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).first()
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(request.id)])
@@ -50,7 +50,7 @@ def test_an_agent_proposes_a_plugin_and_the_user_installs_it(new_story):
 
 def test_an_agent_installs_disables_enables_configures_and_removes_a_plugin(new_story):
     story = plugin_story(new_story)
-    story.expect_refusal(f"plugin install {story.plugin_folder} --yes --reason needed", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(f"plugin install {story.plugin_folder} --yes --reason needed", "A user was asked in the dock", actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).first()
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(request.id)])
@@ -85,7 +85,7 @@ def test_a_standing_yes_installs_a_plugin_again_though_the_install_has_a_prepare
     # the code-commandments project on 8 November: a plugin upgrade a standing yes covered failed every time, since the yes ran it
     # inside the transaction that asked for it
     story = plugin_story(new_story)
-    story.expect_refusal(f"plugin install {story.plugin_folder} --yes --reason 'to judge the code'", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(f"plugin install {story.plugin_folder} --yes --reason 'to judge the code'", "A user was asked in the dock", actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).first()
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(request.id), "--always", "same"])

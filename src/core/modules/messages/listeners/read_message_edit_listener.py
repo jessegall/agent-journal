@@ -12,7 +12,7 @@ TEXT_FIELD = "text"
 
 
 class ReadMessageEditListener(CommitListener[Updated[Message]]):
-    """A person's message whose text changes after the agent read it is named to the agent."""
+    """A user's message whose text changes after the agent read it is named to the agent."""
 
     name = "messages.read-message-edit"
 

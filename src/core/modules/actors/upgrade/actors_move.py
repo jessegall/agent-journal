@@ -17,8 +17,8 @@ SIGNED_TABLE = "messages"
 
 class ActorsMove(VersionFourMove):
     """Carries each version 4 user as a user actor under the same name; the new actor's number is in the map,
-    and the rows the user made name it. A version 4 journal with no user row has one person all the same, its
-    rows signed user:1, so that person is made under the login name, or the viewer would open for nobody. An
+    and the rows the user made name it. A version 4 journal with no user row has one user all the same, its
+    rows signed user:1, so that user is made under the login name, or the viewer would open for nobody. An
     agent's actor is made by the agents move."""
 
     name = "actors"

@@ -22,7 +22,7 @@ export function perHour(completed, startedAt, finishedAt, nowMilliseconds = Date
     return hours > 0 && completed ? Math.round(completed / hours) : 0;
 }
 
-// a row's ISO time as a person reads a date: 3 Nov 2026, 12:19
+// a row's ISO time as a user reads a date: 3 Nov 2026, 12:19
 export function dated(at) {
     return at ? new Date(at).toLocaleString([], {day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false}) : "";
 }

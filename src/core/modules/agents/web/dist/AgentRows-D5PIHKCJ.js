@@ -401,7 +401,7 @@ const Tt = { class: "action-buttons" }, At = {
       ], 32);
     };
   }
-}, Qt = /* @__PURE__ */ Z(_t, [["__scopeId", "data-v-4e3619f8"]]), Xt = {
+}, Qt = /* @__PURE__ */ Z(_t, [["__scopeId", "data-v-8712e475"]]), Xt = {
   class: "agent-command",
   "data-agent-command": ""
 }, ea = {
@@ -455,7 +455,7 @@ const Tt = { class: "action-buttons" }, At = {
       ])) : h("", !0)
     ])) : h("", !0);
   }
-}, ra = /* @__PURE__ */ Z(ia, [["__scopeId", "data-v-abc8e12a"]]), da = ["data-agent-delegated", "onClick"], ua = { class: "agent-task-number" }, ca = { class: "agent-task-title" }, ga = ["title"], va = {
+}, ra = /* @__PURE__ */ Z(ia, [["__scopeId", "data-v-c5c81429"]]), da = ["data-agent-delegated", "onClick"], ua = { class: "agent-task-number" }, ca = { class: "agent-task-title" }, ga = ["title"], va = {
   __name: "AgentTaskGroup",
   props: { section: { type: Object, required: !0 }, open: Boolean },
   emits: ["toggle"],
@@ -2079,7 +2079,7 @@ const yn = ["disabled", "title"], wn = ["disabled", "title"], Mn = { class: "gau
       ], 2)
     ], 2));
   }
-}, so = /* @__PURE__ */ Z(ao, [["__scopeId", "data-v-fceb20c3"]]);
+}, so = /* @__PURE__ */ Z(ao, [["__scopeId", "data-v-6542daf5"]]);
 export {
   so as A
 };

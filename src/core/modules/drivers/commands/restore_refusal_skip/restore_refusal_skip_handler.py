@@ -11,7 +11,7 @@ from core.modules.agents.support.agent_label import AgentLabel
 
 
 class RestoreRefusalSkipHandler(Handler[RestoreRefusalSkip, RefusalSkip]):
-    """A person gives any agent its skip back; a main agent only the agents it started."""
+    """A user gives any agent its skip back; a main agent only the agents it started."""
 
     command = RestoreRefusalSkip
 

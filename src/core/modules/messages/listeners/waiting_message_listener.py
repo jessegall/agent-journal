@@ -11,7 +11,7 @@ from core.modules.messages.support.message_targets import MessageTargets
 
 
 class WaitingMessageListener(CommitListener[Created[Message]]):
-    """A message the person writes while the main agent sits idle wakes it."""
+    """A message the user writes while the main agent sits idle wakes it."""
 
     name = "messages.idle-message"
     run_order = -2

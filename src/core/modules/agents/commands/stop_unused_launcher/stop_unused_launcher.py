@@ -5,7 +5,7 @@ from engine.command.command import Command
 
 @dataclass(frozen=True)
 class StopUnusedLauncher(Command[None]):
-    """Shows the person once that a second launcher ran beside the one that serves the journal, and stops it.
+    """Shows the user once that a second launcher ran beside the one that serves the journal, and stops it.
     It takes no write lock while it waits for the process to go."""
 
     lock = False

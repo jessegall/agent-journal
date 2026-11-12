@@ -16,7 +16,7 @@ UNKNOWN_CODE = "this code pairs no phone"
 
 
 class RedeemPhoneCodeHandler(Handler[RedeemPhoneCode, Phone]):
-    """Redeems an open, unexpired pairing code once and pairs a phone as the person who asked for it; only the
+    """Redeems an open, unexpired pairing code once and pairs a phone as the user who asked for it; only the
     viewer's listener redeems one, as the journal itself."""
 
     command = RedeemPhoneCode

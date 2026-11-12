@@ -12,7 +12,7 @@ from engine.command.person_check import PersonCheck
 
 class TrustWindowHandler(Handler[TrustWindow, WindowPermission]):
     """Writes the caller's page trust of a module at the module's current code fingerprint, so a later upgrade
-    asks again; the guard viewer.person-gives-permissions refuses any caller but a person trusting for
+    asks again; the guard viewer.person-gives-permissions refuses any caller but a user trusting for
     themselves."""
 
     command = TrustWindow

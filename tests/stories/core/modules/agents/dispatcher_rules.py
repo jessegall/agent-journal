@@ -98,7 +98,7 @@ def test_557_the_standing_command_reads_running_and_after_a_stop_through_the_dis
     launcher(story, request_count=0, answers=(PROGRAM_RUNS, STOPPED, NO_PROGRAM))
     story.expect_text(f"agent standing {number} --environment main", "standing: running", actor=story.user)
     story.expect_success(f"agent stop-program {number} --environment main", "stop: program_ended", actor=story.user)
-    story.expect_text(f"agent standing {number} --environment main", "standing: ended", "reason: stopped by a person", actor=story.user)
+    story.expect_text(f"agent standing {number} --environment main", "standing: ended", "reason: stopped by a user", actor=story.user)
 
 
 def test_557_the_list_of_agents_and_the_row_of_an_agent_carry_the_standing_its_own_command_prints(new_story):

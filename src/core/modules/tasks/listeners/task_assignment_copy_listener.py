@@ -10,7 +10,7 @@ from core.modules.tasks.models.task import Task
 class TaskAssignmentCopyListener(SaveListener[Changed[Task]]):
     """While the column delegated_to still exists, the assignment of a task follows it: when the column
     changes, the agent now in it holds the task, and an emptied column leaves the task unassigned. A change
-    of a task that leaves the column as it was leaves its assignment as it was, also one given to a person."""
+    of a task that leaves the column as it was leaves its assignment as it was, also one given to a user."""
 
     name = "tasks.assignment-copy"
 

@@ -10,8 +10,8 @@ from engine.command.person_check import PersonCheck
 
 
 class SavePersonPresetHandler(Handler[SavePersonPreset, PersonPreset]):
-    """Writes a new preset row for the person, refusing a shape that is no layout and a name the person gave
-    another preset of the page; the guard viewer.person-preset-owner refuses any caller but a person."""
+    """Writes a new preset row for the user, refusing a shape that is no layout and a name the user gave
+    another preset of the page; the guard viewer.person-preset-owner refuses any caller but a user."""
 
     command = SavePersonPreset
 
@@ -20,7 +20,7 @@ class SavePersonPresetHandler(Handler[SavePersonPreset, PersonPreset]):
 
     def handle(self, command: SavePersonPreset, context: Context) -> PersonPreset:
         if context.environment_id is None:
-            raise Refusal("a preset of a person belongs to an environment", "name one with --environment")
+            raise Refusal("a preset of a user belongs to an environment", "name one with --environment")
         if not is_layout_text(command.shape):
             raise Refusal(f"{command.shape} is no layout", "a layout is the viewer's layout tree: tabs with windows and active, or a split of two")
         PersonCheck.require(context, f"Save the layout preset {command.name}?")

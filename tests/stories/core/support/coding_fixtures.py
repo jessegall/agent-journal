@@ -60,7 +60,7 @@ class OpenTaskOrchestrator(StoryFixture):
         story.expect_text("setting show journal.suites.coding.auto-mode --environment main", "value: False")
 
 class OrchestratorWithPerson(StoryFixture):
-    """The orchestrator with task 1 open, and a person, Ada, beside it: story.user."""
+    """The orchestrator with task 1 open, and a user, Ada, beside it: story.user."""
 
     parent = OpenTaskOrchestrator
 
@@ -94,7 +94,7 @@ class StartedTaskBuilder(StoryFixture):
 
 
 class UserBuilder(StoryFixture):
-    """A person, Ada, beside the started builder: story.user."""
+    """A user, Ada, beside the started builder: story.user."""
 
     parent = BuilderStarted
 
@@ -143,7 +143,7 @@ class ReadTaskBuilder(StoryFixture):
 
 
 class StartedBuilderWithPerson(StoryFixture):
-    """The builder with task 1 started, and a person, Ada, beside it: story.user."""
+    """The builder with task 1 started, and a user, Ada, beside it: story.user."""
 
     parent = StartedTaskBuilder
 
@@ -155,7 +155,7 @@ class StartedBuilderWithPerson(StoryFixture):
 
 
 class OpenBuilderWithPerson(StoryFixture):
-    """The builder with task 1 open, and a person, Ada, beside it: story.user."""
+    """The builder with task 1 open, and a user, Ada, beside it: story.user."""
 
     parent = OpenTaskBuilder
 

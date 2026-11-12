@@ -34,7 +34,7 @@ def merging(new_story, monkeypatch):
 
 
 def declared_occupant(story, occupant: str) -> None:
-    """Saves the merger's occupant as a person's change over the shipped profile, which declares each-launch."""
+    """Saves the merger's occupant as a user's change over the shipped profile, which declares each-launch."""
     story.expect_success(OCCUPANT_SAVE.format(occupant=occupant), actor=story.user)
 
 

@@ -48,7 +48,7 @@ Every agent has a plan focus of its own: the plan it works on first. With none n
 plan that has work you can take.
 
 - `journal plan focus` reads your focus and what each started plan waits on. `journal plan focus <plan>` names a started
-  or approved plan as your focus, and `journal plan focus --clear` brings the default back. A person names the focus of
+  or approved plan as your focus, and `journal plan focus --clear` brings the default back. A user names the focus of
   the main agent with the same command.
 - The order of hand-outs: the task you were told to take next, a critical task outside any plan, the work of your focus,
   the next task of the other started plans, oldest first, the most urgent open task outside any plan, and last a task

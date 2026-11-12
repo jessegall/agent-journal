@@ -33,7 +33,7 @@ COMPACTION_LIMIT_SECONDS = 600
 class HookCallQuery(Query[HookCall]):
     """Reads hook calls, with the questions the drivers module's rules ask of an agent's recent hooks.
     An agent is between turns when its last turn hook ended the turn, it was interrupted, or it came
-    back from a compaction a person or the journal started, which leaves it at an empty prompt; an
+    back from a compaction a user or the journal started, which leaves it at an empty prompt; an
     automatic compaction goes on with its turn."""
 
     def __init__(self, database: Database, tables: Tables, kept: KeptRows) -> None:

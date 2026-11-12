@@ -49,4 +49,4 @@ def test_a_description_over_120_characters_is_refused(new_story):
 
 
 def test_a_secret_with_a_default_is_refused(new_story):
-    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:SecretDefaultModule", "the secret leaky.token has a default; a secret is set by the person, never written in code")
+    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:SecretDefaultModule", "the secret leaky.token has a default; a secret is set by the user, never written in code")

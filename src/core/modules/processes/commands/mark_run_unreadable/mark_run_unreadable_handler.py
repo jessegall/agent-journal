@@ -14,7 +14,7 @@ SOURCE = "processes.unreadable-by-person"
 
 
 class MarkRunUnreadableHandler(Handler[MarkRunUnreadable, UnreadableMark]):
-    """Marks the command of a run for the person who pressed the card's button, and tells the run's agent that
+    """Marks the command of a run for the user who pressed the card's button, and tells the run's agent that
     its reader asks stop."""
 
     command = MarkRunUnreadable

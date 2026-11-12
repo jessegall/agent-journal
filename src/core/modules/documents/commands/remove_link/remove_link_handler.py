@@ -25,7 +25,7 @@ class RemoveLinkHandler(Handler[RemoveLink, None]):
 
     def handle(self, command: RemoveLink, context: Context) -> None:
         if context.actor.type not in (ActorType.AGENT, ActorType.USER) or context.environment_id is None:
-            raise Refusal("correct attribution as a person or its creating agent in one environment")
+            raise Refusal("correct attribution as a user or its creating agent in one environment")
         removed = self.queries.query(LinkCorrection).filter(link_id=command.link_id).first()
         link = self.rows.find(Link, command.link_id)
         if removed is not None:
@@ -40,7 +40,7 @@ class RemoveLinkHandler(Handler[RemoveLink, None]):
         self.authorize(link.creator_id, context)
         message = self.rows.required(Message, link.source_id) if link.source_model == Message.model_name else None
         if not self.local_request(message, context):
-            raise Refusal("correct a person request attribution in this environment")
+            raise Refusal("correct a user request attribution in this environment")
         if link.target_model not in ("task", "plan", "doc", "report"):
             raise Refusal("correct a request attribution in this environment")
         if self.refs.existing(link.target_model, link.target_id) is None:

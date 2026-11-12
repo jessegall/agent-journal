@@ -134,7 +134,7 @@ test("each revision names its author and date, including an unknown old author",
     expect(element.querySelector('[data-text-revision="1"]').textContent).toContain("Unknown");
 });
 
-test("a person can close the agent's open revision from the inspector", async () => {
+test("a user can close the agent's open revision from the inspector", async () => {
     const {element, ran} = drawn();
     await settle();
     element.querySelector('[data-document-tab="revisions"]').click();

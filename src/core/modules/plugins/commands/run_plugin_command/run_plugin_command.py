@@ -6,7 +6,7 @@ from core.modules.plugins.support.plugin_command_run import PluginCommandRun
 
 @dataclass(frozen=True)
 class RunPluginCommand(Command[PluginCommandRun]):
-    """Runs a shell line at the root of the checkout of an agent, for a plugin or a person; a run of a kind the
+    """Runs a shell line at the root of the checkout of an agent, for a plugin or a user; a run of a kind the
     plugin declares is queued as that kind."""
 
     lock = False

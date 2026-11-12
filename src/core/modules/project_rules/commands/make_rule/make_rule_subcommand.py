@@ -7,7 +7,7 @@ from core.modules.project_rules.models.project_rule import ProjectRule
 
 
 class MakeRuleSubcommand(Subcommand[MakeRule, ProjectRule]):
-    """`journal rule make "<text>"`: a rule for the whole project; an agent's waits for a person's approval."""
+    """`journal rule make "<text>"`: a rule for the whole project; an agent's waits for a user's approval."""
 
     cli_name = "rule"
     name = "make"

@@ -47,7 +47,7 @@ class LongTitleModule(Module):
 class LongDescriptionModule(Module):
     name = "wordy"
     requires_core = ">=5,<6"
-    settings = [SettingValue("limit", "Limit", "How many rows a list shows at once, before it offers the next page of rows to the person who reads it on a screen or a phone.",
+    settings = [SettingValue("limit", "Limit", "How many rows a list shows at once, before it offers the next page of rows to the user who reads it on a screen or a phone.",
                              SettingType.NUMBER, default=50)]
 
 

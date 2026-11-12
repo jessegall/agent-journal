@@ -28,7 +28,7 @@ class WorkerInstructionFiles:
     """Writes the instruction files of a worker's worktree for its profile, in place of the project's copies:
     the profile's text and each injection the profile has on, the journal's own briefing and each plugin's
     block. The project's originals stay beside them when the profile says so, and the written files stay
-    out of the worker's commits. A person can turn it off with the setting."""
+    out of the worker's commits. A user can turn it off with the setting."""
 
     def __init__(self, settings: SettingValues, profiles: ProfileFiles, registry: Registry, plugins: RunnablePlugins, folders: PluginFolders, git: WorktreeGit, libraries: LibraryFolders,
                  agents: AgentRows) -> None:

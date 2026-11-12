@@ -43,7 +43,7 @@ from core.modules.phone.support.skeletons import PHONE_PHONES_SKELETON
 
 
 class PhoneModule(Module):
-    """Pairs a person's phone with the viewer by a short code, and keeps each paired phone until it is
+    """Pairs a user's phone with the viewer by a short code, and keeps each paired phone until it is
     unpaired."""
 
     name = "journal.core.phone"

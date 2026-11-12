@@ -22,7 +22,7 @@ def test_a_stored_occupant_word_restores_as_the_enum():
 
 
 def test_a_stored_reuse_word_is_refused():
-    with pytest.raises(ValueError, match="agents are kept; a person retires them"):
+    with pytest.raises(ValueError, match="agents are kept; a user retires them"):
         AgentProfile.parsed(stored_fields(reuse="never"))
 
 

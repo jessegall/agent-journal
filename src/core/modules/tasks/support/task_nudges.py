@@ -22,7 +22,7 @@ INACTIVE_TASK = NudgeDeclaration("tasks.inactive_task", NudgeType.STEERING, 'not
 
 MISSED_LOG = NudgeDeclaration("tasks.missed_log", NudgeType.STEERING, 'log what the summary missed')
 WAIT_DESCRIPTION = NudgeDeclaration("tasks.wait_in_words", NudgeType.STEERING, "a wait is a block, on a task, a question, a plan or a command", interval=Interval(Seconds(1800)))
-PLAIN_BLOCK = NudgeDeclaration("tasks.plain_block", NudgeType.STEERING, "use --on {targets}, or --until; a plain reason waits for a person", turn_limited=False)
+PLAIN_BLOCK = NudgeDeclaration("tasks.plain_block", NudgeType.STEERING, "use --on {targets}, or --until; a plain reason waits for a user", turn_limited=False)
 TASK_NAME = NudgeDeclaration("tasks.named_task", NudgeType.STEERING, "task {task} names open task {other}; if it waits on it, block it on that task", turn_limited=False)
 BLOCK_REVIEW_REMINDER = ReminderDeclaration("tasks.block_review", Interval(Seconds(900), ClosedTasks(5)), 2)
 BLOCK_REVIEW = NudgeDeclaration("tasks.block_review", NudgeType.NOTICE, 'review blocked task {task}: renew its block with a reason, unblock it, or close it', interval=BLOCK_REVIEW_REMINDER.interval, turn_limited=False,

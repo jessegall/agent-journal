@@ -81,7 +81,7 @@ def expect_person(story: Story) -> None:
 
 
 class UserJoined(StoryFixture):
-    """A person, Ada, beside the agent: story.user."""
+    """A user, Ada, beside the agent: story.user."""
 
     parent = AgentStarted
 

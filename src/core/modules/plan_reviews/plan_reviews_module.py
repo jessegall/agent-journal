@@ -16,7 +16,7 @@ from core.modules.plan_reviews.support.review_state import REVIEW_STATE
 
 
 class PlanReviewsModule(Module):
-    """Lets a person ask for a critique of a plan and shows its review rounds, added to the plan module from
+    """Lets a user ask for a critique of a plan and shows its review rounds, added to the plan module from
     outside it, with the same means any module has."""
 
     name = "journal.core.plan_reviews"

@@ -5,7 +5,7 @@
         "select": "kind:Text",
         "where": [
             {
-                "textMatches": "(?i)(?:(\\b(I|I'm|I'll|I've|me|my|we|we're|our)\\b|\\b(engine|summaris(e|ed|ing)|comes? up|piles?|hub|steer(ed|ing)?|dispatch(ed|es)?|messaged|rows?|resources?|moments?|orchestrators?|inject(ed|s)?|ships with|its own|their own|park(ed|ing|s)?|suspend(ed|ing|s)?|suspension|dismiss(ed)?|took|abandon(ed)?)\\b)|\\b(${bad_viewer_phrases})\\b)"
+                "textMatches": "(?i)(?:(\\b(I|I'm|I'll|I've|me|my|we|we're|our)\\b|\\b(engine|persons?|summaris(e|ed|ing)|comes? up|piles?|hub|steer(ed|ing)?|dispatch(ed|es)?|messaged|rows?|resources?|moments?|orchestrators?|inject(ed|s)?|ships with|its own|their own|park(ed|ing|s)?|suspend(ed|ing|s)?|suspension|dismiss(ed)?|took|abandon(ed)?)\\b)|\\b(${bad_viewer_phrases})\\b)"
             }
         ],
         "reject": [

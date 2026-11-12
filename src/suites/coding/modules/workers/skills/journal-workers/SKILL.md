@@ -29,7 +29,7 @@ stays kept on the same agent number and session until retired.
   between; outside a plan the journal runs the tests of each commit and tells you when the last passes. `--library-link <folder>` links a folder such as
   `.venv` into its worktree and `--library-copy <folder>` copies it. `--program <program>` names the agent program.
 - Each dispatched worker gets the test commands the journal finds in the project's manifests (package.json, pyproject.toml,
-  go.mod, composer.json, Cargo.toml and the like, never in a library folder), read again at every dispatch, with a person's
+  go.mod, composer.json, Cargo.toml and the like, never in a library folder), read again at every dispatch, with a user's
   `preset-test-commands` setting in place of a found one of the same name. `journal worker presets` lists the manifests,
   their languages and those commands. Add `--test-command <name>=<command>` only for a command they lack; with none found
   or preset, an agent's dispatch names at least one.
@@ -55,8 +55,8 @@ stays kept on the same agent number and session until retired.
   choose different programs must be split as its refusal names; use `--phase` for a suitable part of a plan.
 - An agent cannot override the program of a ready route by naming another. After that refusal, an authorized exception
   uses `--skip-guard workers.route-holds --skip-reason "<why>"`. The skip and its reason stay in the log and a chat mark.
-  A person can choose any program. An agent cannot change a route a person made.
-- Only a person changes the split and its plan-window threshold. Ask with `journal setting request` when it needs
+  A user can choose any program. An agent cannot change a route a user made.
+- Only a user changes the split and its plan-window threshold. Ask with `journal setting request` when it needs
   changing. A helper changes neither routes nor program outages, and a worker dispatches no workers.
 - `journal worker send <number> "<job>"` adds instructions to a kept worker's existing work. Use `--task` for new assigned
   tasks. A dispatch is refused when a compatible idle worker can take those tasks. Use `--fresh "<why>"` on dispatch
@@ -78,17 +78,17 @@ stays kept on the same agent number and session until retired.
   answer: `journal worker merge <number> --read-important "<what you make of them>"`.
 - A worker on a unit of several tasks asks for its own merge; `journal merger next` shows the ask and its note. Do not merge such a worker before it asks.
 - Take the work in with `journal worker merge <number>` once every point is checked; nothing else adds a worker's work.
-  Merging a worker's work is the main agent's own decision, never a question for the person: when the merge command
+  Merging a worker's work is the main agent's own decision, never a question for the user: when the merge command
   cannot reach finished work (a branch kept after its worktree was removed), run its tasks' tests and merge that branch
   yourself.
   It first merges the branch into the worktree. When only built files under `web/dist` clash it keeps the branch's:
   rebuild after it. A clash in source goes back to the worker with conflict markers to settle.
-- What a worker needs to go on is the main agent's own decision, never a question for the person: give it test commands
+- What a worker needs to go on is the main agent's own decision, never a question for the user: give it test commands
   with `journal worker send <number> --test-command <name>=<command>` and link a missing folder with `--library-link`, then
-  tell the person only if it matters.
+  tell the user only if it matters.
 - `journal worker release <number> "<why>"` puts its task back to open.
 - `journal worker sandbox <number> on|off` sets whether that worker runs its shell lines in the sandbox, over the project setting
-  `worker-sandbox`; `journal worker dispatch` and `send` take `--no-sandbox` to start it with the sandbox off. A person or the
+  `worker-sandbox`; `journal worker dispatch` and `send` take `--no-sandbox` to start it with the sandbox off. A user or the
   main agent switches it; a helper cannot.
 
 ## Keeping the right mix
@@ -105,7 +105,7 @@ counts simultaneous worker processes; a kept limit counts both running and idle 
 allows none to start; kept 0 means no limit. Lowering a kept limit never removes a worker. Retire an unused worker
 explicitly to free a kept place.
 
-Only a person changes the limits, through the agents window or settings. Environment values override project values;
+Only a user changes the limits, through the agents window or settings. Environment values override project values;
 numbers written in a profile file have no effect. Read-only helpers have their own limits per profile. To add instructions to
 a busy read-only helper's current job, use `journal helper send <number> --steer "<text>"`; give separate work to an idle one.
 
@@ -125,7 +125,7 @@ be drawn from its output.
 
 `journal task block <n> --on worker:<number>` opens when that worker is merged, released or ended. Pending
 tests, corrections and queued tasks keep it blocked. A crashed worker is detected on a tick; one that
-never starts is ended after the idle time; no worker is retired unless a person does it.
+never starts is ended after the idle time; no worker is retired unless a user does it.
 
 ## When this happens
 
@@ -164,7 +164,7 @@ An open question lets you stop; the answer wakes you. Going on with other work e
 - `journal worker status` shows your started tasks and these lists: Tasks held (started, with the points that have no
   proof yet), Tasks staged (every point proved: the next commit takes them), Tasks waiting for tests (committed), Tasks
   you may start, Tasks blocked with the reason, and Tasks someone else holds (in your unit, but started by another
-  agent or a person: ask about them). The main agent can name a worker with
+  agent or a user: ask about them). The main agent can name a worker with
   `journal worker status <number>`. Use `--page` and `--limit` for longer lists, or `--json` for structured output.
 - `journal proof points --agent <number>` lists the points of your task's brief.
 - Prove each one with `journal proof make <point> --task <task> "<file:line, and the test>" --test "<command>"`: the journal runs that

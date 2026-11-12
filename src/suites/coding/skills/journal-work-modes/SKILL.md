@@ -22,7 +22,7 @@ environment, not from a mode. Your first line of a session tells you to read the
 
 - Builder: Auto on and Keep going off. You build tasks yourself, one at a time, and may also send workers.
 - Orchestrator: Auto off and Keep going on. You plan, give every task to a worker and check what comes back.
-- Any other mix of the controls is custom. A person applies a preset with `journal work-settings preset <name>`.
+- Any other mix of the controls is custom. A user applies a preset with `journal work-settings preset <name>`.
 
 ## Auto mode
 

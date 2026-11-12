@@ -12,7 +12,7 @@ KEPT_TYPES = (SessionType.PERSON, SessionType.AGENT)
 
 class SessionFile:
     """The viewer sessions of people and of the main agent, token to who it acts for, kept in a file only its owner
-    reads, so a browser stays logged in when the server restarts. A person is kept as a number, an agent as
+    reads, so a browser stays logged in when the server restarts. A user is kept as a number, an agent as
     {"agent": number}."""
 
     def __init__(self, path: Path) -> None:

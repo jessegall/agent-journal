@@ -6,7 +6,7 @@ from engine.model.model import Model
 
 @dataclass(frozen=True, kw_only=True)
 class SettingRequest(EnvironmentScoped, Model):
-    """A main agent's request to change a setting only a person may change, waiting on the question it asked."""
+    """A main agent's request to change a setting only a user may change, waiting on the question it asked."""
 
     model_name = "setting_request"
     cli_name = "setting-request"

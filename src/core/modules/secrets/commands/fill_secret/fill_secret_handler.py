@@ -32,7 +32,7 @@ class FillSecretHandler(Handler[FillSecret, FilledField]):
     @staticmethod
     def typed(value: str, context: Context) -> str:
         if context.actor.type is not ActorType.USER:
-            raise Refusal("credential values are entered by a person in the Secrets window")
+            raise Refusal("credential values are entered by a user in the Secrets window")
         if not value.strip():
             raise Refusal("the value is blank", "type the value on the Secrets window")
         return value.strip()

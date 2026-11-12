@@ -61,7 +61,7 @@ def test_a_persons_dispatch_without_a_program_is_refused_naming_the_flag(new_sto
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     person = story.new_row_id('actor make user "Ada"')
-    story.expect_refusal(DISPATCH, "a person's dispatch needs the program the worker runs", actor=Actor(person, ActorType.USER))
+    story.expect_refusal(DISPATCH, "a user's dispatch needs the program the worker runs", actor=Actor(person, ActorType.USER))
     expect_clean_environment(story, repository)
 
 

@@ -53,7 +53,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         parser.add_argument("--profile", default="", help="the worker profile it starts from, else journal-worker")
         parser.add_argument("--fresh", default="", metavar="REASON", help="start a new worker though a stopped one could take the task, and why")
         parser.add_argument("--name", default="", help="the worker's name on its card")
-        parser.add_argument("--no-program", action="store_true", help="a person only: cut the worktree and start no program")
+        parser.add_argument("--no-program", action="store_true", help="a user only: cut the worktree and start no program")
         parser.add_argument("--session", default="", help="with --no-program, the session whose hooks are the worker's")
         parser.add_argument("--no-sandbox", action="store_true", help="the worker runs its shell lines outside the sandbox")
         parser.add_argument("--test-command", action="append", default=[], metavar="NAME=COMMAND", help="a test command the worker may run as journal worker test <name>; an agent gives at least one when the project gives none: journal worker presets lists them")

@@ -309,12 +309,12 @@ class EditLockOverlay(Overlay):
 
 
 class LeadLockGuard(Guard[Created[EditLock]]):
-    """An agent the lead drives makes no edit lock; a person and other agents may."""
+    """An agent the lead drives makes no edit lock; a user and other agents may."""
 
     name = "samples.lead-lock-guard"
 
     def check(self, event: Created[EditLock], context: Context) -> None:
-        raise Refusal("the lead makes no edit lock itself", "a person makes one with journal edit-lock make <agent>")
+        raise Refusal("the lead makes no edit lock itself", "a user makes one with journal edit-lock make <agent>")
 
 
 class SampleSuite(Suite):

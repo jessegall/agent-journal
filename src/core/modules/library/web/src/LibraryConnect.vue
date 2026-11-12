@@ -2,7 +2,7 @@
 import {ref} from "vue";
 import {Btn, FormField, TextInput, useWindow} from "@journal/window-kit";
 
-// the form that connects this journal to a shared server: its address and the token an admin gave this person
+// the form that connects this journal to a shared server: its address and the token an admin gave this user
 const props = defineProps({address: {type: String, default: ""}});
 const emit = defineEmits(["connected"]);
 const context = useWindow();

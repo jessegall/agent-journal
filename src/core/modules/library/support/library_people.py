@@ -9,7 +9,7 @@ from core.modules.library.support.new_library_user import NewLibraryUser
 
 
 class LibraryPeople:
-    """The users and tokens of the shared server, for a person who administers it: the server decides who may, and an
+    """The users and tokens of the shared server, for a user who administers it: the server decides who may, and an
     unreachable server is a refusal naming its address."""
 
     def __init__(self, client: LibraryClient, writes: LibraryWrites) -> None:

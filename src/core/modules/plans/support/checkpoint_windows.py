@@ -68,7 +68,7 @@ class CheckpointWindows:
         if newest is not None and newest.state is CheckpointState.FAILED:
             return "failed"
         if newest is not None and newest.state is CheckpointState.PASSED and not is_passed:
-            return "tests passed, waits for a person"
+            return "tests passed, waits for a user"
         return "passed" if is_passed else "reached"
 
     def status_lines(self, newest: Mapping[int, CheckpointReach], passed_phase_ids: frozenset[int]) -> tuple[str, ...]:

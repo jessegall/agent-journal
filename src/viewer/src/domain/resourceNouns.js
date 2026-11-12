@@ -19,7 +19,7 @@ export const creatorNameOf = (actor, agent) => (actor?.type === "agent" && agent
 // who a row belongs to, by name, for a row an agent owns: the main agent when no agent does; "" for a row no agent owns
 export const ownerNameOf = (row, agent) => (!row || !("agent_id" in row) ? "" : row.agent_id === null ? "Main agent" : agent ? agentNameOf(agent) : "");
 
-// the fields of a row with no page of its own, with a label a person reads: everything but what the head and the text already show,
+// the fields of a row with no page of its own, with a label a user reads: everything but what the head and the text already show,
 // empty ones, row numbers and an unchanged updated time left out; the names of whom the row belongs to and who made it stand in for their row numbers,
 // and the task it is tied to is a link
 export const fieldsOf = (row, shownText = "", creator = "", owner = "") => [

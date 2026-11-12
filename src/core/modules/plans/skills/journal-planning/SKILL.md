@@ -12,7 +12,7 @@ and finish it without having to decide anything for itself.
   turn them into the plan, and do not design it again. When it holds a testing plan for unit tests, those unit tests
   go in the plan too.
 
-- Split each phase into its real steps. File one task per step a person could check.
+- Split each phase into its real steps. File one task per step a user could check.
 - A phase with one task needs a reason. `journal plan ready` refuses it until you pass
   `--skip-guard plans.one-task-phase --skip-reason "<why one task is enough>"`; otherwise split the phase.
 - Write each brief so it can be carried out alone: the files to change, what already does part of the work and is

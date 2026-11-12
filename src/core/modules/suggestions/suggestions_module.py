@@ -20,8 +20,8 @@ from core.modules.suggestions.support.skeletons import SUGGESTIONS_SUGGESTIONS_S
 
 
 class SuggestionsModule(Module):
-    """Adds suggestions the journal offers the person once,
-    shown as a chat mark the person accepts or declines."""
+    """Adds suggestions the journal offers the user once,
+    shown as a chat mark the user accepts or declines."""
 
     name = "journal.core.suggestions"
     seed_reason = "a suggestion is an agent's own offer, which a demo has none of"

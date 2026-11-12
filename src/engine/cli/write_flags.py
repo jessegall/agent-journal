@@ -22,7 +22,7 @@ class WriteFlags:
     @staticmethod
     def declare_reason_flag(parser: ArgumentParser) -> None:
         try:
-            parser.add_argument("--reason", default="", help="why this is asked, shown to the person when the line needs their approval")
+            parser.add_argument("--reason", default="", help="why this is asked, shown to the user when the line needs their approval")
         except ArgumentError:
             return None
         parser.set_defaults(reason_flag_added=True)

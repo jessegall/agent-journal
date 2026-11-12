@@ -13,7 +13,7 @@ STOPPING_REASONS = (StopReason.PERSON.value, StopReason.AGENT.value)
 class AgentSession(EnvironmentScoped, Model):
     """One session an agent ran under: its program and model, when it started, and when and why it ended.
     The end and its reason are empty while the session is the agent's current one. The start is empty for a
-    session that replaced another and whose program has not started yet. A session a person or an agent ended
+    session that replaced another and whose program has not started yet. A session a user or an agent ended
     is a stop."""
 
     model_name = "agent_session"

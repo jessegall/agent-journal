@@ -25,7 +25,7 @@ class WindowCheck:
     starts with its module's name, a file it loads is in its module's web/dist, it reads only read
     subcommands and runs only commands, and it follows only events of models it reads. A module the journal
     does not ship adds no commands to a window the journal ships, which asks for no permission, and its
-    buttons run a line of their own: none a person alone runs, none a shipped window or button already
+    buttons run a line of their own: none a user alone runs, none a shipped window or button already
     allows, none another module's button runs, since a press does not say which button it came from."""
 
     def __init__(self, finder: ModuleFinder) -> None:

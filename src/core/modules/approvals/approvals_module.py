@@ -48,7 +48,7 @@ OPEN_REQUEST = ButtonCondition("state", tuple(["open"]))
 
 
 class ApprovalsModule(Module):
-    """Asks for every person-only approval through one persistent dock card."""
+    """Asks for every user-only approval through one persistent dock card."""
 
     name = "journal.core.approvals"
     requires_core = ">=5,<6"

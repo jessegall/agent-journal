@@ -8,7 +8,7 @@ from core.modules.plans.models.lifecycles.checkpoint_lifecycle import Checkpoint
 
 class CheckpointRunGuard(Guard[Moved[CheckpointReach]]):
     """Refuses an agent that ends the run of a checkpoint: the journal ends it with the result of the tests, or
-    a person does."""
+    a user does."""
 
     name = "plans.checkpoint-run"
     moves = (CheckpointLifecycle.passed, CheckpointLifecycle.failed)

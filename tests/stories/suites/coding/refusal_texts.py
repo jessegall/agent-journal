@@ -13,4 +13,4 @@ def test_dispatch_ban_while_writing_no_code_says_nothing_can_be_done_until_a_per
     story = new_story(fixture=UserBuilder)
     story.expect_success(f"setting set {DISPATCHES} off --environment main", actor=story.user)
     story.expect_success("setting set journal.suites.coding.main-writes-code off --environment main", actor=story.user)
-    story.expect_hook_refusal("s-1", WORKER_DISPATCH, "writes no code here either: ask a person to allow workers")
+    story.expect_hook_refusal("s-1", WORKER_DISPATCH, "writes no code here either: ask a user to allow workers")

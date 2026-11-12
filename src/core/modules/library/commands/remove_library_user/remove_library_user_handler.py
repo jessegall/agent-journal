@@ -7,7 +7,7 @@ from core.modules.library.support.library_user import LibraryUser
 
 
 class RemoveLibraryUserHandler(Handler[RemoveLibraryUser, LibraryUser]):
-    """Asks the server to remove a user with no write lock held; only a person removes, and the server asks for an
+    """Asks the server to remove a user with no write lock held; only a user removes, and the server asks for an
     admin."""
 
     command = RemoveLibraryUser

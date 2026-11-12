@@ -7,7 +7,7 @@ from engine.event.created import Created
 
 
 class SuggestionMarkListener(MarkListener[Created[Suggestion]]):
-    """When a suggestion is offered, the chat shows it as a mark the person answers."""
+    """When a suggestion is offered, the chat shows it as a mark the user answers."""
 
     name = "suggestions.offered-mark"
     module_name = "journal.core.suggestions"

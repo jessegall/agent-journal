@@ -26,7 +26,7 @@ their own numbers, so write the type with the number: doc 12, report 3.
 - `journal doc edit <n> --abstract "<one line>" --body "<text>"` writes the whole text anew. Without an open
   revision it refuses the edit and names the open command; the saved text stays intact.
 - `journal doc make` saves the whole new document in one revision and needs no open or close command.
-- Each viewer edit saves a separate revision by that person. A person can close an agent's open document in the
+- Each viewer edit saves a separate revision by that user. A user can close an agent's open document in the
   inspector. If an agent or helper ends, its open document closes with its text and author kept; its parent hears.
 - Change a part without reading or sending the rest: `journal doc edit <n> --section <n or heading> --body "<text>"`
   replaces that section's lines, and its heading too when the text starts with one; `journal doc edit <n> --replace

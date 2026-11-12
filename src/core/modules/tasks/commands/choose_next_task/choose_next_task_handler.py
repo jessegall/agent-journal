@@ -13,7 +13,7 @@ from core.modules.tasks.support.next_task_choices import NextTaskChoices
 
 class ChooseNextTaskHandler(Handler[ChooseNextTask, Task]):
     """Remembers one open task as the next for an agent, replacing an earlier choice; the task must be free for
-    that agent or reserved for it, and only a main agent or a person chooses for another agent."""
+    that agent or reserved for it, and only a main agent or a user chooses for another agent."""
 
     command = ChooseNextTask
 

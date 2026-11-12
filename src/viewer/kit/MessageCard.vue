@@ -62,7 +62,7 @@ const captions = computed(() => JSON.parse(props.message.captions || "{}"));
 const files = computed(() => (props.message.files ?? []).map((name) => ({name, address: addressOf(name), isImage: IMAGE.test(name), title: captions.value[name] || name})));
 const time = computed(() => clock(new Date(props.message.created_at).getTime() / 1000 || props.message.created_at));
 
-// the rows a person's message names, under it, as version 4's line of what it linked
+// the rows a user's message names, under it, as version 4's line of what it linked
 const context = inject(WINDOW_CONTEXT, null);
 const {links, total, more, loading, failure, sentTo, sentMore, sentLoading, sentFailure, loadMore, loadSent} =
     useMessageLinkPages(context, () => fromPerson.value && !props.message.local ? props.message.id : null, bubble);

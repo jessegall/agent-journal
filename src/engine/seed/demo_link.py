@@ -3,7 +3,7 @@ HOST = "127.0.0.1"
 
 
 class DemoLink:
-    """The link that logs a person into the viewer of a demo journal on its environment, on a port other than
+    """The link that logs a user into the viewer of a demo journal on its environment, on a port other than
     those of the journals the team runs itself."""
 
     @staticmethod

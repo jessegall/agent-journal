@@ -20,7 +20,7 @@ PLAN_WINDOW = "plans.plans"
 
 
 class PlanAndPersonFixture(StoryFixture):
-    """Plan 1 with two open tasks, a second plan 2, and a person, Ada, beside the agent."""
+    """Plan 1 with two open tasks, a second plan 2, and a user, Ada, beside the agent."""
 
     parent = TasksPlan
 

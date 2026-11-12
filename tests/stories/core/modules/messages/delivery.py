@@ -490,7 +490,7 @@ def test_editing_an_unread_message_says_nothing(editable_message):
 
 
 class StoppedLead(StoryFixture):
-    """The sample lead has a person, was given a prompt and let to stop, so it sits idle."""
+    """The sample lead has a user, was given a prompt and let to stop, so it sits idle."""
 
     parent = LeadStarted
 

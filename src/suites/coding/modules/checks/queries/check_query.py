@@ -11,7 +11,7 @@ from suites.coding.modules.checks.conditions.interval_passed import IntervalPass
 from suites.coding.modules.checks.queries.conditions.task_wait_command_failure import TaskWaitCommandFailure
 
 
-CHECKS_REASON = "The checks of a project are a catalogue a person or an agent makes one at a time, and a round runs every one of them."
+CHECKS_REASON = "The checks of a project are a catalogue a user or an agent makes one at a time, and a round runs every one of them."
 
 
 class CheckQuery(Query[Check]):

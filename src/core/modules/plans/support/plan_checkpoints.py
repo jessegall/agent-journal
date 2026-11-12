@@ -25,8 +25,8 @@ class PlanCheckpoints:
     completed again, and gets a new reach. The core runs no test: a suite ends the run of a reach. The last
     phase of a plan is always a checkpoint, so a plan is over once that one has passed. A window whose run on
     an agent's commit passed with the same tasks passes at the merge with no new run, unless it is the plan's
-    last window and the branch moved after that commit. When the setting to wait for the person is on, a
-    window whose run passed gets no pass until a person approves it."""
+    last window and the branch moved after that commit. When the setting to wait for the user is on, a
+    window whose run passed gets no pass until a user approves it."""
 
     def __init__(self, queries: Queries, repository: Repository, moves: CheckpointBranchMoves, kept: KeptRows, settings: SettingValues) -> None:
         self.queries, self.repository, self.moves, self.kept, self.settings = queries, repository, moves, kept, settings

@@ -9,7 +9,7 @@ from core.modules.processes.support.silent_start_runs import SilentStartRuns
 
 class RunCommandWords:
     """The leading words a mark of a run's command is kept by: the command of its first watched part, else of its
-    first part a reader reads; the card and the person's buttons both take them from here."""
+    first part a reader reads; the card and the user's buttons both take them from here."""
 
     def __init__(self, parts: ProcessPartQuery) -> None:
         self.parts = parts

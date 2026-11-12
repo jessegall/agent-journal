@@ -17,5 +17,5 @@ class LoginTunlerHandler(Handler[LoginTunler, TunlerLogin]):
 
     def handle(self, command: LoginTunler, context: Context) -> TunlerLogin:
         if context.actor.type is not ActorType.USER:
-            raise Refusal("sign-in credentials are entered by a person in the Tunler window")
+            raise Refusal("sign-in credentials are entered by a user in the Tunler window")
         return self.client.login(command.host, command.username, command.password, command.master)

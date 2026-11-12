@@ -38,17 +38,17 @@ def test_another_person_lists_none_of_your_saved_layouts(existing_layout):
 
 def test_an_agent_cannot_save_a_person_preset(new_story):
     window = window_story(new_story)
-    window.story.expect_refusal(SAVE, "A person was asked in the dock", actor=window.story.agent)
+    window.story.expect_refusal(SAVE, "A user was asked in the dock", actor=window.story.agent)
 
 
 def test_another_person_cannot_remove_your_person_preset(saved_layout):
     window, key = saved_layout
-    window.story.expect_refusal(f"person-preset remove {key}", f"preset {key} is another person's", actor=window.new_person("Bob"))
+    window.story.expect_refusal(f"person-preset remove {key}", f"preset {key} is another user's", actor=window.new_person("Bob"))
 
 
 def test_another_person_cannot_rename_your_preset(saved_layout):
     window, key = saved_layout
-    window.story.expect_refusal(f"person-preset rename {key} --name Theirs", "this layout preset belongs to another person", actor=window.new_person("Bob"))
+    window.story.expect_refusal(f"person-preset rename {key} --name Theirs", "this layout preset belongs to another user", actor=window.new_person("Bob"))
 
 
 def test_a_second_preset_with_the_same_name_for_the_page_is_refused(existing_layout):

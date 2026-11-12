@@ -9,7 +9,7 @@ from core.modules.processes.commands.lift_hold.lift_hold import LiftHold
 
 
 class LiftHoldSubcommand(Subcommand[LiftHold, int]):
-    """`journal process lift-hold <agent>`: what the agent card's Lift this hold button sends; only a person may."""
+    """`journal process lift-hold <agent>`: what the agent card's Lift this hold button sends; only a user may."""
 
     cli_name = "process"
     name = "lift-hold"

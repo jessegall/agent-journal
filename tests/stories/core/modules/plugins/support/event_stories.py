@@ -51,7 +51,7 @@ EVENT_SCRIPTS = {
 
 
 class EventPluginStarted(StoryFixture):
-    """A person, Ada, beside the builder, with task 1 open."""
+    """A user, Ada, beside the builder, with task 1 open."""
 
     parent = OpenTaskBuilder
 
@@ -63,7 +63,7 @@ class EventPluginStarted(StoryFixture):
 
 
 class EventWorkerStarted(StoryFixture):
-    """A person, Ada, beside the orchestrator, with task 1 open."""
+    """A user, Ada, beside the orchestrator, with task 1 open."""
 
     parent = OpenTaskOrchestrator
 

@@ -29,7 +29,7 @@ from core.modules.schedules.support.skeletons import SCHEDULES_JOBS_SKELETON
 
 
 class SchedulesModule(Module):
-    """Adds the record of the jobs an agent schedules in its own program, and a person's way to have one
+    """Adds the record of the jobs an agent schedules in its own program, and a user's way to have one
     stopped."""
 
     name = "journal.core.schedules"

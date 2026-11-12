@@ -10,8 +10,8 @@ from engine.provider.session_start import SessionStart
 class Launch:
     """What the journal starts an agent program with: the journal's root, the folder the program runs in, its
     model, its launch name, the session it starts, the variables the journal sets in its environment, whether
-    it skips the program's permission prompts, the arguments the person gave for the program, the first prompt
-    it starts its first turn with, so a person who opens it needs to type nothing, and the effort a resumed
+    it skips the program's permission prompts, the arguments the user gave for the program, the first prompt
+    it starts its first turn with, so a user who opens it needs to type nothing, and the effort a resumed
     session last ran with."""
 
     root: Path

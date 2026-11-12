@@ -11,7 +11,7 @@ EARLIEST_STEP = timedelta(microseconds=1)
 
 
 class TurnReplyTargets:
-    """The message the text of an agent's turn answers: the newest person message that arrived while the agent
+    """The message the text of an agent's turn answers: the newest user message that arrived while the agent
     was idle, after its last turn ended and before the prompt that started this turn, and that has no reply
     of the agent yet. A message that arrived in the middle of a turn is answered by a reply command, or by
     the text of the turn that starts after it. Before the agent's first stop the span starts when the agent

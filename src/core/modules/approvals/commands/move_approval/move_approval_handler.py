@@ -25,7 +25,7 @@ class MoveApprovalHandler(Handler[MoveApproval, ApprovalRequest]):
         if request.recipient_agent_id is not None:
             raise Refusal(f"this approval is addressed to {AgentLabel.from_agent(self.queries.query(Agent).find(request.recipient_agent_id)).text}")
         if request.required_person_id is not None and request.required_person_id != context.actor.id:
-            raise Refusal("this approval belongs to another person")
+            raise Refusal("this approval belongs to another user")
         if command.move is ApprovalLifecycle.begin and self.restarts.interrupted(request):
             request = self.repository.save_change(request, request.moved(ApprovalLifecycle.retry), context)
         return self.repository.save_change(request, request.moved(command.move), context)

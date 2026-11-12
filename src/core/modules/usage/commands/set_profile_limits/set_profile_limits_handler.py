@@ -14,7 +14,7 @@ from core.modules.usage.commands.set_profile_limits.set_profile_limits import Se
 
 class SetProfileLimitsHandler(Handler[SetProfileLimits, CurrentSetting]):
     """Writes the limits list of the caller's environment with the profile's entry replaced or added; the setting
-    command refuses anyone but a person."""
+    command refuses anyone but a user."""
 
     command = SetProfileLimits
 

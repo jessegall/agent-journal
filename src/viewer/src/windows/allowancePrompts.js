@@ -3,8 +3,8 @@ import {shallowRef} from "vue";
 const TYPES = ["reads", "runs"];
 const words = (text) => (text ? text.split(", ") : []);
 
-// the prompts a third-party window shows the person: its missing read lines first, then its missing commands, each
-// allowed only when the person agrees, through the shell's own window line; several windows that ask at once, such
+// the prompts a third-party window shows the user: its missing read lines first, then its missing commands, each
+// allowed only when the user agrees, through the shell's own window line; several windows that ask at once, such
 // as the sections of one inspector, are asked one after another
 export class AllowancePrompts {
     constructor(runShellLine) {

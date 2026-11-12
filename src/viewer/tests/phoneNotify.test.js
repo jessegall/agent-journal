@@ -95,7 +95,7 @@ test("nothing is offered when notices are already allowed or blocked, or the pho
     expect(button(await mountedOffer())).toBeNull();
 });
 
-test("the phone face carries the offer above its bar, and the person's face does not", async () => {
+test("the phone face carries the offer above its bar, and the user's face does not", async () => {
     fakeWorker();
     fakeNotification("default");
     const layout = {dir: "row", r: 0.5, a: {tabs: ["tasks.tasks"], active: "tasks.tasks"}, b: {tabs: ["messages.chat"], active: "messages.chat"}};

@@ -13,7 +13,7 @@ from core.modules.agents.support.agent_label import AgentLabel
 
 
 class SwitchWorkerSandboxHandler(Handler[SwitchWorkerSandbox, Agent]):
-    """Keeps a worker's sandbox choice on its agent row; only a person or a main agent may switch it."""
+    """Keeps a worker's sandbox choice on its agent row; only a user or a main agent may switch it."""
 
     command = SwitchWorkerSandbox
 

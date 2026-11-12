@@ -11,7 +11,7 @@ from engine.private.secret_values import SecretValues
 
 class EditSecretHandler(Handler[EditSecret, Secret]):
     """Saves a secret's new title or how it is used; its fields keep their variables, and fields can be added,
-    or removed by a person, whose hidden value then stays only to be masked."""
+    or removed by a user, whose hidden value then stays only to be masked."""
 
     command = EditSecret
 
@@ -20,7 +20,7 @@ class EditSecretHandler(Handler[EditSecret, Secret]):
 
     def handle(self, command: EditSecret, context: Context) -> Secret:
         if command.removed_fields:
-            PersonCheck.require(context, "only a person removes a field of a secret")
+            PersonCheck.require(context, "only a user removes a field of a secret")
         secret = self.secrets.find(command.secret_id)
         title = command.title or secret.title
         kept = tuple(field for field in secret.fields if field["name"] not in command.removed_fields)

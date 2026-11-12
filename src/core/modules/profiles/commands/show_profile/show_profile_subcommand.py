@@ -10,7 +10,7 @@ SHOWN_FIELDS = ("name", "agent_type", "program", "model", "occupant", "access", 
 
 
 class ShowProfileSubcommand(ReadSubcommand[AgentProfile]):
-    """`journal profile show <name>`: the effective profile, with a person's changes over the registered one:
+    """`journal profile show <name>`: the effective profile, with a user's changes over the registered one:
     its type, program, model, occupant, access, description and body."""
 
     cli_name = "profile"

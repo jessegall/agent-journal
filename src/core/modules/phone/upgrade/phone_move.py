@@ -9,7 +9,7 @@ PAIRING_NOTE = "version 4 phones and pairing codes stay in the backup: pair each
 
 
 class PhoneMove(VersionFourMove):
-    """Leaves version 4's phones and pairing codes in the backup, counted, and tells the person to pair each
+    """Leaves version 4's phones and pairing codes in the backup, counted, and tells the user to pair each
     phone again, since a version 5 phone keeps only the digest of its own session token."""
 
     name = "phone"

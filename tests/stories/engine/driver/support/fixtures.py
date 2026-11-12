@@ -32,7 +32,7 @@ class LeadStarted(StoryFixture):
 
 
 class LeadLocked(StoryFixture):
-    """A person opened edit lock 1 over agent 1, which silences the lead's own rules."""
+    """A user opened edit lock 1 over agent 1, which silences the lead's own rules."""
 
     parent = LeadStarted
 
@@ -44,7 +44,7 @@ class LeadLocked(StoryFixture):
 
 
 class LeadWaiting(StoryFixture):
-    """The lead's agent waits on task 1, the review, which a person made."""
+    """The lead's agent waits on task 1, the review, which a user made."""
 
     parent = LeadStarted
 

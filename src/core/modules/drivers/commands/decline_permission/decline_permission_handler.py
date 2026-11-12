@@ -9,7 +9,7 @@ from core.modules.drivers.support.permission_answerers import PermissionAnswerer
 
 
 class DeclinePermissionHandler(Handler[DeclinePermission, PermissionRequest]):
-    """Moves the request to decline, for the main agent or a person to answer it."""
+    """Moves the request to decline, for the main agent or a user to answer it."""
 
     command = DeclinePermission
 

@@ -10,7 +10,7 @@ from engine.setting.setting_values import SettingValues
 
 
 class MakeRuleHandler(Handler[MakeRule, ProjectRule]):
-    """Saves a rule: an agent's waits for a person's approval unless the setting lets agents make rules."""
+    """Saves a rule: an agent's waits for a user's approval unless the setting lets agents make rules."""
 
     command = MakeRule
 

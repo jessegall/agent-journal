@@ -6,12 +6,12 @@ from engine.enums.log_level import LogLevel
 
 REASON = "{program} is at your usage limit until {ends_at}"
 STOP_LINE = "[journal] {reason}. Everything is stopped until then{lift}."
-LIFT_TEXT = "; a person can lift the limit with usage-limit delete {limit}"
+LIFT_TEXT = "; a user can lift the limit with usage-limit delete {limit}"
 SUGGESTION = "wait until it ends{lift}"
 
 
 class UsageLockdown(ProgramLockdown):
-    """A program is locked down while its plan window is used up in full or a limit a person set on it is
+    """A program is locked down while its plan window is used up in full or a limit a user set on it is
     reached, until the later of the two ends. A fault while reading
     locks nothing down and is written to the system log, so a broken status file never stops every agent."""
 

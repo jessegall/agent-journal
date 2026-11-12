@@ -53,7 +53,7 @@ def test_a_worker_under_a_main_row_that_ended_is_taken_over_by_the_next_main_ses
     story.run_listeners()
     line = questions(story)[0]
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"merger-line:{line.id}")
-    story.expect_success('task block 1 --reason "waits on a person"', actor=worker)
+    story.expect_success('task block 1 --reason "waits on a user"', actor=worker)
     story.run_listeners()
     story.expect_text(f"agent-line list --agent {story.agent.id}", "task:1")
     story.expect_absent(f"agent-line list --agent {earlier_main_id}", "task:1")

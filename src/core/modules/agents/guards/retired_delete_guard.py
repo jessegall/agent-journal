@@ -8,7 +8,7 @@ from core.modules.agents.support.agent_label import AgentLabel
 
 
 class RetiredDeleteGuard(Guard[Deleted[Agent]]):
-    """An agent's record stays: no person and no agent deletes it, and only a retirement ends an agent for good.
+    """An agent's record stays: no user and no agent deletes it, and only a retirement ends an agent for good.
     The journal itself still removes the row of an agent that never started."""
 
     name = "agents.retired-delete"

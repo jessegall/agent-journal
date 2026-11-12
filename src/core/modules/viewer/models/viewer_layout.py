@@ -6,7 +6,7 @@ from engine.model.environment_scoped import EnvironmentScoped
 
 @dataclass(frozen=True, kw_only=True)
 class ViewerLayout(EnvironmentScoped, Model):
-    """One person's layout of one viewer page in one environment, for one suite and driver, as the layout
+    """One user's layout of one viewer page in one environment, for one suite and driver, as the layout
     tree's JSON."""
 
     model_name = "viewer_layout"

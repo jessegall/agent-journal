@@ -9,7 +9,7 @@ from engine.event.deleted import Deleted
 
 
 class HookWaitFileListener(CommitListener[Changed[Setting]]):
-    """Writes the hook wait a person sets to a file, since the Go hook reads it before it can ask the journal
+    """Writes the hook wait a user sets to a file, since the Go hook reads it before it can ask the journal
     anything."""
 
     name = "drivers.hook-wait-file"

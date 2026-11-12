@@ -25,7 +25,7 @@ class ViewerRoutes:
     """The routes of the viewer's listener behind its login: command lines, the event stream,
     module files, the windows on offer, the chat marks and docked items modules declare, the
     skills, the files the chat carries, the session the cookie opened, a share link's opening,
-    what waits on the person, and whether the server is restarting."""
+    what waits on the user, and whether the server is restarting."""
 
     def __init__(self, home: JournalHome, listener_thread: ListenerThread, login: ViewerLogin, reported: ReportedFindings, queue: ServerQueue, clock: Clock) -> None:
         self.queue, self.clock = queue, clock

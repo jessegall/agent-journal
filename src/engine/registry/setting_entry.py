@@ -14,7 +14,7 @@ class SettingEntry:
     """A registered setting or setting group: its full key, the module that declares it and the group above
     it, its title and description, its type (group for a group), default, scope and choices, whether it is a
     secret (whose default is never kept) or a value an agent may set, for a group whether it can be switched
-    off, for a reference the full key of the group it places here, and whether only a person may change it."""
+    off, for a reference the full key of the group it places here, and whether only a user may change it."""
 
     key: str
     module: str

@@ -10,7 +10,7 @@ from core.modules.plugins.support.plugin_manifest import PluginManifest
 
 class PluginSettings:
     """A plugin's settings as its program reads them: each declared setting's default, overridden by the value
-    the person gave it; the values the person gave are kept while they do not change."""
+    the user gave it; the values the user gave are kept while they do not change."""
 
     def __init__(self, queries: Queries, kept: KeptRows) -> None:
         self.queries, self.kept = queries, kept

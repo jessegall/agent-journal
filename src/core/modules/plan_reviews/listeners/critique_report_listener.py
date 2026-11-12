@@ -20,8 +20,8 @@ REVIEW_APPLYING_SKILL = "journal-plan-review-applying"
 
 class CritiqueReportListener(CommitListener[Created[Link]]):
     """A report about a plan under review makes the skill for working a review into a plan due for the agent
-    that made the plan, or the main agent when a person made it, and ends the review: the plan is ready again,
-    for a person to read the report and approve it or not."""
+    that made the plan, or the main agent when a user made it, and ends the review: the plan is ready again,
+    for a user to read the report and approve it or not."""
 
     name = "plan_reviews.critique-report"
 

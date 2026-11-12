@@ -14,8 +14,8 @@ DIFFERENT = "Worker 697 is building the browser login and installs it tonight"
 SINGLE_SUBJECT = "The skills came back attached after the compaction, the overview printed old reports, and the hold stopped a read of the fixtures"
 DUPLICATE_SUBJECT = "The fixtures read and the hold came first, then old reports from the overview, and the compaction attached the skills last"
 FILLERS = ("The login cookie now carries a name of its own per journal", "Plan 1099 is merged with its declared inspectors and docked cards",
-           "Worker 701 added the update path for a project installed from source", "The sandbox switch lets a person run one worker without it",
-           "Approval cards waiting for a person keep no pin button any more")
+           "Worker 701 added the update path for a project installed from source", "The sandbox switch lets a user run one worker without it",
+           "Approval cards waiting for a user keep no pin button any more")
 
 
 class FirstMessageDelivered(StoryFixture):

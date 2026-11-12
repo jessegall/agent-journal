@@ -1,4 +1,4 @@
-if (!document.getElementById("window-styles-b9314917103f")) { const style = document.createElement("style"); style.id = "window-styles-b9314917103f"; style.textContent = ".library[data-v-d545fd69]{display:flex;flex-direction:column;gap:10px}.library-row[data-v-d545fd69]{display:flex;align-items:center;gap:10px;padding:6px 0}.library-open[data-v-d545fd69]{display:flex;flex:1;flex-direction:column;gap:2px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.library-title[data-v-d545fd69]{font-weight:600}.library-abstract[data-v-d545fd69],.library-excerpt[data-v-d545fd69],.library-facts[data-v-d545fd69],.library-here[data-v-d545fd69]{color:var(--text-3);font-size:12px}.library-failure[data-v-d545fd69],.library-warning[data-v-d545fd69]{margin:0;color:var(--danger);font-size:13px}.library-fields dt[data-v-d545fd69]{margin-top:8px;color:var(--text-3);font-size:12px}.library-fields dd[data-v-d545fd69]{margin:2px 0 0;white-space:pre-wrap}.library-versions[data-v-d545fd69]{padding:0;list-style:none}.library-versions li[data-v-d545fd69]{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0;font-size:13px}.connect[data-v-3067baef]{display:flex;flex-direction:column;gap:12px;max-width:420px}.connect-lead[data-v-3067baef]{margin:0;color:var(--text-2);font-size:13px}.connect-failure[data-v-3067baef]{margin:0;color:var(--danger);font-size:13px}.compare[data-v-a6494d43]{display:flex;flex-direction:column;gap:10px}.compare-help[data-v-a6494d43]{margin:0;color:var(--text-3);font-size:12px}.copy[data-v-eb9c7ddf]{display:flex;flex-direction:column;gap:3px;padding:8px 0}.copy-title[data-v-eb9c7ddf]{font-weight:600}.copy-facts[data-v-eb9c7ddf],.copy-line[data-v-eb9c7ddf]{color:var(--text-3);font-size:12px}.copy-buttons[data-v-eb9c7ddf]{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.copies[data-v-cec02783]{display:flex;flex-direction:column;gap:10px}.copies-share[data-v-cec02783]{display:flex;align-items:flex-end;gap:8px}.copies-list[data-v-cec02783]{margin:0;padding:0;list-style:none}.copies-failure[data-v-cec02783]{margin:0;color:var(--danger);font-size:13px}.copies-empty[data-v-cec02783]{margin:0;color:var(--text-3);font-size:13px}.person[data-v-21161250]{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 0}.person-name[data-v-21161250]{min-width:120px;font-weight:600}.person-facts[data-v-21161250],.person-tokens[data-v-21161250]{color:var(--text-3);font-size:12px}.person-tokens[data-v-21161250]{flex-basis:100%;margin:0;padding:0 0 0 16px;list-style:none}.person-tokens li[data-v-21161250]{display:flex;align-items:center;gap:10px;padding:2px 0}.person-failure[data-v-21161250]{flex-basis:100%;margin:0;color:var(--danger);font-size:13px}.people[data-v-ebd0ab68]{display:flex;flex-direction:column;gap:10px}.people-add[data-v-ebd0ab68]{display:flex;align-items:flex-end;gap:10px}.people-token[data-v-ebd0ab68]{margin:0;font-family:var(--mono);font-size:12px;word-break:break-all}.people-failure[data-v-ebd0ab68]{margin:0;color:var(--danger);font-size:13px}.teams[data-v-9526f576]{display:flex;flex-direction:column;gap:10px}.teams-top[data-v-9526f576]{display:flex;align-items:center;justify-content:space-between}.teams-title[data-v-9526f576]{margin:0;font-size:16px}.teams-header[data-v-9526f576]{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--text-2);font-size:13px}.teams-failure[data-v-9526f576],.teams-stopped[data-v-9526f576]{margin:0;color:var(--danger);font-size:13px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-51b19fb13648")) { const style = document.createElement("style"); style.id = "window-styles-51b19fb13648"; style.textContent = ".library[data-v-d545fd69]{display:flex;flex-direction:column;gap:10px}.library-row[data-v-d545fd69]{display:flex;align-items:center;gap:10px;padding:6px 0}.library-open[data-v-d545fd69]{display:flex;flex:1;flex-direction:column;gap:2px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.library-title[data-v-d545fd69]{font-weight:600}.library-abstract[data-v-d545fd69],.library-excerpt[data-v-d545fd69],.library-facts[data-v-d545fd69],.library-here[data-v-d545fd69]{color:var(--text-3);font-size:12px}.library-failure[data-v-d545fd69],.library-warning[data-v-d545fd69]{margin:0;color:var(--danger);font-size:13px}.library-fields dt[data-v-d545fd69]{margin-top:8px;color:var(--text-3);font-size:12px}.library-fields dd[data-v-d545fd69]{margin:2px 0 0;white-space:pre-wrap}.library-versions[data-v-d545fd69]{padding:0;list-style:none}.library-versions li[data-v-d545fd69]{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0;font-size:13px}.connect[data-v-b69f5dd5]{display:flex;flex-direction:column;gap:12px;max-width:420px}.connect-lead[data-v-b69f5dd5]{margin:0;color:var(--text-2);font-size:13px}.connect-failure[data-v-b69f5dd5]{margin:0;color:var(--danger);font-size:13px}.compare[data-v-a6494d43]{display:flex;flex-direction:column;gap:10px}.compare-help[data-v-a6494d43]{margin:0;color:var(--text-3);font-size:12px}.copy[data-v-43694882]{display:flex;flex-direction:column;gap:3px;padding:8px 0}.copy-title[data-v-43694882]{font-weight:600}.copy-facts[data-v-43694882],.copy-line[data-v-43694882]{color:var(--text-3);font-size:12px}.copy-buttons[data-v-43694882]{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.copies[data-v-cec02783]{display:flex;flex-direction:column;gap:10px}.copies-share[data-v-cec02783]{display:flex;align-items:flex-end;gap:8px}.copies-list[data-v-cec02783]{margin:0;padding:0;list-style:none}.copies-failure[data-v-cec02783]{margin:0;color:var(--danger);font-size:13px}.copies-empty[data-v-cec02783]{margin:0;color:var(--text-3);font-size:13px}.person[data-v-21161250]{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 0}.person-name[data-v-21161250]{min-width:120px;font-weight:600}.person-facts[data-v-21161250],.person-tokens[data-v-21161250]{color:var(--text-3);font-size:12px}.person-tokens[data-v-21161250]{flex-basis:100%;margin:0;padding:0 0 0 16px;list-style:none}.person-tokens li[data-v-21161250]{display:flex;align-items:center;gap:10px;padding:2px 0}.person-failure[data-v-21161250]{flex-basis:100%;margin:0;color:var(--danger);font-size:13px}.people[data-v-ebd0ab68]{display:flex;flex-direction:column;gap:10px}.people-add[data-v-ebd0ab68]{display:flex;align-items:flex-end;gap:10px}.people-token[data-v-ebd0ab68]{margin:0;font-family:var(--mono);font-size:12px;word-break:break-all}.people-failure[data-v-ebd0ab68]{margin:0;color:var(--danger);font-size:13px}.teams[data-v-57a8733b]{display:flex;flex-direction:column;gap:10px}.teams-top[data-v-57a8733b]{display:flex;align-items:center;justify-content:space-between}.teams-title[data-v-57a8733b]{margin:0;font-size:16px}.teams-header[data-v-57a8733b]{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--text-2);font-size:13px}.teams-failure[data-v-57a8733b],.teams-stopped[data-v-57a8733b]{margin:0;color:var(--danger);font-size:13px}\n"; document.head.appendChild(style); }
 import { ref as T, watch as J, openBlock as a, createElementBlock as n, createVNode as g, unref as e, toDisplayString as v, createCommentVNode as S, createElementVNode as f, withCtx as C, createTextVNode as V, createBlock as A, Fragment as j, renderList as P, withModifiers as F, computed as q } from "vue";
 import { useWindow as N, useRunLine as D, SearchBar as ae, Segmented as G, Btn as O, RowList as Q, TimeAgo as M, SidePanel as X, FormField as U, TextInput as Y, DiffCard as te, WindowRoom as le, SwitchCase as re } from "@journal/window-kit";
 const I = (p, x) => {
@@ -312,7 +312,7 @@ const I = (p, x) => {
       }, 8, ["busy", "disabled"])
     ], 32));
   }
-}, xe = /* @__PURE__ */ I(we, [["__scopeId", "data-v-3067baef"]]);
+}, xe = /* @__PURE__ */ I(we, [["__scopeId", "data-v-b69f5dd5"]]);
 function Re(p, x) {
   const h = p === "" ? [] : p.split(`
 `), t = x === "" ? [] : x.split(`
@@ -382,7 +382,7 @@ const Te = {
       agent: ["compare", "send", "library"]
     }, c = { admin: "Admin", edit: "Edit", read: "Read-only" }, l = p, o = x, b = q(() => i[l.copy.status].map((d) => ({ key: d, label: t[d] }))), k = q(() => {
       const d = [];
-      return l.copy.status === "denied" && d.push(`Role: ${c[l.role]}`), l.copy.status === "denied" && l.copy.server_version > l.copy.version && d.push("A newer version is in the library"), l.copy.status === "agent" && d.push("An agent changed this item. A person sends it to the team."), l.copy.status === "removed" && d.push("Your copy stays on this journal."), l.copy.note && d.push(l.copy.note), d;
+      return l.copy.status === "denied" && d.push(`Role: ${c[l.role]}`), l.copy.status === "denied" && l.copy.server_version > l.copy.version && d.push("A newer version is in the library"), l.copy.status === "agent" && d.push("An agent changed this item. A user sends it to the team."), l.copy.status === "removed" && d.push("Your copy stays on this journal."), l.copy.note && d.push(l.copy.note), d;
     });
     return (d, R) => (a(), n("li", {
       class: "copy",
@@ -412,7 +412,7 @@ const Te = {
       ])
     ], 8, Ae));
   }
-}, Pe = /* @__PURE__ */ I(Ie, [["__scopeId", "data-v-eb9c7ddf"]]), Be = {
+}, Pe = /* @__PURE__ */ I(Ie, [["__scopeId", "data-v-43694882"]]), Be = {
   class: "copies",
   "data-library-copies": ""
 }, Ne = {
@@ -773,7 +773,7 @@ const Te = {
     }), R = q(() => [
       { key: "library", label: "Library" },
       { key: "copies", label: "On this journal", count: k.value.length },
-      ...d.value ? [{ key: "people", label: "People" }] : []
+      ...d.value ? [{ key: "people", label: "Users" }] : []
     ]);
     async function m() {
       await h.reload(["status", "copies"]);
@@ -854,7 +854,7 @@ const Te = {
       _: 1
     }));
   }
-}, ga = /* @__PURE__ */ I(ha, [["__scopeId", "data-v-9526f576"]]);
+}, ga = /* @__PURE__ */ I(ha, [["__scopeId", "data-v-57a8733b"]]);
 export {
   ga as default
 };

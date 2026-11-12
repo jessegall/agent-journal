@@ -7,7 +7,7 @@ from core.modules.viewer.models.enums.window_permission_type import WindowPermis
 
 @dataclass(frozen=True, kw_only=True)
 class WindowPermission(EnvironmentScoped, Model):
-    """What one person allowed in one environment: a window's read or command lines, as a JSON list, or a
+    """What one user allowed in one environment: a window's read or command lines, as a JSON list, or a
     module's code in the page at the code fingerprint it was trusted at."""
 
     model_name = "window_permission"

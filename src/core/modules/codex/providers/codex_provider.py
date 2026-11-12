@@ -60,7 +60,7 @@ APPROVAL_ON_REQUEST_ARGUMENTS = ["-c", 'approval_policy="on-request"', "-c", 'sa
 
 class CodexProvider(Provider):
     """OpenAI's Codex: hooks and their trust in the journal's own Codex folder, passed as CODEX_HOME, rollouts
-    under that folder's sessions link to the person's, and a session it names itself, which the first hook
+    under that folder's sessions link to the user's, and a session it names itself, which the first hook
     brings; a main session starts with the MCP servers' keys in its environment."""
 
     name = "codex"

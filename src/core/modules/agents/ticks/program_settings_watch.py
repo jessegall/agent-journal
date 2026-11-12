@@ -32,10 +32,10 @@ SWITCH_TEXT = ("The journal now starts Claude Code and Codex on its own settings
 
 class ProgramSettingsWatch:
     """Keeps the journal's own settings files of each agent program as the journal writes them: at
-    server start it backs up the person's own files first, and on every tick it puts back a file or
+    server start it backs up the user's own files first, and on every tick it puts back a file or
     link changed outside the journal, keeps the changed bytes as a rejected copy and shows one chat
     mark for each change. A Codex login the program refreshed by putting a new file in place of its
-    link is moved to the person's folder and linked again. A failure is logged, never raised, and a
+    link is moved to the user's folder and linked again. A failure is logged, never raised, and a
     person's settings file it cannot read or parse is shown once in the chat."""
 
     def __init__(self) -> None:

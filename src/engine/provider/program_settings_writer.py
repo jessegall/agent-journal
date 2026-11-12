@@ -20,7 +20,7 @@ LINK_SUFFIX = ".link"
 
 class ProgramSettingsWriter:
     """Writes the journal's own settings files for an agent program whole, read-only and atomically, under a
-    file lock, and remakes the links its folder keeps to the person's data."""
+    file lock, and remakes the links its folder keeps to the user's data."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home

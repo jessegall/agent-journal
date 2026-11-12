@@ -118,7 +118,7 @@ def test_a_main_agent_at_five_skips_loses_the_skip_and_the_person_is_told_and_gi
     guard_skips(story, story.agent, 5)
     approval = story.container.get(Queries).query(ApprovalRequest).first()
     story.expect_rows(approval is not None, "skipped 5 refusals" in approval.text)
-    story.expect_refusal(GUARD_SKIP, "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(GUARD_SKIP, "A user was asked in the dock", actor=story.agent)
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(approval.id)])
     guard_skips(story, story.agent, 1)

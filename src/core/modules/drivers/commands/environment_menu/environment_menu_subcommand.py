@@ -10,7 +10,7 @@ from core.modules.drivers.commands.support.environment_menu_choice import Enviro
 from core.modules.drivers.models.environment_menu_row import EnvironmentMenuRow
 from core.modules.drivers.support.suite_choice import SuiteChoice
 
-MENU_REASON = "The menu names every environment of the project, a catalogue a person makes by hand."
+MENU_REASON = "The menu names every environment of the project, a catalogue a user makes by hand."
 
 
 class EnvironmentMenuSubcommand(ReadSubcommand[EnvironmentMenu]):

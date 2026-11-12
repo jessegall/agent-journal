@@ -15,7 +15,7 @@ MOST_LEADING_WORDS = 8
 class UnreadableMarks:
     """The one keeper of the marks of commands whose output no reader can read. A mark covers a command
     by its leading words, so pytest covers pytest tests/a and not npm test; an agent that declares
-    one says why in at least three words, and a person or the engine lifts it."""
+    one says why in at least three words, and a user or the engine lifts it."""
 
     def __init__(self, marks: UnreadableMarkQuery, repository: Repository) -> None:
         self.marks, self.repository = marks, repository

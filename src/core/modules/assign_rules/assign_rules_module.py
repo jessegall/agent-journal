@@ -10,7 +10,7 @@ EXCLUDED_WRITES = ["make", "edit", "delete"]
 
 
 class AssignRulesModule(Module):
-    """Adds a person's standing rules that give new free tasks to the main agent, one agent or a kind of agent."""
+    """Adds a user's standing rules that give new free tasks to the main agent, one agent or a kind of agent."""
 
     name = "journal.core.assign_rules"
     seed_reason = "a rule assigns new tasks, which the demo does not make"

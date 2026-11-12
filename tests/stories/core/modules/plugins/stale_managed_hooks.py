@@ -27,7 +27,7 @@ def install_stamped_plugin(story: Story) -> None:
 
 
 class PersonPresent(StoryFixture):
-    """A person is in the project, with a managed file to be written."""
+    """A user is in the project, with a managed file to be written."""
 
     parent = BuilderStarted
 

@@ -19,4 +19,4 @@ class WorkerHelperGuard(Guard[Created[Agent]]):
 
     def check(self, event: Created[Agent], context: Context) -> None:
         if event.row.role == CodingHelperRole.HELPER and not self.settings.flag(WORKERS_START_HELPERS) and self.queries.query(Agent).filter(id=context.actor.id, role=CodingHelperRole.WORKER).exists():
-            raise Refusal("a worker starts no read-only helper here", "a person turns on journal.suites.coding.workers.workers-start-read-only-helpers")
+            raise Refusal("a worker starts no read-only helper here", "a user turns on journal.suites.coding.workers.workers-start-read-only-helpers")

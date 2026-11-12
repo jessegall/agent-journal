@@ -18,7 +18,7 @@ FOCUSED_STATES = (PlanState.APPROVED, PlanState.STARTED)
 
 class ChoosePlanFocusHandler(Handler[ChoosePlanFocus, tuple[str, ...]]):
     """Names a plan as the focus of the asking agent, clears it, or only reads it, and answers with the lines
-    of the focus. An agent changes its own focus alone; a person changes that of the running main agent. A
+    of the focus. An agent changes its own focus alone; a user changes that of the running main agent. A
     plan that is not approved or started is refused, and so is a number that is no plan of this environment,
     with the same words as a plan that does not exist."""
 
@@ -48,7 +48,7 @@ class ChoosePlanFocusHandler(Handler[ChoosePlanFocus, tuple[str, ...]]):
         if plan is None:
             raise Refusal("no such plan", "journal plan list")
         if plan.state in UNAPPROVED_TEXTS:
-            raise Refusal(f"plan {plan.id} is {UNAPPROVED_TEXTS[plan.state]}: a person must approve it first", "journal plan list --state started")
+            raise Refusal(f"plan {plan.id} is {UNAPPROVED_TEXTS[plan.state]}: a user must approve it first", "journal plan list --state started")
         if plan.state not in FOCUSED_STATES:
             raise Refusal(f"plan {plan.id} is {plan.state.value}: focus a started or an approved plan", "journal plan list --state started")
         return plan

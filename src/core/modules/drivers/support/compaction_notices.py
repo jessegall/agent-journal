@@ -12,7 +12,7 @@ SOURCE = "drivers.compaction-notice"
 
 
 class CompactionNotices:
-    """Tells the person and the main agent once about a compaction that went wrong: one notice row for each
+    """Tells the user and the main agent once about a compaction that went wrong: one notice row for each
     notice of each compaction, which the chat shows, and a line to the main agent naming the notice row."""
 
     def __init__(self, queries: Queries, repository: Repository, main_line: MainAgentLine) -> None:

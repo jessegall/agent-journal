@@ -134,7 +134,7 @@ async function mixedStack(items, collapsed) {
     return {host, app};
 }
 
-test("a card that waits on the person docks open among folded cards, can be folded by hand, and a card that waits on nobody keeps the folded default", async () => {
+test("a card that waits on the user docks open among folded cards, can be folded by hand, and a card that waits on nobody keeps the folded default", async () => {
     localStorage.clear();
     const items = ref([item(1), item(2), approval(3)]);
     const stack = await mixedStack(items, ref(true));

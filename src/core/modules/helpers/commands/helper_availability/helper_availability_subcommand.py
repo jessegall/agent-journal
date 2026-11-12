@@ -8,7 +8,7 @@ from core.modules.helpers.support.helper_start_state import HelperStartState
 
 
 class HelperAvailabilitySubcommand(ReadSubcommand[HelperStartState]):
-    """`journal helper availability`: whether a person can start a helper here, why not, and on which programs."""
+    """`journal helper availability`: whether a user can start a helper here, why not, and on which programs."""
 
     cli_name = "helper"
     name = "availability"

@@ -17,7 +17,7 @@ LISTED_MESSAGES = 5
 
 
 class MessageDeliveryRule(DriverRule):
-    """Delivers each person's message to its target agent, at most five per hook."""
+    """Delivers each user's message to its target agent, at most five per hook."""
 
     name = "messages.delivery"
     hook = HookWildcard.ALL_HOOKS

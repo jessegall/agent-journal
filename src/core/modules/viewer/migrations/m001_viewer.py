@@ -2,8 +2,8 @@ from engine.database.migration import Migration
 
 
 class ViewerTablesMigration(Migration):
-    """Creates the viewer's tables: each person's layouts, one per environment, suite, page and driver, and
-    the permissions each person gave a window or a module in one environment."""
+    """Creates the viewer's tables: each user's layouts, one per environment, suite, page and driver, and
+    the permissions each user gave a window or a module in one environment."""
 
     number = 1
     statements = (

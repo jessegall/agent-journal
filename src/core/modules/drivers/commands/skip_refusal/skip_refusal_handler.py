@@ -33,7 +33,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
     """Keeps an agent's skip of a refusal that just met it, with its reason. A safety refusal has no skip. A
     skip counts as one more in a row unless the agent obeyed a refusal since its last, meaning something
     other than the skipped refusal refused it (a retry is no obeying). At five, the skip is gone; its main
-    agent or the person is told, and only a restore gives it back. A new skip is held until the agent
+    agent or the user is told, and only a restore gives it back. A new skip is held until the agent
     confirms it; a --skip-guard flag only spends a skip already confirmed."""
 
     command = SkipRefusal
@@ -46,7 +46,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
     def handle(self, command: SkipRefusal, context: Context) -> RefusalSkip:
         actor = context.actor
         if actor.type is not ActorType.AGENT:
-            raise Refusal("only an agent skips a refusal this way", "a person passes a guard with --skip-guard")
+            raise Refusal("only an agent skips a refusal this way", "a user passes a guard with --skip-guard")
         guard = next((entry for entry in self.registry.guards if entry.name == command.name), None)
         if guard is not None and guard.path.checked_class(Guard).is_safety:
             raise Refusal(f"{command.name} is a safety refusal and has no skip", "say in your report what you need")

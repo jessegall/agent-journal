@@ -32,8 +32,8 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
     that ended while a run of its own goes is started again when the run ends. A worker that ended while its
     hand-in is under way leaves its main agent no line, and a program that ended within seconds of its start
     is reported to the main agent as a launch failure, with the error it wrote. A worker that stops while a
-    run of its own goes leaves its main agent no line, however often it has stopped, unless a person or
-    another agent stopped it. A worker a person or another agent stopped holds no delegated task or was
+    run of its own goes leaves its main agent no line, however often it has stopped, unless a user or
+    another agent stopped it. A worker a user or another agent stopped holds no delegated task or was
     ended by them and one that reported being stuck leave one line naming all its tasks through the merger;
     one that keeps ending with no run going leaves its main agent that line itself, once, since nobody else
     can start it. The line that tells a worker to carry on names every task it holds. A stop with tasks of a

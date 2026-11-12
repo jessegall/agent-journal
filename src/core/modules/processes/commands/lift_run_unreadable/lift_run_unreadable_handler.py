@@ -13,7 +13,7 @@ SOURCE = "processes.readable-by-person"
 
 
 class LiftRunUnreadableHandler(Handler[LiftRunUnreadable, UnreadableMark]):
-    """Lifts the mark of the command of a run for the person who pressed the card's button, and tells the run's
+    """Lifts the mark of the command of a run for the user who pressed the card's button, and tells the run's
     agent that its reader asks resume."""
 
     command = LiftRunUnreadable

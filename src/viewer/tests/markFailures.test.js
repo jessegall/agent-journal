@@ -44,7 +44,7 @@ test("a button the server refuses shows the refusal", async () => {
     expect(element.querySelector("[role=alert]").textContent).toContain("does not declare");
 });
 
-test("a person who may not run a button's line sees the mark without that button", () => {
+test("a user who may not run a button's line sees the mark without that button", () => {
     loadMarkDeclarations([{type: "output", family_icon: "terminal", mark_icon: "terminal", group: "agent", colouring: "group", click: "unfold", buttons: [{icon: "stop", label: "Stop", runs: "command-output stop {row_id}"}, {icon: "dock", label: "Dock", runs: "dock add output {row_id}"}]}]);
     const mark = {id: 2, type: "output", text: "ran tests", state: "shown", created_at: 1, target_id: 9};
     expect(drawn(MarkHost, {mark}).querySelectorAll(".mark-button")).toHaveLength(2);

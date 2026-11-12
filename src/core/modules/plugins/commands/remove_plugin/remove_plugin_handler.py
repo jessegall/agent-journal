@@ -15,7 +15,7 @@ from core.modules.skills.support.plugin_skill_removal import PluginSkillRemoval
 
 class RemovePluginHandler(Handler[RemovePlugin, str]):
     """Deletes a plugin's row with its aliases, then its readers and its code folder, and its data folder only with
-    --purge; only the person removes."""
+    --purge; only the user removes."""
 
     command = RemovePlugin
     runs_once = True

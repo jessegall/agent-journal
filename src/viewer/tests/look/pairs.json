@@ -39,7 +39,7 @@
         "report": "The chat: the composer",
         "version4": "dump-files-v4.png",
         "version5": "dump-files-v5.png",
-        "version5Does": "Same: Dump files starts a dump from what the person pastes or drops, a part to a paragraph or file. Better: the form opens in place above the composer, and the dump is made through the dumps module's own command."
+        "version5Does": "Same: Dump files starts a dump from what the user pastes or drops, a part to a paragraph or file. Better: the form opens in place above the composer, and the dump is made through the dumps module's own command."
     },
     {
         "name": "top-bars",

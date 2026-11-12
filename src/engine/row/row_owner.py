@@ -5,7 +5,7 @@ MAIN_AGENT = "__main__"
 
 @dataclass(frozen=True)
 class RowOwner:
-    """The agent and environment that work is scoped on; a person's request has no agent. Every main agent of an
+    """The agent and environment that work is scoped on; a user's request has no agent. Every main agent of an
     environment is one agent, named __main__, no matter which session runs it, and its rows store no agent id."""
 
     agent: int | str | None

@@ -59,7 +59,7 @@ def test_a_free_task_is_never_offered_to_a_worker(new_story, monkeypatch):
 def test_the_moment_a_task_is_assigned_to_a_worker_status_the_next_task_start_and_the_stop_check_see_it(new_story, monkeypatch):
     worker = single_task_worker(new_story, monkeypatch)
     story = worker.story
-    story.expect_success('task block 1 --reason "waits for a person"', actor=worker.worker)
+    story.expect_success('task block 1 --reason "waits for a user"', actor=worker.worker)
     story.expect_rows(not worker.stop().refusal, detail=worker.status())
     receipt = story.new_row_id(RECEIPT, actor=story.agent)
     story.expect_success(f"task assign {receipt} --to {agent_number(story, worker.worker.id)}", actor=story.agent)

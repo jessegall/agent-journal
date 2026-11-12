@@ -184,7 +184,7 @@ def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(new_story):
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} ended with task:1")
     story.hook(session, HookSamples.session_start())
     story.advance(timedelta(minutes=1))
-    story.expect_success('task block 1 --reason "waits on a person"', actor=worker)
+    story.expect_success('task block 1 --reason "waits on a user"', actor=worker)
     story.expect_success("task unblock 1", actor=worker)
     story.expect_success("task start 1", actor=worker)
     story.advance(timedelta(minutes=1))

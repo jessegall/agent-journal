@@ -8,7 +8,7 @@ from core.modules.helpers.models.usage_limit import UsageLimit
 
 @dataclass(frozen=True)
 class SetUsageLimit(Command[UsageLimit]):
-    """Sets a person's limit on a program's plan allowance, for a window; a budget counts from what the window
+    """Sets a user's limit on a program's plan allowance, for a window; a budget counts from what the window
     holds now."""
 
     program: str

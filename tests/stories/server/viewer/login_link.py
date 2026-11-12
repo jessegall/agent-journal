@@ -47,4 +47,4 @@ def test_an_agents_viewer_session_is_refused_the_login_link(viewer):
     story, server = viewer
     cookie = server.expect_viewer_login(server.context.viewer.login.new_key(story.agent.id, SessionType.AGENT))
     status, _, body = viewer_answer(server.viewer_port(), "/api/login-link", cookie, "", {})
-    story.expect_rows(status == 403, "only a person" in body, "link" not in json.loads(body))
+    story.expect_rows(status == 403, "only a user" in body, "link" not in json.loads(body))

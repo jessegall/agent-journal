@@ -47,7 +47,7 @@ class CrateUnassigned(UnassignedListener):
 
 
 class GraceGuard(Guard[Created[Assignment]]):
-    """Refuses every assignment to the person Grace."""
+    """Refuses every assignment to the user Grace."""
 
     name = "acme.grace-takes-nothing"
 
@@ -60,7 +60,7 @@ class GraceGuard(Guard[Created[Assignment]]):
 
 
 class DepotListenersModule(Module):
-    """A sample module that hears crates being assigned and unassigned, and guards assignments to one person."""
+    """A sample module that hears crates being assigned and unassigned, and guards assignments to one user."""
 
     name = "acme.depot-listeners"
     requires_core = ">=5,<6"

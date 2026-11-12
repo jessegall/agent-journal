@@ -43,7 +43,7 @@ def test_an_agent_stopped_on_a_wait_on_an_output_is_woken_when_the_output_ends(n
 def test_an_agent_stopped_while_a_person_decides_its_approval_is_woken_by_the_decision(new_story):
     story = new_story(fixture=UserBuilder)
     entered = kept_typing(story)
-    story.expect_refusal(CHANGE_SETTING, "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(CHANGE_SETTING, "A user was asked in the dock", actor=story.agent)
     story.hook("s-1", HookSamples.stop().with_fields(accepts_lines=False))
     story.advance(timedelta(seconds=IDLE_SECONDS))
     story.expect_rows(entered == [])

@@ -12,8 +12,8 @@ from core.modules.plans.support.plan_approval import PlanApproval
 
 
 class ApprovePlanHandler(Handler[ApprovePlan, Plan]):
-    """Approves a plan for a person and saves their comment in the same transaction; an agent is refused,
-    since only a person approves, on the docked card of the plan, and no approval is made of the attempt."""
+    """Approves a plan for a user and saves their comment in the same transaction; an agent is refused,
+    since only a user approves, on the docked card of the plan, and no approval is made of the attempt."""
 
     command = ApprovePlan
 
@@ -22,7 +22,7 @@ class ApprovePlanHandler(Handler[ApprovePlan, Plan]):
 
     def handle(self, command: ApprovePlan, context: Context) -> Plan:
         if context.actor.type is not ActorType.USER:
-            raise Refusal(f"a plan is approved by a person on its docked plan card: plan {command.row_id} waits there", "ask the person in a message, and go on with other work")
+            raise Refusal(f"a plan is approved by a user on its docked plan card: plan {command.row_id} waits there", "ask the user in a message, and go on with other work")
         plan = self.queries.query(Plan).find(command.row_id)
         if plan.environment_id != context.environment_id:
             raise Refusal(f"plan {plan.id} belongs to another environment", "approve it there")

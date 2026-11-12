@@ -12,7 +12,7 @@ TASK_COUNT = 4
 
 
 class TwoWorkersFourTasks(StoryFixture):
-    """The main agent, the person Ada, the workers W and V, and four open tasks that nobody is assigned to."""
+    """The main agent, the user Ada, the workers W and V, and four open tasks that nobody is assigned to."""
 
     parent = UserBuilder
 

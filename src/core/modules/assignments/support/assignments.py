@@ -30,7 +30,7 @@ ASSIGNMENT_PAGE_ROWS = 50
 
 class Assignments:
     """Gives rows of assignable models to actors and reads who holds a row, and which agent when the holder is
-    an agent. It is the one place that writes the assignments table. Only a person or an agent that has not
+    an agent. It is the one place that writes the assignments table. Only a user or an agent that has not
     ended can be given a row. A row of a model that one actor holds is taken from its holder and then given
     to the next, in one change; a row of a model that several actors hold gains a holder. An assigned row
     also assigns the children its model declares: a child with no assignment inherits one, a child that

@@ -18,7 +18,7 @@ class RelayApprovalHandler(Handler[RelayApproval, ApprovalRequest]):
     def handle(self, command: RelayApproval, context: Context) -> ApprovalRequest:
         request = self.queries.query(ApprovalRequest).find(command.request_id)
         if context.actor.type is not ActorType.AGENT or request.recipient_agent_id != context.actor.id:
-            raise Refusal("only the main agent addressed by this request can relay it to a person")
+            raise Refusal("only the main agent addressed by this request can relay it to a user")
         if request.state is not ApprovalState.OPEN:
             raise Refusal("only an open approval can be relayed")
         return self.repository.update(request, context, recipient_agent_id=None, relayer_id=context.actor.id)

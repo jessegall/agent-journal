@@ -21,7 +21,7 @@ AGENT_ENDING_EVENTS = ("agent.update", "agent.end")
 
 
 class WorkerStop:
-    """Whether a worker was stopped on purpose: ended by a person or by another agent, and not by itself or the
+    """Whether a worker was stopped on purpose: ended by a user or by another agent, and not by itself or the
     journal, so the journal does not start it again. The answer is read once from the worker's ending events
     and kept until the worker's row changes."""
 

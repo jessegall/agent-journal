@@ -7,7 +7,7 @@ CODE_LINE = re.compile(r"^code: (\S+)$", re.MULTILINE)
 
 
 class PhoneSeeder(Seeder):
-    """Pairs a phone with the viewer as the person."""
+    """Pairs a phone with the viewer as the user."""
 
     def seed(self, demo: Demo) -> None:
         pair_code = CODE_LINE.search(demo.run("phone pair", demo.people["user"]))

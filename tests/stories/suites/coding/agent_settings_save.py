@@ -75,7 +75,7 @@ def test_a_reader_that_is_not_a_person_sees_every_value_and_cannot_save(modal):
     shown = screens.window_keys("work-screen,tests-screen,advanced-screen")
     assert all(shown[key]["code"] == 0 and shown[key]["value"]["nodes"] for key in shown)
     revision = screens.screen("work")["revision"]
-    story.expect_refusal(f"setting-screen apply work --revision {revision} {AUTO}=off --environment main --reason 'a story asks'", "A person was asked", actor=story.agent)
+    story.expect_refusal(f"setting-screen apply work --revision {revision} {AUTO}=off --environment main --reason 'a story asks'", "A user was asked", actor=story.agent)
     assert screens.value("work", AUTO) is True
 
 

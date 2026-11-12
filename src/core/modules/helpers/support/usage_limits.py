@@ -14,7 +14,7 @@ HOUR_SECONDS = 3600
 
 
 class UsageLimits:
-    """Reads the limits a person set on a program's plan allowance against the windows its program reported,
+    """Reads the limits a user set on a program's plan allowance against the windows its program reported,
     and says when the last limit reached ends: a window's own reset, or the end of the clock hour for an
     hourly limit."""
 

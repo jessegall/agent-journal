@@ -7,7 +7,7 @@ from core.modules.library.support.library_user import LibraryUser
 
 
 class SetLibraryRoleHandler(Handler[SetLibraryRole, LibraryUser]):
-    """Asks the server to change a role with no write lock held; only a person changes it, and the server asks for an
+    """Asks the server to change a role with no write lock held; only a user changes it, and the server asks for an
     admin."""
 
     command = SetLibraryRole

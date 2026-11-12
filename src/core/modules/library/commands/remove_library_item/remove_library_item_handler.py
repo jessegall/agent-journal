@@ -7,7 +7,7 @@ from core.modules.library.support.library_writes import LibraryWrites
 
 
 class RemoveLibraryItemHandler(Handler[RemoveLibraryItem, LibraryItem]):
-    """Asks the server to mark an item removed, with no write lock held; only a person removes, and the server asks
+    """Asks the server to mark an item removed, with no write lock held; only a user removes, and the server asks
     for an admin."""
 
     command = RemoveLibraryItem

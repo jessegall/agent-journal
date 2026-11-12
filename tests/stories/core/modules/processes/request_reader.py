@@ -35,7 +35,7 @@ def test_asking_twice_for_the_same_output_is_refused_and_an_agent_cannot_ask(new
     process = started_run(story, "make build")
     story.expect_success(f"output ask-reader {process.id} --environment main", actor=story.user)
     story.expect_refusal(f"output ask-reader {process.id} --environment main", "was asked already", actor=story.user)
-    story.expect_refusal(f"output ask-reader {process.id} --environment main", "only a person asks", actor=story.agent)
+    story.expect_refusal(f"output ask-reader {process.id} --environment main", "only a user asks", actor=story.agent)
 
 
 def test_the_output_dock_may_run_the_line_of_its_button_and_no_other_write(new_story):

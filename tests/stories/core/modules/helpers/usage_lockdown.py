@@ -15,12 +15,12 @@ from tests.stories.core.modules.helpers.usage_limits import WEEK_SECONDS, report
 
 EDIT = HookSamples.edit("src/cart.py")
 STOP_LINE = "[journal] Claude is at your usage limit until"
-LIFT = "a person can lift the limit with usage-limit delete 1"
+LIFT = "a user can lift the limit with usage-limit delete 1"
 LIMIT = "usage-limit set claude '5 hours' fixed 50"
 
 
 class LimitSet(StoryFixture):
-    """A person set a limit of 50 percent on the five hour window of Claude."""
+    """A user set a limit of 50 percent on the five hour window of Claude."""
 
     parent = UserBuilder
 

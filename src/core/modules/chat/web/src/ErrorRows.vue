@@ -2,7 +2,7 @@
 import {Btn, EmptyState, TimeAgo, WindowRoom, removed, useWindow} from "@journal/window-kit";
 
 // the errors the journal recorded in its own work, newest first, each with the place it happened and what went wrong;
-// a person marks one solved, which clears it from the list
+// a user marks one solved, which clears it from the list
 const view = useWindow();
 const {rows, failure, loaded, act} = view.props.errors;
 const solve = (row) => act(["journal-exception", "solve", String(row.id)], removed(row.id));

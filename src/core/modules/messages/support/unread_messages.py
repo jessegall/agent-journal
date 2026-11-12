@@ -10,7 +10,7 @@ from core.modules.messages.models.message import Message
 
 
 class UnreadMessages(KeptRowChanges[Message]):
-    """Shares unread person messages in each environment and selects their recipients."""
+    """Shares unread user messages in each environment and selects their recipients."""
 
     def __init__(self, queries: Queries, kept: KeptRows, agents: AgentRows) -> None:
         self.queries, self.kept, self.agents = queries, kept, agents

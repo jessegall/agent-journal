@@ -42,7 +42,7 @@ from suites.coding.modules.workers.support.worker_questions import WorkerQuestio
 class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
     """Sends a bounded sequence of waking lines to silent agents with work, excluding explicit waits and runs.
     The main agent has work to go on with when an open task has no worker and does not belong to a plan
-    that is not approved or started: such a plan cannot start before the person approves it. It reads the
+    that is not approved or started: such a plan cannot start before the user approves it. It reads the
     running agents and the workers that are not retired, never an agent that ended for good."""
 
     command = SendSilentAgentLines

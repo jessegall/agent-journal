@@ -25,7 +25,7 @@ def test_a_profile_change_reaches_the_instruction_files_at_the_next_task_start_a
     expect_value(CHANGED not in worktree_file_text(repository, worker, "AGENTS.md"), True)
     story.expect_success(CHANGE_PROFILE, actor=story.user)
     expect_value(CHANGED not in worktree_file_text(repository, worker, "AGENTS.md"), True)
-    story.expect_success('task block 1 --reason "waits on a person"', actor=worker)
+    story.expect_success('task block 1 --reason "waits on a user"', actor=worker)
     story.expect_success("task unblock 1", actor=worker)
     story.expect_success("task start 1", actor=worker)
     expect_value(CHANGED in worktree_file_text(repository, worker, "AGENTS.md"), True)

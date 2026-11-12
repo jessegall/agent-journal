@@ -255,11 +255,11 @@ def test_agent_naming_another_program_is_refused_before_git(protected_route_stor
 def test_agent_naming_another_program_is_refused_before_git_explicit_skip_is_logged(protected_route_story):
     story, route = protected_route_story
     story.expect_refusal('worker dispatch --test-command python=pytest 1 --program claude', 'route 1', actor=story.agent)
-    confirmed_skip(story, "workers.route-holds", story.agent, "The person asked for a comparison")
-    worker = dispatch(story, flags='--program claude --skip-guard workers.route-holds --skip-reason "The person asked for a comparison"')
+    confirmed_skip(story, "workers.route-holds", story.agent, "The user asked for a comparison")
+    worker = dispatch(story, flags='--program claude --skip-guard workers.route-holds --skip-reason "The user asked for a comparison"')
     expect_program(story, worker, 'claude')
     story.expect_text('worker-worktree list', 'cut')
-    story.expect_text('event list --json --limit 100', 'workers.route-holds', 'The person asked for a comparison')
+    story.expect_text('event list --json --limit 100', 'workers.route-holds', 'The user asked for a comparison')
 
 
 def test_person_names_any_program(split_story):

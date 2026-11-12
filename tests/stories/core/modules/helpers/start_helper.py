@@ -25,7 +25,7 @@ PLAIN_START = 'helper start journal-researcher --brief "Read the queue" --enviro
 
 
 class LauncherRuns(StoryFixture):
-    """A main agent with a person beside it, ready to start helpers."""
+    """A main agent with a user beside it, ready to start helpers."""
 
     parent = UserBuilder
 

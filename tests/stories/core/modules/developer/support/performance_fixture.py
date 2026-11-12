@@ -10,7 +10,7 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 
 
 class DevelopmentToolsEnabled(StoryFixture):
-    """A builder and a person with development cost reporting enabled."""
+    """A builder and a user with development cost reporting enabled."""
 
     parent = UserBuilder
 

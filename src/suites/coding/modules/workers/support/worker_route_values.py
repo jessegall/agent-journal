@@ -5,7 +5,7 @@ from core.modules.tasks.models.support.task_complexity import TaskComplexity
 
 
 class WorkerRouteValues(TypedDict, total=False):
-    """The route flags a person typed; a flag left out is not a key."""
+    """The route flags a user typed; a flag left out is not a key."""
 
     program: str
     tags: tuple[str, ...]

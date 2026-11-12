@@ -130,7 +130,7 @@ def test_listeners_catch_up_and_follow_a_chain_to_its_end(tmp_path):
 
 
 class UrgentCounter(CommitListener[Created[Item]]):
-    """Counts new items before any other listener, and again after each, as a line a person waits on."""
+    """Counts new items before any other listener, and again after each, as a line a user waits on."""
 
     name = "items.urgent-count"
     run_order = -1

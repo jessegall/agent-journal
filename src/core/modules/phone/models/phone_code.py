@@ -8,7 +8,7 @@ from core.modules.phone.models.lifecycles.phone_code_lifecycle import PhoneCodeL
 
 @dataclass(frozen=True, kw_only=True)
 class PhoneCode(Model):
-    """A short code a person asked for, which pairs one phone once before it expires; it keeps only the code's
+    """A short code a user asked for, which pairs one phone once before it expires; it keeps only the code's
     digest."""
 
     model_name = "phone_code"

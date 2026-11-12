@@ -55,11 +55,11 @@ test("a task queued for an agent shows the agent's name in its own group, and a 
     expect(element.querySelector('[data-row="6"] [data-task-agent]')).toBeNull();
 });
 
-test("blocked tasks needing a person have a warning", async () => {
+test("blocked tasks needing a user have a warning", async () => {
     const manual = {...task(10, "Needs attention", "blocked"), automatic: false};
     const waiting = {...task(11, "Waits for a task", "blocked"), automatic: true};
     const board = {groups: [{state: "blocked", total: 2, rows: [manual, waiting]}]};
     const element = await mounted(TaskGroups, context({"task board": {ok: true, value: board}}));
-    expect(element.querySelector('[data-row="10"] [data-task-warning]').getAttribute("title")).toBe("Does not open by itself: needs a person");
+    expect(element.querySelector('[data-row="10"] [data-task-warning]').getAttribute("title")).toBe("Does not open by itself: needs a user");
     expect(element.querySelector('[data-row="11"] [data-task-warning]')).toBeNull();
 });

@@ -11,7 +11,7 @@ TASK_LINE = 'task make "Fix the cart"'
 
 
 class AgentAndPerson(StoryFixture):
-    """An agent session s-7 as pid 700, and a person with login ada: story.agent and story.user."""
+    """An agent session s-7 as pid 700, and a user with login ada: story.agent and story.user."""
 
     parent = ProcessAgent
 

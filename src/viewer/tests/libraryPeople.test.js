@@ -37,7 +37,7 @@ function window(status = {}, extra = {}) {
 async function onPeople(status = {}, extra = {}) {
     const result = window(status, extra);
     const element = await mounted(TeamsPage, result);
-    [...element.querySelectorAll("[data-teams-tabs] button")].find((button) => button.textContent.includes("People")).click();
+    [...element.querySelectorAll("[data-teams-tabs] button")].find((button) => button.textContent.includes("Users")).click();
     await settle();
     return {result, element};
 }
@@ -45,7 +45,7 @@ async function onPeople(status = {}, extra = {}) {
 const tabNames = (element) => [...element.querySelectorAll("[data-teams-tabs] button")].map((button) => button.textContent.replace(/\s+\d+$/, "").trim());
 
 test("an admin sees the People tab and a role that may not administer sees none", async () => {
-    expect(tabNames(await mounted(TeamsPage, window()))).toEqual(["Library", "On this journal", "People"]);
+    expect(tabNames(await mounted(TeamsPage, window()))).toEqual(["Library", "On this journal", "Users"]);
     expect(tabNames(await mounted(TeamsPage, window({role: "edit"})))).toEqual(["Library", "On this journal"]);
     expect(tabNames(await mounted(TeamsPage, window({role: "read"})))).toEqual(["Library", "On this journal"]);
 });

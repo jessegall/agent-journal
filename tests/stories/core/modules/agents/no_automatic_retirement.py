@@ -33,5 +33,5 @@ def test_a_cold_replacement_a_refusal_at_the_kept_limit_and_a_profile_moved_to_a
     launcher.server.close()
     cooling.home.socket("launcher").unlink()
     helpers = [agent for agent in agents(cooling) if agent.profile == "cooling"]
-    cooling.expect_rows("ask the person to retire one" in refusal, len(helpers) == 1, helpers[0].id == replaced.id, helper_agent(cooling).session != replaced.session,
+    cooling.expect_rows("ask the user to retire one" in refusal, len(helpers) == 1, helpers[0].id == replaced.id, helper_agent(cooling).session != replaced.session,
                         all(agent.retired_at is None for agent in agents(cooling)), detail=f"{refusal} / {[(agent.number, agent.profile, agent.retired_at) for agent in agents(cooling)]}")

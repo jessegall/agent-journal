@@ -13,7 +13,7 @@ from core.modules.settings.commands.set_setting.set_setting import SetSetting
 
 
 class SaveLibraryConnectionHandler(Handler[SaveLibraryConnection, LibraryConnection]):
-    """Writes the one connection and keeps the address a person typed in the setting; a server that is not the one
+    """Writes the one connection and keeps the address a user typed in the setting; a server that is not the one
     the copies follow is refused while copies exist."""
 
     command = SaveLibraryConnection

@@ -5,7 +5,7 @@ from engine.model.model import Model
 
 @dataclass(frozen=True, kw_only=True)
 class PersonLogin(Model):
-    """The name and password digest a person logs in to a hosted journal with."""
+    """The name and password digest a user logs in to a hosted journal with."""
 
     model_name = "person_login"
     cli_name = "person-login"

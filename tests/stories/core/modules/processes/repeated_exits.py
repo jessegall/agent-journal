@@ -47,4 +47,4 @@ def test_a_person_lifts_a_workers_reader_block_each_time_one_comes(new_story):
         worker_run(story, line)
         story.expect_hook_refusal("s-reader", EDIT, f"reader request {request}")
         story.expect_success(f"process lift-hold {number} --environment main", "1 holds lifted", actor=person)
-        story.expect_hook_allowed("s-reader", PROMPT, f"the block of reader request {request} was lifted by a person")
+        story.expect_hook_allowed("s-reader", PROMPT, f"the block of reader request {request} was lifted by a user")

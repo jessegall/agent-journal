@@ -15,7 +15,7 @@ from core.modules.documents.support.row_refs import RowRefs
 
 
 class ReplyLinkListener(CommitListener[Created[Message]]):
-    """Links the existing tasks an agent reply names to the person request it answers."""
+    """Links the existing tasks an agent reply names to the user request it answers."""
 
     name = "documents.reply-links"
 

@@ -101,7 +101,7 @@ def test_a_connect_with_no_address_and_no_setting_is_refused(new_story):
 def test_an_agent_cannot_connect_and_nothing_is_sent(new_story):
     with StubServer(StubAnswer(200, b"{}")) as stub:
         story = new_story(fixture=UserBuilder)
-        story.expect_refusal(f"library connect {stub.address} --token jsl_token", "connection credentials are entered by a person", actor=story.agent)
+        story.expect_refusal(f"library connect {stub.address} --token jsl_token", "connection credentials are entered by a user", actor=story.agent)
         story.expect_rows(stub.requests == [], library_connection(story) is None, TOKEN_VARIABLE not in story.container.get(SecretValues).values())
 
 
@@ -151,7 +151,7 @@ def test_an_agent_cannot_disconnect(new_story, shared_server):
     server, token = shared_server
     story = new_story(fixture=UserBuilder)
     story.expect_success(f"library connect {server.address} --token {token}", actor=story.user)
-    story.expect_refusal("library disconnect --forget --reason 'a story asks'", "only a person connects to the shared server or disconnects from it", actor=story.agent)
+    story.expect_refusal("library disconnect --forget --reason 'a story asks'", "only a user connects to the shared server or disconnects from it", actor=story.agent)
     story.expect_rows(library_connection(story) is not None, TOKEN_VARIABLE in story.container.get(SecretValues).values())
 
 

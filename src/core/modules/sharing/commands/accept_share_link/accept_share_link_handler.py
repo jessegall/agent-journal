@@ -15,7 +15,7 @@ from core.modules.sharing.models.share_link import ShareLink
 
 
 class AcceptShareLinkHandler(Handler[AcceptShareLink, ShareInvitation]):
-    """Opens an agent's link for the person who accepts it, who becomes its owner and is the only one shown
+    """Opens an agent's link for the user who accepts it, who becomes its owner and is the only one shown
     its token, this once."""
 
     command = AcceptShareLink

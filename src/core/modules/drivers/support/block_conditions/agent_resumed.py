@@ -5,7 +5,7 @@ from core.modules.agents.models.agent import Agent
 
 
 class AgentResumed(BlockCondition):
-    """A person resumed the paused agent."""
+    """A user resumed the paused agent."""
 
     name = "agent-resumed"
 

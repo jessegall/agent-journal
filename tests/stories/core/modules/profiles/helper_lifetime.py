@@ -9,7 +9,7 @@ from tests.stories.server.profile_storage import boot, change_version, profile_l
 __all__ = ["profile_story"]
 
 OCCUPANT_REFUSAL = "occupant must be continue, when-cold or each-launch"
-KEPT_REFUSAL = "agents are kept; a person retires them"
+KEPT_REFUSAL = "agents are kept; a user retires them"
 CRITIC_SAVE_LINE = 'profile save critic --description "Reads a change and says what is wrong" --body "Read the diff." --reason needed'
 MERGER_PROFILE_TEXT = "---\nname: journal-merger\n{field}\n---\n"
 CRITIC_PROFILE_TEXT = "---\nname: critic\ndescription: Reads changes\nkind: helper\nmodel: inherit\n{field}\n---\nRead the diff.\n"

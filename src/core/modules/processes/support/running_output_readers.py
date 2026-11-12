@@ -12,7 +12,7 @@ from core.modules.processes.support.reader_selection import ReaderSelection
 
 
 class RunningOutputReaders:
-    """Puts a reader an agent or a person just saved on each running output that has no reader and
+    """Puts a reader an agent or a user just saved on each running output that has no reader and
     whose command it reads, so a run that is still going shows its progress at once. The outputs and
     their parts are read in two reads; the run keeps its title."""
 

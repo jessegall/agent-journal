@@ -11,7 +11,7 @@ BARE_SCHEME = "https"
 
 @dataclass(frozen=True)
 class LibraryAddress:
-    """A shared server's address as a person writes it: an IP address or a name, with or without a port, or a URL."""
+    """A shared server's address as a user writes it: an IP address or a name, with or without a port, or a URL."""
 
     text: str
 

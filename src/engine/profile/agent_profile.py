@@ -5,7 +5,7 @@ from engine.enums.access import Access
 from engine.enums.model_tier import ModelTier
 from engine.enums.occupant import INDEPENDENT_OCCUPANTS, Occupant
 
-KEPT_AGENTS_TEXT = "agents are kept; a person retires them"
+KEPT_AGENTS_TEXT = "agents are kept; a user retires them"
 
 
 @dataclass(frozen=True)

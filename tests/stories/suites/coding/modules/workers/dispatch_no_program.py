@@ -49,7 +49,7 @@ def test_a_person_dispatches_a_worker_that_starts_no_program_and_its_session_hoo
 def test_an_agent_cannot_dispatch_a_worker_with_no_program(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    story.expect_refusal(MISSING_PROGRAM, "only a person dispatches a worker with no program", actor=story.agent)
+    story.expect_refusal(MISSING_PROGRAM, "only a user dispatches a worker with no program", actor=story.agent)
     story.expect_success("worker-worktree list", "nothing found")
 
 

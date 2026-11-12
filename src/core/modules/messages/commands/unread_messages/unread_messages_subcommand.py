@@ -14,7 +14,7 @@ from core.modules.messages.conditions.main_message_target import MainMessageTarg
 
 
 class UnreadMessagesSubcommand(ReadSubcommand[tuple[MessageText, ...]]):
-    """Shows the caller's unread messages, oldest first, or the main chat's messages for a person."""
+    """Shows the caller's unread messages, oldest first, or the main chat's messages for a user."""
 
     cli_name = "message"
     name = "unread"

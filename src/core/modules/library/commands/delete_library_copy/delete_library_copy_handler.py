@@ -7,7 +7,7 @@ from core.modules.library.models.library_copy import LibraryCopy
 
 
 class DeleteLibraryCopyHandler(Handler[DeleteLibraryCopy, LibraryCopy]):
-    """Deletes a copy for a sync round; unlike leaving, no person asks for it."""
+    """Deletes a copy for a sync round; unlike leaving, no user asks for it."""
 
     command = DeleteLibraryCopy
 

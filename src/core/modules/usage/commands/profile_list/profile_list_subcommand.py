@@ -15,7 +15,7 @@ from core.modules.profiles.support.profile_problem import ProfileProblem
 from core.modules.usage.models.statistic import Statistic
 
 PROFILE_COUNTERS = ("uses", "last_used")
-PROFILE_COUNTERS_REASON = "Two counters for each profile, and the profiles are files a person keeps by hand."
+PROFILE_COUNTERS_REASON = "Two counters for each profile, and the profiles are files a user keeps by hand."
 
 
 class ProfileListSubcommand(ReadSubcommand[Sequence[AgentProfile | ProfileProblem]]):

@@ -66,7 +66,7 @@ test("a preset's thumbnail draws one cell per pane, and the thumb component draw
     expect(element.querySelectorAll(".layout-cell")).toHaveLength(2);
 });
 
-test("save, update, rename and remove call the person-preset commands for the page", async () => {
+test("save, update, rename and remove call the user-preset commands for the page", async () => {
     const person = [{id: 7, name: "Mine", shape: JSON.stringify({tabs: ["messages.chat"], active: "messages.chat"})}];
     const {list, lines} = await presets({person});
     const calls = () => lines.filter((line) => line[0] === "person-preset" && line[1] !== "list");
@@ -142,10 +142,10 @@ test("a rename, remove, update or share of a layout that is gone is refused with
 
 test("a command the journal refuses shows its error as the notice", async () => {
     const {list} = await presets();
-    const shellLine = vi.fn(async () => ({ok: false, error: "only a person keeps a layout"}));
+    const shellLine = vi.fn(async () => ({ok: false, error: "only a user keeps a layout"}));
     const refusing = useLayoutPresets({environment: "main", page: "home", shellLine, window: await presetProps(shellLine), catalogue: {window: () => null}, store: {layout: {value: null}}});
     await refusing.importLayout({name: "Fine", shape: {tabs: ["a.b"], active: "a.b"}});
-    expect(refusing.notice.value).toBe("only a person keeps a layout");
+    expect(refusing.notice.value).toBe("only a user keeps a layout");
     expect(list.notice.value).toBe("");
 });
 

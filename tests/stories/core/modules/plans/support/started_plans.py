@@ -38,7 +38,7 @@ class OldestPlanWaitsOutside(StoryFixture):
 
 
 class OldestPlanWaitsOnAPerson(StoryFixture):
-    """Task 7, Supplier contract, which both tasks of plan 1 wait on, waits on a person: nobody can take it."""
+    """Task 7, Supplier contract, which both tasks of plan 1 wait on, waits on a user: nobody can take it."""
 
     parent = OldestPlanWaitsOutside
 

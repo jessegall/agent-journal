@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_label import AgentLabel
 
-PERSON_RETIRES_TEXT = "ask the person to retire one"
+PERSON_RETIRES_TEXT = "ask the user to retire one"
 
 
 @dataclass(frozen=True)

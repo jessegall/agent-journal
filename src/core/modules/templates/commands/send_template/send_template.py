@@ -7,7 +7,7 @@ from core.modules.messages.models.message import Message
 
 @dataclass(frozen=True)
 class SendTemplate(Command[Message]):
-    """Sends a template request about one row with the values a person supplied."""
+    """Sends a template request about one row with the values a user supplied."""
 
     template_id: int
     target: str

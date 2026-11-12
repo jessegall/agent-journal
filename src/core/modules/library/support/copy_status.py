@@ -9,7 +9,7 @@ from core.modules.library.support.copy_status_view import CopyStatusView
 
 @dataclass(frozen=True)
 class CopyStatus:
-    """What a person sees of one copy: the item it follows, where it stands, the note that says why, the text
+    """What a user sees of one copy: the item it follows, where it stands, the note that says why, the text
     here and the library's text last seen, so the two can be compared offline."""
 
     copy: LibraryCopy

@@ -12,9 +12,9 @@ PERSONS = (ActorType.USER, ActorType.CORE)
 
 
 class EnvironmentGrantGuard(Guard[Changed[Environment]]):
-    """Only a person, in the viewer or at the terminal, marks an environment as a test one or grants an agent
+    """Only a user, in the viewer or at the terminal, marks an environment as a test one or grants an agent
     the right to work in it, and only a test environment takes a grant; an agent's change of either becomes
-    a card for the person."""
+    a card for the user."""
 
     name = "environments.test-grant-by-person"
     is_safety = True

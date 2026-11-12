@@ -12,7 +12,7 @@ SWITCH_ON = f"setting set {AUTOMATIC_APPROVAL} true --project"
 
 
 class EveryApprovalAccepted(StoryFixture):
-    """A person switched Accept every approval on for the project."""
+    """A user switched Accept every approval on for the project."""
 
     parent = UserJoined
 

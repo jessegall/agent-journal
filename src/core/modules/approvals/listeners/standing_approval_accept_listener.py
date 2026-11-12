@@ -16,9 +16,9 @@ from core.modules.approvals.models.standing_approval import StandingApproval
 
 
 class StandingApprovalAcceptListener(CommitListener[Changed[ApprovalRequest]]):
-    """Accepts a request saved under a standing yes that nothing has answered since, as the person who gave
+    """Accepts a request saved under a standing yes that nothing has answered since, as the user who gave
     that yes, as it is saved and again when a restart cut its command off, so the accepted command runs on
-    its own like one a person accepted, never inside the transaction that asked for it; an agent's own line
+    its own like one a user accepted, never inside the transaction that asked for it; an agent's own line
     answers it at once instead, and a failed accept leaves the request in the dock."""
 
     name = "approvals.standing-accept"

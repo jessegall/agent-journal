@@ -30,7 +30,7 @@ from engine.command.context import Context
 
 class WorkerRunEndedListener(SaveListener[ProcessEnded]):
     """A worker that has stopped while a run of its own went on in the background is told when the run
-    ends, by a job line, which starts it again on its session; one a person or another agent stopped, or
+    ends, by a job line, which starts it again on its session; one a user or another agent stopped, or
     that asked for help after the run started, stays stopped."""
 
     name = "workers.run-ended"

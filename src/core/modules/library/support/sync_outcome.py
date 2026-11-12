@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class SyncOutcome:
-    """What one sync round did: whether the server answered, whether the round changed any row, and the line a person
+    """What one sync round did: whether the server answered, whether the round changed any row, and the line a user
     reads."""
 
     has_reached: bool

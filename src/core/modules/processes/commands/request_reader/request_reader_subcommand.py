@@ -9,7 +9,7 @@ from core.modules.processes.models.reader_request import ReaderRequest
 
 class RequestReaderSubcommand(Subcommand[RequestReader, ReaderRequest]):
     """`journal output ask-reader <n>`: opens a reader request for the command of an output that has no reader
-    and tells the agent that ran it, in the chat, from the person."""
+    and tells the agent that ran it, in the chat, from the user."""
 
     cli_name = "output"
     name = "ask-reader"

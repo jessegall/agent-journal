@@ -161,12 +161,12 @@ def test_the_exit_of_the_current_process_ends_the_row_and_the_exit_of_an_earlier
 @pytest.mark.parametrize("agent, answer, stage, reason", [
     (ENDED_HELPER, RUNNING, StandingState.RUNNING, None),
     (replace(ENDED_HELPER, launch_failed_at=NOW), NOTHING, StandingState.FAILED, None),
-    (ENDED_HELPER, NOTHING, StandingState.ENDED, "stopped by a person"),
+    (ENDED_HELPER, NOTHING, StandingState.ENDED, "stopped by a user"),
     (replace(HELPER, launched_at=NOW), NOTHING, StandingState.STARTING, None),
     (HELPER, NOTHING, StandingState.UNSTARTED, None),
 ])
 def test_the_standing_is_one_answer_from_the_launcher_and_the_row(agent, answer, stage, reason):
-    parts = Parts(end_reason="stopped by a person")
+    parts = Parts(end_reason="stopped by a user")
     held = parts.launcher(answer)
     standing = parts.dispatcher.standing(agent)
     assert (standing.stage, standing.reason, len(held.requests)) == (stage, reason, 1)

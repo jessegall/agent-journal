@@ -17,7 +17,7 @@ from core.modules.questions.models.question import Question
 
 QUESTIONS_MODULE = "journal.core.questions"
 
-OPEN_QUESTIONS_REASON = "The questions of the main agent that a person has not answered yet; the dock shows every one of them."
+OPEN_QUESTIONS_REASON = "The questions of the main agent that a user has not answered yet; the dock shows every one of them."
 
 
 class OpenQuestionsDockListener(CommitListener[Touched[Question]]):

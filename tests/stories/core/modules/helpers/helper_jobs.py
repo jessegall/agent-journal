@@ -17,7 +17,7 @@ START = 'helper start journal-researcher --brief "Read src/cart.py" --environmen
 
 
 class StartedHelper(StoryFixture):
-    """A main agent with a person beside it and one helper of journal-researcher on src/cart.py."""
+    """A main agent with a user beside it and one helper of journal-researcher on src/cart.py."""
 
     parent = UserBuilder
 

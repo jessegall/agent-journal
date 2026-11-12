@@ -11,7 +11,7 @@ from core.modules.agents.support.agent_label import AgentLabel
 
 
 class ReservedTaskGuard(Guard[Moved[Task]]):
-    """A task reserved for a running main agent is started only by that agent or a person."""
+    """A task reserved for a running main agent is started only by that agent or a user."""
 
     name = "tasks.reserved-task"
     moves = tuple([TaskLifecycle.start])

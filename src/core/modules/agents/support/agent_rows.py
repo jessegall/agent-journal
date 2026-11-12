@@ -53,7 +53,7 @@ class AgentRows:
             return
         caller = self.find(actor.id)
         if caller.role != AgentRole.MAIN:
-            raise Refusal(f"a {caller.role} cannot {action}", "ask the main agent or a person")
+            raise Refusal(f"a {caller.role} cannot {action}", "ask the main agent or a user")
 
     def is_visible(self, agent_id: int) -> bool:
         return self.rows.find(Agent, agent_id) is not None

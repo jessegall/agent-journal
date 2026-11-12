@@ -14,7 +14,7 @@ COMMAND_NAME_PARTS = ("instruction-import", "remove")
 
 class RemoveInstructionImportHandler(Handler[RemoveInstructionImport, str]):
     """Removes the extra import lines of a file from an instruction file, or its one import line when two
-    files import each other; it changes a person's file, so anyone else is asked through an approval card."""
+    files import each other; it changes a user's file, so anyone else is asked through an approval card."""
 
     command = RemoveInstructionImport
 

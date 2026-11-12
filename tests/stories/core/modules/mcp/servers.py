@@ -113,7 +113,7 @@ def test_an_added_server_needs_a_usable_name_a_new_name_and_a_target(new_story):
     story.expect_refusal("mcp add linear https://other.example", "linear is installed already", actor=story.user)
     story.expect_refusal('mcp add "Bad Name" https://other.example', "Bad Name cannot name a server", actor=story.user)
     story.expect_refusal('mcp add shop " "', "give the server's address", actor=story.user)
-    story.expect_refusal("mcp add shop https://other.example --reason 'a story asks'", "only a person adds a server", actor=story.agent)
+    story.expect_refusal("mcp add shop https://other.example --reason 'a story asks'", "only a user adds a server", actor=story.agent)
 
 
 def test_an_added_server_comes_off_like_any_other(new_story):

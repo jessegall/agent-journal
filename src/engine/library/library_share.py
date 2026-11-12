@@ -44,11 +44,11 @@ class LibraryShare(Generic[M]):
     def is_paused(self, row: M) -> bool:
         return False
 
-    # Whether a newer version would run here with nobody looking, so a person reads it first.
+    # Whether a newer version would run here with nobody looking, so a user reads it first.
     def needs_reading(self, row: M, fields: Fields) -> str:
         return ""
 
-    # What a person must read before getting it, such as the command of a check.
+    # What a user must read before getting it, such as the command of a check.
     def warning(self, fields: Fields) -> str:
         return ""
 

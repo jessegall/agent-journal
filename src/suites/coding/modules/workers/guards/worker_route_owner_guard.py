@@ -11,7 +11,7 @@ from suites.coding.modules.workers.models.worker_route import WorkerRoute
 
 
 class WorkerRouteOwnerGuard(Guard[Updated[WorkerRoute] | Deleted[WorkerRoute]]):
-    """A person owns the routes they made; deleting another route may close a gap."""
+    """A user owns the routes they made; deleting another route may close a gap."""
 
     name = "workers.route-owner"
     is_safety = True

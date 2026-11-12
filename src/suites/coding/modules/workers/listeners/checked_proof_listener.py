@@ -12,7 +12,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 
 
 class CheckedProofListener(SaveListener[Moved[Proof]]):
-    """When the main agent or a person checks a proof, the tasks of its worktree whose proofs are all checked
+    """When the main agent or a user checks a proof, the tasks of its worktree whose proofs are all checked
     are completed. A proof the journal checked by its test, a proof of a merged worktree and a proof of a
     task of a started plan are settled where their result is recorded."""
 

@@ -24,8 +24,8 @@ class CheckpointPassListener(SaveListener[Moved[CheckpointReach]]):
     """A reach whose tests passed opens the phases after its checkpoint: the pass is saved with it,
     each task of the run gets a log line, the main agent is told once for the checkpoint, and tasks
     completed in the window since the run started get a run of their own. An early run opens no
-    phase and tells nobody. When the setting to wait for the person is on, the pass is not saved and
-    the main agent is told that a person must approve. When the quick review is on, the reviewer of
+    phase and tells nobody. When the setting to wait for the user is on, the pass is not saved and
+    the main agent is told that a user must approve. When the quick review is on, the reviewer of
     the checkpoint is started on the model the review-model setting names."""
 
     name = "plans.checkpoint-pass"

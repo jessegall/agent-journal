@@ -9,7 +9,7 @@ from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 
 
 class ProposePluginSubcommand(ReadSubcommand[PluginManifest]):
-    """`journal plugin propose <folder> --why "<what for>"`: an agent names a plugin the person may install.
+    """`journal plugin propose <folder> --why "<what for>"`: an agent names a plugin the user may install.
     """
 
     cli_name = "plugin"

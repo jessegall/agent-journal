@@ -25,7 +25,7 @@ SAFE_TOOLS = {StartedHelper: ["WebFetch", "WebSearch"]}
 
 
 class StartedCodexHelper(StoryFixture):
-    """A main agent with a person beside it and one read-only helper on Codex."""
+    """A main agent with a user beside it and one read-only helper on Codex."""
 
     parent = UserBuilder
 

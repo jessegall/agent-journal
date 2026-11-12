@@ -9,10 +9,10 @@ const SAVED_TEXT = "Saved layout";
 // a shape's cells for the thumbnail, one per pane: its box, the module of its active window, and whether it is the chat
 const cellsOf = (shape) => thumbnail(shape).map((cell) => ({box: cell.box, view: cell.view, module: cell.view.split(".")[0], accent: cell.view === CHAT_WINDOW}));
 
-// the layouts a person can switch a page to: the suite's presets whose windows are all offered and available, then the
+// the layouts a user can switch a page to: the suite's presets whose windows are all offered and available, then the
 // person's own saved layouts, which keep any window; applying one arranges the live layout so panes holding the same
-// active window keep their options, and a person's layout is saved, updated, renamed, removed, shared as a
-// .layout.json file and imported through the person-preset commands
+// active window keep their options, and a user's layout is saved, updated, renamed, removed, shared as a
+// .layout.json file and imported through the user-preset commands
 export function useLayoutPresets({page, shellLine, window, catalogue, store}) {
     const suite = computed(() => (window.props["suite-presets"].data.value?.rows ?? []).map((preset) => ({...preset, shape: arrangedShape(preset.shape)})));
     const person = computed(() => (window.props["person-presets"].data.value?.rows ?? []).map((row) => ({key: `person:${row.id}`, id: row.id, name: row.name, text: SAVED_TEXT, saved: true, shape: JSON.parse(row.shape)})));

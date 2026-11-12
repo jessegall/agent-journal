@@ -24,7 +24,7 @@ def worker(story: Story) -> Actor:
 
 
 class TasksWithOldAssignments(StoryFixture):
-    """A main agent, a worker and a person, and five tasks: tasks 2 and 3 are started by the worker."""
+    """A main agent, a worker and a user, and five tasks: tasks 2 and 3 are started by the worker."""
 
     parent = UserBuilder
 

@@ -6,7 +6,7 @@ import {WINDOW_CONTEXT} from "@journal/window-kit";
 import {WindowSubscriptions} from "./windowSubscriptions.js";
 
 // the body file a module gives a chat mark or a docked item, loaded through the window host: as a component for a module the journal ships or
-// the person trusts, and in a sandboxed frame for any other
+// the user trusts, and in a sandboxed frame for any other
 const props = defineProps({
     declaration: {type: Object, required: true},
     row: {type: Object, default: null},
@@ -38,7 +38,7 @@ const entry = computed(() => ({
     // a body reads as the window its type names, which the module declares with the reads the body needs
     name: props.declaration.type,
     entry_url: props.declaration.body_url,
-    // a body the journal ships or the person trusts hears what it follows; any other hears what its declaration names
+    // a body the journal ships or the user trusts hears what it follows; any other hears what its declaration names
     events: asComponent.value ? [ANY_EVENT] : (props.declaration.events ?? []),
     options: [],
 }));

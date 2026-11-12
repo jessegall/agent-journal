@@ -16,7 +16,7 @@ START_GRACE_SECONDS = 60
 
 
 class MachineRuns:
-    """The runs of a plugin's kind that hold a place anywhere on this machine: one file for each, in the person's
+    """The runs of a plugin's kind that hold a place anywhere on this machine: one file for each, in the user's
     own journal folder or the folder JOURNAL_MACHINE_FOLDER names, holding the path of the pid file its runner
     writes. A run counts while that runner lives, or for a minute after its place was given while its runner
     starts; a file of a run that counts no more is removed."""

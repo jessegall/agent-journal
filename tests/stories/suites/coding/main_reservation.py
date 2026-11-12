@@ -85,7 +85,7 @@ def test_a_reserved_task_is_not_offered_to_send_to_a_worker(new_story):
 
 def test_a_blocked_task_can_be_assigned_to_a_main_agent_and_stays_blocked(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.expect_success('task make "Waits for a person" --environment main', actor=story.user)
+    story.expect_success('task make "Waits for a user" --environment main', actor=story.user)
     story.expect_success('task block 1 --reason "needs an answer"', actor=story.user)
     story.expect_success(f"task assign 1 --to {agent_number(story, story.agent.id)}", actor=story.user)
     story.expect_text("task info 1", "state: blocked", f"assigned to: agent {story.agent.id}", actor=story.agent)

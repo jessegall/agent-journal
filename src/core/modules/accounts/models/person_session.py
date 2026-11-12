@@ -6,7 +6,7 @@ from engine.time.timestamp import Timestamp
 
 @dataclass(frozen=True, kw_only=True)
 class PersonSession(Model):
-    """One logged-in browser of a person; it keeps only the digest of its token, never the token."""
+    """One logged-in browser of a user; it keeps only the digest of its token, never the token."""
 
     model_name = "person_session"
     cli_name = "person-session"

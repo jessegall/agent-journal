@@ -56,7 +56,7 @@ class UnblockerFacts:
     @staticmethod
     def wait_text(waits: Sequence[TaskWait]) -> str:
         if any(wait.target == PERSON_TARGET for wait in waits):
-            return "which waits on a person"
+            return "which waits on a user"
         if any(wait.command for wait in waits):
             return "which waits on a command"
         return "which waits on something that is no task" if waits else "which is blocked with a reason"

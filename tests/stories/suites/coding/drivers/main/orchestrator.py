@@ -65,7 +65,7 @@ def test_tasks_a_released_worker_gave_back_hold_the_main_agent_at_stop(new_story
 
 
 class ReadyPlanTaskOrchestrator(StoryFixture):
-    """A main agent with Auto off, a person and one open task in a ready plan."""
+    """A main agent with Auto off, a user and one open task in a ready plan."""
 
     parent = OpenTaskOrchestrator
 

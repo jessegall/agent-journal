@@ -18,7 +18,7 @@ class ChooseTaskFocusHandler(Handler[ChooseTaskFocus, tuple[str, ...]]):
     """Makes one of the asking agent's started tasks the task it works on now, so the reminders and the
     status name that task, and answers with the task in hand and the started tasks behind it. Starting a
     task makes that one the task in hand again. A task that is not started, or that another agent started,
-    is refused. A person reads and sets the task of the running main agent."""
+    is refused. A user reads and sets the task of the running main agent."""
 
     command = ChooseTaskFocus
 

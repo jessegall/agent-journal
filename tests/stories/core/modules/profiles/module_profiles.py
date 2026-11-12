@@ -60,7 +60,7 @@ def test_the_shipped_code_reviewer_reads_the_diff_itself_and_files_critical_task
 def test_the_planner_profile_says_a_plan_is_written_thoroughly(new_story):
     story = new_story()
     planner = Registry.read(story.container.get(Database)).profile("journal-planner").profile.body
-    story.expect_rows("one task per step a person could check" in planner, "plans.one-task-phase" in planner, "you may run journal plan edit" in planner,
+    story.expect_rows("one task per step a user could check" in planner, "plans.one-task-phase" in planner, "you may run journal plan edit" in planner,
                       "skill journal-planning" in planner, "skill journal-plan-review-applying" in planner)
 
 

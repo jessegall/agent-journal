@@ -13,7 +13,7 @@ from core.modules.agents.models.agent import Agent
 
 
 class UserWaitGuard(Guard[Moved[Task]]):
-    """A person or the main agent reviews a task's wait before reopening it."""
+    """A user or the main agent reviews a task's wait before reopening it."""
 
     name = "tasks.user-wait"
     moves = tuple([TaskLifecycle.unblock])

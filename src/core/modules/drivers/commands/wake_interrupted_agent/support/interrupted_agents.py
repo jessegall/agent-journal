@@ -14,7 +14,7 @@ IDLE_SECONDS = 30
 
 class InterruptedAgents:
     """Wakes a main agent whose turn was interrupted once nobody has typed in its terminal for 30 seconds,
-    with one line that it was interrupted and goes on with its work; a person typing in that time, or a
+    with one line that it was interrupted and goes on with its work; a user typing in that time, or a
     stop the agent made on its own, ends the wait with no wake."""
 
     def __init__(self, bus: Bus, standings: AgentStanding, hook_calls: HookCallQuery) -> None:

@@ -49,7 +49,7 @@ const runs = computed(() =>
 const rows = computed(() => docked.value.filter((item) => !runs.value.includes(item) && !isRunItem(item, dockDeclaration)));
 const sizeChoice = rememberedRef(`dock-size:${store.identity?.root || location.host}`, null);
 const waitsOnPerson = (item) => Boolean(dockDeclaration(item.type)?.needs_user);
-// a card that waits on the person, or the only card in the dock, docks open whatever the chat's scroll or the others' size choice says, until the person folds it
+// a card that waits on the user, or the only card in the dock, docks open whatever the chat's scroll or the others' size choice says, until the user folds it
 const handFolded = ref(new Set());
 const scrollFolded = ref(new Set());
 const alone = computed(() => docked.value.length === 1);
@@ -79,7 +79,7 @@ function openCard(item) {
     sizeChoice.value = {collapsed: true, opened: [...opened, item.id]};
 }
 
-// a card the person folded or unfolded by hand keeps that, the rest follow the chat's scroll; while the chat is scrolled up the insides of every card fold, and the
+// a card the user folded or unfolded by hand keeps that, the rest follow the chat's scroll; while the chat is scrolled up the insides of every card fold, and the
 // hand's choice, which is not touched, shows again at the foot
 const byHand = rememberedRef(`dock-folded:${store.identity?.root || location.host}`, {});
 const foldedFor = (item) =>
@@ -89,7 +89,7 @@ function fold(item) {
     byHand.value = {...byHand.value, [item.id]: !foldedFor(item)};
 }
 
-// a card whose output the person opened stays open when the others are folded, as one opened by a click does, so a card docking beside it does not fold it
+// a card whose output the user opened stays open when the others are folded, as one opened by a click does, so a card docking beside it does not fold it
 function keepOpen(item) {
     if (!sizeChoice.value?.collapsed || sizeChoice.value.opened.includes(item.id)) return;
     sizeChoice.value = {collapsed: true, opened: [...sizeChoice.value.opened, item.id]};

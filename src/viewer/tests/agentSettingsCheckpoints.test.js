@@ -15,7 +15,7 @@ const NODES = [
     node(REVIEW, "flag", "toggle", "Quick review at a checkpoint", false),
     node(MODEL, "choice", "choice", "Review model", "sonnet", {choices: ["sonnet", "equal"], requires: [REVIEW]}),
     node(COMMAND, "text", "text", "Command to run at a checkpoint", ""),
-    node(WAIT, "flag", "toggle", "Wait for the person at a checkpoint", false),
+    node(WAIT, "flag", "toggle", "Wait for the user at a checkpoint", false),
 ];
 
 function drawn() {

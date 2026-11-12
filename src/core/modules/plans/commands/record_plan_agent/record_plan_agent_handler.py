@@ -9,7 +9,7 @@ from core.modules.plans.support.plan_assignee import PlanAssignee
 
 
 class RecordPlanAgentHandler(Handler[RecordPlanAgent, Plan]):
-    """Writes the agent of a plan; a person or a main agent names it."""
+    """Writes the agent of a plan; a user or a main agent names it."""
 
     command = RecordPlanAgent
 

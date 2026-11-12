@@ -15,7 +15,7 @@ from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 SHAPE = '{"tabs":["notes.board"],"active":"notes.board","width":"full"}'
-REQUESTED = "A person was asked in the dock"
+REQUESTED = "A user was asked in the dock"
 
 
 def save_preset(name: str) -> str:
@@ -46,7 +46,7 @@ def resume_approved(story: Story) -> None:
 
 
 class ResumeRequested(StoryFixture):
-    """A person paused the agent and the agent asked to be resumed, so the dock holds the question."""
+    """A user paused the agent and the agent asked to be resumed, so the dock holds the question."""
 
     parent = UserJoined
 
@@ -55,7 +55,7 @@ class ResumeRequested(StoryFixture):
 
 
 class ResumeFixedSession(StoryFixture):
-    """The person accepted that question and kept a standing yes for the same request."""
+    """The user accepted that question and kept a standing yes for the same request."""
 
     parent = ResumeRequested
 

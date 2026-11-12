@@ -9,7 +9,7 @@ from core.modules.drivers.support.suite_choice import SuiteChoice
 
 
 class DriverChangeFilter(ChangeFilter):
-    """A guard a driver lists applies only to changes an agent that driver drives makes, never to a person's;
+    """A guard a driver lists applies only to changes an agent that driver drives makes, never to a user's;
     every other guard and listener applies to every change."""
 
     def __init__(self, registry: Registry, rows: EventRows, choice: SuiteChoice) -> None:

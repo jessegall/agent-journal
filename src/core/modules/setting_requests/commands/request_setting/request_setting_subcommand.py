@@ -8,8 +8,8 @@ from core.modules.approvals.models.approval_request import ApprovalRequest
 
 
 class RequestSettingSubcommand(Subcommand[RequestSetting, ApprovalRequest]):
-    """`journal setting request <key> <value> --reason "<why>" [--project]`: asks a person to change a setting only
-    a person may change."""
+    """`journal setting request <key> <value> --reason "<why>" [--project]`: asks a user to change a setting only
+    a user may change."""
 
     cli_name = "setting"
     name = "request"
@@ -25,4 +25,4 @@ class RequestSettingSubcommand(Subcommand[RequestSetting, ApprovalRequest]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ApprovalRequest):
-            output.write(f"A person was asked in the dock: approval {value.id}", {"approval_id": value.id, "id": value.id})
+            output.write(f"A user was asked in the dock: approval {value.id}", {"approval_id": value.id, "id": value.id})
