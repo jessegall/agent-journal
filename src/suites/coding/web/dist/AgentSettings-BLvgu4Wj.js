@@ -1,6 +1,6 @@
-import { openBlock as a, createElementBlock as d, createElementVNode as l, computed as w, normalizeClass as D, toDisplayString as h, renderSlot as pe, createTextVNode as S, createCommentVNode as x, createVNode as $, unref as v, withCtx as A, reactive as oe, ref as C, watch as ee, Fragment as T, renderList as L, createBlock as V, withModifiers as ve, useModel as ke, normalizeStyle as ae, mergeModels as ye, onMounted as fe } from "vue";
-import { useWindow as G, Btn as K, Switch as ie, TextInput as be, useNow as he, age as we, Icon as $e, Segmented as _e, WindowRoom as Se, InnerTabs as Ce, TabBody as Ae, SwitchCase as Oe } from "@journal/window-kit";
-import { _ as W } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+import { openBlock as a, createElementBlock as d, createElementVNode as l, computed as w, normalizeClass as D, toDisplayString as h, renderSlot as pe, createTextVNode as S, createCommentVNode as x, createVNode as $, unref as v, withCtx as A, reactive as oe, ref as C, watch as ee, Fragment as T, renderList as L, createBlock as V, withModifiers as ve, useModel as ke, normalizeStyle as ae, mergeModels as ye, onMounted as be } from "vue";
+import { useWindow as G, Btn as K, Switch as ie, TextInput as fe, useNow as he, age as we, Icon as $e, Segmented as _e, WindowRoom as Se, InnerTabs as Ce, TabBody as Ae, SwitchCase as Oe } from "@journal/window-kit";
+import { _ as W } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 import { isFull as Te } from "@journal/setting-components";
 const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne = ["disabled"], Be = {
   __name: "NumberStep",
@@ -13,24 +13,24 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
         type: "button",
         disabled: e.disabled || Number(e.modelValue) <= 0,
         "aria-label": "Less",
-        onClick: u[0] || (u[0] = (f) => i(-1))
+        onClick: u[0] || (u[0] = (b) => i(-1))
       }, "−", 8, xe),
       l("input", {
         type: "number",
         min: "0",
         value: e.modelValue,
         disabled: e.disabled,
-        onInput: u[1] || (u[1] = (f) => p("update:modelValue", f.target.value))
+        onInput: u[1] || (u[1] = (b) => p("update:modelValue", b.target.value))
       }, null, 40, Ie),
       l("button", {
         type: "button",
         disabled: e.disabled,
         "aria-label": "More",
-        onClick: u[2] || (u[2] = (f) => i(1))
+        onClick: u[2] || (u[2] = (b) => i(1))
       }, "+", 8, Ne)
     ]));
   }
-}, Me = /* @__PURE__ */ W(Be, [["__scopeId", "data-v-a7b54780"]]), Re = { class: "ctl-text" }, Ve = { class: "ctl-label" }, We = { class: "ctl-help" }, Fe = { class: "ctl-input" }, Ue = {
+}, Me = /* @__PURE__ */ W(Be, [["__scopeId", "data-v-e9d43b82"]]), Re = { class: "ctl-text" }, Ve = { class: "ctl-label" }, We = { class: "ctl-help" }, Fe = { class: "ctl-input" }, Ue = {
   key: 0,
   class: "ctl-src"
 }, Ee = {
@@ -62,13 +62,13 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
       ])) : x("", !0)
     ], 2));
   }
-}, te = /* @__PURE__ */ W(Ee, [["__scopeId", "data-v-c011fa59"]]), Pe = { class: "foot" }, qe = {
+}, te = /* @__PURE__ */ W(Ee, [["__scopeId", "data-v-6e2d513b"]]), Pe = { class: "foot" }, qe = {
   __name: "SettingsFoot",
   props: { changes: { type: Number, default: 0 }, pending: { type: Boolean, default: !1 }, problem: { type: String, default: "" }, blocked: { type: Boolean, default: !1 } },
   emits: ["cancel", "apply"],
   setup(e, { emit: g }) {
     const o = e, p = g, i = G(), n = w(() => o.problem ? o.problem : o.pending ? "Applying." : o.changes ? `${o.changes} ${o.changes === 1 ? "change" : "changes"} to apply to ${i.environment}.` : `No changes. For the environment ${i.environment}.`);
-    return (u, f) => (a(), d("div", Pe, [
+    return (u, b) => (a(), d("div", Pe, [
       l("span", {
         class: D(["foot-note", { bad: e.problem, busy: e.pending }]),
         role: "status"
@@ -77,9 +77,9 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
         bordered: "",
         disabled: !e.changes || e.pending,
         "data-settings-cancel": "",
-        onClick: f[0] || (f[0] = (B) => p("cancel"))
+        onClick: b[0] || (b[0] = (B) => p("cancel"))
       }, {
-        default: A(() => [...f[2] || (f[2] = [
+        default: A(() => [...b[2] || (b[2] = [
           S("Cancel", -1)
         ])]),
         _: 1
@@ -88,25 +88,25 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
         variant: "primary",
         disabled: !e.changes || e.pending || e.blocked || v(i).readOnly,
         "data-settings-apply": "",
-        onClick: f[1] || (f[1] = (B) => p("apply"))
+        onClick: b[1] || (b[1] = (B) => p("apply"))
       }, {
-        default: A(() => [...f[3] || (f[3] = [
+        default: A(() => [...b[3] || (b[3] = [
           S("Apply", -1)
         ])]),
         _: 1
       }, 8, ["disabled"])
     ]));
   }
-}, re = /* @__PURE__ */ W(qe, [["__scopeId", "data-v-ceae936f"]]), Ke = ["data-agent-settings-group"], Le = { class: "sw-word" }, He = ["value", "disabled", "data-field", "onChange"], ze = ["value"], De = ["data-field-badge"], Ge = {
+}, re = /* @__PURE__ */ W(qe, [["__scopeId", "data-v-88c3dd59"]]), Ke = ["data-agent-settings-group"], Le = { class: "sw-word" }, He = ["value", "disabled", "data-field", "onChange"], ze = ["value"], De = ["data-field-badge"], Ge = {
   __name: "AgentSettingsGroup",
   props: { group: { type: String, required: !0 } },
   setup(e) {
-    const g = e, o = (c) => typeof c == "number" ? `${c / 1e3}k` : `${c.charAt(0).toUpperCase()}${c.slice(1)}`, p = G(), i = p.props.work, n = oe({}), u = C(""), f = C(""), B = C(!1), F = w(() => {
+    const g = e, o = (c) => typeof c == "number" ? `${c / 1e3}k` : `${c.charAt(0).toUpperCase()}${c.slice(1)}`, p = G(), i = p.props.work, n = oe({}), u = C(""), b = C(""), B = C(!1), F = w(() => {
       var c;
       return (((c = i.data.value) == null ? void 0 : c.fields) ?? []).filter((j) => j.group === g.group);
     }), H = w(() => F.value.filter((c) => {
-      var j, b;
-      return (((b = (j = i.data.value) == null ? void 0 : j.depends) == null ? void 0 : b[c.key]) ?? []).every((m) => n[m] !== !1);
+      var j, f;
+      return (((f = (j = i.data.value) == null ? void 0 : j.depends) == null ? void 0 : f[c.key]) ?? []).every((m) => n[m] !== !1);
     })), U = (c) => c.type === "flag" ? !!c.value : String(c.value), I = (c) => (c.type === "flag" ? n[c.key] : String(n[c.key])) !== U(c), N = w(() => F.value.filter(I)), q = w(() => N.value.length > 0), M = w(() => {
       var c;
       return q.value && u.value && ((c = i.data.value) == null ? void 0 : c.revision) !== u.value;
@@ -114,63 +114,63 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
     function E() {
       var c;
       for (const j of F.value) n[j.key] = U(j);
-      u.value = ((c = i.data.value) == null ? void 0 : c.revision) ?? "", f.value = "";
+      u.value = ((c = i.data.value) == null ? void 0 : c.revision) ?? "", b.value = "";
     }
     ee(() => i.data.value, () => {
       (!u.value || !q.value) && E();
     }, { immediate: !0 });
-    const _ = w(() => f.value || (M.value ? "These settings changed since you opened them. Cancel to read them again." : "") || (z.value ? "A number is missing." : ""));
+    const _ = w(() => b.value || (M.value ? "These settings changed since you opened them. Cancel to read them again." : "") || (z.value ? "A number is missing." : ""));
     async function P() {
       B.value = !0;
       const c = await p.run(`work-settings apply --revision ${u.value} ${N.value.map((j) => `${j.key}=${R(j)}`).join(" ")}`);
-      B.value = !1, f.value = c.ok ? "" : c.error, await p.reload("work"), c.ok && E();
+      B.value = !1, b.value = c.ok ? "" : c.error, await p.reload("work"), c.ok && E();
     }
     return (c, j) => (a(), d("section", {
       class: "group",
       "data-agent-settings-group": e.group
     }, [
-      (a(!0), d(T, null, L(H.value, (b) => (a(), V(te, {
-        key: b.key,
-        label: b.title,
-        help: b.description,
-        source: b.source,
-        changed: I(b),
-        "data-control": b.key
+      (a(!0), d(T, null, L(H.value, (f) => (a(), V(te, {
+        key: f.key,
+        label: f.title,
+        help: f.description,
+        source: f.source,
+        changed: I(f),
+        "data-control": f.key
       }, {
         default: A(() => {
           var m;
           return [
-            b.type === "flag" ? (a(), d(T, { key: 0 }, [
+            f.type === "flag" ? (a(), d(T, { key: 0 }, [
               $(v(ie), {
-                on: n[b.key],
+                on: n[f.key],
                 disabled: v(p).readOnly,
-                onChange: (k) => n[b.key] = !n[b.key]
+                onChange: (k) => n[f.key] = !n[f.key]
               }, null, 8, ["on", "disabled", "onChange"]),
-              l("span", Le, h(n[b.key] ? "On" : "Off"), 1)
-            ], 64)) : (m = b.choices) != null && m.length ? (a(), d("select", {
+              l("span", Le, h(n[f.key] ? "On" : "Off"), 1)
+            ], 64)) : (m = f.choices) != null && m.length ? (a(), d("select", {
               key: 1,
               class: "choice",
-              value: n[b.key],
+              value: n[f.key],
               disabled: v(p).readOnly,
-              "data-field": b.key,
-              onChange: (k) => n[b.key] = k.target.value
+              "data-field": f.key,
+              onChange: (k) => n[f.key] = k.target.value
             }, [
-              (a(!0), d(T, null, L(b.choices, (k) => (a(), d("option", {
+              (a(!0), d(T, null, L(f.choices, (k) => (a(), d("option", {
                 key: k,
                 value: String(k)
               }, h(o(k)), 9, ze))), 128))
             ], 40, He)) : (a(), V(Me, {
               key: 2,
-              modelValue: n[b.key],
-              "onUpdate:modelValue": (k) => n[b.key] = k,
+              modelValue: n[f.key],
+              "onUpdate:modelValue": (k) => n[f.key] = k,
               disabled: v(p).readOnly,
-              "data-field": b.key
+              "data-field": f.key
             }, null, 8, ["modelValue", "onUpdate:modelValue", "disabled", "data-field"])),
-            b.badge ? (a(), d("span", {
+            f.badge ? (a(), d("span", {
               key: 3,
               class: "badge",
-              "data-field-badge": b.key
-            }, h(b.badge), 9, De)) : x("", !0)
+              "data-field-badge": f.key
+            }, h(f.badge), 9, De)) : x("", !0)
           ];
         }),
         _: 2
@@ -185,7 +185,7 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
       }, null, 8, ["changes", "pending", "problem", "blocked"])
     ], 8, Ke));
   }
-}, ue = /* @__PURE__ */ W(Ge, [["__scopeId", "data-v-f06fd592"]]), Ye = {
+}, ue = /* @__PURE__ */ W(Ge, [["__scopeId", "data-v-09d5a122"]]), Ye = {
   __name: "AgentSettingsAdvanced",
   setup(e) {
     return (g, o) => (a(), V(ue, {
@@ -203,7 +203,7 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
       onSubmit: o[2] || (o[2] = ve((p) => g.$emit("submit"), ["prevent"]))
     }, [
       o[5] || (o[5] = l("p", null, "Retirement is permanent. This agent cannot be resumed. Its record, its memories and its number stay.", -1)),
-      $(v(be), {
+      $(v(fe), {
         "model-value": e.reason,
         label: "Reason",
         disabled: e.pending,
@@ -235,7 +235,7 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
       ])
     ], 32));
   }
-}, Xe = /* @__PURE__ */ W(Qe, [["__scopeId", "data-v-818a34c9"]]), Ze = ["data-edit-type"], et = { class: "stepper" }, tt = ["disabled", "onClick"], nt = ["value", "disabled", "data-agent-limit-input", "onChange"], at = ["disabled", "onClick"], st = { key: 0 }, lt = { key: 1 }, ot = {
+}, Xe = /* @__PURE__ */ W(Qe, [["__scopeId", "data-v-92de7dd6"]]), Ze = ["data-edit-type"], et = { class: "stepper" }, tt = ["disabled", "onClick"], nt = ["value", "disabled", "data-agent-limit-input", "onChange"], at = ["disabled", "onClick"], st = { key: 0 }, lt = { key: 1 }, ot = {
   __name: "AgentLimitEditor",
   props: { row: { type: Object, required: !0 }, pending: Boolean, readOnly: Boolean, environment: { type: String, required: !0 } },
   emits: ["change"],
@@ -276,7 +276,7 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
       ], 8, Ze)
     ], 64));
   }
-}, it = /* @__PURE__ */ W(ot, [["__scopeId", "data-v-736ca02f"]]), rt = (e) => e.flatMap((g) => g.per_profile ? g.profiles.map((o) => ({ ...o, label: o.title, type: g.key, key: `${g.key}:${o.profile}` })) : [{ ...g, type: g.key }]), ut = { class: "counts-panel" }, dt = ["data-count-agent"], ct = { class: "person-text" }, gt = {
+}, it = /* @__PURE__ */ W(ot, [["__scopeId", "data-v-b2420411"]]), rt = (e) => e.flatMap((g) => g.per_profile ? g.profiles.map((o) => ({ ...o, label: o.title, type: g.key, key: `${g.key}:${o.profile}` })) : [{ ...g, type: g.key }]), ut = { class: "counts-panel" }, dt = ["data-count-agent"], ct = { class: "person-text" }, gt = {
   key: 0,
   class: "helper-head"
 }, mt = ["data-agent-limit-type", "data-agent-limit-profile", "onClick"], pt = {
@@ -296,7 +296,7 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
   },
   emits: /* @__PURE__ */ ye(["open-agent", "close"], ["update:title"]),
   setup(e, { emit: g }) {
-    const o = g, p = ke(e, "title"), i = G(), n = w(() => i.props.limits.rows.value ?? []), u = w(() => i.props.limits.failure.value), f = C([]), B = C(0), F = C(!1), H = he(), U = C(null), I = C(!1), N = C(""), q = C(""), M = C(null), R = C(""), z = w(() => rt(n.value)), E = w(() => n.value.find((r) => r.per_profile)), _ = w(() => z.value.find((r) => r.key === U.value)), P = w(() => f.value.filter((r) => {
+    const o = g, p = ke(e, "title"), i = G(), n = w(() => i.props.limits.rows.value ?? []), u = w(() => i.props.limits.failure.value), b = C([]), B = C(0), F = C(!1), H = he(), U = C(null), I = C(!1), N = C(""), q = C(""), M = C(null), R = C(""), z = w(() => rt(n.value)), E = w(() => n.value.find((r) => r.per_profile)), _ = w(() => z.value.find((r) => r.key === U.value)), P = w(() => b.value.filter((r) => {
       var t, s;
       return r.state !== "retired" && r.role === ((t = _.value) == null ? void 0 : t.type) && (!_.value.profile || (((s = r.facts) == null ? void 0 : s.profile) || r.profile) === _.value.profile);
     }).sort((r, t) => (r.state !== "running") - (t.state !== "running") || String(r.ended_at || r.created_at).localeCompare(String(t.ended_at || t.created_at)))), c = w(() => {
@@ -307,7 +307,7 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
         y && r.set(y, (r.get(y) || 0) + 1);
       }
       return [...r].map(([s, y]) => `${y} ${s}`).join(", ");
-    }), j = (r, t) => t ? `${Math.min(r / Math.max(r, t) * 100, 100)}%` : "0%", b = (r, t) => t && r > t ? `${(r - t) / r * 100}%` : "0%", m = w(() => {
+    }), j = (r, t) => t ? `${Math.min(r / Math.max(r, t) * 100, 100)}%` : "0%", f = (r, t) => t && r > t ? `${(r - t) / r * 100}%` : "0%", m = w(() => {
       var r;
       return ((r = _.value) == null ? void 0 : r.key) ?? "counts";
     });
@@ -320,10 +320,10 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
     async function k(r, t = 1) {
       i.state["count-agents.role"] = r.type, r.profile ? i.state["count-agents.profile"] = r.profile : delete i.state["count-agents.profile"], i.state["count-agents.page"] = String(t), await i.reload("count-agents");
       const s = i.props["count-agents"];
-      f.value = t === 1 ? [...s.rows.value] : [...f.value, ...s.rows.value], B.value = t, F.value = s.more.value;
+      b.value = t === 1 ? [...s.rows.value] : [...b.value, ...s.rows.value], B.value = t, F.value = s.more.value;
     }
     function O(r) {
-      U.value = r.key, f.value = [], k(r);
+      U.value = r.key, b.value = [], k(r);
     }
     function Z() {
       U.value = null, M.value = null, N.value = "";
@@ -491,7 +491,7 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
                   style: ae({ width: j(y.count, y.limit) })
                 }, null, 4),
                 l("i", {
-                  style: ae({ width: b(y.count, y.limit) })
+                  style: ae({ width: f(y.count, y.limit) })
                 }, null, 4)
               ])) : x("", !0)
             ], 2))), 128)),
@@ -505,22 +505,22 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
       ], 2))
     ]));
   }
-}, ft = /* @__PURE__ */ W(yt, [["__scopeId", "data-v-002e1f26"]]), bt = {
+}, bt = /* @__PURE__ */ W(yt, [["__scopeId", "data-v-55110dab"]]), ft = {
   class: "agents",
   "data-agent-settings-agents": ""
 }, ht = {
   __name: "AgentSettingsAgents",
   setup(e) {
     const g = G(), o = C("Agent counts"), p = (i) => g.open("agents.agents", i.id);
-    return fe(() => g.reload("limits")), (i, n) => (a(), d("section", bt, [
-      $(ft, {
+    return be(() => g.reload("limits")), (i, n) => (a(), d("section", ft, [
+      $(bt, {
         title: o.value,
         "onUpdate:title": n[0] || (n[0] = (u) => o.value = u),
         onOpenAgent: p
       }, null, 8, ["title"])
     ]));
   }
-}, wt = /* @__PURE__ */ W(ht, [["__scopeId", "data-v-8e37e089"]]), $t = {
+}, wt = /* @__PURE__ */ W(ht, [["__scopeId", "data-v-fde7fc3f"]]), $t = {
   __name: "AgentSettingsTests",
   setup(e) {
     return (g, o) => (a(), V(ue, {
@@ -549,7 +549,7 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
       _: 1
     }, 8, ["label", "help", "data-control"]));
   }
-}, se = /* @__PURE__ */ W(St, [["__scopeId", "data-v-f092daf2"]]), Ct = {
+}, se = /* @__PURE__ */ W(St, [["__scopeId", "data-v-a43d15dd"]]), Ct = {
   class: "work",
   "data-agent-settings-work": ""
 }, At = { class: "section" }, Ot = { class: "section" }, Tt = {
@@ -568,10 +568,10 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
       { key: "journal.suites.coding.main-starts-read-only-helpers", label: "Use read-only helpers", line: "Whether the main agent may start read-only helpers." },
       { key: "journal.suites.coding.designer-enabled", label: "Use a designer", line: "Whether the main agent may start a designer, which writes a design document and changes no code." },
       { key: "journal.suites.coding.workers.main-agent-may-merge", label: "Main agent may merge workers", line: "Whether the main agent may merge the work of a worker itself." }
-    ], o = [{ key: "builder", label: "Builder" }, { key: "orchestrator", label: "Orchestrator" }], p = [le], i = G(), n = i.props.work, u = oe({}), f = C(""), B = C(""), F = C(!1), H = w(() => g.filter((m) => {
+    ], o = [{ key: "builder", label: "Builder" }, { key: "orchestrator", label: "Orchestrator" }], p = [le], i = G(), n = i.props.work, u = oe({}), b = C(""), B = C(""), F = C(!1), H = w(() => g.filter((m) => {
       var k, O;
       return u[m.key] !== ((O = (k = n.data.value) == null ? void 0 : k.controls) == null ? void 0 : O[m.key]);
-    })), U = w(() => H.value.length > 0), I = w(() => U.value && n.data.value && f.value && n.data.value.revision !== f.value), N = w(() => {
+    })), U = w(() => H.value.length > 0), I = w(() => U.value && n.data.value && b.value && n.data.value.revision !== b.value), N = w(() => {
       var m;
       return ((m = n.data.value) == null ? void 0 : m.workflow) ?? "";
     }), q = w(() => {
@@ -582,18 +582,18 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
       const m = n.data.value;
       if (m) {
         for (const k of g) u[k.key] = m.controls[k.key];
-        f.value = m.revision, B.value = "";
+        b.value = m.revision, B.value = "";
       }
     }
     ee(() => n.data.value, () => {
-      (!f.value || !U.value) && P();
+      (!b.value || !U.value) && P();
     }, { immediate: !0 });
     async function c(m) {
       F.value = !0;
       const k = await i.run(m);
       F.value = !1, k.ok ? (await i.reload("work"), P()) : (B.value = k.error, await i.reload("work"));
     }
-    const j = () => c(`work-settings apply --revision ${f.value} ${H.value.map((m) => `${m.key}=${u[m.key] ? "on" : "off"}`).join(" ")}`), b = (m) => c(`work-settings preset ${m} --revision ${f.value}`);
+    const j = () => c(`work-settings apply --revision ${b.value} ${H.value.map((m) => `${m.key}=${u[m.key] ? "on" : "off"}`).join(" ")}`), f = (m) => c(`work-settings preset ${m} --revision ${b.value}`);
     return (m, k) => (a(), d("section", Ct, [
       l("div", At, [
         k[0] || (k[0] = l("p", { class: "section-title" }, "Taking on work", -1)),
@@ -606,7 +606,7 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
             $(v(_e), {
               options: o,
               value: N.value,
-              onPick: b
+              onPick: f
             }, null, 8, ["value"])
           ]),
           _: 1
@@ -641,7 +641,7 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
       }, null, 8, ["changes", "pending", "problem", "blocked"])
     ]));
   }
-}, It = /* @__PURE__ */ W(xt, [["__scopeId", "data-v-d19fa95b"]]), Nt = {
+}, It = /* @__PURE__ */ W(xt, [["__scopeId", "data-v-dfe4b9be"]]), Nt = {
   class: "settings",
   "data-agent-settings": ""
 }, Bt = { class: "settings-bar" }, Mt = {
@@ -656,7 +656,7 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
     function n(u) {
       o.value = u.key, g.state.tab = u.key === "agents" ? "agents" : "";
     }
-    return (u, f) => (a(), V(v(Se), { padding: "0" }, {
+    return (u, b) => (a(), V(v(Se), { padding: "0" }, {
       default: A(() => [
         l("div", Nt, [
           l("div", Bt, [
@@ -696,7 +696,7 @@ const je = { class: "step" }, xe = ["disabled"], Ie = ["value", "disabled"], Ne 
       _: 1
     }));
   }
-}, Et = /* @__PURE__ */ W(Rt, [["__scopeId", "data-v-ba24ef5a"]]);
+}, Et = /* @__PURE__ */ W(Rt, [["__scopeId", "data-v-643e3fba"]]);
 export {
   Et as A
 };
