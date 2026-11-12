@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 
 MINUTE_SECONDS = 60
+MILLISECONDS = 1000
 
 
 @dataclass(frozen=True, order=True)

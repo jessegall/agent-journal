@@ -88,7 +88,7 @@ class ReadingFacts:
         """Whether a stock reader, made for other commands, reads the output of a part that has no reader of its own."""
         if reader is not None or moment is not ReadingMoment.END:
             return False
-        text = self.judge.output_text(process.id, part.position)
+        text = self.folder.part_head(process.id, part.position, SAMPLE_BYTES).decode(errors="replace")
         layers = self.readers.layers()
         return bool(text.strip()) and any(self.fits(stock, part.category, text) for stock in self.readers.all() if layers.layer(stock) is ReaderLayer.STOCK)
 

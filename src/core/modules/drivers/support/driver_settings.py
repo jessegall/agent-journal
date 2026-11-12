@@ -6,7 +6,7 @@ from engine.setting.setting_value import SettingValue
 MODULE_KEY = "journal.core.drivers"
 SUITE_SETTING = f"{MODULE_KEY}.suite"
 DAYS_SETTING = f"{MODULE_KEY}.hook-call-days"
-EVENT_HOURS_SETTING = f"{MODULE_KEY}.event-hours"
+EVENT_COUNT_SETTING = f"{MODULE_KEY}.event-count"
 DRIVER_SETTINGS = f"{MODULE_KEY}.driver."
 HOOK_WAIT_SECONDS = f"{MODULE_KEY}.hook-wait-seconds"
 BLOCK_CARD_SECONDS = f"{MODULE_KEY}.block-card-seconds"
@@ -18,7 +18,7 @@ DRIVERS_SETTINGS = [
                  scope=SettingScope.PROJECT),
     SettingValue("hook-call-days", "Call record days", "How many days the journal keeps the record of each call from the agent program.", SettingType.NUMBER, default=3,
                  scope=SettingScope.PROJECT),
-    SettingValue("event-hours", "Activity history hours", "How many hours the journal keeps the history of commands and tool calls. Older history is deleted.", SettingType.NUMBER, default=24,
+    SettingValue("event-count", "Activity history kept", "How many of the newest changes the journal keeps in its history. Older ones are deleted.", SettingType.NUMBER, default=10000,
                  scope=SettingScope.PROJECT),
     SettingGroup("driver", "Drivers", "The driver each type of agent works under in this environment.",
                  any_key=SettingValue("*", "Driver", "The driver this type of agent works under.", SettingType.TEXT, default="", scope=SettingScope.ENVIRONMENT, person_set=True)),

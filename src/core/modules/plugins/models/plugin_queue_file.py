@@ -9,7 +9,6 @@ class PluginQueueFile(Model):
     """
 
     model_name = "plugin_queue_file"
-    events_expire = True
     event_forms = ()
     cli_name = "plugin-queue-file"
 

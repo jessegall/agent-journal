@@ -1,30 +1,25 @@
-from datetime import timedelta
-
 from engine.event.event_log import EventLog
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.model.model import Model
-from engine.model.tables import Tables
-from engine.registry.registry import Registry
-from engine.time.timestamp import Timestamp
-from core.modules.drivers.commands.prune_events.prune_events import PruneEvents
-from core.modules.drivers.support.driver_settings import EVENT_HOURS_SETTING
 from engine.setting.setting_values import SettingValues
+from core.modules.drivers.commands.prune_events.prune_events import PruneEvents
+from core.modules.drivers.support.driver_settings import EVENT_COUNT_SETTING
 
-MOST_EVENTS_PRUNED = 5000
+WINDOW_IDS = 1000
 
 
 class PruneEventsHandler(Handler[PruneEvents, int]):
-    """Deletes one batch of the logged changes of the rows whose model marks them as expiring, older than the
-    kept hours and passed by every listener. The changes of every other row stay, because their history is
-    read."""
+    """Deletes, in the oldest window of event ids, the logged changes older than the newest the setting keeps and
+    already passed by every listener: the event log is a rolling log of the newest changes."""
 
     command = PruneEvents
 
-    def __init__(self, log: EventLog, tables: Tables, registry: Registry, settings: SettingValues) -> None:
-        self.log, self.tables, self.registry, self.settings = log, tables, registry, settings
+    def __init__(self, log: EventLog, settings: SettingValues) -> None:
+        self.log, self.settings = log, settings
 
     def handle(self, command: PruneEvents, context: Context) -> int:
-        cutoff_at = Timestamp(context.timestamp.value - timedelta(hours=self.settings.project.number(EVENT_HOURS_SETTING)))
-        models = (entry.model.checked_class(Model) for entry in self.registry.models.values())
-        return self.log.prune(tuple(self.tables.table(model).name for model in models if model.events_expire), cutoff_at.text, MOST_EVENTS_PRUNED)
+        deleted, _ = self.log.prune(self.kept(), self.log.oldest_id() - 1, WINDOW_IDS)
+        return deleted
+
+    def kept(self) -> int:
+        return self.settings.project.number(EVENT_COUNT_SETTING)

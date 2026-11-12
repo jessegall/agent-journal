@@ -16,7 +16,6 @@ class QueuedRun(EnvironmentScoped, Model):
 
     model_name = "queued_run"
     cli_name = "queued-run"
-    events_expire = True
     event_forms = tuple([EventForm.COMMIT])
     change_names = (ENDED,)
 

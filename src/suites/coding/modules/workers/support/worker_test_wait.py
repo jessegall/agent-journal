@@ -1,9 +1,8 @@
 from engine.time.clock import Clock
-from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.output_folder import END_POLL_SECONDS, OutputFolder
 from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_WAIT
 
-POLL_SECONDS = 0.5
 
 
 class WorkerTestWait:
@@ -16,8 +15,8 @@ class WorkerTestWait:
     def exit_code(self, process_id: int) -> int | None:
         waited, wait = 0.0, self.settings.number(WORKER_RUN_WAIT)
         while (code := self.folder.end(process_id)) is None and waited < wait:
-            self.clock.sleep(POLL_SECONDS)
-            waited += POLL_SECONDS
+            self.clock.sleep(END_POLL_SECONDS)
+            waited += END_POLL_SECONDS
         if code is None:
             self.folder.ask_move(process_id)
         return code

@@ -24,7 +24,6 @@ class AgentBlock(Model):
     that holds the stop only leaves the agent's tools alone."""
 
     model_name = "agent_block"
-    events_expire = True
     cli_name = "agent-block"
 
     session_agent_id: int

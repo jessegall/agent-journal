@@ -9,7 +9,6 @@ class PluginDelivery(Model):
     """A queued plugin event; system events have no environment."""
 
     model_name = "plugin_delivery"
-    events_expire = True
     event_forms = ()
     cli_name = "plugin-delivery"
 

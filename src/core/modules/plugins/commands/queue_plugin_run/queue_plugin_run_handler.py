@@ -8,6 +8,7 @@ from engine.repository.repository import Repository
 from core.modules.plugins.commands.queue_plugin_run.queue_plugin_run import QueuePluginRun
 from core.modules.plugins.models.enums.queued_run_state import QueuedRunState
 from core.modules.plugins.models.plugin import Plugin
+from core.modules.plugins.support.plugin_command_runner import RUN_LIMIT_SECONDS
 from core.modules.plugins.models.queued_run import QueuedRun
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest
@@ -18,7 +19,6 @@ from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.models.process import Process
 
 WAITING_RUNS_REASON = "every waiting run of the kind is weighed against the new one"
-RUN_LIMIT_SECONDS = 3600
 
 
 class QueuePluginRunHandler(Handler[QueuePluginRun, QueuedRunStart]):

@@ -5,10 +5,9 @@ from engine.subcommand.output import Output
 from engine.time.clock import Clock
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
-from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.output_folder import END_POLL_SECONDS, OutputFolder
 
 QUEUED_RUNS_REASON = "every queued run that is still waiting is followed"
-POLL_SECONDS = 0.5
 STOPPED_EXIT_CODE = 143
 
 
@@ -33,7 +32,7 @@ class QueuedRunFollow:
             offset = page.last_byte
             if has_ended and offset >= page.total:
                 return process.exit_code if process.exit_code is not None else STOPPED_EXIT_CODE
-            self.clock.sleep(POLL_SECONDS)
+            self.clock.sleep(END_POLL_SECONDS)
 
     def ahead(self, process: Process) -> int:
         waiting = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(HasValue("queued_at")).every_row(QUEUED_RUNS_REASON)

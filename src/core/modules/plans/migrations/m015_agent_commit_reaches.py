@@ -7,5 +7,7 @@ class AgentCommitReachesMigration(Migration):
 
     number = 15
     statements = [
+        "DROP TRIGGER IF EXISTS checkpoint_reaches_rule_source_insert",
+        "DROP TRIGGER IF EXISTS checkpoint_reaches_rule_source_update",
         "UPDATE checkpoint_reaches SET source = 'agent_commit' WHERE source NOT IN ('merged', 'early')",
     ]

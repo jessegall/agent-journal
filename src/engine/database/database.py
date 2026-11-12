@@ -14,7 +14,7 @@ from engine.row.row_owner import RowOwner
 if TYPE_CHECKING:
     from engine.database.kept_rows import KeptRows
 
-PRAGMAS = ("foreign_keys = ON", "journal_mode = WAL", "synchronous = NORMAL")
+PRAGMAS = ("auto_vacuum = INCREMENTAL", "foreign_keys = ON", "journal_mode = WAL", "synchronous = NORMAL")
 BUSY_TIMEOUT_SECONDS = 5.0
 READ_LIMIT_ROWS = 50
 NESTING_LIMIT_LEVELS = 8
@@ -61,6 +61,9 @@ class Database:
         database = cls(connection, database_file or connection)
         database.set_busy_timeout(BUSY_TIMEOUT_SECONDS)
         return database
+
+    def release_free_pages(self, pages: int) -> None:
+        self.connection.execute(f"PRAGMA incremental_vacuum({int(pages)})").fetchall()
 
     def set_busy_timeout(self, seconds: float) -> None:
         self.connection.execute(f"PRAGMA busy_timeout = {int(seconds * 1000)}")
