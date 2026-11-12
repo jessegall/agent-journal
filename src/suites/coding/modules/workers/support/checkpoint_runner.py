@@ -17,7 +17,7 @@ from core.modules.plans.support.checkpoint_runs import CheckpointRuns
 from suites.coding.modules.workers.support.checkpoint_folders import FOLDER_NAME, CheckpointFolders
 from suites.coding.modules.workers.support.checkpoint_results import CheckpointResults
 from suites.coding.modules.workers.support.worker_run_starts import WorkerRunStarts
-from suites.coding.modules.workers.models.affected_test import AffectedTestState
+from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 from suites.coding.modules.workers.models.checkpoint_test import CheckpointTest
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.queries.proof_query import ProofQuery

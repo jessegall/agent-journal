@@ -2,6 +2,7 @@ from dataclasses import dataclass, replace
 
 from engine.database.statement import Statement
 from engine.query.condition import Condition
+from engine.query.join import Join
 from engine.query.order import Order
 
 
@@ -16,6 +17,9 @@ class Select:
     limit: int = 0
     offset: int = 0
     full_table_reason: str | None = None
+    named_limit: int = 0
+    joins: tuple[Join, ...] = ()
+    group_columns: tuple[str, ...] = ()
 
     @property
     def is_empty(self) -> bool:
@@ -30,6 +34,21 @@ class Select:
     def sliced(self, limit: int, offset: int) -> "Select":
         return replace(self, limit=limit, offset=offset)
 
+    def joined(self, join: Join) -> "Select":
+        return replace(self, joins=(*self.joins, join))
+
+    def grouped(self, *columns: str) -> "Select":
+        return replace(self, group_columns=(*self.group_columns, *columns))
+
+    @property
+    def source(self) -> str:
+        """The table of the read with the tables it joins."""
+        return " ".join((self.table, *(join.sql for join in self.joins)))
+
+    def named(self, rows: int) -> "Select":
+        """The select names how many rows it may load, which the read limit accepts up to that number."""
+        return replace(self, named_limit=rows)
+
     def full_table(self, reason: str) -> "Select":
         return replace(self, full_table_reason=reason)
 
@@ -43,12 +62,17 @@ class Select:
 
     def statement(self) -> Statement:
         order = f" ORDER BY {', '.join(order.sql for order in self.orders)}" if self.orders else ""
-        page = f" LIMIT {self.limit} OFFSET {self.offset}" if self.limit else ""
-        statement = self.filtered(Statement(f"SELECT {self.columns} FROM {self.table}")).joined(Statement(order + page), "")
-        return replace(statement, full_table_reason=self.full_table_reason)
+        page = (f" LIMIT {self.limit}" + (f" OFFSET {self.offset}" if self.offset else "")) if self.limit else ""
+        statement = self.filtered(Statement(f"SELECT {self.columns} FROM {self.source}")).joined(Statement(order + page), "")
+        return replace(statement, full_table_reason=self.full_table_reason, named_limit_rows=self.named_limit or None)
 
     def count_statement(self) -> Statement:
-        return self.filtered(Statement(f"SELECT count(*) FROM {self.table}"))
+        return self.filtered(Statement(f"SELECT count(*) FROM {self.source}"))
+
+    def group_count_statement(self) -> Statement:
+        """Counts the rows of each value of the group columns."""
+        columns = ", ".join(self.group_columns)
+        return self.filtered(Statement(f"SELECT {columns}, count(*) FROM {self.source}")).joined(Statement(f" GROUP BY {columns}"), "")
 
     def exists_statement(self) -> Statement:
-        return self.filtered(Statement(f"SELECT 1 FROM {self.table}")).joined(Statement(" LIMIT 1"), "")
+        return self.filtered(Statement(f"SELECT 1 FROM {self.source}")).joined(Statement(" LIMIT 1"), "")

@@ -18,3 +18,5 @@ class ProcessCardJsonRecord(TypedDict):
     reads_progress: bool
     reader_requested: bool
     reading_text: str | None
+    marked_words: str
+    markable: bool

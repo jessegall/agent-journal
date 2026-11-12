@@ -1,0 +1,104 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "any": [
+                    {
+                        "all": [
+                            {
+                                "nameIn": [
+                                    "misses",
+                                    "fields_missing"
+                                ]
+                            },
+                            {
+                                "declaredBy": "*ReaderJudge"
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "nameIn": [
+                                    "needs_reader",
+                                    "reason"
+                                ]
+                            },
+                            {
+                                "declaredBy": "*ReaderDemands"
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "name": "choose"
+                            },
+                            {
+                                "of": "receiver",
+                                "resolvesLike": "*ReaderSelection"
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "name": "ordered"
+                            },
+                            {
+                                "declaredBy": "*ReaderLayers"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "any": [
+                    {
+                        "extendsAny": "DriverRule",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "*Listener",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "Handler",
+                        "of": "enclosingType"
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "all": [
+                    {
+                        "name": "choose"
+                    },
+                    {
+                        "extendsAny": "Handler",
+                        "of": "enclosingType"
+                    }
+                ]
+            },
+            {
+                "fileMatches": "(^|/)core/modules/processes/support/(reading/|reader_drafting\\.py$|reader_judge\\.py$|reader_selection\\.py$|reader_demands\\.py$|reader_layers\\.py$)"
+            },
+            {
+                "fileMatches": "(^|/)core/modules/processes/commands/(add_reader|make_reader_draft|request_reader|skip_reader_request|remove_reader|choose_default_reader|update_stock_readers)/"
+            }
+        ]
+    },
+    "sin": {
+        "name": "reading-judged-outside-the-decider",
+        "description": "A rule, a listener or a handler judges whether a command has a good reader.",
+        "rule": "Ask the engine: ReadingDecider decides from the facts ReadingFacts gathers; a rule only reads the stored decision.",
+        "skill": "processes-architecture"
+    }
+}

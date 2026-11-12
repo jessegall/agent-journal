@@ -1,5 +1,6 @@
 import re
 import subprocess
+from collections.abc import Sequence
 
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.reader import Reader
@@ -70,7 +71,17 @@ class ReaderRun:
         try:
             outcome = subprocess.run([reader.script], input=text, capture_output=True, text=True, timeout=self.limit_seconds, env={STAGE_VARIABLE: stage, "PATH": "/usr/bin:/bin"}, check=False)
         except subprocess.TimeoutExpired:
-            return [f"reader {reader.name} did not finish within {self.limit_seconds:g} seconds"]
+            return [f"{ReaderRun.failure_start(reader)} did not finish within {self.limit_seconds:g} seconds"]
         except OSError as error:
-            return [f"reader {reader.name} could not run {reader.script}: {error.strerror}"]
+            return [f"{ReaderRun.failure_start(reader)} could not run {reader.script}: {error.strerror}"]
         return outcome.stdout.splitlines()
+
+    @staticmethod
+    def failure_start(reader: Reader) -> str:
+        return f"reader {reader.name}"
+
+    @staticmethod
+    def has_failed(reader: Reader, lines: Sequence[str]) -> bool:
+        """Whether the script of a reader failed on an output, which leaves one line that says so in its lines."""
+        return reader.type is ReaderType.SCRIPT and any(line.startswith(f"{ReaderRun.failure_start(reader)} did not finish within")
+                                                        or line.startswith(f"{ReaderRun.failure_start(reader)} could not run") for line in lines)

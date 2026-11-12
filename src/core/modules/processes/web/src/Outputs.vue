@@ -1,10 +1,13 @@
 <script setup>
 import {ListTools, RowList, WindowRoom, stateLabel, useListTools, useWindow} from "@journal/window-kit";
+import {computed} from "vue";
 import RunButtons from "./RunButtons.vue";
 
 const context = useWindow();
 if (context.agent != null) context.state["runs.session-agent-id"] = context.agent;
 const {rows, failure, loaded} = context.props.runs;
+const marks = context.props.marks.rows;
+const standingMarks = computed(() => (marks.value ?? []).filter((mark) => !mark.lifted_at));
 const tools = useListTools(rows, {title: (row) => row.line, isOpen: (row) => row.state === "running"});
 
 const isRunning = (row) => row.state === "running" || row.state === "background";
@@ -24,6 +27,15 @@ const isRunning = (row) => row.state === "running" || row.state === "background"
                 </div>
             </template>
         </RowList>
+        <section v-if="standingMarks.length" class="marks" data-unreadable-marks>
+            <h3>Commands no reader can read</h3>
+            <p v-for="mark in standingMarks" :key="mark.id" class="mark" data-unreadable-mark>
+                <span class="line">{{ mark.words }}</span>
+                <span class="why">Why: {{ stateLabel('unreadable_mark', mark.reason) }}</span>
+                <span class="who">Marked by: {{ mark.creator_id }}</span>
+                <span v-if="mark.note" class="note">{{ mark.note }}</span>
+            </p>
+        </section>
     </WindowRoom>
 </template>
 
@@ -52,6 +64,30 @@ const isRunning = (row) => row.state === "running" || row.state === "background"
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.marks {
+    padding: 8px 12px;
+    font-size: 12px;
+}
+
+.marks h3 {
+    margin: 0 0 4px;
+    font-size: 12px;
+    color: var(--text-2);
+}
+
+.mark {
+    display: flex;
+    gap: 8px;
+    margin: 2px 0;
+}
+
+.why,
+.who,
+.note {
+    flex: none;
+    color: var(--text-3);
 }
 
 button {

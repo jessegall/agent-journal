@@ -14,8 +14,6 @@ PEEK_OUTPUT = HookSamples.shell("journal output peek 1", ShellPart("journal", Co
 PAGE_OUTPUT = HookSamples.shell("journal output page 1", ShellPart("journal", CommandCategory.JOURNAL, ["output", "page", "1"], subcommand="output"))
 RUN_STATUS = HookSamples.shell("journal output status 7", ShellPart("journal", CommandCategory.JOURNAL, ["output", "status", "7"], subcommand="output"))
 MONITOR_IN_SHELL = HookSamples.shell("journal output monitor 7", ShellPart("journal", CommandCategory.JOURNAL, ["output", "monitor", "7"], subcommand="output"))
-REDIRECTED_TESTS = HookSamples.shell("pytest -q > results.txt", ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"]), redirects=["> results.txt"])
-ERRORS_TO_FILE = HookSamples.shell("make build 2> errors.txt", ShellPart("make", CommandCategory.BUILD, ["build"]), redirects=["2> errors.txt"])
 
 
 def test_a_run_idle_and_silent_for_the_hang_time_is_stopped_and_its_agent_told_its_output_is_kept(new_story):

@@ -561,7 +561,7 @@ class WorktreeGit:
 
     def git(self, folder: str, limit_seconds: int, *arguments: str) -> subprocess.CompletedProcess[str]:
         line = ["git", "-C", folder, *arguments]
-        kind = ProcessKind.MERGE if self.subcommand(arguments) in BRANCH_CHANGES else ProcessKind.QUICK
+        kind = ProcessKind.MERGE if self.subcommand(arguments) in BRANCH_CHANGES else ProcessKind.READ
         try:
             done = self.executor.execute(ExecutionRequest(line, Path.cwd(), kind, limit_seconds))
             return subprocess.CompletedProcess(line, done.exit_code, done.stdout, done.stderr)

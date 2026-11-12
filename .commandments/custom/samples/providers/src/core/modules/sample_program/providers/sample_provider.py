@@ -13,5 +13,6 @@ class SampleProvider:
     name = "sample"
 
     def answer(self, event: HookEvent) -> HookReply:
+        # @sin architecture_processes_program_started_outside_the_door
         subprocess.run(["sample"], check=False, timeout=5)
         return HookReply.allowed()

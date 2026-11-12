@@ -8,7 +8,7 @@ ALIAS_PLUGIN_OFF = NudgeDeclaration("aliases.plugin_off", NudgeType.REFUSAL, "th
 SAVED_COMMAND_TIMEOUT = NudgeDeclaration("aliases.saved_command_timeout", NudgeType.REFUSAL, 'this --timeout does not read as a duration: use seconds, or 30s, 5m, 2h or 1d')
 SAVED_COMMAND_UNKNOWN = NudgeDeclaration("aliases.saved_command_unknown", NudgeType.REFUSAL,
                                          'save this command as an alias of category {category}')
-COMMAND_TYPE_UNKNOWN = NudgeDeclaration("aliases.command_type_unknown", NudgeType.REFUSAL, "{program} is a command of unknown type: classify its leading words first")
+COMMAND_TYPE_UNKNOWN = NudgeDeclaration("aliases.command_type_unknown", NudgeType.REFUSAL, "{program} is a command of unknown type: {hint}")
 SAVED_COMMAND_MIXED = NudgeDeclaration("aliases.saved_command_mixed",NudgeType.REFUSAL, "a test or build runs on a line of its own: run the other commands apart from it")
 SAVED_COMMAND_CHOICES = NudgeDeclaration("aliases.saved_command_choices", NudgeType.REFUSAL,
                                          'use a saved {category} with --tail, --head or --cut')

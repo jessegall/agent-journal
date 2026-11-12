@@ -314,6 +314,17 @@ test("the button asks for the reader by one command and goes once pressed", asyn
     expect(runs).toEqual([["output", "ask-reader", "3"]]);
 });
 
+test("a person marks the command of a run as not readable, and a marked command as readable again", async () => {
+    const runs = [];
+    const element = await emptyBox({markable: true, marked_words: ""}, runs);
+    element.querySelector("[data-output-mark-unreadable]").click();
+    await vi.waitFor(() => expect(runs).toContainEqual(["output", "unreadable", "3"]));
+    const marked = await emptyBox({markable: true, marked_words: "make build"}, runs);
+    marked.querySelector("[data-output-mark-readable]").click();
+    await vi.waitFor(() => expect(runs).toContainEqual(["output", "readable", "3"]));
+    expect((await emptyBox({markable: false}, [])).querySelector("[data-output-mark-unreadable]")).toBeNull();
+});
+
 test("a run whose reader was asked for already offers no button", async () => {
     expect((await emptyBox({reader_requested: true}, [])).querySelector("[data-output-reader-ask]")).toBeNull();
 });

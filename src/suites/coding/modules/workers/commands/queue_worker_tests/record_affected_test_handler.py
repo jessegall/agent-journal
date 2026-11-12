@@ -14,7 +14,8 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.queue_worker_tests.record_affected_test import RecordAffectedTest
 from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test_handler import RecordWorkerTestHandler
-from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
+from suites.coding.modules.workers.models.affected_test import AffectedTest
+from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 

@@ -57,6 +57,11 @@ When an agent receives a reader request:
 3. If the command needs no reader, run `journal reader-request waive <request> --reason "<why>"`.
    Only the main agent, a person or a module may skip a request.
 
+A command whose output no reader can read, such as one that only redraws a progress bar, is marked with
+`journal reader unreadable "<leading words>" --reason "<why, in at least three words>"`: from then on no
+reader is asked of any command opening with those words. `journal reader readable "<leading words>"` lifts the
+mark. The journal marks a command itself after two runs that agree, and lifts that mark after two readable runs.
+
 A worker tries its own saves first. After `reader-save-tries` failed saves for that request (default 3),
 further worker saves stop and the main agent is asked to help. Drafting without `--save` does not use a try.
 The main agent can save the reader after the worker's tries run out. Set the limit to zero to ask the main

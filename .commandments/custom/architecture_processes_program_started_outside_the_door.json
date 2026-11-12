@@ -1,0 +1,82 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "any": [
+                    {
+                        "all": [
+                            {
+                                "nameIn": [
+                                    "run",
+                                    "Popen",
+                                    "check_output",
+                                    "call",
+                                    "check_call",
+                                    "getoutput",
+                                    "getstatusoutput"
+                                ]
+                            },
+                            {
+                                "of": "receiver",
+                                "name": "subprocess"
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "nameMatches": "^(system|popen|posix_spawnp?|exec[lv]p?e?|spawn[lv]p?e?)$"
+                            },
+                            {
+                                "of": "receiver",
+                                "name": "os"
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "name": "spawn"
+                            },
+                            {
+                                "of": "receiver",
+                                "name": "pty"
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "nameMatches": "^create_subprocess_(exec|shell)$"
+                            },
+                            {
+                                "of": "receiver",
+                                "name": "asyncio"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "fileMatches": "(^|/)src/(engine|core|suites|server|install|tunnels)/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/(${outside_starts})$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "program-started-outside-the-door",
+        "description": "A file starts a program itself instead of through the one door, so the run gets no row, no time limit from the door and no place in the queue.",
+        "rule": "Run a program with ProcessExecutor.execute(ExecutionRequest(...)); a file that must start one itself is named in OUTSIDE_STARTS (src/engine/process/door/outside_starts.py) with its reason, and in the outside_starts list of .commandments/custom/lists.json.",
+        "skill": "processes-architecture"
+    }
+}

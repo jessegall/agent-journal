@@ -81,7 +81,7 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
                 <Icon class="agent-chevron" name="chevronRight" :size="12" />
             </template>
         </div>
-        <template v-if="open && menuOpen"><div class="agent-menu" data-agent-menu-panel><AgentActions :row="row" /></div></template>
+        <template v-if="open && menuOpen"><div class="agent-menu" data-agent-menu-panel><AgentActions :row="row" :held="dotState === 'blocked'" /></div></template>
         <template v-if="!open">
             <span class="agent-line">
                 <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>

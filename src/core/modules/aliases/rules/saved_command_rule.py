@@ -13,7 +13,7 @@ from core.modules.aliases.support.alias_nudges import SAVED_COMMAND_CHOICES, SAV
 from core.modules.drivers.support.suite_choice import SuiteChoice
 
 ASKING_FLAGS = ("--help", "-h", "--version", "-V")
-SKIPPED_KEYS = (SAVED_COMMAND_UNKNOWN.key, SAVED_COMMAND_HELPER.key)
+SKIPPED_KEYS = (SAVED_COMMAND_UNKNOWN.key, SAVED_COMMAND_HELPER.key, SAVED_COMMAND_MIXED.key, SAVED_COMMAND_SILENT.key)
 
 
 class SavedCommandRule(DriverRule):
