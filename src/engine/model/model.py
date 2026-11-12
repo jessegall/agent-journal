@@ -54,9 +54,9 @@ class Model:
     def search_text(self) -> str:
         return " ".join(str(getattr(self, name)) for name in self.search_fields)
 
-    def count_matching_terms(self, terms: Sequence[str]) -> int:
+    def matching_terms(self, terms: Sequence[str]) -> list[str]:
         text = self.search_text().lower()
-        return sum(SearchTerm.stem(term) in text for term in terms)
+        return [term for term in terms if SearchTerm.stem(term) in text]
 
     @property
     def is_saved(self) -> bool:
