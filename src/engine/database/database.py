@@ -1,5 +1,6 @@
 import sqlite3
 from contextlib import contextmanager
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from engine.database.errors.nesting_error import NestingError
@@ -58,6 +59,13 @@ class Database:
         database = cls(connection, database_file or connection)
         database.set_busy_timeout(BUSY_TIMEOUT_SECONDS)
         return database
+
+    def backup_to(self, target: Path) -> None:
+        copy = sqlite3.connect(target)
+        try:
+            self.connection.backup(copy)
+        finally:
+            copy.close()
 
     def release_free_pages(self, pages: int) -> None:
         self.connection.execute(f"PRAGMA incremental_vacuum({int(pages)})").fetchall()

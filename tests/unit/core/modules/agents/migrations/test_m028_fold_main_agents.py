@@ -4,6 +4,7 @@ import pytest
 
 from core.modules.agents.migrations.m028_fold_main_agents import FoldMainAgentsMigration
 from engine.database.database import Database
+from engine.database.errors.migration_deferred_error import MigrationDeferred
 
 ROWS = """
     CREATE TABLE actors (id INTEGER PRIMARY KEY, name TEXT);
@@ -36,11 +37,43 @@ def test_the_migration_folds_the_older_main_row_into_the_running_one_after_a_cop
     assert list((tmp_path / "backups-watch").glob("fold-*.db"))
 
 
-def test_a_mismatch_rolls_back_and_logs_while_the_journal_starts_unfolded(database, tmp_path):
+def plant_mismatch(database):
     database.connection.execute("CREATE TRIGGER planted AFTER UPDATE ON memories BEGIN INSERT INTO agent_sessions (session_agent_id, session) VALUES (99, 'x'); END")
-    FoldMainAgentsMigration().run(database)
+
+
+def test_a_mismatch_rolls_back_logs_and_is_deferred_while_the_journal_starts_unfolded(database, tmp_path):
+    plant_mismatch(database)
+    with pytest.raises(MigrationDeferred):
+        FoldMainAgentsMigration().run(database)
     assert database.connection.execute("SELECT count(*) FROM agents").fetchone()[0] == 2
     assert "rolled back" in next(tmp_path.rglob("*.log")).read_text()
+
+
+def test_a_refused_fold_runs_again_and_folds_once_the_cause_is_gone(database):
+    plant_mismatch(database)
+    with pytest.raises(MigrationDeferred):
+        FoldMainAgentsMigration().run(database)
+    database.connection.execute("DROP TRIGGER planted")
+    FoldMainAgentsMigration().run(database)
+    assert [tuple(row) for row in database.connection.execute("SELECT id, number FROM agents")] == [(2, 1)]
+
+
+def test_failed_attempts_leave_one_copy(database, tmp_path):
+    plant_mismatch(database)
+    for _ in range(2):
+        with pytest.raises(MigrationDeferred):
+            FoldMainAgentsMigration().run(database)
+    assert [path.name for path in (tmp_path / "backups-watch").iterdir()] == ["fold-before.db"]
+
+
+def test_the_copy_is_of_the_open_database_whatever_its_file_is_called(tmp_path):
+    connection = sqlite3.connect(tmp_path / "other-name.db", autocommit=True)
+    connection.executescript(ROWS)
+    FoldMainAgentsMigration().run(Database.configured(connection))
+    connection.close()
+    copy = sqlite3.connect(tmp_path / "backups-watch" / "fold-before.db")
+    assert copy.execute("SELECT count(*) FROM agents").fetchone()[0] == 2
+    assert not (tmp_path / "version-5.db").exists()
 
 
 def test_a_second_run_changes_nothing(database):
