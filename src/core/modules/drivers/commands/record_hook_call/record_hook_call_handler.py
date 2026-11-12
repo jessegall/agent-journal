@@ -84,7 +84,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         tool = command.event.tool
         metadata = {**answers.metadata(), "foreign": [asdict(run) for run in command.event.foreign], "folder": str(command.event.raw.get("cwd", "")), "resumed": command.event.is_resume, "compaction_start": command.event.is_compaction_start, "clear_start": command.event.is_clear_start, "ended_session": command.event.session if command.event.event == HookEventName.SESSION_END else "", "manual_compaction": command.event.is_manual_compaction, "search": SearchCategory.classify(tool, str(command.event.raw.get("cwd", "")), self.home.project_folder), "interrupted": command.event.is_interrupt, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)]}
         if command.event.event == HookEventName.COMPACT or command.event.is_compaction_start:
-            percent = self.share.percent(command.event.program, command.event.session)
+            percent = self.share.percent_of(agent)
             if percent is not None:
                 metadata["context_percent"] = percent
         metadata[PROGRAM_SESSION] = command.event.session

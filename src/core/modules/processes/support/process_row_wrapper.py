@@ -1,5 +1,6 @@
 from engine.database.database import Database
 from engine.enums.process_kind import ProcessKind
+from engine.log.error_log import ErrorLog
 from engine.process.door.request_records import RequestRecords
 from engine.time.clock import Clock
 from core.modules.processes.support.request_log import RequestLog
@@ -11,8 +12,8 @@ class ProcessRowWrapper(RequestRecords):
     so answering costs no write and no read, and a tick writes the log's rows. Such a row is priority 0: it takes no place, never moves to the
     background and gives no output number."""
 
-    def __init__(self, database: Database, log: RequestLog, clock: Clock) -> None:
-        self.database, self.log, self.clock = database, log, clock
+    def __init__(self, database: Database, log: RequestLog, clock: Clock, errors: ErrorLog) -> None:
+        self.database, self.log, self.clock, self.errors = database, log, clock, errors
 
     def ended_now(self, kind: ProcessKind, line: str, exit_code: int) -> None:
         owner = self.database.row_owner
@@ -22,3 +23,6 @@ class ProcessRowWrapper(RequestRecords):
 
     def recorded_hook(self, agent_id: int, environment_id: int, line: str, exit_code: int) -> None:
         self.log.append(RequestLogEntry(environment_id, agent_id, ProcessKind.HOOK, line, exit_code, self.clock.timestamp().text))
+
+    def write_failed(self, line: str, failure: Exception) -> None:
+        self.errors.recorded(["record-request", line], failure, None)

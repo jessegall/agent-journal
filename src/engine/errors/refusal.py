@@ -1,4 +1,7 @@
-class Refusal(Exception):
+from engine.errors.exit_coded_error import ExitCodedError
+
+
+class Refusal(ExitCodedError):
     """Raised when a command cannot be done, with the reason and what to do instead."""
 
     exit_code = 1
