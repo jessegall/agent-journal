@@ -18,6 +18,19 @@ from engine.testing.stories.story import Story
 
 ENVIRONMENT = "main"
 SAMPLES_MODULE = "tests.stories.core.modules.viewer.support.window_samples"
+CHANGED_SUITE = """
+from {samples} import {name} as Sample{index}
+
+
+class ChangedModule{index}(Sample{index}.modules[0]):
+    @classmethod
+    def web_folder(cls):
+        return Sample{index}.modules[0].web_folder()
+
+
+class Changed{index}(Sample{index}):
+    modules = [ChangedModule{index}]
+"""
 
 
 class WindowStory:
@@ -62,9 +75,7 @@ class WindowStory:
         module_name = "changed_" + hashlib.sha256(str(folder).encode()).hexdigest()[:12]
         modules = json.loads(self.story.home.module_list.read_text())
         changed = [path for path in modules if path.startswith(SAMPLES_MODULE)]
-        (folder / f"{module_name}.py").write_text("".join(f"from {SAMPLES_MODULE} import {path.split(':')[1]} as Sample{index}\n" for index, path in enumerate(changed))
-                                                  + "".join(f"\n\nclass Changed{index}(Sample{index}):\n    @classmethod\n    def web_folder(cls):\n        return Sample{index}.web_folder()\n"
-                                                          for index, _ in enumerate(changed)))
+        (folder / f"{module_name}.py").write_text("".join(CHANGED_SUITE.format(samples=SAMPLES_MODULE, name=path.split(":")[1], index=index) for index, path in enumerate(changed)))
         sys.path.insert(0, str(folder))
         try:
             renamed = {path: f"{module_name}:Changed{index}" for index, path in enumerate(changed)}
