@@ -14,10 +14,10 @@ ACTIVE_STATES = (BehindCheckState.OPEN, BehindCheckState.ORDERED, BehindCheckSta
 
 
 class BehindChecks:
-    """When a worktree of the environment in scope is looked at for how far it is behind its base, and when such a
-    look opens a check: the worktrees still cut, once the minutes between looks have passed since the last look,
-    and a check only at the set number of commits behind, with none open, and after a check left alone only once
-    the worktree fell the recheck number of commits further behind."""
+    """When a worktree of the environment in scope is looked at for how far it is behind its base, and when
+    such a look opens a check: the worktrees still cut, once the minutes between looks have passed since the
+    last look, and a check only at the set number of commits behind, with none open, and after a check left
+    alone only once the worktree fell the recheck number of commits further behind."""
 
     def __init__(self, queries: Queries, settings: SettingValues) -> None:
         self.queries, self.settings = queries, settings

@@ -23,7 +23,6 @@ class WorkerTaskAccess:
 
     @staticmethod
     def is_held_by_another(task: Task, worker_id: int) -> bool:
-        """Whether another agent has the task started, so no proof or commit of this worker takes it."""
         return task.state is TaskState.STARTED and task.holder_id not in (None, worker_id)
 
     def refusal(self, task: Task, worker_id: int) -> Refusal:

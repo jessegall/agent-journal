@@ -16,9 +16,9 @@ TAKEN_IN_TEXT = "merged into {branch}: its branch had no commit ahead of {branch
 
 
 class CloseTakenInWorktreeHandler(Handler[CloseTakenInWorktree, bool]):
-    """Reads whether a delivered worktree's branch has a commit ahead of its base; with none it closes the delivered
-    tasks as merged with that reason, removes the worktree as a merge does and starts the worker on its next task.
-    Git runs outside any transaction, so its wait holds no write lock."""
+    """Reads whether a delivered worktree's branch has a commit ahead of its base; with none it closes the
+    delivered tasks as merged with that reason, removes the worktree as a merge does and starts the worker on
+    its next task. Git runs outside any transaction, so its wait holds no write lock."""
 
     command = CloseTakenInWorktree
     runs_once = True

@@ -87,8 +87,6 @@ class Query(Generic[M]):
         return self.where(**values)
 
     def where(self, *comparison: object, **values: object) -> Self:
-        """Matches rows whose columns equal the given values, or, given a column, an operator and a value, rows
-        whose column compares so; a column and a value alone compare by equality."""
         self.checked(*values, *(comparison[:1]))
         select = self.select
         if comparison:
@@ -109,16 +107,13 @@ class Query(Generic[M]):
         return COMPARISONS[str(operator)](str(column), stored(value))
 
     def select_columns(self, *columns: str) -> Self:
-        """Reads only the named columns, which may name this table's columns as table.column or table.*."""
         self.checked(*(column.split(".", 1)[1] if column.startswith(f"{self.table.name}.") else column for column in columns if not column.endswith(".*")))
         return self.with_select(self.select.column(", ".join(columns)))
 
     def where_in(self, column: str, values: "Sequence[object] | Query[Model]") -> Self:
-        """Matches rows whose column is among the values, or among the column an inner query selects."""
         return self.matching(self.among(column, values, False))
 
     def where_not_in(self, column: str, values: "Sequence[object] | Query[Model]") -> Self:
-        """Matches rows whose column is not among the values, or not among the column an inner query selects."""
         return self.matching(self.among(column, values, True))
 
     def among(self, column: str, values: "Sequence[object] | Query[Model]", negated: bool) -> Condition:
@@ -131,31 +126,25 @@ class Query(Generic[M]):
         return SubqueryMatch(column, ScopedSelect(inner), negated=negated)
 
     def where_null(self, column: str) -> Self:
-        """Matches rows whose column has no value."""
         self.checked(column)
         return self.matching(Equal(column, None))
 
     def where_not_null(self, column: str) -> Self:
-        """Matches rows whose column has a value."""
         self.checked(column)
         return self.matching(Equal(column, None, negated=True))
 
     def where_prefix(self, column: str, text: str) -> Self:
-        """Matches rows whose text column opens on the given words, taken literally."""
         self.checked(column)
         return self.matching(Prefix(column, text))
 
     def where_column(self, column: str, other_column: str) -> Self:
-        """Matches rows whose column equals another column, which may name the outer table as table.column."""
         self.checked(column)
         return self.matching(ColumnEqual(column, other_column))
 
     def where_exists(self, query: "Query[Model]") -> Self:
-        """Matches rows for which an inner query finds a row."""
         return self.matching(Exists(query.scoped(query.select)))
 
     def where_not_exists(self, query: "Query[Model]") -> Self:
-        """Matches rows for which an inner query finds no row."""
         return self.matching(Exists(query.scoped(query.select), negated=True))
 
     def checked(self, *columns: object) -> None:
@@ -185,7 +174,6 @@ class Query(Generic[M]):
         return query
 
     def order_by(self, column: str, direction: str = "asc") -> Self:
-        """Orders the rows by a column, ascending or descending."""
         if direction not in ("asc", "desc"):
             raise UnknownOperatorError("a direction is asc or desc")
         if "." in column:
@@ -195,11 +183,9 @@ class Query(Generic[M]):
         return self.with_select(self.select.ordered(column, direction == "desc"))
 
     def join(self, model: type[Model], first: str, operator: str, second: str) -> Self:
-        """Reads the rows together with the rows of another model whose columns compare so."""
         return self.joining(model, first, operator, second, False)
 
     def left_join(self, model: type[Model], first: str, operator: str, second: str) -> Self:
-        """Reads the rows together with the rows of another model whose columns compare so, keeping rows that have none."""
         return self.joining(model, first, operator, second, True)
 
     def joining(self, model: type[Model], first: str, operator: str, second: str, left: bool) -> Self:
@@ -217,7 +203,6 @@ class Query(Generic[M]):
         return query
 
     def checked_qualified(self, *names: str) -> None:
-        """Refuses a table.column name whose table this read does not read or whose column that table lacks."""
         tables = {self.table.name: self.table, **{table.name: table for table in self.joined_tables}}
         for name in names:
             table_name, _, column = name.partition(".")
@@ -227,12 +212,10 @@ class Query(Generic[M]):
                 raise UnknownColumnError(f"{table_name} has no column {column}")
 
     def group_by(self, *columns: str) -> Self:
-        """Groups the rows by the given columns, for count_by."""
         self.checked(*columns)
         return self.with_select(self.select.grouped(*columns))
 
     def count_by(self) -> dict[object, int]:
-        """How many rows each value of the group columns has; a key is a tuple when there are several columns."""
         select = self.scoped(self.select)
         if select.is_empty:
             return {}
@@ -240,7 +223,6 @@ class Query(Generic[M]):
         return {(tuple(row[:width]) if width > 1 else row[0]): row[width] for row in self.database.rows(select.group_count_statement())}
 
     def pluck(self, column: str) -> list[object]:
-        """The values of one column of the rows, at most the limit of the read."""
         self.checked(column)
         limit = self.select.limit or DEFAULT_LIMIT_ROWS
         select = self.scoped(self.select.column(column).sliced(limit + 1, 0).named(limit + 1))
@@ -261,14 +243,11 @@ class Query(Generic[M]):
         return Page(tuple(self.rows(select)), number, size, self.count())
 
     def limit(self, rows: int, reason: str) -> Self:
-        """Names how many rows get() returns, from 1 to the most a read may name, and why a read needs that many."""
         if not reason.strip():
             raise QueryLimitError("say why the read needs that many rows")
         return self.with_select(self.select.sliced(Query.checked_limit(rows), 0))
 
     def get(self) -> list[M]:
-        """The rows of the query up to its limit, 50 unless it names one; a read that finds more is cut there and
-        reported, never silent."""
         limit = self.select.limit or DEFAULT_LIMIT_ROWS
         select = self.select.sliced(limit + 1, 0).named(limit + 1)
         rows = self.rows(select)
@@ -303,8 +282,6 @@ class Query(Generic[M]):
             offset += size
 
     def every_row(self, reason: str) -> Iterator[M]:
-        """Every matching row in the order of the key, read 50 at a time past the last key read, never by offset: an
-        order the caller set is not used, and a row added during the walk with a higher key comes at its end."""
         if not reason.strip():
             raise QueryLimitError("say why every row is needed")
         if not self.table.key or not self.table.has_column(self.table.key):

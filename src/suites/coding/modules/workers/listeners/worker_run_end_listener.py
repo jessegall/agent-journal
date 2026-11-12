@@ -22,8 +22,8 @@ from suites.coding.modules.workers.commands.wake_waiting_worker.wake_waiting_wor
 
 class WorkerRunEndListener(CommitListener[Moved[CheckpointReach]]):
     """When a worker run ends, the worker's newest commit gets the runs that waited for it, and a delivered
-    worktree whose runs all passed goes to the merger. A worker that waits with its whole unit committed is woken
-    by a pass with its next step; a worker still at work hears nothing."""
+    worktree whose runs all passed goes to the merger. A worker that waits with its whole unit committed is
+    woken by a pass with its next step; a worker still at work hears nothing."""
 
     name = "workers.worker-run-end"
     moves = [CheckpointLifecycle.passed, CheckpointLifecycle.failed]

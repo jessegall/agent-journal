@@ -19,7 +19,8 @@ SOURCE = "workers.help-request"
 
 class WorkerHelpRequestListener(SaveListener[Created[Wait]]):
     """A worker that says it is stuck tells the merger at once, or its main agent with the merger off, with
-    the reason and the tasks it has left, as a question with its answer time like any other, unless a run of its own still goes, which is waiting and not stuck."""
+    the reason and the tasks it has left, as a question with its answer time like any other, unless a run of
+    its own still goes, which is waiting and not stuck."""
 
     name = "workers.help-request"
     disabled_scopes = [ActorScope]

@@ -158,8 +158,6 @@ class HookEndpoint:
         return HookReply.allowed(f"the journal failed on this hook and let it through: {type(error).__name__}: {error}")
 
     def kept_row(self, sender: HookSender, program: str) -> None:
-        """Keeps the row of a hook the server held, let through unchecked or failed on, with no database at hand: the
-        request log names its session, and the tick finds its agent."""
         line = " ".join(word for word in (program, sender.event_name) if word)
         RequestLog(self.context.home, FileAccess.shared()).append(RequestLogEntry(None, None, ProcessKind.HOOK, line, REFUSED_HOOK_EXIT_CODE, self.context.clock.timestamp().text, sender.session))
 

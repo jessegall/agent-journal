@@ -13,9 +13,9 @@ PASSABLE_STATES = (BehindCheckState.OPEN, BehindCheckState.ORDERED, BehindCheckS
 
 @dataclass(frozen=True, kw_only=True)
 class WorktreeBehindCheck(EnvironmentScoped, Model):
-    """One look at a worktree that fell behind its base branch: the base tip it was behind, by how many commits,
-    where the decision stands, who decided it and why, how often the worker was reminded to update, and why its last
-    update failed."""
+    """One look at a worktree that fell behind its base branch: the base tip it was behind, by how many
+    commits, where the decision stands, who decided it and why, how often the worker was reminded to update,
+    and why its last update failed."""
 
     model_name = "worktree_behind_check"
     cli_name = "behind-check"
@@ -36,7 +36,6 @@ class WorktreeBehindCheck(EnvironmentScoped, Model):
         return cls(environment_id=environment_id, worktree_id=worktree_id, base_tip=base_tip, behind=behind)
 
     def decision_text(self, decider: str) -> str:
-        """Where the decision about the worktree stands, in the words worker status shows; decider names who decided."""
         match self.state:
             case BehindCheckState.OPEN:
                 return "waiting for a decision"
@@ -63,7 +62,6 @@ class WorktreeBehindCheck(EnvironmentScoped, Model):
         return self.taken(BehindCheckLifecycle.pass_on, decided_by=by, reason=reason)
 
     def passed_to_main_agent(self, reason: str) -> "WorktreeBehindCheck":
-        """Goes to the main agent with no one having decided, when the worktree is too far behind for the merger."""
         return self.taken(BehindCheckLifecycle.pass_on, decided_by=None, reason=reason)
 
     def conflicted(self) -> "WorktreeBehindCheck":
@@ -76,7 +74,6 @@ class WorktreeBehindCheck(EnvironmentScoped, Model):
         return self.taken(BehindCheckLifecycle.end)
 
     def failed(self, reason: str) -> "WorktreeBehindCheck":
-        """Notes an update that changed nothing; the check stays where it was, since nothing was brought up to date."""
         move = BehindCheckLifecycle.note_ordered_failure if self.state is BehindCheckState.ORDERED else BehindCheckLifecycle.note_open_failure
         return self.taken(move, failure=reason)
 
@@ -85,7 +82,6 @@ class WorktreeBehindCheck(EnvironmentScoped, Model):
         return self.taken(move, reminders=self.reminders + 1)
 
     def held(self) -> "WorktreeBehindCheck":
-        """Starts the wait for the update again, for a worker that was paused or stopped while it ran."""
         return self.taken(BehindCheckLifecycle.hold)
 
     def may_be_passed(self) -> bool:

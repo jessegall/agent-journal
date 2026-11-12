@@ -15,9 +15,9 @@ FOLDER_NAME = "plan-{plan}"
 class CheckpointFolders:
     """Says where the run of a reached checkpoint tests, who owns its tests and which commit its selected run
     compares with. A worker run tests the worker's commit in the worker's test checkout, owned by the worker,
-    over the files changed since its worktree was cut. A run of merged work tests the head of the environment's
-    branch, owned by the worker merged last in the window, or by the main agent when no worker's work is in
-    it, over the files the last merge changed."""
+    over the files changed since its worktree was cut. A run of merged work tests the head of the
+    environment's branch, owned by the worker merged last in the window, or by the main agent when no worker's
+    work is in it, over the files the last merge changed."""
 
     def __init__(self, queries: Queries, worktrees: WorktreeQuery, git: WorktreeGit, environments: EnvironmentRows, agents: AgentRows, kept: KeptRows) -> None:
         self.queries, self.worktrees, self.git, self.kept = queries, worktrees, git, kept

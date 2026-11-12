@@ -17,8 +17,9 @@ SHORT_LINES = 20
 
 
 class RunWorkerTestSubcommand(Subcommand[RunWorkerTest, WorkerTestRun]):
-    """`journal worker test <name> <test files>`: runs one of the worker's named test commands and answers with
-    its summary when it ends within the worker's wait, the whole output for a pipe, and always its output number."""
+    """`journal worker test <name> <test files>`: runs one of the worker's named test commands and answers
+    with its summary when it ends within the worker's wait, the whole output for a pipe, and always its output
+    number."""
 
     cli_name = "worker"
     name = "test"

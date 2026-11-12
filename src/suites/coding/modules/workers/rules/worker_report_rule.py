@@ -15,9 +15,10 @@ from suites.coding.modules.workers.support.work_units import WorkUnits
 
 
 class WorkerReportRule(DriverRule):
-    """What a worker says as it stops with no task started and none queued, every task handed in, is its report
-    to its main agent; with the merger on it is only kept, since the merger reads the hand-in. A worker whose unit
-    of several tasks is all committed stops to wait for its runs or its merge, which is no report."""
+    """What a worker says as it stops with no task started and none queued, every task handed in, is its
+    report to its main agent; with the merger on it is only kept, since the merger reads the hand-in. A worker
+    whose unit of several tasks is all committed stops to wait for its runs or its merge, which is no report.
+    """
 
     name = "workers.report"
     hook = HookEventName.STOP

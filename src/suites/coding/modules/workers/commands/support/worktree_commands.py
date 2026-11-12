@@ -14,8 +14,8 @@ COMMAND_LIMIT_SECONDS = 600
 
 
 class WorktreeCommands:
-    """Runs the commands a setting holds in a folder, one per line, through the one door; the first that fails refuses
-    the order."""
+    """Runs the commands a setting holds in a folder, one per line, through the one door; the first that fails
+    refuses the order."""
 
     def __init__(self, executor: ProcessExecutor) -> None:
         self.executor = executor

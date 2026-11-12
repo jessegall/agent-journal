@@ -42,8 +42,6 @@ class RuleAnswer:
         return cls(refusal=nudge.text, nudges=tuple([nudge]), last=True)
 
     def for_role(self, role: str) -> "RuleAnswer":
-        """This answer with each nudge in the text its declaration gives an agent of the role; a refusal follows its
-        nudge."""
         nudges = tuple(nudge.for_role(role) for nudge in self.nudges)
         if all(new is old for new, old in zip(nudges, self.nudges)):
             return self

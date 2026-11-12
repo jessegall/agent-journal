@@ -42,11 +42,9 @@ class Select:
 
     @property
     def source(self) -> str:
-        """The table of the read with the tables it joins."""
         return " ".join((self.table, *(join.sql for join in self.joins)))
 
     def named(self, rows: int) -> "Select":
-        """The select names how many rows it may load, which the read limit accepts up to that number."""
         return replace(self, named_limit=rows)
 
     def full_table(self, reason: str) -> "Select":
@@ -70,7 +68,6 @@ class Select:
         return self.filtered(Statement(f"SELECT count(*) FROM {self.source}"))
 
     def group_count_statement(self) -> Statement:
-        """Counts the rows of each value of the group columns."""
         columns = ", ".join(self.group_columns)
         return self.filtered(Statement(f"SELECT {columns}, count(*) FROM {self.source}")).joined(Statement(f" GROUP BY {columns}"), "")
 

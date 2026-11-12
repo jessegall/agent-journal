@@ -26,8 +26,8 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 class MergerRetry:
     """Wakes an idle merger when the next worker can be merged or a line waits unread for it. A merger whose
-    program is at a usage limit is left alone until the limit ends. A worker whose branch has no commit ahead of
-    its base is closed as merged without the merger."""
+    program is at a usage limit is left alone until the limit ends. A worker whose branch has no commit ahead
+    of its base is closed as merged without the merger."""
 
     def __call__(self, container: Container) -> None:
         worktrees = container.get(WorktreeQuery).all_worktrees()
