@@ -188,28 +188,35 @@ test("a plugin is removed with or without its data, after asking", async () => {
     expect(ran).toContainEqual(["plugin", "remove", "sins", "--purge"]);
 });
 
-test("a plugin's settings open and a change is saved", async () => {
+test("a plugin's settings open, a change waits for Save, and Save sends it", async () => {
     const {element, ran} = await drawn();
     element.querySelector("[data-plugin-settings]").click();
     await settle();
-    const input = document.querySelector("[data-plugin-setting='depth'] input");
+    const input = document.querySelector("[data-setting='depth'] input[type=number]");
     input.value = "5";
-    input.dispatchEvent(new Event("change"));
+    input.dispatchEvent(new Event("input"));
+    await settle();
+    expect(ran).not.toContainEqual(["plugin", "configure", "sins", "depth", "5"]);
+    expect(document.querySelector("[data-settings-note]").textContent).toContain("Depth: 5");
+    document.querySelector("[data-settings-apply]").click();
     await settle();
     expect(ran).toContainEqual(["plugin", "configure", "sins", "depth", "5"]);
     expect(document.querySelector("[data-plugin-setting-list]").textContent).toContain("How deep to look");
 });
 
-test("a plugin's settings show the control of their type and a group's switches turn on together", async () => {
+test("a plugin's settings are drawn with the shared setting components for their types and a switch is saved as on or off", async () => {
     const {element, ran} = await drawn();
     element.querySelector("[data-plugin-settings]").click();
     await settle();
-    expect(document.querySelector("[data-plugin-setting='strict'] [role=switch]")).not.toBeNull();
-    expect(document.querySelector("[data-plugin-setting='mode'] [role=radio]")).not.toBeNull();
-    document.querySelector("[data-plugin-all-on]").click();
+    expect(document.querySelector("[data-setting='strict'] [role=switch]")).not.toBeNull();
+    expect(document.querySelector("[data-setting='mode'] select")).not.toBeNull();
+    expect(document.querySelector("[data-section]")).not.toBeNull();
+    document.querySelector("[data-setting='strict'] [role=switch]").click();
     await settle();
-    expect(ran).toContainEqual(["plugin", "configure", "sins", "strict", "true"]);
-    expect(ran).not.toContainEqual(["plugin", "configure", "sins", "loud", "true"]);
+    document.querySelector("[data-settings-apply]").click();
+    await settle();
+    expect(ran).toContainEqual(["plugin", "configure", "sins", "strict", "on"]);
+    expect(ran).not.toContainEqual(["plugin", "configure", "sins", "loud", "on"]);
 });
 
 async function recordDrawn(answer) {

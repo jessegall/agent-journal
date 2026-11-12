@@ -7,14 +7,3 @@ export function shownValue(setting) {
 }
 
 export const isOn = (setting) => shownValue(setting) === "true";
-
-export const childrenOf = (settings, setting) => settings.filter((child) => child.parent === setting.key);
-
-// the settings in their groups, in the order the plugin lists them, without the ones that show under another; flags counts every switch of the group
-export function settingGroups(settings) {
-    const groups = new Map();
-    for (const setting of settings.filter((each) => !each.parent)) {
-        groups.set(setting.group, [...(groups.get(setting.group) ?? []), setting]);
-    }
-    return [...groups].map(([name, listed]) => ({name, settings: listed, flags: listed.flatMap((setting) => [setting, ...childrenOf(settings, setting)]).filter((setting) => setting.type === "flag")}));
-}
