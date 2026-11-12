@@ -1,7 +1,10 @@
 from engine.actor.actor import Actor
+from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.enums.actor_type import ActorType
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
+from core.modules.plans.migrations.m016_plan_assignments import PlanAssignmentsMigration
 from tests.stories.core.support.fixtures import UserJoined
 
 TASKS_IN_A_PHASE = 3
@@ -34,3 +37,26 @@ class PlanWithTwoPhases(StoryFixture):
             for task_id in phase_task_ids(phase_id):
                 story.run(f'task make "Task {task_id}" --brief "A task of the plan" --environment main', actor=story.agent)
                 story.run(f"phase place {task_id} --phase {phase_id}", actor=story.agent)
+
+
+OLD_ASSIGNEE_PATH = '$."journal.core.plans".assignee_id'
+HAND_GIVEN_TASK = 2
+
+
+class PlanWithOldAssignee(StoryFixture):
+    """Plan 1 as an older journal kept it: worker W named in the plan's metadata and each task given by hand, W's
+    but task 2, which is V's. The metadata is written directly: no command of today writes that key."""
+
+    parent = PlanWithTwoPhases
+
+    def steps(self, story: Story) -> None:
+        for task_id in [*phase_task_ids(1), *phase_task_ids(2)]:
+            position = 2 if task_id == HAND_GIVEN_TASK else 1
+            story.run(f"assign task {task_id} --to {plan_worker(story, position).id} --environment main", actor=story.user)
+        story.container.get(Database).update(Statement(f"UPDATE plans SET metadata = json_set(metadata, '{OLD_ASSIGNEE_PATH}', {plan_worker(story, 1).id}) WHERE id = 1"))
+
+
+def run_plan_assignments_migration(story: Story) -> None:
+    database = story.container.get(Database)
+    for statement in PlanAssignmentsMigration.statements:
+        database.update(Statement(statement))
