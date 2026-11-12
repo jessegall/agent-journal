@@ -129,7 +129,6 @@ def test_a_person_changes_each_number_of_the_questions_on_the_workers_screen_and
 def test_a_merger_started_by_an_ended_main_session_tells_the_main_agent_that_runs_now(case):
     story = case.story
     story.expect_success(f"agent end {story.agent.id}", actor=story.agent)
-    new_main = story.new_row_id("agent start s-9 claude main --environment main")
+    story.expect_success("agent start s-9 claude main --environment main")
     story.expect_success(f"{MERGER_QUESTION_LINE} --worker {agent_number(story, case.worker.id)}", actor=case.merger)
-    listed = story.run(f"message list --json --limit 20 --environment main --target-agent {agent_number(story, new_main)}", actor=story.agent).output_text
-    story.expect_rows("What: The worker cannot build" in listed, detail=listed)
+    story.expect_rows("What: The worker cannot build" in messages(case), detail=messages(case))

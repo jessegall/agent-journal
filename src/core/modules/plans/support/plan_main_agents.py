@@ -2,6 +2,7 @@ from engine.command.context import Context
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.driver.nudger import Nudger
 from engine.query.queries import Queries
+from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.plan_assignee import PlanAssignee
@@ -13,6 +14,9 @@ class PlanMainAgents:
 
     def __init__(self, queries: Queries, nudger: Nudger) -> None:
         self.queries, self.nudger = queries, nudger
+
+    def newest(self) -> Agent | None:
+        return MainAgentFinder.newest(self.queries)
 
     def send(self, plan: Plan, declaration: NudgeDeclaration, source: str, context: Context, **fields: object) -> None:
         assignee_id = PlanAssignee.agent_id(plan)

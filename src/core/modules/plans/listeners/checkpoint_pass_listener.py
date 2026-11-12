@@ -42,8 +42,9 @@ class CheckpointPassListener(SaveListener[Moved[CheckpointReach]]):
             phase = self.rows.required(Phase, reach.phase_id)
             if opened or waits:
                 self.main_agents.send(self.rows.required(Plan, reach.plan_id), CHECKPOINT_FINISHED if opened else CHECKPOINT_AWAITS_APPROVAL, PASS_SOURCE, context, phase=phase.title)
-            if self.settings.flag(QUICK_REVIEW_SETTING):
-                self.bus.dispatch(StartCheckpointReview(reach.plan_id, reach.phase_id), context)
+            reporter = self.main_agents.newest()
+            if self.settings.flag(QUICK_REVIEW_SETTING) and reporter is not None:
+                self.bus.dispatch(StartCheckpointReview(reach.plan_id, reach.phase_id, reporter.id), context)
         for task_id in reach.tasks():
             self.bus.dispatch(MakeTaskLog(task_id, PASS_LINE.format(phase=reach.phase_id)), context)
         self.checkpoints.record(reach.plan_id, context)

@@ -209,7 +209,7 @@ def test_a_task_that_waits_on_a_task_outside_the_plan_counts_as_ordered(new_stor
 
 def test_a_dependency_loop_cannot_be_skipped(new_story):
     story = new_story(fixture=Ordered)
-    story.expect_refusal('task depend 1 --on 4 --skip-guard tasks.no-dependency-loop --skip-reason "I want it"', "loop", actor=story.agent)
+    story.expect_refusal('task depend 1 --on 4 --skip-guard plans.task-dependency-circle --skip-reason "I want it"', "circle", actor=story.agent)
 
 
 @pytest.mark.parametrize("fixture, line", [

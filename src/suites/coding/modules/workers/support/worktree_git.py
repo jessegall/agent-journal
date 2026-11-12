@@ -51,6 +51,7 @@ SHORT_COMMIT_FLAG = f"--abbrev={SHORT_ID_CHARACTERS}"
 RENAME_STATUS = "R"
 DIFF_STATUSES = {"A": FileStatus.ADDED, "D": FileStatus.DELETED}
 STASH_MESSAGE = "journal merge of "
+CLASHED_STASH_MESSAGE = "journal copy of changes that clashed when put back on "
 STASH_LOCK_FILE = "journal-stash.lock"
 DEPENDENCY_FOLDER_NAMES = {"node_modules", "bower_components", "vendor", ".venv", "venv", "env", ".bundle"}
 SKIP_WORKTREE_MARK = "S "
@@ -66,7 +67,7 @@ BRANCH_CHANGES = frozenset({"merge", "rebase", "checkout", "switch", "worktree",
 class WorktreeGit:
     """Runs timed Git operations on worker branches and worktrees. Every worktree of a project shares one
     stash stack, so a worktree finds its stash by its own message, and a lock holds the stack during a push or
-    a drop. Tests run in a detached checkout of their own, of a worktree's commit or of the head of the
+    a drop. A stash is dropped only once it applied cleanly or HEAD already holds it. Tests run in a detached checkout of their own, of a worktree's commit or of the head of the
     environment's branch, so no checkout anybody works in is moved."""
 
     def __init__(self, runs: WorkerFolderRuns, executor: ProcessExecutor) -> None:
@@ -203,14 +204,24 @@ class WorktreeGit:
         self.refuse_conflicts(worktree)
         if self.is_merging(worktree.folder):
             self.commit(worktree, message, trailer)
-            return ()
-        moved = self.tip(worktree.folder, worktree.base_branch) != worktree.base_commit
+            return self.committed_stashes(worktree, message, trailer)
+        moved =self.tip(worktree.folder, worktree.base_branch) != worktree.base_commit
         rebased = moved and self.rebase(worktree)
         conflicts = self.without_instruction_conflicts(worktree, self.conflict_files(worktree)) if rebased else ()
         if conflicts:
             return conflicts
         self.commit(worktree, message, trailer)
         return self.sync(worktree) if moved and not rebased else ()
+
+    def committed_stashes(self, worktree: Worktree, message: str, trailer: str) -> tuple[str, ...]:
+        """Puts back the changes an update kept in a stash while its merge was settled, and commits them, or names
+        the files where they clash."""
+        self.restore_stashes(worktree)
+        conflicts = self.conflict_files(worktree)
+        if conflicts:
+            return conflicts
+        self.commit(worktree, message, trailer)
+        return ()
 
     def refuse_conflicts(self, worktree: Worktree) -> None:
         conflicts = self.conflict_files(worktree)
@@ -365,7 +376,9 @@ class WorktreeGit:
     def update(self, worktree: Worktree) -> WorktreeUpdate:
         """Brings the worktree up to its base branch, keeping the worker's uncommitted changes: a rebase, and when it
         clashes a merge of the base into the stashed, clean tree. A clean merge gets the changes back; a conflicting
-        one leaves its markers and keeps the changes in their stash, since a stash does not apply over unmerged paths."""
+        one leaves its markers and keeps the changes in their stash, since a stash does not apply over unmerged paths,
+        and the commit of the settled merge puts them back. Changes that clash with the rebased tree leave markers,
+        which the update names as its conflicts."""
         self.restore_stashes(worktree)
         self.refuse_conflicts(worktree)
         if self.is_merging(worktree.folder):
@@ -374,7 +387,7 @@ class WorktreeGit:
         if self.is_ancestor(worktree.folder, tip, "HEAD"):
             return WorktreeUpdate.current(tip)
         if self.rebase(worktree):
-            return WorktreeUpdate(tip)
+            return WorktreeUpdate(tip, self.conflict_files(worktree))
         return self.merged_update(worktree, tip)
 
     def merged_update(self, worktree: Worktree, tip: str) -> WorktreeUpdate:
@@ -435,10 +448,31 @@ class WorktreeGit:
                 fcntl.flock(lock, fcntl.LOCK_UN)
 
     def unstash(self, worktree: Worktree, stash: str) -> None:
-        applied = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "apply", stash).returncode == 0
-        has_markers = bool(self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.strip())
-        if not applied and not has_markers and not self.head_contains(worktree.folder, stash):
-            raise Refusal(f"after the rebase, git stash apply failed for the uncommitted changes of the worker", AskTopic.CONFLICT.hint(f"they stay in its stash {stash}: apply them with git stash apply {stash}"))
+        """Puts a stash back on the tree. Over unsettled merge markers it is not tried and waits for the commit of
+        the settled merge. One that applied cleanly, or that HEAD already holds, is dropped; one whose apply left
+        markers is kept under another message, so it is never applied twice and never lost; any other failure is
+        refused with the stash kept."""
+        if self.unmerged_files(worktree.folder):
+            return
+        if self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "apply", stash).returncode == 0:
+            self.drop_stash(worktree, stash)
+            return
+        if self.unmerged_files(worktree.folder):
+            self.keep_clashed_stash(worktree, stash)
+            return
+        if not self.head_contains(worktree.folder, stash):
+            raise Refusal(f"git stash apply failed for the uncommitted changes of the worker", AskTopic.CONFLICT.hint(f"they stay in its stash {stash}: apply them with git stash apply {stash}"))
+        self.drop_stash(worktree, stash)
+
+    def unmerged_files(self, folder: str) -> tuple[str, ...]:
+        return tuple(self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.splitlines())
+
+    def keep_clashed_stash(self, worktree: Worktree, stash: str) -> None:
+        self.drop_stash(worktree, stash)
+        with self.stash_stack_lock(worktree):
+            self.checked(worktree.folder, GIT_LIMIT_SECONDS, "stash", "store", "--message", f"{CLASHED_STASH_MESSAGE}{worktree.branch}", stash)
+
+    def drop_stash(self, worktree: Worktree, stash: str) -> None:
         with self.stash_stack_lock(worktree):
             entries = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H %gd").stdout.splitlines()
             for entry in (line.split() for line in entries):

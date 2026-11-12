@@ -88,7 +88,6 @@ from core.modules.tasks.guards.dependencies_closed_guard import DependenciesClos
 from core.modules.tasks.listeners.task_assignment_copy_listener import TaskAssignmentCopyListener
 from core.modules.tasks.migrations.m025_task_assignments import TaskAssignmentsMigration
 from core.modules.tasks.guards.visible_dependency_guard import VisibleDependencyGuard
-from core.modules.tasks.guards.no_dependency_loop_guard import NoDependencyLoopGuard
 from core.modules.tasks.guards.user_wait_guard import UserWaitGuard
 from core.modules.tasks.guards.reserved_task_guard import ReservedTaskGuard
 from core.modules.tasks.listeners.dependency_remover_listener import DependencyRemoverListener
@@ -163,7 +162,7 @@ class TasksModule(Module):
                    RemoveTaskDependencySubcommand, RecordTaskIndependenceSubcommand]
     handlers = [ChooseNextTaskHandler, ChooseTaskFocusHandler, RecordTaskIndependenceHandler, TagTaskHandler, RemoveTaskTagHandler, RecordTaskReadHandler, AssignTaskHandler, ClearDelegatedTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
     moves = [TasksMove]
-    guards = [TaskTagAccessGuard, TaskTagWordGuard, TaskEditAccessGuard, VisibleDependencyGuard, NoDependencyLoopGuard, DependenciesClosedGuard, UserWaitGuard, ReservedTaskGuard]
+    guards = [TaskTagAccessGuard, TaskTagWordGuard, TaskEditAccessGuard, VisibleDependencyGuard, DependenciesClosedGuard, UserWaitGuard, ReservedTaskGuard]
     views = [TaskTagWord, OpenDependency, TaskCard, TaskEdge, EnvironmentCard, TaskInspectionRow, TaskBlockReview]
     listeners = [TaskAssignmentCopyListener, TaskTagRemoverListener, TaskDependencyWaitListener, WaitingTaskListener, TaskRowsListener, TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener, StoppedAgentTasksListener]
     marks = TASK_MARKS

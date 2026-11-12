@@ -233,6 +233,7 @@ from core.modules.drivers.commands.record_agent_launch_failure.record_agent_laun
 from core.modules.drivers.listeners.instruction_imports_listener import InstructionImportsListener
 from core.modules.agents.support.current_agent_policy import CurrentAgentPolicy
 from core.modules.drivers.support.driver_settings import DRIVERS_SETTINGS
+from core.modules.drivers.support.reviewer_start import REVIEWER_PROFILE
 from core.modules.drivers.support.skeletons import DRIVERS_NUDGES_SKELETON, DRIVERS_HOOK_CALLS_SKELETON
 
 
@@ -242,6 +243,7 @@ class DriversModule(Module):
 
     name = "journal.core.drivers"
     nudges = DRIVER_NUDGES
+    profiles = [REVIEWER_PROFILE]
     move_reason = "version 4 kept hook records in its own bookkeeping tables, which stay in the backup"
     requires_core = ">=5,<6"
     settings = DRIVERS_SETTINGS
