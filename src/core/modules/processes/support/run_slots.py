@@ -91,8 +91,10 @@ class RunSlots:
 
     def record_count(self, process: Process, agent: Agent, context: Context) -> None:
         status = self.folder.count_status(process.id)
-        count = self.listings.count(process, self.folder.count_text(process.id)) if status == 0 else 0
-        self.listings.reject_unknown(process, agent, status, count, context)
+        text = self.folder.count_text(process.id)
+        count = self.listings.count(process, text) if status == 0 else 0
+        if text.strip():
+            self.listings.reject_unknown(process, agent, status, count, context)
         output = self.outputs.process_output(process.id)
         if count and output is not None and output.test_count != count:
             self.repository.update(output, context, test_count=count)

@@ -14,6 +14,7 @@ from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process
+from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.ticks.output_reading import OutputReading
@@ -181,6 +182,19 @@ def test_a_listing_without_a_known_count_stops_the_run(limited_run, status):
     story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.STOPPED,
                       len(lines) == 1, "could not count" in lines[0].text)
     story.expect_rows("save a reader that counts the tests" in lines[0].text, "journal reader draft" in lines[0].text, "--about tests" in lines[0].text, detail=lines[0].text)
+
+
+def test_a_listing_that_printed_nothing_is_a_killed_run_and_asks_for_no_reader_while_one_that_printed_no_number_still_does(limited_run):
+    story, process = limited_run
+    folder = story.container.get(OutputFolder)
+    folder.write_count(process.id, "", 143)
+    story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
+    story.expect_rows(story.container.get(ReaderRequestQuery).open().count() == 0, story.container.get(Queries).query(Process).find(process.id).state is not ProcessState.STOPPED)
+    other = worker_run(story, "pytest tests/totals.py", CommandCategory.TEST_RUN)
+    story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
+    folder.write_count(other.id, "no number\n", 0)
+    story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
+    story.expect_rows(story.container.get(ReaderRequestQuery).open().count() == 1, story.container.get(Queries).query(Process).find(other.id).state is ProcessState.STOPPED)
 
 
 def test_a_worker_stopped_for_an_unknown_count_adds_a_counting_reader_and_its_next_run_starts(new_story):
