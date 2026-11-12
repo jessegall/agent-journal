@@ -1,5 +1,3 @@
-import shlex
-
 from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.process_query import ProcessQuery
@@ -22,7 +20,7 @@ class ReaderDemands:
 
     @staticmethod
     def asks_about_itself(command: str) -> bool:
-        return bool(ASKING_FLAGS.intersection(shlex.split(command)))
+        return bool(ASKING_FLAGS.intersection(command.split()))
 
     def reason(self, part: PartSpec, reader: Reader | None, scope: ReaderSampleScope) -> str:
         if reader is None:
