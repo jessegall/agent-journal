@@ -1,5 +1,5 @@
 from core.modules.agents.migrations.m021_menu_answer_agent_index import MenuAnswerAgentIndexMigration
-from core.modules.agents.migrations.m027_worker_profile_names import WorkerProfileNamesMigration
+from core.modules.agents.migrations.m029_worker_profile_names import WorkerProfileNamesMigration
 from engine.agent.agent_role_reader import AgentRoleReader
 from core.modules.agents.guards.agent_chat_guard import AgentChatGuard
 from core.modules.agents.support.agent_role_rows import AgentRoleRows
@@ -17,6 +17,8 @@ from core.modules.agents.commands.program_trust.program_trust_subcommand import 
 from core.modules.agents.commands.manage_program.manage_program_subcommand import ManageProgramSubcommand
 from core.modules.agents.commands.manage_program.manage_program_handler import ManageProgramHandler
 from core.modules.agents.commands.restore_hooks.restore_hooks_handler import RestoreHooksHandler
+from core.modules.agents.commands.fold_mains_check.fold_mains_check_handler import FoldMainsCheckHandler
+from core.modules.agents.commands.fold_mains_check.fold_mains_check_subcommand import FoldMainsCheckSubcommand
 from core.modules.agents.commands.restore_hooks.restore_hooks_subcommand import RestoreHooksSubcommand
 from core.modules.agents.commands.bind_agent_session.bind_agent_session_handler import BindAgentSessionHandler
 from core.modules.agents.commands.replace_agent_session.replace_agent_session_handler import ReplaceAgentSessionHandler
@@ -61,6 +63,10 @@ from core.modules.agents.models.agent_session import AgentSession
 from core.modules.agents.listeners.session_end_listener import SessionEndListener
 from core.modules.agents.listeners.session_launch_listener import SessionLaunchListener
 from core.modules.agents.migrations.m023_agent_sessions import AgentSessionsMigration
+from core.modules.agents.migrations.m027_agent_folds import AgentFoldsMigration
+from core.modules.agents.migrations.m028_fold_main_agents import FoldMainAgentsMigration
+from core.modules.agents.models.agent_fold import AgentFold
+from core.modules.agents.models.agent_fold_row import AgentFoldRow
 from core.modules.agents.migrations.m024_main_agent_parent import MainAgentParentMigration
 from core.modules.agents.support.local_launcher_transport import LocalLauncherTransport
 from core.modules.agents.support.program_transport import ProgramTransport
@@ -155,17 +161,17 @@ class AgentsModule(Module):
     helper_types = [HelperType("helper", "Read-only helper", run_limit_key="journal.core.helpers.read-only-helper-run-limit", kept_limit_key="journal.core.helpers.read-only-helper-kept-limit", profile_limits_key="journal.core.helpers.read-only-helper-profile-limits", job_command=("helper", "send"), line="Reads the project and reports; it changes no code."), HelperType("reviewer", "Reviewer")]
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
-    models = [ModelDeclaration(Agent, query=AgentQuery, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"]),
+    models = [ModelDeclaration(Agent, query=AgentQuery, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentFold, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentFoldRow, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(AgentSession, excluded_subcommands=["make", "edit", "delete"])]
     moves = [AgentsMove]
-    migrations = [WorkerProfileNamesMigration, AgentAnnouncedColumnMigration, AgentLaunchFailureColumnMigration, MainAgentParentMigration, AgentSessionsMigration, AgentNumberMigration, MenuAnswerAgentIndexMigration, AgentHaltColumnMigration, AgentLaunchColumnMigration, PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageCapMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
+    migrations = [WorkerProfileNamesMigration, FoldMainAgentsMigration, AgentFoldsMigration, AgentAnnouncedColumnMigration, AgentLaunchFailureColumnMigration, MainAgentParentMigration, AgentSessionsMigration, AgentNumberMigration, MenuAnswerAgentIndexMigration, AgentHaltColumnMigration, AgentLaunchColumnMigration, PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageCapMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
     nudges = [AGENT_START_FAILED, *REPORT_NUDGES, PROGRAM_SETTINGS_BAN]
     guards = [AgentNameGuard, NumberGuard, RetiredRowGuard, RetiredDeleteGuard, AgentChatGuard]
     tick_handlers = [TickHandler(TickInterval(seconds=30), AgentReconcile(), "agent rows and their programs"),
                      TickHandler(TickInterval(seconds=2), ProgramSettingsWatch(), "program settings watch", starts_immediately=True)]
     driver_rules = [UnusedLauncherRule, ProgramSettingsRule]
-    handlers = [StopUnusedLauncherHandler, CheckAgentProgramsHandler, StartAgentProgramHandler, StopAgentProgramHandler, HaltAgentHandler, EndAgentHaltHandler, ReplaceAgentSessionHandler, WarnInstructionImportsHandler, RemoveInstructionImportHandler, RecordAgentInterruptHandler, SetAgentUsageLimitHandler, RetireAgentHandler, EndReplacedMainHandler, RecordAgentProcessHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]
-    subcommands = [RemoveInstructionImportSubcommand, RecordAgentInterruptSubcommand, RetireAgentSubcommand, ShowMainAgentsSubcommand, MainSessionsSubcommand, AgentSessionsSubcommand, AgentStandingSubcommand, StartAgentProgramSubcommand, StopAgentProgramSubcommand, ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, AgentPeopleSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand]
+    handlers = [StopUnusedLauncherHandler, CheckAgentProgramsHandler, StartAgentProgramHandler, StopAgentProgramHandler, HaltAgentHandler, EndAgentHaltHandler, ReplaceAgentSessionHandler, WarnInstructionImportsHandler, RemoveInstructionImportHandler, RecordAgentInterruptHandler, SetAgentUsageLimitHandler, RetireAgentHandler, EndReplacedMainHandler, RecordAgentProcessHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler, FoldMainsCheckHandler]
+    subcommands = [RemoveInstructionImportSubcommand, RecordAgentInterruptSubcommand, RetireAgentSubcommand, ShowMainAgentsSubcommand, MainSessionsSubcommand, AgentSessionsSubcommand, AgentStandingSubcommand, StartAgentProgramSubcommand, StopAgentProgramSubcommand, ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, AgentPeopleSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand, FoldMainsCheckSubcommand]
     bindings = {ProgramSessions: AgentProgramSessions, ProgramTransport: LocalLauncherTransport, CallerResolver: AgentCallerResolver, AgentCheckouts: AgentProjectCheckouts, AgentRoleReader: AgentRoleRows, RowNumbers: AgentRowNumbers}
     windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, skeleton=AGENTS_AGENTS_SKELETON, search=WindowSearch(AgentSearcher, "Search the agents"), icon=WindowIcon.AGENT, reads=["agent show", *CARD_READS], runs=["setting set", "message send", "helper send", "helper stop", "agent retire", "agent driver", "agent pause", "agent stop"], events=CARD_EVENTS, tabs=CARD_TABS, keys=CARD_KEYS),
                WindowDeclaration("agents.helpers", "Helpers", "helpers.js", WindowLoading.COMPONENT, skeleton=AGENTS_HELPERS_SKELETON, icon=WindowIcon.SUBAGENT, shows=WindowShows.SELECTED_AGENT, search=WindowSearch(AgentSearcher, "Search the agents"), reads=CARD_READS, runs=["setting set", "message send", "helper send", "helper stop", "agent retire", "agent driver"],

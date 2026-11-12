@@ -10,9 +10,9 @@ def test_a_worker_shows_its_role_and_its_number_and_not_its_row_id():
     assert agent("worker", 5).display_name == "Worker 5"
 
 
-def test_a_running_main_session_shows_as_the_main_agent_and_an_ended_one_as_a_previous_session():
+def test_the_main_agent_shows_as_the_main_agent_running_or_not():
     assert agent("main", 1).display_name == "Main agent"
-    assert agent("main", 1, Timestamp.parsed("2026-01-01T00:00:00+00:00")).display_name == "Main agent, previous session"
+    assert agent("main", 1, Timestamp.parsed("2026-01-01T00:00:00+00:00")).display_name == "Main agent"
 
 
 def test_a_helper_with_a_profile_is_kept_until_it_is_retired_and_no_other_role_is():

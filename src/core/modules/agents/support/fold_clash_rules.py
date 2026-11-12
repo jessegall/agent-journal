@@ -45,6 +45,10 @@ RULES: dict[str, tuple[str, Callable[[Sequence[Row], int, str], Row]]] = {
     "memory_marks": ("keep the survivor's open mark, else the newest", survivors_else_newest),
     "context_compactions": ("keep the survivor's open one, else the newest", survivors_else_newest),
     "links": ("keep the oldest", oldest),
+    "link_corrections": ("keep the oldest", oldest),
+    "helper_jobs": ("keep the newest", newest),
+    "reader_requests": ("keep the newest", newest),
+    "plan_context_reads": ("keep the newest", newest),
 }
 
 
