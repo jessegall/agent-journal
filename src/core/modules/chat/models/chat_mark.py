@@ -1,4 +1,3 @@
-from datetime import timedelta
 from engine.model.prunable import Prunable
 from engine.query.conditions.among import Among
 from dataclasses import dataclass
@@ -21,7 +20,7 @@ class ChatMark(Prunable, EnvironmentScoped, SessionBound, Model):
     stands, and, for a mark that follows a process, whether it still runs. Its lines are kept one to a line of
     text."""
 
-    kept_for = timedelta(days=3)
+    kept_rows = 20000
 
     model_name = "chat_mark"
     cli_name = "chat-mark"
@@ -50,5 +49,5 @@ class ChatMark(Prunable, EnvironmentScoped, SessionBound, Model):
         return self.moved(ChatMarkLifecycle.end, ended_at=timestamp)
 
     @classmethod
-    def prunable(cls, query, now):
-        return super().prunable(query, now).matching(Among("state", PRUNABLE_MARK_STATES))
+    def prunable(cls, query, table):
+        return super().prunable(query, table).matching(Among("state", PRUNABLE_MARK_STATES))

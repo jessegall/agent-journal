@@ -1,4 +1,3 @@
-from datetime import timedelta
 from engine.model.prunable import Prunable
 from dataclasses import dataclass
 
@@ -13,7 +12,7 @@ class RequestRun(Prunable, EnvironmentScoped, Model):
     """One hook, journal command, viewer request or run of the journal's own that went through the one door: the
     agent it worked for, its kind, its words without any value, and how it ended. Written once, when it ended."""
 
-    kept_for = timedelta(days=1)
+    kept_rows = 20000
 
     model_name = "request_run"
     cli_name = "request-run"

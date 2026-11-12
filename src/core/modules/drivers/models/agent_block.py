@@ -1,4 +1,3 @@
-from datetime import timedelta
 from engine.model.prunable import Prunable
 from engine.query.conditions.excluding import Excluding
 from engine.query.conditions.is_null import IsNull
@@ -26,7 +25,7 @@ class AgentBlock(Prunable, Model):
     its countdown line meanwhile, and may be skipped with a reason; so may a block declared skippable. A block
     that holds the stop only leaves the agent's tools alone."""
 
-    kept_for = timedelta(days=3)
+    kept_rows = 5000
 
     model_name = "agent_block"
     cli_name = "agent-block"
@@ -65,5 +64,5 @@ class AgentBlock(Prunable, Model):
         return Interval(*spans) if spans else None
 
     @classmethod
-    def prunable(cls, query, now):
-        return super().prunable(query, now).matching(Excluding(IsNull("closed_at")))
+    def prunable(cls, query, table):
+        return super().prunable(query, table).matching(Excluding(IsNull("closed_at")))

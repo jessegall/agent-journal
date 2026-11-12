@@ -1,4 +1,3 @@
-from datetime import timedelta
 from engine.model.prunable import Prunable
 from dataclasses import dataclass
 
@@ -15,7 +14,7 @@ class DockItem(Prunable, SessionBound, Model):
     """One item docked above the chat: an item of a type a module declared, about one row it points at and
     never copies, kept by a person or leaving by itself once its row ends."""
 
-    kept_for = timedelta(days=3)
+    kept_rows = 0
 
     model_name = "dock_item"
     cli_name = "dock-item"

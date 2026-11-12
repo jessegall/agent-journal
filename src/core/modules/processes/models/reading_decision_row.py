@@ -1,4 +1,3 @@
-from datetime import timedelta
 from engine.model.prunable import Prunable
 from dataclasses import dataclass
 
@@ -16,7 +15,7 @@ class ReadingDecisionRow(Prunable, Model):
     """The engine's decision about the reader of one part of a run at one moment, kept so hooks read it and do
     not decide again."""
 
-    kept_for = timedelta(days=7)
+    kept_rows = 5000
 
     model_name = "reading_decision"
     cli_name = "reading-decision"

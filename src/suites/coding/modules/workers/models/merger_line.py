@@ -1,4 +1,3 @@
-from datetime import timedelta
 from engine.model.prunable import Prunable
 from engine.query.conditions.excluding import Excluding
 from engine.query.conditions.is_null import IsNull
@@ -19,7 +18,7 @@ class MergerLine(Prunable, EnvironmentScoped, Model):
     with a worker is that worker's question: it records its wait, its task, when an answer is due, when it is
     forwarded to the main agent, how often a merger read it, and how and when it ended."""
 
-    kept_for = timedelta(days=3)
+    kept_rows = 5000
 
     model_name = "merger_line"
     cli_name = "merger-line"
@@ -63,5 +62,5 @@ class MergerLine(Prunable, EnvironmentScoped, Model):
         return self.worker_id is not None and self.outcome is None
 
     @classmethod
-    def prunable(cls, query, now):
-        return super().prunable(query, now).matching(Excluding(IsNull("closed_at")))
+    def prunable(cls, query, table):
+        return super().prunable(query, table).matching(Excluding(IsNull("closed_at")))

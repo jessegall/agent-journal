@@ -1,4 +1,3 @@
-from datetime import timedelta
 from engine.model.prunable import Prunable
 from engine.query.conditions.among import Among
 from dataclasses import dataclass
@@ -20,7 +19,7 @@ class AgentLine(Prunable, SessionPrivate, Model):
     """A line the journal has for an agent, kept as a row until a hook gives it or the server types it, with
     the rule or listener that wrote it."""
 
-    kept_for = timedelta(days=3)
+    kept_rows = 20000
 
     hidden_state = AgentLineState.HIDDEN
     model_name = "agent_line"
@@ -46,5 +45,5 @@ class AgentLine(Prunable, SessionPrivate, Model):
         return NudgeDeclaration.restore(self.nudge_json)
 
     @classmethod
-    def prunable(cls, query, now):
-        return super().prunable(query, now).matching(Among("state", PRUNABLE_LINE_STATES))
+    def prunable(cls, query, table):
+        return super().prunable(query, table).matching(Among("state", PRUNABLE_LINE_STATES))
