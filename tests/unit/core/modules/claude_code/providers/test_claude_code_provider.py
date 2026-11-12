@@ -1,6 +1,6 @@
 import json
 from core.modules.claude_code.support.claude_code_settings import DEFAULT_MODEL_EFFORTS
-from core.modules.claude_code.support.model_efforts import ModelEfforts
+from engine.provider.model_efforts import ModelEfforts
 from pathlib import Path
 
 import pytest
@@ -114,5 +114,5 @@ def test_a_session_found_under_another_project_does_not_resume_here(provider, tm
 
 
 def test_opus_starts_at_medium_and_sonnet_at_high_by_default():
-    efforts = ModelEfforts(EffortSettings())
-    assert (efforts.effort("claude-opus-5-5"), efforts.effort("opus"), efforts.effort("sonnet")) == ("medium", "medium", "high")
+    provider = ClaudeCodeProvider(ProgramFolders(), None, ModelEfforts(EffortSettings()))
+    assert (provider.effort("claude-opus-5-5"), provider.effort("opus"), provider.effort("sonnet"), provider.effort("haiku")) == ("medium", "medium", "high", "high")

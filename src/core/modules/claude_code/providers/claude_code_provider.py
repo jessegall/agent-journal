@@ -1,4 +1,5 @@
-from core.modules.claude_code.support.model_efforts import ModelEfforts
+from engine.provider.model_efforts import ModelEfforts
+from core.modules.claude_code.support.claude_code_settings import MODEL_EFFORTS
 from engine.provider.program_server_file import ProgramServerFile
 from core.modules.claude_code.providers.support.claude_server_file import ClaudeServerFile
 from dataclasses import replace
@@ -50,6 +51,7 @@ TEMPORARY_FILES_FOLDER = Path("/tmp")
 
 
 MODEL_CHOICES = (("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("fable", "Fable"))
+FALLBACK_EFFORT = "high"
 EFFORT_CHOICES = (("low", "Low"), ("medium", "Medium"), ("high", "High"), ("xhigh", "Extra high"), ("max", "Maximum"))
 
 COMPACT_LINE = "/compact Focus on continuing the work at once: what you were doing last, what comes next, and the facts those depend on. Keep every instruction, request, direction and correction the user gave you. Leave out the rest of the earlier history and old messages: the journal gives back recent messages, tasks, memories and rules."
@@ -124,17 +126,20 @@ class ClaudeCodeProvider(Provider):
     def session_command(self, launch: Launch) -> LaunchCommand:
         skip = ["--dangerously-skip-permissions"] if launch.skip_prompts else []
         model = [] if launch.names_flag("--model") else ["--model", launch.model]
-        effort = [] if launch.names_flag("--effort") else ["--effort", launch.effort or self.efforts.effort(launch.model)]
+        effort = [] if launch.names_flag("--effort") else ["--effort", launch.effort or self.effort(launch.model)]
         arguments = [self.executable, *model, *effort, *skip, *launch.program_arguments, *launch.session.arguments(self), *launch.prompt_arguments]
         return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()}, launch.session.session)
 
     def helper_command(self, launch: HelperLaunch) -> LaunchCommand:
-        arguments = [self.executable, "-p", launch.brief, "--model", launch.model, "--effort", self.efforts.effort(launch.model), "--dangerously-skip-permissions",
+        arguments = [self.executable, "-p", launch.brief, "--model", launch.model, "--effort", self.effort(launch.model), "--dangerously-skip-permissions",
                      "--output-format", "stream-json", "--verbose", *launch.session.arguments(self)]
         return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()}, launch.session.session)
 
+    def effort(self, model: str) -> str:
+        return self.efforts.effort(MODEL_EFFORTS, model) or FALLBACK_EFFORT
+
     def session_effort(self, home: JournalHome, session: str) -> str:
-        return self.status_text(home, session, "effort", "level") or self.efforts.effort(self.reported_model(home, session))
+        return self.status_text(home, session, "effort", "level") or self.effort(self.reported_model(home, session))
 
     def reported_model(self, home: JournalHome, session: str) -> str:
         return self.status_text(home, session, "model", "id")
