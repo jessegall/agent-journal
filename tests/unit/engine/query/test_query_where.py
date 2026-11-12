@@ -10,6 +10,8 @@ from engine.query.query import Query
 from tests.unit.engine.model.test_table import LogEntry
 from tests.unit.engine.query.test_query import entries  # noqa: F401  (the shared fixture)
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 SELECT_ALL = "SELECT * FROM log_entries"
 
 
@@ -51,7 +53,7 @@ def test_where_with_keywords_writes_equal_conditions_in_order(entries: Query[Log
 
 
 def test_filter_still_gives_the_rows_where_gives(entries: Query[LogEntry]):
-    assert [row.id for row in entries.filter(shelf_id=3).all_rows()] == [row.id for row in entries.where(shelf_id=3).all_rows()] == [2, 4, 6]
+    assert [row.id for row in entries.filter(shelf_id=3).every_row(TEST_ROWS_REASON)] == [row.id for row in entries.where(shelf_id=3).every_row(TEST_ROWS_REASON)] == [2, 4, 6]
 
 
 @pytest.mark.parametrize("operator", ["=", "!=", "<", "<=", ">", ">="])
@@ -70,7 +72,7 @@ def test_where_in_a_list_writes_in_with_one_placeholder_each(entries: Query[LogE
 
 
 def test_where_in_an_empty_list_reads_nothing_and_runs_no_statement(entries: Query[LogEntry], statements_run):
-    assert list(entries.where_in("id", []).all_rows()) == [] and statements_run == []
+    assert list(entries.where_in("id", []).every_row(TEST_ROWS_REASON)) == [] and statements_run == []
 
 
 def test_where_in_another_query_writes_a_subselect_with_its_parameters_in_order(entries: Query[LogEntry], loans: Query[Loan]):

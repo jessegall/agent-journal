@@ -23,6 +23,8 @@ from tests.stories.support.story_checks import expect_value
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session, repository_environment
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 BATCH_READS = 2
 
 
@@ -46,7 +48,7 @@ def four_workers(four_tasks):
 
 def test_a_later_tick_reads_fresh_activity_after_a_worker_acts(four_workers):
     story = four_workers
-    workers = list(story.container.get(Queries).query(Agent).filter(parent_id=story.agent.id, role="worker").oldest().all_rows())
+    workers = list(story.container.get(Queries).query(Agent).filter(parent_id=story.agent.id, role="worker").every_row(TEST_ROWS_REASON))
     story.advance(timedelta(minutes=14))
     story.tick("s-1")
     story.hook(worker_session(story, workers[0]), HookSamples.prompt("Continue the job"))
@@ -74,7 +76,7 @@ def test_a_worker_dispatch_reads_its_whole_task_batch_once_per_transaction(four_
 
 def test_reading_running_worker_output_stays_within_the_tick_limit(four_workers):
     story = four_workers
-    workers = story.container.get(Queries).query(Agent).filter(parent_id=story.agent.id, role="worker").oldest().all_rows()
+    workers = story.container.get(Queries).query(Agent).filter(parent_id=story.agent.id, role="worker").every_row(TEST_ROWS_REASON)
     folder = story.container.get(OutputFolder)
     bus = story.container.get(Bus)
     for index, worker in enumerate(workers):
@@ -95,7 +97,7 @@ def test_five_workers_read_their_running_outputs_within_the_tick_limit(four_work
     story.run("setting set journal.suites.coding.workers.worker-run-limit 5 --environment main")
     task_id = story.new_row_id('task make "Job 5" --brief "Finish job 5" --environment main', actor=story.agent)
     story.expect_success(f"worker dispatch --test-command python=pytest --fresh 'A new worker' --model sonnet {task_id}", actor=story.agent)
-    workers = story.container.get(Queries).query(Agent).filter(parent_id=story.agent.id, role="worker").oldest().all_rows()
+    workers = story.container.get(Queries).query(Agent).filter(parent_id=story.agent.id, role="worker").every_row(TEST_ROWS_REASON)
     folder = story.container.get(OutputFolder)
     bus = story.container.get(Bus)
     for index, worker in enumerate(workers):

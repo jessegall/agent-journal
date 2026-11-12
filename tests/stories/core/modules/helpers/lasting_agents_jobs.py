@@ -8,6 +8,8 @@ from engine.query.queries import Queries
 from tests.stories.core.modules.helpers.helper_jobs import JOB, START, EndedHelper, helper_agent, read_jobs, resumable_session
 from tests.stories.core.modules.helpers.lifetime_reviewers import launches, refusal_text
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 MEMORY_TEXT = "The cart rounds each line before it adds them"
 NEW_AGENT_REASON = "A second reader for the tax file"
 TAX_START = 'helper start journal-researcher --brief "Read src/tax.py" --environment main'
@@ -22,7 +24,7 @@ def idle_helper(new_story, monkeypatch):
 
 
 def researchers(story) -> list[Agent]:
-    return sorted(story.container.get(Queries).query(Agent).filter(profile="journal-researcher").all_rows(), key=lambda helper: helper.id)
+    return sorted(story.container.get(Queries).query(Agent).filter(profile="journal-researcher").every_row(TEST_ROWS_REASON), key=lambda helper: helper.id)
 
 
 def test_a_job_sent_to_an_idle_helper_runs_on_that_helper_which_still_reads_its_memory(idle_helper):

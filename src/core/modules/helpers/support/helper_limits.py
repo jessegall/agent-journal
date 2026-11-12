@@ -88,9 +88,12 @@ class HelperLimits:
     def checked_resume(self, profile: str) -> None:
         self.admission.checked_resume("helper", profile)
 
+    def checked_helper_model(self, helper: Agent) -> None:
+        self.admission.checked_model("helper", helper.profile, helper.program, helper.program_model)
+
     def checked_resume_session(self, helper: Agent) -> None:
         self.checked_resume(helper.profile)
-        self.admission.checked_model("helper", helper.profile, helper.program, helper.program_model)
+        self.checked_helper_model(helper)
 
     def checked_model(self, program: str, model: str) -> str:
         return self.listed_model(program, model, self.models.allowed(self.providers.provider(program)))

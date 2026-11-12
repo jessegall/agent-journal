@@ -24,6 +24,13 @@ class AgentRowNumbers(RowNumbers):
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
             return self.queries.query(Agent).find(row_id).number
 
+    def numbers(self, model_name: str, row_ids: set[int]) -> dict[int, int]:
+        self.check_model(model_name)
+        if not row_ids:
+            return {}
+        with self.scopes.opened(None, disabled=[EnvironmentScope]):
+            return {agent.id: agent.number for agent in self.queries.query(Agent).find_many(list(row_ids))}
+
     def environment_number(self, model_name: str, row_id: int, environment_id: int | None) -> int:
         return self.environment_agent(model_name, environment_id, f"agent with row {row_id}", id=row_id).number
 

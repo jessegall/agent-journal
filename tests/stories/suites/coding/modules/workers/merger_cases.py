@@ -24,6 +24,8 @@ from tests.stories.suites.coding.modules.workers.support.merger_launcher import 
 from tests.stories.suites.coding.modules.workers.support.phase_steps import start_planned_worker
 from tests.stories.support.story_checks import expect_value, expect_value_with
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 MERGER_ROLE_REFUSAL = "only the merger runs this"
 LOG_REVIEW_REFUSAL = "reviews no worker's logs"
 LOG_LINE = "The cart total rounds down"
@@ -63,10 +65,10 @@ class MergerCase:
 
     def worker_messages(self) -> str:
         self.story.run_listeners()
-        return "\n".join(message.text for message in self.story.container.get(Queries).query(Message).filter(target_agent_id=self.worker.id).oldest().all_rows())
+        return "\n".join(message.text for message in self.story.container.get(Queries).query(Message).filter(target_agent_id=self.worker.id).every_row(TEST_ROWS_REASON))
 
     def main_messages(self) -> tuple[Message, ...]:
-        return tuple(self.story.container.get(Queries).query(Message).filter(session_agent_id=self.merger.id).all_rows())
+        return tuple(self.story.container.get(Queries).query(Message).filter(session_agent_id=self.merger.id).every_row(TEST_ROWS_REASON))
 
     def marks(self) -> str:
         self.story.run_listeners()

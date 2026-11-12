@@ -12,7 +12,7 @@ from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 from tests.stories.core.modules.plugins.support.event_stories import (
-    SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, event_plugin_story, install_event_plugin, plugin_row, script_calls, tasks_titled)
+    SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, event_page, event_plugin_story, install_event_plugin, plugin_row, script_calls, tasks_titled)
 
 MOST_RUNNING = 8
 WAIT_SECONDS = 15

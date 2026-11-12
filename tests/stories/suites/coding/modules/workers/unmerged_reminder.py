@@ -14,6 +14,8 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import c
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.support.story_checks import expect_value
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 MAIN_SESSION = "s-1"
 REMINDER_INTERVAL = timedelta(seconds=WORKER_UNMERGED.interval.seconds)
 
@@ -90,7 +92,7 @@ def remind(story, count: int) -> None:
 
 
 def merge_block_rows(story, worker_id: int) -> list[AgentBlock]:
-    return [row for row in story.container.get(Queries).query(AgentBlock).filter(session_agent_id=story.agent.id).all_rows()
+    return [row for row in story.container.get(Queries).query(AgentBlock).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON)
             if f"journal worker merge {agent_number(story, worker_id)}" in row.condition_text and row.closed_at is None]
 
 

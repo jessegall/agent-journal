@@ -23,6 +23,8 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story import Story
 from core.modules.processes.ticks.output_reading import OutputReading
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 BYTES_LONG = 5000
 BYTES_SHORT = 12
 
@@ -98,7 +100,7 @@ def ended_run(story: Story, line: str, text: str, exit_code: int = 0) -> Process
 
 def parts_started(story: Story, process: Process) -> None:
     actor = Actor(process.session_agent_id, ActorType.AGENT)
-    for part in story.container.get(Queries).query(ProcessPart).filter(process_id=process.id).all_rows():
+    for part in story.container.get(Queries).query(ProcessPart).filter(process_id=process.id).every_row(TEST_ROWS_REASON):
         story.container.get(Bus).run(StartProcessPart(process.id, part.position), actor, environment_id=1)
 
 
@@ -137,7 +139,7 @@ def printed_and_read(story: Story, process: Process, text: str) -> None:
 
 def tick(story) -> None:
     story.advance(timedelta(minutes=1))
-    for process in tuple(story.container.get(ProcessQuery).running().all_rows()):
+    for process in tuple(story.container.get(ProcessQuery).running().every_row(TEST_ROWS_REASON)):
         story.container.get(OutputFolder).beat(process.id, story.clock.timestamp())
     OutputReading().read(story.container)
     story.tick("s-1")
@@ -145,6 +147,6 @@ def tick(story) -> None:
 
 def ended_hook_lines(story: Story, sample: HookSample) -> list[str]:
     reply = story.hook("s-1", sample)
-    for process in story.container.get(ProcessQuery).running().all_rows():
+    for process in story.container.get(ProcessQuery).running().every_row(TEST_ROWS_REASON):
         end_run(story, process, "done\n")
     return reply.lines

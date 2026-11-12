@@ -19,6 +19,8 @@ from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.suites.coding.modules.workers.support.helper_types import ClerkStarted, HelperStarted, BuilderNativeHelper, EveryHelperRule, ReaderHelpersRule, WorkerStarted
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 READ_SAMPLE = HookSamples.tool_use("Read", ToolType.READ, ["README.md"], None)
 FIXTURES = {"helper": HelperStarted, "helper": BuilderNativeHelper, "worker": WorkerStarted, "clerk": ClerkStarted}
 
@@ -48,7 +50,7 @@ def test_an_inactive_helper_of_any_registered_descendant_type_wakes_its_parent(n
     story.tick("s-1")
     wanted = f"{role}:{agent_number(story, helper['id'])} has used no tool for 15 minutes"
     story.expect_text(f"agent-line list --agent {story.agent.id}", wanted)
-    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows()
+    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON)
     story.expect_rows(any(wanted in line.text and line.wakes_agent for line in lines))
 
 

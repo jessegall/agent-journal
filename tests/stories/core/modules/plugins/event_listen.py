@@ -13,6 +13,8 @@ from engine.time.timestamp import Timestamp
 from tests.stories.core.modules.plugins.support.event_stories import (
     NOTES_PIN_TITLE, PIN_LINE, REFUSAL, SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, event_plugin_story, pins_titled, tasks_titled)
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 MESSAGE_TEXT = "pinned for you"
 CARD_LABEL = "Pin made"
 ANSWER_SCRIPT = f"""cat <<'ANSWER'
@@ -31,7 +33,7 @@ def test_s27_a_line_with_its_tell_and_card_runs_once_and_the_card_shows(new_stor
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.run_listeners()
     story.expect_text("chat-mark list --environment 1", CARD_LABEL, actor=story.user)
-    messages = [line for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows() if MESSAGE_TEXT in line.text]
+    messages = [line for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON) if MESSAGE_TEXT in line.text]
     story.expect_rows(len(pins_titled(story, NOTES_PIN_TITLE)) == 1, len(messages) == 1)
 
 

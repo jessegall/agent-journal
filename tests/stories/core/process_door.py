@@ -22,6 +22,8 @@ from core.modules.processes.support.request_log_entry import RequestLogEntry
 from core.modules.processes.ticks.request_log_import import RequestLogImport
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 MISSING_ENVIRONMENT_ID = 999
 
@@ -37,7 +39,7 @@ def logged_rows_written(story) -> None:
 
 
 def runs_of_kind(story, kind: ProcessKind) -> list[RequestRun]:
-    return list(story.container.get(Queries).query(RequestRun).filter(kind=kind.value).all_rows())
+    return list(story.container.get(Queries).query(RequestRun).filter(kind=kind.value).every_row(TEST_ROWS_REASON))
 
 
 def test_each_hook_leaves_one_ended_request_row_of_the_hook_kind_and_no_process_row(new_story):

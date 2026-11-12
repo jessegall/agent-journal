@@ -17,6 +17,8 @@ from engine.query.query import Query
 from engine.query.errors.unknown_column_error import UnknownColumnError
 from tests.unit.engine.model.test_table import LogEntry
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 FIXED_TIME = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
 
 
@@ -101,7 +103,7 @@ def test_all_rows_reads_a_long_table_without_a_statement_per_small_page(entries:
     reads: list[str] = []
     entries.database.connection.set_trace_callback(reads.append)
 
-    rows = list(entries.oldest().all_rows())
+    rows = list(entries.every_row(TEST_ROWS_REASON))
 
     entries.database.connection.set_trace_callback(None)
     assert [row.id for row in rows] == list(range(1, 61))

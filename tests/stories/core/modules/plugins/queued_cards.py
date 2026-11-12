@@ -16,6 +16,8 @@ from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, installed_s
 from tests.stories.core.modules.plugins.support.notices import expect_plugin_notice
 from tests.stories.support.story_checks import expect_value
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 CARD = {"kind": "state", "key": "queued", "label": "Queue was judged"}
 
 
@@ -216,9 +218,9 @@ def test_a_hook_does_not_recover_a_card_claim_while_the_tick_is_saving_it(new_st
         if isinstance(command, AddPluginOutput) and not visited:
             visited.append(True)
             query = story.container.get(Queries).query(AgentLine)
-            previous = {row.id for row in query.all_rows()}
+            previous = {row.id for row in query.every_row(TEST_ROWS_REASON)}
             story.expect_hook_allowed("s-1", LISTING_SAMPLE)
-            expect_value({row.id for row in query.all_rows()}, previous)
+            expect_value({row.id for row in query.every_row(TEST_ROWS_REASON)}, previous)
         return original(bus, command, *arguments, **options)
 
     monkeypatch.setattr(Bus, "run", run_hook)

@@ -21,6 +21,8 @@ from tests.stories.suites.coding.modules.workers.support.memory_git.git_choice i
 from tests.stories.suites.coding.modules.workers.support.memory_git.memory_repository import MemoryRepository
 from tests.stories.suites.coding.modules.workers.support.memory_git.memory_worktree_git import MemoryWorktreeGit
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 DISPATCH = "worker dispatch --test-command python=pytest --model sonnet 1"
 CART_CHANGE = "TOTAL = 1\n"
 FIRST_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart total story"'
@@ -88,7 +90,7 @@ def worker_session(story: Story, worker: Actor) -> str:
 
 
 def merged_worker_lines(story: Story, worker: Actor) -> list[AgentLine]:
-    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows()
+    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON)
     return [line for line in lines if line.text == f"worker:{agent_number(story, worker.id)} was merged"]
 
 

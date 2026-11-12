@@ -15,6 +15,8 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.plans.support.approval_fixtures import ReadyApprovalPlan
 from tests.stories.core.support.fixtures import UserJoined
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])).with_fields(event="post_tool_use")
 
 
@@ -41,7 +43,7 @@ def test_an_approval_without_a_message_keeps_the_plain_notice(new_story):
 
 
 def docked_types(story) -> list[str]:
-    return [item.type for item in story.container.get(Queries).query(DockItem).filter(state=DockItemState.DOCKED).all_rows()]
+    return [item.type for item in story.container.get(Queries).query(DockItem).filter(state=DockItemState.DOCKED).every_row(TEST_ROWS_REASON)]
 
 
 def test_a_plan_a_helper_marks_ready_shows_one_plan_card_and_no_approval(new_story):

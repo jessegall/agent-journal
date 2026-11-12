@@ -14,6 +14,8 @@ from engine.query.query import Query
 from engine.row.row_owner import RowOwner
 from engine.time.timestamp import Timestamp
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 COMMON = "version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL DEFAULT '', updated_at TEXT NOT NULL DEFAULT ''"
 WALK_REASON = "the test reads every shelf"
 
@@ -84,19 +86,19 @@ def shelves(database, tables) -> Query[Shelf]:
 
 def test_where_in_a_query_scopes_the_inner_query_by_environment(database, tables, statements_run):
     inner = shelves(database, tables).where("id", "<=", 4).select_columns("id")
-    rows = list(Query(database, tables, Card).where_in("shelf_id", inner).all_rows())
+    rows = list(Query(database, tables, Card).where_in("shelf_id", inner).every_row(TEST_ROWS_REASON))
     assert [row.shelf_id for row in rows] == [1] and "environment_id = ?" in statements_run[-1]
 
 
 def test_where_exists_inner_query_hides_removed_rows(database, tables, statements_run):
     cards = Query(database, tables, Card).where_column("shelf_id", "shelves.id")
-    names = [row.name for row in shelves(database, tables).where("id", "<=", 4).where_exists(cards).all_rows()]
+    names = [row.name for row in shelves(database, tables).where("id", "<=", 4).where_exists(cards).every_row(TEST_ROWS_REASON)]
     assert names == ["Shelf 1"] and "removed_at IS NULL" in statements_run[-1]
 
 
 def test_where_not_exists_inner_query_hides_removed_rows(database, tables, statements_run):
     cards = Query(database, tables, Card).where_column("shelf_id", "shelves.id")
-    ids = [row.id for row in shelves(database, tables).where("id", "<=", 4).where_not_exists(cards).all_rows()]
+    ids = [row.id for row in shelves(database, tables).where("id", "<=", 4).where_not_exists(cards).every_row(TEST_ROWS_REASON)]
     assert ids == [3] and "removed_at IS NULL" in statements_run[-1]
 
 

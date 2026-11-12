@@ -14,6 +14,8 @@ from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 @pytest.fixture
 def reader_sample_story(new_story):
@@ -32,7 +34,7 @@ def test_each_worker_gets_its_own_request_and_sample(reader_scoped_story):
     story = reader_scoped_story
     second = Actor(story.new_row_id("agent start s-second claude worker --environment main"), ActorType.AGENT)
     process = story.container.get(Bus).run(StartProcess.single_part(second.id, "custom-build run", "/work/main", CommandCategory.TEST_RUN, 30), second, environment_id=1)
-    requests = tuple(story.container.get(ReaderRequestQuery).open().agent(second.id).all_rows())
+    requests = tuple(story.container.get(ReaderRequestQuery).open().agent(second.id).every_row(TEST_ROWS_REASON))
     story.expect_rows(len(requests) == 1, requests[0].creator_id == second.id,
                       requests[0].sample_process_id == process.id,
                       story.container.get(OutputFolder).has_slot(process.id))
@@ -41,7 +43,7 @@ def test_each_worker_gets_its_own_request_and_sample(reader_scoped_story):
 def test_another_command_of_the_same_program_has_its_own_sample(reader_scoped_story):
     story = reader_scoped_story
     process = worker_run(story, "custom-build other")
-    requests = tuple(story.container.get(ReaderRequestQuery).open().all_rows())
+    requests = tuple(story.container.get(ReaderRequestQuery).open().every_row(TEST_ROWS_REASON))
     story.expect_rows(len(requests) == 2, any(request.sample_process_id == process.id for request in requests),
                       story.container.get(OutputFolder).has_slot(process.id))
 

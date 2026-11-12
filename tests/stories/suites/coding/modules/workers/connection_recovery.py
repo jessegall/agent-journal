@@ -27,6 +27,8 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import story_repository
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 RECOVERY_SOURCE = "workers.silent-agent"
 FAILED_SOURCE = "workers.silent-agent-failed"
 SILENT_SECONDS = 180
@@ -80,7 +82,7 @@ class RecoveryCase:
         return sum(f"worker:{agent_number(self.story, self.worker.id)} has stopped" in row["text"] for row in rows)
 
     def lines(self, agent_id, source=RECOVERY_SOURCE):
-        return list(self.story.container.get(Queries).query(AgentLine).filter(session_agent_id=agent_id, source=source).all_rows())
+        return list(self.story.container.get(Queries).query(AgentLine).filter(session_agent_id=agent_id, source=source).every_row(TEST_ROWS_REASON))
 
 
 @pytest.fixture

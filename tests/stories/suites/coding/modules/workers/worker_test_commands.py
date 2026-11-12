@@ -15,6 +15,8 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import PHAS
 from tests.stories.support.story_checks import expect_value, expect_value_with
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 
+TEST_ROWS_REASON = "the test reads every row it checks"
+
 
 REAL_WORKER_TEST_START_WAITED = WorkerTestLaunch.start_waited
 PYTHON = "--test-command python=pytest"
@@ -68,7 +70,7 @@ def person_dispatched_worker(story, monkeypatch):
 
 
 def worker_runs(worker):
-    return tuple(worker.story.container.get(Queries).query(Process).filter(owner_agent_id=worker.worker.id).oldest().all_rows())
+    return tuple(worker.story.container.get(Queries).query(Process).filter(owner_agent_id=worker.worker.id).every_row(TEST_ROWS_REASON))
 
 
 def started_lines(worker):
