@@ -6,6 +6,7 @@ from engine.caller.caller import Caller
 from engine.journal.journal_home import JournalHome
 from engine.provider.launch import Launch
 from engine.provider.providers import Providers
+from engine.provider.program_settings_sync import ProgramSettingsSync
 from engine.provider.resumed_session import ResumedSession
 from engine.provider.session_start import SessionStart
 from engine.subcommand.output import Output
@@ -25,8 +26,8 @@ class ProgramCommandSubcommand(ReadSubcommand[list[str]]):
     cli_name = "program"
     name = "command"
 
-    def __init__(self, providers: Providers, home: JournalHome) -> None:
-        self.providers, self.home = providers, home
+    def __init__(self, providers: Providers, home: JournalHome, sync: ProgramSettingsSync) -> None:
+        self.providers, self.home, self.sync = providers, home, sync
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("program")
@@ -38,6 +39,7 @@ class ProgramCommandSubcommand(ReadSubcommand[list[str]]):
 
     def read(self, arguments: Namespace, caller: Caller) -> list[str]:
         provider = self.providers.provider(arguments.program)
+        self.sync.prepare(arguments.program)
         session = ResumedSession(arguments.resume) if arguments.resume else SessionStart(str(uuid4()))
         model = provider.reported_model(self.home, arguments.resume) or provider.session_model()
         launch = Launch(self.home.folder.parent, Path(arguments.folder), model, arguments.launch, session, {},
