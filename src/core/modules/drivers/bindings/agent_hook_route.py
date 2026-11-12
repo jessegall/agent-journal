@@ -1,3 +1,4 @@
+from engine.time.timestamp import MILLISECONDS
 from dataclasses import replace
 
 from engine.actor.actor import Actor
@@ -37,7 +38,6 @@ from engine.setting.setting_values import SettingValues
 
 MAIN_HOOK_SECONDS = 5
 AGENT_HOOK_SECONDS = 40
-MILLISECONDS = 1000
 
 
 def hook_row_line(event: HookEvent) -> str:

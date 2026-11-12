@@ -185,7 +185,7 @@ from suites.coding.modules.workers.models.worker_progress import WorkerProgress
 from suites.coding.modules.workers.commands.worker_progress.worker_progress_subcommand import WorkerProgressSubcommand
 from core.modules.tasks.support.task_assignees import TaskAssignees
 from core.modules.documents.support.document_filers import DocumentFilers
-from suites.coding.support.report_only_document_filers import ReportOnlyDocumentFilers
+from suites.coding.modules.workers.support.report_only_document_filers import ReportOnlyDocumentFilers
 from suites.coding.modules.workers.support.worker_task_assignees import WorkerTaskAssignees
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
