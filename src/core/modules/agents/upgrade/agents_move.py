@@ -1,5 +1,6 @@
 import sqlite3
 from collections import Counter
+from collections.abc import Mapping
 
 from engine.actor.actor import CORE_ACTOR_ID
 from engine.enums.actor_type import ActorType
@@ -61,10 +62,11 @@ class AgentsMove(VersionFourMove):
                 report.count(TABLE, moved_id)
                 if role == AgentRole.MAIN.value and moved_id:
                     main_rows[row["environment_id"]] = map.new_id(TABLE, row["id"])
-        self.move_missing_sessions(source, rows, map, report, roles)
+        self.move_missing_sessions(source, rows, map, report, roles, main_rows, context)
         return report
 
-    def move_missing_sessions(self, source: VersionFourSource, rows: RowInsert, map: MoveMap, report: MoveReport, roles: list[str]) -> None:
+    def move_missing_sessions(self, source: VersionFourSource, rows: RowInsert, map: MoveMap, report: MoveReport, roles: list[str],
+                              main_rows: dict[int, int], context: MoveContext) -> None:
         agent_rows = source.rows(TABLE)
         sessions = {row["session"] for row in agent_rows}
         helpers = {row["session"]: row for row in source.rows(HELPERS) if row["session"]}
@@ -82,7 +84,13 @@ class AgentsMove(VersionFourMove):
             if role not in roles or not program:
                 report.note(f"session {session} made rows but had no agent row, no known role and program: its rows name the core")
                 continue
-            self.insert(rows, session, span["environment_id"], program, role, CORE_ACTOR_ID, span["first_at"], span["last_at"], span["last_at"])
+            if role == AgentRole.MAIN.value and span["environment_id"] in main_rows:
+                self.session_of(rows, main_rows[span["environment_id"]], {"environment_id": span["environment_id"], "session": session, "provider": program,
+                                                                           "created_at": span["first_at"], "updated_at": span["last_at"]}, context)
+            else:
+                moved_id = self.insert(rows, session, span["environment_id"], program, role, CORE_ACTOR_ID, span["first_at"], span["last_at"], span["last_at"])
+                if role == AgentRole.MAIN.value:
+                    main_rows[span["environment_id"]] = moved_id
             report.count(TABLE, True)
             moved += 1
         if moved:
@@ -120,7 +128,7 @@ class AgentsMove(VersionFourMove):
         return str(span["creator"]).partition(SEPARATOR)[2]
 
     @staticmethod
-    def session_of(rows: RowInsert, main_id: int, row: sqlite3.Row, context: MoveContext) -> int:
+    def session_of(rows: RowInsert, main_id: int, row: Mapping[str, object], context: MoveContext) -> int:
         started = row["created_at"] or context.timestamp
         rows.insert(SESSIONS_TABLE, {"environment_id": row["environment_id"], "session_agent_id": main_id, "session": row["session"], "program": row["provider"],
                                      "started_at": started, "ended_at": row["updated_at"] or started, "end_reason": EndReason.PERSON_REPLACEMENT.value,

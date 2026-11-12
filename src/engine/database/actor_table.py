@@ -10,6 +10,7 @@ from engine.row.row_owner import MAIN_AGENT, RowOwner
 CORE_ACTOR = Statement("INSERT OR IGNORE INTO actors (id, type, name, created_at, updated_at) VALUES (?, ?, 'core', ?, ?)")
 MODULE_ACTOR = Statement("INSERT OR IGNORE INTO actors (creator_id, type, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)")
 MODULE_ACTOR_ID = Statement("SELECT id FROM actors WHERE type = ? AND name = ?")
+SESSION_HOLDER_ID = Statement("SELECT session_agent_id AS id FROM agent_sessions WHERE session = ?")
 MODULE_ACTOR_IDS = Statement("SELECT id, name FROM actors WHERE type = 'module'", full_table_reason="One row for each installed module, never for stored journal rows.")
 ACTOR_ROW = Statement("SELECT 1 FROM actors WHERE id = ? AND type = ?")
 AGENT_OWNER = Statement("SELECT role, environment_id FROM agents WHERE id = ?")
@@ -47,7 +48,7 @@ class ActorTable:
         return {row["name"]: row["id"] for row in self.database.rows(MODULE_ACTOR_IDS)}
 
     def agent_actor_id(self, session: str) -> int | None:
-        rows = self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.AGENT.value, session)))
+        rows = self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.AGENT.value, session))) or self.database.rows(Statement(SESSION_HOLDER_ID.sql, (session,)))
         return int(rows[0]["id"]) if rows else None
 
     def is_agent(self, actor_id: int) -> bool:
