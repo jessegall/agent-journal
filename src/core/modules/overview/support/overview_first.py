@@ -1,5 +1,5 @@
 from engine.driver.block_until import BlockUntil
-from engine.driver.conditions.ran_command import RanCommand
+from core.modules.overview.support.block_conditions.overview_read_since import OverviewReadSince
 from core.modules.overview.support.overview_nudges import OVERVIEW_COMMAND, OVERVIEW_REFUSAL
 
 
@@ -10,4 +10,4 @@ class OverviewFirst:
     is_required = True
 
     def block(self, agent_id: int) -> BlockUntil:
-        return BlockUntil(agent_id, OVERVIEW_REFUSAL.nudge(), RanCommand(OVERVIEW_COMMAND), strict=True)
+        return BlockUntil(agent_id, OVERVIEW_REFUSAL.nudge(), OverviewReadSince(OVERVIEW_COMMAND), strict=True)

@@ -49,7 +49,8 @@ class AgentBlockRule(DriverRule):
         closing = [CloseAgentBlocks(tuple(block.id for block in finished_blocks))] if finished_blocks else []
         refused_blocks = [block for block in active_blocks if tool is not None and self.refuses(block, tool)]
         if refused_blocks:
-            return RuleAnswer.refused(Nudge(refused_blocks[0].nudge_key, NudgeType.REFUSAL, refused_blocks[0].nudge_text.replace("{block}", str(refused_blocks[0].id)))).running_unrefused(*closing)
+            first = refused_blocks[0]
+            return RuleAnswer.refused(Nudge(first.nudge_key, first.refusal_type, first.nudge_text.replace("{block}", str(first.id)))).running_unrefused(*closing)
         countdowns = [self.countdown(block, tool_uses.get(block.id, 0)) for block in waiting_blocks if block not in active_blocks]
         return RuleAnswer.with_nudges(*[nudge for nudge in countdowns if nudge is not None]).running_unrefused(*closing)
 

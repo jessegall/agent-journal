@@ -38,12 +38,12 @@ func builtJournal(t *testing.T) string {
 }
 
 func TestOnlyJournalPanicAloneIsAPanicLine(t *testing.T) {
-	for _, command := range []string{`journal panic "the journal refuses everything"`, "/usr/local/bin/journal panic locked database", "  journal panic why  "} {
+	for _, command := range []string{`journal panic "the journal refuses everything"`, "/usr/local/bin/journal panic locked database", "  journal panic why  ", "journal panic"} {
 		if !IsPanicLine(shellBody(command)) {
 			t.Errorf("%q should go through as a panic line", command)
 		}
 	}
-	for _, command := range []string{"journal task list", "journal panic", "journal panic x; rm -rf .", "journal panic x && cat secrets", "journal panic x | tee out",
+	for _, command := range []string{"journal task list", "journal panicky", "journal panic x; rm -rf .", "journal panic x && cat secrets", "journal panic x | tee out",
 		"journal panic $(cat file)", "journal panic x > .journal/other", "echo journal panic", "journal panic x\nrm file"} {
 		if IsPanicLine(shellBody(command)) {
 			t.Errorf("%q must not go through as a panic line", command)
