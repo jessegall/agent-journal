@@ -6,6 +6,7 @@ import json
 
 from engine.command.bus import Bus
 from engine.command.context import Context
+from suites.coding.modules.workers.support.model_complexity_policy import ModelComplexityPolicy
 from engine.command.handler import Handler
 from engine.provider.providers import Providers
 from engine.query.queries import Queries
@@ -59,7 +60,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     command = DispatchWorker
 
     def __init__(self, queries: Queries, bus: Bus, settings: SettingValues, git: WorktreeGit, worker_command: WorkerCommand, worktrees: WorktreeQuery,
-                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: HelperTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, admission: AgentAdmission, release: StartedTaskRelease, reservations: MainReservedTasks, presets: WorkerTestPresets) -> None:
+                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: HelperTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, admission: AgentAdmission, release: StartedTaskRelease, reservations: MainReservedTasks, presets: WorkerTestPresets, complexity: ModelComplexityPolicy) -> None:
+        self.complexity = complexity
         self.release, self.reservations, self.presets = release, reservations, presets
         self.places, self.copies, self.available_workers, self.admission = places, copies, available_workers, admission
         self.queries, self.bus, self.settings = queries, bus, settings
@@ -87,6 +89,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         self.check_unstarted(command, context, environment)
         choice = self.routing.choice(command, tasks, caller, profile, context)
         program, model = choice.program, choice.model
+        if command.plan_id is None and command.phase_id is None:
+            self.complexity.check(program, model, tasks, context)
         self.check_model(ProfileModel(program, model, profile.name))
         if not command.new_agent_reason.strip():
             self.check_idle(environment.folder, WorkerRequest(profile.name, program, model), tasks, command)

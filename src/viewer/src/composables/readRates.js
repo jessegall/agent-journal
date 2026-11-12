@@ -1,7 +1,7 @@
 // how long each repeated read waits, in milliseconds, after its last answer has arrived
 export const READ_RATES = {
     runningTool: 500,
-    agentCommand: 5000,
+    agentCommand: 500,
     planCard: 3000,
     openPanel: 5000,
     documentWithNoEvents: 60000,
