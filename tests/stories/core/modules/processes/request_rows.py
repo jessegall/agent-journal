@@ -3,13 +3,14 @@ import os
 
 import pytest
 
-from engine.caller.caller_request import CallerRequest
+from engine.caller.caller_request import SESSION_VARIABLE, CallerRequest
 from engine.cli.line_run import LineRun
 from engine.enums.process_kind import ProcessKind
 from engine.event.event_log import EventLog
 from engine.query.queries import Queries
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.processes.models.request_run import RequestRun
+from core.modules.processes.ticks.request_log_import import RequestLogImport
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 PROCESSES_TABLE = "processes"
@@ -19,16 +20,19 @@ COMMANDS = (["task", "list"], ["agent", "list"], ["setting", "list"], ["doc", "l
 
 
 def run_command(story, argv: list[str]) -> int:
-    request = CallerRequest(dict(os.environ), os.getcwd(), os.getpid())
+    request = CallerRequest({**os.environ, SESSION_VARIABLE: "s-1"}, os.getcwd(), os.getpid())
     return LineRun(story.home).run(argv, request, io.StringIO())
 
 
 def events_of(story, work) -> list:
-    """The events `work` logged on request rows and on process rows. A request row is one creation. A process row
-    would be what a listener of a run's end waits for, so a hook or command logs none."""
+    """The events `work` and the two ticks that take and write the request log logged on request rows and on
+    process rows. A request row is one creation. A process row would be what a listener of a run's end waits for,
+    so a hook or command logs none."""
     log = story.container.get(EventLog)
     first = log.newest_id()
     work()
+    RequestLogImport()(story.container)
+    RequestLogImport()(story.container)
     return [event for event in log.events_after(first) if event.row_table in (REQUEST_RUNS_TABLE, PROCESSES_TABLE)]
 
 

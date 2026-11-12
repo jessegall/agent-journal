@@ -136,10 +136,18 @@ class WorktreeGit:
         else:
             self.checked(folder, CHECKOUT_LIMIT_SECONDS, "reset", "--hard", commit)
             self.checked(folder, GIT_LIMIT_SECONDS, "clean", "-fd", *(flag for name in libraries for flag in ("-e", name)))
+        self.restore_skipped_files(folder)
         for name in libraries:
             if not Path(folder, name).exists():
                 Path(folder, name).symlink_to(Path(source, name).resolve(), target_is_directory=True)
         return folder
+
+    def restore_skipped_files(self, folder: str) -> None:
+        """A reset leaves a tracked file marked skip-worktree as it is, so a test checkout lifts every mark and brings the files back."""
+        skipped = [line[len(SKIP_WORKTREE_MARK):] for line in self.checked(folder, GIT_LIMIT_SECONDS, "ls-files", "-v").stdout.splitlines() if line.startswith(SKIP_WORKTREE_MARK)]
+        if skipped:
+            self.checked(folder, GIT_LIMIT_SECONDS, "update-index", "--no-skip-worktree", "--", *skipped)
+            self.checked(folder, GIT_LIMIT_SECONDS, "restore", "--", *skipped)
 
     @staticmethod
     def test_folder(worktree: Worktree) -> str:
@@ -640,7 +648,7 @@ class WorktreeGit:
 
     def git(self, folder: str, limit_seconds: int, *arguments: str) -> subprocess.CompletedProcess[str]:
         line = ["git", "-C", folder, *arguments]
-        kind = ProcessKind.MERGE if self.subcommand(arguments) in BRANCH_CHANGES else ProcessKind.READ
+        kind = ProcessKind.MERGE if self.subcommand(arguments) in BRANCH_CHANGES else ProcessKind.QUICK
         try:
             done = self.executor.execute(ExecutionRequest(line, Path.cwd(), kind, limit_seconds))
             return subprocess.CompletedProcess(line, done.exit_code, done.stdout, done.stderr)

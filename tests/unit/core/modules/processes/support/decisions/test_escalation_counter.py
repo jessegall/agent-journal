@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from engine.query.conditions.among import Among
 from datetime import datetime, timedelta, timezone
@@ -61,8 +62,8 @@ class ResetsSample(EscalationResets):
     marked_at: dict[str, Timestamp] = field(default_factory=dict)
     skipped_at: dict[str, Timestamp] = field(default_factory=dict)
 
-    def last_marked_at(self, command_key: str) -> Timestamp | None:
-        return self.marked_at.get(command_key)
+    def last_marked_among(self, command_keys: Sequence[str]) -> dict[str, Timestamp | None]:
+        return {key: self.marked_at.get(key) for key in command_keys}
 
     def skipped_since(self, command_key: str, timestamp: Timestamp) -> bool:
         return command_key in self.skipped_at and self.skipped_at[command_key] > timestamp

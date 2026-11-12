@@ -14,8 +14,8 @@ class EscalationResets:
     def marked_keys(self, command_keys: Sequence[str]) -> frozenset[str]:
         return self.marks.marked_among(command_keys)
 
-    def last_marked_at(self, command_key: str) -> Timestamp | None:
-        return self.marks.last_marked_at(command_key)
+    def last_marked_among(self, command_keys: Sequence[str]) -> dict[str, Timestamp | None]:
+        return self.marks.last_marked_among(command_keys)
 
     def skipped_since(self, command_key: str, timestamp: Timestamp) -> bool:
         return False

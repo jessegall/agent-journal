@@ -41,7 +41,7 @@ class StartedPlanRows:
 
 
 def focus(ready=(), unblocked=(), plans=STARTED_PLANS):
-    next_tasks = SimpleNamespace(ready=lambda plan_id, agent: tuple(["a place"]) if (plan_id, agent.id) in ready else ())
+    next_tasks = SimpleNamespace(ready=lambda plan_ids, agent: {plan_id: tuple(["a place"]) if (plan_id, agent.id) in ready else () for plan_id in plan_ids})
     unblockers = SimpleNamespace(plan_unblockers=lambda plan_ids, agent: {
         plan_id: Unblockers(tuple([Unblocker(40, 2, 100)])) if (plan_id, agent.id) in unblocked else Unblockers() for plan_id in plan_ids})
     database = SimpleNamespace(change_mark=lambda: (0, 0), row_owner=None)
