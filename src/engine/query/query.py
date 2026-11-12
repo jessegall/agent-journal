@@ -40,7 +40,6 @@ from engine.query.errors.unnamed_column_error import UnnamedColumnError
 
 M = TypeVar("M", bound=Model | ViewModel, covariant=True)
 PAGE_SIZE_ROWS = 25
-READ_ALL_BATCH_ROWS = 1000
 AGENT_COLUMN = "agent_id"
 SESSION_COLUMN = "session_agent_id"
 REMOVED_COLUMN = "removed_at"
@@ -249,9 +248,6 @@ class Query(Generic[M]):
             self.database.report_cut(select.statement().sql, limit)
         return values[:limit]
 
-    def full_table(self, reason: str) -> Self:
-        return self.with_select(self.select.full_table(reason))
-
     def page(self, number: int = 1, size: int = PAGE_SIZE_ROWS) -> Page[M]:
         select = self.select.sliced(size, (number - 1) * size)
         if size > DEFAULT_LIMIT_ROWS:
@@ -288,23 +284,9 @@ class Query(Generic[M]):
             raise QueryLimitError(f"a read names at most {MOST_NAMED_LIMIT_ROWS} rows; walk the rows with every_row(reason) if you need them all")
         return rows
 
-    def limited(self, size: int) -> list[M]:
-        return self.rows(self.select.sliced(size, 0))
-
-    def rows_without(self, column: str) -> list[M]:
-        return list(self.matching(IsNull(column)).oldest().all_rows())
-
     def first(self) -> M | None:
-        rows = self.limited(1)
+        rows = self.rows(self.select.sliced(1, 0))
         return rows[0] if rows else None
-
-    def all_rows(self, size: int = READ_ALL_BATCH_ROWS) -> Iterator[M]:
-        offset = 0
-        while rows := self.rows(self.select.sliced(size, offset)):
-            yield from rows
-            if len(rows) < size:
-                return
-            offset += size
 
     def every_row(self, reason: str) -> Iterator[M]:
         """Every matching row in the order of the key, read 50 at a time past the last key read, never by offset: an

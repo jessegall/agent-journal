@@ -21,7 +21,7 @@ class PlaceRows:
     def find(self, agent_id):
         return SimpleNamespace(id=agent_id)
 
-    def all_rows(self):
+    def get(self):
         return [SimpleNamespace(task_id=task_id, plan_id=PLACES[task_id]) for task_id in self.task_ids if task_id in PLACES]
 
 

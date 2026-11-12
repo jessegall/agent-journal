@@ -13,7 +13,6 @@ from tests.stories.core.modules.messages.delivery import KeptTyping
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_outcome_with, expect_value_with
 
-TEST_ROWS_REASON = "the test reads every row it checks"
 
 
 def story_with_worker(new_story, typing=None):
@@ -40,7 +39,7 @@ def test_a_workers_report_is_typed_to_an_idle_main_agent(new_story):
 def test_a_workers_report_says_it_wakes_the_main_agent_and_stays_visible(new_story):
     story, worker = story_with_worker(new_story)
     report(story, worker)
-    line = next(story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).newest().every_row(TEST_ROWS_REASON))
+    line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).newest().first()
     expect_wakes_agent_proof(line)
     expect_outcome_with(line, "reports in message")
 

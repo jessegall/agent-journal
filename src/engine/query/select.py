@@ -16,7 +16,6 @@ class Select:
     orders: tuple[Order, ...] = ()
     limit: int = 0
     offset: int = 0
-    full_table_reason: str | None = None
     named_limit: int = 0
     joins: tuple[Join, ...] = ()
     group_columns: tuple[str, ...] = ()
@@ -49,9 +48,6 @@ class Select:
         """The select names how many rows it may load, which the read limit accepts up to that number."""
         return replace(self, named_limit=rows)
 
-    def full_table(self, reason: str) -> "Select":
-        return replace(self, full_table_reason=reason)
-
     def column(self, column: str) -> "Select":
         return replace(self, columns=column)
 
@@ -64,7 +60,7 @@ class Select:
         order = f" ORDER BY {', '.join(order.sql for order in self.orders)}" if self.orders else ""
         page = (f" LIMIT {self.limit}" + (f" OFFSET {self.offset}" if self.offset else "")) if self.limit else ""
         statement = self.filtered(Statement(f"SELECT {self.columns} FROM {self.source}")).joined(Statement(order + page), "")
-        return replace(statement, full_table_reason=self.full_table_reason, named_limit_rows=self.named_limit or None)
+        return replace(statement, named_limit_rows=self.named_limit or None)
 
     def count_statement(self) -> Statement:
         return self.filtered(Statement(f"SELECT count(*) FROM {self.source}"))

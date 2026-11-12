@@ -75,12 +75,12 @@ def test_counting_and_asking_whether_any_exist(entries: Query[LogEntry]):
 def test_every_row_is_walked_page_by_page_without_counting(entries: Query[LogEntry], monkeypatch: pytest.MonkeyPatch):
     counted: list[int] = []
     monkeypatch.setattr(Query, "count", lambda self: counted.append(1) or 0)
-    assert [entry.id for entry in entries.oldest().all_rows(size=3)] == [1, 2, 3, 4, 5, 6, 7]
+    assert [entry.id for entry in entries.every_row(TEST_ROWS_REASON)] == [1, 2, 3, 4, 5, 6, 7]
     assert counted == []
 
 
-@pytest.mark.parametrize(("row_count", "statement_count"), [(0, 1), (3, 1), (25, 2), (26, 2)])
-def test_all_rows_stops_after_a_short_page(entries: Query[LogEntry], row_count: int, statement_count: int):
+@pytest.mark.parametrize(("row_count", "statement_count"), [(0, 1), (3, 1), (26, 1)])
+def test_every_row_stops_after_a_short_statement(entries: Query[LogEntry], row_count: int, statement_count: int):
     statements = TableStatements(entries.table)
     for number in range(8, row_count + 1):
         entry = LogEntry(title=f"Book {number}")
@@ -88,14 +88,14 @@ def test_all_rows_stops_after_a_short_page(entries: Query[LogEntry], row_count: 
     reads: list[str] = []
     entries.database.connection.set_trace_callback(reads.append)
 
-    rows = list(entries.matching(Less("id", row_count + 1)).oldest().all_rows(size=25))
+    rows = list(entries.matching(Less("id", row_count + 1)).every_row(TEST_ROWS_REASON))
 
     entries.database.connection.set_trace_callback(None)
     assert [row.id for row in rows] == list(range(1, row_count + 1))
     assert len(reads) == statement_count
 
 
-def test_all_rows_reads_a_long_table_without_a_statement_per_small_page(entries: Query[LogEntry]):
+def test_every_row_reads_a_long_table_in_statements_of_fifty(entries: Query[LogEntry]):
     statements = TableStatements(entries.table)
     for number in range(8, 61):
         entry = LogEntry(title=f"Book {number}")
@@ -107,7 +107,7 @@ def test_all_rows_reads_a_long_table_without_a_statement_per_small_page(entries:
 
     entries.database.connection.set_trace_callback(None)
     assert [row.id for row in rows] == list(range(1, 61))
-    assert len(reads) == 1
+    assert len(reads) == 2
 
 
 class ShelfEntries(Query[LogEntry]):
