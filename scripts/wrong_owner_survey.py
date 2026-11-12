@@ -110,11 +110,18 @@ class WrongOwnerSurvey:
                 apart.append(f"{path}: its name says the {first_word} driver")
         return apart
 
+    @staticmethod
+    def is_register(path: Path, tree: ast.Module) -> bool:
+        """A file of one module's declarations, its nudges or its setting keys with the values they use, holding no
+        behaviour but the one class it is named for: one subject however many values it lists."""
+        behaviour = [node for node in tree.body if isinstance(node, (ast.ClassDef, ast.FunctionDef))]
+        return all(isinstance(node, ast.ClassDef) and snake_case(node.name) == path.stem for node in behaviour)
+
     def catch_all_files(self) -> list[str]:
         files = []
         for path in self.source_files:
             members = [node for node in self.trees[path].body if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.Assign))]
-            if path.stem.endswith(CATCH_ALL_ENDINGS) and "support" in path.parts and len(members) > 3:
+            if path.stem.endswith(CATCH_ALL_ENDINGS) and "support" in path.parts and len(members) > 3 and not self.is_register(path, self.trees[path]):
                 files.append(f"{path}: collects more than 3 classes, functions and values")
         return files
 
