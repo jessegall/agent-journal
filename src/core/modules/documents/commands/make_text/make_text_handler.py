@@ -7,6 +7,7 @@ from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
 from core.modules.documents.support.doc_revisions import DocRevisions
+from core.modules.documents.support.document_filers import DocumentFilers
 from core.modules.documents.support.markdown_check import MarkdownCheck
 from core.modules.documents.support.row_refs import RowRefs
 from core.modules.documents.support.row_link_writer import RowLinkWriter
@@ -17,11 +18,13 @@ class MakeTextHandler(Handler[MakeText, NewText]):
 
     command = MakeText
 
-    def __init__(self, repository: Repository, revisions: DocRevisions, row_refs: RowRefs, links: RowLinkWriter) -> None:
+    def __init__(self, repository: Repository, revisions: DocRevisions, row_refs: RowRefs, links: RowLinkWriter, filers: DocumentFilers) -> None:
         self.repository, self.revisions, self.row_refs = repository, revisions, row_refs
-        self.links = links
+        self.links, self.filers = links, filers
 
     def handle(self, command: MakeText, context: Context) -> NewText:
+        if issubclass(command.text_model, Doc):
+            self.filers.check(context.actor)
         MarkdownCheck.check(command.body)
         subject_refs = [self.row_refs.parsed(word) for text in command.subjects for word in text.replace(",", " ").split()]
         text_row = self.repository.save(command.text_model(creator_id=context.actor.id, title=command.title,

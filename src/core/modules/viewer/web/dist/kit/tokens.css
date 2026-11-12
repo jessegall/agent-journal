@@ -23,6 +23,7 @@
     --term: #0a0b0c;
     --raised: #18191c;
     --hover: #1d1e22;
+    --bar-track: #3a3c44;
     --sel: #212329;
     --tip-bg: var(--sel);
     --tip-edge: var(--border-3);

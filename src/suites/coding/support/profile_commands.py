@@ -19,6 +19,15 @@ DOCUMENT_COMMANDS = (
     "for all actions and each action's --help for its flags."
 )
 
+REPORT_COMMANDS = (
+    "\n\nFile findings with journal report make \"<title>\" --abstract \"<one line>\" --body \"<markdown>\". "
+    "Use --environment <name> to name the environment. A report is a one-time answer to a question and has no revisions; "
+    "journal doc make and journal doc edit are refused to you, because documents are for designs and plans. "
+    "Read reports with journal report list, journal report show, journal report inspect, journal report edit, "
+    "journal report comment and journal report comments, and read documents with journal doc list and journal doc show. "
+    "Use journal report --help for all actions and each action's --help for its flags."
+)
+
 PLAN_COMMANDS = (
     "\n\nCreate a plan with journal plan make \"<title>\" --brief \"<goal>\" --environment <name>. "
     "Add phases with journal phase make --plan <n> \"<title>\" --goal \"<done when>\"; "
