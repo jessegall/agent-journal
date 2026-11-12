@@ -36,4 +36,5 @@ class WorkerTaskAssignees(TaskAssignees):
             return
         if self.tasks.holder(task.holder_id).filter(state=TaskState.TESTING).exists():
             return
-        raise Refusal(f"task {task.id} is the last of {AgentLabel.from_row_id(task.holder_id, self.numbers, "worker").text}", f"journal worker release {AgentLabel.from_row_id(task.holder_id, self.numbers).number} \"<why>\" takes it back")
+        label = AgentLabel.from_row_id(task.holder_id, self.numbers, "worker")
+        raise Refusal(f"task {task.id} is the last of {label.text}", f"journal worker release {label.number} \"<why>\" takes it back")
