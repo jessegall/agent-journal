@@ -3,7 +3,7 @@ import {reactive, ref, watch} from "vue";
 import {peek} from "../../route.js";
 import {rowsOf} from "./agentView.js";
 import AgentFold from "./AgentFold.vue";
-import {wordLabel} from "../../domain/labels.js";
+import {agentTitle} from "../../domain/agentTitle.js";
 
 // the three folds at the foot of an agent's inspector: the helpers it started, the skills it loaded and its details, each with a plain label;
 // the inspector reads only the counts, and a list is read when its fold opens and again each time the inspector reloads while it stays open
@@ -19,14 +19,13 @@ watch(() => [shown.helpers, props.loads], async ([isOpen]) => {
 watch(() => [shown.skills, props.loads], async ([isOpen]) => {
     if (isOpen) skills.value = await listed(["agent-skill", "list", "--agent", String(props.id), "--state", "loaded"]);
 });
-const nameOf = (agent) => agent.given_name || `${wordLabel(agent.role)} ${agent.number}`;
 </script>
 
 <template>
     <AgentFold v-model:open="shown.helpers" icon="bot" label="Helpers" :count="counts.helpers">
         <template v-for="agent in helpers" :key="agent.id">
             <button type="button" class="row" data-agent-helper @click="peek('agents', agent.id)">
-                <span class="text">{{ nameOf(agent) }}</span><span class="aside">{{ wordLabel(agent.role) }} {{ agent.id }}</span>
+                <span class="text">{{ agentTitle(agent).title }}</span><span class="aside">{{ agentTitle(agent).subtext }}</span>
             </button>
         </template>
         <template v-if="!helpers.length">
