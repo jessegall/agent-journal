@@ -74,3 +74,9 @@ def test_a_quick_run_past_its_limit_is_not_stopped_but_moves_to_the_background_o
     door, placement = executor()
     execution = door.execute(ExecutionRequest(["sh", "-c", "sleep 0.4; echo late"], tmp_path, ProcessKind.QUICK, 0.1))
     assert (execution.stdout, placement.moved, len(placement.ended_runs), placement.ended_runs[0][1].exit_code) == ("late\n", [1], 1, 0)
+
+
+def test_a_byte_that_is_not_utf8_on_either_pipe_is_replaced_and_the_run_still_ends(tmp_path: Path):
+    door, placement = executor()
+    execution = door.execute(ExecutionRequest(["sh", "-c", r"printf 'a\377b'; printf 'c\377d' >&2"], tmp_path, ProcessKind.SHELL, 5))
+    assert (execution.stdout, execution.stderr, placement.ended_runs[0][1].exit_code) == ("a�b", "c�d", 0)

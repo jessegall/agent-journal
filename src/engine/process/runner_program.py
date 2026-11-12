@@ -9,12 +9,12 @@ from engine.process.run_placement import RunPlacement
 class RunnerProgram:
     """Runs an admitted program to its end. A quick run still going at its limit is not stopped: it moves to the
     background on its row and the caller waits on for its result; any other run fails naming its command when it
-    passes its limit."""
+    passes its limit. Output that is not UTF-8 is read with each bad byte replaced, never refused."""
 
     def run(self, placed: PlacedRun, placement: RunPlacement) -> Execution:
         request = placed.request
         child = subprocess.Popen(list(request.line), cwd=request.folder, stdin=subprocess.PIPE if request.stdin is not None else subprocess.DEVNULL,
-                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=None if request.variables is None else dict(request.variables))
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8", errors="replace", env=None if request.variables is None else dict(request.variables))
         try:
             stdout, stderr = child.communicate(request.stdin, timeout=request.limit_seconds)
         except subprocess.TimeoutExpired as error:
