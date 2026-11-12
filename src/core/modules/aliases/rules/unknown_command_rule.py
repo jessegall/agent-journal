@@ -5,6 +5,10 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.aliases.support.alias_nudges import COMMAND_TYPE_UNKNOWN
 from core.modules.drivers.support.suite_choice import SuiteChoice
+from core.modules.processes.models.enums.reading_exit import ReadingExit
+from core.modules.processes.support.reading.exit_texts import ExitTexts
+
+UNCLASSIFIED_HINT = f"{ExitTexts.sentences((ReadingExit.CLASSIFY,))}, process when no type fits"
 
 
 class UnknownCommandRule(DriverRule):
@@ -24,4 +28,4 @@ class UnknownCommandRule(DriverRule):
         if shell is None or shell.parse_error or not shell.aliases_loaded or hook.role not in self.suites.agent_policy().saved_command_roles:
             return RuleAnswer.allowed()
         unknown = next((part for part in shell.parts if part.program and part.classification.category is CommandCategory.UNKNOWN), None)
-        return RuleAnswer.refused(COMMAND_TYPE_UNKNOWN.nudge(program=unknown.program)) if unknown else RuleAnswer.allowed()
+        return RuleAnswer.refused(COMMAND_TYPE_UNKNOWN.nudge(program=unknown.program, hint=UNCLASSIFIED_HINT)) if unknown else RuleAnswer.allowed()
