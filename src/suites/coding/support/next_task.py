@@ -68,8 +68,8 @@ class NextTask(TaskAssigner[Task]):
 
     def own_tasks(self, agent_ids: Sequence[int]) -> dict[int, tuple[int, ...]]:
         tasks = self.queries.query(Task).matching(Among("state", [TaskState.OPEN, TaskState.STARTED])).ordered("id")
-        held = tasks.matching(Among("holder_id", agent_ids)).all_rows(TASK_PAGE_ROWS)
-        assigned = tasks.matching(AssigneeAmong(Task, tuple(agent_ids))).all_rows(TASK_PAGE_ROWS)
+        held = tuple(tasks.matching(Among("holder_id", agent_ids)).all_rows(TASK_PAGE_ROWS))
+        assigned = tuple(tasks.matching(AssigneeAmong(Task, tuple(agent_ids))).all_rows(TASK_PAGE_ROWS))
         actor_ids = self.assignments.row_actor_ids(Task, sorted({task.id for task in (*held, *assigned)}))
         own: dict[int, set[int]] = defaultdict(set)
         for task in held:

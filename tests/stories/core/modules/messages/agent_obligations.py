@@ -105,9 +105,9 @@ def test_a_main_agent_that_wrote_many_messages_since_an_answered_report_is_check
 
 def test_a_helper_that_wrote_many_messages_since_an_answered_one_is_checked_within_the_read_limit(new_story):
     story = beside_story(new_story)
-    story.expect_success(f'message send "Read the cart" --to agent:{agent_number(story, story.helper.id)}', actor=story.agent)
+    story.expect_success(f'message send "Read the totals" --to agent:{agent_number(story, story.helper.id)}', actor=story.agent)
     story.expect_success("message read 1", actor=story.helper)
-    story.expect_success('message reply 1 "Reading it"', actor=story.helper)
+    story.expect_success(f'message send "Reading it" --to agent:{agent_number(story, story.agent.id)}', actor=story.helper)
     for number in range(READ_LIMIT_ROWS + 10):
         story.expect_success(f'message send "Step {number} is done" --to agent:{agent_number(story, story.agent.id)}', actor=story.helper)
     limit_reads(story)

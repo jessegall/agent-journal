@@ -19,9 +19,9 @@ from engine.cli.row_numbers import RowNumbers
 class WorkerTaskWaitTargets(TaskWaitTargets):
     """Validates worker wait targets and resolves them after the worker finishes."""
 
-    def __init__(self, database: Database, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, waits: TaskWaits, numbers: RowNumbers) -> None:
+    def __init__(self, database: Database, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, waits: TaskWaits, numbers: RowNumbers, tasks: TaskQuery) -> None:
         super().__init__(database, queries, numbers)
-        self.queries, self.worktrees, self.proofs, self.waits = queries, worktrees, proofs, waits
+        self.queries, self.worktrees, self.proofs, self.waits, self.tasks = queries, worktrees, proofs, waits, tasks
 
     @property
     def target_types(self) -> tuple[str, ...]:
@@ -57,8 +57,7 @@ class WorkerTaskWaitTargets(TaskWaitTargets):
         return task.started_at is None or task.started_at.value <= worker.ended_at.value
 
     def holds_work(self, worker: Agent) -> bool:
-        assigned = self.queries.query(Task).matching(TaskQuery.assignee(worker.id))
-        return assigned.filter(state=TaskState.OPEN).exists() or (worker.ended_at is None and assigned.filter(state=TaskState.STARTED).exists())
+        return any(task.state is TaskState.OPEN or worker.ended_at is None for task in self.tasks.unfinished_assigned(worker.id))
 
     def resolve_waits(self, worker_id: int, context: Context) -> None:
         waits = self.waits.pending_target(f"workers:{worker_id}")

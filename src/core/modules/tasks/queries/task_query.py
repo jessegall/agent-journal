@@ -53,6 +53,12 @@ class TaskQuery(Query[Task]):
         return self.kept.owner_read(self.table.name, lambda: tuple(self.open_tasks().matching(self.assignee(actor_id)).oldest().all_rows(TASK_PAGE_ROWS)),
                               f"state = ? AND {assignee.sql}", [TaskState.OPEN, *assignee.parameters], name="tasks.queued_tasks")
 
+    def unfinished_assigned(self, actor_id: int) -> tuple[Task, ...]:
+        assignee = self.assignee(actor_id).statement()
+        states = [TaskState.OPEN, TaskState.STARTED]
+        return self.kept.owner_read(self.table.name, lambda: tuple(self.assignee_tasks(actor_id).matching(Among("state", states)).oldest().all_rows(TASK_PAGE_ROWS)),
+                                    f"state IN (?, ?) AND {assignee.sql}", [*states, *assignee.parameters], name="tasks.unfinished_assigned")
+
     def assigned_ready(self, actor_id: int) -> tuple[Task, ...]:
         assignee, dependency_free = self.assignee(actor_id).statement(), self.no_open_dependency().statement()
         return self.kept.owner_read(self.table.name, lambda: tuple(self.open_tasks().matching(self.assignee(actor_id)).matching(self.no_open_dependency()).oldest().all_rows(TASK_PAGE_ROWS)),

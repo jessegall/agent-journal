@@ -162,7 +162,7 @@ def test_removing_a_plugin_unlinks_a_worktree_skill_without_removing_its_target(
 
 
 def published_skill_folders(story) -> list[Path]:
-    return [root / "sample-rules" for root in (story.project_folder / ".claude" / "skills", story.project_folder / ".agents" / "skills")]
+    return [root / "sample-rules" for root in (story.home.folder.parent / ".claude" / "skills", story.home.folder.parent / ".agents" / "skills")]
 
 
 def test_disabling_a_plugin_keeps_the_skills_it_published_and_removing_it_removes_them(new_story):
