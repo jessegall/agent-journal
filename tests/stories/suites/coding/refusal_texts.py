@@ -6,7 +6,7 @@ AUTO = "journal.suites.coding.auto-mode"
 HELPERS = "journal.suites.coding.main-starts-read-only-helpers"
 DISPATCHES = "journal.suites.coding.workers.main-dispatches-workers"
 HELPER_START = HookSamples.shell("journal helper start journal-researcher", ShellPart("journal", "journal", ["helper", "start", "journal-researcher"]))
-WORKER_DISPATCH = HookSamples.shell("journal worker dispatch 1", ShellPart("journal", "journal", ["worker", "dispatch", "1"]))
+WORKER_DISPATCH = HookSamples.shell("journal worker dispatch 1 --model sonnet", ShellPart("journal", "journal", ["worker", "dispatch", "1", "--model", "sonnet"]))
 
 
 def test_dispatch_ban_while_writing_no_code_says_nothing_can_be_done_until_a_person_allows_it(new_story):

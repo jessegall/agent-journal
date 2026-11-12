@@ -108,9 +108,9 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
 
     def facts(self, card: AgentCard, policy: AgentPolicy, titles: dict[str, str], work_status: str | None, status: SessionStatus, account: tuple[PlanWindow, ...], sandboxed: bool, merged: MergedWork | None) -> AgentFacts:
         blocked_reason = AgentBlocked(self.settings.number(BLOCK_CARD_SECONDS)).reason(card, self.clock.timestamp(), policy)
-        return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.job_model, self.context_percent(card, status), status.cost_dollars, card.started_task_id, card.started_task_title,
+        return AgentFacts(card.id, self.model(card, status) or card.program_model or card.job_model, self.context_percent(card, status), status.cost_dollars, card.started_task_id, card.started_task_title,
                           self.current_round(json.loads(card.tasks), merged), self.waiting_state(card, blocked_reason), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
-                          card.job_instruction, status.effort or self.session_effort(card), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), card.helper_job_title, titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not sandboxed, status.windows or account, card.usage_limit_ends_at.text if card.usage_limit_ends_at is not None else None,
+                          card.job_instruction, self.effort(card, status), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), card.helper_job_title, titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not sandboxed, status.windows or account, card.usage_limit_ends_at.text if card.usage_limit_ends_at is not None else None,
                           helper_job_program=card.helper_job_program, occupant_launch=self.occupant_launch(card), is_helper_job_open=card.is_helper_job_open, is_context_unknown=self.is_context_unknown(card))
 
     @staticmethod
@@ -137,10 +137,14 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
             return self.share.usage_within(card.program, card.session, cap).percent
         return None if status.context_percent is None else self.share.reading_within(ContextWindow(status.context_percent, status.context_tokens), cap).percent
 
-    def reported_model(self, card: AgentCard) -> str:
+    def model(self, card: AgentCard, status: SessionStatus) -> str:
+        if status.is_reported:
+            return status.model
         return self.providers.reported_model(card.program, self.home, card.session)
 
-    def session_effort(self, card: AgentCard) -> str:
+    def effort(self, card: AgentCard, status: SessionStatus) -> str:
+        if status.is_reported:
+            return status.effort
         return self.providers.session_effort(card.program, self.home, card.session)
 
     @staticmethod
