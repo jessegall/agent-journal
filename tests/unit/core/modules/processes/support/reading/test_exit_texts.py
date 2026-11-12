@@ -18,4 +18,4 @@ def test_every_level_above_a_suggestion_states_an_exit_the_agent_takes_alone(lev
 
 def test_an_exit_names_its_command_with_the_command_and_the_output():
     listed = ExitTexts.listed((ReadingExit.COMPLY, ReadingExit.READ_OUTPUT), "make build", 7)
-    assert listed == "add or fix the reader: journal reader add make build; read the output: journal output read 7"
+    assert listed == "add or fix the reader: journal reader add make build; read it: journal output read 7"

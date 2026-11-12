@@ -16,8 +16,8 @@ EXIT_TEXTS: dict[ReadingExit, ExitText] = {
     ReadingExit.COMPLY: ExitText("add or fix the reader", "journal reader add {name}"),
     ReadingExit.SKIP_WITH_REASON: ExitText("skip this one start and say why", "journal refusal skip processes.reading --reason '<why>'"),
     ReadingExit.DECLARE_UNREADABLE: ExitText("mark the command unreadable", 'journal reader unreadable "{name}" --reason "<why>"'),
-    ReadingExit.READ_OUTPUT: ExitText("read the output", "journal output read {output}"),
-    ReadingExit.STOP_RUN: ExitText("stop the run", "journal output stop {output}"),
+    ReadingExit.READ_OUTPUT: ExitText("read it", "journal output read {output}"),
+    ReadingExit.STOP_RUN: ExitText("stop it", "journal output stop {output}"),
     ReadingExit.CLASSIFY: ExitText("say what type the command is", 'journal command-type make "{name}" "<type>"'),
     ReadingExit.EXPIRES: ExitText("wait until the block expires"),
     ReadingExit.PERSON_RELEASES: ExitText("a person releases it"),
@@ -36,3 +36,8 @@ class ExitTexts:
     @staticmethod
     def said(text: ExitText, name: str, output: int) -> str:
         return f"{text.sentence}: {text.command.format(name=name, output=output)}" if text.command else text.sentence
+
+    @staticmethod
+    def sentences(exits: Sequence[ReadingExit]) -> str:
+        """The exits said in their sentences alone, for a line too short to name their commands."""
+        return "; ".join(EXIT_TEXTS[way].sentence for way in exits)

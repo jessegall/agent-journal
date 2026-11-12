@@ -61,7 +61,7 @@ SANDBOX_FOLDER_MISSING = NudgeDeclaration("processes.sandbox_folder_missing", Nu
 MOVE_BAN = NudgeDeclaration("processes.do_not_move", NudgeType.REFUSAL, 'do not move with cd: you are in {folder}; use paths, or a tool flag such as npm --prefix')
 OUTPUT_RUNNING = NudgeDeclaration("processes.output_running", NudgeType.STEERING, 'output {output}: running')
 SILENT_RUN_HELD = NudgeDeclaration("processes.silent_run_held", NudgeType.REFUSAL,
-                                   "output {output} printed nothing for {seconds} seconds, processor time {processor}: read it, or stop it",
+                                   "output {output} printed nothing for {seconds} seconds, processor time {processor}: {hint}",
                                    required_command="journal output read {output} --tail 5")
 SLEEP_REFUSED = NudgeDeclaration("processes.sleep_refused", NudgeType.REFUSAL, 'a sleep is refused: you are told when a run ends')
 RUN_NAME = NudgeDeclaration("processes.name_the_run", NudgeType.STEERING, 'output {process} has its raw command as its title: give it a title', required_command="journal output title {process}")

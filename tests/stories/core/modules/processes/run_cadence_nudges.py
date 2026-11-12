@@ -22,7 +22,7 @@ def test_the_hold_names_what_to_do_and_the_read_it_lets_through_shows_the_lines(
     process = moved_run(story, "make bundle", CommandCategory.BUILD)
     printed_now(story, process, "bundling the secret module\n")
     story.advance(timedelta(seconds=HANG_SECONDS + 1))
-    story.expect_hook_refusal(MAIN, TOOL_USE, f"output {process.id} printed nothing for {HANG_SECONDS + 1} seconds, processor time not known: read it, or stop it")
+    story.expect_hook_refusal(MAIN, TOOL_USE, f"output {process.id} printed nothing for {HANG_SECONDS + 1} seconds, processor time not known: read it; stop it; a person releases it")
     reply = story.hook(MAIN, TOOL_USE)
     story.expect_rows("secret" not in reply.refusal, detail=reply.refusal)
     story.expect_hook_allowed(MAIN, read_tail(process.id))
