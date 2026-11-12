@@ -1,4 +1,4 @@
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from copy import copy
 from dataclasses import replace
 from typing import Generic, Self, TypeVar
@@ -36,9 +36,11 @@ from engine.query.errors.unknown_table_error import UnknownTableError
 from engine.query.join import Join
 from engine.query.errors.unknown_operator_error import UnknownOperatorError
 from engine.query.errors.unnamed_column_error import UnnamedColumnError
+from engine.query.errors.column_kind_error import ColumnKindError
 
 
 M = TypeVar("M", bound=Model | ViewModel, covariant=True)
+V = TypeVar("V")
 PAGE_SIZE_ROWS = 25
 AGENT_COLUMN = "agent_id"
 SESSION_COLUMN = "session_agent_id"
@@ -49,7 +51,7 @@ ALL_COLUMNS = "*"
 DEFAULT_LIMIT_ROWS = 50
 MOST_NAMED_LIMIT_ROWS = 1000
 WALK_ROWS = 50
-COMPARISONS: dict[str, type[Condition]] = {">": Greater, "<": Less, ">=": Minimum, "<=": Maximum}
+COMPARISONS: dict[str, Callable[[str, object], Condition]] = {">": Greater, "<": Less, ">=": Minimum, "<=": Maximum}
 OPERATORS = ("=", "!=", "<", "<=", ">", ">=")
 
 
@@ -107,8 +109,10 @@ class Query(Generic[M]):
         return COMPARISONS[str(operator)](str(column), stored(value))
 
     def select_columns(self, *columns: str) -> Self:
-        """Reads only the named columns, which may name this table's columns as table.column or table.*."""
-        self.checked(*(column.split(".", 1)[1] if column.startswith(f"{self.table.name}.") else column for column in columns if not column.endswith(".*")))
+        """Reads only the named columns: this table's by name, and this table's or a joined table's as table.column or
+        table.*."""
+        self.checked_qualified(*(column for column in columns if "." in column))
+        self.checked(*(column for column in columns if "." not in column))
         return self.with_select(self.select.column(", ".join(columns)))
 
     def where_in(self, column: str, values: "Sequence[object] | Query[Model]") -> Self:
@@ -237,17 +241,24 @@ class Query(Generic[M]):
         width = len(select.group_columns)
         return {(tuple(row[:width]) if width > 1 else row[0]): row[width] for row in self.database.rows(select.group_count_statement())}
 
-    def pluck(self, column: str) -> list[object]:
-        """The values of one column of the rows, at most the limit of the read."""
+    def pluck(self, column: str, kind: type[V]) -> list[V]:
+        """The values of one column of the rows, at most the limit of the read, each of the kind named; a value of
+        another kind is refused, since the column's type names what it holds."""
         self.checked(column)
         limit = self.select.limit or DEFAULT_LIMIT_ROWS
         select = self.scoped(self.select.column(column).sliced(limit + 1, 0).named(limit + 1))
         if select.is_empty:
             return []
-        values = [row[0] for row in self.database.rows(select.statement())]
+        values = [Query.of_kind(row[0], kind, column) for row in self.database.rows(select.statement())]
         if len(values) > limit:
             self.database.report_cut(select.statement().sql, limit)
         return values[:limit]
+
+    @staticmethod
+    def of_kind(value: object, kind: type[V], column: str) -> V:
+        if not isinstance(value, kind):
+            raise ColumnKindError(f"{column} holds {type(value).__name__} {value!r}, not {kind.__name__}")
+        return value
 
     def page(self, number: int = 1, size: int = PAGE_SIZE_ROWS) -> Page[M]:
         select = self.select.sliced(size, (number - 1) * size)
@@ -319,7 +330,7 @@ class Query(Generic[M]):
             return 0
         return self.database.rows(select.count_statement())[0][0]
 
-    def counts_after(self, column: str, starts: Sequence[object]) -> list[int]:
+    def counts_after(self, column: str, starts: Sequence[str]) -> list[int]:
         """For each start, how many rows have the column past it, in the order of the starts, read in one statement
         that reads no row before the earliest start."""
         self.checked(column)

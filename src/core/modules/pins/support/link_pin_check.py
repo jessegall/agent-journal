@@ -62,14 +62,14 @@ class LinkPinCheck:
 
     def first_unpinned_command(self, text: str) -> str | None:
         commands = dict.fromkeys(f"! {line.strip()}" for line in BANG_COMMAND.findall(text))
-        pinned = set(self.queries.query(Pin).matching(IsNull("closed_at")).matching(Among("link", tuple(commands))).pluck("link"))
+        pinned = set(self.queries.query(Pin).matching(IsNull("closed_at")).matching(Among("link", tuple(commands))).pluck("link", str))
         return next((command for command in commands if command not in pinned), None)
 
     def change_request_pins(self, text: str) -> list[MakePin]:
         repositories = self.repositories.names()
         links = dict.fromkeys(url.rstrip(".,;:/") for url in LINK.findall(text) if self.is_complete_link(url) and PR_ADDRESS.fullmatch(url.rstrip(".,;:/"))
                               and self.repository(url.rstrip(".,;:/")) in repositories)
-        pinned = set(self.queries.query(Pin).matching(Among("link", self.with_trailing_slashes(tuple(links)))).pluck("link"))
+        pinned = set(self.queries.query(Pin).matching(Among("link", self.with_trailing_slashes(tuple(links)))).pluck("link", str))
         return [MakePin(f"Pull request {url.rsplit('/', 1)[-1]}", url, OPEN_LABEL) for url in links if url not in pinned and f"{url}/" not in pinned]
 
     @staticmethod
@@ -116,7 +116,7 @@ class LinkPinCheck:
             return None
         variants = self.with_trailing_slashes(tuple(url.rstrip("/") for url in links))
         pins = self.queries.query(Pin).matching(IsNull("closed_at")).matching(Among("link", variants))
-        pinned = self.kept.read(pins, lambda: set(pins.pluck("link")), name="pins.open_links")
+        pinned = self.kept.read(pins, lambda: set(pins.pluck("link", str)), name="pins.open_links")
         return next((url for url in links if url.rstrip("/") not in pinned and f"{url.rstrip('/')}/" not in pinned), None)
 
     def claims_missing_pin(self, text: str) -> bool:

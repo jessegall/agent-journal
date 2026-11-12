@@ -44,7 +44,7 @@ UNKNOWN_COLUMN_READS = {
     "where_column": lambda query: query.where_column("titel", "log_entries.id"),
     "order_by": lambda query: query.order_by("titel"),
     "group_by": lambda query: query.group_by("titel"),
-    "pluck": lambda query: query.pluck("titel"),
+    "pluck": lambda query: query.pluck("titel", str),
     "select": lambda query: query.select_columns("titel"),
 }
 

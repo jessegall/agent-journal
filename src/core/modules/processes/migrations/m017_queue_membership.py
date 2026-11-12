@@ -26,6 +26,7 @@ class QueueMembershipMigration(Migration):
         while rows := self.selected(database, ("SELECT id FROM processes WHERE id > ? AND state IN ('running', 'background')"
                                               " AND is_queue_run = 0 ORDER BY id LIMIT ?"), [last_id, READ_SIZE]):
             for row in rows:
-                if folder.has_slot(row[0]):
+                process_id = row[0]
+                if isinstance(process_id, int) and folder.has_slot(process_id):
                     database.update(Statement("UPDATE processes SET is_queue_run = 1 WHERE id = ?", [row[0]]))
             last_id = rows[-1][0]

@@ -77,7 +77,7 @@ class PluginRule(DriverRule):
     def queued(self, hook: AgentHook, plugin: Plugin, lines: list[str], commands: list[Command[object]]) -> None:
         queue = PluginQueue(self.folders.data(plugin.name))
         reserved = queue.reserved_names()
-        committed: set[str] = {str(name) for name in self.queries.query(PluginQueueFile).filter(plugin_id=plugin.id).matching(Among("name", reserved)).pluck("name")} if reserved else set()
+        committed: set[str] = set(self.queries.query(PluginQueueFile).filter(plugin_id=plugin.id).matching(Among("name", reserved)).pluck("name", str)) if reserved else set()
         read = queue.reserve(hook.event.environment, hook.agent_id, hook.event.firing, committed, self.clock)
         for name, answer in read.answers:
             lines.extend([f"[plugin {plugin.name}] {answer.line}"] if answer.line else [])

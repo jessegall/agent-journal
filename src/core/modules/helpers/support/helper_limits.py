@@ -58,7 +58,7 @@ class HelperLimits:
             raise Refusal("a helper needs the launcher, which is not running", "keep your work and start the journal with journal launch")
 
     def checked_running(self, profile: str) -> None:
-        running_ids = set(self.helpers(profile).matching(IsNull("ended_at")).pluck("id")) | self.kept.with_open_jobs(profile)
+        running_ids = set(self.helpers(profile).matching(IsNull("ended_at")).pluck("id", int)) | self.kept.with_open_jobs(profile)
         limit = self.helper_limits(profile).run
         if len(running_ids) >= limit:
             names = ", ".join(f"agent:{self.numbers.number(AGENT_MODEL_NAME, helper_id)}" for helper_id in sorted(running_ids))[:RUNNING_NAMES_CHARACTERS]

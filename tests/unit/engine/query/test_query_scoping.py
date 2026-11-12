@@ -23,6 +23,7 @@ WALK_REASON = "the test reads every shelf"
 @dataclass(frozen=True, kw_only=True)
 class Shelf(EnvironmentScoped, Model):
     model_name = "shelf"
+    table = "shelves"
     cli_name = "shelf"
 
     environment_id: int = 0
@@ -120,7 +121,7 @@ def test_count_by_applies_the_scope(database, tables):
 
 
 def test_pluck_applies_the_scope(database, tables):
-    assert shelves(database, tables).where("id", "<=", 4).pluck("name") == ["Shelf 1", "Shelf 3"]
+    assert shelves(database, tables).where("id", "<=", 4).pluck("name", str) == ["Shelf 1", "Shelf 3"]
 
 
 def test_get_applies_the_scope_and_the_default_limit_together(database, tables):
@@ -138,4 +139,4 @@ def test_every_row_applies_the_scope_on_each_statement(database, tables, stateme
 
 def test_an_agent_scoped_read_keeps_the_agents_rows(database, tables):
     database.row_owner = RowOwner(agent=7, environment_id=None)
-    assert Query(database, tables, Note).pluck("shelf_id") == [1]
+    assert Query(database, tables, Note).pluck("shelf_id", int) == [1]

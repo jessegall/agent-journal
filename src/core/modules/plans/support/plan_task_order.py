@@ -42,7 +42,7 @@ class PlanTaskOrder:
         if not tasks:
             return None
         rows = self.task_rows(tasks)
-        started_plan_ids = set(self.queries.query(Plan).filter(state=PlanState.STARTED).pluck("id"))
+        started_plan_ids = set(self.queries.query(Plan).filter(state=PlanState.STARTED).pluck("id", int))
         waiting_task_ids = {row.task_id for row in rows if row.plan_id not in started_plan_ids}
         return self.earliest([task for task in tasks if task.id not in waiting_task_ids], rows, ())
 

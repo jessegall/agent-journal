@@ -30,7 +30,7 @@ class Seeder:
             columns = tuple(rows[0])
             self.tables.insert_rows(seed.table, columns, [tuple(row[column] for column in columns) for row in rows])
         self.facts.reset(seed.table)
-        return tuple(row[ID_COLUMN] for row in rows)
+        return tuple(first_id - index for index in range(count))
 
     @contextmanager
     def filling(self) -> Generator[None]:

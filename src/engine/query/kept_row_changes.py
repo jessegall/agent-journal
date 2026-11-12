@@ -15,8 +15,8 @@ class KeptRowChanges(Generic[M]):
     def remove(self, row: M) -> None:
         self.update_kept(row, ())
 
-    def kept_rows(self, row: M) -> tuple[M, ...]:
+    def kept_rows(self, row: M, /) -> tuple[M, ...]:
         return tuple([row])
 
-    def update_kept(self, row: M, kept: tuple[M, ...]) -> None:
+    def update_kept(self, row: M, kept: tuple[M, ...], /) -> None:
         raise NotImplementedError(f"{type(self).__name__} keeps no read to update")

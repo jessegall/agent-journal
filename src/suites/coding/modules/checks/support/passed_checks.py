@@ -13,5 +13,5 @@ class PassedChecks(StepChecks):
         self.checks = checks
 
     def unpassed(self, numbers: Sequence[int]) -> tuple[int, ...]:
-        passed = set(self.checks.matching(IsNull("removed_at")).filter(last_passed=True).matching(Among("id", tuple(numbers))).pluck("id"))
+        passed = set(self.checks.matching(IsNull("removed_at")).filter(last_passed=True).matching(Among("id", tuple(numbers))).pluck("id", int))
         return tuple(number for number in numbers if number not in passed)

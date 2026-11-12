@@ -25,7 +25,8 @@ class AgentJobCounts:
         jobs: dict[int, int] = defaultdict(int)
         for model, agent_column in WORK_SOURCES:
             for agent_id, count in self.queries.query(model).matching(Greater("created_at", oldest_created_at)).matching(HasValue(agent_column)).group_by(agent_column).count_by().items():
-                jobs[int(agent_id)] += count
+                if isinstance(agent_id, int):
+                    jobs[agent_id] += count
         counts: dict[tuple[str, str], int] = defaultdict(int)
         agents = self.queries.query(Agent).matching(Among("id", list(jobs))).matching(Excluding(Equal("role", MAIN_ROLE)))
         for agent in agents.every_row(WORKING_AGENTS_REASON):

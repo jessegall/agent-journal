@@ -35,7 +35,7 @@ class KeptHelpers:
     def with_open_jobs(self, profile: str) -> set[int]:
         """The helpers of a profile with an open job, at most the 50 newest: more than any run limit."""
         jobs = self.open_jobs().where(profile=profile).where_not_null("helper_id").newest()
-        return self.kept_rows.read(jobs, lambda: set(jobs.pluck("helper_id")), name="helpers.with_open_jobs")
+        return self.kept_rows.read(jobs, lambda: set(jobs.pluck("helper_id", int)), name="helpers.with_open_jobs")
 
     def has_open_job(self, helper: Agent) -> bool:
         return self.open_jobs().where(helper_id=helper.id).exists()

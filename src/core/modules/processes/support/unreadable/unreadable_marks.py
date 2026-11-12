@@ -29,7 +29,7 @@ class UnreadableMarks:
         """The commands a standing mark covers, from one read of the marks of all of them."""
         covering = {command: UnreadableMarks.covering_words(command) for command in dict.fromkeys(commands)}
         words = sorted({word for leading in covering.values() for word in leading})
-        marked = set(self.marks.standing().of_words(words).pluck("words")) if words else set()
+        marked = set(self.marks.standing().of_words(words).pluck("words", str))
         return frozenset(command for command, leading in covering.items() if marked.intersection(leading))
 
     def excuses(self, command: str) -> bool:
@@ -42,7 +42,7 @@ class UnreadableMarks:
         covering = {command: UnreadableMarks.covering_words(command) for command in dict.fromkeys(commands)}
         words = sorted({word for leading in covering.values() for word in leading})
         newest: dict[str, Timestamp] = {}
-        for mark in (self.marks.of_words(words).every_row(MARKS_OF_WORDS_REASON) if words else []):
+        for mark in self.marks.of_words(words).every_row(MARKS_OF_WORDS_REASON):
             made_at = mark.creation_timestamp()
             if mark.words not in newest or made_at > newest[mark.words]:
                 newest[mark.words] = made_at

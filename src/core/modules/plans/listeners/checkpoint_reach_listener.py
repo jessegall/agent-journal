@@ -35,7 +35,7 @@ class CheckpointReachListener(CommitListener[Moved[Task]]):
         places = tuple(self.queries.query(PlanTask).matching(Among("task_id", [event.row_id for event in events])).every_row(CHANGED_TASKS_REASON))
         plans = {plan.id: plan for plan in self.queries.query(Plan).find_many(sorted({place.plan_id for place in places}))}
         self.places = {place.task_id: place for place in places if plans[place.plan_id].state is PlanState.STARTED}
-        self.recorded_plan_ids = set()
+        self.recorded_plan_ids = set[int]()
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
         place = self.places.get(event.row.id)

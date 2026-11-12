@@ -55,7 +55,7 @@ class PlanCheckpoints:
         return windows.status_lines(newest, self.passed_phase_ids(plan_id))
 
     def passed_phase_ids(self, plan_id: int) -> frozenset[int]:
-        return frozenset(self.queries.query(CheckpointPass).filter(plan_id=plan_id).pluck("phase_id"))
+        return frozenset(self.queries.query(CheckpointPass).filter(plan_id=plan_id).pluck("phase_id", int))
 
     def is_end_passed(self, plan_id: int) -> bool:
         return self.windows(plan_id).is_end_passed(self.passed_phase_ids(plan_id))

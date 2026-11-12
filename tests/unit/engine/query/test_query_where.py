@@ -94,4 +94,4 @@ def test_where_prefix_and_where_null_and_where_not_null_write_their_sql(entries:
 
 
 def test_pluck_gives_a_list_of_plain_values_at_most_50(entries: Query[LogEntry]):
-    assert entries.where("id", "<=", 3).pluck("title") == ["Book 1", "Book 2", "Book 3"]
+    assert entries.where("id", "<=", 3).pluck("title", str) == ["Book 1", "Book 2", "Book 3"]

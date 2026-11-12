@@ -114,4 +114,4 @@ class ReadingFacts:
 
     def waiting_commands(self, process: Process, commands: Sequence[str]) -> set[str]:
         open_requests = self.requests.open().filter(creator_id=process.session_agent_id).matching(Among("command", tuple(dict.fromkeys(commands))))
-        return set(open_requests.pluck("command"))
+        return set(open_requests.pluck("command", str))
