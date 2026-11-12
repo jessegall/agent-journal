@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
 from engine.setting.setting_values import SettingValues
-from core.modules.settings.commands.support.setting_store import SettingStore
+from core.modules.settings.support.setting_store import SettingStore
 from core.modules.settings.support.setting_reader import SettingReader
 from core.modules.skills.commands.set_required_skill.set_required_skill import SetRequiredSkill
 from core.modules.skills.models.enums.required_agents import RequiredAgents

@@ -51,12 +51,14 @@ class ProcessMarkListener(CommitListener[E]):
     def show(self, process: Process, logged: LoggedEvent) -> None:
         if process.plugin:
             return
+        part = self.visibility.visible_part(process)
+        if part is None:
+            return
         key = f"process:{process.id}"
         shown = self.marks.keyed(key)
         if shown is not None and shown.state is ChatMarkState.ENDED:
             return
-        part = self.visibility.visible_part(process)
-        if part is None or (shown is None and part.state is PartState.WAITING):
+        if shown is None and part.state is PartState.WAITING:
             return
         output = self.outputs.process_output(process.id)
         reader = self.rows.required(Reader, output.reader_id) if output and output.reader_id else None

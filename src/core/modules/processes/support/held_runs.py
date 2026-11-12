@@ -5,10 +5,9 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.held_run import HeldRun
-from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.output_folder import CPU_FILE, OutputFolder
 from core.modules.processes.support.cadence.run_silences import RunSilences
 from core.modules.processes.support.process_settings import ProcessSettings
-from core.modules.processes.ticks.hang_watch import CPU_FILE
 
 
 class HeldRuns:

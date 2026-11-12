@@ -2,7 +2,7 @@ PROFILE_MODEL = "default"
 
 
 class ModelChoice:
-    """The model a helper or worker start names: an exact model, or default for the profile's own, which the
+    """The model a helper start names: an exact model, or default for the profile's own, which the
     empty text stands for in the start command."""
 
     @staticmethod

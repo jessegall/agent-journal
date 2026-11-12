@@ -13,7 +13,7 @@ from core.modules.drivers.models.helper_job import HelperJob
 REVIEWER_PROFILE_NAME = "journal-reviewer"
 REVIEWER_PROFILE = AgentProfile(
     REVIEWER_PROFILE_NAME, "Reads finished work and compares it with what was asked. Read-only.",
-    "You review finished work and change no file. Read what the work changed with the journal and with git commands that only read, and compare it with the brief you are given. "
+    "You review finished work and change no file. Read what the work changed with the journal and with version control commands that only read, and compare it with the brief you are given. "
     "Answer in a short report: what matches, what is missing and what differs, with the files and lines that show each point.",
     title="Reviewer", agent_type="helper", tier=ModelTier.GENERAL, model="sonnet", codex_model="gpt-6.1-terra",
     skills=("journal", "journal-etiquette", "journal-shell", "journal-documents"))

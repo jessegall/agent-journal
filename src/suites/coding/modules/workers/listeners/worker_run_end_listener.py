@@ -32,7 +32,7 @@ class WorkerRunEndListener(CommitListener[Moved[CheckpointReach]]):
         self.bus, self.queries, self.settings, self.lines, self.runs = bus, queries, settings, lines, runs
 
     def handle(self, event: Moved[CheckpointReach], logged: LoggedEvent) -> None:
-        if event.row.source is not CheckpointReachSource.WORKER:
+        if event.row.source is not CheckpointReachSource.AGENT_COMMIT:
             return
         link = self.queries.query(WorktreeReach).filter(reach_id=event.row.id).first()
         if link is None:

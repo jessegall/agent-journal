@@ -4,7 +4,7 @@ from engine.errors.refusal import Refusal
 from engine.registry.registry import Registry
 from core.modules.drivers.commands.choose_driver.choose_driver import ChooseDriver
 from core.modules.settings.models.setting import Setting
-from core.modules.settings.commands.support.setting_store import SettingStore
+from core.modules.settings.support.setting_store import SettingStore
 from core.modules.drivers.support.driver_settings import DRIVER_SETTINGS
 
 

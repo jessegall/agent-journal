@@ -15,7 +15,7 @@ RECORDING_SUFFIXES = (".cast", ".rec", ".recording", ".har")
 SANITISED_MARKS = ("sanitised", "sanitized")
 TEXT_SUFFIX_MAX_BYTES = 1_000_000
 
-# a git remote such as git@github.com:shop/cart.git is a host and a path, not an address
+# a remote such as deploy@host.example:shop/cart is a host and a path, not an address
 EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,})(?![A-Za-z0-9.-]*:[^\s/])")
 HOME_PATH = re.compile(r"(?:/Users|/home)/([A-Za-z0-9_-][A-Za-z0-9._-]*)/")
 SESSION_ID = re.compile(r"session[_ -]?id[\"']?\s*[:=]\s*[\"']?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", re.IGNORECASE)

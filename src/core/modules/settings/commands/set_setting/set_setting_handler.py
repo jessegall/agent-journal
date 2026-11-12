@@ -1,10 +1,8 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.errors.refusal import Refusal
-from engine.registry.setting_entry import SettingEntry
-from engine.enums.setting_scope import SettingScope
 from core.modules.settings.commands.set_setting.set_setting import SetSetting
-from core.modules.settings.commands.support.setting_store import SettingStore
+from core.modules.settings.support.setting_store import SettingStore
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 from core.modules.settings.support.setting_reader import SettingReader
 from core.modules.settings.support.setting_revision import SettingRevision
@@ -28,21 +26,9 @@ class SetSettingHandler(Handler[SetSetting, CurrentSetting]):
             if self.values.current(entry.key).value == value:
                 return self.values.current(entry.key)
             raise Refusal(f"{entry.key} changed since this change was asked for", "ask for the change again")
-        environment_id = self.environment(entry, command.project, context.environment_id)
+        environment_id = self.store.environment(entry, command.project, context.environment_id)
         if entry.secret:
             self.store.write_secret(entry.key, str(value), environment_id, context)
         else:
             self.store.write(entry.key, value, environment_id, context)
         return self.values.current(entry.key)
-
-    @staticmethod
-    def environment(entry: SettingEntry, project: bool, environment_id: int | None) -> int | None:
-        if project:
-            if entry.scope == SettingScope.ENVIRONMENT.value:
-                raise Refusal(f"{entry.key} is set per environment", "leave out --project and name --environment")
-            return None
-        if entry.scope == SettingScope.PROJECT.value:
-            raise Refusal(f"{entry.key} is set for the whole project", "add --project")
-        if environment_id is None:
-            raise Refusal(f"{entry.key} needs an environment or the whole project", "name --environment, or add --project")
-        return environment_id
