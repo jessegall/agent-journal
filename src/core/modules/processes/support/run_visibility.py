@@ -1,4 +1,3 @@
-from engine.enums.command_category import CommandCategory
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.database.kept_rows import KeptRows
@@ -26,7 +25,7 @@ class RunVisibility:
             return parts[0]
         if process.moved_at is None:
             return None
-        return next((part for part in parts if part.category is not CommandCategory.JOURNAL), None)
+        return next((part for part in parts if not part.category.is_short), None)
 
     def parts(self, process_id: int) -> tuple[ProcessPart, ...]:
         return self.kept.read("process_parts", lambda: tuple(self.queries.query(ProcessPart).filter(process_id=process_id).oldest().all_rows()),

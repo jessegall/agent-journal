@@ -92,14 +92,14 @@ def test_a_run_moved_by_the_foreground_limit_keeps_its_card_and_its_title_ask(ma
     expect_reply_line(main_story.hook("s-1", READ), RUN_NAME.nudge(process=process.id).text)
 
 
-def test_a_slow_read_that_moved_shows_a_card_and_a_quick_one_never_does(main_story):
+def test_a_read_that_moved_and_one_that_finished_at_once_never_show_a_card(main_story):
     quick = started_run(main_story, "cat small.log", CommandCategory.READ)
     end_run(main_story, quick, "line\n")
-    slow = started_run(main_story, "cat big.log", CommandCategory.READ)
+    slow = started_run(main_story, "grep -r cart logs", CommandCategory.SEARCH)
     main_story.advance(FOREGROUND_SECONDS)
     main_story.run(f"process background {slow.id}", actor=main_story.agent)
-    main_story.run_listeners()
-    main_story.expect_text(MARKS, f"process:{slow.id}", actor=main_story.user)
+    docked(main_story)
+    main_story.expect_absent(MARKS, f"process:{slow.id}", actor=main_story.user)
     main_story.expect_absent(MARKS, f"process:{quick.id}", actor=main_story.user)
 
 
