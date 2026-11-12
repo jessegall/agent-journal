@@ -54,7 +54,7 @@ SKIP_WORKTREE_MARK = "S "
 UNTRACKED_STATUS = "?? "
 PUBLISHED_FOLDERS = (".claude", ".agents")
 
-BRANCH_CHANGES = frozenset({"merge", "rebase", "checkout", "switch", "worktree", "stash", "reset", "commit", "cherry-pick", "revert", "branch", "pull", "push", "clone", "am", "apply", "restore", "clean"})
+BRANCH_CHANGES = frozenset({"merge", "rebase", "checkout", "switch", "worktree", "stash", "reset", "commit", "cherry-pick", "revert", "branch", "pull", "push", "clone", "am", "apply", "restore", "clean", "add", "update-ref", "update-index", "config", "fetch", "rm", "mv", "tag", "notes"})
 
 
 class WorktreeGit:
@@ -549,7 +549,7 @@ class WorktreeGit:
         line = ["git", "-C", folder, *arguments]
         kind = ProcessKind.MERGE if arguments and arguments[0] in BRANCH_CHANGES else ProcessKind.QUICK
         try:
-            done = self.executor.execute(ExecutionRequest(line, Path(folder), kind, limit_seconds))
+            done = self.executor.execute(ExecutionRequest(line, Path.cwd(), kind, limit_seconds))
             return subprocess.CompletedProcess(line, done.exit_code, done.stdout, done.stderr)
         except RunTimeLimitError as timeout:
             raise Refusal(f"git {' '.join(arguments[:2])} took longer than {limit_seconds} seconds in {folder}", "run it again once the folder is free") from timeout

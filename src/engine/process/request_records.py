@@ -8,12 +8,6 @@ class RequestRecords:
     """Keeps a process row for each hook, journal command and viewer request that comes in, from its start to its
     end. With no processes module installed nothing is kept; the processes module binds the rows."""
 
-    def begun(self, kind: ProcessKind, line: str) -> int | None:
-        return None
-
-    def ended(self, row_id: int | None, exit_code: int) -> None:
-        return None
-
     def recorded_hook(self, agent_id: int, line: str, exit_code: int, context: Context) -> None:
         return None
 
@@ -22,8 +16,14 @@ class RequestRecords:
         try:
             exit_code = answer()
         finally:
-            self.ended_now(kind, line, exit_code)
+            self.recorded_safely(kind, line, exit_code)
         return exit_code
+
+    def recorded_safely(self, kind: ProcessKind, line: str, exit_code: int) -> None:
+        try:
+            self.ended_now(kind, line, exit_code)
+        except Exception:
+            return
 
     def ended_now(self, kind: ProcessKind, line: str, exit_code: int) -> None:
         return None

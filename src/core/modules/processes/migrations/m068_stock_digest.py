@@ -10,7 +10,7 @@ class StockDigestMigration(Migration):
     """Gives each reader row the digest of the shipped entry it was written from; the stock rows there are now
     get the digest of their current shipped entry."""
 
-    number = 67
+    number = 68
     statements = ["ALTER TABLE readers ADD COLUMN shipped_digest TEXT NOT NULL DEFAULT ''"]
 
     def run(self, database: Database) -> None:

@@ -13,6 +13,7 @@ const props = defineProps({
     follow: {type: Boolean, default: false},
     fits: Boolean,
     wide: Boolean,
+    huge: Boolean,
     small: Boolean,
     tall: Boolean,
     large: Boolean,
@@ -65,7 +66,7 @@ onUnmounted(() => watcher.disconnect());
             <div v-if="visible" :class="['dialog', {large, sheet}]" :style="{zIndex: layer}" @click.self="outside">
                 <section
                     ref="panel"
-                    :class="['dialog-panel', {fixed: !fits, small, tall, large, wide, sheet, nudged}]"
+                    :class="['dialog-panel', {fixed: !fits, small, tall, large, wide, huge, sheet, nudged}]"
                     role="dialog"
                     :aria-modal="modal || undefined"
                     :aria-label="modal ? undefined : title"
@@ -143,6 +144,15 @@ onUnmounted(() => watcher.disconnect());
 
 .dialog-panel.wide {
     width: min(1080px, 100%);
+}
+
+.dialog-panel.huge {
+    width: min(1120px, 100%);
+    max-height: min(820px, 100%);
+}
+
+.dialog-panel.fixed.huge {
+    height: min(820px, 100%);
 }
 
 .dialog.large {

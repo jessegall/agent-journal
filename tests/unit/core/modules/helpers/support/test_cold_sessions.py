@@ -27,7 +27,7 @@ def cold_sessions(silent: bool, percent: int, tokens: int = 0, minutes: int = 55
     bus = RecordingBus()
     sessions = ColdSessions(None, SimpleNamespace(timestamp=lambda: None), SimpleNamespace(context_tokens=lambda program, home, session: tokens), None, settings, bus,
                             SimpleNamespace(percent=lambda program, session: percent), SimpleNamespace(required=lambda model, row_id: activity),
-                            SimpleNamespace(unstarted=lambda agent: False), SimpleNamespace(exists=lambda agent: True))
+                            SimpleNamespace(unstarted=lambda agent: False), SimpleNamespace(exists=lambda agent: True), SimpleNamespace(tokens=lambda agent: None))
     return sessions, bus
 
 

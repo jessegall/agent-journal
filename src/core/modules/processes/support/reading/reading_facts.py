@@ -50,9 +50,10 @@ class ReadingFacts:
         keys = [SilentStartRuns.name(part.text, part.program, part.category) for part in parts]
         runs = self.counter.runs_without_change(keys)
         waiting = self.waiting_commands(process, [part.command or part.text for part in parts])
-        return [self.case_for(process, part, moment, runs[key], (part.command or part.text) in waiting) for part, key in zip(parts, keys)]
+        marked = self.resets.marked_keys(keys)
+        return [self.case_for(process, part, moment, runs[key], (part.command or part.text) in waiting, key in marked) for part, key in zip(parts, keys)]
 
-    def case_for(self, process: Process, part: ProcessPart, moment: ReadingMoment, runs_without_change: int, request_is_waiting: bool) -> ReadingCase:
+    def case_for(self, process: Process, part: ProcessPart, moment: ReadingMoment, runs_without_change: int, request_is_waiting: bool, is_marked: bool) -> ReadingCase:
         agent = self.rows.required(Agent, process.session_agent_id)
         command = part.command or part.text
         command_key = SilentStartRuns.name(part.text, part.program, part.category)
@@ -68,7 +69,7 @@ class ReadingFacts:
                            draft_fits=self.draft_fits(process, part, reader, moment), output=self.output(process, part, moment),
                            runs_without_change=runs_without_change,
                            request_is_waiting=request_is_waiting, was_skipped=self.resets.skipped_since(command_key, process.creation_timestamp()),
-                           has_unreadable_mark=self.resets.has_mark(command_key), role_must_have_reader=agent.role in policy.reader_request_roles,
+                           has_unreadable_mark=is_marked, role_must_have_reader=agent.role in policy.reader_request_roles,
                            role_may_write_readers=self.writers.allows(Actor(agent.id, ActorType.AGENT)), role_uses_saved_commands=agent.role in policy.saved_command_roles,
                            readers_forced=self.settings.flag(ProcessSetting.READERS_FORCED))
 

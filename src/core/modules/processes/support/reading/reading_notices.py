@@ -19,10 +19,10 @@ from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.reading_decision_row import ReadingDecisionRow
 from core.modules.processes.models.unreadable_mark import UnreadableMark
 from core.modules.processes.queries.reader_query import ReaderQuery
-from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
 from core.modules.processes.support.process_nudges import (DRAFT_READY, READER_DRAFT, READER_FAILED, UNREADABLE_BINARY, UNREADABLE_DECLARED, UNREADABLE_EMPTY,
                                                           UNREADABLE_INTERACTIVE, UNREADABLE_LIFTED, UNREADABLE_SINGLE_LINE, READER_MISSED, READER_PROGRESS_MISSING, READER_SUMMARY_MISSING, READER_WIDTH,
                                                           SILENT_SAVED_FAILURE)
+from core.modules.processes.support.decisions.reading_decisions import ReadingDecisions
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.reader_writers import ReaderWriters
 from core.modules.processes.support.run_visibility import RunVisibility
@@ -45,7 +45,7 @@ class ReadingNotices:
     saved command that failed silently, a reader to draft, and what the reader of the run missed. Only an agent that
     may write readers is told how to read better."""
 
-    def __init__(self, readers: ReaderQuery, judge: ReaderJudge, writers: ReaderWriters, rows: EventRows, decisions: ReadingDecisionQuery) -> None:
+    def __init__(self, readers: ReaderQuery, judge: ReaderJudge, writers: ReaderWriters, rows: EventRows, decisions: ReadingDecisions) -> None:
         self.readers, self.judge, self.writers, self.rows, self.decisions = readers, judge, writers, rows, decisions
 
     def nudges(self, process: Process, output: Output | None, parts: tuple[ProcessPart, ...]) -> tuple[Nudge, ...]:
@@ -54,7 +54,7 @@ class ReadingNotices:
         failures = self.silent_failure_nudges(process, output, parts)
         if not self.writers.allows(Actor(process.session_agent_id, ActorType.AGENT)) or RunVisibility.select_visible_part(process, parts) is None:
             return failures
-        decisions = {row.part_position: row for row in self.decisions.for_process(process.id).filter(moment=ReadingMoment.END).all_rows()}
+        decisions = self.decisions.kept(process, ReadingMoment.END)
         read_position = output.reader_position if output is not None and output.reader_position else 1
         if read_position in decisions and decisions[read_position].state is ReaderState.UNREADABLE:
             return failures

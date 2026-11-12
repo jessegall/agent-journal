@@ -6,24 +6,35 @@ from core.modules.settings.support.context_reading import PERCENT_FULL, ContextR
 
 CONTEXT_LIMIT_ENABLED = "journal.core.helpers.context-limit-on"
 CONTEXT_LIMIT_TOKENS = "journal.core.helpers.context-limit-tokens"
+CONTEXT_LIMIT_KINDS = "journal.core.helpers.context-limit-kinds"
+CONTEXT_LIMIT_PROFILES = "journal.core.helpers.context-limit-profiles"
 
 
 class ContextShare:
-    """How full an agent's context is, in percent: of the context limit while that is on and comes sooner than the
-    program's window, otherwise of the window."""
+    """How full an agent's context is, in percent: of a limit in tokens while there is one and it comes sooner than
+    the program's window, otherwise of the window. The limit is the size set for every agent unless the caller
+    names the agent's own."""
 
     def __init__(self, settings: SettingValues, providers: Providers, home: JournalHome) -> None:
         self.settings, self.providers, self.home = settings, providers, home
 
     def usage(self, program: str, session: str) -> ContextReading:
-        return self.reading(self.providers.provider(program).context_window(self.home, session))
+        return self.usage_within(program, session, self.limit_tokens())
+
+    def usage_within(self, program: str, session: str, limit: int | None) -> ContextReading:
+        return self.reading_within(self.providers.provider(program).context_window(self.home, session), limit)
 
     def reading(self, window: ContextWindow) -> ContextReading:
+        return self.reading_within(window, self.limit_tokens())
+
+    def limit_tokens(self) -> int | None:
+        return self.settings.number(CONTEXT_LIMIT_TOKENS) if self.settings.flag(CONTEXT_LIMIT_ENABLED) else None
+
+    def reading_within(self, window: ContextWindow, limit: int | None) -> ContextReading:
         window_percent, tokens = window.used_percentage, window.total_input_tokens
         window_tokens = window.window_size_tokens or self.window_tokens_from_percent(window)
-        if tokens is None or not self.settings.flag(CONTEXT_LIMIT_ENABLED):
+        if tokens is None or limit is None:
             return ContextReading(window_percent, tokens, None, window_tokens)
-        limit = self.settings.number(CONTEXT_LIMIT_TOKENS)
         limit_percent = tokens * PERCENT_FULL // limit
         percent = limit_percent if window_percent is None else max(limit_percent, window_percent)
         return ContextReading(min(PERCENT_FULL, percent), tokens, limit if window_tokens is None or limit < window_tokens else None, window_tokens)

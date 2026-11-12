@@ -2,10 +2,27 @@
     "$schema": "../rule.schema.json",
     "engine": "python",
     "find": {
-        "select": "identifier",
+        "select": "call",
         "where": [
             {
-                "textMatches": "^(?:${reading_declarations})$"
+                "any": [
+                    {
+                        "all": [
+                            {
+                                "name": "nudge"
+                            },
+                            {
+                                "of": "receiver",
+                                "textMatches": "^(?:${reading_declarations})$"
+                            }
+                        ]
+                    },
+                    {
+                        "argument": {
+                            "textMatches": "^(?:${reading_declarations})$"
+                        }
+                    }
+                ]
             },
             {
                 "fileMatches": "(^|/)core/"
@@ -16,17 +33,7 @@
                 "testCode": true
             },
             {
-                "inside": {
-                    "is": "import"
-                }
-            },
-            {
-                "fileMatches": "(^|/)core/modules/processes/(support/(process_nudges|reading/reading_notices|cadence/cadence_nudges)\\.py|models/enums/)"
-            },
-            {
-                "inside": {
-                    "textMatches": "^(?:ReasonCode|ReaderAction)\\."
-                }
+                "fileMatches": "(^|/)core/modules/processes/support/(process_nudges|reading/reading_notices|cadence/cadence_nudges)\\.py$"
             }
         ]
     },

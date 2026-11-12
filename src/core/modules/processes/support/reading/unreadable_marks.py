@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from engine.command.context import Context
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
@@ -20,6 +22,13 @@ class UnreadableMarks:
 
     def marked(self, command: str) -> UnreadableMark | None:
         return self.marks.standing().of_words(UnreadableMarks.covering_words(command)).newest().first()
+
+    def marked_among(self, commands: Sequence[str]) -> frozenset[str]:
+        """The commands a standing mark covers, from one read of the marks of all of them."""
+        covering = {command: UnreadableMarks.covering_words(command) for command in dict.fromkeys(commands)}
+        words = sorted({word for leading in covering.values() for word in leading})
+        marked = {mark.words for mark in self.marks.standing().of_words(words).all_rows()} if words else set()
+        return frozenset(command for command, leading in covering.items() if marked.intersection(leading))
 
     def excuses(self, command: str) -> bool:
         """Whether a standing mark covers the command, so nothing asks it for a reader."""

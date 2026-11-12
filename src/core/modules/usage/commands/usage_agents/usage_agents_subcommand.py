@@ -1,6 +1,8 @@
 from core.modules.drivers.support.current_context_window import CurrentContextWindow
 from engine.cli.agent_number import AgentNumber
 from core.modules.agents.support.agent_rows import RUNNING_AGENTS_REASON
+from core.modules.settings.bindings.support.context_caps import ContextCaps
+from core.modules.settings.bindings.support.context_caps import ContextCaps
 from core.modules.settings.bindings.support.context_share import ContextShare
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.helper_job import NEW_SESSION_LAUNCH, RESUMED_SESSION_LAUNCH
@@ -54,8 +56,8 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     name = "agents"
     environment_refusal = "the agents are shown for one environment"
 
-    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity, sandbox: AgentSandboxChoice, types: HelperTypeBook, share: ContextShare, spend: AgentSpend, current_window: CurrentContextWindow) -> None:
-        self.share, self.spend, self.current_window = share, spend, current_window
+    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity, sandbox: AgentSandboxChoice, types: HelperTypeBook, share: ContextShare, caps: ContextCaps, spend: AgentSpend, current_window: CurrentContextWindow) -> None:
+        self.share, self.caps, self.spend, self.current_window = share, caps, spend, current_window
         self.activity, self.sandbox, self.types = activity, sandbox, types
         self.queries, self.files, self.providers, self.home, self.suites, self.profiles = queries, files, providers, home, suites, profiles
         self.settings, self.clock = settings, clock
@@ -132,9 +134,10 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     def context_percent(self, card: AgentCard, status: SessionStatus) -> int | None:
         if self.is_context_unknown(card):
             return None
+        cap = self.caps.tokens(card.role, card.profile)
         if not status.is_reported:
-            return self.share.percent(card.program, card.session)
-        return None if status.context_percent is None else self.share.reading(ContextWindow(status.context_percent, status.context_tokens)).percent
+            return self.share.usage_within(card.program, card.session, cap).percent
+        return None if status.context_percent is None else self.share.reading_within(ContextWindow(status.context_percent, status.context_tokens), cap).percent
 
     def reported_model(self, card: AgentCard) -> str:
         return self.providers.reported_model(card.program, self.home, card.session)

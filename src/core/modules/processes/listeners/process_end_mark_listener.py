@@ -8,11 +8,10 @@ __all__ = ["MODULE_NAME", "ProcessEndMarkListener"]
 
 
 class ProcessEndMarkListener(ProcessMarkListener[Changed[Process]]):
-    """Each change of a run brings its chat mark up to date; a request row of a hook, a journal command or a run of
-    the journal's own has no mark."""
+    """Each change of a run brings its chat mark up to date."""
 
     name = "processes.process-mark"
 
     def handle(self, event: Changed[Process], logged: LoggedEvent) -> None:
-        if not isinstance(event, Deleted) and not event.row.is_request_row:
+        if not isinstance(event, Deleted):
             self.show(event.row, logged)
