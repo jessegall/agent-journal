@@ -1,4 +1,9 @@
+from engine.command.bus import Bus
 from engine.event.logged_event import LoggedEvent
+from engine.listener.rows.event_rows import EventRows
+from engine.module.module_actors import ModuleActors
+from engine.query.queries import Queries
+from core.modules.assignments.support.assignments import Assignments
 from engine.scope.actor_scope import ActorScope
 from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.reviews.models.enums.review_mark_type import ReviewMarkType
@@ -17,7 +22,11 @@ class ReviewStartedMarkListener(MarkListener[Moved[Review]]):
     disabled_scopes = [ActorScope]
     module_name = "journal.core.reviews"
 
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, event_rows: EventRows, assignments: Assignments) -> None:
+        super().__init__(bus, actors, queries, event_rows)
+        self.assignments = assignments
+
     def handle(self, event: Moved[Review], logged: LoggedEvent) -> None:
         review = event.row
-        self.show(logged, ReviewMarkType.REVIEW, ReviewMarkVariant.STARTED, f"Reviewer {review.reviewer_id} is reviewing {review.subject_model} {review.subject_id}",
+        self.show(logged, ReviewMarkType.REVIEW, ReviewMarkVariant.STARTED, f"Reviewer {self.assignments.actor(review)} is reviewing {review.subject_model} {review.subject_id}",
                   review.requester_id, "review", review.id)

@@ -14,19 +14,19 @@ ACTOR = Actor(2, ActorType.AGENT)
 QUEUED = Review(id=1, version=1, environment_id=1, subject_model="task", subject_id=1, requester_id=1, point_count=2)
 
 
-def test_a_review_starts_queued_with_no_reviewer():
-    assert (QUEUED.state, QUEUED.reviewer_id) == (ReviewState.QUEUED, None)
+def test_a_review_starts_queued():
+    assert QUEUED.state == ReviewState.QUEUED
     assert ReviewLifecycle.initial == [ReviewState.QUEUED]
 
 
-def test_assigning_a_queued_review_names_its_reviewer():
-    reviewing = QUEUED.assign(FIXED_TIME, ACTOR, 5)
-    assert (reviewing.state, reviewing.reviewer_id) == (ReviewState.REVIEWING, 5)
+def test_assigning_a_queued_review_moves_it_to_reviewing():
+    reviewing = QUEUED.assign(FIXED_TIME, ACTOR)
+    assert reviewing.state == ReviewState.REVIEWING
 
 
 @pytest.mark.parametrize(("method", "state"), [("approve", ReviewState.APPROVED), ("reject", ReviewState.REJECTED), ("leave_undecided", ReviewState.UNDECIDED)])
 def test_a_report_ends_the_review_and_keeps_its_text(method: str, state: ReviewState):
-    reported = getattr(QUEUED.assign(FIXED_TIME, ACTOR, 5), method)(FIXED_TIME, ACTOR, "1 passed")
+    reported = getattr(QUEUED.assign(FIXED_TIME, ACTOR), method)(FIXED_TIME, ACTOR, "1 passed")
     assert (reported.state, reported.report, reported.reported_at) == (state, "1 passed", FIXED_TIME)
 
 
@@ -37,4 +37,4 @@ def test_only_a_review_being_reviewed_can_be_reported():
 
 def test_a_review_is_abandoned_while_queued_or_reviewing():
     assert QUEUED.abandon(FIXED_TIME, ACTOR).state == ReviewState.ABANDONED
-    assert QUEUED.assign(FIXED_TIME, ACTOR, 5).abandon(FIXED_TIME, ACTOR).state == ReviewState.ABANDONED
+    assert QUEUED.assign(FIXED_TIME, ACTOR).abandon(FIXED_TIME, ACTOR).state == ReviewState.ABANDONED

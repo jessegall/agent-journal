@@ -1,3 +1,5 @@
+import json
+
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.testing.stories.story import Story
@@ -10,6 +12,12 @@ REVIEWERS_ENABLED = "setting set journal.core.reviews.reviewer true --project"
 EMPTY_REVIEWERS = "setting set journal.core.reviews.reviewers-most 0 --project"
 REVIEW_DETAILS = "review show 1"
 REVIEW_POINTS = "review-point list --review 1"
+REVIEW_ASSIGNMENTS = "assignment list --subject-model review --subject 1 --json"
+
+
+def review_assignees(story: Story) -> list[int]:
+    """The actors review 1 is assigned to: its reviewer, once one took it."""
+    return [assignment["actor_id"] for assignment in json.loads(story.run(REVIEW_ASSIGNMENTS, actor=story.agent).output_text)["rows"]]
 
 
 def read_reviewer(story: Story) -> Actor:
@@ -87,4 +95,5 @@ class ProgressReview(StoryFixture):
         story.run(f"review assign 1 --reviewer-id {read_reviewer(story).id}", actor=story.agent)
 
     def expect(self, story: Story) -> None:
-        story.expect_success(REVIEW_DETAILS, "state: reviewing", f"reviewer_id: {read_reviewer(story).id}")
+        story.expect_success(REVIEW_DETAILS, "state: reviewing")
+        story.expect_rows(review_assignees(story) == [read_reviewer(story).id], detail=str(review_assignees(story)))

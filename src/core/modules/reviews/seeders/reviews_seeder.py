@@ -1,11 +1,9 @@
-import re
+import json
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.seed.demo import Demo
 from engine.seed.seeder import Seeder
-
-REVIEWER_ID = re.compile(r"^reviewer_id: (\d+)$", re.MULTILINE)
 
 
 class ReviewsSeeder(Seeder):
@@ -18,6 +16,6 @@ class ReviewsSeeder(Seeder):
         main = demo.people["main"]
         demo.run("setting make journal.core.reviews.reviewer true")
         review = demo.new_id(f"review request task {demo.ids['task:closed']} --points 2 {demo.environment_flag}", main)
-        reviewer = REVIEWER_ID.search(demo.run(f"review show {review}"))
-        if reviewer is not None:
-            demo.run(f'review record "1 passed\n2 passed" --review {review}', Actor(int(reviewer[1]), ActorType.AGENT))
+        assignments = json.loads(demo.run(f"assignment list --subject-model review --subject {review} --json"))["rows"]
+        for assignment in assignments:
+            demo.run(f'review record "1 passed\n2 passed" --review {review}', Actor(assignment["actor_id"], ActorType.AGENT))

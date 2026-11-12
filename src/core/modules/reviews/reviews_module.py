@@ -33,6 +33,9 @@ from core.modules.reviews.guards.reviewers_most_guard import ReviewersMostGuard
 from core.modules.reviews.queries.reviewer_query import ReviewerQuery
 from core.modules.reviews.commands.request_review.request_review_subcommand import RequestReviewSubcommand
 from core.modules.reviews.commands.assign_review.assign_review import AssignReview
+from core.modules.reviews.commands.assign_review.assign_review_handler import AssignReviewHandler
+from core.modules.reviews.listeners.review_abandoned_listener import ReviewAbandonedListener
+from core.modules.reviews.migrations.m006_review_assignments import ReviewAssignmentsMigration
 from core.modules.reviews.commands.record_review.record_review_handler import RecordReviewHandler
 from core.modules.reviews.commands.record_review.record_review_subcommand import RecordReviewSubcommand
 from core.modules.reviews.guards.reporter_is_reviewer_guard import ReporterIsReviewerGuard
@@ -60,14 +63,14 @@ class ReviewsModule(Module):
     move_reason = "version 4 kept plan reviews in plan_reviews, which the plans module moves"
     requires_core = ">=5,<6"
     settings = REVIEW_SETTINGS
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings", "journal.core.chat", "journal.core.plans", "journal.core.drivers"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings", "journal.core.chat", "journal.core.plans", "journal.core.drivers", "journal.core.assignments"]
     models = [ModelDeclaration(Review, query=ReviewQuery, commands=(AssignReview, AbandonReview)), ModelDeclaration(ReviewPoint), ModelDeclaration(ReviewStep, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(Reviewer, query=ReviewerQuery, commands=(StartReviewer, EndReviewer), excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [ReviewStateIndexMigration, ReviewerEnvironmentIndexMigration, ReviewsTablesMigration, ReviewersTableMigration, ReviewStepsTableMigration]
+    migrations = [ReviewAssignmentsMigration, ReviewStateIndexMigration, ReviewerEnvironmentIndexMigration, ReviewsTablesMigration, ReviewersTableMigration, ReviewStepsTableMigration]
     views = [ReviewerRow]
     subcommands = [ReviewBoardSubcommand, ReviewStepBoardSubcommand, RequestReviewSubcommand, RecordReviewSubcommand, AddReviewerSubcommand, RetireReviewerSubcommand, ReviewerListSubcommand]
     guards = [OneOpenReviewPerSubjectGuard, ReporterIsReviewerGuard, ReviewersEnabledGuard, ReviewersMostGuard]
-    handlers = [RecordReviewHandler, AddReviewerHandler, RetireReviewerHandler, AssignNextReviewHandler]
-    listeners = [ReviewQueuedListener, ReviewerAvailableListener, ReviewerEndedListener, ReviewStartedStepListener, ReviewReportedStepListener, ReviewStartedMarkListener, ReviewReportedMarkListener]
+    handlers = [AssignReviewHandler, RecordReviewHandler, AddReviewerHandler, RetireReviewerHandler, AssignNextReviewHandler]
+    listeners = [ReviewQueuedListener, ReviewerAvailableListener, ReviewerEndedListener, ReviewStartedStepListener, ReviewReportedStepListener, ReviewStartedMarkListener, ReviewReportedMarkListener, ReviewAbandonedListener]
     marks = REVIEW_MARKS
     windows = [WindowDeclaration("reviews.reviewer", "Reviewer", "reviewer.js", WindowLoading.COMPONENT, skeleton=REVIEWS_REVIEWER_SKELETON, search=WindowSearch(ReviewStepSearcher, "Search the reviews"), icon=WindowIcon.REVIEW,
                                  reads=["review board", "review-step board", "reviewer list"],
@@ -75,6 +78,7 @@ class ReviewsModule(Module):
                WindowDeclaration("reviews.reviewers", "Reviewers", "reviewers.js", WindowLoading.COMPONENT, skeleton=REVIEWS_REVIEWERS_SKELETON, icon=WindowIcon.REVIEW, place=WindowPlace.DROPDOWN,
                                  reads=["agent list"], keys=[WindowKey("reviewers", "agent list --role reviewer", events=["agent.*"])], events=["agent.*"]),
                WindowDeclaration("reviews.subject-reviews", "Reviews", "subject-reviews.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, slots=tuple(["inspector.plan"]), icon=WindowIcon.REVIEW,
-                                 reads=["review list"], keys=[WindowKey("reviews.*", "review list --subject {id} --oldest", events=["review.*"], loading=KeyLoading.REQUESTED)],
-                                 events=["review.*"], skeleton=tuple([SkeletonPart.line()]))]
+                                 reads=["review list", "assignment list"], keys=[WindowKey("reviews.*", "review list --subject {id} --oldest", events=["review.*"], loading=KeyLoading.REQUESTED),
+                                                                                 WindowKey("reviewers", "assignment list --subject-model review", events=["assignment.*"])],
+                                 events=["review.*", "assignment.*"], skeleton=tuple([SkeletonPart.line()]))]
     seeders = [ReviewsSeeder]
