@@ -1,14 +1,13 @@
-import fcntl
 import hashlib
 import json
 import os
 import stat
 import tempfile
-from collections.abc import Generator, Mapping
-from contextlib import contextmanager
+from collections.abc import Mapping
 from pathlib import Path
 
 from engine.file.file_access import FileAccess
+from engine.file.file_lock import FileLock
 from engine.file.kept_bytes import KeptBytes
 from engine.file.private_folders import PrivateFolders
 from engine.journal.journal_home import JournalHome
@@ -27,7 +26,7 @@ class ProgramSettingsWriter:
         self.home = home
 
     def write(self, settings: ProgramSettings) -> tuple[Path, ...]:
-        with self._locked():
+        with FileLock.held(PrivateFolders.made(self.home.programs_folder) / LOCK_NAME):
             for folder in self._folders(settings):
                 PrivateFolders.made(folder)
                 self._remove_stale_temporaries(folder)
@@ -48,16 +47,6 @@ class ProgramSettingsWriter:
         if not self.home.program_settings_digests.is_file():
             return {}
         return json.loads(FileAccess.shared().read(self.home.program_settings_digests))
-
-    @contextmanager
-    def _locked(self) -> Generator[None]:
-        PrivateFolders.made(self.home.programs_folder)
-        with FileAccess.shared().writer(self.home.programs_folder / LOCK_NAME, "a") as lock:
-            fcntl.flock(lock, fcntl.LOCK_EX)
-            try:
-                yield
-            finally:
-                fcntl.flock(lock, fcntl.LOCK_UN)
 
     @staticmethod
     def _folders(settings: ProgramSettings) -> tuple[Path, ...]:

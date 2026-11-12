@@ -145,6 +145,10 @@ class JournalHome:
         return self.folder / "bin" / "journal-hook"
 
     @property
+    def hook_runner_choice(self) -> Path:
+        return self.folder / "hooks" / "runner"
+
+    @property
     def programs_folder(self) -> Path:
         return self.folder / "programs"
 

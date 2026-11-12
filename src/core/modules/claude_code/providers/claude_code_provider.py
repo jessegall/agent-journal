@@ -56,7 +56,8 @@ MODEL_CHOICES = (("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("f
 FALLBACK_EFFORT = "high"
 EFFORT_CHOICES = (("low", "Low"), ("medium", "Medium"), ("high", "High"), ("xhigh", "Extra high"), ("max", "Maximum"))
 
-CARRIED_SETTINGS = ("env", "apiKeyHelper")
+CARRIED_SETTINGS = ("env", "apiKeyHelper", "awsAuthRefresh", "awsCredentialExport", "forceLoginMethod", "forceLoginOrgUUID", "otelHeadersHelper",
+                    "includeCoAuthoredBy", "skipDangerousModePermissionPrompt")
 BYPASS_PERMISSIONS = {"defaultMode": "bypassPermissions"}
 
 COMPACT_LINE = "/compact Focus on continuing the work at once: what you were doing last, what comes next, and the facts those depend on. Keep every instruction, request, direction and correction the user gave you. Leave out the rest of the earlier history and old messages: the journal gives back recent messages, tasks, memories and rules."
@@ -226,20 +227,22 @@ class ClaudeCodeProvider(Provider):
         path = home.program_settings_file(self.name)
         root = home.project_folder
         person_data = self.person_data()
-        person_settings = self.person_settings(person_data.get(self.user_hook_files()[0], b""))
-        carried = {key: person_settings[key] for key in CARRIED_SETTINGS if key in person_settings}
+        person_file = self.user_hook_files()[0]
+        person_settings = self.person_settings(person_data.get(person_file, b""))
+        unreadable = tuple(path for path in [person_file] if path.is_file() and (path not in person_data or person_settings is None))
+        carried = {key: value for key, value in (person_settings or {}).items() if key in CARRIED_SETTINGS}
         settings = {**carried, "permissions": BYPASS_PERMISSIONS, **self.hook_settings(runner, root),
                     "hooks": ProgramHooks.journal(type(self), path).journal_blocks(runner, root, managed)}
         return ProgramSettings(self.name, tuple([SettingsFile(path, json.dumps(settings, indent=2, sort_keys=True) + "\n")]),
-                               person_files=self.user_hook_files(), person_data=person_data)
+                               person_files=self.user_hook_files(), person_data=person_data, unreadable_person_files=unreadable)
 
     @staticmethod
-    def person_settings(data: bytes) -> Mapping[str, object]:
+    def person_settings(data: bytes) -> Mapping[str, object] | None:
         try:
             parsed: object = json.loads(data or b"{}")
         except (json.JSONDecodeError, UnicodeDecodeError):
-            return {}
-        return {str(key): value for key, value in parsed.items()} if is_mapping(parsed) else {}
+            return None
+        return {str(key): value for key, value in parsed.items()} if is_mapping(parsed) else None
 
     def hook_trust(self, project: Path) -> HookTrust:
         return HookTrust.READY if ProgramHooks.hooks(type(self), project).is_complete() else HookTrust.UNWRITTEN

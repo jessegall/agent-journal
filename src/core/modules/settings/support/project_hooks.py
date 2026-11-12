@@ -8,6 +8,7 @@ from engine.provider.managed_hooks import ManagedHooks
 from engine.provider.program_hooks import ProgramHooks
 from engine.provider.provider import Provider
 from engine.provider.providers import Providers
+from engine.provider.program_settings_sync import ProgramSettingsSync
 from engine.types.type_guards import is_list, is_mapping
 from core.modules.settings.support.journal_hook import JournalHook
 from core.modules.settings.support.managed_hook_item import ManagedHookItem
@@ -18,8 +19,8 @@ from core.modules.settings.support.unmanaged_hook import UnmanagedHook
 class ProjectHooks:
     """Reads managed hooks, pending native commands and files left outside management."""
 
-    def __init__(self, home: JournalHome, providers: Providers, managed: ManagedHooks, history: ManagedHookHistoryReader) -> None:
-        self.home, self.providers, self.managed, self.history = home, providers, managed, history
+    def __init__(self, home: JournalHome, providers: Providers, managed: ManagedHooks, history: ManagedHookHistoryReader, sync: ProgramSettingsSync) -> None:
+        self.home, self.providers, self.managed, self.history, self.sync = home, providers, managed, history, sync
 
     def listed(self) -> ProjectHookList:
         root = self.home.project_folder
@@ -30,7 +31,7 @@ class ProjectHooks:
                                tuple(entry for provider in providers for entry in self.journal_entries(provider)),
                                tuple(hook for provider in providers for hook in manager.unmanaged(type(provider), root)),
                                tuple(entry for provider in providers for entry in self.excluded(provider)),
-                               any(ProgramHooks.hooks(type(provider), root).uses_shell_runner for provider in providers))
+                               self.sync.uses_shell_runner or any(ProgramHooks.hooks(type(provider), root).uses_shell_runner for provider in providers))
 
     def journal_entries(self, provider: Provider) -> list[JournalHook]:
         program_hooks = ProgramHooks.hooks(type(provider), self.home.project_folder)

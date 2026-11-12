@@ -3,6 +3,7 @@ from pathlib import Path
 
 from engine.enums.log_level import LogLevel
 from engine.file.file_access import FileAccess
+from engine.file.file_lock import FileLock
 from engine.file.kept_bytes import KeptBytes
 from engine.file.private_folders import PrivateFolders
 from engine.journal.journal_home import JournalHome
@@ -16,6 +17,7 @@ STAMP_FORMAT = "%Y%m%dT%H%M%SZ"
 COPY_NAME = re.compile(r"^(?P<stamp>\d{8}T\d{6}Z)(?:-(?P<number>\d+))?-(?P<name>.+)$")
 REJECTED_MARK = "-rejected-"
 PROJECT_PREFIX = "project-"
+LOCK_NAME = ".lock"
 
 
 class ProgramSettingsBackup:
@@ -59,13 +61,15 @@ class ProgramSettingsBackup:
         return self._stored(program, name, data)
 
     def _stored(self, program: str, name: str, data: bytes) -> Path | None:
-        newest = self.newest(program, name)
-        if newest is not None and KeptBytes.read(newest) == data:
-            return None
-        copy = self.free_name(PrivateFolders.made(self.home.program_settings_backups / program), name)
-        FileAccess.shared().write_whole(copy, data, COPY_MODE)
-        self.prune(program, name)
-        return copy
+        folder = PrivateFolders.made(self.home.program_settings_backups / program)
+        with FileLock.held(folder / LOCK_NAME):
+            newest = self.newest(program, name)
+            if newest is not None and KeptBytes.read(newest) == data:
+                return None
+            copy = self.free_name(folder, name)
+            FileAccess.shared().write_whole(copy, data, COPY_MODE)
+            self.prune(program, name)
+            return copy
 
     def free_name(self, folder: Path, name: str) -> Path:
         stamp = self.clock.timestamp().value.strftime(STAMP_FORMAT)

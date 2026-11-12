@@ -51,6 +51,10 @@ DEVELOPER_ROLE = "developer"
 CODEX_CONTEXT_OPENINGS = ("# AGENTS.md instructions", "<environment_context>", "<permissions instructions>", "<skills_instructions>", "<collaboration_mode>", "<recommended_plugins>", "<apps_instructions>")
 HOOK_PROMPT_TAG = re.compile(r"</?hook_prompt[^>]*>")
 PERSON_LINKS = ("auth.json", "sessions", "history.jsonl")
+PERSON_STATE = ("state_5.sqlite", "thread_history_1.sqlite", "session_index.jsonl", "rules", "skills", "plugins")
+PERSON_FOLDER = ".codex"
+PROGRAMS_FOLDER = "programs"
+JOURNAL_FOLDER = ".journal"
 
 
 class CodexProvider(Provider):
@@ -215,18 +219,24 @@ class CodexProvider(Provider):
 
     def journal_settings(self, home: JournalHome, runner: str, managed: Sequence[ManagedHook], folders: Sequence[Path]) -> ProgramSettings:
         folder = home.program_folder(self.name)
-        person = self.folders.folder(HOME_VARIABLE, ".codex")
+        person = self.person_folder()
         hooks_file = folder / "hooks.json"
         blocks = ProgramHooks.journal(type(self), hooks_file).journal_blocks(runner, home.project_folder, managed)
         person_data = self.person_data()
         config = CodexJournalConfig(person_data.get(person / "config.toml", b""), folders, hooks_file.resolve(), blocks)
         files = (SettingsFile(folder / "config.toml", config.text()), SettingsFile(hooks_file, json.dumps({"hooks": blocks}, indent=2, sort_keys=True) + "\n"))
-        links = {folder / name: person / name for name in PERSON_LINKS}
+        present = tuple(name for name in PERSON_STATE if (person / name).exists())
+        links = {folder / name: person / name for name in (*PERSON_LINKS, *present)}
         return ProgramSettings(self.name, files, links, self.user_hook_files(), person_data)
 
     def user_hook_files(self) -> tuple[Path, ...]:
-        folder = self.folders.folder(HOME_VARIABLE, ".codex")
+        folder = self.person_folder()
         return (folder / "hooks.json", folder / "config.toml")
+
+    def person_folder(self) -> Path:
+        folder = self.folders.folder(HOME_VARIABLE, PERSON_FOLDER)
+        is_journal_folder = folder.resolve().parent.name == PROGRAMS_FOLDER and folder.resolve().parent.parent.name == JOURNAL_FOLDER
+        return Path.home() / PERSON_FOLDER if is_journal_folder else folder
 
     @classmethod
     def hooks_rewritten(cls, path: Path, original_hooks: object, updated_hooks: object) -> None:

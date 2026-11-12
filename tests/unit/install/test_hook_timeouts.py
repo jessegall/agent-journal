@@ -35,3 +35,8 @@ def test_hook_switch_passes_the_saved_hooks_and_keeps_settings(tmp_path: Path):
     assert settings["permissions"] == {"allow": ["Bash(ls)"]}
     assert settings["hooks"]["PreToolUse"][0]["hooks"][0]["timeout"] == 690
     assert settings["hooks"]["Stop"][0]["hooks"][0]["timeout"] == 90
+
+
+def test_hook_writer_records_the_runner_it_chose_for_the_journal_settings(tmp_path: Path):
+    HookWriter(tmp_path).write(f'sh "{tmp_path}/.journal/hooks/hook.sh"')
+    assert JournalHome(tmp_path / ".journal").hook_runner_choice.read_text() == f'sh "{tmp_path}/.journal/hooks/hook.sh"\n'

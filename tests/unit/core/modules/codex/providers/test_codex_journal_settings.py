@@ -123,3 +123,23 @@ def test_the_same_inputs_give_the_same_bytes(provider, home, folders):
     (person_folder() / "config.toml").write_text(PERSON_CONFIG)
     first_files = journal_settings(provider, home, folders).files
     assert journal_settings(provider, home, list(reversed(folders))).files == first_files
+
+
+PERSON_STATE = ("auth.json", "sessions", "history.jsonl", "state_5.sqlite", "thread_history_1.sqlite", "session_index.jsonl", "rules", "skills", "plugins")
+
+
+def test_every_piece_of_the_person_codex_state_is_linked(provider, home, folders):
+    for name in PERSON_STATE:
+        (person_folder() / name).parent.mkdir(parents=True, exist_ok=True)
+        (person_folder() / name).mkdir() if "." not in name else (person_folder() / name).write_text("{}")
+    folder = home.program_folder("codex")
+    assert dict(journal_settings(provider, home, folders).links) == {folder / name: person_folder() / name for name in PERSON_STATE}
+
+
+def test_a_codex_home_that_is_the_journal_folder_links_to_the_person_folder_in_the_home_directory(provider, home, folders, tmp_path, monkeypatch):
+    monkeypatch.setenv("CODEX_HOME", str(home.program_folder("codex")))
+    monkeypatch.setenv("HOME", str(tmp_path / "person-home"))
+    folder = home.program_folder("codex")
+    links = journal_settings(provider, home, folders).links
+    assert links[folder / "auth.json"] == tmp_path / "person-home" / ".codex" / "auth.json"
+    assert all(target != link for link, target in links.items())

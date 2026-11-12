@@ -3,14 +3,17 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from engine.errors.refusal import Refusal
+from engine.file.kept_bytes import KeptBytes
 from engine.journal.journal_home import JournalHome
 from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.program_hooks import JOURNAL_MARKS
 from engine.provider.program_settings import ProgramSettings
 from engine.provider.program_settings_backup import ProgramSettingsBackup
 from engine.provider.program_settings_writer import ProgramSettingsWriter
 from engine.provider.providers import Providers
 
 WORKTREE_PATTERN = "*/*"
+SHELL_RUNNER_MARK = JOURNAL_MARKS[1]
 
 
 class ProgramSettingsSync:
@@ -23,7 +26,17 @@ class ProgramSettingsSync:
 
     def settings(self, program: str) -> ProgramSettings:
         provider = self.providers.provider(program)
-        return provider.journal_settings(self.home, f'"{self.home.hook_runner}"', self.managed.all(), self.folders())
+        return provider.journal_settings(self.home, self.runner(), self.managed.all(), self.folders())
+
+    def runner(self) -> str:
+        choice = self.home.hook_runner_choice
+        if not choice.is_file():
+            return f'"{self.home.hook_runner}"'
+        return KeptBytes.read(choice).decode().strip()
+
+    @property
+    def uses_shell_runner(self) -> bool:
+        return SHELL_RUNNER_MARK in self.runner()
 
     def folders(self) -> tuple[Path, ...]:
         worktrees = self.home.worktrees_folder
@@ -40,6 +53,9 @@ class ProgramSettingsSync:
         settings = self.settings(program)
         with self.refused_on_failure(program):
             return self.writer.write(settings)
+
+    def unreadable_person_files(self) -> tuple[Path, ...]:
+        return tuple(path for provider in self.providers.all() for path in self.settings(provider.name).unreadable_person_files)
 
     def prepare_all(self) -> tuple[Path, ...]:
         return tuple(path for provider in self.providers.all() for path in self.prepare(provider.name))

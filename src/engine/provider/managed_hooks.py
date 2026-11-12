@@ -1,5 +1,5 @@
 from engine.file.file_access import FileAccess
-import fcntl
+from engine.file.file_lock import FileLock
 import json
 from functools import lru_cache
 from engine.file.versions.file_version import FileVersion
@@ -91,12 +91,8 @@ class ManagedHooks:
     @contextmanager
     def _locked(self) -> Generator[None]:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        with FileAccess.shared().writer(self.path.with_suffix(".lock"), "a") as lock:
-            fcntl.flock(lock, fcntl.LOCK_EX)
-            try:
-                yield
-            finally:
-                fcntl.flock(lock, fcntl.LOCK_UN)
+        with FileLock.held(self.path.with_suffix(".lock")):
+            yield
 
     def _read(self) -> list[ManagedHook]:
         if not self.path.is_file():

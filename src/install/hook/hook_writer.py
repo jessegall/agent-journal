@@ -2,6 +2,7 @@ import sys
 import shlex
 from pathlib import Path
 
+from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
 from engine.provider.managed_hook import ManagedHook
 from engine.provider.managed_hooks import ManagedHooks
@@ -12,7 +13,8 @@ from core.modules import DEFAULT_MODULES
 
 class HookWriter:
     """Writes the hooks of every agent program the journal ships into a project, each calling the given hook
-    runner; an upgrade touches only the programs whose hook file the project already has."""
+    runner, and records that runner for the journal's own settings files; an upgrade touches only the programs
+    whose hook file the project already has."""
 
     def __init__(self, root: Path) -> None:
         self.root = root
@@ -20,6 +22,7 @@ class HookWriter:
         self.programs = [ProgramHooks.hooks(provider, root) for provider in self.providers]
 
     def write(self, runner: str, is_upgrade: bool = False) -> None:
+        self.record_runner(runner)
         managed = self.managed()
         installed_programs: list[ProgramHooks] = []
         for provider, program in zip(self.providers, self.programs, strict=True):
@@ -40,6 +43,11 @@ class HookWriter:
         for provider in self.providers:
             manager.import_hooks(provider, self.root)
         return self.managed()
+
+    def record_runner(self, runner: str) -> None:
+        choice = JournalHome(self.root / ".journal").hook_runner_choice
+        choice.parent.mkdir(parents=True, exist_ok=True)
+        FileAccess.shared().write(choice, f"{runner}\n")
 
     def managed(self) -> list[ManagedHook]:
         return ManagedHooks(JournalHome(self.root / ".journal")).all()
