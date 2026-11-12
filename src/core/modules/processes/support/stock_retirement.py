@@ -1,6 +1,5 @@
 from collections.abc import Collection
 
-from engine.actor.actor import CORE_ACTOR_ID
 from core.modules.processes.models.reader import Reader
 
 
@@ -10,4 +9,4 @@ class StockRetirement:
 
     @staticmethod
     def retires(row: Reader, shipped_names: Collection[str], edited: bool) -> bool:
-        return row.creator_id == CORE_ACTOR_ID and row.name not in shipped_names and not edited
+        return row.is_stock and row.name not in shipped_names and not edited

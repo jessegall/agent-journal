@@ -2,6 +2,20 @@ from dataclasses import dataclass
 
 from engine.enums.command_category import CommandCategory
 
+# a command each pattern of the streaming hints stands for, so the test can ask which stock reader reads it
+HINT_EXAMPLES = {
+    "*vitest*": "npx vitest run", "*jest*": "npx jest", "*phpunit*": "vendor/bin/phpunit", "*pest*": "vendor/bin/pest", "*artisan test*": "artisan test",
+    "*pytest*": "pytest tests", "*-m unittest*": "python3 -m unittest discover", "go test*": "go test ./...", "*gotestsum*": "gotestsum --format testname",
+    "cargo test*": "cargo test", "*playwright test*": "npx playwright test", "*webpack*": "npx webpack", "*gradle*": "./gradlew build", "mvn*": "mvn -B test",
+    "*mvnw*": "./mvnw test", "sbt*": "sbt test", "dotnet build*": "dotnet build", "dotnet test*": "dotnet test", "turbo*": "turbo run build",
+    "*turbo run*": "turbo run build", "ctest*": "ctest", "docker build*": "docker build .", "docker buildx*": "docker buildx build .",
+    "xcodebuild*": "xcodebuild test", "npm*run *": "npm run build", "pnpm*run *": "pnpm run build", "yarn *": "yarn build", "*python*": "python3 tools/deploy.py",
+}
+TOOLS_WITHOUT_STOCK_READER = {
+    "pnpm*run *": "a script run: what it prints is the output of the tool the script runs",
+    "yarn *": "a script run: what it prints is the output of the tool the script runs",
+    "*python*": "any Python program: there is no one output a reader could know",
+}
 KEPT_BEFORE = "an output of the tool run in this project, kept in stock_reader_catalog.py before 12 November 2026"
 
 

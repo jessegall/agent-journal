@@ -1,7 +1,6 @@
 from collections.abc import Callable
 from dataclasses import replace
 
-from engine.actor.actor import CORE_ACTOR_ID
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.database.kept_rows import KeptRows
@@ -29,7 +28,7 @@ class UpdateStockReadersHandler(Handler[UpdateStockReaders, None]):
         rows = self.kept.read("readers", self.loaded_rows, name="processes.stock_readers")
         for stock in STOCK_READERS:
             reader = rows.readers.get(stock.name)
-            if reader is not None and (reader.creator_id != CORE_ACTOR_ID or reader.id in rows.edited_ids):
+            if reader is not None and (not reader.is_stock or reader.id in rows.edited_ids):
                 continue
             updated = replace(stock.applied(reader), shipped_digest=StockDigest.of(stock))
             if updated != reader:

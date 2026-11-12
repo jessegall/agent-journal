@@ -1,7 +1,6 @@
 from collections import defaultdict
 from collections.abc import Sequence
 
-from engine.actor.actor import CORE_ACTOR_ID
 from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
 from engine.query.conditions.among import Among
@@ -39,7 +38,7 @@ class CatalogueAudit:
 
     def readers_behind(self) -> tuple[tuple[Reader, str], ...]:
         """The stock rows an edit froze whose shipped entry changed since: each with the digest of the entry now."""
-        stock_rows = {reader.name: reader for reader in self.reader_rows.all() if reader.creator_id == CORE_ACTOR_ID}
+        stock_rows = {reader.name: reader for reader in self.reader_rows.all() if reader.is_stock}
         edited = self.edits.edited_ids(stock_rows.values())
         return tuple((stock_rows[stock.name], StockDigest.of(stock)) for stock in STOCK_READERS
                      if stock.name in stock_rows and stock_rows[stock.name].id in edited and stock_rows[stock.name].shipped_digest != StockDigest.of(stock))

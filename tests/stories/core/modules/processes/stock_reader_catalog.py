@@ -19,7 +19,10 @@ from core.modules.processes.support.reader_run import ReaderRun
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.stock_reader import STOCK_READERS
 from tests.stories.core.modules.processes.support.process_samples import end_run, start_process
-from tests.stories.core.modules.processes.support.stock_samples import STOCK_SAMPLES
+from tests.stories.core.modules.processes.support.stock_samples import HINT_EXAMPLES, STOCK_SAMPLES, TOOLS_WITHOUT_STOCK_READER
+from core.modules.processes.support.reader_rows import ReaderRows
+from core.modules.processes.support.streaming_hints import STREAMING_HINTS
+from engine.actor.actor import CORE_ACTOR_ID
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 
@@ -110,3 +113,29 @@ def test_a_filtered_pytest_collect_counts_only_the_selected_tests(new_story, lin
     story = new_story(fixture=UserJoined)
     pytest_reader = story.container.get(Queries).query(Reader).filter(name="pytest").first()
     story.expect_rows(story.container.get(ReaderRun).count(pytest_reader, line, 0) == 1)
+
+
+def test_every_tool_with_a_streaming_hint_has_a_stored_stock_reader_or_says_why_not(new_story):
+    story = new_story(fixture=BuilderStarted)
+    BootingWork().run(story.container)
+    story.run_listeners()
+    stored = story.container.get(ReaderQuery).filter(creator_id=CORE_ACTOR_ID).limit(200).get()
+    patterns = [pattern for patterns, _ in STREAMING_HINTS for pattern in patterns.split(",")]
+    wrong = [pattern for pattern in patterns
+             if any(ReaderSelection.matches(reader.commands, HINT_EXAMPLES[pattern]) for reader in stored) == (pattern in TOOLS_WITHOUT_STOCK_READER)]
+    story.expect_rows(wrong == [], detail=str(wrong))
+
+
+def test_a_reader_a_person_adds_is_stored_layered_and_judged_as_an_agents_is(new_story):
+    story = new_story(fixture=BuilderStarted)
+    fields = '--commands "{tool} test*" --title "Tool tests" --lines "passed" --summary "[0-9]+ passed" --count "([0-9]+) tests" --step "(?m)^(?P<passed>ok) "'
+    story.expect_success(f'reader add person-tool {fields.format(tool="person-tool")} --environment main', actor=story.user)
+    story.expect_success(f'reader add agent-tool {fields.format(tool="agent-tool")} --environment main', actor=story.agent)
+    readers = story.container.get(ReaderQuery)
+    rows = [readers.filter(name=name).page(1, 1).rows[0] for name in ("person-tool", "agent-tool")]
+    layers = story.container.get(ReaderRows).layers()
+    judge = story.container.get(ReaderJudge)
+    story.expect_rows(layers.layer(rows[0]) == layers.layer(rows[1]),
+                      judge.judged(rows[0], CommandCategory.TEST_RUN).is_valid == judge.judged(rows[1], CommandCategory.TEST_RUN).is_valid,
+                      (rows[0].title, rows[0].lines_pattern, rows[0].summary_pattern, rows[0].count_pattern) == (rows[1].title, rows[1].lines_pattern, rows[1].summary_pattern, rows[1].count_pattern),
+                      detail=f"layers {layers.layer(rows[0])} {layers.layer(rows[1])}, creators {rows[0].creator_id} {rows[1].creator_id}")

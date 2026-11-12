@@ -1,6 +1,7 @@
 from engine.actor.actor import CORE_ACTOR_ID
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.reader import Reader
+from core.modules.processes.models.enums.reader_layer import ReaderLayer
 from core.modules.processes.support.reading.reader_layers import ReaderLayers
 
 AGENT_ID = 7
@@ -9,7 +10,7 @@ NO_EDITS = ReaderLayers(frozenset())
 
 def reader(name: str, row_id: int, creator_id: int = AGENT_ID, is_default: bool = False, plugin_name: str = "") -> Reader:
     return Reader(id=row_id, creator_id=creator_id, name=name, type=ReaderType.PATTERN, commands="pytest*",
-                  is_default=is_default, plugin_name=plugin_name)
+                  is_default=is_default, plugin_name=plugin_name, shipped_digest="shipped" if creator_id == CORE_ACTOR_ID else "")
 
 
 def names(readers: list[Reader]) -> list[str]:
@@ -58,3 +59,8 @@ def test_a_stock_reader_that_was_edited_counts_as_a_project_reader():
 
 def test_no_readers_give_no_readers():
     assert NO_EDITS.ordered([]) == []
+
+
+def test_a_reader_a_person_made_is_a_project_reader_though_the_persons_number_is_the_cores():
+    person_reader = Reader(id=7, creator_id=CORE_ACTOR_ID, name="person-tool", type=ReaderType.PATTERN, commands="pytest*")
+    assert ReaderLayers(frozenset()).layer(person_reader) is ReaderLayer.PROJECT
