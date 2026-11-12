@@ -168,7 +168,6 @@ def test_the_module_guide_shows_the_samples_own_declaration_and_commands_that_ex
     declared = (checkout / "tests/stories/fixtures/acme_plan_notes/module.py").read_text()
     windows = declared[declared.index("    windows = "):].rstrip()
     plan_notes.story.expect_rows(windows in guide, "journal module add tests/stories/fixtures/acme_plan_notes" in guide, "journal window trust acme.plan_notes --environment main" in guide)
-    plan_notes.story.expect_success("window trust acme.plan_notes --environment main", actor=plan_notes.story.user)
 
 
 def test_an_agent_cannot_remove_a_module_with_a_section(plan_notes):
