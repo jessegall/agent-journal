@@ -238,7 +238,13 @@ class RepeatedWork(PointTally):
     @classmethod
     def build_finding(cls, category: str, subject: str, text: str) -> RepeatedFinding:
         frames = cls.caller_frames()
-        return RepeatedFinding("|".join([category, subject, *cls.stack_calls(frames)[-SHOWN_CALLS:]]), f"{text}\n{cls.shown_calls(frames)}")
+        return RepeatedFinding("|".join([category, subject, *cls.project_calls(frames)[-SHOWN_CALLS:]]), f"{text}\n{cls.shown_calls(frames)}")
+
+    @classmethod
+    def project_calls(cls, frames: list[traceback.FrameSummary]) -> list[str]:
+        calls = cls.stack_calls(frames)
+        first_project_call = next((index for index, call in enumerate(calls) if not call.startswith(TEST_FOLDER)), len(calls))
+        return calls[first_project_call:]
 
     def note_command(self, command: str) -> None:
         self.commands[command] += 1
