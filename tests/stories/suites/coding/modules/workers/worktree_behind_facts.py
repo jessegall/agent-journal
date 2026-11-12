@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from pathlib import Path
 from collections.abc import Callable
 
 import pytest
@@ -7,29 +6,11 @@ import pytest
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.base_branch import checkout_of, committed_on, own_commits
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
 
 LOGIN_BRANCH = "feature/login"
 OTHER_WORKER_BRANCH = "journal/main/worker-other"
-
-
-def checkout_of(repository: GitRepository, branch: str) -> Path:
-    """A checkout of the branch beside the repository, where the story commits on it as a person would."""
-    folder = repository.folder.parent / f"checkout-{branch.replace('/', '-')}"
-    if not folder.exists():
-        repository.git("worktree", "add", str(folder), branch)
-    return folder
-
-
-def committed_on(repository: GitRepository, folder: Path, name: str, text: str, message: str) -> None:
-    (folder / name).write_text(text)
-    repository.git("add", name, folder=folder)
-    repository.git("commit", "-m", message, folder=folder)
-
-
-def own_commits(repository: GitRepository, worker_id: int, count: int) -> None:
-    for number in range(count):
-        committed_on(repository, repository.worktree_folder(worker_id), f"own_{number}.py", f"OWN = {number}\n", f"Own commit {number}")
 
 
 def no_base_change(story, repository: GitRepository) -> None:
