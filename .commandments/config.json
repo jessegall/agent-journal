@@ -288,8 +288,44 @@
         "architecture_core_product_file_named_like_a_test"
     ],
     "parallel": 2,
+    "cache_hours": 12,
     "configure": {
+        "architecture_testing_clock_loop_in_a_test": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
+        "architecture_testing_git_init_in_a_test": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
+        "architecture_testing_interpreter_in_a_test": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
         "architecture_testing_sleep_in_a_test": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
+        "architecture_testing_source_parsed_in_a_test": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
+        "architecture_testing_type_check_in_a_test": [
             {
                 "judges": [
                     "tests"
@@ -349,41 +385,6 @@
             {
                 "elements": [
                     50
-                ]
-            }
-        ],
-        "architecture_testing_clock_loop_in_a_test": [
-            {
-                "judges": [
-                    "tests"
-                ]
-            }
-        ],
-        "architecture_testing_git_init_in_a_test": [
-            {
-                "judges": [
-                    "tests"
-                ]
-            }
-        ],
-        "architecture_testing_interpreter_in_a_test": [
-            {
-                "judges": [
-                    "tests"
-                ]
-            }
-        ],
-        "architecture_testing_source_parsed_in_a_test": [
-            {
-                "judges": [
-                    "tests"
-                ]
-            }
-        ],
-        "architecture_testing_type_check_in_a_test": [
-            {
-                "judges": [
-                    "tests"
                 ]
             }
         ]
