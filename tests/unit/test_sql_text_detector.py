@@ -6,6 +6,8 @@ import subprocess
 
 import pytest
 
+from tests.unit.support.commandments_config import commandments_config
+
 """Book 6 of doc 1255, stories 41 to 50 and 59: the detectors refuse SQL written by hand outside the builder's own
 engine, and let prose, the engine, migrations and the listed views pass."""
 
@@ -156,7 +158,7 @@ def test_the_sin_names_the_method_for_each_kind():
 
 def test_the_two_old_sql_detectors_are_gone():
     assert [name for name in OLD_RULES if (CUSTOM / f"{name}.json").exists()] == []
-    detectors = json.loads((CUSTOM.parent / "config.json").read_text())["detectors"]
+    detectors = commandments_config(ROOT)["detectors"]
     assert [name for name in OLD_RULES if name in detectors] == []
     assert detectors.count(TEXT_RULE) == 1 and detectors.count(CALL_RULE) == 1
 
