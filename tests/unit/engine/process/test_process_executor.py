@@ -37,7 +37,7 @@ class OpenGate(ExecutionGate):
     def __init__(self) -> None:
         self.asked = 0
 
-    def opened(self, placement: RunPlacement, run: PlacedRun) -> bool:
+    def opened(self) -> bool:
         self.asked += 1
         return True
 

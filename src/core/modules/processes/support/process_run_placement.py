@@ -28,11 +28,6 @@ class ProcessRunPlacement(RunPlacement):
             return PlacedRun(request, None, False)
         return PlacedRun(request, None, False, agent.id, agent.environment_id, agent.paused_at is not None)
 
-    def holds(self, run: PlacedRun) -> bool:
-        if not run.paused_at_start or run.agent_id is None:
-            return False
-        return self.agents.find(run.agent_id).paused_at is not None
-
     def moved_to_background(self, run: PlacedRun, pid: int) -> None:
         return None
 

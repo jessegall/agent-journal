@@ -70,7 +70,7 @@ class LineRun:
             with container.get(RequestWatch).watching_without_refusal(argv):
                 if argv[:2] == MODULE_REMOVAL_ARGUMENTS:
                     return container.get(ModuleRemoveLine).run(argv, request, stream)
-                return container.get(RequestRecords).recorded(ProcessKind.JOURNAL, shlex.join(["journal", *argv]), lambda: container.get(Console).requested_run(argv, request, stream))
+                return container.get(RequestRecords).recorded(ProcessKind.JOURNAL, shlex.join(["journal", *argv[:2]]), lambda: container.get(Console).requested_run(argv, request, stream))
         finally:
             cost = tools.cost(start_points)
             if cost is not None:

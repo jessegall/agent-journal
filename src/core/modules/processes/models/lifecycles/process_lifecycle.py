@@ -7,7 +7,7 @@ OPEN = (ProcessState.RUNNING, ProcessState.BACKGROUND)
 
 class ProcessLifecycle(Lifecycle):
     states = ProcessState
-    initial = [ProcessState.RUNNING, ProcessState.FINISHED, ProcessState.FAILED]
+    initial = [ProcessState.RUNNING]
     editable = OPEN
     deletable = tuple(state for state in ProcessState if state not in OPEN)
 

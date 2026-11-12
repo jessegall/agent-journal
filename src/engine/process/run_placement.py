@@ -11,9 +11,6 @@ class RunPlacement:
     def placed(self, request: ExecutionRequest) -> PlacedRun:
         return PlacedRun(request, None, False)
 
-    def holds(self, run: PlacedRun) -> bool:
-        return False
-
     def moved_to_background(self, run: PlacedRun, pid: int) -> None:
         return None
 
