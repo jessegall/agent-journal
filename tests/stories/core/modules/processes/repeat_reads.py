@@ -2,9 +2,11 @@ from datetime import timedelta
 
 import pytest
 
+from engine.actor.actor import Actor
+from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run
+from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, moved_run_of
 from tests.stories.core.support.coding_fixtures import BuilderHelper, BuilderStarted
 
 LONG_OUTPUT = "a line\n" * 400
@@ -33,12 +35,14 @@ def test_a_running_output_the_agent_read_once_is_refused_in_every_form_until_it_
     story.expect_success(f"output read {process.id} --summary", actor=story.agent)
 
 
-def test_a_helper_is_told_to_go_idle_and_not_what_a_main_agent_does(new_story):
+def test_a_helper_and_a_worker_are_told_to_go_idle_and_not_what_a_main_agent_does(new_story):
     story = install_runner(new_story(fixture=BuilderHelper))
-    process = moved_run(story, "make test", category=CommandCategory.TEST_RUN)
-    story.expect_success(f"output read {process.id} --summary", actor=story.helper)
-    story.expect_refusal(f"output read {process.id} --summary", "go idle: the journal wakes you when it ends", actor=story.helper)
-    story.expect_no_text(f"output read {process.id} --summary", "a main agent", "monitor", actor=story.helper)
+    worker = Actor(story.new_row_id(f"agent start sub-2 claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
+    for agent in (story.helper, worker):
+        process = moved_run_of(story, agent, "make test", category=CommandCategory.TEST_RUN)
+        story.expect_success(f"output read {process.id} --summary", actor=agent)
+        story.expect_refusal(f"output read {process.id} --summary", "go idle: the journal wakes you when it ends", actor=agent)
+        story.expect_no_text(f"output read {process.id} --summary", "a main agent", "monitor", actor=agent)
 
 
 def test_other_commands_between_reads_do_not_lift_the_refusal_of_a_running_output(new_story):
