@@ -9,14 +9,12 @@ from engine.actor.actor import Actor
 from engine.caller.caller import Caller
 from engine.cli.line_run import LineRun
 from engine.enums.actor_type import ActorType
-from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.file.file_access import FileAccess
 from engine.query.queries import Queries
 from engine.row.row_owner import MAIN_AGENT, RowOwner
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.processes.models.process import Process
-from core.modules.processes.commands.prune_processes.prune_processes import PruneProcesses
 from core.modules.processes.commands.record_request_runs.record_request_runs_handler import RecordRequestRunsHandler
 from core.modules.processes.models.request_run import RequestRun
 from core.modules.processes.support.request_log import RequestLog
@@ -92,7 +90,7 @@ def test_a_broken_line_in_the_request_log_is_left_out_and_the_rows_around_it_are
     story.expect_rows([row.line for row in runs_of_kind(story, ProcessKind.JOURNAL)] == ["journal task list", "journal task show"], not log.taken_path.exists())
 
 
-def test_a_failed_environment_in_the_request_log_repeats_no_row_of_the_environments_written_before_it(new_story, monkeypatch):
+def test_a_failed_environment_in_the_request_log_is_let_go_and_repeats_no_row_of_the_others(new_story, monkeypatch):
     story = new_story(fixture=BuilderStarted)
     written = RecordRequestRunsHandler.handle
 
@@ -109,8 +107,7 @@ def test_a_failed_environment_in_the_request_log_repeats_no_row_of_the_environme
     for _ in range(2):
         with contextlib.suppress(Exception):
             RequestLogImport()(story.container)
-    story.expect_rows([row.line for row in runs_of_kind(story, ProcessKind.JOURNAL)] == ["journal task list"],
-                      [entry.environment_id for entry in log.taken()] == [MISSING_ENVIRONMENT_ID])
+    story.expect_rows([row.line for row in runs_of_kind(story, ProcessKind.JOURNAL)] == ["journal task list"], log.taken() == ())
 
 
 def test_a_request_row_older_than_its_days_is_pruned(new_story):
@@ -119,7 +116,6 @@ def test_a_request_row_older_than_its_days_is_pruned(new_story):
     log.append(RequestLogEntry(1, None, ProcessKind.JOURNAL, "journal task list", 0, (story.clock.timestamp().value - timedelta(days=30)).isoformat()))
     log.append(RequestLogEntry(1, None, ProcessKind.JOURNAL, "journal task show", 0, story.clock.timestamp().text))
     logged_rows_written(story)
-    story.container.get(Bus).run(PruneProcesses(), Actor.core(), environment_id=1)
     story.expect_rows([row.line for row in runs_of_kind(story, ProcessKind.JOURNAL)] == ["journal task show"])
 
 

@@ -3,7 +3,7 @@ from pathlib import Path
 from engine.journal.journal_home import JournalHome
 from core.modules.pins.support.project_repositories import ProjectRepositories
 
-CONFIG = '[remote "origin"]\n\turl = git@github.com:acme/cart.git\n'
+CONFIG = '[remote "origin"]\n\turl = https://github.com/acme/cart.git\n'
 
 
 def test_a_checkout_names_the_repository_of_its_git_config(tmp_path: Path):
