@@ -42,14 +42,14 @@ def connection():
 
 def test_every_reference_moves_to_the_survivor_and_the_folded_rows_go(connection):
     MainFold(Database.configured(connection)).run(FOLDS, FOLDED_AT)
-    assert connection.execute("SELECT id, number FROM agents ORDER BY id").fetchall() == [(3, 1), (5, 1)]
-    assert connection.execute("SELECT session_agent_id FROM agent_sessions ORDER BY id").fetchall() == [(3,), (3,), (5,)]
-    assert connection.execute("SELECT actor_id, weight FROM memories ORDER BY id").fetchall() == [(3, 7), (3, 3), (3, 5), (5, 2), (5, 9)]
+    assert [tuple(row) for row in connection.execute("SELECT id, number FROM agents ORDER BY id")] == [(3, 1), (5, 1)]
+    assert [tuple(row) for row in connection.execute("SELECT session_agent_id FROM agent_sessions ORDER BY id")] == [(3,), (3,), (5,)]
+    assert [tuple(row) for row in connection.execute("SELECT actor_id, weight FROM memories ORDER BY id")] == [(3, 7), (3, 3), (3, 5), (5, 2), (5, 9)]
 
 
 def test_each_folded_agent_is_recorded_whole(connection):
     MainFold(Database.configured(connection)).run(FOLDS, FOLDED_AT)
-    assert connection.execute("SELECT folded_agent_id, survivor_id, folded_number FROM agent_folds ORDER BY folded_agent_id").fetchall() == [
+    assert [tuple(row) for row in connection.execute("SELECT folded_agent_id, survivor_id, folded_number FROM agent_folds ORDER BY folded_agent_id")] == [
         (1, 3, 1), (2, 3, 2), (4, 5, 4)]
 
 
@@ -80,10 +80,10 @@ def clashing(connection):
 
 def test_a_clash_keeps_the_row_its_rule_chooses_and_records_the_rest(clashing):
     MainFold(Database.configured(clashing)).run(FOLDS, FOLDED_AT)
-    assert clashing.execute("SELECT id, session_agent_id, task_id FROM task_reads ORDER BY id").fetchall() == [(2, 3, 50), (3, 3, 51)]
-    assert clashing.execute("SELECT table_name, rule FROM agent_fold_rows").fetchall() == [("task_reads", "keep the latest read"), ("links", "keep the oldest")]
+    assert [tuple(row) for row in clashing.execute("SELECT id, session_agent_id, task_id FROM task_reads ORDER BY id")] == [(2, 3, 50), (3, 3, 51)]
+    assert [tuple(row) for row in clashing.execute("SELECT table_name, rule FROM agent_fold_rows")] == [("task_reads", "keep the latest read"), ("links", "keep the oldest")]
 
 
 def test_a_clash_on_a_model_and_id_pair_is_settled_the_same_way(clashing):
     MainFold(Database.configured(clashing)).run(FOLDS, FOLDED_AT)
-    assert clashing.execute("SELECT id, source_id, target_id FROM links ORDER BY id").fetchall() == [(1, 7, 3), (3, 8, 3)]
+    assert [tuple(row) for row in clashing.execute("SELECT id, source_id, target_id FROM links ORDER BY id")] == [(1, 7, 3), (3, 8, 3)]

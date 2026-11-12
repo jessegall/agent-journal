@@ -4,6 +4,7 @@ from types import SimpleNamespace
 import pytest
 
 from core.modules.agents.bindings.agent_row_numbers import AgentRowNumbers
+from core.modules.agents.models.agent_fold import AgentFold
 from engine.errors.refusal import Refusal
 
 AGENTS = [SimpleNamespace(id=10, environment_id=1, number=1), SimpleNamespace(id=11, environment_id=1, number=2),
@@ -19,6 +20,22 @@ class FakeScopes:
     def opened(self, actor_id: int | None, environment_id: int | None = None, disabled: tuple = ()):
         self.environment_id = environment_id
         yield
+
+
+class EmptyFoldQuery:
+    """A journal in which no main agent row was ever folded."""
+
+    def filter(self, **values: object) -> "EmptyFoldQuery":
+        return self
+
+    def matching(self, condition: object) -> "EmptyFoldQuery":
+        return self
+
+    def first(self) -> None:
+        return None
+
+    def every_row(self, reason: str):
+        return iter(())
 
 
 class FakeAgentQuery:
@@ -45,7 +62,7 @@ class FakeAgentQuery:
 def numbers() -> AgentRowNumbers:
     scopes = FakeScopes()
     environments = SimpleNamespace(find=lambda environment_id: SimpleNamespace(name=ENVIRONMENT_NAMES[environment_id]))
-    return AgentRowNumbers(SimpleNamespace(query=lambda model: FakeAgentQuery(scopes, AGENTS)), scopes, environments)
+    return AgentRowNumbers(SimpleNamespace(query=lambda model: EmptyFoldQuery() if model is AgentFold else FakeAgentQuery(scopes, AGENTS)), scopes, environments)
 
 
 @pytest.mark.parametrize("agent", AGENTS)

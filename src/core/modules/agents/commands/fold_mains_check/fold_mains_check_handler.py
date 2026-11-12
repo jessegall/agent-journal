@@ -32,7 +32,7 @@ class FoldMainsCheckHandler(Handler[FoldMainsCheck, str]):
             started = time.monotonic()
             fold = MainFold(copy)
             folds = fold.plan()
-            counts = fold.run(folds, context.timestamp.text())
+            counts = fold.run(folds, context.timestamp.text)
             seconds = time.monotonic() - started
         finally:
             copy.connection.close()
