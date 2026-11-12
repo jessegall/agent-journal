@@ -30,7 +30,7 @@ READER_REQUEST_SPAN = ToolUseSpan(5)
 READER_REQUEST_COUNTDOWN = CountDown("processes.reader_request_countdown", "reader of {command}", READER_REQUEST_SPAN)
 READER_REQUEST_REFUSAL = NudgeDeclaration("processes.reader_request_refusal", NudgeType.REFUSAL, 'reader request {request} needs a reader')
 
-READER_BLOCK = NudgeDeclaration("processes.reader_block", NudgeType.REFUSAL, "no reader reads output {output}: journal reader draft {request} --save for reader request {request}, or mark unreadable",
+READER_BLOCK = NudgeDeclaration("processes.reader_block", NudgeType.REFUSAL, "no proper reader for output {output}, reader request {request}: journal reader draft {request} --save or mark unreadable",
                                 full_text=True)
 OUTPUT_CHECK = NudgeDeclaration("processes.output_check", NudgeType.STEERING, 'output {output} still runs after {minutes} minutes: check it does its work',
                                 required_command="journal output confirm {output}", wakes_agent=True, turn_limited=False)
