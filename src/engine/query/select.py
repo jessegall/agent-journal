@@ -16,6 +16,7 @@ class Select:
     limit: int = 0
     offset: int = 0
     full_table_reason: str | None = None
+    named_limit: int = 0
 
     @property
     def is_empty(self) -> bool:
@@ -29,6 +30,10 @@ class Select:
 
     def sliced(self, limit: int, offset: int) -> "Select":
         return replace(self, limit=limit, offset=offset)
+
+    def named(self, rows: int) -> "Select":
+        """The select names how many rows it may load, which the read limit accepts up to that number."""
+        return replace(self, named_limit=rows)
 
     def full_table(self, reason: str) -> "Select":
         return replace(self, full_table_reason=reason)
@@ -45,7 +50,7 @@ class Select:
         order = f" ORDER BY {', '.join(order.sql for order in self.orders)}" if self.orders else ""
         page = f" LIMIT {self.limit} OFFSET {self.offset}" if self.limit else ""
         statement = self.filtered(Statement(f"SELECT {self.columns} FROM {self.table}")).joined(Statement(order + page), "")
-        return replace(statement, full_table_reason=self.full_table_reason)
+        return replace(statement, full_table_reason=self.full_table_reason, named_limit_rows=self.named_limit or None)
 
     def count_statement(self) -> Statement:
         return self.filtered(Statement(f"SELECT count(*) FROM {self.table}"))

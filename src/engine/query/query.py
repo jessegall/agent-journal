@@ -29,6 +29,7 @@ from engine.row.page import Page
 from engine.query.select import Select
 from engine.row.row_owner import RowOwner
 from engine.query.errors.unknown_column_error import UnknownColumnError
+from engine.query.errors.query_limit_error import QueryLimitError
 from engine.query.errors.unknown_operator_error import UnknownOperatorError
 from engine.query.errors.unnamed_column_error import UnnamedColumnError
 
@@ -42,6 +43,8 @@ REMOVED_COLUMN = "removed_at"
 ROW_KEY = "id"
 VERSION_COLUMN = "version"
 ALL_COLUMNS = "*"
+DEFAULT_LIMIT_ROWS = 50
+MOST_NAMED_LIMIT_ROWS = 1000
 COMPARISONS: dict[str, type[Condition]] = {">": Greater, "<": Less, ">=": Minimum, "<=": Maximum}
 OPERATORS = ("=", "!=", "<", "<=", ">", ">=")
 
@@ -177,7 +180,32 @@ class Query(Generic[M]):
         return self.with_select(self.select.full_table(reason))
 
     def page(self, number: int = 1, size: int = PAGE_SIZE_ROWS) -> Page[M]:
-        return Page(tuple(self.rows(self.select.sliced(size, (number - 1) * size))), number, size, self.count())
+        select = self.select.sliced(size, (number - 1) * size)
+        if size > DEFAULT_LIMIT_ROWS:
+            select = select.named(Query.checked_limit(size))
+        return Page(tuple(self.rows(select)), number, size, self.count())
+
+    def limit(self, rows: int) -> Self:
+        """Names how many rows get() returns, from 1 to the most a read may name."""
+        return self.with_select(self.select.sliced(Query.checked_limit(rows), 0))
+
+    def get(self) -> list[M]:
+        """The rows of the query up to its limit, 50 unless it names one; a read that finds more is cut there and
+        reported, never silent."""
+        limit = self.select.limit or DEFAULT_LIMIT_ROWS
+        select = self.select.sliced(limit + 1, 0).named(limit + 1)
+        rows = self.rows(select)
+        if len(rows) > limit:
+            self.database.report_cut(self.scoped(select).statement().sql, limit)
+        return rows[:limit]
+
+    @staticmethod
+    def checked_limit(rows: int) -> int:
+        if rows < 1:
+            raise QueryLimitError("a limit is at least 1")
+        if rows > MOST_NAMED_LIMIT_ROWS:
+            raise QueryLimitError(f"a read names at most {MOST_NAMED_LIMIT_ROWS} rows; walk the rows with every_row(reason) if you need them all")
+        return rows
 
     def limited(self, size: int) -> list[M]:
         return self.rows(self.select.sliced(size, 0))
