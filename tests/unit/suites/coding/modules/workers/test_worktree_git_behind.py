@@ -1,3 +1,4 @@
+from tests.unit.support.declared_merge_builds import declared_merge_builds
 from pathlib import Path
 
 import pytest
@@ -24,7 +25,7 @@ def cut_worktree(tmp_path, base_branch: str = BASE_BRANCH, name: str = "worktree
 
 
 def git() -> WorktreeGit:
-    return WorktreeGit(None, plain_executor())
+    return WorktreeGit(None, plain_executor(), declared_merge_builds())
 
 
 def merged_branch(repository: SampleRepository, branch: str, commits: int) -> None:

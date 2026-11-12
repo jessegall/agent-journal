@@ -1,3 +1,4 @@
+from tests.unit.support.declared_merge_builds import declared_merge_builds
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.support.behind_facts_reader import BehindFactsReader
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
@@ -37,7 +38,7 @@ def facts(tmp_path, worker_files: dict[str, str], base_files: dict[str, str], un
         repository.committed(name, text, f"Base changes {name}")
     for name, text in (uncommitted or {}).items():
         (own.folder / name).write_text(text)
-    return BehindFactsReader(WorktreeGit(None, plain_executor()), NoChecks()).read(worktree, worker())
+    return BehindFactsReader(WorktreeGit(None, plain_executor(), declared_merge_builds()), NoChecks()).read(worktree, worker())
 
 
 def test_a_file_both_changed_is_the_overlap_with_the_lines_the_base_changed_in_it(tmp_path):

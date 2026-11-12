@@ -29,6 +29,7 @@ from suites.coding.modules.workers.support.worktree_changes import WorktreeChang
 from suites.coding.modules.workers.support.worktree_file_change import WorktreeFileChange
 from suites.coding.modules.workers.support.worktree_start import WorktreeStart
 from suites.coding.modules.workers.support.worker_folder_runs import WorkerFolderRuns
+from suites.coding.modules.workers.support.merge_builds import MergeBuilds
 
 WORKTREES_FOLDER = Path(".journal") / "worktrees"
 GIT_LIMIT_SECONDS = 60
@@ -37,7 +38,7 @@ BUILD_LIMIT_SECONDS = 300
 WORKTREE_EXCLUDE_FILE = "journal-exclude"
 WORKTREE_CONFIG_FILE = "config.worktree"
 GIT_FOLDER_PREFIX = "gitdir:"
-BUILT_FOLDER = "/web/dist/"
+REBUILD_MESSAGE = "Rebuild built files from merged sources"
 HASHED_BUILT_FILE = re.compile(r"(.+)-[\w-]{8}\.[^.]+")
 # git quotes a name with a space, a quote or another letter it finds odd, unless it separates names with NUL
 COMMIT_SEPARATOR = "\x1e"
@@ -71,8 +72,8 @@ class WorktreeGit:
     checkout of their own, of a worktree's commit or of the head of the environment's branch, so no checkout
     anybody works in is moved."""
 
-    def __init__(self, runs: WorkerFolderRuns, executor: ProcessExecutor) -> None:
-        self.runs, self.executor = runs, executor
+    def __init__(self, runs: WorkerFolderRuns, executor: ProcessExecutor, builds: MergeBuilds) -> None:
+        self.runs, self.executor, self.builds = runs, executor, builds
 
     def tip(self, folder: str, branch: str) -> str:
         revision = self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}")
@@ -240,10 +241,11 @@ class WorktreeGit:
         if merged:
             return ()
         conflicts = self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.splitlines()
-        folders = self.built_folders(conflicts)
+        built = self.builds.paths()
+        folders = built.folders(conflicts)
         if folders:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rm", "-r", "-f", "--ignore-unmatch", "--", *folders)
-        source_conflicts = tuple(path for path in self.without_instruction_conflicts(worktree, tuple(conflicts)) if BUILT_FOLDER not in path)
+        source_conflicts = built.others(self.without_instruction_conflicts(worktree, tuple(conflicts)))
         if not source_conflicts:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "--no-edit")
         return source_conflicts
@@ -253,9 +255,6 @@ class WorktreeGit:
         if instruction_conflicts:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "restore", f"--source={worktree.base_branch}", "--staged", "--worktree", "--", *instruction_conflicts)
         return tuple(path for path in conflicts if path not in INSTRUCTION_FILES)
-
-    def built_folders(self, files: list[str]) -> tuple[str, ...]:
-        return tuple(sorted({path.split(BUILT_FOLDER, 1)[0] + "/web/dist" for path in files if BUILT_FOLDER in path}))
 
     def tracked_files(self, worktree: Worktree, folders: set[str]) -> list[str]:
         return self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", *sorted(folders)).stdout.splitlines()
@@ -270,45 +269,49 @@ class WorktreeGit:
         return injections.group(1) if injections is not None else None
 
     def refuse_deleted_built_files(self, worktree: Worktree, changes: WorktreeChanges) -> None:
-        deleted = [change.relative for change in changes.changes if change.deleted_under(BUILT_FOLDER)]
+        built = self.builds.paths()
+        deleted = [change.relative for change in changes.changes if change.status is FileStatus.DELETED and built.holds(change.relative)]
         if not deleted:
             return
-        tracked = self.tracked_files(worktree, {path.split(BUILT_FOLDER, 1)[0] for path in deleted})
-        kept = [path for path in deleted if any(file.startswith(path.split(BUILT_FOLDER, 1)[0]) for file in tracked) and not self.is_rebuilt(path, tracked)]
+        tracked = self.tracked_files(worktree, {str(Path(built.folder(path)).parent) for path in deleted})
+        kept = [path for path in deleted if any(file.startswith(str(Path(built.folder(path)).parent)) for file in tracked) and not self.is_rebuilt(path, tracked)]
         if kept:
-            raise Refusal(f"it deletes {len(kept)} built files under web/dist while their sources stay, such as {kept[0]}",
-                          AskTopic.TOOL.hint("build them again with npm --prefix src/viewer run build, then commit again"))
+            raise Refusal(f"it deletes {len(kept)} built files under {built.folder(kept[0])} while their sources stay, such as {kept[0]}",
+                          AskTopic.TOOL.hint(f"build them again with {' '.join(self.builds.command())}, then commit again"))
 
     def rebuild(self, worktree: Worktree, base_folder: str) -> None:
         changed = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", worktree.base_branch, worktree.branch).stdout.splitlines()
-        folders = self.built_folders(changed)
+        folders = self.builds.paths().folders(changed)
         if not folders:
             return
-        viewer = Path(worktree.folder, "src/viewer")
-        if not (viewer / "package.json").is_file():
-            raise Refusal("the web build needs src/viewer/package.json", "add the build command before merging generated web files")
-        for folder in folders:
-            path = Path(worktree.folder, folder)
+        self.build(worktree.folder, base_folder, folders)
+        self.commit(worktree, REBUILD_MESSAGE, f"Journal: worker worker-{worktree.session_agent_id}")
+
+    def build(self, folder: str, base_folder: str, folders: Sequence[str]) -> None:
+        """Builds the built files of these folders again from the sources in the folder, with the build command of
+        the workers settings; the dependencies of the main checkout serve a worktree that has none of its own."""
+        for built in folders:
+            path = Path(folder, built)
             if path.exists():
                 shutil.rmtree(path)
+        viewer = Path(folder, "src/viewer")
         modules = viewer / "node_modules"
         base_modules = Path(base_folder, "src/viewer/node_modules")
-        linked = not modules.exists() and base_modules.is_dir()
+        linked = viewer.is_dir() and not modules.exists() and base_modules.is_dir()
         if linked:
             modules.symlink_to(base_modules.resolve(), target_is_directory=True)
         try:
-            finished = self.executor.execute(ExecutionRequest(["npm", "run", "build"], viewer, ProcessKind.SHELL, BUILD_LIMIT_SECONDS))
+            finished = self.executor.execute(ExecutionRequest(self.builds.command(), Path(folder), ProcessKind.SHELL, BUILD_LIMIT_SECONDS))
             if not finished.succeeded:
-                raise Refusal("the web build failed", (finished.stderr or finished.stdout).strip())
+                raise Refusal("the build of the built files failed", (finished.stderr or finished.stdout).strip())
         except RunTimeLimitError as timeout:
-            raise Refusal("the web build exceeded its time limit", "fix the build in the worker's worktree, then merge again") from timeout
+            raise Refusal("the build of the built files exceeded its time limit", "fix the build, then merge again") from timeout
         finally:
             if linked:
                 modules.unlink()
-        missing = [folder for folder in folders if not any(path.is_file() for path in Path(worktree.folder, folder).rglob("*"))]
+        missing = [built for built in folders if not any(path.is_file() for path in Path(folder, built).rglob("*"))]
         if missing:
-            raise Refusal(f"the web build produced no files in {', '.join(missing)}", "fix the web build before merging")
-        self.commit(worktree, "Rebuild web files from merged sources", f"Journal: worker worker-{worktree.session_agent_id}")
+            raise Refusal(f"the build produced no files in {', '.join(missing)}", "fix the build before merging")
 
     @contextmanager
     def without_instruction_files(self, folder: str) -> Generator[None]:
@@ -442,7 +445,7 @@ class WorktreeGit:
             self.keep_clashed_stash(worktree, stash)
             return
         if not self.head_contains(worktree.folder, stash):
-            raise Refusal(f"git stash apply failed for the uncommitted changes of the worker", AskTopic.CONFLICT.hint(f"they stay in its stash {stash}: apply them with git stash apply {stash}"))
+            raise Refusal("git stash apply failed for the uncommitted changes of the worker", AskTopic.CONFLICT.hint(f"they stay in its stash {stash}: apply them with git stash apply {stash}"))
         self.drop_stash(worktree, stash)
 
     def unmerged_files(self, folder: str) -> tuple[str, ...]:
@@ -485,10 +488,25 @@ class WorktreeGit:
                 raise Refusal(f"git merge of {revision} failed in {folder}", (finished.stderr or finished.stdout).strip())
             return
         self.keep_instruction_files(folder)
-        if self.git(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.strip():
+        conflicts = self.git(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.splitlines()
+        built = self.builds.paths()
+        if built.others(conflicts):
             self.git(folder, GIT_LIMIT_SECONDS, "merge", "--abort")
             raise Refusal(f"git merge of {revision} failed in {folder}", (finished.stderr or finished.stdout).strip())
+        clashed = built.of(conflicts)
+        if clashed:
+            self.checked(folder, GIT_LIMIT_SECONDS, "checkout", "--ours", "--", *clashed)
+            self.checked(folder, GIT_LIMIT_SECONDS, "add", "--", *clashed)
         self.checked(folder, GIT_LIMIT_SECONDS, "commit", "-m", message)
+        if clashed:
+            self.rebuilt_after_merge(folder, built.folders(clashed))
+
+    def rebuilt_after_merge(self, folder: str, folders: Sequence[str]) -> None:
+        """Builds the built files whose copies clashed again from the merged sources, once, and commits them."""
+        self.build(folder, folder, folders)
+        self.checked(folder, GIT_LIMIT_SECONDS, "add", "-A", "--", *folders)
+        if self.git(folder, GIT_LIMIT_SECONDS, "diff", "--cached", "--quiet").returncode != 0:
+            self.checked(folder, GIT_LIMIT_SECONDS, "commit", "-m", REBUILD_MESSAGE)
 
     def keep_instruction_files(self, folder: str) -> None:
         kept = self.checked(folder, GIT_LIMIT_SECONDS, "ls-tree", "--name-only", "HEAD", "--", *INSTRUCTION_FILES).stdout.split()

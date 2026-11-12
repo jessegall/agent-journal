@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.support.merge_builds import MergeBuilds
 from engine.process.door.process_executor import ProcessExecutor
 from tests.stories.core.modules.agents.support.numbered_agents import FIRST_STORY_NUMBER
 import json
@@ -45,7 +46,7 @@ def repository_environment(story: Story, branch: str = ENVIRONMENT_BRANCH, real_
 
 def memory_repository(story: Story) -> MemoryRepository:
     repository = MemoryRepository.sample(repository_folder(story))
-    story.bind(WorktreeGit, MemoryWorktreeGit(story.container.get(WorkerFolderRuns), repository.history, story.container.get(ProcessExecutor)))
+    story.bind(WorktreeGit, MemoryWorktreeGit(story.container.get(WorkerFolderRuns), repository.history, story.container.get(ProcessExecutor), story.container.get(MergeBuilds)))
     checked: dict[type, bool] = {}
     for class_type in [key for key, instance in story.container.instances.items() if uses_git(type(instance), checked)]:
         del story.container.instances[class_type]

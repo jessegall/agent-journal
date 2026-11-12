@@ -15,7 +15,6 @@ from suites.coding.modules.workers.models.enums.affected_test_state import Affec
 from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
 
-MERGE_PROOFS_REASON = "a merge checks every proof of the worktree"
 
 
 class MergeChecks:
@@ -39,8 +38,7 @@ class MergeChecks:
     def check_proofs(self, worktree: Worktree) -> None:
         if not self.plans.is_started_plan(worktree.task_id):
             self.check_selected_tests(worktree)
-        proofs = self.proofs.worktree_proofs(worktree.id).oldest()
-        self.check_states(worktree, self.kept.read(proofs, lambda: tuple(proofs.every_row(MERGE_PROOFS_REASON)), name="workers.merge_proofs"))
+        self.check_states(worktree, self.proofs.worktree_rows(worktree.id))
 
     def check_states(self, worktree: Worktree, proofs: Iterable[Proof]) -> None:
         mergeable = COMMITTED_WORK_MERGEABLE_STATES if self.plans.is_started_plan(worktree.task_id) else MERGEABLE_STATES

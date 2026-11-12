@@ -26,7 +26,15 @@ class ShadowDecisions:
     def store(self, process: Process, parts: Sequence[ProcessPart], moment: ReadingMoment, context: Context) -> None:
         if not parts:
             return
-        stored = self.decisions.kept(process, moment)
+        self.store_parts(process, parts, moment, self.decisions.kept(process, moment), context)
+
+    def store_at_start(self, process: Process, parts: Sequence[ProcessPart], context: Context) -> None:
+        """Keeps the decisions of a run that has just started, which has none kept yet, so nothing is read."""
+        if not parts:
+            return
+        self.store_parts(process, parts, ReadingMoment.START, {}, context)
+
+    def store_parts(self, process: Process, parts: Sequence[ProcessPart], moment: ReadingMoment, stored: Mapping[int, ReadingDecisionRow], context: Context) -> None:
         for part, case in zip(parts, self.facts.cases_for(process, parts, moment)):
             self.store_part(process, part, case, stored, context)
 

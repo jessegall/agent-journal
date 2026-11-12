@@ -43,9 +43,10 @@ class WorkerTaskCommit:
         changes = self.git.comparison(current)
         if is_none_answer(differences):
             self.check_built(current, tasks, changes)
-        self.git.refuse_deleted_built_files(current, changes)
         if base_commit != worktree.base_commit:
             self.git.rebuild(current, self.queries.query(Environment).find(worktree.environment_id).folder)
+            changes = self.git.comparison(current)
+        self.git.refuse_deleted_built_files(current, changes)
         self.bus.run(RecordWorktreeBase(worktree.id, base_commit, tuple(task.id for task in tasks), self.git.short_tip(worktree)), actor, environment_id=worktree.environment_id)
 
     def check_built(self, worktree: Worktree, tasks: tuple[Task, ...], changes: WorktreeChanges) -> None:
