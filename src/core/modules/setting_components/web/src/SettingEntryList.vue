@@ -12,14 +12,16 @@ const props = defineProps({
 });
 const emit = defineEmits(["update:modelValue"]);
 
-const entries = ref(props.modelValue.map(String));
-const filled = (list) => list.map((entry) => entry.trim()).filter(Boolean);
-const isNumber = (entry) => Number.isFinite(Number(entry));
+let lastKey = 0;
+const entryOf = (text) => ({key: ++lastKey, text});
+const entries = ref(props.modelValue.map((value) => entryOf(String(value))));
+const filled = (list) => list.map((entry) => entry.text.trim()).filter(Boolean);
+const isNumber = (text) => Number.isFinite(Number(text));
 const problem = computed(() => (props.numbers && filled(entries.value).some((entry) => !isNumber(entry)) ? props.rule : ""));
 const valueOf = (list) => (props.numbers ? filled(list).map(Number) : filled(list));
 
 watch(() => props.modelValue, (value) => {
-    if (JSON.stringify(valueOf(entries.value)) !== JSON.stringify(value)) entries.value = value.map(String);
+    if (JSON.stringify(valueOf(entries.value)) !== JSON.stringify(value)) entries.value = value.map((item) => entryOf(String(item)));
 });
 
 function send() {
@@ -27,7 +29,7 @@ function send() {
 }
 
 function edit(index, text) {
-    entries.value[index] = text;
+    entries.value[index].text = text;
     send();
 }
 
@@ -36,7 +38,7 @@ function remove(index) {
     send();
 }
 
-const add = () => entries.value.push("");
+const add = () => entries.value.push(entryOf(""));
 </script>
 
 <template>
@@ -44,9 +46,9 @@ const add = () => entries.value.push("");
         <template v-if="!entries.length">
             <p class="none">Nothing in the list yet.</p>
         </template>
-        <template v-for="(entry, index) in entries" :key="index">
+        <template v-for="(entry, index) in entries" :key="entry.key">
             <div class="entry">
-                <input type="text" :inputmode="numbers ? 'decimal' : 'text'" :value="entry" :placeholder="placeholder" :disabled="disabled" :data-entry="index" @input="edit(index, $event.target.value)">
+                <input type="text" :inputmode="numbers ? 'decimal' : 'text'" :value="entry.text" :placeholder="placeholder" :disabled="disabled" :data-entry="index" @input="edit(index, $event.target.value)">
                 <button type="button" class="remove" aria-label="Remove" :disabled="disabled" :data-remove="index" @click="remove(index)">×</button>
             </div>
         </template>
