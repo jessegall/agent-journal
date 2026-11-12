@@ -102,7 +102,7 @@ class CodingModule(Module):
                                        WindowKey("matches", "project-file find {words}", loading=KeyLoading.REQUESTED),
                                        WindowKey("file", "project-file show {path}", loading=KeyLoading.REQUESTED)]),
                WindowDeclaration("coding.work-mode", "Work mode", "work-mode.js", WindowLoading.COMPONENT, skeleton=CODING_WORK_MODE_SKELETON, icon=WindowIcon.WINDOW, place=WindowPlace.HEADER,
-                                 reads=["work-settings show", "setting show", "agent limits"], runs=["work-settings preset", "work-settings apply", "setting set", "agent profile-limits"], events=["setting.*", "agent.*"],
+                                 reads=["work-settings show", "setting show", "agent limits"], runs=["work-settings preset", "work-settings apply", "setting set", "agent profile-limits", "agent retire"], events=["setting.*", "agent.*"],
                                  keys=[WindowKey("work", "work-settings show", events=["setting.*"]),
                                        WindowKey("auto", "setting show journal.suites.coding.auto-mode", events=["setting.*"]),
                                        WindowKey("limits", "agent limits", tab="agents", events=["agent.*", "setting.*"])]),
