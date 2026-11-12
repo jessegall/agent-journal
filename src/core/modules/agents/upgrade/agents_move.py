@@ -40,9 +40,9 @@ class AgentsMove(VersionFourMove):
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
         roles = list(context.role_names)
-        all_rows = list(source.rows(TABLE))
-        latest_ids = self.newest_main_ids(all_rows)
-        for row in all_rows:
+        source_rows = list(source.rows(TABLE))
+        latest_ids = self.newest_main_ids(source_rows)
+        for row in source_rows:
             role = self.moved_role(row["role"] or AgentRole.MAIN.value)
             if not row["session"]:
                 report.drop("agents without a session", 1)

@@ -20,6 +20,8 @@ from core.modules.processes.support.reading.stock_reader_edits import StockReade
 from core.modules.processes.support.stock_digest import StockDigest
 from core.modules.processes.support.stock_reader import STOCK_READERS
 
+MARK_CREATORS_REASON = "every creator of a recent mark is checked for an agent"
+
 AUDIT_SOURCE = "processes.readers-at-start"
 REPAIR_AFTER_OUTPUTS = 3
 RECENT_OUTPUTS = 50
@@ -63,16 +65,16 @@ class CatalogueAudit:
     def agent_marks_count(self, last_audit_at: Timestamp) -> int:
         """How many commands agents marked unreadable since the main agent last heard the audit; marks of the
         engine and of a person are not counted."""
-        creators = [mark.creator_id for mark in self.marks.made_after(last_audit_at).standing().descending("created_at", "id").limited(RECENT_OUTPUTS)]
+        creators = [mark.creator_id for mark in self.marks.made_after(last_audit_at).standing().descending("created_at", "id").take(RECENT_OUTPUTS)]
         if not creators:
             return 0
-        agents = {actor.id for actor in self.queries.query(ActorRecord).matching(Among("id", sorted(set(creators)))).filter(type=ActorType.AGENT).all_rows()}
+        agents = {actor.id for actor in self.queries.query(ActorRecord).matching(Among("id", sorted(set(creators)))).filter(type=ActorType.AGENT).every_row(MARK_CREATORS_REASON)}
         return sum(creator in agents for creator in creators)
 
     def readers_needing_repair(self) -> tuple[Reader, ...]:
         """The readers whose last outputs with lines, three of them, each had no line the reader kept."""
         kept_lines: defaultdict[int, list[int]] = defaultdict(list)
-        for output in self.outputs.read_with_lines().newest().limited(RECENT_OUTPUTS):
+        for output in self.outputs.read_with_lines().newest().take(RECENT_OUTPUTS):
             kept_lines[output.reader_id].append(output.reader_lines)
         broken = {reader_id for reader_id, counts in kept_lines.items() if len(counts) >= REPAIR_AFTER_OUTPUTS and not any(counts[:REPAIR_AFTER_OUTPUTS])}
         return tuple(reader for reader in self.reader_rows.all() if reader.id in broken)

@@ -54,7 +54,7 @@ class TargetResolutionListener(SaveListener[Changed[Model]]):
 
     def pending_targets(self) -> tuple[WaitTarget, ...]:
         targets = self.open_targets()
-        return self.kept.read(targets, lambda: tuple(targets.full_table(OPEN_TARGETS_REASON).all_rows()), name="waits.open_targets")
+        return self.kept.read(targets, lambda: tuple(targets.every_row(OPEN_TARGETS_REASON)), name="waits.open_targets")
 
     def open_targets(self) -> Query[WaitTarget]:
         return self.queries.query(WaitTarget).matching(IsNull("resolved_at")).oldest()

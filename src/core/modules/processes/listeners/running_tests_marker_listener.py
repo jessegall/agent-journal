@@ -28,5 +28,5 @@ class RunningTestsMarkerListener(CommitListener[Changed[Process]]):
 
         test_runs = self.processes.running().filter(category=CommandCategory.TEST_RUN)
         self.kept.update(test_runs, updated, name="processes.running_tests")
-        running = self.kept.read(test_runs, lambda: {row.id for row in test_runs.all_rows()}, name="processes.running_tests")
+        running = self.kept.read(test_runs, lambda: set(test_runs.pluck("id")), name="processes.running_tests")
         self.tools.keep_tests_running(bool(running))

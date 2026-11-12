@@ -27,7 +27,7 @@ class UnreadableMarks:
         """The commands a standing mark covers, from one read of the marks of all of them."""
         covering = {command: UnreadableMarks.covering_words(command) for command in dict.fromkeys(commands)}
         words = sorted({word for leading in covering.values() for word in leading})
-        marked = {mark.words for mark in self.marks.standing().of_words(words).all_rows()} if words else set()
+        marked = set(self.marks.standing().of_words(words).pluck("words")) if words else set()
         return frozenset(command for command, leading in covering.items() if marked.intersection(leading))
 
     def excuses(self, command: str) -> bool:

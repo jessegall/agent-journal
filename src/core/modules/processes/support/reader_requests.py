@@ -55,7 +55,7 @@ class ReaderRequests:
         existing = self.open_row(scope)
         if existing is not None:
             return existing.id
-        samples = self.parts.kept_samples(["*"]).matching(scope).limited(5)
+        samples = self.parts.kept_samples(["*"]).matching(scope).take(5)
         sample_id = next((sample.process_id for sample in samples if sample.exit_code != 2 or not self.judge.is_rejected(
             sample.exit_code, self.judge.output_text(sample.process_id, sample.position))), process.id)
         return self.saved_request(process, spec, reason, sample_id, context)

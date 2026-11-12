@@ -7,6 +7,8 @@ from engine.query.query import Query
 from engine.enums.command_category import CommandCategory
 from core.modules.aliases.models.alias import Alias
 
+BEGINNING_REASON = "a command is matched against the saved aliases of its category, oldest first, until one begins it"
+
 ALIAS_PAGE_ROWS = 50
 
 
@@ -28,4 +30,4 @@ class AliasQuery(Query[Alias]):
         return self.filter(category=category)
 
     def first_beginning(self, command: str, category: CommandCategory) -> Alias | None:
-        return next((alias for alias in self.of_category(category).oldest().all_rows(ALIAS_PAGE_ROWS) if alias.begins(command)), None)
+        return next((alias for alias in self.of_category(category).every_row(BEGINNING_REASON) if alias.begins(command)), None)

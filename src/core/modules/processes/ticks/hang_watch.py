@@ -16,6 +16,8 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.cadence.run_silences import RunSilences
 from core.modules.processes.support.process_settings import ProcessSettings
 
+RUNNING_REASON = "the tick looks at every run that is running"
+
 CPU_FILE = "cpu"
 LOOKS_BEFORE_STOP = 3
 
@@ -29,7 +31,7 @@ class HangWatch:
     asks made. One listing of the machine's processes serves every run of a tick."""
 
     def __call__(self, container: Container) -> bool:
-        running = tuple(container.get(ProcessQuery).running().oldest().all_rows())
+        running = tuple(container.get(ProcessQuery).running().every_row(RUNNING_REASON))
         listing = container.get(GroupCpuTime).listing() if running else None
         if listing is None:
             return False

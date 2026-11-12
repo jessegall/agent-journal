@@ -23,6 +23,8 @@ from engine.setting.setting_values import SettingValues
 from core.modules.usage.support.status_files import StatusFiles
 from core.modules.usage.support.plan_window import PlanWindow
 
+OUTAGES_REASON = "the state of a program comes from every outage it had, latest end first"
+
 
 LIMIT_PERCENT = 100
 
@@ -88,7 +90,7 @@ class ProgramStates:
     def windows(self, program: str) -> tuple[PlanWindow, ...]:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
             running = self.agents.running().filter(program=program)
-            agents = self.kept_rows.read(running, lambda: tuple(running.all_rows()), name="helpers.program_sessions")
+            agents = self.kept_rows.read(running, lambda: tuple(running.get()), name="helpers.program_sessions")
         return self.statuses.newest_status([agent.session for agent in agents], self.clock.timestamp()).windows
 
     def outage_state(self, program: str) -> ProgramState:
@@ -98,7 +100,7 @@ class ProgramStates:
             return ProgramState.unavailable(f"{program} has no installed provider module")
         checked_at = self.clock.timestamp()
         program_outages = self.queries.query(ProviderOutage).filter(program=program).descending("ends_at")
-        outages = self.kept_rows.read(program_outages, lambda: tuple(program_outages.all_rows()), name="helpers.program_outages")
+        outages = self.kept_rows.read(program_outages, lambda: tuple(sorted(program_outages.every_row(OUTAGES_REASON), key=lambda row: row.ends_at.text, reverse=True)), name="helpers.program_outages")
         outage = next((row for row in outages if row.ends_at > checked_at), None)
         if outage is None:
             return ProgramState.ready()

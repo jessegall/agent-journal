@@ -22,7 +22,7 @@ class HelperCounts:
             changed_at = self.shares.changed_at()
             if changed_at is not None:
                 query = query.matching(Minimum("created_at", changed_at.text))
-            jobs = tuple(query.descending("created_at", "id").limited(RECENT_HELPERS_COUNT))
+            jobs = tuple(query.descending("created_at", "id").take(RECENT_HELPERS_COUNT))
             helper_ids = tuple(job.helper_id for job in jobs if job.helper_id is not None)
             agents = {agent.id: agent for agent in self.queries.query(Agent).find_many(tuple(set(helper_ids)))} if helper_ids else {}
             return Counter(agents[helper_id].program for helper_id in helper_ids)

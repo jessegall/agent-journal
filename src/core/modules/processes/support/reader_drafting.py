@@ -28,7 +28,7 @@ class ReaderDrafting:
     def draft(self, request: ReaderRequest) -> ReaderDraft:
         if request.sample_process_id is None:
             raise Refusal(f"reader request {request.id} has no sample", "wait for the sample run to print output")
-        parts = self.parts.filter(process_id=request.sample_process_id).all_rows()
+        parts = self.parts.filter(process_id=request.sample_process_id).get()
         part = next((part for part in parts if part.reader_request_id == request.id or part.command == request.command or part.text == request.command), None)
         text = self.judge.output_text(request.sample_process_id, part.position if part else 0)
         stock_readers = tuple(Reader(creator_id=request.creator_id, name=stock.name, type=ReaderType.PATTERN,

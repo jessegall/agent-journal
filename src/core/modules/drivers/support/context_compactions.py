@@ -123,7 +123,7 @@ class ContextCompactions:
         self.repository.save(replace(ended, woken_at=context.timestamp), context)
 
     def newest_rows(self, agent_ids: Sequence[int]) -> dict[int, ContextCompaction]:
-        rows = self.queries.query(ContextCompaction).matching(Among("session_agent_id", tuple(agent_ids))).descending("id").limited(NEWEST_ROWS_READ)
+        rows = self.queries.query(ContextCompaction).matching(Among("session_agent_id", tuple(agent_ids))).descending("id").take(NEWEST_ROWS_READ)
         newest: dict[int, ContextCompaction] = {}
         for row in rows:
             newest.setdefault(row.session_agent_id, row)

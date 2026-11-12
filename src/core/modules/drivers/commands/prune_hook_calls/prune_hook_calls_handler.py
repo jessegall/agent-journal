@@ -12,6 +12,8 @@ from core.modules.drivers.commands.prune_hook_calls.prune_hook_calls import Prun
 from engine.setting.setting_values import SettingValues
 from core.modules.drivers.support.driver_settings import DAYS_SETTING
 
+PRUNE_REASON = "pruning removes every hook call older than the kept window, with its lines"
+
 
 
 class PruneHookCallsHandler(Handler[PruneHookCalls, int]):
@@ -26,9 +28,9 @@ class PruneHookCallsHandler(Handler[PruneHookCalls, int]):
     def handle(self, command: PruneHookCalls, context: Context) -> int:
         days = self.settings.project.number(DAYS_SETTING)
         cutoff = Timestamp(context.timestamp.value - timedelta(days=days))
-        calls = tuple(self.queries.query(HookCall).matching(Less("created_at", cutoff.text)).all_rows())
+        calls = tuple(self.queries.query(HookCall).matching(Less("created_at", cutoff.text)).every_row(PRUNE_REASON))
         for call in calls:
-            for line in tuple(self.queries.query(AgentLine).filter(hook_call_id=call.id).all_rows()):
+            for line in tuple(self.queries.query(AgentLine).filter(hook_call_id=call.id).every_row(PRUNE_REASON)):
                 self.repository.delete(line, context)
             self.repository.delete(call, context)
         return len(calls)

@@ -34,7 +34,7 @@ class ListHoldsSubcommand(ReadSubcommand[tuple[str, ...]]):
         agent_id = self.numbers.row_id(AGENT_MODEL_NAME, arguments.agent, caller.environment_id) if arguments.agent is not None else caller.actor.id
         held = self.held_runs.found(agent_id, self.clock.timestamp())
         lines = [f"hold on output {held.process.id}: {ExitTexts.sentences(PressureLevel.HOLD.exits)}"] if held is not None else []
-        blocks = self.queries.query(AgentBlock).filter(session_agent_id=agent_id, closed_at=None).all_rows()
+        blocks = self.queries.query(AgentBlock).filter(session_agent_id=agent_id, closed_at=None).get()
         lines += [f"block of reader request {block.nudge_key.rsplit('.', 1)[-1]}: {ExitTexts.sentences(PressureLevel.BLOCK.exits)}"
                   for block in blocks if block.nudge_key.startswith(READING_BLOCK_KEYS)]
         return tuple(lines)

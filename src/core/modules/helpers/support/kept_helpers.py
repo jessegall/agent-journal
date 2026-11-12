@@ -16,6 +16,8 @@ from core.modules.helpers.support.program_states import ProgramStates
 from core.modules.helpers.support.program_state import ProgramState
 from core.modules.agents.support.agent_label import AgentLabel
 
+KEPT_HELPERS_REASON = "every kept helper of a profile is checked for an idle one"
+
 FULL_SESSION_PERCENT = 80
 
 
@@ -43,7 +45,7 @@ class KeptHelpers:
 
     def kept(self, profile: str) -> tuple[Agent, ...]:
         helpers = self.queries.query(Agent).filter(role=HelperRole.HELPER, profile=profile).matching(IsNull("retired_at")).newest()
-        return self.kept_rows.read(helpers, lambda: tuple(helpers.all_rows()), name="helpers.kept")
+        return self.kept_rows.read(helpers, lambda: tuple(helpers.every_row(KEPT_HELPERS_REASON)), name="helpers.kept")
 
     def idle(self, selection: ProfileModel, occupant: Occupant) -> tuple[Agent, ...]:
         """The stopped helpers of a profile that can take a job on the model chosen for it; one on another model is

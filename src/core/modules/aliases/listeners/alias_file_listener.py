@@ -15,6 +15,9 @@ from engine.event.touched import Touched
 from core.modules.aliases.models.command_type import CommandType
 from engine.query.queries import Queries
 
+ALIAS_FILE_REASON = "the alias file lists every alias"
+COMMAND_TYPES_REASON = "the command type file lists every command type"
+
 
 class AliasFileListener(CommitListener[FilePublishing | Touched[Alias] | Touched[CommandType]]):
     """Writes each alias's shell line to a file, since the Go hook classifies a line before it can ask the
@@ -32,14 +35,14 @@ class AliasFileListener(CommitListener[FilePublishing | Touched[Alias] | Touched
 
     def handle(self, event: FilePublishing | Touched[Alias] | Touched[CommandType], logged: LoggedEvent) -> None:
         commands = self.names.command_names()
-        aliases = self.kept.read(self.aliases, lambda: tuple(self.aliases.all_rows()), name="aliases.file_rows")
+        aliases = self.kept.read(self.aliases, lambda: tuple(self.aliases.every_row(ALIAS_FILE_REASON)), name="aliases.file_rows")
         lines = {alias.name: self.line(alias) for alias in aliases if alias.name not in commands}
         self.home.alias_file.parent.mkdir(parents=True, exist_ok=True)
         FileAccess.shared().write(self.home.alias_file, json.dumps(lines))
         FileAccess.shared().write(self.home.saved_command_file, json.dumps([alias.name for alias in aliases if alias.name in lines and alias.category and alias.category.is_long_running]))
         FileAccess.shared().write(self.home.alias_category_file, json.dumps({alias.name: alias.category.value for alias in aliases if alias.name in lines and alias.category}))
         command_types = self.queries.query(CommandType)
-        types = self.kept.read(command_types, lambda: tuple(command_types.all_rows()), name="aliases.command_types")
+        types = self.kept.read(command_types, lambda: tuple(command_types.every_row(COMMAND_TYPES_REASON)), name="aliases.command_types")
         FileAccess.shared().write(self.home.command_type_file, json.dumps({command_type.words: command_type.category.value for command_type in types}))
 
     def line(self, alias: Alias) -> str:

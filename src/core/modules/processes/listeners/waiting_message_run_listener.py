@@ -29,6 +29,6 @@ class WaitingMessageRunListener(CommitListener[Created[Message]]):
         if target is None:
             return
         foreground = self.processes.agent(target.id).filter(state=ProcessState.RUNNING)
-        processes = self.kept.read(foreground, lambda: tuple(foreground.all_rows()), name="processes.message_foreground_runs")
+        processes = self.kept.read(foreground, lambda: tuple(foreground.get()), name="processes.message_foreground_runs")
         for process in processes:
             self.folder.ask_move(process.id)

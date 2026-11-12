@@ -23,11 +23,11 @@ class ReaderRequestQuery(Query[ReaderRequest]):
 
     def open_rows(self) -> tuple[ReaderRequest, ...]:
         requests = self.open()
-        return self.kept.read(requests, lambda: tuple(requests.full_table(OPEN_REQUESTS_REASON).all_rows()), name="processes.open_reader_requests")
+        return self.kept.read(requests, lambda: tuple(requests.every_row(OPEN_REQUESTS_REASON)), name="processes.open_reader_requests")
 
     def agent_open_rows(self, agent_id: int) -> tuple[ReaderRequest, ...]:
         requests = self.open().agent(agent_id).oldest()
-        return self.kept.read(requests, lambda: tuple(requests.all_rows()), name="processes.agent_reader_requests")
+        return self.kept.read(requests, lambda: tuple(requests.get()), name="processes.agent_reader_requests")
 
     def remove_completed(self, completed: ReaderRequest) -> None:
         def remaining(requests: tuple[ReaderRequest, ...]) -> tuple[ReaderRequest, ...]:

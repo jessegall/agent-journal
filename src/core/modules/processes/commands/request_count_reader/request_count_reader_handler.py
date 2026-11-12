@@ -22,7 +22,7 @@ class RequestCountReaderHandler(Handler[RequestCountReader, int]):
 
     def handle(self, command: RequestCountReader, context: Context) -> int:
         process = self.processes.find(command.process_id)
-        part = next(part for part in self.parts.process(process.id).all_rows() if part.category is CommandCategory.TEST_RUN)
+        part = self.parts.process(process.id).filter(category=CommandCategory.TEST_RUN).first()
         spec = PartSpec(part.text, part.program, category=part.category, command=part.command)
         request_id = self.requests.open_request(process, spec, COUNT_MISSING_REASON.format(command=part.command or part.text), process.id, context)
         if part.reader_request_id is None:

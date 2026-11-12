@@ -62,14 +62,14 @@ class AgentRows:
         environment_id = self.scopes.environment_id
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
             running = self.agents.running().oldest()
-            agents = self.kept.read(running, lambda: tuple(running.full_table(RUNNING_AGENTS_REASON).all_rows()), name="agents.running")
+            agents = self.kept.read(running, lambda: tuple(running.every_row(RUNNING_AGENTS_REASON)), name="agents.running")
         agents = tuple(agent for agent in agents if environment_id is None or agent.environment_id == environment_id)
         agents = tuple(agent for agent in agents if role is None or agent.role == role)
         return tuple(agent for agent in agents if parent_id is None or agent.parent_id == parent_id)
 
     def running_main_agents(self) -> tuple[Agent, ...]:
         mains = self.agents.running().filter(role=AgentRole.MAIN)
-        return self.kept.read(mains, lambda: tuple(mains.all_rows()), name="agents.running_main_agents")
+        return self.kept.read(mains, lambda: tuple(mains.get()), name="agents.running_main_agents")
 
     def numbered_main(self, environment_id: int) -> Agent | None:
         with self.scopes.opened(None, environment_id):

@@ -23,6 +23,8 @@ from core.modules.processes.support.run_queue_halt import RunQueueHalt
 from core.modules.processes.support.run_admission import RunAdmission
 from core.modules.processes.support.process_kind_limits import ProcessKindLimits
 
+SLOT_RUNS_REASON = "the run slots are shared out over every running and queued run"
+
 
 class RunSlots:
     """Admits every run, granting immediate runs and giving waiting runs capacity in order; a run of a kind with
@@ -66,19 +68,19 @@ class RunSlots:
 
     def running(self) -> tuple[Process, ...]:
         runs = self.slot_runs()
-        return self.kept.read(runs, lambda: tuple(runs.all_rows()), name="processes.slot_runs")
+        return self.kept.read(runs, lambda: tuple(runs.every_row(SLOT_RUNS_REASON)), name="processes.slot_runs")
 
     def slot_runs(self) -> Query[Process]:
         return self.queries.query(Process).matching(Among("state", RUNNING_STATES)).oldest()
 
     def grant_all_environments(self, context: Context) -> None:
-        queued = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(HasValue("queued_at")).oldest().all_rows()
+        queued = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(HasValue("queued_at")).every_row(SLOT_RUNS_REASON)
         for environment_id in dict.fromkeys(process.environment_id for process in tuple(queued)):
             with self.scopes.opened(None, environment_id):
                 self.grant(context)
 
     def take_counts(self, context: Context) -> None:
-        started = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(IsNull("queued_at")).filter(is_queue_run=True).oldest().all_rows()
+        started = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(IsNull("queued_at")).filter(is_queue_run=True).every_row(SLOT_RUNS_REASON)
         for process in tuple(started):
             if self.folder.is_count_taken(process.id) or self.folder.count_status(process.id) is None:
                 continue

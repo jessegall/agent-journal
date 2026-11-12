@@ -15,6 +15,8 @@ from core.modules.docking.commands.remove_dock_item.remove_dock_item import Remo
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 
+PENDING_REASON = "at a start every pending approval is docked and every docked one checked"
+
 
 class PendingApprovalDockListener(CommitListener[RegistrySynced]):
     """Restores open approval cards after an upgrade or a registry refresh."""
@@ -26,10 +28,10 @@ class PendingApprovalDockListener(CommitListener[RegistrySynced]):
         self.bus, self.actors, self.queries, self.items = bus, actors, queries, items
 
     def handle(self, event: RegistrySynced, logged: LoggedEvent) -> None:
-        items = tuple(self.items.type_items(ApprovalDockType.REQUEST.value).filter(state=DockItemState.DOCKED).all_rows())
+        items = tuple(self.items.type_items(ApprovalDockType.REQUEST.value).filter(state=DockItemState.DOCKED).every_row(PENDING_REASON))
         docked = {item.target_id for item in items}
         requests = tuple(self.queries.query(ApprovalRequest).filter(recipient_agent_id=None).matching(
-            Among("state", (ApprovalState.OPEN, ApprovalState.RUNNING))).all_rows())
+            Among("state", (ApprovalState.OPEN, ApprovalState.RUNNING))).every_row(PENDING_REASON))
         pending = {request.id for request in requests}
         actor = self.actors.actor("journal.core.approvals")
         for item in items:

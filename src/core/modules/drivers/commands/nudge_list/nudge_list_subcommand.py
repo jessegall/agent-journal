@@ -26,7 +26,7 @@ class NudgeListSubcommand(ReadSubcommand[tuple[NudgeRow, ...]]):
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[NudgeRow, ...]:
-        totals = {total.nudge_key: total for total in self.queries.query(NudgeTotal).full_table(TOTALS_REASON).all_rows()}
+        totals = {total.nudge_key: total for total in self.queries.query(NudgeTotal).every_row(TOTALS_REASON)}
         return tuple(NudgeRow(entry.key, entry.module, entry.type, entry.text, entry.repeat_seconds, totals[entry.key].delivery_count if entry.key in totals else 0,
                               totals[entry.key].last_delivered_at if entry.key in totals else "") for entry in self.registry.nudges)
 

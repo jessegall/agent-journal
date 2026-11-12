@@ -24,6 +24,8 @@ from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.run_visibility import RunVisibility
 from core.modules.processes.support.run_title import RunTitle
 
+DOCK_RUNS_REASON = "every long run the dock considers is read with its parts and output"
+
 
 RUNS_CONSIDERED = 2
 
@@ -44,17 +46,17 @@ class LongRunDockRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         dock = Interval(self.settings.seconds(ProcessSetting.DOCK_AFTER_SECONDS))
         runs = self.processes.agent(hook.agent_id)
-        docked = tuple(runs.running().docked_runs().all_rows())
-        fresh = tuple(runs.running().fresh_long_runs(hook.timestamp, dock.seconds).oldest().limited(RUNS_CONSIDERED))
+        docked = tuple(runs.running().docked_runs().get())
+        fresh = tuple(runs.running().fresh_long_runs(hook.timestamp, dock.seconds).oldest().take(RUNS_CONSIDERED))
         if not docked and not fresh:
             return RuleAnswer.allowed()
         parts: dict[int, list[ProcessPart]] = defaultdict(list)
-        for part in self.queries.query(ProcessPart).matching(Among("process_id", [process.id for process in fresh])).oldest().all_rows():
+        for part in self.queries.query(ProcessPart).matching(Among("process_id", [process.id for process in fresh])).every_row(DOCK_RUNS_REASON):
             parts[part.process_id].append(part)
         due = [process for process in fresh if self.needs_dock(process, hook, dock, tuple(parts[process.id]))]
         placed = due[:self.room.places(ProcessDockType.OUTPUT.value)]
         shown = [*docked, *placed]
-        outputs = {output.process_id: output for output in self.outputs.matching(Among("process_id", [process.id for process in shown])).all_rows()} if shown else {}
+        outputs = {output.process_id: output for output in self.outputs.matching(Among("process_id", [process.id for process in shown])).every_row(DOCK_RUNS_REASON)} if shown else {}
         titles = self.title_nudges(shown, outputs)
         return RuleAnswer.with_nudges(*titles).running(*(AddDockItem(ProcessDockType.OUTPUT.value, process.model_name, process.id) for process in placed))
 

@@ -49,19 +49,19 @@ class AgentCallerResolver(CallerResolver):
         return Caller(Actor(person.id, ActorType.USER) if person else Actor.core(), environment.id if environment else None, plugin_script)
 
     def program_agent(self, sessions: tuple[str, ...]) -> Agent | None:
-        return next(iter(self.agents.running().matching(Among("session", sessions)).all_rows()), None) if sessions else None
+        return self.agents.running().matching(Among("session", sessions)).first() if sessions else None
 
     def session_agent(self, request: CallerRequest) -> Agent | None:
         session = request.variables.get(SESSION_VARIABLE)
         if not session:
             return None
         session_agents = self.agents.filter(session=session)
-        agent = next(iter((session_agents if RUNNER_VARIABLE in request.variables else session_agents.running()).all_rows()), None)
+        agent = (session_agents if RUNNER_VARIABLE in request.variables else session_agents.running()).first()
         if agent is None:
             raise UsageError(f"{SESSION_VARIABLE} is session {session}, which is no open agent: start it with journal agent start")
         return agent
 
     def ancestor_agent(self, steps: Sequence[ProcessRow]) -> Agent | None:
-        agents = self.agents.running().matching(Among("pid", [step.pid for step in steps])).all_rows()
+        agents = self.agents.running().matching(Among("pid", [step.pid for step in steps])).get()
         started = {(agent.pid, agent.process_started_at): agent for agent in agents}
         return next((started[step.pid, step.started_at] for step in steps if (step.pid, step.started_at) in started), None)

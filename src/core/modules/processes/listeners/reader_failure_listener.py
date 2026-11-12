@@ -32,5 +32,5 @@ class ReaderFailureListener(SaveListener[OutputEnded]):
         parts = self.queries.query(ProcessPart).filter(process_id=process.id)
         if output.reader_position:
             parts = parts.filter(position=output.reader_position)
-        for part in parts.all_rows():
+        for part in parts.get():
             self.requests.after_run(process, part, reader, context)

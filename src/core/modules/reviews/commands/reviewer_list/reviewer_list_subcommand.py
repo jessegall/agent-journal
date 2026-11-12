@@ -7,6 +7,8 @@ from core.modules.reviews.commands.support.reviewer_listing import ReviewerListi
 from core.modules.reviews.queries.review_query import ReviewQuery
 from core.modules.reviews.queries.reviewer_query import ReviewerQuery
 
+QUEUED_REASON = "the reviewer list counts every queued review"
+
 
 class ReviewerListSubcommand(ReadSubcommand[ReviewerListing]):
     """`journal reviewer list`: each reviewer out with its state, then the waiting reviews in queue order,
@@ -20,8 +22,8 @@ class ReviewerListSubcommand(ReadSubcommand[ReviewerListing]):
         self.reviewers, self.reviews = reviewers, reviews
 
     def read(self, arguments: Namespace, caller: Caller) -> ReviewerListing:
-        reviewers = tuple(self.reviewers.active().oldest().all_rows())
-        waiting = tuple(self.reviews.queued().all_rows())
+        reviewers = tuple(self.reviewers.active().oldest().get())
+        waiting = tuple(self.reviews.queued().every_row(QUEUED_REASON))
         return ReviewerListing((*(f"reviewer {reviewer.id}: {reviewer.state}" for reviewer in reviewers),
                                 *(f"waiting {place}: review {review.id}" for place, review in enumerate(waiting, 1)),
                                 f"reviewers: {len(reviewers)}, reviews waiting: {len(waiting)}"))

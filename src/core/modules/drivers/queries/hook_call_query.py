@@ -21,6 +21,8 @@ from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from engine.driver.search_category import CODE, GRAPHIFY
 
+DISPLAY_CALLS_REASON = "every message display call since the agent's last turn is shown"
+
 STOPS_READ = 20
 MOST_DISPLAYED_PARTS = 500
 CALL_BATCH_ROWS = 50
@@ -44,7 +46,7 @@ class HookCallQuery(Query[HookCall]):
         return self.filter(session_agent_id=agent_id)
 
     def stop_refusal_count(self, agent_id: int) -> int:
-        stops = self.agent(agent_id).filter(hook=HookEventName.STOP).newest().limited(STOPS_READ)
+        stops = self.agent(agent_id).filter(hook=HookEventName.STOP).newest().take(STOPS_READ)
         refused = [stop.answer == HookAnswer.REFUSED for stop in stops]
         return refused.index(False) if False in refused else len(refused)
 
@@ -63,12 +65,12 @@ class HookCallQuery(Query[HookCall]):
 
     def newest_calls(self, agent_id: int, hook: HookEventName, most: int) -> Iterator[HookCall]:
         hook_calls = self.agent(agent_id).filter(hook=hook).newest()
-        calls = hook_calls.limited(min(most, CALL_BATCH_ROWS))
+        calls = hook_calls.take(min(most, CALL_BATCH_ROWS))
         for read_count in range(CALL_BATCH_ROWS, most + CALL_BATCH_ROWS, CALL_BATCH_ROWS):
             yield from calls
             if len(calls) < CALL_BATCH_ROWS or read_count >= most:
                 return
-            calls = hook_calls.matching(Less("id", calls[-1].id)).limited(min(most - read_count, CALL_BATCH_ROWS))
+            calls = hook_calls.matching(Less("id", calls[-1].id)).take(min(most - read_count, CALL_BATCH_ROWS))
 
     def latest_turn_call(self, agent_id: int) -> HookCall | None:
         calls = self.agent(agent_id).matching(Among("hook", TURN_HOOKS)).newest()
@@ -82,7 +84,7 @@ class HookCallQuery(Query[HookCall]):
 
     def display_calls_after_turn(self, agent_id: int) -> Sequence[HookCall]:
         latest = self.latest_turn_call(agent_id)
-        return tuple(self.agent(agent_id).filter(hook=HookEventName.MESSAGE_DISPLAY).matching(Greater("id", latest.id if latest is not None else 0)).oldest().all_rows())
+        return tuple(self.agent(agent_id).filter(hook=HookEventName.MESSAGE_DISPLAY).matching(Greater("id", latest.id if latest is not None else 0)).every_row(DISPLAY_CALLS_REASON))
 
     def latest_prompt(self, agent_id: int, cutoff_at: Timestamp) -> HookCall | None:
         calls = self.agent(agent_id).filter(hook=HookEventName.PROMPT).matching(Maximum("created_at", cutoff_at.text)).newest()

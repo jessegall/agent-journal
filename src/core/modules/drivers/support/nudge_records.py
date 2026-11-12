@@ -6,6 +6,8 @@ from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.modules.drivers.models.nudge_record import NudgeRecord
 
+NUDGE_LINES_REASON = "every record of the nudges asked about decides whether each is due again"
+
 
 class NudgeRecords:
     """Reads the records of the lines an agent is about to be sent, never all of that agent's records."""
@@ -24,5 +26,5 @@ class NudgeRecords:
     def loaded_rows(self, agent_id: int, nudges: Sequence[Nudge]) -> list[NudgeRecord]:
         clock_keys = sorted({nudge.key for nudge in nudges if nudge.interval})
         newest = [row for row in (self.newest_row(agent_id, key) for key in clock_keys) if row is not None]
-        lines = self.queries.query(NudgeRecord).filter(session_agent_id=agent_id).matching(Among("key", tuple(sorted({nudge.key for nudge in nudges})))).matching(Among("text", tuple(sorted({nudge.text for nudge in nudges})))).all_rows()
+        lines = self.queries.query(NudgeRecord).filter(session_agent_id=agent_id).matching(Among("key", tuple(sorted({nudge.key for nudge in nudges})))).matching(Among("text", tuple(sorted({nudge.text for nudge in nudges})))).every_row(NUDGE_LINES_REASON)
         return [*newest, *lines]

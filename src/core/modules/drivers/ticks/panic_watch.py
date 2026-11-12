@@ -25,7 +25,7 @@ class PanicWatch:
 
     def __call__(self, container: Container) -> None:
         home, log = container.get(JournalHome), container.get(SystemLogWriter)
-        bus, environments = container.get(Bus), tuple(container.get(Queries).query(Environment).all_rows())
+        bus, environments = container.get(Bus), tuple(container.get(Queries).query(Environment).get())
         actor = container.get(ModuleActors).actor(MODULE_KEY)
         announced = home.panic_announced
         text = FileAccess.shared().read(home.panic_file, errors="replace") if home.panic_file.is_file() else ""

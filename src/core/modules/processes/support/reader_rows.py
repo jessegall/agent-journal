@@ -14,7 +14,7 @@ class ReaderRows:
         self.readers, self.kept, self.edits = readers, kept, edits
 
     def all(self) -> tuple[Reader, ...]:
-        return self.kept.read(self.readers, lambda: tuple(self.readers.full_table(CATALOGUE_REASON).all_rows()), name="processes.readers")
+        return self.kept.read(self.readers, lambda: tuple(self.readers.every_row(CATALOGUE_REASON)), name="processes.readers")
 
     def layers(self) -> ReaderLayers:
         return self.kept.read(self.readers, lambda: ReaderLayers(self.edits.edited_ids(self.all())), name="processes.reader_layers")

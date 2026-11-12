@@ -18,7 +18,7 @@ class ManagedHookHistoryQuery(Query[HookCall]):
         super().__init__(database, tables, HookCall)
 
     def read(self, hook: ManagedHook) -> ManagedHookHistory:
-        calls = self.matching(ForeignHook(hook.id)).newest().limited(HISTORY_RUNS)
+        calls = self.matching(ForeignHook(hook.id)).newest().take(HISTORY_RUNS)
         records = [run for call in calls for run in reversed(call.foreign_runs) if run.id == hook.id][:HISTORY_RUNS]
         answers = [ForeignAnswer.read(run) for run in records]
         return ManagedHookHistory(runs=len(records), refused=sum(bool(answer.refusal) for answer in answers),

@@ -12,6 +12,8 @@ from core.modules.developer.models.hook_request import HookRequest
 from engine.enums.hook_answer import HookAnswer
 from engine.setting.setting_values import SettingValues
 
+REQUEST_LOG_REASON = "the developer request log lists every hook request it holds"
+
 class HookRequestLog:
     """Keeps the configured number of completed requests and reads their display view."""
 
@@ -20,7 +22,7 @@ class HookRequestLog:
         self.agents = agents
 
     def read(self) -> list[HookRequest]:
-        return list(self.queries.query(HookRequest).descending("id").all_rows())
+        return sorted(self.queries.query(HookRequest).every_row(REQUEST_LOG_REASON), key=lambda request: request.id, reverse=True)
 
     def filter_options(self) -> list[tuple[str, str]]:
         return self.table.filter_options()
@@ -32,7 +34,7 @@ class HookRequestLog:
                 query = query.matching(Among(column, values))
         if not families:
             query = query.matching(Among("family", ["process bookkeeping"], negated=True))
-        return list(query.all_rows())
+        return list(query.every_row(REQUEST_LOG_REASON))
 
     def record(self, program: str, headers: Mapping[str, str], body: object, duration_ms: float, outcome: HookAnswer, queued_ms: float = 0, role: str = "main", agent: str = "") -> bool:
         if not self.settings.project.flag(HOOK_REQUEST_LOG_SETTING):

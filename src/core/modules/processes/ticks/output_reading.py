@@ -15,6 +15,8 @@ from core.modules.processes.support.grown_outputs import GrownOutputs
 from core.modules.processes.support.prepared_read import PreparedRead
 from core.modules.processes.support.reader_step import ReaderStep
 
+RUNNING_REASON = "the tick reads the new output of every running run"
+
 WARNING_REPEAT_TICKS = 5
 
 
@@ -37,7 +39,7 @@ class OutputReading:
 
     def read(self, container: Container) -> bool:
         new_output = container.get(GrownOutputs)
-        processes = tuple(container.get(ProcessQuery).running().oldest().all_rows())
+        processes = tuple(container.get(ProcessQuery).running().every_row(RUNNING_REASON))
         outputs = container.get(OutputQuery).process_outputs(tuple(process.id for process in processes)) if processes else ()
         process_outputs = {output.process_id: output for output in outputs}
         updated = [(process, process_outputs[process.id]) for process in processes if process.id in process_outputs and new_output.has_new_output(process_outputs[process.id])]

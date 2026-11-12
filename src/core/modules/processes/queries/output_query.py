@@ -16,6 +16,8 @@ from core.modules.processes.models.output import Output
 from core.modules.processes.queries.conditions.part_output import PartOutput
 from core.modules.processes.queries.process_query import OPEN
 
+PROCESS_OUTPUTS_REASON = "the output of every process asked about is read"
+
 
 class OutputQuery(Query[Output]):
     """Reads outputs, with the filters the processes module and its rules use by name."""
@@ -25,7 +27,7 @@ class OutputQuery(Query[Output]):
         self.cached = cached
 
     def process_outputs(self, process_ids: tuple[int, ...]) -> tuple[Output, ...]:
-        return tuple(self.matching(Among("process_id", process_ids)).all_rows())
+        return tuple(self.matching(Among("process_id", process_ids)).every_row(PROCESS_OUTPUTS_REASON))
 
     def process_output(self, process_id: int) -> Output | None:
         outputs = self.process(process_id)

@@ -9,6 +9,8 @@ from engine.serving.server_files import ServerFiles
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.send_journal_started_line.send_journal_started_line import SendJournalStartedLine
 
+RELEASED_SESSIONS_REASON = "every kept agent of a released session is woken"
+
 
 class HeldSessionWake:
     """Once the server is ready again, wakes every agent whose hook the journal held while it started or updated,
@@ -21,5 +23,5 @@ class HeldSessionWake:
         sessions = files.released_sessions()
         if not sessions:
             return
-        for agent in container.get(Queries).query(Agent).matching(Among("session", sessions)).matching(IsNull("retired_at")).all_rows():
+        for agent in container.get(Queries).query(Agent).matching(Among("session", sessions)).matching(IsNull("retired_at")).every_row(RELEASED_SESSIONS_REASON):
             container.get(Bus).run(SendJournalStartedLine(agent.id), Actor.core(), environment_id=agent.environment_id)

@@ -21,7 +21,7 @@ class ReadingDecisions:
         """The kept decision of each part of a run at one moment, by the part's position, read again only after the
         decisions of that run changed, so storing and telling them read once."""
         decisions = self.decisions.for_process(process.id).filter(moment=moment)
-        rows = self.kept_rows.read(decisions, lambda: tuple(decisions.all_rows()), name="processes.kept_decisions")
+        rows = self.kept_rows.read(decisions, lambda: tuple(decisions.get()), name="processes.kept_decisions")
         return {row.part_position: row for row in rows}
 
     def store(self, process: Process, part: ProcessPart, moment: ReadingMoment, decision: ReadingDecision, stored: ReadingDecisionRow | None, context: Context) -> ReadingDecisionRow:

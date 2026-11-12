@@ -41,6 +41,8 @@ from core.modules.processes.support.run_shapes import RunShapes
 from core.modules.processes.support.silent_run import SilentRun
 from core.modules.processes.support.silent_start_runs import SilentStartRuns
 
+OPEN_REQUESTS_REASON = "the main agent is told of every open reader request that needs help or ran out of time"
+
 EXIT_COMMANDS = ("output read", "output peek", "output page", "output stop", "reader", "refusal skip", "command-type")
 UNKNOWN_SHAPE = "none of the known ones"
 MISSING_TOTAL_TEXT = "states no total, so the command must print one first"
@@ -149,7 +151,7 @@ class ReadingEnforcer:
             return RuleAnswer.allowed()
         if hook.role != AgentRole.MAIN:
             return RuleAnswer.with_nudges(*(self.request_text.line(request) for request in self.writers.agent_requests(Actor(hook.agent_id, ActorType.AGENT))))
-        waiting = tuple(request for request in self.requests.open().oldest().all_rows()
+        waiting = tuple(request for request in self.requests.open().every_row(OPEN_REQUESTS_REASON)
                         if (self.attempts.needs_help(request) or request.expires_at <= hook.timestamp)
                         if not self.notices.has_recent_notice(hook.agent_id, request.id, hook.timestamp))
         blocks = tuple(self.help_block(hook.agent_id, request) for request in waiting)

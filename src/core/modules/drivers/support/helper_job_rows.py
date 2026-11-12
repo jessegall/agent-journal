@@ -5,6 +5,8 @@ from engine.query.queries import Queries
 from engine.query.query import Query
 from core.modules.drivers.models.helper_job import HelperJob
 
+HELPER_JOBS_REASON = "a helper's history is every job it was given"
+
 
 class HelperJobRows:
     """Shares a helper's jobs across one request, until one of them changes."""
@@ -14,7 +16,7 @@ class HelperJobRows:
 
     def helper_jobs(self, helper_id: int) -> tuple[HelperJob, ...]:
         jobs = self.queries.query(HelperJob).filter(helper_id=helper_id).oldest()
-        return self.kept.read(jobs, lambda: tuple(jobs.all_rows()), name="drivers.helper_jobs")
+        return self.kept.read(jobs, lambda: tuple(jobs.every_row(HELPER_JOBS_REASON)), name="drivers.helper_jobs")
 
     def open_job(self, helper_id: int) -> HelperJob | None:
         jobs = self.queries.query(HelperJob).filter(helper_id=helper_id)
