@@ -25,7 +25,7 @@ class SettingRows:
         return self.kept.read_matching_signature(self.queries.query(model), lambda signature: self.shared.read(self.database, TABLES[model], signature, lambda: self.table(model)), name="settings.rows")
 
     def table(self, model: SettingModel) -> dict[tuple[str, int | None], Setting | SecretSetting]:
-        return {(row.key, row.environment_id): row for row in self.queries.query(model).full_table(KEPT_SETTINGS_REASON).all_rows()}
+        return {(row.key, row.environment_id): row for row in self.queries.query(model).every_row(KEPT_SETTINGS_REASON)}
 
     def remember(self, row: Setting | SecretSetting) -> None:
         def with_row(rows: dict[tuple[str, int | None], Setting | SecretSetting]) -> dict[tuple[str, int | None], Setting | SecretSetting]:

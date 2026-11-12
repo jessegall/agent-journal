@@ -21,7 +21,7 @@ class MarkTracker:
 
     def open_marks(self, agent_id: int) -> list[MemoryMark]:
         marks = self.queries.query(MemoryMark).filter(session_agent_id=agent_id, state=MarkState.OPEN)
-        return list(self.kept.read(marks, lambda: tuple(marks.all_rows()), name="memories.open_marks"))
+        return list(self.kept.read(marks, lambda: tuple(marks.get()), name="memories.open_marks"))
 
     @staticmethod
     def spaced(marks: Sequence[int], maximum_tokens: int, spacing_tokens: int) -> tuple[int, ...]:

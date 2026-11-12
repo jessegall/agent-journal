@@ -15,6 +15,8 @@ from core.modules.plans.models.plan_task import PlanTask
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 
+CHANGED_TASKS_REASON = "every changed task may reach a checkpoint of its plan"
+
 
 class CheckpointReachListener(CommitListener[Moved[Task]]):
     """A task of a started plan that is closed or cancelled may complete the window of a checkpoint: the
@@ -30,7 +32,7 @@ class CheckpointReachListener(CommitListener[Moved[Task]]):
         self.recorded_plan_ids = set[int]()
 
     def prepare(self, events: Sequence[LoggedEvent]) -> None:
-        places = tuple(self.queries.query(PlanTask).matching(Among("task_id", [event.row_id for event in events])).all_rows())
+        places = tuple(self.queries.query(PlanTask).matching(Among("task_id", [event.row_id for event in events])).every_row(CHANGED_TASKS_REASON))
         plans = {plan.id: plan for plan in self.queries.query(Plan).find_many(sorted({place.plan_id for place in places}))}
         self.places = {place.task_id: place for place in places if plans[place.plan_id].state is PlanState.STARTED}
         self.recorded_plan_ids = set()

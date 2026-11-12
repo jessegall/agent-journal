@@ -26,7 +26,7 @@ class PhoneSessionSubcommand(ReadSubcommand[Phone]):
     def read(self, arguments: Namespace, caller: Caller) -> Phone:
         if caller.actor.type is not ActorType.CORE:
             raise Refusal("only the viewer reads a phone's session")
-        phones = list(self.queries.query(Phone).filter(token_digest=arguments.token_digest, state=PhoneState.PAIRED).all_rows())
+        phones = self.queries.query(Phone).filter(token_digest=arguments.token_digest, state=PhoneState.PAIRED).get()
         if not phones:
             raise Refusal("no paired phone has this session")
         return phones[0]

@@ -8,6 +8,8 @@ from engine.repository.repository import Repository
 from core.modules.documents.models.link import Link
 from collections.abc import Sequence
 
+DELETED_LINKS_REASON = "a deleted row takes every link to or from it with it"
+
 
 class DeletedRowLinkListener(DeletionListener[Changed[Model]]):
     """Removes links at either end of any deleted rows, inside their deletion transaction; the links go together, so their own deletion reads the links of all of them at once."""
@@ -27,7 +29,7 @@ class DeletedRowLinkListener(DeletionListener[Changed[Model]]):
         ids = [event.row.id for event in events]
         for start in range(0, len(ids), 500):
             batch = ids[start:start + 500]
-            outgoing = self.queries.query(Link).filter(source_model=model).matching(Among("source_id", batch)).all_rows()
-            incoming = self.queries.query(Link).filter(target_model=model).matching(Among("target_id", batch)).all_rows()
+            outgoing = self.queries.query(Link).filter(source_model=model).matching(Among("source_id", batch)).every_row(DELETED_LINKS_REASON)
+            incoming = self.queries.query(Link).filter(target_model=model).matching(Among("target_id", batch)).every_row(DELETED_LINKS_REASON)
             touching = {link.id: link for link in (*outgoing, *incoming)}
             self.repository.delete_many_stored(list(touching.values()), context)

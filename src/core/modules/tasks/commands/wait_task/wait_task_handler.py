@@ -12,6 +12,8 @@ from core.modules.tasks.models.task_wait import TaskWait
 from core.modules.tasks.support.task_opener import USER_TARGET
 from core.modules.tasks.support.task_wait_targets import TaskWaitTargets
 
+EDGES_REASON = "a new wait is checked against every edge of the task graph for a loop"
+
 
 class WaitTaskHandler(Handler[WaitTask, Task]):
     """Blocks a task until its targets resolve, its command passes or someone unblocks it."""
@@ -22,7 +24,7 @@ class WaitTaskHandler(Handler[WaitTask, Task]):
         self.bus, self.queries, self.repository, self.targets = bus, queries, repository, targets
 
     def handle(self, command: WaitTask, context: Context) -> Task:
-        edges = tuple(self.queries.query(TaskEdge).all_rows()) if command.targets else ()
+        edges = tuple(self.queries.query(TaskEdge).every_row(EDGES_REASON)) if command.targets else ()
         targets = tuple(self.target(text, command.task_id, edges) for text in command.targets)
         if command.user_wait and not command.reason.strip():
             raise Refusal("say what the user must do", "--until-user --reason '<words>'")

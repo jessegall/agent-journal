@@ -13,6 +13,7 @@ class PlanPhasesHaveTasks(StepCondition):
         self.queries = queries
 
     def problem(self, subject_id: int) -> str | None:
-        filled = {task.phase_id for task in self.queries.query(PlanTask).filter(plan_id=subject_id).all_rows()}
-        empty = next((phase.id for phase in self.queries.query(Phase).filter(plan_id=subject_id).oldest().all_rows() if phase.id not in filled), None)
+        filled = set(self.queries.query(PlanTask).filter(plan_id=subject_id).group_by("phase_id").count_by())
+        empty_phase = self.queries.query(Phase).filter(plan_id=subject_id).where_not_in("id", sorted(filled)).oldest().first()
+        empty = None if empty_phase is None else empty_phase.id
         return None if empty is None else f"phase {empty} of plan {subject_id} has no tasks"

@@ -21,7 +21,7 @@ class RepeatedMessages:
         if "?" in text or len(MessageTokens.tokens(text)) < MINIMUM_TOKENS:
             return None
         written = self.messages.agent_messages().filter(creator_id=creator_id).newest()
-        newest = self.kept.read_newest(written, lambda: written.limited(COMPARED_MESSAGES + 1), name="messages.newest_of_agent")
+        newest = self.kept.read_newest(written, lambda: written.take(COMPARED_MESSAGES + 1), name="messages.newest_of_agent")
         previous = [row for row in newest if row.id != new_id][:COMPARED_MESSAGES]
         return next((row for row in previous if self.repeats_previous(row.text, text)), None)
 

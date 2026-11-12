@@ -11,6 +11,8 @@ from core.modules.dumps.models.dump import Dump
 from core.modules.dumps.models.dump_item import DumpItem
 from core.modules.dumps.support.dump_board import DumpBoard
 
+DUMP_ITEMS_REASON = "the board shows every item of the dumps on its page"
+
 
 class DumpBoardSubcommand(ReadSubcommand[DumpBoard]):
     """`journal dump board [--before <id>]`: a page of dumps, newest first and before the number given, each
@@ -27,9 +29,9 @@ class DumpBoardSubcommand(ReadSubcommand[DumpBoard]):
 
     def read(self, arguments: Namespace, caller: Caller) -> DumpBoard:
         dumps = self.queries.query(Dump)
-        rows = (dumps.matching(Less("id", arguments.before)) if arguments.before else dumps).newest().limited(PAGE_SIZE_ROWS)
-        items = self.queries.query(DumpItem).matching(Among("dump_id", tuple(dump.id for dump in rows))).ordered("dump_id", "position")
-        return DumpBoard(dumps.count(), rows, tuple(items.all_rows()))
+        rows = (dumps.matching(Less("id", arguments.before)) if arguments.before else dumps).newest().limit(PAGE_SIZE_ROWS).get()
+        items = self.queries.query(DumpItem).matching(Among("dump_id", tuple(dump.id for dump in rows)))
+        return DumpBoard(dumps.count(), rows, tuple(sorted(items.every_row(DUMP_ITEMS_REASON), key=lambda item: (item.dump_id, item.position))))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, DumpBoard):

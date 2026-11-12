@@ -17,7 +17,7 @@ class NotePhoneNoticeHandler(Handler[NotePhoneNotice, int]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: NotePhoneNotice, context: Context) -> int:
-        phones = [phone for phone in self.queries.query(Phone).filter(state=PhoneState.PAIRED, notice_waiting=False).all_rows() if phone.endpoint is not None]
+        phones = [phone for phone in self.queries.query(Phone).filter(state=PhoneState.PAIRED, notice_waiting=False).get() if phone.endpoint is not None]
         for phone in phones:
             self.repository.save(phone.changed(notice_waiting=True), context)
         return len(phones)

@@ -36,7 +36,7 @@ class TaskWaits(KeptRowChanges[TaskWait]):
     def resolved(self, waits: Sequence[TaskWait], context: Context) -> None:
         for wait in waits:
             self.repository.update(wait, context, ended_at=context.timestamp)
-        opened = [task for task in self.queries.query(Task).matching(Among("id", list(dict.fromkeys(wait.task_id for wait in waits)))).oldest().full_table(ENDED_WAITS_REASON).all_rows()
+        opened = [task for task in self.queries.query(Task).matching(Among("id", list(dict.fromkeys(wait.task_id for wait in waits)))).every_row(ENDED_WAITS_REASON)
                   if task.state is TaskState.BLOCKED and not self.pending_task(task.id)]
         if not opened:
             return
@@ -66,7 +66,7 @@ class TaskWaits(KeptRowChanges[TaskWait]):
 
     def pending_rows(self) -> tuple[TaskWait, ...]:
         waits = self.pending_waits()
-        return self.kept.read(waits, lambda: tuple(waits.full_table(KEPT_WAITS_REASON).all_rows()), name="tasks.pending_waits")
+        return self.kept.read(waits, lambda: tuple(waits.every_row(KEPT_WAITS_REASON)), name="tasks.pending_waits")
 
     def pending_waits(self) -> Query[TaskWait]:
         return self.queries.query(TaskWait).matching(IsNull("ended_at")).oldest()

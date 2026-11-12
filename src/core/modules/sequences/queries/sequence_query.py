@@ -25,7 +25,7 @@ class SequenceQuery(Query[Sequence]):
 
     def load_trigger_lists(self) -> tuple[SequenceTriggerList, ...]:
         triggered = self.matching(Equal("triggers", EMPTY_TRIGGERS, negated=True))
-        return tuple(SequenceTriggerList(sequence.id, SequenceTriggers.parsed(sequence.triggers)) for sequence in triggered.all_rows())
+        return tuple(SequenceTriggerList(sequence.id, SequenceTriggers.parsed(sequence.triggers)) for sequence in triggered.get())
 
     def step_guard(self, sequence_id: int, step_number: int) -> SequenceGuard:
         return SequenceGuards.picked(self.step_guards()[sequence_id], step_number)
@@ -34,4 +34,4 @@ class SequenceQuery(Query[Sequence]):
         return self.kept.read(self.oldest(), self.load_step_guards, name="sequences.step_guards")
 
     def load_step_guards(self) -> dict[int, tuple[SequenceGuard, ...]]:
-        return {sequence.id: SequenceGuards.parsed(sequence.step_guards) for sequence in self.all_rows()}
+        return {sequence.id: SequenceGuards.parsed(sequence.step_guards) for sequence in self.get()}

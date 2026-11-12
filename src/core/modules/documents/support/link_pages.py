@@ -71,7 +71,7 @@ class LinkPages:
         if arguments.group_counterparts:
             page = self.counterpart_page(query.matching(FirstLinkCounterpart(query.select, reference)), reference, arguments, size)
             counterparts = tuple(scope.counterpart(link) for link in page.rows)
-            links = tuple(query.matching(LinkCounterparts(reference, counterparts)).oldest().limited(size * len(LinkType) * 2))
+            links = tuple(query.matching(LinkCounterparts(reference, counterparts)).oldest().take(size * len(LinkType) * 2))
         else:
             if arguments.first_counterpart:
                 raise Refusal("a first counterpart needs --group-counterparts")
@@ -108,7 +108,7 @@ class LinkPages:
         total = query.count()
         pool = query.matching(Among("id", [priority.id], negated=True)).oldest()
         if arguments.page == 1:
-            following = tuple(pool.limited(size - 1)) if size > 1 else ()
+            following = tuple(pool.take(size - 1)) if size > 1 else ()
             return Page((priority, *following), arguments.page, size, total)
         selected = tuple(pool.rows(pool.select.sliced(size, (arguments.page - 1) * size - 1)))
         return Page(selected, arguments.page, size, total)

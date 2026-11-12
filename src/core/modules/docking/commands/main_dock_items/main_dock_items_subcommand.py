@@ -26,7 +26,7 @@ class MainDockItemsSubcommand(ReadSubcommand[Page[DockItem]]):
         parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[DockItem]:
-        dock = next(self.queries.query(Dock).all_rows(), None)
+        dock = self.queries.query(Dock).first()
         return self.items.filter(dock_id=dock.id if dock else 0).same_chat(None).newest().page(1, arguments.limit)
 
     def write_output(self, value: object, output: Output) -> None:

@@ -17,7 +17,7 @@ class PlanOutlines:
         self.queries, self.checkpoints, self.runs = queries, checkpoints, runs
 
     def outline(self, plan_id: int) -> PlanOutline:
-        places = tuple(sorted(self.queries.query(PlanOutlineTask).filter(plan_id=plan_id).full_table(OUTLINE_REASON).all_rows(), key=lambda place: (place.phase_position, -place.priority, place.task_id)))
+        places = tuple(sorted(self.queries.query(PlanOutlineTask).filter(plan_id=plan_id).every_row(OUTLINE_REASON), key=lambda place: (place.phase_position, -place.priority, place.task_id)))
         windows = self.checkpoints.windows(plan_id)
         phases = windows.phases
         return PlanOutline(plan_id, tuple(OutlinePhase(phase.id, phase.title, phase.goal, tuple(OutlineTask(place.task_id, place.title, place.state.value, place.priority, place.complexity, place.tags, place.reason, place.automatic, place.delegated_to, place.main_delegate, place.helper_id, place.helper_name, place.helper_main) for place in places if place.phase_id == phase.id),

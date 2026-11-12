@@ -26,7 +26,7 @@ class PlanBeingBuiltGuard(Guard[Moved[Plan]]):
     def check(self, event: Moved[Plan], context: Context) -> None:
         if context.actor.type is not ActorType.AGENT:
             return
-        for run in self.runs.filter(subject_id=event.row.id).matching(IsNull("ended_at")).all_rows():
+        for run in self.runs.filter(subject_id=event.row.id).matching(IsNull("ended_at")).get():
             sequence = self.rows.required(Sequence, run.sequence_id)
             if sequence.has_end_event(PLAN_READY_EVENT) and run.step_number < len(sequence.steps):
                 raise Refusal(f"plan {event.row.id} is still being built: step {run.step_number} of sequence {sequence.id}", "finish the sequence's steps first")

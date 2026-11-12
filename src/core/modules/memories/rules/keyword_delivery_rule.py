@@ -14,6 +14,8 @@ from engine.setting.setting_values import SettingValues
 from engine.agent.enums.role_group import RoleGroup
 from core.modules.memories.support.memory_settings import KEYWORD_LIMIT
 
+KEYWORDS_REASON = "every memory whose keyword the hook names may be delivered"
+
 
 
 class KeywordDeliveryRule(DriverRule):
@@ -33,10 +35,9 @@ class KeywordDeliveryRule(DriverRule):
         hook_terms = hook_keywords(hook.event)
         if not hook_terms:
             return RuleAnswer.allowed()
-        memory_ids = [keyword.memory_id for keyword in self.queries.query(KeywordMemory).matching(Among("word", hook_terms)).all_rows()]
+        memory_ids = [keyword.memory_id for keyword in self.queries.query(KeywordMemory).matching(Among("word", hook_terms)).every_row(KEYWORDS_REASON)]
         limit = self.settings.number(KEYWORD_LIMIT)
-        rows = self.memories.among(memory_ids).absent_memories(hook.agent_id).weight_order().all_rows()
-        memories = list(rows)[:limit]
+        memories = self.memories.among(memory_ids).absent_memories(hook.agent_id).weight_order().take(limit)
         if not memories:
             return RuleAnswer.allowed()
         return RuleAnswer.with_nudges(*(MEMORY_LINE.nudge(memory=memory.memory_id) for memory in memories)).running(GiveMemories(hook.agent_id, tuple(row.memory_id for row in memories), DeliveryCause.KEYWORD))

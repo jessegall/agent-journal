@@ -28,8 +28,8 @@ class DependencyWaits:
         return self.kept.owner_read(self.queries.query(TaskDependency), lambda: self.read_pairs(task_ids), name=f"tasks.dependency_pairs:{sorted(task_ids)}")
 
     def read_pairs(self, task_ids: Sequence[int]) -> tuple[TaskDependency, ...]:
-        dependencies = self.queries.query(TaskDependency).full_table(PAIRS_REASON)
-        pairs = {pair.id: pair for column in ("task_id", "dependency_id") for pair in dependencies.matching(Among(column, task_ids)).all_rows()}
+        dependencies = self.queries.query(TaskDependency)
+        pairs = {pair.id: pair for column in ("task_id", "dependency_id") for pair in dependencies.matching(Among(column, task_ids)).every_row(PAIRS_REASON)}
         return tuple(pairs[pair_id] for pair_id in sorted(pairs))
 
     def update_wait(self, task_id: int, dependency_id: int, context: Context) -> None:
@@ -40,9 +40,9 @@ class DependencyWaits:
 
     def update_tasks(self, task_ids: Sequence[int], context: Context) -> None:
         pairs = self.pairs(task_ids)
-        open_ids = {row.id for row in self.queries.query(OpenDependency).matching(Among("id", tuple(pair.id for pair in pairs))).all_rows()}
+        open_ids = {row.id for row in self.queries.query(OpenDependency).matching(Among("id", tuple(pair.id for pair in pairs))).every_row(PAIRS_REASON)}
         task_ids_waiting = tuple({pair.task_id for pair in pairs})
-        tasks = {task.id: task for task in self.queries.query(Task).matching(Among("id", task_ids_waiting)).full_table(PAIRS_REASON).all_rows()}
+        tasks = {task.id: task for task in self.queries.query(Task).matching(Among("id", task_ids_waiting)).every_row(PAIRS_REASON)}
         ended: list[TaskWait] = []
         for pair in pairs:
             if pair.id in open_ids:

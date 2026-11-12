@@ -27,7 +27,7 @@ class RedeemPhoneCodeHandler(Handler[RedeemPhoneCode, Phone]):
     def handle(self, command: RedeemPhoneCode, context: Context) -> Phone:
         if context.actor.type is not ActorType.CORE:
             raise Refusal("only the viewer redeems a pairing code", "open the pairing link on the phone")
-        open_codes = list(self.queries.query(PhoneCode).filter(code_digest=self.codes.digest(command.code), state=PhoneCodeState.OPEN).all_rows())
+        open_codes = self.queries.query(PhoneCode).filter(code_digest=self.codes.digest(command.code), state=PhoneCodeState.OPEN).get()
         if not open_codes or open_codes[0].expires_at <= self.clock.timestamp():
             raise Refusal(UNKNOWN_CODE, "ask for a new code with journal phone pair")
         code = self.repository.save(open_codes[0].moved(PhoneCodeLifecycle.spend), context)

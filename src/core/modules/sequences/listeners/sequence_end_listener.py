@@ -24,5 +24,5 @@ class SequenceEndListener(CommitListener[Touched[Model]]):
         sequence_ids = self.events.ending(logged.event)
         if not sequence_ids:
             return
-        for run in self.runs.filter(subject_id=logged.row_id).matching(IsNull("ended_at")).matching(Among("sequence_id", tuple(sequence_ids))).all_rows():
+        for run in self.runs.filter(subject_id=logged.row_id).matching(IsNull("ended_at")).matching(Among("sequence_id", tuple(sequence_ids))).get():
             self.bus.run(MoveSequenceRun(END, reason=logged.event, run_id=run.id), Actor(run.session_agent_id, ActorType.AGENT), cause_id=logged.id)

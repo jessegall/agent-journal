@@ -68,7 +68,7 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
         previous_id = arguments.before_id if arguments.state is not None else None
         limit = arguments.limit or PAGE_SIZE_ROWS
         rows = (cards.matching(Less("id", previous_id)) if previous_id is not None else cards).newest()
-        return TaskGroup(str(state), cards.count(), tuple(rows.full_table(WORKING_TASKS_REASON).all_rows() if state in WORKING_STATES else rows.limited(limit)))
+        return TaskGroup(str(state), cards.count(), tuple(sorted(rows.every_row(WORKING_TASKS_REASON), key=lambda task: task.id, reverse=True) if state in WORKING_STATES else rows.limit(limit).get()))
 
     @staticmethod
     def finished_cursor(arguments: Namespace) -> Condition | None:
@@ -82,7 +82,7 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
         cards = self.shown_cards(state, arguments)
         cursor = self.finished_cursor(arguments) if arguments.state is not None else None
         rows = cards.matching(cursor) if cursor is not None else cards
-        return TaskGroup(state.value, cards.count(), tuple(rows.descending("closed_at", "id").limited(arguments.limit or FINISHED_PAGE_ROWS)))
+        return TaskGroup(state.value, cards.count(), tuple(rows.descending("closed_at", "id").limit(arguments.limit or FINISHED_PAGE_ROWS).get()))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, TaskBoard):

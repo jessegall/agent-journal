@@ -11,6 +11,8 @@ from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.docking.conditions.same_chat import SameChat
 
+LEAVING_REASON = "the departure tick undocks every item whose time to leave has come"
+
 
 class DockItemQuery(Query[DockItem]):
     """Reads docked items, by dock, by type and by the row they point at."""
@@ -34,5 +36,5 @@ class DockItemQuery(Query[DockItem]):
         return self.filter(state=DockItemState.DOCKED, kept=False).matching(IsNull("leaves_at"))
 
     def leaving(self, timestamp: Timestamp) -> list[DockItem]:
-        return list(self.filter(state=DockItemState.DOCKED, kept=False).matching(HasValue("leaves_at"))
-                    .matching(Maximum("leaves_at", timestamp.text)).ordered("leaves_at", "id").all_rows())
+        due = self.filter(state=DockItemState.DOCKED, kept=False).matching(HasValue("leaves_at")).matching(Maximum("leaves_at", timestamp.text))
+        return sorted(due.every_row(LEAVING_REASON), key=lambda item: (item.leaves_at, item.id))

@@ -6,6 +6,8 @@ from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.messages.models.message_work_source import MessageWorkSource
 
+WORK_SOURCES_REASON = "a deleted agent takes every work source it chose with it"
+
 
 class DeletedAgentWorkSourceListener(DeletionListener[Deleted[Agent]]):
     """Removes the selections owned by a deleted agent."""
@@ -16,5 +18,5 @@ class DeletedAgentWorkSourceListener(DeletionListener[Deleted[Agent]]):
         self.queries, self.repository = queries, repository
 
     def handle(self, event: Deleted[Agent], context: Context) -> None:
-        for selected in tuple(self.queries.query(MessageWorkSource).filter(agent_id=event.row.id).all_rows()):
+        for selected in tuple(self.queries.query(MessageWorkSource).filter(agent_id=event.row.id).every_row(WORK_SOURCES_REASON)):
             self.repository.delete_stored(selected, context)

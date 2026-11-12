@@ -27,7 +27,7 @@ class PlanPlaceSubcommand(ReadSubcommand[TaskPlace]):
         place = self.queries.query(PlanTask).filter(task_id=arguments.task_id).first()
         if place is None:
             return TaskPlace()
-        phases = list(self.queries.query(Phase).filter(plan_id=place.plan_id).ordered("position").all_rows())
+        phases = self.queries.query(Phase).filter(plan_id=place.plan_id).ordered("position").get()
         number = next(index for index, phase in enumerate(phases, 1) if phase.id == place.phase_id)
         return TaskPlace(place.plan_id, self.queries.query(Plan).find(place.plan_id).title, number, len(phases), phases[number - 1].title)
 

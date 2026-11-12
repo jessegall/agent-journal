@@ -28,7 +28,7 @@ class ShareApprovalListener(CommitListener[Created[ShareLink] | Moved[ShareLink]
         self.bus, self.actors, self.queries, self.targets = bus, actors, queries, targets
 
     def handle(self, event: Created[ShareLink] | Moved[ShareLink] | RegistrySynced, logged: LoggedEvent) -> None:
-        links = tuple(self.queries.query(ShareLink).filter(state=ShareLinkState.WAITING).all_rows()) if isinstance(event, RegistrySynced) else tuple([event.row])
+        links = tuple(self.queries.query(ShareLink).filter(state=ShareLinkState.WAITING).get()) if isinstance(event, RegistrySynced) else tuple([event.row])
         for link in links:
             self.update_request(link, logged.id)
 

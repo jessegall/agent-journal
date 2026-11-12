@@ -11,7 +11,8 @@ from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_reactions import MessageReactions
 
-REPLY_PAGE_ROWS = 50
+REPLIES_REASON = "a message counts as answered by any reply the agent wrote to it"
+
 
 
 class MessageReplies:
@@ -33,7 +34,7 @@ class MessageReplies:
 
     def replied_ids(self, agent_id: int, message_ids: tuple[int, ...]) -> set[int | None]:
         written = self.messages_by(agent_id).matching(Among("parent_id", message_ids)).oldest()
-        replies = self.kept.read(written, lambda: tuple(written.all_rows(REPLY_PAGE_ROWS)), name="messages.written_replies")
+        replies = self.kept.read(written, lambda: tuple(written.every_row(REPLIES_REASON)), name="messages.written_replies")
         return {reply.parent_id for reply in replies}
 
     def newest_reply_ids(self, agent_id: int, messages: Sequence[Message]) -> dict[int, int]:

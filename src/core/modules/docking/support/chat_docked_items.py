@@ -16,7 +16,7 @@ class ChatDockedItems:
 
     def read(self, dock_id: int) -> list[DockItem]:
         agent_id = self.scopes.actor_id
-        return self.kept.read(self.items.docked(dock_id), lambda: list(self.items.docked(dock_id).same_chat(agent_id).oldest().full_table(DOCKED_REASON).all_rows()),
+        return self.kept.read(self.items.docked(dock_id), lambda: list(self.items.docked(dock_id).same_chat(agent_id).every_row(DOCKED_REASON)),
                               name=self.name(agent_id))
 
     def docked(self, item: DockItem) -> None:

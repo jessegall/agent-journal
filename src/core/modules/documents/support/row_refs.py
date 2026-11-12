@@ -10,6 +10,8 @@ from engine.registry.registry import Registry
 from core.modules.documents.references.row_ref import RowRef
 from core.modules.documents.support.resolved_row_ref import ResolvedRowRef
 
+EXISTING_ROWS_REASON = "every reference is checked for a row that exists"
+
 REF = re.compile(r"^([a-z_]+):(\d+)$")
 
 
@@ -56,6 +58,6 @@ class RowRefs:
         for model, numbers in model_ids.items():
             ids = tuple(numbers)
             for start in range(0, len(ids), 500):
-                rows = self.queries.query(model).matching(Among("id", ids[start:start + 500])).all_rows()
+                rows = self.queries.query(model).matching(Among("id", ids[start:start + 500])).every_row(EXISTING_ROWS_REASON)
                 existing.update(RowRef(model.model_name, row.id) for row in rows)
         return tuple(dict.fromkeys(ref for ref in resolved if ref in existing))

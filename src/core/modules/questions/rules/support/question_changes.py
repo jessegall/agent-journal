@@ -12,6 +12,8 @@ from core.modules.waits.models.wait_target import WaitTarget
 from engine.driver.nudge import Nudge
 from core.modules.questions.support.question_nudges import QUESTION_ANSWER_SOURCE
 
+CHANGED_QUESTIONS_REASON = "every question of the agent that changed since the last answer is told, with what waits on it"
+
 
 class QuestionChanges:
     """The questions an agent asked that reached a state since the rule last answered, with no open wait on
@@ -25,7 +27,7 @@ class QuestionChanges:
         questions = self.questions.agent(hook.agent_id).state(state)
         if last_answer_at is not None:
             questions = questions.matching(Greater("updated_at", last_answer_at.text))
-        rows = tuple(questions.oldest().all_rows())
+        rows = tuple(questions.every_row(CHANGED_QUESTIONS_REASON))
         waiting_ids = self.waiting_ids([question.id for question in rows])
         lines: list[Nudge] = []
         for question in rows:
@@ -41,4 +43,4 @@ class QuestionChanges:
         if not question_ids:
             return set()
         return {target.row_id for target in self.queries.query(WaitTarget).filter(row_table="questions")
-                .matching(Among("row_id", question_ids)).matching(IsNull("resolved_at")).all_rows()}
+                .matching(Among("row_id", question_ids)).matching(IsNull("resolved_at")).every_row(CHANGED_QUESTIONS_REASON)}

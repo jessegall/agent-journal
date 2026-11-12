@@ -29,6 +29,8 @@ from core.modules.assignments.queries.conditions.unassigned import Unassigned
 FOLLOWED_PLAN_STATES = ("approved", "started")
 
 TASK_PAGE_ROWS = 50
+HELD_TASKS_REASON = "an agent's current tasks are every task it holds started, which its open-task setting bounds"
+ASSIGNED_TASKS_REASON = "the tasks assigned to an agent are its whole unit of work, which can hold more than fifty tasks"
 
 class TaskQuery(Query[Task], KeptRowChanges[Task]):
     """Reads tasks with named filters. The open tasks assigned to an actor are that actor's work, and the open
@@ -40,7 +42,7 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
 
     def started_tasks(self, agent_id: int) -> tuple[Task, ...]:
         tasks = self.held_started(agent_id)
-        return self.kept.read(tasks, lambda: self.newest_current(tasks.all_rows(TASK_PAGE_ROWS)), name="tasks.current_tasks")
+        return self.kept.read(tasks, lambda: self.newest_current(tuple(tasks.every_row(HELD_TASKS_REASON))), name="tasks.current_tasks")
 
     def held_started(self, agent_id: int) -> Self:
         return self.holder(agent_id).started().oldest()
@@ -54,15 +56,15 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
 
     def assigned(self, actor_id: int) -> tuple[Task, ...]:
         tasks = self.open_tasks().matching(self.assignee(actor_id)).oldest()
-        return self.kept.owner_read(tasks, lambda: tuple(tasks.all_rows(TASK_PAGE_ROWS)), name="tasks.queued_tasks")
+        return self.kept.owner_read(tasks, lambda: tuple(tasks.every_row(ASSIGNED_TASKS_REASON)), name="tasks.queued_tasks")
 
     def unfinished_assigned(self, actor_id: int) -> tuple[Task, ...]:
         tasks = self.assignee_tasks(actor_id).matching(Among("state", [TaskState.OPEN, TaskState.STARTED])).oldest()
-        return self.kept.owner_read(tasks, lambda: tuple(tasks.all_rows(TASK_PAGE_ROWS)), name="tasks.unfinished_assigned")
+        return self.kept.owner_read(tasks, lambda: tuple(tasks.every_row(ASSIGNED_TASKS_REASON)), name="tasks.unfinished_assigned")
 
     def assigned_ready(self, actor_id: int) -> tuple[Task, ...]:
         tasks = self.open_tasks().matching(self.assignee(actor_id)).matching(self.no_open_dependency()).oldest()
-        return self.kept.owner_read(tasks, lambda: tuple(tasks.all_rows(TASK_PAGE_ROWS)), name="tasks.next_delegated")
+        return self.kept.owner_read(tasks, lambda: tuple(tasks.every_row(ASSIGNED_TASKS_REASON)), name="tasks.next_delegated")
 
     def free(self) -> Self:
         return self.open_tasks().matching(Unassigned(Task))

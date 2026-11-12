@@ -20,10 +20,10 @@ class PlanWaits:
         self.queries, self.repository, self.main_agents = queries, repository, main_agents
 
     def open_waits(self, plan_id: int) -> tuple[PlanWait, ...]:
-        return tuple(self.queries.query(PlanWait).filter(plan_id=plan_id).matching(IsNull("ended_at")).all_rows())
+        return tuple(self.queries.query(PlanWait).filter(plan_id=plan_id).matching(IsNull("ended_at")).get())
 
     def blocker_waits(self, blocker_id: int) -> tuple[PlanWait, ...]:
-        return tuple(self.queries.query(PlanWait).filter(blocker_id=blocker_id).matching(IsNull("ended_at")).all_rows())
+        return tuple(self.queries.query(PlanWait).filter(blocker_id=blocker_id).matching(IsNull("ended_at")).get())
 
     def reaches(self, plan_id: int, target_id: int) -> bool:
         visited: set[int] = set()

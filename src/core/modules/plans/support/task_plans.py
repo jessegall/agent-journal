@@ -10,7 +10,8 @@ from core.modules.plans.models.phase_task import PhaseTask
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
 
-PLACE_PAGE_ROWS = 50
+TASK_PLACES_REASON = "the phase of every task asked about is kept for the request"
+
 
 
 class TaskPlans:
@@ -37,7 +38,7 @@ class TaskPlans:
         if not distinct_ids:
             return
         among = self.queries.query(PhaseTask).matching(Among("task_id", distinct_ids))
-        rows = self.kept.read(among, lambda: tuple(among.all_rows(PLACE_PAGE_ROWS)), name="plans.task_phases")
+        rows = self.kept.read(among, lambda: tuple(among.every_row(TASK_PLACES_REASON)), name="plans.task_phases")
         places = {place.task_id: place for place in rows}
         for task_id in distinct_ids:
             self.kept.read(self.task_places(task_id), lambda task_id=task_id: places.get(task_id), name="plans.task_phase")

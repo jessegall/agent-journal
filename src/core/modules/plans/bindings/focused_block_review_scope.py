@@ -7,6 +7,8 @@ from core.modules.plans.support.focus.plan_focus import PlanFocus
 from core.modules.tasks.models.task_block_review import TaskBlockReview
 from core.modules.tasks.support.block_review_scope import BlockReviewScope
 
+FOCUSED_TASKS_REASON = "the focus keeps every listed task that is a task of the plan"
+
 
 class FocusedBlockReviewScope(BlockReviewScope):
     """Narrows the review of blocked tasks to the plan the agent named as its focus, while that plan is started
@@ -20,5 +22,5 @@ class FocusedBlockReviewScope(BlockReviewScope):
         plan = None if plan_id is None else self.queries.query(Plan).filter(id=plan_id).first()
         if plan is None or not plan.state.can_be_focused:
             return tasks
-        task_ids = {row.task_id for row in self.queries.query(PlanTask).filter(plan_id=plan.id).matching(Among("task_id", [task.task_id for task in tasks])).all_rows()}
+        task_ids = {row.task_id for row in self.queries.query(PlanTask).filter(plan_id=plan.id).matching(Among("task_id", [task.task_id for task in tasks])).every_row(FOCUSED_TASKS_REASON)}
         return tuple(task for task in tasks if task.task_id in task_ids)

@@ -9,6 +9,8 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
 
+UNREAD_PEOPLE_REASON = "every unread message of a person is shared out to the agents it addresses"
+
 
 class UnreadMessages(KeptRowChanges[Message]):
     """Shares unread person messages in each environment and selects their recipients."""
@@ -18,7 +20,7 @@ class UnreadMessages(KeptRowChanges[Message]):
 
     def addressed(self, agent_id: int) -> tuple[Message, ...]:
         unread = self.unread_person_messages()
-        messages = self.kept.read(unread, lambda: tuple(unread.all_rows()), name="messages.unread_person_messages")
+        messages = self.kept.read(unread, lambda: tuple(unread.every_row(UNREAD_PEOPLE_REASON)), name="messages.unread_person_messages")
         agent = self.agents.find(agent_id)
         return tuple(message for message in messages if message.target_agent_id == agent_id
                      or (message.target_agent_id is None and agent.role == AgentRole.MAIN))

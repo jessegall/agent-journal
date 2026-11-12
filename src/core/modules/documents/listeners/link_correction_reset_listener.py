@@ -8,6 +8,8 @@ from core.modules.documents.models.link_correction import LinkCorrection
 from core.modules.messages.models.enums.work_source_origin import WorkSourceOrigin
 from core.modules.messages.models.message_work_source import MessageWorkSource
 
+CORRECTIONS_REASON = "a new selection resets every link correction of the message"
+
 
 class LinkCorrectionResetListener(SaveListener[Created[MessageWorkSource] | Updated[MessageWorkSource]]):
     """Allows attribution again when an agent explicitly selects the request."""
@@ -23,6 +25,6 @@ class LinkCorrectionResetListener(SaveListener[Created[MessageWorkSource] | Upda
             return
         if event.old_row is not None and selected.selection_number == event.old_row.selection_number:
             return
-        corrections = self.queries.query(LinkCorrection).filter(source_model="message", source_id=selected.message_id).all_rows()
+        corrections = self.queries.query(LinkCorrection).filter(source_model="message", source_id=selected.message_id).every_row(CORRECTIONS_REASON)
         for correction in corrections:
             self.repository.delete_stored(correction, context)

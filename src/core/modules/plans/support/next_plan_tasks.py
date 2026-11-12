@@ -10,6 +10,8 @@ from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES, TaskSt
 from core.modules.tasks.models.open_dependency import OpenDependency
 from core.modules.tasks.queries.task_query import TaskQuery
 
+NEXT_TASKS_REASON = "the next tasks of a plan are every takeable task of its current phase"
+
 
 class NextPlanTasks:
     """Selects the tasks of the earliest unfinished phase of a plan that one agent may take now."""
@@ -26,7 +28,7 @@ class NextPlanTasks:
         if unfinished is None:
             return ()
         places = self.queries.query(PlanTask).filter(plan_id=plan_id, phase_position=unfinished.phase_position, state=TaskState.OPEN)
-        return tuple(places.matching(waiting).matching(takeable).matching(CheckpointLimit(plan_id)).all_rows())
+        return tuple(places.matching(waiting).matching(takeable).matching(CheckpointLimit(plan_id)).every_row(NEXT_TASKS_REASON))
 
     def plan_exclusion(self) -> SubqueryMatch:
         return SubqueryMatch("id", Select("phase_tasks").column("task_id"), negated=True)

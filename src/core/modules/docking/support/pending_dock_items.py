@@ -14,7 +14,7 @@ class PendingDockItems:
 
     def matching(self, model_name: str, row_id: int) -> list[DockItem]:
         waiting = self.items.waiting()
-        items = self.kept.read(waiting, lambda: tuple(waiting.full_table(WAITING_REASON).all_rows()), name="docking.pending_items")
+        items = self.kept.read(waiting, lambda: tuple(waiting.every_row(WAITING_REASON)), name="docking.pending_items")
         return [item for item in items if item.target_model == model_name and item.target_id == row_id]
 
     def remove(self, scheduled: DockItem) -> None:

@@ -40,7 +40,7 @@ class MainChatRowsSubcommand(ReadSubcommand[ViewRowPage]):
             marks = marks.matching(Less("id", arguments.before_id))
         if arguments.ids is not None:
             marks = marks.matching(Among("id", arguments.ids))
-        return ViewRowPage(tuple(marks.newest().limited(arguments.limit)))
+        return ViewRowPage(tuple(marks.newest().limit(arguments.limit).get()))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ViewRowPage):

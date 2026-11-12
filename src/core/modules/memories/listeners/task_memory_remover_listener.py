@@ -15,6 +15,8 @@ from core.modules.memories.commands.remove_memory.remove_memory import RemoveMem
 from core.modules.memories.models.enums.memory_state import MemoryState
 from core.modules.tasks.models.task import Task
 
+TASK_MEMORIES_REASON = "an ended task removes every memory tied to it"
+
 
 
 class TaskMemoryRemoverListener(CommitListener[Moved[Task]]):
@@ -30,13 +32,13 @@ class TaskMemoryRemoverListener(CommitListener[Moved[Task]]):
 
     def prepare(self, events: Sequence[LoggedEvent]) -> None:
         task_ids = list(dict.fromkeys(event.row_id for event in events))
-        memories = self.queries.query(Memory).filter(state=MemoryState.ACTIVE).matching(Among("task_id", task_ids)).all_rows()
+        memories = tuple(self.queries.query(Memory).filter(state=MemoryState.ACTIVE).matching(Among("task_id", task_ids)).every_row(TASK_MEMORIES_REASON))
         for task_id in task_ids:
             self.kept.read(self.task_memories(task_id), lambda task_id=task_id: tuple(memory for memory in memories if memory.task_id == task_id), name="memories.task_active")
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
         active = self.task_memories(logged.row_id)
-        memories = self.kept.read(active, lambda: tuple(active.all_rows()), name="memories.task_active")
+        memories = self.kept.read(active, lambda: tuple(active.every_row(TASK_MEMORIES_REASON)), name="memories.task_active")
         for memory in memories:
             self.bus.run(RemoveMemory(memory.id, f"task {logged.row_id} ended"), Actor.core(), cause_id=logged.id)
 

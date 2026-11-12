@@ -45,5 +45,5 @@ class StartSkillsListener(SkillListener[SessionStarted]):
         return [*start, *self.start.main_agent()] if is_main and self.main_skills.is_required else start
 
     def previous_call(self, call: HookCall) -> HookCall | None:
-        recent = self.queries.query(HookCall).filter(session_agent_id=call.session_agent_id).newest().limited(2)
+        recent = self.queries.query(HookCall).filter(session_agent_id=call.session_agent_id).newest().take(2)
         return recent[1] if len(recent) == 2 else None

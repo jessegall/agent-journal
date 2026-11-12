@@ -33,7 +33,7 @@ class RecordWaitingMessageLineHandler(Handler[RecordWaitingMessageLine, Model | 
         message = self.lines.waking_message(agent.id)
         if message is None:
             return None
-        waiting = self.lines.waiting(agent.id).limited(MOST_WAITING_LINES)
+        waiting = self.lines.waiting(agent.id).take(MOST_WAITING_LINES)
         if len(waiting) == MOST_WAITING_LINES or (waiting and waiting[0].creation_timestamp().elapsed_seconds(context.timestamp) < RETRY_SECONDS):
             return None
         return self.nudger.send(agent.id, NEW_MESSAGE, WAITING_MESSAGE_SOURCE, context, message=message.id)

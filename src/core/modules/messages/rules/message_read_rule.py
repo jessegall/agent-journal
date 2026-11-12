@@ -12,6 +12,8 @@ from core.modules.messages.commands.read_message.note_message_read import NoteMe
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_captions import MessageCaptions
 
+UNREAD_REASON = "reading the unread list marks every delivered unread message as read"
+
 IMAGE_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif", ".webp")
 
 
@@ -31,10 +33,10 @@ class MessageReadRule(DriverRule):
         if shell is None:
             return RuleAnswer.allowed()
         numbers = shell.journal_command_numbers("message read")
-        unread = list(self.messages.addressed(hook.agent_id).matching(Among("id", numbers)).all_rows()) if numbers else []
+        unread = self.messages.addressed(hook.agent_id).matching(Among("id", numbers)).get() if numbers else []
         unread = [message for message in unread if message.read_notice_at is None]
         if shell.parts_running_journal_command("message unread"):
-            all_unread = self.messages.unread(hook.agent_id).oldest().all_rows()
+            all_unread = self.messages.unread(hook.agent_id).every_row(UNREAD_REASON)
             unread = [message for message in all_unread if message.delivered_at is not None]
         images = [nudge for message in unread for nudge in self.image_nudges(message)]
         nudges = [MESSAGE_NOTE.nudge(), REPLY_COMMAND.nudge(), *images] if unread else []

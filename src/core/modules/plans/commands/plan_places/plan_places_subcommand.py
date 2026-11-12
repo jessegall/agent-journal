@@ -26,11 +26,11 @@ class PlanPlacesSubcommand(ReadSubcommand[RowList]):
         self.plans, self.queries = plans, queries
 
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
-        plans = tuple(self.plans.unclosed().newest().limited(PAGE_SIZE_ROWS))
+        plans = tuple(self.plans.unclosed().newest().limit(PAGE_SIZE_ROWS).get())
         if not plans:
             return RowList([])
-        phases = tuple(self.queries.query(Phase).matching(Among("plan_id", [plan.id for plan in plans])).ordered("position").full_table(PLACES_REASON).all_rows())
-        tasks = tuple(self.queries.query(PlanTask).matching(Among("plan_id", [plan.id for plan in plans])).full_table(PLACES_REASON).all_rows())
+        phases = tuple(sorted(self.queries.query(Phase).matching(Among("plan_id", [plan.id for plan in plans])).every_row(PLACES_REASON), key=lambda phase: (phase.position, phase.id)))
+        tasks = tuple(self.queries.query(PlanTask).matching(Among("plan_id", [plan.id for plan in plans])).every_row(PLACES_REASON))
         return RowList([{"id": phase.id, "label": f"Plan {plan.id}: {plan.title} › {phase.title}",
                          "task_ids": [task.task_id for task in tasks if task.phase_id == phase.id]}
                         for plan in plans for phase in phases if phase.plan_id == plan.id])

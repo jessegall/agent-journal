@@ -9,7 +9,8 @@ from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS
+
+PLAN_ROWS_REASON = "the order of the tasks asked about is worked out from every task of their plans"
 
 
 WORKING_STATES = (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED)
@@ -41,7 +42,7 @@ class PlanTaskOrder:
         if not tasks:
             return None
         rows = self.task_rows(tasks)
-        started_plan_ids = {plan.id for plan in self.queries.query(Plan).filter(state=PlanState.STARTED).all_rows()}
+        started_plan_ids = set(self.queries.query(Plan).filter(state=PlanState.STARTED).pluck("id"))
         waiting_task_ids = {row.task_id for row in rows if row.plan_id not in started_plan_ids}
         return self.earliest([task for task in tasks if task.id not in waiting_task_ids], rows, ())
 
@@ -62,9 +63,9 @@ class PlanTaskOrder:
         return self.kept.owner_read(tasks, lambda: self.loaded_plan_rows(task_ids), name=f"plans.plan_rows:{task_ids}")
 
     def loaded_plan_rows(self, task_ids: tuple[int, ...]) -> tuple[PlanTask, ...]:
-        places = self.queries.query(PlanTask).matching(Among("task_id", task_ids)).ordered("task_id").all_rows(TASK_PAGE_ROWS)
+        places = self.queries.query(PlanTask).matching(Among("task_id", task_ids)).every_row(PLAN_ROWS_REASON)
         plan_ids = tuple(sorted({row.plan_id for row in places}))
-        return tuple(self.queries.query(PlanTask).matching(Among("plan_id", plan_ids)).ordered("plan_id", "task_id").all_rows(TASK_PAGE_ROWS)) if plan_ids else ()
+        return tuple(sorted(self.queries.query(PlanTask).matching(Among("plan_id", plan_ids)).every_row(PLAN_ROWS_REASON), key=lambda row: (row.plan_id, row.task_id))) if plan_ids else ()
 
     @staticmethod
     def order(task: Task, positions: dict[int, PlanTask]) -> tuple[int, int, int, int]:

@@ -54,5 +54,5 @@ class PeerMessageRule(DriverRule):
     def new_notes(self, agent_id: int, notes: Sequence[PeerNote]) -> list[PeerNote]:
         if not notes:
             return []
-        saved_keys = {message.peer_key for message in self.queries.query(Message).filter(session_agent_id=agent_id, type=MessageType.PEER).matching(Among("peer_key", tuple(note.key for note in notes))).all_rows()}
+        saved_keys = set(self.queries.query(Message).filter(session_agent_id=agent_id, type=MessageType.PEER).matching(Among("peer_key", tuple(note.key for note in notes))).pluck("peer_key"))
         return [note for note in notes if note.key not in saved_keys]

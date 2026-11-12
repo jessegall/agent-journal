@@ -24,6 +24,10 @@ class ActiveMemoryQuery(Query[ActiveMemory]):
     def weight_order(self) -> Self:
         return self.descending("weight").ordered("memory_id")
 
+    def every_by_weight(self, reason: str) -> list[ActiveMemory]:
+        """Every matching memory, the heaviest first, read by key and put in the weight order afterwards."""
+        return sorted(self.every_row(reason), key=lambda memory: (-memory.weight, memory.memory_id))
+
     def absent_memories(self, agent_id: int) -> Self:
         context_memory_ids = Select(ContextMemory.view).matching(Equal("session_agent_id", agent_id)).column("memory_id")
         return self.matching(SubqueryMatch("memory_id", context_memory_ids, negated=True))

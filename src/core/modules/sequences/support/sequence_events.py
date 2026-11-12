@@ -21,7 +21,7 @@ class SequenceEvents:
         return self.kept.read(self.queries.query(Sequence), self.load, name="sequences.event-index")
 
     def load(self) -> SequenceEventIndex:
-        return SequenceEventIndex.built(self.queries.query(Sequence).all_rows())
+        return SequenceEventIndex.built(self.queries.query(Sequence).get())
 
     def remember(self, sequence: Sequence) -> None:
         def saved(index: SequenceEventIndex) -> SequenceEventIndex:
