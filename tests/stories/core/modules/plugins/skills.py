@@ -170,5 +170,8 @@ def test_disabling_a_plugin_withdraws_the_skills_it_published_and_enabling_it_pu
     story.expect_rows(all((folder / "SKILL.md").is_file() for folder in published_skill_folders(story)), detail="published at install")
     story.expect_success("plugin disable sample", actor=story.user)
     story.expect_rows(not any(folder.exists() for folder in published_skill_folders(story)), detail="withdrawn once disabled")
+    story.expect_text("plugin list", "sample", "off", actor=story.user)
     story.expect_success("plugin enable sample", actor=story.user)
+    story.expect_text("plugin list", "sample", "on", actor=story.user)
+    story.expect_success("plugin list --json", actor=story.user)
     story.expect_rows(all((folder / "SKILL.md").is_file() for folder in published_skill_folders(story)), detail="published again once enabled")

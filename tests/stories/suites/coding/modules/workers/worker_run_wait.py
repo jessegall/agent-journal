@@ -105,6 +105,10 @@ def test_a_named_test_launches_held_with_the_settings_queue_wait(worker, launche
     worker.story.run_listeners()
     expect_value_with(launches[0], f"{QUEUE_WAIT_VARIABLE}=60")
     expect_value_without(launches[0], "--background")
+    set_seconds(worker.story, 90)
+    worker.story.run(TEST_RUN, actor=worker.worker)
+    worker.story.run_listeners()
+    expect_value_with(launches[1], f"{QUEUE_WAIT_VARIABLE}=90")
 
 
 def test_the_commands_card_in_the_workers_chat_shows_what_its_named_test_printed(worker):

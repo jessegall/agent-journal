@@ -40,6 +40,7 @@ def test_finishing_one_task_in_a_workers_batch_keeps_the_wait_blocked(new_story)
     story.expect_success(COMMIT, actor=worker)
     story.expect_success(f"task show {second_id}", "state: started", actor=story.agent)
     story.expect_success(f"task show {task_id}", "state: blocked", actor=story.agent)
+    story.expect_success("worker status", f"Current task: {second_id} (started) Second job", actor=worker)
 
 
 def test_merging_a_worker_opens_the_task_waiting_on_it(new_story):

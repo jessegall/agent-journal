@@ -25,8 +25,10 @@ def test_a_session_under_an_unknown_launch_name_is_let_through_and_logged(new_st
     story = new_story(SAMPLES, fixture=SampleSuiteChoice)
     story.hook("s-1", HookSamples.session_start())
     story.expect_hook_silent("t-9", HookSamples.session_start().with_fields(program="codex", launch="worker-99"))
+    story.expect_hook_silent("t-10", HookSamples.session_start().with_fields(program="codex", launch="helper-5"))
     story.expect_absent("agent list --environment 1", "t-9")
-    story.expect_rows("launch name worker-99" in story.system_log_text())
+    story.expect_absent("agent list --environment 1", "t-10")
+    story.expect_rows("launch name worker-99" in story.system_log_text(), "launch name helper-5" in story.system_log_text())
 
 
 def test_a_workers_tool_no_agent_holds_is_refused(new_story):

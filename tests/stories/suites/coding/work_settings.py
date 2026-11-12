@@ -69,3 +69,4 @@ def test_the_work_settings_read_carries_the_presets_with_the_value_each_gives_ea
     assert sorted(presets["orchestrator"]["values"].values()) == sorted(ORCHESTRATOR)
     assert set(presets["builder"]["values"]) == {switch["key"] for switch in shown["switches"]}
     assert all(switch["title"] for switch in shown["switches"])
+    assert shown_fields(story)

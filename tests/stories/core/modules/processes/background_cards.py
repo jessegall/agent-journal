@@ -122,6 +122,7 @@ def test_the_card_of_a_background_run_ends_in_place_with_the_run(main_story, end
 
 def test_a_process_script_is_not_refused_as_a_command_of_unknown_type(main_story):
     main_story.expect_hook_allowed("s-1", HookSamples.shell("./tools/serve-docs", ShellPart("./tools/serve-docs", CommandCategory.PROCESS, [])))
+    main_story.expect_hook_allowed("s-1", HookSamples.shell("./tools/serve-docs --port 80", ShellPart("./tools/serve-docs", CommandCategory.PROCESS, ["--port", "80"])))
 
 
 def test_two_background_runs_with_one_title_are_asked_to_take_their_own(main_story):
