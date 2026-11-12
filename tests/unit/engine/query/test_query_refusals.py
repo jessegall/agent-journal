@@ -7,6 +7,7 @@ from engine.database.statement import Statement
 from engine.model.model import Model
 from engine.query.errors.query_limit_error import QueryLimitError
 from engine.query.errors.unknown_column_error import UnknownColumnError
+from engine.query.errors.unknown_operator_error import UnknownOperatorError
 from engine.query.errors.unknown_table_error import UnknownTableError
 from engine.query.query import Query
 from tests.unit.engine.model.test_table import LogEntry
@@ -69,4 +70,14 @@ def test_a_join_qualifier_that_is_no_table_of_the_read_is_refused(entries: Query
 @pytest.mark.parametrize("rows", [0, -1])
 def test_a_limit_of_zero_or_less_is_refused(entries: Query[LogEntry], rows):
     with pytest.raises(QueryLimitError, match="a limit is at least 1"):
-        entries.limit(rows)
+        entries.limit(rows, "a test names the limit")
+
+
+def test_a_where_with_a_column_alone_is_refused_with_how_to_write_it(entries: Query[LogEntry]):
+    with pytest.raises(UnknownOperatorError, match="a column and a value, or a column, an operator and a value"):
+        entries.where("id")
+
+
+def test_a_limit_with_no_reason_is_refused(entries: Query[LogEntry]):
+    with pytest.raises(QueryLimitError, match="say why the read needs that many rows"):
+        entries.limit(200, " ")

@@ -12,7 +12,7 @@ TAKEN_NAME = "request-runs.taken"
 class RequestLog:
     """The file a journal command, viewer request, hook or run of the journal's own appends its ended run to, so
     answering costs no database write. A tick moves the log aside, and the next tick, once a late append to the
-    moved file has landed, writes its rows and only then removes it. A line that is not an entry is left out."""
+    moved file has landed, writes its rows and only then removes it, keeping the rows a busy database refused. A line that is not an entry is left out."""
 
     def __init__(self, home: JournalHome, files: FileAccess) -> None:
         self.home, self.files = home, files
@@ -37,10 +37,13 @@ class RequestLog:
     def left(self, entries: tuple[RequestLogEntry, ...]) -> None:
         self.files.write(self.taken_path, "".join(entry.text() + "\n" for entry in entries))
 
-    def written(self) -> None:
+    def written(self, kept: tuple[RequestLogEntry, ...] = ()) -> None:
         self.taken_path.unlink(missing_ok=True)
         if self.path.exists():
             self.files.replace(self.path, self.taken_path)
+        if kept:
+            with self.files.writer(self.taken_path, "a") as taken:
+                taken.write("".join(entry.text() + "\n" for entry in kept))
 
     @staticmethod
     def entry(line: str) -> RequestLogEntry | None:
