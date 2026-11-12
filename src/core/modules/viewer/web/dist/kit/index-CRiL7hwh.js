@@ -2227,6 +2227,7 @@ const vf = ["aria-modal", "aria-label", "aria-labelledby"], yf = {
     follow: { type: Boolean, default: !1 },
     fits: Boolean,
     wide: Boolean,
+    huge: Boolean,
     small: Boolean,
     tall: Boolean,
     large: Boolean,
@@ -2267,7 +2268,7 @@ const vf = ["aria-modal", "aria-label", "aria-labelledby"], yf = {
             m("section", {
               ref_key: "panel",
               ref: c,
-              class: Q(["dialog-panel", { fixed: !e.fits, small: e.small, tall: e.tall, large: e.large, wide: e.wide, sheet: e.sheet, nudged: g.value }]),
+              class: Q(["dialog-panel", { fixed: !e.fits, small: e.small, tall: e.tall, large: e.large, wide: e.wide, huge: e.huge, sheet: e.sheet, nudged: g.value }]),
               role: "dialog",
               "aria-modal": e.modal || void 0,
               "aria-label": e.modal ? void 0 : e.title,
@@ -2303,7 +2304,7 @@ const vf = ["aria-modal", "aria-label", "aria-labelledby"], yf = {
       }, 8, ["onAfterLeave"])
     ]));
   }
-}, ya = /* @__PURE__ */ U(xf, [["__scopeId", "data-v-24a11f8a"]]), Sf = {
+}, ya = /* @__PURE__ */ U(xf, [["__scopeId", "data-v-089c42bc"]]), Sf = {
   class: "action-output",
   "data-action-output": ""
 }, Mf = {
@@ -14443,7 +14444,7 @@ function eA(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const tA = du(() => import("./VoiceFigure-B5dOI204.js").then((e) => e.V)), nA = "1.2.0", aA = "3.5";
+const tA = du(() => import("./VoiceFigure-D3RLZpmd.js").then((e) => e.V)), nA = "1.2.0", aA = "3.5";
 export {
   eh as $,
   Ee as A,
