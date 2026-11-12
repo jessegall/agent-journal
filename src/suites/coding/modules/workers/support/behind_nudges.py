@@ -2,7 +2,7 @@ from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.enums.nudge_type import NudgeType
 
 BEHIND_SOURCE = "behind worktrees"
-FAST_FORWARDED = NudgeDeclaration("workers.worktree_fast_forwarded", NudgeType.NOTICE,
+FAST_FORWARDED = NudgeDeclaration("workers.worktree_fast_forwarded", NudgeType.STEERING,
     "your worktree moved to {base} at {commit}; nothing of yours was touched", turn_limited=False)
 BEHIND_FOR_MERGER = NudgeDeclaration("workers.worktree_behind", NudgeType.STEERING,
     "worker:{worker} is {count} commits behind {base}: journal merger behind {worker}", turn_limited=False, wakes_agent=True)
