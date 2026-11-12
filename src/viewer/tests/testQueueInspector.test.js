@@ -135,6 +135,7 @@ test("the process queue reads its counts and ordered lists together", async () =
         "Waiting2",
         "Finished1",
     ]);
+    expect([...document.body.querySelectorAll("[data-queue-heading]")].every((item) => item.classList.contains("sticky-band"))).toBe(true);
     expect(rowsOf("running")[0].textContent).toContain("make package");
     expect(rowsOf("running")[0].textContent).toContain("Agent 21");
     expect(rowsOf("running")[0].textContent).toContain("Task 11");
