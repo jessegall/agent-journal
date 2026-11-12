@@ -1,6 +1,5 @@
 from collections.abc import Callable
 
-from engine.command.context import Context
 from engine.enums.process_kind import ProcessKind
 from engine.errors.exit_coded_error import ExitCodedError
 
@@ -11,7 +10,7 @@ class RequestRecords:
     written is reported and never changes the answer. With no processes module installed nothing is kept; the
     processes module binds the rows."""
 
-    def recorded_hook(self, agent_id: int, line: str, exit_code: int, context: Context) -> None:
+    def recorded_hook(self, agent_id: int, environment_id: int, line: str, exit_code: int) -> None:
         return None
 
     def recorded(self, kind: ProcessKind, line: str, answer: Callable[[], int]) -> int:

@@ -54,6 +54,7 @@ SKIP_WORKTREE_MARK = "S "
 UNTRACKED_STATUS = "?? "
 PUBLISHED_FOLDERS = (".claude", ".agents")
 
+GIT_OPTIONS_WITH_VALUE = frozenset({"-c", "-C", "--git-dir", "--work-tree", "--namespace", "--exec-path", "--super-prefix", "--config-env"})
 BRANCH_CHANGES = frozenset({"merge", "rebase", "checkout", "switch", "worktree", "stash", "reset", "commit", "cherry-pick", "revert", "branch", "pull", "push", "clone", "am", "apply", "restore", "clean", "add", "update-ref", "update-index", "config", "fetch", "rm", "mv", "tag", "notes"})
 
 
@@ -547,9 +548,20 @@ class WorktreeGit:
             raise Refusal(f"git {' '.join(arguments[:2])} failed in {folder}", (finished.stderr or finished.stdout).strip())
         return finished
 
+    @staticmethod
+    def subcommand(arguments: Sequence[str]) -> str:
+        """The git command in the arguments, after any options placed before it such as -c name=value."""
+        remaining = iter(arguments)
+        for argument in remaining:
+            if argument in GIT_OPTIONS_WITH_VALUE:
+                next(remaining, None)
+            elif not argument.startswith("-"):
+                return argument
+        return ""
+
     def git(self, folder: str, limit_seconds: int, *arguments: str) -> subprocess.CompletedProcess[str]:
         line = ["git", "-C", folder, *arguments]
-        kind = ProcessKind.MERGE if arguments and arguments[0] in BRANCH_CHANGES else ProcessKind.QUICK
+        kind = ProcessKind.MERGE if self.subcommand(arguments) in BRANCH_CHANGES else ProcessKind.QUICK
         try:
             done = self.executor.execute(ExecutionRequest(line, Path.cwd(), kind, limit_seconds))
             return subprocess.CompletedProcess(line, done.exit_code, done.stdout, done.stderr)
