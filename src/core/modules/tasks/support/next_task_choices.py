@@ -3,6 +3,7 @@ from engine.row.metadata import Metadata
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
+from core.modules.assignments.support.assignments import Assignments
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 
@@ -14,8 +15,8 @@ class NextTaskChoices:
     """The one task each agent was told to take next, kept on the agent's row. A choice that is no longer open
     or free for the agent is passed over, and counts again once it is."""
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, queries: Queries, repository: Repository, assignments: Assignments) -> None:
+        self.queries, self.repository, self.assignments = queries, repository, assignments
 
     def choose(self, agent: Agent, task: Task, context: Context) -> None:
         part = {**agent.metadata.module_part(TASKS_MODULE), NEXT_TASK_KEY: task.id}
@@ -30,6 +31,5 @@ class NextTaskChoices:
             return None
         return task
 
-    @staticmethod
-    def is_free(task: Task, agent_id: int) -> bool:
-        return task.delegated_to in (None, agent_id)
+    def is_free(self, task: Task, agent_id: int) -> bool:
+        return self.assignments.actor(task) in (None, agent_id)

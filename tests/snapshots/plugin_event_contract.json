@@ -6801,6 +6801,30 @@
       "title"
     ]
   },
+  "core.tasks.task.drop_hold": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "closed_at",
+      "complexity",
+      "creator_id",
+      "delegated_to",
+      "environment_id",
+      "focused_at",
+      "holder_id",
+      "independence_reason",
+      "outcome",
+      "priority",
+      "reason",
+      "started_at",
+      "state",
+      "title"
+    ]
+  },
   "core.tasks.task.release": {
     "forms": [
       "commit",

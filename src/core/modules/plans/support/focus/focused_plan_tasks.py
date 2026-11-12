@@ -1,7 +1,6 @@
 from collections.abc import Sequence
 
 from engine.query.conditions.among import Among
-from engine.query.conditions.is_null import IsNull
 from engine.scope.actor_scope import ActorScope
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
@@ -9,6 +8,7 @@ from core.modules.plans.support.focus.focus_overview import FocusOverview
 from core.modules.plans.support.focus.plan_focus import PlanFocus
 from core.modules.plans.support.focus.plan_work import PlanWork
 from core.modules.tasks.models.task import Task
+from core.modules.assignments.queries.conditions.unassigned import Unassigned
 from core.modules.tasks.queries.task_query import TaskQuery
 
 
@@ -39,7 +39,7 @@ class FocusedPlanTasks:
     def free_task(self, plans: Sequence[PlanWork], excluded_id: int | None) -> Task | None:
         for work in plans:
             task_ids = [task_id for task_id in work.ready_task_ids() if task_id != excluded_id]
-            free = work.highest_priority(self.tasks.matching(IsNull("delegated_to")).matching(Among("id", task_ids)).all_rows()) if task_ids else None
+            free = work.highest_priority(self.tasks.matching(Unassigned(Task)).matching(Among("id", task_ids)).all_rows()) if task_ids else None
             if free is not None:
                 return free
         return None

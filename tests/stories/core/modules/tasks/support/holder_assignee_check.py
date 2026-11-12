@@ -1,6 +1,8 @@
 import json
 
 from engine.testing.stories.story import Story
+from core.modules.assignments.support.assignments import Assignments
+from core.modules.tasks.models.task import Task
 
 FIRST_STORY_ID = 1
 
@@ -30,9 +32,6 @@ def assert_holders_are_assignees(story: Story) -> None:
             story.expect_rows(assignees.get(task["id"], []) == [holder_id], detail=f"task {task['id']} is held by {holder_id} and assigned to {assignees.get(task['id'], [])}")
 
 
-def assert_pivot_equals_column(story: Story) -> None:
-    """While the column delegated_to exists, the assignment of every task equals it. Deleted in phase 9 of plan 1104."""
-    assignees = task_assignees(story)
-    for task in (task for task in rows(story, "task list") if task["id"] >= FIRST_STORY_ID):
-        expected = [task["delegated_to"]] if task["delegated_to"] is not None else []
-        story.expect_rows(assignees.get(task["id"], []) == expected, detail=f"task {task['id']} is delegated to {task['delegated_to']} and assigned to {assignees.get(task['id'], [])}")
+
+def assignee_of(story: Story, task: Task) -> int | None:
+    return story.container.get(Assignments).actor(task)

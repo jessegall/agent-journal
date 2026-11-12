@@ -4,7 +4,7 @@ from core.modules.tasks.support.tasks_changed_together import TasksChangedTogeth
 
 
 @dataclass(frozen=True)
-class ClearDelegatedTasks(Command[None], TasksChangedTogether):
-    """Clears the open and started tasks delegated to an agent."""
+class UnassignAgentTasks(Command[None], TasksChangedTogether):
+    """Takes the open and started tasks assigned to an agent away from it."""
 
     agent_id: int

@@ -26,7 +26,8 @@ def delegated_cards(story) -> list[dict[str, object]]:
 
 
 def expect_reserved(story, task: int) -> None:
-    story.expect_text(f"task show {task}", f"delegated_to: {story.agent.id}", "state: open", actor=story.agent)
+    story.expect_text(f"task show {task}", "state: open", actor=story.agent)
+    story.expect_text(f"task info {task}", f"assigned to: agent {story.agent.id}", actor=story.agent)
 
 
 def test_a_main_agent_claims_an_open_task_ahead_of_time(new_story):
@@ -56,7 +57,7 @@ def test_an_open_task_stays_with_auto_mode_while_a_reservation_ends_when_the_mai
     story.expect_success(f"task assign 1 --to {agent_number(story, story.agent.id)}", actor=story.agent)
     expect_value(assigned_task(story).id, 1)
     story.expect_success("task start 1", actor=story.agent)
-    story.expect_absent("task show 1", "delegated_to", actor=story.agent)
+    story.expect_text("task info 1", "assigned to: nobody", actor=story.agent)
     story.expect_text("task show 1", f"holder_id: {story.agent.id}", actor=story.agent)
 
 
@@ -64,14 +65,14 @@ def test_a_main_agent_that_writes_no_code_cannot_have_a_task_reserved(new_story)
     story = new_story(fixture=OpenTaskBuilder)
     story.expect_success(f"setting set {WRITES_CODE} off --environment main")
     story.expect_refusal(f"task assign 1 --to {agent_number(story, story.agent.id)}", "task 1 goes to a worker", actor=story.agent)
-    story.expect_absent("task show 1", "delegated_to", actor=story.agent)
+    story.expect_text("task info 1", "assigned to: nobody", actor=story.agent)
 
 
 def test_a_reserved_task_is_not_sent_to_a_worker(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.expect_success(f"task assign 1 --to {agent_number(story, story.agent.id)}", actor=story.agent)
-    story.expect_refusal("worker dispatch --test-command python=pytest --model sonnet 1", f"task 1 is reserved for agent {story.agent.id}", actor=story.agent)
+    story.expect_refusal("worker dispatch --test-command python=pytest --model sonnet 1", "task 1 is assigned to main agent", actor=story.agent)
     expect_reserved(story, 1)
 
 

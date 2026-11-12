@@ -78,19 +78,18 @@ from core.modules.tasks.commands.task_counts.task_counts_subcommand import TaskC
 from core.modules.tasks.commands.task_inspect.task_inspect_subcommand import TaskInspectSubcommand
 from core.modules.tasks.commands.task_info.task_info_subcommand import TaskInfoSubcommand
 from core.modules.tasks.commands.cancel_task.cancel_task import CancelTask
-from core.modules.tasks.commands.clear_delegated_tasks.clear_delegated_tasks_handler import ClearDelegatedTasksHandler
+from core.modules.tasks.commands.unassign_agent_tasks.unassign_agent_tasks_handler import UnassignAgentTasksHandler
 from core.modules.tasks.commands.release_task.release_task import ReleaseTask
 from core.modules.tasks.commands.close_task.close_task import CloseTask
 from core.modules.tasks.commands.make_task_dependency.make_task_dependency_subcommand import MakeTaskDependencySubcommand
 from core.modules.tasks.commands.remove_task_dependency.remove_task_dependency_subcommand import RemoveTaskDependencySubcommand
 from core.modules.tasks.commands.record_task_independence.record_task_independence_subcommand import RecordTaskIndependenceSubcommand
 from core.modules.tasks.guards.dependencies_closed_guard import DependenciesClosedGuard
-from core.modules.tasks.listeners.task_assignment_copy_listener import TaskAssignmentCopyListener
 from core.modules.tasks.listeners.assign_on_start_listener import AssignOnStartListener
 from core.modules.tasks.migrations.m025_task_assignments import TaskAssignmentsMigration
 from core.modules.tasks.guards.visible_dependency_guard import VisibleDependencyGuard
 from core.modules.tasks.guards.user_wait_guard import UserWaitGuard
-from core.modules.tasks.guards.reserved_task_guard import ReservedTaskGuard
+from core.modules.tasks.guards.assigned_task_start_guard import AssignedTaskStartGuard
 from core.modules.tasks.listeners.dependency_remover_listener import DependencyRemoverListener
 from core.modules.tasks.rules.unlogged_write_rule import UnloggedWriteRule
 from core.modules.tasks.rules.log_request_rule import LogRequestRule
@@ -156,16 +155,16 @@ class TasksModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking", "journal.core.settings", "journal.core.assignments"]
     bindings = {AgentTaskReads: RowAgentTaskReads}
     skills = [SkillDeclaration("journal-tasks", "Use tasks to declare, log and finish the current work; read it before the first task command of a session", keywords=("task", "tasks", "todo"), commands=["task"])]
-    models = [ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(TaskTag, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), ModelDeclaration(TaskWait, excluded_subcommands=["make", "edit", "delete"]),
+    models = [ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS, excluded_subcommands=["block", "drop_hold"]), ModelDeclaration(TaskTag, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), ModelDeclaration(TaskWait, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(TaskBlockRenewal, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(TaskRead, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
     migrations = [TaskAssignmentsMigration, TaskFocusTimeMigration, TaskHolderDelegationMigration, BlockWaitingTasksMigration, TaskLogImportantMigration, TaskReadSessionMigration, PendingWaitsIndexMigration, OpenTaskEdgeIndexMigration, ClosedTaskIndexMigration, TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration, DelegatedTaskIndexMigration, TaskReadsTableMigration, TaskBlockRenewalsMigration, TaskClosedCursorIndexMigration, AllEnvironmentsTaskStateIndexMigration, TaskComplexityMigration, TaskTagsMigration, TaskEnvironmentIdIndexMigration, TaskIndependenceReasonMigration]
     subcommands = [ChooseNextTaskSubcommand, ChooseTaskFocusSubcommand, TagTaskSubcommand, RemoveTaskTagSubcommand, TaskTagsSubcommand, TaskListSubcommand, EditTaskSubcommand, AssignTaskSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskCountsSubcommand, TaskInspectSubcommand, TaskInfoSubcommand, MakeTaskLogSubcommand, ReadTaskBriefSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand, RecordTaskIndependenceSubcommand]
-    handlers = [ChooseNextTaskHandler, ChooseTaskFocusHandler, RecordTaskIndependenceHandler, TagTaskHandler, RemoveTaskTagHandler, RecordTaskReadHandler, AssignTaskHandler, ClearDelegatedTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
+    handlers = [ChooseNextTaskHandler, ChooseTaskFocusHandler, RecordTaskIndependenceHandler, TagTaskHandler, RemoveTaskTagHandler, RecordTaskReadHandler, AssignTaskHandler, UnassignAgentTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
     moves = [TasksMove]
-    guards = [TaskTagAccessGuard, TaskTagWordGuard, TaskEditAccessGuard, VisibleDependencyGuard, DependenciesClosedGuard, UserWaitGuard, ReservedTaskGuard]
+    guards = [TaskTagAccessGuard, TaskTagWordGuard, TaskEditAccessGuard, VisibleDependencyGuard, DependenciesClosedGuard, UserWaitGuard, AssignedTaskStartGuard]
     views = [TaskTagWord, OpenDependency, TaskCard, TaskEdge, EnvironmentCard, TaskInspectionRow, TaskBlockReview]
-    listeners = [TaskAssignmentCopyListener, AssignOnStartListener, TaskTagRemoverListener, TaskDependencyWaitListener, WaitingTaskListener, TaskRowsListener, TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener, StoppedAgentTasksListener]
+    listeners = [AssignOnStartListener, TaskTagRemoverListener, TaskDependencyWaitListener, WaitingTaskListener, TaskRowsListener, TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener, StoppedAgentTasksListener]
     marks = TASK_MARKS
     docks = TASK_DOCKS
     driver_rules = [TaskFiledRule, TaskStartRule, TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, AutoModeTaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]

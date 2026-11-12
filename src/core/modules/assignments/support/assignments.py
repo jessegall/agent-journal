@@ -83,7 +83,13 @@ class Assignments:
         actor_id = self.actor(row)
         if actor_id is None:
             return None
+        return self.agent_row(actor_id)
+
+    def agent_row(self, actor_id: int) -> Agent | None:
         return self.kept.read("agents", lambda: self.queries.query(Agent).filter(id=actor_id).first(), "id = ?", [actor_id], name="assignments.assigned_agent")
+
+    def actor_record(self, actor_id: int) -> ActorRecord | None:
+        return self.kept.read("actors", lambda: self.queries.query(ActorRecord).filter(id=actor_id).first(), "id = ?", [actor_id], name="assignments.actor_record")
 
     def assign(self, row: Assignable, actor_id: int, context: Context, *, cascade: bool = True, override: bool = False) -> Cascade:
         self.require_working_actor(actor_id)
@@ -205,11 +211,11 @@ class Assignments:
         return self.kept.read("actors", self.queries.query(ActorRecord).filter(id=actor_id).exists, "id = ?", [actor_id], name="assignments.actor_exists")
 
     def require_working_actor(self, actor_id: int) -> None:
-        actor = self.queries.query(ActorRecord).filter(id=actor_id).first()
+        actor = self.actor_record(actor_id)
         if actor is None:
             raise UnknownActorRefusal(actor_id)
         if not actor.type.can_receive_work:
             raise ActorTypeRefusal(actor_id, actor.type)
-        agent = self.queries.query(Agent).filter(id=actor_id).first() if actor.type is ActorType.AGENT else None
+        agent = self.agent_row(actor_id) if actor.type is ActorType.AGENT else None
         if agent is not None and agent.ended_at is not None:
             raise EndedAgentRefusal(agent.number)

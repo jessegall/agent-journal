@@ -6,6 +6,7 @@ from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.assignments.support.assignments import Assignments
 from core.modules.plans.commands.assign_plan.assign_plan import AssignPlan
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
@@ -27,8 +28,10 @@ class AssignPlanHandler(Handler[AssignPlan, Plan]):
 
     command = AssignPlan
 
-    def __init__(self, queries: Queries, repository: Repository, outlines: PlanOutlines, agents: AgentRows, assignees: TaskAssignees, waits: DependencyWaits) -> None:
+    def __init__(self, queries: Queries, repository: Repository, outlines: PlanOutlines, agents: AgentRows, assignees: TaskAssignees, waits: DependencyWaits,
+                 task_assignments: Assignments) -> None:
         self.queries, self.repository, self.outlines, self.agents, self.assignees, self.waits = queries, repository, outlines, agents, assignees, waits
+        self.task_assignments = task_assignments
 
     def handle(self, command: AssignPlan, context: Context) -> Plan:
         self.agents.require_main(context.actor, "assign a plan")
@@ -46,8 +49,12 @@ class AssignPlanHandler(Handler[AssignPlan, Plan]):
     def move_tasks(self, task_ids: tuple[int, ...], agent_id: int | None, context: Context) -> None:
         if not task_ids:
             return
-        for task in self.queries.query(Task).find_many(task_ids):
-            self.repository.update(task, context, delegated_to=agent_id)
+        tasks = tuple(self.queries.query(Task).find_many(task_ids))
+        if agent_id is None:
+            self.task_assignments.unassign_rows(tasks, context)
+        else:
+            for task in tasks:
+                self.task_assignments.assign(task, agent_id, context, cascade=False)
         self.waits.update_tasks(task_ids, context)
 
     def assignee(self, command: AssignPlan) -> Agent:

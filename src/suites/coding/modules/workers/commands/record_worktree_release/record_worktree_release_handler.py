@@ -1,6 +1,5 @@
 from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS, TaskQuery
 from core.modules.assignments.support.assignments import Assignments
-from dataclasses import replace
 
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -47,14 +46,13 @@ class RecordWorktreeReleaseHandler(Handler[RecordWorktreeRelease, Worktree]):
             changed_ids.append(unproved_task.id)
         waiting = tuple(worker_tasks.matching(Among("state", WAITING_STATES)).all_rows(TASK_PAGE_ROWS))
         self.assignments.unassign_rows(waiting, context)
-        for delegated in waiting:
-            self.repository.update(delegated, context, delegated_to=None)
-            changed_ids.append(delegated.id)
+        changed_ids.extend(waiting_task.id for waiting_task in waiting)
         self.waits.update_tasks(changed_ids, context)
         return abandoned
 
     def release_task(self, task: Task, reason: str, context: Context) -> None:
-        self.repository.save_change(task, replace(task.release(context.timestamp, context.actor, reason), delegated_to=None), context)
+        self.repository.save_change(task, task.release(context.timestamp, context.actor, reason), context)
+        self.assignments.unassign(task, context)
 
     def has_all_proofs_checked(self, task: Task, worktree: Worktree) -> bool:
         proofs = tuple(self.queries.query(Proof).filter(task_id=task.id, worktree_id=worktree.id).all_rows())

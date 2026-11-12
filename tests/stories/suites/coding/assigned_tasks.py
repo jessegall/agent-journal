@@ -1,3 +1,4 @@
+from tests.stories.core.modules.tasks.support.holder_assignee_check import assignee_of
 from tests.stories.core.support.agent_labels import agent_number
 from engine.query.queries import Queries
 from core.modules.tasks.models.enums.task_state import TaskState
@@ -40,4 +41,4 @@ def test_a_released_task_that_was_assigned_to_the_main_agent_stays_open(new_stor
 
 def test_assigning_a_task_to_the_main_agent_reserves_it_for_that_agent_only(new_story):
     story = new_story(fixture=AssignedLaterTask)
-    story.expect_rows(task_row(story, LATER).delegated_to == story.agent.id)
+    story.expect_rows(assignee_of(story, task_row(story, LATER)) == story.agent.id)
