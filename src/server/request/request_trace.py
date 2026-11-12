@@ -19,11 +19,11 @@ from core.modules.developer.support.hook_request_log import HookRequestLog
 from engine.enums.hook_answer import HookAnswer
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING, HOOK_REQUEST_LOG_SIZE_SETTING
 from engine.setting.setting_values import SettingValues
-from server.request.request_log_entry import RequestLogEntry
+from server.request.request_trace_entry import RequestTraceEntry
 from server.viewer.read_attribution import ReadAttribution
 from server.viewer.viewer_request_record import ViewerRequestRecord
 from server.viewer.window_priorities import WindowPriorities
-from server.request.request_log_settings import RequestLogSettings
+from server.request.request_trace_settings import RequestTraceSettings
 
 SETTINGS_REFRESH_SECONDS = 5.0
 
@@ -32,8 +32,12 @@ def is_database_busy(error: sqlite3.Error) -> bool:
     return getattr(error, "sqlite_errorcode", 0) & 0xff in (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED)
 
 
-class RequestLog:
-    """Records requests without waiting for a database writer; a request counts as attempted and as recorded or dropped under one hold of the lock, so the status never shows a request half counted."""
+class RequestTrace:
+    """The developer's trace of the requests the server answers: the body, timing and attribution of each hook,
+    command and viewer request, kept in the hook requests table while the developer request log setting is on. The
+    one request log of every run is RequestLog of the processes module; this trace adds the detail a developer reads.
+    Records requests without waiting for a database writer; a request counts as attempted and as recorded or dropped
+    under one hold of the lock, so the status never shows a request half counted."""
 
     def __init__(self, home: JournalHome, clock: Clock) -> None:
         self.home = home
@@ -42,7 +46,7 @@ class RequestLog:
         self.epoch = str(uuid4())
         self.lock = RLock()
         self.container: Container | None = None
-        self.configuration = RequestLogSettings()
+        self.configuration = RequestTraceSettings()
         self.last_refreshed_at: float | None = None
         self.stored_rows = 0
         self.recording_ms = 0.0
@@ -73,7 +77,7 @@ class RequestLog:
         settings = container.get(SettingValues).project
         with settings.keep_rows():
             enabled = settings.flag(HOOK_REQUEST_LOG_SETTING)
-            configuration = RequestLogSettings(enabled, max(settings.number(HOOK_REQUEST_LOG_SIZE_SETTING), 1) if enabled else 0)
+            configuration = RequestTraceSettings(enabled, max(settings.number(HOOK_REQUEST_LOG_SIZE_SETTING), 1) if enabled else 0)
         stored_rows = container.get(HookRequestsTable).kept_row_count()
         with self.lock:
             self.configuration, self.stored_rows = configuration, stored_rows
@@ -103,7 +107,7 @@ class RequestLog:
     def record_viewers(self, records: Sequence[ViewerRequestRecord]) -> None:
         self.save_many([self.viewer_entry(record) for record in records])
 
-    def viewer_entry(self, record: ViewerRequestRecord) -> RequestLogEntry:
+    def viewer_entry(self, record: ViewerRequestRecord) -> RequestTraceEntry:
         request, http = record.request, record.http
         attribution = {**asdict(request.attribution), "schema": 1, "request_id": http.request_id,
                        "batch_id": http.batch_id, "child_index": record.child_index, "person_id": http.person_id,
@@ -118,7 +122,7 @@ class RequestLog:
         if not attribution["command_id"]:
             attribution["command_id"] = f"{http.request_id}:{record.child_index}"
         body = {"event": " ".join(request.line), "attribution": attribution}
-        return RequestLogEntry(request.line, "viewer", record.duration_ms, record.queued_ms, record.code, body, record.child_index == 0)
+        return RequestTraceEntry(request.line, "viewer", record.duration_ms, record.queued_ms, record.code, body, record.child_index == 0)
 
     def complete_reads(self, person_id: int, receipts: tuple[ReadAttribution, ...]) -> None:
         started_at = perf_counter()
@@ -142,7 +146,7 @@ class RequestLog:
                 self.recording_ms += (perf_counter() - started_at) * 1000
 
     def record(self, line: list[str], role: str, duration_ms: float, queued_ms: float, code: int) -> None:
-        self.save(RequestLogEntry(line, role, duration_ms, queued_ms, code, {"event": " ".join(line)}))
+        self.save(RequestTraceEntry(line, role, duration_ms, queued_ms, code, {"event": " ".join(line)}))
 
     def record_hook(self, record: Callable[[], bool]) -> None:
         started_at = perf_counter()
@@ -158,10 +162,10 @@ class RequestLog:
             finally:
                 self.recording_ms += (perf_counter() - started_at) * 1000
 
-    def save(self, entry: RequestLogEntry) -> None:
+    def save(self, entry: RequestTraceEntry) -> None:
         self.save_many([entry])
 
-    def save_many(self, entries: Sequence[RequestLogEntry]) -> None:
+    def save_many(self, entries: Sequence[RequestTraceEntry]) -> None:
         entries = [entry for entry in entries if not self.priorities.is_unqueued(entry.line)]
         if not entries:
             return

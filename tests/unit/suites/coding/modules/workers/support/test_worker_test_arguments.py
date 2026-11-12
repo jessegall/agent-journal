@@ -29,3 +29,15 @@ def test_a_command_that_already_names_its_go_package_needs_no_file_beside_it():
 def test_a_command_that_names_no_package_still_needs_one_in_its_arguments():
     with pytest.raises(Refusal):
         WorkerTestArguments.check([], ["go", "-C", "tools/journal", "test", "-count=1"])
+
+
+@pytest.mark.parametrize("pattern", [".", ".*", "^", "^.*$", ""])
+def test_a_go_pattern_that_matches_every_test_is_the_whole_suite(pattern):
+    with pytest.raises(Refusal, match="name each test file"):
+        WorkerTestArguments.check(["-run", pattern], ["go", "test", "-run", pattern])
+    with pytest.raises(Refusal, match="name each test file"):
+        WorkerTestArguments.check([f"-run={pattern}"], ["go", "test", f"-run={pattern}"])
+
+
+def test_a_go_pattern_that_names_a_test_passes():
+    assert WorkerTestArguments.check(["-run", "^TestLaunch$"], ["go", "test", "-run", "^TestLaunch$"]) is None

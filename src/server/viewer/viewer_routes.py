@@ -18,7 +18,7 @@ from server.viewer.skills_route import SkillsRoute
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.waiting_route import WaitingRoute
 from server.viewer.windows_route import WindowsRoute
-from server.request.request_log import RequestLog
+from server.request.request_trace import RequestTrace
 
 
 class ViewerRoutes:
@@ -29,9 +29,9 @@ class ViewerRoutes:
 
     def __init__(self, home: JournalHome, listener_thread: ListenerThread, login: ViewerLogin, reported: ReportedFindings, queue: ServerQueue, clock: Clock) -> None:
         self.queue, self.clock = queue, clock
-        self.request_log = RequestLog(home, clock)
-        self.priorities = self.request_log.priorities
-        self.line_route, self.event_stream = LineRoute(home, listener_thread, reported, queue, self.request_log.completed), EventStream(home)
+        self.request_trace = RequestTrace(home, clock)
+        self.priorities = self.request_trace.priorities
+        self.line_route, self.event_stream = LineRoute(home, listener_thread, reported, queue, self.request_trace.completed), EventStream(home)
         self.window_data = WindowDataRoute(self.priorities, self.line_route)
         self.module_files, self.windows_route = ModuleFiles(home), WindowsRoute(home)
         self.buttons_route = ButtonsRoute(home)

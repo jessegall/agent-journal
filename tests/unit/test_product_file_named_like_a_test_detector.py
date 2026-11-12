@@ -9,12 +9,12 @@ ROOT = Path(__file__).resolve().parents[2]
 CUSTOM = ROOT / ".commandments" / "custom"
 RULE = "architecture_core_product_file_named_like_a_test"
 SAMPLES = CUSTOM / "samples" / "src" / "shop"
-SAMPLE_FILES = ("test_grant.py", "environment_grant.py")
+SAMPLE_FILES = ("test_grant.py", "test_limits.py", "environment_grant.py")
 
 
 def test_the_detector_exists_is_registered_and_its_samples_exist():
     declared = json.loads((CUSTOM / f"{RULE}.json").read_text())
-    assert declared["engine"] == "python" and declared["find"]["select"] == "import"
+    assert declared["engine"] == "python" and declared["find"]["select"] == "kind:Module"
     assert RULE in json.loads((CUSTOM.parent / "config.json").read_text())["detectors"]
     assert all((SAMPLES / name).is_file() for name in SAMPLE_FILES)
 

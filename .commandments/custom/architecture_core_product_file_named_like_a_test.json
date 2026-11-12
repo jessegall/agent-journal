@@ -2,7 +2,7 @@
     "$schema": "../rule.schema.json",
     "engine": "python",
     "find": {
-        "select": "import",
+        "select": "kind:Module",
         "where": [
             {
                 "fileMatches": "(^|/)src/(.*/)?test_[^/]*\\.py$"

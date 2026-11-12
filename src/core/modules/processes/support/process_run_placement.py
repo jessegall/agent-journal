@@ -34,7 +34,7 @@ class ProcessRunPlacement(RunPlacement):
         if owner is None or owner.environment_id is None:
             return PlacedRun(request, None, False)
         if request.kind is not ProcessKind.MERGE:
-            return PlacedRun(request, None, False, owner.stored_agent_id, owner.environment_id)
+            return PlacedRun(request, None, False, owner.stored_agent_id, owner.environment_id, owner.is_main)
         agent_id = owner.stored_agent_id if owner.stored_agent_id is not None else self.main_agent_id(owner.environment_id)
         if agent_id is None:
             return PlacedRun(request, None, True, None, owner.environment_id)

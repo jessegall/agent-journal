@@ -22,6 +22,7 @@ const KEYS = {
     "work-screen": {line: "setting-screen show work", events: ["setting.*"]},
     "tests-screen": {line: "setting-screen show tests", events: ["setting.*"]},
     "advanced-screen": {line: "setting-screen show advanced", events: ["setting.*"]},
+    "helper-types-screen": {line: "setting-screen show helper-type", events: ["setting.*"]},
     find: {line: "setting-screen index", events: ["setting.*"]},
     limits: {line: "agent limits", loading: "requested", events: ["agent.*", "setting.*"]},
     "type-screen": {line: "setting-screen show helper-type", loading: "requested", arguments: ["type"], events: ["setting.*"]},
@@ -39,7 +40,9 @@ export const SCREENS = () => ({
         node(`${CONTEXT}-on`, "flag", true, {section: "Context size"}),
         node(`${CONTEXT}-tokens`, "number", 400000, {section: "Context size", rule: RULE}),
         node(`${CONTEXT}-kinds`, "list", ["worker:200000"], {section: "Context size", component: "keyed-cap-table"}),
-        node(`${CONTEXT}-profiles`, "list", ["journal-researcher:150000"], {section: "Context size", component: "three-way-cap"}),
+    ]},
+    "helper-type": {screen: "helper-type", revision: "h1", nodes: [
+        node(`${CONTEXT}-profiles`, "list", ["journal-researcher:150000"], {section: "Context cap", component: "three-way-cap"}),
     ]},
 });
 
@@ -98,7 +101,7 @@ export async function mountAgentSettings({readOnly = false, unreadable = false, 
         readOnly,
         read: async (line) => {
             reads.push(line);
-            if (line.startsWith("setting-screen show helper-type")) return {ok: true, value: types[line.split("--type ")[1].split(" ")[0]]};
+            if (line.startsWith("setting-screen show helper-type") && line.includes("--type ")) return {ok: true, value: types[line.split("--type ")[1].split(" ")[0]]};
             if (line.startsWith("setting-screen show")) return {ok: true, value: answers[line.split(" ")[2]]};
             if (line.startsWith("work-settings show")) return {ok: true, value: WORK()};
             if (line.startsWith("setting-screen index")) return {ok: true, value: {rows: INDEX()}};

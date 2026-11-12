@@ -28,7 +28,7 @@ class RequestLogImport:
         kept: list[RequestLogEntry] = []
         for index, group in enumerate(groups):
             kept.extend(self.written_group(container, group))
-            log.left(tuple(entry for later in groups[index + 1:] for entry in later))
+            log.replace_taken(tuple(entry for later in groups[index + 1:] for entry in later))
         log.written(tuple(kept))
 
     @staticmethod

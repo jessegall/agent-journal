@@ -14,7 +14,6 @@ from core.modules.environments.models.environment import Environment
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.support.plugin_event import PluginEvent
 from core.modules.plugins.support.plugin_event_answer import PluginEventAnswer
-from core.modules.plugins.support.plugin_queued_judge import PluginQueuedJudge
 from core.modules.plugins.support.plugin_run import PluginRun
 from core.modules.plugins.support.plugin_run_check import PluginRunCheck
 from core.modules.plugins.support.plugin_run_request import PluginRunRequest
@@ -30,9 +29,8 @@ FAILING_RETRY_SECONDS = 300
 class PluginEventRunner:
     """Runs plugin guard and listen scripts and records failures and skipped runs."""
 
-    def __init__(self, queries: Queries, runnable: RunnablePlugins, runs: PluginRun, clock: Clock, bus: Bus, actors: ModuleActors, scripts: PluginScriptProcesses, system_log: SystemLogWriter, judge: PluginQueuedJudge) -> None:
+    def __init__(self, queries: Queries, runnable: RunnablePlugins, runs: PluginRun, clock: Clock, bus: Bus, actors: ModuleActors, scripts: PluginScriptProcesses, system_log: SystemLogWriter) -> None:
         self.queries, self.runnable, self.runs, self.clock, self.bus, self.actors, self.scripts, self.system_log = queries, runnable, runs, clock, bus, actors, scripts, system_log
-        self.judge = judge
 
     def answer(self, subscription: PluginSubscription, form: EventForm, key: str, data: Mapping[str, object], environment_id: int | None, agent_id: int | None, wait_callback: Callable[[], None]) -> PluginEventAnswer | None:
         plugin = self.queries.query(Plugin).filter(id=subscription.plugin_id).first()
@@ -47,14 +45,12 @@ class PluginEventRunner:
             return None
         environment = self.queries.query(Environment).find(environment_id).name if environment_id is not None else ""
         request = PluginRunRequest(check.runnable, PluginEvent(key, data), form, subscription.limit_ms, location, environment, self.clock.timestamp(), agent_id, subscription.script, wait_callback=wait_callback)
-        outcome = self.runs.recorded_run(request)
+        outcome = self.runs.recorded_run(request, environment_id)
         if outcome.is_late:
             self.note_late(plugin, form, key, subscription.limit_ms)
-        answer = outcome.answer
-        if answer is None:
+        if outcome.answer is None:
             return None
-        settled = self.judge.settled(answer, plugin.name, agent_id, environment_id) if form is EventForm.GUARD else answer
-        return PluginEventAnswer(plugin.name, plugin.id, settled, subscription.allows_skip)
+        return PluginEventAnswer(plugin.name, plugin.id, outcome.answer, subscription.allows_skip)
 
     def note_late(self, plugin: Plugin, form: EventForm, key: str, limit_ms: int | None) -> None:
         self.system_log.write(LogLevel.WARNING, f"Plugin {plugin.name} did not answer its {form.value} of {key} within {limit_ms} ms, so the change went through unjudged.")

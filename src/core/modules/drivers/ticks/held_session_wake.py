@@ -12,14 +12,16 @@ from core.modules.drivers.commands.send_journal_started_line.send_journal_starte
 
 class HeldSessionWake:
     """Once the server is ready again, wakes every agent whose hook the journal held while it started or updated,
-    also a hook held after the booting round."""
+    also a hook held after the booting round: a round moves the held sessions aside and the next round wakes them,
+    so a session held during the move is woken too."""
 
     def __call__(self, container: Container) -> None:
         files = ServerFiles(container.get(JournalHome))
         if not files.phase().runs_programs:
             return
-        sessions = files.released_sessions()
-        if not sessions:
-            return
-        for agent in container.get(Queries).query(Agent).matching(Among("session", sessions)).matching(IsNull("retired_at")).all_rows():
-            container.get(Bus).run(SendJournalStartedLine(agent.id), Actor.core(), environment_id=agent.environment_id)
+        held = files.held_sessions()
+        sessions = tuple(dict.fromkeys(held.taken_lines()))
+        if sessions:
+            for agent in container.get(Queries).query(Agent).matching(Among("session", sessions)).matching(IsNull("retired_at")).all_rows():
+                container.get(Bus).run(SendJournalStartedLine(agent.id), Actor.core(), environment_id=agent.environment_id)
+        held.move_aside()

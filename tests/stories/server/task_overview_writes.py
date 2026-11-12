@@ -45,7 +45,7 @@ def test_six_worker_overviews_leave_hook_and_viewer_writes_free(new_story, monke
                 reply = request_answer(server.socket_path, "POST", "/hook", HookSamples.edit("cart.py").body)
                 story.expect_rows(reply.status == 200, "unchecked" not in reply.text, "database is locked" not in reply.text)
                 server.viewer_line_value(cookie, {"window": "tasks.tasks", "environment": "main", "line": ["task", "list"]})
-                story.expect_rows(server.context.request_log.counts["dropped"] == 0)
+                story.expect_rows(server.context.request_trace.counts["dropped"] == 0)
             finally:
                 release.set()
             answers = [future.result() for future in futures]
