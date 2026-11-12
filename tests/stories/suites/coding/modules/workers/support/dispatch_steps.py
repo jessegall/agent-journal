@@ -19,6 +19,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.memory_git.git_choice import REAL_GIT
 from tests.stories.suites.coding.modules.workers.support.memory_git.memory_repository import MemoryRepository
 from tests.stories.suites.coding.modules.workers.support.memory_git.memory_worktree_git import MemoryWorktreeGit
+from engine.process.process_executor import ProcessExecutor
 
 DISPATCH = "worker dispatch --test-command python=pytest --model sonnet 1"
 CART_CHANGE = "TOTAL = 1\n"
@@ -42,7 +43,7 @@ def repository_environment(story: Story, branch: str = ENVIRONMENT_BRANCH, real_
 
 def memory_repository(story: Story) -> MemoryRepository:
     repository = MemoryRepository.sample(repository_folder(story))
-    story.bind(WorktreeGit, MemoryWorktreeGit(story.container.get(WorkerFolderRuns), repository.history))
+    story.bind(WorktreeGit, MemoryWorktreeGit(story.container.get(WorkerFolderRuns), story.container.get(ProcessExecutor), repository.history))
     checked: dict[type, bool] = {}
     for class_type in [key for key, instance in story.container.instances.items() if uses_git(type(instance), checked)]:
         del story.container.instances[class_type]

@@ -42,6 +42,8 @@ from tests.stories.suites.coding.modules.workers.test_queue import PROOF, ended,
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
 from tests.stories.core.support.agent_labels import agent_label
+from tests.stories.core.modules.helpers.helper_jobs import helper_agent
+from tests.stories.suites.coding.modules.workers.quiet_helpers import StartedMerger
 
 
 
@@ -503,8 +505,8 @@ def test_a_worker_the_merger_passes_on_is_named_to_the_main_agent_with_its_merge
 
 
 def test_the_merger_started_by_an_ended_main_session_tells_the_main_agent_that_runs_now(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    merger = Actor(story.new_row_id(f"agent start s-merger claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
+    story = new_story(fixture=StartedMerger)
+    merger = Actor(helper_agent(story).id, ActorType.AGENT)
     story.expect_success(f"agent end {story.agent.id}", actor=story.user)
     running_main = Actor(story.new_row_id("agent start s-new-main claude main --environment main"), ActorType.AGENT)
     story.expect_success('merger tell "Worker 4 asks which reader to keep" --tried "Read the brief" --option "The first" --option "The second" --recommend "The first"', actor=merger)
