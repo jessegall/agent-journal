@@ -12,6 +12,7 @@ from engine.file.kept_bytes import KeptBytes
 from engine.file.private_folders import PrivateFolders
 from engine.journal.journal_home import JournalHome
 from engine.provider.program_settings import ProgramSettings, SettingsFile
+from engine.types.type_guards import is_mapping
 
 DIGESTS_MODE = 0o600
 LOCK_NAME = ".lock"
@@ -46,7 +47,8 @@ class ProgramSettingsWriter:
     def recorded_digests(self) -> dict[str, str]:
         if not self.home.program_settings_digests.is_file():
             return {}
-        return json.loads(FileAccess.shared().read(self.home.program_settings_digests))
+        recorded = json.loads(FileAccess.shared().read(self.home.program_settings_digests))
+        return {str(path): str(digest) for path, digest in recorded.items()} if is_mapping(recorded) else {}
 
     @staticmethod
     def _folders(settings: ProgramSettings) -> tuple[Path, ...]:

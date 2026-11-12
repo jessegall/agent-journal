@@ -1,4 +1,3 @@
-import json
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from uuid import uuid4
@@ -13,13 +12,14 @@ from engine.provider.session_start import SessionStart
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.errors.refusal import Refusal
-from engine.types.type_guards import is_mapping, is_text_list
+from engine.types.type_guards import is_text_list
+from core.modules.agents.support.program_command_line import ProgramCommandLine
 
 FORMATS = ("lines", "json")
 FIRST_PROMPT = "[journal] the journal started this session: follow its opening lines"
 
 
-class ProgramCommandSubcommand(ReadSubcommand[list[str] | dict[str, object]]):
+class ProgramCommandSubcommand(ReadSubcommand[list[str] | ProgramCommandLine]):
     """`journal program command <program> <folder> --launch <name> [--resume <session>] [--ask-prompts]
     [--program-argument=<argument>]... [--format lines|json]`: the command line that starts the program in the
     folder, as its provider builds it, for the launcher: one argument a line, or with --format json the arguments
@@ -42,7 +42,7 @@ class ProgramCommandSubcommand(ReadSubcommand[list[str] | dict[str, object]]):
         parser.add_argument("--program-argument", action="append", default=[])
         parser.add_argument("--format", choices=FORMATS, default=FORMATS[0])
 
-    def read(self, arguments: Namespace, caller: Caller) -> list[str] | dict[str, object]:
+    def read(self, arguments: Namespace, caller: Caller) -> list[str] | ProgramCommandLine:
         provider = self.providers.provider(arguments.program)
         variables = dict(provider.launch_variables(self.home))
         if variables and arguments.format == FORMATS[0]:
@@ -57,10 +57,10 @@ class ProgramCommandSubcommand(ReadSubcommand[list[str] | dict[str, object]]):
         command_arguments = list(provider.session_command(launch).arguments)
         if arguments.format == FORMATS[0]:
             return command_arguments
-        return {"arguments": command_arguments, "variables": variables}
+        return ProgramCommandLine(tuple(command_arguments), variables)
 
     def write_output(self, value: object, output: Output) -> None:
-        if is_mapping(value):
-            output.line(json.dumps(value))
+        if isinstance(value, ProgramCommandLine):
+            output.line(value.json())
             return
         output.line("\n".join(value) if is_text_list(value) else str(value))

@@ -1,9 +1,7 @@
 from engine.file.file_access import FileAccess
 from engine.file.versions.file_version import FileVersion
 import json
-from dataclasses import replace
 import shutil
-from dataclasses import replace
 from collections.abc import Sequence
 from collections.abc import Mapping
 from pathlib import Path
@@ -77,10 +75,10 @@ class StatusFiles:
     def reported(path: Path) -> SessionStatus:
         try:
             version = FileAccess.shared().version(path)
-            return replace(StatusFiles.kept_status(path, version), read_at=version.modified_timestamp())
+            return StatusFiles.kept_status(path, version)
         except (FileNotFoundError, json.JSONDecodeError):
             return SessionStatus()
 
     @staticmethod
     def kept_status(path: Path, version: FileVersion) -> SessionStatus:
-        return replace(SessionStatus.reported(StatusFileFields.read(path, version)), read_at=version.modified_timestamp())
+        return SessionStatus.reported(StatusFileFields.read(path, version), version.modified_timestamp())

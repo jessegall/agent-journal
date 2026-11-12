@@ -65,20 +65,21 @@ class EventStream:
 
     @staticmethod
     def message(event: LoggedEvent, environment: str | None) -> str:
-        value: dict[str, object] = {"id": event.id, "event": event.event, "environment": environment, "row_table": event.row_table, "row_id": event.row_id, "actor_id": event.actor_id}
-        if environment is not None:
-            value["changed_ids"] = {name: [number for number in pair if type(number) is int] for name, pair in event.data.items() if name.endswith("_id")}
-        if event.row_table == "links":
-            sources: list[dict[str, object]] = []
-            for position in (0, 1):
-                model = event.data.get("source_model", (None, None))[position]
-                number = event.data.get("source_id", (None, None))[position]
-                source = {"model": model, "id": number}
-                if isinstance(model, str) and type(number) is int and number > 0 and source not in sources:
-                    sources.append(source)
-            if sources:
-                value.update(source_model=sources[-1]["model"], source_id=sources[-1]["id"], sources=sources)
-            link_types = tuple(dict.fromkeys(link_type for link_type in event.data.get("link_type", ()) if isinstance(link_type, str)))
-            if link_types:
-                value.update(link_type=link_types[-1], link_types=link_types)
+        changed_ids = {"changed_ids": {name: [number for number in pair if type(number) is int] for name, pair in event.data.items() if name.endswith("_id")}} if environment is not None else {}
+        links = EventStream.link_values(event) if event.row_table == "links" else {}
+        value = {"id": event.id, "event": event.event, "environment": environment, "row_table": event.row_table, "row_id": event.row_id, "actor_id": event.actor_id, **changed_ids, **links}
         return f"id: {event.id}\ndata: {json.dumps(value)}\n\n"
+
+    @staticmethod
+    def link_values(event: LoggedEvent) -> dict[str, object]:
+        sources: list[dict[str, object]] = []
+        for position in (0, 1):
+            model = event.data.get("source_model", (None, None))[position]
+            number = event.data.get("source_id", (None, None))[position]
+            source = {"model": model, "id": number}
+            if isinstance(model, str) and type(number) is int and number > 0 and source not in sources:
+                sources.append(source)
+        link_types = tuple(dict.fromkeys(link_type for link_type in event.data.get("link_type", ()) if isinstance(link_type, str)))
+        source_values = {"source_model": sources[-1]["model"], "source_id": sources[-1]["id"], "sources": sources} if sources else {}
+        link_type_values = {"link_type": link_types[-1], "link_types": link_types} if link_types else {}
+        return {**source_values, **link_type_values}

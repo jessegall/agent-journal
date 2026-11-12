@@ -4,6 +4,7 @@ from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_program import PluginProgram
+from core.modules.plugins.support.plugin_run_settings import PluginRunSettings
 from core.modules.plugins.support.plugin_settings import PluginSettings
 
 
@@ -15,9 +16,9 @@ class PluginAliasVariables:
     def __init__(self, queries: Queries, folders: PluginFolders, settings: PluginSettings, program: PluginProgram) -> None:
         self.queries, self.folders, self.settings, self.program = queries, folders, settings, program
 
-    def variables(self, plugin_id: int, environment_id: int | None) -> dict[str, str]:
+    def run_settings(self, plugin_id: int, environment_id: int | None) -> PluginRunSettings:
         plugin = self.queries.query(Plugin).find(plugin_id)
         environment = self.queries.query(Environment).find(environment_id).name if environment_id is not None else ""
         manifest = PluginManifest.read(self.folders.code(plugin.name))
         self.program.write_settings(plugin.name, self.settings.values(plugin, manifest, environment), environment)
-        return {"JOURNAL_ENV": environment, "JOURNAL_SETTINGS": str(self.program.settings_path(plugin.name, environment))}
+        return PluginRunSettings(environment, self.program.settings_path(plugin.name, environment))
