@@ -3,11 +3,8 @@ import hashlib
 from engine.command.context import Context
 from engine.errors.refusal import Refusal
 from engine.registry.setting_entry import SettingEntry
-from engine.enums.setting_scope import SettingScope
 from engine.enums.setting_type import SettingType
-from core.modules.settings.commands.set_setting.set_setting_handler import SetSettingHandler
-from core.modules.settings.commands.support.setting_store import SettingStore
-from core.modules.settings.support.checked_setting_value import CheckedSettingValue
+from core.modules.settings.support.setting_changes import SettingChanges
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 from core.modules.settings.support.setting_reader import SettingReader
 from suites.coding.modules.workers.support.coding_main_options import CONTROL_KEYS, CodingMainOptions
@@ -22,8 +19,8 @@ class WorkControls:
     any is written, and a change made from a reading that has since changed is refused, so a person
     never overwrites what they did not see."""
 
-    def __init__(self, options: CodingMainOptions, declared: SettingCatalogue, store: SettingStore, reader: SettingReader) -> None:
-        self.options, self.declared, self.store, self.reader = options, declared, store, reader
+    def __init__(self, options: CodingMainOptions, declared: SettingCatalogue, changes: SettingChanges, reader: SettingReader) -> None:
+        self.options, self.declared, self.changes, self.reader = options, declared, changes, reader
 
     def shown(self) -> WorkSettings:
         current = self.options.options()
@@ -46,10 +43,7 @@ class WorkControls:
     def apply(self, revision: str, changes: tuple[tuple[str, str], ...], context: Context) -> WorkSettings:
         if revision != self.shown().revision:
             raise Refusal("the work settings changed since you read them", "run journal work-settings show and apply again")
-        checked = [(self.work_control(key), text) for key, text in changes]
-        values = [(entry, CheckedSettingValue().value(entry, text)) for entry, text in checked]
-        for entry, value in values:
-            self.store.write(entry.key, value, SetSettingHandler.environment(entry, entry.scope == SettingScope.PROJECT.value, context.environment_id), context)
+        self.changes.apply([(self.work_control(key), text) for key, text in changes], context)
         return self.shown()
 
     def work_control(self, key: str) -> SettingEntry:

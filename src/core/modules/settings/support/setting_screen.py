@@ -7,6 +7,10 @@ from core.modules.settings.support.setting_catalogue import SettingCatalogue
 from core.modules.settings.support.setting_reader import SettingReader
 
 
+HELPER_TYPE_SCREEN = "helper-type"
+HELPERS_TAB = "Helpers"
+
+
 @dataclass(frozen=True)
 class ScreenNode:
     """One setting of a screen as a viewer draws it: what it is, which component draws it, where it sits, what
@@ -42,6 +46,19 @@ class ScreenReading:
         return hashlib.sha256(repr([(node.key, node.value, node.source) for node in nodes]).encode()).hexdigest()[:12]
 
 
+@dataclass(frozen=True)
+class ScreenIndexEntry:
+    """One screened setting as Find a setting lists it: what it is called, where it lives in words, and the screen
+    and section that open to it."""
+
+    key: str
+    title: str
+    description: str
+    path: str
+    screen: str
+    section: str
+
+
 class SettingScreen:
     """Reads the settings that declare one screen as nodes, grouped by section in the order the sections are
     first declared and by declaration order inside a section. A screen is only a name a setting declares."""
@@ -59,3 +76,14 @@ class SettingScreen:
         current = self.reader.current(entry.key)
         return ScreenNode(entry.key, entry.type, entry.drawn_by().value, entry.section, entry.parent, entry.title, entry.description, None if entry.secret else current.value,
                           None if entry.secret else entry.default, current.source, tuple(entry.choices), entry.rule, tuple(entry.required_settings), entry.person_set)
+
+    def index(self) -> tuple[ScreenIndexEntry, ...]:
+        return tuple(ScreenIndexEntry(entry.key, entry.title, entry.description, self.path(entry), entry.screen, entry.section)
+                     for entry in self.declared.all() if entry.screen and entry.type != REFERENCE_TYPE)
+
+    @staticmethod
+    def path(entry: SettingEntry) -> str:
+        tab, _, kind = entry.screen.partition(".")
+        if tab == HELPER_TYPE_SCREEN:
+            return f"{HELPERS_TAB} > {kind.replace('-', ' ').capitalize()}"
+        return f"{tab.capitalize()} > {entry.section}"
