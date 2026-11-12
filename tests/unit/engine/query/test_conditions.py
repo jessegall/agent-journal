@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from engine.database.database import Database
@@ -11,6 +13,7 @@ from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.less import Less
 from engine.query.conditions.maximum import Maximum
 from engine.query.conditions.metadata_equal import MetadataEqual
+from engine.query.conditions.metadata_list_differs import MetadataListDiffers
 from engine.query.errors.metadata_key_error import MetadataKeyError
 from engine.query.conditions.prefix import Prefix
 
@@ -42,6 +45,27 @@ def test_metadata_is_matched_by_module_and_key_on_a_stored_row(tmp_path):
     database.insert(Statement("INSERT INTO notes (metadata) VALUES (?)", ['{"reviews": {"asked": "no"}}']))
     condition = MetadataEqual("reviews", "asked", "yes").statement()
     assert [row["id"] for row in database.rows(Statement(f"SELECT id FROM notes WHERE {condition.sql}", condition.parameters))] == [1]
+
+
+REFUSED_RULES = {1: [{"rule": "skipped", "outcome": "refused"}],
+                 2: [{"rule": "skipped", "outcome": "refused"}, {"rule": "another", "outcome": "refused"}],
+                 3: [],
+                 4: [{"rule": "another", "outcome": "allowed"}, {"rule": "skipped", "outcome": "refused"}],
+                 5: [{"outcome": "refused"}]}
+
+
+def test_a_metadata_list_differs_when_an_element_of_its_kind_names_another_value_or_none_is_of_its_kind(tmp_path):
+    database = Database.opened(JournalHome(tmp_path))
+    database.update(Statement("CREATE TABLE calls (id INTEGER PRIMARY KEY, metadata TEXT NOT NULL) STRICT"))
+    for row_id, rules in REFUSED_RULES.items():
+        database.insert(Statement("INSERT INTO calls (id, metadata) VALUES (?, ?)", [row_id, json.dumps({"journal.core.drivers": {"rules": rules}})]))
+    condition = MetadataListDiffers("journal.core.drivers", "rules", "outcome", "refused", "rule", "skipped").statement()
+    assert [row["id"] for row in database.rows(Statement(f"SELECT id FROM calls WHERE {condition.sql} ORDER BY id", condition.parameters))] == [2, 3, 5]
+
+
+def test_a_metadata_list_named_with_anything_but_plain_names_is_refused():
+    with pytest.raises(MetadataKeyError):
+        MetadataListDiffers("journal.core.drivers", "rules) OR 1=1 --", "outcome", "refused", "rule", "skipped").statement()
 
 
 def test_metadata_named_with_anything_but_plain_titles_is_refused():

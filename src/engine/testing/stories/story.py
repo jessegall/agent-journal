@@ -97,7 +97,9 @@ class Story:
     @classmethod
     def opened(cls, home: JournalHome, state: StoryState) -> "Story":
         clock, process_table = ManualClock(), FixedProcessTable([])
-        return cls(home, story_container(home, clock, process_table), clock, process_table, state)
+        story = cls(home, story_container(home, clock, process_table), clock, process_table, state)
+        story.container.get(Database).cuts_raise = True
+        return story
 
     def attach_journal(self, journal: StoryJournal) -> None:
         self.journal = journal

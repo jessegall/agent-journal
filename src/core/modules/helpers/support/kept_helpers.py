@@ -6,6 +6,7 @@ from engine.database.kept_rows import KeptRows
 from engine.provider.providers import Providers
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
+from engine.query.query import Query
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
 from core.modules.agents.support.agent_folders import AgentFolders
@@ -30,8 +31,15 @@ class KeptHelpers:
         self.states, self.share = states, share
 
     def with_open_jobs(self, profile: str) -> set[int]:
-        return self.kept_rows.scoped_read("helper_jobs", lambda: {job.helper_id for job in self.queries.query(HelperJob).filter(profile=profile).matching(IsNull("ended_at")).all_rows() if job.helper_id is not None},
+        """The helpers of a profile with an open job, at most the 50 newest: more than any run limit."""
+        return self.kept_rows.scoped_read("helper_jobs", lambda: set(self.open_jobs().where(profile=profile).where_not_null("helper_id").newest().pluck("helper_id")),
                                    "profile = ? AND ended_at IS NULL", [profile], name="helpers.with_open_jobs")
+
+    def has_open_job(self, helper: Agent) -> bool:
+        return self.open_jobs().where(helper_id=helper.id).exists()
+
+    def open_jobs(self) -> Query[HelperJob]:
+        return self.queries.query(HelperJob).where_null("ended_at")
 
     def kept(self, profile: str) -> tuple[Agent, ...]:
         return self.kept_rows.scoped_read(AGENTS_TABLE, lambda: self.query_kept(profile), "role = ? AND profile = ? AND retired_at IS NULL", [HelperRole.HELPER, profile], name="helpers.kept")
@@ -52,8 +60,7 @@ class KeptHelpers:
         return tuple(sorted(idle_helpers, key=lambda helper: helper.number))
 
     def stopped(self, profile: str) -> list[Agent]:
-        open_jobs = self.with_open_jobs(profile)
-        return [helper for helper in self.kept(profile) if helper.ended_at is not None and helper.id not in open_jobs]
+        return [helper for helper in self.kept(profile) if helper.ended_at is not None and not self.has_open_job(helper)]
 
     def resumes(self, helper: Agent, program: str, model: str) -> bool:
         if (program and helper.program != program) or (model and helper.program_model != model):

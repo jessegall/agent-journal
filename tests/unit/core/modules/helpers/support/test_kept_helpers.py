@@ -20,9 +20,27 @@ class StoredRows:
         return self.open_job_ids if table == OPEN_JOBS_TABLE else self.helpers
 
 
+class OpenJobs:
+    def __init__(self, helper_ids: set[int]) -> None:
+        self.helper_ids, self.helper_id = helper_ids, None
+
+    def query(self, model):
+        return self
+
+    def where_null(self, column):
+        return self
+
+    def where(self, helper_id):
+        self.helper_id = helper_id
+        return self
+
+    def exists(self):
+        return self.helper_id in self.helper_ids
+
+
 def kept_helpers(helpers: list[SimpleNamespace], open_job_ids: frozenset[int] = frozenset(), full_percent: int = 0) -> KeptHelpers:
     provider = SimpleNamespace(session_matches_folder=lambda folder, session: session == "kept")
-    return KeptHelpers(None, SimpleNamespace(provider=lambda program: provider), SimpleNamespace(folder=lambda agent: "folder"), StoredRows(helpers, set(open_job_ids)), None,
+    return KeptHelpers(OpenJobs(set(open_job_ids)), SimpleNamespace(provider=lambda program: provider), SimpleNamespace(folder=lambda agent: "folder"), StoredRows(helpers, set(open_job_ids)), None,
                        SimpleNamespace(percent_of=lambda helper: full_percent), None)
 
 

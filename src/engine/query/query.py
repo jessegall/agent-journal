@@ -263,14 +263,22 @@ class Query(Generic[M]):
         return self.with_select(self.select.sliced(Query.checked_limit(rows), 0))
 
     def get(self) -> list[M]:
-        """The rows of the query up to its limit, 50 unless it names one; a read that finds more is cut there and
-        reported, never silent."""
+        """The rows of the query up to its limit, 50 unless it names one, by key unless it names an order; a read
+        that finds more is cut there and reported, never silent."""
         limit = self.select.limit or DEFAULT_LIMIT_ROWS
         select = self.select.sliced(limit + 1, 0).named(limit + 1)
+        if not select.orders and self.table.key and self.table.has_column(self.table.key):
+            select = select.ordered(self.table.key, False)
         rows = self.rows(select)
         if len(rows) > limit:
             self.database.report_cut(self.scoped(select).statement().sql, limit)
         return rows[:limit]
+
+    def take(self, rows: int) -> list[M]:
+        """The first rows in the order of the query, as many as named; more rows past them are left on purpose and
+        never reported as a cut."""
+        size = Query.checked_limit(rows)
+        return self.rows(self.select.sliced(size, 0).named(size))
 
     @staticmethod
     def checked_limit(rows: int) -> int:
