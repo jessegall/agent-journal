@@ -70,6 +70,7 @@ function openHit(hit) {
                         <button type="button" class="search-hit" data-hit @click="openHit(hit)">
                             <span class="search-hit-name">{{ hit.cli_name }} {{ hit.id }}</span>
                             <span class="search-hit-excerpt">{{ hit.excerpt }}</span>
+                            <template v-if="answer.closest"><span class="search-hit-words" data-hit-words>holds: {{ hit.matched_words.join(", ") }}</span></template>
                         </button>
                     </li>
                 </template>
@@ -154,6 +155,11 @@ function openHit(hit) {
 .search-hit-excerpt {
     flex: 1;
     min-width: 0;
+}
+
+.search-hit-words {
+    color: var(--text-2);
+    font-size: 12px;
 }
 
 .search-note {

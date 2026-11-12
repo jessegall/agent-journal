@@ -139,10 +139,15 @@ class WorktreeGit:
 
     def restore_skipped_files(self, folder: str) -> None:
         """A reset leaves a tracked file marked skip-worktree as it is, so a test checkout lifts every mark and brings the files back."""
-        skipped = [line[len(SKIP_WORKTREE_MARK):] for line in self.checked(folder, GIT_LIMIT_SECONDS, "ls-files", "-v").stdout.splitlines() if line.startswith(SKIP_WORKTREE_MARK)]
+        skipped = self.skipped_files(folder)
         if skipped:
             self.checked(folder, GIT_LIMIT_SECONDS, "update-index", "--no-skip-worktree", "--", *skipped)
             self.checked(folder, GIT_LIMIT_SECONDS, "restore", "--", *skipped)
+
+    def skipped_files(self, folder: str, *paths: str) -> list[str]:
+        """The tracked files, or those among the paths, whose index entry is marked skip-worktree; names are read split on NUL, so a name git would quote is read whole."""
+        listing = self.checked(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "-z", *(("--", *paths) if paths else ())).stdout
+        return [record[len(SKIP_WORKTREE_MARK):] for record in listing.split(NAME_SEPARATOR) if record.startswith(SKIP_WORKTREE_MARK)]
 
     @staticmethod
     def test_folder(worktree: Worktree) -> str:
@@ -294,7 +299,7 @@ class WorktreeGit:
 
     @contextmanager
     def without_instruction_files(self, folder: str) -> Generator[None]:
-        skipped_names = [line[len(SKIP_WORKTREE_MARK):] for line in self.git(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "--", *INSTRUCTION_FILES).stdout.splitlines() if line.startswith(SKIP_WORKTREE_MARK)]
+        skipped_names = self.skipped_files(folder, *INSTRUCTION_FILES)
         kept = {name: self.git_folder(folder) / f"{name}.kept" for name in skipped_names}
         for name in skipped_names:
             FileAccess.shared().replace(Path(folder) / name, kept[name])
