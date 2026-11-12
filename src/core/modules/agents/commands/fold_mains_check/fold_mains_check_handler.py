@@ -7,12 +7,12 @@ from engine.command.handler import Handler
 from engine.database.database import Database
 from engine.journal.journal_home import JournalHome
 from core.modules.agents.commands.fold_mains_check.fold_mains_check import FoldMainsCheck
+from core.modules.agents.support.fold_copy import FoldCopy
 from core.modules.agents.support.main_fold import FoldCounts, MainFold
 from core.modules.agents.support.main_fold_plan import EnvironmentFold
 from core.modules.documents.commands.make_text.make_text import MakeText
 from core.modules.documents.models.report import Report
 
-COPY_FOLDER = "backups-watch"
 NOTHING_TO_FOLD = "Every environment has one main agent row: nothing to fold."
 REPORT_TITLE = "Fold of main agents, checked on a copy"
 
@@ -27,7 +27,7 @@ class FoldMainsCheckHandler(Handler[FoldMainsCheck, str]):
         self.home, self.bus = home, bus
 
     def handle(self, command: FoldMainsCheck, context: Context) -> str:
-        copy = Database.configured(sqlite3.connect(self.copied(context), autocommit=True))
+        copy = Database.configured(sqlite3.connect(FoldCopy.written(self.home, context.timestamp), autocommit=True))
         try:
             started = time.monotonic()
             fold = MainFold(copy)
@@ -41,18 +41,6 @@ class FoldMainsCheckHandler(Handler[FoldMainsCheck, str]):
         text = self.report_text(folds, counts, seconds)
         self.bus.dispatch(MakeText(Report, REPORT_TITLE, f"{sum(len(fold.folded) for fold in folds)} main agent rows fold into {len(folds)} survivors", text), context)
         return text
-
-    def copied(self, context: Context) -> str:
-        folder = self.home.folder / COPY_FOLDER
-        folder.mkdir(parents=True, exist_ok=True)
-        target = folder / f"fold-{context.timestamp.value.strftime('%Y%m%d-%H%M%S')}.db"
-        source, copy = sqlite3.connect(self.home.database), sqlite3.connect(target)
-        try:
-            source.backup(copy)
-        finally:
-            copy.close()
-            source.close()
-        return str(target)
 
     @staticmethod
     def report_text(folds: tuple[EnvironmentFold, ...], counts: FoldCounts, seconds: float) -> str:

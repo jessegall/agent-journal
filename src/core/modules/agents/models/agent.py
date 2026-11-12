@@ -17,7 +17,6 @@ PID_FIELD = "pid"
 MAIN_ROLE = "main"
 LAUNCH_CHANGE = "launch"
 MAIN_TITLE = "Main agent"
-ENDED_MAIN_TITLE = "Main agent, previous session"
 MAIN_NUMBER = 1
 
 
@@ -148,7 +147,7 @@ class Agent(EnvironmentScoped, Model):
     def display_name(self) -> str:
         if self.role != MAIN_ROLE:
             return f"{self.role.capitalize()} {self.number}"
-        return MAIN_TITLE if self.ended_at is None else ENDED_MAIN_TITLE
+        return MAIN_TITLE
 
     @property
     def original_launch_name(self) -> str:
