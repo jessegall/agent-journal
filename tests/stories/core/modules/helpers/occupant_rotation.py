@@ -52,7 +52,7 @@ def test_the_first_start_gives_the_agent_a_session_and_its_job_is_keyed_by_it(ro
 def test_a_send_to_the_ended_agent_opens_a_job_under_a_new_session_that_starts_from_the_profile_body(rotating):
     helper = helper_agent(rotating)
     launch = job_launch(rotating)["command"]
-    command, brief = " ".join(launch), launch[2]
+    command, brief = " ".join(launch), launch[launch.index("-p") + 1]
     current, jobs = helper_agent(rotating), read_jobs(rotating, helper)
     rotating.expect_rows(current.id == helper.id, current.session != helper.session, helper.session not in command, current.session in command,
                          "--resume" not in command, len(jobs) == 2, jobs[1].cost_baseline == 0, jobs[1].tool_key.startswith(current.session), detail=command)

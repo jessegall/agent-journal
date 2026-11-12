@@ -33,7 +33,7 @@ class StartRecorder:
 
 def route() -> AgentHookRoute:
     sessions = SimpleNamespace(replaced_agent_id=REPLACED_SESSIONS.get)
-    return AgentHookRoute(*[SimpleNamespace()] * 5, FakeRows(), *[SimpleNamespace()] * 6, sessions)
+    return AgentHookRoute(*[SimpleNamespace()] * 5, FakeRows(), *[SimpleNamespace()] * 6, sessions, SimpleNamespace())
 
 
 def hook(session: str, event: HookEventName, role: str = "", source: str = "startup") -> HookEvent:
