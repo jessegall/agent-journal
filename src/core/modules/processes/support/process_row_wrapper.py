@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.command.context import Context
@@ -33,7 +35,7 @@ class ProcessRowWrapper(RequestRecords):
         self.bus.run(EndProcess(row_id, exit_code, 0, 0), Actor.core(), environment_id=process.environment_id)
 
     def recorded_hook(self, agent_id: int, line: str, exit_code: int, context: Context) -> None:
-        self.bus.dispatch(RecordRequestRun(agent_id, ProcessKind.HOOK, line, exit_code), context)
+        self.bus.dispatch(RecordRequestRun(agent_id, ProcessKind.HOOK, line, exit_code), replace(context, environment_id=self.agents.find(agent_id).environment_id))
 
     def owner_agent(self) -> Agent | None:
         owner = self.database.row_owner
