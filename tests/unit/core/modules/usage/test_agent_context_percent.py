@@ -27,7 +27,7 @@ def percent(role: str, profile: str, tokens: int, enabled: bool = True) -> int |
     settings = Settings(enabled)
     subcommand = UsageAgentsSubcommand.__new__(UsageAgentsSubcommand)
     subcommand.share = ContextShare(settings, None, None)
-    subcommand.is_context_unknown = lambda card: False
+    subcommand.is_context_unknown = lambda card, status: False
     card = SimpleNamespace(role=role, profile=profile)
     return subcommand.context_percent(card, SessionStatus(model="m", context_percent=WINDOW_PERCENT, context_tokens=tokens))
 
