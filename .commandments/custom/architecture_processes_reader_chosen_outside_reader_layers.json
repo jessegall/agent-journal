@@ -26,8 +26,16 @@
                                 ]
                             },
                             {
-                                "of": "receiver",
-                                "typeLike": "*Reader"
+                                "any": [
+                                    {
+                                        "of": "receiver",
+                                        "typeLike": "*Reader"
+                                    },
+                                    {
+                                        "of": "receiver",
+                                        "nameMatches": "^readers?$"
+                                    }
+                                ]
                             }
                         ]
                     }

@@ -1,0 +1,39 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "identifier",
+        "where": [
+            {
+                "textMatches": "^(?:${reading_declarations})$"
+            },
+            {
+                "fileMatches": "(^|/)core/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "inside": {
+                    "is": "import"
+                }
+            },
+            {
+                "fileMatches": "(^|/)core/modules/processes/(support/(process_nudges|reading/reading_notices|cadence/cadence_nudges)\\.py|models/enums/)"
+            },
+            {
+                "inside": {
+                    "textMatches": "^(?:ReasonCode|ReaderAction)\\."
+                }
+            }
+        ]
+    },
+    "sin": {
+        "name": "reading-nudge-outside-the-notices",
+        "description": "A rule, a listener or a tick says a reading or cadence notice itself, so the same case can be told twice or in two ways.",
+        "rule": "Send a reading notice through ReadingNotices and a cadence notice through CadenceNudges and WarnCadenceHandler.",
+        "skill": "processes-architecture"
+    }
+}

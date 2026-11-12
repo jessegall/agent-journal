@@ -5,10 +5,12 @@
         "select": "call",
         "where": [
             {
-                "name": "NudgeDeclaration"
+                "of": "child:func",
+                "resolvesLike": "engine.driver.nudge_declaration.NudgeDeclaration"
             },
             {
                 "argument": {
+                    "at": 2,
                     "textMatches": "\\{(line|command|title|text|lines)\\}"
                 }
             },
@@ -22,6 +24,7 @@
             },
             {
                 "argument": {
+                    "at": 2,
                     "textMatches": "\\{lines\\} lines|of \\{lines\\}"
                 }
             }
