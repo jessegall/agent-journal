@@ -9,6 +9,7 @@ import pytest
 from engine.testing.stories.story import Story
 from tests.stories.support.program_states import bind_ready_programs
 from tests.stories.suites.coding.modules.workers.support.memory_git.git_choice import REAL_GIT
+from core.modules.plugins.support.machine_runs import MACHINE_FOLDER_VARIABLE
 
 pytest_plugins = ["engine.testing.pytest_plugin"]
 STORY_SUPPORT_FOLDER = "support"
@@ -116,6 +117,7 @@ def pytest_collect_file(file_path: Path, parent: pytest.Collector):
 @pytest.fixture(autouse=True)
 def program_config_folder(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, tmp_path_factory: pytest.TempPathFactory) -> None:
     monkeypatch.setenv("CODEX_HOME", str(tmp_path / "codex-home"))
+    monkeypatch.setenv(MACHINE_FOLDER_VARIABLE, str(tmp_path / "machine"))
     if request.config.getoption(REAL_PROGRAM_FLAG):
         return
     monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path_factory.mktemp("claude-config")))

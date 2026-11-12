@@ -178,7 +178,8 @@ class PlansModule(Module):
                                        WindowKey("plan.*", "plan show {id}", loading=KeyLoading.REQUESTED)],
                                  tabs=[WindowTab("open", "Open", "plan board", "open_total"), WindowTab("started", "Started", "plan board --started", "started_total"), WindowTab("closed", "Closed", "plan board --closed", "closed_total")]),
                WindowDeclaration("plans.plan-details", "Details", "plan-details.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.PLAN, skeleton=[SkeletonPart.line()]),
-               WindowDeclaration("plans.plan-phases", "Phases", "plan-phases.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.PLAN, skeleton=[SkeletonPart.line()]),
+               WindowDeclaration("plans.plan-phases", "Phases", "plan-phases.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.PLAN, skeleton=[SkeletonPart.line()],
+                                 runs=["task edit"]),
                WindowDeclaration("plans.plan-timeline", "Timeline", "plan-timeline.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.PLAN, skeleton=[SkeletonPart.line()],
                                  reads=["plan timeline"], events=["plan.*"])]
     inspectors = [PLAN_INSPECTOR]

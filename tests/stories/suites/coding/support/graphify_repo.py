@@ -4,8 +4,8 @@ from pathlib import Path
 from tests.stories.server.support.file_changes import FileChanges
 
 WAIT_SECONDS = 10
-COMMAND_SETTING = "journal.core.tools.graphify-command"
-INSTALL_SETTING = "journal.core.tools.graphify-install-command"
+COMMAND_SETTING = "journal.suites.coding.graphify-command"
+INSTALL_SETTING = "journal.suites.coding.graphify-install-command"
 
 
 class GraphifyRepo:

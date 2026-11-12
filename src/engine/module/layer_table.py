@@ -9,7 +9,7 @@ LAYER_PATTERNS = (
     LayerPattern(re.compile(r"src/core/modules/([^/]+)/testing/"), LayerTier.TEST_KIT),
     LayerPattern(re.compile(r"src/suites/([^/]+/modules/[^/]+)/testing/"), LayerTier.TEST_KIT),
     LayerPattern(re.compile(r"src/(core/modules|core|suites|tunnels)/__init__\.py$"), LayerTier.MODULE_LIST),
-    LayerPattern(re.compile(r"src/suites/[^/]+/[^/]+_suite\.py$"), LayerTier.MODULE_LIST),
+    LayerPattern(re.compile(r"src/(suites/[^/]+)/[^/]+_suite\.py$"), LayerTier.MODULE_LIST),
     LayerPattern(re.compile(r"src/engine/"), LayerTier.ENGINE),
     LayerPattern(re.compile(r"src/core/modules/([^/]+)/"), LayerTier.CORE_MODULE),
     LayerPattern(re.compile(r"src/suites/([^/]+)/modules/([^/]+)/"), LayerTier.SUITE_MODULE),

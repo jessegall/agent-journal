@@ -20,6 +20,7 @@ from core.modules.plugins.support.manifest_dashboard import ManifestDashboard
 from core.modules.plugins.support.manifest_instruction_block import ManifestInstructionBlock
 from core.modules.plugins.support.manifest_service import ManifestService
 from core.modules.plugins.support.manifest_process_kind import ManifestProcessKind
+from core.modules.plugins.models.enums.run_scope import RunScope
 from engine.enums.command_category import CommandCategory
 from core.modules.plugins.support.manifest_setting import ManifestSetting
 from core.modules.plugins.support.plugin_health import PluginHealth
@@ -29,6 +30,7 @@ from core.modules.plugins.models.enums.service_restart import ServiceRestart
 from core.modules.plugins.support.event_window import EventWindow
 
 REQUIRED_FIELDS = ("name", "title", "version")
+PLUGIN_RUN_CATEGORY = CommandCategory.CHECK
 
 
 LINE_VERSION = 1
@@ -180,9 +182,13 @@ class PluginManifest:
     @staticmethod
     def read_process_kinds(processes: object) -> tuple[ManifestProcessKind, ...]:
         categories = {category.value: category for category in CommandCategory}
-        entries = [entry for entry in processes if is_mapping(entry) and "kind" in entry and str(entry.get("category", "")) in categories] if is_list(processes) else []
-        return tuple(ManifestProcessKind(str(entry["kind"]), str(entry["title"]) if "title" in entry else str(entry["kind"]), categories[str(entry["category"])],
-                                         str(entry["at_once"]) if "at_once" in entry else "") for entry in entries)
+        scopes = {scope.value: scope for scope in RunScope}
+        entries = [entry for entry in processes if is_mapping(entry) and "kind" in entry and str(entry.get("category", PLUGIN_RUN_CATEGORY)) in categories
+                   and str(entry.get("scope", RunScope.PROJECT)) in scopes] if is_list(processes) else []
+        return tuple(ManifestProcessKind(str(entry["kind"]), str(entry["title"]) if "title" in entry else str(entry["kind"]), categories[str(entry.get("category", PLUGIN_RUN_CATEGORY))],
+                                         str(entry["at_once"]) if "at_once" in entry else "", scopes[str(entry.get("scope", RunScope.PROJECT))],
+                                         memory if isinstance(memory := entry.get("memory_mb", 0), int) and memory > 0 else 0, entry.get("coalesce") is True)
+                     for entry in entries)
 
     def process_kind(self, kind: str) -> ManifestProcessKind | None:
         return next((declared for declared in self.process_kinds if declared.kind == kind), None)

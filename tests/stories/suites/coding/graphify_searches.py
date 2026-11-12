@@ -10,8 +10,8 @@ from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value
 
 SESSION = "s-1"
-BLOCK_AFTER = "journal.core.tools.graphify.block-after"
-NUDGE_AFTER = "journal.core.tools.graphify.nudge-after"
+BLOCK_AFTER = "journal.suites.coding.graphify.block-after"
+NUDGE_AFTER = "journal.suites.coding.graphify.nudge-after"
 SEARCH = HookSamples.tool_use("Grep", ToolType.SEARCH, [], None)
 LOG_SEARCH = HookSamples.tool_use("Grep", ToolType.SEARCH, ["/var/log/system.log"], None)
 SHELL_SEARCH = HookSamples.shell("grep -rn cart src", ShellPart("grep", CommandCategory.SEARCH, ["-rn", "cart", "src"]))

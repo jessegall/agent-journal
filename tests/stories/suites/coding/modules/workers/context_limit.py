@@ -1,4 +1,3 @@
-import json
 from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 

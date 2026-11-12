@@ -1499,7 +1499,7 @@
         "core/modules/plugins/support/plugin_services.py",
         "core/modules/processes/support/group_cpu_time.py",
         "core/modules/processes/support/reader_run.py",
-        "core/modules/tools/support/graphify_tool.py",
+        "suites/coding/support/graphify_tool.py",
         "core/modules/triggers/support/trigger_action_process.py"
     ]
 }

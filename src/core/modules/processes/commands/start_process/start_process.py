@@ -7,6 +7,7 @@ from engine.driver.agent_hook import AgentHook
 from engine.enums.command_category import CommandCategory
 from engine.driver.shell_line import ShellLine
 from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.models.enums.queue_priority import QueuePriority
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.foreground_run import ForegroundRun
 
@@ -31,6 +32,7 @@ class StartProcess(Command[Process]):
     timeout_durations: tuple[str, ...] = ()
     plugin: str = ""
     kind: str = ""
+    priority: QueuePriority = QueuePriority.NORMAL
 
     @classmethod
     def single_part(cls, agent_id: int, line: str, folder: str, category: CommandCategory, limit_seconds: int, plugin: str = "", kind: str = "") -> "StartProcess":

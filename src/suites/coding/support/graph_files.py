@@ -4,8 +4,8 @@ from pathlib import Path
 from engine.time.clock import Clock
 from engine.process.process_ids import ProcessIds
 from engine.file.file_access import FileAccess
-from core.modules.tools.support.graph.graph_stamp import GraphStamp
-from core.modules.tools.support.graph.project_graph_claim import CLAIM_GRACE_SECONDS
+from suites.coding.support.graph_stamp import GraphStamp
+from suites.coding.support.project_graph_claim import CLAIM_GRACE_SECONDS
 
 OUTPUT_FOLDER = "graphify-out"
 STAMP_FILE = ".journal-refresh"
