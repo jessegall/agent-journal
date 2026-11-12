@@ -11,13 +11,13 @@ from core.modules.drivers.commands.prune_events.prune_events import PruneEvents
 from core.modules.drivers.support.driver_settings import EVENT_HOURS_SETTING
 from engine.setting.setting_values import SettingValues
 
-MOST_EVENTS_PRUNED = 5000
+WINDOW_IDS = 1000
 
 
 class PruneEventsHandler(Handler[PruneEvents, int]):
-    """Deletes one batch of the logged changes of the rows whose model marks them as expiring, older than the
-    kept hours and passed by every listener. The changes of every other row stay, because their history is
-    read."""
+    """Deletes, in the oldest window of event ids, the logged changes of the rows whose model marks them as
+    expiring, older than the kept hours and passed by every listener. The changes of every other row stay,
+    because their history is read."""
 
     command = PruneEvents
 
@@ -25,6 +25,12 @@ class PruneEventsHandler(Handler[PruneEvents, int]):
         self.log, self.tables, self.registry, self.settings = log, tables, registry, settings
 
     def handle(self, command: PruneEvents, context: Context) -> int:
-        cutoff_at = Timestamp(context.timestamp.value - timedelta(hours=self.settings.project.number(EVENT_HOURS_SETTING)))
+        deleted, _ = self.log.prune(self.expiring_tables(), self.cutoff(context.timestamp), self.log.oldest_id() - 1, WINDOW_IDS)
+        return deleted
+
+    def expiring_tables(self) -> tuple[str, ...]:
         models = (entry.model.checked_class(Model) for entry in self.registry.models.values())
-        return self.log.prune(tuple(self.tables.table(model).name for model in models if model.events_expire), cutoff_at.text, MOST_EVENTS_PRUNED)
+        return tuple(self.tables.table(model).name for model in models if model.events_expire)
+
+    def cutoff(self, now: Timestamp) -> str:
+        return Timestamp(now.value - timedelta(hours=self.settings.project.number(EVENT_HOURS_SETTING))).text

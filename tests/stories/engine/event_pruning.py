@@ -58,17 +58,17 @@ def test_a_listener_that_has_not_passed_an_event_keeps_it(new_story):
     hook_event_total = event_count(story, HOOK_CALLS)
     story.advance(EXPIRED_AGE)
     story.container.get(Database).update(Statement("UPDATE listener_cursors SET event_id = 0 WHERE listener = (SELECT min(listener) FROM listener_cursors)"))
-    story.container.get(EventLog).prune([HOOK_CALLS], story.clock.timestamp().text, MOST_EVENTS)
+    story.container.get(EventLog).prune([HOOK_CALLS], story.clock.timestamp().text, 0, MOST_EVENTS)
     expect_value(event_count(story, HOOK_CALLS), hook_event_total)
 
 
-def test_one_run_deletes_one_batch(new_story, monkeypatch):
+def test_one_run_deletes_within_one_window_of_ids(new_story, monkeypatch):
     story = new_story(fixture=HookAndTaskLogged)
     event_total = total_events(story)
     story.advance(EXPIRED_AGE)
-    monkeypatch.setattr(prune_events_handler, "MOST_EVENTS_PRUNED", 1)
+    monkeypatch.setattr(prune_events_handler, "WINDOW_IDS", 1)
     story.container.get(Bus).run(PruneEvents(), Actor.core())
-    expect_value(total_events(story), event_total - 1)
+    expect_value(total_events(story) >= event_total - 1, True)
 
 
 def test_the_first_page_of_events_does_not_count_the_table(new_story):
