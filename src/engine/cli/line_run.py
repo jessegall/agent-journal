@@ -85,7 +85,7 @@ class LineRun:
             return USAGE_CODE
         try:
             with container.get(RequestWatch).watching_without_refusal(argv):
-                return container.get(Console).run(argv, checked_caller(container), stream)
+                return container.get(RequestRecords).recorded(ProcessKind.JOURNAL, shlex.join(["journal", *argv[:2]]), lambda: container.get(Console).run(argv, checked_caller(container), stream))
         finally:
             self.close(container, argv)
 

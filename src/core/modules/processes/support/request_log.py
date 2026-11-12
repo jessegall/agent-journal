@@ -32,7 +32,10 @@ class RequestLog:
     def taken(self) -> tuple[RequestLogEntry, ...]:
         if not self.taken_path.exists():
             return ()
-        return tuple(RequestLogEntry.parsed(line) for line in self.files.read(self.taken_path).splitlines() if self.is_entry(line))
+        return tuple(entry for entry in (self.entry(line) for line in self.files.read(self.taken_path).splitlines()) if entry is not None)
+
+    def left(self, entries: tuple[RequestLogEntry, ...]) -> None:
+        self.files.write(self.taken_path, "".join(entry.text() + "\n" for entry in entries))
 
     def written(self) -> None:
         self.taken_path.unlink(missing_ok=True)
@@ -40,8 +43,8 @@ class RequestLog:
             self.files.replace(self.path, self.taken_path)
 
     @staticmethod
-    def is_entry(line: str) -> bool:
+    def entry(line: str) -> RequestLogEntry | None:
         try:
-            return isinstance(json.loads(line), dict)
-        except json.JSONDecodeError:
-            return False
+            return RequestLogEntry.parsed(line)
+        except (json.JSONDecodeError, KeyError, TypeError, ValueError):
+            return None

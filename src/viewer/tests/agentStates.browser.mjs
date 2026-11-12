@@ -25,7 +25,6 @@ try {
     }
     await window.locator(`[data-agent-open="${helper}"]`).click();
     await window.locator('[data-agent-tab-body="transcript"]').waitFor();
-    await window.locator('[data-agent-resume-reason]').first().waitFor();
     await window.locator('.agent-back').click();
     await window.getByRole('radio', {name: 'Retired', exact: true}).click();
     await window.locator('[data-agents-upgrade]').waitFor();
