@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 
-MAIN_ROLE = "main"
+from engine.enums.agent_role import AgentRole
+
+MAIN_ROLE = AgentRole.MAIN.value
 MAIN_NAME = "Main agent"
 
 

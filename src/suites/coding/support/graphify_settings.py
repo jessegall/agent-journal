@@ -4,7 +4,7 @@ from engine.setting.number_rule import NumberRule
 from engine.setting.setting_group import SettingGroup
 from engine.setting.setting_value import SettingValue
 
-MODULE_KEY = "journal.suites.coding"
+from suites.coding.support.coding_settings import MODULE_KEY
 GRAPHIFY_GROUP = f"{MODULE_KEY}.graphify"
 GRAPHIFY_COMMAND = f"{MODULE_KEY}.graphify-command"
 GRAPHIFY_INSTALL_COMMAND = f"{MODULE_KEY}.graphify-install-command"

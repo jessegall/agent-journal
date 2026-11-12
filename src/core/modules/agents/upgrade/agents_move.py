@@ -14,19 +14,21 @@ from engine.upgrade.move_map import MoveMap
 from engine.upgrade.move_report import MoveReport
 from engine.upgrade.version_four_move import VersionFourMove
 from engine.upgrade.version_four_source import VersionFourSource
+from core.modules.agents.models.enums.end_reason import EndReason
 
 TABLE = "agents"
 ENDED = "ended"
 SEPARATOR = ":"
 HELPERS = "sent_agents"
+SESSIONS_TABLE = "agent_sessions"
 
 VERSION_FOUR_CHILD_ROLE = "subagent"
 
 
 class AgentsMove(VersionFourMove):
     """Carries each version 4 agent with its session, program (version 4's provider), role and environment;
-    each environment's most recently active main agent stays open, so Continue resumes it, and older ones end,
-    as an agent whose number is its new actor's; a session that ended stays an ended agent so the rows
+    each environment's most recently active main agent stays open, so Continue resumes it, and its older main
+    sessions join that one agent as its past sessions; a session that ended stays an ended agent so the rows
     it made keep their owner. An early session that has no role was a main session and moves as one. A
     session that made rows but has no agent row moves ended, as the helper version 4 sent it as with
     that helper's program, or as a main session, since version 4 handed a main row on to the next
@@ -42,17 +44,23 @@ class AgentsMove(VersionFourMove):
         roles = list(context.role_names)
         all_rows = list(source.rows(TABLE))
         latest_ids = self.newest_main_ids(all_rows)
-        for row in all_rows:
+        main_rows: dict[int, int] = {}
+        for row in sorted(all_rows, key=lambda row: row["id"] not in latest_ids):
             role = self.moved_role(row["role"] or AgentRole.MAIN.value)
             if not row["session"]:
                 report.drop("agents without a session", 1)
             elif role not in roles:
                 report.skip(TABLE, row["id"], f"role {row['role']} is none of {', '.join(roles)}")
+            elif role == AgentRole.MAIN.value and row["environment_id"] in main_rows:
+                report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.session_of(rows, main_rows[row["environment_id"]], row, context)))
             else:
                 created = row["created_at"] or context.timestamp
                 ended = self.end_timestamp(row, role, created, latest_ids)
-                report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.insert(rows, row["session"], row["environment_id"], row["provider"], role,
-                                                                                         creators.actor_id(row["creator"]), created, row["updated_at"] or created, ended)))
+                moved_id = map.transfer(TABLE, row["id"], TABLE, lambda: self.insert(rows, row["session"], row["environment_id"], row["provider"], role,
+                                                                                     creators.actor_id(row["creator"]), created, row["updated_at"] or created, ended))
+                report.count(TABLE, moved_id)
+                if role == AgentRole.MAIN.value and moved_id:
+                    main_rows[row["environment_id"]] = map.new_id(TABLE, row["id"])
         self.move_missing_sessions(source, rows, map, report, roles)
         return report
 
@@ -110,6 +118,14 @@ class AgentsMove(VersionFourMove):
     @staticmethod
     def session(span: sqlite3.Row) -> str:
         return str(span["creator"]).partition(SEPARATOR)[2]
+
+    @staticmethod
+    def session_of(rows: RowInsert, main_id: int, row: sqlite3.Row, context: MoveContext) -> int:
+        started = row["created_at"] or context.timestamp
+        rows.insert(SESSIONS_TABLE, {"environment_id": row["environment_id"], "session_agent_id": main_id, "session": row["session"], "program": row["provider"],
+                                     "started_at": started, "ended_at": row["updated_at"] or started, "end_reason": EndReason.PERSON_REPLACEMENT.value,
+                                     "created_at": started, "updated_at": row["updated_at"] or started})
+        return main_id
 
     def insert(self, rows: RowInsert, session: str, environment_id: int, program: str, role: str, creator_id: int, created: str, updated: str, ended: str | None) -> int:
         actor_id = rows.insert("actors", {"creator_id": creator_id, "type": ActorType.AGENT.value, "name": session, "created_at": created, "updated_at": created})
