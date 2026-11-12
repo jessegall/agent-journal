@@ -8,7 +8,7 @@ HEAVY = ManifestProcessKind("heavy", "Heavy", CommandCategory.BUILD, "heavy-at-o
 
 
 def waiting(number: int) -> Process:
-    return Process(id=number, plugin="judge", kind="heavy", environment_id=1)
+    return Process(id=number, plugin="judge", kind="heavy", environment_id=1, session_agent_id=1, creator_id=1, line="check", folder="/", shell="sh", category=CommandCategory.BUILD, limit_seconds=30)
 
 
 def kind_pass(free: int | None) -> PluginKindPass:
