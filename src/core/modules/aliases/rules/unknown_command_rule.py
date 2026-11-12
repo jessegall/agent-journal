@@ -13,7 +13,7 @@ UNCLASSIFIED_HINT = f"{ExitTexts.sentences((ReadingExit.CLASSIFY,))}, process wh
 
 class UnknownCommandRule(DriverRule):
     """Refuses a command of a type the journal does not know until the agent classifies its leading words, so the
-    rules of its type, such as a saved alias for a test run, hold for it from then on."""
+    rules of its type, such as a saved alias for a long-running type, hold for it from then on."""
 
     name = "aliases.unknown-command"
     hook = HookEventName.PRE_TOOL_USE

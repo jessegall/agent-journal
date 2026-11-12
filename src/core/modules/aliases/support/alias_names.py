@@ -4,7 +4,7 @@ from engine.registry.registry import Registry
 from core.modules.aliases.models.alias import Alias
 from core.modules.aliases.queries.alias_query import AliasQuery
 
-PROGRAM_COMMANDS = frozenset({"launch", "worktree", "server", "viewer", "claude", "codex"})
+PROGRAM_COMMANDS = frozenset({"launch", "server", "viewer", "claude", "codex"})
 
 
 class AliasNames:

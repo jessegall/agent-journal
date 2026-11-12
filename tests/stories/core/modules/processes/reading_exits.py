@@ -14,7 +14,8 @@ from core.modules.aliases.support.alias_nudges import COMMAND_TYPE_UNKNOWN, SAVE
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.models.process import Process
-from core.modules.processes.support.process_nudges import FAILED_FULL_RUN, READER_BLOCK, REDIRECTED_RUN, REQUIRED_MONITOR, SILENT_RUN_HELD, SILENT_START_REFUSED
+from suites.coding.support.coding_nudges import FAILED_FULL_RUN
+from core.modules.processes.support.process_nudges import READER_BLOCK, REDIRECTED_RUN, REQUIRED_MONITOR, SILENT_RUN_HELD, SILENT_START_REFUSED
 from core.modules.processes.support.reading.exit_texts import ExitTexts
 from suites.coding.modules.workers.support.worker_test_limit_nudges import TEST_COUNT_UNKNOWN
 from tests.stories.core.modules.processes.hang_watch import HANG_SECONDS

@@ -1,5 +1,9 @@
 import json
 import subprocess
+from engine.enums.process_kind import ProcessKind
+from engine.errors.run_time_limit_error import RunTimeLimitError
+from engine.process.execution_request import ExecutionRequest
+from engine.process.process_executor import ProcessExecutor
 from pathlib import Path
 
 from engine.errors.refusal import Refusal
@@ -15,8 +19,8 @@ class PluginInstallSteps:
     found, its setup steps run in order in its folder, and its installed command's answer read as its
     settings."""
 
-    def __init__(self, program: PluginProgram) -> None:
-        self.program = program
+    def __init__(self, program: PluginProgram, executor: ProcessExecutor) -> None:
+        self.program, self.executor = program, executor
 
     def check_requirements(self, manifest: PluginManifest, folder: Path) -> None:
         for requirement in manifest.requirements:
@@ -41,5 +45,8 @@ class PluginInstallSteps:
         return {str(key): value for key, value in answer.items()} if is_mapping(answer) else {}
 
     def shell(self, line: str, plugin_name: str, folder: Path) -> "subprocess.CompletedProcess[str]":
-        return subprocess.run(["sh", "-c", line], cwd=folder, env=self.program.environment(plugin_name, ""), capture_output=True, text=True,
-                              timeout=STEP_LIMIT_SECONDS)
+        try:
+            done = self.executor.execute(ExecutionRequest(["sh", "-c", line], folder, ProcessKind.PLUGIN, STEP_LIMIT_SECONDS, variables=self.program.environment(plugin_name, "")))
+        except RunTimeLimitError as error:
+            raise subprocess.TimeoutExpired(line, STEP_LIMIT_SECONDS) from error
+        return subprocess.CompletedProcess(["sh", "-c", line], done.exit_code, done.stdout, done.stderr)

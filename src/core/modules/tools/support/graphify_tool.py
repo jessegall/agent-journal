@@ -107,9 +107,16 @@ class GraphifyTool:
 
     @staticmethod
     def copy_graph(source: Path, target: Path) -> None:
+        """Copies the graph files at the top of the source's graph folder, such as graph.json, and none of its folders:
+        the cache and the dated snapshots stay with the source, so a new worktree takes no copy of them."""
         graph = GraphFiles(source).output
-        if graph.is_dir():
-            shutil.copytree(graph, GraphFiles(target).output, ignore=shutil.ignore_patterns(RUNNING_FILE, FAILED_FILE, REBUILD_LOCK_FILE), dirs_exist_ok=True)
+        if not graph.is_dir():
+            return
+        copied = GraphFiles(target).output
+        copied.mkdir(parents=True, exist_ok=True)
+        for file in graph.iterdir():
+            if file.is_file() and file.name not in (RUNNING_FILE, FAILED_FILE, REBUILD_LOCK_FILE):
+                shutil.copy2(file, copied / file.name)
 
     @staticmethod
     def checked_folder(folder: Path) -> None:

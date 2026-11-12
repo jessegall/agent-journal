@@ -13,7 +13,7 @@ from core.modules.agents.commands.manage_program.manage_program import ManagePro
 
 class ManageProgramHandler(Handler[ManageProgram, int]):
     """Imports project command hooks from the launch folder into the source project's store, before the transaction
-    opens, since it runs git and edits files."""
+    opens, since it runs version control and edits files."""
 
     command = ManageProgram
 

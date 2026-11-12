@@ -99,7 +99,7 @@ def test_an_update_that_adds_a_choice_asks_again(allowed_button):
 
 
 def test_an_allowed_button_of_an_inactive_module_is_refused(new_story):
-    window = WindowStory(new_story(CODING_ACME, f"{SUITE_MODULES}:SuiteModule", fixture=UserJoined))
+    window = WindowStory(new_story(CODING_ACME, f"{SUITE_MODULES}:SuiteModuleJoining", f"{SUITE_MODULES}:AcmeSuiteOfSuiteModule", fixture=UserJoined))
     window.story.expect_success("suite choose coding --environment main", actor=window.story.user)
     window.story.expect_success(ACME_ALLOW, actor=window.story.user)
     window.expect_window_allowed(CHAT, ACME_PRESS)

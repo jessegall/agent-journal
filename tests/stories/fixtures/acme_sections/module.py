@@ -1,3 +1,4 @@
+from engine.module.suite import Suite
 from engine.module.module import Module
 from engine.viewer.skeleton_part import SkeletonPart
 from engine.viewer.window_declaration import WindowDeclaration
@@ -14,9 +15,14 @@ def section(name: str, title: str, entry: str, *slots: str, reads: tuple[str, ..
 class AcmeSectionsModule(Module):
     name = "acme.sections"
     requires_core = ">=5,<6"
-    parent_suite = "coding"
     dependencies = ["journal.core.agents", "journal.core.documents", "journal.core.memories", "journal.core.plans", "journal.core.tasks", "journal.core.viewer", "journal.suites.coding"]
     windows = [section("failing", "Failing", "failing.js", "inspector.plan", reads=tuple(["plan show"])),
                section("undeclared", "Undeclared", "undeclared.js", "inspector.plan", reads=tuple(["plan show"])),
                section("throwing", "Throwing", "throwing.js", "inspector.plan"),
                section("elsewhere", "Elsewhere", "elsewhere.js", "inspector.task", "inspector.doc", "inspector.report", "inspector.agent", "inspector.memory")]
+
+
+class AcmeSectionsModuleJoining(Suite):
+    name = "acme.sections"
+    joins = "coding"
+    modules = [AcmeSectionsModule]

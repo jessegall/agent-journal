@@ -8,7 +8,7 @@ def test_the_main_agent_is_the_running_one_though_a_newer_one_has_ended(new_stor
     newer = story.new_row_id("agent start s-2 claude main --environment main")
     story.expect_success(f"agent end {newer}")
     story.expect_success("agent start s-1 claude main --environment main")
-    story.expect_success("agent main --environment main", "main agent, session s-1")
+    story.expect_text("agent main --environment main", "main agent, agent:", "session s-1")
 
 
 def test_with_none_running_it_says_so(new_story):

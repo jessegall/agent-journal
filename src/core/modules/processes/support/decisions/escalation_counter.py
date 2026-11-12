@@ -3,6 +3,8 @@ from itertools import takewhile
 
 from engine.time.timestamp import Timestamp
 from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from engine.query.conditions.among import Among
+from core.modules.processes.models.reading_decision_row import ReadingDecisionRow
 from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
@@ -19,8 +21,15 @@ class EscalationCounter:
     def __init__(self, decisions: ReadingDecisionQuery, readers: ReaderRows, resets: EscalationResets) -> None:
         self.decisions, self.readers, self.resets = decisions, readers, resets
 
-    def runs_without_change(self, command_key: str) -> int:
-        ended = self.decisions.for_command_key(command_key).filter(moment=ReadingMoment.END).descending("decided_at", "id").limited(RUNS_READ)
+    def runs_without_change(self, command_keys: Sequence[str]) -> dict[str, int]:
+        """The count of each command, from one read of the newest ended runs of all of them: up to RUNS_READ runs
+        a command, so a command that runs far less often than the others may count fewer runs than it had."""
+        keys = tuple(dict.fromkeys(command_keys))
+        ended = self.decisions.matching(Among("command_key", keys)).filter(moment=ReadingMoment.END).descending("decided_at", "id").limited(RUNS_READ * len(keys))
+        rows = {key: [row for row in ended if row.command_key == key][:RUNS_READ] for key in keys}
+        return {key: self.counted_runs(key, rows[key]) for key in keys}
+
+    def counted_runs(self, command_key: str, ended: Sequence[ReadingDecisionRow]) -> int:
         changed_at = self.reader_changed_at(command_key)
         marked_at = self.resets.last_marked_at(command_key)
         return self.counted([KeyRun(row.state, self.is_reset_after(command_key, row.decided_at, changed_at, marked_at)) for row in ended])

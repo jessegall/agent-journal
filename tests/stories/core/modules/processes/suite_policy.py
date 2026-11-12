@@ -3,7 +3,7 @@ from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.processes.support.process_samples import ended_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-NOTES_MODULE = "tests.stories.core.modules.profiles.support.notes_module:NotesModule"
+NOTES_MODULE = "tests.stories.core.modules.profiles.support.notes_module:NotesSuiteOfNotesModule"
 
 
 def test_output_access_follows_the_chosen_suites_role_policy(new_story):

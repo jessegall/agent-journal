@@ -10,7 +10,7 @@ from core.modules.aliases.models.alias import Alias
 
 
 class EditAliasSubcommand(Subcommand[EditAlias, Alias]):
-    """`journal alias edit <name> [--line "<line>"] [--reader <name>] [--about <text>] [--category "test run"]
+    """`journal alias edit <name> [--line "<line>"] [--reader <name>] [--about <text>] [--category <command type>]
     [--background | --foreground]`."""
 
     cli_name = "alias"

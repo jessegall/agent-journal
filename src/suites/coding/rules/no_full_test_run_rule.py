@@ -5,7 +5,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.drivers.support.access_nudges import FULL_TEST_RESTRICTION
+from suites.coding.support.coding_nudges import FULL_TEST_RESTRICTION
 
 
 class NoFullTestRunRule(DriverRule):

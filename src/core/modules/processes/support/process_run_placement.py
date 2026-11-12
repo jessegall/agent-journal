@@ -29,6 +29,12 @@ class ProcessRunPlacement(RunPlacement):
         process = self.bus.run(command, Actor.core(), environment_id=self.environment_id())
         return PlacedRun(request, process.id, request.kind.takes_place and self.rows.required(Process, process.id).slot_assigned)
 
+    def holds(self, run: PlacedRun) -> bool:
+        if run.process_id is None:
+            return False
+        agent = self.agents.find(self.rows.required(Process, run.process_id).session_agent_id)
+        return agent.paused_at is not None
+
     def moved_to_background(self, run: PlacedRun, pid: int) -> None:
         if run.process_id is None:
             return

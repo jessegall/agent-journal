@@ -63,11 +63,11 @@ def test_a_window_with_no_skeleton_is_refused_at_sync(new_story):
 
 
 def test_a_suite_preset_showing_a_window_the_suite_does_not_offer_is_refused_at_sync(new_story):
-    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:ForeignPresetModule", "suite presets's preset chat for home shows messages.chat, which the suite does not offer")
+    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:ForeignPresetSuiteOfForeignPresetModule", "suite presets's preset chat for home shows messages.chat, which the suite does not offer")
 
 
 def test_two_presets_of_a_page_under_one_key_are_refused_at_sync(new_story):
-    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:ForeignPresetModule", "suite presets offers two presets keyed board for home")
+    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:ForeignPresetSuiteOfForeignPresetModule", "suite presets offers two presets keyed board for home")
 
 
 def test_a_page_window_of_a_module_the_journal_does_not_ship_is_recorded_for_the_people_who_trust_it(new_story):

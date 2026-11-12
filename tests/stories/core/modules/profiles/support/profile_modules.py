@@ -56,7 +56,7 @@ class LegacySuite(Suite):
 
 
 class LegacyProfiles(ProfileModule):
-    suites = [LegacySuite]
+    """Ships the legacy suite, which lists it."""
 
 
 class ClerkRule(DriverRule):
@@ -81,8 +81,17 @@ class ClerkDriver(Driver):
 class ClerkModule(Module):
     name = "sample.clerks"
     requires_core = ">=5,<6"
-    parent_suite = "coding"
     dependencies = ["journal.core.agents", "journal.suites.coding"]
     helper_types = [HelperType("clerk", "Clerk", extends="helper", default_profile="sample-clerk")]
     profiles = [AgentProfile("sample-clerk", "Reads contracts", "Read the contracts.", agent_type="clerk", model="sonnet", codex_model="gpt-6.1-terra")]
     drivers = [ClerkDriver]
+
+
+class LegacySuiteOfLegacyProfiles(LegacySuite):
+    modules = [LegacyProfiles]
+
+
+class ClerkModuleJoining(Suite):
+    name = "sample.clerks"
+    joins = "coding"
+    modules = [ClerkModule]

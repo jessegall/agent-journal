@@ -14,6 +14,9 @@ class NotesModule(Module):
     requires_core = ">=5,<6"
     seed_reason = "the module declares profiles and templates without seeding its own rows"
     move_reason = "the suite has no earlier rows"
-    suites = [NotesSuite]
     drivers = [NotesDriver]
     templates = [TemplateDeclaration(title="Summarize notes", brief="Summarize the notes.", targets=tuple(["doc"]))]
+
+
+class NotesSuiteOfNotesModule(NotesSuite):
+    modules = [NotesModule]

@@ -18,11 +18,17 @@ class AcmeModule(Module):
     name = "acme.suite"
     requires_core = ">=5,<6"
     dependencies = ["journal.suites.coding"]
-    suites = [AcmeSuite]
 
 
 class AuditModule(Module):
     name = "audit.suite"
     requires_core = ">=5,<6"
     dependencies = ["journal.suites.coding"]
-    suites = [AuditSuite]
+
+
+class AcmeSuiteOfAcmeModule(AcmeSuite):
+    modules = [AcmeModule]
+
+
+class AuditSuiteOfAuditModule(AuditSuite):
+    modules = [AuditModule]

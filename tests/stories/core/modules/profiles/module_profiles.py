@@ -64,5 +64,5 @@ def test_the_planner_profile_says_a_plan_is_written_thoroughly(new_story):
 
 def test_a_third_party_module_brings_a_type_a_driver_and_a_profile(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_sync_success(f"{MODULES}:ClerkModule")
+    story.expect_sync_success(f"{MODULES}:ClerkModuleJoining")
     story.expect_text("profile list", "sample-clerk", "clerk")

@@ -14,6 +14,7 @@ class WorktreeLifecycle(Lifecycle):
     deliver = Move("deliver", [WorktreeState.CUT], WorktreeState.DELIVERED)
     rework = Move("rework", [WorktreeState.DELIVERED], WorktreeState.CUT)
     review_logs = Move("review_logs", [WorktreeState.DELIVERED], WorktreeState.DELIVERED)
+    review_logs_cut = Move("review_logs_cut", [WorktreeState.CUT], WorktreeState.CUT)
     return_worker = Move("return_worker", [WorktreeState.DELIVERED], WorktreeState.DELIVERED)
     mark_tests_passed = Move("mark_tests_passed", [WorktreeState.DELIVERED], WorktreeState.DELIVERED)
     merge = Move("merge", [WorktreeState.DELIVERED], WorktreeState.MERGED)

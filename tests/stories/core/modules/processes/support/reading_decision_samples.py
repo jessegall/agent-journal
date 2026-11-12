@@ -18,7 +18,8 @@ from core.modules.processes.support.decisions.reading_decisions import ReadingDe
 def stored_decision(story: Story, process: Process, moment: ReadingMoment, decision: ReadingDecision) -> None:
     part = story.container.get(Queries).query(ProcessPart).filter(process_id=process.id, position=1).first()
     context = Context(Actor.core(), story.clock.timestamp(), MoveProcess(process.id), environment_id=process.environment_id)
-    story.container.get(ReadingDecisions).store(process, part, moment, decision, context)
+    decisions = story.container.get(ReadingDecisions)
+    decisions.store(process, part, moment, decision, decisions.kept(process, moment).get(part.position), context)
 
 
 def stored_missing_reader(story: Story, process: Process, moment: ReadingMoment) -> None:

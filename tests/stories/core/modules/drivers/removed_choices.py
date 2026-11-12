@@ -22,12 +22,12 @@ def test_a_removed_driver_uses_the_default_without_changing_settings(new_story, 
 
 
 def test_reinstalling_a_removed_suite_restores_the_saved_choice(new_story):
-    story = new_story(f"{PATH}:AcmeModule", fixture=MainEnvironment)
+    story = new_story(f"{PATH}:AcmeSuiteOfAcmeModule", fixture=MainEnvironment)
     story.expect_success("suite choose acme --environment main")
     story.container.get(ModuleRemoval).remove("acme.suite")
     code, text = story.synced()
     story.expect_rows(code == 0)
     story.expect_text("suite current main", "suite: coding")
-    story.expect_sync_success(f"{PATH}:AcmeModule")
+    story.expect_sync_success(f"{PATH}:AcmeSuiteOfAcmeModule")
     story.expect_success("suite current main", "suite: acme")
     story.expect_text("setting show journal.core.drivers.suite --environment main", "value: acme")

@@ -68,8 +68,9 @@ def tool(name, category=ToolType.UNCATEGORISED):
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
 @pytest.mark.parametrize("sample", [tool("Read", ToolType.READ), tool("Skill", ToolType.READ), tool("Grep", ToolType.SEARCH), tool("Glob", ToolType.SEARCH), shell("grep cart a", part("grep", CommandCategory.SEARCH, "cart", "a")),
                                     shell("cat a", part("cat", CommandCategory.READ, "a")), shell("ls", part("ls", CommandCategory.READ)),
-                                    shell('journal report make "x"', part("journal", CommandCategory.JOURNAL, "report", "make", "x"))],
-                         ids=["read", "skill", "grep", "glob", "shell grep", "cat", "ls", "journal report"])
+                                    shell('journal report make "x"', part("journal", CommandCategory.JOURNAL, "report", "make", "x")),
+                                    HookSamples.tool_use("Read", ToolType.READ, [".claude/skills/journal-merger/SKILL.md"], None), HookSamples.tool_use("Read", ToolType.READ, ["src/cart.py"], None)],
+                         ids=["read", "skill", "grep", "glob", "shell grep", "cat", "ls", "journal report", "read a skill its profile does not list", "read a source file"])
 def test_a_read_only_helper_reads_and_searches(new_story, helper_fixture, sample):
     story, session = helper_story(new_story, helper_fixture)
     expect_reply_allowed(story.hook(session, sample))

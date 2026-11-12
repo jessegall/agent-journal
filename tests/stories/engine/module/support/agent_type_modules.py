@@ -74,7 +74,6 @@ class UnknownDriver(Driver):
 
 
 class DriverRole(Clerk):
-    suites = [SampleSuite]
     drivers = [UnknownDriver]
 
 
@@ -83,7 +82,7 @@ class DefaultSuite(SampleSuite):
 
 
 class DefaultRole(DriverRole):
-    suites = [DefaultSuite]
+    """Ships the suite that lists it."""
 
 
 class PolicySuite(SampleSuite):
@@ -91,7 +90,7 @@ class PolicySuite(SampleSuite):
 
 
 class PolicyRole(Clerk):
-    suites = [PolicySuite]
+    """Ships the suite that lists it."""
 
 
 class UnknownRule(DriverRule):
@@ -139,4 +138,20 @@ class HelperTypeSuite(Suite):
 
 
 class SuiteRegistersHelperType(Clerk):
-    suites = [HelperTypeSuite]
+    """Ships the suite that lists it."""
+
+
+class SampleSuiteOfDriverRole(SampleSuite):
+    modules = [DriverRole]
+
+
+class DefaultSuiteOfDefaultRole(DefaultSuite):
+    modules = [DefaultRole]
+
+
+class PolicySuiteOfPolicyRole(PolicySuite):
+    modules = [PolicyRole]
+
+
+class HelperTypeSuiteOfSuiteRegistersHelperType(HelperTypeSuite):
+    modules = [SuiteRegistersHelperType]

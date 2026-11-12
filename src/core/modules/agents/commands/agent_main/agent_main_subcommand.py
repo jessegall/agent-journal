@@ -10,7 +10,8 @@ from core.modules.agents.support.agent_label import AgentLabel
 
 
 class AgentMainSubcommand(ReadSubcommand[Agent | None]):
-    """`journal agent main [--environment <name>]`: the main agent running in the environment, if one is."""
+    """`journal agent main [--environment <name>]`: the main agent running in the environment, if one is, by its
+    number, the one every agent argument takes; its row id only as a labelled field."""
 
     cli_name = "agent"
     name = "main"
@@ -25,6 +26,6 @@ class AgentMainSubcommand(ReadSubcommand[Agent | None]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Agent):
-            output.write(f"{AgentLabel.from_agent(value).text}, session {value.session}", {"id": value.id})
+            output.write(f"{AgentLabel.from_agent(value).text}, agent:{value.number}, session {value.session}, row id {value.id}", {"id": value.id, "number": value.number})
             return
-        output.write("no main agent is running", {"id": None})
+        output.write("no main agent is running", {"id": None, "number": None})

@@ -16,10 +16,13 @@ class Suite:
     module first), the suites it requires, a
     default driver per role, whether it takes complete control, the other modules' overlays it then includes,
     the viewer windows its environments show, the default layout of each viewer page, per driver where one
-    is named, the layouts it offers per page in the picker, and the kinds of helper it registers."""
+    is named, the layouts it offers per page in the picker, and the kinds of helper it registers. A suite that
+    joins another is no suite to pick: a plugin ships one to add its modules to that suite, whose environments
+    alone run them, so no module names a suite itself."""
 
     name: ClassVar[str]
     modules: ClassVar[Sequence[type[Module]]] = []
+    joins: ClassVar[str | None] = None
     requires: ClassVar[Sequence[str]] = []
     defaults: ClassVar[Mapping[str, str]] = {}
     complete_control: ClassVar[bool] = False

@@ -236,6 +236,7 @@
         "architecture_processes_reader_demand_from_whole_line",
         "module_registration",
         "core_names_no_suite",
+        "core_names_no_coding_word",
         "core_names_no_suite_in_a_script",
         "core_names_no_suite_in_a_view",
         "story_assert",

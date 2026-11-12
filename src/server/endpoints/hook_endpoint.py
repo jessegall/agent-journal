@@ -1,5 +1,6 @@
 import sqlite3
 import traceback
+from engine.serving.server_files import ServerFiles
 from time import perf_counter
 from collections.abc import Mapping
 
@@ -39,6 +40,9 @@ REQUEST_LOG_BUSY_SECONDS = 0.0
 UNCHECKED_TOOL = "the journal could not check this, so it is held: {reason}. A worker or helper goes on with nothing the journal did not check. Try once more. If that is held as well, stop and write in your report that the journal does not answer."
 
 
+SERVER_UPDATING = "the journal is updating: your line is held; try it again once the journal says it started"
+
+
 class HookEndpoint:
     """Answers POST /hook: reads a hook's object, prepared or raw, and runs it through the hook
     route on a synced journal over the connection the server's hooks share, waiting for another
@@ -55,6 +59,8 @@ class HookEndpoint:
     def answer(self, data: object, program: str, headers: Mapping[str, str]) -> HookReply:
         started_at = perf_counter()
         sender = HookSender.parsed(data, self.context.hook_limit_seconds, self.context.agent_hook_limit_seconds)
+        if not ServerFiles(self.context.home).phase().runs_programs:
+            return self.held(sender)
         try:
             request = QueueRequest.started(sender.name, sender.event_name, sender.session)
             with self.context.hook_database.used(sender.priority, sender.limit_seconds, sender.owner, request) as database:
@@ -141,6 +147,12 @@ class HookEndpoint:
         if sender.needs_check:
             return HookReply(refusal=UNCHECKED_TOOL.format(reason=f"{type(error).__name__}: {error}"))
         return HookReply.allowed(f"the journal failed on this hook and let it through: {type(error).__name__}: {error}")
+
+    @staticmethod
+    def held(sender: HookSender) -> HookReply:
+        if sender.needs_check:
+            return HookReply(refusal=SERVER_UPDATING)
+        return HookReply.allowed(SERVER_UPDATING)
 
     def unchecked(self, sender: HookSender, reason: Exception) -> HookReply:
         if sender.is_stop:

@@ -8,7 +8,7 @@ import shutil
 
 
 class PluginSkillRemoval:
-    """Removes the skills a plugin published from the project and worktree program folders."""
+    """Removes the skills a plugin published from the program folders of the project and of each separate copy of it."""
 
     def __init__(self, projects: SkillProjects, providers: Providers) -> None:
         self.projects, self.providers = projects, providers

@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
@@ -12,6 +13,7 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope
+from engine.query.conditions.among import Among
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_settings import ProcessSettings
@@ -44,7 +46,13 @@ class ReadingFacts:
         self.resets, self.folder, self.settings, self.suites, self.rows, self.clock, self.cadences = resets, folder, settings, suites, rows, clock, cadences
         self.run, self.counts = run, counts
 
-    def case_for(self, process: Process, part: ProcessPart, moment: ReadingMoment) -> ReadingCase:
+    def cases_for(self, process: Process, parts: Sequence[ProcessPart], moment: ReadingMoment) -> list[ReadingCase]:
+        keys = [SilentStartRuns.name(part.text, part.program, part.category) for part in parts]
+        runs = self.counter.runs_without_change(keys)
+        waiting = self.waiting_commands(process, [part.command or part.text for part in parts])
+        return [self.case_for(process, part, moment, runs[key], (part.command or part.text) in waiting) for part, key in zip(parts, keys)]
+
+    def case_for(self, process: Process, part: ProcessPart, moment: ReadingMoment, runs_without_change: int, request_is_waiting: bool) -> ReadingCase:
         agent = self.rows.required(Agent, process.session_agent_id)
         command = part.command or part.text
         command_key = SilentStartRuns.name(part.text, part.program, part.category)
@@ -58,8 +66,8 @@ class ReadingFacts:
                            reader_is_default=reader is not None and reader.is_default, reader_failed=self.reader_failed(process, reader, moment),
                            count_missing=self.counts.count_missing(process, part),
                            draft_fits=self.draft_fits(process, part, reader, moment), output=self.output(process, part, moment),
-                           runs_without_change=self.counter.runs_without_change(command_key),
-                           request_is_waiting=self.request_is_waiting(process, command), was_skipped=self.resets.skipped_since(command_key, process.creation_timestamp()),
+                           runs_without_change=runs_without_change,
+                           request_is_waiting=request_is_waiting, was_skipped=self.resets.skipped_since(command_key, process.creation_timestamp()),
                            has_unreadable_mark=self.resets.has_mark(command_key), role_must_have_reader=agent.role in policy.reader_request_roles,
                            role_may_write_readers=self.writers.allows(Actor(agent.id, ActorType.AGENT)), role_uses_saved_commands=agent.role in policy.saved_command_roles,
                            readers_forced=self.settings.flag(ProcessSetting.READERS_FORCED))
@@ -103,5 +111,6 @@ class ReadingFacts:
     def age_seconds(self, process: Process) -> int:
         return int(process.creation_timestamp().elapsed_seconds(self.clock.timestamp()))
 
-    def request_is_waiting(self, process: Process, command: str) -> bool:
-        return self.requests.open().filter(creator_id=process.session_agent_id, command=command).exists()
+    def waiting_commands(self, process: Process, commands: Sequence[str]) -> set[str]:
+        open_requests = self.requests.open().filter(creator_id=process.session_agent_id).matching(Among("command", tuple(dict.fromkeys(commands))))
+        return {request.command for request in open_requests.all_rows()}

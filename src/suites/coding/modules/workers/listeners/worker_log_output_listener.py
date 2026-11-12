@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.support.worker_log_read import logs_read
 from dataclasses import replace
 
 from engine.event.updated import Updated
@@ -9,7 +10,6 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
-from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.merger_line import MergerLine
 
@@ -34,4 +34,4 @@ class WorkerLogOutputListener(SaveListener[Updated[Output]]):
             self.repository.save_change(line, replace(line, read_at=context.timestamp, read_output_id=None), context)
         worktrees = self.queries.query(Worktree).filter(logs_output_id=process.id, state=WorktreeState.DELIVERED).all_rows()
         for worktree in worktrees:
-            self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.review_logs, logs_read_at=context.timestamp, logs_output_id=None), context)
+            self.repository.save_change(worktree, logs_read(worktree, context.timestamp, None), context)

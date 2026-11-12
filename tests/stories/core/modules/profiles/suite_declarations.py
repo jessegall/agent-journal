@@ -2,7 +2,7 @@ from core.modules.profiles.support.profile_files import ProfileFiles
 from server.work.booting_work import BootingWork
 from tests.stories.core.support.fixtures import UserJoined
 
-NOTES_MODULE = "tests.stories.core.modules.profiles.support.notes_module:NotesModule"
+NOTES_MODULE = "tests.stories.core.modules.profiles.support.notes_module:NotesSuiteOfNotesModule"
 
 
 def test_a_module_supplies_profiles_for_its_registered_type(new_story):

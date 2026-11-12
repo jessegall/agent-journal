@@ -97,7 +97,7 @@ class ReadingEnforcer:
             return RuleAnswer.with_nudges(self.taught(name, runs[0]))
         if len(runs) > 1 and runs[0].shows_percent and runs[1].is_silent:
             return RuleAnswer.with_nudges(SILENT_START_FIXED.nudge(name=name))
-        if self.counter.runs_without_change(name) >= PREVENT_AFTER_RUNS:
+        if self.counter.runs_without_change([name])[name] >= PREVENT_AFTER_RUNS:
             return self.prevented(name)
         return RuleAnswer.allowed()
 

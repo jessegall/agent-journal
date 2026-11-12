@@ -16,7 +16,7 @@ LEGACY = "tests.stories.engine.chat.support.legacy_buttons_module:LegacyButtonsM
 
 @pytest.fixture
 def buttons_server(new_story):
-    journal = new_story(BUTTONS, f"{SUITES}:SuiteModule", fixture=PlanAndPersonFixture)
+    journal = new_story(BUTTONS, f"{SUITES}:SuiteModuleJoining", f"{SUITES}:AcmeSuiteOfSuiteModule", fixture=PlanAndPersonFixture)
     journal.advance(datetime.now(timezone.utc) - journal.clock.timestamp().value)
     journal.expect_success("suite choose coding --environment main", actor=journal.user)
     journal.expect_success("environment make elsewhere /work/elsewhere")

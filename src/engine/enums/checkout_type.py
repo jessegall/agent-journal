@@ -6,3 +6,7 @@ class CheckoutType(StrEnum):
 
     MAIN = "main"
     WORKTREE = "worktree"
+
+    @property
+    def is_separate_copy(self) -> bool:
+        return self is CheckoutType.WORKTREE
