@@ -15,6 +15,7 @@ class CheckpointTestEndListener(CommitListener[Moved[Process]]):
     """A process that ended is recorded on the test of a checkpoint run it ran for."""
 
     name = "workers.checkpoint-test-ends"
+    run_order = -1
     moves = [ProcessLifecycle.finish, ProcessLifecycle.fail, ProcessLifecycle.stop, ProcessLifecycle.orphan]
 
     def __init__(self, queries: Queries, bus: Bus) -> None:
