@@ -7,6 +7,7 @@ from engine.event.changed import Changed
 from engine.event.event_type import EventType
 from engine.event.logged_event import LoggedEvent
 from engine.container.container import Container
+from engine.container.round_state import RoundState
 from engine.log.error_log import ErrorLog
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
@@ -33,7 +34,7 @@ PROGRAM_STOP_RUN_ORDER = 500
 PLUGIN_RUN_ORDER = 1000
 
 
-class CommitListenerRunner:
+class CommitListenerRunner(RoundState):
     """Runs commit listeners with at most once delivery across a server stop; reported failures are retried."""
 
     def __init__(self, registry: Registry, log: EventLog, container: Container, errors: ErrorLog, cursors: ListenerCursorTable,
@@ -41,6 +42,10 @@ class CommitListenerRunner:
         self.system_log, self.turns = system_log, turns
         self.registry, self.log, self.container, self.errors, self.cursors, self.exceptions, self.scopes = registry, log, container, errors, cursors, exceptions, scopes
         self.positions: dict[str, int] = {}
+        self.positions_stale = False
+
+    def reset(self) -> None:
+        self.positions = {}
         self.positions_stale = False
 
     def run(self) -> None:
