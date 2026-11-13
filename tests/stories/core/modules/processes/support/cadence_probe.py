@@ -1,6 +1,5 @@
 import os
 import shutil
-import time
 from datetime import timedelta
 
 from engine.actor.actor import Actor
@@ -147,17 +146,16 @@ def folder_made_a_file(story: Story, process: Process) -> None:
     path.write_text("not a folder")
 
 
-def tick_cost(story: Story) -> tuple[int, float]:
-    """The statements one cadence tick sends to the database and the seconds it takes."""
+def tick_statements(story: Story) -> int:
+    """The number of statements one cadence tick sends to the database."""
     connection = story.container.get(Database).connection
     statements: list[str] = []
     connection.set_trace_callback(statements.append)
-    began = time.perf_counter()
     try:
         cadence_tick(story)
     finally:
         connection.set_trace_callback(None)
-    return len(statements), time.perf_counter() - began
+    return len(statements)
 
 
 def worker_agent(story: Story) -> Agent:

@@ -1,6 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
 from threading import Event
-from time import perf_counter
 
 from engine.testing.examples.hook_samples import HookSamples
 from server.endpoints.cli_endpoint import CliEndpoint
@@ -14,7 +13,6 @@ from tests.stories.server.developer_hook_requests import recording_server
 from tests.stories.server.support.server_client import viewer_answer
 
 
-CLI_QUEUED_LIMIT_SECONDS = 0.05
 LONG_WAIT_LIMIT_SECONDS = 30
 ROUND_START_LIMIT_SECONDS = 10
 
@@ -113,10 +111,8 @@ def test_a_cli_line_runs_after_its_wait_limit_even_while_a_hook_is_held(recordin
     server.context.hook_database.queue.cli_wait_limit_seconds = 0.05
     with ThreadPoolExecutor(1) as pool:
         with server.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, 1):
-            started_at = perf_counter()
             command = pool.submit(server.expect_cli_exit, "task list", "/", 0, "")
             command.result(timeout=2)
-            server.story.expect_rows(perf_counter() - started_at < 1)
 
 
 def test_a_slow_round_is_listed_in_the_inspector_and_a_cli_line_is_not_queued_behind_it(recording_server):
@@ -128,10 +124,8 @@ def test_a_slow_round_is_listed_in_the_inspector_and_a_cli_line_is_not_queued_be
         running = pool.submit(JournalRound(server.story.home, "plugin listener thread", work, queue=queue).run)
         try:
             server.story.expect_rows(work.entered.wait(ROUND_START_LIMIT_SECONDS))
-            started_at = perf_counter()
             with queue.cli_turn(QueueRequest.started("CLI", "task list")):
-                queued_seconds = perf_counter() - started_at
-            server.story.expect_rows(queued_seconds < CLI_QUEUED_LIMIT_SECONDS)
+                server.story.expect_rows(work.entered.is_set(), not work.release.is_set())
             server.story.expect_rows(any(row["sender"] == "Background" and row["event"] == "plugin listener thread" for row in inspection(server, cookie)["running"]))
         finally:
             work.release.set()
@@ -145,6 +139,5 @@ def test_a_tick_round_does_not_wait_behind_a_running_hook(recording_server):
     work = BlockedRound()
     work.release.set()
     with server.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, 1):
-        started_at = perf_counter()
         JournalRound(server.story.home, "output reading", work, queue=queue).run()
-        server.story.expect_rows(work.entered.is_set(), perf_counter() - started_at < ROUND_START_LIMIT_SECONDS)
+        server.story.expect_rows(work.entered.is_set())

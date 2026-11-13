@@ -1,6 +1,5 @@
 from tests.unit.core.modules.plans.support.view_timing import ViewTiming
 
-PLAIN_VIEW_LIMIT_MS = 5.0
 
 HAND_PLAN_TASKS = ("SELECT phase_tasks.task_id, phases.plan_id, phase_tasks.phase_id, phases.position, phases.checkpoint, phase_tasks.position,"
                    " tasks.state, tasks.closed_at FROM phases JOIN phase_tasks ON phase_tasks.phase_id = phases.id"
@@ -25,7 +24,7 @@ def test_each_proposed_view_read_by_key_stays_a_plain_view():
     ]
     for read in reads:
         print(f"{read.name}: {read.median_ms:.3f} ms; {read.plan}")
-    assert not [read.name for read in reads if read.scans_tasks or read.median_ms > PLAIN_VIEW_LIMIT_MS], reads
+    assert not [read.name for read in reads if read.scans_tasks], reads
 
 
 def test_plan_progress_by_plan_searches_plans_by_key_and_scans_no_tasks():

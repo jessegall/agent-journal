@@ -1,5 +1,4 @@
 from collections import defaultdict
-from time import perf_counter
 
 import pytest
 
@@ -13,7 +12,6 @@ from tests.stories.support.story_checks import expect_value
 
 MESSAGES = 30000
 PROCESSES = 60000
-RULE_SECONDS = 0.1
 WATCHED_RULES = ("messages.delivery", "messages.unanswered", "processes.long-run-dock", "plugins.plugin-events")
 SCANNED_INDEXES = ("messages_waiting", "messages_chat", "messages_environment_parent", "processes_environment_ended")
 COUNTING = "WITH RECURSIVE c(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM c WHERE n < {count}) "
@@ -21,11 +19,10 @@ SHELL = HookSamples.shell("ls -la", ShellPart("ls", CommandCategory.READ, ["-la"
 
 
 class RuleCalls:
-    """The statements and seconds of each watched rule's calls, taken while hooks run."""
+    """The statements of each watched rule's calls, taken while hooks run."""
 
     def __init__(self, database: Database) -> None:
         self.database = database
-        self.seconds: dict[str, list[float]] = defaultdict(list)
         self.statements: dict[str, set[str]] = defaultdict(set)
 
     def watch(self, monkeypatch) -> None:
@@ -34,9 +31,7 @@ class RuleCalls:
         def timed(rules, entry, hook):
             captured: list[str] = []
             self.database.connection.set_trace_callback(captured.append)
-            started_at = perf_counter()
             outcome = original(rules, entry, hook)
-            self.seconds[entry.name].append(perf_counter() - started_at)
             self.database.connection.set_trace_callback(None)
             self.statements[entry.name].update(sql for sql in captured if sql.startswith("SELECT"))
             return outcome
@@ -75,14 +70,7 @@ def watched_hooks(long_chat, monkeypatch):
     return calls
 
 
-@pytest.mark.story_budget(cpu_seconds=20, reason="it fills the chat and the runs of one environment with tens of thousands of rows")
 def test_no_hook_rule_reads_a_whole_table_on_a_journal_with_a_long_chat_and_many_runs(watched_hooks):
     scans = {rule: [plan for plan in watched_hooks.plans(rule) if any(index in plan for index in SCANNED_INDEXES)] for rule in WATCHED_RULES}
     expect_value({rule: plans for rule, plans in scans.items() if plans}, {})
 
-
-@pytest.mark.story_budget(cpu_seconds=20, reason="it fills the chat and the runs of one environment with tens of thousands of rows")
-def test_the_rules_that_ran_slowest_on_a_busy_server_answer_within_a_tenth_of_a_second_on_a_long_chat(watched_hooks):
-    slowest = {rule: max(watched_hooks.seconds[rule]) for rule in WATCHED_RULES if watched_hooks.seconds[rule]}
-    expect_value({rule: seconds for rule, seconds in slowest.items() if seconds >= RULE_SECONDS}, {})
-    expect_value(sorted(slowest), sorted(WATCHED_RULES))

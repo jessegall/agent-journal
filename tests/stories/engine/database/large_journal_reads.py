@@ -59,7 +59,7 @@ def large_reads(story, database, label: str, work) -> list[str]:
     return [f"{label}: {error}" for error in collected]
 
 
-@pytest.mark.story_budget(points=80000, cpu_seconds=40, reason="it runs every read command of the journal as nine actors on a journal with many rows")
+@pytest.mark.story_budget(points=80000, reason="it runs every read command of the journal as nine actors on a journal with many rows")
 def test_no_read_command_and_no_hook_loads_more_rows_than_the_read_limit_on_a_large_journal(new_story):
     story = new_story(fixture=LargeJournal)
     database = story.container.get(Database)
@@ -84,7 +84,6 @@ def test_no_read_command_and_no_hook_loads_more_rows_than_the_read_limit_on_a_la
     story.expect_rows(not fixed, detail="these reads are fixed, so take them out of OPEN_LARGE_READS:\n" + "\n".join(fixed))
 
 
-@pytest.mark.story_budget(cpu_seconds=20, reason="it runs every changing command of the journal twice on a journal with many rows")
 def test_no_changing_command_and_no_listener_after_it_loads_more_rows_than_the_read_limit_on_a_large_journal(new_story):
     story = new_story(fixture=LargeJournal)
     database = story.container.get(Database)

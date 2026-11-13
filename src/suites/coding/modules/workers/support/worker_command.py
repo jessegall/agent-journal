@@ -18,7 +18,9 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.agent_label import AgentLabel
 from core.modules.agents.support.new_session_line import NewSessionLine
+from core.modules.skills.support.start_skills import StartSkills
 
+WORKER_SKILLS = ("journal-tasks", "journal-shell", "journal-workers")
 WORK_STEPS = ("Read journal worker status first: it says where you are and what to do now. Prove each point of a task you have started with "
               "journal proof make <point> --task <task> \"<file:line, and the test>\", naming the tests that cover your changes in its --test command; "
               "you may prove any started task at any time and nothing is judged then. Start another of your tasks with journal task start <task> or "
@@ -33,8 +35,8 @@ class WorkerCommand:
     """Builds fresh and resumed worker launch commands through their providers."""
 
     def __init__(self, providers: Providers, servers: ServerConfigs, libraries: LibraryFolders, helpers: HelperCommand, profiles: ProfileFiles, types: HelperTypeBook, session_lines: NewSessionLine,
-                 units: WorkUnits) -> None:
-        self.session_lines, self.units = session_lines, units
+                 units: WorkUnits, start_skills: StartSkills) -> None:
+        self.session_lines, self.units, self.start_skills = session_lines, units, start_skills
         self.providers, self.servers, self.libraries, self.helpers = providers, servers, libraries, helpers
         self.profiles, self.types = profiles, types
 
@@ -44,8 +46,8 @@ class WorkerCommand:
     def restarted(self, worker: Agent, worktree: Worktree, environment: Environment, task: Task, job: str) -> LaunchCommand:
         provider = self.providers.provider(worker.program)
         skills = Path(worktree.folder) / provider.skills_folder
-        reads = "\n".join(provider.skill_instruction(name, skills / name / "SKILL.md") for name in
-                          ("journal", "journal-tasks", "journal-shell", "journal-workers"))
+        names = dict.fromkeys([*self.start_skills.session_start(), *WORKER_SKILLS])
+        reads = "\n".join(provider.skill_instruction(name, skills / name / "SKILL.md") for name in names)
         profile = self.profiles.effective(worker.profile or self.types.find(worker.role).default_profile)
         session_line = self.session_lines.line(worker)
         identity = f"You are {AgentLabel.labelled(worker).text}." if session_line is None else f"You are {AgentLabel.labelled(worker).text}.\n{session_line}"

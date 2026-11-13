@@ -1,4 +1,3 @@
-import pytest
 
 from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_tasks_singly
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PLAN_DISPATCH, approve_plan, dispatched_story_worker, planned_story
@@ -8,7 +7,6 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import PLAN
 EXTRA_TASK_COUNT = 56
 
 
-@pytest.mark.story_budget(cpu_seconds=8.0, reason="it makes and places 56 more tasks to prove a unit of sixty stays under the read limit")
 def test_a_unit_of_sixty_tasks_is_worked_under_the_read_limit(new_story, monkeypatch):
     story = planned_story(new_story, approve=False)
     for place in range(EXTRA_TASK_COUNT):

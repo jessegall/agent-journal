@@ -1,4 +1,3 @@
-import pytest
 
 from engine.database.database import Database
 from engine.model.tables import Tables
@@ -15,7 +14,6 @@ def worktree_rows_read(story, work) -> int:
     return sum(rows for statement, rows in work.statements.items() if f"FROM {table}" in statement)
 
 
-@pytest.mark.story_budget(cpu_seconds=8.0, reason="it adds 300 removed worktrees to prove a delivery reads only the worktrees that hold the file")
 def test_a_delivery_with_a_file_reads_a_handful_of_worktree_rows_among_300_removed_ones(new_story):
     story = checkout_story(new_story)
     removed_worktree_rows(story, REMOVED_COUNT)

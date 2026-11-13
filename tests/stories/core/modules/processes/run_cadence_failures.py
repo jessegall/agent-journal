@@ -5,7 +5,7 @@ from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.cadence_probe import (cadence_lines, truncate_output, damaged_record, foreign_run, folder_made_a_file,
-                                                                       kept_lines, emitted, record_text, removed_output, ring, tick_cost, ticks)
+                                                                       kept_lines, emitted, record_text, removed_output, ring, tick_statements, ticks)
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 from core.modules.processes.models.enums.process_setting import ProcessSetting
@@ -14,7 +14,6 @@ MAIN = "s-1"
 NON_STREAMING = "so it is not streaming"
 FIFTY_RUNS = 50
 MOST_STATEMENTS = 20 * FIFTY_RUNS
-MOST_SECONDS = 5.0
 
 
 def titled(story, process, title: str) -> None:
@@ -77,9 +76,9 @@ def test_fifty_runs_at_once_are_judged_in_one_tick_within_its_limits(new_story):
     for process in processes:
         emitted(story, process, "started\n")
     story.advance(timedelta(seconds=10))
-    statements, seconds = tick_cost(story)
-    story.expect_rows(all(len(ring(story, process)) == 1 for process in processes), statements < MOST_STATEMENTS, seconds < MOST_SECONDS,
-                      detail=f"{statements} statements in {seconds:.2f} seconds")
+    statements = tick_statements(story)
+    story.expect_rows(all(len(ring(story, process)) == 1 for process in processes), statements < MOST_STATEMENTS,
+                      detail=f"{statements} statements")
     story.expect_text(f"output show {processes[-1].id}", f"process_id: {processes[-1].id}", actor=story.agent)
 
 

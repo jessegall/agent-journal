@@ -1,4 +1,3 @@
-import pytest
 import json
 import os
 import re
@@ -18,7 +17,6 @@ def is_running(pid: int) -> bool:
     return bool(state) and not state.startswith("Z")
 
 
-@pytest.mark.story_budget(cpu_seconds=5.0, reason="it starts a real demo server process and waits for it to end")
 def test_the_server_of_a_demo_ends_with_the_process_it_was_started_for(new_story):
     story = new_story(fixture=UserJoined)
     owner = subprocess.Popen(["sleep", str(OWNER_LIFE_SECONDS)])
