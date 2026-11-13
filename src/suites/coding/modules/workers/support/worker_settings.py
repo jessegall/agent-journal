@@ -120,7 +120,7 @@ WORKER_SETTING_VALUES = [
     SettingValue("preset-test-commands", "Preset test commands", "Test commands each worker gets, as name=command; a name replaces the one found in the project's manifests.",
                  SettingType.LIST, default=(), person_set=True),
     SettingValue(WORKTREE_COMMANDS_NAME, "Worktree commands", "Commands run in each new worker worktree before the worker starts.",
-                 SettingType.LIST, default=()),
+                 SettingType.LIST, default=(), person_set=True),
     SettingValue(MERGE_COMMANDS_NAME, "Merge commands", "Commands run in the main checkout after each worker merge, such as a push. The task closes only when they all succeed.",
                  SettingType.LIST, default=(), person_set=True),
     SettingValue("merge-built-paths", "Built files a merge rebuilds", "Globs of files a build makes. A merge never stops on a clash in them; it builds them again from the merged sources.",

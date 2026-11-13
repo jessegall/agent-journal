@@ -12,6 +12,9 @@ class LibraryShares:
     def __init__(self, registry: Registry, container: Container) -> None:
         self.registry, self.container = registry, container
 
+    def has(self, name: str) -> bool:
+        return name in self.registry.library_shares
+
     def lookup(self, name: str) -> LibraryShare[Model]:
         if name not in self.registry.library_shares:
             raise Refusal(f"this journal shares no {name} with the library", f"the shares are {', '.join(sorted(self.registry.library_shares)) or 'none'}")

@@ -33,6 +33,7 @@ SYNC_REASON = "the library sync compares every library item with its file"
 
 MODULE_NAME = "journal.core.library"
 REACHED_NOTE_SECONDS = 60
+ROW_IDS_PER_READ = 500
 
 
 class LibrarySync:
@@ -54,12 +55,28 @@ class LibrarySync:
             return SyncOutcome.idle(connection.stopped)
         try:
             state = self.state(connection, memory)
-            results = [self.sync_safely(copy, state, memory) for copy in list(self.queries.query(LibraryCopy).every_row(SYNC_REASON))]
+            copies = list(self.queries.query(LibraryCopy).every_row(SYNC_REASON))
+            rows = self.copy_rows(copies)
+            results = [self.sync_safely(copy, rows, state, memory) for copy in copies]
         except LibraryUnreachableError as failure:
             return self.note_failure(connection, failure)
         except LibraryStoppedError as stopped:
             return self.note_stopped(connection, stopped)
         return self.note_reached(connection, state, results)
+
+    def copy_rows(self, copies: list[LibraryCopy]) -> dict[tuple[str, int], Model]:
+        ids_by_share: dict[str, list[int]] = {}
+        for copy in copies:
+            ids_by_share.setdefault(copy.share, []).append(copy.row_id)
+        rows: dict[tuple[str, int], Model] = {}
+        for name, row_ids in ids_by_share.items():
+            if not self.shares.has(name):
+                continue
+            model = self.shares.lookup(name).model
+            for start in range(0, len(row_ids), ROW_IDS_PER_READ):
+                found = self.queries.query(model).with_removed().where_in("id", row_ids[start:start + ROW_IDS_PER_READ]).every_row(SYNC_REASON)
+                rows.update({(name, row.id): row for row in found})
+        return rows
 
     def state(self, connection: LibraryConnection, memory: RoundMemory) -> ServerState:
         state = self.client.state() if memory.state is None else self.client.newest_state(memory.state)
@@ -68,9 +85,9 @@ class LibrarySync:
         memory.state = state
         return state
 
-    def sync_safely(self, copy: LibraryCopy, state: ServerState, memory: RoundMemory) -> bool:
+    def sync_safely(self, copy: LibraryCopy, rows: dict[tuple[str, int], Model], state: ServerState, memory: RoundMemory) -> bool:
         try:
-            return self.sync_copy(copy, state, memory)
+            return self.sync_copy(copy, rows, state, memory)
         except (LibraryStoppedError, LibraryUnreachableError):
             raise
         except (LibraryItemRemovedError, StaleRowError):
@@ -79,18 +96,23 @@ class LibrarySync:
             memory.skip(copy, state.entry(copy.share, copy.item_id))
             return copy.note != str(failure) and self.save(UpdateLibraryCopy(copy.id, copy.state, note=str(failure)))
 
-    def sync_copy(self, copy: LibraryCopy, state: ServerState, memory: RoundMemory) -> bool:
+    def sync_copy(self, copy: LibraryCopy, rows: dict[tuple[str, int], Model], state: ServerState, memory: RoundMemory) -> bool:
         share = self.shares.lookup(copy.share)
-        row = self.queries.query(share.model).filter(id=copy.row_id).first()
+        row = rows.get((copy.share, copy.row_id))
         if row is None or share.is_removed(row):
             return self.save(DeleteLibraryCopy(copy.id))
         entry = state.entry(copy.share, copy.item_id)
         if entry.is_removed:
             return self.mark(copy, CopyState.REMOVED)
+        if memory.is_unchanged(copy, row, entry):
+            return False
         digest = share.digest(row)
         local_changed, server_changed = digest != copy.base_digest, entry.version != copy.base_version
         if not local_changed and not server_changed:
-            return self.mark(copy, CopyState.SYNCED)
+            has_marked = self.mark(copy, CopyState.SYNCED)
+            if not has_marked:
+                memory.remember_unchanged(copy, row, entry)
+            return has_marked
         if memory.is_skipped(copy, entry) or copy.is_recorded(digest, entry.version, state.role):
             return False
         if server_changed and not local_changed and share.is_paused(row):
