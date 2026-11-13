@@ -65,11 +65,12 @@ test("a row shows no age and no dot at its left, and the dot is a button a keybo
     expect(element.contains(dotOf(element))).toBe(true);
 });
 
-test("an open card shows the run time and Seen in its live bar and no Started line, as plain text", async () => {
+test("an open card shows no run time, Seen or Started line in its live bar; its dot says when it was last seen", async () => {
     const element = await card(worker(), {tasks: [], last_activity: new Date().toISOString()}, true);
-    expect(element.querySelector("[data-information-bar] [data-agent-run-time]").textContent).toBe("Run time: 7m");
+    expect(element.querySelector("[data-agent-run-time]")).toBeNull();
     expect(element.querySelector("[data-agent-first-dispatched]")).toBeNull();
-    expect(element.querySelector("[data-information-bar] [data-agent-last-heard]").textContent).toBe("Seen: just now");
+    expect(element.querySelector("[data-agent-last-heard]")).toBeNull();
+    expect(dotOf(element).getAttribute("aria-label")).toContain("Seen: just now");
     expect(element.querySelector("[data-information-bar] [data-fact='uptime']")).toBeNull();
     expect(element.querySelector("[data-information-bar] [data-icon='reminders']")).toBeNull();
     expect(dotOf(element)).not.toBeNull();

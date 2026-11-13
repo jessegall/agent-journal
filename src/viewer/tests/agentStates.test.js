@@ -25,7 +25,7 @@ test("an older idle agent keeps the details returned on its page", async () => {
     card.click();
     await settle();
     expect(card.querySelector("[data-agent-report]")).toBeNull();
-    expect(card.querySelector("[data-agent-last-heard]")).not.toBeNull();
+    expect(card.querySelector("[data-agent-last-heard]")).toBeNull();
     expect(card.querySelector("[data-agent-resume-reason]")).toBeNull();
 });
 

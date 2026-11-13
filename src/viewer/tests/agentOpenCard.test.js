@@ -94,8 +94,8 @@ test("the opened agent card names its role and number once, and its program, mod
     expect(bar.querySelector("[data-fact='effort']").textContent).toContain("high");
     expect(bar.querySelector("[data-fact='context']")).not.toBeNull();
     expect(bar.querySelector("[data-fact='cost']")).not.toBeNull();
-    expect(bar.querySelector("[data-agent-run-time]").textContent).toContain("Run time:");
-    expect(bar.querySelector("[data-agent-last-heard]").textContent).toContain("Seen:");
+    expect(element.querySelector("[data-agent-run-time]")).toBeNull();
+    expect(element.querySelector("[data-agent-last-heard]")).toBeNull();
     expect(element.querySelector("[data-agent-driver-name]")).toBeNull();
     expect(element.querySelector("[data-agent-memory-count]")).toBeNull();
     expect(element.textContent.match(/opus/g)).toHaveLength(1);

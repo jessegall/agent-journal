@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {age, agentNumber, agentTitle, perHour, seenWords, sinceWords, AgentTip, Btn, Icon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
+import {agentNumber, agentTitle, perHour, seenWords, sinceWords, AgentTip, Btn, Icon, useNow, useWindow} from "@journal/window-kit";
 import AgentActions from "./AgentActions.vue";
 import AgentCardDetails from "./AgentCardDetails.vue";
 import AgentStatusDot from "./AgentStatusDot.vue";
@@ -25,7 +25,6 @@ const job = computed(() => props.row.role === "helper" ? props.facts?.helper_job
 const roleLabel = computed(() => agentNumber(props.row));
 const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, roleLabel.value].filter(Boolean).join(" · "));
 const context = useWindow();
-const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
 const LAUNCH_LABELS = {fresh: "new conversation", resumed: "resumed"};
 const jobLaunch = computed(() => [props.facts?.helper_job_program, LAUNCH_LABELS[props.facts?.occupant_launch]].filter(Boolean).join(", "));
@@ -82,10 +81,8 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
         </template>
         <template v-if="open && !retired"><InformationBar class="agent-live" :agent-programs="context.props.programs.rows.value" :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: facts?.windows ?? []}" card>
             <template v-if="facts?.sandbox_off"><span class="agent-sandbox-off" data-agent-sandbox-off>sandbox off</span></template>
-            <span class="agent-live-fact" data-agent-motion data-agent-run-time title="How long this session has run">Run time: {{ runTime }}</span>
-            <template v-if="facts?.last_activity"><span class="agent-live-fact" data-agent-last-heard>Seen: <TimeAgo :at="facts.last_activity" /></span></template>
         </InformationBar></template>
-        <template v-if="facts?.unit_name">
+        <template v-if="!open && facts?.unit_name">
             <div class="agent-unit" data-agent-unit>Unit: {{ facts.unit_name }}</div>
         </template>
         <template v-if="!open"><AgentTaskLine :tasks="tasks" :in-hand="row.role !== 'helper' && facts?.job_enabled ? jobTask || null : null" :job="row.role === 'helper' ? job : ''" :job-title="row.role === 'helper' ? facts?.helper_job_title || '' : ''" :job-launch="row.role === 'helper' ? jobLaunch : ''" :per-hour="rate" /></template>
@@ -207,5 +204,4 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
 .agent-menu-button { margin-left: auto; }
 .agent-menu { padding: 8px 14px; border-bottom: 1px solid var(--border-inner); background: var(--side); }
 .agent-live { background: var(--bg-2); }
-.agent-live-fact { flex: none; color: var(--text-3); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 </style>
