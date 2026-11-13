@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.cli.row_numbers import RowNumbers
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.driver.nudge import Nudge
@@ -14,7 +15,6 @@ from engine.repository.repository import Repository
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
 from suites.coding.modules.workers.support.worker_nudges import WORKER_OPERATION_UNSTARTED, WORKER_OPERATION_FAILED
 from core.modules.processes.events.process_ended import ProcessEnded
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.listener.save_listener import SaveListener
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_rows import AgentRows
@@ -50,7 +50,7 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
                 self.nudger.send_nudge(operation.recipient_id, self.operation_nudge(operation, process), WORKER_JOB_SOURCE, context)
             return
         agent = self.agents.find(process.session_agent_id)
-        if agent.role != CodingHelperRole.WORKER or agent.ended_at is None:
+        if agent.role != Worker.key or agent.ended_at is None:
             return
         worktree = self.worktrees.worker_worktree(agent.id)
         if worktree is None or worktree.state is not WorktreeState.CUT:

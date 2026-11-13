@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.driver.agent_hook import AgentHook
 from core.modules.processes.support.output_watch_call import OutputWatchCall
 from core.modules.drivers.models.enums.compaction_reason import CompactionReason
@@ -7,7 +8,6 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.scope.actor_scope import ActorScope
 from suites.coding.modules.workers.commands.compact_agent_context.compact_agent_context import CompactAgentContext
 from suites.coding.modules.workers.support.worker_nudges import CONTEXT_HARD_STOP
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.enums.agent_role import AgentRole
 from suites.coding.support.context_limit_check import ContextLimitCheck
 
@@ -27,7 +27,7 @@ class ContextHardStopRule(DriverRule):
     name = "workers.context-limit-hard-stop"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [AgentRole.MAIN, CodingHelperRole.WORKER]
+    roles = [AgentRole.MAIN, Worker.key]
     disabled_scopes = [ActorScope]
     single_action_refusal = "An agent past the second context limit may run no more tools, so it must stop"
 

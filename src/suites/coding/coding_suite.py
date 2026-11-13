@@ -1,5 +1,6 @@
+from core.modules.helpers.types.helper import Helper
+from suites.coding.modules.workers.types.worker import Worker
 from suites.coding.modules.workers.types.merger import Merger
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.enums.agent_role import AgentRole
 from engine.module.suite import Suite
 from engine.viewer.layout_preset import LayoutPreset
@@ -37,7 +38,7 @@ class CodingSuite(Suite):
         saved_command_roles=("main", "helper", "merger"),
         queue_limit_settings=tuple([WORKER_TEST_LIMIT]),
     )
-    defaults = {AgentRole.MAIN: "coding.main", CodingHelperRole.WORKER: "coding.worker", CodingHelperRole.HELPER: "coding.helper", Merger.key: "coding.helper"}
+    defaults = {AgentRole.MAIN: "coding.main", Worker.key: "coding.worker", Helper.key: "coding.helper", Merger.key: "coding.helper"}
     windows = ["messages.chat", "questions.waiting", "questions.questions", "tasks.tasks", "tasks.task-counts", "plans.plans", "agents.agents", "agents.helpers", "schedules.jobs", "memories.memories", "project-rules.rules", "workers.workers", "agents.transcript", "drivers.hook-calls", "coding.file-feed",
                "coding.file-edits", "coding.files", "coding.git", "workers.worktrees", "messages.attachments", "coding.terminal", "processes.outputs", "processes.output", "search.search", "dumps.dumps", "secrets.secrets", "skills.skills", "mcp.integrations", "profiles.profiles", "transcriptions.transcriptions", "reminders.reminders", "sharing.shares", "library.teams", "tunnel.tunnel", "updates.updates", "developer.numbers", "developer.hook-requests", "developer.system-logs", "drivers.nudges", "workers.points", "workers.todos", "documents.documents", "documents.page", "sequences.sequences", "templates.templates", "plugins.plugins", "settings.settings", "settings.project-hooks", "tools.tools", "triggers.triggers", "checks.checks", "usage.load", "usage.usage", "usage.cost", "usage.context", "coding.work-mode"]
     layouts = {

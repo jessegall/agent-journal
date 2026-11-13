@@ -1,4 +1,4 @@
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
+from suites.coding.modules.workers.types.worker import Worker
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -18,7 +18,7 @@ class WorkerJudgeScopeRule(DriverRule):
     name = "workers.worker-judge-scope"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["coding.*"]
-    roles = [CodingHelperRole.WORKER]
+    roles = [Worker.key]
     single_action_refusal = "A worker judges only its own changes"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:

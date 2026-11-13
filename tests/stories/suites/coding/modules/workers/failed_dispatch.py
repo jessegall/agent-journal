@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from core.modules.agents.models.agent import Agent
 from tests.stories.core.support.agent_labels import agent_number
 import json
@@ -14,7 +15,6 @@ from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree_ha
 from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_cut_handler import RecordWorktreeCutHandler
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, repository_environment
 
@@ -74,7 +74,7 @@ def test_a_dispatch_failing_once_a_row_refers_to_its_worker_ends_the_worker_and_
 
 def test_a_worker_release_clears_a_worktree_left_in_state_new(dispatch_story):
     story = dispatch_story
-    opened = story.container.get(Bus).run(OpenWorkerWorktree(StartAgent("s-left", "claude", CodingHelperRole.WORKER, story.agent.id), 1), story.agent, environment_id=1)
+    opened = story.container.get(Bus).run(OpenWorkerWorktree(StartAgent("s-left", "claude", Worker.key, story.agent.id), 1), story.agent, environment_id=1)
     worker_id = opened.worker.id
     story.expect_text("worker-worktree show 1", "state: new", actor=story.agent)
     story.expect_success(f'worker release {agent_number(story, worker_id)} "its dispatch failed"', actor=story.agent)

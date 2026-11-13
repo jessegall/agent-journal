@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from core.modules.agents.models.agent import Agent
 from engine.driver.nudger import Nudger
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
@@ -7,7 +8,6 @@ from engine.event.moved import Moved
 from engine.listener.rows.event_rows import EventRows
 from engine.listener.save_listener import SaveListener
 from engine.scope.actor_scope import ActorScope
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_COUNT
 from suites.coding.modules.workers.support.worker_task_limit import WorkerTaskLimit
 
@@ -25,7 +25,7 @@ class WorkerTaskCountListener(SaveListener[Moved[Task]]):
 
     def handle(self, event: Moved[Task], context: Context) -> None:
         agent = self.rows.find(Agent, context.actor.id)
-        if agent is None or agent.role != CodingHelperRole.WORKER:
+        if agent is None or agent.role != Worker.key:
             return
         started_count = self.limit.started_count(agent.id, event.row)
         if started_count:

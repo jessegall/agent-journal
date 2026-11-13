@@ -1,8 +1,8 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.command.context import Context
 from engine.listener.save_listener import SaveListener
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.events.agent_ended import AgentEnded
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.modules.workers.support.worker_questions import WorkerQuestions
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 
@@ -19,5 +19,5 @@ class AskFinalStopListener(SaveListener[AgentEnded]):
 
     def handle(self, event: AgentEnded, context: Context) -> None:
         worker = event.row
-        if worker.role == CodingHelperRole.WORKER and self.stop.is_final(worker, context.actor.id):
+        if worker.role == Worker.key and self.stop.is_final(worker, context.actor.id):
             self.questions.close_worker_lines(worker.id, "the worker was stopped for good", context)

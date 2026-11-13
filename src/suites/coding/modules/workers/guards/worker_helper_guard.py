@@ -1,3 +1,5 @@
+from core.modules.helpers.types.helper import Helper
+from suites.coding.modules.workers.types.worker import Worker
 from engine.event.created import Created
 from engine.command.context import Context
 from engine.guard.guard import Guard
@@ -6,7 +8,6 @@ from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import WORKERS_START_HELPERS
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class WorkerHelperGuard(Guard[Created[Agent]]):
@@ -18,5 +19,5 @@ class WorkerHelperGuard(Guard[Created[Agent]]):
         self.queries, self.settings = queries, settings
 
     def check(self, event: Created[Agent], context: Context) -> None:
-        if event.row.role == CodingHelperRole.HELPER and not self.settings.flag(WORKERS_START_HELPERS) and self.queries.query(Agent).filter(id=context.actor.id, role=CodingHelperRole.WORKER).exists():
+        if event.row.role == Helper.key and not self.settings.flag(WORKERS_START_HELPERS) and self.queries.query(Agent).filter(id=context.actor.id, role=Worker.key).exists():
             raise Refusal("a worker starts no read-only helper here", "a user turns on journal.suites.coding.workers.workers-start-read-only-helpers")

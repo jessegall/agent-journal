@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from contextlib import AbstractContextManager
 
 from engine.query.conditions.among import Among
@@ -7,7 +8,6 @@ from core.modules.agents.models.enums.agent_session_state import AgentSessionSta
 from core.modules.agents.support.dispatch_policy import DispatchPolicy
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
 from suites.coding.modules.workers.support.worker_sessions import WorkerSessions
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
@@ -42,8 +42,8 @@ class WorkerPolicy(DispatchPolicy):
         return self.worker_stop.was_stopped(agent)
 
     def takes_messages(self, agent: Agent) -> bool:
-        return agent.role == CodingHelperRole.WORKER or super().takes_messages(agent)
+        return agent.role == Worker.key or super().takes_messages(agent)
 
     @staticmethod
     def is_ended_worker(agent: Agent) -> bool:
-        return agent.role == CodingHelperRole.WORKER and agent.ended_at is not None
+        return agent.role == Worker.key and agent.ended_at is not None

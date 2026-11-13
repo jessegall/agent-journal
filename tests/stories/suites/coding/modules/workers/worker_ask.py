@@ -1,3 +1,4 @@
+from core.modules.helpers.types.helper import Helper
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.core.support.agent_labels import agent_number
 import json
@@ -15,7 +16,6 @@ from engine.testing.expectations.line_outcome import LineOutcome
 from engine.testing.stories.story import Story
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.merger_line import MergerLine
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, FIRST_PROOF, dispatched_worker, repository_environment, worker_session
@@ -210,7 +210,7 @@ def test_a_person_cannot_ask(asking):
 
 
 def test_a_helper_cannot_ask(asking):
-    helper = asking.story.container.get(Bus).run(StartAgent("s-helper", "claude", CodingHelperRole.HELPER, asking.story.agent.id, profile=f"{RESEARCHER_PROFILE.name}"), Actor.core(), environment_id=1)
+    helper = asking.story.container.get(Bus).run(StartAgent("s-helper", "claude", Helper.key, asking.story.agent.id, profile=f"{RESEARCHER_PROFILE.name}"), Actor.core(), environment_id=1)
     asking.story.expect_refusal(f'worker ask "{QUESTION}"', "journal worker ask is for workers", actor=Actor(helper.id, ActorType.AGENT))
 
 

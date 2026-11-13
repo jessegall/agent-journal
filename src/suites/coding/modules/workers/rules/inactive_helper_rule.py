@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from suites.coding.modules.workers.types.merger import Merger
 from collections.abc import Sequence
 from engine.helper_type.helper_type_book import HelperTypeBook
@@ -8,7 +9,6 @@ from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
 from suites.coding.modules.workers.support.worker_nudges import HELPER_INACTIVE, UNSTARTED_JOB
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_GRACE_MINUTES, INACTIVE_HELPER_MINUTES
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
@@ -47,7 +47,7 @@ class InactiveHelperRule(DriverRule):
     name = "workers.inactive-helper"
     hook = HookEventName.TICK
     drivers = ["*"]
-    roles = [AgentRole.MAIN, CodingHelperRole.WORKER]
+    roles = [AgentRole.MAIN, Worker.key]
     disabled_scopes = [ActorScope]
 
     def __init__(self, agents: AgentRows, queries: Queries, activities: AgentActivities, history: HookHistory, settings: SettingValues, processes: ProcessQuery, workers: QueueRunWorkers, requests: ReaderRequestQuery, types: HelperTypeBook, stops: WorkerStop) -> None:
@@ -75,7 +75,7 @@ class InactiveHelperRule(DriverRule):
 
     @staticmethod
     def action(helper: Agent) -> str:
-        return f"journal worker status {helper.number}" if helper.role == CodingHelperRole.WORKER else "check on it"
+        return f"journal worker status {helper.number}" if helper.role == Worker.key else "check on it"
 
     def unstarted(self, hook: AgentHook, grace: Seconds) -> list[Agent]:
         ended = tuple(self.queries.query(Agent).filter(parent_id=hook.agent_id).matching(Among("role", self.types.helper_keys())).matching(Greater("ended_at", "")).matching(IsNull("retired_at")).matching(IsNull("paused_at")).every_row(INACTIVE_REASON))

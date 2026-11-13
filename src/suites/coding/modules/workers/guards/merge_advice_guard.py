@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from suites.coding.modules.workers.types.merger import Merger
 from engine.enums.actor_type import ActorType
 from engine.event.created import Created
@@ -7,7 +8,6 @@ from engine.errors.refusal import Refusal
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.messages.commands.send_agent_message.send_agent_message import SendAgentMessage
 from core.modules.messages.models.message import Message
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class MergeAdviceGuard(Guard[Created[Message]]):
@@ -22,7 +22,7 @@ class MergeAdviceGuard(Guard[Created[Message]]):
         receiver_id = event.row.target_agent_id
         if receiver_id is None or context.actor.type is not ActorType.AGENT or self.is_counted(context):
             return
-        if self.agents.find(context.actor.id).role == Merger.key and self.agents.find(receiver_id).role == CodingHelperRole.WORKER:
+        if self.agents.find(context.actor.id).role == Merger.key and self.agents.find(receiver_id).role == Worker.key:
             raise Refusal("you talk to a worker only through advise", 'journal merger advise <worker> "<text>" (five between two commits of the worker)')
 
     @staticmethod

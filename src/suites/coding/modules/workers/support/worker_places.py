@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.agent.work.agent_work import AgentWork
 from datetime import timedelta
 
@@ -18,7 +19,6 @@ from core.modules.agents.support.type_limits import TypeLimits
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from core.modules.agents.support.agent_rows import AgentRows
 
 KEPT_WORKERS_REASON = "the places count every kept worker and every line that resumes one"
@@ -35,22 +35,22 @@ class WorkerPlaces:
         self.agents, self.queries, self.limits, self.kept, self.clock, self.scopes = agents, queries, limits, kept, clock, scopes
 
     def running(self) -> tuple[Agent, ...]:
-        running = self.agents.running(CodingHelperRole.WORKER)
+        running = self.agents.running(Worker.key)
         pending_ids = tuple(self.work.pending())
         pending = tuple(self.rows.required_index(Agent, pending_ids).values())
         return tuple({worker.id: worker for worker in (*running, *pending)}.values())
 
     def kept_workers(self) -> tuple[Agent, ...]:
-        workers = self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(IsNull("retired_at")).newest()
+        workers = self.queries.query(Agent).filter(role=Worker.key).matching(IsNull("retired_at")).newest()
         return self.kept.read(workers, lambda: tuple(workers.every_row(KEPT_WORKERS_REASON)), name="workers.kept")
 
     def kept_workers_excluding(self, parent_id: int) -> tuple[Agent, ...]:
-        workers = self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(IsNull("retired_at"))
+        workers = self.queries.query(Agent).filter(role=Worker.key).matching(IsNull("retired_at"))
         workers = workers.matching(Disjunction([IsNull("parent_id"), workers.compared("parent_id", "!=", parent_id)]))
         return tuple(workers.every_row(KEPT_WORKERS_REASON))
 
     def kept_limit(self) -> int:
-        return self.limits.required(CodingHelperRole.WORKER).kept
+        return self.limits.required(Worker.key).kept
 
     def can_start_new(self) -> bool:
         workers = self.kept_workers()
@@ -71,7 +71,7 @@ class WorkerPlaces:
             raise Refusal(f"the limit of {self.kept_limit()} workers is reached: {names}", TypeLimits.kept_limit_suggestion(workers))
 
     def run_limit(self) -> int:
-        return self.limits.required(CodingHelperRole.WORKER).run
+        return self.limits.required(Worker.key).run
 
     def resuming_lines(self) -> tuple[AgentLine, ...]:
         cutoff_value_at = self.clock.timestamp().value - timedelta(seconds=JOB_DELIVERY_SECONDS)

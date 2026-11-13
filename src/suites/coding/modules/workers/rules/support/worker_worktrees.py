@@ -1,8 +1,8 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.database.kept_rows import KeptRows
 from core.modules.agents.models.agent import Agent
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
@@ -25,7 +25,7 @@ class WorkerWorktrees:
         owner_ids = sorted(worktree_index)
         if not owner_ids:
             return []
-        owners = self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(Among("id", owner_ids)).oldest()
+        owners = self.queries.query(Agent).filter(role=Worker.key).matching(Among("id", owner_ids)).oldest()
         workers = self.kept.read(owners, lambda: tuple(owners.every_row(OWNERS_REASON)), name=f"workers.main_workers:{owner_ids}")
         return [worktree_index[worker.id] for worker in workers]
 

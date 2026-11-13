@@ -1,6 +1,6 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.enums.command_category import CommandCategory
 from engine.query.queries import Queries
 from engine.command.bus import Bus
@@ -19,7 +19,7 @@ TEST_ROWS_REASON = "the test reads every row it checks"
 def queued(story, line: str, category: CommandCategory = CommandCategory.TEST_RUN) -> Process:
     queries = story.container.get(Queries)
     agent = queries.query(Agent).find(story.agent.id)
-    workers = tuple(queries.query(Agent).filter(environment_id=agent.environment_id, role=CodingHelperRole.WORKER).every_row(TEST_ROWS_REASON))
+    workers = tuple(queries.query(Agent).filter(environment_id=agent.environment_id, role=Worker.key).every_row(TEST_ROWS_REASON))
     worker = Actor(workers[0].id, ActorType.AGENT)
     return story.container.get(Bus).run(StartProcess.single_part(worker.id, line, "/work", category, 30), story.agent, environment_id=agent.environment_id)
 

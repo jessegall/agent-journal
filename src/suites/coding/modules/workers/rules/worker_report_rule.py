@@ -1,4 +1,4 @@
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
+from suites.coding.modules.workers.types.worker import Worker
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -23,7 +23,7 @@ class WorkerReportRule(DriverRule):
     name = "workers.report"
     hook = HookEventName.STOP
     drivers = ["*"]
-    roles = [CodingHelperRole.WORKER]
+    roles = [Worker.key]
 
     def __init__(self, agents: AgentRows, tasks: TaskQuery, settings: SettingValues, next_task: WorkerNextTask, units: WorkUnits) -> None:
         self.next_task, self.units = next_task, units

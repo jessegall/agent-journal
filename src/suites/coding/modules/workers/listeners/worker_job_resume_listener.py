@@ -1,7 +1,7 @@
+from suites.coding.modules.workers.types.worker import Worker
 from core.modules.agents.events.agent_ended import AgentEnded
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.event.logged_event import LoggedEvent
 from engine.listener.commit.commit_listener import CommitListener
 from engine.query.queries import Queries
@@ -27,7 +27,7 @@ class WorkerJobResumeListener(CommitListener[AgentEnded | Updated[Agent]]):
         worker = event.row
         if isinstance(event, Updated) and event.old_row is not None and self.is_launch_record(event.old_row, worker):
             return
-        ended_worker = worker.role == CodingHelperRole.WORKER and worker.ended_at is not None
+        ended_worker = worker.role == Worker.key and worker.ended_at is not None
         if ended_worker and not self.stop.is_final(worker, logged.actor_id):
             self.worker_resume.resume(worker, Actor(logged.actor_id, ActorType.AGENT))
 

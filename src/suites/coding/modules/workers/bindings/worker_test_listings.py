@@ -1,7 +1,7 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.actor.actor import Actor
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.support.output_folder import OutputFolder
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.enums.command_category import CommandCategory
 from engine.query.queries import Queries
 from engine.command.bus import Bus
@@ -41,7 +41,7 @@ class WorkerTestListings(RunCounts):
         return self.output_parts(process, self.outputs.process_output(process.id)) if self.is_counted(process, agent) else ()
 
     def is_counted(self, process: Process, agent: Agent) -> bool:
-        return process.is_queue_run and self.own_runs.is_worker_run(process) and self.settings.number(WORKER_TEST_LIMIT) > 0 and agent.role == CodingHelperRole.WORKER
+        return process.is_queue_run and self.own_runs.is_worker_run(process) and self.settings.number(WORKER_TEST_LIMIT) > 0 and agent.role == Worker.key
 
     def output_parts(self, process: Process, output: Output | None) -> tuple[PartTestListing, ...]:
         readers = self.readers.all()
@@ -57,7 +57,7 @@ class WorkerTestListings(RunCounts):
     def count_missing(self, process: Process, part: ProcessPart) -> bool:
         if part.category is not CommandCategory.TEST_RUN or self.settings.number(WORKER_TEST_LIMIT) <= 0:
             return False
-        if self.rows.required(Agent, process.session_agent_id).role != CodingHelperRole.WORKER:
+        if self.rows.required(Agent, process.session_agent_id).role != Worker.key:
             return False
         return self.counting_reader(part, None, self.readers.all()) is None
 

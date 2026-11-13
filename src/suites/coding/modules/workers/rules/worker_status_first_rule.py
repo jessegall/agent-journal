@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.driver.agent_hook import AgentHook
 from engine.driver.block_until import BlockUntil
 from engine.driver.conditions.ran_command import RanCommand
@@ -5,7 +6,6 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from suites.coding.modules.workers.support.worker_nudges import WORKER_STATUS_FIRST
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 STATUS_COMMAND = "journal worker status"
 
@@ -18,7 +18,7 @@ class WorkerStatusFirstRule(DriverRule):
     start_line_rule = True
     hook = HookEventName.SESSION_START
     drivers = ["*"]
-    roles = [CodingHelperRole.WORKER]
+    roles = [Worker.key]
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if not hook.event.is_compaction_start:

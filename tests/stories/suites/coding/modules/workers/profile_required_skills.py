@@ -1,3 +1,5 @@
+from core.modules.helpers.types.helper import Helper
+from suites.coding.modules.workers.types.worker import Worker
 import pytest
 
 from engine.actor.actor import Actor
@@ -9,7 +11,6 @@ from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.skills.support.profile_skills import ProfileSkills
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from engine.testing.examples.hook_samples import HookSamples
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.support.story_checks import expect_value
@@ -46,7 +47,7 @@ def started_agent(story, session: str, profile: str, role: str) -> Actor:
 
 
 def started_helper(story, session: str, profile: str) -> Actor:
-    return started_agent(story, session, profile, CodingHelperRole.HELPER)
+    return started_agent(story, session, profile, Helper.key)
 
 
 @pytest.fixture
@@ -116,7 +117,7 @@ def test_reading_the_required_skill_ends_the_refusal(saved, note_taker):
 
 def test_a_worker_of_the_profile_has_the_required_skill_due(person):
     person.expect_success(f'profile save note-worker --type worker --description "Works on notes" --body "Work." --skills {LISTED} --required-skills {REQUIRED}', actor=person.user)
-    worker = started_agent(person, "s-worker", "note-worker", CodingHelperRole.WORKER)
+    worker = started_agent(person, "s-worker", "note-worker", Worker.key)
     person.expect_text("skill required", REQUIRED, actor=worker)
 
 

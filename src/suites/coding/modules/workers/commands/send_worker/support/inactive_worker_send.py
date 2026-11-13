@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from core.modules.assignments.support.assignments import Assignments
 import shlex
 from dataclasses import replace
@@ -18,7 +19,6 @@ from suites.coding.modules.workers.queries.worker_operation_query import WorkerO
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class InactiveWorkerSend:
@@ -45,7 +45,7 @@ class InactiveWorkerSend:
         self.bus.dispatch(QueueWorkerOperation(worker.id, operation_line, worker_job_command, WorkerOperationName.JOB), replace(context, actor=Actor(worker.parent_id, ActorType.AGENT)))
 
     def is_idle(self, worker: Agent) -> bool:
-        if worker.role != CodingHelperRole.WORKER or worker.retired_at is not None or worker.parent_id is None:
+        if worker.role != Worker.key or worker.retired_at is not None or worker.parent_id is None:
             return False
         if self.tasks.started_tasks(worker.id) or self.operations.active(worker.id) is not None:
             return False

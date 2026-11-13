@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from core.modules.plans.commands.assign_plan.assign_plan import AssignPlan
 from uuid import uuid4
 from suites.coding.modules.workers.support.worker_test_presets import WorkerTestPresets
@@ -18,7 +19,6 @@ from suites.coding.modules.workers.support.worker_test_command_entry import TEST
 from core.modules.profiles.support.profile_files import ProfileFiles
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.environments.models.environment import Environment
 from core.modules.environments.support.environment_rows import EnvironmentRows
@@ -96,7 +96,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         self.check_model(ProfileModel(program, model, profile.name))
         if not command.new_agent_reason.strip():
             self.check_idle(environment.folder, WorkerRequest(profile.name, program, model), tasks, command)
-        start = StartAgent(command.session or str(uuid4()), program, CodingHelperRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
+        start = StartAgent(command.session or str(uuid4()), program, Worker.key, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
         if command.source_worker_id is not None:
             return self.takeover_launch(command, start, choice, environment, context)
         source = self.sources.source_copy(replace(context, environment_id=task.environment_id))
@@ -160,7 +160,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             raise Refusal(f"{AgentLabel.labelled(idle).text} is idle: journal worker send {idle.number} --task {task_ids}", 'or --fresh "<why>"')
 
     def worker_profile(self, name: str) -> AgentProfile:
-        worker_type = self.types.find(CodingHelperRole.WORKER)
+        worker_type = self.types.find(Worker.key)
         profile = self.profiles.effective(name or worker_type.default_profile)
         self.profiles.refuse_base(profile)
         if profile.agent_type != worker_type.key:

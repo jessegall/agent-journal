@@ -1,13 +1,13 @@
+from suites.coding.modules.workers.types.worker import Worker
 from core.modules.drivers.support.compaction_stop import CompactionStop
 from engine.driver.agent_hook import AgentHook
 from engine.driver.rule_answer import RuleAnswer
 from engine.enums.agent_role import AgentRole
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.modules.workers.commands.compact_agent_context.compact_agent_context import CompactAgentContext
 from suites.coding.modules.workers.support.worker_nudges import CONTEXT_COMPACTED
 from suites.coding.support.context_limit_check import ContextLimitCheck
 
-COMPACTED_ROLES = (AgentRole.MAIN, CodingHelperRole.WORKER)
+COMPACTED_ROLES = (AgentRole.MAIN, Worker.key)
 
 
 class WorkerCompactionStop(CompactionStop):

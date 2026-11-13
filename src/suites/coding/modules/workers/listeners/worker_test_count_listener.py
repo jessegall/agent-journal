@@ -1,4 +1,4 @@
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
+from suites.coding.modules.workers.types.worker import Worker
 from engine.command.bus import Bus
 from engine.enums.command_category import CommandCategory
 from engine.listener.save_listener import SaveListener
@@ -44,7 +44,7 @@ class WorkerTestCountListener(SaveListener[Changed[Output]]):
             return
         agent = self.rows.required(Agent, process.session_agent_id)
         limit = self.settings.number(WORKER_TEST_LIMIT)
-        if agent.role != CodingHelperRole.WORKER or not 0 < limit < output.test_count:
+        if agent.role != Worker.key or not 0 < limit < output.test_count:
             return
         parts = self.queries.query(ProcessPart).filter(process_id=process.id, category=CommandCategory.TEST_RUN)
         if output.reader_position:

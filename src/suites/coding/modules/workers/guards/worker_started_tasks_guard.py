@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
@@ -6,7 +7,6 @@ from engine.errors.refusal import Refusal
 from engine.event.moved import Moved
 from engine.guard.guard import Guard
 from engine.listener.rows.event_rows import EventRows
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.modules.workers.support.worker_task_limit import WorkerTaskLimit
 
 
@@ -21,7 +21,7 @@ class WorkerStartedTasksGuard(Guard[Moved[Task]]):
 
     def check(self, event: Moved[Task], context: Context) -> None:
         agent = self.rows.find(Agent, context.actor.id)
-        if agent is None or agent.role != CodingHelperRole.WORKER:
+        if agent is None or agent.role != Worker.key:
             return
         count = self.limit.started_count(agent.id, event.row)
         if count >= self.limit.maximum():
