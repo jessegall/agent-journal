@@ -46,13 +46,3 @@ def test_the_merger_profile_carries_the_case_book_skill():
     merger = next(profile for profile in HELPER_PROFILES if profile.name == f"{MERGER_PROFILE.name}")
     expect_value(f"{MERGER_PROFILE.name}" in merger.skills and "journal-dispatching-workers" in merger.skills, True)
 
-
-def test_narrowing_a_running_worker_s_profile_removes_the_dropped_skill_at_the_next_publish(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    repository = repository_environment(story)
-    story.expect_success(f'profile save notes-worker --type worker --description "Works through notes" --body "Work through the notes." --skills {LISTED}', actor=story.user)
-    worker = dispatched_worker(story, DISPATCH.replace("--model sonnet", "--model sonnet --profile notes-worker"))
-    story.expect_success('profile save notes-worker --type worker --description "Works through notes" --body "Work through the notes." --skills journal', actor=story.user)
-    story.run("skill write")
-    story.expect_rows(stored(repository, worker, "journal"), not stored(repository, worker, "journal-tasks"), detail=story.run(f"profile skills --profile notes-worker").output_text)

@@ -16,6 +16,9 @@ from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
 from engine.registry.registry import Registry
 
+# the word of --on worker:<n>, a wait on a worker by its number
+WORKER_TARGET = "worker"
+
 
 class WorkerTaskWaitTargets(TaskWaitTargets):
     """Validates worker wait targets and resolves them after the worker finishes."""
@@ -26,10 +29,10 @@ class WorkerTaskWaitTargets(TaskWaitTargets):
 
     @property
     def target_types(self) -> tuple[str, ...]:
-        return (*super().target_types, "worker")
+        return (*super().target_types, WORKER_TARGET)
 
     def target(self, target_type: str, row_id: int) -> str:
-        if target_type != "worker":
+        if target_type != WORKER_TARGET:
             return super().target(target_type, row_id)
         return self.worker_target(self.queries.query(Agent).find(self.agent_row_id(row_id)))
 

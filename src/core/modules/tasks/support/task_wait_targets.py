@@ -13,6 +13,9 @@ from engine.registry.registry import Registry
 TARGET_MODELS = ("task", "question", "plan")
 FINISHED_STATES = ("completed", "cancelled", "answered", "closed")
 
+# the word of --on helper:<n>, a wait on a helper agent by its number
+HELPER_TARGET = "helper"
+
 
 class TaskWaitTargets:
     """Validates the rows a task can wait on and returns their stored references. A helper is named by its
@@ -26,7 +29,7 @@ class TaskWaitTargets:
 
     @property
     def target_types(self) -> tuple[str, ...]:
-        return (*TARGET_MODELS, "helper")
+        return (*TARGET_MODELS, HELPER_TARGET)
 
     @property
     def target_help(self) -> str:
@@ -34,7 +37,7 @@ class TaskWaitTargets:
         return f"write {', '.join(choices[:-1])} or {choices[-1]}"
 
     def target(self, target_type: str, row_id: int) -> str:
-        if target_type == "helper":
+        if target_type == HELPER_TARGET:
             return self.helper_target(self.agent_row_id(row_id))
         if target_type not in TARGET_MODELS:
             raise Refusal(f"{target_type}:{row_id} gives nothing to wait on", self.target_help)
