@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from core.modules.agents.models.agent import Agent
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
@@ -26,6 +27,10 @@ def test_the_merge_hooks_set_on_a_profile_run_once_after_its_worker_is_merged_an
         modal.save({MERGE_HOOKS: json.dumps(hooks)}, HELPER_TYPES)
         expect_value(json.loads(modal.value(HELPER_TYPES, MERGE_HOOKS)), hooks)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+    runner = story.container.get(CommitListenerRunner)
+    runner.run_ordinary()
+    expect_value(Path(repository.folder, "hooked.txt").exists(), False)
+    runner.run_program_stops()
     story.run_listeners()
     executed = Path(repository.folder, "hooked.txt").read_text().splitlines()
     expect_value(len(executed), 1)

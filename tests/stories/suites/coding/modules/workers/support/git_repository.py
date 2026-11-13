@@ -111,6 +111,11 @@ class GitRepository:
         status = self.git("status", "--porcelain", folder=self.worktree_folder(worker_id)).stdout
         assert status == "", f"the worktree of worker {worker_id} holds uncommitted changes: {status}"
 
+    def expect_clean_checkout(self, folder_name: str) -> None:
+        status = self.git("status", "--porcelain", "--", folder_name).stdout
+        merging = self.git("rev-parse", "--quiet", "--verify", "MERGE_HEAD").returncode == 0
+        assert status == "" and not merging, f"the checkout holds a merge in progress ({merging}) or uncommitted changes under {folder_name}: {status}"
+
     def expect_head(self, branch: str, folder: Path | None = None) -> None:
         head = self.git("symbolic-ref", "--short", "HEAD", folder=folder).stdout.strip()
         assert head == branch, f"{folder or self.folder} has {head!r} checked out, not {branch}"

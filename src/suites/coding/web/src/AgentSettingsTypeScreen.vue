@@ -3,7 +3,7 @@ import {computed, onMounted, watch} from "vue";
 import {useWindow} from "@journal/window-kit";
 import {SettingBackPath, SettingEntryList, SettingPerTypeOverrideRow, SettingRow, SettingThreeWayCap, SettingsScreen} from "@journal/setting-components";
 import AgentTypeAgents from "../../../../core/modules/agents/web/src/AgentTypeAgents.vue";
-import {CAP_SIZES, CONTEXT_KINDS, CONTEXT_PROFILES, CONTEXT_TOKENS, MERGE_HOOKS, PROFILE_LIMITS, READ_ONLY_KEPT, READ_ONLY_RUN, valueOf} from "./helperRows.js";
+import {CAP_SIZES, CONTEXT_KINDS, CONTEXT_PROFILES, CONTEXT_TOKENS, MERGE_HOOKS, PROFILE_LIMITS, READ_ONLY_KEPT, READ_ONLY_RUN, changedHooks, profileHooks, valueOf} from "./helperRows.js";
 
 // the screen of one helper type over the table: its settings on the left, drawn from what they declare and kept in
 // the one draft of the modal, and its agents on the right. A profile has no settings of its own to draw: it shows
@@ -58,16 +58,8 @@ function chooseCap({mode, size}) {
 // the commands run after a worker of this profile is merged: its entries profile: command in the list of merge hooks
 const WORKER_ROLE = "worker";
 const hookProfile = computed(() => (props.row.role === WORKER_ROLE ? capProfile.value : ""));
-const hookEntries = computed(() => (props.draft.value(MERGE_HOOKS) ?? []).map((text) => {
-    const at = text.indexOf(":");
-    return {name: text.slice(0, at).trim(), command: text.slice(at + 1).trim()};
-}));
-const ownHooks = computed(() => hookEntries.value.filter((entry) => entry.name === hookProfile.value).map((entry) => entry.command));
-
-function changeHooks(commands) {
-    const others = hookEntries.value.filter((entry) => entry.name !== hookProfile.value).map((entry) => `${entry.name}: ${entry.command}`);
-    props.draft.set(MERGE_HOOKS, [...others, ...commands.map((command) => `${hookProfile.value}: ${command}`)]);
-}
+const ownHooks = computed(() => profileHooks(props.draft.value(MERGE_HOOKS), hookProfile.value));
+const changeHooks = (commands) => props.draft.set(MERGE_HOOKS, changedHooks(props.draft.value(MERGE_HOOKS), hookProfile.value, commands));
 
 const openAgent = (agent) => view.open("agents.agents", agent.id);
 </script>

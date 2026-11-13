@@ -1,5 +1,6 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
+from itertools import count
 
 
 @dataclass(frozen=True)
@@ -12,9 +13,16 @@ class SecretField:
     variable: str
 
     @classmethod
-    def made(cls, title: str, name: str, hidden: bool) -> "SecretField":
-        stem = "_".join("".join(character if character.isalnum() else " " for character in title).upper().split())
+    def made(cls, stem: str, name: str, hidden: bool) -> "SecretField":
         return cls(name, hidden, f"{stem}_{name.upper()}")
+
+    # The start of the variables of fields made for this title: the title in capitals, numbered from 2 when another
+    # secret's field has one of the variables, so no two secrets share a value.
+    @staticmethod
+    def free_stem(title: str, names: tuple[str, ...], used_variables: frozenset[str]) -> str:
+        title_stem = "_".join("".join(character if character.isalnum() else " " for character in title).upper().split())
+        stems = (title_stem, *(f"{title_stem}_{number}" for number in count(2)))
+        return next(stem for stem in stems if not any(f"{stem}_{name.upper()}" in used_variables for name in names))
 
     @classmethod
     def parsed(cls, raw: Mapping[str, object]) -> "SecretField":

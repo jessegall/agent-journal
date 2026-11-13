@@ -18,6 +18,17 @@ export const entryOf = (text) => {
     const at = text.lastIndexOf(":");
     return {name: text.slice(0, at).trim(), value: text.slice(at + 1).trim()};
 };
+// a merge hook entry such as journal-worker: npm run deploy, split at its first colon as the server splits it; an entry
+// with no colon belongs to no profile and is written back as it was
+const hookEntryOf = (text) => {
+    const at = text.indexOf(":");
+    return at < 0 ? {text, name: "", command: ""} : {text, name: text.slice(0, at).trim(), command: text.slice(at + 1).trim()};
+};
+export const profileHooks = (entries, profile) => (entries ?? []).map(hookEntryOf).filter((entry) => entry.name === profile).map((entry) => entry.command);
+export const changedHooks = (entries, profile, commands) => [
+    ...(entries ?? []).map(hookEntryOf).filter((entry) => entry.name !== profile).map((entry) => entry.text),
+    ...commands.map((command) => `${profile}: ${command}`),
+];
 export const valueOf = (entries, name) => (entries ?? []).map(entryOf).find((entry) => entry.name === name)?.value;
 const worded = (value) => (value === NO_CAP ? "No cap" : sizeWord(Number(value)));
 

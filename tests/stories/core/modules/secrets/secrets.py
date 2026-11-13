@@ -1,5 +1,9 @@
 import stat
 
+from engine.database.database import Database
+from engine.database.statement import Statement
+from core.modules.secrets.migrations.m003_erased_deleted_secrets import ErasedDeletedSecretsMigration
+
 from tests.stories.core.modules.secrets.support.private_home import REPLACEMENT_VALUE, VALUE, filled_story, private_folder, values_text
 from tests.stories.core.modules.secrets.support.secret_fixtures import SecretMade
 from tests.stories.core.support.fixtures import UserJoined
@@ -127,3 +131,14 @@ def test_an_agent_that_deletes_a_secret_asks_the_user(new_story):
     story = filled_story(new_story)
     story.expect_refusal("secret delete 1 --reason 'the key leaked'", "A user was asked in the dock", actor=story.agent)
     story.expect_text("secret list", "Github", actor=story.agent)
+
+
+def test_a_secret_deleted_before_deletion_erased_it_loses_its_value_when_the_migration_drops_its_row(new_story, private_folder):
+    story = filled_story(new_story, 'secret make "Stripe"', f"secret fill 2 key {REPLACEMENT_VALUE}")
+    database = story.container.get(Database)
+    for statement in ("ALTER TABLE secrets ADD COLUMN deleted_at TEXT", "CREATE INDEX secrets_active ON secrets (deleted_at, id) WHERE deleted_at IS NULL",
+                      "UPDATE secrets SET deleted_at = '2026-11-01T00:00:00+00:00' WHERE id = 1"):
+        database.update(Statement(statement))
+    ErasedDeletedSecretsMigration().run(database)
+    story.expect_refusal("secret show 1", "no secret", actor=story.agent)
+    story.expect_rows(VALUE not in values_text(private_folder), "GITHUB_KEY" not in values_text(private_folder), REPLACEMENT_VALUE in values_text(private_folder))

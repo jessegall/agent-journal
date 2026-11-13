@@ -20,6 +20,13 @@ JOINING_BUILD = ('const fs = require("node:fs");\n'
                  'fs.mkdirSync(folder, { recursive: true });\n'
                  'const names = fs.readdirSync(sources).sort();\n'
                  'fs.writeFileSync(folder + "/chat.js", names.map((name) => fs.readFileSync(sources + "/" + name, "utf8")).join(""));\n')
+BUILD_FAILING_WHEN_BOTH_VIEWS_CHANGED = ('const fs = require("node:fs");\n'
+                           'const sources = "../../app/web/src";\n'
+                           'const names = fs.readdirSync(sources).sort();\n'
+                           'const texts = names.map((name) => fs.readFileSync(sources + "/" + name, "utf8"));\n'
+                           'if (texts.every((text) => text.includes("changed"))) { process.exit(1); }\n'
+                           'fs.mkdirSync("../../app/web/dist", { recursive: true });\n'
+                           'fs.writeFileSync("../../app/web/dist/chat.js", texts.join(""));\n')
 
 
 def joined(texts) -> str:
@@ -27,14 +34,14 @@ def joined(texts) -> str:
     return "".join(texts)
 
 
-def built_repository(story):
+def built_repository(story, build: str = JOINING_BUILD):
     """A project whose build joins its two view sources into one built file, built once and committed."""
     repository = repository_environment(story)
     repository.checkout(ENVIRONMENT_BRANCH)
     for folder in ("app/web/src", "app/web/dist", "src/viewer"):
         (repository.folder / folder).mkdir(parents=True)
     repository.committed("src/viewer/package.json", json.dumps({"scripts": {"build": "node build.cjs"}}), "The build command")
-    repository.committed("src/viewer/build.cjs", JOINING_BUILD, "The build joins the view sources")
+    repository.committed("src/viewer/build.cjs", build, "The build joins the view sources")
     for name, text in zip(SOURCES, FIRST_TEXTS, strict=True):
         repository.committed(name, text, f"The view source {name}")
     repository.committed(BUILT_FILE, joined(FIRST_TEXTS), "The first build")
@@ -71,3 +78,20 @@ def test_two_workers_that_rebuilt_the_same_built_file_merge_one_after_the_other_
     repository.expect_file(ENVIRONMENT_BRANCH, SOURCES[0], CHANGED_TEXTS[0])
     repository.expect_file(ENVIRONMENT_BRANCH, SOURCES[1], CHANGED_TEXTS[1])
     repository.expect_file(ENVIRONMENT_BRANCH, BUILT_FILE, joined(CHANGED_TEXTS))
+
+
+def test_a_build_that_fails_after_a_built_file_clash_refuses_the_merge_and_leaves_the_checkout_clean(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = built_repository(story, BUILD_FAILING_WHEN_BOTH_VIEWS_CHANGED)
+    second_task = story.new_row_id('task make "Change the second view" --brief "Change view b" --environment main', actor=story.agent)
+    first = worker_changes_single_view(story, repository, 1, DISPATCH, 0)
+    second = worker_changes_single_view(story, repository, second_task, DISPATCH.removesuffix(" 1") + f" {second_task}", 1)
+    merged(story, first, 1)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    tip = repository.tip(ENVIRONMENT_BRANCH)
+    story.expect_success("proof check 2", "state: checked", actor=story.agent)
+    request_merge(story, second)
+    story.expect_refusal(f"worker merge --wait {agent_number(story, second.id)}", "the build of the built files failed", actor=story.agent)
+    repository.expect_branch_tip(ENVIRONMENT_BRANCH, tip)
+    repository.expect_clean_checkout("app")
+    repository.expect_file(ENVIRONMENT_BRANCH, BUILT_FILE, joined((CHANGED_TEXTS[0], FIRST_TEXTS[1])))
