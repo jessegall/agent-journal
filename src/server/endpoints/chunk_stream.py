@@ -1,5 +1,5 @@
-from collections.abc import Callable
 import io
+from collections.abc import Callable
 
 
 class ChunkStream(io.StringIO):
