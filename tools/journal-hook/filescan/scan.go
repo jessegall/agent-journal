@@ -140,7 +140,7 @@ func fingerprintOf(facts fs.FileInfo) Fingerprint {
 // no last scan: it counts each file modified at or after since as changed by the line or tool that started it, and
 // takes every other file as it is. Once per root it keeps the text of every file, so a later edit of any file counts
 // against the text it had.
-func Scan(root, state string, since time.Time) ([]Change, error) {
+func Scan(root, state string, cutoff time.Time) ([]Change, error) {
 	if err := os.MkdirAll(filepath.Join(state, textFolder), 0o700); err != nil {
 		return nil, err
 	}
@@ -150,7 +150,7 @@ func Scan(root, state string, since time.Time) ([]Change, error) {
 		return nil, err
 	}
 	if !hasScan {
-		previous = unchangedSince(current, since)
+		previous = unchangedSince(current, cutoff)
 	}
 	if err := writeFingerprints(state, current); err != nil {
 		return nil, err
@@ -167,13 +167,13 @@ func Scan(root, state string, since time.Time) ([]Change, error) {
 	}
 	changes := []Change{}
 	for _, path := range paths {
-		_, seen := previous[path]
+		_, scanned := previous[path]
 		_, exists := current[path]
 		var original *string
-		if seen || !hasScan {
+		if scanned || !hasScan {
 			original = oldText(root, state, path)
 		}
-		if change, changed := fileChange(root, state, path, original, seen || original != nil, exists); changed {
+		if change, changed := fileChange(root, state, path, original, scanned || original != nil, exists); changed {
 			changes = append(changes, change)
 		}
 	}
@@ -182,13 +182,13 @@ func Scan(root, state string, since time.Time) ([]Change, error) {
 
 // unchangedSince is the fingerprint of each file last modified before since: what a first scan takes as it was. With no
 // moment named every file is taken as it was.
-func unchangedSince(current map[string]Fingerprint, since time.Time) map[string]Fingerprint {
-	if since.IsZero() {
+func unchangedSince(current map[string]Fingerprint, cutoff time.Time) map[string]Fingerprint {
+	if cutoff.IsZero() {
 		return current
 	}
 	unchanged := map[string]Fingerprint{}
 	for path, fingerprint := range current {
-		if fingerprint.ModifiedNs < since.UnixNano() {
+		if fingerprint.ModifiedNs < cutoff.UnixNano() {
 			unchanged[path] = fingerprint
 		}
 	}
@@ -384,9 +384,9 @@ func (rules ignoreRules) read(root, folder string) {
 func (rules ignoreRules) matches(relative, name string) bool {
 	folder := filepath.Dir(relative)
 	for {
-		if patterns, found := rules[folder]; found {
-			below, err := filepath.Rel(folder, relative)
-			if err == nil && patterns.matches(below, name) {
+		if patterns, matched := rules[folder]; matched {
+			relativePath, err := filepath.Rel(folder, relative)
+			if err == nil && patterns.matches(relativePath, name) {
 				return true
 			}
 		}

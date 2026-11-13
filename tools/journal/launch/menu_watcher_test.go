@@ -301,16 +301,16 @@ func TestAnEnterThatChangesNothingEndsTheWatchAndThreeThatDoNotSendAreToldOf(t *
 	if ignored.watcher.CheckUnsentLine() || ignored.enters != 1 || ignored.line != nil || len(ignored.answers) != 0 {
 		t.Fatalf("an Enter the screen did not answer was repeated: %d Enters, %v", ignored.enters, ignored.answers)
 	}
-	stubborn := newUnsentLineTerminal()
-	stubborn.onEnter = func(terminal *unsentLineTerminal) {
+	unsentTerminal := newUnsentLineTerminal()
+	unsentTerminal.onEnter = func(terminal *unsentLineTerminal) {
 		terminal.later(100 * time.Millisecond)
 		terminal.draw("\r\n")
 	}
 	for range 5 {
-		stubborn.later(3 * time.Second)
-		stubborn.watcher.CheckUnsentLine()
+		unsentTerminal.later(3 * time.Second)
+		unsentTerminal.watcher.CheckUnsentLine()
 	}
-	if stubborn.enters != 3 || len(stubborn.answers) != 1 || !strings.Contains(stubborn.answers[0], "stays in the input box") || stubborn.line != nil {
-		t.Fatalf("%d Enters and told %v", stubborn.enters, stubborn.answers)
+	if unsentTerminal.enters != 3 || len(unsentTerminal.answers) != 1 || !strings.Contains(unsentTerminal.answers[0], "stays in the input box") || unsentTerminal.line != nil {
+		t.Fatalf("%d Enters and told %v", unsentTerminal.enters, unsentTerminal.answers)
 	}
 }

@@ -45,7 +45,7 @@ func pipesAt(characters []rune, level int) []pipeMark {
 		if index <= passed || index > 0 && characters[index-1] == '\\' && quote != '\'' {
 			continue
 		}
-		if bodies.holds(index) {
+		if bodies.contains(index) {
 			continue
 		}
 		switch {
@@ -145,7 +145,7 @@ var heredocStart = regexp.MustCompile(`<<-?\s*['"]?(\w+)['"]?`)
 // runeSpans are stretches of a text, each from its first character up to the one after its last.
 type runeSpans [][2]int
 
-func (spans runeSpans) holds(index int) bool {
+func (spans runeSpans) contains(index int) bool {
 	for _, span := range spans {
 		if index >= span[0] && index < span[1] {
 			return true

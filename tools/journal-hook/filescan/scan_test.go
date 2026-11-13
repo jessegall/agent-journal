@@ -217,16 +217,16 @@ func editedOuterProject(t *testing.T, project string) {
 
 func expectCounts(t *testing.T, changes []Change, want map[string][3]int) {
 	t.Helper()
-	got := map[string][3]int{}
+	actual := map[string][3]int{}
 	for _, change := range changes {
-		existed := 0
+		presence := 0
 		if change.Diff.Existed {
-			existed = 1
+			presence = 1
 		}
-		got[change.Diff.Path] = [3]int{change.Diff.LinesAdded, change.Diff.LinesRemoved, existed}
+		actual[change.Diff.Path] = [3]int{change.Diff.LinesAdded, change.Diff.LinesRemoved, presence}
 	}
-	if fmt.Sprint(got) != fmt.Sprint(want) {
-		t.Fatalf("want path: [added removed existed] %v, got %v", want, got)
+	if fmt.Sprint(actual) != fmt.Sprint(want) {
+		t.Fatalf("want path: [added removed existed] %v, got %v", want, actual)
 	}
 }
 
@@ -295,17 +295,17 @@ func TestAProjectWithNoRepositoryCountsAnEditAgainstTheTextKeptAtTheFirstScan(t 
 func TestAFirstScanOfAProjectKeepsTheEditThatStartedIt(t *testing.T) {
 	project, home := outerProject(t)
 	root := ScanRoot(home, project)
-	since := time.Now()
+	cutoff := time.Now()
 	writeFile(t, project, "tako/src/Tako/Node.cs", "class Node { int Id; }\n")
 	writeFile(t, project, "site/new.html", "<p>a</p>\n")
-	expectCounts(t, mustScan(t, root, StateFolder(home, root), since), map[string][3]int{"tako/src/Tako/Node.cs": {1, 1, 1}, "site/new.html": {1, 0, 0}})
+	expectCounts(t, mustScan(t, root, StateFolder(home, root), cutoff), map[string][3]int{"tako/src/Tako/Node.cs": {1, 1, 1}, "site/new.html": {1, 0, 0}})
 	writeFile(t, project, "notes.md", "one\ntwo\nthree\n")
-	expectCounts(t, mustScan(t, root, StateFolder(home, root), since), map[string][3]int{"notes.md": {1, 0, 1}})
+	expectCounts(t, mustScan(t, root, StateFolder(home, root), cutoff), map[string][3]int{"notes.md": {1, 0, 1}})
 }
 
-func mustScan(t *testing.T, root, state string, since time.Time) []Change {
+func mustScan(t *testing.T, root, state string, cutoff time.Time) []Change {
 	t.Helper()
-	changes, err := Scan(root, state, since)
+	changes, err := Scan(root, state, cutoff)
 	if err != nil {
 		t.Fatal(err)
 	}

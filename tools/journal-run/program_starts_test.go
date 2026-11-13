@@ -27,7 +27,7 @@ func TestEveryFileThatStartsAProgramIsAStartOfTheRunnerWithItsReason(t *testing.
 	if err != nil {
 		t.Fatal(err)
 	}
-	var unnamed []string
+	var unlistedFiles []string
 	for _, file := range files {
 		if strings.HasSuffix(file, "_test.go") {
 			continue
@@ -36,13 +36,13 @@ func TestEveryFileThatStartsAProgramIsAStartOfTheRunnerWithItsReason(t *testing.
 		if err != nil {
 			t.Fatal(err)
 		}
-		if _, named := runnerStarts[file]; programStart.Match(text) && !named {
-			unnamed = append(unnamed, file)
+		if _, registered := runnerStarts[file]; programStart.Match(text) && !registered {
+			unlistedFiles = append(unlistedFiles, file)
 		}
 	}
-	sort.Strings(unnamed)
-	if len(unnamed) > 0 {
-		t.Fatalf("these files start a program and are not named among the runner's starts with a reason: %v", unnamed)
+	sort.Strings(unlistedFiles)
+	if len(unlistedFiles) > 0 {
+		t.Fatalf("these files start a program and are not named among the runner's starts with a reason: %v", unlistedFiles)
 	}
 	for file, reason := range runnerStarts {
 		if _, err := os.Stat(file); err != nil || reason == "" {

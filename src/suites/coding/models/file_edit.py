@@ -8,7 +8,7 @@ from engine.model.model import Model
 from engine.query.query import Query
 from suites.coding.queries.conditions.prunable_file_edits import PrunableFileEdits
 
-AGENT_EDIT_LIMIT = 500
+AGENT_EDIT_ROWS = 500
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -33,4 +33,4 @@ class FileEdit(Prunable, EnvironmentScoped, Model):
 
     @classmethod
     def prunable(cls, query: Query[Self], table: str) -> Query[Self]:
-        return query.matching(PrunableFileEdits(table, cls.kept_rows, AGENT_EDIT_LIMIT))
+        return query.matching(PrunableFileEdits(table, cls.kept_rows, AGENT_EDIT_ROWS))

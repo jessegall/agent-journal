@@ -19,7 +19,7 @@ const editLookBack = 30 * time.Second
 // ScanFiles runs detached after a shell line or an edit tool: it reads what changed in the project of the journal at
 // home, or in the worktree of a worker working in folder, and hands each change to the journal, for the agent the owner
 // flag names, and goes round again for a line that ended meanwhile. A first scan counts what changed from since on.
-func ScanFiles(home, ownerFlag, owner, folder string, since time.Time) {
+func ScanFiles(home, ownerFlag, owner, folder string, cutoff time.Time) {
 	root := filescan.ScanRoot(home, folder)
 	state := filescan.StateFolder(home, root)
 	if !filescan.Acquire(state) {
@@ -27,7 +27,7 @@ func ScanFiles(home, ownerFlag, owner, folder string, since time.Time) {
 	}
 	defer filescan.Release(state)
 	for {
-		changes, err := filescan.Scan(root, state, since)
+		changes, err := filescan.Scan(root, state, cutoff)
 		if err == nil && len(changes) > 0 {
 			handOver(home, ownerFlag, owner, state, filescan.Report{Folder: root, Changes: changes})
 		}
@@ -75,8 +75,8 @@ func scanAfterEdit(root string, prepared event.HookEvent) {
 	if err != nil {
 		return
 	}
-	since := strconv.FormatInt(time.Now().Add(-editLookBack).UnixNano(), 10)
-	command := exec.Command(program, "--file-scan", filepath.Join(root, ".journal"), "--session", prepared.Session, folder, since)
+	cutoff := strconv.FormatInt(time.Now().Add(-editLookBack).UnixNano(), 10)
+	command := exec.Command(program, "--file-scan", filepath.Join(root, ".journal"), "--session", prepared.Session, folder, cutoff)
 	detach(command)
 	_ = command.Start()
 }

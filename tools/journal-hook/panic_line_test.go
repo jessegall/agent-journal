@@ -55,9 +55,9 @@ func TestOnlyJournalPanicAloneIsAPanicLine(t *testing.T) {
 }
 
 func TestABlockedMainAgentRunsJournalPanicAndItsNextCommandPassesWithTheServerUnreachable(t *testing.T) {
-	var asked atomic.Int32
+	var askCount atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		asked.Add(1)
+		askCount.Add(1)
 		writer.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(writer).Encode(Reply{Refusal: blockText})
 	}))
@@ -72,12 +72,12 @@ func TestABlockedMainAgentRunsJournalPanicAndItsNextCommandPassesWithTheServerUn
 	if stdout, _ := run(t, hook, root, shellBody("cat cart.py"), variables...); !strings.Contains(stdout, blockText) {
 		t.Fatalf("the block did not refuse the command: %s", stdout)
 	}
-	askedBefore := asked.Load()
+	askedBefore := askCount.Load()
 	panicLine := `journal panic "the journal refuses every command"`
 	if stdout, code := run(t, hook, root, shellBody(panicLine), variables...); code != 0 || strings.Contains(stdout, blockText) || !strings.Contains(stdout, PanicLineNote) {
 		t.Fatalf("the panic line was not let through: exit %d, %s", code, stdout)
 	}
-	if asked.Load() != askedBefore {
+	if askCount.Load() != askedBefore {
 		t.Fatal("the hook asked the server about the panic line")
 	}
 

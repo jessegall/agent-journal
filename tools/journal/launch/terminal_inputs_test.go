@@ -156,8 +156,8 @@ func TestTheEnterOfATypedLineWaitsUntilTheScreenHasShownTheLine(t *testing.T) {
 	reader, _ := io.Pipe()
 	terminal := bufio.NewReader(inputs.Open(1, reader))
 	inputs.NoteOutput(1)
-	typed := make(chan bool)
-	go func() { typed <- inputs.TypeLine(1, "read the overview") }()
+	lineEntered := make(chan bool)
+	go func() { lineEntered <- inputs.TypeLine(1, "read the overview") }()
 	line := make([]byte, len("read the overview"))
 	if _, err := io.ReadFull(terminal, line); err != nil {
 		t.Fatal(err)
@@ -177,7 +177,7 @@ func TestTheEnterOfATypedLineWaitsUntilTheScreenHasShownTheLine(t *testing.T) {
 	if key := <-entered; key != '\r' || time.Since(shownAt) < echoQuiet {
 		t.Fatalf("got %q %v after the line was shown", key, time.Since(shownAt))
 	}
-	if !<-typed {
+	if !<-lineEntered {
 		t.Fatal("the line was not typed")
 	}
 	if watched, ok := inputs.EnteredLine(1); !ok || watched.MoreEnters != 0 {
