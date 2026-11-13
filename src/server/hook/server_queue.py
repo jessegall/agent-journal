@@ -8,6 +8,8 @@ from engine.request.request_queue import RequestQueue
 from engine.request.request_queue_entry import RequestQueueEntry
 from engine.request.request_queue_status import RequestQueueStatus
 from engine.enums.window_priority import WindowPriority
+from engine.enums.execution_priority import ExecutionPriority
+from engine.execution.current_execution import CurrentExecution
 from server.errors.hook_database_busy_error import HookDatabaseBusyError
 from server.enums.queue_priority import QueuePriority
 from server.hook.queue_request import QueueRequest
@@ -66,7 +68,7 @@ class ServerQueue(RequestQueue):
                 del self.waiting_cli[number]
                 self.running_cli += 1
             try:
-                with self.observing(request):
+                with self.observing(request), CurrentExecution(ExecutionPriority.NORMAL, "command", request.event).held():
                     yield
             finally:
                 with self.changed:
@@ -96,7 +98,8 @@ class ServerQueue(RequestQueue):
         place = (priority, next(self.arrivals), owner)
         self.start_hook(place, wait_seconds, request)
         try:
-            yield
+            with CurrentExecution(priority.execution_priority, "hook", request.event).held():
+                yield
         finally:
             with self.changed:
                 self.running_owners.remove(owner)
@@ -144,7 +147,8 @@ class ServerQueue(RequestQueue):
                 self.running_requests[number] = request.entry()
                 self.running_viewers += 1
             try:
-                yield
+                with CurrentExecution(priority.execution_priority, "viewer", line).held():
+                    yield
             finally:
                 with self.changed:
                     del self.running_requests[number]
