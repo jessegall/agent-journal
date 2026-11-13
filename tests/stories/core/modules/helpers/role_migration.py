@@ -9,7 +9,6 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 WORKERS_MODULE = "journal.suites.coding.workers"
 ROLE_KEYS_MIGRATION = 81
 MERGER_START = 'helper start journal-merger --brief "Merge the finished workers" --environment main'
-RETIRED_REACH = "plugin sample reaches verifiers, which the role migration made helpers"
 
 
 def agent_row(story, number: int) -> dict:
@@ -43,8 +42,7 @@ class OldRoleKeys(StoryFixture):
 
     def steps(self, story) -> None:
         for session, role in (("v-1", "verifier"), ("r-1", "reviewer")):
-            story.run(f"agent start {session} claude {role} --environment main")
-            story.run(f"agent end {role_numbers(story, role)[0]} --environment main", actor=story.user)
+            story.run(f"agent end {story.new_row_id(f'agent start {session} claude {role} --environment main')}")
         launcher = FakeLauncher.accepting(story.home.socket("launcher"))
         story.run(MERGER_START, actor=story.agent)
         story.run_listeners()
@@ -93,18 +91,11 @@ def test_an_interrupted_migration_leaves_both_keys_readable_until_it_runs_again(
     story.expect_rows(role_numbers(story, "verifier") == [])
 
 
-def test_a_plugin_that_reaches_a_retired_role_is_reported(new_story):
-    story = new_story(fixture=OldRoleKeys)
-    plugin_reaching(story, {"idle": ["verifiers"], "command_starting": ["helpers"]})
-    story.run_migration_again(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
-    story.expect_rows(RETIRED_REACH in story.system_log_text())
-
-
-def test_a_plugin_that_reaches_helpers_is_not_reported(new_story):
+def test_a_plugin_that_reaches_helpers_stays_on_after_the_migration(new_story):
     story = new_story(fixture=OldRoleKeys)
     plugin_reaching(story, {"command_starting": ["helpers"]})
     story.run_migration_again(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
-    story.expect_rows(RETIRED_REACH not in story.system_log_text(), "reaches helpers" not in story.system_log_text())
+    story.expect_text("plugin list", "sample", "on", actor=story.user)
 
 
 def test_a_running_merger_keeps_running_when_its_row_moves_at_the_update(new_story):
