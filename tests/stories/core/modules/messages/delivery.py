@@ -30,6 +30,8 @@ from tests.stories.engine.driver.support.samples import SAMPLES
 from engine.testing.expectations.expect_reply import expect_absent_reply_line, expect_absent_reply_refusal, expect_reply_line
 from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_lines_2, expect_lines_3, expect_refusal_hook
+from core.modules.messages.support.message_nudges import MESSAGE_UPDATED
+from engine.testing.expectations.expect_nudge import said
 
 
 READ_MESSAGE_HOOK = HookSamples.shell("journal message read 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")).with_fields(event="post_tool_use")
@@ -478,7 +480,7 @@ def test_editing_a_message_the_agent_read_names_it_to_the_agent_without_its_text
     story.expect_success('message edit 1 --text "Better words"', actor=story.user)
     story.run_listeners()
     lines = story.hook("s-1", HookSamples.edit("cart.py"))
-    expect_reply_line(lines, "message:1 was updated: read it again")
+    expect_reply_line(lines, said(MESSAGE_UPDATED, message=1))
     expect_absent_reply_line(lines, "Better words")
 
 

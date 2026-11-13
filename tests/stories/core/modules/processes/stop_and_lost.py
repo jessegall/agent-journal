@@ -14,10 +14,12 @@ from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
 from server.work.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_handler, expect_poll_second, expect_value_4
+from core.modules.processes.support.process_nudges import PROCESS_MISSING
+from engine.testing.expectations.expect_nudge import said
 
 GROUP_END_SECONDS = 5
 
-ORPHAN_LINE = "Process 1 was lost: its shell is gone"
+ORPHAN_LINE = said(PROCESS_MISSING, process=1)
 
 
 def test_a_stop_kills_the_group_of_the_runner_and_ends_a_wait_on_the_process(new_story):

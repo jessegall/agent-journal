@@ -13,10 +13,11 @@ from tests.stories.core.support.read_limit import READ_LIMIT_ROWS, limit_reads
 from tests.stories.core.modules.messages.reply_teaching import READ_MESSAGE, VIEW_LINE, ReplySession, journal_line, listeners_run_at_hook  # noqa: F401
 from core.modules.messages.support.message_nudges import UNANSWERED
 from engine.testing.expectations.expect_nudge import said
+from core.modules.messages.support.message_nudges import UNANSWERED_REFUSAL
 
 HELPER_SESSION = "s-2"
 WORKER_SESSION = "s-worker"
-HOLD = "Answer message 1 first"
+HOLD = said(UNANSWERED_REFUSAL, messages=1)
 EDIT = HookSamples.edit("src/cart.py")
 
 

@@ -2,10 +2,12 @@ from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.secrets.support.private_home import REPLACEMENT_VALUE, VALUE, filled_story, private_folder
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from core.modules.secrets.support.secret_nudges import SECRETS_FOLDER_BAN
+from engine.testing.expectations.expect_nudge import said
 
 __all__ = ["private_folder"]
 
-FOLDER_REFUSAL = "The secrets folder is off limits: run programs that need a secret through the secret command"
+FOLDER_REFUSAL = said(SECRETS_FOLDER_BAN)
 
 
 def read_sample(path: str):

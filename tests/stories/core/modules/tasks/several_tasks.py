@@ -8,6 +8,8 @@ from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.helper_started import HelperStarted
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from engine.testing.expectations.expect_reply import expect_reply_line
+from core.modules.tasks.support.task_nudges import TASK_RETURN
+from engine.testing.expectations.expect_nudge import said
 def posted(line):
     sample = HookSamples.shell(line, ShellPart("journal", CommandCategory.JOURNAL, line.split()[1:], subcommand=line.split()[1]))
     return sample.with_fields(event="post_tool_use", raw={"tool_input": {"command": line}})
@@ -35,7 +37,7 @@ def test_after_a_close_the_newest_started_still_held_is_named_and_nothing_new_st
     story.expect_success("task close 2 --outcome done", actor=story.agent)
     story.run_listeners()
     lines = story.hook("s-1", posted("journal task close 2 --outcome done"))
-    expect_reply_line(lines, "Back to task:3")
+    expect_reply_line(lines, said(TASK_RETURN, task=3))
     story.expect_success("task show 4", "state: open", actor=story.agent)
 
 
@@ -57,7 +59,7 @@ def test_closing_the_focused_task_goes_back_to_the_task_started_last(started_tas
     story.run("task focus 1", actor=story.agent)
     story.expect_success("task close 1 --outcome done", actor=story.agent)
     story.run_listeners()
-    expect_reply_line(story.hook("s-1", posted("journal task close 1 --outcome done")), "Back to task:2")
+    expect_reply_line(story.hook("s-1", posted("journal task close 1 --outcome done")), said(TASK_RETURN, task=2))
 
 
 def test_a_task_that_is_open_or_is_no_task_cannot_be_focused(started_tasks):

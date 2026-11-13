@@ -17,6 +17,10 @@ from tests.stories.support.story_checks import expect_lines_reply_line
 from core.modules.messages.support.message_nudges import UNANSWERED
 from core.modules.messages.support.message_nudges import UNANSWERED_REFUSAL
 from engine.testing.expectations.expect_nudge import said
+from core.modules.messages.support.message_nudges import EM_DASH_NUDGE
+from core.modules.messages.support.message_nudges import PARAGRAPH_NUDGE
+from core.modules.messages.support.message_nudges import SHOP_TALK_NUDGE
+from core.modules.messages.support.message_nudges import THIRD_PERSON_NUDGE
 
 
 
@@ -129,10 +133,10 @@ def test_the_chat_is_read_for_the_third_person_em_dashes_shop_talk_and_run_on_pa
     long_text = "The cart is fixed. The total is right. The tax is right. The shop is right. " * 6
     story.hook("s-1", HookSamples.message_display(f"the user asked — so journal task make ran — done. {long_text}"))
     lines = story.hook("s-1", VIEW_LINE.with_fields(event="post_tool_use"))
-    expect_reply_line(lines, 'In the chat, say "you", never "the user"')
-    expect_reply_line(lines, "no em dashes in the chat: use a full stop")
-    expect_reply_line(lines, "talk about the work, not the journal's commands")
-    expect_reply_line(lines, "Separate paragraphs with a blank line")
+    expect_reply_line(lines, said(THIRD_PERSON_NUDGE))
+    expect_reply_line(lines, said(EM_DASH_NUDGE))
+    expect_reply_line(lines, said(SHOP_TALK_NUDGE))
+    expect_reply_line(lines, said(PARAGRAPH_NUDGE))
     story.expect_absent_hook_line("s-1", VIEW_LINE.with_fields(event="post_tool_use"), "never \"the user\"")
 
 

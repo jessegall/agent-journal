@@ -4,8 +4,10 @@ from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from core.modules.helpers.support.helper_nudges import START_WITHOUT_MODEL
+from engine.testing.expectations.expect_nudge import said
 
-REFUSAL = "Name a model when starting a helper or worker, or default for the profile's own"
+REFUSAL = said(START_WITHOUT_MODEL)
 
 
 def journal_line(command: str):
