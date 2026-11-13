@@ -10,7 +10,7 @@ from engine.scope.environment_scope import EnvironmentScope
 from core.modules.agents.models.agent import Agent
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState
-from core.modules.approvals.support.approval_nudges import APPROVAL_PENDING, APPROVAL_DECIDED, APPROVAL_REVIEW
+from core.modules.approvals.support.approval_nudges import APPROVAL_PENDING, APPROVAL_DECIDED, APPROVAL_FAILED, APPROVAL_REVIEW
 from core.modules.drivers.commands.record_agent_nudge.record_agent_nudge import RecordAgentNudge
 
 
@@ -27,7 +27,7 @@ class ApprovalNoticeListener(CommitListener[Changed[ApprovalRequest]]):
         request = event.row
         created = isinstance(event, Created)
         routed = event.old_row is not None and event.old_row.recipient_agent_id != request.recipient_agent_id
-        if not created and not routed and request.state not in (ApprovalState.ACCEPTED, ApprovalState.REFUSED, ApprovalState.CLOSED):
+        if not created and not routed and request.state not in (ApprovalState.ACCEPTED, ApprovalState.REFUSED, ApprovalState.CLOSED, ApprovalState.FAILED):
             return
         pending = request.state in (ApprovalState.OPEN, ApprovalState.RUNNING)
         reviewer = request.recipient_agent_id if pending else None
@@ -37,6 +37,8 @@ class ApprovalNoticeListener(CommitListener[Changed[ApprovalRequest]]):
         if agent is None:
             return
         declaration = APPROVAL_PENDING if pending else APPROVAL_DECIDED
+        if request.state is ApprovalState.FAILED:
+            declaration = APPROVAL_FAILED
         if review:
             declaration = APPROVAL_REVIEW
         notice = declaration.nudge(approval=request.id, recipient=recipient) if declaration is APPROVAL_REVIEW else declaration.nudge(approval=request.id)

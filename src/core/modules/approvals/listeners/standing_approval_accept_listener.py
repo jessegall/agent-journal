@@ -19,7 +19,7 @@ class StandingApprovalAcceptListener(CommitListener[Changed[ApprovalRequest]]):
     """Accepts a request saved under a standing yes that nothing has answered since, as the user who gave
     that yes, as it is saved and again when a restart cut its command off, so the accepted command runs on
     its own like one a user accepted, never inside the transaction that asked for it; an agent's own line
-    answers it at once instead, and a failed accept leaves the request in the dock."""
+    answers it at once instead, and a failed accept ends the request failed."""
 
     name = "approvals.standing-accept"
     disabled_scopes = [ActorScope]

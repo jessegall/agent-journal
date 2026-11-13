@@ -84,17 +84,11 @@ class SkillFiles:
             self.write(project, skill)
         return self.providers.skill_folders()
 
-    def remove_all(self) -> None:
-        for root in self.projects.roots((*self.providers.skill_folders(), ".codex/skills")):
-            for folder in root.glob(f"{FOLDER_PREFIX}*"):
-                if folder.is_dir():
-                    shutil.rmtree(folder)
-
     def clear(self, declared: Sequence[SkillEntry]) -> list[str]:
         names, cleared = {skill.folder for skill in declared}, list[str]()
         legacy_roots = set(self.projects.roots([".codex/skills"]))
         for root in (*self.projects.roots(self.providers.skill_folders()), *legacy_roots):
-            stale = [folder for folder in root.glob(f"{FOLDER_PREFIX}*") if folder.is_dir() and (root in legacy_roots or folder.name not in names)]
+            stale = [folder for folder in root.glob(f"{FOLDER_PREFIX}*") if folder.is_dir() and (root in legacy_roots or folder.name not in names or not self.projects.permits(root.parents[1], folder.name))]
             for folder in stale:
                 shutil.rmtree(folder)
                 cleared.append(folder.name)

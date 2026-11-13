@@ -45,7 +45,7 @@ def test_a_missing_open_card_is_restored_after_a_registry_refresh(phone_request,
     story.expect_rows(len(items) == 1, items[0].kept)
 
 
-def test_a_failed_action_keeps_its_card_open_for_refusal(new_story):
+def test_a_failed_action_ends_the_request_failed_with_its_reason_and_is_not_offered_again(new_story):
     story = new_story(NOTES, fixture=UserJoined)
     with viewer_client(story) as viewer:
         viewer.value("viewer.shell", ["viewer-layout", "save", "--suite", "notes", "--page", "home", "--layout", "{}"])
@@ -55,14 +55,13 @@ def test_a_failed_action_keeps_its_card_open_for_refusal(new_story):
     with viewer_client(story) as viewer:
         viewer.value("viewer.shell", ["viewer-layout", "save", "--suite", "notes", "--page", "home", "--layout", '{"root":"changed"}'])
         viewer.refusal("messages.chat", ["approval", "accept", str(request.id)], "the requested action failed")
-        saved = story.container.get(Queries).query(ApprovalRequest).find(request.id)
-        story.expect_rows(saved.state is ApprovalState.OPEN)
-        viewer.value("messages.chat", ["approval", "refuse", str(request.id)])
     saved = story.container.get(Queries).query(ApprovalRequest).find(request.id)
-    story.expect_rows(saved.state is ApprovalState.REFUSED)
+    docked = story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=request.id, state=DockItemState.DOCKED).every_row(TEST_ROWS_REASON)
+    story.expect_rows(saved.state is ApprovalState.FAILED, saved.failure != "", not tuple(docked))
+    story.expect_rows(not tuple(story.container.get(Queries).query(ApprovalRequest).filter(state=ApprovalState.OPEN).every_row(TEST_ROWS_REASON)))
 
 
-def test_an_action_that_raises_can_be_accepted_again(phone_request, phone_viewer, monkeypatch):
+def test_an_action_that_raises_ends_the_request_failed_and_the_agent_asks_again(phone_request, phone_viewer, monkeypatch):
     story, request = phone_request
     run_action = AnswerApprovalHandler.run_action
 
@@ -72,8 +71,11 @@ def test_an_action_that_raises_can_be_accepted_again(phone_request, phone_viewer
     monkeypatch.setattr(AnswerApprovalHandler, "run_action", fail)
     with pytest.raises(AssertionError):
         phone_viewer.value("messages.chat", ["approval", "accept", str(request.id)])
-    story.expect_rows(story.row(ApprovalRequest, request.id).state is ApprovalState.OPEN)
-    story.expect_refusal("phone pair --reason needed", "A user was asked in the dock", actor=story.agent)
+    failed = story.row(ApprovalRequest, request.id)
+    story.expect_rows(failed.state is ApprovalState.FAILED, failed.failure == "action stopped")
     monkeypatch.setattr(AnswerApprovalHandler, "run_action", run_action)
-    phone_viewer.value("messages.chat", ["approval", "accept", str(request.id)])
-    story.expect_rows(story.row(ApprovalRequest, request.id).state is ApprovalState.ACCEPTED)
+    story.expect_refusal("phone pair --reason needed", "A user was asked in the dock", actor=story.agent)
+    asked_again = story.container.get(Queries).query(ApprovalRequest).filter(state=ApprovalState.OPEN).first()
+    story.expect_rows(asked_again is not None, asked_again.id != request.id)
+    phone_viewer.value("messages.chat", ["approval", "accept", str(asked_again.id)])
+    story.expect_rows(story.row(ApprovalRequest, asked_again.id).state is ApprovalState.ACCEPTED)

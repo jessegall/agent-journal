@@ -48,12 +48,27 @@ test("the body holds Edit above its tabs, and the comment box stays at the foot"
     expect(element.querySelector("[data-resource-close]")).toBeNull();
 });
 
+test("the comments are hidden until the person opens them, and a second press closes them", async () => {
+    const {element} = drawn();
+    await settle();
+    expect(element.querySelector("[data-document-sidebar]")).toBeNull();
+    const toggle = element.querySelector("[data-document-notes-toggle]");
+    toggle.click();
+    await settle();
+    expect(element.querySelector("[data-comment-rail]")).not.toBeNull();
+    toggle.click();
+    await settle();
+    expect(element.querySelector("[data-document-sidebar]")).toBeNull();
+});
+
 test("a comment on a selection is tinted with its number and its card shows the words it is on", async () => {
     const {element} = drawn();
     await settle();
     const mark = element.querySelector('[data-resource-text] mark[data-comment="7"]');
     expect(mark.textContent).toContain("in cents");
     expect(mark.querySelector("[data-comment-number]").textContent).toBe("1");
+    element.querySelector("[data-document-notes-toggle]").click();
+    await settle();
     const card = element.querySelector('[data-comment-id="7"]');
     expect(card.querySelector("[data-comment-quote]").textContent).toBe("in cents");
     expect(card.querySelector("[data-comment]").textContent).toBe("Why cents?");

@@ -135,3 +135,19 @@ def test_nested_ask_in_same_thread_passes(turn_threads):
     with turn_threads.queue.write_turn(), turn_threads.queue.write_turn():
         assert turn_threads.queue.holder is not None
     assert turn_threads.queue.holder is None
+
+
+def test_holder_whose_thread_died_gives_the_turn_back(turn_threads):
+    holder = threading.Thread(target=turn_threads.queue.acquire)
+    holder.start()
+    holder.join()
+    with turn_threads.queue.write_turn():
+        assert turn_threads.queue.holder.thread is threading.current_thread()
+
+
+def test_immediate_ask_past_the_limit_keeps_waiting_for_the_turn(turn_threads):
+    with turn_threads.queue.write_turn():
+        turn_threads.ask("immediate", ExecutionPriority.IMMEDIATE)
+        turn_threads.clock.seconds += LIMIT_SECONDS * 2
+        turn_threads.queue.wake_waiters()
+    assert turn_threads.finish() == ["immediate"]

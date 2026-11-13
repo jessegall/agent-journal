@@ -21,8 +21,9 @@ from core.modules.approvals.listeners.approval_dock_listener import ApprovalDock
 from core.modules.approvals.listeners.approval_notice_listener import ApprovalNoticeListener
 from core.modules.approvals.listeners.pending_approval_dock_listener import PendingApprovalDockListener
 from core.modules.approvals.guards.approval_decision_guard import ApprovalDecisionGuard
-from core.modules.approvals.support.approval_nudges import APPROVAL_PENDING, APPROVAL_DECIDED, APPROVAL_REVIEW
+from core.modules.approvals.support.approval_nudges import APPROVAL_PENDING, APPROVAL_DECIDED, APPROVAL_FAILED, APPROVAL_REVIEW
 from core.modules.approvals.migrations.m001_approval_requests import ApprovalRequestsMigration
+from core.modules.approvals.migrations.m007_approval_failure import ApprovalFailureMigration
 from core.modules.approvals.migrations.m002_approval_recipients import ApprovalRecipientsMigration
 from core.modules.approvals.migrations.m003_approval_commands import ApprovalCommandsMigration
 from core.modules.approvals.migrations.m004_standing_approvals import StandingApprovalsMigration
@@ -55,15 +56,15 @@ class ApprovalsModule(Module):
     move_reason = "approval requests are new in version 5"
     seed_reason = "the demo has no pending approval requests"
     dependencies = ["journal.core.agents", "journal.core.actors", "journal.core.environments", "journal.core.docking", "journal.core.viewer", "journal.core.chat", "journal.core.drivers", "journal.core.settings"]
-    models = [ModelDeclaration(ApprovalRequest, excluded_subcommands=["make", "edit", "delete", "begin", "accept", "refuse", "retry", "close"]), ModelDeclaration(StandingApproval, excluded_subcommands=["make", "edit"])]
-    migrations = [PlainColumnNamesMigration, ApprovalRequestsMigration, ApprovalRecipientsMigration, ApprovalCommandsMigration, StandingApprovalsMigration, ApprovalWhyMigration]
+    models = [ModelDeclaration(ApprovalRequest, excluded_subcommands=["make", "edit", "delete", "begin", "accept", "refuse", "retry", "fail", "close"]), ModelDeclaration(StandingApproval, excluded_subcommands=["make", "edit"])]
+    migrations = [ApprovalFailureMigration, PlainColumnNamesMigration, ApprovalRequestsMigration, ApprovalRecipientsMigration, ApprovalCommandsMigration, StandingApprovalsMigration, ApprovalWhyMigration]
     handlers = [AcceptCoveredApprovalHandler, MakeStandingApprovalHandler, CheckApprovalWorksHandler, RequestUserApprovalHandler, MoveApprovalHandler, AnswerApprovalHandler, CloseUserApprovalHandler, RelayApprovalHandler, AnswerAgentApprovalHandler, RecoverApprovalsHandler]
     tick_handlers = [TickHandler(TickInterval(seconds=30), RecoverApprovalsTick(), "recover approvals", starts_immediately=True)]
     subcommands = [AcceptApprovalSubcommand, DenyApprovalSubcommand, PendingApprovalsSubcommand, RelayApprovalSubcommand, AnswerAgentApprovalSubcommand]
     listeners = [StandingApprovalDockListener, StandingApprovalAcceptListener, StandingApprovalMarkListener, ApprovalDockListener, ApprovalNoticeListener, PendingApprovalDockListener]
     guards = [ApprovalDecisionGuard, StandingApprovalGuard]
     marks = APPROVAL_MARKS
-    nudges = [APPROVAL_PENDING, APPROVAL_DECIDED, APPROVAL_REVIEW]
+    nudges = [APPROVAL_PENDING, APPROVAL_DECIDED, APPROVAL_FAILED, APPROVAL_REVIEW]
     docks = [DockDeclaration(ApprovalDockType.REQUEST, "question", "Approval", "approval-dock.js", reads=["approval pending"], needs_user=True, reads_target=False),
              DockDeclaration(ApprovalDockType.STANDING_USED, "check", "Approval automatically accepted", "standing-used-dock.js", reads=["standing-approval show"], buttons=[MarkButton("close", "Withdraw", "standing-approval delete {row_id}")], leaves_after_seconds=8)]
     button_slots = list(APPROVAL_SLOT)

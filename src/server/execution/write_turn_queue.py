@@ -9,6 +9,7 @@ from server.errors.write_turn_busy_error import WriteTurnBusyError
 from server.execution.waiting_ask import WaitingAsk
 
 SLOW_HOLD_SECONDS = 1.0
+HOLDER_CHECK_SECONDS = 1.0
 
 
 class WriteTurnQueue(WriteTurns):
@@ -50,7 +51,9 @@ class WriteTurnQueue(WriteTurns):
             waited = current_time - asking.asked_at
             if waited >= self.wait_limit_seconds and not asking.priority.is_unlimited:
                 raise WriteTurnBusyError.blocked(self.holder_text(), waited)
-            self.changed.wait(min(self.wait_limit_seconds - waited, min(waiting.raise_delay(current_time) for waiting in self.waiting)))
+            # an unlimited ask looks again each second for a holder whose thread died, never a negative time that spins
+            limit_delay = HOLDER_CHECK_SECONDS if asking.priority.is_unlimited else self.wait_limit_seconds - waited
+            self.changed.wait(min(limit_delay, min(waiting.raise_delay(current_time) for waiting in self.waiting)))
 
     # the ask that holds the turn, or, between two holders, the earlier ask the turn goes to next
     def holder_text(self) -> str:

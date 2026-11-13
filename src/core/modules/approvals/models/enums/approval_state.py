@@ -7,3 +7,4 @@ class ApprovalState(StrEnum):
     ACCEPTED = "accepted"
     REFUSED = "refused"
     CLOSED = "closed"
+    FAILED = "failed"

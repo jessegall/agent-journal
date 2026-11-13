@@ -1,10 +1,13 @@
 import {createApp, h} from "vue";
-import {expect, test} from "vitest";
+import {expect, test, vi} from "vitest";
+import {peekRef} from "../src/route.js";
 import {settled} from "./settled.js";
 import DocumentLibrary from "../../core/modules/documents/web/src/DocumentLibrary.vue";
 import {grouped} from "../../core/modules/documents/web/src/libraryGroups.js";
 import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
 import {documentWindowContext} from "./support/documentWindowContext.js";
+
+vi.mock("../src/route.js", async (importOriginal) => ({...(await importOriginal()), peekRef: vi.fn()}));
 
 const NOW = Date.parse("2026-10-31T12:00:00Z");
 const DOCS = [
@@ -60,15 +63,14 @@ test("on the page a chosen document is read beside the list, by the mouse or by 
     expect(reads).toContain("doc inspect 2");
 });
 
-test("in the window the rows only link to the documents page on that document and nothing is read beside them", async () => {
+test("in the window a row opens that document's inspector in place and nothing is read beside the list", async () => {
     const {element, reads} = mounted();
     await settled();
     expect(element.querySelector("[data-library-reader]")).toBeNull();
     const row = element.querySelector('[data-row="2"]');
-    expect(row.tagName).toBe("A");
-    const link = new URLSearchParams(row.getAttribute("href"));
-    expect(link.get("page")).toBe("documents.page");
-    expect(link.get("doc")).toBe("doc:2");
+    expect(row.tagName).toBe("BUTTON");
+    row.click();
+    expect(peekRef).toHaveBeenCalledWith("docs:2");
     expect(reads.some((line) => line.startsWith("doc inspect"))).toBe(false);
 });
 

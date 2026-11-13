@@ -94,11 +94,10 @@ defineExpose({show, showHeading, nextTick});
     min-width: 0;
     overflow-x: hidden;
     overflow-y: auto;
-    padding: 22px 28px 28px 24px;
+    padding: 0;
 }
 
 .document-words {
-    max-width: 794px;
     font-size: 14px;
     line-height: 1.7;
     overflow-wrap: anywhere;
@@ -273,11 +272,5 @@ defineExpose({show, showHeading, nextTick});
 
 .document-words :deep(.inline-comment) {
     margin: -2px 0 14px;
-}
-
-@media (max-width: 760px) {
-    .document-text {
-        padding: 18px 16px 24px;
-    }
 }
 </style>

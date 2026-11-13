@@ -1,7 +1,6 @@
 import sqlite3
 from pathlib import Path
 from contextlib import contextmanager
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from engine.database.errors.nesting_error import NestingError

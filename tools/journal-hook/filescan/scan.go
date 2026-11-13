@@ -55,10 +55,12 @@ type Fingerprint struct {
 	ModifiedNs int64 `json:"modified_ns"`
 }
 
-// Change is one file a scan found changed, with its counted lines and its rows.
+// Change is one file a scan found changed, with its counted lines and its rows. A file moved from another path in the
+// same scan, with the same text, names that path in MovedFrom and has no lines or rows of its own.
 type Change struct {
-	Diff event.DiffCount `json:"diff"`
-	Rows []event.DiffRow `json:"rows"`
+	Diff      event.DiffCount `json:"diff"`
+	Rows      []event.DiffRow `json:"rows"`
+	MovedFrom string          `json:"moved_from,omitempty"`
 }
 
 // Report is what a scan hands the server: the folder it read and each changed file, its path from that folder.
@@ -166,6 +168,7 @@ func Scan(root, state string, cutoff time.Time) ([]Change, error) {
 		return nil, nil
 	}
 	changes := []Change{}
+	removedTexts := map[string]string{}
 	for _, path := range paths {
 		_, scanned := previous[path]
 		_, exists := current[path]
@@ -173,11 +176,54 @@ func Scan(root, state string, cutoff time.Time) ([]Change, error) {
 		if scanned || !hasScan {
 			original = oldText(root, state, path)
 		}
+		if original != nil && !exists {
+			removedTexts[path] = *original
+		}
 		if change, changed := fileChange(root, state, path, original, scanned || original != nil, exists); changed {
 			changes = append(changes, change)
 		}
 	}
-	return changes, nil
+	return withMoves(root, changes, removedTexts), nil
+}
+
+// withMoves turns a file that appeared and a file that went in the same scan, with the same non-empty text, into one
+// change of the new file that names the old path, instead of a creation and a deletion.
+func withMoves(root string, changes []Change, removedTexts map[string]string) []Change {
+	pathsByText := map[string]string{}
+	for path, text := range removedTexts {
+		if text != "" {
+			if other, shared := pathsByText[text]; !shared || path < other {
+				pathsByText[text] = path
+			}
+		}
+	}
+	movedPaths := map[string]bool{}
+	moved := []Change{}
+	for _, change := range changes {
+		if change.Diff.Existed {
+			moved = append(moved, change)
+			continue
+		}
+		text := readText(root, change.Diff.Path)
+		from, found := "", false
+		if text != nil {
+			from, found = pathsByText[*text]
+		}
+		if !found {
+			moved = append(moved, change)
+			continue
+		}
+		delete(pathsByText, *text)
+		movedPaths[from] = true
+		moved = append(moved, Change{Diff: event.DiffCount{Path: change.Diff.Path}, Rows: []event.DiffRow{}, MovedFrom: from})
+	}
+	kept := []Change{}
+	for _, change := range moved {
+		if change.MovedFrom != "" || !movedPaths[change.Diff.Path] {
+			kept = append(kept, change)
+		}
+	}
+	return kept
 }
 
 // unchangedSince is the fingerprint of each file last modified before since: what a first scan takes as it was. With no

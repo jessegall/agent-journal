@@ -19,7 +19,8 @@ from core.modules.approvals.support.approval_result import ApprovalResult
 
 
 class AnswerApprovalHandler(Handler[AnswerApproval, ApprovalResult]):
-    """Claims a request before running its action with the deciding user's rights."""
+    """Claims a request before running its action with the deciding user's rights; an action that fails ends the
+    request failed, with why, and it is never offered again: the agent asks anew."""
 
     command = AnswerApproval
     runs_once = True
@@ -44,16 +45,26 @@ class AnswerApprovalHandler(Handler[AnswerApproval, ApprovalResult]):
                 continued = command.decision.choose(request.continued_arguments, ())
                 if code == SUCCESS_CODE and continued:
                     code = self.run_action(continued, caller, output)
-            move = command.decision.choose(ApprovalLifecycle.accept, ApprovalLifecycle.refuse) if code == SUCCESS_CODE else ApprovalLifecycle.retry
+            if code != SUCCESS_CODE:
+                raise Refusal("the requested action failed", output.getvalue().strip())
+            move = command.decision.choose(ApprovalLifecycle.accept, ApprovalLifecycle.refuse)
             ended = self.bus.run(MoveApproval(request.id, move), context.actor, environment_id=context.environment_id)
-            if code == SUCCESS_CODE and command.standing is not None and command.decision.choose(True, False):
-                self.bus.run(MakeStandingApproval(request.id, command.standing), context.actor, environment_id=context.environment_id)
-        except Exception:
-            self.bus.run(MoveApproval(request.id, ApprovalLifecycle.retry), context.actor, environment_id=context.environment_id)
+            self.keep_standing_yes(request.id, command, context)
+        except Refusal as failure:
+            self.failed(request.id, failure.text, command, context)
             raise
-        if code != SUCCESS_CODE:
-            raise Refusal("the requested action failed", output.getvalue().strip())
+        except Exception as failure:
+            self.failed(request.id, str(failure) or type(failure).__name__, command, context)
+            raise
         return ApprovalResult(ended, output.getvalue())
+
+    def failed(self, request_id: int, failure: str, command: AnswerApproval, context: Context) -> None:
+        self.bus.run(MoveApproval(request_id, ApprovalLifecycle.fail, failure), context.actor, environment_id=context.environment_id)
+        self.keep_standing_yes(request_id, command, context)
+
+    def keep_standing_yes(self, request_id: int, command: AnswerApproval, context: Context) -> None:
+        if command.standing is not None and command.decision.choose(True, False):
+            self.bus.run(MakeStandingApproval(request_id, command.standing), context.actor, environment_id=context.environment_id)
 
     def run_action(self, arguments: tuple[str, ...], caller: Caller, output: io.StringIO) -> int:
         if not arguments:

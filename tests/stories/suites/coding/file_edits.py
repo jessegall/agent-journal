@@ -42,6 +42,17 @@ def test_a_scan_of_a_shell_line_keeps_each_file_for_the_agent_of_its_process(new
     story.expect_success("file-edit show 2", "removed: 3", "edit_type: edit")
 
 
+def test_a_scan_that_found_a_file_moved_keeps_one_edit_that_names_its_old_path(new_story):
+    story = new_story(fixture=BuilderStarted)
+    repository = repository_environment(story)
+    report = story.home.folder / "scan-report.json"
+    report.write_text(json.dumps({"folder": str(repository.folder), "changes": [
+        {"diff": {"path": "cart/total.py", "existed": False, "lines_added": 0, "lines_removed": 0}, "rows": [], "moved_from": "cart.py"}]}))
+    story.expect_success(f"file-edit record-changes {report} --session s-1")
+    story.expect_success("file-edit show 1", "path: cart/total.py", "edit_type: moved", "moved_from: cart.py")
+    story.expect_refusal("file-edit show 2", "no")
+
+
 def test_no_hook_records_a_file_edit_by_itself_since_the_scan_is_the_one_source(new_story):
     story = new_story(fixture=BuilderStarted)
     repository = repository_environment(story)

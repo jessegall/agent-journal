@@ -19,7 +19,7 @@ from core.modules.settings.models.setting import Setting
 class AcceptCoveredApprovalHandler(Handler[AcceptCoveredApproval, str | None]):
     """Accepts the caller's newest open request a standing yes covers, as the user who gave that yes, and
     gives what the accepted command printed; a command that fails is refused with its reason, and the
-    request waits in the dock. With the setting Accept every approval on, a request no standing yes covers is
+    request ends failed. With the setting Accept every approval on, a request no standing yes covers is
     accepted too, as the user it asks, or else the user who switched the setting on."""
 
     command = AcceptCoveredApproval

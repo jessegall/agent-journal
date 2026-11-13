@@ -16,5 +16,5 @@ class FileChangeReport:
     @classmethod
     def parsed(cls, text: str) -> "FileChangeReport":
         report = json.loads(text)
-        changes = [FileChange(DiffCount(change["diff"]["path"], change["diff"]["existed"], change["diff"]["lines_added"], change["diff"]["lines_removed"]), tuple(change["rows"])) for change in report["changes"]]
+        changes = [FileChange(DiffCount(change["diff"]["path"], change["diff"]["existed"], change["diff"]["lines_added"], change["diff"]["lines_removed"]), tuple(change["rows"]), change.get("moved_from", "")) for change in report["changes"]]
         return cls(report["folder"], changes)
