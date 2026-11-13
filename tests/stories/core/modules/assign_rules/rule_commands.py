@@ -78,6 +78,7 @@ def test_a_person_turns_a_rule_off_and_on(new_story):
     story = new_story(fixture=PersonWithTwoRules)
     story.expect_text(f"assign-rule disable {MIGRATION_RULE} {ENVIRONMENT}", "enabled: False", actor=story.user)
     story.expect_text(f"assign-rule enable {MIGRATION_RULE} {ENVIRONMENT}", "enabled: True", actor=story.user)
+    story.expect_refusal(f"assign-rule enable {MIGRATION_RULE} {ENVIRONMENT}", f"rule {MIGRATION_RULE} is on already", actor=story.user)
 
 
 def test_a_person_deletes_a_rule_and_the_gap_closes(new_story):

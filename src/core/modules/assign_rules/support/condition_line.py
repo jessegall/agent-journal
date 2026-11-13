@@ -74,6 +74,10 @@ class ConditionLine:
     def text(self) -> str:
         return " ".join(part for part in (self.field, self.operator, self.value) if part)
 
+    @property
+    def label(self) -> str:
+        return " ".join(part for part in (self.field, self.operator.label, self.value) if part)
+
     def matches(self, facts: TaskFacts) -> bool:
         return check_condition(self.field, self.operator, self.value, facts)
 

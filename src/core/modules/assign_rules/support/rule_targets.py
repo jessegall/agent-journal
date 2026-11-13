@@ -71,13 +71,16 @@ class RuleTargets:
         ready = [agent for agent in agents if not agent.is_paused and agent.usage_limit_ends_at is None and self.checked(agent, rule, batch).actor_id is not None]
         if not ready:
             return Usable(None, none_can)
-        chosen = min(ready, key=lambda agent: (self.held(agent, batch), self.last_given_at(agent), agent.id))
+        chosen = min(ready, key=lambda agent: (self.held(agent, batch), batch.last_turn(agent.id), self.last_given_at(agent, batch), agent.id))
         return Usable(chosen.id, f"{AgentLabel.labelled(chosen).text} holds the fewest open tasks of its kind")
 
     def held(self, agent: Agent, batch: DecisionBatch) -> int:
-        return len(self.tasks.assigned(agent.id)) + batch.count(agent.id)
+        return batch.held(agent.id, lambda: len(self.tasks.unfinished_assigned(agent.id)))
 
-    def last_given_at(self, agent: Agent) -> str:
+    def last_given_at(self, agent: Agent, batch: DecisionBatch) -> str:
+        return batch.last_given_at(agent.id, lambda: self.newest_assignment_time(agent))
+
+    def newest_assignment_time(self, agent: Agent) -> str:
         newest = self.queries.query(Assignment).filter(actor_id=agent.id, subject_model=Task.model_name).newest().first()
         return "" if newest is None else newest.creation_timestamp().text
 

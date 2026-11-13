@@ -1,5 +1,6 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
+from engine.errors.refusal import Refusal
 from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
 from core.modules.assign_rules.commands.switch_assign_rule.switch_assign_rule import SwitchAssignRule
@@ -7,7 +8,7 @@ from core.modules.assign_rules.models.assign_rule import AssignRule
 
 
 class SwitchAssignRuleHandler(Handler[SwitchAssignRule, AssignRule]):
-    """Turns a rule on or off."""
+    """Turns a rule on or off; a rule already in that state is refused, so the change is never empty."""
 
     command = SwitchAssignRule
 
@@ -15,4 +16,7 @@ class SwitchAssignRuleHandler(Handler[SwitchAssignRule, AssignRule]):
         self.rows, self.repository = rows, repository
 
     def handle(self, command: SwitchAssignRule, context: Context) -> AssignRule:
-        return self.repository.update(self.rows.required(AssignRule, command.rule_id), context, enabled=command.enabled)
+        rule = self.rows.required(AssignRule, command.rule_id)
+        if rule.enabled == command.enabled:
+            raise Refusal(f"rule {rule.id} is {'on' if rule.enabled else 'off'} already")
+        return self.repository.update(rule, context, enabled=command.enabled)

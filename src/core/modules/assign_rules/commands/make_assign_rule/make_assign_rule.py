@@ -16,3 +16,4 @@ class MakeAssignRule(Command[AssignRule]):
     program: str = ""
     program_model: str = ""
     queue_limit: int = 0
+    revision: str = ""

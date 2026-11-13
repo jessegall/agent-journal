@@ -10,3 +10,4 @@ class SwitchAssignRule(Command[AssignRule]):
 
     rule_id: int
     enabled: bool
+    revision: str = ""

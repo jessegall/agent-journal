@@ -9,3 +9,4 @@ class DeleteAssignRule(DeleteCommand):
     """Deletes a rule with its conditions."""
 
     deleted_model = AssignRule
+    revision: str = ""

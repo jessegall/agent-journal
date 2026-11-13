@@ -10,3 +10,4 @@ class MoveAssignRule(Command[AssignRule]):
 
     rule_id: int
     position: int
+    revision: str = ""

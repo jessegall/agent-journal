@@ -42,12 +42,13 @@ class PersonWithTwoRules(StoryFixture):
 
 
 class PersonRulesAndWorker(StoryFixture):
-    """Ada's two rules for the main agent, and a worker, session w-1, under the main agent: story.helper."""
+    """Ada's two rules for the main agent, rule 2 turned off, and a worker, session w-1, under the main agent: story.helper."""
 
     parent = PersonWithTwoRules
 
     def steps(self, story: Story) -> None:
         story.helper = Actor(story.new_row_id(f"agent start w-1 claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
+        story.run(f"assign-rule disable {MIGRATION_RULE} {ENVIRONMENT}", actor=story.user)
 
     def expect(self, story: Story) -> None:
         story.expect_text(f"agent show {story.helper.id}", "w-1")

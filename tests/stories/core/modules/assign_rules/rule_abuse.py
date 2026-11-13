@@ -16,7 +16,7 @@ def test_a_worker_that_makes_a_rule_is_refused(new_story):
     f"assign-rule edit {COMPLEXITY_RULE} --condition any",
     f"assign-rule move {MIGRATION_RULE} --to 1",
     f"assign-rule disable {COMPLEXITY_RULE}",
-    f"assign-rule enable {COMPLEXITY_RULE}",
+    f"assign-rule enable {MIGRATION_RULE}",
     f"assign-rule delete {COMPLEXITY_RULE}",
 ])
 def test_the_main_agent_cannot_change_a_rule_it_would_be_the_target_of(new_story, line):

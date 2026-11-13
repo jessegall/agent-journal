@@ -6,6 +6,7 @@ from core.modules.assign_rules.models.enums.rule_target import RuleTarget
 from core.modules.assign_rules.support.condition_line import ConditionLine
 
 CONDITIONS_FIELD = "conditions"
+REVISION_FIELD = "revision"
 
 
 @dataclass(frozen=True)
@@ -19,9 +20,10 @@ class EditAssignRule(EditCommand[AssignRule]):
     program_model: str | None = None
     queue_limit: int | None = None
     conditions: tuple[ConditionLine, ...] | None = None
+    revision: str = ""
 
     def rule_changes(self) -> dict[str, object]:
         if self.target is None:
-            return {name: value for name, value in self.changed_fields().items() if name != CONDITIONS_FIELD}
+            return {name: value for name, value in self.changed_fields().items() if name not in (CONDITIONS_FIELD, REVISION_FIELD)}
         target_fields = {"target": self.target, "agent_id": self.agent_id, "program": self.program or "", "program_model": self.program_model or ""}
         return target_fields if self.queue_limit is None else {**target_fields, "queue_limit": self.queue_limit}
