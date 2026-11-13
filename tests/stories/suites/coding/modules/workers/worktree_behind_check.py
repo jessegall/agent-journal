@@ -42,7 +42,7 @@ def merged_workers(repository: GitRepository, count: int, commits: int = 1) -> N
         repository.git("merge", "--no-ff", "-m", f"Merge worker {worker}", branch, folder=checkout_of(repository, ENVIRONMENT_BRANCH))
 
 
-def look(story) -> None:
+def stale_check(story) -> None:
     BehindWorktrees()(story.container)
 
 
@@ -64,7 +64,7 @@ class LookCase:
     after: Callable[..., None]
 
 
-def threshold_one(story, repository) -> None:
+def single_threshold(story, repository) -> None:
     setting(story, "behind-commits-to-check", 1)
 
 
@@ -81,54 +81,54 @@ def login_base(story, repository) -> None:
 def s1_three_merged_workers_open_one_check_and_start_the_merger(story, repository, worker: Actor) -> None:
     own_commits(repository, worker.id, 1)
     merged_workers(repository, 3)
-    look(story)
+    stale_check(story)
     story.expect_rows([check.behind for check in checks(story)] == [3], len(behind_lines(story)) == 1, detail=f"{checks(story)} {behind_lines(story)}")
 
 
 def s2_own_commits_and_an_unmoved_base_open_none(story, repository, worker: Actor) -> None:
     own_commits(repository, worker.id, 5)
-    look(story)
+    stale_check(story)
     story.expect_rows(checks(story) == [])
 
 
 def s3_a_merged_four_commit_worker_counts_once(story, repository, worker: Actor) -> None:
     own_commits(repository, worker.id, 1)
     merged_workers(repository, 1, commits=4)
-    look(story)
+    stale_check(story)
     story.expect_rows([check.behind for check in checks(story)] == [1], detail=str(checks(story)))
 
 
 def s4_a_commit_straight_on_the_base_counts(story, repository, worker: Actor) -> None:
     own_commits(repository, worker.id, 1)
     base_commits(repository, 1)
-    look(story)
+    stale_check(story)
     story.expect_rows([check.behind for check in checks(story)] == [1], detail=str(checks(story)))
 
 
 def s5_a_worktree_counts_against_its_own_base(story, repository, worker: Actor) -> None:
     own_commits(repository, worker.id, 1)
     base_commits(repository, 2)
-    look(story)
+    stale_check(story)
     story.expect_rows(checks(story) == [], detail=str(checks(story)))
 
 
 def s6_two_behind_with_three_to_check_opens_none(story, repository, worker: Actor) -> None:
     own_commits(repository, worker.id, 1)
     base_commits(repository, 2)
-    look(story)
+    stale_check(story)
     story.expect_rows(checks(story) == [])
 
 
 def s7_the_look_comes_once_per_ten_minutes(story, repository, worker: Actor) -> None:
     own_commits(repository, worker.id, 1)
     base_commits(repository, 2)
-    look(story)
+    stale_check(story)
     base_commits(repository, 1, start=2)
     story.advance(timedelta(minutes=1))
-    look(story)
+    stale_check(story)
     first = list(checks(story))
     story.advance(timedelta(minutes=10))
-    look(story)
+    stale_check(story)
     story.expect_rows(first == [], [check.behind for check in checks(story)] == [3], detail=f"{first} {checks(story)}")
 
 
@@ -136,29 +136,29 @@ def s8_zero_to_check_looks_at_nothing(story, repository, worker: Actor) -> None:
     setting(story, "behind-commits-to-check", 0)
     own_commits(repository, worker.id, 1)
     base_commits(repository, 4)
-    look(story)
+    stale_check(story)
     story.expect_rows(checks(story) == [], behind_lines(story) == [])
 
 
 def s9_a_delivered_worktree_is_skipped(story, repository, worker: Actor) -> None:
     base_commits(repository, 4)
-    look(story)
+    stale_check(story)
     story.expect_rows(checks(story) == [])
 
 
 def s10_an_open_check_is_not_doubled(story, repository, worker: Actor) -> None:
     own_commits(repository, worker.id, 1)
     base_commits(repository, 3)
-    look(story)
+    stale_check(story)
     base_commits(repository, 5, start=3)
     story.advance(timedelta(minutes=10))
-    look(story)
+    stale_check(story)
     story.expect_rows(len(checks(story)) == 1, detail=str(checks(story)))
 
 
 def s12_a_worktree_with_nothing_of_its_own_moves_with_no_merger(story, repository, worker: Actor) -> None:
     base_commits(repository, 3)
-    look(story)
+    stale_check(story)
     story.expect_text(f"agent-line list --agent {worker.id}", expected_nudge(FAST_FORWARDED), actor=worker)
     story.expect_rows(behind_lines(story) == [], detail=str(behind_lines(story)))
 
@@ -166,17 +166,17 @@ def s12_a_worktree_with_nothing_of_its_own_moves_with_no_merger(story, repositor
 def s13_a_partial_merge_of_its_own_unit_does_not_count(story, repository, worker: Actor) -> None:
     own_commits(repository, worker.id, 2)
     repository.git("merge", "--no-ff", "-m", "Merge part of the unit", repository.worker_branch(worker.id), folder=checkout_of(repository, ENVIRONMENT_BRANCH))
-    look(story)
+    stale_check(story)
     story.expect_rows(checks(story) == [], detail=str(checks(story)))
 
 
-CASES = [LookCase(defaults, s1_three_merged_workers_open_one_check_and_start_the_merger), LookCase(threshold_one, s2_own_commits_and_an_unmoved_base_open_none),
-         LookCase(threshold_one, s3_a_merged_four_commit_worker_counts_once), LookCase(threshold_one, s4_a_commit_straight_on_the_base_counts),
+CASES = [LookCase(defaults, s1_three_merged_workers_open_one_check_and_start_the_merger), LookCase(single_threshold, s2_own_commits_and_an_unmoved_base_open_none),
+         LookCase(single_threshold, s3_a_merged_four_commit_worker_counts_once), LookCase(single_threshold, s4_a_commit_straight_on_the_base_counts),
          LookCase(login_base, s5_a_worktree_counts_against_its_own_base), LookCase(defaults, s6_two_behind_with_three_to_check_opens_none),
          LookCase(defaults, s7_the_look_comes_once_per_ten_minutes), LookCase(defaults, s8_zero_to_check_looks_at_nothing),
          LookCase(defaults, s9_a_delivered_worktree_is_skipped), LookCase(defaults, s10_an_open_check_is_not_doubled),
          LookCase(defaults, s12_a_worktree_with_nothing_of_its_own_moves_with_no_merger),
-         LookCase(threshold_one, s13_a_partial_merge_of_its_own_unit_does_not_count)]
+         LookCase(single_threshold, s13_a_partial_merge_of_its_own_unit_does_not_count)]
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case.after.__name__.split("_")[0])

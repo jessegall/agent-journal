@@ -9,7 +9,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
-from tests.stories.suites.coding.modules.workers.checkpoint_runs import branch_runs_only, BUILD_TEST, CART_COMMAND, OUTLINE, PASSES, PICKER, REACHES, TOTALS_COMMAND, WAITING_PHASE_TERMS, merge, task_proofs, rows, run_lines
+from tests.stories.suites.coding.modules.workers.checkpoint_runs import sole_branch_runs, BUILD_TEST, CART_COMMAND, OUTLINE, PASSES, PICKER, REACHES, TOTALS_COMMAND, WAITING_PHASE_TERMS, merge, task_proofs, rows, run_lines
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import committed_window, running_checkpoint  # noqa: F401
 from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
@@ -41,7 +41,7 @@ def output_id(worker: StoryWorker, line: str) -> int:
     return [process.id for process in worker.started_processes() if process.line == line][-1]
 
 
-def print_output(worker: StoryWorker, line: str, text: str) -> None:
+def produce_output(worker: StoryWorker, line: str, text: str) -> None:
     worker.story.container.get(OutputFolder).write_output(output_id(worker, line), 1, text)
 
 
@@ -100,7 +100,7 @@ def test_180_a_worker_with_two_failed_proof_tests_gets_both_tasks_and_one_line_w
 
 def test_182_a_failed_own_test_goes_to_the_task_whose_proof_names_the_failing_path(running_checkpoint):
     worker, story = running_checkpoint, running_checkpoint.story
-    print_output(worker, BUILD_TEST, "FAILED tests/cart.py::test_total - assert 3 == 4\n")
+    produce_output(worker, BUILD_TEST, "FAILED tests/cart.py::test_total - assert 3 == 4\n")
     end_run(worker, BUILD_TEST)
     reach = rows(worker, REACHES)[0]
     expect_returned(worker, 1)
@@ -112,7 +112,7 @@ def test_183_a_failure_that_names_no_task_goes_to_the_task_completed_last_and_th
     worker, story = running_checkpoint, running_checkpoint.story
     merger_can_start(monkeypatch)
     story.expect_success(MERGER_ON, actor=story.user)
-    print_output(worker, BUILD_TEST, "FAILED tests/receipts.py::test_print - assert 3 == 4\n")
+    produce_output(worker, BUILD_TEST, "FAILED tests/receipts.py::test_print - assert 3 == 4\n")
     with running_launcher(story):
         end_run(worker, BUILD_TEST)
         merger_lines = " | ".join(line.text for line in story.story_rows(MergerLine))
@@ -128,7 +128,7 @@ def test_175_183_the_run_makes_the_selected_run_over_the_files_the_window_change
     merge(worker)
     picks = [line for line in run_lines(worker) if line.startswith(PICKER)]
     story.expect_rows(len(picks) == 1, "cart.py" in "".join(picks), detail=str(run_lines(worker)))
-    print_output(worker, picks[0], "tests/receipts.py\n")
+    produce_output(worker, picks[0], "tests/receipts.py\n")
     end_run(worker, f"{SELECTED_TEST} tests/receipts.py")
     reach = rows(worker, REACHES)[0]
     expect_returned(worker, 3)
@@ -136,7 +136,7 @@ def test_175_183_the_run_makes_the_selected_run_over_the_files_the_window_change
 
 
 def test_187_a_failed_test_of_a_run_the_main_agent_started_early_returns_the_task_in_testing_to_its_worker(new_story, monkeypatch):
-    branch_runs_only(monkeypatch)
+    sole_branch_runs(monkeypatch)
     worker = dispatched_story_worker(planned_story(new_story), PHASE_DISPATCH, monkeypatch)
     worker.story.run("task start 2", actor=worker.worker)
     worker.prove_commit(TEST_LINE)

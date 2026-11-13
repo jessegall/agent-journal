@@ -18,13 +18,13 @@ class HardLimitWithHelper(StoryFixture):
         story.expect_success(f"agent start helper-session claude helper --parent {story.agent.id} --environment main")
 
 
-def report_tokens_over_both_limits(story, session: str) -> None:
+def report_tokens_exceeding_limits(story, session: str) -> None:
     save_status_file(story, session, {"context_window": {"total_input_tokens": TOKENS_OVER_BOTH_LIMITS}})
 
 
 def test_a_helper_past_both_context_limits_is_not_compacted_at_its_stop_and_its_tools_go_on(new_story):
     story, session = typing_recorded(new_story(fixture=HardLimitWithHelper)), "helper-session"
-    report_tokens_over_both_limits(story, session)
+    report_tokens_exceeding_limits(story, session)
     reply = story.hook(session, EDIT)
     story.hook(session, HookSamples.stop())
     story.expect_rows(story.typing.typed == [], "context passed" not in reply.refusal, detail=f"{story.typing.typed} {reply.refusal}")

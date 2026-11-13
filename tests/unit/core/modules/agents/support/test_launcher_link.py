@@ -32,7 +32,7 @@ def refusing_socket() -> Path:
     return path
 
 
-def link_to(path: Path) -> tuple[LauncherLink, CountingService]:
+def link_target(path: Path) -> tuple[LauncherLink, CountingService]:
     service = CountingService()
     return LauncherLink(SimpleNamespace(socket=lambda name: path), service), service
 
@@ -45,25 +45,25 @@ def ended_process_id() -> int:
 
 def test_a_launcher_whose_process_runs_and_refuses_is_not_replaced_and_keeps_its_socket(refusing_socket):
     refusing_socket.with_name("launcher.pid").symlink_to(str(os.getpid()))
-    link, service = link_to(refusing_socket)
+    link, service = link_target(refusing_socket)
     assert link.request_launcher(START_REQUEST, ANSWER_BYTES) is None
     assert (service.start_count, refusing_socket.exists()) == (0, True)
 
 
 def test_a_socket_left_by_a_launcher_whose_process_ended_is_removed_and_one_launcher_is_started(refusing_socket):
     refusing_socket.with_name("launcher.pid").symlink_to(str(ended_process_id()))
-    link, service = link_to(refusing_socket)
+    link, service = link_target(refusing_socket)
     assert link.request_launcher(START_REQUEST, ANSWER_BYTES) is None
     assert (service.start_count, refusing_socket.exists()) == (1, False)
 
 
 def test_a_socket_with_no_process_link_is_treated_as_left_by_a_launcher_that_ended(refusing_socket):
-    link, service = link_to(refusing_socket)
+    link, service = link_target(refusing_socket)
     link.request_launcher(START_REQUEST, ANSWER_BYTES)
     assert (service.start_count, refusing_socket.exists()) == (1, False)
 
 
 def test_a_request_that_starts_no_program_never_starts_a_launcher(refusing_socket):
-    link, service = link_to(refusing_socket)
+    link, service = link_target(refusing_socket)
     assert not link.has_program(41)
     assert service.start_count == 0

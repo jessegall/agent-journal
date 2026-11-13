@@ -22,7 +22,7 @@ def empty_setup(repository: GitRepository) -> None:
     return None
 
 
-def claude_file_on_the_base(repository: GitRepository) -> None:
+def base_claude_file(repository: GitRepository) -> None:
     committed_on(repository, checkout_of(repository, ENVIRONMENT_BRANCH), "CLAUDE.md", "The words of the project\n", "The project instructions")
 
 
@@ -85,7 +85,7 @@ class UpdateCase:
 CASES = [UpdateCase(empty_setup, s25_uncommitted_changes_in_two_files_stay), UpdateCase(empty_setup, s26_the_accepted_line_says_to_edit_nothing_until_it_ends),
          UpdateCase(empty_setup, s27_three_own_commits_sit_on_the_new_tip), UpdateCase(empty_setup, s28_an_untracked_new_file_comes_back),
          UpdateCase(empty_setup, s30_the_new_base_is_recorded_and_the_count_starts_there), UpdateCase(empty_setup, s32_already_up_to_date_changes_nothing),
-         UpdateCase(claude_file_on_the_base, s35_the_instruction_files_do_not_clash)]
+         UpdateCase(base_claude_file, s35_the_instruction_files_do_not_clash)]
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case.after_dispatch.__name__.split("_")[0])

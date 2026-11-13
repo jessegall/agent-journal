@@ -117,31 +117,31 @@ def expect_compaction_count(story, count):
     story.expect_rows(story.typing.typed.count(COMPACT) == count, detail=str(story.typing.typed))
 
 
-def ended_at_once(story):
+def ended_immediately(story):
     story.advance(STATUS_FILE_AGE)
     compacted(story, "manual")
 
 
-def ended_after_too_long(story):
+def ended_late(story):
     story.advance(TOO_LONG)
     compacted(story, "manual")
 
 
-def sent_and_waiting(story):
+def delivered_waiting(story):
     story.advance(RETRY_DUE)
 
 
-def larger_context_while_waiting(story):
+def larger_waiting_context(story):
     story.advance(WAITING_IN_THE_PROGRAM)
     has_context(story, LIMIT_TOKENS + GROWTH_TOKENS)
 
 
-def started_and_waiting(story):
+def started_waiting(story):
     story.hook(SESSION, PRE_COMPACT.with_raw({"trigger": "manual"}))
     story.advance(TOO_LONG)
 
 
-@pytest.mark.parametrize("steps_between_stops, compaction_count", [(ended_at_once, 1), (ended_after_too_long, 1), (larger_context_while_waiting, 1), (sent_and_waiting, 2), (started_and_waiting, 1)],
+@pytest.mark.parametrize("steps_between_stops, compaction_count", [(ended_immediately, 1), (ended_late, 1), (larger_waiting_context, 1), (delivered_waiting, 2), (started_waiting, 1)],
                          ids=["b1-ended-at-once", "b5-c9-ended-after-601-seconds", "larger-context-while-the-line-waits", "sent-and-not-started-after-three-minutes-is-typed-once-more", "c9-started"])
 def test_a_later_stop_types_the_compaction_a_second_time_only_after_three_minutes_with_none_started(agent, steps_between_stops, compaction_count):
     has_context(agent, LIMIT_TOKENS)

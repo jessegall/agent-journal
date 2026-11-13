@@ -14,7 +14,7 @@ PROCESSES = [{"kind": "judge", "title": "Judging the project", "category": "chec
 SETTINGS = [{"key": "judge_at_once", "title": "Judges at once", "kind": "number", "default": 1, "help": "How many judges may run at once"}]
 
 
-def kinds_plugin(story):
+def categories_plugin(story):
     folder = event_plugin_folder(story.home.folder.parent / "sources", [], {}, name=PLUGIN, processes=PROCESSES, settings="settings.json")
     (folder / "settings.json").write_text(json.dumps(SETTINGS))
     story.expect_success(f"plugin install {folder} --yes", actor=story.user)
@@ -34,7 +34,7 @@ def queue(story) -> dict[str, list[dict[str, object]]]:
 
 
 def test_a_plugin_run_takes_a_queue_place_and_a_kind_limited_to_one_runs_one_at_a_time(new_story):
-    story = kinds_plugin(worker_with_tools(new_story))
+    story = categories_plugin(worker_with_tools(new_story))
     story.expect_rows(plugin_run(story, "--kind", "lint") != 0)
     story.expect_rows(plugin_run(story, "--kind", "judge") == 0, plugin_run(story, "--kind", "judge") == 0, plugin_run(story) == 0)
     rows = queue(story)

@@ -48,7 +48,7 @@ def assigned_worker(worker_scenario):
     return AssignedWorker(worker_scenario, dispatch(worker_scenario))
 
 
-def commit_and_go_on(scenario: WorkerTrail, worker: Actor, task_id: int) -> None:
+def commit_continuing(scenario: WorkerTrail, worker: Actor, task_id: int) -> None:
     """The worker starts the task named beside its own, proves the one it had and commits that one."""
     scenario.repository.changed(worker.id, "cart.py", "TOTAL = 2\n")
     worktree = scenario.story.container.get(WorktreeQuery).worker_worktree(worker.id)
@@ -88,7 +88,7 @@ def test_worker_queued_tasks_use_their_own_sources(worker_scenario):
     worker_scenario.story.expect_success("task overview 1", actor=worker)
     worker_scenario.story.expect_success('task make "From first job" --environment main', actor=worker)
     worker_scenario.expect_link("message:2", "task:3", "about")
-    commit_and_go_on(worker_scenario, worker, 2)
+    commit_continuing(worker_scenario, worker, 2)
     worker_scenario.story.expect_success("task overview 2", actor=worker)
     worker_scenario.story.expect_success('task make "From second job" --environment main', actor=worker)
     worker_scenario.expect_link("message:1", "task:4", "about")
@@ -152,7 +152,7 @@ def test_queued_and_resumed_workers_read_their_current_context(worker_scenario):
     worker_scenario.make_task("Queued cart assignment")
     worker = dispatch(worker_scenario, "1 2")
     worker_scenario.story.expect_success("task overview 1", actor=worker)
-    commit_and_go_on(worker_scenario, worker, 2)
+    commit_continuing(worker_scenario, worker, 2)
     worker_scenario.story.expect_hook_refusal(worker_session(worker_scenario.story, worker), HookSamples.edit("src/cart.py"), TASK_BRIEF_FIRST.nudge(task=2).text)
     outcome = worker_scenario.story.run("task overview 2", actor=worker)
     worker_scenario.story.expect_rows(outcome.code == 0, detail=outcome.output_text)

@@ -72,7 +72,7 @@ def merge(worker: StoryWorker) -> None:
     worker.story.run_listeners()
 
 
-def branch_runs_only(monkeypatch) -> None:
+def sole_branch_runs(monkeypatch) -> None:
     """These stories test the run of a checkpoint on the branch after the merge, which a window held by more than
     one actor still gets; the worker run of a window one worker holds is left out of them."""
     monkeypatch.setattr(WorkerRunWindows, "completed_by", lambda windows, worktree: ())
@@ -81,7 +81,7 @@ def branch_runs_only(monkeypatch) -> None:
 def checkpoint_worker(new_story, monkeypatch, *test_lines: str) -> StoryWorker:
     """A worker of a started plan whose phase Build is a checkpoint with a test of its own; it committed tasks
     1, 2 and 3 of that phase with the given test lines."""
-    branch_runs_only(monkeypatch)
+    sole_branch_runs(monkeypatch)
     worker = dispatched_story_worker(planned_story(new_story, build_test=BUILD_TEST), PHASE_DISPATCH, monkeypatch)
     commit_tasks(worker, *test_lines)
     return worker
@@ -106,7 +106,7 @@ def ended_plan(new_story, monkeypatch) -> StoryWorker:
     """A started plan with no flagged checkpoint whose four tasks are committed with a test each and merged:
     the end of the plan is reached. Phase Build holds a test command an older journal stored on it, the last
     phase Ship has none."""
-    branch_runs_only(monkeypatch)
+    sole_branch_runs(monkeypatch)
     story = planned_story(new_story)
     story.container.get(Database).update(Statement("UPDATE phases SET test_command = ? WHERE id = 1", [BUILD_TEST]))
     worker = dispatched_story_worker(story, PLAN_DISPATCH, monkeypatch)

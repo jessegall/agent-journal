@@ -13,7 +13,7 @@ MAIN_SESSION = "s-1"
 INTERVAL = timedelta(seconds=WORKER_ASKING_STOPPED.interval.seconds)
 
 
-def past_the_wait(story) -> timedelta:
+def wait_passed(story) -> timedelta:
     return timedelta(minutes=story.number_default(MERGER_WAIT_MINUTES) + 1)
 
 
@@ -38,7 +38,7 @@ def stopped_while_asking(silent_worker):
 @pytest.fixture
 def ended_with_work(silent_worker):
     silent_worker.program_ended()
-    silent_worker.story.advance(past_the_wait(silent_worker.story))
+    silent_worker.story.advance(wait_passed(silent_worker.story))
     return silent_worker
 
 
@@ -46,7 +46,7 @@ def test_a_worker_another_agent_stopped_is_not_named(silent_worker):
     story = silent_worker.story
     silent_worker.post_question()
     story.expect_success(f"agent end {silent_worker.worker.id}", actor=story.agent)
-    story.advance(past_the_wait(story))
+    story.advance(wait_passed(story))
     story.tick(MAIN_SESSION)
     story.expect_rows(stopped_lines(story) == [], detail=str(stopped_lines(story)))
 

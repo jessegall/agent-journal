@@ -8,7 +8,7 @@ from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.commands.decide_behind_check.order_worker_update import OrderWorkerUpdate
 from suites.coding.modules.workers.commands.update_worker.update_worker_subcommand import UpdateWorkerSubcommand
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState as State
-from tests.unit.suites.coding.modules.workers.test_merger_update_subcommand import MAIN, MERGER, WORKER, Agents, Checks, ordered_by
+from tests.unit.suites.coding.modules.workers.test_merger_update_subcommand import MAIN, MERGER, WORKER, Agents, Checks, ordering_actor
 
 OWN_RUN = object()
 
@@ -38,10 +38,10 @@ def test_a_worker_naming_another_worker_is_refused():
 
 
 def test_the_main_agent_orders_a_worker_with_no_check_open_and_one_is_opened_and_ordered():
-    repository, _, nudger = ordered_by(MAIN, Checks())
+    repository, _, nudger = ordering_actor(MAIN, Checks())
     assert [row.state for row in repository.saved] == [State.OPEN, State.ORDERED] and nudger.sent[0][0] == WORKER
 
 
 def test_the_merger_still_needs_an_open_check():
     with pytest.raises(Refusal, match="no open check for this worker"):
-        ordered_by(MERGER, Checks())
+        ordering_actor(MERGER, Checks())

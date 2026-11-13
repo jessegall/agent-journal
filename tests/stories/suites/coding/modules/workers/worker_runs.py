@@ -89,7 +89,7 @@ def test_a_worker_past_its_restarts_on_old_tasks_is_restarted_for_a_queued_task(
     expect_count_output_2(story, f"agent-line list --agent {worker.id}", "You ended with tasks left", 2)
 
 
-def past_the_stopped_run_limit(story) -> timedelta:
+def exceed_stopped_run_limit(story) -> timedelta:
     return timedelta(minutes=story.number_default(STOPPED_WORKER_RUN_MINUTES) + 1)
 
 
@@ -98,7 +98,7 @@ def test_a_tick_reads_no_ended_worker_that_has_no_running_process(new_story):
     for number in range(30):
         worker_id = story.new_row_id(f"agent start ended-{number} claude worker --parent {story.agent.id} --environment main")
         story.run(f"agent end {worker_id}", actor=story.agent)
-    story.advance(past_the_stopped_run_limit(story))
+    story.advance(exceed_stopped_run_limit(story))
     database = story.container.get(Database)
     start = database.repeated_work.points()
     StoppedWorkerRuns()(story.container)
@@ -111,7 +111,7 @@ def test_with_the_merger_off_a_worker_stopped_past_the_limit_on_a_run_that_goes_
     story.run(f"agent end {worker.id}", actor=worker)
     StoppedWorkerRuns()(story.container)
     story.expect_rows(stopped_run_texts(story) == [], detail="the limit has not gone by")
-    story.advance(past_the_stopped_run_limit(story))
+    story.advance(exceed_stopped_run_limit(story))
     StoppedWorkerRuns()(story.container)
     StoppedWorkerRuns()(story.container)
     texts = stopped_run_texts(story)

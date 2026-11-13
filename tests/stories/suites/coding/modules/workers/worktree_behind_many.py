@@ -5,11 +5,11 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.merger_behind_decisions import MergerBeside, both_change, merger
+from tests.stories.suites.coding.modules.workers.merger_behind_decisions import MergerBeside, diverge_file, merger
 from tests.stories.suites.coding.modules.workers.support.base_branch import checkout_of, committed_on
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
-from tests.stories.suites.coding.modules.workers.worktree_behind_check import look, setting
+from tests.stories.suites.coding.modules.workers.worktree_behind_check import stale_check, setting
 
 UPDATE = "worker update --wait"
 
@@ -39,8 +39,8 @@ def s59_a_second_update_right_after_the_first_says_already_up_to_date(story, rep
 
 
 def s61_the_merger_only_orders_and_changes_no_file(story, repository, worker: Actor) -> None:
-    both_change(repository, worker, "plan_checkpoints.py", "plan_checkpoints.py")
-    look(story)
+    diverge_file(repository, worker, "plan_checkpoints.py", "plan_checkpoints.py")
+    stale_check(story)
     previous = repository.git("status", "--porcelain", folder=repository.folder).stdout
     worker_head = repository.git("rev-parse", "HEAD", folder=repository.worktree_folder(worker.id)).stdout
     story.expect_success(f'merger update {agent_number(story, worker.id)} --why "plan_checkpoints.py moved on both sides"', actor=merger(story))

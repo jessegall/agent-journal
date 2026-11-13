@@ -84,20 +84,20 @@ def test_a_walk_that_is_gone_is_taken_off_the_snapshot():
     assert not removed, f"take these lines off tests/snapshots/every_row_reads.txt: {removed}"
 
 
-def has_enough_words(reason: str) -> bool:
+def has_enough_terms(reason: str) -> bool:
     return len(reason.split()) >= FEWEST_REASON_WORDS
 
 
 def test_every_walk_gives_a_reason_longer_than_three_words():
-    short = [line for line in walks() if not has_enough_words(line.split(":", 1)[1])]
+    short = [line for line in walks() if not has_enough_terms(line.split(":", 1)[1])]
     assert not short, f"say in a sentence what needs every row: {short}"
 
 
 def test_a_walk_reason_that_says_nothing_is_rejected():
     """Story 60: a reason of one word passes no review. The test refuses the words alone; reading whether a reason
     of four words is true stays the reviewer's rule, who reads each new line of the snapshot."""
-    assert [reason for reason in ("needed", "all", "rows") if has_enough_words(reason)] == []
-    assert has_enough_words("the board shows every open task")
+    assert [reason for reason in ("needed", "all", "rows") if has_enough_terms(reason)] == []
+    assert has_enough_terms("the board shows every open task")
 
 
 def test_the_reason_of_a_walk_is_not_empty():

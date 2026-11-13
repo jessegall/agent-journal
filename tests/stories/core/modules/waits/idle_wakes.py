@@ -31,7 +31,7 @@ def test_an_agent_stopped_on_a_wait_on_a_task_is_woken_when_the_task_ends(new_st
     story.expect_rows(entered == [])
     story.expect_success(f'task cancel {task} --reason "no longer needed"', actor=story.agent)
     story.run_listeners()
-    expect_typed(story, entered, expected_nudge(WAIT_ENDED, wait=1))
+    expect_entered(story, entered, expected_nudge(WAIT_ENDED, wait=1))
 
 
 def test_an_agent_stopped_on_a_wait_on_an_output_is_woken_when_the_output_ends(new_story):
@@ -41,7 +41,7 @@ def test_an_agent_stopped_on_a_wait_on_an_output_is_woken_when_the_output_ends(n
     story.expect_rows(entered == [])
     story.container.get(Bus).run(EndProcess(process.id, 0, 40, 3), story.agent, environment_id=1)
     story.run_listeners()
-    expect_typed(story, entered, expected_nudge(WAIT_ENDED, wait=1))
+    expect_entered(story, entered, expected_nudge(WAIT_ENDED, wait=1))
 
 
 def test_an_agent_stopped_while_a_person_decides_its_approval_is_woken_by_the_decision(new_story):
@@ -53,7 +53,7 @@ def test_an_agent_stopped_while_a_person_decides_its_approval_is_woken_by_the_de
     story.expect_rows(entered == [])
     story.expect_success("approval refuse 1", actor=story.user)
     story.run_listeners()
-    expect_typed(story, entered, expected_nudge(APPROVAL_DECIDED, approval=1))
+    expect_entered(story, entered, expected_nudge(APPROVAL_DECIDED, approval=1))
 
 
 def test_an_agent_stopped_with_a_task_blocked_on_a_question_is_woken_when_the_question_is_answered(new_story):
@@ -68,10 +68,10 @@ def test_an_agent_stopped_with_a_task_blocked_on_a_question_is_woken_when_the_qu
     story.expect_rows(entered == [])
     story.expect_success(f"question answer {question} --answer sqlite", actor=story.user)
     story.run_listeners()
-    expect_typed(story, entered, expected_nudge(TASK_REOPENED, task=1), expected_nudge(WAIT_ENDED, wait=1))
+    expect_entered(story, entered, expected_nudge(TASK_REOPENED, task=1), expected_nudge(WAIT_ENDED, wait=1))
     story.expect_text(f"task show {task}", "state: open", actor=story.agent)
 
 
-def expect_typed(story, entered, *nudges) -> None:
+def expect_entered(story, entered, *nudges) -> None:
     """The main agent was typed these nudges, in this order, and nothing else."""
     story.expect_rows(len(entered) == len(nudges), all(agent_id == story.agent.id and nudge.is_in(text) for (agent_id, text), nudge in zip(entered, nudges)), detail=str(entered))

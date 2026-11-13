@@ -6,7 +6,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.upgrade.support.fixture_upgrade import repeated_upgrade
 from tests.stories.core.modules.chat.support.mark_samples import marks_text
 import json
-from engine.testing.expectations.text_match import holds_line, holds_text
+from engine.testing.expectations.text_match import holds_line, contains_text
 
 
 def expect_value(actual, expected) -> None:
@@ -223,7 +223,7 @@ def expect_lines_2(lines, expected) -> None:
 
 
 def expect_lines_3(lines, text, expected) -> None:
-    actual = [line for line in lines if holds_text(line, text)]
+    actual = [line for line in lines if contains_text(line, text)]
     assert actual == expected, actual
 
 

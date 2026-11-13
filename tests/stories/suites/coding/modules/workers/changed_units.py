@@ -1,7 +1,7 @@
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_tasks_singly
 from tests.stories.suites.coding.modules.workers.support.phase_steps import start_planned_worker, unplanned_group_worker
-from tests.stories.suites.coding.modules.workers.work_units import plan_card, unit_of
+from tests.stories.suites.coding.modules.workers.work_units import plan_card, worker_unit
 
 """A unit that cannot finish, and a user who changes it mid-way."""
 
@@ -11,7 +11,7 @@ def test_a_task_cancelled_out_of_a_unit_lets_the_rest_finish(new_story, monkeypa
     commit_tasks_singly(worker, (1, 2))
     worker.story.expect_success('task cancel 3 --reason "not needed"', actor=worker.story.user)
     worker.end_all_tests()
-    worker.story.expect_rows(unit_of(worker).task_ids == (1, 2), "Point: merge_due" in worker.status(), detail=worker.status())
+    worker.story.expect_rows(worker_unit(worker).task_ids == (1, 2), "Point: merge_due" in worker.status(), detail=worker.status())
 
 
 def test_a_plan_given_to_another_agent_mid_unit_leaves_the_worker_its_committed_tasks(new_story, monkeypatch):
@@ -19,7 +19,7 @@ def test_a_plan_given_to_another_agent_mid_unit_leaves_the_worker_its_committed_
     commit_tasks_singly(worker, tuple([1]))
     worker.story.expect_success("plan assign 1 --environment main", actor=worker.story.user)
     card = plan_card(worker)
-    worker.story.expect_rows(card["assignee"] is None or card["assignee"]["id"] != worker.worker.id, 1 in unit_of(worker).task_ids, detail=f"{card} / {unit_of(worker)}")
+    worker.story.expect_rows(card["assignee"] is None or card["assignee"]["id"] != worker.worker.id, 1 in worker_unit(worker).task_ids, detail=f"{card} / {worker_unit(worker)}")
 
 
 def test_a_release_while_an_ask_waits_is_refused(new_story, monkeypatch):

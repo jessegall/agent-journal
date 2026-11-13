@@ -1,4 +1,4 @@
-from engine.testing.expectations.text_match import holds_text
+from engine.testing.expectations.text_match import contains_text
 import json
 from unittest.mock import patch
 
@@ -33,7 +33,7 @@ def test_a_local_address_and_a_pinned_link_are_not_offered(new_story):
 
 
 def pin_lines(hook_answer) -> list[str]:
-    return [line for line in hook_answer.lines if holds_text(line, "pin this link")]
+    return [line for line in hook_answer.lines if contains_text(line, "pin this link")]
 
 
 def with_shop_remote(story):
@@ -140,7 +140,7 @@ def expect_absent_pin_lines(hook_answer) -> None:
 
 
 def expect_lines_hook_2(text, text_2, story, text_3, text_4, text_5) -> None:
-    actual = any((holds_text(line, text) and text_2 in line for line in story.hook(text_3, shell_call(text_4, text_5)).lines))
+    actual = any((contains_text(line, text) and text_2 in line for line in story.hook(text_3, shell_call(text_4, text_5)).lines))
     assert actual, actual
 
 

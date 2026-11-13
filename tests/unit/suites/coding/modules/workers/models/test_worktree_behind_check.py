@@ -22,20 +22,20 @@ MOVES = {
 }
 
 
-def taken(row: WorktreeBehindCheck, name: str) -> WorktreeBehindCheck:
+def claimed(row: WorktreeBehindCheck, name: str) -> WorktreeBehindCheck:
     method = getattr(row, name)
     return method(MERGER, "the reason") if name in ("ordered", "left", "passed") else method()
 
 
 @pytest.mark.parametrize("state, name, target", [(state, name, target) for state, moves in MOVES.items() for name, target in moves.items()])
 def test_every_allowed_move_reaches_its_state(state, name, target):
-    assert taken(check(state), name).state is target
+    assert claimed(check(state), name).state is target
 
 
 @pytest.mark.parametrize("state, name", [(state, name) for state, moves in MOVES.items() for name in ("ordered", "left", "passed", "updated", "conflicted", "gone", "reminded") if name not in moves])
 def test_every_other_move_is_refused(state, name):
     with pytest.raises(Refusal, match=f"is {state}"):
-        taken(check(state), name)
+        claimed(check(state), name)
 
 
 def test_a_pass_goes_back_to_the_main_agent_who_may_order_the_update():

@@ -38,7 +38,7 @@ def events_of(story, work) -> list:
     return [event for event in log.events_after(first) if event.row_table in (REQUEST_RUNS_TABLE, PROCESSES_TABLE)]
 
 
-def expect_one_request_row_written_once(story, events: list, category: ProcessKind) -> None:
+def expect_single_request_row(story, events: list, category: ProcessKind) -> None:
     requests = [event for event in events if event.row_table == REQUEST_RUNS_TABLE]
     processes = [event for event in events if event.row_table == PROCESSES_TABLE]
     rows = [row for row in story.container.get(Queries).query(RequestRun).filter(kind=category.value).every_row(TEST_ROWS_REASON) if row.id in {event.row_id for event in requests}]
@@ -50,11 +50,11 @@ def expect_one_request_row_written_once(story, events: list, category: ProcessKi
 def test_a_hook_writes_one_request_row_once_and_no_process_row(new_story, name):
     story = new_story(fixture=BuilderStarted)
     events = events_of(story, lambda: story.hook("s-1", HOOKS[name]()))
-    expect_one_request_row_written_once(story, events, ProcessKind.HOOK)
+    expect_single_request_row(story, events, ProcessKind.HOOK)
 
 
 @pytest.mark.parametrize("argv", COMMANDS, ids=lambda argv: " ".join(argv))
 def test_a_journal_command_writes_one_request_row_once_and_no_process_row(new_story, argv):
     story = new_story(fixture=BuilderStarted)
     events = events_of(story, lambda: run_command(story, argv))
-    expect_one_request_row_written_once(story, events, ProcessKind.JOURNAL)
+    expect_single_request_row(story, events, ProcessKind.JOURNAL)

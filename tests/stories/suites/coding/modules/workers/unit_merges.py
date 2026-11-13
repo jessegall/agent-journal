@@ -1,4 +1,4 @@
-from tests.stories.suites.coding.modules.workers.work_units import unit_of
+from tests.stories.suites.coding.modules.workers.work_units import worker_unit
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 import pytest
 

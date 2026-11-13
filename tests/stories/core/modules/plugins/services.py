@@ -457,7 +457,7 @@ def service_process_ids(story) -> list[int]:
     return [pid for pid, _, command_parts in OrphanServices.listed() if program in command_parts[:2]]
 
 
-def other_server_start(story, is_locked: Event, is_following: Event, started: list[subprocess.Popen]) -> None:
+def second_server_start(story, is_locked: Event, is_following: Event, started: list[subprocess.Popen]) -> None:
     code, pid_file = story.container.get(PluginFolders).code("served"), story.services.sockets.pid(*SERVED)
     environment = story.services.environment(SERVED, PluginManifest.read(code))
     with story.services.start_lock(SERVED):
@@ -480,7 +480,7 @@ def test_one_service_has_one_process_across_a_restart_by_command_two_servers_and
     story.expect_rows(second_server.running[SERVED].pid == first.pid, service_process_ids(story) == [first.pid], detail=str(service_process_ids(story)))
     story.processes.close()
     is_locked, is_following, started = Event(), Event(), []
-    different_server = Thread(target=other_server_start, args=[story, is_locked, is_following, started])
+    different_server = Thread(target=second_server_start, args=[story, is_locked, is_following, started])
     different_server.start()
     try:
         is_locked.wait(END_LIMIT_SECONDS)

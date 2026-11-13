@@ -12,7 +12,7 @@ PLACEHOLDER = re.compile(r"\{[^}]*\}")
 PLANTED = WindowKey("planted", "journal-exception list --no-such-flag")
 
 
-def words_of(line: str) -> list[str]:
+def line_terms(line: str) -> list[str]:
     return [PLACEHOLDER.sub("1", word) for word in line.split()]
 
 
@@ -22,7 +22,7 @@ def full_line(key: WindowKey) -> str:
 
 
 def key_fails(parser: LineParser, key: WindowKey) -> bool:
-    argv = words_of(full_line(key))
+    argv = line_terms(full_line(key))
     try:
         _, command_parser = parser.parser(argv)
     except UsageError:
@@ -33,7 +33,7 @@ def key_fails(parser: LineParser, key: WindowKey) -> bool:
 
 def read_fails(parser: LineParser, line: str) -> bool:
     try:
-        parser.parser(words_of(line)[:2])
+        parser.parser(line_terms(line)[:2])
     except UsageError:
         return True
     return False

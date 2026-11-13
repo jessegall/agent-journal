@@ -13,7 +13,7 @@ from tests.stories.suites.coding.modules.workers.quiet_helpers import merger_cha
 from tests.stories.suites.coding.modules.workers.support.base_branch import checkout_of, committed_on
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
-from tests.stories.suites.coding.modules.workers.worktree_behind_check import checks, look, setting
+from tests.stories.suites.coding.modules.workers.worktree_behind_check import checks, stale_check, setting
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.support.behind_nudges import BEHIND_CHOICES
@@ -40,7 +40,7 @@ def merger(story) -> Actor:
     return Actor(next(row["id"] for row in rows if row["session"] == MERGER_SESSION), ActorType.AGENT)
 
 
-def both_change(repository: GitRepository, worker: Actor, worker_file: str, base_file: str) -> None:
+def diverge_file(repository: GitRepository, worker: Actor, worker_file: str, base_file: str) -> None:
     committed_on(repository, repository.worktree_folder(worker.id), worker_file, "WORKER = 1\n", f"The worker changes {worker_file}")
     committed_on(repository, checkout_of(repository, ENVIRONMENT_BRANCH), base_file, "BASE = 1\n", f"The base changes {base_file}")
 
@@ -50,21 +50,21 @@ def worker_lines(story, worker: Actor) -> str:
 
 
 def s15_another_area_is_left_alone_and_the_worker_is_not_woken(story, repository, worker: Actor) -> None:
-    both_change(repository, worker, "src/core/modules/plans/plan_rows.py", "src/viewer/board.ts")
-    look(story)
+    diverge_file(repository, worker, "src/core/modules/plans/plan_rows.py", "src/viewer/board.ts")
+    stale_check(story)
     story.expect_success(f'merger leave {agent_number(story, worker.id)} --why "only the viewer moved"', actor=merger(story))
     story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.IGNORED], not expected_nudge(UPDATE_ORDERED).is_in(worker_lines(story, worker)), detail=str(checks(story)))
 
 
 def s16_an_overlap_is_ordered_and_the_worker_is_woken_with_the_order(story, repository, worker: Actor) -> None:
-    both_change(repository, worker, "plan_checkpoints.py", "plan_checkpoints.py")
-    look(story)
+    diverge_file(repository, worker, "plan_checkpoints.py", "plan_checkpoints.py")
+    stale_check(story)
     story.expect_success(f'merger update {agent_number(story, worker.id)} --why "plan_checkpoints.py moved on both sides"', actor=merger(story))
     story.expect_rows(expected_nudge(UPDATE_ORDERED).is_in(worker_lines(story, worker)), detail=worker_lines(story, worker))
 
 
 def s17_a_sibling_file_is_same_folder_and_not_overlap(story, repository, worker: Actor) -> None:
-    both_change(repository, worker, "shop/cart.py", "shop/tax.py")
+    diverge_file(repository, worker, "shop/cart.py", "shop/tax.py")
     story.expect_text(f"merger behind {agent_number(story, worker.id)}", "Overlap: none", "Same folder, not overlap: shop/tax.py", actor=merger(story))
 
 
@@ -77,7 +77,7 @@ def s18_a_large_update_for_a_small_model_is_passed_and_the_main_agent_reads_its_
     repository.git("commit", "-m", "The worker changes many parts", folder=repository.worktree_folder(worker.id))
     repository.git("add", "-A", folder=base)
     repository.git("commit", "-m", "The base changes many parts", folder=base)
-    look(story)
+    stale_check(story)
     story.expect_success(f'merger pass {agent_number(story, worker.id)} "it is too large for a small model"', actor=merger(story))
     check = checks(story)[0]
     story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(BEHIND_PASSED))
@@ -88,8 +88,8 @@ def s18_a_large_update_for_a_small_model_is_passed_and_the_main_agent_reads_its_
 
 
 def s20_worker_status_shows_the_decision(story, repository, worker: Actor) -> None:
-    both_change(repository, worker, "src/core/modules/plans/plan_rows.py", "src/viewer/board.ts")
-    look(story)
+    diverge_file(repository, worker, "src/core/modules/plans/plan_rows.py", "src/viewer/board.ts")
+    stale_check(story)
     story.expect_success(f'merger leave {agent_number(story, worker.id)} --why "different area"', actor=merger(story))
     story.expect_text(f"worker status {agent_number(story, worker.id)}", f"1 behind {ENVIRONMENT_BRANCH}; left alone by the merger: different area", actor=story.agent)
 
@@ -101,8 +101,8 @@ def s21_an_agent_with_no_worktree_is_refused(story, repository, worker: Actor) -
 
 
 def s22_a_closed_check_cannot_be_left_again(story, repository, worker: Actor) -> None:
-    both_change(repository, worker, "src/core/modules/plans/plan_rows.py", "src/viewer/board.ts")
-    look(story)
+    diverge_file(repository, worker, "src/core/modules/plans/plan_rows.py", "src/viewer/board.ts")
+    stale_check(story)
     deciding = merger(story)
     story.expect_success(f'merger leave {agent_number(story, worker.id)} --why "different area"', actor=deciding)
     story.expect_refusal(f'merger leave {agent_number(story, worker.id)} --why "again"', "no open check for this worker", actor=deciding)
@@ -110,8 +110,8 @@ def s22_a_closed_check_cannot_be_left_again(story, repository, worker: Actor) ->
 
 def s23_with_the_merger_off_the_main_agent_gets_the_check_and_its_choices(story, repository, worker: Actor) -> None:
     setting(story, "merger-on", "off")
-    both_change(repository, worker, "plan_checkpoints.py", "plan_checkpoints.py")
-    look(story)
+    diverge_file(repository, worker, "plan_checkpoints.py", "plan_checkpoints.py")
+    stale_check(story)
     number = agent_number(story, worker.id)
     story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(BEHIND_CHOICES))
 

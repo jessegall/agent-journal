@@ -8,22 +8,22 @@ SPECIFICATION.loader.exec_module(wrong_owner_survey)
 RECOGNIZED_LINES = ROOT / "tests" / "snapshots" / "wrong_owner.txt"
 
 
-def known_lines() -> list[str]:
+def recognized_lines() -> list[str]:
     return RECOGNIZED_LINES.read_text().splitlines()
 
 
 def test_no_file_sits_with_the_wrong_owner_beyond_the_known_lines():
-    added = sorted(set(wrong_owner_survey.WrongOwnerSurvey().known_lines()) - set(known_lines()))
+    added = sorted(set(wrong_owner_survey.WrongOwnerSurvey().known_lines()) - set(recognized_lines()))
     assert added == [], "move the file to its owner; the list of known lines only shrinks"
 
 
 def test_a_known_line_that_no_longer_happens_is_taken_off_the_list():
-    stale = sorted(set(known_lines()) - set(wrong_owner_survey.WrongOwnerSurvey().known_lines()))
+    stale = sorted(set(recognized_lines()) - set(wrong_owner_survey.WrongOwnerSurvey().known_lines()))
     assert stale == [], "delete these lines from tests/snapshots/wrong_owner.txt"
 
 
 def test_every_known_line_names_a_file_that_exists():
-    missing = [line for line in known_lines() if not (ROOT / line.split(": ")[1]).is_file()]
+    missing = [line for line in recognized_lines() if not (ROOT / line.split(": ")[1]).is_file()]
     assert missing == []
 
 

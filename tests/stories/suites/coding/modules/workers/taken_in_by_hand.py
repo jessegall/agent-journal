@@ -9,7 +9,7 @@ from tests.stories.suites.coding.modules.workers.support.memory_git.memory_repos
 from tests.stories.suites.coding.modules.workers.test_queue import ended, queued_story
 
 
-def taken_in_by_hand(story, repository: MemoryRepository) -> Worktree:
+def merged_manually(story, repository: MemoryRepository) -> Worktree:
     worktree = story.container.get(Queries).query(Worktree).first()
     history = repository.history
     history.branches[ENVIRONMENT_BRANCH] = history.branches[worktree.branch]
@@ -29,7 +29,7 @@ def expect_closed_without_the_merger(story, repository: MemoryRepository, worktr
 
 def test_a_delivered_branch_taken_in_by_hand_closes_as_merged_when_its_tests_pass_and_no_merger_is_sent(new_story, monkeypatch):
     story, repository, _, started = queued_story(new_story, monkeypatch)
-    worktree = taken_in_by_hand(story, repository)
+    worktree = merged_manually(story, repository)
     ended(story, started[0], 0)
     expect_closed_without_the_merger(story, repository, worktree)
 
@@ -38,7 +38,7 @@ def test_a_merge_ready_branch_taken_in_by_hand_later_is_closed_at_the_next_round
     story, repository, _, started = queued_story(new_story, monkeypatch)
     ended(story, started[0], 0)
     story.expect_rows(merger_agent(story) is None, detail="the merger could not start while nothing launches")
-    worktree = taken_in_by_hand(story, repository)
+    worktree = merged_manually(story, repository)
     MergerRetry()(story.container)
     story.run_listeners()
     expect_closed_without_the_merger(story, repository, worktree)

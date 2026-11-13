@@ -58,49 +58,49 @@ def agent(new_story):
 
 
 @pytest.fixture
-def over_limit(new_story):
+def exceeding_limit(new_story):
     return typing_recorded(new_story(fixture=PromptedWithLimit))
 
 
 @pytest.fixture
-def over_hard_limit(new_story):
+def exceeding_hard_limit(new_story):
     return typing_recorded(new_story(fixture=PromptedWithHardLimit))
 
 
-def expect_one_request_typed_once(story):
+def expect_single_typed_request(story):
     rows = compactions(story)
     story.expect_rows(len(rows) == 1, rows[0].state is CompactionState.REQUESTED, story.typing.typed == [COMPACT_LINE], detail=f"{rows} {story.typing.typed}")
 
 
-def test_g1_two_stops_of_one_agent_in_the_same_second_make_one_request_and_type_one_line(over_limit):
-    has_context(over_limit, LIMIT_TOKENS)
-    over_limit.hook(SESSION, HookSamples.stop())
-    over_limit.hook(SESSION, HookSamples.stop())
-    expect_one_request_typed_once(over_limit)
+def test_g1_two_stops_of_one_agent_in_the_same_second_make_one_request_and_type_one_line(exceeding_limit):
+    has_context(exceeding_limit, LIMIT_TOKENS)
+    exceeding_limit.hook(SESSION, HookSamples.stop())
+    exceeding_limit.hook(SESSION, HookSamples.stop())
+    expect_single_typed_request(exceeding_limit)
 
 
-def test_g1_a_second_request_made_in_the_same_second_as_the_first_is_refused_naming_it(over_limit):
-    has_context(over_limit, LIMIT_TOKENS)
-    over_limit.hook(SESSION, HookSamples.stop())
+def test_g1_a_second_request_made_in_the_same_second_as_the_first_is_refused_naming_it(exceeding_limit):
+    has_context(exceeding_limit, LIMIT_TOKENS)
+    exceeding_limit.hook(SESSION, HookSamples.stop())
     with pytest.raises(Refusal, match=OPEN_REFUSAL):
-        over_limit.container.get(Bus).run(CompactAgentContext(over_limit.agent.id), over_limit.agent)
-    expect_one_request_typed_once(over_limit)
+        exceeding_limit.container.get(Bus).run(CompactAgentContext(exceeding_limit.agent.id), exceeding_limit.agent)
+    expect_single_typed_request(exceeding_limit)
 
 
-def test_g2_the_stop_rule_after_the_hard_stop_rule_in_the_same_second_makes_no_second_request(over_hard_limit):
-    has_context(over_hard_limit, HARD)
-    over_hard_limit.expect_hook_refusal(SESSION, EDIT, HARD_STOP_REFUSAL)
-    over_hard_limit.hook(SESSION, HookSamples.stop())
-    expect_one_request_typed_once(over_hard_limit)
-    over_hard_limit.expect_rows(compactions(over_hard_limit)[0].reason is CompactionReason.HARD_STOP)
+def test_g2_the_stop_rule_after_the_hard_stop_rule_in_the_same_second_makes_no_second_request(exceeding_hard_limit):
+    has_context(exceeding_hard_limit, HARD)
+    exceeding_hard_limit.expect_hook_refusal(SESSION, EDIT, HARD_STOP_REFUSAL)
+    exceeding_hard_limit.hook(SESSION, HookSamples.stop())
+    expect_single_typed_request(exceeding_hard_limit)
+    exceeding_hard_limit.expect_rows(compactions(exceeding_hard_limit)[0].reason is CompactionReason.HARD_STOP)
 
 
-def test_g2_the_hard_stop_rule_after_the_stop_rule_in_the_same_second_makes_no_second_request(over_hard_limit):
-    has_context(over_hard_limit, HARD)
-    over_hard_limit.hook(SESSION, HookSamples.stop())
-    over_hard_limit.expect_hook_refusal(SESSION, EDIT, HARD_STOP_REFUSAL)
-    expect_one_request_typed_once(over_hard_limit)
-    over_hard_limit.expect_rows(compactions(over_hard_limit)[0].reason is CompactionReason.STOP_LIMIT)
+def test_g2_the_hard_stop_rule_after_the_stop_rule_in_the_same_second_makes_no_second_request(exceeding_hard_limit):
+    has_context(exceeding_hard_limit, HARD)
+    exceeding_hard_limit.hook(SESSION, HookSamples.stop())
+    exceeding_hard_limit.expect_hook_refusal(SESSION, EDIT, HARD_STOP_REFUSAL)
+    expect_single_typed_request(exceeding_hard_limit)
+    exceeding_hard_limit.expect_rows(compactions(exceeding_hard_limit)[0].reason is CompactionReason.STOP_LIMIT)
 
 
 def test_g3_a_typed_compaction_is_woken_by_the_listener_and_a_tick_after_600_seconds_types_no_second_wake(agent):

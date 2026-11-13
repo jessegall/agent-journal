@@ -15,7 +15,7 @@ REUSED_START_TIME = Timestamp.parsed("2026-10-31T11:00:00+00:00")
 TASK_LINE = 'task make "Fix the cart"'
 
 
-def expect_made_by_no_agent(story) -> None:
+def expect_agentless_creator(story) -> None:
     creator = story.row(ActorRecord, story.story_rows(Task)[-1].creator_id)
     story.expect_rows(creator.type is not ActorType.AGENT, detail=str(creator))
 
@@ -52,7 +52,7 @@ def test_a_reused_pid_with_another_start_time_names_no_agent(new_story):
     story, agent_id = agent_with_pid(new_story)
     story.use_processes(ProcessRow(900, 700, REUSED_START_TIME), ProcessRow(700, 1, REUSED_START_TIME))
     story.expect_requested_success(f"{TASK_LINE} --environment main", CallerRequest(pid=900))
-    expect_made_by_no_agent(story)
+    expect_agentless_creator(story)
 
 
 def test_a_symlinked_working_folder_finds_the_environment_of_the_folder_it_points_to(new_story):
@@ -81,7 +81,7 @@ def test_an_ended_agent_preserves_its_process_identity_but_a_command_from_it_nam
     story.run(f"agent end {agent_id}")
     story.expect_text(f"agent show {agent_number(story, agent_id)}", "pid: 700", f"process_started_at: {AGENT_START_TIME.text}")
     story.expect_requested_success(f"{TASK_LINE} --environment main", CallerRequest(pid=900))
-    expect_made_by_no_agent(story)
+    expect_agentless_creator(story)
 
 
 def test_an_agent_ends_once(new_story):

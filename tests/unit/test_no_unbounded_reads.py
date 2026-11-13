@@ -19,7 +19,7 @@ def python_files() -> list[Path]:
     return [path for folder in SCANNED_FOLDERS for path in sorted(folder.rglob("*.py")) if "__pycache__" not in path.parts and path != Path(__file__).resolve()]
 
 
-def calls_named(path: Path, names: tuple[str, ...]) -> list[str]:
+def matching_calls(path: Path, names: tuple[str, ...]) -> list[str]:
     tree = source_tree(path)
     relative = path.relative_to(ROOT).as_posix()
     return [f"{relative}:{node.lineno}" for node in ast.walk(tree) if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr in names]
@@ -53,12 +53,12 @@ def bare_get_lines(path: Path) -> list[int]:
 
 
 def test_no_all_rows_call_is_left():
-    matched = [place for path in python_files() for place in calls_named(path, tuple(["all_rows"]))]
+    matched = [place for path in python_files() for place in matching_calls(path, tuple(["all_rows"]))]
     assert matched == [], "read with get, take, a page or every_row(reason):\n" + "\n".join(matched)
 
 
 def test_no_limited_or_full_table_call_is_left():
-    matched = [place for path in python_files() for place in calls_named(path, ("limited", "rows_without", "full_table"))]
+    matched = [place for path in python_files() for place in matching_calls(path, ("limited", "rows_without", "full_table"))]
     assert matched == [], "limited(n) is take(n) or limit(n).get(); full_table goes; rows_without is where_null:\n" + "\n".join(matched)
 
 

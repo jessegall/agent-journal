@@ -1,5 +1,5 @@
 from engine.driver.hook_reply import HookReply
-from engine.testing.expectations.text_match import ExpectedText, holds_line, holds_text
+from engine.testing.expectations.text_match import ExpectedText, holds_line, contains_text
 
 
 def expect_reply_line(reply: HookReply, *texts: ExpectedText) -> None:
@@ -13,11 +13,11 @@ def expect_absent_reply_line(reply: HookReply, *texts: ExpectedText) -> None:
 
 
 def expect_reply_refusal(reply: HookReply, reason: ExpectedText) -> None:
-    assert holds_text(reply.refusal, reason), f"the hook's refusal {reply.refusal!r} does not say {reason!r}"
+    assert contains_text(reply.refusal, reason), f"the hook's refusal {reply.refusal!r} does not say {reason!r}"
 
 
 def expect_absent_reply_refusal(reply: HookReply, reason: ExpectedText) -> None:
-    assert not holds_text(reply.refusal, reason), f"the hook's refusal {reply.refusal!r} says {reason!r}"
+    assert not contains_text(reply.refusal, reason), f"the hook's refusal {reply.refusal!r} says {reason!r}"
 
 
 def expect_reply_allowed(reply: HookReply) -> None:

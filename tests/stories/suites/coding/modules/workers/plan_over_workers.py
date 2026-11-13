@@ -1,7 +1,7 @@
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import BUILD_TEST, REACHES, merge, rows
 from tests.stories.suites.coding.modules.workers.free_commits import commit_tasks_singly
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, StoryWorker, dispatched_story_worker, planned_story
-from tests.stories.suites.coding.modules.workers.work_units import plan_card, unit_of
+from tests.stories.suites.coding.modules.workers.work_units import plan_card, worker_unit
 
 """Book F of doc 1252: a plan over several workers."""
 
@@ -18,7 +18,7 @@ def two_workers(new_story, monkeypatch) -> tuple[StoryWorker, StoryWorker]:
 
 def test_75_a_phase_to_a_second_worker_is_its_unit_and_the_plan_agent_stays_the_first(new_story, monkeypatch):
     first, second = two_workers(new_story, monkeypatch)
-    unit = unit_of(second)
+    unit = worker_unit(second)
     card = plan_card(first)
     first.story.expect_rows(unit.phase is not None and unit.phase.id == 2, card["assignee"] is None or card["assignee"]["id"] != second.worker.id, detail=f"{unit} / {card}")
 

@@ -72,7 +72,7 @@ from engine.testing.stories.story_state import StoryState
 from engine.testing.fakes.fixed_process_table import FixedProcessTable
 from engine.testing.expectations.line_outcome import LineOutcome
 from engine.testing.expectations.expected_nudge import ExpectedNudge
-from engine.testing.expectations.text_match import ExpectedText, holds_line, holds_text
+from engine.testing.expectations.text_match import ExpectedText, holds_line, contains_text
 
 STORY_ROWS_REASON = "the story kit lists every row of a table for an assertion"
 
@@ -279,7 +279,7 @@ class Story:
     def expect_hook_refusal(self, session: str, sample: HookSample, reason: ExpectedText) -> None:
         self.checked(f"hook {sample.action}")
         reply = self.hook(session, sample)
-        self.expected(holds_text(reply.refusal, reason), f"the hook's refusal {reply.refusal!r} does not say {reason!r}")
+        self.expected(contains_text(reply.refusal, reason), f"the hook's refusal {reply.refusal!r} does not say {reason!r}")
 
     # The line of the story's own test function that led to a check, through any helper it called, so two stories check
     # the same thing when they check it from the same line; a check made outside a test function keeps its subject.
@@ -332,20 +332,20 @@ class Story:
         outcome = self.run(line, actor)
         self.expected(outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}")
         output_text = self.with_touched_rows(outcome)
-        missing = [text for text in texts if not holds_text(output_text, text)]
+        missing = [text for text in texts if not contains_text(output_text, text)]
         self.expected(not missing, f"{line} printed none of {missing}:\n{outcome.output_text}")
 
     def expect_no_text(self, line: str, *texts: ExpectedText, actor: Actor | None = None) -> None:
         self.checked(line)
         outcome = self.run(line, actor)
-        matching = [text for text in texts if holds_text(outcome.output_text, text)]
+        matching = [text for text in texts if contains_text(outcome.output_text, text)]
         self.expected(not matching, f"{line} printed {matching}:\n{outcome.output_text}")
 
     def expect_refusal(self, line: str, reason: ExpectedText, actor: Actor | None = None) -> None:
         self.checked(line)
         outcome = self.run(line, actor)
         self.expected(outcome.code == 1, f"{line} was not refused: {outcome.code} {outcome.output_text}")
-        self.expected(holds_text(outcome.output_text, reason), f"{line} was refused, but not for {reason!r}: {outcome.output_text}")
+        self.expected(contains_text(outcome.output_text, reason), f"{line} was refused, but not for {reason!r}: {outcome.output_text}")
 
     def expect_usage_error(self, line: str, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)
@@ -369,7 +369,7 @@ class Story:
     def expect_requested_exit(self, line: str, request: CallerRequest, code: int, text: str) -> None:
         self.checked(line)
         outcome = self.run_requested(line, request)
-        self.expected(outcome.code == code and holds_text(outcome.output_text, text), f"{line} did not exit {code} naming {text!r}: {outcome.code} {outcome.output_text}")
+        self.expected(outcome.code == code and contains_text(outcome.output_text, text), f"{line} did not exit {code} naming {text!r}: {outcome.code} {outcome.output_text}")
 
     def new_row_id(self, line: str, actor: Actor | None = None) -> int:
         outcome = self.run(f"{line} --json", actor)

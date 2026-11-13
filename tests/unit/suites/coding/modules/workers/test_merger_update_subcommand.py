@@ -98,7 +98,7 @@ def handler(checks: Checks, worktrees: Worktrees | None = None) -> tuple[OrderWo
     return OrderWorkerUpdateHandler(Agents(), decisions, Reader(), checks, repository, visits, nudger), repository, visits, nudger
 
 
-def ordered_by(actor_id: int, checks: Checks, worktrees: Worktrees | None = None):
+def ordering_actor(actor_id: int, checks: Checks, worktrees: Worktrees | None = None):
     order, repository, visits, nudger = handler(checks, worktrees)
     command = OrderWorkerUpdate(WORKER, "cart.py is changed on both sides")
     order.prepare(command, Actor(actor_id, ActorType.AGENT))
@@ -107,7 +107,7 @@ def ordered_by(actor_id: int, checks: Checks, worktrees: Worktrees | None = None
 
 
 def test_the_merger_orders_the_update_with_who_and_why_and_the_worker_is_woken_with_how_far_its_base_moved():
-    repository, visits, nudger = ordered_by(MERGER, Checks(State.OPEN))
+    repository, visits, nudger = ordering_actor(MERGER, Checks(State.OPEN))
     check = repository.saved[0]
     assert (check.state, check.decided_by, check.reason, visits.closed) == (State.ORDERED, MERGER, "cart.py is changed on both sides", 1)
     worker, declaration, fields = nudger.sent[0]
@@ -116,13 +116,13 @@ def test_the_merger_orders_the_update_with_who_and_why_and_the_worker_is_woken_w
 
 
 def test_the_main_agent_may_order_after_a_pass_and_another_agent_is_refused():
-    assert ordered_by(MAIN, Checks(State.PASSED))[0].saved[0].state is State.ORDERED
+    assert ordering_actor(MAIN, Checks(State.PASSED))[0].saved[0].state is State.ORDERED
     with pytest.raises(Refusal, match="only the merger or the main agent"):
-        ordered_by(OTHER, Checks(State.OPEN))
+        ordering_actor(OTHER, Checks(State.OPEN))
 
 
 @pytest.mark.parametrize("checks, worktrees, refusal", [(Checks(), None, "no open check for this worker"), (Checks(State.IGNORED, State.UPDATED), None, "no open check for this worker"),
                                                         (Checks(State.OPEN), Worktrees(matched=False), "no worker 999 with a worktree in this environment")])
 def test_an_order_is_refused_with_no_check_to_decide_or_no_worktree(checks, worktrees, refusal):
     with pytest.raises(Refusal, match=refusal):
-        ordered_by(MERGER, checks, worktrees)
+        ordering_actor(MERGER, checks, worktrees)

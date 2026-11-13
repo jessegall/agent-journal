@@ -32,7 +32,7 @@ STOP_OUTPUT = HookSamples.shell("journal output stop 1", ShellPart("journal", Co
 BLOCKED = "Output 1 printed nothing for 301s"
 
 
-def print_line(story: Story, text: str) -> None:
+def output_line(story: Story, text: str) -> None:
     folder = story.container.get(OutputFolder)
     folder.write_start(1, "make build", ["make build"])
     folder.write_output(1, 1, text)
@@ -104,7 +104,7 @@ def test_a_run_that_prints_is_never_held(new_story):
     story = new_story(fixture=ActiveBuild)
     for number in range(3):
         story.advance(timedelta(seconds=200))
-        print_line(story, f"step {number}\n")
+        output_line(story, f"step {number}\n")
         story.expect_hook_allowed("s-1", EDIT)
 
 

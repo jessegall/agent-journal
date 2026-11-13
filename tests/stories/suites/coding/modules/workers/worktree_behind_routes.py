@@ -12,7 +12,7 @@ from tests.stories.suites.coding.modules.workers.support.base_branch import own_
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
-from tests.stories.suites.coding.modules.workers.worktree_behind_check import base_commits, behind_lines, checks, look, setting
+from tests.stories.suites.coding.modules.workers.worktree_behind_check import base_commits, behind_lines, checks, stale_check, setting
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
@@ -24,7 +24,7 @@ def b24_far_behind_goes_to_the_main_agent_without_the_merger(story, repository: 
     setting(story, "update-to-main-commits", 20)
     own_commits(repository, worker.id, 1)
     base_commits(repository, 25)
-    look(story)
+    stale_check(story)
     story.expect_text(f"agent-line list --agent {story.agent.id}", "commits behind", "too far to leave to the merger")
     story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.PASSED], behind_lines(story) == [], detail=f"{checks(story)} {behind_lines(story)}")
 
@@ -32,7 +32,7 @@ def b24_far_behind_goes_to_the_main_agent_without_the_merger(story, repository: 
 def f53_a_commit_closes_the_open_check_as_updated(story, repository: GitRepository, worker: Actor) -> None:
     own_commits(repository, worker.id, 1)
     base_commits(repository, 3)
-    look(story)
+    stale_check(story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(FIRST_PROOF, actor=worker)
     story.run(COMMIT, actor=worker)
@@ -42,7 +42,7 @@ def f53_a_commit_closes_the_open_check_as_updated(story, repository: GitReposito
 def f54_abandoning_the_worktree_closes_its_check_as_gone(story, repository: GitRepository, worker: Actor) -> None:
     own_commits(repository, worker.id, 1)
     base_commits(repository, 3)
-    look(story)
+    stale_check(story)
     story.expect_success(f'worker release {agent_number(story, worker.id)} --abandon "the worker left"', actor=story.agent)
     story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.REMOVED], detail=str(checks(story)))
 
@@ -56,7 +56,7 @@ def g57_five_worktrees_in_one_look_start_the_merger_once(story, repository: GitR
     for each in workers:
         own_commits(repository, each.id, 1)
     base_commits(repository, 3)
-    look(story)
+    stale_check(story)
     mergers = [agent for agent in story.container.get(Queries).query(Agent).every_row(TEST_ROWS_REASON) if agent.profile == f"{MERGER_PROFILE.name}"]
     story.expect_rows(len(checks(story)) == SEVERAL_WORKERS, len(behind_lines(story)) == SEVERAL_WORKERS, len(mergers) <= 1, detail=f"{len(checks(story))} {behind_lines(story)} {mergers}")
 

@@ -84,7 +84,7 @@ def sample_folders_missing() -> list[str]:
     return sorted(owner for owner in owners if not (ROOT / owner).is_dir())
 
 
-def known(path: Path) -> list[str]:
+def recognized(path: Path) -> list[str]:
     return path.read_text().splitlines()
 
 
@@ -96,21 +96,21 @@ def test_an_architecture_detector_loads_and_says_what_it_flags_and_how_to_fix_it
 
 
 def test_every_architecture_detector_has_a_refused_sample_and_an_accepted_sample():
-    added = sorted(set(lines_without_sample()) - set(known(RECOGNIZED_WITHOUT_SAMPLE)))
+    added = sorted(set(lines_without_sample()) - set(recognized(RECOGNIZED_WITHOUT_SAMPLE)))
     assert added == [], "write a sample with a line '@sin <detector>' and a line '@righteous <detector>' under .commandments/custom/samples"
 
 
 def test_a_detector_that_got_its_samples_is_taken_off_the_known_list():
-    assert sorted(set(known(RECOGNIZED_WITHOUT_SAMPLE)) - set(lines_without_sample())) == []
+    assert sorted(set(recognized(RECOGNIZED_WITHOUT_SAMPLE)) - set(lines_without_sample())) == []
 
 
 def test_every_folder_a_detector_names_exists_in_the_checkout():
-    added = sorted(set(missing_folder_lines()) - set(known(RECOGNIZED_MISSING_FOLDERS)))
+    added = sorted(set(missing_folder_lines()) - set(recognized(RECOGNIZED_MISSING_FOLDERS)))
     assert added == [], "a detector names a folder that is gone: a moved folder switches the detector off, so update its pattern"
 
 
 def test_a_detector_folder_that_exists_again_is_taken_off_the_known_list():
-    assert sorted(set(known(RECOGNIZED_MISSING_FOLDERS)) - set(missing_folder_lines())) == []
+    assert sorted(set(recognized(RECOGNIZED_MISSING_FOLDERS)) - set(missing_folder_lines())) == []
 
 
 def test_the_literal_folder_of_a_pattern_is_what_stands_before_its_first_pattern_character():
@@ -131,9 +131,9 @@ def test_every_top_folder_of_the_source_is_judged():
 
 
 def test_a_sample_that_mirrors_an_engine_area_a_core_module_or_a_suite_names_one_that_exists():
-    added = sorted(set(sample_folders_missing()) - set(known(RECOGNIZED_MISSING_SAMPLE_FOLDERS)))
+    added = sorted(set(sample_folders_missing()) - set(recognized(RECOGNIZED_MISSING_SAMPLE_FOLDERS)))
     assert added == [], "the area, module or suite of a sample is gone: move the sample with the source it mirrors"
 
 
 def test_a_sample_folder_that_exists_again_is_taken_off_the_known_list():
-    assert sorted(set(known(RECOGNIZED_MISSING_SAMPLE_FOLDERS)) - set(sample_folders_missing())) == []
+    assert sorted(set(recognized(RECOGNIZED_MISSING_SAMPLE_FOLDERS)) - set(sample_folders_missing())) == []

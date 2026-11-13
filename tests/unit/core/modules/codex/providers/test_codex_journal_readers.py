@@ -41,7 +41,7 @@ def person_folder() -> Path:
     return Path(os.environ["CODEX_HOME"])
 
 
-def write_journal_folder(provider: CodexProvider, home: JournalHome) -> None:
+def create_journal_folder(provider: CodexProvider, home: JournalHome) -> None:
     ProgramSettingsWriter(home).write(provider.journal_settings(home, RUNNER, (), [home.project_folder]))
 
 
@@ -49,13 +49,13 @@ def test_a_transcript_is_found_in_the_sessions_the_journal_folder_links_to(provi
     rollout = person_folder() / "sessions" / "2026" / "11" / "12" / "rollout-2026-11-12T00-00-00-t-1.jsonl"
     rollout.parent.mkdir(parents=True)
     rollout.write_text("{}\n")
-    write_journal_folder(provider, home)
+    create_journal_folder(provider, home)
     assert provider.transcript(home.project_folder, "t-1") == rollout
     assert (home.program_folder("codex") / "sessions" / "2026" / "11" / "12" / rollout.name).is_file()
 
 
 def test_hook_trust_is_ready_after_the_journal_writes_its_folder(provider, home):
-    write_journal_folder(provider, home)
+    create_journal_folder(provider, home)
     assert provider.journal_trust(home) is HookTrust.READY
 
 
@@ -68,7 +68,7 @@ def test_a_journal_write_leaves_the_person_config_untouched(provider, home):
     config = person_folder() / "config.toml"
     config.write_text('model = "gpt-6.1-sol"\n')
     previous = (config.read_bytes(), config.stat().st_mtime_ns)
-    write_journal_folder(provider, home)
+    create_journal_folder(provider, home)
     assert (config.read_bytes(), config.stat().st_mtime_ns) == previous
 
 

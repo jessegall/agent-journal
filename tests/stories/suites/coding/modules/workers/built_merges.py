@@ -41,7 +41,7 @@ def built_repository(story):
     return repository
 
 
-def worker_changes_one_view(story, repository, task_id: int, dispatch: str, view: int):
+def worker_changes_single_view(story, repository, task_id: int, dispatch: str, view: int):
     """A worker changes one view source and commits the built file it built from its own sources."""
     worker = dispatched_worker(story, dispatch)
     own_texts = tuple(CHANGED_TEXTS[index] if index == view else FIRST_TEXTS[index] for index in range(len(SOURCES)))
@@ -63,8 +63,8 @@ def test_two_workers_that_rebuilt_the_same_built_file_merge_one_after_the_other_
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = built_repository(story)
     second_task = story.new_row_id('task make "Change the second view" --brief "Change view b" --environment main', actor=story.agent)
-    first = worker_changes_one_view(story, repository, 1, DISPATCH, 0)
-    second = worker_changes_one_view(story, repository, second_task, DISPATCH.removesuffix(" 1") + f" {second_task}", 1)
+    first = worker_changes_single_view(story, repository, 1, DISPATCH, 0)
+    second = worker_changes_single_view(story, repository, second_task, DISPATCH.removesuffix(" 1") + f" {second_task}", 1)
     merged(story, first, 1)
     repository.checkout(ENVIRONMENT_BRANCH)
     merged(story, second, 2)
