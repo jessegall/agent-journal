@@ -17,7 +17,7 @@
                 "testCode": true
             },
             {
-                "fileMatches": "(^|/)(src/viewer/src/composables/now\\.js|src/viewer/kit/useNow\\.js|src/viewer/kit/usePoll\\.js|src/viewer/kit/frameBridgeClient\\.js|src/viewer/src/platform/busyField\\.js|src/viewer/src/windows/FrameContent\\.vue|src/core/modules/plugins/web/src/PluginServices\\.vue|src/core/modules/agents/web/src/AgentRows\\.vue|src/core/modules/skills/web/src/SkillTriggerEditor\\.vue)$"
+                "fileMatches": "(^|/)(src/viewer/src/composables/now\\.js|src/viewer/kit/useNow\\.js|src/viewer/kit/usePoll\\.js|src/viewer/kit/frameBridgeClient\\.js|src/viewer/src/platform/busyField\\.js|src/viewer/src/state/updating\\.js|src/viewer/src/windows/FrameContent\\.vue|src/core/modules/plugins/web/src/PluginServices\\.vue|src/core/modules/agents/web/src/AgentRows\\.vue|src/core/modules/skills/web/src/SkillTriggerEditor\\.vue)$"
             }
         ]
     },
