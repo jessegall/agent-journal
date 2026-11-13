@@ -23,6 +23,8 @@ from engine.listener.event_builder import EventBuilder
 from engine.database.performance_costs import PerformanceCosts
 from engine.performance.performance_state import PerformanceState
 from engine.errors.refusal import Refusal
+from engine.listener.errors.listener_time_limit_error import ListenerTimeLimitError
+from engine.setting.setting_values import SettingValues
 
 
 FAILURE_LIMIT_ATTEMPTS = 3
@@ -31,6 +33,7 @@ COSTLY_LISTENER_POINTS = 500
 SLOW_LISTENER_SECONDS = 0.5
 PROGRAM_STOP_RUN_ORDER = 500
 PLUGIN_RUN_ORDER = 1000
+LISTENER_TIME_LIMIT_SETTING = "journal.core.developer.tools.listener-time-limit"
 
 
 class CommitListenerRunner:
@@ -42,6 +45,7 @@ class CommitListenerRunner:
         self.registry, self.log, self.container, self.errors, self.cursors, self.exceptions, self.scopes = registry, log, container, errors, cursors, exceptions, scopes
         self.positions: dict[str, int] = {}
         self.positions_stale = False
+        self.held_listeners: set[str] = set()
 
     def run(self) -> None:
         self.flush_exceptions()
@@ -99,7 +103,7 @@ class CommitListenerRunner:
 
     def run_round(self, entries: list[ListenerEntry], urgent_entries: list[ListenerEntry]) -> bool:
         positions = self.known_positions(entries)
-        entries = [entry for entry in entries if entry.name in positions]
+        entries = [entry for entry in entries if entry.name in positions and entry.name not in self.held_listeners]
         events = self.log.events_after(min(positions[entry.name] for entry in entries)) if entries else []
         if not events:
             return False
@@ -150,6 +154,8 @@ class CommitListenerRunner:
                 return progress
             position, progress = event.id, True
             self.positions[entry.name] = position
+            if entry.name in self.held_listeners:
+                return progress
         if events and events[-1].id != position:
             advanced = self.cursors.claimed(entry.name, position, events[-1].id)
             if advanced:
@@ -201,6 +207,7 @@ class CommitListenerRunner:
                 if built_event is not None:
                     self.container.get(listener_class).handle(built_event, event)
             elapsed = perf_counter() - started_at
+            self.hold_when_over_time_limit(entry, event, elapsed)
             if elapsed >= SLOW_LISTENER_SECONDS:
                 self.system_log.write(LogLevel.INFORMATION, f"listener {entry.name} took {elapsed * 1000:.0f} ms on event {event.id} {event.event}")
             cost = tools.cost(start_points)
@@ -216,3 +223,13 @@ class CommitListenerRunner:
             self.errors.reported(["listener", entry.name, "event", str(event.id)], error, event.environment_id)
             return failures >= FAILURE_LIMIT_ATTEMPTS
         return True
+
+    # a developer setting, 0 when off: a listener over the limit runs no more events until the server restarts, and its
+    # error reaches the main agent at once; its cursor stays, so the held events run after the restart
+    def hold_when_over_time_limit(self, entry: ListenerEntry, event: LoggedEvent, elapsed: float) -> None:
+        limit_ms = self.container.get(SettingValues).number(LISTENER_TIME_LIMIT_SETTING)
+        if limit_ms <= 0 or elapsed * 1000 <= limit_ms:
+            return
+        self.held_listeners.add(entry.name)
+        error = ListenerTimeLimitError(entry.name, round(elapsed * 1000), limit_ms, event.id, event.event)
+        self.errors.reported(["listener", entry.name, "event", str(event.id)], error, event.environment_id)
