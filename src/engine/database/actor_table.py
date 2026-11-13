@@ -56,6 +56,12 @@ class ActorTable(RoundState):
         rows = self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.AGENT.value, session))) or self.database.rows(Statement(SESSION_HOLDER_ID.sql, tuple([session])))
         return int(rows[0]["id"]) if rows else None
 
+    # the role of the agent a session belongs to, none for a session no agent row has yet
+    def session_role(self, session: str) -> str | None:
+        actor_id = self.agent_actor_id(session)
+        rows = self.database.rows(Statement(AGENT_OWNER.sql, [actor_id])) if actor_id is not None else []
+        return str(rows[0]["role"]) if rows else None
+
     def is_agent(self, actor_id: int) -> bool:
         if actor_id not in self.agent_answers:
             self.agent_answers[actor_id] = bool(self.database.rows(Statement(ACTOR_ROW.sql, (actor_id, ActorType.AGENT.value))))

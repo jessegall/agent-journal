@@ -1,4 +1,4 @@
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 
 from engine.enums.agent_role import AgentRole
@@ -25,12 +25,14 @@ class HookSender:
     priority: ExecutionPriority
     limit_seconds: float
 
+    # the role comes from the server's own record of the session, never from the body, so a worker can not pass
+    # itself off as the main agent
     @classmethod
     def parsed(cls, data: object, main_limit_seconds: float = HOOK_LIMIT_SECONDS, agent_limit_seconds: float = AGENT_HOOK_LIMIT_SECONDS,
-               stop_limit_seconds: float = STOP_LIMIT_SECONDS) -> "HookSender":
+               stop_limit_seconds: float = STOP_LIMIT_SECONDS, *, role_of: Callable[[str], str]) -> "HookSender":
         fields: Mapping[object, object] = data if is_mapping(data) else {}
-        role = str(fields.get("role") or AgentRole.MAIN)
         session = str(fields.get("session", fields.get("session_id", "")))
+        role = role_of(session)
         event_name = str(fields.get("event", fields.get("hook_event_name", "hook")))
         normalized_name = event_name.replace("_", "").casefold()
         event = next((event for event in HookEventName if event.value.replace("_", "").casefold() == normalized_name), None)

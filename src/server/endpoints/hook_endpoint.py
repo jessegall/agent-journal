@@ -31,6 +31,7 @@ from engine.performance.route_cost_tool import RouteCostTool
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from engine.enums.hook_answer import HookAnswer
 from server.hook.hook_delivery_retries import HookDeliveryRetries
+from server.execution.session_starters import SessionStarters
 from server.hook.hook_sender import HookSender
 from server.hook.raw_hook_body import RawHookBody, is_raw_body
 from server.hook.hook_headers import HookHeaders
@@ -63,7 +64,8 @@ class HookEndpoint:
 
     def answer(self, data: object, program: str, headers: Mapping[str, str]) -> HookReply:
         started_at = perf_counter()
-        sender = HookSender.parsed(data, self.context.hook_limit_seconds, self.context.agent_hook_limit_seconds, self.context.stop_limit_seconds)
+        sender = HookSender.parsed(data, self.context.hook_limit_seconds, self.context.agent_hook_limit_seconds, self.context.stop_limit_seconds,
+                                   role_of=SessionStarters.shared(self.context.home).role)
         files = ServerFiles(self.context.home)
         if not files.phase().runs_programs:
             files.block_session(sender.session)
