@@ -71,12 +71,12 @@ def profile_names() -> re.Pattern[str]:
 @cache
 def number_defaults() -> dict[str, int]:
     """The short key of every setting declared with one whole number for its default."""
-    found: dict[str, set[int]] = {}
+    matched: dict[str, set[int]] = {}
     for call in declared_calls(SETTING_VALUE):
         for keyword in call.keywords:
             if keyword.arg == "default" and isinstance(keyword.value, ast.Constant) and type(keyword.value.value) is int:
-                found.setdefault(text_argument(call, 0), set()).add(keyword.value.value)
-    return {key: next(iter(values)) for key, values in found.items() if len(values) == 1}
+                matched.setdefault(text_argument(call, 0), set()).add(keyword.value.value)
+    return {key: next(iter(values)) for key, values in matched.items() if len(values) == 1}
 
 
 def fixed_text(node: ast.expr) -> str | None:
@@ -90,14 +90,14 @@ def fixed_text(node: ast.expr) -> str | None:
 @cache
 def key_constant_defaults() -> dict[str, int]:
     """Every constant of the source that holds a setting key, with the whole number its setting defaults to."""
-    found = {}
+    matched = {}
     for source in SOURCE_FOLDER.rglob("*.py"):
         for node in source_tree(source).body:
             if isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
                 text = fixed_text(node.value)
                 if text is not None and text.rsplit(".", 1)[-1] in number_defaults():
-                    found[node.targets[0].id] = number_defaults()[text.rsplit(".", 1)[-1]]
-    return found
+                    matched[node.targets[0].id] = number_defaults()[text.rsplit(".", 1)[-1]]
+    return matched
 
 
 def names_in(node: ast.AST) -> set[str]:
@@ -126,23 +126,23 @@ def raw_default_lines(path: Path) -> list[str]:
 
 def raw_defaults(tree: ast.Module, relative: str) -> list[str]:
     """A whole number a test writes that equals the default of a setting the same test names and gives no value."""
-    found = []
+    matched = []
     for function in (node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)):
         named = {name: key_constant_defaults()[name] for name in names_in(function) - given_settings(function) if name in key_constant_defaults()}
         for node in ast.walk(function):
             if isinstance(node, ast.Constant) and type(node.value) is int and node.value not in COUNTED_ANYWAY and node.value in named.values():
-                found += [f"{relative}:{node.lineno} default of {name}" for name, default in named.items() if default == node.value]
-    return found
+                matched += [f"{relative}:{node.lineno} default of {name}" for name, default in named.items() if default == node.value]
+    return matched
 
 
 def raw_values(text: str, relative: str) -> list[str]:
-    found = [f"nudge text {pattern.pattern[:40]}" for pattern in nudge_patterns() if pattern.search(text)]
+    matched = [f"nudge text {pattern.pattern[:40]}" for pattern in nudge_patterns() if pattern.search(text)]
     if any(word in relative for word in KEPT_AS_WRITTEN):
-        return found
-    found += [f"setting key {key}" for key in SETTING_KEY.findall(text) if key.rstrip(".").rsplit(".", 1)[-1] in setting_keys()]
+        return matched
+    matched += [f"setting key {key}" for key in SETTING_KEY.findall(text) if key.rstrip(".").rsplit(".", 1)[-1] in setting_keys()]
     if not relative.startswith(CORE_UNIT_TESTS):
-        found += [f"profile name {name}" for name in profile_names().findall(text)]
-    return found
+        matched += [f"profile name {name}" for name in profile_names().findall(text)]
+    return matched
 
 
 def raw_value_lines(path: Path) -> list[str]:
@@ -151,9 +151,9 @@ def raw_value_lines(path: Path) -> list[str]:
 
 
 def test_no_test_writes_a_value_the_code_declares():
-    found = [line for path in sorted(TESTS_FOLDER.rglob("*.py")) if path != Path(__file__).resolve() for line in [*raw_value_lines(path), *raw_default_lines(path)]]
-    assert found == [], ("take the value from its declaration: said(NUDGE) or NUDGE.nudge(...).text for a nudge, the key constant for a "
-                         "setting, PROFILE.name for a shipped profile, story.number_default(KEY) for a default:\n" + "\n".join(found))
+    matched = [line for path in sorted(TESTS_FOLDER.rglob("*.py")) if path != Path(__file__).resolve() for line in [*raw_value_lines(path), *raw_default_lines(path)]]
+    assert matched == [], ("take the value from its declaration: said(NUDGE) or NUDGE.nudge(...).text for a nudge, the key constant for a "
+                         "setting, PROFILE.name for a shipped profile, story.number_default(KEY) for a default:\n" + "\n".join(matched))
 
 
 def test_the_scan_finds_a_raw_nudge_a_raw_setting_key_and_a_raw_profile_name(tmp_path):

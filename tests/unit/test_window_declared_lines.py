@@ -29,17 +29,17 @@ def call_arguments(text: str) -> list[str]:
 
 
 def component_files(entry: Path) -> set[Path]:
-    seen: set[Path] = set()
+    viewed: set[Path] = set()
     waiting = [entry]
     while waiting:
         path = waiting.pop()
-        if path in seen or not path.is_file():
+        if path in viewed or not path.is_file():
             continue
-        seen.add(path)
+        viewed.add(path)
         for target in IMPORT.findall(path.read_text()):
             resolved = (path.parent / target).resolve()
             waiting.extend(candidate for candidate in (resolved, resolved.with_suffix(".js"), resolved / "index.js") if candidate.is_file())
-    return seen
+    return viewed
 
 
 def component_lines(files: set[Path]) -> set[str]:

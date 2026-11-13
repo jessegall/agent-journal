@@ -22,11 +22,11 @@ TESTS = {
 
 
 def placed(screen: str) -> dict[str, list[str]]:
-    found: dict[str, list[str]] = {}
+    matched: dict[str, list[str]] = {}
     for value in DECLARED:
         if value.screen == screen:
-            found.setdefault(value.section, []).append(value.key)
-    return found
+            matched.setdefault(value.section, []).append(value.key)
+    return matched
 
 
 def test_every_work_setting_of_the_design_is_on_the_work_screen_in_its_section():

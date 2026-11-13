@@ -33,15 +33,15 @@ def loans(entries: Query[LogEntry]) -> Query[Loan]:
 
 @pytest.fixture
 def statements_run(monkeypatch):
-    ran: list[str] = []
+    executed: list[str] = []
     original = Database.rows
 
     def counted(database: Database, statement: Statement):
-        ran.append(statement.sql)
+        executed.append(statement.sql)
         return original(database, statement)
 
     monkeypatch.setattr(Database, "rows", counted)
-    return ran
+    return executed
 
 
 def saved(query: Query) -> Statement:

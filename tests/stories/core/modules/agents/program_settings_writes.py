@@ -57,13 +57,13 @@ def test_a_rewrite_never_shows_a_half_file(new_story):
     story = new_story(fixture=MainEnvironment)
     sync = story.container.get(ProgramSettingsSync)
     texts: set[str] = set()
-    seen_texts: list[str] = []
+    viewed_texts: list[str] = []
     finished = threading.Event()
 
     def read_while_rewritten() -> None:
         while not finished.is_set():
             if claude_file(story).is_file():
-                seen_texts.append(claude_file(story).read_text())
+                viewed_texts.append(claude_file(story).read_text())
 
     reader = threading.Thread(target=read_while_rewritten)
     reader.start()
@@ -75,7 +75,7 @@ def test_a_rewrite_never_shows_a_half_file(new_story):
     finally:
         finished.set()
         reader.join()
-    story.expect_rows(len(texts) == 2, len(seen_texts) > 0, all(text in texts for text in seen_texts))
+    story.expect_rows(len(texts) == 2, len(viewed_texts) > 0, all(text in texts for text in viewed_texts))
 
 
 def test_a_launch_is_refused_when_the_settings_cannot_be_written(new_story):

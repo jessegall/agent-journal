@@ -27,15 +27,15 @@ def filled(entries: Query[LogEntry], total: int) -> Query[LogEntry]:
 
 @pytest.fixture
 def statements_run(monkeypatch):
-    ran: list[str] = []
+    executed: list[str] = []
     original = Database.rows
 
     def counted(database: Database, statement: Statement):
-        ran.append(statement.sql)
+        executed.append(statement.sql)
         return original(database, statement)
 
     monkeypatch.setattr(Database, "rows", counted)
-    return ran
+    return executed
 
 
 def test_get_on_sixty_rows_returns_fifty_and_reads_fifty_one(entries: Query[LogEntry], statements_run):

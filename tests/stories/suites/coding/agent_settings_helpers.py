@@ -15,7 +15,7 @@ from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 from tests.stories.support.story_checks import expect_value, expect_value_4, expect_value_without
 
 CONTEXT = "journal.core.helpers.context-limit"
-CONTEXT_ON, CONTEXT_TOKENS, CONTEXT_KINDS, CONTEXT_PROFILES = (f"{CONTEXT}-{name}" for name in ("on", "tokens", "kinds", "profiles"))
+CONTEXT_ON, CONTEXT_TOKENS, CONTEXT_CATEGORIES, CONTEXT_PROFILES = (f"{CONTEXT}-{name}" for name in ("on", "tokens", "kinds", "profiles"))
 WORKER_RUN = f"{WORKER_RUN_LIMIT}"
 WORKER_KEPT = f"{WORKER_KEPT_LIMIT}"
 READ_ONLY_RUN = f"{HELPER_RUN_LIMIT}"
@@ -122,7 +122,7 @@ def test_a_type_set_to_no_cap_shows_no_percent_of_a_cap(helpers):
 
 def test_the_kind_table_sets_the_workers_cap_and_a_type_with_a_cap_of_its_own_uses_that_instead(helpers):
     story, tab = helpers
-    tab.modal.save({CONTEXT_ON: "on", CONTEXT_KINDS: '["worker:200000"]', CONTEXT_PROFILES: f'["{DESIGNER_PROFILE.name}:150000"]'}, "advanced", HELPER_TYPES)
+    tab.modal.save({CONTEXT_ON: "on", CONTEXT_CATEGORIES: '["worker:200000"]', CONTEXT_PROFILES: f'["{DESIGNER_PROFILE.name}:150000"]'}, "advanced", HELPER_TYPES)
     read_by_agents(story)
     shown = tab.contexts()
     expect_value(shown["worker"], (30, 200000))

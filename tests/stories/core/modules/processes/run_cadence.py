@@ -115,14 +115,14 @@ def test_only_a_silent_go_test_over_several_packages_is_told_and_runs_printing_l
     bar = moved_run(story, "make images", CommandCategory.BUILD)
     titled(story, silent, "Running the package tests")
     bar_text = ""
-    heard: list[str] = []
+    received: list[str] = []
     for step in range(20):
         bar_text += "\r[" + "#" * (step % 20) + "] working"
         emitted(story, bar, bar_text)
         ticks(story, 10, lines, every=10, text="compiled one more file\n" * 10)
-        heard += cadence_lines(informed(story, MAIN))
-    story.expect_rows(len(heard) == 1, expected_nudge(SILENT_RUN, seconds=30, hint='run').is_in(heard[0]),
-                      detail="\n".join(heard))
+        received += cadence_lines(informed(story, MAIN))
+    story.expect_rows(len(received) == 1, expected_nudge(SILENT_RUN, seconds=30, hint='run').is_in(received[0]),
+                      detail="\n".join(received))
 
 
 def test_a_busy_silent_build_is_told_it_does_not_stream_and_is_never_asked_to_be_looked_at(new_story):

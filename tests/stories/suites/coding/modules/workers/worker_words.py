@@ -80,8 +80,8 @@ def test_207_no_setting_of_the_workers_says_batch_and_the_two_task_counts_say_wh
 
 
 def test_209_the_profile_of_a_worker_says_proof_start_and_commit_and_the_planner_is_told_that_tests_run_at_a_checkpoint(new_story):
-    profile_words = f"{PROFILE_WORKER_COMMANDS} {WORKER_RULES}"
+    profile_terms = f"{PROFILE_WORKER_COMMANDS} {WORKER_RULES}"
     checkpoint_step = next(step for step in PLAN_BUILDING.steps if "--checkpoint" in step)
-    expect_value_4(all(command in profile_words for command in WORKER_COMMANDS))
-    expect_value_4(not [word for word in ("journal worker deliver", "end of its phase", "hand all in") if word in profile_words])
+    expect_value_4(all(command in profile_terms for command in WORKER_COMMANDS))
+    expect_value_4(not [word for word in ("journal worker deliver", "end of its phase", "hand all in") if word in profile_terms])
     expect_value_with(checkpoint_step, "tests run")

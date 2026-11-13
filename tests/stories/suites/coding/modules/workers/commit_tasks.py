@@ -88,11 +88,11 @@ def test_25_158_163_165_a_commit_of_two_tasks_in_a_started_plan_is_one_git_commi
 
 
 def test_29_what_differs_at_a_commit_of_two_tasks_becomes_an_important_log_line_of_each_task(two_proved):
-    asked = two_proved.story.run(f"{COMMIT_COMMAND} --wait", actor=two_proved.worker)
+    requested = two_proved.story.run(f"{COMMIT_COMMAND} --wait", actor=two_proved.worker)
     two_proved.story.expect_success(f'{COMMIT_COMMAND} --wait --differences "{LEFT_OUT}"', actor=two_proved.worker)
     two_proved.story.expect_text("task-log list --task 1", LEFT_OUT, actor=two_proved.story.agent)
     two_proved.story.expect_text("task-log list --task 2", LEFT_OUT, actor=two_proved.story.agent)
-    two_proved.story.expect_rows(asked.code != 0, "did you do anything other than the task brief asked" in asked.output_text, detail=asked.output_text)
+    two_proved.story.expect_rows(requested.code != 0, "did you do anything other than the task brief asked" in requested.output_text, detail=requested.output_text)
 
 
 def test_30_a_rule_of_a_plugin_refuses_a_file_of_a_commit_of_two_tasks_and_both_stay_started(two_proved):

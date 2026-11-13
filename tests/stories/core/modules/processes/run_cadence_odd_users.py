@@ -16,18 +16,18 @@ BUILD_START = HookSamples.shell(BUILD_ALIAS, ShellPart("journal", CommandCategor
 
 def test_a_silent_command_started_again_and_again_is_told_once_per_run_and_refused_after_two(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    heard: list[str] = []
+    received: list[str] = []
     runs = []
     for _ in range(2):
-        heard += informed(story, MAIN)
+        received += informed(story, MAIN)
         runs.append(started_run(story, BUILD_ALIAS, CommandCategory.BUILD))
         ticks(story, 70)
         end_run(story, runs[-1], "")
-    heard += informed(story, MAIN)
+    received += informed(story, MAIN)
     refused = story.hook(MAIN, BUILD_START)
-    heard += list(refused.lines)
-    story.expect_rows(sum("Alias build-npm printed nothing for 30s" in line for line in heard) == len(runs), "ran silent twice" in refused.refusal,
-                      detail="\n".join([*heard, refused.refusal]))
+    received += list(refused.lines)
+    story.expect_rows(sum("Alias build-npm printed nothing for 30s" in line for line in received) == len(runs), "ran silent twice" in refused.refusal,
+                      detail="\n".join([*received, refused.refusal]))
 
 
 def test_a_dot_every_25_seconds_added_to_quiet_the_notice_and_a_program_printing_only_whitespace_count_as_streaming(new_story):

@@ -35,15 +35,15 @@ def added(entries: Query[LogEntry], count: int) -> None:
 
 @pytest.fixture
 def statements_run(monkeypatch):
-    ran: list[str] = []
+    executed: list[str] = []
     original = Database.rows
 
     def counted(database: Database, statement: Statement):
-        ran.append(statement.sql)
+        executed.append(statement.sql)
         return original(database, statement)
 
     monkeypatch.setattr(Database, "rows", counted)
-    return ran
+    return executed
 
 
 def test_a_walk_over_a_view_model_without_a_key_is_refused(queries: Queries):
