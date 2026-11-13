@@ -1,7 +1,10 @@
+from engine.model.assignable import Assignable
+from core.modules.tasks.models.task import Task
+
+
 class AssignRulesMode:
-    """Whether a matching rule assigns its task or only records a dry run. It answers no until tasks are
-    assigned only through the assignments (plan 1104, phase 8), so a rule never assigns half a task before
-    then."""
+    """Whether a matching rule assigns its task or only records a dry run: it assigns once tasks are given only
+    through the assignments, which is so while a task is an assignable row."""
 
     def assigns(self) -> bool:
-        return False
+        return issubclass(Task, Assignable)
