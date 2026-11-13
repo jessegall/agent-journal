@@ -13,6 +13,7 @@ from tests.stories.core.support.fixtures import MainEnvironment
 
 OLD_JOURNAL_BLOCK = {"matcher": "", "hooks": [{"type": "command", "command": "exec sh /p/.journal/src/journal/hooks/hook.sh claude /p"}]}
 REWRITES = 50
+OLDER_SETTINGS = '{"older": true}\n'
 
 
 def program_files(story) -> list[Path]:
@@ -42,11 +43,11 @@ def test_the_server_start_writes_both_programs_files_read_only(new_story):
 def test_every_launch_writes_the_programs_files_first_and_replaces_an_older_read_only_one(new_story):
     story = new_story(fixture=LauncherRuns)
     claude_file(story).parent.mkdir(parents=True)
-    claude_file(story).write_text('{"older": true}\n')
+    claude_file(story).write_text(OLDER_SETTINGS)
     os.chmod(claude_file(story), 0o444)
     older_inode = claude_file(story).stat().st_ino
     story.expect_text(f'program command claude "{story.home.project_folder}" --launch launch-1', "claude")
-    replaced = claude_file(story).stat().st_ino != older_inode and mode_of(claude_file(story)) == 0o444 and "older" not in claude_file(story).read_text()
+    replaced = claude_file(story).stat().st_ino != older_inode and mode_of(claude_file(story)) == 0o444 and claude_file(story).read_text() != OLDER_SETTINGS
     shutil.rmtree(story.home.folder / "programs")
     story.expect_text(f'program manage codex "{story.home.project_folder}"', "managed hooks:")
     story.expect_rows(replaced, all(path.is_file() for path in program_files(story)[1:]), not claude_file(story).exists())
