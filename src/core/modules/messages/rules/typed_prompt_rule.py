@@ -13,7 +13,7 @@ PROGRAM_COMMAND = "/"
 
 
 class TypedPromptRule(DriverRule):
-    """Record a person's terminal prompt as a chat message."""
+    """Record a user's terminal prompt as a chat message."""
 
     name = "messages.typed-prompt"
     hook = HookEventName.PROMPT

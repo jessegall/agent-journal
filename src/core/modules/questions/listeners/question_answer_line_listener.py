@@ -17,9 +17,10 @@ CLOSED_SOURCE = "questions.closed"
 
 
 class QuestionAnswerLineListener(SaveListener[Moved[Question]]):
-    """Tells the agent that asked a question that it is answered or closed, the moment it is. A wait still open on the
-    question, or one this answer ends, wakes the agent itself, so the line then only reaches it on its next tool
-    call; otherwise, with every earlier wait long ended, the line wakes an idle agent. A working agent reads it on its next tool call."""
+    """Tells the agent that asked a question that it is answered or closed, the moment it is. A wait
+    still open on the question, or one this answer ends, wakes the agent itself, so the line then
+    only reaches it on its next tool call; otherwise, with every earlier wait long ended, the line
+    wakes an idle agent. A working agent reads it on its next tool call."""
 
     name = "questions.answer-line"
     moves = (QuestionLifecycle.answer, QuestionLifecycle.close)

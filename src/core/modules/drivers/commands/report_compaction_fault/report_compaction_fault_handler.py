@@ -13,7 +13,7 @@ UNSTARTED_LINE_FAILURE = "its line never started"
 
 
 class ReportCompactionFaultHandler(Handler[ReportCompactionFault, None]):
-    """A request whose line never started fails and the person is told once; a compaction that ended with no
+    """A request whose line never started fails and the user is told once; a compaction that ended with no
     context size read since is told once; and an open one whose agent is paused, ended or retired is given up,
     so nothing is typed to an agent that cannot take it."""
 

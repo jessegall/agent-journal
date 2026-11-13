@@ -12,7 +12,7 @@ dispatch`, and work that writes goes to one or stays with you.
 - Choose the profile from what the job is: `journal-researcher` for research and checks, `journal-code-reviewer` for a review,
   `journal-debugger` to trace a fault, `journal-planner` for a design. A job that writes goes to a worker.
 - Pick the cheapest model that fits the job. Reuse a kept helper only when it is on that model, never because a
-  stronger one happens to be there. With no idle kept helper on that model and no free place, ask the person
+  stronger one happens to be there. With no idle kept helper on that model and no free place, ask the user
   to retire a finished helper, then start one on the simpler model.
 - A helper stays kept after its process stops. It is idle until retired, and can take another job on the same
   agent number and session. Give new work to a compatible idle helper, whatever the subject; prefer the
@@ -39,8 +39,8 @@ dispatch`, and work that writes goes to one or stays with you.
 - `journal helper stop <number>` stops its program and ends its job, keeping the agent available for reuse.
 - `journal agent sessions <number>` lists the sessions an agent ran under, newest first, each with its program, model,
   start, end and the reason it ended.
-- `journal agent retire <number> --reason "<why>"` asks the person to retire a stopped helper for good: only a person
-  retires an agent, so it stays until the person accepts. A retired helper keeps its record and transcript, but cannot
+- `journal agent retire <number> --reason "<why>"` asks the user to retire a stopped helper for good: only a user
+  retires an agent, so it stays until the user accepts. A retired helper keeps its record and transcript, but cannot
   receive another job or resume. Stop a running helper before retiring it; a report alone is not retirement.
 - `journal agent driver <number> --program <program> --model <model>` moves a stopped helper or worker to another program
   or model. It stays the same agent, with its number, memories and tasks, and gets a new session; its profile must allow
@@ -62,7 +62,7 @@ Keep a mix that matches the work: the models a profile actually uses, with more 
 rarely runs keeps at most one agent per model, unless they know different work. When retiring, prefer the agent that has idled
 longest, among the models with most agents to spare; one that knows the work coming next is worth keeping. `journal agent mix`
 lists, for each kind of agent and model, the recent jobs, the agents kept and the time each has idled. When a start is
-refused because no place is free, the refusal names the idle helper to send the job to, or says to ask the person to retire
+refused because no place is free, the refusal names the idle helper to send the job to, or says to ask the user to retire
 one; the journal retires no agent by itself.
 
 ## Running and kept limits
@@ -72,7 +72,7 @@ kept limits count running and idle read-only helpers until they are retired. Rea
 overrides for one profile. A running limit of 0 allows none to start; a kept limit of 0 means no limit. Lowering a kept
 limit never deletes a helper. Retire an unused helper explicitly to free a kept place.
 
-Only a person changes these settings. Environment values override project values, and an environment's profile list
+Only a user changes these settings. Environment values override project values, and an environment's profile list
 replaces the project's list. Limits written in a profile file have no effect.
 
 ## As a read-only helper
@@ -85,5 +85,5 @@ replaces the project's list. Limits written in a profile file have no effect.
 - A long report is a document: `journal report make "<title>" --abstract "<one line>" --body - <<'EOF'`, the text, then a
   line `EOF`. Name it in your last words.
 
-The program keeps its own session files, such as those under `~/.claude/projects`. They belong to the person, and a resumed
+The program keeps its own session files, such as those under `~/.claude/projects`. They belong to the user, and a resumed
 helper needs them, so the journal leaves them when a helper ends.

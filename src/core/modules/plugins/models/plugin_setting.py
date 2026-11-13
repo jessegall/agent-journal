@@ -6,7 +6,7 @@ from engine.model.model import Model
 
 @dataclass(frozen=True, kw_only=True)
 class PluginSetting(Model):
-    """One setting the person gave a plugin, by the key its manifest declares, its value kept as JSON text."""
+    """One setting the user gave a plugin, by the key its manifest declares, its value kept as JSON text."""
 
     model_name = "plugin_setting"
     event_forms = tuple([EventForm.COMMIT])

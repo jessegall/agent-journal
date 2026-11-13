@@ -12,7 +12,7 @@ from core.modules.drivers.commands.send_journal_started_line.send_journal_starte
 RELEASED_SESSIONS_REASON = "every kept agent of a released session is woken"
 
 
-class HeldSessionWake:
+class ReleasedSessionWake:
     """Once the server is ready again, wakes every agent whose hook the journal held while it started or updated,
     also a hook held after the booting round: a round moves the held sessions aside and the next round wakes them,
     so a session held during the move is woken too."""

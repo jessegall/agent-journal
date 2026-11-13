@@ -2,7 +2,7 @@ from engine.database.migration import Migration
 
 
 class SettingRequestsTableMigration(Migration):
-    """Creates the table of settings an agent asked a person to change."""
+    """Creates the table of settings an agent asked a user to change."""
 
     number = 1
     statements = (

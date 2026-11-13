@@ -29,8 +29,8 @@ test("the dialog shows the full login link and copies it", async () => {
 
 test("a session the server refuses sees the reason and no link", async () => {
     answer.ok = false;
-    answer.body = {error: "only a person's own viewer can log in another browser"};
+    answer.body = {error: "only a user's own viewer can log in another browser"};
     await opened();
-    expect(document.querySelector("[data-login-failure]").textContent).toContain("only a person");
+    expect(document.querySelector("[data-login-failure]").textContent).toContain("only a user");
     expect(document.querySelector("[data-login-address]")).toBeNull();
 });

@@ -7,7 +7,7 @@ from core.modules.suggestions.models.suggestion import Suggestion
 
 @dataclass(frozen=True)
 class AnswerSuggestion(Command[Suggestion]):
-    """The person accepts or declines a suggestion, once."""
+    """The user accepts or declines a suggestion, once."""
 
     suggestion_id: int
     answer: SuggestionAnswer

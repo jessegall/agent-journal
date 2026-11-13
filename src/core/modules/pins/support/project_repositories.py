@@ -14,9 +14,9 @@ MOST_CONFIG_FILES = 8
 
 
 class ProjectRepositories:
-    """The GitHub repositories this project's checkout names as its remotes, as owner/name, read from its git config
-    and the files it includes, also when the checkout is a worktree or a submodule whose .git is a file, so only a pull
-    request of the project's own repository is pinned."""
+    """The GitHub repositories this project's checkout names as its remotes, as owner/name, read from
+    its git config and the files it includes, also when the checkout is a worktree or a submodule
+    whose .git is a file, so only a pull request of the project's own repository is pinned."""
 
     def __init__(self, home: JournalHome) -> None:
         self.git = home.project_folder / ".git"
@@ -25,7 +25,6 @@ class ProjectRepositories:
         return {f"{owner}/{name}".lower() for text in self.config_texts().values() for owner, name in REMOTE_URL.findall(text)}
 
     def config_texts(self) -> dict[Path, str]:
-        """The text of the checkout's config and of every file it includes, each read once."""
         config = self.config()
         texts: dict[Path, str] = {}
         pending = [config] if config is not None else []

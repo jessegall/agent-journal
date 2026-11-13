@@ -23,7 +23,7 @@ UNFINISHED_STATES = (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED)
 
 
 class TranscriptionTaskListener(SaveListener[Changed[Transcription]]):
-    """A new transcription, or a person's change to one's text, gives the main agent a line and a task to summarize
+    """A new transcription, or a user's change to one's text, gives the main agent a line and a task to summarize
     it, linked to the transcription; a task still unfinished serves again."""
 
     name = "transcriptions.task"

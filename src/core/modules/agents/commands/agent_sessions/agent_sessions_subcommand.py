@@ -15,9 +15,9 @@ EMPTY_HISTORY_TEXT = "this agent has no session in the history"
 
 
 class AgentSessionsSubcommand(ReadSubcommand[tuple[AgentSession, ...]]):
-    """`journal agent sessions <agent>`: the sessions the agent ran under, newest first, each with its program,
-    model, start, end and the reason it ended, or running for its current session, or not started for a session
-    that replaced another and whose program has not started."""
+    """`journal agent sessions <agent>`: the sessions the agent ran under, newest first, each with its
+    program, model, start, end and the reason it ended, or running for its current session, or not
+    started for a session that replaced another and whose program has not started."""
 
     cli_name = "agent"
     name = "sessions"

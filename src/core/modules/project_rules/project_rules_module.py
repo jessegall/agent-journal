@@ -21,7 +21,7 @@ from core.modules.project_rules.support.skeletons import PROJECT_RULES_RULES_SKE
 from core.modules.project_rules.upgrade.rules_move import RulesMove
 
 class ProjectRulesModule(Module):
-    """Adds project rules: standing instructions every agent gets at its start, which a person approves."""
+    """Adds project rules: standing instructions every agent gets at its start, which a user approves."""
 
     name = "journal.core.project-rules"
     seed_reason = "the demo shows no rules yet"

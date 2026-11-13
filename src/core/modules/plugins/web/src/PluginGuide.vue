@@ -20,7 +20,7 @@ const KEYS = [
     ["hears", "The events it runs for."],
     ["holds", "The events it answers before they go on, each with an optional window_ms."],
     ["listen", "Scripts to run for a change, each entry with an event key from journal event keys and a script for any of guard, listen and commit. The journal puts no time limit on a script, except that a guard on an agent's tool step or prompt keeps the journal's own limit."],
-    ["listen: guard", "Before a change. The script can refuse it, and then nothing is saved. Set \"skip\": false on the entry and nobody can pass it with --skip-guard plugins.event-guard:<plugin>; a person can always turn the plugin off."],
+    ["listen: guard", "Before a change. The script can refuse it, and then nothing is saved. Set \"skip\": false on the entry and nobody can pass it with --skip-guard plugins.event-guard:<plugin>; a user can always turn the plugin off."],
     ["listen: listen", "During a change. The script sees the item before it is saved, its answered commands are saved with the change, and a journal command it runs itself is saved at once and stays. An id it reads may still change, and only commit promises the change happened."],
     ["listen: commit", "After a change. The script runs after the change is saved and cannot stop it."],
     ["docs/writing-a-plugin.md", "The whole contract for a plugin's author, with a working sample."],
@@ -90,7 +90,7 @@ const CALLS = [
     ["journal plugin checkout [--agent <n>] --json", "The checkout object above."],
     ["journal plugin changes [--agent <n>] [--since <commit>] --json", "One file object for each name that differs, by default from the commit the checkout started from."],
     ["journal plugin file <relative> [--agent <n>] [--from checkout, project or base]", "The text of that name in that place. A name that is not there exits with code 4."],
-    ["journal plugin run [--agent <n>] [--read-only] -- <command>", "Runs a command at the root of the checkout, with the sandbox of that agent. Only a plugin or a person may call it."],
+    ["journal plugin run [--agent <n>] [--read-only] -- <command>", "Runs a command at the root of the checkout, with the sandbox of that agent. Only a plugin or a user may call it."],
 ];
 </script>
 
@@ -123,7 +123,7 @@ const CALLS = [
                 </template>
             </dl>
             <h3>Asking the journal about a checkout</h3>
-            <p>Plugins and people can name any agent. An agent names only the checkout it works in and reads project folders listed in <code>project_reads</code>.</p>
+            <p>Plugins and users can name any agent. An agent names only the checkout it works in and reads project folders listed in <code>project_reads</code>.</p>
             <dl>
                 <template v-for="[call, text] in CALLS" :key="call">
                     <dt><code>{{ call }}</code></dt>

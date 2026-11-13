@@ -8,13 +8,13 @@ from core.modules.messages.support.message_nudges import UNREAD_DISPLAY_REFUSAL
 
 
 class UnreadMessageShowRule(DriverRule):
-    """The main agent reads a person's unread message with journal message read: showing it is refused."""
+    """The main agent reads a user's unread message with journal message read: showing it is refused."""
 
     name = "messages.unread-show"
     exempt = True
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    single_action_refusal = "Showing a person's unread message is refused: the main agent reads it with journal message read"
+    single_action_refusal = "Showing a user's unread message is refused: the main agent reads it with journal message read"
 
     def __init__(self, messages: MessageQuery) -> None:
         self.messages = messages

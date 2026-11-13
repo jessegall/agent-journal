@@ -30,7 +30,7 @@ class RequestUserApprovalHandler(Handler[RequestUserApproval, object]):
     def handle(self, command: RequestUserApproval, context: Context) -> ApprovalRequest:
         why = (command.why or command.approval.request_reason).strip()
         if not why:
-            raise Refusal("an approval needs a reason: the person sees it with the question", "add --reason \"<why this is asked>\" to the line")
+            raise Refusal("an approval needs a reason: the user sees it with the question", "add --reason \"<why this is asked>\" to the line")
         requester_id = command.requester_id if command.requester_id is not None else context.actor.id
         if not self.actors.is_agent(requester_id):
             main = MainAgentFinder.newest(self.queries)
@@ -54,7 +54,7 @@ class RequestUserApprovalHandler(Handler[RequestUserApproval, object]):
         existing = requests.matching(Among("state", (ApprovalState.OPEN, ApprovalState.RUNNING))).first()
         docked = actions.matching(Among("state", (ApprovalState.OPEN, ApprovalState.RUNNING))).matching(Greater("source_version", 0)).first() if command.approval.source_version is None else None
         if existing is None and docked is not None:
-            raise Refusal(f"approval {docked.id} already asks a person for this on its docked card", "wait for the person to decide it")
+            raise Refusal(f"approval {docked.id} already asks a user for this on its docked card", "wait for the user to decide it")
         if existing is not None:
             if existing.relayer_id is not None:
                 recipient = None

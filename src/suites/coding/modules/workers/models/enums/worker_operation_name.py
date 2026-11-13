@@ -7,7 +7,7 @@ from engine.enums.nudge_type import NudgeType
 WORKER_OPERATION_NEXT = NudgeDeclaration("workers.operation_next", NudgeType.STEERING,
     'task:{task} is yours next; output {output}', turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_TESTS = NudgeDeclaration("workers.operation_tests", NudgeType.STEERING,
-    'task:{task} tests queued: this commit is done, so you can run tests yourself now, or stop; output {output}', turn_limited=False, wakes_agent=True)
+    "task:{task} tests queued: this commit is done, so run tests yourself or stop; output {output}", turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_CONFLICT = NudgeDeclaration("workers.operation_conflict", NudgeType.STEERING,
     'worker:{worker} has a merge conflict: output {output}', turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_MERGED = NudgeDeclaration("workers.operation_merged", NudgeType.STEERING,
@@ -15,7 +15,7 @@ WORKER_OPERATION_MERGED = NudgeDeclaration("workers.operation_merged", NudgeType
 WORKER_OPERATION_JOB = NudgeDeclaration("workers.operation_job", NudgeType.STEERING,
     'worker:{worker} has the job: output {output}', turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_PAUSED = NudgeDeclaration("workers.operation_paused", NudgeType.STEERING,
-    'worker:{worker} is paused, so the job waits until it is resumed', turn_limited=False, wakes_agent=True)
+    "worker:{worker} is paused: the job waits until it is resumed", turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_COMMITTED = NudgeDeclaration("workers.operation_committed", NudgeType.STEERING,
     'worker:{worker} committed its work: output {output}', turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_STARTED = NudgeDeclaration("workers.operation_started", NudgeType.STEERING,

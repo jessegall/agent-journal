@@ -26,7 +26,7 @@ def set_limit(story, limit: int, scope: str = "--environment main") -> None:
 
 
 class LimitRaised(StoryFixture):
-    """A person, Ada, raised the worker limit of main to 4: story.user."""
+    """A user, Ada, raised the worker limit of main to 4: story.user."""
 
     parent = OpenTaskBuilder
 

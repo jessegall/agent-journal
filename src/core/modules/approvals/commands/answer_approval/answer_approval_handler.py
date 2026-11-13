@@ -19,7 +19,7 @@ from core.modules.approvals.support.approval_result import ApprovalResult
 
 
 class AnswerApprovalHandler(Handler[AnswerApproval, ApprovalResult]):
-    """Claims a request before running its action with the deciding person's rights."""
+    """Claims a request before running its action with the deciding user's rights."""
 
     command = AnswerApproval
     runs_once = True

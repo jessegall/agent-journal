@@ -9,9 +9,9 @@ from core.modules.settings.support.setting_screen import ScreenReading
 
 
 class ApplySettingScreenSubcommand(Subcommand[ApplySettingScreen, ScreenReading]):
-    """`journal setting-screen apply <screen> --revision <revision> [--also <screen>=<revision>]... <key>=<value>...`:
-    changes the settings of one screen, and of the further screens named with --also, together, each from the
-    reading with its revision."""
+    """`journal setting-screen apply <screen> --revision <revision> [--also <screen>=<revision>]...
+    <key>=<value>...`: changes the settings of one screen, and of the further screens named with
+    --also, together, each from the reading with its revision."""
 
     cli_name = "setting-screen"
     name = "apply"

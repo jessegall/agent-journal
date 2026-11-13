@@ -48,7 +48,7 @@ def test_only_the_addressed_main_agent_can_relay_the_request(helper_request):
     saved = story.container.get(Queries).query(ApprovalRequest).find(approval.id)
     items = tuple(story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=approval.id, state=DockItemState.DOCKED).every_row(TEST_ROWS_REASON))
     story.expect_rows(saved.recipient_agent_id is None, saved.relayer_id == story.agent.id, len(items) == 1)
-    story.expect_refusal("phone pair --reason needed", "A person was asked", actor=helper)
+    story.expect_refusal("phone pair --reason needed", "A user was asked", actor=helper)
     saved = story.container.get(Queries).query(ApprovalRequest).find(approval.id)
     story.expect_rows(saved.recipient_agent_id is None)
     with viewer_client(story) as viewer:

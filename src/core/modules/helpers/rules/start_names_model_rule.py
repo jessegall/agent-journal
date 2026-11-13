@@ -21,5 +21,5 @@ class StartNamesModelRule(DriverRule):
         if shell is None:
             return RuleAnswer.allowed()
         starts = [part for start in self.starts for part in shell.parts_running_journal_command(start)]
-        unnamed = [part for part in starts if not any(argument.split("=")[0] == MODEL_FLAG for argument in part.arguments)]
-        return RuleAnswer.refused(START_WITHOUT_MODEL.nudge()) if unnamed else RuleAnswer.allowed()
+        starts_without_model = [part for part in starts if not any(argument.split("=")[0] == MODEL_FLAG for argument in part.arguments)]
+        return RuleAnswer.refused(START_WITHOUT_MODEL.nudge()) if starts_without_model else RuleAnswer.allowed()

@@ -20,7 +20,7 @@ def test_a_circle_gives_a_line_and_no_end_and_a_chain_too_long_gives_a_line():
 
 def test_an_end_the_agent_can_take_is_a_candidate_with_its_count_and_any_other_end_is_a_line():
     walk = PlanWaitWalk.walked([1, 2, 3], WaitGraph({1: [7], 2: [7], 3: [9]}))
-    person_wait = WaitingLine(9, WaitingReason.NON_TASK_WAIT, "which waits on a person")
+    person_wait = WaitingLine(9, WaitingReason.NON_TASK_WAIT, "which waits on a user")
     facts = SimpleNamespace(waiting_line=lambda task: person_wait if task.id == 9 else None)
     unblockers = walk.unblockers({7: SimpleNamespace(id=7, priority=100), 9: SimpleNamespace(id=9, priority=100)}, facts)
     assert [(candidate.task_id, candidate.unlocks) for candidate in unblockers.candidates] == [(7, 2)]

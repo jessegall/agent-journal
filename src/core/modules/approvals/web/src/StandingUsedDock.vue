@@ -2,7 +2,7 @@
 import {computed} from "vue";
 import {useDockCard, useWindow} from "@journal/window-kit";
 
-// the card of an approval a standing yes accepted: the question that was asked, and the yes the person kept for it
+// the card of an approval a standing yes accepted: the question that was asked, and the yes the user kept for it
 const card = useDockCard();
 const item = useWindow().option("row");
 const question = computed(() => item.value.text);

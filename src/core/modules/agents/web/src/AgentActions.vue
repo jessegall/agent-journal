@@ -60,7 +60,7 @@ async function readTasks() {
         loading.value = false;
     }
 }
-// a person lifts every reading hold on the agent: a run held for printing nothing, and the blocks of its reader requests
+// a user lifts every reading hold on the agent: a run held for printing nothing, and the blocks of its reader requests
 async function liftHold() {
     await run(["process", "lift-hold", String(props.row.number)], "Hold lifted.");
 }

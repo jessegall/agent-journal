@@ -73,9 +73,9 @@ BYPASS_PERMISSIONS = {"defaultMode": "bypassPermissions"}
 COMPACT_LINE = "/compact Focus on continuing the work at once: what you were doing last, what comes next, and the facts those depend on. Keep every instruction, request, direction and correction the user gave you. Leave out the rest of the earlier history and old messages: the journal gives back recent messages, tasks, memories and rules."
 
 class ClaudeCodeProvider(Provider):
-    """Anthropic's Claude Code: hooks in the journal's own settings file, passed with --settings, sessions under
-    its config folder's projects, a session id the journal chooses, and a state file that records the folders it
-    trusts; a main session starts with the MCP servers' keys in its environment."""
+    """Anthropic's Claude Code: hooks in the journal's own settings file, passed with --settings, sessions
+    under its config folder's projects, a session id the journal chooses, and a state file that records the
+    folders it trusts; a main session starts with the MCP servers' keys in its environment."""
 
     name = "claude"
     title = "Claude Code"
@@ -252,8 +252,8 @@ class ClaudeCodeProvider(Provider):
         person_file = self.user_hook_files()[0]
         person_settings = self.person_settings(person_data.get(person_file, b""))
         unreadable = tuple(path for path in [person_file] if path.is_file() and (path not in person_data or person_settings is None))
-        carried = {key: value for key, value in (person_settings or {}).items() if key in CARRIED_SETTINGS}
-        settings = {**carried, "permissions": BYPASS_PERMISSIONS, **self.hook_settings(runner, root),
+        person_values = {key: value for key, value in (person_settings or {}).items() if key in CARRIED_SETTINGS}
+        settings = {**person_values, "permissions": BYPASS_PERMISSIONS, **self.hook_settings(runner, root),
                     "hooks": ProgramHooks.journal(type(self), path).journal_blocks(runner, root, managed)}
         state = self.state_file()
         person_state = self.person_settings(KeptBytes.read(state)) if state.is_file() and os.access(state, os.R_OK) else {}

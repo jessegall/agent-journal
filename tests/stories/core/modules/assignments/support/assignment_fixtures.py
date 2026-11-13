@@ -16,7 +16,7 @@ def worker(story: Story) -> Actor:
 
 
 def second_person(story: Story) -> Actor:
-    """Grace, the person CratesAndActors made after Ada."""
+    """Grace, the user CratesAndActors made after Ada."""
     return Actor(story.user.id + 2, ActorType.USER)
 
 
@@ -54,7 +54,7 @@ def parcel_ids(bay_id: int) -> list[int]:
 
 
 class YardWithBays(StoryFixture):
-    """The main agent, the person Ada, three workers, and one yard of two bays with three parcels in each,
+    """The main agent, the user Ada, three workers, and one yard of two bays with three parcels in each,
     of the chain module, which the story names when it starts."""
 
     parent = UserJoined

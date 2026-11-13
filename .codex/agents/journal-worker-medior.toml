@@ -1,4 +1,4 @@
-name = "journal-medior"
+name = "journal-worker-medior"
 description = "A worker for a job whose shape is defined: a change the brief states, tests to write, a rename. Writes, on Sonnet."
 model = "gpt-6.1-terra"
 sandbox_mode = "workspace-write"

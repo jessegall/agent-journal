@@ -8,7 +8,7 @@ from core.modules.library.support.library_person import LibraryPerson
 
 
 class LeaveLibraryCopyHandler(Handler[LeaveLibraryCopy, LibraryCopy]):
-    """Deletes a copy and nothing else; it asks nothing of the server. Only a person stops following."""
+    """Deletes a copy and nothing else; it asks nothing of the server. Only a user stops following."""
 
     command = LeaveLibraryCopy
 

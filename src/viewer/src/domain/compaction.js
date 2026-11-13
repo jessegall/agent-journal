@@ -6,7 +6,7 @@ export function compactionLine(compaction) {
 }
 
 const CHANGE_WORDS = {compact: "Compaction", clear: "Clear"};
-const REASON_WORDS = {stop_limit: "The journal, at the context size", hard_stop: "The journal, at the second context size", person: "A person, in the viewer", auto: "The program", terminal_person: "A person, in the terminal", headless_program: "The journal, before the next job"};
+const REASON_WORDS = {stop_limit: "The journal, at the context size", hard_stop: "The journal, at the second context size", person: "A user, in the viewer", auto: "The program", terminal_person: "A user, in the terminal", headless_program: "The journal, before the next job"};
 const STATE_WORDS = {requested: "Asked, not started yet", started: "Running", ended: "Ended, size not read yet", measured: "Done", unreduced: "Done, context not smaller", failed: "Failed", abandoned: "Given up"};
 
 // the words of the request for a compaction or clear that is still open, or nothing when none is

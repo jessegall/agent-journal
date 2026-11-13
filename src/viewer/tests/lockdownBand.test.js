@@ -21,7 +21,7 @@ test("no program stopped shows no band", () => {
     expect(shown([]).querySelector("[data-lockdown-band]")).toBeNull();
 });
 
-test("a person's limit shows until when, how many agents are stopped and the way to the limits", async () => {
+test("a user's limit shows until when, how many agents are stopped and the way to the limits", async () => {
     const opened = [];
     const body = shown([{program: "claude", reason: REASON, ends_at: "2026-11-10T14:00:00+00:00", limit_id: 3, halted_count: 4}], opened);
     expect(body.querySelector("[data-lockdown-band]").textContent).toContain(`${REASON}. 4 agents are stopped.`);

@@ -89,6 +89,7 @@ async function save(profile, fields) {
                         <ListRow :title="profile.title || profile.name" :text="profile.description">
                             <template #end>
                                 <span class="profile-meta">
+                                    <template v-if="profile.is_base"><span class="profile-base" title="Other profiles extend this one; it is not dispatched on its own" data-profile-base>Base</span></template>
                                     <template v-if="profile.title"><span class="profile-model">{{ profile.name }}</span></template>
                                     <span class="profile-model">{{ rowLine(profile) }}</span>
                                     <template v-for="warning in warnings(profile)" :key="warning">
@@ -184,5 +185,13 @@ async function save(profile, fields) {
     .profile-meta {
         display: none;
     }
+}
+
+.profile-base {
+    padding: 1px 7px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    color: var(--text-2);
+    font-size: 11px;
 }
 </style>

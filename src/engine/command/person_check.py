@@ -6,7 +6,7 @@ from engine.errors.refusal import Refusal
 
 
 class PersonCheck:
-    """The check the commands of the agent bar share: a person gives them, never an agent."""
+    """The check the commands of the agent bar share: a user gives them, never an agent."""
 
     @staticmethod
     def require(context: Context, reason: str, *, returns_output: bool = False) -> None:

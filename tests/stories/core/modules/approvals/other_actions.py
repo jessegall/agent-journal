@@ -23,7 +23,7 @@ def approval_story(new_story):
 
 def test_a_person_adds_an_agents_mcp_server_request_in_the_viewer(approval_story):
     story = approval_story
-    story.expect_refusal("mcp add shop https://mcp.shop.example/mcp --reason needed", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal("mcp add shop https://mcp.shop.example/mcp --reason needed", "A user was asked in the dock", actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).first()
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(request.id)])
@@ -34,7 +34,7 @@ def test_a_person_adds_an_agents_mcp_server_request_in_the_viewer(approval_story
 def test_a_person_changes_the_shared_server_address_through_the_same_dock(approval_story):
     story = approval_story
     key = "journal.core.library.address"
-    story.expect_refusal(f"setting set {key} https://shared.example --project --reason needed", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(f"setting set {key} https://shared.example --project --reason needed", "A user was asked in the dock", actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).first()
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(request.id)])
@@ -45,7 +45,7 @@ def test_a_person_changes_the_shared_server_address_through_the_same_dock(approv
 @pytest.fixture
 def pending_template(new_story):
     story = new_story(fixture=SendingTemplates)
-    story.expect_refusal(CRITIQUE, "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(CRITIQUE, "A user was asked in the dock", actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).newest().first()
     return story, request
 
@@ -70,7 +70,7 @@ def test_a_template_becomes_a_person_request_only_after_acceptance(pending_templ
 @pytest.fixture(params=["memory agents --reason needed", "memory counts --reason needed", "memory page --reason needed --environment main"])
 def pending_memory_read(new_story, request):
     story = new_story(fixture=MainAndWorkerMemories)
-    story.expect_refusal(request.param, "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(request.param, "A user was asked in the dock", actor=story.agent)
     approval = story.container.get(Queries).query(ApprovalRequest).first()
     return story, approval
 

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class TextField:
-    """A button field for words a person types."""
+    """A button field for words a user types."""
 
     name: str
     label: str

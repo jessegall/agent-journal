@@ -110,7 +110,7 @@ def test_a_helper_that_gives_the_worker_profile_an_occupant_is_refused_and_no_pr
 
 
 def test_the_main_agent_asks_a_person_to_save_the_merger_profile_and_a_person_saves_it_directly(rotating):
-    rotating.expect_refusal(MERGER_CONTINUE, "A person was asked in the dock", actor=rotating.agent)
+    rotating.expect_refusal(MERGER_CONTINUE, "A user was asked in the dock", actor=rotating.agent)
     rotating.expect_text("profile show journal-merger --json", '"occupant": "each-launch"', actor=rotating.user)
     rotating.expect_success(MERGER_CONTINUE, actor=rotating.user)
     rotating.expect_text("profile show journal-merger --json", '"occupant": "continue"', actor=rotating.user)

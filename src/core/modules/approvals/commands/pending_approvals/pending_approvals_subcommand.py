@@ -8,7 +8,7 @@ from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState
 
-PENDING_REASON = "the person sees every approval that waits on them, newest first"
+PENDING_REASON = "the user sees every approval that waits on them, newest first"
 
 
 class PendingApprovalsSubcommand(ReadSubcommand[Page[ApprovalRequest]]):

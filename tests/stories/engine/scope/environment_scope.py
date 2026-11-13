@@ -4,7 +4,7 @@ from tests.stories.core.modules.memories.support.memory_owners import MAIN_FACT,
 
 
 class TwoEnvironments(StoryFixture):
-    """The memories of main beside an environment staging with memory 3, made by a person."""
+    """The memories of main beside an environment staging with memory 3, made by a user."""
 
     parent = MainAndWorkerMemories
 

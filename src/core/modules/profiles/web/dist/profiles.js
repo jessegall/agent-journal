@@ -1,5 +1,5 @@
-if (!document.getElementById("window-styles-58a1176d0e7d")) { const style = document.createElement("style"); style.id = "window-styles-58a1176d0e7d"; style.textContent = ".helper-start[data-v-382ed53a]{display:grid;gap:12px;padding:0 0 20px;margin-bottom:20px;border-bottom:1px solid var(--border-2)}h3[data-v-382ed53a]{margin:0;font-size:14px;font-weight:600}.field[data-v-382ed53a]{display:grid;gap:4px}.field>span[data-v-382ed53a]{color:var(--text-2);font-size:12px;font-weight:500}.reason[data-v-382ed53a],.notice[data-v-382ed53a]{margin:0;color:var(--text-3);font-size:12px;line-height:1.5;overflow-wrap:anywhere}.idle-helper[data-v-382ed53a]{display:flex;align-items:center;justify-content:space-between;gap:12px}.profile-panel-tab[data-v-29dafd7a]{display:flex;flex-direction:column;gap:14px}.profile-panel-reason[data-v-29dafd7a]{margin:0;color:var(--text-3);font-size:12px}.profile-panel-tab[data-v-06548598]{display:flex;flex-direction:column;gap:14px}.profile-panel-models[data-v-06548598]{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.profile-skill[data-v-da955a19]{display:flex;gap:10px;align-items:flex-start;padding:10px 12px}.profile-skill+.profile-skill[data-v-da955a19]{border-top:1px solid var(--border)}.profile-skill-text[data-v-da955a19]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}.profile-skill-head[data-v-da955a19]{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.profile-skill-name[data-v-da955a19]{color:var(--text);font-size:13px}.profile-skill.off .profile-skill-name[data-v-da955a19]{color:var(--text-3)}.profile-skill-own[data-v-da955a19]{padding:0 5px;border:1px solid var(--border-2);border-radius:5px;color:var(--text-3);font-size:10px}.profile-skill-about[data-v-da955a19]{display:-webkit-box;overflow:hidden;color:var(--text-3);font-size:12px;-webkit-box-orient:vertical;-webkit-line-clamp:2}.profile-skill-end[data-v-da955a19]{display:flex;flex:none;justify-content:flex-end;min-width:84px}.profile-skill-locked[data-v-da955a19]{max-width:130px;color:var(--text-3);font-size:11.5px;text-align:right}@media(max-width:640px){.profile-skill[data-v-da955a19]{flex-wrap:wrap}.profile-skill-end[data-v-da955a19]{justify-content:flex-start;width:100%;padding-left:38px}}.profile-skills[data-v-5fb78afd]{display:flex;flex-direction:column;gap:10px}.profile-skills-line[data-v-5fb78afd]{display:flex;gap:12px;align-items:baseline;justify-content:space-between}.profile-skills-help[data-v-5fb78afd],.profile-skills-count[data-v-5fb78afd],.profile-skills-note[data-v-5fb78afd]{margin:0;color:var(--text-3);font-size:12px}.profile-skills-card[data-v-5fb78afd]{border:1px solid var(--border);border-radius:8px;background:var(--bg-2)}.profile-skills-skeleton[data-v-5fb78afd],.profile-skills-note[data-v-5fb78afd]{padding:10px 12px}.profile-panel[data-v-37c5760c],.profile-panel-tab[data-v-37c5760c]{display:flex;flex-direction:column;gap:14px}.profile-panel-meta[data-v-37c5760c]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}.profile-panel-name[data-v-37c5760c]{color:var(--text-3);font-size:12px}.profile-panel-tag[data-v-37c5760c]{padding:0 5px;border:1px solid var(--border-2);border-radius:5px;color:var(--text-3);font-size:10px}.profile-panel-changed[data-v-37c5760c]{display:flex;gap:10px;align-items:center;justify-content:space-between}.profile-panel-reason[data-v-37c5760c],.profile-panel-unsaved[data-v-37c5760c]{margin:0;color:var(--text-3);font-size:12px}.profile-panel-grow[data-v-37c5760c]{flex:1}.profiles[data-v-bd1b1e56]{padding:0 0 40px}.bar[data-v-bd1b1e56]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-bd1b1e56]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-bd1b1e56]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-bd1b1e56]{color:var(--danger)}.empty[data-v-bd1b1e56]{margin:40px auto;max-width:480px}.rows[data-v-bd1b1e56]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-bd1b1e56]{text-align:left}.profile-meta[data-v-bd1b1e56]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-bd1b1e56]{color:var(--text-2)}.profile-used[data-v-bd1b1e56]{color:var(--text-3);white-space:nowrap}.profile-warning[data-v-bd1b1e56]{color:var(--tone-warn)}.profile-used.never[data-v-bd1b1e56]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-bd1b1e56]{flex:1 1 100%}.profile-meta[data-v-bd1b1e56]{display:none}}\n"; document.head.appendChild(style); }
-import { ref as I, computed as C, watch as Q, openBlock as l, createElementBlock as i, withModifiers as ce, createElementVNode as y, createVNode as u, unref as e, withDirectives as H, Fragment as W, renderList as F, toDisplayString as T, vModelSelect as ve, withCtx as v, createTextVNode as M, createCommentVNode as _, useModel as ie, createBlock as q, mergeModels as ue, normalizeClass as de, renderSlot as me, vShow as K } from "vue";
+if (!document.getElementById("window-styles-5a1074db9fdb")) { const style = document.createElement("style"); style.id = "window-styles-5a1074db9fdb"; style.textContent = ".helper-start[data-v-382ed53a]{display:grid;gap:12px;padding:0 0 20px;margin-bottom:20px;border-bottom:1px solid var(--border-2)}h3[data-v-382ed53a]{margin:0;font-size:14px;font-weight:600}.field[data-v-382ed53a]{display:grid;gap:4px}.field>span[data-v-382ed53a]{color:var(--text-2);font-size:12px;font-weight:500}.reason[data-v-382ed53a],.notice[data-v-382ed53a]{margin:0;color:var(--text-3);font-size:12px;line-height:1.5;overflow-wrap:anywhere}.idle-helper[data-v-382ed53a]{display:flex;align-items:center;justify-content:space-between;gap:12px}.profile-panel-tab[data-v-29dafd7a]{display:flex;flex-direction:column;gap:14px}.profile-panel-reason[data-v-29dafd7a]{margin:0;color:var(--text-3);font-size:12px}.profile-panel-tab[data-v-06548598]{display:flex;flex-direction:column;gap:14px}.profile-panel-models[data-v-06548598]{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.profile-skill[data-v-da955a19]{display:flex;gap:10px;align-items:flex-start;padding:10px 12px}.profile-skill+.profile-skill[data-v-da955a19]{border-top:1px solid var(--border)}.profile-skill-text[data-v-da955a19]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}.profile-skill-head[data-v-da955a19]{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.profile-skill-name[data-v-da955a19]{color:var(--text);font-size:13px}.profile-skill.off .profile-skill-name[data-v-da955a19]{color:var(--text-3)}.profile-skill-own[data-v-da955a19]{padding:0 5px;border:1px solid var(--border-2);border-radius:5px;color:var(--text-3);font-size:10px}.profile-skill-about[data-v-da955a19]{display:-webkit-box;overflow:hidden;color:var(--text-3);font-size:12px;-webkit-box-orient:vertical;-webkit-line-clamp:2}.profile-skill-end[data-v-da955a19]{display:flex;flex:none;justify-content:flex-end;min-width:84px}.profile-skill-locked[data-v-da955a19]{max-width:130px;color:var(--text-3);font-size:11.5px;text-align:right}@media(max-width:640px){.profile-skill[data-v-da955a19]{flex-wrap:wrap}.profile-skill-end[data-v-da955a19]{justify-content:flex-start;width:100%;padding-left:38px}}.profile-skills[data-v-5fb78afd]{display:flex;flex-direction:column;gap:10px}.profile-skills-line[data-v-5fb78afd]{display:flex;gap:12px;align-items:baseline;justify-content:space-between}.profile-skills-help[data-v-5fb78afd],.profile-skills-count[data-v-5fb78afd],.profile-skills-note[data-v-5fb78afd]{margin:0;color:var(--text-3);font-size:12px}.profile-skills-card[data-v-5fb78afd]{border:1px solid var(--border);border-radius:8px;background:var(--bg-2)}.profile-skills-skeleton[data-v-5fb78afd],.profile-skills-note[data-v-5fb78afd]{padding:10px 12px}.profile-panel[data-v-37c5760c],.profile-panel-tab[data-v-37c5760c]{display:flex;flex-direction:column;gap:14px}.profile-panel-meta[data-v-37c5760c]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}.profile-panel-name[data-v-37c5760c]{color:var(--text-3);font-size:12px}.profile-panel-tag[data-v-37c5760c]{padding:0 5px;border:1px solid var(--border-2);border-radius:5px;color:var(--text-3);font-size:10px}.profile-panel-changed[data-v-37c5760c]{display:flex;gap:10px;align-items:center;justify-content:space-between}.profile-panel-reason[data-v-37c5760c],.profile-panel-unsaved[data-v-37c5760c]{margin:0;color:var(--text-3);font-size:12px}.profile-panel-grow[data-v-37c5760c]{flex:1}.profiles[data-v-83684cee]{padding:0 0 40px}.bar[data-v-83684cee]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-83684cee]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-83684cee]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-83684cee]{color:var(--danger)}.empty[data-v-83684cee]{margin:40px auto;max-width:480px}.rows[data-v-83684cee]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-83684cee]{text-align:left}.profile-meta[data-v-83684cee]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-83684cee]{color:var(--text-2)}.profile-used[data-v-83684cee]{color:var(--text-3);white-space:nowrap}.profile-warning[data-v-83684cee]{color:var(--tone-warn)}.profile-used.never[data-v-83684cee]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-83684cee]{flex:1 1 100%}.profile-meta[data-v-83684cee]{display:none}}.profile-base[data-v-83684cee]{padding:1px 7px;border:1px solid var(--border-2);border-radius:6px;color:var(--text-2);font-size:11px}\n"; document.head.appendChild(style); }
+import { ref as I, computed as C, watch as Q, openBlock as l, createElementBlock as i, withModifiers as ce, createElementVNode as y, createVNode as u, unref as e, withDirectives as H, Fragment as W, renderList as F, toDisplayString as T, vModelSelect as ve, withCtx as v, createTextVNode as M, createCommentVNode as b, useModel as ie, createBlock as q, mergeModels as ue, normalizeClass as de, renderSlot as me, vShow as K } from "vue";
 import { useWindow as ae, TextArea as oe, Btn as L, TextInput as X, FormField as O, Segmented as J, ModelPicker as ye, Switch as re, matchesSearch as pe, SearchBar as fe, Notice as Y, SkeletonLine as ke, SidePanel as ge, DiffCard as he, InnerTabs as be, TabBody as _e, EmptyState as te, ListRow as we, ago as $e } from "@journal/window-kit";
 const z = (t, x) => {
   const a = t.__vccOpts || t;
@@ -28,27 +28,27 @@ const z = (t, x) => {
     let R = 0;
     const N = C(() => !c.value && !S.value && !!d.value.trim()), E = C(() => !N.value || !(r.value.can_start || r.value.can_start_fresh && A.value.trim()));
     async function j() {
-      const b = ++R;
-      if (S.value = !0, a.state["availability.profile"] = x.profile, s.value ? a.state["availability.program"] = s.value : delete a.state["availability.program"], await a.reload("availability"), b !== R) return;
+      const _ = ++R;
+      if (S.value = !0, a.state["availability.profile"] = x.profile, s.value ? a.state["availability.program"] = s.value : delete a.state["availability.program"], await a.reload("availability"), _ !== R) return;
       const o = a.props.availability;
       o.failure.value ? (r.value = k, P.value = o.failure.value) : r.value = o.data.value, S.value = !1;
     }
     async function B() {
       E.value || await p(["helper", "start", x.profile, "--brief", d.value, ...s.value ? ["--program", s.value] : [], ...A.value.trim() ? ["--fresh", A.value.trim()] : []], "The read-only helper is starting.");
     }
-    async function V(b) {
-      N.value && await p(["helper", "send", String(b), d.value], "Job sent.");
+    async function V(_) {
+      N.value && await p(["helper", "send", String(_), d.value], "Job sent.");
     }
-    async function p(b, o) {
+    async function p(_, o) {
       c.value = !0;
       try {
-        const h = await a.run(b);
+        const h = await a.run(_);
         P.value = h.ok ? o : h.error, h.ok && (d.value = "", A.value = ""), await j();
       } finally {
         c.value = !1;
       }
     }
-    return Q([() => x.profile, s], j, { immediate: !0 }), (b, o) => (l(), i("form", {
+    return Q([() => x.profile, s], j, { immediate: !0 }), (_, o) => (l(), i("form", {
       class: "helper-start",
       "data-helper-start": "",
       onSubmit: ce(B, ["prevent"])
@@ -109,7 +109,7 @@ const z = (t, x) => {
           disabled: c.value,
           "data-helper-fresh-reason": ""
         }, null, 8, ["modelValue", "disabled"])
-      ])) : _("", !0),
+      ])) : b("", !0),
       u(e(L), {
         type: "submit",
         disabled: E.value,
@@ -120,9 +120,9 @@ const z = (t, x) => {
         ])]),
         _: 1
       }, 8, ["disabled"]),
-      r.value.fresh_reason ? (l(), i("p", xe, T(r.value.fresh_reason), 1)) : _("", !0),
-      r.value.reason && r.value.reason !== r.value.fresh_reason ? (l(), i("p", Ae, T(r.value.reason), 1)) : _("", !0),
-      P.value ? (l(), i("p", je, T(P.value), 1)) : _("", !0)
+      r.value.fresh_reason ? (l(), i("p", xe, T(r.value.fresh_reason), 1)) : b("", !0),
+      r.value.reason && r.value.reason !== r.value.fresh_reason ? (l(), i("p", Ae, T(r.value.reason), 1)) : b("", !0),
+      P.value ? (l(), i("p", je, T(P.value), 1)) : b("", !0)
     ], 32));
   }
 }, Ne = /* @__PURE__ */ z(Re, [["__scopeId", "data-v-382ed53a"]]), Be = {
@@ -149,7 +149,7 @@ const z = (t, x) => {
     return (k, r) => {
       var d;
       return l(), i("div", Be, [
-        t.profile.name ? _("", !0) : (l(), i(W, { key: 0 }, [
+        t.profile.name ? b("", !0) : (l(), i(W, { key: 0 }, [
           u(e(O), {
             label: "Name",
             for: "profile-name",
@@ -165,7 +165,7 @@ const z = (t, x) => {
             ]),
             _: 1
           }),
-          t.nameIsBad && a.value.name ? (l(), i("p", Oe, "Use letters, digits and dashes.")) : _("", !0)
+          t.nameIsBad && a.value.name ? (l(), i("p", Oe, "Use letters, digits and dashes.")) : b("", !0)
         ], 64)),
         u(e(O), {
           label: "Title",
@@ -195,7 +195,7 @@ const z = (t, x) => {
           ]),
           _: 1
         }),
-        t.descriptionIsEmpty ? (l(), i("p", Ee, "Describe when the agent should start it.")) : _("", !0),
+        t.descriptionIsEmpty ? (l(), i("p", Ee, "Describe when the agent should start it.")) : b("", !0),
         u(e(O), {
           label: "Type",
           for: "profile-type",
@@ -245,7 +245,7 @@ const z = (t, x) => {
             }, null, 8, ["value"])
           ]),
           _: 1
-        })) : _("", !0)
+        })) : b("", !0)
       ]);
     };
   }
@@ -307,8 +307,8 @@ const z = (t, x) => {
             }, null, 8, ["value"])
           ]),
           _: 1
-        })) : _("", !0)
-      ], 64)) : _("", !0),
+        })) : b("", !0)
+      ], 64)) : b("", !0),
       u(e(O), {
         label: "Model tier",
         for: "profile-tier",
@@ -374,7 +374,7 @@ const z = (t, x) => {
       y("span", Ge, [
         y("span", He, [
           y("span", Je, T(t.row.key), 1),
-          t.row.own ? (l(), i("span", Ke, "Made for this type")) : _("", !0)
+          t.row.own ? (l(), i("span", Ke, "Made for this type")) : b("", !0)
         ]),
         y("span", {
           class: "profile-skill-about",
@@ -391,7 +391,7 @@ const z = (t, x) => {
           title: `Require ${t.row.key} at the start`,
           "data-profile-skill-required": "",
           onChange: r[1] || (r[1] = (d) => a("require", d))
-        }, null, 8, ["on", "title"])) : _("", !0)
+        }, null, 8, ["on", "title"])) : b("", !0)
       ])
     ], 10, ze));
   }
@@ -418,33 +418,33 @@ const z = (t, x) => {
   setup(t, { emit: x }) {
     const a = t, k = x, r = ae(), d = I([]), s = I(""), P = I(!1), A = I(""), c = C(() => new Set(a.chosen ?? d.value.filter((p) => p.state === "on").map((p) => p.key))), S = C(() => new Set(a.requiredChosen ?? d.value.filter((p) => p.required).map((p) => p.key))), R = C(() => {
       const p = A.value.toLowerCase().split(/\s+/).filter(Boolean);
-      return d.value.filter((b) => p.every((o) => pe(b, o, ["key", "description"])));
+      return d.value.filter((_) => p.every((o) => pe(_, o, ["key", "description"])));
     }), N = C(() => `${c.value.size} of ${d.value.length} on${S.value.size ? `, ${S.value.size} required` : ""}`);
     async function E() {
       P.value = !1, r.state["skills.profile"] = a.profile, await r.reload("skills");
       const p = r.props.skills;
       s.value = p.failure.value, d.value = s.value ? [] : p.data.value.rows, P.value = !0;
     }
-    const j = (p) => d.value.filter((b) => p.has(b.key)).map((b) => b.key);
-    function B(p, b) {
+    const j = (p) => d.value.filter((_) => p.has(_.key)).map((_) => _.key);
+    function B(p, _) {
       const o = new Set(c.value);
-      b ? o.add(p.key) : o.delete(p.key), k("change", j(o)), !b && S.value.has(p.key) && V(p, !1);
+      _ ? o.add(p.key) : o.delete(p.key), k("change", j(o)), !_ && S.value.has(p.key) && V(p, !1);
     }
-    function V(p, b) {
+    function V(p, _) {
       const o = new Set(S.value);
-      b ? o.add(p.key) : o.delete(p.key), k("change-required", j(o));
+      _ ? o.add(p.key) : o.delete(p.key), k("change-required", j(o));
     }
-    return Q(() => a.profile, E, { immediate: !0 }), Q(() => c.value.size, (p) => k("count", p), { immediate: !0 }), (p, b) => (l(), i("div", ll, [
+    return Q(() => a.profile, E, { immediate: !0 }), Q(() => c.value.size, (p) => k("count", p), { immediate: !0 }), (p, _) => (l(), i("div", ll, [
       y("div", tl, [
-        b[1] || (b[1] = y("span", { class: "profile-skills-help" }, "Changing a skill here saves the whole list.", -1)),
-        P.value && d.value.length ? (l(), i("span", al, T(N.value), 1)) : _("", !0)
+        _[1] || (_[1] = y("span", { class: "profile-skills-help" }, "Changing a skill here saves the whole list.", -1)),
+        P.value && d.value.length ? (l(), i("span", al, T(N.value), 1)) : b("", !0)
       ]),
       d.value.length > il ? (l(), q(e(fe), {
         key: 0,
         modelValue: A.value,
-        "onUpdate:modelValue": b[0] || (b[0] = (o) => A.value = o),
+        "onUpdate:modelValue": _[0] || (_[0] = (o) => A.value = o),
         "data-profile-skill-find": ""
-      }, null, 8, ["modelValue"])) : _("", !0),
+      }, null, 8, ["modelValue"])) : b("", !0),
       s.value ? (l(), q(e(Y), {
         key: 1,
         tone: "danger"
@@ -457,7 +457,7 @@ const z = (t, x) => {
             "data-profile-skills-retry": "",
             onClick: E
           }, {
-            default: v(() => [...b[2] || (b[2] = [
+            default: v(() => [..._[2] || (_[2] = [
               M("Try again", -1)
             ])]),
             _: 1
@@ -542,7 +542,7 @@ const z = (t, x) => {
 `), n = (a.profile.module_body || "").split(`
 `);
       return [...V("del", w, n), ...V("add", n, w)];
-    }), b = C(() => ({ ...a.profile, mcp_tools: a.profile.mcp_tools.join(","), fallback_programs: a.profile.fallback_programs.join(",") })), o = C(() => A.some((w) => JSON.stringify(c.value[w]) !== JSON.stringify(b.value[w])) || c.value.skills !== null || c.value.required_skills !== null || !a.profile.name), h = C(() => !a.profile.name && !r.test(c.value.name || "")), U = C(() => !c.value.description.trim()), G = C(() => o.value && !h.value && !U.value), ee = C(() => R.value === null ? {} : { skills: R.value }), le = C(() => [a.profile.problem, ...a.profile.notes].filter(Boolean));
+    }), _ = C(() => ({ ...a.profile, mcp_tools: a.profile.mcp_tools.join(","), fallback_programs: a.profile.fallback_programs.join(",") })), o = C(() => A.some((w) => JSON.stringify(c.value[w]) !== JSON.stringify(_.value[w])) || c.value.skills !== null || c.value.required_skills !== null || !a.profile.name), h = C(() => !a.profile.name && !r.test(c.value.name || "")), U = C(() => !c.value.description.trim()), G = C(() => o.value && !h.value && !U.value), ee = C(() => R.value === null ? {} : { skills: R.value }), le = C(() => [a.profile.problem, ...a.profile.notes].filter(Boolean));
     return (w, n) => (l(), q(e(ge), {
       width: "wide",
       "foot-below": "",
@@ -553,10 +553,10 @@ const z = (t, x) => {
       meta: v(() => [
         t.profile.name ? (l(), i("div", fl, [
           y("span", cl, T(t.profile.name), 1),
-          t.profile.shipped ? (l(), i("span", vl, "Comes with the journal")) : _("", !0),
-          t.profile.changed.length ? (l(), i("span", ml, "Changed")) : _("", !0),
-          t.profile.problem ? (l(), i("span", yl, "Problem")) : _("", !0)
-        ])) : _("", !0)
+          t.profile.shipped ? (l(), i("span", vl, "Comes with the journal")) : b("", !0),
+          t.profile.changed.length ? (l(), i("span", ml, "Changed")) : b("", !0),
+          t.profile.problem ? (l(), i("span", yl, "Problem")) : b("", !0)
+        ])) : b("", !0)
       ]),
       foot: v(() => [
         u(e(L), {
@@ -581,9 +581,9 @@ const z = (t, x) => {
             M("Use the journal's version", -1)
           ])]),
           _: 1
-        })) : _("", !0),
+        })) : b("", !0),
         n[18] || (n[18] = y("span", { class: "profile-panel-grow" }, null, -1)),
-        o.value && t.profile.name ? (l(), i("span", Tl, "Unsaved changes")) : _("", !0),
+        o.value && t.profile.name ? (l(), i("span", Tl, "Unsaved changes")) : b("", !0),
         u(e(L), {
           variant: "primary",
           small: "",
@@ -613,7 +613,7 @@ const z = (t, x) => {
               y("span", hl, T(t.notice), 1)
             ]),
             _: 1
-          })) : _("", !0),
+          })) : b("", !0),
           (l(!0), i(W, null, F(le.value, (g) => (l(), q(e(Y), {
             key: g,
             tone: "wait"
@@ -652,8 +652,8 @@ const z = (t, x) => {
               at: "",
               rows: p.value,
               "data-profile-diff": ""
-            }, null, 8, ["added", "removed", "rows"])) : _("", !0)
-          ], 64)) : _("", !0),
+            }, null, 8, ["added", "removed", "rows"])) : b("", !0)
+          ], 64)) : b("", !0),
           u(e(be), {
             tabs: d,
             active: S.value,
@@ -760,8 +760,13 @@ const z = (t, x) => {
   class: "rows"
 }, Rl = { class: "profile-meta" }, Nl = {
   key: 0,
+  class: "profile-base",
+  title: "Other profiles extend this one; it is not dispatched on its own",
+  "data-profile-base": ""
+}, Bl = {
+  key: 1,
   class: "profile-model"
-}, Bl = { class: "profile-model" }, Ol = {
+}, Ol = { class: "profile-model" }, El = {
   __name: "ProfileRows",
   setup(t) {
     const x = { name: "", title: "", description: "", agent_type: "helper", access: "read-only", program: "", occupant: "when-cold", mcp_tools: [], fallback_programs: [], changed: [], notes: [], problem: "", program_models: {}, tier: null, body: "", shipped: !1, uses: 0 }, a = { "read-only": "Read-only", writing: "Writing" }, k = ae(), { rows: r, listing: d, failure: s, loaded: P, act: A, actionFailure: c } = k.props.profiles, S = k.props.programs.rows, R = C(() => d.value ? d.value.types : []), N = I(""), E = I(""), j = I(""), B = I(!1), V = C(() => {
@@ -770,10 +775,10 @@ const z = (t, x) => {
         var D;
         return pe(f, $, (D = k.search) == null ? void 0 : D.fields);
       }));
-    }), p = C(() => B.value ? x : r.value.find((m) => m.name === N.value) || null), b = (m) => {
+    }), p = C(() => B.value ? x : r.value.find((m) => m.name === N.value) || null), _ = (m) => {
       var f;
       return ((f = R.value.find(($) => $.key === m.agent_type)) == null ? void 0 : f.label) || m.agent_type;
-    }, o = (m) => m.shipped ? "Comes with the journal" : m.module, h = (m) => [`Type: ${b(m)}`, `Access: ${a[m.access]}`, ...S.value.map((f) => {
+    }, o = (m) => m.shipped ? "Comes with the journal" : m.module, h = (m) => [`Type: ${_(m)}`, `Access: ${a[m.access]}`, ...S.value.map((f) => {
       var $;
       return `${(($ = m.program_models) == null ? void 0 : $[f.name]) || "chosen at start"} on ${f.title}`;
     }), m.changed.length ? "Changed" : "", o(m)].filter(Boolean).join(" · "), U = (m) => [m.problem, m.module_text_changed ? "Text changed: the journal's instructions have a new version" : "", ...m.notes].filter(Boolean), G = (m) => m.uses ? `Uses: ${m.uses} ${m.uses === 1 ? "time" : "times"}, last ${$e(new Date(m.last_used * 1e3).toISOString())}` : "Uses: none";
@@ -815,8 +820,8 @@ const z = (t, x) => {
             _: 1
           }),
           y("span", Pl, T(e(r).length) + " " + T(e(r).length === 1 ? "profile" : "profiles"), 1),
-          j.value ? (l(), i("span", xl, T(j.value), 1)) : _("", !0),
-          e(c) ? (l(), i("span", Al, T(e(c)), 1)) : _("", !0)
+          j.value ? (l(), i("span", xl, T(j.value), 1)) : b("", !0),
+          e(c) ? (l(), i("span", Al, T(e(c)), 1)) : b("", !0)
         ]),
         _: 1
       }, 8, ["modelValue"]),
@@ -856,8 +861,9 @@ const z = (t, x) => {
             }, {
               end: v(() => [
                 y("span", Rl, [
-                  $.title ? (l(), i("span", Nl, T($.name), 1)) : _("", !0),
-                  y("span", Bl, T(h($)), 1),
+                  $.is_base ? (l(), i("span", Nl, "Base")) : b("", !0),
+                  $.title ? (l(), i("span", Bl, T($.name), 1)) : b("", !0),
+                  y("span", Ol, T(h($)), 1),
                   (l(!0), i(W, null, F(U($), (D) => (l(), i("span", {
                     key: D,
                     class: "profile-warning",
@@ -900,13 +906,13 @@ const z = (t, x) => {
             key: 0,
             programs: e(S),
             profile: p.value.name
-          }, null, 8, ["programs", "profile"])) : _("", !0)
+          }, null, 8, ["programs", "profile"])) : b("", !0)
         ]),
         _: 1
-      }, 8, ["notice", "failure", "programs", "types", "profile", "used"])) : _("", !0)
+      }, 8, ["notice", "failure", "programs", "types", "profile", "used"])) : b("", !0)
     ]));
   }
-}, Wl = /* @__PURE__ */ z(Ol, [["__scopeId", "data-v-bd1b1e56"]]);
+}, Vl = /* @__PURE__ */ z(El, [["__scopeId", "data-v-83684cee"]]);
 export {
-  Wl as default
+  Vl as default
 };

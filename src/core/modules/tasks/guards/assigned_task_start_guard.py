@@ -10,7 +10,7 @@ from core.modules.tasks.support.assignee_label import AssigneeLabel
 
 
 class AssignedTaskStartGuard(Guard[Moved[Task]]):
-    """An agent starts only a task assigned to nobody or to itself; a person starts any task."""
+    """An agent starts only a task assigned to nobody or to itself; a user starts any task."""
 
     name = "tasks.assigned-task-start"
     moves = tuple([TaskLifecycle.start])

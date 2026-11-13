@@ -8,7 +8,7 @@ from suites.coding.modules.checks.models.check import Check
 
 
 class StartCheckSubcommand(Subcommand[StartCheck, Check]):
-    """`journal check start <n>`: a person starts a stopped check, which runs again on its next due round."""
+    """`journal check start <n>`: a user starts a stopped check, which runs again on its next due round."""
 
     cli_name = "check"
     name = "start"

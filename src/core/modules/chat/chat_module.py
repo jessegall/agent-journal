@@ -1,13 +1,7 @@
 from core.modules.chat.migrations.m009_environment_index import JournalExceptionsEnvironmentIndexMigration
 from core.modules.chat.migrations.m007_chat_mark_session import ChatMarkSessionMigration
 from core.modules.chat.migrations.m005_chat_mark_agent_index import ChatMarkAgentIndexMigration
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.enums.window_place import WindowPlace
 from engine.module.model_declaration import ModelDeclaration
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_key import WindowKey
-from core.modules.chat.support.skeletons import CHAT_ERRORS_SKELETON
 from engine.module.module import Module
 from core.modules.chat.support.chat_marks import CHAT_MARKS
 from engine.log.exception_sink import ExceptionSink
@@ -48,5 +42,3 @@ class ChatModule(Module):
     marks = CHAT_MARKS
     listeners = [JournalExceptionMarkListener, UpgradeMarkListener]
     bindings = {ExceptionSink: ChatExceptionSink}
-    windows = [WindowDeclaration("chat.errors", "Errors", "errors.js", WindowLoading.COMPONENT, skeleton=CHAT_ERRORS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.WARNING,
-                                 reads=["journal-exception list"], keys=[WindowKey("errors", "journal-exception list", events=["journal_exception.*"])], runs=["journal-exception solve"], events=["journal_exception.*"])]

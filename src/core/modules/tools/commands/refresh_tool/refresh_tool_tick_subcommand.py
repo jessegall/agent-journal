@@ -7,9 +7,10 @@ from core.modules.tools.commands.refresh_tool.refresh_tool_subcommand import Ref
 
 
 class RefreshToolTickSubcommand(RefreshToolSubcommand):
-    """`journal tool tick <name> --folder <folder>`: what a turned-on tool's managed hook runs on each prompt; it
-    returns at once, starts a refresh in the background only when a commit has landed since the last one, and
-    prints nothing: a prompt gives the agent no line, since the journal's own count of searches is its one reminder."""
+    """`journal tool tick <name> --folder <folder>`: what a turned-on tool's managed hook runs on each
+    prompt; it returns at once, starts a refresh in the background only when a commit has landed
+    since the last one, and prints nothing: a prompt gives the agent no line, since the journal's
+    own count of searches is its one reminder."""
 
     name = "tick"
 

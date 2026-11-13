@@ -5,7 +5,7 @@ import {Dialog} from "@journal/window-kit";
 defineProps({record: {type: Object, required: true}});
 const emit = defineEmits(["close"]);
 
-// a plugin that reports cards writes them as JSON; what a person reads is each card's words
+// a plugin that reports cards writes them as JSON; what a user reads is each card's words
 function outputWords(text) {
     try {
         return JSON.parse(text).cards.map((card) => card.detail || card.title).join("\n");

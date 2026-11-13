@@ -68,7 +68,7 @@ test("Cancel drops the changes of every tab", async () => {
 
 test("a viewer who may only read sees the note, every value, controls that are off and no foot", async () => {
     const {element} = await mount({readOnly: true});
-    expect(element.querySelector("[data-settings-lock]").textContent).toContain("Only a person can change these settings");
+    expect(element.querySelector("[data-settings-lock]").textContent).toContain("Only a user can change these settings");
     expect(control(element, AUTO).querySelector("[role=switch]").disabled).toBe(true);
     expect(element.querySelector("[data-settings-apply]")).toBeNull();
     expect(element.querySelector("[data-settings-note]")).toBeNull();

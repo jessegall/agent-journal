@@ -17,8 +17,8 @@ from core.modules.library.ticks.library_sync import LibrarySync
 
 
 class ChooseLibraryVersionHandler(Handler[ChooseLibraryVersion, LibraryCopy]):
-    """Keeps the person's text by sending it with the version they were shown, or keeps the library's by
-    copying the row to the item. Both ask the server with no write lock held; only a person chooses."""
+    """Keeps the user's text by sending it with the version they were shown, or keeps the library's by
+    copying the row to the item. Both ask the server with no write lock held; only a user chooses."""
 
     command = ChooseLibraryVersion
 
@@ -26,7 +26,7 @@ class ChooseLibraryVersionHandler(Handler[ChooseLibraryVersion, LibraryCopy]):
         self.queries, self.shares, self.connections, self.sync, self.browse, self.bus = queries, shares, connections, sync, browse, bus
 
     def handle(self, command: ChooseLibraryVersion, context: Context) -> LibraryCopy:
-        LibraryPerson.require(context, "only a person chooses between a copy and its item")
+        LibraryPerson.require(context, "only a user chooses between a copy and its item")
         copy = self.queries.query(LibraryCopy).find(command.copy_id)
         if not copy.state.needs_choice:
             raise Refusal(f"{copy.share} {copy.row_id} has nothing to resolve: it is {copy.state.value}", "journal library copies shows what needs a choice")

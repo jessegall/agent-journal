@@ -7,8 +7,8 @@ from core.modules.plans.commands.approve_checkpoint.approve_checkpoint import Ap
 
 
 class ApproveCheckpointSubcommand(Subcommand[ApproveCheckpoint, int]):
-    """`journal plan approve-checkpoint <plan> <phase>`: a person lets the phases after a checkpoint open, when the
-    checkpoint's tests passed and the setting to wait for the person is on."""
+    """`journal plan approve-checkpoint <plan> <phase>`: a user lets the phases after a checkpoint open, when the
+    checkpoint's tests passed and the setting to wait for the user is on."""
 
     cli_name = "plan"
     name = "approve-checkpoint"

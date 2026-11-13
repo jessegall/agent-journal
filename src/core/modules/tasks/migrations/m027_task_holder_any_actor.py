@@ -5,7 +5,7 @@ COLUMNS = ("id, environment_id, holder_id, creator_id, title, brief, state, reas
 
 
 class TaskHolderAnyActorMigration(RebuildMigration):
-    """Rebuilds the tasks table so its holder may be any actor, a person as well as an agent: a person that starts
+    """Rebuilds the tasks table so its holder may be any actor, a user as well as an agent: a user that starts
     a task holds it."""
 
     number = 27

@@ -20,7 +20,7 @@ from core.modules.sharing.commands.make_share_link.make_share_link_handler impor
 
 class PhoneSessions:
     """The viewer's way to the phone module: it redeems a phone's code for a session token, keeping only the
-    token's digest in the journal, and finds the person a token's paired phone acts for, so a phone stays
+    token's digest in the journal, and finds the user a token's paired phone acts for, so a phone stays
     logged in across restarts of the server and is logged out once it is unpaired."""
 
     def __init__(self, home: JournalHome, listener_thread: ListenerThread) -> None:

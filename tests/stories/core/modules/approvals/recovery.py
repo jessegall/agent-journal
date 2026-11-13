@@ -18,7 +18,7 @@ TEST_ROWS_REASON = "the test reads every row it checks"
 @pytest.fixture
 def phone_request(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_refusal("phone pair --reason needed", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal("phone pair --reason needed", "A user was asked in the dock", actor=story.agent)
     return story, story.container.get(Queries).query(ApprovalRequest).first()
 
 
@@ -50,7 +50,7 @@ def test_a_failed_action_keeps_its_card_open_for_refusal(new_story):
     with viewer_client(story) as viewer:
         viewer.value("viewer.shell", ["viewer-layout", "save", "--suite", "notes", "--page", "home", "--layout", "{}"])
     line = "viewer-layout save --suite notes --page home --layout '{}' --base-version 1 --reason needed --environment main"
-    story.expect_refusal(line, "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(line, "A user was asked in the dock", actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).first()
     with viewer_client(story) as viewer:
         viewer.value("viewer.shell", ["viewer-layout", "save", "--suite", "notes", "--page", "home", "--layout", '{"root":"changed"}'])
@@ -73,7 +73,7 @@ def test_an_action_that_raises_can_be_accepted_again(phone_request, phone_viewer
     with pytest.raises(AssertionError):
         phone_viewer.value("messages.chat", ["approval", "accept", str(request.id)])
     story.expect_rows(story.row(ApprovalRequest, request.id).state is ApprovalState.OPEN)
-    story.expect_refusal("phone pair --reason needed", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal("phone pair --reason needed", "A user was asked in the dock", actor=story.agent)
     monkeypatch.setattr(AnswerApprovalHandler, "run_action", run_action)
     phone_viewer.value("messages.chat", ["approval", "accept", str(request.id)])
     story.expect_rows(story.row(ApprovalRequest, request.id).state is ApprovalState.ACCEPTED)

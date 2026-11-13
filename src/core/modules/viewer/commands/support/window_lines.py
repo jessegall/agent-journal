@@ -20,12 +20,13 @@ AGENT_TIP_LINE = "agent tip"
 
 
 class WindowLines:
-    """Whether a window may run a command line for a person, or only a read for the main agent's own viewer
-    session: the line parses, it is a read subcommand the window declares or a command it declares, or one
-    of its own settings, it neither skips a guard nor names another environment, and the person has allowed
-    it unless the journal ships the window. Any window may read the line a state declares for its badge's
-    tooltip, and any window may read an agent's tooltip. A line only a button allows answers to the module of that button, not the window. It checks
-    the parsed line, never its raw words."""
+    """Whether a window may run a command line for a user, or only a read for the main agent's own
+    viewer session: the line parses, it is a read subcommand the window declares or a command it
+    declares, or one of its own settings, it neither skips a guard nor names another environment,
+    and the user has allowed it unless the journal ships the window. Any window may read the line
+    a state declares for its badge's tooltip, and any window may read an agent's tooltip. A line
+    only a button allows answers to the module of that button, not the window. It checks the parsed
+    line, never its raw words."""
 
     def __init__(self, registry: Registry, line_parser: LineParser, flags: WriteFlags, allowances: WindowAllowances, environment_names: EnvironmentNames,
                  active: ActiveModules, scopes: Scopes, exceptions: ExceptionSink) -> None:
@@ -54,7 +55,7 @@ class WindowLines:
         window = self.registry.window(window_name)
         subcommand_name = " ".join(argv[:2])
         if not window.shipped and subcommand_name in PERSON_LINES:
-            raise WindowRefusal(f"{window_name} may never run {subcommand_name}: only a person gives rights and changes settings")
+            raise WindowRefusal(f"{window_name} may never run {subcommand_name}: only a user gives rights and changes settings")
         parsed = self.parsed(window_name, argv)
         if person.type is ActorType.AGENT and not parsed.is_read:
             raise WindowRefusal("the main agent's viewer session only reads")

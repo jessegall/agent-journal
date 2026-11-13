@@ -49,10 +49,10 @@ SHELL_READS = ["scheduled-job list", "agent environments", "agent main", "output
 
 class ViewerModule(Module):
     """Adds the viewer: the window the shell itself runs its lines as, the check of every line a window sends,
-    each person's layouts and the permissions each person gives a window."""
+    each user's layouts and the permissions each user gives a window."""
 
     name = "journal.core.viewer"
-    seed_reason = "a person's layouts and presets are made by using the viewer"
+    seed_reason = "a user's layouts and presets are made by using the viewer"
     requires_core = ">=5,<6"
     settings = VIEWER_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings", "journal.core.drivers"]

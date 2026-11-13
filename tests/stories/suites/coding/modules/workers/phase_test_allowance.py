@@ -27,7 +27,7 @@ def test_another_worker_in_the_same_phase_has_its_own_count(new_story, monkeypat
 
 
 def test_only_a_person_can_change_the_allowance(worker):
-    worker.story.expect_refusal(f"setting set {SETTING} 1 --environment main", "person", actor=worker.worker)
+    worker.story.expect_refusal(f"setting set {SETTING} 1 --environment main", "user", actor=worker.worker)
     worker.story.expect_success(f"setting set {SETTING} 1 --environment main", actor=worker.story.user)
     expect_counted(worker, 0)
     expect_reply_refusal(worker.run_test(), "No test runs left")

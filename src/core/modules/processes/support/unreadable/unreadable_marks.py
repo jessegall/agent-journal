@@ -15,9 +15,9 @@ MOST_LEADING_WORDS = 8
 
 
 class UnreadableMarks:
-    """The one keeper of the marks of commands whose output no reader can read. A mark covers a command by its
-    leading words, so pytest covers pytest tests/a and not npm test; an agent that declares one says why in at least
-    three words, and a person or the engine lifts it."""
+    """The one keeper of the marks of commands whose output no reader can read. A mark covers a command
+    by its leading words, so pytest covers pytest tests/a and not npm test; an agent that declares
+    one says why in at least three words, and a user or the engine lifts it."""
 
     def __init__(self, marks: UnreadableMarkQuery, repository: Repository) -> None:
         self.marks, self.repository = marks, repository
@@ -26,18 +26,14 @@ class UnreadableMarks:
         return self.marks.standing().of_words(UnreadableMarks.covering_words(command)).newest().first()
 
     def marked_among(self, commands: Sequence[str]) -> frozenset[str]:
-        """The commands a standing mark covers, from one read of the marks of all of them."""
         covering, words = UnreadableMarks.covered_by(commands)
         marked = set(self.marks.standing().of_words(words).pluck("words", str))
         return frozenset(command for command, leading in covering.items() if marked.intersection(leading))
 
     def excuses(self, command: str) -> bool:
-        """Whether a standing mark covers the command, so nothing asks it for a reader."""
         return self.marked(command) is not None
 
     def last_marked_among(self, commands: Sequence[str]) -> dict[str, Timestamp | None]:
-        """When the newest mark covering each command was made, lifted or not, from one read of the marks of all of
-        them; none for a command never marked."""
         covering, words = UnreadableMarks.covered_by(commands)
         newest: dict[str, Timestamp] = {}
         for mark in self.marks.of_words(words).every_row(MARKS_OF_WORDS_REASON):
@@ -64,7 +60,6 @@ class UnreadableMarks:
 
     @staticmethod
     def checked_note(note: str) -> str:
-        """The agent's reason for a mark, refused when it is empty or shorter than three words."""
         if len(note.split()) < FEWEST_NOTE_WORDS:
             raise Refusal("a command is marked unreadable only with a reason of at least three words",
                           'say why no reader can read it, such as --note "prints only a progress bar"')
@@ -72,17 +67,14 @@ class UnreadableMarks:
 
     @staticmethod
     def covering_words(command: str) -> list[str]:
-        """The leading words a mark covering the command can have: its first word, its first two, and so on."""
         terms = command.split()[:MOST_LEADING_WORDS]
         return [" ".join(terms[:count]) for count in range(1, len(terms) + 1)]
 
     @staticmethod
     def covered_by(commands: Sequence[str]) -> tuple[dict[str, list[str]], list[str]]:
-        """The leading words that can cover each command, and all of those words once, sorted, for one read of the marks."""
         covering = {command: UnreadableMarks.covering_words(command) for command in dict.fromkeys(commands)}
         return covering, sorted({word for leading in covering.values() for word in leading})
 
     @staticmethod
     def covers(words: str, command: str) -> bool:
-        """Whether a mark of these leading words covers the command."""
         return UnreadableMarks.leading_words(words) in UnreadableMarks.covering_words(command)

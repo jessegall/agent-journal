@@ -22,7 +22,7 @@ from core.modules.skills.support.profile_skills import ProfileSkills
 
 
 class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
-    """Saves a personal profile or changes to a registered profile. Only a person or the main agent may: a
+    """Saves a personal profile or changes to a registered profile. Only a user or the main agent may: a
     helper of any type is refused before anything is read or written."""
 
     cli_name = "profile"
@@ -44,7 +44,7 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
         parser.add_argument("--access", type=Access, choices=list(Access))
         parser.add_argument("--independent", action=BooleanOptionalAction, default=None)
         parser.add_argument("--occupant", help="continue, when-cold or each-launch: when the program session of an agent is replaced")
-        parser.add_argument("--reuse", help="not accepted: only a person retires an agent")
+        parser.add_argument("--reuse", help="not accepted: only a user retires an agent")
         parser.add_argument("--keeps-project-instructions", dest="uses_project_instructions", action=BooleanOptionalAction, default=None, help="a helper's own checkout keeps the project's instruction files beside the ones written for this profile")
         parser.add_argument("--skills", help="the skill folders the profile's agents get, a comma list or a JSON list; blank takes the skills of the profile's type")
         parser.add_argument("--required-skills", help="the skills of this profile its agents must read at the start, a comma list or a JSON list; blank requires none")

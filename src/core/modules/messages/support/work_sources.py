@@ -21,7 +21,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 
 
 class WorkSources:
-    """Selects addressed person requests without changing delivery state."""
+    """Selects addressed user requests without changing delivery state."""
 
     def __init__(self, queries: Queries, messages: MessageQuery, repository: Repository, kept: KeptRows,
                  jobs: HelperJobRows, assignments: AssignedWorkSources, agents: AgentRows) -> None:
@@ -51,7 +51,7 @@ class WorkSources:
         if context.actor.type is not ActorType.AGENT or context.environment_id is None:
             raise Refusal("an agent selects a request in one environment")
         if message.type not in PERSON_MESSAGE_TYPES or message.environment_id != context.environment_id:
-            raise Refusal("select a person request from this environment")
+            raise Refusal("select a user request from this environment")
         if not self.messages.addressed(context.actor.id).filter(id=message.id).exists():
             raise Refusal("this message is addressed to another agent", "read your messages with journal message unread")
         return self.store(message, origin, context, context.environment_id)

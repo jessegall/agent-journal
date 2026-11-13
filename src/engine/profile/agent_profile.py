@@ -5,7 +5,7 @@ from engine.enums.access import Access
 from engine.enums.model_tier import ModelTier
 from engine.enums.occupant import INDEPENDENT_OCCUPANTS, Occupant
 
-KEPT_AGENTS_TEXT = "agents are kept; a person retires them"
+KEPT_AGENTS_TEXT = "agents are kept; a user retires them"
 SEQUENCE_FIELDS = ("fallback_programs", "mcp_tools", "writable_folders", "changed", "notes", "skills", "required_skills", "default_fields")
 
 
@@ -20,6 +20,7 @@ class AgentProfile:
     body: str = ""
     base: str = ""
     agent_type: str = "helper"
+    is_base: bool = False
     access: Access | None = None
     program: str = ""
     preferred_program: bool = True

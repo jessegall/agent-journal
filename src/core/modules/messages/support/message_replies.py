@@ -16,10 +16,10 @@ REPLIES_REASON = "a message counts as answered by any reply the agent wrote to i
 
 
 class MessageReplies:
-    """Which of the messages an agent was sent it has answered: by a reply to it or a reaction on it, and for a
-    message from another agent also by any later message to that agent, since an agent writes to an agent without
-    naming the message it answers. It reads the replies to these messages and the newest message to each
-    sender, never every message the agent wrote since."""
+    """Which of the messages an agent was sent it has answered: by a reply to it or a reaction on it,
+    and for a message from another agent also by any later message to that agent, since an agent
+    writes to an agent without naming the message it answers. It reads the replies to these messages
+    and the newest message to each sender, never every message the agent wrote since."""
 
     def __init__(self, queries: Queries, agents: AgentRows, kept: KeptRows) -> None:
         self.queries, self.agents, self.kept = queries, agents, kept
@@ -50,5 +50,5 @@ class MessageReplies:
         untargeted = self.kept.read_newest(untargeted_replies, untargeted_replies.first, name="messages.newest_untargeted_reply") if sender_id == main_id else None
         return max((reply.id for reply in (targeted, untargeted) if reply is not None), default=0)
 
-    def messages_by(self, agent_id: int) -> Query[Message]:
+    def authored_messages(self, agent_id: int) -> Query[Message]:
         return self.queries.query(Message).filter(type=MessageType.AGENT, creator_id=agent_id)

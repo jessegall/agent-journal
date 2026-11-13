@@ -3,7 +3,7 @@ from engine.seed.seeder import Seeder
 
 
 class QuestionsSeeder(Seeder):
-    """Asks one question that stays open and one the person answers."""
+    """Asks one question that stays open and one the user answers."""
 
     def seed(self, demo: Demo) -> None:
         user, main = demo.people["user"], demo.people["main"]

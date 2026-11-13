@@ -9,7 +9,7 @@ from tests.stories.server.profile_storage import boot, change_version, profile_l
 __all__ = ["profile_story"]
 
 OCCUPANT_REFUSAL = "occupant must be continue, when-cold or each-launch"
-KEPT_REFUSAL = "agents are kept; a person retires them"
+KEPT_REFUSAL = "agents are kept; a user retires them"
 CRITIC_SAVE_LINE = 'profile save critic --description "Reads a change and says what is wrong" --body "Read the diff." --reason needed'
 MERGER_PROFILE_TEXT = "---\nname: journal-merger\n{field}\n---\n"
 CRITIC_PROFILE_TEXT = "---\nname: critic\ndescription: Reads changes\nkind: helper\nmodel: inherit\n{field}\n---\nRead the diff.\n"
@@ -76,8 +76,8 @@ def test_a_module_upgrade_keeps_a_persons_occupant(profile_story):
 
 
 def test_a_worker_profile_that_declares_an_occupant_is_refused_naming_its_type_and_start_line(person):
-    person.expect_refusal("profile save journal-medior --occupant each-launch --reason needed", "worker", actor=person.user)
-    person.expect_refusal("profile save journal-medior --occupant each-launch --reason needed", "journal worker dispatch", actor=person.user)
+    person.expect_refusal("profile save journal-worker-medior --occupant each-launch --reason needed", "worker", actor=person.user)
+    person.expect_refusal("profile save journal-worker-medior --occupant each-launch --reason needed", "journal worker dispatch", actor=person.user)
 
 
 def test_the_reviewer_the_merger_and_the_researcher_each_show_their_own_occupant(profile_story):

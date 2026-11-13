@@ -37,7 +37,7 @@ def test_a_planner_with_its_own_cap_shows_the_percent_of_that_cap():
 
 
 def test_a_kind_cap_applies_to_a_type_without_its_own():
-    assert percent("worker", "journal-medior", 75000) == 25
+    assert percent("worker", "journal-worker-medior", 75000) == 25
 
 
 def test_the_size_for_every_agent_applies_to_a_kind_without_an_entry():

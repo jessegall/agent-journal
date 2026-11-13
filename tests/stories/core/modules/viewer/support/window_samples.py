@@ -24,7 +24,7 @@ WIDER_NOTES = "tests.stories.core.modules.viewer.support.window_samples:WiderNot
 
 
 class NotesStartCheck(Guard[Moved[Task]]):
-    """A sample guard on a task start that a short flag lets a person pass."""
+    """A sample guard on a task start that a short flag lets a user pass."""
 
     name = "notes.start-check"
     moves = tuple([TaskLifecycle.start])

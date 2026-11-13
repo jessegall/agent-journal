@@ -13,7 +13,7 @@ from core.modules.sharing.models.share_link import ShareLink
 
 
 class ShareLinkRowGuard(Guard[Changed[ShareLink]]):
-    """Lets the person who made a link write it, an agent only ask for one that waits, and any person answer
+    """Lets the user who made a link write it, an agent only ask for one that waits, and any user answer
     what an agent asked."""
 
     name = "sharing.share-link-rows"

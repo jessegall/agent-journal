@@ -14,7 +14,7 @@ TYPING_SUGGESTION = "it types only for an agent it started, and a launcher older
 class TerminalTyping:
     """Hands the running launcher a line to type into an agent's terminal, and refuses unless it answers that
     it did. Nothing is typed into an agent whose program is locked down at a usage limit: every wake, message
-    line and line a person types passes here, so each is refused with the stop line and stays waiting."""
+    line and line a user types passes here, so each is refused with the stop line and stays waiting."""
 
     lockdown: ProgramLockdown = ProgramLockdown()
 

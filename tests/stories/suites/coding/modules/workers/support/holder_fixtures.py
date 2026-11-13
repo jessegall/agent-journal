@@ -32,7 +32,7 @@ def worker_on_two_tasks(new_story) -> Story:
 
 
 def free_third_task(new_story) -> Story:
-    """Beside the worker on tasks 1 and 2, task 3 is open and nobody's, and Ada is a person of the journal: story.user."""
+    """Beside the worker on tasks 1 and 2, task 3 is open and nobody's, and Ada is a user of the journal: story.user."""
     story = worker_on_two_tasks(new_story)
     story.run('task make "Third job" --brief "Do the third job" --environment main', actor=story.agent)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)

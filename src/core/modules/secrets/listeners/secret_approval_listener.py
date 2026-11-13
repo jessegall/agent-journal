@@ -12,7 +12,7 @@ from core.modules.secrets.models.secret import Secret
 
 
 class SecretApprovalListener(CommitListener[Changed[Secret]]):
-    """Asks a person before a proposed program can receive a secret."""
+    """Asks a user before a proposed program can receive a secret."""
 
     name = "secrets.approval"
     disabled_scopes = [ActorScope, EnvironmentScope]

@@ -5,11 +5,11 @@ from engine.event.changed import Changed
 
 
 class PermissionOwnerGuard(PersonRowGuard[Changed[WindowPermission]]):
-    """Refuses a window permission written by anyone but the person it names, so no agent, window or other
+    """Refuses a window permission written by anyone but the user it names, so no agent, window or other
     person gives rights for someone."""
 
     name = "viewer.permission-owner"
-    refusal = Refusal("these permissions belong to another person")
+    refusal = Refusal("these permissions belong to another user")
     question = "Change these window permissions?"
 
     def person_id(self, event: Changed[WindowPermission]) -> int:

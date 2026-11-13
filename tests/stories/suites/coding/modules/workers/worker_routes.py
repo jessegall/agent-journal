@@ -252,14 +252,23 @@ def test_agent_naming_another_program_is_refused_before_git(protected_route_stor
     story.expect_rows(not list((story.home.folder.parent / 'project' / '.journal' / 'worktrees').glob('*/*')))
 
 
+def test_agent_naming_another_program_goes_through_once_the_user_switches_the_route_guard_off(protected_route_story):
+    story, route = protected_route_story
+    story.use_fixture_environment(None)
+    story.expect_success('setting make journal.core.settings.guard.workers.route-holds false', actor=story.user)
+    story.use_fixture_environment('main')
+    worker = dispatch(story, flags='--program claude')
+    expect_program(story, worker, 'claude')
+
+
 def test_agent_naming_another_program_is_refused_before_git_explicit_skip_is_logged(protected_route_story):
     story, route = protected_route_story
     story.expect_refusal('worker dispatch --test-command python=pytest 1 --program claude', 'route 1', actor=story.agent)
-    confirmed_skip(story, "workers.route-holds", story.agent, "The person asked for a comparison")
-    worker = dispatch(story, flags='--program claude --skip-guard workers.route-holds --skip-reason "The person asked for a comparison"')
+    confirmed_skip(story, "workers.route-holds", story.agent, "The user asked for a comparison")
+    worker = dispatch(story, flags='--program claude --skip-guard workers.route-holds --skip-reason "The user asked for a comparison"')
     expect_program(story, worker, 'claude')
     story.expect_text('worker-worktree list', 'cut')
-    story.expect_text('event list --json --limit 100', 'workers.route-holds', 'The person asked for a comparison')
+    story.expect_text('event list --json --limit 100', 'workers.route-holds', 'The user asked for a comparison')
 
 
 def test_person_names_any_program(split_story):
@@ -279,8 +288,8 @@ def test_person_names_any_program_over_a_route(split_story):
 def test_agent_cannot_change_a_route_a_person_made(split_story, split_viewer):
     story = split_story
     split_viewer.value('workers.workers', ['worker-route', 'make', '--tags', 'owned', '--program', 'codex'])
-    story.expect_refusal('worker-route edit 1 --program claude', 'person', actor=story.agent)
-    story.expect_refusal('worker-route delete 1', 'person', actor=story.agent)
+    story.expect_refusal('worker-route edit 1 --program claude', 'user', actor=story.agent)
+    story.expect_refusal('worker-route delete 1', 'user', actor=story.agent)
     story.expect_text('worker-route show 1', 'program: codex')
 
 

@@ -21,7 +21,7 @@ PROJECT_PREFIX = "project-"
 
 
 class ProgramSettingsBackup:
-    """Copies the person's own settings files of an agent program into the journal's backups, private to their
+    """Copies the user's own settings files of an agent program into the journal's backups, private to their
     owner, only when they changed since the newest copy; it keeps the first copy and the newest 20 of each
     file."""
 

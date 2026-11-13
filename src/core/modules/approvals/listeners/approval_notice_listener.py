@@ -15,7 +15,7 @@ from core.modules.drivers.commands.record_agent_nudge.record_agent_nudge import 
 
 
 class ApprovalNoticeListener(CommitListener[Changed[ApprovalRequest]]):
-    """Tells the requesting agent when a person was asked and when the request ends."""
+    """Tells the requesting agent when a user was asked and when the request ends."""
 
     name = "approvals.notices"
     disabled_scopes = [ActorScope, EnvironmentScope]

@@ -29,7 +29,7 @@ def agent_messages(story: Story) -> list[Message]:
 
 
 class MessageToStoppedAgent(StoryFixture):
-    """The agent ended its turn, then a person wrote message 1 and the journal's line for it started a new turn."""
+    """The agent ended its turn, then a user wrote message 1 and the journal's line for it started a new turn."""
 
     parent = UserBuilder
 
@@ -37,12 +37,12 @@ class MessageToStoppedAgent(StoryFixture):
         story.hook("s-1", HookSamples.stop())
         story.advance(STEP)
         person_message(story, "Is the cart done?")
-        story.hook("s-1", HookSamples.prompt("[journal] new message 1"))
+        story.hook("s-1", HookSamples.prompt("[journal] New message 1: read it"))
         story.advance(STEP)
 
 
 class MessageDuringTurn(StoryFixture):
-    """The agent works in a turn that a journal line started, and a person writes message 1 in the middle of it."""
+    """The agent works in a turn that a journal line started, and a user writes message 1 in the middle of it."""
 
     parent = UserBuilder
 

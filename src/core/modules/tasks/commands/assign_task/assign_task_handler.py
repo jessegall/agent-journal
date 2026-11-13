@@ -14,9 +14,9 @@ from core.modules.tasks.support.task_assignees import TaskAssignees
 
 
 class AssignTaskHandler(Handler[AssignTask, Task]):
-    """Gives an unfinished task to a person or an agent, after the suite checks an agent assignee. A task another
+    """Gives an unfinished task to a user or an agent, after the suite checks an agent assignee. A task another
     actor holds is let go in the same command: a started or testing one opens again and a blocked one stays
-    blocked without a holder, so the task never shows the new actor while another holds it. Only a person or the
+    blocked without a holder, so the task never shows the new actor while another holds it. Only a user or the
     main agent assigns."""
 
     command = AssignTask

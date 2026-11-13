@@ -8,7 +8,7 @@ from core.modules.assignments.support.assignments import Assignments
 
 
 class UnassignRowHandler(Handler[UnassignRow, tuple[Assignment, ...]]):
-    """Removes the assignments of the named row and answers with the ones it removed. A person or the main
+    """Removes the assignments of the named row and answers with the ones it removed. A user or the main
     agent runs it."""
 
     command = UnassignRow

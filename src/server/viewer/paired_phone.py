@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class PairedPhone:
-    """The paired phone a session token belongs to, as the phone module answers it: the person it acts for."""
+    """The paired phone a session token belongs to, as the phone module answers it: the user it acts for."""
 
     person_id: int
 

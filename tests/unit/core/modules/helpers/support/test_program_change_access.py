@@ -30,7 +30,7 @@ def test_the_main_agent_changes_the_driver_of_a_helper_and_of_a_worker(agent):
 
 @pytest.mark.parametrize("caller, agent", [(HELPER, WORKER), (WORKER, HELPER), (HELPER, MAIN_AGENT)], ids=["a helper on a worker", "a worker on a helper", "a helper on the main agent"])
 def test_a_helper_or_a_worker_changes_nobodys_driver(caller, agent):
-    with pytest.raises(Refusal, match="only a person or the main agent changes a driver"):
+    with pytest.raises(Refusal, match="only a user or the main agent changes a driver"):
         ACCESS.check_driver_change(agent_actor(caller), agent)
 
 

@@ -14,7 +14,7 @@ SOURCE = "workers.retired-worker"
 
 
 class RetiredWorkerListener(SaveListener[Updated[Agent]]):
-    """A worker a person retires while it has tasks left leaves the merger one line that names all of them, and
+    """A worker a user retires while it has tasks left leaves the merger one line that names all of them, and
     its open questions are closed as moot: nobody is left to answer."""
 
     name = "workers.retired-worker"

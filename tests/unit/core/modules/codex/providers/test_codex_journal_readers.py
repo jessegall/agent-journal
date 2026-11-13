@@ -21,7 +21,7 @@ RUNNER = '"/work/journal/.journal/bin/journal-hook"'
 
 
 class NoEffortSettings:
-    """Effort settings with no entry a person set."""
+    """Effort settings with no entry a user set."""
 
     def texts(self, key: str) -> tuple[str, ...]:
         return ()

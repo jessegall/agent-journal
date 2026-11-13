@@ -346,7 +346,7 @@ def test_a_plugin_an_agent_installs_through_the_persons_approval_has_its_service
     manifest = json.loads(FileAccess.shared().read(manifest_path))
     manifest["installed"] = "touch run.sh; echo '{}'"
     FileAccess.shared().write(manifest_path, json.dumps(manifest))
-    story.expect_refusal(f"plugin install {folder} --yes --reason needed", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(f"plugin install {folder} --yes --reason needed", "A user was asked in the dock", actor=story.agent)
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(story.container.get(Queries).query(ApprovalRequest).first().id)])
     services, processes = story.container.get(PluginServices), ServiceProcesses()

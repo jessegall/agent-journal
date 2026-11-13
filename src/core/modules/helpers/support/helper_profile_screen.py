@@ -5,8 +5,8 @@ from core.modules.settings.support.setting_screen import ScreenNode, ScreenReadi
 from engine.enums.setting_component import SettingComponent
 from engine.types.type_guards import is_list, is_tuple
 
-EVERY_PROFILE = "Every profile"
-OWN_VALUE = "Own value"
+ALL_PROFILES_SOURCE = "Every profile"
+PROFILE_VALUE_SOURCE = "Own value"
 SECTIONS = {"running": "How many", "kept": "How many", "cap": "Context cap", "minutes": "Limits on one job", "cost": "Limits on one job"}
 
 
@@ -19,13 +19,13 @@ class HelperProfileScreen:
         self.reader = reader
 
     def read(self, profile: str) -> ScreenReading:
-        own_limits = self.entries(HELPER_PROFILE_LIMITS, profile)
-        own_run, own_kept = (int(number) for number in own_limits[:2]) if len(own_limits) == 2 and all(number.isdigit() for number in own_limits) else (None, None)
-        own_cap = self.entries(CONTEXT_LIMIT_PROFILES, profile)
+        profile_limits = self.entries(HELPER_PROFILE_LIMITS, profile)
+        profile_run, profile_kept = (int(number) for number in profile_limits[:2]) if len(profile_limits) == 2 and all(number.isdigit() for number in profile_limits) else (None, None)
+        profile_cap = self.entries(CONTEXT_LIMIT_PROFILES, profile)
         nodes = (
-            self.node(HELPER_RUN_LIMIT, "running", own_run, SettingComponent.PER_TYPE_OVERRIDE),
-            self.node(HELPER_KEPT_LIMIT, "kept", own_kept, SettingComponent.PER_TYPE_OVERRIDE),
-            self.node(CONTEXT_LIMIT_TOKENS, "cap", int(own_cap[0]) if own_cap and own_cap[0].isdigit() else None, SettingComponent.THREE_WAY_CAP),
+            self.node(HELPER_RUN_LIMIT, "running", profile_run, SettingComponent.PER_TYPE_OVERRIDE),
+            self.node(HELPER_KEPT_LIMIT, "kept", profile_kept, SettingComponent.PER_TYPE_OVERRIDE),
+            self.node(CONTEXT_LIMIT_TOKENS, "cap", int(profile_cap[0]) if profile_cap and profile_cap[0].isdigit() else None, SettingComponent.THREE_WAY_CAP),
             self.node(HELPER_MAX_MINUTES, "minutes", None, SettingComponent.PER_TYPE_OVERRIDE),
             self.node(HELPER_MAX_COST, "cost", None, SettingComponent.PER_TYPE_OVERRIDE))
         return ScreenReading(f"helper-type.{profile}", ScreenReading.revision_of(nodes), nodes)
@@ -38,8 +38,8 @@ class HelperProfileScreen:
                 return numbers.split(":")
         return []
 
-    def node(self, key: str, section: str, own: int | None, component: SettingComponent) -> ScreenNode:
-        every = self.reader.current(key)
-        entry = every.entry
-        return ScreenNode(key, entry.type, component.value, SECTIONS[section], entry.parent, entry.title, entry.description, every.value if own is None else own, entry.default,
-                          EVERY_PROFILE if own is None else OWN_VALUE, tuple(entry.choices), entry.rule, tuple(entry.required_settings), entry.person_set)
+    def node(self, key: str, section: str, profile_value: int | None, component: SettingComponent) -> ScreenNode:
+        shared_setting = self.reader.current(key)
+        entry = shared_setting.entry
+        return ScreenNode(key, entry.type, component.value, SECTIONS[section], entry.parent, entry.title, entry.description, shared_setting.value if profile_value is None else profile_value, entry.default,
+                          ALL_PROFILES_SOURCE if profile_value is None else PROFILE_VALUE_SOURCE, tuple(entry.choices), entry.rule, tuple(entry.required_settings), entry.person_set)

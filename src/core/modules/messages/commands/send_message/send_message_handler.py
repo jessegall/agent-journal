@@ -25,7 +25,7 @@ ACTOR_MESSAGE_TYPES = {ActorType.USER: MessageType.USER, ActorType.AGENT: Messag
 
 
 class SendMessageHandler(Handler[SendMessage, Message]):
-    """Saves a message from the caller: a person's is a user message, an agent's an agent message,
+    """Saves a message from the caller: a user's is a user message, an agent's an agent message,
     anything else the journal's."""
 
     command = SendMessage
@@ -55,7 +55,6 @@ class SendMessageHandler(Handler[SendMessage, Message]):
             self.repository.update(parent, context, read_at=context.timestamp)
 
     def answered_agent_name(self, parent: Message | None, actor: Actor) -> str:
-        """A reply to what another agent wrote is talk between agents and names that agent; any other message names none."""
         if parent is None or actor.type is not ActorType.AGENT or parent.type is not MessageType.AGENT or parent.session_agent_id in (None, actor.id):
             return ""
         return self.rows.required(Agent, parent.session_agent_id).display_name

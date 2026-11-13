@@ -7,7 +7,7 @@ const dockTitle = (item, declaration) =>
 
 const own = (action, icon, label, runs) => ({action, icon, label, runs});
 
-// the pin of an item that leaves by itself: it keeps the item, and pressed again lets it leave; an item that waits for a person is always kept and has none
+// the pin of an item that leaves by itself: it keeps the item, and pressed again lets it leave; an item that waits for a user is always kept and has none
 const leavesByItself = (item, declaration) => !declaration?.needs_user && Boolean(item.leaves_at || item.kept || declaration?.leaves_after_seconds > 0);
 const pin = (item) => ({...(item.kept ? own("unkeep", "pins", "Let this card close", `dock unkeep ${item.id}`) : own("keep", "pins", "Keep this card", `dock keep ${item.id}`)), pressed: Boolean(item.kept)});
 

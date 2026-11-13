@@ -22,6 +22,6 @@ class RemovePersonPresetHandler(Handler[RemovePersonPreset, PersonPreset]):
         if context.actor.type is ActorType.AGENT:
             raise UserApprovalRefusal(f"Remove the layout preset {layout.name}?", required_person_id=layout.person_id, command=command)
         if layout.person_id != context.actor.id:
-            raise Refusal(f"preset {layout.id} is another person's", "journal person-preset list lists yours")
+            raise Refusal(f"preset {layout.id} is another user's", "journal person-preset list lists yours")
         self.repository.delete(layout, context)
         return layout

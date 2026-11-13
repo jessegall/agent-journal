@@ -25,6 +25,6 @@ class ReadOnlyHelperStartGuard(Guard[Created[Agent]]):
             return
         options = self.options.options()
         if event.row.profile == DESIGNER_PROFILE and not options.designer:
-            raise Refusal("the main agent starts no designer here", "a person turns on journal.suites.coding.designer-enabled")
+            raise Refusal("the main agent starts no designer here", "a user turns on journal.suites.coding.designer-enabled")
         if event.row.profile != DESIGNER_PROFILE and not options.helpers:
-            raise Refusal("the main agent starts no read-only helper here", "a person turns on journal.suites.coding.main-starts-read-only-helpers")
+            raise Refusal("the main agent starts no read-only helper here", "a user turns on journal.suites.coding.main-starts-read-only-helpers")

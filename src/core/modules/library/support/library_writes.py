@@ -11,7 +11,7 @@ T = TypeVar("T")
 
 
 class LibraryWrites:
-    """Sends a person's changes to the shared server as they are made: a new item, a removal, a removed item brought
+    """Sends a user's changes to the shared server as they are made: a new item, a removal, a removed item brought
     back, and an old version put in again as a new one; an unreachable server is a refusal naming its address."""
 
     def __init__(self, client: LibraryClient) -> None:

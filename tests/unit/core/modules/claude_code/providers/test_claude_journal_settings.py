@@ -16,7 +16,7 @@ PERSON_HOOK = {"matcher": "Bash", "hooks": [{"type": "command", "command": "my-l
 
 
 class NoEffortSettings:
-    """Effort settings with no entry a person set."""
+    """Effort settings with no entry a user set."""
 
     def texts(self, key: str) -> tuple[str, ...]:
         return ()

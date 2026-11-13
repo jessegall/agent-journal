@@ -16,8 +16,8 @@ from core.modules.actors.models.actor_record import ActorRecord
 
 
 class CheckApprovalWorksHandler(Handler[CheckApprovalWorks, None]):
-    """Explains what Accept would run, as the person who would accept, and refuses the request when that would
-    fail, so a card that cannot work is never shown. Where no person has joined there is none to run it as,
+    """Explains what Accept would run, as the user who would accept, and refuses the request when that would
+    fail, so a card that cannot work is never shown. Where no user has joined there is none to run it as,
     and a command whose handler does work before its transaction cannot be tried without doing that work,
     so it is not tried. A command that reaches a change outside the database has passed everything before
     it, and the dry run stops there."""
@@ -38,7 +38,7 @@ class CheckApprovalWorksHandler(Handler[CheckApprovalWorks, None]):
                 if command.arguments and list(command.arguments[:2]) != MODULE_REMOVAL_ARGUMENTS:
                     self.explain_line(command.arguments, Caller(person, context.environment_id), context)
             except Refusal as refusal:
-                raise Refusal(f"this would fail when a person accepts it: {refusal.text}", "change the request so it works, then ask again") from None
+                raise Refusal(f"this would fail when a user accepts it: {refusal.text}", "change the request so it works, then ask again") from None
 
     def person(self, person_id: int | None) -> Actor | None:
         people = self.queries.query(ActorRecord).filter(type=ActorType.USER)

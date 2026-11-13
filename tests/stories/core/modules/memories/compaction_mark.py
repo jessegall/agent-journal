@@ -13,7 +13,7 @@ from tests.stories.server.support.server_client import server_story
 
 
 class CompactedMainAgent(StoryFixture):
-    """The main agent of environment main, with a person beside it, compacted its context."""
+    """The main agent of environment main, with a user beside it, compacted its context."""
 
     parent = UserBuilder
 

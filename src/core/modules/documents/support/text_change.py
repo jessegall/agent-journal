@@ -36,7 +36,7 @@ class TextChange:
         matching = outline.matching(wanted)
         if not matching:
             raise Refusal(f"no section {wanted}: the outline numbers them from 1", "the outline lists them with their numbers")
-        target, *others = matching
-        if others:
+        target, *extra_sections = matching
+        if extra_sections:
             raise Refusal(f"{len(matching)} sections are headed {wanted}", "name the section by its number")
         return outline.with_section_text(target, body)

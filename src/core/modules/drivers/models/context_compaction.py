@@ -14,12 +14,12 @@ RETRY_SECONDS = 180
 @dataclass(frozen=True, kw_only=True)
 class ContextCompaction(Model):
     """One compaction or clear of one agent's context, from the line that asked for it to the first context
-    size read after it ended. The line is the text typed into the agent's terminal. A compaction that left the
-    context at the limit or over it did not help, so the next one is due only once the context has grown by a
-    share of the limit; until the size after it is read, no next one is due. The agent is woken once after the
-    compaction ends, and the row keeps when. The journal asks a second time when a request did not start within
-    the retry time, and no third time: a request that repeats one, and a compaction that failed, block the
-    journal's next request until a person asks or the program compacts by itself."""
+    size read after it ended. The line is the text typed into the agent's terminal. A compaction that left
+    the context at the limit or over it did not help, so the next one is due only once the context has grown
+    by a share of the limit; until the size after it is read, no next one is due. The agent is woken once
+    after the compaction ends, and the row keeps when. The journal asks a second time when a request did not
+    start within the retry time, and no third time: a request that repeats one, and a compaction that
+    failed, block the journal's next request until a user asks or the program compacts by itself."""
 
     model_name = "context_compaction"
     cli_name = "context-compaction"

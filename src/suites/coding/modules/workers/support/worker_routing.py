@@ -42,7 +42,7 @@ class WorkerRouting:
     def choice(self, command: WorkerProgramRequest, tasks: list[Task], caller: Agent | None, profile: AgentProfile, context: Context | None = None) -> WorkerChoice:
         if caller is None:
             if not command.program:
-                raise Refusal("a person's dispatch needs the program the worker runs", "add --program, such as the program of the environment's main agent")
+                raise Refusal("a user's dispatch needs the program the worker runs", "add --program, such as the program of the environment's main agent")
             return self.requested(command, tasks, caller, profile, command.program, context)
         requested_program = command.program or (self.providers.model_program(command.program_model) if command.program_model else "")
         if not requested_program and profile.mcp_tools:

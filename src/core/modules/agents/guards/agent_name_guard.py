@@ -10,7 +10,7 @@ PLAIN_NAME = re.compile(r"[^\W\d_]+([ .'-]+[^\W\d_]+)*\.?")
 
 
 class AgentNameGuard(Guard[Created[Agent]]):
-    """An agent's name is a person's name and nothing more, so a list of agents stays short."""
+    """An agent's name is a user's name and nothing more, so a list of agents stays short."""
 
     name = "agents.plain-name"
 

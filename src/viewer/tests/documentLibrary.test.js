@@ -4,7 +4,6 @@ import {settled} from "./settled.js";
 import DocumentLibrary from "../../core/modules/documents/web/src/DocumentLibrary.vue";
 import {grouped} from "../../core/modules/documents/web/src/libraryGroups.js";
 import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
-import {opening} from "../src/route.js";
 import {documentWindowContext} from "./support/documentWindowContext.js";
 
 const NOW = Date.parse("2026-10-31T12:00:00Z");
@@ -14,12 +13,18 @@ const DOCS = [
 ];
 const BODY = {id: 1, title: "Cart rules", abstract: "How the cart counts money", body: "## Totals\n- in cents"};
 
-function mounted() {
+function mounted(reader = false) {
     const reads = [];
-    const read = async (line) => (reads.push(line), line.startsWith("doc show") ? {ok: true, value: BODY} : {ok: true, value: {total: DOCS.length, rows: line === "document library --type doc --state open" ? DOCS : []}});
+    const read = async (words) => {
+        const line = Array.isArray(words) ? words.join(" ") : words;
+        reads.push(line);
+        if (line.startsWith("doc inspect")) return {ok: true, value: line.endsWith("2") ? {...BODY, id: 2, title: "Release steps", body: "## Steps"} : BODY};
+        const rows = line === "document library --type doc --state open" ? DOCS : [];
+        return {ok: true, value: {total: rows.length, rows}};
+    };
     const context = {...documentWindowContext({}), read, run: async () => ({ok: true}), follow: () => {}, face: "person"};
     const element = document.createElement("div");
-    createApp({setup: () => () => h(DocumentLibrary), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
+    createApp({setup: () => () => h(DocumentLibrary, {reader}), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
     return {element, reads};
 }
 
@@ -38,19 +43,33 @@ test("the library is read once, a page of one type", async () => {
     expect(reads).toEqual(["document library --type doc --state open"]);
 });
 
-test("choosing a document opens it in the panel, by the mouse or by Enter", async () => {
-    const {element} = mounted();
+test("on the page a chosen document is read beside the list, by the mouse or by the arrow keys", async () => {
+    const {element, reads} = mounted(true);
     await settled();
+    const reader = element.querySelector("[data-library-reader]");
+    expect(reader.textContent).toContain("Choose a document to read it here");
     element.querySelector('[data-row="1"]').click();
     await settled();
-    expect(window.location.href).toContain("docs:1");
-    opening([]);
+    await settled();
+    expect(reads).toContain("doc inspect 1");
+    expect(reader.textContent).not.toContain("Choose a document");
     const list = element.querySelector("[data-library-list]");
     list.dispatchEvent(new KeyboardEvent("keydown", {key: "ArrowDown"}));
-    list.dispatchEvent(new KeyboardEvent("keydown", {key: "Enter"}));
     await settled();
-    expect(window.location.href).toContain("docs:2");
-    opening([]);
+    await settled();
+    expect(reads).toContain("doc inspect 2");
+});
+
+test("in the window the rows only link to the documents page on that document and nothing is read beside them", async () => {
+    const {element, reads} = mounted();
+    await settled();
+    expect(element.querySelector("[data-library-reader]")).toBeNull();
+    const row = element.querySelector('[data-row="2"]');
+    expect(row.tagName).toBe("A");
+    const link = new URLSearchParams(row.getAttribute("href"));
+    expect(link.get("page")).toBe("documents.page");
+    expect(link.get("doc")).toBe("doc:2");
+    expect(reads.some((line) => line.startsWith("doc inspect"))).toBe(false);
 });
 
 test("rows fall under the age heading of their last edit", () => {

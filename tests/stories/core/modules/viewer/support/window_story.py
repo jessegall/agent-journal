@@ -35,7 +35,7 @@ if getattr(Sample{index}, "modules", None):
 
 
 class WindowStory:
-    """A story's checks of the command lines a viewer window may run for the person at the viewer."""
+    """A story's checks of the command lines a viewer window may run for the user at the viewer."""
 
     def __init__(self, story: Story) -> None:
         self.story = story

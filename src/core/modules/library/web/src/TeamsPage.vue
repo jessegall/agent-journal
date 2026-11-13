@@ -20,7 +20,7 @@ const isAdmin = computed(() => status.value?.role === "admin");
 const tabs = computed(() => [
     {key: "library", label: "Library"},
     {key: "copies", label: "On this journal", count: followed.value.length},
-    ...(isAdmin.value ? [{key: "people", label: "People"}] : []),
+    ...(isAdmin.value ? [{key: "people", label: "Users"}] : []),
 ]);
 
 // a local edit writes no copy, and the status is worked out when it is read, so the copies are read again every few seconds as well as when one changes

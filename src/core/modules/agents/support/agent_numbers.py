@@ -3,7 +3,7 @@ from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import MAIN_NUMBER, MAIN_ROLE, Agent
 from core.modules.agents.support.fold_record import FoldRecord
 
-FIRST_OTHER_NUMBER = 2
+FIRST_NON_MAIN_NUMBER = 2
 
 
 class AgentNumbers:
@@ -21,4 +21,4 @@ class AgentNumbers:
             highest = agents.descending("number").first()
             folded = self.folds.highest_number()
         numbers = [number for number in (None if highest is None else highest.number, folded) if number is not None]
-        return max([FIRST_OTHER_NUMBER, *(number + 1 for number in numbers)])
+        return max([FIRST_NON_MAIN_NUMBER, *(number + 1 for number in numbers)])

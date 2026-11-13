@@ -53,7 +53,7 @@ def test_a_third_party_window_draws_its_own_slot_and_a_press_runs_after_the_prom
 def test_story_5_a_person_holds_a_task_and_an_agent_is_refused(third_party):
     story = third_party.story
     story.expect_success('task make "Fix the cart" --environment main', actor=story.user)
-    story.expect_refusal('task hold 1 --reason "the cart needs a legal look"', "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal('task hold 1 --reason "the cart needs a legal look"', "A user was asked in the dock", actor=story.agent)
     story.expect_success("task hold 1", actor=story.user)
     story.expect_text("task show 1", "state: legal-hold", actor=story.user)
     story.expect_success("task release-hold 1", actor=story.user)

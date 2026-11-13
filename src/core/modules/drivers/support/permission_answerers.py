@@ -7,8 +7,8 @@ from core.modules.drivers.models.permission_request import PermissionRequest
 
 
 class PermissionAnswerers:
-    """Who may answer a request for leave: the main agent of its environment, or a person; the asker never
-    answers its own, and only a person answers one that needs a person."""
+    """Who may answer a request for leave: the main agent of its environment, or a user; the asker never
+    answers its own, and only a user answers one that needs a user."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
@@ -18,4 +18,4 @@ class PermissionAnswerers:
             return
         main = MainAgentFinder.newest(self.queries)
         if request.needs_person or context.actor.id == request.asker_id or main is None or main.id != context.actor.id:
-            raise Refusal(f"only the main agent, or a person where the action needs one, answers request {request.id}")
+            raise Refusal(f"only the main agent, or a user where the action needs one, answers request {request.id}")

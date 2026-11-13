@@ -10,7 +10,7 @@ AGENT_EDITS_WAIT_SETTING = "journal.core.library.agent-edits-wait"
 
 class AgentEdits:
     """Tells whether the last change of a row was made by an agent, read from the event log, and whether the project
-    asks an agent's edit to wait for a person before it goes up to the team."""
+    asks an agent's edit to wait for a user before it goes up to the team."""
 
     def __init__(self, settings: SettingValues, events: EventLog, tables: Tables, actors: ActorTable) -> None:
         self.settings, self.events, self.tables, self.actors = settings, events, tables, actors

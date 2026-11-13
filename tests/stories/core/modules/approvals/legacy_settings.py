@@ -45,7 +45,7 @@ def test_closing_the_original_question_closes_its_pending_card(restored_question
 
 def test_an_agent_cannot_answer_the_old_permission_question(restored_question):
     story, request = restored_question
-    story.expect_refusal("question answer 1 --answer 'Yes, approve'", "a person was asked", actor=story.agent)
+    story.expect_refusal("question answer 1 --answer 'Yes, approve'", "a user was asked", actor=story.agent)
     story.expect_refusal("question answer 1 --answer 'Yes, approve' --skip-guard setting-requests.person-answers",
                          "safety refusal", actor=story.agent)
     saved = story.container.get(Queries).query(ApprovalRequest).find(request.id)

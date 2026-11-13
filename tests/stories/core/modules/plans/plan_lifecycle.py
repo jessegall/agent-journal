@@ -13,7 +13,7 @@ def test_a_plan_is_made_as_a_draft_in_the_callers_environment(new_story):
 
 
 class StartedPlan(StoryFixture):
-    """Plan 1 made, marked ready, approved by a person and started."""
+    """Plan 1 made, marked ready, approved by a user and started."""
 
     parent = UserJoined
 
@@ -108,7 +108,7 @@ def test_a_plan_is_cancelled_by_itself_when_every_task_is_cancelled(new_story):
 def test_a_started_plan_goes_back_for_approval_and_a_person_approves_it_again(new_story):
     story = new_story(fixture=StartedPlan)
     story.expect_success('plan rework 1 --reason "A new phase comes first"', "state: ready", actor=story.agent)
-    story.expect_refusal("plan approve 1 --environment main", "approved by a person on its docked plan card", actor=story.agent)
+    story.expect_refusal("plan approve 1 --environment main", "approved by a user on its docked plan card", actor=story.agent)
     story.expect_success("plan approve 1 --environment main", "state: approved", actor=story.user)
     story.expect_success("plan start 1", "state: started", actor=story.agent)
 

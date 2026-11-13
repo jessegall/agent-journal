@@ -7,7 +7,7 @@ import {Btn, TextInput, WindowRoom, useRunLine, useWindow} from "@journal/window
 const view = useWindow();
 const {data: usage, failure} = view.props.usage;
 const windows = computed(() => usage.value?.windows ?? []);
-// the limits a person sets on the allowance: each counts a window of the plan, fixed or as a budget from now
+// the limits a user sets on the allowance: each counts a window of the plan, fixed or as a budget from now
 const limits = computed(() => view.props.limits?.rows?.value ?? []);
 const program = computed(() => usage.value?.agents?.[0]?.program ?? "claude");
 // the limits a window of the plan can carry: the use within one clock hour is counted on the 5 hour window

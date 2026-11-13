@@ -3,7 +3,7 @@ from tests.stories.suites.coding.modules.workers.free_commits import ASK_MERGE, 
 from tests.stories.suites.coding.modules.workers.support.phase_steps import start_planned_worker, unplanned_group_worker
 from tests.stories.suites.coding.modules.workers.work_units import plan_card, unit_of
 
-"""A unit that cannot finish, and a person who changes it mid-way."""
+"""A unit that cannot finish, and a user who changes it mid-way."""
 
 
 def test_a_task_cancelled_out_of_a_unit_lets_the_rest_finish(new_story, monkeypatch):

@@ -62,7 +62,7 @@ def two_task_worker(running_worker):
 @pytest.fixture
 def blocked_worker(two_task_worker):
     story = two_task_worker
-    story.expect_success('task block 1 --reason "waits on a person"', actor=story.agent)
+    story.expect_success('task block 1 --reason "waits on a user"', actor=story.agent)
     ended(story)
     return story
 
@@ -72,8 +72,8 @@ def test_a_stopped_worker_whose_current_task_is_blocked_is_woken_for_its_next_op
 
 
 def test_a_stopped_worker_with_only_blocked_tasks_is_left_alone(two_task_worker):
-    two_task_worker.expect_success('task block 1 --reason "waits on a person"', actor=two_task_worker.agent)
-    two_task_worker.expect_success('task block 2 --reason "waits on a person"', actor=two_task_worker.agent)
+    two_task_worker.expect_success('task block 1 --reason "waits on a user"', actor=two_task_worker.agent)
+    two_task_worker.expect_success('task block 2 --reason "waits on a user"', actor=two_task_worker.agent)
     ended(two_task_worker)
     waiting_lines_entered(two_task_worker)
     two_task_worker.advance(timedelta(minutes=1))
@@ -82,7 +82,7 @@ def test_a_stopped_worker_with_only_blocked_tasks_is_left_alone(two_task_worker)
 
 
 def test_a_worker_another_agent_stopped_with_open_tasks_stays_stopped(two_task_worker):
-    two_task_worker.expect_success('task block 1 --reason "waits on a person"', actor=two_task_worker.agent)
+    two_task_worker.expect_success('task block 1 --reason "waits on a user"', actor=two_task_worker.agent)
     two_task_worker.expect_success(f"agent end {two_task_worker.worker.id}", actor=two_task_worker.agent)
     two_task_worker.advance(timedelta(minutes=1))
     launcher = retried(two_task_worker)
@@ -102,7 +102,7 @@ def test_a_worker_that_keeps_ending_with_the_merger_on_is_named_to_the_main_agen
 def test_a_worker_that_keeps_ending_with_a_blocked_current_task_names_its_open_task_to_the_main_agent(two_task_worker):
     story = two_task_worker
     set_resume_limit(story.container, 0)
-    story.expect_success('task block 1 --reason "waits on a person"', actor=story.agent)
+    story.expect_success('task block 1 --reason "waits on a user"', actor=story.agent)
     ended(story)
     waiting_lines_entered(story)
     story.advance(timedelta(minutes=1))

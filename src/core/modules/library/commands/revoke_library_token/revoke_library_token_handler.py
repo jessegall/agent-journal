@@ -7,7 +7,7 @@ from core.modules.library.support.library_token import LibraryToken
 
 
 class RevokeLibraryTokenHandler(Handler[RevokeLibraryToken, LibraryToken]):
-    """Asks the server to revoke a token with no write lock held; only a person revokes, and the server allows an
+    """Asks the server to revoke a token with no write lock held; only a user revokes, and the server allows an
     admin or the token's owner."""
 
     command = RevokeLibraryToken

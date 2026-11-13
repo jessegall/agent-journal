@@ -9,7 +9,7 @@ WRONG_HOST_REASON = "this listener answers only its own address"
 
 
 class LocalDoor(Door):
-    """The door of a journal on a person's own machine: a request must name the listener's own address, or
+    """The door of a journal on a user's own machine: a request must name the listener's own address, or
     the address of the tunnel this server holds open. A request that came through the tunnel is from
     outside, so it reads the server's state only with a login."""
 

@@ -23,7 +23,7 @@ const {opened, toggle} = useOpenRow();
             <button type="button" :class="['card', {open: opened === row.id}]" :data-row="row.id" @click="toggle(row)">
                 <span class="card-head"><Icon name="board" class="card-icon" /> Template {{ row.id }}<TimeAgo class="card-age" :at="row.created_at" /></span>
                 <span class="card-title">{{ row.title }}</span>
-                <span class="card-origin">{{ row.module ? `Module: ${row.module}` : "Written by a person" }}</span>
+                <span class="card-origin">{{ row.module ? `Module: ${row.module}` : "Written by a user" }}</span>
                 <span class="card-brief">{{ row.brief }}</span>
                 <template v-if="opened === row.id">
                     <ul class="card-steps">

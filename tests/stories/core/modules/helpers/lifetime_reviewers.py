@@ -57,7 +57,7 @@ def review_job(story, reviewer: Agent, plan: int) -> str:
 
 
 class StartedReviewer(StoryFixture):
-    """A main agent with a person beside it and one plan reviewer whose review of plan 5 still runs."""
+    """A main agent with a user beside it and one plan reviewer whose review of plan 5 still runs."""
 
     parent = UserBuilder
 

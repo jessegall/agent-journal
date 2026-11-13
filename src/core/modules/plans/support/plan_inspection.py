@@ -12,9 +12,9 @@ from core.modules.plans.support.plan_outline import PlanOutline
 
 @dataclass(frozen=True)
 class PlanInspection:
-    """What the plan inspector draws: the plan, its phases and tasks, how far it has come and the phase it is
-    in, a line on how each checkpoint stands, the plans it waits on while blocked, and the average complexity of
-    its scored tasks."""
+    """What the plan inspector draws: the plan, its phases and tasks, how far it has come and the phase
+    it is in, a line on how each checkpoint stands, the plans it waits on while blocked, and the
+    average complexity of its scored tasks."""
 
     plan: Plan
     outline: PlanOutline

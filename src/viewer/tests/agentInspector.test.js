@@ -58,7 +58,7 @@ test("opening an inspector is one read, for that agent alone", async () => {
 test("a running worker says who it is, how it does, what it does now and what it was told", async () => {
     const {element} = opened(WORKER);
     await settle();
-    expect(text(element, ".name")).toBe("Worker Builder · worker 4");
+    expect(text(element, ".name")).toBe("Builder · worker 4");
     expect(text(element, '[data-fact="agent"]')).toBe("Claude Code");
     expect(element.querySelector('[data-fact="agent"]').title).toContain("Session 7c1f0d9e-52a4");
     expect(text(element, '[data-fact="model"]')).toBe("Sonnet 5.5");
@@ -147,7 +147,7 @@ test("the main agent is titled without a number, shows the tasks done of its pla
     expect(lines.some((line) => line.startsWith("worker-worktree"))).toBe(false);
     element.querySelectorAll("[data-agent-fold]")[0].click();
     await settle();
-    expect(text(element, "[data-agent-helper]")).toBe("HelperExplorer · helper 22");
+    expect(text(element, "[data-agent-helper]")).toBe("Explorerhelper 22");
 });
 
 const ENDED = {

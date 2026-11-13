@@ -7,7 +7,8 @@ from core.modules.processes.support.reading.reader_request_blocks import ReaderR
 
 
 class ReaderRequestRule(DriverRule):
-    """Asks an agent for its reader and the main agent for help after failed saves, through the reader request blocks."""
+    """Asks an agent for its reader and the main agent for help after failed saves, through the reader
+    request blocks."""
 
     name = "processes.reader-request"
     hook = HookWildcard.ALL_HOOKS

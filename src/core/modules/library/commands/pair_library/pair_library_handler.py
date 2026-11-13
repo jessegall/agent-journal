@@ -24,7 +24,7 @@ from engine.setting.setting_values import SettingValues
 
 class PairLibraryHandler(Handler[PairLibrary, LibraryConnection]):
     """Asks the server at the typed address who the token belongs to, then keeps the token in the private folder and
-    writes the connection; only a person connects, and nothing is sent before that is checked."""
+    writes the connection; only a user connects, and nothing is sent before that is checked."""
 
     command = PairLibrary
 
@@ -33,7 +33,7 @@ class PairLibraryHandler(Handler[PairLibrary, LibraryConnection]):
 
     def handle(self, command: PairLibrary, context: Context) -> LibraryConnection:
         if context.actor.type is not ActorType.USER:
-            raise Refusal("connection credentials are entered by a person in the Teams window")
+            raise Refusal("connection credentials are entered by a user in the Teams window")
         address_text = command.address or str(self.settings.project_value(ADDRESS_SETTING))
         address = LibraryAddress(address_text).base
         server, user = self.verified(address, command.token, self.opener(command.certificate))

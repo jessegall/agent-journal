@@ -7,14 +7,14 @@ from core.modules.messages.queries.message_query import MessageQuery
 
 
 class UnreadMessageStopRule(DriverRule):
-    """The main agent's stop is refused while a message of the person is unread, naming the oldest."""
+    """The main agent's stop is refused while a message of the user is unread, naming the oldest."""
 
     name = "messages.unread-at-stop"
     hook = HookEventName.STOP
     drivers = ["*"]
     overlay_proof = True
     is_notice = True
-    single_action_refusal = "The main agent's stop is refused while a message of the person is unread, naming the oldest"
+    single_action_refusal = "The main agent's stop is refused while a message of the user is unread, naming the oldest"
 
     def __init__(self, messages: MessageQuery) -> None:
         self.messages = messages

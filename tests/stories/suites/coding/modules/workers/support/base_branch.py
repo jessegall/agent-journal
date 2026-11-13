@@ -4,7 +4,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import G
 
 
 def checkout_of(repository: GitRepository, branch: str) -> Path:
-    """A checkout of the branch beside the repository, where a story commits on it as a person would."""
+    """A checkout of the branch beside the repository, where a story commits on it as a user would."""
     folder = repository.folder.parent / f"checkout-{branch.replace('/', '-')}"
     if not folder.exists():
         repository.git("worktree", "add", str(folder), branch)

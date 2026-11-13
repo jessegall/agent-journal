@@ -129,6 +129,12 @@ test("the panel shows the stored conversation choice of a helper profile, and pi
     expect(saved.slice(saved.indexOf("--occupant"), saved.indexOf("--occupant") + 2)).toEqual(["--occupant", "each-launch"]);
 });
 
+test("a base profile shows a Base badge and the profiles that extend it show none", async () => {
+    await drawn([RESEARCHER, {...BUILDER, name: "journal-worker", is_base: true}, {...BUILDER, name: "journal-worker-medior", is_base: false}]);
+    const badged = [...host.querySelectorAll("[data-profile]")].filter((row) => row.querySelector("[data-profile-base]")).map((row) => row.dataset.profile);
+    expect(badged).toEqual(["journal-worker"]);
+});
+
 test("a worker profile shows no conversation choice and its save names no occupant", async () => {
     const lines = await drawn();
     await open("builder");
@@ -207,12 +213,12 @@ test("a name with a space cannot be saved", async () => {
 });
 
 test("an agent's save is refused, which the page says in words and the panel stays open", async () => {
-    await drawn([RESEARCHER], async () => ({ok: false, error: "only a person saves a profile, since it says what an agent may do"}));
+    await drawn([RESEARCHER], async () => ({ok: false, error: "only a user saves a profile, since it says what an agent may do"}));
     await open("journal-researcher");
     await type(panel().querySelector("#profile-description"), "Changed");
     document.querySelector("[data-profile-save]").click();
     await settle();
-    expect(host.querySelector("[data-profile-failure]").textContent).toContain("only a person saves a profile");
+    expect(host.querySelector("[data-profile-failure]").textContent).toContain("only a user saves a profile");
     expect(panel()).not.toBeNull();
 });
 
@@ -414,10 +420,10 @@ test("a new profile has no skill list yet and says to save first", async () => {
 });
 
 test("a failed save is shown inside the panel, not only behind it", async () => {
-    await drawn([RESEARCHER], async (line) => (line[1] === "save" ? {ok: false, error: "only a person saves a profile"} : {ok: true, value: null}));
+    await drawn([RESEARCHER], async (line) => (line[1] === "save" ? {ok: false, error: "only a user saves a profile"} : {ok: true, value: null}));
     await open("journal-researcher");
     await type(document.querySelector("#profile-title"), "Researcher");
     document.querySelector("[data-profile-save]").click();
     await settle();
-    expect(panel().querySelector("[data-profile-panel-failure]").textContent).toContain("only a person saves a profile");
+    expect(panel().querySelector("[data-profile-panel-failure]").textContent).toContain("only a user saves a profile");
 });

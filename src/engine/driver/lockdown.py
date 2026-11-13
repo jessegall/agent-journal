@@ -8,7 +8,7 @@ from engine.errors.refusal import Refusal
 @dataclass(frozen=True)
 class Lockdown:
     """Whether a program is stopped at a usage limit, until when, the one line the journal gives about it, the
-    reason and the suggestion a refused start gives, and the number of the person's limit that holds it, none
+    reason and the suggestion a refused start gives, and the number of the user's limit that holds it, none
     when the plan's own window does."""
 
     ends_at: Timestamp | None = None

@@ -48,8 +48,8 @@ def test_s54_one_invalid_value_in_an_apply_changes_none_of_the_controls(new_stor
 
 def test_s45_an_agent_cannot_apply_a_preset_or_a_change_and_nothing_changes(new_story):
     story = new_story(fixture=UserBuilder)
-    story.expect_refusal(f"work-settings preset orchestrator --revision {revision(story, story.agent)} --environment main --reason 'a story asks'", "A person was asked", actor=story.agent)
-    story.expect_refusal(f"work-settings apply --revision {revision(story, story.agent)} --environment main {AUTO}=off --reason 'a story asks'", "A person was asked", actor=story.agent)
+    story.expect_refusal(f"work-settings preset orchestrator --revision {revision(story, story.agent)} --environment main --reason 'a story asks'", "A user was asked", actor=story.agent)
+    story.expect_refusal(f"work-settings apply --revision {revision(story, story.agent)} --environment main {AUTO}=off --reason 'a story asks'", "A user was asked", actor=story.agent)
     story.expect_text("work-settings show --environment main", "workflow: builder", actor=story.agent)
 
 

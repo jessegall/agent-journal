@@ -17,13 +17,13 @@ def deleted(retired_at: datetime | None) -> SimpleNamespace:
     return SimpleNamespace(row=SimpleNamespace(role="helper", number=4, retired_at=retired_at))
 
 
-@pytest.mark.parametrize("actor", [PERSON, MAIN_AGENT, Actor.core()], ids=["a person", "an agent", "the journal"])
+@pytest.mark.parametrize("actor", [PERSON, MAIN_AGENT, Actor.core()], ids=["a user", "an agent", "the journal"])
 def test_the_delete_of_a_retired_agent_is_refused_for_everyone(actor):
     with pytest.raises(Refusal, match="helper 4 is retired, and its record stays"):
         RetiredDeleteGuard().check(deleted(RETIRED_AT), SimpleNamespace(actor=actor))
 
 
-@pytest.mark.parametrize("actor", [PERSON, MAIN_AGENT], ids=["a person", "an agent"])
+@pytest.mark.parametrize("actor", [PERSON, MAIN_AGENT], ids=["a user", "an agent"])
 def test_the_delete_of_an_agent_that_is_not_retired_is_refused_naming_the_retirement(actor):
     with pytest.raises(Refusal) as refused:
         RetiredDeleteGuard().check(deleted(None), SimpleNamespace(actor=actor))

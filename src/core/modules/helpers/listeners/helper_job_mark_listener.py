@@ -12,9 +12,10 @@ from core.modules.agents.support.agent_label import AgentLabel
 
 
 class HelperJobMarkListener(MarkListener[Changed[HelperJob]]):
-    """A helper's job shows as one mark in the chat with its instruction, which ends in place with what the helper
-    returned, and a click opens the helper once it has started. The first job of a helper says Started; a job sent
-    to a running helper says Steered, and one sent to a helper that had ended says Sent a job."""
+    """A helper's job shows as one mark in the chat with its instruction, which ends in place with what the
+    helper returned, and a click opens the helper once it has started. The first job of a helper says
+    Started; a job sent to a running helper says Steered, and one sent to a helper that had ended says Sent
+    a job."""
 
     name = "helpers.job-mark"
     disabled_scopes = [ActorScope]

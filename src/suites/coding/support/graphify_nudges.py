@@ -4,8 +4,8 @@ from engine.enums.nudge_type import NudgeType
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
 
 NUDGE_TOOL_USES = 9  # the nine tool uses between two nudges make it the tenth search after one in a row of searches
-USE_GRAPHIFY = NudgeDeclaration("tools.use_graphify", NudgeType.STEERING, "{count} searches without Graphify: graphify query 2 to 4 code names, then explain one",
+USE_GRAPHIFY = NudgeDeclaration("tools.use_graphify", NudgeType.STEERING, "{count} searches without Graphify: run graphify query with 2 to 4 code names, then explain one",
                                 interval=Interval(ToolUseSpan(NUDGE_TOOL_USES)), turn_limited=False)
-GRAPHIFY_FIRST = NudgeDeclaration("tools.graphify_first", NudgeType.REFUSAL, "{count} searches without Graphify: graphify query 2 to 4 code names, then explain one, first", turn_limited=False)
+GRAPHIFY_FIRST = NudgeDeclaration("tools.graphify_first", NudgeType.REFUSAL, "{count} searches without Graphify: first run graphify query with 2 to 4 code names, then explain one", turn_limited=False)
 
 TOOL_NUDGES = [USE_GRAPHIFY, GRAPHIFY_FIRST]

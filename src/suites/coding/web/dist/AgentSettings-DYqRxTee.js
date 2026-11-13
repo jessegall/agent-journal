@@ -414,7 +414,7 @@ const bt = {
                 "data-agent-settings-work": ""
               }, {
                 before: h(() => [
-                  e.nothingStarts ? (u(), $("p", _t, "With Auto off and no workers, nothing starts the work: a person starts tasks or turns one of them on.")) : A("", !0)
+                  e.nothingStarts ? (u(), $("p", _t, "With Auto off and no workers, nothing starts the work: a user starts tasks or turns one of them on.")) : A("", !0)
                 ]),
                 _: 1
               }, 8, ["nodes", "draft", "read-only", "found"])) : A("", !0)
@@ -535,7 +535,7 @@ const bt = {
                   onChoose: se
                 }, null, 8, ["active", "answer"])
               ]),
-              s(t).readOnly ? (u(), $("p", qt, "Only a person can change these settings. You can read every value, and ask a person for a change.")) : A("", !0),
+              s(t).readOnly ? (u(), $("p", qt, "Only a user can change these settings. You can read every value, and ask a user for a change.")) : A("", !0),
               k(It, {
                 tab: o.value,
                 active: f.value,
@@ -575,7 +575,7 @@ const bt = {
       _: 1
     }));
   }
-}, Ht = /* @__PURE__ */ q(Wt, [["__scopeId", "data-v-5fbde76f"]]);
+}, Ht = /* @__PURE__ */ q(Wt, [["__scopeId", "data-v-d342f429"]]);
 export {
   Ht as A
 };

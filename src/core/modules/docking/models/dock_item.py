@@ -13,7 +13,7 @@ from core.modules.docking.models.lifecycles.dock_item_lifecycle import DockItemL
 @dataclass(frozen=True, kw_only=True)
 class DockItem(Prunable, SessionBound, Model):
     """One item docked above the chat: an item of a type a module declared, about one row it points at and
-    never copies, kept by a person or leaving by itself once its row ends."""
+    never copies, kept by a user or leaving by itself once its row ends."""
 
     kept_rows = 0
 

@@ -15,7 +15,7 @@ class ButtonCommandCheck:
                 continue
             sharing = sorted({peer.module for peer in peers if peer.line == button.line and peer.module != button.module})
             if button.line in PERSON_LINES:
-                problems.append(f"{button.module} has a button that runs {button.line}, which only a person runs")
+                problems.append(f"{button.module} has a button that runs {button.line}, which only a user runs")
             if button.line in windows:
                 problems.append(f"{button.module} has a button that runs {button.line}, which the journal's own windows run with no permission")
             problems += [f"{button.module} has a button that runs {button.line}, which {peer} also runs" for peer in sharing]

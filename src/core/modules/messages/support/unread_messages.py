@@ -9,11 +9,11 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
 
-UNREAD_PEOPLE_REASON = "every unread message of a person is shared out to the agents it addresses"
+UNREAD_PEOPLE_REASON = "every unread message of a user is shared out to the agents it addresses"
 
 
 class UnreadMessages(KeptRowChanges[Message]):
-    """Shares unread person messages in each environment and selects their recipients."""
+    """Shares unread user messages in each environment and selects their recipients."""
 
     def __init__(self, queries: Queries, kept: KeptRows, agents: AgentRows) -> None:
         self.queries, self.kept, self.agents = queries, kept, agents

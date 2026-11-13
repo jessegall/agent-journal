@@ -7,7 +7,7 @@ from core.modules.plans.models.plan import Plan
 
 @dataclass(frozen=True)
 class ApprovePlan(MoveCommand[Plan]):
-    """Approves a plan with an optional message from the person approving it."""
+    """Approves a plan with an optional message from the user approving it."""
 
     move = PlanLifecycle.approve
     message: str = ""

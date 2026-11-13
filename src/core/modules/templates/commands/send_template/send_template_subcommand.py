@@ -9,7 +9,7 @@ from core.modules.templates.commands.send_template.send_template import SendTemp
 
 
 class SendTemplateSubcommand(Subcommand[SendTemplate, Message]):
-    """Sends template send <n> --on=<type:id> --set=<name>=<value> as a person's comment."""
+    """Sends template send <n> --on=<type:id> --set=<name>=<value> as a user's comment."""
 
     cli_name = "template"
     name = "send"

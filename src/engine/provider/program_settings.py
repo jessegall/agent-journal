@@ -21,7 +21,7 @@ class SettingsFile:
 @dataclass(frozen=True)
 class ProgramSettings:
     """The files the journal writes for one agent program at every start, the links its folder keeps to the
-    person's data, and the person's own files it backs up but never reads for a launch, with the bytes of
+    person's data, and the user's own files it backs up but never reads for a launch, with the bytes of
     those it read to build these settings, so a backup does not read them again, and those it could not read
     or parse."""
 

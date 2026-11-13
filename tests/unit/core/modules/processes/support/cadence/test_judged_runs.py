@@ -30,6 +30,6 @@ def part(text: str, category: CommandCategory) -> ProcessPart:
     (BUILD_RUN, [part("cat notes", CommandCategory.READ)], False),
     (BUILD_RUN, [part("sed -i s/a/b/ notes", CommandCategory.EDIT)], False),
     (BUILD_RUN, [part("journal task list", CommandCategory.JOURNAL)], False),
-], ids=["build", "test run", "python program", "queued", "not started", "plugin run", "started by a person", "search", "read", "edit", "journal"])
+], ids=["build", "test run", "python program", "queued", "not started", "plugin run", "started by a user", "search", "read", "edit", "journal"])
 def test_which_runs_are_judged(process, parts, judged):
     assert JudgedRuns.is_judged(process, parts) is judged

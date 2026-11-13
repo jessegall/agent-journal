@@ -14,9 +14,9 @@ PANIC_PATH = re.compile(r"\.journal/panic(?![\w.-])")
 
 
 class PanicFileRule(DriverRule):
-    """An agent may write the panic file only after hooks went through unchecked because the server did not answer
-    them, or while its program is stopped at a usage limit; otherwise the file is not an agent's to write, and the
-    refusal has no skip."""
+    """An agent may write the panic file only after hooks went through unchecked because the server did not
+    answer them, or while its program is stopped at a usage limit; otherwise the file is not an agent's to
+    write, and the refusal has no skip."""
 
     name = "drivers.panic-file"
     hook = HookEventName.PRE_TOOL_USE

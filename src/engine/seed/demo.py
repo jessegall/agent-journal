@@ -15,7 +15,7 @@ DEMO_ENVIRONMENT = "demo"
 
 
 class Demo:
-    """What a seeder is given: the lines it may run, as a person or an agent would type them, the people and
+    """What a seeder is given: the lines it may run, as a user or an agent would type them, the people and
     rows the seeders before it kept under a name, and the container for a command that has no line."""
 
     def __init__(self, container: Container, environment: str = DEMO_ENVIRONMENT) -> None:

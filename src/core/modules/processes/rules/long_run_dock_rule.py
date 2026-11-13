@@ -31,9 +31,9 @@ RUNS_CONSIDERED = 2
 
 
 class LongRunDockRule(DriverRule):
-    """Docks visible runs after the dock seconds of running, time in the queue left out, and asks for a name when a
-    docked run has none. It looks at the two oldest runs not yet docked in a hook, so a hook that finds many runs
-    due costs a few rows and docks them over the next hooks."""
+    """Docks visible runs after the dock seconds of running, time in the queue left out, and asks for a
+    name when a docked run has none. It looks at the two oldest runs not yet docked in a hook, so a
+    hook that finds many runs due costs a few rows and docks them over the next hooks."""
 
     name = "processes.long-run-dock"
     hook = HookWildcard.ALL_HOOKS

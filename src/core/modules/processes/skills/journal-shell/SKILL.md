@@ -26,7 +26,7 @@ Every shell command you run goes through the journal's runner.
 
 ## Readers
 
-A main agent, a person or a module manages readers. An agent with its own open reader request may draft and
+A main agent, a user or a module manages readers. An agent with its own open reader request may draft and
 save a reader matching that request, through the same checks and output proof. It cannot remove readers,
 choose defaults or skip a request.
 
@@ -55,7 +55,7 @@ When an agent receives a reader request:
    that field in the printed `journal reader add` line and run it. A save always uses the normal writer
    check and output proof. `--save` refuses an incomplete draft.
 3. If the command needs no reader, run `journal reader-request waive <request> --reason "<why>"`.
-   Only the main agent, a person or a module may skip a request.
+   Only the main agent, a user or a module may skip a request.
 
 A command whose output no reader can read, such as one that only redraws a progress bar, is marked with
 `journal reader unreadable "<leading words>" --reason "<why, in at least three words>"`: from then on no
@@ -113,7 +113,7 @@ and the run is stopped after the third one if it still prints nothing.
 
 ## A stopped run keeps its output
 
-A run stopped part way, by a person, by you or by the journal, keeps what it printed, and you are told so. Read it
+A run stopped part way, by a user, by you or by the journal, keeps what it printed, and you are told so. Read it
 for the failures it named before you start the run again, and rerun only what is left: do not start the whole run
 over. A run killed before its summary names only what it printed, so have a test run print each failure by name as
 it happens (for pytest, `-rf` or `-v`), and a stopped run still names them.

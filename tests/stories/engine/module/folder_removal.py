@@ -67,7 +67,7 @@ def test_a_dependency_refusal_keeps_the_module_and_its_folder(installed_notes, s
 @pytest.mark.parametrize("variables", [{"CLAUDE_CODE_SESSION_ID": "unknown"}, {"USER": "Ada", "JOURNAL_AGENT_SESSION": "s-1"}])
 def test_only_a_person_removes_a_module(installed_notes, source_folder, variables):
     code, text = execute_removal(installed_notes, variables)
-    expected = "A person was asked in the dock" if "JOURNAL_AGENT_SESSION" in variables else "module removal requires a person"
+    expected = "A user was asked in the dock" if "JOURNAL_AGENT_SESSION" in variables else "module removal requires a user"
     installed_notes.expect_rows(code == 1, expected in text,
                                (installed_notes.home.modules_folder / source_folder.name).is_dir())
 
@@ -75,7 +75,7 @@ def test_only_a_person_removes_a_module(installed_notes, source_folder, variable
 def test_a_person_accepts_the_agents_module_removal_from_the_dock(installed_notes, source_folder):
     story = installed_notes
     code, text = execute_removal(story, {"JOURNAL_AGENT_SESSION": "s-1"})
-    story.expect_rows(code == 1, "A person was asked in the dock" in text)
+    story.expect_rows(code == 1, "A user was asked in the dock" in text)
     request = story.container.get(Queries).query(ApprovalRequest).first()
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(request.id)])

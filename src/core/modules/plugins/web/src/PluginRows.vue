@@ -140,8 +140,15 @@ async function showSettings(row) {
     settings.value = prop.failure.value ? [] : prop.data.value.settings;
 }
 
-async function configure(setting, value) {
-    if (await run(["plugin", "configure", settingsOf.value, setting.key, value])) await showSettings(openedPlugin.value);
+// the changes of the settings dialog, saved one after another; the dialog is told what went wrong, and the settings are read again either way
+async function saveSettings(changes) {
+    let answer = {ok: true};
+    for (const change of changes) {
+        answer = await context.run(["plugin", "configure", settingsOf.value, change.key, change.text]);
+        if (!answer.ok) break;
+    }
+    await showSettings(openedPlugin.value);
+    return answer;
 }
 
 const record = ref(null);
@@ -208,7 +215,7 @@ async function showRecord(row) {
             </div>
         </div>
         <template v-if="openedPlugin">
-            <PluginSettingsDialog :plugin="openedPlugin" :description="descriptionOf(openedPlugin)" :settings="settings" @close="settingsOf = ''" @configure="configure" @toggle="switchOver(openedPlugin)" />
+            <PluginSettingsDialog :plugin="openedPlugin" :description="descriptionOf(openedPlugin)" :settings="settings" @close="settingsOf = ''" :save="saveSettings" @toggle="switchOver(openedPlugin)" />
         </template>
         <template v-if="making">
             <PluginMakeDialog v-model:repository="repository" v-model:wish="wish" @close="making = false" @guide="readGuide" @ask="askTheAgent" />

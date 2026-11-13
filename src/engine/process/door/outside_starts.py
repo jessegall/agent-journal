@@ -8,7 +8,7 @@ OUTSIDE_STARTS = (
     OutsideStart("src/install/hook/hook_switch.py", "the installer checks the hook program it is about to switch to, inside the pause"),
     OutsideStart("src/server/handover/successor_start.py", "starts the next server during a handover, inside the pause the door is held by"),
     OutsideStart("src/engine/serving/launcher_replacement.py", "replaces the launcher during an update, inside the pause"),
-    OutsideStart("src/engine/cli/shell_handoff.py", "hands the person's terminal to a shell line of their own, outside any server request"),
+    OutsideStart("src/engine/cli/shell_handoff.py", "hands the user's terminal to a shell line of their own, outside any server request"),
     OutsideStart("src/engine/caller/process_table.py", "reads ps to find which agent a request comes from, before the request has a scope or an owner to give a row to"),
     OutsideStart("src/engine/process/leftover_process.py", "reads ps for a process group left by a server that stopped, at start before the queue runs"),
     OutsideStart("src/engine/sandbox/shell_sandbox.py", "checks once whether the sandbox program works, while the journal is installed or started"),

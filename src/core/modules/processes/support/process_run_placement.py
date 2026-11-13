@@ -21,10 +21,11 @@ FIRST_PART = 0
 
 
 class ProcessRunPlacement(RunPlacement):
-    """Admits a run of the journal's own through the one door. A merge takes the one merge place, so two merges
-    never run at once, and keeps a process row with its output, of the agent it works for or of the environment's
-    main agent. Any other run is appended to the request log at its end, so it costs no read and no write; a tick
-    writes the log's rows. With no environment to own it a run keeps no row."""
+    """Admits a run of the journal's own through the one door. A merge takes the one merge place, so
+    two merges never run at once, and keeps a process row with its output, of the agent it works for
+    or of the environment's main agent. Any other run is appended to the request log at its end, so
+    it costs no read and no write; a tick writes the log's rows. With no environment to own it a run
+    keeps no row."""
 
     def __init__(self, database: Database, log: RequestLog, clock: Clock, bus: Bus, agents: AgentRows, outputs: OutputFolder, merges: MergeRunLock) -> None:
         self.database, self.log, self.clock, self.bus, self.agents, self.outputs, self.merges = database, log, clock, bus, agents, outputs, merges

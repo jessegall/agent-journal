@@ -2,7 +2,7 @@ from enum import StrEnum
 
 
 class CopyProgress(StrEnum):
-    """Where a copy stands for a person: in step, a change on its way, paused for a run, or the reason it is not in
+    """Where a copy stands for a user: in step, a change on its way, paused for a run, or the reason it is not in
     step. The reasons use the names of the stored states."""
 
     SYNCED = "synced"

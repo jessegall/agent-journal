@@ -1,7 +1,7 @@
 from core.modules.drivers.support.driver_nudges import JOURNAL_STARTED
 from engine.serving.server_files import ServerFiles
 from server.work.booting_work import BootingWork
-from core.modules.drivers.ticks.held_session_wake import HeldSessionWake
+from core.modules.drivers.ticks.held_session_wake import ReleasedSessionWake
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.support.fixtures import MainEnvironment
 
@@ -36,8 +36,8 @@ def test_once_the_server_is_ready_a_worker_whose_hook_the_journal_held_is_woken(
     story = new_story(fixture=BuilderStarted)
     worker_id = story.new_row_id("agent start s-9 claude worker --environment main")
     ServerFiles(story.home).hold_session("s-9")
-    HeldSessionWake()(story.container)
-    HeldSessionWake()(story.container)
+    ReleasedSessionWake()(story.container)
+    ReleasedSessionWake()(story.container)
     story.run_listeners()
     held = ServerFiles(story.home).held_sessions()
     story.expect_rows(LINE in story.run(f"agent-line list --agent {worker_id}").output_text, not held.path.exists(), not held.taken_path.exists())
@@ -49,12 +49,12 @@ def test_a_session_held_while_the_held_sessions_are_moved_aside_is_woken_on_the_
     late_id = story.new_row_id("agent start s-late claude worker --environment main")
     files = ServerFiles(story.home)
     files.hold_session("s-early")
-    HeldSessionWake()(story.container)
+    ReleasedSessionWake()(story.container)
     files.hold_session("s-late")
-    HeldSessionWake()(story.container)
+    ReleasedSessionWake()(story.container)
     story.run_listeners()
     story.expect_rows(LINE in story.run(f"agent-line list --agent {early_id}").output_text, LINE not in story.run(f"agent-line list --agent {late_id}").output_text)
-    HeldSessionWake()(story.container)
-    HeldSessionWake()(story.container)
+    ReleasedSessionWake()(story.container)
+    ReleasedSessionWake()(story.container)
     story.run_listeners()
     story.expect_text(f"agent-line list --agent {late_id}", LINE)

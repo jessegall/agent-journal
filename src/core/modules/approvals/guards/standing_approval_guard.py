@@ -7,7 +7,7 @@ from core.modules.approvals.models.standing_approval import StandingApproval
 
 
 class StandingApprovalGuard(Guard[Changed[StandingApproval]]):
-    """A standing yes is a person's: an agent neither makes nor removes one."""
+    """A standing yes is a user's: an agent neither makes nor removes one."""
 
     name = "approvals.person-stands"
     is_safety = True

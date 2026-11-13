@@ -9,7 +9,7 @@ TRUSTED_KEY = "hasTrustDialogAccepted"
 
 
 class ClaudeTrust:
-    """Claude Code's record of the folders the person trusts, in its state file: a folder is marked trusted
+    """Claude Code's record of the folders the user trusts, in its state file: a folder is marked trusted
     before Claude Code starts there, so its trust question never stops a launch."""
 
     def __init__(self, state_file: Path) -> None:

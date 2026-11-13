@@ -43,7 +43,6 @@ class ProcessCardSubcommand(ReadSubcommand[ProcessCard]):
                            self.reading_text(process.id, visible), words, self.marked_words(words))
 
     def marked_words(self, words: str) -> str:
-        """The leading words of the standing mark that covers the run's command, empty when none does."""
         mark = self.marks.marked(words) if words else None
         return mark.words if mark is not None else ""
 

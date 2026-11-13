@@ -49,9 +49,10 @@ LOG_LINE_CHARACTERS = 240
 
 
 class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
-    """Keeps the answers of a hook's rules in one transaction: their history and the hook call,
-    logs the rules that refused a stop in one short line, gives the agent its waiting lines, and runs each command the rules returned alone, so a refused one rolls
-    back by itself; a tick's lines wait for the agent's next hook."""
+    """Keeps the answers of a hook's rules in one transaction: their history and the hook call, logs the rules
+    that refused a stop in one short line, gives the agent its waiting lines, and runs each command the
+    rules returned alone, so a refused one rolls back by itself; a tick's lines wait for the agent's next
+    hook."""
 
     command = RecordHookCall
     runs_once = True

@@ -17,7 +17,7 @@ from core.modules.templates.support.template_targets import TemplateTargets
 
 
 class SendTemplateHandler(Handler[SendTemplate, Message]):
-    """Checks a person's template request and sends it as a comment linked to the target row."""
+    """Checks a user's template request and sends it as a comment linked to the target row."""
 
     command = SendTemplate
 

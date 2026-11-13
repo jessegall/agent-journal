@@ -17,7 +17,7 @@ ADDRESS_PREFIXES = ("http://", "https://")
 
 
 class AddServerHandler(Handler[AddServer, McpServer]):
-    """Saves a server named by the person and writes every installed one into the agent programs' configs: an
+    """Saves a server named by the user and writes every installed one into the agent programs' configs: an
     address is reached over http, anything else is the command that starts it."""
 
     command = AddServer
@@ -26,7 +26,7 @@ class AddServerHandler(Handler[AddServer, McpServer]):
         self.servers, self.repository, self.configs = servers, repository, configs
 
     def handle(self, command: AddServer, context: Context) -> McpServer:
-        PersonCheck.require(context, "only a person adds a server, since its command runs outside every hook")
+        PersonCheck.require(context, "only a user adds a server, since its command runs outside every hook")
         if not SERVER_NAME.fullmatch(command.name):
             raise Refusal(f"{command.name} cannot name a server", "use lowercase letters, digits, dashes and underscores")
         if self.servers.filter(name=command.name).exists():

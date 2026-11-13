@@ -20,7 +20,7 @@ REFERENCING_TABLES = Statement("SELECT DISTINCT tables.name FROM sqlite_master A
 
 
 class ConstraintRefusals:
-    """Converts a database rule violation into a refusal a person can understand."""
+    """Converts a database rule violation into a refusal a user can understand."""
 
     def __init__(self, database: Database) -> None:
         self.database = database

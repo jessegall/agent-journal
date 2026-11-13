@@ -65,7 +65,7 @@ def test_a_template_with_no_targets_fits_a_row_without_an_environment(new_story)
 @pytest.mark.parametrize("flags", ["", "--skip-guard core.lifecycle"])
 def test_an_agent_is_refused_before_a_template_is_sent(new_story, flags):
     story = new_story(fixture=SendingTemplates)
-    story.expect_refusal(f"{CRITIQUE} {flags}", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(f"{CRITIQUE} {flags}", "A user was asked in the dock", actor=story.agent)
     expect_empty_messages(story)
 
 

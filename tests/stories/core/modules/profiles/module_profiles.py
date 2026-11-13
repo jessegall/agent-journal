@@ -45,10 +45,11 @@ def test_shipped_profiles_have_registered_types_and_the_plan_reviewer_is_each_la
     registry = Registry.read(story.container.get(Database))
     for name in ("journal-researcher", "journal-planner", "journal-debugger", "journal-plan-reviewer", "journal-code-reviewer"):
         story.expect_rows(registry.profile(name).profile.agent_type == "helper")
-    for name in ("journal-senior", "journal-medior", "journal-worker"):
+    for name in ("journal-worker-senior", "journal-worker-medior", "journal-worker"):
         story.expect_rows(registry.profile(name).profile.agent_type == "worker")
     story.expect_rows(registry.profile("journal-plan-reviewer").profile.occupant is Occupant.LAUNCH_ROTATION,
-                      registry.helper_type_book().find("worker").default_profile == "journal-worker")
+                      registry.helper_type_book().find("worker").default_profile == "journal-worker-medior",
+                      registry.profile("journal-worker").profile.is_base)
 
 
 def test_the_shipped_code_reviewer_reads_the_diff_itself_and_files_critical_tasks(new_story):
@@ -60,7 +61,7 @@ def test_the_shipped_code_reviewer_reads_the_diff_itself_and_files_critical_task
 def test_the_planner_profile_says_a_plan_is_written_thoroughly(new_story):
     story = new_story()
     planner = Registry.read(story.container.get(Database)).profile("journal-planner").profile.body
-    story.expect_rows("one task per step a person could check" in planner, "plans.one-task-phase" in planner, "you may run journal plan edit" in planner,
+    story.expect_rows("one task per step a user could check" in planner, "plans.one-task-phase" in planner, "you may run journal plan edit" in planner,
                       "skill journal-planning" in planner, "skill journal-plan-review-applying" in planner)
 
 

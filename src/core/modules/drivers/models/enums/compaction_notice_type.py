@@ -2,7 +2,7 @@ from enum import StrEnum
 
 
 class CompactionNoticeType(StrEnum):
-    """What a person is told about a compaction that went wrong: its line never started, no context size was
+    """What a user is told about a compaction that went wrong: its line never started, no context size was
     read after it ended, it left the context at the limit or over it, or it failed."""
 
     UNSTARTED = "unstarted"

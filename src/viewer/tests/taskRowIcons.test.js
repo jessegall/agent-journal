@@ -87,7 +87,7 @@ test("a click on a cell does not open the task, and the priority menu opens on a
     expect(element.querySelector('[data-row="7"]').classList.contains("selected")).toBe(false);
 });
 
-test("a task assigned to a person shows the people icon with the person's name and opens nothing", async () => {
+test("a task assigned to a user shows the people icon with the user's name and opens nothing", async () => {
     const element = await drawn([task({id: 1, state: "started", assigned_actor_id: 4, assigned_name: "Ada", assigned_type: "user"}), task({id: 2, assigned_actor_id: 4, assigned_name: "Ada", assigned_type: "user"})]);
     const held = cell(element, 1, "data-task-person");
     const queued = cell(element, 2, "data-task-person");

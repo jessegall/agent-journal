@@ -42,13 +42,13 @@ def test_a_trigger_the_user_makes_is_on_at_once(new_story):
 def test_an_agent_cannot_enable_a_trigger(new_story):
     story = new_story(fixture=UserBuilder)
     story.run(TRIGGER_LINE, actor=story.agent)
-    story.expect_refusal("trigger enable 1 --reason needed", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal("trigger enable 1 --reason needed", "A user was asked in the dock", actor=story.agent)
 
 
 def test_an_agent_cannot_change_what_an_enabled_trigger_does(new_story):
     story = new_story(fixture=UserBuilder)
     story.run(TRIGGER_LINE, actor=story.user)
-    story.expect_refusal('trigger edit 1 --text "Do something else" --reason needed', "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal('trigger edit 1 --text "Do something else" --reason needed', "A user was asked in the dock", actor=story.agent)
 
 
 def test_the_setting_lets_an_agents_trigger_act_at_once(new_story):
@@ -82,5 +82,5 @@ def expect_prompt_lines(story, expected) -> None:
 def test_another_agent_that_runs_the_command_of_a_docked_card_is_refused_and_makes_no_second_approval(new_story):
     story = new_story(fixture=AgentTriggerMade)
     helper = Actor(story.new_row_id(f"agent start helper-1 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
-    story.expect_refusal("trigger enable 1 --reason needed", "approval 1 already asks a person for this on its docked card", actor=helper)
+    story.expect_refusal("trigger enable 1 --reason needed", "approval 1 already asks a user for this on its docked card", actor=helper)
     story.expect_absent("approval list", "approval 2", actor=story.user)

@@ -164,8 +164,6 @@ class GraphifyTool(ToolRunner):
 
     @staticmethod
     def copy_graph(source: Path, target: Path) -> None:
-        """Copies the graph files at the top of the source's graph folder, such as graph.json, and none of its folders:
-        the cache and the dated snapshots stay with the source, so a new worktree takes no copy of them."""
         graph = GraphFiles(source).output
         if not graph.is_dir():
             return

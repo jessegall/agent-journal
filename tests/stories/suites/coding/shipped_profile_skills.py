@@ -34,7 +34,7 @@ def given(story, name):
 
 
 @pytest.mark.parametrize("name, has, lacks", [
-    ("journal-worker", WORKERS, PLANNING), ("journal-medior", WORKERS, PLANNING), ("journal-senior", WORKERS, PLANNING),
+    ("journal-worker", WORKERS, PLANNING), ("journal-worker-medior", WORKERS, PLANNING), ("journal-worker-senior", WORKERS, PLANNING),
     ("journal-planner", PLANNING, WORKERS), ("journal-plan-reviewer", PLANNING, WORKERS),
     ("journal-functional-designer", DESIGN, PLANNING), ("journal-merger", WORKERS, PLANNING),
     ("journal-researcher", "journal-helpers", PLANNING), ("journal-debugger", "journal-helpers", WORKERS),

@@ -140,4 +140,4 @@ def test_two_modules_cannot_share_a_button_command():
 @pytest.mark.parametrize("line", ["window allow", "window trust", "setting make", "setting edit", "setting delete", "viewer-layout save",
                                  "program trust", "plugin install", "update install", "secret allow", "secret fill", "phone pair"])
 def test_a_third_party_cannot_run_a_person_only_command(line):
-    assert any("only a person" in problem for problem in problems(replace(BUTTON, runs=line)))
+    assert any("only a user" in problem for problem in problems(replace(BUTTON, runs=line)))

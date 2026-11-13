@@ -5,11 +5,12 @@ CADENCE_FILE = "cadence"
 
 
 class CadenceLog:
-    """The times a run's output last grew, kept in its folder with the size seen and the time of the last look,
-    so the cadence of a run is judged from what it printed and a break in the watching is not read as a pause:
-    after a break the times start again and the time the watching resumed is kept, so the run is judged from then.
-    One line: the size, the time of the last look, the time the watching resumed (0 when it never broke), then up
-    to five growth times; a damaged line reads as empty."""
+    """The times a run's output last grew, kept in its folder with the size seen and the time of the
+    last look, so the cadence of a run is judged from what it printed and a break in the watching is
+    not read as a pause: after a break the times start again and the time the watching resumed is
+    kept, so the run is judged from then. One line: the size, the time of the last look, the time
+    the watching resumed (0 when it never broke), then up to five growth times; a damaged line reads
+    as empty."""
 
     def __init__(self, folder: OutputFolder) -> None:
         self.folder = folder

@@ -7,7 +7,7 @@ from core.modules.suggestions.models.enums.suggestion_answer import SuggestionAn
 
 @dataclass(frozen=True, kw_only=True)
 class Suggestion(EnvironmentScoped, Model):
-    """Something the journal offers the person once, by its key, in the environment it was offered in, with
+    """Something the journal offers the user once, by its key, in the environment it was offered in, with
     their answer once they give one."""
 
     model_name = "suggestion"

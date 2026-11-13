@@ -102,7 +102,7 @@ def test_update_notification_names_the_explicit_selection_command(scenario):
     scenario.person("messages.chat", "message", "edit", "1", "--text", "Use a different rounding boundary")
     scenario.story.run_listeners()
     lines = "\n".join(scenario.story.hook("s-1", HookSamples.prompt("go on")).lines)
-    scenario.story.expect_rows("message:1 updated" in lines, detail=lines)
+    scenario.story.expect_rows("message:1 was updated: read it again" in lines, detail=lines)
 
 
 @pytest.mark.parametrize("invalid", ["agent-message", "other-recipient", "other-author"])

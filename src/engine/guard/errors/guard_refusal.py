@@ -4,7 +4,7 @@ SKIP_ALLOWED_CASE = "only if this refusal is wrong for the case in hand, never t
 
 
 class GuardRefusal(Refusal):
-    """A refusal from a guard, naming the guard and the flag that lets a person pass it."""
+    """A refusal from a guard, naming the guard and the flag that lets a user pass it."""
 
     def __init__(self, guard: str, refusal: Refusal, skip_flag: str) -> None:
         super().__init__(refusal.reason, refusal.suggestion)

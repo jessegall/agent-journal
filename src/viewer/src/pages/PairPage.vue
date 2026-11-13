@@ -3,7 +3,7 @@ import {transport} from "../api/transport.js";
 import {onMounted, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 
-// the page a phone opens to pair: a link's code pairs at once, otherwise the person types the code the computer shows
+// the page a phone opens to pair: a link's code pairs at once, otherwise the user types the code the computer shows
 const props = defineProps({
     code: {type: String, default: ""},
     opened: {type: Function, required: true},

@@ -82,8 +82,6 @@ class ReaderRequests:
             self.open_request(process, spec, reason, process.id, context)
 
     def reason(self, process: Process, spec: PartSpec, reader: Reader | None, scope: ReaderSampleScope) -> str:
-        """Why a reader is asked for: a count the suite needs and no reader gives, or, when the suite asks beyond
-        counts, a missing or poor reader; nothing when no reader is to be asked for."""
         part = ProcessPart(process_id=process.id, position=0, text=spec.text, program=spec.program, command=spec.command, piped=spec.piped, category=spec.category)
         if self.counts.count_missing(process, part):
             return COUNT_MISSING_REASON.format(command=spec.command or spec.text)

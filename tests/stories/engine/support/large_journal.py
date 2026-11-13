@@ -20,7 +20,7 @@ EDIT = HookSamples.edit("src/cart.py")
 
 
 class LargeJournal(StoryFixture):
-    """A journal with a main agent, a person, a helper and a worker, a few rows of many types made by
+    """A journal with a main agent, a user, a helper and a worker, a few rows of many types made by
     commands and hooks, and then every table copied onto itself until it has more rows than any read may
     load at once. The rows are made up here; none comes from a real journal."""
 

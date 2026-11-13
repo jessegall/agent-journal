@@ -24,7 +24,7 @@ test("the lengths are version 4's: a report folds above 70px and shows 46px, a m
     expect(FOLDS).toEqual({report: {at: 70, keep: 46}, message: {at: 420, keep: 320}});
 });
 
-test("a report is the kind of a message of a worker, and the person's words and the agent's reply are one kind", () => {
+test("a report is the kind of a message of a worker, and the user's words and the agent's reply are one kind", () => {
     expect([foldOf({type: "agent", worker_id: 9}), foldOf({type: "agent"}), foldOf({type: "user"}), foldOf({type: "comment"})]).toEqual([FOLDS.report, FOLDS.message, FOLDS.message, FOLDS.message]);
 });
 
@@ -39,7 +39,7 @@ test("an agent's reply taller than 420px is folded to 320px until Show more open
     expect(more(element).textContent).toBe("Show less");
 });
 
-test("a person's message is folded at the same height", async () => {
+test("a user's message is folded at the same height", async () => {
     const element = await drawn({type: "user"}, 421);
     expect(body(element).style.maxHeight).toBe("320px");
     expect(more(element)).not.toBeNull();

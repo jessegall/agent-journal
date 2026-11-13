@@ -52,7 +52,7 @@ def test_a_short_flag_from_an_agent_spends_its_confirmed_skip_and_a_person_needs
     skipped(story)
     story.expect_success(reply("Third kept") + " --confirm" + REASON, actor=story.agent)
     story.expect_text("refusal-skip show 1", f"name: {GUARD}", "reason: it adds the result", "used_at: ", f"tried: {TRIED}", actor=story.user)
-    story.expect_success(reply("Thanks from the person") + " --confirm", actor=story.user)
+    story.expect_success(reply("Thanks from the user") + " --confirm", actor=story.user)
     story.expect_rows(kept_skips(story) == 1)
 
 

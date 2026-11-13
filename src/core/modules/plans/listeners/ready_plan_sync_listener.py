@@ -17,7 +17,7 @@ from core.modules.plans.models.plan import Plan
 
 class ReadyPlanSyncListener(CommitListener[RegistrySynced]):
     """As the modules sync, a plan already waiting for approval gets its own plan card, and the approval an older
-    version asked for it is closed: a person approves a ready plan on its card, with no approval of its own."""
+    version asked for it is closed: a user approves a ready plan on its card, with no approval of its own."""
 
     name = "plans.ready-sync"
     disabled_scopes = [ActorScope, EnvironmentScope]

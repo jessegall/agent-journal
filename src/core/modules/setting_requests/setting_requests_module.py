@@ -13,7 +13,7 @@ from core.modules.setting_requests.models.setting_request import SettingRequest
 
 
 class SettingRequestsModule(Module):
-    """Sends setting changes that require a person to the shared approval dock."""
+    """Sends setting changes that require a user to the shared approval dock."""
 
     name = "journal.core.setting-requests"
     requires_core = ">=5,<6"

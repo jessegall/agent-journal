@@ -11,10 +11,10 @@ class LookState:
     unanswered, of the last answer; zero for a run never asked."""
 
     unanswered: int
-    at: float
+    ask_seconds: float
 
-    def is_due(self, now: float, hang_seconds: int, look_seconds: int) -> bool:
-        return now - self.at >= (hang_seconds if self.unanswered else look_seconds)
+    def waited_enough(self, clock_seconds: float, hang_seconds: int, look_seconds: int) -> bool:
+        return clock_seconds - self.ask_seconds >= (hang_seconds if self.unanswered else look_seconds)
 
 
 class LookAsks:
@@ -25,16 +25,16 @@ class LookAsks:
         self.folder = folder
 
     def state(self, process_id: int) -> LookState:
-        recorded = self.folder.text(process_id, LOOK_FILE).split()
-        return LookState(int(recorded[0]), float(recorded[1])) if len(recorded) == 2 else LookState(0, 0.0)
+        stored = self.folder.text(process_id, LOOK_FILE).split()
+        return LookState(int(stored[0]), float(stored[1])) if len(stored) == 2 else LookState(0, 0.0)
 
-    def asked(self, process_id: int, now: float) -> None:
-        self.folder.write(process_id, LOOK_FILE, f"{self.state(process_id).unanswered + 1} {now}")
+    def record_ask(self, process_id: int, clock_seconds: float) -> None:
+        self.folder.write(process_id, LOOK_FILE, f"{self.state(process_id).unanswered + 1} {clock_seconds}")
 
-    def answered(self, process_id: int, now: float) -> None:
+    def record_answer(self, process_id: int, clock_seconds: float) -> None:
         if self.state(process_id).unanswered:
-            self.folder.write(process_id, LOOK_FILE, f"0 {now}")
+            self.folder.write(process_id, LOOK_FILE, f"0 {clock_seconds}")
 
-    def forgotten(self, process_id: int) -> None:
-        if self.state(process_id).at:
+    def clear(self, process_id: int) -> None:
+        if self.state(process_id).ask_seconds:
             self.folder.write(process_id, LOOK_FILE, "")

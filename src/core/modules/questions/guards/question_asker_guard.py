@@ -10,7 +10,7 @@ from engine.command.context import Context
 
 
 class QuestionAskerGuard(Guard[Created[Question]]):
-    """Allows only the main agent to ask the person a question."""
+    """Allows only the main agent to ask the user a question."""
 
     name = "questions.asked-by-the-main-agent"
 

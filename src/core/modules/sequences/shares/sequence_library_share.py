@@ -14,7 +14,7 @@ from core.modules.sequences.shares.sequence_columns import SequenceColumns
 class SequenceLibraryShare(LibraryShare[Sequence]):
     """A sequence is sent as its title, steps and what each step holds back. What starts it on its own never
     travels. New steps wait while a run of it is going, since a run counts its place in the steps, and they
-    wait for a person when local triggers would start them with nobody looking."""
+    wait for a user when local triggers would start them with nobody looking."""
 
     name = "sequence"
     model = Sequence

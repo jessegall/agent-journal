@@ -2,7 +2,7 @@ from engine.database.migration import Migration
 
 
 class StandingApprovalsMigration(Migration):
-    """Adds the standing yeses of a person, and which of them accepted a request."""
+    """Adds the standing yeses of a user, and which of them accepted a request."""
 
     number = 4
     statements = [

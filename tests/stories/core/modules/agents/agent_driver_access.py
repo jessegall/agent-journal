@@ -37,7 +37,7 @@ def test_the_main_agent_changes_the_driver_of_its_helper(ended):
 def test_a_helper_that_changes_the_driver_of_another_agent_is_refused_naming_who_may(ended):
     helper = helper_agent(ended)
     main_number = agent_number(ended, ended.agent.id)
-    ended.expect_refusal(DRIVER.format(number=main_number, program="codex", model=CODEX_MODEL), "only a person or the main agent changes a driver", actor=Actor(helper.id, ActorType.AGENT))
+    ended.expect_refusal(DRIVER.format(number=main_number, program="codex", model=CODEX_MODEL), "only a user or the main agent changes a driver", actor=Actor(helper.id, ActorType.AGENT))
     ended.expect_text(f"agent show {main_number} --environment main", "program: claude", actor=ended.user)
 
 

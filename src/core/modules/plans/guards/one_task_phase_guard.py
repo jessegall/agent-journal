@@ -26,4 +26,4 @@ class OneTaskPhaseGuard(Guard[Moved[Plan]]):
         single = [phase_id for phase_id in phase_ids if sum(task.phase_id == phase_id for task in tasks) == 1]
         if single:
             raise Refusal(f"phase {single[0]} of plan {event.row.id} has one task" + (f", and so do phases {', '.join(map(str, single[1:]))}" if single[1:] else ""),
-                          "split each phase into its real steps, one task a person could check, or say why one is enough with --skip-guard plans.one-task-phase --skip-reason \"<why>\"")
+                          "split each phase into its real steps, one task a user could check, or say why one is enough with --skip-guard plans.one-task-phase --skip-reason \"<why>\"")

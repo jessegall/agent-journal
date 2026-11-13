@@ -25,7 +25,7 @@ class WaitTaskSubcommand(Subcommand[WaitTask, Task]):
         parser.add_argument("--on", action="append", default=[], help=f"a target that opens the task once it finishes; {self.targets.target_help}")
         parser.add_argument("--until", default="", help="a shell command that opens the task once it passes")
         parser.add_argument("--every", type=int, default=DEFAULT_INTERVAL_MINUTES, help="minutes between two runs of the --until command")
-        parser.add_argument("--until-user", dest="user_wait", action="store_true", help="wait for a person; use --reason to describe the required action")
+        parser.add_argument("--until-user", dest="user_wait", action="store_true", help="wait for a user; use --reason to describe the required action")
 
     def command(self, arguments: Namespace, caller: Caller) -> WaitTask:
         return WaitTask(arguments.task_id, arguments.reason, tuple(arguments.on), arguments.until, arguments.every, arguments.user_wait)

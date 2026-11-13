@@ -134,4 +134,4 @@ def test_a_tell_with_no_main_agent_running_reaches_the_next_main_agent(merger_wi
     story.run_listeners()
     next_main_agent_id = newest_main_agent_id(story)
     story.expect_rows(next_main_agent_id == ended_main_agent_id)
-    expect_value_with(story.run(f"agent-line list --agent {next_main_agent_id}").output_text, "reports in message:")
+    expect_value_with(story.run(f"agent-line list --agent {next_main_agent_id}").output_text, "reported in message:")

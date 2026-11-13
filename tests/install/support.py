@@ -18,7 +18,7 @@ SYSTEM_PATH = "/usr/bin:/bin"
 
 
 class Scratch:
-    """A scratch folder for one install test: an empty project, a home that is not the person's, an empty
+    """A scratch folder for one install test: an empty project, a home that is not the user's, an empty
     release to download from and a folder of programs for the install's PATH, so nothing runs in a consumer
     project and nothing touches the real ~/.claude."""
 

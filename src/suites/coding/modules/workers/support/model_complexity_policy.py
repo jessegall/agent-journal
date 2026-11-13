@@ -5,6 +5,7 @@ from engine.enums.actor_type import ActorType
 from engine.enums.model_tier import ModelTier
 from engine.errors.refusal import Refusal
 from engine.guard.errors.guard_refusal import GuardRefusal
+from engine.guard.guard_switches import GuardSwitches
 from engine.provider.providers import Providers
 from engine.setting.setting_values import SettingValues
 from core.modules.tasks.models.task import Task
@@ -15,13 +16,16 @@ MODEL_FITS_COMPLEXITY_GUARD = "workers.model-fits-complexity"
 
 class ModelComplexityPolicy:
     """Refuses an agent that sends easy tasks, alone and not as a plan or a phase, to a worker on the strongest
-    model, so a cheaper model does the work it fits (message 118737). The agent may skip it with a reason."""
+    model, so a cheaper model does the work it fits (message 118737). The agent may skip it with a reason, and the
+    user may switch it off with the guard setting."""
 
-    def __init__(self, providers: Providers, settings: SettingValues) -> None:
-        self.providers, self.settings = providers, settings
+    def __init__(self, providers: Providers, settings: SettingValues, switches: GuardSwitches) -> None:
+        self.providers, self.settings, self.switches = providers, settings, switches
 
     def check(self, program: str, model: str, tasks: Sequence[Task], context: Context) -> None:
         if context.actor.type is not ActorType.AGENT or MODEL_FITS_COMPLEXITY_GUARD in context.skipped_guards:
+            return
+        if not self.switches.enabled(MODEL_FITS_COMPLEXITY_GUARD):
             return
         if not tasks or not self.is_strongest(program, model):
             return

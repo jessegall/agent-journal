@@ -8,7 +8,7 @@ from core.modules.assignments.support.cascade import Cascade
 
 
 class AssignRowSubcommand(Subcommand[AssignRow, Cascade]):
-    """`journal assign <model> <id> --to <actor>`: gives one row to a person or an agent; with `--from-parent`
+    """`journal assign <model> <id> --to <actor>`: gives one row to a user or an agent; with `--from-parent`
     in place of `--to`, the row inherits the assignment of its parent."""
 
     cli_name = "assign"

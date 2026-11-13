@@ -6,6 +6,6 @@ from core.modules.sharing.commands.support.share_invitation import ShareInvitati
 
 @dataclass(frozen=True)
 class AcceptShareLink(Command[ShareInvitation]):
-    """A person accepts the link an agent asked for, and gets its token."""
+    """A user accepts the link an agent asked for, and gets its token."""
 
     link_id: int

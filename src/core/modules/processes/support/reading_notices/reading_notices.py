@@ -41,9 +41,9 @@ SHELL_TERMS = frozenset(("journal", "set", "for", "while", "until", "if", "case"
 
 
 class ReadingNotices:
-    """The lines that tell an agent, when a run it moved to the background ended, how to read such a run better: a
-    saved command that failed silently, a reader to draft, and what the reader of the run missed. Only an agent that
-    may write readers is told how to read better."""
+    """The lines that tell an agent, when a run it moved to the background ended, how to read such a
+    run better: a saved command that failed silently, a reader to draft, and what the reader of the
+    run missed. Only an agent that may write readers is told how to read better."""
 
     def __init__(self, readers: ReaderQuery, judge: ReaderJudge, writers: ReaderWriters, rows: EventRows, decisions: ReadingDecisions) -> None:
         self.readers, self.judge, self.writers, self.rows, self.decisions = readers, judge, writers, rows, decisions

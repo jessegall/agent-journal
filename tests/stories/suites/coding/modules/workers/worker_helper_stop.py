@@ -43,7 +43,7 @@ def test_a_helpers_report_keeps_the_workers_task_and_worktree(new_story):
     story, worker = worker_with_helper(new_story)
     stop = HookSamples.stop()
     story.hook(read_helper(story, worker).session, stop.with_raw({**stop.body["raw"], "last_assistant_message": "The cart adds tax twice."}))
-    story.expect_text(f"agent-line list --agent {worker.id}", f"agent:{agent_number(story, read_helper(story, worker).id)} reports in message:")
+    story.expect_text(f"agent-line list --agent {worker.id}", f"agent:{agent_number(story, read_helper(story, worker).id)} reported in message:")
     story.expect_rows(story.container.get(Queries).query(Message).newest().first().text == "The cart adds tax twice.")
     story.expect_text("worker-worktree show 1", "state: cut")
     story.expect_text("task show 1", "state: started")

@@ -11,7 +11,7 @@ from tests.stories.support.story_checks import expect_value, expect_value_with
 OUT_OF_RUNS_REFUSAL = "No test runs left"
 GRANT = "helper grant {worker} pytest tests/cart.py"
 RUN = "helper run pytest tests/cart.py"
-GRANT_REFUSAL = "only a person or the main agent"
+GRANT_REFUSAL = "only a user or the main agent"
 
 
 @pytest.fixture

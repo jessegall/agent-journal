@@ -162,10 +162,10 @@ test("docked items: a declared button goes the moment it is pressed, and comes b
     await nextTick();
     expect(button()).toBeNull();
     await settled();
-    answer({json: async () => ({code: 1, error: "only a person approves"})});
+    answer({json: async () => ({code: 1, error: "only a user approves"})});
     await settled();
     expect(button().textContent).toContain("Approve");
-    expect(element.querySelector("[data-dock-failure]").textContent).toContain("only a person approves");
+    expect(element.querySelector("[data-dock-failure]").textContent).toContain("only a user approves");
 });
 
 test("a refused close of a docked card says why on the card", async () => {
@@ -179,7 +179,7 @@ test("a refused close of a docked card says why on the card", async () => {
     expect(element.querySelector("[data-dock-failure]").textContent).toContain("this card stays");
 });
 
-// task 5498: version 4's docked cards fold as the chat is scrolled up and open again at its foot, and the person folds one by hand
+// task 5498: version 4's docked cards fold as the chat is scrolled up and open again at its foot, and the user folds one by hand
 test("docked cards fold when the chat is scrolled up, open at its foot, and a hand fold holds", async () => {
     const element = await mountedChat({"dock-item main": [REPORT_DOCK, {...REPORT_DOCK, id: REPORT_DOCK.id + 1, target_id: REPORT_DOCK.target_id + 1}]});
     const history = element.querySelector(".history");

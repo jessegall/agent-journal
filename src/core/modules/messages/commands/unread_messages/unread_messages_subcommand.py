@@ -16,7 +16,7 @@ UNREAD_REASON = "the unread list shows every message not read yet, oldest first"
 
 
 class UnreadMessagesSubcommand(ReadSubcommand[tuple[MessageText, ...]]):
-    """Shows the caller's unread messages, oldest first, or the main chat's messages for a person."""
+    """Shows the caller's unread messages, oldest first, or the main chat's messages for a user."""
 
     cli_name = "message"
     name = "unread"

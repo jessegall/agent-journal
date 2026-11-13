@@ -7,7 +7,7 @@ from core.modules.library.support.library_user import LibraryUser
 
 @dataclass(frozen=True)
 class LibraryUsers:
-    """The users of the shared server, as a person who administers it reads them."""
+    """The users of the shared server, as a user who administers it reads them."""
 
     users: tuple[LibraryUser, ...]
 

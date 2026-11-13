@@ -13,9 +13,9 @@ from core.modules.questions.models.question import Question
 
 
 class AnswerQuestionHandler(Handler[AnswerQuestion, Question]):
-    """Moves a question to answered. A person's answer is no message of theirs: the chat shows it as one
+    """Moves a question to answered. A user's answer is no message of theirs: the chat shows it as one
     answered mark of the question, and the agent hears of it once, through the answered question. A message
-    the person already wrote may be named as the answer's source, if it is theirs and addressed to the
+    the user already wrote may be named as the answer's source, if it is theirs and addressed to the
     agent that asked."""
 
     command = AnswerQuestion
@@ -34,4 +34,4 @@ class AnswerQuestionHandler(Handler[AnswerQuestion, Question]):
         with self.scopes.row_scope(question):
             message = self.messages.addressed(question.session_agent_id).filter(id=command.message_id).first()
             if message is None or message.type not in PERSON_MESSAGE_TYPES or message.creator_id != context.actor.id:
-                raise Refusal("use a person answer from its author addressed to the agent that asked this question")
+                raise Refusal("use a user answer from its author addressed to the agent that asked this question")

@@ -50,7 +50,7 @@ def test_a_paused_agents_tool_calls_are_refused_until_it_is_resumed(new_story):
     story = new_story(fixture=UserJoined)
     story.container.bind(TerminalTyping, FakeTyping())
     story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", f"paused {agent_label(story, story.agent.id)}", actor=story.user)
-    story.expect_hook_refusal("s-1", EDIT_SAMPLE, "the user paused you")
+    story.expect_hook_refusal("s-1", EDIT_SAMPLE, "The user paused you")
     story.expect_success(f"agent resume {agent_number(story, story.agent.id)}", f"resumed {agent_label(story, story.agent.id)}", actor=story.user)
     story.expect_hook_allowed("s-1", EDIT_SAMPLE)
 
@@ -59,27 +59,27 @@ def test_a_paused_agent_may_read_and_run_message_commands_and_is_not_told_of_the
     story = new_story(fixture=UserJoined)
     story.container.bind(TerminalTyping, FakeTyping())
     story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
-    story.expect_hook_refusal("s-1", JOURNAL_SAMPLE, "the user paused you")
-    story.expect_hook_refusal("s-1", NESTED_JOURNAL_SAMPLE, "the user paused you")
+    story.expect_hook_refusal("s-1", JOURNAL_SAMPLE, "The user paused you")
+    story.expect_hook_refusal("s-1", NESTED_JOURNAL_SAMPLE, "The user paused you")
     for allowed in (READ_SAMPLE, LISTING_SAMPLE, MESSAGE_SAMPLE):
-        story.expect_absent_hook_line("s-1", allowed, "the user paused you")
+        story.expect_absent_hook_line("s-1", allowed, "The user paused you")
         story.expect_hook_allowed("s-1", allowed)
-    story.expect_hook_refusal("s-1", EDIT_SAMPLE, "the user paused you")
-    story.expect_hook_refusal("s-1", WRITING_LISTING_SAMPLE, "the user paused you")
+    story.expect_hook_refusal("s-1", EDIT_SAMPLE, "The user paused you")
+    story.expect_hook_refusal("s-1", WRITING_LISTING_SAMPLE, "The user paused you")
 
 
 def test_resume_types_only_after_its_commit_and_the_line_is_not_said_twice(watched_paused_agent):
     story, database, transaction_flags = watched_paused_agent
     story.expect_success(f"agent resume {agent_number(story, story.agent.id)}", actor=story.user)
     story.expect_rows(transaction_flags == [False, False])
-    story.expect_text(f"agent-line list --agent {story.agent.id} --state entered", "the user resumed you", actor=story.user)
-    story.expect_absent(f"agent-line list --agent {story.agent.id} --state waiting", "the user resumed you", actor=story.user)
+    story.expect_text(f"agent-line list --agent {story.agent.id} --state entered", "The user resumed you", actor=story.user)
+    story.expect_absent(f"agent-line list --agent {story.agent.id} --state waiting", "The user resumed you", actor=story.user)
 
 
 def test_with_no_terminal_the_resume_line_waits_for_the_next_hook(paused_agent_without_terminal):
     story = paused_agent_without_terminal
     story.expect_success(f"agent resume {agent_number(story, story.agent.id)}", actor=story.user)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "the user resumed you", actor=story.user)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "The user resumed you", actor=story.user)
 
 
 def test_pausing_and_resuming_must_fit_the_state(new_story):
@@ -100,7 +100,7 @@ def test_a_helper_of_a_paused_agent_cannot_resume_it(new_story):
 def test_a_paused_agent_cannot_resume_itself_and_the_user_resumes_it(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
-    story.expect_refusal(f"agent resume {agent_number(story, story.agent.id)} --reason needed", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(f"agent resume {agent_number(story, story.agent.id)} --reason needed", "A user was asked in the dock", actor=story.agent)
     story.expect_success(f"agent resume {agent_number(story, story.agent.id)}", actor=story.user)
 
 
@@ -135,7 +135,7 @@ def test_a_paused_agent_can_still_run_journal_lines(paused_task_holder):
 def test_a_helper_of_a_paused_agent_is_paused_too(new_story):
     story = paused_story(new_story, BuilderHelper)
     story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
-    story.expect_hook_refusal("sub-1", BUILD_SAMPLE, "the user paused you")
+    story.expect_hook_refusal("sub-1", BUILD_SAMPLE, "The user paused you")
     story.expect_success(f"agent resume {agent_number(story, story.agent.id)}", actor=story.user)
     story.expect_hook_allowed("sub-1", BUILD_SAMPLE)
 

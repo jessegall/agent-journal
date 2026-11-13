@@ -10,7 +10,7 @@ MAIN_ROLE = "main"
 
 @dataclass(frozen=True)
 class NonHelperRows:
-    """Matches rows created by a main agent or a person."""
+    """Matches rows created by a main agent or a user."""
 
     def statement(self) -> Statement:
         other_agents = Select("agents").matching(Equal("role", MAIN_ROLE, negated=True)).column("id")

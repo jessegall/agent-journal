@@ -15,7 +15,7 @@ KEY_BYTES = 24
 
 class ViewerLogin:
     """The viewer's logins: a one-time key opened once, and the session token it leaves in a cookie, which a
-    restart keeps, each naming who the viewer acts for: a person, the main agent, a person's phone, or one
+    restart keeps, each naming who the viewer acts for: a user, the main agent, a user's phone, or one
     share. The cookie's name carries this journal's own suffix, so two journals on one machine keep their
     logins side by side in one browser. A phone's token and a share link's are asked of their modules, not
     held here, so they outlive a restart and end with the unpairing or the revoking; a link is never spent."""

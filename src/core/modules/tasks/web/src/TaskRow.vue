@@ -31,7 +31,7 @@ const setPriority = (priority) => view.run(["task", "edit", String(props.row.id)
         <template v-if="display.reason && row.reason">
             <span class="task-reason" data-task-reason>{{ row.reason }}</span>
         </template>
-        <template v-if="row.state === 'blocked' && !row.automatic"><MarkIcon name="warning" class="task-warning" data-task-warning title="Does not open by itself: needs a person" /></template>
+        <template v-if="row.state === 'blocked' && !row.automatic"><MarkIcon name="warning" class="task-warning" data-task-warning title="Does not open by itself: needs a user" /></template>
         <TaskRowIcons :row="row" @priority="setPriority" />
     </div>
 </template>

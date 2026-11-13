@@ -8,7 +8,7 @@ from engine.time.timestamp import Timestamp
 @dataclass(frozen=True, kw_only=True)
 class ScheduledJob(EnvironmentScoped, Model):
     """A prompt an agent scheduled for itself in its own program: the id the program gave it, its cron
-    schedule, the prompt, whether it repeats, when it last ran, when a person asked it stopped, and when it
+    schedule, the prompt, whether it repeats, when it last ran, when a user asked it stopped, and when it
     ended."""
 
     model_name = "scheduled_job"

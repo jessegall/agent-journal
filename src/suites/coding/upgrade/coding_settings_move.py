@@ -15,7 +15,7 @@ DROPPED_REASONS = {
     "workers.test_command": TEST_COMMAND_REASON,
     "workers.test_command_proof": "this test argument must be combined with the project test command in journal proof make --test",
     "workers.builder_may_queue": "version 5 has no separate builder queue permission; workers receive task queues through dispatch and send",
-    "workers.mode": "the mode was chosen per person; version 5 chooses a driver for each environment with journal driver choose",
+    "workers.mode": "the mode was chosen per user; version 5 chooses a driver for each environment with journal driver choose",
 }
 
 

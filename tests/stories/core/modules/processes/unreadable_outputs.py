@@ -94,7 +94,7 @@ def test_a_marked_command_is_asked_nothing_by_its_leading_words_while_another_pr
     told = heard(story)
     moved_run(story, "make watch --forever", CommandCategory.BUILD)
     ticks(story, 320)
-    story.expect_rows("no reader reads make" not in told, "no reader reads custom-dev yet" in told, "printed nothing for 30 seconds" not in kept_lines(story),
+    story.expect_rows("no reader reads make" not in told, "no reader reads custom-dev yet" in told, "printed nothing for 30s" not in kept_lines(story),
                       detail=f"{told}\n{kept_lines(story)}")
     story.expect_hook_refusal("s-1", HookSamples.edit("cart.py"), "printed nothing for 320 seconds")
     story.expect_success("reader-request list", "nothing found", actor=story.agent)

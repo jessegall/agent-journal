@@ -58,7 +58,7 @@ def test_tier_flag_picks_the_model_of_each_program_rare_needs_a_name(split_story
 @pytest.mark.parametrize('program,model', [('codex', 'gpt-6.1-sol'), ('claude', 'opus')])
 def test_profile_tier_fits_any_program(split_story, program, model):
     story = split_story
-    worker = dispatch(story, flags=f'--profile journal-senior --program {program}')
+    worker = dispatch(story, flags=f'--profile journal-worker-senior --program {program}')
     expect_program(story, worker, program, model)
 
 

@@ -33,9 +33,11 @@ ENDED_HELPERS_COUNTED = 50
 
 
 class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
-    """`journal usage show [--open] [--environment <name>]`: each open session of the environment with the model,
-    context and cost its status line last reported, the plan's windows, each program stopped at a usage limit with how many of its agents are halted, and the sessions' cost added up. The
-    ended helpers of the open sessions count too, unless --open asks for the open sessions alone."""
+    """`journal usage show [--open] [--environment <name>]`: each open session of the environment with
+    the model, context and cost its status line last reported, the plan's windows, each program
+    stopped at a usage limit with how many of its agents are halted, and the sessions' cost added
+    up. The ended helpers of the open sessions count too, unless --open asks for the open sessions
+    alone."""
 
     cli_name = "usage"
     name = "show"

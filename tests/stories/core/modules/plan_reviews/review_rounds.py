@@ -20,7 +20,7 @@ CRITIQUE_COMMAND = 'template send 1 --on=plan:1 --set=agents=2 --set=size="a nor
 
 
 class CritiquePlanReady(StoryFixture):
-    """Plan 1, made by the main agent, is ready, and a person has a critique template."""
+    """Plan 1, made by the main agent, is ready, and a user has a critique template."""
 
     parent = UserBuilder
 

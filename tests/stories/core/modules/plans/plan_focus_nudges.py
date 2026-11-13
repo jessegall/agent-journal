@@ -59,4 +59,4 @@ def test_c10_a_plan_with_nothing_that_can_start_names_each_task_it_waits_on(new_
     story.expect_success("task start 1", actor=story.agent)
     story.run('task block 1 --reason "waits for a key"', actor=story.agent)
     lines = story.hook("s-1", journal_line("task block 1")).lines
-    expect_value_with(lines, "plan 1: no task can start; 2 wait or are blocked: task 1, which is blocked with a reason; task 2, which waits on a person")
+    expect_value_with(lines, "plan 1: no task can start; 2 wait or are blocked: task 1, which is blocked with a reason; task 2, which waits on a user")

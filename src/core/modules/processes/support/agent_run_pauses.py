@@ -6,7 +6,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 
 class AgentRunPauses(RunPauses):
     """A run is paused while the agent it works for is paused, the running main agent of its environment for a run of
-    a main agent; a run of no agent, such as one of a person or of the journal itself, never is."""
+    a main agent; a run of no agent, such as one of a user or of the journal itself, never is."""
 
     def __init__(self, agents: AgentRows) -> None:
         self.agents = agents

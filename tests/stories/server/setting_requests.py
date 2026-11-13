@@ -16,7 +16,7 @@ REQUEST_LINE = f"setting request {SUITE_KEY} samples --reason 'it fits the work'
 
 
 class PersonMain(StoryFixture):
-    """A main agent in main with a person, Ada, beside it, and the suite setting left to its default."""
+    """A main agent in main with a user, Ada, beside it, and the suite setting left to its default."""
 
     parent = SampleSuiteChoice
 
@@ -41,18 +41,18 @@ def plain_story(new_story):
 
 @pytest.fixture
 def requested(plain_story):
-    plain_story.expect_success(REQUEST_LINE, "A person was asked in the dock: approval 1", actor=plain_story.agent)
+    plain_story.expect_success(REQUEST_LINE, "A user was asked in the dock: approval 1", actor=plain_story.agent)
     with server_story(plain_story) as server:
         yield server
 
 
 def test_an_agents_write_of_a_person_set_setting_is_refused(plain_story):
-    plain_story.expect_refusal(f"setting set {SUITE_KEY} samples --environment main --reason needed", "A person was asked in the dock", actor=plain_story.agent)
+    plain_story.expect_refusal(f"setting set {SUITE_KEY} samples --environment main --reason needed", "A user was asked in the dock", actor=plain_story.agent)
 
 
 def test_choosing_the_driver_or_the_suite_is_refused_to_an_agent(plain_story):
-    plain_story.expect_refusal("driver choose samples.lead --environment main --reason needed", "A person was asked in the dock", actor=plain_story.agent)
-    plain_story.expect_refusal("suite choose samples --environment main --reason needed", "A person was asked in the dock", actor=plain_story.agent)
+    plain_story.expect_refusal("driver choose samples.lead --environment main --reason needed", "A user was asked in the dock", actor=plain_story.agent)
+    plain_story.expect_refusal("suite choose samples --environment main --reason needed", "A user was asked in the dock", actor=plain_story.agent)
 
 
 def test_a_person_set_refusal_has_no_skip(plain_story):
@@ -61,7 +61,7 @@ def test_a_person_set_refusal_has_no_skip(plain_story):
 
 def test_a_worker_also_requests_a_persons_approval(plain_story):
     worker = Actor(plain_story.new_row_id(f"agent start w-1 claude worker --parent {plain_story.agent.id} --environment main"), ActorType.AGENT)
-    plain_story.expect_text(REQUEST_LINE, "A person was asked in the dock", actor=worker)
+    plain_story.expect_text(REQUEST_LINE, "A user was asked in the dock", actor=worker)
 
 
 def test_a_setting_an_agent_may_set_needs_no_request(plain_story):

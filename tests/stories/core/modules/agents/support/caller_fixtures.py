@@ -5,7 +5,7 @@ from tests.stories.core.support.fixtures import MainEnvironment
 
 
 class LoginUser(StoryFixture):
-    """A person with login ada in main, with no agent started."""
+    """A user with login ada in main, with no agent started."""
 
     parent = MainEnvironment
 

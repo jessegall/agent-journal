@@ -9,8 +9,9 @@ TYPE_SEPARATOR = "."
 
 
 class SettingScreenShowSubcommand(ReadSubcommand[ScreenReading]):
-    """`journal setting-screen show <screen>`: every setting that declares the screen as a node the viewer draws
-    without knowing any setting; --type names a helper type, whose screen is the screen name, a dot and the type."""
+    """`journal setting-screen show <screen>`: every setting that declares the screen as a node the
+    viewer draws without knowing any setting; --type names a helper type, whose screen is the screen
+    name, a dot and the type."""
 
     cli_name = "setting-screen"
     name = "show"

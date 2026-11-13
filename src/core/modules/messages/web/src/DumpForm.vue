@@ -2,7 +2,7 @@
 import {ref} from "vue";
 import {Btn} from "@journal/window-kit";
 
-// Dump files as version 4 had it: the person pastes text or drops text files, and one dump is made of it, a part to a paragraph or file
+// Dump files as version 4 had it: the user pastes text or drops text files, and one dump is made of it, a part to a paragraph or file
 const emit = defineEmits(["made", "close"]);
 const props = defineProps({run: {type: Function, required: true}});
 const notes = ref("");

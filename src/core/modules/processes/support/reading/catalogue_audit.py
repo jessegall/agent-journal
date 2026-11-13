@@ -28,10 +28,11 @@ RECENT_OUTPUTS = 50
 
 
 class CatalogueAudit:
-    """What the main agent hears of the readers when its session starts: the readers that lack required fields, by
-    the judge every reader is judged by, the readers that picked no line of their last outputs, and the runs of
-    agents that may not write readers whose end was decided without a proper reader since the main agent last heard
-    the audit, and the stock readers an edit froze that fell behind the shipped ones. Only a main agent writes readers."""
+    """What the main agent hears of the readers when its session starts: the readers that lack required
+    fields, by the judge every reader is judged by, the readers that picked no line of their last
+    outputs, and the runs of agents that may not write readers whose end was decided without a
+    proper reader since the main agent last heard the audit, and the stock readers an edit froze
+    that fell behind the shipped ones. Only a main agent writes readers."""
 
     def __init__(self, reader_rows: ReaderRows, judge: ReaderJudge, decisions: ReadingDecisionQuery, queries: Queries, outputs: OutputQuery,
                  marks: UnreadableMarkQuery, edits: StockReaderEdits) -> None:
@@ -39,7 +40,6 @@ class CatalogueAudit:
         self.edits = edits
 
     def readers_behind(self) -> tuple[tuple[Reader, str], ...]:
-        """The stock rows an edit froze whose shipped entry changed since: each with the digest of the entry now."""
         stock_rows = {reader.name: reader for reader in self.reader_rows.all() if reader.is_stock}
         edited = self.edits.edited_ids(stock_rows.values())
         return tuple((stock_rows[stock.name], StockDigest.of(stock)) for stock in STOCK_READERS
@@ -55,7 +55,6 @@ class CatalogueAudit:
         return any(self.judge.fields_missing(reader, category) for category in categories)
 
     def last_audit_at(self, main_agent: Agent) -> Timestamp:
-        """When the main agent was last told the audit, or when it started, before its first audit line."""
         last_audit = self.queries.query(AgentLine).filter(session_agent_id=main_agent.id, source=AUDIT_SOURCE).newest().first()
         return last_audit.creation_timestamp() if last_audit is not None else main_agent.creation_timestamp()
 
@@ -64,7 +63,7 @@ class CatalogueAudit:
 
     def agent_marks_count(self, last_audit_at: Timestamp) -> int:
         """How many commands agents marked unreadable since the main agent last heard the audit; marks of the
-        engine and of a person are not counted."""
+        engine and of a user are not counted."""
         creators = [mark.creator_id for mark in self.marks.made_after(last_audit_at).standing().descending("created_at", "id").take(RECENT_OUTPUTS)]
         if not creators:
             return 0
@@ -72,7 +71,6 @@ class CatalogueAudit:
         return sum(creator in agents for creator in creators)
 
     def readers_needing_repair(self) -> tuple[Reader, ...]:
-        """The readers whose last outputs with lines, three of them, each had no line the reader kept."""
         kept_lines: defaultdict[int, list[int]] = defaultdict(list)
         for output in self.outputs.read_with_lines().newest().take(RECENT_OUTPUTS):
             kept_lines[output.reader_id].append(output.reader_lines)

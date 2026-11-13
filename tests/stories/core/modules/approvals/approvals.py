@@ -32,7 +32,7 @@ class PendingRule(NamedTuple):
 @pytest.fixture
 def pending_setting(new_story):
     story = new_story(fixture=UserBuilder)
-    story.expect_refusal(CHANGE_SETTING, "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(CHANGE_SETTING, "A user was asked in the dock", actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).first()
     story.expect_rows(request is not None)
     return PendingSetting(story, request)
@@ -82,7 +82,7 @@ def test_an_agent_can_never_decide_a_docked_request(pending_setting, decision):
 def test_an_agent_cannot_hide_a_pending_approval(pending_setting):
     story, request = pending_setting
     item = story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=request.id).first()
-    story.expect_refusal(f"dock remove {item.id}", "an agent cannot change a card waiting for a person", actor=story.agent)
+    story.expect_refusal(f"dock remove {item.id}", "an agent cannot change a card waiting for a user", actor=story.agent)
     story.expect_text(f"approval show {request.id}", "state: open")
 
 
@@ -97,7 +97,7 @@ def test_every_pending_approval_stays_visible_beyond_the_ordinary_dock_limit(new
 @pytest.mark.parametrize("decision,state", [("accept", "active"), ("refuse", "denied")])
 def test_a_rule_proposal_uses_the_same_dock_and_person_decision(proposed_rule, rule_viewer, decision, state):
     story, rule_id, request = proposed_rule
-    story.expect_refusal(f"rule approve {rule_id}", "a person was asked", actor=story.agent)
+    story.expect_refusal(f"rule approve {rule_id}", "a user was asked", actor=story.agent)
     rule_viewer.value("messages.chat", ["approval", decision, str(request.id)])
     story.expect_text(f"rule show {rule_id}", f"state: {state}")
 

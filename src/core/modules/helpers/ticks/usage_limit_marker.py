@@ -14,7 +14,7 @@ from core.modules.helpers.support.usage_limits import UsageLimits
 
 class UsageLimitMarker:
     """Every few seconds, marks the open agents of each program whose plan allowance is used up in full as at
-    the usage limit until it starts again, or until the limit a person set is lifted, and, once it has
+    the usage limit until it starts again, or until the limit a user set is lifted, and, once it has
     started again, clears the mark, tells each agent a hook of which was stopped to go on, and types the lines
     that waited."""
 

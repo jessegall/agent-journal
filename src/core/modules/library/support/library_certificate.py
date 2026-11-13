@@ -10,7 +10,7 @@ SUFFIX = ".library-certificate.pem"
 
 
 class LibraryCertificate:
-    """The certificate a person trusted for the shared server, kept in the private folder beside the token, and the
+    """The certificate a user trusted for the shared server, kept in the private folder beside the token, and the
     openers that follow no redirect and trust it, or the system's certificates when none is kept."""
 
     def __init__(self, folder: PrivateFolder) -> None:

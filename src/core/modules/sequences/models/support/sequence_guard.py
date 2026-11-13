@@ -16,9 +16,9 @@ CONDITIONS = "conditions"
 
 @dataclass(frozen=True)
 class SequenceGuard:
-    """What one step of a sequence holds back: whether it allows file edits, the commands it allows when it
-    does not, the commands it refuses, and the checks and conditions that must hold before the step can advance
-    or the sequence can finish."""
+    """What one step of a sequence holds back: whether it allows file edits, the commands it allows
+    when it does not, the commands it refuses, and the checks and conditions that must hold before
+    the step can advance or the sequence can finish."""
 
     file_edits_allowed: bool = True
     allowed_commands: tuple[str, ...] = ()

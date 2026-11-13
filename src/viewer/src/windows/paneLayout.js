@@ -26,7 +26,7 @@ export const sessionTab = {
     },
 };
 
-// this browser's copy of a layout, shared by its tabs, so a new tab draws the person's panes and their skeletons at once
+// this browser's copy of a layout, shared by its tabs, so a new tab draws the user's panes and their skeletons at once
 export const browserCopy = {
     read(key) {
         try {
@@ -65,7 +65,7 @@ function tidied(layout, entry) {
     return {...layout, panes};
 }
 
-// one page's layout for a person, suite, page and driver: the browser tab's copy, else the person's saved layout, else
+// one page's layout for a user, suite, page and driver: the browser tab's copy, else the user's saved layout, else
 // the suite's; a change goes to the tab at once and is saved half a second after the last of a burst, against the version
 // it was loaded at, so a save over another tab's newer layout is refused and that layout loaded instead; a window no
 // module offers keeps its tab and is listed as gone, and loading never saves
@@ -109,7 +109,7 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, copy = brow
         }
     }
 
-    // the first paint, before the person, suite and driver are known: the layout this browser last had for the page, so its skeleton has the panes' number and widths
+    // the first paint, before the user, suite and driver are known: the layout this browser last had for the page, so its skeleton has the panes' number and widths
     function drawKept(environment, page) {
         const at = copy.read(lastKey(environment, page));
         const kept = at && (tab.read(tabKey(at)) ?? copy.read(tabKey(at)));
@@ -118,7 +118,7 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, copy = brow
         ready.value = true;
     }
 
-    // no layout is kept while one loads: a change to the empty layout would be saved over the person's own
+    // no layout is kept while one loads: a change to the empty layout would be saved over the user's own
     async function load(at) {
         loaded.value = false;
         await flush();

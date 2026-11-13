@@ -18,7 +18,7 @@ from engine.provider.model_efforts import ModelEfforts
 
 
 class EffortSettings:
-    """The Codex effort entries a person set."""
+    """The Codex effort entries a user set."""
 
     def __init__(self, *entries: str) -> None:
         self.entries = entries

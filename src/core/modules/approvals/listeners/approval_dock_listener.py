@@ -17,8 +17,9 @@ from core.modules.docking.queries.dock_item_query import DockItemQuery
 
 
 class ApprovalDockListener(CommitListener[Changed[ApprovalRequest]]):
-    """Keeps open approval requests in the dock until a person decides them; one a standing yes covers is docked only
-    after its accepted command failed, for a person to answer; one a restart cut off is accepted again with no card."""
+    """Keeps open approval requests in the dock until a user decides them; one a standing yes covers is
+    docked only after its accepted command failed, for a user to answer; one a restart cut off is accepted
+    again with no card."""
 
     name = "approvals.dock"
     disabled_scopes = [ActorScope, EnvironmentScope]

@@ -24,7 +24,7 @@ function menu(options = declared) {
     return {element, values};
 }
 
-// the marks are listed behind a fold, which a person opens
+// the marks are listed behind a fold, which a user opens
 async function opened(options) {
     const shown = menu(options);
     await settled();

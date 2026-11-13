@@ -29,8 +29,8 @@ SPANS = {"h": timedelta(hours=1), "d": timedelta(days=1)}
 
 
 class MakeShareLinkHandler(Handler[MakeShareLink, ShareInvitation]):
-    """Makes a link to a row for the calling person, keeping the digest of its token and giving the token this
-    once; an agent's link only asks: nothing opens until a person accepts it, and only then is there a token.
+    """Makes a link to a row for the calling user, keeping the digest of its token and giving the token this
+    once; an agent's link only asks: nothing opens until a user accepts it, and only then is there a token.
     """
 
     command = MakeShareLink

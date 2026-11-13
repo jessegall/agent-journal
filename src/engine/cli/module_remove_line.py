@@ -22,7 +22,7 @@ MODULE_REMOVAL_ARGUMENTS = ["module", "remove"]
 
 
 class ModuleRemoveLine:
-    """Removes an installed module for a person and runs cleanup against the updated registry."""
+    """Removes an installed module for a user and runs cleanup against the updated registry."""
 
     def __init__(self, removal: ModuleRemoval, resolver: CallerResolver, tables: Tables, home: JournalHome, console: Console) -> None:
         self.removal, self.resolver, self.tables, self.home = removal, resolver, tables, home
@@ -50,7 +50,7 @@ class ModuleRemoveLine:
             if caller.actor.type is ActorType.AGENT:
                 raise UserApprovalRefusal(f"Remove the module {arguments.name}?", WriteFlags.without_reason(argv))
             if caller.actor.type is not ActorType.USER:
-                raise Refusal("module removal requires a person")
+                raise Refusal("module removal requires a user")
             self.removal.remove(arguments.name)
         except UsageError as error:
             output.error(str(error))

@@ -51,8 +51,6 @@ class RowSearch:
         return hits
 
     def closest(self, terms: Sequence[str], search_models: Sequence[type[Model]]) -> SearchResult:
-        """Reads the rows holding the most words first, then those holding one fewer, and so on down to half of them,
-        until enough rows are read, so an older row holding more of the words is not left out by newer ones holding fewer."""
         hits: dict[tuple[str, int], SearchHit] = {}
         for words in range(len(terms) - 1, (len(terms) + 1) // 2 - 1, -1):
             for model in search_models:

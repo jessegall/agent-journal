@@ -141,7 +141,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     def check_unstarted(command: DispatchWorker, context: Context, environment: Environment) -> None:
         if command.starts_program or context.actor.is_person() or environment.grants(context.actor.id):
             return
-        raise Refusal("only a person dispatches a worker with no program", "an agent dispatches a worker without --no-program")
+        raise Refusal("only a user dispatches a worker with no program", "an agent dispatches a worker without --no-program")
 
     def check_idle(self, folder: str, request: WorkerRequest, tasks: list[Task], command: DispatchWorker) -> None:
         idle = self.available_workers.first(folder, request)
@@ -155,6 +155,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     def worker_profile(self, name: str) -> AgentProfile:
         worker_type = self.types.find(CodingHelperRole.WORKER)
         profile = self.profiles.effective(name or worker_type.default_profile)
+        self.profiles.refuse_base(profile)
         if profile.agent_type != worker_type.key:
             raise Refusal(f"{profile.name} is a {self.types.find(profile.agent_type).label}: journal helper start runs it")
         return profile

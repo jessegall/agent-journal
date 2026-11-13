@@ -39,7 +39,7 @@ const start = (answer) => {
 };
 
 // the cookie says which face this is: a share link's visitor gets the share page (so does a page the server marks as a gone link), anyone else the viewer;
-// a person who opened the viewer in this browser before gets the page at once, so its skeleton shows before the journal has answered, and a new answer reloads it
+// a user who opened the viewer in this browser before gets the page at once, so its skeleton shows before the journal has answered, and a new answer reloads it
 const SESSION_TYPE_KEY = "journal.session-type";
 const PERSON = "person";
 const opensAtOnce = browserCopy.read(SESSION_TYPE_KEY) === PERSON && location.pathname !== PAIRING_PATH && !document.querySelector(ENDED_LINK_MARK);

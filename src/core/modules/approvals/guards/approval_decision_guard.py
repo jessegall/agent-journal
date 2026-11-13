@@ -9,7 +9,7 @@ from core.modules.approvals.commands.answer_agent_approval.answer_agent_approval
 
 
 class ApprovalDecisionGuard(Guard[Changed[ApprovalRequest]]):
-    """Every path that decides an approval request requires a person or a source listener."""
+    """Every path that decides an approval request requires a user or a source listener."""
 
     name = "approvals.person-decides"
     is_safety = True

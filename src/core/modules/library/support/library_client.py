@@ -41,7 +41,7 @@ T = TypeVar("T")
 
 
 class LibraryClient:
-    """Sends one request to the shared server, only to the address a person connected to, and turns the answer into
+    """Sends one request to the shared server, only to the address a user connected to, and turns the answer into
     a value or one of the failures in library_failures. It has no retries: the next round is the retry."""
 
     def __init__(self, settings: SettingValues, values: SecretValues, connections: LibraryConnectionQuery, certificate: LibraryCertificate) -> None:

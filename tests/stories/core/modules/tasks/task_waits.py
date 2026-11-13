@@ -78,7 +78,7 @@ def test_unblocking_by_hand_ends_the_wait_so_a_later_end_changes_nothing(new_sto
 
 def test_a_wait_in_words_teaches_the_block_and_a_block_with_a_flag_does_not(new_story):
     story = new_story(fixture=TwoTasks)
-    story.expect_hook_allowed("s-1", posted('journal task log 1 waiting for the keys'), "a wait is a block, on a task")
+    story.expect_hook_allowed("s-1", posted('journal task log 1 waiting for the keys'), "A wait is a block: on a task")
     story.expect_absent_hook_line("s-1", posted('journal task block 1 --on task:2 waiting for the keys'), "a wait is a block")
     story.expect_absent_hook_line("s-1", posted('journal task log 1 the cart is done'), "a wait is a block")
 
@@ -96,7 +96,7 @@ def test_a_task_whose_brief_names_an_open_task_is_told_how_to_block_on_it(new_st
     story = new_story(fixture=TwoTasks)
     story.run('task edit 1 --brief "Build on task 2 first"')
     story.run("task start 1", actor=story.agent)
-    story.expect_hook_allowed("s-1", posted("journal task start 1"), "task 1 names open task 2; if it waits on it, block it on that task")
+    story.expect_hook_allowed("s-1", posted("journal task start 1"), "Task 1 names open task 2: if it waits on it, block it on that task")
 
 
 def test_the_graph_names_what_waits_on_what_by_a_dependency_or_a_block(new_story):
@@ -146,7 +146,7 @@ def test_an_idle_agent_is_typed_that_its_task_opened_and_the_line_is_not_said_tw
     story.advance(timedelta(seconds=31))
     story.run('task cancel 2 --reason "no"')
     story.run_listeners()
-    story.expect_rows(entered == [(story.agent.id, "[journal] task:1 is open again: what it waited on has ended"), (story.agent.id, "[journal] wait:1 is over")], detail=str(entered))
+    story.expect_rows(entered == [(story.agent.id, "[journal] task:1 is open again: what it waited on has ended"), (story.agent.id, "[journal] wait:1 is over: continue")], detail=str(entered))
     story.expect_text(f"agent-line list --agent {story.agent.id} --state entered", "task:1 is open again")
 
 

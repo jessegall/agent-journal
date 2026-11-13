@@ -38,7 +38,7 @@ A line from `journal worker ask` holds the worker's point, its last refusal, its
 | The update is large or risky for the worker's model | `journal merger behind <number>`, weighed as below | `journal merger pass <number> "<why>"`: the main agent decides. |
 | A worker has not run an ordered update | The order in the line and the worker's status | Remind it once with `journal merger advise <number> "<text>"`, then pass it. |
 | A worker could not settle the conflicts of an update | The clashing files in its line | Advise it once on the clash, then pass it. |
-| A real need only a person can meet, such as a machine with root | Whether a command in reach could do it | Ask the main agent, step 3 of the ladder. |
+| A real need only a user can meet, such as a machine with root | Whether a command in reach could do it | Ask the main agent, step 3 of the ladder. |
 
 ## A worktree behind its base
 

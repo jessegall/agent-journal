@@ -6,7 +6,7 @@ from core.modules.tasks.commands.unassign_agent_tasks.unassign_agent_tasks impor
 
 
 class StoppedAgentTasksListener(SaveListener[AgentStopped]):
-    """Hands back the open and started tasks of an agent a person or an agent stopped, in the same change."""
+    """Hands back the open and started tasks of an agent a user or an agent stopped, in the same change."""
 
     name = "tasks.stopped-agent-tasks"
 

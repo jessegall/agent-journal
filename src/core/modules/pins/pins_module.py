@@ -17,7 +17,7 @@ from core.modules.pins.upgrade.pins_move import PinsMove
 
 
 class PinsModule(Module):
-    """Adds pins: links pinned above an environment's chat for the person to open on their return."""
+    """Adds pins: links pinned above an environment's chat for the user to open on their return."""
 
     name = "journal.core.pins"
     requires_core = ">=5,<6"

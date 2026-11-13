@@ -5,7 +5,7 @@ from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
 from tests.stories.suites.coding.modules.workers.support.program_split import dispatch, expect_program, new_task, split_story
 
 GUARD = "workers.model-fits-complexity"
-SKIP_REASON = "The person asked for the strongest model on it"
+SKIP_REASON = "The user asked for the strongest model on it"
 
 
 def easy_task(story):
@@ -18,6 +18,15 @@ def test_an_easy_task_sent_alone_to_the_strongest_model_is_refused_until_skipped
                                f"task {task_id} complexity 2 is below 3: a general model fits it", actor=split_story.agent)
     confirmed_skip(split_story, GUARD, split_story.agent, SKIP_REASON)
     worker = dispatch(split_story, str(task_id), f'--model opus --skip-guard {GUARD} --skip-reason "{SKIP_REASON}"')
+    expect_program(split_story, worker, "claude", "opus")
+
+
+def test_an_easy_task_goes_to_the_strongest_model_once_the_user_switches_the_guard_off(split_story):
+    task_id = easy_task(split_story)
+    split_story.use_fixture_environment(None)
+    split_story.expect_success(f"setting make journal.core.settings.guard.{GUARD} false", actor=split_story.user)
+    split_story.use_fixture_environment("main")
+    worker = dispatch(split_story, str(task_id), "--model opus")
     expect_program(split_story, worker, "claude", "opus")
 
 

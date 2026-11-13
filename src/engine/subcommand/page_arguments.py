@@ -3,7 +3,7 @@ from engine.query.query import MOST_NAMED_LIMIT_ROWS, PAGE_SIZE_ROWS
 
 
 def read_limit(text: str) -> int:
-    """A person's --limit, from 1 to the most rows one read may name."""
+    """A user's --limit, from 1 to the most rows one read may name."""
     rows = int(text)
     if not 1 <= rows <= MOST_NAMED_LIMIT_ROWS:
         raise ArgumentTypeError(f"--limit is from 1 to {MOST_NAMED_LIMIT_ROWS}; read further rows with --page")

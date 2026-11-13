@@ -26,7 +26,7 @@ A line typed into your terminal starts with `[journal]`: the journal typed it, n
 ## The request behind the work
 
 - `journal message work-source` shows the effective request. `journal message work-from N` explicitly switches to
-  an authorized person request; replying to a person request also switches. Reading its context does not switch.
+  an authorized user request; replying to a user request also switches. Reading its context does not switch.
 - `journal message clear-work-source` ends attribution to the main agent's selected request. Helpers
   already running keep the authorized source snapshot captured for their job; a later parent read cannot replace it.
 - For a task use `journal task context N`; for a plan use `journal plan context N`. Follow the returned `--page`,

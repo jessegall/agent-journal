@@ -40,7 +40,7 @@ test("the catalogue keeps each window's skeleton in this browser, so a new page 
     expect(next.skeleton("a.gone")).toEqual([]);
 });
 
-test("the first paint draws the layout this browser last had, before the person, suite and driver are known", async () => {
+test("the first paint draws the layout this browser last had, before the user, suite and driver are known", async () => {
     const at = {environment: "main", person: 1, suite: "coding", page: "home", driver: "coding.builder"};
     const shape = {dir: "row", r: 0.7, a: {tabs: ["a.b"], active: "a.b"}, b: {tabs: ["c.d"], active: "c.d"}};
     const first = paneLayout({saved: async () => null, defaults: async () => shape, save: async () => ({ok: true}), entry: () => null, tab: {read: () => null, write: () => {}}});

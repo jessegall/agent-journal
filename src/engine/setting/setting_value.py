@@ -68,6 +68,6 @@ class SettingValue:
             allowed = ", ".join(component.value for component in SettingComponent if self.type in component.kinds())
             yield f"the setting {key} is a {self.type.value}, which the component {self.component.value} cannot draw; use one of: {allowed}"
         if self.secret and self.default is not None:
-            yield f"the secret {key} has a default; a secret is set by the person, never written in code"
+            yield f"the secret {key} has a default; a secret is set by the user, never written in code"
         elif self.default is not None and not self.accepts(self.default):
             yield f"the setting {key} is a {self.type.value}, but its default is {self.default!r}"

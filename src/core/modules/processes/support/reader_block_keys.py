@@ -17,6 +17,5 @@ class ReaderBlockKeys:
 
     @staticmethod
     def request_id(nudge_key: str) -> int | None:
-        """The request a block key is for, or none when the key is not that of a block of a reader request."""
         found = READING_BLOCK_KEY.fullmatch(nudge_key)
         return int(found.group(1)) if found is not None else None

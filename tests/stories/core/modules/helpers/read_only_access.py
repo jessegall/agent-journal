@@ -25,7 +25,7 @@ SAFE_TOOLS = {StartedHelper: ["WebFetch", "WebSearch"]}
 
 
 class StartedCodexHelper(StoryFixture):
-    """A main agent with a person beside it and one read-only helper on Codex."""
+    """A main agent with a user beside it and one read-only helper on Codex."""
 
     parent = UserBuilder
 
@@ -87,7 +87,7 @@ def test_a_read_only_helper_calls_the_read_tools_of_its_program(new_story, helpe
 @pytest.mark.parametrize("name, category", EDIT_TOOLS)
 def test_a_read_only_helper_never_edits_a_file(new_story, helper_fixture, name, category):
     story, session = helper_story(new_story, helper_fixture)
-    story.expect_hook_refusal(session, tool(name, category), "reads and searches only")
+    story.expect_hook_refusal(session, tool(name, category), "This driver only reads and searches")
 
 
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
@@ -101,7 +101,7 @@ def test_a_tool_outside_the_list_is_refused_with_a_way_on(new_story, helper_fixt
 def test_a_wait_does_not_lift_the_limit(new_story, helper_fixture):
     story, session = helper_story(new_story, helper_fixture)
     story.run('wait stuck "no way on"', actor=Actor(helper_agent(story).id, ActorType.AGENT))
-    story.expect_hook_refusal(session, tool("Edit", ToolType.EDIT), "reads and searches only")
+    story.expect_hook_refusal(session, tool("Edit", ToolType.EDIT), "This driver only reads and searches")
 
 
 def test_a_writing_main_agent_is_not_held_to_reading(new_story):
@@ -155,16 +155,16 @@ def main_story(new_story):
 def test_a_programs_own_subagent_tool_is_refused_with_the_way_on(new_story, name, category):
     story = main_story(new_story)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    story.expect_hook_refusal("s-1", tool(name, category), "start a helper for this")
+    story.expect_hook_refusal("s-1", tool(name, category), "Start a helper for this")
     launcher.server.close()
 
 
 def test_a_wait_does_not_lift_the_subagent_refusal(new_story):
     story = main_story(new_story)
     story.run('wait stuck "no way on"', actor=story.agent)
-    story.expect_hook_refusal("s-1", tool("Agent", ToolType.AGENT), "keep this work yourself")
+    story.expect_hook_refusal("s-1", tool("Agent", ToolType.AGENT), "do this work yourself")
 
 
 def test_a_tool_called_by_a_programs_own_child_is_refused(new_story):
     story = main_story(new_story)
-    story.expect_hook_refusal("s-1", tool("Read", ToolType.READ).with_fields(child_agent="child-1"), "keep this work yourself")
+    story.expect_hook_refusal("s-1", tool("Read", ToolType.READ).with_fields(child_agent="child-1"), "do this work yourself")

@@ -5,10 +5,10 @@ from engine.event.changed import Changed
 
 
 class PersonPresetOwnerGuard(PersonRowGuard[Changed[PersonPreset]]):
-    """Refuses a preset of a person written by anyone but the person it is for."""
+    """Refuses a preset of a user written by anyone but the user it is for."""
 
     name = "viewer.person-preset-owner"
-    refusal = Refusal("this layout preset belongs to another person")
+    refusal = Refusal("this layout preset belongs to another user")
     question = "Change this saved layout preset?"
 
     def person_id(self, event: Changed[PersonPreset]) -> int:

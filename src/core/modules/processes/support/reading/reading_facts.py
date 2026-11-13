@@ -78,14 +78,12 @@ class ReadingFacts:
         return None if selected is None else selected.reader
 
     def measured_reason(self, process: Process, part: ProcessPart) -> UnreadableReason | None:
-        """Why no reader can read what a part printed by its end, from measures only."""
         return OutputFacts.reason_at_end(self.output(process, part, ReadingMoment.END))
 
     def reader_failed(self, process: Process, reader: Reader | None, moment: ReadingMoment) -> bool:
         return reader is not None and moment is ReadingMoment.END and ReaderRun.has_failed(reader, self.folder.reader_lines(process.id))
 
     def draft_fits(self, process: Process, part: ProcessPart, reader: Reader | None, moment: ReadingMoment) -> bool:
-        """Whether a stock reader, made for other commands, reads the output of a part that has no reader of its own."""
         if reader is not None or moment is not ReadingMoment.END:
             return False
         text = self.folder.part_head(process.id, part.position, SAMPLE_BYTES).decode(errors="replace")

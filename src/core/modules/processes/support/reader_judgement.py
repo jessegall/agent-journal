@@ -25,6 +25,5 @@ class ReaderJudgement:
 
     @property
     def reason_code(self) -> ReasonCode:
-        """Why the reader is poor: the first result it missed on its output, else the fields it lacks."""
         missed = " ".join(self.missed)
         return next((reason for miss, reason in MISSED_REASONS if miss in missed), ReasonCode.FIELDS_MISSING)

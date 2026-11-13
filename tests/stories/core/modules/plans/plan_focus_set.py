@@ -22,7 +22,7 @@ def test_a7_clearing_the_focus_brings_the_default_back_and_says_so(new_story):
 
 
 @pytest.mark.parametrize("ready_line, reason", [
-    ("", "plan 4 is a draft: a person must approve it first"),
+    ("", "plan 4 is a draft: a user must approve it first"),
     ("plan block 3 --reason \"the supplier is late\"", "plan 3 is blocked: focus a started or an approved plan"),
     ("plan cancel 3 --reason \"replaced\"", "plan 3 is cancelled: focus a started or an approved plan"),
 ], ids=["draft", "blocked", "cancelled"])

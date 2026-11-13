@@ -17,7 +17,7 @@ AccountRowChange = (Changed[PersonLogin] | Changed[PersonSession] | Changed[Pers
 
 class AccountRowsGuard(Guard[AccountRowChange]):
     """Lets only the journal itself write a login, a session, a second factor, a recovery code, a login attempt,
-    an audit entry or a setup code, so no agent and no person can change who may log in."""
+    an audit entry or a setup code, so no agent and no user can change who may log in."""
 
     name = "accounts.account-rows"
     is_safety = True

@@ -13,12 +13,13 @@ MAX_FOREGROUND_SECONDS = 15
 
 
 class ForegroundLimit:
-    """How a shell line is run: a line of only reading, writing and searching stays in the foreground to its end, like a
-    journal line; else in the background at once for an alias marked so or a part that went past the
-    limit in an earlier run, else the seconds the settings give, fewer for the main agent while the user
-    waits on a message; a line that runs an alias is judged by the command under the alias, as the hook
-    classified it, and read by the alias's reader. The test runs and builds of a line keep more of their
-    output. A queued line of an agent with a wait of its own holds the call for that wait."""
+    """How a shell line is run: a line of only reading, writing and searching stays in the foreground
+    to its end, like a journal line; else in the background at once for an alias marked so or a part
+    that went past the limit in an earlier run, else the seconds the settings give, fewer for the
+    main agent while the user waits on a message; a line that runs an alias is judged by the command
+    under the alias, as the hook classified it, and read by the alias's reader. The test runs and
+    builds of a line keep more of their output. A queued line of an agent with a wait of its own
+    holds the call for that wait."""
 
     def __init__(self, settings: ProcessSettings, background: BackgroundCommands, processes: ProcessQuery, messages: MessageQuery, waits: RunWaits) -> None:
         self.settings, self.background, self.processes, self.messages, self.waits = settings, background, processes, messages, waits

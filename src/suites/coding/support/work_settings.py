@@ -16,7 +16,7 @@ class WorkPreset:
 
 @dataclass(frozen=True)
 class WorkSettings:
-    """The workflow controls of the main agent as a person sees them: the preset they match or custom,
+    """The workflow controls of the main agent as a user sees them: the preset they match or custom,
     the revision a change must name, each control's key and value, and the settings of the Tests and
     Advanced tabs."""
 

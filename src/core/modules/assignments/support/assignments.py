@@ -32,7 +32,7 @@ CASCADE_REASON = "an assignment cascade reaches every assignment that follows fr
 
 class Assignments:
     """Gives rows of assignable models to actors and reads who holds a row, and which agent when the holder is
-    an agent. It is the one place that writes the assignments table. Only a person or an agent that has not
+    an agent. It is the one place that writes the assignments table. Only a user or an agent that has not
     ended can be given a row. A row of a model that one actor holds is taken from its holder and then given
     to the next, in one change; a row of a model that several actors hold gains a holder. An assigned row
     also assigns the children its model declares: a child with no assignment inherits one, a child that
@@ -164,7 +164,7 @@ class Assignments:
     def unassign(self, row: Assignable, context: Context, actor_id: int | None = None) -> tuple[Assignment, ...]:
         removed = tuple(assignment for assignment in self.assignments(row) if actor_id is None or assignment.actor_id == actor_id)
         for assignment in removed:
-            self.remove_of(row, assignment, context)
+            self.remove_row_assignment(row, assignment, context)
         return removed
 
     def unassign_rows(self, rows: Sequence[Assignable], context: Context) -> None:
@@ -177,7 +177,7 @@ class Assignments:
         self.repository.delete_many_stored(list(assigned), context)
         self.keep_rows(model, row_ids)
 
-    def remove_of(self, row: Assignable, assignment: Assignment, context: Context) -> None:
+    def remove_row_assignment(self, row: Assignable, assignment: Assignment, context: Context) -> None:
         if not row.assigns:
             self.repository.delete_stored(assignment, context)
             return
@@ -215,7 +215,7 @@ class Assignments:
         if [assignment.actor_id for assignment in current] == [actor_id]:
             return
         for assignment in current:
-            self.remove_of(row, assignment, context)
+            self.remove_row_assignment(row, assignment, context)
         if actor_id is not None and self.actor_exists(actor_id):
             self.repository.save(Assignment(creator_id=context.actor.id, subject_model=row.model_name, subject_id=row.id, actor_id=actor_id), context)
 

@@ -17,7 +17,7 @@ defineProps({tab: {type: String, required: true}, active: {type: Object, require
                         <AgentSettingsScreen key="work" :nodes="nodes('work')" :draft="draft" :read-only="readOnly" :found="found" data-agent-settings-work>
                             <template #before>
                                 <template v-if="nothingStarts">
-                                    <p class="hint" data-work-hint>With Auto off and no workers, nothing starts the work: a person starts tasks or turns one of them on.</p>
+                                    <p class="hint" data-work-hint>With Auto off and no workers, nothing starts the work: a user starts tasks or turns one of them on.</p>
                                 </template>
                             </template>
                         </AgentSettingsScreen>

@@ -7,7 +7,7 @@ from engine.model.environment_scoped import EnvironmentScoped
 
 @dataclass(frozen=True, kw_only=True)
 class PersonPreset(EnvironmentScoped, Model):
-    """A layout one person saved as a preset for one viewer page in one environment, offered in their picker
+    """A layout one user saved as a preset for one viewer page in one environment, offered in their picker
     beside the suite's presets; its shape is the layout tree's JSON."""
 
     model_name = "person_preset"

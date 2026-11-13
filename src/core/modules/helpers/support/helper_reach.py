@@ -14,7 +14,7 @@ HELPER_JOB_COMMAND = ("helper", "send")
 
 
 class HelperReach:
-    """Who may send to or stop a helper: its parent, the parent's main agent, or a person."""
+    """Who may send to or stop a helper: its parent, the parent's main agent, or a user."""
 
     def __init__(self, agents: AgentRows, helper_types: HelperTypeBook) -> None:
         self.agents, self.helper_types = agents, helper_types

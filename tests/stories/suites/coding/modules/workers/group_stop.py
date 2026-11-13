@@ -143,6 +143,6 @@ def test_a_worker_with_only_blocked_tasks_may_stop_and_tells_who_blocked_them(ne
     story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
-    story.expect_success('task block 1 --reason "waits on a person"', actor=worker)
+    story.expect_success('task block 1 --reason "waits on a user"', actor=worker)
     reply = story.expect_hook_allowed(worker_session(story, worker), HookSamples.stop())
     story.expect_rows(reply is None or "blocked task:1" in " ".join(reply.lines))

@@ -20,10 +20,11 @@ TICK_INTERVAL_SECONDS = 150
 
 
 class OrphanProcessRule(DriverRule):
-    """On each tick, a run the agent started whose shell has given no sign of life for longer than the limit, or
-    whose runner pid is gone for the lost runner seconds, is ended lost and the agent is told; a run whose folder holds an end the server
-    never heard of is ended from the folder. The first tick after a long gap, a machine that slept, ends
-    nothing lost, since no heartbeat could have been written either."""
+    """On each tick, a run the agent started whose shell has given no sign of life for longer than the
+    limit, or whose runner pid is gone for the lost runner seconds, is ended lost and the agent is
+    told; a run whose folder holds an end the server never heard of is ended from the folder. The
+    first tick after a long gap, a machine that slept, ends nothing lost, since no heartbeat could
+    have been written either."""
 
     name = "processes.orphan-process"
     hook = HookEventName.TICK

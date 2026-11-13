@@ -21,12 +21,13 @@ LOOKS_BEFORE_STOP = 3
 
 
 class HangWatch:
-    """Stops each running command whose process tree printed nothing and used no processor time for the hang
-    seconds, and tells the agent that started it. A test run that prints nothing for the look seconds while it
-    uses processor time may be working or may spin, so its agent is asked to read its output and decide, again
-    after each hang seconds until it reads the run's output, and the run is stopped when three asks stay
-    unanswered. The tree's processor time and the moment it last changed are kept in the run's folder, with the
-    asks made. One listing of the machine's processes serves every run of a tick."""
+    """Stops each running command whose process tree printed nothing and used no processor time for the
+    hang seconds, and tells the agent that started it. A test run that prints nothing for the look
+    seconds while it uses processor time may be working or may spin, so its agent is asked to read
+    its output and decide, again after each hang seconds until it reads the run's output, and the
+    run is stopped when three asks stay unanswered. The tree's processor time and the moment it last
+    changed are kept in the run's folder, with the asks made. One listing of the machine's processes
+    serves every run of a tick."""
 
     def __call__(self, container: Container) -> bool:
         running = tuple(container.get(ProcessQuery).running().every_row(RUNNING_REASON))
@@ -66,15 +67,15 @@ class HangWatch:
     def looked(self, container: Container, process: Process, silent: int, now: float, limits: HangLimits) -> bool:
         asks = container.get(LookAsks)
         if process.category is not CommandCategory.TEST_RUN or silent < limits.look:
-            asks.forgotten(process.id)
+            asks.clear(process.id)
             return False
         state = asks.state(process.id)
-        if not state.is_due(now, limits.hang, limits.look):
+        if not state.waited_enough(now, limits.hang, limits.look):
             return False
         if state.unanswered >= LOOKS_BEFORE_STOP:
             self.stop(container, process, silent)
             return True
-        asks.asked(process.id, now)
+        asks.record_ask(process.id, now)
         container.get(Bus).run(AskAgentToLook(process.id, silent), Actor.core(), environment_id=process.environment_id)
         return True
 

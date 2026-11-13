@@ -14,10 +14,10 @@ from server.viewer.viewer_login import ViewerLogin
 
 
 class ViewerKeyRoute:
-    """Answers POST /viewer/key on the journal's socket: a one-time login key for the person who asks,
+    """Answers POST /viewer/key on the journal's socket: a one-time login key for the user who asks,
     found the way a command line's caller is found, with the environment of the folder they asked from. A
     running main agent gets a key for itself, so it can see the viewer; a helper, a worker or another caller
-    who is no person gets none."""
+    who is no user gets none."""
 
     def __init__(self, home: JournalHome, login: ViewerLogin) -> None:
         self.home, self.login = home, login
@@ -34,5 +34,5 @@ class ViewerKeyRoute:
         if is_main_agent:
             return ViewerKey(self.login.new_key(caller.actor.id, SessionType.AGENT), environment)
         if caller.actor.type is not ActorType.USER:
-            raise Refusal("an agent cannot receive a person's viewer credentials")
+            raise Refusal("an agent cannot receive a user's viewer credentials")
         return ViewerKey(self.login.new_key(caller.actor.id), environment)

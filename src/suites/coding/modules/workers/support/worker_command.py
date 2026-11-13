@@ -45,7 +45,7 @@ class WorkerCommand:
         provider = self.providers.provider(worker.program)
         skills = Path(worktree.folder) / provider.skills_folder
         reads = "\n".join(provider.skill_instruction(name, skills / name / "SKILL.md") for name in
-                          ("journal", "journal-etiquette", "journal-tasks", "journal-shell", "journal-workers"))
+                          ("journal", "journal-tasks", "journal-shell", "journal-workers"))
         profile = self.profiles.effective(worker.profile or self.types.find(worker.role).default_profile)
         session_line = self.session_lines.line(worker)
         identity = f"You are {AgentLabel.from_agent(worker).text}." if session_line is None else f"You are {AgentLabel.from_agent(worker).text}.\n{session_line}"

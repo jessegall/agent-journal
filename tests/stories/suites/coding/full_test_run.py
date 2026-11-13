@@ -23,7 +23,7 @@ def run_story(new_story, sample):
 
 def test_a_full_run_that_passes_closes_the_tasks_in_testing_and_names_them_when_it_starts(full_suite_process):
     story, process = full_suite_process
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "task:1 wait in testing")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "task:1 are in testing")
     end_run(story, process, "ok\n")
     story.expect_text("task show 1", "state: completed", f"the full test run, process {process.id}, passed", actor=story.agent)
 
@@ -48,7 +48,7 @@ def test_a_failed_full_run_leaves_the_tasks_and_names_them(full_suite_process):
     story, process = full_suite_process
     end_run(story, process, "boom\n", exit_code=1)
     story.expect_text("task show 1", "state: testing", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "the full test run failed: task:1 stay in testing")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "The full test run failed: task:1 stay in testing")
 
 
 @pytest.fixture

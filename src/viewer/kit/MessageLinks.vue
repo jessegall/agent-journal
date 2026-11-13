@@ -6,7 +6,7 @@ import MoreItems from "./MoreItems.vue";
 import {useOutside} from "../src/composables/outside.js";
 import {peekRef} from "../src/route.js";
 
-// The quiet line under a person's message naming the rows linked to it, as version 4 drew it: up to three as chips,
+// The quiet line under a user's message naming the rows linked to it, as version 4 drew it: up to three as chips,
 // and from four (three on a phone) a count that opens a list of them in place
 const props = defineProps({links: {type: Array, required: true}, total: {type: Number, default: 0}, more: Boolean, loading: Boolean, failure: {type: String, default: ""}});
 const emit = defineEmits(["more"]);

@@ -18,14 +18,14 @@ def managed(sample, answer):
 def test_a_project_hook_refuses_a_tool_and_the_call_names_it(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
     reply = story.hook("s-1", managed(LISTING, {"refusal": "unsafe"}))
-    expect_reply_refusal(reply, "project hooks refused for agent:")
+    expect_reply_refusal(reply, "Project hooks refused for agent:")
     story.expect_text(f"agent-line list --agent {story.agent.id}", "project-check: unsafe", actor=story.agent)
     story.expect_text(f"hook-call show {reply.hook_call_id}", "refused", "drivers.managed-hooks")
 
 
 def test_a_project_hook_refuses_a_stop(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
-    story.expect_hook_refusal("s-1", managed(HookSamples.stop(), {"refusal": "unfinished"}), "project hooks refused for agent:")
+    story.expect_hook_refusal("s-1", managed(HookSamples.stop(), {"refusal": "unfinished"}), "Project hooks refused for agent:")
     story.expect_text(f"agent-line list --agent {story.agent.id}", "project-check: unfinished", actor=story.agent)
 
 

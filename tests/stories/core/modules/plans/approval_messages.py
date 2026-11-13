@@ -38,7 +38,7 @@ def test_a_plan_of_another_environment_is_refused_without_a_message(new_story):
 def test_an_agent_cannot_approve_even_when_skipping_a_guard(new_story, flags, message):
     story = new_story(fixture=ReadyApprovalPlan)
     story.expect_refusal(f"plan approve 1 --environment main {flags} {message}",
-                         "approved by a person on its docked plan card", actor=story.agent)
+                         "approved by a user on its docked plan card", actor=story.agent)
     story.expect_rows(len(story.story_rows(Message)) == 0)
     story.expect_success("plan show 1", "state: ready")
 

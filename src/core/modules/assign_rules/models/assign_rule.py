@@ -7,7 +7,7 @@ from core.modules.assign_rules.models.enums.rule_target import RuleTarget
 
 @dataclass(frozen=True, kw_only=True)
 class AssignRule(EnvironmentScoped, Positioned):
-    """A person's standing rule: a new free task that meets every condition is given to the target."""
+    """A user's standing rule: a new free task that meets every condition is given to the target."""
 
     model_name = "assign_rule"
     cli_name = "assign-rule"

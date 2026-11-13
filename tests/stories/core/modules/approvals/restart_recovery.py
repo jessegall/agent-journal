@@ -27,16 +27,16 @@ TEST_ROWS_REASON = "the test reads every row it checks"
 
 
 class ApprovalAsked(StoryFixture):
-    """An agent asked a person in the dock and nobody has answered."""
+    """An agent asked a user in the dock and nobody has answered."""
 
     parent = UserJoined
 
     def steps(self, story: Story) -> None:
-        story.expect_refusal("phone pair --reason needed", "A person was asked in the dock", actor=story.agent)
+        story.expect_refusal("phone pair --reason needed", "A user was asked in the dock", actor=story.agent)
 
 
 class ApprovalRunning(StoryFixture):
-    """A person accepted that request after the journal started, and its action is still running."""
+    """A user accepted that request after the journal started, and its action is still running."""
 
     parent = ApprovalAsked
 

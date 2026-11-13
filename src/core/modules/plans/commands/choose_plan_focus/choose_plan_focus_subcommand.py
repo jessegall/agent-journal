@@ -8,7 +8,7 @@ from core.modules.plans.commands.choose_plan_focus.choose_plan_focus import Choo
 class ChoosePlanFocusSubcommand(Subcommand[ChoosePlanFocus, tuple[str, ...]]):
     """`journal plan focus [<plan>] [--clear]`: the plan the asking agent works on first, where that focus comes
     from, and what each started plan waits on. A number names the plan as the focus, and --clear brings the
-    default back. A person reads and sets the focus of the running main agent."""
+    default back. A user reads and sets the focus of the running main agent."""
 
     cli_name = "plan"
     name = "focus"

@@ -13,7 +13,7 @@ from suites.coding.modules.workers.support.worker_test_presets import WorkerTest
 
 class WorkerPresetsSubcommand(ReadSubcommand[RowList]):
     """`journal worker presets`: the package manifests found in the environment's folder, the language each names,
-    and the test commands each dispatched worker gets with no grant, a person's presets included."""
+    and the test commands each dispatched worker gets with no grant, a user's presets included."""
 
     cli_name = "worker"
     name = "presets"

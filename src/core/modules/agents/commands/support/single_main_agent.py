@@ -17,9 +17,9 @@ from core.modules.agents.support.agent_sessions import AgentSessions
 
 class SingleMainAgent:
     """Keeps one main agent to an environment: a main session that opens ends the one that runs there.
-    Only a person, the launcher or the journal replaces a running main agent this way; an agent that
+    Only a user, the launcher or the journal replaces a running main agent this way; an agent that
     registers a main agent beside a running one is refused, outside a test environment granted to it, so it
-    can never end a person's own."""
+    can never end a user's own."""
 
     def __init__(self, agents: AgentRows, scopes: Scopes, bus: Bus, actors: ActorTable, sessions: AgentSessions) -> None:
         self.agents, self.scopes, self.bus, self.actors, self.sessions = agents, scopes, bus, actors, sessions
@@ -34,7 +34,7 @@ class SingleMainAgent:
 
     def ended_session(self, main: Agent, context: Context) -> Agent:
         if self.is_agent_without_grant(context, main.environment_id):
-            raise Refusal(f"main agent {main.id} runs in this environment, and an agent does not replace it", "a person or the launcher starts a new main agent")
+            raise Refusal(f"main agent {main.id} runs in this environment, and an agent does not replace it", "a user or the launcher starts a new main agent")
         self.sessions.ended(main.id, EndReason.PERSON_REPLACEMENT, context)
         return self.bus.dispatch(EndReplacedMain(main.id), replace(context, actor=Actor.core(), environment_id=main.environment_id))
 

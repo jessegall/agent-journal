@@ -8,7 +8,7 @@ from core.modules.agents.support.launcher_processes import LauncherProcesses
 
 
 class UnusedLauncherRule(DriverRule):
-    """On a main agent's tick, has each second launcher of this journal that serves nobody told to the person
+    """On a main agent's tick, has each second launcher of this journal that serves nobody told to the user
     and stopped."""
 
     name = "agents.unused-launcher"

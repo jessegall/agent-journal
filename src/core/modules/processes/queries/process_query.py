@@ -64,7 +64,6 @@ class ProcessQuery(Query[Process]):
         return self.matching(SubqueryMatch("id", self.output_items().matching(Equal("state", DockItemState.DOCKED.value))))
 
     def fresh_long_runs(self, present: Timestamp, seconds: int) -> Self:
-        """The runs old enough to dock that have no output dock item yet."""
         return self.long_run_candidates(present, seconds).matching(SubqueryMatch("id", self.output_items(), negated=True))
 
     @staticmethod

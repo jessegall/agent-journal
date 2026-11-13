@@ -173,7 +173,7 @@ async function askedLine(window, line, environment, signal, unbatched) {
     return transport.joined(JSON.stringify(body), (stop, attribution) => readAnswer({...body, attribution}, stop, unbatched), signal, body).catch(() => CANCELLED);
 }
 
-// a file the person attached, sent to the journal to wait for the message that names it: answers {ok, value: its pending name}
+// a file the user attached, sent to the journal to wait for the message that names it: answers {ok, value: its pending name}
 async function uploaded(file, window, signal = undefined) {
     try {
         const response = await transport.raw(`/api/files?name=${encodeURIComponent(file.name)}`, {method: "POST", headers: {"Content-Type": "application/octet-stream"}, body: file}, {window, line: `upload ${file.name}`});

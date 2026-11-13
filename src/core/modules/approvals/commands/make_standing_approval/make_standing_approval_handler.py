@@ -9,7 +9,7 @@ from core.modules.approvals.support.standing_approvals import StandingApprovals
 
 
 class MakeStandingApprovalHandler(Handler[MakeStandingApproval, StandingApproval]):
-    """Saves the standing yes of the person, drawn from the request, once for what it covers."""
+    """Saves the standing yes of the user, drawn from the request, once for what it covers."""
 
     command = MakeStandingApproval
 

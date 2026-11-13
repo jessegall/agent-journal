@@ -13,7 +13,7 @@ from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper
 from tests.stories.core.modules.helpers.usage_limits import report
 from tests.stories.core.modules.helpers.usage_lockdown import EDIT, LIFT, LIMIT, STOP_LINE, lockdown_story
 
-LOCKDOWN_ENDED_TEXT = "The usage limit ended; go on with what you were doing."
+LOCKDOWN_ENDED_TEXT = "The usage limit ended: continue what you were doing"
 STOPPED_TIME = timedelta(minutes=45)
 
 

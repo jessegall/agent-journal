@@ -17,7 +17,7 @@ T = TypeVar("T")
 
 
 class LibraryBrowse:
-    """Reads the shared server live for a person: a page of its list with the local copy of each item, one item, and
+    """Reads the shared server live for a user: a page of its list with the local copy of each item, one item, and
     an item's versions. It writes nothing, and an unreachable server is a refusal in plain words."""
 
     def __init__(self, client: LibraryClient, queries: Queries) -> None:

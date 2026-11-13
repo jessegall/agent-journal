@@ -7,7 +7,7 @@ from core.modules.helpers.models.usage_limit import UsageLimit
 
 
 class UsageCapGuard(Guard[Changed[UsageLimit]]):
-    """A usage limit is a person's own: an agent neither sets, changes nor removes one."""
+    """A usage limit is a user's own: an agent neither sets, changes nor removes one."""
 
     name = "helpers.person-limits"
     is_safety = True

@@ -61,7 +61,7 @@ def test_the_main_agent_retires_an_ended_agent_at_once_without_asking_a_person()
 
 def test_an_agent_that_is_not_the_main_agent_is_refused_a_retirement():
     retiring, stored = handler(stored_agent(), stored_agent(id=9, number=5))
-    with pytest.raises(Refusal, match="only a person or the main agent retires helper 4"):
+    with pytest.raises(Refusal, match="only a user or the main agent retires helper 4"):
         retiring.prepare(RetireAgent(HELPER_ID, REASON), Actor(9, ActorType.AGENT))
     assert stored.saved == []
 

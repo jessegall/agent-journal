@@ -7,7 +7,8 @@ from core.modules.drivers.models.agent_block import AgentBlock
 
 
 class CloseAgentBlocksHandler(Handler[CloseAgentBlocks, None]):
-    """Ends each of the blocks that is still open, in one read of them all; one closed in the meantime stays as it is."""
+    """Ends each of the blocks that is still open, in one read of them all; one closed in the meantime
+    stays as it is."""
 
     command = CloseAgentBlocks
 

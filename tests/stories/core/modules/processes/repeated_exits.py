@@ -19,7 +19,7 @@ PROMPT = HookSamples.prompt("go on")
 def held_again(story: Story, process: Process) -> None:
     """The run prints nothing for another hang time, so the hold comes back."""
     story.advance(timedelta(seconds=HANG_SECONDS + 1))
-    story.expect_hook_refusal("s-1", EDIT, f"output {process.id} printed nothing for")
+    story.expect_hook_refusal("s-1", EDIT, f"Output {process.id} printed nothing for")
 
 
 def test_each_exit_of_the_silent_run_hold_works_again_when_the_hold_comes_back(new_story):
@@ -47,4 +47,4 @@ def test_a_person_lifts_a_workers_reader_block_each_time_one_comes(new_story):
         worker_run(story, line)
         story.expect_hook_refusal("s-reader", EDIT, f"reader request {request}")
         story.expect_success(f"process lift-hold {number} --environment main", "1 holds lifted", actor=person)
-        story.expect_hook_allowed("s-reader", PROMPT, f"the block of reader request {request} was lifted by a person")
+        story.expect_hook_allowed("s-reader", PROMPT, f"the block of reader request {request} was lifted by a user")

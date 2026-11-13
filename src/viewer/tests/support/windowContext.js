@@ -30,7 +30,8 @@ const keyFlags = (name, state, line, switches) => Object.entries(state).filter((
 
 export function context(answers, agent = null, keys = WINDOW_KEYS) {
     const reads = [];
-    const read = async (line) => {
+    const read = async (words) => {
+        const line = Array.isArray(words) ? words.join(" ") : words;
         reads.push(line);
         const key = Object.keys(answers).find((start) => line.startsWith(start));
         return key ? answers[key] : {ok: false, failure: "refused", error: `no answer for ${line}`};

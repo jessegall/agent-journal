@@ -19,9 +19,9 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.support.story_checks import expect_value
 
 READ_NOTES = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))
-SILENT_LINE = "alias build-npm printed nothing for 30 seconds: make it print each step; this run stays silent, the next shows its steps"
-PACKAGES_LINE = "alias gotest printed nothing for 30 seconds: go test over several packages holds back each package's output until it is done, so run one package at a time, or with -p 1"
-REFUSAL = "alias build-npm printed nothing for 30 seconds on its last run: edit it to print each step, then run it again"
+SILENT_LINE = "Alias build-npm printed nothing for 30s: make it print each step. This run stays silent; the next shows its steps"
+PACKAGES_LINE = "alias gotest printed nothing for 30s: go test over several packages holds back each package's output until it is done, so run one package at a time, or with -p 1"
+REFUSAL = "alias build-npm printed nothing for 30s on its last run: edit it to print each step, then run it again"
 RUN = "journal build-npm --tail 5"
 EDITED_LINE = "npm run build --verbose"
 

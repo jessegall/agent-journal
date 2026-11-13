@@ -8,7 +8,7 @@ from suites.coding.modules.checks.models.check import Check
 
 
 class StopCheckSubcommand(Subcommand[StopCheck, Check]):
-    """`journal check stop <n>`: the check runs no more until a person starts it again."""
+    """`journal check stop <n>`: the check runs no more until a user starts it again."""
 
     cli_name = "check"
     name = "stop"

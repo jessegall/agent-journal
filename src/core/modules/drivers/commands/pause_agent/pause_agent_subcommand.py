@@ -10,7 +10,7 @@ from core.modules.agents.support.agent_label import AgentLabel
 
 
 class PauseAgentSubcommand(Subcommand[PauseAgent, Agent]):
-    """`journal agent pause <agent>`: holds a running agent until a person resumes it."""
+    """`journal agent pause <agent>`: holds a running agent until a user resumes it."""
 
     cli_name = "agent"
     name = "pause"

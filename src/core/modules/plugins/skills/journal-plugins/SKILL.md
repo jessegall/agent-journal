@@ -18,14 +18,14 @@ A plugin adds rules, services, skills and a dashboard to the journal from a fold
   out a checkout. `relative` is the name of a file, the same in the project and in every worktree, so match files on it
   and nothing else. Every absolute path is a real path. Fields are added; a change of meaning raises `v`.
 - `journal plugin checkout`, `journal plugin changes [--since <commit>]` and `journal plugin file <relative> [--from
-  checkout, project or base]` answer the same for an agent. A plugin or a person may name any agent with `--agent`; an agent
+  checkout, project or base]` answer the same for an agent. A plugin or a user may name any agent with `--agent`; an agent
   names only itself, and reads the project only in the folders plugins declare in `project_reads`. A name that is not
   there exits with code 4. `journal plugin path <absolute>` gives a path's relative name and its checkout, and
   `--since base` is the commit the checkout was cut from.
 - `journal plugin config <name>` prints a plugin's config as the project holds it, with its version; `--set
   <pointer>=<value>` or `--stdin` changes it, checked against the plugin's schema. A change raises `plugin.config_changed`.
 - `journal plugin run [--agent <n>] [--read-only] -- <command>` runs a command at the root of a checkout with the sandbox of
-  its agent. Only a plugin or a person may call it.
+  its agent. Only a plugin or a user may call it.
 - `journal plugin card <name> --label "<one line>" --detail "<text>" [--tone good|warn|danger|note|muted]` shows a card in the
   chat of the agent that ran it, its detail folded: a plugin's own command or alias posts its result this way.
 - `journal plugin record <name>` shows what it did, its newest outputs and its last fault, and `--inputs` the last lines it
@@ -34,7 +34,7 @@ A plugin adds rules, services, skills and a dashboard to the journal from a fold
   forms, and `journal plugin events <name>` shows how each entry stands. `journal plugin try <name> <key>` runs the script
   for real with the newest event of that key, prints the line and the answer, and applies nothing.
 - `guard` runs before a change and can refuse it, and nothing is saved. `"skip": false` on the entry means no
-  `--skip-guard plugins.event-guard:<plugin>` passes it; a person can always switch the plugin off.
+  `--skip-guard plugins.event-guard:<plugin>` passes it; a user can always switch the plugin off.
 - `listen` runs during a change. It sees the row uncommitted with `final` false. The commands it answers commit with the
   change; a journal command it runs itself commits at once and stays. Ids are a forecast. Only `commit` promises the change
   happened.

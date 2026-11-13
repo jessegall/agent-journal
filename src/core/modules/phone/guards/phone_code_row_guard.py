@@ -9,7 +9,7 @@ from core.modules.phone.models.phone_code import PhoneCode
 
 
 class PhoneCodeRowGuard(Guard[Changed[PhoneCode]]):
-    """Lets a person make only their own phone code, and only the journal itself redeem one."""
+    """Lets a user make only their own phone code, and only the journal itself redeem one."""
 
     name = "phone.phone-code-rows"
 
@@ -19,4 +19,4 @@ class PhoneCodeRowGuard(Guard[Changed[PhoneCode]]):
             return
         if isinstance(event, Created) and actor.type is ActorType.USER and actor.id == event.row.person_id:
             return
-        raise Refusal("a phone code belongs to its person and can only be redeemed by the viewer")
+        raise Refusal("a phone code belongs to its user and can only be redeemed by the viewer")

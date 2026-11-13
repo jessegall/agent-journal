@@ -157,7 +157,7 @@ def test_a_quiet_run_its_agent_read_is_kept_past_the_hang_time_and_stopped_once_
 
 TICK = timedelta(seconds=10)
 HALF = HANG_SECONDS // 2
-STUCK = "uses no processor time"
+STUCK = "uses no CPU"
 
 
 def titled(story: Story, title: str, process_id: int = 1) -> None:
@@ -175,11 +175,11 @@ def watched(story: Story, seconds: int, tree: FakeGroupCpuTime | None = None) ->
 
 
 def stuck_line(process_id: int, seconds: int = HALF) -> str:
-    return f"output {process_id} printed nothing for {seconds} s and uses no processor time: read it, or it is stopped at {HANG_SECONDS} s"
+    return f"Output {process_id} printed nothing for {seconds}s and uses no CPU: read it, or it is stopped at {HANG_SECONDS}s"
 
 
 def hung_line(process_id: int) -> str:
-    return f"output {process_id} printed nothing for {HANG_SECONDS} seconds, so it was stopped: its output is kept"
+    return f"Output {process_id} printed nothing for {HANG_SECONDS}s and was stopped: its output is kept"
 
 
 def test_a_stuck_test_run_wakes_its_agent_once_at_half_the_hang_time_and_is_stopped_at_the_hang_time(new_story):
@@ -227,7 +227,7 @@ def test_a_stuck_build_test_run_check_and_python_run_are_warned_alike(new_story)
     watched(story, HALF)
     outputs = ", ".join(str(process.id) for process in runs)
     heard = told(story, "s-1") + told(story, "s-1")
-    story.expect_rows(any(f"output {outputs} printed nothing for {HALF} s and uses no processor time" in line for line in heard), detail="\n".join(heard))
+    story.expect_rows(any(f"Output {outputs} printed nothing for {HALF}s and uses no CPU" in line for line in heard), detail="\n".join(heard))
 
 
 def test_reading_a_stuck_run_after_the_warning_starts_the_hold_anew_and_the_stop_still_follows(new_story):
@@ -262,7 +262,7 @@ def test_a_run_with_no_known_process_tree_is_never_warned_or_stopped_but_still_t
     watched(story, HANG_SECONDS + 30)
     story.expect_text("process show 1", "state: background", actor=story.agent)
     lines = kept_lines(story)
-    story.expect_rows(STUCK not in lines, "output 1 printed nothing for 30 seconds" in lines, detail=lines)
+    story.expect_rows(STUCK not in lines, "Output 1 printed nothing for 30s" in lines, detail=lines)
 
 
 def test_a_chain_whose_test_part_is_stuck_is_warned_once_for_its_output(new_story):

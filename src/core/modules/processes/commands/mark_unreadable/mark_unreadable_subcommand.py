@@ -7,7 +7,8 @@ from core.modules.processes.models.unreadable_mark import UnreadableMark
 
 
 class MarkUnreadableSubcommand(Subcommand[MarkUnreadable, UnreadableMark]):
-    """`journal reader unreadable "<leading words>" --reason "<why>"`: marks a command whose output no reader can read."""
+    """`journal reader unreadable "<leading words>" --reason "<why>"`: marks a command whose output no
+    reader can read."""
 
     cli_name = "reader"
     name = "unreadable"

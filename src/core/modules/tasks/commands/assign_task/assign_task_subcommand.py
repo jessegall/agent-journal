@@ -9,7 +9,7 @@ from core.modules.tasks.models.task import Task
 
 class AssignTaskSubcommand(Subcommand[AssignTask, Task]):
     """`journal task assign <task> --to <agent>`: gives a task to the agent named, as journal assign task does. Only
-    a person or the main agent assigns."""
+    a user or the main agent assigns."""
 
     cli_name = "task"
     name = "assign"

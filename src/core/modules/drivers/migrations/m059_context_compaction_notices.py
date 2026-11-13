@@ -3,7 +3,7 @@ from engine.database.migration import Migration
 
 class ContextCompactionNoticesMigration(Migration):
     """Gives each compaction whether its request repeats one that never started and the cause it failed
-    with, and creates the table of what a person was told about a compaction, one row for each notice of
+    with, and creates the table of what a user was told about a compaction, one row for each notice of
     each compaction."""
 
     number = 59

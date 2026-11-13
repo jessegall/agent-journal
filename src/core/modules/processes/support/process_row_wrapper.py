@@ -7,10 +7,10 @@ from core.modules.processes.support.request_log_entry import RequestLogEntry
 
 
 class ProcessRowWrapper(RequestRecords):
-    """Keeps the row of a hook, journal command or viewer request once it answered, as a run of the agent the
-    request came from, or of the main agent for a person. Each is appended to the request log, so answering costs no
-    write and no read, and a tick writes the log's rows. Such a row is priority 0: it takes no place, never moves to
-    the background and gives no output number."""
+    """Keeps the row of a hook, journal command or viewer request once it answered, as a run of the
+    agent the request came from, or of the main agent for a user. Each is appended to the request
+    log, so answering costs no write and no read, and a tick writes the log's rows. Such a row is
+    priority 0: it takes no place, never moves to the background and gives no output number."""
 
     def __init__(self, log: RequestLog, clock: Clock, errors: ErrorLog) -> None:
         self.log, self.clock, self.errors = log, clock, errors

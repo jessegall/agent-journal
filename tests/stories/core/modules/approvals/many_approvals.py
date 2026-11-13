@@ -35,10 +35,10 @@ def pending_viewer(pending_requests):
 def test_several_approvals_reach_the_agent_as_one_counted_notice(pending_requests):
     story = pending_requests
     answer = story.hook("s-1", HookSamples.prompt("Continue"))
-    lines = [line for line in answer.lines if "A person was asked" in line]
-    story.expect_rows(lines == ["A person was asked for 12 approvals"])
+    lines = [line for line in answer.lines if "A user was asked" in line]
+    story.expect_rows(lines == ["A user was asked for 12 approvals"])
     following = story.hook("s-1", HookSamples.prompt("Continue"))
-    story.expect_rows(not any("A person was asked" in line for line in following.lines))
+    story.expect_rows(not any("A user was asked" in line for line in following.lines))
 
 
 def test_delivering_many_notices_reads_each_agent_line_once(pending_requests):

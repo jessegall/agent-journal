@@ -301,8 +301,8 @@ def test_a_merged_worker_with_a_task_still_assigned_is_not_listed_as_running(new
 def test_a_workers_facts_carry_its_model_profile_and_name_with_no_status_file(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    worker = story.new_row_id("worker dispatch --test-command python=pytest --model sonnet --profile journal-medior --name Lovelace 1", actor=story.agent)
-    story.expect_text("usage agents --environment main --json", f'"id": {worker}', '"model": "sonnet"', '"profile": "journal-medior"', '"given_name": "Lovelace"', actor=story.agent)
+    worker = story.new_row_id("worker dispatch --test-command python=pytest --model sonnet --profile journal-worker-medior --name Lovelace 1", actor=story.agent)
+    story.expect_text("usage agents --environment main --json", f'"id": {worker}', '"model": "sonnet"', '"profile": "journal-worker-medior"', '"given_name": "Lovelace"', actor=story.agent)
 
 
 def expect_total_started_groups(groups, expected) -> None:

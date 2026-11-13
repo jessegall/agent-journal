@@ -8,8 +8,8 @@ CONFIG_CHANGED = "config_changed"
 
 @dataclass(frozen=True, kw_only=True)
 class Plugin(Model):
-    """A program the person installed that hears the journal's events: where it came from, its version,
-    whether it is switched on, the digest of its files when the person last took them, its faults in a
+    """A program the user installed that hears the journal's events: where it came from, its version,
+    whether it is switched on, the digest of its files when the user last took them, its faults in a
     row, and the last good copy of its config with its version and the places the last change touched."""
 
     model_name = "plugin"

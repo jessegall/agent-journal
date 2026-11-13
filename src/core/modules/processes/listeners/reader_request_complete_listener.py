@@ -25,7 +25,7 @@ WAITING_PARTS_REASON = "a completed request gives its reader to every part that 
 
 
 class ReaderRequestCompleteListener(SaveListener[Changed[Reader]]):
-    """Completes requests read by a newly saved proper reader, and puts a reader an agent or a person saved on the
+    """Completes requests read by a newly saved proper reader, and puts a reader an agent or a user saved on the
     running outputs it reads that have no reader yet; the stock readers are left to the start of a run."""
 
     name = "processes.reader-request-complete"

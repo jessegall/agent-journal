@@ -11,7 +11,7 @@ from suites.coding.modules.checks.models.check import Check
 
 
 class StartCheckHandler(Handler[StartCheck, Check]):
-    """Marks a stopped check as running again; only a person starts a check."""
+    """Marks a stopped check as running again; only a user starts a check."""
 
     command = StartCheck
 

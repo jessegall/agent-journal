@@ -18,7 +18,7 @@ SOURCE = "processes.hold-lifted"
 
 
 class LiftHoldHandler(Handler[LiftHold, int]):
-    """Lifts the reading holds on an agent for the person who pressed the agent card's button: the run it is held
+    """Lifts the reading holds on an agent for the user who pressed the agent card's button: the run it is held
     on counts as read, each block of a reader request is closed, and the agent is told once for each."""
 
     command = LiftHold
@@ -28,7 +28,7 @@ class LiftHoldHandler(Handler[LiftHold, int]):
 
     def handle(self, command: LiftHold, context: Context) -> int:
         if context.actor.type is not ActorType.USER:
-            raise Refusal("only a person lifts a hold, on the agent's card", "take the exit the hold names")
+            raise Refusal("only a user lifts a hold, on the agent's card", "take the exit the hold names")
         lifted = 0
         held = self.held_runs.found(command.agent_id, context.timestamp)
         if held is not None:

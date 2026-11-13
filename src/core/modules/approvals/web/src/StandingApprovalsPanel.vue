@@ -2,7 +2,7 @@
 import {computed} from "vue";
 import {Btn, WindowRoom, useRunLine, useWindow} from "@journal/window-kit";
 
-// the standing yeses of the environment: each says what it covers, and a person removes one so the same request asks again
+// the standing yeses of the environment: each says what it covers, and a user removes one so the same request asks again
 const view = useWindow();
 const {rows, failure} = view.props.standing;
 const standing = computed(() => rows.value ?? []);

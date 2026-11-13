@@ -8,7 +8,7 @@ from core.modules.drivers.support.driver_settings import MODULE_KEY
 
 
 class CompactionNoticeMarkListener(MarkListener[Created[ContextCompactionNotice]]):
-    """Shows what a person is told about a compaction that went wrong, once, in the chat."""
+    """Shows what a user is told about a compaction that went wrong, once, in the chat."""
 
     name = "drivers.compaction-notice-mark"
     module_name = MODULE_KEY

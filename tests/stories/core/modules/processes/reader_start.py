@@ -3,7 +3,7 @@ from core.modules.drivers.models.agent_block import AgentBlock
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-NOTICE = "readers need required fields"
+NOTICE = "readers lack required fields"
 
 
 def test_a_main_agent_gets_one_reader_count_after_its_session_start_without_a_block(new_story):

@@ -85,7 +85,8 @@ test("the opened agent card names its role and number once, and its program, mod
     const row = {...AGENTS[2], number: 770, program_model: "opus", session_count: 2, memory_count: 3, created_at: "2026-11-01T10:00:00Z"};
     const facts = {id: row.id, tasks: [], model: "opus", effort: "high", last_activity: "2026-11-11T10:00:00Z", context_percent: 15, cost_dollars: 1.5};
     const element = await mounted({render: () => h(AgentCard, {row, facts, open: true})}, {...context({}), tabs: TABS});
-    expect(element.querySelector("[data-agent-title]").textContent).toBe("Worker 770");
+    expect(element.querySelector("[data-agent-title]").textContent).toBe("Worker");
+    expect(element.querySelector("[data-agent-name]").textContent).toBe("worker 770");
     expect(element.querySelector("[data-agent-identity]")).toBeNull();
     const bar = element.querySelector("[data-information-bar]");
     expect(bar.querySelector("[data-fact='agent']")).not.toBeNull();

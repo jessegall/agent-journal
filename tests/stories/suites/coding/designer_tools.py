@@ -10,7 +10,7 @@ CLAUDE_DESIGN_TOOL = "mcp__claude_design__write_files"
 
 
 class StartedDesigner(StoryFixture):
-    """A main agent with a person beside it and one journal-designer helper."""
+    """A main agent with a user beside it and one journal-designer helper."""
 
     parent = UserBuilder
 
@@ -25,7 +25,7 @@ class StartedDesigner(StoryFixture):
 
 
 class StartedResearcher(StoryFixture):
-    """A main agent with a person beside it and one read-only journal-researcher helper."""
+    """A main agent with a user beside it and one read-only journal-researcher helper."""
 
     parent = UserBuilder
 

@@ -8,9 +8,10 @@ from core.modules.plugins.support.plugin_answer import PluginAnswer
 
 
 class PluginQueuedJudge:
-    """Turns a plugin's queue answer into the answer of the run it asked for. The run is queued under the kind its
-    manifest declares, exactly as journal plugin run --kind queues it, and no hook time limit applies to it. A run
-    that exits with 0 lets the step go on; any other exit refuses it, with what the run printed as the reason."""
+    """Turns a plugin's queue answer into the answer of the run it asked for. The run is queued under
+    the kind its manifest declares, exactly as journal plugin run --kind queues it, and no hook time
+    limit applies to it. A run that exits with 0 lets the step go on; any other exit refuses it,
+    with what the run printed as the reason."""
 
     def __init__(self, bus: Bus) -> None:
         self.bus = bus

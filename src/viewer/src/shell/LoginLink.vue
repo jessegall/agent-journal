@@ -4,7 +4,7 @@ import Btn from "../kit/Btn.vue";
 import {transport} from "../api/transport.js";
 import {copyText} from "../platform/clipboard.js";
 
-// a one-time link that logs another browser in as this person; the server refuses it to any session that is not a person's
+// a one-time link that logs another browser in as this user; the server refuses it to any session that is not a user's
 const emit = defineEmits(["close"]);
 const link = ref("");
 const failure = ref("");

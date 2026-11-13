@@ -8,8 +8,8 @@ from core.modules.approvals.models.lifecycles.approval_lifecycle import Approval
 
 @dataclass(frozen=True, kw_only=True)
 class ApprovalRequest(EnvironmentScoped, Model):
-    """An action waiting for a person's decision in an environment's dock; command_json is the command Accept runs as
-    the person, when the approval names one."""
+    """An action waiting for a user's decision in an environment's dock; command_json is the command Accept runs as
+    the user, when the approval names one."""
 
     model_name = "approval"
     cli_name = "approval"

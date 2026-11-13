@@ -52,7 +52,7 @@ def test_a_person_s_comment_is_a_message_of_type_comment_naming_the_document_and
     shown = json.loads(story.run("message show 1 --json", actor=story.user).output_text)
     expect_row(shown, type="comment")
     expect_row(shown["metadata"]["journal.core.messages"], commented_row={"model": "doc", "id": 1})
-    story.expect_hook_allowed("s-1", HookSamples.prompt("Carry on"), "new message 1")
+    story.expect_hook_allowed("s-1", HookSamples.prompt("Carry on"), "New message 1")
 
 
 def test_an_agent_s_comment_stays_an_agent_message_and_is_not_told_back_to_it(new_story):

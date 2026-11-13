@@ -4,7 +4,7 @@ from server.work.round_work import RoundWork
 
 
 class UrgentListenerWork(RoundWork):
-    """The round of the listeners a person waits on, such as those that type a line, on a thread of their own so
+    """The round of the listeners a user waits on, such as those that type a line, on a thread of their own so
     that no other listener holds them up."""
 
     def run(self, container: Container) -> None:

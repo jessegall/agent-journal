@@ -48,7 +48,7 @@ def test_a_started_task_names_its_holder_and_every_main_agent_is_the_same_holder
 
 
 @pytest.mark.parametrize("waits, text", [
-    ([SimpleNamespace(target="user", command="")], "which waits on a person"),
+    ([SimpleNamespace(target="user", command="")], "which waits on a user"),
     ([SimpleNamespace(target="", command="test -f x")], "which waits on a command"),
     ([SimpleNamespace(target="plans:3", command="")], "which waits on something that is no task"),
     ([], "which is blocked with a reason"),

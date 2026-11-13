@@ -63,7 +63,7 @@ def test_the_agent_card_reads_reports_through_the_viewer(new_story):
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
 def test_a_long_report_gives_the_parent_its_message_number(new_story, helper_fixture):
     story = reported(new_story, helper_fixture, "x" * 2001)
-    story.expect_text(LINES.format(agent=story.agent.id), f"reports in message:{helper_report(story).id}")
+    story.expect_text(LINES.format(agent=story.agent.id), f"reported in message:{helper_report(story).id}")
 
 
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
@@ -86,7 +86,7 @@ def test_a_report_to_a_parent_that_ended_for_good_goes_to_the_running_main_agent
     second = Actor(story.new_row_id("agent start s-2 claude main --environment main"), ActorType.AGENT)
     story.run(f"agent end {story.agent.id}", actor=story.user)
     story.hook(helper_agent(story).session, stop_with_report("The cart adds tax twice."))
-    story.expect_text(LINES.format(agent=second.id), f"reports in message:{helper_report(story).id}")
+    story.expect_text(LINES.format(agent=second.id), f"reported in message:{helper_report(story).id}")
     story.expect_text(f"message read {helper_report(story).id}", "The cart adds tax twice.", actor=second)
 
 
@@ -202,7 +202,7 @@ def test_a_new_main_agent_takes_over_a_running_helper_and_its_report(new_story):
     second = Actor(story.new_row_id("agent start s-2 claude main --environment main"), ActorType.AGENT)
     story.expect_rows(helper_agent(story).parent_id == second.id)
     story.hook(helper_agent(story).session, stop_with_report("The cart adds tax twice."))
-    story.expect_text(LINES.format(agent=second.id), f"reports in message:{helper_report(story).id}")
+    story.expect_text(LINES.format(agent=second.id), f"reported in message:{helper_report(story).id}")
     story.expect_text(f"message read {helper_report(story).id}", "The cart adds tax twice.", actor=second)
 
 
@@ -210,7 +210,7 @@ def test_a_new_main_agent_takes_the_report_lines_left_on_the_ended_one(new_story
     story = reported(new_story, StartedHelper, "Nothing left to read.")
     story.run(f"agent end {story.agent.id}", actor=story.user)
     second = Actor(story.new_row_id("agent start s-2 claude main --environment main"), ActorType.AGENT)
-    story.expect_text(LINES.format(agent=second.id), f"reports in message:{helper_report(story).id}")
+    story.expect_text(LINES.format(agent=second.id), f"reported in message:{helper_report(story).id}")
     story.expect_text("message reports --environment main", f"message:{helper_report(story).id}", actor=second)
     story.expect_text(f"message read {helper_report(story).id}", "Nothing left to read.", actor=second)
 

@@ -15,7 +15,7 @@ from core.modules.plans.models.phase import Phase
 
 @dataclass(frozen=True, kw_only=True)
 class Plan(EnvironmentScoped, Model, StateHolder, Assignable):
-    """A goal reached by tasks placed in ordered phases; it is made ready, approved by a person, then
+    """A goal reached by tasks placed in ordered phases; it is made ready, approved by a user, then
     followed. Its design document, when it has one, is linked to it. One actor holds a plan, and its
     assignment also assigns its phases and through them their tasks."""
 

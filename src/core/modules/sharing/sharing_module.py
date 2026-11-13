@@ -36,7 +36,7 @@ from core.modules.sharing.support.skeletons import SHARING_SHARES_SKELETON
 
 
 class SharingModule(Module):
-    """Lets a person share a document, a report or a plan as a read-only link, kept by the digest of its token
+    """Lets a user share a document, a report or a plan as a read-only link, kept by the digest of its token
     until it expires or is
     revoked; an agent may ask for one, and visitors may comment if the link lets them."""
 

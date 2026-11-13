@@ -19,7 +19,7 @@ def test_a_third_party_button_cannot_run_a_line_a_shipped_button_runs(new_story)
 @pytest.mark.parametrize("module,line", [("GrantingButtonModule", "window trust"), ("ProgramTrustButtonModule", "program trust"), ("PluginInstallButtonModule", "plugin install"), ("UpdateInstallButtonModule", "update install"),
                                          ("SecretAllowButtonModule", "secret allow"), ("SecretFillButtonModule", "secret fill"), ("PhonePairButtonModule", "phone pair")])
 def test_a_third_party_button_cannot_run_a_line_only_a_person_runs(new_story, module, line):
-    refused(new_story, module, f"good has a button that runs {line}, which only a person runs")
+    refused(new_story, module, f"good has a button that runs {line}, which only a user runs")
 
 
 def test_two_third_party_buttons_cannot_share_a_line(new_story):

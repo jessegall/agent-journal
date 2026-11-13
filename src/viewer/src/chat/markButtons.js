@@ -9,7 +9,7 @@ export {CHAT_WINDOW};
 const buttonLine = (button, row, values = {}) => lineWords(button.runs).map((word) =>
     word.replace(/\{(\w+)\}/g, (_, name) => name === "row_id" ? String(row?.id ?? "") : values[name]));
 
-// a button sends its declared command after the person allows its module
+// a button sends its declared command after the user allows its module
 export async function pressButton(button, row, environment, values = {}) {
     try {
         if (!(await allowed(button.module, environment))) return {ok: false, error: ""};
@@ -23,6 +23,6 @@ export async function pressButton(button, row, environment, values = {}) {
     }
 }
 
-// the buttons a person may press: all of them when nothing limits the lines they may run, else those whose line, its first two words, is allowed
+// the buttons a user may press: all of them when nothing limits the lines they may run, else those whose line, its first two words, is allowed
 export const pressable = (buttons, allowedRuns) =>
     allowedRuns ? buttons.filter((button) => allowedRuns.includes(button.runs.split(" ").slice(0, 2).join(" "))) : buttons;

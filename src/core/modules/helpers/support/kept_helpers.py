@@ -22,10 +22,10 @@ FULL_SESSION_PERCENT = 80
 
 
 class KeptHelpers:
-    """Reads the idle helpers of a profile that can take a new job: not retired, process ended, no open job, on
-    the program and model asked for, with a session that resumes in its folder and is not nearly full. A helper
-    whose profile replaces its session at each launch is idle on any program, model and session, because its
-    next launch picks its own. The lowest number comes first."""
+    """Reads the idle helpers of a profile that can take a new job: not retired, process ended, no open
+    job, on the program and model asked for, with a session that resumes in its folder and is not
+    nearly full. A helper whose profile replaces its session at each launch is idle on any program,
+    model and session, because its next launch picks its own. The lowest number comes first."""
 
     def __init__(self, queries: Queries, providers: Providers, folders: AgentFolders, kept_rows: KeptRows, states: ProgramStates, share: ContextShare, lockdown: ProgramLockdown) -> None:
         self.lockdown = lockdown
@@ -48,13 +48,11 @@ class KeptHelpers:
         return self.kept_rows.read(helpers, lambda: tuple(helpers.every_row(KEPT_HELPERS_REASON)), name="helpers.kept")
 
     def idle(self, selection: ProfileModel, occupant: Occupant) -> tuple[Agent, ...]:
-        """The stopped helpers of a profile that can take a job on the model chosen for it; one on another model is
-        never reused, even by an occupant that may change program."""
         stopped = [helper for helper in self.stopped(selection.profile) if not selection.model or helper.program_model == selection.model]
         idle_helpers = stopped if occupant.may_change_program else [helper for helper in stopped if self.resumes(helper, selection.program, selection.model)]
         return tuple(sorted(idle_helpers, key=lambda helper: helper.number))
 
-    def idle_of_profile(self, profile: str, occupant: Occupant) -> tuple[Agent, ...]:
+    def idle_profile_helpers(self, profile: str, occupant: Occupant) -> tuple[Agent, ...]:
         stopped = self.stopped(profile)
         idle_helpers = stopped if occupant.may_change_program else [helper for helper in stopped if self.resumes(helper, helper.program, helper.program_model)]
         return tuple(sorted(idle_helpers, key=lambda helper: helper.number))

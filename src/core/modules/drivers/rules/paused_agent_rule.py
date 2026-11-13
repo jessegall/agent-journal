@@ -7,9 +7,10 @@ from core.modules.drivers.support.block_conditions.agent_resumed import AgentRes
 
 
 class PausedAgentRule(DriverRule):
-    """A paused agent's tool calls are refused until it is resumed, except read tools, read commands and journal
-    message commands, so it can still look things up and answer in the chat; any other journal command waits for
-    the resume too (message 117878), also one nested in the line of another program, such as bash -c."""
+    """A paused agent's tool calls are refused until it is resumed, except read tools, read commands and
+    journal message commands, so it can still look things up and answer in the chat; any other journal
+    command waits for the resume too (message 117878), also one nested in the line of another program, such
+    as bash -c."""
 
     name = "drivers.paused-agent"
     hook = HookEventName.PRE_TOOL_USE

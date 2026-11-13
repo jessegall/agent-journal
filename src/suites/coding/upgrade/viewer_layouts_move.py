@@ -36,7 +36,7 @@ class ViewerLayoutsMove(VersionFourMove):
         for row in [row for row in source.rows("settings") if row["key"].removeprefix(KEY_PREFIX) in LAYOUT_PAGES]:
             windows = self.windows(row["value"])
             if person is None or not environments or not windows:
-                report.skip("settings", row["id"], "there is no person, no environment or no view in the layout")
+                report.skip("settings", row["id"], "there is no user, no environment or no view in the layout")
                 continue
             report.count("viewer_layouts", map.transfer("settings", row["id"], "viewer_layouts", lambda: self.insert(
                 rows, row, windows, person, environments[0]["id"], creators.actor_id(row["creator"]), context)))

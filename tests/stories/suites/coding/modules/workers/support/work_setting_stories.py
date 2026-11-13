@@ -15,7 +15,7 @@ def settings_revision(story: Story) -> str:
 
 
 def apply_work_setting(story: Story, key: str, value: object) -> None:
-    """A person changes one setting of the Workers screen, by the line the screen sends."""
+    """A user changes one setting of the Workers screen, by the line the screen sends."""
     story.expect_success(f"work-settings apply --revision {settings_revision(story)} --environment main {key}={value}", actor=story.user)
 
 

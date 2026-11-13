@@ -43,7 +43,7 @@ def test_a_button_the_journal_ships_needs_no_allowance(new_story):
 
 def test_an_agent_cannot_allow_a_module_buttons(new_story):
     window = window_story(new_story)
-    window.story.expect_refusal(ALLOW, "A person was asked in the dock", actor=window.story.agent)
+    window.story.expect_refusal(ALLOW, "A user was asked in the dock", actor=window.story.agent)
 
 
 def test_allowing_buttons_no_module_declares_is_refused(new_story):

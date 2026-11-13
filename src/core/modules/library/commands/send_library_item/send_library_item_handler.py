@@ -11,7 +11,7 @@ from core.modules.library.support.shared_library_item import SharedLibraryItem
 
 
 class SendLibraryItemHandler(Handler[SendLibraryItem, SharedLibraryItem]):
-    """Checks a row, uploads it with no write lock held, then writes the copy in a short transaction; only a person
+    """Checks a row, uploads it with no write lock held, then writes the copy in a short transaction; only a user
     shares."""
 
     command = SendLibraryItem

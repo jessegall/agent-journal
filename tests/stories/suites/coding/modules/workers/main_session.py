@@ -34,7 +34,7 @@ def started_replacement(replacement):
 def test_a_new_main_session_hears_a_workers_report(replacement):
     story, worker, main = replacement
     story.expect_hook_allowed(worker_session(story, worker), stop_with_text(REPORT))
-    story.expect_text(f"agent-line list --agent {main.id}", f"agent:{agent_number(story, worker.id)} reports in message:1")
+    story.expect_text(f"agent-line list --agent {main.id}", f"agent:{agent_number(story, worker.id)} reported in message:1")
 
 
 def test_a_new_main_session_is_held_for_a_delivered_workers_proof(started_replacement):

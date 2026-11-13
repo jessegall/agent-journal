@@ -19,7 +19,7 @@ KEPT_AGENTS_REASON = "The helpers of every type that are not retired, which the 
 
 
 class AgentUse:
-    """Counts the jobs of each type of agent by model over the last days, with the agents kept of it, so a person
+    """Counts the jobs of each type of agent by model over the last days, with the agents kept of it, so a user
     can decide what to retire; the journal retires nothing itself."""
 
     def __init__(self, queries: Queries, settings: SettingValues, clock: Clock, job_counts: AgentJobCounts) -> None:

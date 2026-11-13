@@ -68,7 +68,7 @@ def test_an_exit_passes_under_a_silent_run_hold(new_story, line):
     story = install_runner(new_story(fixture=UserBuilder))
     process = moved_run(story, "zork-build bundle", CommandCategory.BUILD)
     story.advance(timedelta(seconds=HANG_SECONDS + 1))
-    story.expect_hook_refusal("s-1", EDIT, f"output {process.id} printed nothing for")
+    story.expect_hook_refusal("s-1", EDIT, f"Output {process.id} printed nothing for")
     story.expect_hook_allowed("s-1", journal_line(line.format(output=process.id)))
 
 
@@ -94,7 +94,7 @@ def test_a_peek_at_a_held_run_passes_and_leaves_the_hold_which_only_a_read_lifts
     process = moved_run(story, "zork-build bundle", CommandCategory.BUILD)
     story.advance(timedelta(seconds=HANG_SECONDS + 1))
     story.expect_text(f"output peek {process.id} --tail 5", actor=story.agent)
-    story.expect_hook_refusal("s-1", EDIT, f"output {process.id} printed nothing for")
+    story.expect_hook_refusal("s-1", EDIT, f"Output {process.id} printed nothing for")
     story.expect_text(f"output read {process.id} --tail 5", actor=story.agent)
     story.expect_hook_allowed("s-1", EDIT)
 

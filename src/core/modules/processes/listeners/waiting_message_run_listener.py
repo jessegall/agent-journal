@@ -12,7 +12,7 @@ from core.modules.messages.support.message_targets import MessageTargets
 
 
 class WaitingMessageRunListener(CommitListener[Created[Message]]):
-    """A person's message moves the main agent's foreground run to the background at once, through a file its runner
+    """A user's message moves the main agent's foreground run to the background at once, through a file its runner
     watches, so the agent can read the message without waiting for the run; a run that never goes to the background,
     such as a journal command, finishes in the foreground."""
 

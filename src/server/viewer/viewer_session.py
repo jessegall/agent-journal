@@ -7,7 +7,7 @@ from server.enums.session_type import SessionType
 
 @dataclass(frozen=True)
 class ViewerSession:
-    """One login's session: its type, and the person it acts for or the share it shows and when that share
+    """One login's session: its type, and the user it acts for or the share it shows and when that share
     ends."""
 
     type: SessionType

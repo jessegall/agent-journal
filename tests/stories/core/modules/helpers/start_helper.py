@@ -25,7 +25,7 @@ PLAIN_START = 'helper start journal-researcher --brief "Read the queue" --enviro
 
 
 class LauncherRuns(StoryFixture):
-    """A main agent with a person beside it, ready to start helpers."""
+    """A main agent with a user beside it, ready to start helpers."""
 
     parent = UserBuilder
 
@@ -112,7 +112,7 @@ def test_a_start_with_no_model_anywhere_is_refused_naming_the_flag(new_story):
 @pytest.mark.parametrize("line, reason", [
     (f"{START} --program codex --model not-a-model", "may run"),
     ('helper start nobody --brief "Read" --environment main', "journal profile list"),
-    ('helper start journal-senior --brief "Read" --environment main', "journal-senior is a Worker: use journal worker dispatch"),
+    ('helper start journal-worker-senior --brief "Read" --environment main', "journal-worker-senior is a Worker: use journal worker dispatch"),
     (f'helper start journal-researcher --brief "{"x" * 100001}" --environment main', "journal doc make"),
 ], ids=["model", "profile", "worker profile", "long brief"])
 def test_a_refused_start_leaves_no_row(new_story, line, reason):
@@ -169,7 +169,7 @@ def test_a_failed_launch_ends_the_helper_and_tells_the_parent(new_story):
     story.run_listeners()
     launcher.drain_requests()
     story.expect_text(f"agent show {agent_number(story, helper_id)}", "ended_at: 20")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, helper_id)} could not start")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, helper_id)} failed to start")
 
 
 def test_a_helper_with_no_hook_after_a_minute_ends_and_the_parent_is_told(new_story):
@@ -179,7 +179,7 @@ def test_a_helper_with_no_hook_after_a_minute_ends_and_the_parent_is_told(new_st
     story.hook("s-1", HookSamples.tick())
     story.run_listeners()
     story.expect_text(f"agent show {agent_number(story, helper_id)}", "ended_at: 20")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, helper_id)} could not start")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, helper_id)} failed to start")
 
 
 def test_a_helper_that_sent_a_hook_stays(new_story):

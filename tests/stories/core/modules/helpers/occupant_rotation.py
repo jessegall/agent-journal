@@ -149,6 +149,6 @@ def test_a_launch_that_cannot_start_ends_the_job_with_a_report_and_the_next_send
     failed_session = helper_agent(rotating).session
     jobs = read_jobs(rotating, helper)
     rotating.expect_rows(len(jobs) == 2, jobs[1].ended_at is not None, "could not start" in jobs[1].returned, agent_number(rotating, helper.id) == 2, detail=str(jobs[-1]))
-    rotating.expect_text(f"agent-line list --agent {rotating.agent.id}", "could not start")
+    rotating.expect_text(f"agent-line list --agent {rotating.agent.id}", "failed to start")
     job_launch(rotating)
     rotating.expect_rows(helper_agent(rotating).session not in (helper.session, failed_session), len(read_jobs(rotating, helper)) == 3)

@@ -118,7 +118,7 @@ async function load() {
 
 watch(opened, (open) => open && load());
 
-// the agent that ran the run is asked to draw a reader: the journal opens its request and posts one chat message from the person, and the menu item goes
+// the agent that ran the run is asked to draw a reader: the journal opens its request and posts one chat message from the user, and the menu item goes
 const asked = ref(false);
 async function askForReader() {
   const answer = await view.run(["output", "ask-reader", String(item.value?.target_id)]);
@@ -131,7 +131,7 @@ async function reportWith(action) {
   reportOpen.value = false;
   await action();
 }
-// a person marks the command of the run as one no reader can read, or lifts that mark; the agent is told, and the card reads again
+// a user marks the command of the run as one no reader can read, or lifts that mark; the agent is told, and the card reads again
 async function markRun(subcommand) {
   const answer = await view.run(["output", subcommand, String(item.value?.target_id)]);
   if (answer?.ok !== false) load();

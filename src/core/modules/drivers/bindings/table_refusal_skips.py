@@ -19,7 +19,7 @@ from core.modules.drivers.models.refusal_skip import RefusalSkip
 
 class TableRefusalSkips(RefusalSkips):
     """Finds a skip that waits for a rule in the table, and turns an agent's skipped guards into kept skips, each
-    held to the same checks; a person skips a guard freely. Guards that share a short flag are one skip: the
+    held to the same checks; a user skips a guard freely. Guards that share a short flag are one skip: the
     one that refused the agent, or the first when none did."""
 
     def __init__(self, queries: Queries, bus: Bus, registry: Registry, refusals: RefusalLog) -> None:

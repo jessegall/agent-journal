@@ -1,7 +1,7 @@
 from engine.database.migration import Migration
 
 
-class CountdownLimitNameMigration(Migration):
+class CountdownCapNameMigration(Migration):
     """Renames the block column that holds how many uses remain when its countdown is first shown."""
 
     number = 49

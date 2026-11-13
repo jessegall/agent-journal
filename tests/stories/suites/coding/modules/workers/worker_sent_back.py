@@ -39,5 +39,3 @@ def test_a_worker_that_asked_for_help_and_stops_is_answered_and_never_told_to_go
     story.expect_rows(GO_ON_TEXT not in worker_lines(story, case.worker.id), detail=worker_lines(story, case.worker.id))
     story.expect_success(f'merger answer {questions(story)[0].id} "{ANSWER}"', actor=case.merger)
     story.expect_rows(ANSWER in case.worker_messages(), GO_ON_TEXT not in worker_lines(story, case.worker.id), detail=worker_lines(story, case.worker.id))
-
-

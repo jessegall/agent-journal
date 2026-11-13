@@ -11,7 +11,7 @@ from tests.stories.core.modules.plans.support.started_plans import (
 
 def test_a2_a_started_plan_whose_tasks_all_wait_on_a_task_nobody_can_take_is_passed_over(new_story):
     story = new_story(fixture=OldestPlanWaitsOnAPerson)
-    story.expect_success(PLAN_FOCUS, f"plan 2 is your focus: {DEFAULT_FOCUS}", "plan 1: waits on task 7, which waits on a person", actor=story.agent)
+    story.expect_success(PLAN_FOCUS, f"plan 2 is your focus: {DEFAULT_FOCUS}", "plan 1: waits on task 7, which waits on a user", actor=story.agent)
 
 
 def test_a3_a_started_plan_that_waits_on_an_outside_task_the_agent_can_take_is_workable_and_the_default(new_story):
@@ -24,7 +24,7 @@ def test_a6_plan_focus_with_no_number_prints_the_focus_says_which_and_lists_the_
     story.run("task start 5", actor=story.agent)
     story.run("task depend 6 --on 5", actor=story.user)
     story.expect_success(PLAN_FOCUS, f"plan 2 is your focus: {DEFAULT_FOCUS}", "other started plans:",
-                         "plan 1: waits on task 7, which waits on a person", "plan 3: waits on task 5, which you hold", actor=story.agent)
+                         "plan 1: waits on task 7, which waits on a user", "plan 3: waits on task 5, which you hold", actor=story.agent)
     answer = story.run(PLAN_FOCUS, actor=story.agent).output_text
     story.expect_rows("you set it" not in answer, detail=answer)
 

@@ -7,8 +7,8 @@ from core.modules.tasks.models.task import Task
 
 
 class AssignOnStartListener(SaveListener[Moved[Task]]):
-    """A person or an agent that starts a task nobody is assigned becomes its assignee. A task already assigned
-    keeps its assignee, also when a person starts it for someone else."""
+    """A user or an agent that starts a task nobody is assigned becomes its assignee. A task already assigned
+    keeps its assignee, also when a user starts it for someone else."""
 
     name = "tasks.assign-on-start"
     moves = tuple([TaskLifecycle.start])

@@ -16,7 +16,7 @@ from engine.command.person_check import PersonCheck
 class AllowWindowHandler(Handler[AllowWindow, WindowPermission]):
     """Writes the caller's permission row for a window, or for the buttons of a module (button:<module>): the
     lines it declares added to those allowed before; the guard viewer.person-gives-permissions refuses any
-    caller but a person allowing for themselves."""
+    caller but a user allowing for themselves."""
 
     command = AllowWindow
 

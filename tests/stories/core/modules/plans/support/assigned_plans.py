@@ -23,7 +23,7 @@ def phase_task_ids(phase_id: int) -> list[int]:
 
 
 class PlanWithTwoPhases(StoryFixture):
-    """The main agent, the person Ada, three workers W, V and X, and plan 1 of two phases with three open tasks in
+    """The main agent, the user Ada, three workers W, V and X, and plan 1 of two phases with three open tasks in
     each, nobody assigned."""
 
     parent = UserJoined

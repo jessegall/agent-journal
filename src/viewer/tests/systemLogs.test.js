@@ -35,6 +35,8 @@ test("system log paging and filters are read on the server and filters return to
     expect(window.reads.at(-1)).toBe("developer system-logs --page 1 --source journal");
     await pick(element, "data-log-level", "warning");
     expect(window.reads.at(-1)).toContain("--source journal --level warning");
+    await pick(element, "data-log-level", "error");
+    expect(window.reads.at(-1)).toContain("--source journal --level error");
 });
 
 test("pause freezes log lines and filters until resume, and reports read failures", async () => {

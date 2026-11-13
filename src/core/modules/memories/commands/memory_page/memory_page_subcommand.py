@@ -18,7 +18,7 @@ HOLDERS_REASON = "the page names the holder of every memory it shows"
 
 
 class MemoryPageSubcommand(ReadSubcommand[MemoryPage]):
-    """Reads a page of memories with its agents for a person."""
+    """Reads a page of memories with its agents for a user."""
 
     cli_name = "memory"
     name = "page"

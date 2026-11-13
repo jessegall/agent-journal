@@ -25,7 +25,7 @@ class PendingDockItems:
 
     def remember(self, saved: DockItem) -> None:
         def with_saved(items: tuple[DockItem, ...]) -> tuple[DockItem, ...]:
-            others = tuple(item for item in items if item.id != saved.id)
-            return (*others, saved) if saved.state is DockItemState.DOCKED and not saved.kept and saved.leaves_at is None else others
+            remaining_items = tuple(item for item in items if item.id != saved.id)
+            return (*remaining_items, saved) if saved.state is DockItemState.DOCKED and not saved.kept and saved.leaves_at is None else remaining_items
 
         self.kept.update(self.items.waiting(), with_saved, name="docking.pending_items")

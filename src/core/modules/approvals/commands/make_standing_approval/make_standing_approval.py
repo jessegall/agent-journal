@@ -7,7 +7,7 @@ from core.modules.approvals.models.standing_approval import StandingApproval
 
 @dataclass(frozen=True)
 class MakeStandingApproval(Command[StandingApproval]):
-    """Keeps a person's standing yes for the request they just accepted."""
+    """Keeps a user's standing yes for the request they just accepted."""
 
     request_id: int
     scope: StandingScope

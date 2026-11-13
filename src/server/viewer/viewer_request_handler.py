@@ -496,7 +496,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
 
     def answer_login_link(self, viewer: ViewerServer, session: ViewerSession) -> None:
         if session.type is not SessionType.PERSON or session.person_id is None:
-            self.answer(403, {"error": "only a person's own viewer can log in another browser"})
+            self.answer(403, {"error": "only a user's own viewer can log in another browser"})
             return
         self.answer(200, {"link": f"{viewer.answer_headers.listener_origin(viewer.host)}/?key={viewer.login.new_key(session.person_id)}"})
 

@@ -16,9 +16,10 @@ JUDGED_RUNS_REASON = "the cadence tick judges every running run with its agent a
 
 
 class JudgedRuns:
-    """The runs whose cadence is judged: started by the agent itself, running or in the background, out of the
-    queue, from no plugin, of a session that has not ended, and running a command that is no search, read, edit or
-    journal command, or a python program. The runs, their agents and all their parts are read in three reads."""
+    """The runs whose cadence is judged: started by the agent itself, running or in the background, out
+    of the queue, from no plugin, of a session that has not ended, and running a command that is no
+    search, read, edit or journal command, or a python program. The runs, their agents and all their
+    parts are read in three reads."""
 
     def __init__(self, processes: ProcessQuery, parts: ProcessPartQuery, queries: Queries) -> None:
         self.processes, self.parts, self.queries = processes, parts, queries

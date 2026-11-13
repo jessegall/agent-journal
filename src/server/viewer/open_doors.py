@@ -5,7 +5,7 @@ from server.enums.closed_service import ClosedService
 
 
 class OpenDoors(ClosedDoors):
-    """The doors of a journal on a person's own machine: none is shut."""
+    """The doors of a journal on a user's own machine: none is shut."""
 
     def closes_route(self, path: str, query: Mapping[str, Sequence[str]]) -> bool:
         return False

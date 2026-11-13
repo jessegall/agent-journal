@@ -7,7 +7,7 @@ from engine.event.event_subscriber import E
 
 
 class PhoneNoticeListener(CommitListener[E]):
-    """What the notice listeners share: when something new waits for the person, every paired phone that
+    """What the notice listeners share: when something new waits for the user, every paired phone that
     subscribed is marked, and the ticker's round pushes it, so no push service holds the listener thread."""
 
     def __init__(self, bus: Bus) -> None:

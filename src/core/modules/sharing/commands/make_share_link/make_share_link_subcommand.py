@@ -10,7 +10,7 @@ from core.modules.sharing.commands.support.share_invitation import ShareInvitati
 class MakeShareLinkSubcommand(Subcommand[MakeShareLink, ShareInvitation]):
     """`journal share make plans:2 [--ends 7d] [--password <it>] [--comments]`: a read-only link to a
     document, a report or a plan, whose token is shown
-    once; an agent's only asks a person for one."""
+    once; an agent's only asks a user for one."""
 
     cli_name = "share"
     name = "make"

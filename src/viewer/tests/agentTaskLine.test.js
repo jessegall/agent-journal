@@ -97,3 +97,21 @@ test("the count and the bar draw the tasks the card was given for its current ro
     expect(labelOf(element.querySelector("[data-agent-count]"))).toBe("1 of 3");
     expect(element.querySelector("[data-task-bar-done]").style.width).toBe("33%");
 });
+
+test("a worker with more than three started tasks shows one Tasks count and lists each task in its tooltip", async () => {
+    const tasks = Array.from({length: 10}, (unused, place) => ({id: 200 + place, title: `Started title ${place}`, state: "started"}));
+    const element = await card(worker(), {tasks});
+    const count = element.querySelector("[data-agent-task-count]");
+    expect(count.textContent).toContain("Tasks: 10");
+    expect(element.querySelectorAll("[data-agent-task]")).toHaveLength(0);
+    const listed = [...count.querySelectorAll("[data-agent-task-listed]")].map((line) => line.textContent);
+    expect(listed).toHaveLength(10);
+    expect(listed[0]).toBe("200 Started title 0");
+});
+
+test("a worker with three started tasks lists all three as before and shows no count", async () => {
+    const tasks = [200, 201, 202].map((id) => ({id, title: `Title ${id}`, state: "started"}));
+    const element = await card(worker(), {tasks});
+    expect(element.querySelectorAll("[data-agent-task]")).toHaveLength(3);
+    expect(element.querySelector("[data-agent-task-count]")).toBeNull();
+});

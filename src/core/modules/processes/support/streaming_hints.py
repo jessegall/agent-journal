@@ -35,8 +35,9 @@ STREAMING_HINTS = (
 
 
 class StreamingHints:
-    """What tells a quiet command to print while it runs: the hint of its tool, else the general one. go test over
-    several packages holds back each package's output until it is done, so it gets the hint to run them one by one."""
+    """What tells a quiet command to print while it runs: the hint of its tool, else the general one.
+    go test over several packages holds back each package's output until it is done, so it gets the
+    hint to run them one by one."""
 
     @staticmethod
     def hint(command: str) -> str:

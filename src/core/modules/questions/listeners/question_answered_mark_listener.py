@@ -15,7 +15,7 @@ ANSWER_SHOWN_CHARACTERS = 1000
 class QuestionAnsweredMarkListener(QuestionMarkListener[Moved[Question]]):
     """When a question is answered, its card stays in place and shows the answer, and a new mark names the
     question and the answer given, at this moment; both are on the side of whoever answered. It is the only
-    trace of a person answer in the chat."""
+    trace of a user answer in the chat."""
 
     name = "questions.answered-mark"
     moves = tuple([QuestionLifecycle.answer])

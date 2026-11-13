@@ -10,9 +10,9 @@ from core.modules.drivers.support.current_context_window import CurrentContextWi
 
 
 class RecordedContextChangeRequests(ContextChangeRequests):
-    """Records each request to compact or clear an agent's context as a row with the context size it is asked at,
-    and refuses it while a compaction of that agent is open. A request whose line could not be typed fails with
-    the cause, and the person is told once."""
+    """Records each request to compact or clear an agent's context as a row with the context size it is asked
+    at, and refuses it while a compaction of that agent is open. A request whose line could not be typed
+    fails with the cause, and the user is told once."""
 
     def __init__(self, compactions: ContextCompactions, current_window: CurrentContextWindow, notices: CompactionNotices) -> None:
         self.compactions, self.current_window, self.notices = compactions, current_window, notices

@@ -8,7 +8,7 @@ from engine.command.context import Context
 
 
 class LibraryAddressGuard(Guard[Changed[Setting]]):
-    """Refuses a change of the shared server's address by anyone but a person."""
+    """Refuses a change of the shared server's address by anyone but a user."""
 
     name = "library.address-by-person"
     is_safety = True

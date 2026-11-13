@@ -59,7 +59,7 @@ test("Save sends the switches the preset changed", async () => {
     expect(runs).toEqual([["setting-screen", "apply", "work", "--revision", "w1", `${AUTO}=off`, `${WRITES}=off`]]);
 });
 
-test("the link opens the page inside the modal, and Back returns to the tab the person came from", async () => {
+test("the link opens the page inside the modal, and Back returns to the tab the user came from", async () => {
     const {element} = await mount();
     element.querySelector("[data-tab=tests]").click();
     await settled();

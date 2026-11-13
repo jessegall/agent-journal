@@ -13,7 +13,7 @@ from suites.coding.modules.checks.queries.conditions.task_wait_command_failure i
 ACTED_CHECKS_REASON = "the check tick acts on every check that is due, broken or failing unreported"
 
 
-CHECKS_REASON = "The checks of a project are a catalogue a person or an agent makes one at a time, and a round runs every one of them."
+CHECKS_REASON = "The checks of a project are a catalogue a user or an agent makes one at a time, and a round runs every one of them."
 
 
 class CheckQuery(Query[Check]):

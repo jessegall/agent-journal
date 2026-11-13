@@ -2,7 +2,7 @@ from enum import StrEnum
 
 
 class RuleState(StrEnum):
-    """Where a project rule stands: proposed by an agent, active, denied by a person, or removed."""
+    """Where a project rule stands: proposed by an agent, active, denied by a user, or removed."""
 
     PROPOSED = "proposed"
     ACTIVE = "active"

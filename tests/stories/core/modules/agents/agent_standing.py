@@ -47,4 +47,4 @@ def test_544_the_exit_of_its_program_ends_an_agents_row_once_and_its_open_job_en
     after_exit = shown(story)
     story.expect_success(f"agent exited {story.helper.id} 1", actor=story.user)
     story.expect_rows(ENDED in after_exit, shown(story) == after_exit, story.container.get(HelperJobRows).open_job(story.helper.id) is None, detail=after_exit)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "reports in message:")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "reported in message:")

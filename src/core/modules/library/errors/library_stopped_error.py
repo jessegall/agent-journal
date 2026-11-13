@@ -2,7 +2,7 @@ from core.modules.library.errors.library_failure_error import LibraryFailureErro
 
 
 class LibraryStoppedError(LibraryFailureError):
-    """The server or the connection needs a person before anything more is sent: sync stops until they connect again."""
+    """The server or the connection needs a user before anything more is sent: sync stops until they connect again."""
 
     @classmethod
     def address_changed(cls) -> "LibraryStoppedError":

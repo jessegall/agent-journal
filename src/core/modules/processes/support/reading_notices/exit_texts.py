@@ -22,7 +22,7 @@ EXIT_TEXTS: dict[ReadingExit, ExitText] = {
     ReadingExit.STOP_RUN: ExitText("stop it", "journal output stop {output}"),
     ReadingExit.CLASSIFY: ExitText("say what type the command is", 'journal command-type make "{name}" "<type>"'),
     ReadingExit.EXPIRES: ExitText("wait until the block expires"),
-    ReadingExit.PERSON_RELEASES: ExitText("a person releases it"),
+    ReadingExit.PERSON_RELEASES: ExitText("a user releases it"),
     ReadingExit.MAIN_AGENT_HELPS: ExitText("ask the main agent for help"),
 }
 
@@ -42,11 +42,8 @@ class ExitTexts:
 
     @staticmethod
     def template(exits: Sequence[ReadingExit]) -> str:
-        """The exits with their commands, the name and the output left as fields for a nudge declaration to fill, so
-        a long line of exits is part of the declared text and never cut as a field."""
         return "; ".join(f"{EXIT_TEXTS[way].sentence}: {EXIT_TEXTS[way].command}" if EXIT_TEXTS[way].command else EXIT_TEXTS[way].sentence for way in exits)
 
     @staticmethod
     def sentences(exits: Sequence[ReadingExit]) -> str:
-        """The exits said in their sentences alone, for a line too short to name their commands."""
         return "; ".join(EXIT_TEXTS[way].sentence for way in exits)

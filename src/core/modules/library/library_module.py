@@ -68,7 +68,7 @@ from core.modules.library.support.skeletons import LIBRARY_TEAMS_SKELETON
 
 
 class LibraryModule(Module):
-    """Connects this journal to a team's shared server, and keeps the items a person got in step with it."""
+    """Connects this journal to a team's shared server, and keeps the items a user got in step with it."""
 
     name = "journal.core.library"
     requires_core = ">=5,<6"
@@ -77,7 +77,7 @@ class LibraryModule(Module):
     dependencies = ["journal.core.actors", "journal.core.settings", "journal.core.documents", "journal.core.secrets", "journal.core.agents"]
     settings = [SettingValue("address", "Shared server address", "The IP address or URL of your team's shared server, such as 10.0.0.5 or https://library.example.com.",
                              SettingType.TEXT, default="", scope=SettingScope.PROJECT),
-                SettingValue("agent-edits-wait", "Agent edits wait for a person", "An agent's edit of an item that follows the library stays on this journal until a person sends it.",
+                SettingValue("agent-edits-wait", "Agent edits wait for a user", "An agent's edit of an item that follows the library stays on this journal until a user sends it.",
                              SettingType.FLAG, default=True, scope=SettingScope.PROJECT)]
     models = [ModelDeclaration(LibraryConnection, query=LibraryConnectionQuery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(LibraryCopy, excluded_subcommands=ALL_SUBCOMMANDS)]
     migrations = [LibraryTablesMigration, ConnectionSignatureIndexMigration]

@@ -27,7 +27,7 @@ def test_words_after_a_person_wrote_again_since_the_reply_reach_the_chat(new_sto
 def test_closing_words_that_ask_the_user_to_choose_reach_the_chat_after_a_reaction(new_story):
     story = new_story(fixture=UserBuilder)
     story.run('message send "Are you back at work" --environment main', actor=story.user)
-    story.hook("s-1", HookSamples.prompt("[journal] new message 1"))
+    story.hook("s-1", HookSamples.prompt("[journal] New message 1: read it"))
     story.run('message react 1 "👍"', actor=story.agent)
     text = "Everything came through intact: the summary (doc 1) and the briefing (doc 2).\n\nShall I set the research team on docs 1 and 2?"
     story.hook("s-1", HookSamples.message_display(text))

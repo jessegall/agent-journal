@@ -8,7 +8,7 @@ from core.modules.assignments.support.assignments import Assignments
 
 
 class RecordPlanAgentHandler(Handler[RecordPlanAgent, Plan]):
-    """Assigns a plan to its agent without its phases and tasks; a person or a main agent names it."""
+    """Assigns a plan to its agent without its phases and tasks; a user or a main agent names it."""
 
     command = RecordPlanAgent
 

@@ -14,7 +14,7 @@ WHERE_WORD = " WHERE "
 
 class ReferenceRewrite:
     """Reads, rewrites and removes the rows that hold an agent id in named columns, for the fold of main agents;
-    the table and column names come from the live schema, never from a person."""
+    the table and column names come from the live schema, never from a user."""
 
     def __init__(self, database: Database) -> None:
         self.database = database

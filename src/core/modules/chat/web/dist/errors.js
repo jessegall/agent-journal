@@ -1,4 +1,4 @@
-if (!document.getElementById("window-styles-6f6a7e7311bc")) { const style = document.createElement("style"); style.id = "window-styles-6f6a7e7311bc"; style.textContent = ".error[data-v-961e9275]{padding:10px 16px;border-bottom:1px solid var(--border-inner)}.head[data-v-961e9275]{display:flex;gap:10px;align-items:center;font-size:12.5px}.place[data-v-961e9275]{flex:1;min-width:0;overflow:hidden;color:var(--text-3);text-overflow:ellipsis;white-space:nowrap}.message[data-v-961e9275]{margin:4px 0 0;color:var(--text-2);font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}.failure[data-v-961e9275]{padding:10px 16px;color:var(--danger);font-size:12px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-d686e2c44148")) { const style = document.createElement("style"); style.id = "window-styles-d686e2c44148"; style.textContent = ".error[data-v-09c8de51]{padding:10px 16px;border-bottom:1px solid var(--border-inner)}.head[data-v-09c8de51]{display:flex;gap:10px;align-items:center;font-size:12.5px}.place[data-v-09c8de51]{flex:1;min-width:0;overflow:hidden;color:var(--text-3);text-overflow:ellipsis;white-space:nowrap}.message[data-v-09c8de51]{margin:4px 0 0;color:var(--text-2);font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}.failure[data-v-09c8de51]{padding:10px 16px;color:var(--danger);font-size:12px}\n"; document.head.appendChild(style); }
 import { openBlock as o, createBlock as m, unref as e, withCtx as u, createElementBlock as p, toDisplayString as d, createTextVNode as f, createCommentVNode as h, Fragment as x, renderList as y, createElementVNode as n, createVNode as v } from "vue";
 import { useWindow as E, WindowRoom as N, EmptyState as B, TimeAgo as C, Btn as S, removed as V } from "@journal/window-kit";
 const R = (l, c) => {
@@ -61,7 +61,7 @@ const R = (l, c) => {
       _: 1
     }));
   }
-}, $ = /* @__PURE__ */ R(F, [["__scopeId", "data-v-961e9275"]]);
+}, $ = /* @__PURE__ */ R(F, [["__scopeId", "data-v-09c8de51"]]);
 export {
   $ as default
 };

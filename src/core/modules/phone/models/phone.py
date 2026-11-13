@@ -9,7 +9,7 @@ from core.modules.phone.models.lifecycles.phone_lifecycle import PhoneLifecycle
 
 @dataclass(frozen=True, kw_only=True)
 class Phone(Model):
-    """A phone a person paired, which opens the viewer as that person until it is unpaired; it keeps only the
+    """A phone a user paired, which opens the viewer as that user until it is unpaired; it keeps only the
     digest of its session token, never the token, and the push subscription it gave, if any."""
 
     model_name = "phone"

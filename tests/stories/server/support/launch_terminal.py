@@ -39,7 +39,7 @@ def fake_programs(folder: Path) -> Path:
 
 class LaunchTerminal:
     """`journal launch claude` through the real client in a pseudo terminal of its own: it reads what the
-    launch draws, jumps to the suite by its number and presses Enter on each question, as a person takes the
+    launch draws, jumps to the suite by its number and presses Enter on each question, as a user takes the
     defaults. Whatever still runs is killed when the story ends."""
 
     def __init__(self, home: JournalHome, binary: Path, programs: Path, folder: Path, suite_number: int) -> None:

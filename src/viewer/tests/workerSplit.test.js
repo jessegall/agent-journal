@@ -27,11 +27,11 @@ test("a drag updates all shares and writes only once on release", async () => {
     expect(view.run).toHaveBeenCalledWith(["setting", "set", "journal.core.helpers.program-split", "claude 65,codex 35", "--project"]);
 });
 test("the run limit comes from the registered type and refusals stay visible", async () => {
-    const {view, element} = await split({ok: false, error: "Only a person changes this setting"});
+    const {view, element} = await split({ok: false, error: "Only a user changes this setting"});
     const input = element.querySelector('[aria-label="Workers running at once"]');
     input.value = "4"; input.dispatchEvent(new Event("change")); await settle();
     expect(view.run).toHaveBeenCalledWith(["setting", "set", "sample.worker-run", "4", "--environment", "main"]);
-    expect(element.querySelector('[role="alert"]').textContent).toContain("Only a person");
+    expect(element.querySelector('[role="alert"]').textContent).toContain("Only a user");
 });
 test("an outage names its reason and end and Back now ends that program's outage", async () => {
     const {view, element} = await split();

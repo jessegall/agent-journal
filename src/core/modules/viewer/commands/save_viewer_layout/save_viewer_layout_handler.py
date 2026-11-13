@@ -9,9 +9,9 @@ from engine.command.person_check import PersonCheck
 
 
 class SaveViewerLayoutHandler(Handler[SaveViewerLayout, ViewerLayout]):
-    """Writes the person's one layout row for the page, suite and driver in the environment, over the row
+    """Writes the user's one layout row for the page, suite and driver in the environment, over the row
     there is or as a new one, refusing a save over a version newer than the one it was loaded at; the guard
-    viewer.person-keeps-layouts refuses any caller but a person."""
+    viewer.person-keeps-layouts refuses any caller but a user."""
 
     command = SaveViewerLayout
 

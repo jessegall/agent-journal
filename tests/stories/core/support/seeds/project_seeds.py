@@ -115,7 +115,7 @@ class TaskLogSeed(Seed):
 
 
 class MessageSeed(Seed):
-    """A message that was read: from a person, an agent or the journal."""
+    """A message that was read: from a user, an agent or the journal."""
 
     table = "messages"
 

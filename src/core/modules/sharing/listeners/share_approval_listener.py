@@ -18,7 +18,7 @@ from core.modules.sharing.models.lifecycles.share_link_lifecycle import ShareLin
 
 
 class ShareApprovalListener(CommitListener[Created[ShareLink] | Moved[ShareLink] | RegistrySynced]):
-    """Keeps waiting share links in the shared approval dock until a person decides them."""
+    """Keeps waiting share links in the shared approval dock until a user decides them."""
 
     name = "sharing.approval"
     moves = (ShareLinkLifecycle.accept, ShareLinkLifecycle.deny, ShareLinkLifecycle.revoke)

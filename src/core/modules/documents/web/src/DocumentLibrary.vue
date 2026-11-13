@@ -1,6 +1,7 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {Btn, Icon, peekRef, Segmented, Skeleton, SearchBar, TimeAgo, steppedItem, useWindow} from "@journal/window-kit";
+import {Btn, DocumentBody, Icon, Segmented, Skeleton, SearchBar, TimeAgo, steppedItem, useWindow} from "@journal/window-kit";
+import {documentRead} from "./documentRead.js";
 import {grouped, searched, sorted} from "./libraryGroups.js";
 
 const LIBRARIES = [
@@ -16,11 +17,15 @@ const ORDERS = [
     {key: "title", label: "A to Z"},
 ];
 
-const term = ref("doc");
+// the page reads a document beside its sidebar; the window lists rows only, and a row opens the page on that document
+const props = defineProps({reader: {type: Boolean, default: false}});
+const PAGE = "documents.page";
+const opened = props.reader ? (new URLSearchParams(globalThis.location.search).get("doc") ?? "").split(":") : [];
+const term = ref(["doc", "report"].includes(opened[0]) ? opened[0] : "doc");
 const state = ref("open");
 const order = ref("newest");
 const words = ref("");
-const chosen = ref(null);
+const chosen = ref(Number(opened[1]) || null);
 const view = useWindow();
 view.state["library.type"] = term.value;
 view.state["library.state"] = state.value;
@@ -62,11 +67,23 @@ async function more() {
     if (type === term.value && shown === state.value) rows.value = [...rows.value, ...library.data.value.rows];
 }
 
-// a row opens in the panel, as every other row does
+// a row is read beside the list
+const read = documentRead(view);
 function open(row) {
     chosen.value = row.id;
-    peekRef(`${term.value === "doc" ? "docs" : "reports"}:${row.id}`);
 }
+
+const pageAddress = (row) => {
+    const address = new URL(globalThis.location.href);
+    for (const name of ["view", "float"]) address.searchParams.delete(name);
+    address.searchParams.set("page", PAGE);
+    address.searchParams.set("doc", `${term.value}:${row.id}`);
+    return address.search;
+};
+const openChosen = () => {
+    const row = shownRows.value.find((held) => held.id === chosen.value);
+    if (row) globalThis.location.assign(pageAddress(row));
+};
 
 async function create() {
     const {title, abstract, body} = draft.value;
@@ -79,10 +96,6 @@ async function create() {
     load();
 }
 
-const openChosen = () => {
-    const row = shownRows.value.find((held) => held.id === chosen.value);
-    if (row) open(row);
-};
 const shownRows = computed(() => groups.value.flatMap((group) => group.rows));
 
 function step(by) {
@@ -128,7 +141,7 @@ onUnmounted(() => stopFollowing?.());
             </form>
         </template>
         <div class="library-body">
-            <div class="library-list" tabindex="0" data-library-list @keydown.down.prevent="step(1)" @keydown.up.prevent="step(-1)" @keydown.esc="closeOrClear" @keydown.enter.self="openChosen">
+            <div class="library-list" tabindex="0" data-library-list @keydown.down.prevent="step(1)" @keydown.up.prevent="step(-1)" @keydown.esc="closeOrClear" @keydown.enter.self="!reader && openChosen()">
                 <template v-if="!loaded">
                     <Skeleton shape="cards" />
                 </template>
@@ -146,7 +159,7 @@ onUnmounted(() => stopFollowing?.());
                         <h3 class="library-group">{{ group.title }}</h3>
                     </template>
                     <template v-for="row in group.rows" :key="row.id">
-                        <button type="button" :class="['library-row', {chosen: row.id === chosen}]" :data-row="row.id" @click="open(row)">
+                        <component :is="reader ? 'button' : 'a'" :type="reader ? 'button' : undefined" :href="reader ? undefined : pageAddress(row)" :class="['library-row', {chosen: row.id === chosen}]" :data-row="row.id" @click="reader && open(row)">
                             <Icon name="file" class="library-icon" />
                             <span class="library-text">
                                 <span class="library-title">{{ row.title }}</span>
@@ -154,11 +167,19 @@ onUnmounted(() => stopFollowing?.());
                                 <span class="library-ref">{{ label }} {{ row.id }}</span>
                             </span>
                             <TimeAgo class="library-age" :at="row.updated_at" />
-                        </button>
+                        </component>
                     </template>
                 </template>
                 <template v-if="rows.length < total && !words">
                     <button type="button" class="library-more" @click="more">Show more</button>
+                </template>
+            </div>
+            <div v-if="reader" class="library-reader" data-library-reader>
+                <template v-if="chosen">
+                    <DocumentBody :key="`${term}:${chosen}`" :term="term" :id="chosen" :read="read" />
+                </template>
+                <template v-else>
+                    <p class="reader-empty-title">Choose a {{ label.toLowerCase() }} to read it here</p>
                 </template>
             </div>
         </div>
@@ -196,7 +217,7 @@ onUnmounted(() => stopFollowing?.());
 .library-body {
     display: grid;
     flex: 1;
-    grid-template-columns: minmax(240px, 2fr) 3fr;
+    grid-template-columns: v-bind("reader ? 'minmax(240px, 2fr) 3fr' : '1fr'");
     min-height: 0;
 }
 
@@ -215,6 +236,7 @@ onUnmounted(() => stopFollowing?.());
 
 .library-row {
     display: flex;
+    text-decoration: none;
     gap: 12px;
     align-items: flex-start;
     width: 100%;

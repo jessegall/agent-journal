@@ -8,7 +8,7 @@ from suites.coding.modules.workers.support.worker_stop import WorkerStop
 
 
 class AskFinalStopListener(SaveListener[AgentEnded]):
-    """The open questions of a worker are closed as moot when a person stops the worker for good. A worker that
+    """The open questions of a worker are closed as moot when a user stops the worker for good. A worker that
     only ends its turn keeps its questions: the answer wakes it."""
 
     name = "workers.ask-final-stop"

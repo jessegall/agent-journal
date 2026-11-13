@@ -9,7 +9,7 @@ from core.modules.docking.support.dock_limits import DockLimits
 
 
 class UserDockGuard(Guard[Changed[DockItem]]):
-    """An agent cannot change or hide a card that requires a person."""
+    """An agent cannot change or hide a card that requires a user."""
 
     name = "docking.person-card"
     is_safety = True
@@ -24,4 +24,4 @@ class UserDockGuard(Guard[Changed[DockItem]]):
         if event.old_row is not None:
             protected = protected or self.limits.requires_user(event.old_row.type)
         if protected:
-            raise Refusal("an agent cannot change a card waiting for a person")
+            raise Refusal("an agent cannot change a card waiting for a user")

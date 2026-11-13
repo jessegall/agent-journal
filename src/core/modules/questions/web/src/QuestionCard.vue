@@ -3,7 +3,7 @@ import {ref} from "vue";
 import {TextInput, TimeAgo, peekRef, useWindow} from "@journal/window-kit";
 import QuestionActions from "./QuestionActions.vue";
 
-// one question as version 4 asked it: a card with the options under each other, the recommended one tagged, and a box for an answer in the person's own words;
+// one question as version 4 asked it: a card with the options under each other, the recommended one tagged, and a box for an answer in the user's own words;
 // an answer shows the moment it is given and goes back if the server refuses it;
 // flush is the questions window's look: one block edge to edge, a darker banner with the dot, the number and the time, the question below it, the options as rows and the answer in a band at the foot
 const props = defineProps({row: {type: Object, required: true}, flush: Boolean});

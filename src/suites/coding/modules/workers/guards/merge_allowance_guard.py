@@ -9,7 +9,7 @@ from suites.coding.support.main_caller import MainCaller
 
 
 class MergeAllowanceGuard(Guard[Moved[Worktree]]):
-    """A main agent merges no worker itself while it may not merge; the merger or a person takes the work in."""
+    """A main agent merges no worker itself while it may not merge; the merger or a user takes the work in."""
 
     name = "workers.main-merges-no-worker"
     moves = tuple([WorktreeLifecycle.merge])
@@ -19,4 +19,4 @@ class MergeAllowanceGuard(Guard[Moved[Worktree]]):
 
     def check(self, event: Moved[Worktree], context: Context) -> None:
         if self.caller.is_main(context) and not self.options.options().may_merge:
-            raise Refusal("the main agent merges no worker here", "a person turns on journal.suites.coding.workers.main-agent-may-merge")
+            raise Refusal("the main agent merges no worker here", "a user turns on journal.suites.coding.workers.main-agent-may-merge")

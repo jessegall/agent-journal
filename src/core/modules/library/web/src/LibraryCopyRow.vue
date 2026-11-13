@@ -34,7 +34,7 @@ const lines = computed(() => {
     const extra = [];
     if (props.copy.status === "denied") extra.push(`Role: ${ROLE_WORDS[props.role]}`);
     if (props.copy.status === "denied" && props.copy.server_version > props.copy.version) extra.push("A newer version is in the library");
-    if (props.copy.status === "agent") extra.push("An agent changed this item. A person sends it to the team.");
+    if (props.copy.status === "agent") extra.push("An agent changed this item. A user sends it to the team.");
     if (props.copy.status === "removed") extra.push("Your copy stays on this journal.");
     if (props.copy.note) extra.push(props.copy.note);
     return extra;

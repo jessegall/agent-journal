@@ -9,7 +9,7 @@ STALE = "approval 1 is closed, so it cannot begin"
 
 
 def agent_question(story, line: str) -> ApprovalRequest:
-    story.expect_refusal(f"{line} --reason needed", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(f"{line} --reason needed", "A user was asked in the dock", actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).newest().first()
     story.expect_rows(request is not None)
     return request

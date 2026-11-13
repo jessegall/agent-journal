@@ -1,16 +1,16 @@
 <script setup>
-import {computed, reactive} from "vue";
-import {Btn, Dialog, FoldGroup, Switch} from "@journal/window-kit";
-import {isOn, settingGroups} from "./pluginSettingGroups.js";
-import PluginSettingRow from "./PluginSettingRow.vue";
+import {computed, watch} from "vue";
+import {Dialog, Switch} from "@journal/window-kit";
+import {ChangeFoot, SettingsScreen, useSettingsDraft} from "@journal/setting-components";
+import {configureChanges, secretsOf, settingScreens} from "./pluginSettingScreen.js";
 
-// a plugin's settings as version 4 drew them: its name, version, description and switch, then its settings in folding groups, with a way to turn a group's switches on or off together
-const props = defineProps({plugin: {type: Object, required: true}, description: {type: String, default: ""}, settings: {type: Array, required: true}});
-const emit = defineEmits(["close", "configure", "toggle"]);
-const groups = computed(() => settingGroups(props.settings));
-const closed = reactive({});
-const onCount = (group) => (group.flags.length ? `${group.flags.filter(isOn).length} of ${group.flags.length} on` : String(group.settings.length));
-const turnAll = (group, on) => group.flags.filter((setting) => isOn(setting) !== on).forEach((setting) => emit("configure", setting, String(on)));
+// a plugin's settings drawn from the shared setting components, as the agent settings are: its name, version, description and switch, then its settings in sections, saved together with Save
+const props = defineProps({plugin: {type: Object, required: true}, description: {type: String, default: ""}, settings: {type: Array, required: true}, save: {type: Function, required: true}});
+const emit = defineEmits(["close", "toggle"]);
+const draft = useSettingsDraft({run: (line) => props.save(configureChanges(line, props.settings)), reload: async () => {}});
+const nodes = computed(() => settingScreens(props.plugin.name, props.settings).flatMap((screen) => screen.nodes));
+const secrets = computed(() => secretsOf(props.settings));
+watch(() => props.settings, (settings) => draft.load(settingScreens(props.plugin.name, settings)), {immediate: true});
 </script>
 
 <template>
@@ -26,20 +26,14 @@ const turnAll = (group, on) => group.flags.filter((setting) => isOn(setting) !==
             <template v-if="!settings.length">
                 <p class="plugin-settings-line">This plugin has no settings</p>
             </template>
-            <template v-for="group in groups" :key="group.name">
-                <FoldGroup class="plugin-settings-group" bar :label="group.name || 'Settings'" :count="onCount(group)" :open="!closed[group.name]" data-plugin-setting-group @toggle="closed[group.name] = !closed[group.name]">
-                    <template v-if="group.flags.length > 1">
-                        <div class="plugin-settings-all">
-                            <Btn small bordered data-plugin-all-on @click="turnAll(group, true)">Turn all on</Btn>
-                            <Btn small bordered data-plugin-all-off @click="turnAll(group, false)">Turn all off</Btn>
-                        </div>
-                    </template>
-                    <template v-for="setting in group.settings" :key="setting.key">
-                        <PluginSettingRow :setting="setting" :settings="settings" @configure="(...saved) => emit('configure', ...saved)" />
-                    </template>
-                </FoldGroup>
+            <SettingsScreen :nodes="nodes" :draft="draft" />
+            <template v-for="secret in secrets" :key="secret.key">
+                <p class="plugin-settings-line" :data-plugin-setting="secret.key">{{ secret.title }}: {{ secret.value ? `kept as ${secret.value}.` : "a secret." }} Add the credential on the Secrets page and allow this plugin to use it.</p>
             </template>
         </div>
+        <template #foot>
+            <ChangeFoot :changes="draft.changes()" :can-save="draft.canSave.value" :pending="draft.pending.value" :reason="draft.reason.value" @save="draft.apply()" @cancel="emit('close')" />
+        </template>
     </Dialog>
 </template>
 
@@ -78,18 +72,5 @@ const turnAll = (group, on) => group.flags.filter((setting) => isOn(setting) !==
     color: var(--text-2);
     font-size: 13px;
     line-height: 1.5;
-}
-
-.plugin-settings-group {
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.plugin-settings-all {
-    display: flex;
-    gap: 8px;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border);
 }
 </style>

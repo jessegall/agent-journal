@@ -60,7 +60,7 @@ test("picking a reaction replaces the buttons with a bar, and cancel brings them
     expect(element.querySelector('[data-message-action="reply"]')).not.toBeNull();
 });
 
-test("a person's message shows the rows it linked, under it", async () => {
+test("a user's message shows the rows it linked, under it", async () => {
     const {WINDOW_CONTEXT} = await import("../kit/windowContextKey.js");
     const element = document.createElement("div");
     const app = createApp({render: () => h(MessageCard, {message: {id: 4, type: "user", text: "see report 1", reactions: "[]", created_at: "2026-11-02T10:00:00Z"}})});

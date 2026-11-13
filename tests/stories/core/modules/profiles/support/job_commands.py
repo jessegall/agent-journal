@@ -26,8 +26,8 @@ PROFILE_COMMANDS = {
     "journal-researcher": ("journal search find", "journal doc make", "journal report make"),
     "journal-debugger": ("journal search find", "journal task show", "journal output read"),
     "journal-plan-reviewer": ("journal plan outline", "journal phase show", "journal task show"),
-    "journal-medior": ("journal task overview", "journal task log", "journal proof make", "journal task start", "journal worker commit", "journal worker ask-merge"),
-    "journal-senior": ("journal task overview", "journal task log", "journal proof make", "journal task start", "journal worker commit", "journal worker ask-merge"),
+    "journal-worker-medior": ("journal task overview", "journal task log", "journal proof make", "journal task start", "journal worker commit", "journal worker ask-merge"),
+    "journal-worker-senior": ("journal task overview", "journal task log", "journal proof make", "journal task start", "journal worker commit", "journal worker ask-merge"),
     "journal-code-reviewer": ("journal search find", "journal task make", "journal task list", "journal doc show", "journal report make"),
     "journal-functional-designer": ("journal sequence list", "journal sequence run", "journal doc make", "journal search find"),
     "journal-designer": ("journal doc make", "journal doc show", "journal report make", "journal search find", "journal task show"),
@@ -98,7 +98,7 @@ def expect_helper_commands(story) -> None:
 
 def expect_worker_commands(story) -> None:
     repository_environment(story)
-    for profile in ("journal-medior", "journal-senior"):
+    for profile in ("journal-worker-medior", "journal-worker-senior"):
         task = story.new_row_id(f'task make "Work for {profile}" --brief "1. Keep the total in cents" --environment main', actor=story.agent)
         worker = dispatched_worker(story, f"worker dispatch --test-command python=pytest {task} --model sonnet --profile {profile}")
         story.expect_success(f"task overview {task}", actor=worker)

@@ -15,7 +15,7 @@ from core.modules.agents.support.agent_label import AgentLabel
 
 
 class RetireAgentHandler(Handler[RetireAgent, Agent]):
-    """Retires an agent that has ended and holds nothing. A person or the main agent retires it directly, since
+    """Retires an agent that has ended and holds nothing. A user or the main agent retires it directly, since
     managing agents is the main agent's job; any other agent is refused. The suite that owns the agent's type
     says what still holds it."""
 
@@ -32,7 +32,7 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
         if block:
             raise Refusal(block)
         if actor.is_agent() and self.queries.query(Agent).find(actor.id).role != AgentRole.MAIN:
-            raise Refusal(f"only a person or the main agent retires {AgentLabel.from_agent(agent).text}", "ask the main agent to retire it")
+            raise Refusal(f"only a user or the main agent retires {AgentLabel.from_agent(agent).text}", "ask the main agent to retire it")
         if roster is not None:
             roster.release(agent, actor)
 

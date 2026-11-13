@@ -9,7 +9,7 @@ from core.modules.drivers.support.permission_answerers import PermissionAnswerer
 
 
 class AllowPermissionHandler(Handler[AllowPermission, PermissionRequest]):
-    """Moves the request to allow, for the main agent or a person to answer it."""
+    """Moves the request to allow, for the main agent or a user to answer it."""
 
     command = AllowPermission
 

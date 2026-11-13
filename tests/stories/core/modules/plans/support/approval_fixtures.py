@@ -3,7 +3,7 @@ from tests.stories.core.support.fixtures import UserJoined
 
 
 class ReadyApprovalPlan(StoryFixture):
-    """A person and an agent in main, with plan 1 ready for the person's approval."""
+    """A user and an agent in main, with plan 1 ready for the user's approval."""
 
     parent = UserJoined
 

@@ -15,16 +15,24 @@ def dispatched_brief(new_story, line):
 
 
 def test_a_worker_gets_its_profile_s_body_before_its_task(new_story):
-    story, brief = dispatched_brief(new_story, "worker dispatch --test-command python=pytest 1 --model opus --profile journal-senior")
+    story, brief = dispatched_brief(new_story, "worker dispatch --test-command python=pytest 1 --model opus --profile journal-worker-senior")
     story.expect_rows("You are a senior worker" in brief, brief.index("You are a senior worker") < brief.index("Your task is 1"))
 
 
 def test_the_required_steps_reach_a_worker_of_any_profile(new_story):
-    story, brief = dispatched_brief(new_story, "worker dispatch --test-command python=pytest 1 --profile journal-medior")
+    story, brief = dispatched_brief(new_story, "worker dispatch --test-command python=pytest 1 --profile journal-worker-medior")
     story.expect_rows(WORK_STEPS in brief)
 
 
-def test_a_profile_of_another_type_is_refused(new_story):
+def test_a_profile_of_another_type_and_a_base_profile_are_refused(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.expect_refusal("worker dispatch --test-command python=pytest 1 --model sonnet --profile journal-researcher", "journal helper start", actor=story.agent)
+    base_line = "worker dispatch --test-command python=pytest 1 --model sonnet --profile journal-worker"
+    story.expect_refusal(base_line, "journal-worker is a base profile", actor=story.agent)
+    story.expect_refusal(base_line, "journal-worker-medior, journal-worker-senior", actor=story.agent)
+
+
+def test_a_dispatch_with_no_profile_goes_to_the_medior_profile(new_story):
+    story, brief = dispatched_brief(new_story, "worker dispatch --test-command python=pytest 1")
+    story.expect_rows("You are a medium worker" in brief)

@@ -7,7 +7,7 @@ from core.modules.chat.models.journal_exception import JournalException
 
 
 class SolveJournalExceptionHandler(Handler[SolveJournalException, JournalException]):
-    """Takes a recorded exception out of the errors a person reads; the error log file keeps its trace."""
+    """Takes a recorded exception out of the errors a user reads; the error log file keeps its trace."""
 
     command = SolveJournalException
 

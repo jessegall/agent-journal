@@ -7,8 +7,8 @@ from engine.enums.hook_event_name import HookEventName
 @dataclass(frozen=True)
 class CurrentSessionRows:
     """Matches rows whose time column is later than the start of an agent's current session: the later of its
-    newest session row and its newest session start hook, so a program started again on the same session, as after a
-    restart, begins a new one. An agent with neither matches every row."""
+    newest session row and its newest session start hook, so a program started again on the same session, as
+    after a restart, begins a new one. An agent with neither matches every row."""
 
     column: str
     session_agent_id: int

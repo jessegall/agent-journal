@@ -37,7 +37,7 @@ def person_story(new_story):
 def pending_person_action(person_story, request):
     story = person_story
     action = request.param
-    story.expect_refusal(action.line, "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(action.line, "A user was asked in the dock", actor=story.agent)
     approval = story.container.get(Queries).query(ApprovalRequest).first()
     story.expect_rows(approval is not None, approval.required_person_id is None)
     return story, approval, action.model
@@ -63,7 +63,7 @@ def pending_rename(person_story):
     with viewer_client(story) as viewer:
         viewer.value("viewer.shell", ["person-preset", "save", "--page", "home", "--name", "Mine", "--shape", SHAPE])
     preset = story.container.get(Queries).query(PersonPreset).first()
-    story.expect_refusal(f"person-preset rename {preset.id} --name Review --reason needed", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(f"person-preset rename {preset.id} --name Review --reason needed", "A user was asked in the dock", actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).first()
     story.expect_rows(request.required_person_id == story.user.id)
     return story, request, preset
@@ -79,7 +79,7 @@ def test_a_different_person_cannot_accept_an_owners_approval(pending_rename, ren
     story, request, preset = pending_rename
     cookie = rename_viewer.server.expect_viewer_login(rename_viewer.server.viewer_key("Bob"))
     body = {"window": "messages.chat", "environment": "main", "line": ["approval", "accept", str(request.id)]}
-    rename_viewer.server.expect_viewer_line(cookie, body, 200, "this approval belongs to another person")
+    rename_viewer.server.expect_viewer_line(cookie, body, 200, "this approval belongs to another user")
     rename_viewer.value("messages.chat", ["approval", "accept", str(request.id)])
     saved = story.container.get(Queries).query(PersonPreset).find(preset.id)
     story.expect_rows(saved.name == "Review", saved.person_id == story.user.id)

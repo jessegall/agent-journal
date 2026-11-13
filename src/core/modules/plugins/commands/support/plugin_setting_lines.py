@@ -6,7 +6,7 @@ from core.modules.plugins.support.plugin_manifest import PluginManifest
 
 @dataclass(frozen=True)
 class PluginSettingLines:
-    """A plugin's declared settings with the values the person gave, as plugin settings prints them."""
+    """A plugin's declared settings with the values the user gave, as plugin settings prints them."""
 
     manifest: PluginManifest
     values: dict[str, str]

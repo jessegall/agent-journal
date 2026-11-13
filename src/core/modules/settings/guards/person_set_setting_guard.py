@@ -12,7 +12,7 @@ from core.modules.settings.support.setting_revision import SettingRevision
 
 class PersonSetSettingGuard(Guard[Changed[Setting]]):
     """An agent never writes a setting that drives what an agent may do; every way to write one ends in this
-    row. The change waits for a person with the revision of the setting as the agent saw it, so an approval
+    row. The change waits for a user with the revision of the setting as the agent saw it, so an approval
     that comes after the setting changed is refused."""
 
     name = "settings.person-set"

@@ -40,7 +40,7 @@ class MemoryAgentsSubcommand(ReadSubcommand[Page[MemoryHolderRow]]):
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[MemoryHolderRow]:
         if caller.actor.type is ActorType.AGENT:
-            raise UserApprovalRefusal("Show the people using the viewer which agents hold memories?", returns_output=True)
+            raise UserApprovalRefusal("Show the users of the viewer which agents hold memories?", returns_output=True)
         query = self.queries.query(MemoryHolder)
         if arguments.role:
             query = query.filter(role=arguments.role)

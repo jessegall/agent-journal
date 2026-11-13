@@ -18,7 +18,7 @@ function store({saved = {}, defaults = {}} = {}) {
     };
 }
 
-test("switching the suite loads the person's saved layout for the new suite, and switching back brings the first back", async () => {
+test("switching the suite loads the user's saved layout for the new suite, and switching back brings the first back", async () => {
     const coding = layoutOf("messages.chat", "tasks.tasks");
     const marketing = layoutOf("marketing.calendar");
     const {layouts} = store({saved: {"coding/home/coding.builder": coding, "marketing/home/marketing.lead": marketing}});

@@ -23,7 +23,7 @@ class StoppedWorkerRule(DriverRule):
     """A tick names to the main agent, and again after the line's interval, each stopped worker with work left
     that nothing will start again: one whose question nobody answered, one that used up its restarts, and one
     whose process ended with no run and no hand-in of its own under way, as at a restart of the journal. The
-    merger has the wait setting's minutes first, a worker a person or another agent stopped is left alone, and
+    merger has the wait setting's minutes first, a worker a user or another agent stopped is left alone, and
     nothing is named while workers are switched off."""
 
     name = "workers.stopped-worker"

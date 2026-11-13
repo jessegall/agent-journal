@@ -12,7 +12,7 @@ class ReadingExit(StrEnum):
     STOP_RUN = "stop the run"
     CLASSIFY = "classify the command"
     EXPIRES = "the block expires"
-    PERSON_RELEASES = "a person releases it"
+    PERSON_RELEASES = "a user releases it"
     MAIN_AGENT_HELPS = "the main agent helps"
 
     @property

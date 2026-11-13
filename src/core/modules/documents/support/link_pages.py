@@ -41,7 +41,7 @@ class LinkPages:
     def read_many(self, argument_list: Sequence[Namespace]) -> tuple[LinkPage, ...]:
         sections = tuple(self.section(arguments) for arguments in argument_list)
         endpoints = self.endpoints.read({reference for section in sections for reference in section.endpoint_references})
-        return tuple(self.page_of(section, endpoints) for section in sections)
+        return tuple(self.link_page(section, endpoints) for section in sections)
 
     def section(self, arguments: Namespace) -> LinkSection:
         size = min(arguments.page_size, 50)
@@ -80,7 +80,7 @@ class LinkPages:
         return LinkSection(links, counterparts, scope, page, reference, side.value, size, types, target_model_name, target_counts, arguments.group_counterparts,
                            arguments.first_counterpart, arguments.excludes_plan, arguments.page)
 
-    def page_of(self, section: LinkSection, endpoints: dict[RowRef, LinkEndpoint]) -> LinkPage:
+    def link_page(self, section: LinkSection, endpoints: dict[RowRef, LinkEndpoint]) -> LinkPage:
         links, scope = section.links, section.scope
         rows = tuple(LinkRead(link, endpoints[RowRef(link.source_model, link.source_id)], endpoints[RowRef(link.target_model, link.target_id)]) for link in links)
         groups = tuple(LinkCounterpart(endpoints[counterpart],

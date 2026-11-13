@@ -58,7 +58,7 @@ class MessageQuery(Query[Message]):
 
         self.kept.update(self.agent_messages_of(message.creator_id), newest, name="messages.latest_agent_message")
 
-    def person_messages_in_span(self, agent_id: int, start_text: str, end_at: Timestamp) -> Self:
+    def person_messages_during(self, agent_id: int, start_text: str, end_at: Timestamp) -> Self:
         return self.addressed(agent_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(Greater("created_at", start_text)).matching(Maximum("created_at", end_at.text))
 
     def replies(self, message_id: int) -> Self:
@@ -87,7 +87,7 @@ class MessageQuery(Query[Message]):
         return self.unread(agent_id).matching(IsNull("delivered_at"))
 
     def oldest_undelivered(self, agent_id: int, size: int) -> list[Message]:
-        """The oldest of each person message type is found by its own index walk, so none walks the other types' rows."""
+        """The oldest of each user message type is found by its own index walk, so none walks the other types' rows."""
         oldest = [message for kind in PERSON_MESSAGE_TYPES
                   for message in self.addressed(agent_id).filter(type=kind).matching(IsNull("read_at")).matching(IsNull("delivered_at")).oldest().take(size)]
         return sorted(oldest, key=lambda message: message.id)[:size]

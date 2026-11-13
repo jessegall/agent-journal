@@ -19,6 +19,6 @@ def reader(name: str, creator_id: int = CORE_ACTOR_ID, shipped_digest: str = "sh
     (reader("pytest"), False, False),
     (reader("gone-tool", PROJECT_ACTOR_ID), False, False),
     (reader("person-tool", shipped_digest=""), False, False),
-], ids=["core-made, not shipped, never edited", "edited", "still shipped", "another creator's reader", "a person's reader with the core's number"])
+], ids=["core-made, not shipped, never edited", "edited", "still shipped", "another creator's reader", "a user's reader with the core's number"])
 def test_a_stock_row_retires_only_when_the_core_made_it_nobody_edited_it_and_it_is_no_longer_shipped(row, edited, retires):
     assert StockRetirement.retires(row, SHIPPED, edited) is retires

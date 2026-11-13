@@ -90,7 +90,7 @@ def test_a_dispatch_at_the_kept_limit_is_refused_naming_the_idle_worker_to_send_
     launcher.server.close()
     story.home.socket("launcher").unlink()
     story.expect_rows(outcome.code == 1, "send the job to idle worker" in outcome.output_text, f"worker {number}" in outcome.output_text,
-                      "ask the person to retire" in outcome.output_text, "journal agent retire" not in outcome.output_text, len(worker_rows(story)) == 1, detail=outcome.output_text)
+                      "ask the user to retire" in outcome.output_text, "journal agent retire" not in outcome.output_text, len(worker_rows(story)) == 1, detail=outcome.output_text)
 
 
 def test_a_person_who_retires_a_worker_with_unmerged_work_is_refused(new_story):

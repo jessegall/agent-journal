@@ -9,9 +9,10 @@ from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
 
 
 class SilentRunHoldRule(DriverRule):
-    """Holds the tool uses of an agent whose run has printed nothing for the hang time, naming the run and what
-    its processor time does, until the agent reads its output or stops it, or a person releases it; the exits are
-    said in the shared wording. Like every block it lets reads and journal commands through."""
+    """Holds the tool uses of an agent whose run has printed nothing for the hang time, naming the run
+    and what its processor time does, until the agent reads its output or stops it, or a user
+    releases it; the exits are said in the shared wording. Like every block it lets reads and
+    journal commands through."""
 
     name = "processes.silent-run-hold"
     hook = HookEventName.PRE_TOOL_USE

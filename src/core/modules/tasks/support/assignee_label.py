@@ -8,7 +8,7 @@ NOBODY = "nobody"
 
 
 class AssigneeLabel:
-    """Names the actor a task is assigned to as a line names it: an agent by its role and number, a person by name."""
+    """Names the actor a task is assigned to as a line names it: an agent by its role and number, a user by name."""
 
     def __init__(self, queries: Queries, assignments: Assignments) -> None:
         self.queries, self.assignments = queries, assignments

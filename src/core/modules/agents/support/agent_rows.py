@@ -58,7 +58,7 @@ class AgentRows:
             return
         caller = self.find(actor.id)
         if caller.role != AgentRole.MAIN:
-            raise Refusal(f"a {caller.role} cannot {action}", "ask the main agent or a person")
+            raise Refusal(f"a {caller.role} cannot {action}", "ask the main agent or a user")
 
     def is_visible(self, agent_id: int) -> bool:
         return self.rows.find(Agent, agent_id) is not None
@@ -84,7 +84,6 @@ class AgentRows:
         return max(self.running_main_agents(), key=lambda agent: agent.id, default=None)
 
     def environment_main_agent(self, environment_id: int) -> Agent | None:
-        """The newest running main agent of that environment, never one of another environment."""
         running = [agent for agent in self.running_main_agents() if agent.environment_id == environment_id]
         return max(running, key=lambda agent: agent.id, default=None)
 

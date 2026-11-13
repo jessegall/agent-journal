@@ -18,7 +18,7 @@ PROFILES = {"merger": "journal-merger", "designer": "journal-designer"}
 
 
 class MainControlsActors(StoryFixture):
-    """Ada, a person, beside the started main agent, with a worker, an ordinary helper, a merger and a
+    """Ada, a user, beside the started main agent, with a worker, an ordinary helper, a merger and a
     designer under it: story.user and story.agent, and agent_actors for the others."""
 
     parent = UserBuilder

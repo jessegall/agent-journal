@@ -26,7 +26,7 @@ class AliasQuery(Query[Alias]):
     def with_name(self, name: str) -> Self:
         return self.filter(name=name)
 
-    def of_category(self, category: CommandCategory) -> Self:
+    def with_category(self, category: CommandCategory) -> Self:
         return self.filter(category=category)
 
     def first_beginning(self, command: str, category: CommandCategory) -> Alias | None:

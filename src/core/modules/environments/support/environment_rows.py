@@ -3,7 +3,7 @@ from engine.errors.missing_rows_error import MissingRowsError
 from engine.query.queries import Queries
 from core.modules.environments.models.environment import Environment
 
-CATALOGUE_REASON = "The environments of a project are a catalogue a person makes by hand, and every request reads them from this one kept load."
+CATALOGUE_REASON = "The environments of a project are a catalogue a user makes by hand, and every request reads them from this one kept load."
 
 
 class EnvironmentRows:

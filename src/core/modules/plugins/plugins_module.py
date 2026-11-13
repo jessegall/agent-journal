@@ -118,12 +118,12 @@ from core.modules.plugins.support.skeletons import PLUGINS_PLUGINS_SKELETON
 
 
 class PluginsModule(Module):
-    """Adds plugins: programs the person installs into the journal, switches on or off and configures, which
+    """Adds plugins: programs the user installs into the journal, switches on or off and configures, which
     an agent may only propose."""
 
     name = "journal.core.plugins"
     nudges = PLUGIN_NUDGES
-    seed_reason = "a plugin is a program the person installs, which a demo has none of"
+    seed_reason = "a plugin is a program the user installs, which a demo has none of"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.chat", "journal.core.skills",
                     "journal.core.processes", "journal.core.agents", "journal.core.messages"]

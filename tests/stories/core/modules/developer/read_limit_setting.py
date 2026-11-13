@@ -16,7 +16,7 @@ REFUSED = f"one read loaded {READ_LIMIT_ROWS + 1} rows, more than {READ_LIMIT_RO
 
 
 class ReadLimitWithHelper(StoryFixture):
-    """A main agent, a person and a helper of the main agent, before the read limit is switched on."""
+    """A main agent, a user and a helper of the main agent, before the read limit is switched on."""
 
     parent = UserJoined
 
@@ -75,7 +75,7 @@ def test_a_helper_that_passes_the_flag_is_refused(new_story, monkeypatch):
 
 
 class ReadLimitEnabled(StoryFixture):
-    """A person switched on the developer setting that refuses large loads."""
+    """A user switched on the developer setting that refuses large loads."""
 
     parent = UserJoined
 

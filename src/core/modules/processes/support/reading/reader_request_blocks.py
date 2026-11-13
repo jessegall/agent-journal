@@ -35,7 +35,6 @@ class ReaderRequestBlocks:
         self.bus, self.clock = bus, clock
 
     def block_for_request(self, process: Process, part: ProcessPart, context: Context) -> None:
-        """Holds the agent of a run whose part opened a reader request until the request is completed or expires."""
         request = self.requests.find(part.reader_request_id)
         if request.completed_at is not None or request.expires_at <= self.clock.timestamp():
             return
@@ -44,8 +43,6 @@ class ReaderRequestBlocks:
         self.bus.dispatch(BlockUntil(process.session_agent_id, ReaderBlockKeys.keyed(nudge, request.id), ends), context)
 
     def request_answer(self, hook: AgentHook) -> RuleAnswer:
-        """The lines of the reader requests an agent waits on; for the main agent also the block that asks it to help
-        with a request whose saves failed or whose time ran out."""
         if not hook.event.accepts_lines:
             return RuleAnswer.allowed()
         if hook.role != AgentRole.MAIN:

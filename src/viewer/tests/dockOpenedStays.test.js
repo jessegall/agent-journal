@@ -38,7 +38,7 @@ async function openedWithOutput(items) {
     return host;
 }
 
-test("a card and its output that the person opened stay open when another card docks", async () => {
+test("a card and its output that the user opened stay open when another card docks", async () => {
     const items = reactive([run(1), run(2)]);
     const host = await openedWithOutput(items);
     expect(host.querySelectorAll(".chat-dock.collapsed")).toHaveLength(1);
@@ -50,7 +50,7 @@ test("a card and its output that the person opened stay open when another card d
     expect(host.querySelector("[data-dock-fold]").getAttribute("aria-expanded")).toBe("true");
 });
 
-test("a card that docked alone and its output, which the person opened, stay open when a second card docks while all were folded before", async () => {
+test("a card that docked alone and its output, which the user opened, stay open when a second card docks while all were folded before", async () => {
     const items = reactive([run(1), run(2)]);
     const host = stacked(items);
     await nextTick();
