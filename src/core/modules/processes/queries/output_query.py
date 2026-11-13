@@ -29,6 +29,12 @@ class OutputQuery(Query[Output]):
     def process_outputs(self, process_ids: tuple[int, ...]) -> tuple[Output, ...]:
         return tuple(self.matching(Among("process_id", process_ids)).every_row(PROCESS_OUTPUTS_REASON))
 
+    def running_reader_offsets(self) -> dict[int, int]:
+        running = Select("processes").matching(Among("state", OPEN)).column("id")
+        outputs = self.matching(SubqueryMatch("process_id", running)).matching(HasValue("reader_id"))
+        select = self.scoped(outputs.select.column("process_id, displayed_offset"))
+        return {row["process_id"]: row["displayed_offset"] for row in self.database.rows(select.statement())}
+
     def process_output(self, process_id: int) -> Output | None:
         outputs = self.process(process_id)
         return self.cached.read(outputs, outputs.first, name="processes.process_output")

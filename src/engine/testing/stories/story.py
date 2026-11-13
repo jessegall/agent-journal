@@ -24,6 +24,9 @@ from engine.caller.process_table import ProcessTable
 from engine.caller.process_row import ProcessRow
 from engine.time.clock import Clock
 from engine.container.container import Container
+from engine.database.points import Points
+from engine.module.performance_tools import PerformanceTools
+from collections.abc import Callable
 from engine.database.database import Database
 from engine.driver.hook_event import HookEvent
 from engine.driver.hook_reply import HookReply
@@ -237,6 +240,12 @@ class Story:
 
     def tick(self, session: str) -> HookReply:
         return self.hook(session, HookSamples.tick())
+
+    def tick_handler_points(self, tick_handler: Callable[[Container], object]) -> Points | None:
+        tools = self.container.get(PerformanceTools)
+        start = tools.begin()
+        tick_handler(self.container)
+        return tools.cost(start)
 
     def expect_hook_allowed(self, session: str, sample: HookSample, *expected_lines: ExpectedText) -> None:
         self.checked(f"hook {sample.action}")

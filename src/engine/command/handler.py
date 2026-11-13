@@ -1,6 +1,7 @@
 from typing import ClassVar, Generic, TypeIs, TypeVar
 
 from engine.actor.actor import Actor
+from engine.container.single_instance import SingleInstance
 from engine.command.command import Command
 from engine.command.context import Context
 from engine.scope.scopes import WholeScopes
@@ -9,7 +10,7 @@ C = TypeVar("C", bound=Command[object], contravariant=True)
 R = TypeVar("R", covariant=True)
 
 
-class Handler(Generic[C, R]):
+class Handler(SingleInstance, Generic[C, R]):
     """Runs a command; check_rows refuses queued work, and prepare runs before its transaction."""
 
     command: ClassVar[type[Command[object]]]
