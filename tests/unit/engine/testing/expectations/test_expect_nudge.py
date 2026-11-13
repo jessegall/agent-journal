@@ -1,0 +1,29 @@
+from engine.driver.nudge_declaration import NudgeDeclaration
+from engine.enums.nudge_type import NudgeType
+from engine.testing.expectations.expect_nudge import said
+
+PLAN_WAITS = NudgeDeclaration("sample.plan_waits", NudgeType.STEERING, "plan:{plan} is approved and {count} places are free")
+
+
+def test_a_line_matches_its_declaration_with_the_values_given_in_any_case():
+    line = PLAN_WAITS.nudge(plan=4, count=2).text.upper()
+    assert said(PLAN_WAITS, plan=4, count=2).is_in(line)
+
+
+def test_a_value_left_out_matches_any_text():
+    assert said(PLAN_WAITS, plan=4).is_in(PLAN_WAITS.nudge(plan=4, count=9).text)
+
+
+def test_another_value_does_not_match():
+    assert not said(PLAN_WAITS, plan=5).is_in(PLAN_WAITS.nudge(plan=4, count=2).text)
+
+
+def test_a_line_of_another_declaration_does_not_match():
+    other = NudgeDeclaration("sample.other", NudgeType.STEERING, "plan:{plan} was cancelled")
+    assert not said(PLAN_WAITS).is_in_any([other.nudge(plan=4).text])
+
+
+def test_a_kept_nudge_matches_by_its_key_and_fields():
+    kept = PLAN_WAITS.nudge(plan=4, count=2)
+    assert said(PLAN_WAITS, plan=4).is_kept_as(kept)
+    assert not said(PLAN_WAITS, plan=3).is_kept_as(kept)

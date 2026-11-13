@@ -1,3 +1,5 @@
+from core.modules.processes.support.process_nudges import UPDATE_WAITING
+from engine.testing.expectations.expect_nudge import said
 import json
 import os
 import subprocess
@@ -16,7 +18,6 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.modules.processes.support.queue_fixtures import QueueAgents
 
 VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
-UPDATE_REMINDER = "An update waits"
 REMINDER_SECONDS = 5 * 60
 
 
@@ -106,15 +107,15 @@ def test_the_main_agent_is_told_an_update_waits_and_for_which_runs(new_story):
     running = queued(story, "make one")
     (story.home.folder / "processes" / str(running.id) / "pid").write_text(str(os.getpid()))
     (story.home.folder / "processes" / str(running.id) / "1.started").write_text("")
-    lines = [line for line in ended_hook_lines(story, VIEW_LINE) if UPDATE_REMINDER in line]
-    story.expect_rows(len(lines) == 1, f"{running.id}" in lines[0])
+    lines = [line for line in ended_hook_lines(story, VIEW_LINE) if said(UPDATE_WAITING).is_in(line)]
+    story.expect_rows(len(lines) == 1, f"{running.id}" in lines[0], detail=str(lines))
 
 
 def test_the_reminder_that_an_update_waits_comes_again_after_five_minutes_and_not_when_it_is_done(new_story):
     story = update_waiting_story(new_story)
     ended_hook_lines(story, VIEW_LINE)
     story.advance(timedelta(seconds=REMINDER_SECONDS + 1))
-    story.expect_rows(len([line for line in ended_hook_lines(story, VIEW_LINE) if UPDATE_REMINDER in line]) == 1)
+    story.expect_rows(len([line for line in ended_hook_lines(story, VIEW_LINE) if said(UPDATE_WAITING).is_in(line)]) == 1)
     story.home.run_lock.unlink()
     story.advance(timedelta(seconds=REMINDER_SECONDS + 1))
-    story.expect_rows(not [line for line in ended_hook_lines(story, VIEW_LINE) if UPDATE_REMINDER in line])
+    story.expect_rows(not [line for line in ended_hook_lines(story, VIEW_LINE) if said(UPDATE_WAITING).is_in(line)])
