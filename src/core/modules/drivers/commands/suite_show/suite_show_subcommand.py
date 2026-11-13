@@ -27,4 +27,4 @@ class SuiteShowSubcommand(ReadSubcommand[SuiteDescription]):
         shipped = {overlay.name for overlay in self.registry.overlays}
         missing = [name for name in suite.included_overlays if name not in shipped]
         return SuiteDescription(suite.name, suite.module, ", ".join(suite.requires), suite.complete_control, ", ".join(suite.included_overlays), ", ".join(missing),
-                                ", ".join(f"{role}: {driver}" for role, driver in suite.defaults.items()))
+                                ", ".join(f"{role}: {driver.name}" for role, driver in self.registry.type_drivers(suite).items()))

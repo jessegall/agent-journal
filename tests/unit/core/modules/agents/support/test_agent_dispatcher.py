@@ -21,6 +21,7 @@ from core.modules.agents.support.local_launcher_transport import LocalLauncherTr
 from core.modules.agents.support.program_exit import ProgramExit
 from core.modules.agents.support.program_process import ProgramProcess
 from core.modules.agents.testing.fake_launcher import FakeLauncher
+from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.process.leftover_process import LeftoverProcess
 from engine.provider.launch_command import LaunchCommand
 from engine.time.clock import Clock
@@ -29,7 +30,7 @@ from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 NOW = Timestamp.parsed("2026-10-31T09:00:00+00:00")
 CONTEXT = SimpleNamespace(timestamp=NOW)
-POLICY = SimpleNamespace(agent_policy=lambda: SimpleNamespace(pause_retention_roles=()))
+TYPES = HelperTypeBook()
 STARTED = b"started 701\n"
 RUNNING = b"running\n"
 STOPPED = b"stopped\n"
@@ -104,7 +105,7 @@ class Parts:
         providers = SimpleNamespace(executable=lambda program: program)
         program = AgentProgram(providers, link, SimpleNamespace(rows=lambda: []), Clock())
         self.dispatcher = AgentDispatcher(
-            launcher, program, link, providers, self.repository, POLICY, SimpleNamespace(running=lambda: open_agents),
+            launcher, program, link, providers, self.repository, TYPES, SimpleNamespace(running=lambda: open_agents),
             SimpleNamespace(current=lambda agent_id: SimpleNamespace(end_reason=end_reason), ended=lambda agent_id, reason, context: self.session_reasons.append(reason)), SimpleNamespace(find=lambda environment_id: SimpleNamespace(id=1, name="main")),
             SimpleNamespace(query=lambda model: FakeAgentQuery(recently_ended)), SimpleNamespace(timestamp=lambda: NOW),
             SimpleNamespace(write=lambda level, text: self.log_lines.append(text)), SamplePolicy(final))

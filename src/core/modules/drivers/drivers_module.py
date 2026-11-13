@@ -231,11 +231,9 @@ from core.modules.drivers.commands.suite_show.suite_show_subcommand import Suite
 from core.modules.drivers.commands.suite_layout.suite_layout_subcommand import SuiteLayoutSubcommand
 from core.modules.drivers.commands.suite_presets.suite_presets_subcommand import SuitePresetsSubcommand
 from core.modules.drivers.bindings.table_hook_history import TableHookHistory
-from core.modules.drivers.bindings.suite_agent_policy import SuiteAgentPolicy
 from core.modules.drivers.commands.send_exception_line.send_exception_line_handler import SendExceptionLineHandler
 from core.modules.drivers.commands.record_agent_launch_failure.record_agent_launch_failure_handler import RecordAgentLaunchFailureHandler
 from core.modules.drivers.listeners.instruction_imports_listener import InstructionImportsListener
-from core.modules.agents.support.current_agent_policy import CurrentAgentPolicy
 from core.modules.drivers.support.driver_settings import DRIVERS_SETTINGS
 from core.modules.drivers.support.reviewer_start import REVIEWER_PROFILE
 from core.modules.drivers.support.skeletons import DRIVERS_NUDGES_SKELETON, DRIVERS_HOOK_CALLS_SKELETON
@@ -268,7 +266,7 @@ class DriversModule(Module):
                      TickHandler(TickInterval(seconds=5), EventPruning(), "event pruning")]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed]
     driver_rules = [RepeatedFileReadRule, SafeguardsStopRule, PanicFileRule, BlockStopRule, LongOutputRule, ForeignHooksRule, CompactionDueStopRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, ContinuedSessionRule, AgentBlockRule, TakeoverRule, AccessRule, NativeSubagentRule, PrivateCorpusRule]
-    bindings = {ContextChangeRequests: RecordedContextChangeRequests, Nudger: AgentLineNudger, CurrentAgentPolicy: SuiteAgentPolicy, OverviewReads: TableOverviewReads, RefusalSkips: TableRefusalSkips, ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, HookHistory: TableHookHistory,HookRoute: AgentHookRoute, ChangeFilter: DriverChangeFilter,
+    bindings = {ContextChangeRequests: RecordedContextChangeRequests, Nudger: AgentLineNudger, OverviewReads: TableOverviewReads, RefusalSkips: TableRefusalSkips, ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, HookHistory: TableHookHistory,HookRoute: AgentHookRoute, ChangeFilter: DriverChangeFilter,
                 EssentialAllowances: SettingEssentialAllowances}
     windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, skeleton=DRIVERS_NUDGES_SKELETON, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"], keys=[WindowKey("nudges", "nudge list", events=["nudge_record.*"]) ]),
                WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, skeleton=DRIVERS_HOOK_CALLS_SKELETON, icon=WindowIcon.RUNS, shows=WindowShows.SELECTED_AGENT,

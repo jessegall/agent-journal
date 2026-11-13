@@ -21,9 +21,8 @@ class DriverEntries:
     module, each driver's rules, each overlay's rules, then the rules the module adds."""
 
     def suites(self, modules: Sequence[type[Module]], shipped_modules: Sequence[type[Module]], suites: SuiteList) -> tuple[SuiteEntry, ...]:
-        return tuple(SuiteEntry(suite.name, module.name, tuple(suite.requires), {str(role): driver for role, driver in suite.defaults.items()}, suite.complete_control, tuple(suite.included_overlays),
+        return tuple(SuiteEntry(suite.name, module.name, tuple(suite.requires), suite.complete_control, tuple(suite.included_overlays),
                                       tuple(suite.windows), dict(suite.layouts), {page: tuple(presets) for page, presets in suite.presets.items()},
-                                      suite.agent_policy,
                                       self.task_assigner_path(suite), shipped=module in shipped_modules)
                      for module in modules for suite in suites.module_suites(module))
 

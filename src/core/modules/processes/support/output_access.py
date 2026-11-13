@@ -1,6 +1,6 @@
+from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from core.modules.drivers.support.suite_choice import SuiteChoice
 from engine.listener.rows.event_rows import EventRows
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
@@ -10,8 +10,8 @@ from core.modules.processes.models.process import Process
 class OutputAccess:
     """Applies the suite's output access policy to the actor reading an output."""
 
-    def __init__(self, rows: EventRows, suites: SuiteChoice) -> None:
-        self.rows, self.suites = rows, suites
+    def __init__(self, rows: EventRows, types: HelperTypeBook) -> None:
+        self.rows, self.types = rows, types
 
     def agent(self, actor: Actor) -> Agent | None:
         if actor.type is not ActorType.AGENT:
@@ -20,7 +20,7 @@ class OutputAccess:
 
     def has_private_outputs(self, actor: Actor) -> bool:
         agent = self.agent(actor)
-        return agent is not None and agent.role in self.suites.agent_policy().private_output_roles
+        return agent is not None and self.types.behaviours(agent.role).has_private_outputs
 
     def process(self, actor: Actor, process_id: int) -> Process:
         process = self.rows.required(Process, process_id)

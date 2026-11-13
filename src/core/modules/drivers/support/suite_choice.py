@@ -1,7 +1,6 @@
 from engine.registry.driver_entry import DriverEntry
 from engine.registry.registry import Registry
 from engine.registry.suite_entry import SuiteEntry
-from engine.agent.agent_policy import AgentPolicy
 from engine.setting.setting_values import SettingValues
 from core.modules.drivers.support.driver_settings import DRIVER_SETTINGS, SUITE_SETTING
 
@@ -33,10 +32,6 @@ class SuiteChoice:
         suite = self.suite()
         return suite is not None and suite_name in self.registry.ancestors(suite)
 
-    def agent_policy(self) -> AgentPolicy:
-        suite = self.suite()
-        return suite.agent_policy if suite is not None else AgentPolicy()
-
     def driver(self, role: str) -> DriverEntry | None:
         suite = self.suite()
         if suite is None:
@@ -44,7 +39,7 @@ class SuiteChoice:
         configured_driver = self.registry.driver(self.settings.text(f"{DRIVER_SETTINGS}{role}"))
         if configured_driver is not None:
             return configured_driver
-        return self.registry.driver(suite.defaults.get(role, ""))
+        return self.registry.type_driver(suite, role)
 
     def suite_names(self) -> str:
         return " or ".join(sorted(suite.name for suite in self.registry.suites))

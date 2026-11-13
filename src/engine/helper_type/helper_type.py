@@ -20,6 +20,7 @@ class HelperType:
     run_limit_key: ClassVar[str] = ""
     kept_limit_key: ClassVar[str] = ""
     profile_limits_key: ClassVar[str] = ""
+    queue_limit_key: ClassVar[str] = ""
     job_command: ClassVar[tuple[str, ...]] = ()
     job_task_flag: ClassVar[str] = ""
     line: ClassVar[str] = ""

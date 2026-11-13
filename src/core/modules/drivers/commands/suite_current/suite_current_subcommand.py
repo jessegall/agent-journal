@@ -33,5 +33,5 @@ class SuiteCurrentSubcommand(ReadSubcommand[SuiteRun]):
         suite = self.choice.suite()
         if suite is None:
             return SuiteRun.unset(self.choice.suite_names())
-        drivers = [f"{role}: {driver.name}" for role in suite.defaults if (driver := self.choice.driver(role)) is not None]
+        drivers = [f"{role}: {driver.name}" for role in self.choice.registry.helper_type_book().entries if (driver := self.choice.driver(role)) is not None]
         return SuiteRun(suite.name, ", ".join(drivers))

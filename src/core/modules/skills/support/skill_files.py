@@ -1,3 +1,4 @@
+from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.skill.skill_contents import SkillContents
 from engine.file.file_access import FileAccess
 import shutil
@@ -5,7 +6,6 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.support.suite_choice import SuiteChoice
 from engine.driver.agent_hook import AgentHook
 from engine.provider.providers import Providers
 from engine.registry.skill_entry import SkillEntry
@@ -19,14 +19,14 @@ from core.modules.skills.support.skill_projects import SkillProjects
 class SkillFiles:
     """Publishes skills in each program's folder and selects paths for agent reminders."""
 
-    def __init__(self, projects: SkillProjects, providers: Providers, catalogue: SkillCatalogue, suites: SuiteChoice) -> None:
+    def __init__(self, projects: SkillProjects, providers: Providers, catalogue: SkillCatalogue, types: HelperTypeBook) -> None:
         self.projects, self.providers, self.catalogue = projects, providers, catalogue
-        self.suites = suites
+        self.types = types
 
     def path(self, folder: str, hook: AgentHook) -> Path:
         project = self.projects.agent_folder(hook.agent_id, hook.environment_id)
         path = Path(self.providers.provider(hook.event.program).skills_folder) / folder / SKILL_FILE
-        return project / path if hook.role in self.suites.agent_policy().project_skill_roles else path
+        return project / path if self.types.behaviours(hook.role).reads_project_skills else path
 
     def instruction(self, folder: str, hook: AgentHook) -> str:
         return self.providers.provider(hook.event.program).skill_instruction(folder, self.path(folder, hook))
@@ -34,7 +34,7 @@ class SkillFiles:
     def agent_instruction(self, folder: str, agent: Agent) -> str:
         provider = self.providers.provider(agent.program)
         path = Path(provider.skills_folder) / folder / SKILL_FILE
-        if agent.role in self.suites.agent_policy().project_skill_roles:
+        if self.types.behaviours(agent.role).reads_project_skills:
             path = self.projects.agent_folder(agent.id, agent.environment_id) / path
         return provider.skill_instruction(folder, path)
 

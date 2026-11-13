@@ -1,3 +1,4 @@
+from engine.helper_type.helper_type_book import HelperTypeBook
 from collections.abc import Sequence
 
 from engine.enums.command_category import CommandCategory
@@ -5,7 +6,6 @@ from engine.query.queries import Queries
 from engine.enums.agent_role import AgentRole
 from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.models.process import Process
@@ -18,13 +18,13 @@ class RunAdmission:
     """Decides which runs wait for capacity and readers, and which start immediately; a run is never held for its
     count, which it takes while it runs."""
 
-    def __init__(self, queries: Queries, suites: SuiteChoice, settings: ProcessSettings, visibility: RunVisibility) -> None:
-        self.queries, self.suites, self.settings, self.visibility = queries, suites, settings, visibility
+    def __init__(self, queries: Queries, types: HelperTypeBook, settings: ProcessSettings, visibility: RunVisibility) -> None:
+        self.queries, self.types, self.settings, self.visibility = queries, types, settings, visibility
 
     def needs_slot(self, process: Process, agent: Agent) -> bool:
         if process.plugin:
             return process.category is not CommandCategory.BACKGROUND_JOB
-        return process.is_queue_run and agent.role in self.suites.agent_policy().queued_run_roles
+        return process.is_queue_run and self.types.behaviours(agent.role).queues_runs
 
     def uses_slot(self, process: Process) -> bool:
         if process.slot_assigned:

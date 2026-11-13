@@ -7,7 +7,7 @@ from engine.model.model import END_CHANGE, Model
 from engine.model.errors.model_error import ModelError
 from engine.time.timestamp import Timestamp
 from engine.agent.agent_name import AgentName
-from engine.agent.agent_policy import AgentPolicy
+from engine.helper_type.helper_behaviours import HelperBehaviours
 from core.modules.agents.models.enums.agent_activity import AgentActivity
 from core.modules.agents.models.enums.standing_state import StandingState
 from engine.agent.agent_name import MAIN_ROLE
@@ -100,8 +100,8 @@ class Agent(EnvironmentScoped, Model):
             raise ModelError(f"{self.display_name} has no parent agent")
         return self.parent_id
 
-    def ended(self, timestamp: Timestamp, policy: AgentPolicy) -> "Agent":
-        return self.changed(ended_at=timestamp, paused_at=self.paused_at if self.role in policy.pause_retention_roles else None)
+    def ended(self, timestamp: Timestamp, behaviours: HelperBehaviours) -> "Agent":
+        return self.changed(ended_at=timestamp, paused_at=self.paused_at if behaviours.keeps_pause_after_end else None)
 
     def is_foreign_helper(self, actor: Actor) -> bool:
         return actor.type is ActorType.AGENT and self.parent_id != actor.id

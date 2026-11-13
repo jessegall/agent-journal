@@ -1,8 +1,8 @@
+from engine.helper_type.helper_type_book import HelperTypeBook
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
 from engine.event.moved import Moved
 from dataclasses import replace
 
-from core.modules.drivers.support.suite_choice import SuiteChoice
 from engine.command.bus import Bus
 from engine.driver.block_until import BlockUntil
 from engine.enums.tool_type import ToolType
@@ -24,9 +24,9 @@ class BackgroundRunWatchListener(SaveListener[Moved[Process]]):
     name = "processes.background-run-watch"
     moves = tuple([ProcessLifecycle.background])
 
-    def __init__(self, repository: Repository, bus: Bus, queries: Queries, providers: Providers, suites: SuiteChoice) -> None:
+    def __init__(self, repository: Repository, bus: Bus, queries: Queries, providers: Providers, types: HelperTypeBook) -> None:
         self.repository, self.bus, self.queries, self.providers = repository, bus, queries, providers
-        self.suites = suites
+        self.types = types
 
     def handle(self, event: Moved[Process], context: Context) -> None:
         process = event.row
@@ -39,6 +39,6 @@ class BackgroundRunWatchListener(SaveListener[Moved[Process]]):
 
     def monitor_tool(self, process: Process) -> ToolType | None:
         agent = self.queries.query(Agent).find(process.session_agent_id)
-        if process.creator_id != process.session_agent_id or agent.role in self.suites.agent_policy().automatic_watch_roles:
+        if process.creator_id != process.session_agent_id or self.types.behaviours(agent.role).watches_runs_automatically:
             return None
         return self.providers.provider(agent.program).monitor_tool

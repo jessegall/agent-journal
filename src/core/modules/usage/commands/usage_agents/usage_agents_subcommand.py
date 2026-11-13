@@ -4,8 +4,6 @@ from core.modules.agents.support.agent_rows import RUNNING_AGENTS_REASON
 from core.modules.settings.bindings.support.context_share import ContextShare
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.helper_job import NEW_SESSION_LAUNCH, RESUMED_SESSION_LAUNCH
-from core.modules.drivers.support.suite_choice import SuiteChoice
-from engine.agent.agent_policy import AgentPolicy
 import json
 from collections.abc import Mapping, Sequence
 from dataclasses import replace
@@ -53,10 +51,10 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     name = "agents"
     environment_refusal = "the agents are shown for one environment"
 
-    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity, sandbox: AgentSandboxChoice, types: HelperTypeBook, share: ContextShare, spend: AgentSpend, current_window: CurrentContextWindow) -> None:
+    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity, sandbox: AgentSandboxChoice, types: HelperTypeBook, share: ContextShare, spend: AgentSpend, current_window: CurrentContextWindow) -> None:
         self.share, self.spend, self.current_window = share, spend, current_window
         self.activity, self.sandbox, self.types = activity, sandbox, types
-        self.queries, self.files, self.providers, self.home, self.suites, self.profiles = queries, files, providers, home, suites, profiles
+        self.queries, self.files, self.providers, self.home, self.profiles = queries, files, providers, home, profiles
         self.settings, self.clock = settings, clock
 
     def arguments(self, parser: ArgumentParser) -> None:
@@ -74,7 +72,6 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         running = tuple(cards.matching(activity).every_row(RUNNING_AGENTS_REASON))
         ended = tuple(cards.matching(Greater("ended_at", "")).matching(Excluding(activity)).newest().page(1, CLOSED_AGENTS_SHOWN).rows) if closed else ()
         pending = activity.pending
-        policy = self.suites.agent_policy()
         titles = {profile.name: profile.display_title for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
         cards_read = (*running, *ended)
         statuses = self.statuses(cards_read)
@@ -83,7 +80,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         session_costs = self.spend.session_costs(agent_id) if agent_id is not None else ()
         unit_names = self.activity.work.unit_names([card.id for card in cards_read])
         merges = self.merged_work(cards_read)
-        return AgentFactsList(tuple(replace(self.facts(card, policy, titles, pending.get(card.id), statuses[card.session], account, sandboxes.get(card.id, True), merges.get(card.id)), session_costs=session_costs,
+        return AgentFactsList(tuple(replace(self.facts(card, titles, pending.get(card.id), statuses[card.session], account, sandboxes.get(card.id, True), merges.get(card.id)), session_costs=session_costs,
                                             unit_name=unit_names.get(card.id, ""))
                                     for card in cards_read))
 
@@ -105,11 +102,11 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     def statuses(self, cards: Sequence[AgentCard]) -> Mapping[str, SessionStatus]:
         return {card.session: self.files.status(card.session) for card in cards}
 
-    def facts(self, card: AgentCard, policy: AgentPolicy, titles: dict[str, str], work_status: str | None, status: SessionStatus, account: tuple[PlanWindow, ...], sandboxed: bool, merged: MergedWork | None) -> AgentFacts:
-        blocked_reason = AgentBlocked(self.settings.number(BLOCK_CARD_SECONDS)).reason(card, self.clock.timestamp(), policy)
+    def facts(self, card: AgentCard, titles: dict[str, str], work_status: str | None, status: SessionStatus, account: tuple[PlanWindow, ...], sandboxed: bool, merged: MergedWork | None) -> AgentFacts:
+        blocked_reason = AgentBlocked(self.settings.number(BLOCK_CARD_SECONDS)).reason(card, self.clock.timestamp(), self.types.behaviours(card.role))
         return AgentFacts(card.id, self.model(card, status) or card.program_model or card.job_model, self.context_percent(card, status), status.cost_dollars, card.started_task_id, card.started_task_title,
                           self.current_round(json.loads(card.tasks), merged), self.waiting_state(card, blocked_reason), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
-                          card.job_instruction, self.effort(card, status), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), card.helper_job_title, titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not sandboxed, status.windows or account, card.usage_limit_ends_at.text if card.usage_limit_ends_at is not None else None,
+                          card.job_instruction, self.effort(card, status), self.types.behaviours(card.role).takes_jobs, card.job_returned, card.last_activity, self.helper_job(card), card.helper_job_title, titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not sandboxed, status.windows or account, card.usage_limit_ends_at.text if card.usage_limit_ends_at is not None else None,
                           helper_job_program=card.helper_job_program, occupant_launch=self.occupant_launch(card), is_helper_job_open=card.is_helper_job_open, is_context_unknown=self.is_context_unknown(card, status))
 
     @staticmethod

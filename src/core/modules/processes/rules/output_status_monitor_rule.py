@@ -1,4 +1,4 @@
-from core.modules.drivers.support.suite_choice import SuiteChoice
+from engine.helper_type.helper_type_book import HelperTypeBook
 from core.modules.processes.support.process_nudges import MONITOR_COMMAND_NOTE, MONITOR_NOTE, AUTOMATIC_RUN_WATCHED
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
@@ -20,8 +20,8 @@ class OutputStatusMonitorRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
 
-    def __init__(self, providers: Providers, suites: SuiteChoice) -> None:
-        self.providers, self.suites = providers, suites
+    def __init__(self, providers: Providers, types: HelperTypeBook) -> None:
+        self.providers, self.types = providers, types
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
@@ -30,7 +30,7 @@ class OutputStatusMonitorRule(DriverRule):
         return RuleAnswer.with_nudges(*(note.nudge(output=number) for number in numbers))
 
     def note(self, hook: AgentHook) -> NudgeDeclaration:
-        if hook.role in self.suites.agent_policy().automatic_watch_roles:
+        if self.types.behaviours(hook.role).watches_runs_automatically:
             return AUTOMATIC_RUN_WATCHED
         return MONITOR_COMMAND_NOTE if self.providers.provider(hook.event.program).monitor_tool is ToolType.SHELL else MONITOR_NOTE
 

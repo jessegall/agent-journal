@@ -3,6 +3,7 @@ from core.modules.helpers.types.helper import Helper
 from engine.helper_type.helper_behaviours import HelperBehaviours
 from suites.coding.modules.workers.bindings.worker_roster import WorkerRoster
 from suites.coding.modules.workers.support.worker_settings import WORKER_KEPT_LIMIT, WORKER_RUN_LIMIT
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 
 class Worker(Helper):
@@ -18,6 +19,7 @@ class Worker(Helper):
     run_limit_key = WORKER_RUN_LIMIT
     kept_limit_key = WORKER_KEPT_LIMIT
     profile_limits_key = ""
+    queue_limit_key = WORKER_TEST_LIMIT
     job_command = ("worker", "send")
     job_task_flag = "--task"
     line = "Writes the code of a task in a worktree of its own."

@@ -15,7 +15,6 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.usage.support.agent_type_limits import UNLIMITED_AGENT_COUNT, AgentTypeLimits
 from core.modules.agents.support.type_limits import TypeLimits
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
-from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.helpers.support.agent_admission import AgentAdmission
 from core.modules.helpers.support.allowed_models import AllowedModels
 from core.modules.helpers.support.kept_helpers import KeptHelpers
@@ -32,12 +31,12 @@ class HelperLimits:
     """Who may start a helper, on which model, and how many of a profile run or are kept. A helper with an open job
     holds a run place while its resume is on its way, before its session binds."""
 
-    def __init__(self, queries: Queries, settings: SettingValues, suites: SuiteChoice, models: AllowedModels, providers: Providers, agents: AgentRows, standings: AgentStanding, limits: AgentTypeLimits, kept: KeptHelpers, admission: AgentAdmission, numbers: RowNumbers, types: HelperTypeBook) -> None:
+    def __init__(self, queries: Queries, settings: SettingValues, models: AllowedModels, providers: Providers, agents: AgentRows, standings: AgentStanding, limits: AgentTypeLimits, kept: KeptHelpers, admission: AgentAdmission, numbers: RowNumbers, types: HelperTypeBook) -> None:
         self.numbers, self.types = numbers, types
         self.admission = admission
         self.limits, self.kept = limits, kept
         self.standings = standings
-        self.queries, self.settings, self.suites, self.models, self.providers, self.agents = queries, settings, suites, models, providers, agents
+        self.queries, self.settings, self.models, self.providers, self.agents = queries, settings, models, providers, agents
 
     def checked_parent(self, context: Context | Caller) -> Agent:
         if context.actor.type is ActorType.AGENT:
@@ -50,7 +49,7 @@ class HelperLimits:
         return main
 
     def checked_agent(self, agent: Agent) -> Agent:
-        if agent.role not in self.suites.agent_policy().dispatch_roles:
+        if not self.types.behaviours(agent.role).dispatches:
             raise Refusal("a read-only helper starts no helper", "say in your report what should be done next")
         return agent
 

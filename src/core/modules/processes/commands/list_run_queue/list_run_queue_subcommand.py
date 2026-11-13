@@ -9,7 +9,7 @@ from engine.query.query import Query
 from engine.errors.refusal import Refusal
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
-from core.modules.drivers.support.suite_choice import SuiteChoice
+from engine.helper_type.helper_type_book import HelperTypeBook
 from core.modules.environments.models.environment import Environment
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.process_queue_row import ProcessQueueRow
@@ -36,12 +36,12 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
     name = "list"
     environment_refusal = "the process queue needs an environment"
 
-    def __init__(self, queries: Queries, settings: ProcessSettings, halt: RunQueueHalt, suites: SuiteChoice, catalogue: SettingCatalogue, values: SettingValues, queue_runs: ActiveQueueRuns) -> None:
+    def __init__(self, queries: Queries, settings: ProcessSettings, halt: RunQueueHalt, types: HelperTypeBook, catalogue: SettingCatalogue, values: SettingValues, queue_runs: ActiveQueueRuns) -> None:
         self.queries, self.settings, self.halt, self.queue_runs = queries, settings, halt, queue_runs
-        self.suites, self.catalogue, self.values = suites, catalogue, values
+        self.types, self.catalogue, self.values = types, catalogue, values
 
     def suite_limits(self) -> list[dict[str, object]]:
-        entries = (self.catalogue.value(key) for key in self.suites.agent_policy().queue_limit_settings)
+        entries = (self.catalogue.value(key) for key in self.types.queue_limit_keys())
         return [{"key": entry.key, "title": entry.title, "description": entry.description, "value": self.values.value(entry.key)} for entry in entries]
 
     def arguments(self, parser: ArgumentParser) -> None:

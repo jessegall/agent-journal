@@ -2,6 +2,7 @@ from collections.abc import Sequence
 
 from engine.enums.access import Access
 from engine.errors.refusal import Refusal
+from engine.helper_type.helper_behaviours import HelperBehaviours
 from engine.helper_type.helper_type_entry import HelperTypeEntry
 from engine.helper_type.main_agent import MainAgent
 
@@ -31,6 +32,15 @@ class HelperTypeBook:
         if key not in self.entries:
             raise Refusal(f"{key} is no helper type: no installed module or suite registers it", "register it in a module's or suite's helper_types")
         return self.entries[key]
+
+    def behaviours(self, key: str) -> HelperBehaviours:
+        return self.entries[key].behaviours if key in self.entries else HelperBehaviours.retired()
+
+    def queue_limit_keys(self) -> tuple[str, ...]:
+        return tuple(entry.queue_limit_key for entry in self.startable() if entry.queue_limit_key)
+
+    def type_keys(self, key: str) -> tuple[str, ...]:
+        return self.entries[key].type_keys() if key in self.entries else (key,)
 
     def label(self, key: str) -> str:
         return self.entries[key].label if key in self.entries else key.capitalize()

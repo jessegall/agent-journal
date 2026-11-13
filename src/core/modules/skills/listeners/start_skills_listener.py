@@ -1,4 +1,4 @@
-from core.modules.drivers.support.suite_choice import SuiteChoice
+from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.enums.agent_role import AgentRole
 from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
@@ -23,8 +23,8 @@ class StartSkillsListener(SkillListener[SessionStarted]):
 
     name = "skills.start"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, catalogue: SkillCatalogue, start: StartSkills, suites: SuiteChoice, main_skills: MainAgentSkills, agents: AgentRows, profile_skills: AgentProfileSkills) -> None:
-        super().__init__(bus, actors, queries, catalogue, suites, agents)
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, catalogue: SkillCatalogue, start: StartSkills, types: HelperTypeBook, main_skills: MainAgentSkills, agents: AgentRows, profile_skills: AgentProfileSkills) -> None:
+        super().__init__(bus, actors, queries, catalogue, types, agents)
         self.start, self.main_skills, self.profile_skills = start, main_skills, profile_skills
 
     def handle(self, event: SessionStarted, logged: LoggedEvent) -> None:
@@ -34,7 +34,7 @@ class StartSkillsListener(SkillListener[SessionStarted]):
         previous_call = self.previous_call(call)
         if previous_call is not None and previous_call.program_session not in ("", call.program_session):
             self.run(logged, ResetSkills(call.session_agent_id))
-        takes_start_skills = self.agents.find(call.session_agent_id).role in self.suites.agent_policy().prompt_roles
+        takes_start_skills = self.types.behaviours(self.agents.find(call.session_agent_id).role).takes_prompts
         start = self.skills(call, previous_call) if takes_start_skills else []
         profile_skills = self.profile_skills.required(call.session_agent_id)
         for skill in dict.fromkeys((*start, *profile_skills)):

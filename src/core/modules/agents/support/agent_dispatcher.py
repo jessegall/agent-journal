@@ -25,7 +25,7 @@ from core.modules.agents.support.agent_launcher import AgentLauncher
 from core.modules.agents.support.agent_program import AgentProgram
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.agent_sessions import AgentSessions
-from core.modules.agents.support.current_agent_policy import CurrentAgentPolicy
+from engine.helper_type.helper_type_book import HelperTypeBook
 from core.modules.agents.support.dispatch_policy import DispatchPolicy
 from core.modules.agents.support.program_transport import ProgramTransport
 from core.modules.agents.support.program_exit import ProgramExit
@@ -47,15 +47,15 @@ class AgentDispatcher:
     """Owns the life of an agent's program: it starts it, says whether it runs, and ends it, and it is the
     one place that writes the end of an agent's row. The standing is worked out from the launcher, the
     recorded process of an open row and the row, each read once. A stop leaves a program alone while a start
-    of its session has the lock of the suite's policy, and ends the row only after the program is gone. One
+    of its session has the lock of its type's behaviours, and ends the row only after the program is gone. One
     round of reconcile opens a row that ended while its program runs and ends an open row whose started
     program is gone, and writes each correction to the system log."""
 
     def __init__(self, launcher: AgentLauncher, program: AgentProgram, transport: ProgramTransport, providers: Providers, repository: Repository,
-                 policy: CurrentAgentPolicy, agents: AgentRows, sessions: AgentSessions, environments: EnvironmentRows, queries: Queries, clock: Clock,
+                 types: HelperTypeBook, agents: AgentRows, sessions: AgentSessions, environments: EnvironmentRows, queries: Queries, clock: Clock,
                  system_log: SystemLogWriter, dispatch_policy: DispatchPolicy) -> None:
         self.dispatch_policy = dispatch_policy
-        self.launcher, self.program, self.transport, self.providers, self.repository, self.policy = launcher, program, transport, providers, repository, policy
+        self.launcher, self.program, self.transport, self.providers, self.repository, self.types = launcher, program, transport, providers, repository, types
         self.agents, self.sessions, self.environments, self.queries, self.clock, self.system_log = agents, sessions, environments, queries, clock, system_log
 
     def start(self, agent: Agent, command: LaunchCommand) -> Dispatch:
@@ -113,7 +113,7 @@ class AgentDispatcher:
         return self.end_row(self.repository.update(agent, context, pid=None, process_started_at=None), context)
 
     def end_row(self, agent: Agent, context: Context) -> Agent:
-        return self.repository.save_change(agent, agent.ended(context.timestamp, self.policy.agent_policy()), context)
+        return self.repository.save_change(agent, agent.ended(context.timestamp, self.types.behaviours(agent.role)), context)
 
     def move_program(self, launch: Agent, resumed: Agent, context: Context) -> Agent:
         self.end_row(launch, replace(context, actor=Actor(launch.id, ActorType.AGENT)))

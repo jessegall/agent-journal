@@ -1,8 +1,8 @@
+from engine.helper_type.helper_type_book import HelperTypeBook
 from datetime import timedelta
 from dataclasses import replace
 from pathlib import Path
 
-from core.modules.drivers.support.suite_choice import SuiteChoice
 from engine.time.clock import Clock
 from engine.command.context import Context
 from engine.repository.repository import Repository
@@ -33,16 +33,16 @@ class ReaderRequests:
     """Opens an agent's request for each command without a proper reader."""
 
     def __init__(self, queries: Queries, requests: ReaderRequestQuery, parts: ProcessPartQuery, repository: Repository,
-                 demands: ReaderDemands, settings: ProcessSettings, clock: Clock, suites: SuiteChoice, judge: ReaderJudge, counts: RunCounts,
+                 demands: ReaderDemands, settings: ProcessSettings, clock: Clock, types: HelperTypeBook, judge: ReaderJudge, counts: RunCounts,
                  marks: UnreadableMarkRegistry) -> None:
         self.counts, self.marks = counts, marks
         self.queries, self.requests, self.parts, self.repository = queries, requests, parts, repository
         self.demands, self.settings, self.clock = demands, settings, clock
-        self.suites = suites
+        self.types = types
         self.judge = judge
 
     def needed(self, process: Process, agent: Agent) -> bool:
-        return (agent.role in self.suites.agent_policy().reader_request_roles and process.creator_id == agent.id
+        return self.types.behaviours((agent.role).needs_readers and process.creator_id == agent.id
                 and self.settings.flag(ProcessSetting.READERS_FORCED))
 
     def request(self, process: Process, spec: PartSpec, reader: Reader | None, context: Context) -> int | None:

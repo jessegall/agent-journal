@@ -5,7 +5,7 @@ from engine.enums.command_category import CommandCategory
 from engine.listener.rows.event_rows import EventRows
 from engine.time.clock import Clock
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.support.suite_choice import SuiteChoice
+from engine.helper_type.helper_type_book import HelperTypeBook
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.enums.unreadable_reason import UnreadableReason
@@ -40,10 +40,10 @@ class ReadingFacts:
     role, and how the run prints. It is the one builder of a ReadingCase."""
 
     def __init__(self, readers: ReaderRows, judge: ReaderJudge, writers: ReaderWriters, requests: ReaderRequestQuery, run_counts: CommandRunCounts,
-                 resets: EscalationResets, folder: OutputFolder, settings: ProcessSettings, suites: SuiteChoice, rows: EventRows, clock: Clock,
+                 resets: EscalationResets, folder: OutputFolder, settings: ProcessSettings, types: HelperTypeBook, rows: EventRows, clock: Clock,
                  cadences: RunCadences, run: ReaderRun, counts: RunCounts) -> None:
         self.readers, self.judge, self.writers, self.requests, self.run_counts = readers, judge, writers, requests, run_counts
-        self.resets, self.folder, self.settings, self.suites, self.rows, self.clock, self.cadences = resets, folder, settings, suites, rows, clock, cadences
+        self.resets, self.folder, self.settings, self.types, self.rows, self.clock, self.cadences = resets, folder, settings, types, rows, clock, cadences
         self.run, self.counts = run, counts
 
     def gathered_cases(self, process: Process, parts: Sequence[ProcessPart], point: ReadingPhase) -> list[ReadingCase]:
@@ -58,7 +58,7 @@ class ReadingFacts:
         command = part.command or part.text
         command_key = SilentStartRuns.name(part.text, part.program, part.category)
         reader = self.reader(part)
-        policy = self.suites.agent_policy()
+        behaviours = self.types.behaviours(agent.role)
         return ReadingCase(command_key=command_key, category=part.category, classification_recognized=part.category is not CommandCategory.UNKNOWN,
                            has_asking_flag=ReaderDemands.is_help_request(command), output_hidden=part.piped, is_saved_command=bool(part.saved_command),
                            is_plugin_run=bool(process.plugin), phase=point, age_seconds=self.age_seconds(process), run_state=process.state,
@@ -69,8 +69,8 @@ class ReadingFacts:
                            draft_fits=self.draft_fits(process, part, reader, point), output=self.output(process, part, point),
                            runs_without_change=runs_without_change,
                            waiting_request=waiting_request, skipped=self.resets.skipped_after(command_key, process.creation_timestamp()),
-                           has_unreadable_mark=is_flagged, reader_required=agent.role in policy.reader_request_roles,
-                           reader_writing_allowed=self.writers.allows(Actor(agent.id, ActorType.AGENT)), role_uses_saved_commands=agent.role in policy.saved_command_roles,
+                           has_unreadable_mark=is_flagged, reader_required=behaviours.needs_readers,
+                           reader_writing_allowed=self.writers.allows(Actor(agent.id, ActorType.AGENT)), role_uses_saved_commands=behaviours.runs_saved_commands,
                            readers_forced=self.settings.flag(ProcessSetting.READERS_FORCED))
 
     def reader(self, part: ProcessPart) -> Reader | None:

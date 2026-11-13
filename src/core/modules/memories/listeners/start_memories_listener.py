@@ -1,4 +1,4 @@
-from core.modules.drivers.support.suite_choice import SuiteChoice
+from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.listener.commit.commit_listener import CommitListener
@@ -21,14 +21,14 @@ class StartMemoriesListener(CommitListener[SessionStarted]):
 
     name = "memories.start-memories"
 
-    def __init__(self, memories: ActiveMemoryQuery, agents: AgentRows, bus: Bus, actors: ModuleActors, suites: SuiteChoice, scopes: Scopes) -> None:
+    def __init__(self, memories: ActiveMemoryQuery, agents: AgentRows, bus: Bus, actors: ModuleActors, types: HelperTypeBook, scopes: Scopes) -> None:
         self.memories, self.agents, self.bus, self.actors = memories, agents, bus, actors
-        self.suites, self.scopes = suites, scopes
+        self.types, self.scopes = types, scopes
 
     def handle(self, event: SessionStarted, logged: LoggedEvent) -> None:
         call = event.row
         agent = self.agents.find(call.session_agent_id)
-        if agent.retired_at is not None or agent.role not in self.suites.agent_policy().prompt_roles:
+        if agent.retired_at is not None or not self.types.behaviours(agent.role).takes_prompts:
             return
         with self.scopes.opened(call.session_agent_id):
             memory_ids = tuple(row.memory_id for row in self.memories.absent_memories(call.session_agent_id).all_weighted(START_MEMORIES_REASON))
