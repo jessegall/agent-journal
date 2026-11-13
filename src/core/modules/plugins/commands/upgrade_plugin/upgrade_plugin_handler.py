@@ -17,7 +17,6 @@ from core.modules.plugins.support.plugin_digest import PluginDigest
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_install_steps import PluginInstallSteps
 from core.modules.plugins.support.plugin_manifest import PluginManifest
-from core.modules.plugins.support.plugin_readers import PluginReaders
 from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
 from core.modules.plugins.support.plugin_staging import EXCLUDED_NAMES, PluginStaging
 from core.modules.plugins.support.plugin_upgrade import PluginUpgrade
@@ -35,8 +34,8 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
     command = UpgradePlugin
     runs_once = True
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders, staging: PluginStaging, steps: PluginInstallSteps, repository: Repository, skill_files: PluginSkillFiles, readers: PluginReaders, code_diff: PluginCodeDiff, scripts: PluginScriptProcesses) -> None:
-        self.plugins, self.folders, self.staging, self.steps, self.repository, self.skill_files, self.readers, self.code_diff, self.scripts = plugins, folders, staging, steps, repository, skill_files, readers, code_diff, scripts
+    def __init__(self, plugins: PluginQuery, folders: PluginFolders, staging: PluginStaging, steps: PluginInstallSteps, repository: Repository, skill_files: PluginSkillFiles, code_diff: PluginCodeDiff, scripts: PluginScriptProcesses) -> None:
+        self.plugins, self.folders, self.staging, self.steps, self.repository, self.skill_files, self.code_diff, self.scripts = plugins, folders, staging, steps, repository, skill_files, code_diff, scripts
 
     def prepare(self, command: UpgradePlugin, actor: Actor) -> None:
         if actor.is_agent():
@@ -93,7 +92,6 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
         self.staging.cleared(origin)
         manifest = PluginManifest.read(code)
         self.skill_files.publish(code, manifest)
-        self.readers.publish(code, manifest.name, context)
         self.repository.save(plugin.changed(release=manifest.version, files_digest=PluginDigest.digest(code, manifest)), context)
         self.folders.upgrade_mark(plugin.name).unlink(missing_ok=True)
         return PluginUpgrade(plugin.name, plugin.release, manifest.version, [], True)
