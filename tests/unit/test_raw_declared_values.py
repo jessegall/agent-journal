@@ -18,6 +18,8 @@ NUDGE_VALUE = r"\S+"
 SETTING_KEY = re.compile(r"journal\.[a-z0-9_.-]+")
 KEPT_AS_WRITTEN = ("migration", "upgrade", "legacy", "old_views")
 CORE_UNIT_TESTS = "tests/unit/core/"
+SETTING_SET = "setting set"
+COUNTED_ANYWAY = (0, 1)
 
 
 def literal_texts(tree: ast.Module) -> Iterator[tuple[int, str]]:
@@ -65,6 +67,73 @@ def profile_names() -> re.Pattern[str]:
     return re.compile(r"(?<![\w./-])(" + "|".join(re.escape(name) for name in names) + r")(?![\w-])")
 
 
+@cache
+def number_defaults() -> dict[str, int]:
+    """The short key of every setting declared with one whole number for its default."""
+    found: dict[str, set[int]] = {}
+    for call in declared_calls(SETTING_VALUE):
+        for keyword in call.keywords:
+            if keyword.arg == "default" and isinstance(keyword.value, ast.Constant) and type(keyword.value.value) is int:
+                found.setdefault(text_argument(call, 0), set()).add(keyword.value.value)
+    return {key: next(iter(values)) for key, values in found.items() if len(values) == 1}
+
+
+def fixed_text(node: ast.expr) -> str | None:
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return node.value
+    if isinstance(node, ast.JoinedStr):
+        return "".join(value.value for value in node.values if isinstance(value, ast.Constant))
+    return None
+
+
+@cache
+def key_constant_defaults() -> dict[str, int]:
+    """Every constant of the source that holds a setting key, with the whole number its setting defaults to."""
+    found = {}
+    for source in SOURCE_FOLDER.rglob("*.py"):
+        for node in ast.parse(source.read_text()).body:
+            if isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
+                text = fixed_text(node.value)
+                if text is not None and text.rsplit(".", 1)[-1] in number_defaults():
+                    found[node.targets[0].id] = number_defaults()[text.rsplit(".", 1)[-1]]
+    return found
+
+
+def names_in(node: ast.AST) -> set[str]:
+    return {name.id for name in ast.walk(node) if isinstance(name, ast.Name)}
+
+
+def given_settings(function: ast.FunctionDef) -> set[str]:
+    """The key constants a test gives a value of its own: a key of a dict, an item it assigns, an argument of a
+    call that sets, or a setting set command; a number beside them is the test's own and no default."""
+    given = set()
+    for node in ast.walk(function):
+        if isinstance(node, ast.Dict):
+            given |= {name for key in node.keys if key is not None for name in names_in(key)}
+        elif isinstance(node, ast.Assign):
+            given |= {name for target in node.targets if isinstance(target, ast.Subscript) for name in names_in(target.slice)}
+        elif isinstance(node, ast.Call) and "set" in (getattr(node.func, "attr", "") or getattr(node.func, "id", "")):
+            given |= {name for argument in node.args for name in names_in(argument)}
+        elif isinstance(node, ast.JoinedStr) and SETTING_SET in (fixed_text(node) or ""):
+            given |= names_in(node)
+    return given
+
+
+def raw_default_lines(path: Path) -> list[str]:
+    return raw_defaults(ast.parse(path.read_text()), str(path.relative_to(PROJECT)))
+
+
+def raw_defaults(tree: ast.Module, relative: str) -> list[str]:
+    """A whole number a test writes that equals the default of a setting the same test names and gives no value."""
+    found = []
+    for function in (node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)):
+        named = {name: key_constant_defaults()[name] for name in names_in(function) - given_settings(function) if name in key_constant_defaults()}
+        for node in ast.walk(function):
+            if isinstance(node, ast.Constant) and type(node.value) is int and node.value not in COUNTED_ANYWAY and node.value in named.values():
+                found += [f"{relative}:{node.lineno} default of {name}" for name, default in named.items() if default == node.value]
+    return found
+
+
 def raw_values(text: str, relative: str) -> list[str]:
     found = [f"nudge text {pattern.pattern[:40]}" for pattern in nudge_patterns() if pattern.search(text)]
     if any(word in relative for word in KEPT_AS_WRITTEN):
@@ -81,7 +150,7 @@ def raw_value_lines(path: Path) -> list[str]:
 
 
 def test_no_test_writes_a_value_the_code_declares():
-    found = [line for path in sorted(TESTS_FOLDER.rglob("*.py")) if path != Path(__file__).resolve() for line in raw_value_lines(path)]
+    found = [line for path in sorted(TESTS_FOLDER.rglob("*.py")) if path != Path(__file__).resolve() for line in [*raw_value_lines(path), *raw_default_lines(path)]]
     assert found == [], ("take the value from its declaration: said(NUDGE) or NUDGE.nudge(...).text for a nudge, the key constant for a "
                          "setting, PROFILE.name for a shipped profile, story.number_default(KEY) for a default:\n" + "\n".join(found))
 
@@ -97,3 +166,10 @@ def test_the_scan_finds_a_raw_nudge_a_raw_setting_key_and_a_raw_profile_name(tmp
 
 def raw_values_of(path: Path) -> list[str]:
     return [f"{line} {value}" for line, text in literal_texts(ast.parse(path.read_text())) for value in raw_values(text, "tests/stories/sample.py")]
+
+
+def test_the_scan_finds_a_raw_setting_default_and_leaves_a_value_the_test_gives():
+    name, default = next((name, default) for name, default in sorted(key_constant_defaults().items()) if default not in COUNTED_ANYWAY)
+    raw = f"def test_raw(story):\n    assert story.number({name}) == {default}\n"
+    given = f"def test_given(story):\n    story.run(f'setting set {{{name}}} {default}')\n    assert story.number({name}) == {default}\n"
+    assert (raw_defaults(ast.parse(raw), "sample.py"), raw_defaults(ast.parse(given), "sample.py")) == ([f"sample.py:2 default of {name}"], [])

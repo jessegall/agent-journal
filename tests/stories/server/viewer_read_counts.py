@@ -462,7 +462,7 @@ def test_workload_records_and_restores_prior_setting_values(new_story):
         previous = sample.prior_settings
         story = sample.server.story
         expect_value(previous["journal.core.developer.tools"]["value"], False)
-        expect_value(previous[f"{HOOK_REQUEST_LOG_SIZE_SETTING}"]["value"], 50)
+        expect_value(previous[f"{HOOK_REQUEST_LOG_SIZE_SETTING}"]["value"], story.number_default(HOOK_REQUEST_LOG_SIZE_SETTING))
         expect_value(sample.manifest()["settings_before"], previous)
     restored = json.loads(story.run("setting show journal.core.developer.tools --json", actor=story.user).output_text)
     expect_value(restored["value"], False)
