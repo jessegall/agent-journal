@@ -23,13 +23,13 @@ def test_a_build_no_reader_reads_has_no_layer_no_judgement_and_no_output_at_its_
     story = new_story(fixture=BuilderStarted)
     case = case_of(story, start_process(story, "custom-build run", category=CommandCategory.BUILD), STARTED)
     story.expect_rows(case.category is CommandCategory.BUILD, case.classification_recognized, case.reader_layer is None, case.reader_judgement is None,
-                      not case.default_reader, case.output is None, case.runs_without_change == 0, not case.is_not_needed, detail=repr(case))
+                      not case.default_reader, case.output is None, case.runs_without_change == 0, not case.is_unneeded, detail=repr(case))
 
 
 def test_a_read_only_helpers_search_needs_no_reader_and_its_role_writes_none(new_story):
     story = new_story(fixture=StartedHelper)
     case = case_of(story, helper_search(story), STARTED)
-    story.expect_rows(case.category is CommandCategory.SEARCH, case.is_not_needed, not case.reader_required, detail=repr(case))
+    story.expect_rows(case.category is CommandCategory.SEARCH, case.is_unneeded, not case.reader_required, detail=repr(case))
 
 
 def test_a_workers_test_run_with_no_reader_has_its_request_waiting_and_must_have_a_reader(new_story):
@@ -43,7 +43,7 @@ def test_a_plugin_run_needs_no_reader(new_story):
     process = plugin_check(story)
     end_run(story, process, "lint clean\n")
     case = case_of(story, process, ENDED)
-    story.expect_rows(case.is_plugin_run, case.is_not_needed, case.output is not None and case.output.byte_count > 0, detail=repr(case))
+    story.expect_rows(case.is_plugin_run, case.is_unneeded, case.output is not None and case.output.byte_count > 0, detail=repr(case))
 
 
 TICK = timedelta(seconds=10)

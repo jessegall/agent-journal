@@ -40,7 +40,7 @@ def main_lines(story) -> str:
 
 
 def launcher(story, **answers) -> FakeLauncher:
-    return FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), **answers)
+    return FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET), **answers)
 
 
 @pytest.fixture

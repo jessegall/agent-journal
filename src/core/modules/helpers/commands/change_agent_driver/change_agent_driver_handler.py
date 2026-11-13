@@ -35,7 +35,7 @@ class ChangeAgentDriverHandler(Handler[ChangeAgentDriver, Agent]):
         return self.bus.run_with_context(ReplaceAgentSession(agent.id, EndReason.DRIVER_CHANGED, command.program, command.program_model), context)
 
     def check_agent(self, agent: Agent, command: ChangeAgentDriver) -> None:
-        label = AgentLabel.from_agent(agent).text
+        label = AgentLabel.labelled(agent).text
         if agent.retired_at is not None:
             raise Refusal(f"{label} is retired, for good")
         if agent.ended_at is None:

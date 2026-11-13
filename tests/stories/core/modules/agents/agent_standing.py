@@ -22,7 +22,7 @@ def running_helper(new_story):
     """A helper whose program the launcher holds: the launcher answers every request about it with running."""
     story = new_story(fixture=StartedHelper)
     story.helper = Actor(helper_agent(story).id, ActorType.AGENT)
-    story.launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=PROGRAM_RUNS, request_count=0)
+    story.launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET), answer=PROGRAM_RUNS, request_count=0)
     yield story
     story.launcher.server.close()
 

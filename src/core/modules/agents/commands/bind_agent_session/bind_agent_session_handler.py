@@ -24,7 +24,7 @@ class BindAgentSessionHandler(Handler[BindAgentSession, Agent]):
     def handle(self, command: BindAgentSession, context: Context) -> Agent:
         agent = self.agents.find(command.row_id)
         if agent.ended_at is not None:
-            raise Refusal(f"{AgentLabel.from_agent(agent).text} has ended already", f"journal agent show {agent.number}")
+            raise Refusal(f"{AgentLabel.labelled(agent).text} has ended already", f"journal agent show {agent.number}")
         session_agent = self.agents.session(command.session)
         if session_agent is not None and session_agent.id != agent.id:
             reopened = self.dispatcher.move_program(agent, session_agent, context)

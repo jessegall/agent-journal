@@ -30,5 +30,5 @@ class SendHelperSubcommand(Subcommand[SendHelper, int]):
         return SendHelper(arguments.helper_id, arguments.job, arguments.steer, arguments.plan, arguments.title)
 
     def write_output(self, value: object, output: Output) -> None:
-        output.write(f"{AgentLabel.from_agent(self.agents.find(value)).text} takes the job", {"helper_id": value})
+        output.write(f"{AgentLabel.labelled(self.agents.find(value)).text} takes the job", {"helper_id": value})
 

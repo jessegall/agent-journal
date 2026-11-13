@@ -18,11 +18,11 @@ class AgentLabel:
     number: int
 
     @classmethod
-    def from_agent(cls, agent: Agent) -> Self:
+    def labelled(cls, agent: Agent) -> Self:
         return cls(agent.role, agent.number)
 
     @classmethod
-    def from_row_id(cls, agent_id: int, numbers: RowNumbers, word: str = AGENT_WORD) -> Self:
+    def labelled_row(cls, agent_id: int, numbers: RowNumbers, word: str = AGENT_WORD) -> Self:
         return cls(word, numbers.number(AGENT_MODEL_NAME, agent_id))
 
     @property

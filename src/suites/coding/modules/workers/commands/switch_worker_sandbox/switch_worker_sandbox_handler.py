@@ -24,6 +24,6 @@ class SwitchWorkerSandboxHandler(Handler[SwitchWorkerSandbox, Agent]):
         self.agents.require_main(context.actor, "switch a worker's sandbox")
         worker = self.agents.find(command.worker_id)
         if worker.role != CodingHelperRole.WORKER:
-            raise Refusal(f"{AgentLabel.from_agent(worker).text} is a {worker.role}, not a worker", "journal worker status lists the workers")
+            raise Refusal(f"{AgentLabel.labelled(worker).text} is a {worker.role}, not a worker", "journal worker status lists the workers")
         part = {**worker.metadata.module_part(MODULE_KEY), SANDBOX_KEY: command.sandboxed}
         return self.repository.save_metadata(worker, Metadata({**worker.metadata.values, MODULE_KEY: part}), context)

@@ -40,7 +40,7 @@ class HelperCommand:
         if self.folders.start_folder(helper).is_dir():
             self.programs.checked(helper.program, self.folders.folder(helper))
         profile = self.profiles.effective(helper.profile)
-        opening = (f"You are {AgentLabel.from_agent(helper).text}.", self.session_lines.line(helper), profile.body, job, REPORT_STEP)
+        opening = (f"You are {AgentLabel.labelled(helper).text}.", self.session_lines.line(helper), profile.body, job, REPORT_STEP)
         return self.launched(helper, SessionStart(helper.session), BLANK_LINE.join(part for part in opening if part is not None))
 
     def resumed(self, helper: Agent, job: str) -> LaunchCommand:

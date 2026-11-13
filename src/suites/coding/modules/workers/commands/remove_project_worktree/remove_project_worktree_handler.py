@@ -28,7 +28,7 @@ class RemoveProjectWorktreeHandler(Handler[RemoveProjectWorktree, str]):
         if worktree.is_checkout:
             raise Refusal(f"{command.folder} is the main checkout", "only a linked worktree is removed")
         if worktree.worker_id is not None:
-            raise Refusal(f"{AgentLabel.from_row_id(worktree.worker_id, self.numbers, "worker").text} is out on {command.folder}", "merge or release the worker first")
+            raise Refusal(f"{AgentLabel.labelled_row(worktree.worker_id, self.numbers, "worker").text} is out on {command.folder}", "merge or release the worker first")
         if worktree.agent_count:
             raise Refusal(f"an agent is running in {command.folder}", "end the agent first")
         self.git.remove_folder(self.worktrees.folder(context.environment_id), command.folder)

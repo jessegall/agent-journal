@@ -10,4 +10,4 @@ class MarkedCommands:
         self.marks = marks
 
     def skips(self, category: NoticeKind, command_key: str) -> bool:
-        return category.is_about_reading and self.marks.excuses(command_key)
+        return category.concerns_reading and self.marks.excuses(command_key)

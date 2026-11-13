@@ -46,7 +46,7 @@ def built_hook(story) -> None:
 def test_helper_start_on_a_journal_with_1200_helper_jobs_makes_no_read_cut_report(new_story):
     story = new_story(fixture=LargeJournal)
     limit_reads(story)
-    FakeLauncher.listening(story.home.socket("launcher"))
+    FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_refusal(START, "knows these files", actor=story.agent)
 
 
@@ -81,6 +81,6 @@ def test_each_fixed_read_reads_at_most_51_rows_where_it_read_207_to_1000_before(
     story = new_story(fixture=LargeJournal)
     limit_reads(story)
     story.expect_text(f"helper lifetimes {RESEARCHER_PROFILE.name} --environment main", "50 jobs on a new session", actor=story.user)
-    FakeLauncher.listening(story.home.socket("launcher"))
+    FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_refusal(START, "knows these files", actor=story.agent)
     guard_skips(story, story.agent, 1)

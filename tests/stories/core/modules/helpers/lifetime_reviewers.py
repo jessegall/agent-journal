@@ -30,7 +30,7 @@ REVIEW_MEMORY = "Plan 5 lacked a phase for the migration"
 
 def launches(story, *lines: str, actor=None) -> list[dict]:
     """Runs each line with a launcher listening and returns what the launcher was asked to start."""
-    launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"started 701\n", request_count=len(lines))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"started 701\n", request_count=len(lines))
     for line in lines:
         story.expect_success(line, actor=actor or story.agent)
         story.run_listeners()
@@ -42,7 +42,7 @@ def launches(story, *lines: str, actor=None) -> list[dict]:
 
 def refusal_text(story, line: str) -> str:
     """Runs a line that must be refused, with a launcher listening, and returns what the refusal printed."""
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     outcome = story.run(line, actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()

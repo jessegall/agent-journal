@@ -27,7 +27,7 @@ from suites.coding.support.shipped_profiles import WORKER_SENIOR_PROFILE
 
 @pytest.fixture
 def failed_worker_story(split_story):
-    launcher = FakeLauncher.listening(split_story.home.socket('launcher'), request_count=4)
+    launcher = FakeLauncher.accepting(split_story.home.socket('launcher'), request_count=4)
     worker = dispatch(split_story)
     split_story.run_listeners()
     exit_program(split_story, worker)

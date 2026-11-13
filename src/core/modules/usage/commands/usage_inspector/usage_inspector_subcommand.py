@@ -45,6 +45,6 @@ class UsageInspectorSubcommand(ReadSubcommand[AgentInspectorAnswer]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, AgentInspectorAnswer):
-            output.write(f"{AgentLabel.from_agent(value.agent).text}, {value.helpers} helpers, {value.skills} skills loaded", {
+            output.write(f"{AgentLabel.labelled(value.agent).text}, {value.helpers} helpers, {value.skills} skills loaded", {
                 "agent": {**output.values(value.agent), **output.properties(value.agent)}, "facts": value.facts.json() if value.facts else None, "inspection": value.inspection.json(),
                 "compaction": value.compaction.json() if value.compaction is not None else None, "tool": asdict(value.tool), "helpers": value.helpers, "skills": value.skills, "points": list(value.points), "programs": value.programs.json()["rows"]})

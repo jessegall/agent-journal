@@ -21,6 +21,6 @@ class RunSlotListener(SaveListener[Moved[Process]]):
     def handle(self, event: Moved[Process], context: Context) -> None:
         run = event.row
         self.slots.remember(run)
-        if not run.takes_part_in_queue:
+        if not run.joins_queue:
             return
         self.bus.dispatch(GrantRunSlots(), context)

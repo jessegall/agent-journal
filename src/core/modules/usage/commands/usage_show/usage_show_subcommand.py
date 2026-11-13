@@ -98,7 +98,7 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
 
     @staticmethod
     def agent_line(agent: Agent, status: SessionStatus) -> str:
-        start = f"{AgentLabel.from_agent(agent).text}  {agent.session}  {agent.program}"
+        start = f"{AgentLabel.labelled(agent).text}  {agent.session}  {agent.program}"
         if not status.is_reported:
             return f"{start}  nothing reported yet"
         context = f"  context {status.context.used_percentage}%" if status.context.used_percentage is not None else ""

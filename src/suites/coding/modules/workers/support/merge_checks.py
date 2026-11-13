@@ -28,12 +28,12 @@ class MergeChecks:
 
     def check_important_lines(self, worktree: Worktree, review: WorkerReview, answer: str) -> None:
         if review.has_important_lines() and not answer.strip():
-            raise Refusal(f"{AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text} has important log lines you have not answered",
+            raise Refusal(f"{AgentLabel.labelled_row(worktree.session_agent_id, self.numbers, "worker").text} has important log lines you have not answered",
                           f'read them with journal worker logs {worktree.session_agent_id}, then journal worker merge {worktree.session_agent_id} --read-important "<what you make of them>"')
 
     def check_logs(self, worktree: Worktree) -> None:
         if worktree.logs_read_at is None:
-            raise Refusal(f"the logs of {AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text} have not been read", f"journal worker logs {AgentLabel.from_row_id(worktree.session_agent_id, self.numbers).number}")
+            raise Refusal(f"the logs of {AgentLabel.labelled_row(worktree.session_agent_id, self.numbers, "worker").text} have not been read", f"journal worker logs {AgentLabel.labelled_row(worktree.session_agent_id, self.numbers).number}")
 
     def check_proofs(self, worktree: Worktree) -> None:
         if not self.plans.is_started_plan(worktree.task_id):

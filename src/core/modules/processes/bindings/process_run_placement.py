@@ -48,7 +48,7 @@ class ProcessRunPlacement(RunPlacement):
         return None if main is None else main.id
 
     def admitted(self, run: PlacedRun) -> AbstractContextManager[None]:
-        return self.merges.held() if run.has_place else nullcontext()
+        return self.merges.locked() if run.has_place else nullcontext()
 
     def ended(self, run: PlacedRun, execution: Execution) -> int | None:
         if run.environment_id is None:

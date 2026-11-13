@@ -15,7 +15,7 @@ class RetiredDeleteGuard(Guard[Deleted[Agent]]):
     is_safety = True
 
     def check(self, event: Deleted[Agent], context: Context) -> None:
-        label = AgentLabel.from_agent(event.row).text
+        label = AgentLabel.labelled(event.row).text
         if event.row.retired_at is not None:
             raise Refusal(f"{label} is retired, and its record stays")
         if context.actor != Actor.core():

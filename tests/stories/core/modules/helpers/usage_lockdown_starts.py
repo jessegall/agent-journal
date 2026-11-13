@@ -27,7 +27,7 @@ def helper_count(story) -> int:
 
 def test_a_helper_start_is_refused_with_the_reason_with_no_program_and_with_claude_named_and_no_agent_is_made(new_story):
     story = lockdown_story(new_story)
-    FakeLauncher.listening(story.home.socket("launcher"))
+    FakeLauncher.accepting(story.home.socket("launcher"))
     report(story, 55)
     story.expect_refusal(START, REFUSAL, actor=story.agent)
     story.expect_refusal(f"{START} --program claude", REFUSAL, actor=story.agent)
@@ -37,7 +37,7 @@ def test_a_helper_start_is_refused_with_the_reason_with_no_program_and_with_clau
 
 def test_a_helper_started_on_codex_while_claude_is_locked_down_starts(new_story):
     story = lockdown_story(new_story)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     report(story, 55)
     story.expect_success(f"{START} --program codex", actor=story.agent)
     story.run_listeners()
@@ -48,7 +48,7 @@ def test_a_helper_started_on_codex_while_claude_is_locked_down_starts(new_story)
 def test_a_send_to_an_ended_kept_helper_is_refused_with_the_reason_and_the_same_job_is_sent_once_the_limit_is_lifted(new_story, monkeypatch):
     story = lockdown_story(new_story, fixture=LimitedEndedHelper)
     helper = helper_agent(story)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     resumable_session(story, helper, monkeypatch)
     report(story, 55)
     story.expect_refusal(f'helper send {agent_number(story, helper.id)} "{JOB}"', REFUSAL, actor=story.agent)

@@ -30,7 +30,7 @@ class SendAgentMessageHandler(Handler[SendAgentMessage, Message]):
     def handle(self, command: SendAgentMessage, context: Context) -> Message:
         receiver = self.agents.find(command.recipient_agent_id)
         if receiver.retired_at is not None:
-            raise Refusal(f"{AgentLabel.from_agent(receiver).text} is retired, for good", "message an agent that is not retired")
+            raise Refusal(f"{AgentLabel.labelled(receiver).text} is retired, for good", "message an agent that is not retired")
         self.routes.check(context.actor, receiver)
         sender_id = context.actor.id if context.actor.is_agent() else None
         message = self.repository.save(Message(session_agent_id=sender_id, target_agent_id=None if receiver.is_main else receiver.id, creator_id=context.actor.id,

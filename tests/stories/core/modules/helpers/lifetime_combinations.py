@@ -26,7 +26,7 @@ def cooling(new_story):
 
 
 def launched_job(story) -> dict:
-    launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"started 701\n")
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"started 701\n")
     story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
@@ -72,7 +72,7 @@ def test_a_when_cold_helper_never_changes_program_while_its_own_is_out(cooling):
     real_program_states(cooling)
     ends_at = (cooling.clock.timestamp().value + timedelta(minutes=30)).isoformat()
     cooling.expect_success(f'provider-outage make claude "rate limit" --ends-at {ends_at}', actor=cooling.agent)
-    launcher = FakeLauncher.listening(cooling.home.socket("launcher"), answer=b"started 701\n")
+    launcher = FakeLauncher.accepting(cooling.home.socket("launcher"), answer=b"started 701\n")
     cooling.run(f'helper send {agent_number(cooling, helper.id)} "{JOB}"', actor=cooling.agent)
     cooling.run_listeners()
     launcher.drain_requests()

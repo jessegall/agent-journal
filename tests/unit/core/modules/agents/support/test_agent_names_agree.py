@@ -24,4 +24,4 @@ def test_the_name_of_an_agent_is_the_same_in_the_model_the_label_the_view_and_th
     assert agent.display_name == name["title"]
     assert AgentName(name["role"], name["number"]).title == name["title"]
     assert sql_name(name["role"], name["number"]) == name["title"]
-    assert AgentLabel.from_agent(agent).text == name["label"]
+    assert AgentLabel.labelled(agent).text == name["label"]

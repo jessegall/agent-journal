@@ -55,4 +55,4 @@ class WorkerFolderRuns:
 
     def stop_agent(self, agent: Agent, folder: Path) -> None:
         if agent.pid is not None and not self.program.stop(agent):
-            raise Refusal(f"{AgentLabel.from_agent(agent).text} is still using {folder}", "stop its program before removing the worktree")
+            raise Refusal(f"{AgentLabel.labelled(agent).text} is still using {folder}", "stop its program before removing the worktree")

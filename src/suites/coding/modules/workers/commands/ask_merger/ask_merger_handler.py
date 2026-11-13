@@ -72,8 +72,8 @@ class AskMergerHandler(Handler[AskMerger, str]):
         group = point.counted_window_key()
         exceeds_limit = self.queries.query(MergerLine).filter(worker_id=command.worker_id, group_key=group).matching(HasValue("topic")).count() >= self.settings.number(MERGER_GROUP_MESSAGE_LIMIT)
         facts = self.facts_query.read(point, task)
-        self.bus.dispatch(MakeTaskLog(facts.task, f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} asked the merger about {command.topic}: {command.text}"), context)
-        text = f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} asks about {command.topic} on task {facts.task}: {command.text}\n{facts.text()}"
+        self.bus.dispatch(MakeTaskLog(facts.task, f"{AgentLabel.labelled_row(command.worker_id, self.numbers, "worker").text} asked the merger about {command.topic}: {command.text}"), context)
+        text = f"{AgentLabel.labelled_row(command.worker_id, self.numbers, "worker").text} asks about {command.topic} on task {facts.task}: {command.text}\n{facts.text()}"
         wait = self.bus.dispatch(OpenWait(WaitType.ANSWER, focus), context)
         line = MergerLine(text=text, fallback_source=QUESTION_SOURCE, topic=command.topic, facts_json=facts.json_text(), worker_id=command.worker_id, group_key=group)
         self.inbox.deliver(self.questions.timed(line, wait.id, facts.task, context.timestamp), context)

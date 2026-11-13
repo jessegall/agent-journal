@@ -41,7 +41,7 @@ def chain_names(call: ast.Call) -> tuple[list[str], str | None]:
             return names, None
 
 
-def bare_get_lines(path: Path) -> list[int]:
+def unbounded_get_lines(path: Path) -> list[int]:
     """The lines of a file that call get() on a query of a growing model with nothing that bounds it."""
     lines: list[int] = []
     for node in ast.walk(source_tree(path)):
@@ -68,7 +68,7 @@ def test_query_has_no_all_rows_limited_or_full_table_method():
 
 def test_a_bare_get_on_a_growing_table_is_listed():
     allowed = {line for line in ALLOWED_BARE_GETS.read_text().split("\n") if line}
-    places = [f"{path.relative_to(ROOT).as_posix()}:{line}" for path in python_files() if path.is_relative_to(ROOT / "src") for line in bare_get_lines(path)]
+    places = [f"{path.relative_to(ROOT).as_posix()}:{line}" for path in python_files() if path.is_relative_to(ROOT / "src") for line in unbounded_get_lines(path)]
     matched = [place for place in places if place not in allowed]
     assert matched == [], "filter a read of a growing table before get(), or list it with its reason:\n" + "\n".join(matched)
 
@@ -76,4 +76,4 @@ def test_a_bare_get_on_a_growing_table_is_listed():
 def test_the_bare_get_scan_finds_a_get_with_no_filter_on_a_growing_table(tmp_path):
     sample = tmp_path / "sample.py"
     sample.write_text("rows = queries.query(HookCall).newest().get()\nmine = queries.query(HookCall).filter(id=1).get()\nnames = values.get()\n")
-    assert bare_get_lines(sample) == [1]
+    assert unbounded_get_lines(sample) == [1]

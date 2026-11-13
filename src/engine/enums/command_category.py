@@ -25,7 +25,7 @@ class CommandCategory(StrEnum):
     # Reading, writing, searching and journal commands stay in the foreground to their end; a journal command is the
     # journal answering the agent, never a run of its own.
     @property
-    def can_go_to_background(self) -> bool:
+    def is_backgroundable(self) -> bool:
         return not (self.is_priority_zero or self is CommandCategory.JOURNAL)
 
     @property

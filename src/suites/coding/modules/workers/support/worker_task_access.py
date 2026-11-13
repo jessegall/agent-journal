@@ -20,11 +20,11 @@ class WorkerTaskAccess:
         return task.state is TaskState.STARTED and task.holder_id == worker_id
 
     @staticmethod
-    def is_held_by_another(task: Task, worker_id: int) -> bool:
+    def has_foreign_holder(task: Task, worker_id: int) -> bool:
         return task.state is TaskState.STARTED and task.holder_id not in (None, worker_id)
 
     def refusal(self, task: Task, worker_id: int) -> Refusal:
-        if WorkerTaskAccess.is_held_by_another(task, worker_id):
+        if WorkerTaskAccess.has_foreign_holder(task, worker_id):
             return Refusal(f"task {task.id} is held by {self.labels.text(task.holder_id)}", AskTopic.GENERAL.hint(WORKER_TASKS_HINT))
         if worker_id not in (self.assignments.actor(task), task.holder_id):
             return Refusal(f"task {task.id} is not yours", AskTopic.GENERAL.hint(WORKER_TASKS_HINT))

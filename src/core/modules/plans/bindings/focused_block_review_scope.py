@@ -20,7 +20,7 @@ class FocusedBlockReviewScope(BlockReviewScope):
     def covered(self, agent_id: int, tasks: tuple[TaskBlockReview, ...]) -> tuple[TaskBlockReview, ...]:
         plan_id = PlanFocus.explicit_plan_id(self.queries.query(Agent).find(agent_id))
         plan = None if plan_id is None else self.queries.query(Plan).filter(id=plan_id).first()
-        if plan is None or not plan.state.can_be_focused:
+        if plan is None or not plan.state.is_focusable:
             return tasks
         task_ids = {row.task_id for row in self.queries.query(PlanTask).filter(plan_id=plan.id).matching(Among("task_id", [task.task_id for task in tasks])).every_row(FOCUSED_TASKS_REASON)}
         return tuple(task for task in tasks if task.task_id in task_ids)

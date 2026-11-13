@@ -13,13 +13,13 @@ def agent(role: str, number: int) -> Agent:
 
 
 def test_a_helper_is_named_by_its_role_and_its_number():
-    assert AgentLabel.from_agent(agent("helper", 5)).text == "helper 5"
+    assert AgentLabel.labelled(agent("helper", 5)).text == "helper 5"
 
 
 def test_the_main_agent_is_named_main_agent():
-    assert AgentLabel.from_agent(agent("main", 1)).text == "main agent"
+    assert AgentLabel.labelled(agent("main", 1)).text == "main agent"
 
 
 def test_an_agent_known_by_its_row_id_is_named_by_the_number_of_that_row():
-    assert AgentLabel.from_row_id(40, RowFortyIsNumberFive()).text == "agent 5"
-    assert AgentLabel.from_row_id(40, RowFortyIsNumberFive(), "Reviewer").text == "reviewer 5"
+    assert AgentLabel.labelled_row(40, RowFortyIsNumberFive()).text == "agent 5"
+    assert AgentLabel.labelled_row(40, RowFortyIsNumberFive(), "Reviewer").text == "reviewer 5"

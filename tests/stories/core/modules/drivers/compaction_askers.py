@@ -24,7 +24,7 @@ def control(story, value: str) -> list[str]:
 
 
 def test_d2_d8_a_person_asks_in_the_viewer_once_and_a_second_compact_or_a_clear_is_refused_naming_the_open_one(agent):
-    FakeLauncher.listening(agent.home.socket("launcher"))
+    FakeLauncher.accepting(agent.home.socket("launcher"))
     with viewer_client(agent) as person:
         person.value(SHELL_WINDOW, control(agent, "compact"))
         with pytest.raises(AssertionError, match=OPEN_REFUSAL):

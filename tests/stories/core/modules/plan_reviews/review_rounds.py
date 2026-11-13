@@ -116,7 +116,7 @@ def test_the_end_the_review_button_closes_the_round_with_no_report(rounds, cooki
 
 
 def start_helper(story, brief: str) -> Agent:
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_success(f'helper start {RESEARCHER_PROFILE.name} --brief "{brief}" --environment main', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()

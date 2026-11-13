@@ -54,7 +54,7 @@ def test_a_foreign_edit_of_the_journal_s_hooks_is_changed_until_the_next_start_w
     hooks.path.chmod(0o644)
     ProgramHooks.store(hooks.path, settings)
     story.expect_success(f'program trust codex "{folder}"', 'changed', actor=story.agent)
-    FakeLauncher.listening(story.home.socket('launcher'))
+    FakeLauncher.accepting(story.home.socket('launcher'))
     story.expect_success(f'{START} --program codex --model gpt-6.1-sol', actor=story.agent)
     story.expect_success(f'program trust codex "{folder}"', 'ready', actor=story.agent)
     story.expect_rows('--foreign' not in hooks.path.read_text())

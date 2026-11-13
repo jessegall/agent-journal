@@ -15,8 +15,8 @@ class ReportWorkerProgramRecovery(Command[None]):
 
     @property
     def waiting_source(self) -> str:
-        return ReportWorkerProgramRecovery.source_of(self.worker_id, self.stopped_at)
+        return ReportWorkerProgramRecovery.recovery_source(self.worker_id, self.stopped_at)
 
     @staticmethod
-    def source_of(worker_id: int, stopped_at: Timestamp) -> str:
+    def recovery_source(worker_id: int, stopped_at: Timestamp) -> str:
         return f"workers.program-out:{worker_id}:{stopped_at.text}"

@@ -57,7 +57,7 @@ class KeptWorkerTasks:
         worktree = self.worktrees.worker_worktree(worker.id)
         if worktree is not None:
             if self.proof_queue.tests_pending(worktree):
-                raise Refusal(f"the tests of {AgentLabel.from_agent(worker).text} are running", "send the task when they have passed")
+                raise Refusal(f"the tests of {AgentLabel.labelled(worker).text} are running", "send the task when they have passed")
             return []
         self.check_recut(worker)
         if not AssignableTasks.has_open(tasks):
@@ -67,9 +67,9 @@ class KeptWorkerTasks:
     def check_recut(self, worker: Agent) -> None:
         last = self.worktrees.newest_worktree(worker.id)
         if last is None:
-            raise Refusal(f"{AgentLabel.from_agent(worker).text} has no worktree", "journal worker dispatch <task> starts a new one")
+            raise Refusal(f"{AgentLabel.labelled(worker).text} has no worktree", "journal worker dispatch <task> starts a new one")
         if self.git.has_unmerged_branch(self.environments.find(worker.environment_id).folder, last):
-            raise Refusal(f"{AgentLabel.from_agent(worker).text} has unmerged work on {last.branch}", f"journal worker merge {worker.number}, or merge the branch by hand")
+            raise Refusal(f"{AgentLabel.labelled(worker).text} has unmerged work on {last.branch}", f"journal worker merge {worker.number}, or merge the branch by hand")
 
     def handed(self, worker: Agent, worktree: Worktree, task_ids: tuple[int, ...], job: str, context: Context) -> Model:
         tasks = AssignableTasks.open_first(self.read_tasks(task_ids))

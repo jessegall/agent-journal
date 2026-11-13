@@ -28,7 +28,7 @@ class ProgramSettingsWriter:
         self.home = home
 
     def write(self, settings: ProgramSettings) -> tuple[Path, ...]:
-        with FileLock.held(PrivateFolders.made(self.home.programs_folder) / LOCK_NAME):
+        with FileLock.locked(PrivateFolders.made(self.home.programs_folder) / LOCK_NAME):
             for folder in self._folders(settings):
                 PrivateFolders.made(folder)
                 self._remove_stale_temporaries(folder)

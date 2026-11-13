@@ -28,7 +28,7 @@ class CountingService:
 def refusing_socket() -> Path:
     """A launcher socket whose file is there and refuses every connection."""
     path = Path(tempfile.mkdtemp()) / "launcher"
-    FakeLauncher.listening(path).server.close()
+    FakeLauncher.accepting(path).server.close()
     return path
 
 

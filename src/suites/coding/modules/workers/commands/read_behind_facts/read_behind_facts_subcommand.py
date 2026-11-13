@@ -30,7 +30,7 @@ class ReadBehindFactsSubcommand(ReadSubcommand[BehindFacts | Refusal]):
     def read(self, arguments: Namespace, caller: Caller) -> BehindFacts | Refusal:
         worktree = self.worktrees.worker_worktree(arguments.worker_id)
         if worktree is None:
-            return Refusal(f"no {AgentLabel.from_row_id(arguments.worker_id, self.numbers, 'worker').text} with a worktree in this environment")
+            return Refusal(f"no {AgentLabel.labelled_row(arguments.worker_id, self.numbers, 'worker').text} with a worktree in this environment")
         return self.reader.read(worktree, self.queries.query(Agent).find(arguments.worker_id))
 
     def write_output(self, value: object, output: Output) -> None:

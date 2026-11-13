@@ -14,7 +14,7 @@ def card_facts(person, helper) -> dict:
 def test_a_person_pauses_stops_ends_the_open_job_and_retires_an_agent_from_its_card_by_its_number(new_story):
     story = new_story(fixture=StartedHelper)
     helper = helper_agent(story)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"stopped\n", request_count=5)
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"stopped\n", request_count=5)
     with viewer_client(story) as person:
         person.value(WINDOW, ["agent", "pause", str(helper.number)])
         paused = helper_agent(story)

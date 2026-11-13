@@ -146,7 +146,7 @@ def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_
     repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
     story.expect_success(PROOF, actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         story.expect_success("worker commit --wait --differences none", actor=worker)
         story.run_listeners()
@@ -174,7 +174,7 @@ def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
     finally:
@@ -205,7 +205,7 @@ def test_the_merger_and_a_worker_message_each_other_but_two_workers_do_not(new_s
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
     finally:
@@ -227,7 +227,7 @@ def test_a_workers_report_goes_to_the_merger_and_the_merger_tells_the_main_agent
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         story.expect_success('worker report "Converted the window"', actor=worker)
         story.run_listeners()
@@ -275,7 +275,7 @@ def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkey
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
         merger = merger_agent(story)
@@ -318,7 +318,7 @@ def test_the_merger_pass_shows_the_reason_on_the_worker_mark(new_story, monkeypa
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
     finally:
@@ -339,7 +339,7 @@ def test_the_merger_ending_without_a_report_does_not_notify_the_main_agent(new_s
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
     finally:
@@ -359,7 +359,7 @@ def test_a_worker_left_to_the_main_agent_is_not_reported_as_stopped(new_story, m
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
     finally:
@@ -380,7 +380,7 @@ def test_long_merger_lines_wait_until_the_output_is_read_whole(new_story, monkey
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         story.expect_success(f'worker report "{"important line " * 40}"', actor=worker)
         story.run_listeners()
@@ -414,7 +414,7 @@ def test_a_merge_the_merger_starts_runs_in_the_foreground_and_is_reported_once_a
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
     finally:
@@ -439,7 +439,7 @@ def test_explaining_a_merge_runs_the_merge_inside_the_explanation_without_the_tr
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
     finally:
@@ -455,7 +455,7 @@ def test_explaining_a_merge_runs_the_merge_inside_the_explanation_without_the_tr
 def test_a_planner_helper_ending_starts_no_merger(new_story):
     story = new_story(fixture=UserBuilder)
     story.expect_success(f"setting set {MERGER_ENABLED} true --project", actor=story.user)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.run(f'helper start {PLANNER_PROFILE.name} --brief "Plan the change" --environment main', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
@@ -475,7 +475,7 @@ def test_a_worker_the_merger_ended_without_taking_in_is_named_to_the_main_agent_
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
     repository.checkout(ENVIRONMENT_BRANCH)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
     finally:
@@ -499,7 +499,7 @@ def test_a_worker_the_merger_passes_on_is_named_to_the_main_agent_with_its_merge
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
     repository.checkout(ENVIRONMENT_BRANCH)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
     finally:

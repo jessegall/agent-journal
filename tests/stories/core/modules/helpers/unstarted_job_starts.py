@@ -14,7 +14,7 @@ def test_a_job_whose_start_was_lost_is_started_by_the_tick_after_a_minute_and_a_
     resumable_session(story, helper_agent(story), monkeypatch)
     monkeypatch.setattr(HelperProgramListener, "handle", lambda listener, event, logged: None)
     story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"', actor=story.agent)
-    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), request_count=0, answers=(b"\n", b"started 801\n", b"running\n"))
+    launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET), request_count=0, answers=(b"\n", b"started 801\n", b"running\n"))
     UnstartedJobStarts()(story.container)
     story.expect_rows(launcher.starts == [], detail="within the first minute the start may still be under way")
     story.advance(timedelta(seconds=61))

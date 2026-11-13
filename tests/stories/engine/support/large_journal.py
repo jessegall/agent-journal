@@ -41,7 +41,7 @@ class LargeJournal(StoryFixture):
         for number in range(ROW_EVENTS):
             story.expect_success(f'plan edit 1 --brief "A right cart total, edit {number}" --environment main', actor=story.agent)
             story.expect_success(f'check edit 1 --brief "Passes when the cart is right, edit {number}" --environment main', actor=story.user)
-        launcher = FakeLauncher.listening(story.home.socket("launcher"))
+        launcher = FakeLauncher.accepting(story.home.socket("launcher"))
         for profile in HELPER_PROFILES:
             story.expect_success(f'helper start {profile} --brief "Read the cart code" --environment main', actor=story.agent)
         launcher.drain_requests()

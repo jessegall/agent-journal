@@ -18,7 +18,7 @@ QUESTION = MergerLine(text="worker 4 asks", fallback_source="workers.ask", worke
 
 
 def deadline(line: MergerLine = QUESTION, visits_limit: int = VISITS_LIMIT) -> AskDeadline:
-    return AskDeadline.from_line(line, visits_limit)
+    return AskDeadline.parsed(line, visits_limit)
 
 
 def test_a_question_is_not_overdue_before_its_due_time():

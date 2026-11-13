@@ -22,7 +22,7 @@ class FakeLauncher:
         self.thread = threading.Thread(target=self.accepted, daemon=True)
 
     @classmethod
-    def listening(cls, path: Path, answer: bytes = b"", request_count: int = 1, answers: tuple[bytes, ...] = ()) -> "FakeLauncher":
+    def accepting(cls, path: Path, answer: bytes = b"", request_count: int = 1, answers: tuple[bytes, ...] = ()) -> "FakeLauncher":
         launcher = cls(path, answer, request_count, answers)
         launcher.listen()
         return launcher

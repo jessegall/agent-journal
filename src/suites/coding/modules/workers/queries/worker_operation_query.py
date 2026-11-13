@@ -33,5 +33,5 @@ class WorkerOperationQuery(Query[WorkerOperation]):
     def check_available(self, worker_id: int, process_id: int | None = None) -> None:
         operation = self.active(worker_id)
         if operation is not None and operation.process_id != process_id:
-            raise Refusal(f"{AgentLabel.from_row_id(worker_id, self.numbers, "worker").text} has a command running in output {operation.process_id}",
+            raise Refusal(f"{AgentLabel.labelled_row(worker_id, self.numbers, "worker").text} has a command running in output {operation.process_id}",
                           f"wait for it to end: journal output read {operation.process_id} --summary")

@@ -32,7 +32,7 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
         if block:
             raise Refusal(block)
         if actor.is_agent() and not self.queries.query(Agent).find(actor.id).is_main:
-            raise Refusal(f"only a user or the main agent retires {AgentLabel.from_agent(agent).text}", "ask the main agent to retire it")
+            raise Refusal(f"only a user or the main agent retires {AgentLabel.labelled(agent).text}", "ask the main agent to retire it")
         if roster is not None:
             roster.release(agent, actor)
 
@@ -50,9 +50,9 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
         if agent.is_main:
             raise Refusal("a main agent is not retired", f"journal agent stop {agent.number} ends its session")
         if agent.retired_at is not None:
-            raise Refusal(f"{AgentLabel.from_agent(agent).text} is retired already")
+            raise Refusal(f"{AgentLabel.labelled(agent).text} is retired already")
         if agent.ended_at is None:
-            raise Refusal(f"{AgentLabel.from_agent(agent).text} is still running", f"journal agent stop {agent.number}, then retire it")
+            raise Refusal(f"{AgentLabel.labelled(agent).text} is still running", f"journal agent stop {agent.number}, then retire it")
 
     def roster(self, agent: Agent) -> AgentRoster[Agent] | None:
         entry = next((entry for entry in self.registry.helper_types if entry.key == agent.role), None)

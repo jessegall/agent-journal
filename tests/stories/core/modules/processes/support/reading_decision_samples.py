@@ -27,4 +27,4 @@ def stored_missing_reader(story: Story, process: Process, point: ReadingMoment) 
 
 
 def stored_suitable_reader(story: Story, process: Process, point: ReadingMoment) -> None:
-    stored_decision(story, process, point, ReadingDecision.nothing(ReaderState.SUITABLE))
+    stored_decision(story, process, point, ReadingDecision.empty(ReaderState.SUITABLE))

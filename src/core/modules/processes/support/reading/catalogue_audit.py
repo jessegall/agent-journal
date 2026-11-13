@@ -42,8 +42,8 @@ class CatalogueAudit:
     def stale_readers(self) -> tuple[tuple[Reader, str], ...]:
         stock_rows = {reader.name: reader for reader in self.reader_rows.all() if reader.is_stock}
         edited = self.edits.edited_ids(stock_rows.values())
-        return tuple((stock_rows[stock.name], StockDigest.of(stock)) for stock in STOCK_READERS
-                     if stock.name in stock_rows and stock_rows[stock.name].id in edited and stock_rows[stock.name].shipped_digest != StockDigest.of(stock))
+        return tuple((stock_rows[stock.name], StockDigest.digest(stock)) for stock in STOCK_READERS
+                     if stock.name in stock_rows and stock_rows[stock.name].id in edited and stock_rows[stock.name].shipped_digest != StockDigest.digest(stock))
 
     def fields_missing_count(self) -> int:
         readers = self.reader_rows.all()

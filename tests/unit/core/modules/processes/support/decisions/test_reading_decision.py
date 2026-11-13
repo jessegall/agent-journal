@@ -43,6 +43,6 @@ def test_only_a_person_the_main_agent_and_the_expiry_are_other_parties(exit_opti
 
 
 def test_nothing_builds_a_decision_that_asks_nothing():
-    decision = ReadingDecision.nothing(ReaderState.SUITABLE)
+    decision = ReadingDecision.empty(ReaderState.SUITABLE)
     assert (decision.state, decision.action, decision.level, decision.reason, decision.exits) == (
         ReaderState.SUITABLE, ReaderAction.NOTHING, PressureLevel.SUGGEST, ReasonCode.NONE, ())

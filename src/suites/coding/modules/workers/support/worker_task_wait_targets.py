@@ -35,9 +35,9 @@ class WorkerTaskWaitTargets(TaskWaitTargets):
 
     def worker_target(self, worker: Agent) -> str:
         if worker.role != CodingHelperRole.WORKER:
-            raise Refusal(f"{AgentLabel.from_agent(worker).text} is not a worker", "name a worker")
+            raise Refusal(f"{AgentLabel.labelled(worker).text} is not a worker", "name a worker")
         if self.is_finished(worker):
-            raise Refusal(f"{AgentLabel.from_agent(worker).text} has already finished", "nothing waits on it; carry on with the task")
+            raise Refusal(f"{AgentLabel.labelled(worker).text} has already finished", "nothing waits on it; carry on with the task")
         return f"workers:{worker.id}"
 
     def helper_target(self, row_id: int) -> str:

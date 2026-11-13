@@ -29,7 +29,7 @@ class HelperProfileScreen:
             self.node(CONTEXT_LIMIT_TOKENS, "cap", int(profile_cap[0]) if profile_cap and profile_cap[0].isdigit() else None, SettingComponent.TRIPLE_CAP),
             self.node(HELPER_MAX_MINUTES, "minutes", None, SettingComponent.TYPE_OVERRIDE),
             self.node(HELPER_MAX_COST, "cost", None, SettingComponent.TYPE_OVERRIDE))
-        return ScreenReading(f"helper-type.{profile}", ScreenReading.revision_of(nodes), nodes)
+        return ScreenReading(f"helper-type.{profile}", ScreenReading.screen_revision(nodes), nodes)
 
     def entries(self, key: str, profile: str) -> list[str]:
         stored = self.reader.current(key).value

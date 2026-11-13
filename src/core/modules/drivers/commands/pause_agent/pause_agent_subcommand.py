@@ -24,4 +24,4 @@ class PauseAgentSubcommand(Subcommand[PauseAgent, Agent]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Agent):
-            output.line(f"paused {AgentLabel.from_agent(value).text}")
+            output.line(f"paused {AgentLabel.labelled(value).text}")

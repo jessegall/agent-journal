@@ -167,7 +167,7 @@ def expect_waiting_job_name(story, monkeypatch) -> None:
     story.expect_success(f"agent end {helper.id}", actor=Actor(helper.id, ActorType.AGENT))
     resumable_session(story, helper, monkeypatch)
     story.advance(minutes(1))
-    launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"running\n")
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"running\n")
     story.expect_success(f'helper send {agent_number(story, helper.id)} "Read the cart"', actor=story.agent)
     launcher.drain_requests()
     story.advance(minutes(grace(story)))

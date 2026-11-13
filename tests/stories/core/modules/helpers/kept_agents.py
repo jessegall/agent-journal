@@ -58,7 +58,7 @@ def helper_form_server(new_story, monkeypatch):
     monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         with server_story(story, listener_thread_started=False) as server:
             yield server, helper
@@ -114,7 +114,7 @@ def test_helper_form_offers_send_in_light_and_dark(helper_form_server):
 
 
 def expect_start_refused(story, reason: str) -> None:
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_refusal(f'helper start {RESEARCHER_PROFILE.name} --fresh "A second reader" --brief "Read src/till.py" --environment main', reason, actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()
@@ -213,7 +213,7 @@ def test_launches_in_flight_count(new_story, monkeypatch):
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
     story.expect_success(f'setting set {HELPER_PROFILE_LIMITS} \'["{RESEARCHER_PROFILE.name}:1:8"]\' --project', actor=story.user)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_success(f'helper send {agent_number(story, helper.id)} "One more job"', actor=story.agent)
     story.expect_refusal(f"helper start {RESEARCHER_PROFILE.name} --fresh 'A second reader' --brief 'Read src/other.py' --environment main", f"1 of {RESEARCHER_PROFILE.name} run", actor=story.agent)
     launcher.server.close()
@@ -224,7 +224,7 @@ def test_a_start_with_an_idle_helper_is_refused_with_its_send_line(new_story, mo
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_refusal(f'helper start {RESEARCHER_PROFILE.name} --brief "Read src/till.py" --environment main', f'helper {agent_number(story, helper.id)} is idle: journal helper send {agent_number(story, helper.id)} "<job>"', actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()
@@ -233,7 +233,7 @@ def test_a_start_with_an_idle_helper_is_refused_with_its_send_line(new_story, mo
 def test_fresh_with_a_reason_starts_a_new_helper_and_keeps_the_reason(new_story, monkeypatch):
     story = new_story(fixture=EndedHelper)
     resumable_session(story, helper_agent(story), monkeypatch)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_success(f"helper start {RESEARCHER_PROFILE.name} --fresh 'A second reader' --brief 'Read src/other.py' --environment main", actor=story.agent)
     job = story.container.get(Queries).query(HelperJob).newest().first()
     story.expect_rows(job.new_agent_reason == "A second reader")
@@ -264,7 +264,7 @@ def test_two_sends_to_one_idle_helper_run_one_session(new_story, monkeypatch):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_success(f'helper send {agent_number(story, helper.id)} "One more job"', actor=story.agent)
     story.expect_refusal(f'helper send {agent_number(story, helper.id)} "And another"', "is busy with a job", actor=story.agent)
     open_jobs = story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).matching(IsNull("ended_at")).every_row(TEST_ROWS_REASON)
@@ -279,7 +279,7 @@ def test_a_new_main_takes_over_an_idle_helper_and_gets_its_report(new_story, mon
     resumable_session(story, helper, monkeypatch)
     story.run(f"agent end {story.agent.id}", actor=story.user)
     second = Actor(story.new_row_id("agent start s-2 claude main --environment main"), ActorType.AGENT)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_success(f'helper send {agent_number(story, helper.id)} "One more job"', actor=second)
     job = story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).newest().first()
     story.expect_rows(helper_agent(story).parent_id == second.id, job.session_agent_id == second.id)
@@ -298,7 +298,7 @@ def test_steering_or_new_job(new_story):
 
 def test_same_reviewer_same_plan_is_refused(new_story, monkeypatch):
     story = new_story(fixture=UserBuilder)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"), request_count=2)
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"), request_count=2)
     story.expect_success(f"helper start {PLAN_REVIEWER_PROFILE.name} --plan 7 --brief 'Review plan 7' --environment main", actor=story.agent)
     reviewer = helper_agent(story)
     job = story.container.get(Queries).query(HelperJob).filter(helper_id=reviewer.id).first()
@@ -315,7 +315,7 @@ def test_same_reviewer_same_plan_is_refused(new_story, monkeypatch):
 def test_refusals_fit_and_a_kept_limit_with_all_running_says_to_ask_the_person(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_success(f'setting set {HELPER_PROFILE_LIMITS} \'["{RESEARCHER_PROFILE.name}:4:1"]\' --project', actor=story.user)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     outcome = story.run(f"helper start {RESEARCHER_PROFILE.name} --brief 'Read src/other.py' --environment main", actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()
@@ -333,7 +333,7 @@ def test_an_idle_helper_on_another_model_is_not_reused_and_a_start_on_its_own_mo
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
     different_model = "opus" if helper.program_model != "opus" else "sonnet"
-    launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"started 703\n", request_count=2)
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"started 703\n", request_count=2)
     story.expect_refusal(f'helper start {RESEARCHER_PROFILE.name} --model {helper.program_model} --brief "Read src/queue.py" --environment main', f"helper {agent_number(story, helper.id)} is idle", actor=story.agent)
     started = story.new_row_id(f'helper start {RESEARCHER_PROFILE.name} --model {different_model} --brief "Read src/tax.py" --environment main', actor=story.agent)
     launcher.drain_requests()

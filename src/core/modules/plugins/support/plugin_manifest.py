@@ -102,7 +102,7 @@ class PluginManifest:
                    tuple(str(entry) for entry in project_reads) if is_list(project_reads) else (), listeners, (), cls.read_protocol(fields["protocol"] if "protocol" in fields else None), cls.read_listed_files(listed),
                    cls.read_config(fields["config"] if "config" in fields else None), str(fields["hook_stamp"]) if "hook_stamp" in fields else "",
                    cls.read_instruction_blocks(fields["instruction_blocks"] if "instruction_blocks" in fields else None), cls.read_listed_files(injected),
-                   cls.read_process_kinds(fields["processes"] if "processes" in fields else None))
+                   cls.read_process_categories(fields["processes"] if "processes" in fields else None))
 
     @classmethod
     def loaded_fields(cls, path: Path, version: FileVersion) -> Mapping[str, object]:
@@ -180,7 +180,7 @@ class PluginManifest:
                                      entry["answers"] is True if "answers" in entry else False) for entry in entries)
 
     @staticmethod
-    def read_process_kinds(processes: object) -> tuple[ManifestProcessKind, ...]:
+    def read_process_categories(processes: object) -> tuple[ManifestProcessKind, ...]:
         categories = {category.value: category for category in CommandCategory}
         scopes = {scope.value: scope for scope in RunScope}
         entries = [entry for entry in processes if is_mapping(entry) and "kind" in entry and str(entry.get("category", PLUGIN_RUN_CATEGORY)) in categories

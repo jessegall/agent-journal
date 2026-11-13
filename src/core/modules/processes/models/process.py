@@ -79,11 +79,11 @@ class Process(EnvironmentScoped, Model):
     # The agent of the session ran it, or the journal ran it for one of that agent's tasks, such as a proof's test; a
     # run for no task that the journal started, such as a checkpoint's, is not.
     @property
-    def is_agents_own_work(self) -> bool:
+    def is_agent_work(self) -> bool:
         return self.creator_id == self.session_agent_id or self.task_id is not None
 
     @property
-    def takes_part_in_queue(self) -> bool:
+    def joins_queue(self) -> bool:
         return self.is_queue_run or self.slot_assigned or self.queued_at is not None
 
     # The queue gave this run its place since the earlier row was saved.

@@ -118,7 +118,7 @@ def test_resumed_worker_does_not_keep_the_old_job_source(assigned_worker):
     scenario.story.container.get(TaskBriefRequirement).is_required = True
     scenario.command(f"agent end {worker.id}")
     scenario.command("message clear-work-source")
-    launcher = FakeLauncher.listening(scenario.story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(scenario.story.home.socket("launcher"))
     scenario.command(f'worker send --wait {agent_number(scenario.story, worker.id)} "A separate unsourced job"')
     scenario.story.run_listeners()
     launcher.expect_started(worker.id, worker_session(scenario.story, worker), scenario.repository.worktree_folder(worker.id))
@@ -179,7 +179,7 @@ def test_resumed_launch_requires_current_overview(assigned_worker):
     scenario.story.expect_success("task overview 1", actor=worker)
     scenario.story.expect_success(f"agent end {worker.id}", actor=scenario.story.agent)
     scenario.story.advance(timedelta(seconds=1))
-    launcher = FakeLauncher.listening(scenario.story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(scenario.story.home.socket("launcher"))
     scenario.command(f'worker send --wait {agent_number(scenario.story, worker.id)} "Continue the cart assignment"')
     scenario.story.run_listeners()
     launcher.expect_started(worker.id, worker_session(scenario.story, worker), scenario.repository.worktree_folder(worker.id))

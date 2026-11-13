@@ -33,7 +33,7 @@ class HelperJobMarkListener(MarkListener[Changed[HelperJob]]):
     def opening_words(self, row: HelperJob) -> str:
         if row.helper_id is None or not self.queries.query(HelperJob).filter(helper_id=row.helper_id).matching(Less("id", row.id)).exists():
             return f"Started {row.profile} . {row.program_model}: {row.description}"
-        helper = AgentLabel.from_agent(self.queries.query(Agent).find(row.helper_id)).text
+        helper = AgentLabel.labelled(self.queries.query(Agent).find(row.helper_id)).text
         if row.source_line_id is not None:
             return f"Steered {helper}: {row.instruction}"
         return f"Sent {helper} a job: {row.instruction}"

@@ -11,7 +11,7 @@ class FileLock:
 
     @staticmethod
     @contextmanager
-    def held(path: Path) -> Generator[None]:
+    def locked(path: Path) -> Generator[None]:
         with FileAccess.shared().writer(path, "a") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
             try:

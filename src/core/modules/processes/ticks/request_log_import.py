@@ -27,7 +27,7 @@ class RequestLogImport:
         groups = [tuple(logged) for _, logged in groupby(sorted(entries, key=self.environment_id), key=self.environment_id)]
         kept: list[RequestLogEntry] = []
         for index, group in enumerate(groups):
-            kept.extend(self.written_group(container, group))
+            kept.extend(self.group_record(container, group))
             log.replace_claimed(tuple(entry for later in groups[index + 1:] for entry in later))
         log.saved(tuple(kept))
 
@@ -44,21 +44,21 @@ class RequestLogImport:
         return tuple(placed)
 
     @classmethod
-    def written_group(cls, container: Container, group: tuple[RequestLogEntry, ...]) -> tuple[RequestLogEntry, ...]:
+    def group_record(cls, container: Container, group: tuple[RequestLogEntry, ...]) -> tuple[RequestLogEntry, ...]:
         try:
             container.get(Bus).run(RecordRequestRuns(group), Actor.core(), environment_id=group[0].environment_id)
         except sqlite3.OperationalError as failure:
             if failure.sqlite_errorcode not in BUSY_CODES:
-                return cls.written_alone(container, group, failure)
+                return cls.single_record(container, group, failure)
             return group
         except Exception as failure:
-            return cls.written_alone(container, group, failure)
+            return cls.single_record(container, group, failure)
         return ()
 
     @classmethod
-    def written_alone(cls, container: Container, group: tuple[RequestLogEntry, ...], failure: Exception) -> tuple[RequestLogEntry, ...]:
+    def single_record(cls, container: Container, group: tuple[RequestLogEntry, ...], failure: Exception) -> tuple[RequestLogEntry, ...]:
         if len(group) > 1:
-            return tuple(kept for entry in group for kept in cls.written_group(container, tuple([entry])))
+            return tuple(kept for entry in group for kept in cls.group_record(container, tuple([entry])))
         container.get(ErrorLog).recorded(["request-log", f"environment {group[0].environment_id}"], failure, None)
         return ()
 

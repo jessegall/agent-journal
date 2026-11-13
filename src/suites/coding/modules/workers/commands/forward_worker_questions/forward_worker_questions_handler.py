@@ -45,7 +45,7 @@ class ForwardWorkerQuestionsHandler(Handler[ForwardWorkerQuestions, None]):
             self.questions.close(line, AskOutcome.FORWARDED, FORWARDED_TEXT, context)
 
     def question(self, worker_id: int, lines: tuple[MergerLine, ...]) -> MainAgentQuestion:
-        worker = AgentLabel.from_row_id(worker_id, self.numbers, "worker").text
+        worker = AgentLabel.labelled_row(worker_id, self.numbers, "worker").text
         visits = max(line.visit_count for line in lines)
         quoted = tuple(f"> {text}" for line in lines for text in line.text.splitlines())
         return MainAgentQuestion(f"{JOURNAL_QUESTION_START}{worker} has {len(lines)} unanswered question(s)", f"the merger read it {visits} times and settled nothing", OPTIONS, RECOMMENDATION, quoted)

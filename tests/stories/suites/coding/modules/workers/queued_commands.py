@@ -250,7 +250,7 @@ def test_a_worker_can_stop_after_hand_in_and_resumes_when_the_command_ends(worke
     story.expect_rows(story.row(Agent, worker.id).ended_at is not None)
     outcome = run_operation(story, operation)
     story.expect_rows(outcome.code == 0, detail=outcome.output_text)
-    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=b"started 123456789\n", request_count=1)
+    launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET), answer=b"started 123456789\n", request_count=1)
     try:
         end_operation(story, operation)
         story.run_listeners()

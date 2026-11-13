@@ -28,7 +28,7 @@ class AgentMessageRoutes:
         if agent.id == receiver.id:
             raise Refusal("an agent sends no message to itself", "name another agent in --to")
         if not self.is_related(agent, receiver):
-            raise Refusal(f"{AgentLabel.from_agent(receiver).text} is not yours to message", MAIN_AGENT_ROUTES if agent.role == AgentRole.MAIN else HELPER_ROUTES)
+            raise Refusal(f"{AgentLabel.labelled(receiver).text} is not yours to message", MAIN_AGENT_ROUTES if agent.role == AgentRole.MAIN else HELPER_ROUTES)
 
     def is_related(self, agent: Agent, peer: Agent) -> bool:
         if self.parent_key(agent) == self.route_key(peer) or self.parent_key(peer) == self.route_key(agent):

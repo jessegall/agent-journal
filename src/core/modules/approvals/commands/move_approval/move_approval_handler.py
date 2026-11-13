@@ -23,7 +23,7 @@ class MoveApprovalHandler(Handler[MoveApproval, ApprovalRequest]):
             raise Refusal("an agent cannot decide an approval request")
         request = self.queries.query(ApprovalRequest).find(command.row_id)
         if request.recipient_agent_id is not None:
-            raise Refusal(f"this approval is addressed to {AgentLabel.from_agent(self.queries.query(Agent).find(request.recipient_agent_id)).text}")
+            raise Refusal(f"this approval is addressed to {AgentLabel.labelled(self.queries.query(Agent).find(request.recipient_agent_id)).text}")
         if request.required_person_id is not None and request.required_person_id != context.actor.id:
             raise Refusal("this approval belongs to another user")
         if command.move is ApprovalLifecycle.begin and self.restarts.interrupted(request):

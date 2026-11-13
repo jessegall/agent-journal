@@ -45,9 +45,9 @@ class SendHelperHandler(Handler[SendHelper, int]):
         helper = self.reach.checked_helper(command.helper_id, context.actor, context.command)
         last_job = self.jobs.last_job(helper.id)
         if last_job is None:
-            raise Refusal(f"{AgentLabel.from_agent(helper).text} has no job to go on from", "journal helper start starts a new one")
+            raise Refusal(f"{AgentLabel.labelled(helper).text} has no job to go on from", "journal helper start starts a new one")
         if command.review_plan_id is not None and self.reviewed(helper, command.review_plan_id):
-            raise Refusal(f"{AgentLabel.from_agent(helper).text} reviewed plan {command.review_plan_id} already", self.other_reviewer_step(helper, command.review_plan_id))
+            raise Refusal(f"{AgentLabel.labelled(helper).text} reviewed plan {command.review_plan_id} already", self.other_reviewer_step(helper, command.review_plan_id))
         is_idle = helper.ended_at is not None and last_job.ended_at is not None
         rotating_profile = self.occupants.profile(helper) if is_idle else None
         if is_idle and rotating_profile is None:
@@ -93,7 +93,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
 
     def running_helper_job(self, helper: Agent, last_job: HelperJob, source: WorkSourceCopy, source_context: Context, command: SendHelper, context: Context) -> int:
         if last_job.ended_at is None and not command.steer and context.actor.is_agent():
-            raise Refusal(f"{AgentLabel.from_agent(helper).text} is busy with a job", f'wait for its report, or journal helper send {helper.number} --steer "<text>" adds to that job')
+            raise Refusal(f"{AgentLabel.labelled(helper).text} is busy with a job", f'wait for its report, or journal helper send {helper.number} --steer "<text>" adds to that job')
         with self.scopes.opened(context.actor.id, context.environment_id, [ActorScope]):
             line = self.nudger.send_text(helper.id, command.job, HELPER_JOB_SOURCE, context, wakes_agent=True)
         if self.continues(last_job, source):
@@ -106,14 +106,14 @@ class SendHelperHandler(Handler[SendHelper, int]):
 
     def check_resume(self, helper: Agent) -> None:
         if not helper.profile:
-            raise Refusal(f"{AgentLabel.from_agent(helper).text} ran as a program subagent and cannot be resumed", "start a new helper")
+            raise Refusal(f"{AgentLabel.labelled(helper).text} ran as a program subagent and cannot be resumed", "start a new helper")
         self.limits.checked_resume_session(helper)
         self.check_place(helper)
 
     def check_place(self, helper: Agent) -> None:
         self.limits.checked_running(helper.profile)
         if not self.folders.has_folder(helper):
-            raise Refusal(f"{AgentLabel.from_agent(helper).text} worked in a folder that is gone", 'start a new helper with --fresh "<why>"')
+            raise Refusal(f"{AgentLabel.labelled(helper).text} worked in a folder that is gone", 'start a new helper with --fresh "<why>"')
 
     @staticmethod
     def continues(job: HelperJob, source: WorkSourceCopy) -> bool:

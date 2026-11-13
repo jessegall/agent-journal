@@ -292,7 +292,7 @@ def compacted_agent(limited):
     return limited
 
 
-def set_through_the_viewer(story, key, value):
+def apply_viewer_setting(story, key, value):
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         answer = server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", key, value, "--project"]})
@@ -301,11 +301,11 @@ def set_through_the_viewer(story, key, value):
 
 
 def test_a_cap_for_the_main_agents_kind_holds_it_in_place_of_the_size_for_all(limited):
-    set_through_the_viewer(limited, CONTEXT_LIMIT_CATEGORIES, json.dumps(["main:none", "worker:200000"]))
+    apply_viewer_setting(limited, CONTEXT_LIMIT_CATEGORIES, json.dumps(["main:none", "worker:200000"]))
     has_context(limited, 900_000)
     stops(limited)
     limited.expect_rows(limited.typing.typed == [], detail=str(limited.typing.typed))
-    set_through_the_viewer(limited, CONTEXT_LIMIT_CATEGORIES, json.dumps(["main:300000"]))
+    apply_viewer_setting(limited, CONTEXT_LIMIT_CATEGORIES, json.dumps(["main:300000"]))
     has_context(limited, 350_000)
     idle_turn(limited)
     stops(limited)

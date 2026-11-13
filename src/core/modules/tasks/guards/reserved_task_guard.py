@@ -27,4 +27,4 @@ class ReservedTaskGuard(Guard[Moved[Task]]):
         if reserving_agent is None or reserving_agent.id == context.actor.id:
             return
         if reserving_agent.role == AgentRole.MAIN and reserving_agent.ended_at is None:
-            raise Refusal(f"task {task.id} is reserved for {AgentLabel.from_agent(reserving_agent).text}", f"journal task assign {task.id} --to <agent> moves it")
+            raise Refusal(f"task {task.id} is reserved for {AgentLabel.labelled(reserving_agent).text}", f"journal task assign {task.id} --to <agent> moves it")

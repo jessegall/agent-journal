@@ -26,4 +26,4 @@ class AnswerWorkerAskHandler(Handler[AnswerWorkerAsk, str]):
         self.visits.close_newest(context)
         line = self.questions.find_line(command.line_id)
         self.questions.close(line, AskOutcome.ANSWERED, command.text, context)
-        return f"answer sent to {AgentLabel.from_row_id(line.worker_id, self.numbers, 'worker').text}"
+        return f"answer sent to {AgentLabel.labelled_row(line.worker_id, self.numbers, 'worker').text}"

@@ -182,7 +182,7 @@ class WorkContextReader:
         return start
 
     @staticmethod
-    def keeps_original(original: Message | None, primary: Message, size: int) -> TypeIs[Message]:
+    def preserves_original(original: Message | None, primary: Message, size: int) -> TypeIs[Message]:
         return original is not None and original.id != primary.id and size > 1
 
     def page_rows(self, conversation: MessageQuery, primary: Message | None, request: WorkContextRequest) -> tuple[Message, ...]:
@@ -195,7 +195,7 @@ class WorkContextReader:
             anchors: tuple[Message, ...] = tuple([primary])
             if request.order is WorkContextOrder.NEWEST:
                 original = conversation.with_text_segment(0, CONTEXT_CHARACTERS).ordered("created_at", "id").first()
-                if self.keeps_original(original, primary, size):
+                if self.preserves_original(original, primary, size):
                     anchors = (primary, original)
             pool = pool.matching(Among("id", tuple(message.id for message in anchors), negated=True))
             if request.page == 1:

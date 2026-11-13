@@ -33,7 +33,7 @@ class UpdateStockReadersHandler(Handler[UpdateStockReaders, None]):
             reader = rows.readers.get(stock.name)
             if reader is not None and (not reader.is_stock or reader.id in rows.edited_ids):
                 continue
-            updated = replace(stock.applied(reader), shipped_digest=StockDigest.of(stock))
+            updated = replace(stock.applied(reader), shipped_digest=StockDigest.digest(stock))
             if updated != reader:
                 saved = self.repository.save_change(reader, updated, context)
                 self.kept.update(self.readers, self.with_saved(saved), name="processes.stock_readers")

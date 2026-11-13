@@ -27,7 +27,7 @@ class AgentLauncher:
 
     def hand(self, agent: Agent, environment: Environment, command: LaunchCommand) -> LaunchAnswer:
         if agent.retired_at is not None:
-            raise Refusal(f"{AgentLabel.from_agent(agent).text} is retired, for good", "start a new agent")
+            raise Refusal(f"{AgentLabel.labelled(agent).text} is retired, for good", "start a new agent")
         if self.lockdown.lockdown(agent.program).is_active:
             return LaunchAnswer.LOCKED_DOWN
         with self.policy.lock(agent.session) as available:

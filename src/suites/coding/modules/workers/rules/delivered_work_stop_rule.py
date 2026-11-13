@@ -34,12 +34,12 @@ class DeliveredWorkStopRule(DriverRule):
         for worktree in self.delivered.main_worktrees():
             untested = list(self.proofs.delivered_proofs(worktree.id).filter(test_command="").every_row(DELIVERED_PROOFS_REASON))
             if untested:
-                return RuleAnswer.refused_for_each(self.nudges(worktree, untested))
+                return RuleAnswer.refusals(self.nudges(worktree, untested))
         refused_at = self.hook_history.last_answer(self.name, hook)
         for worktree in self.delivered.delivered():
             proofs = list(self.proofs.delivered_proofs(worktree.id).every_row(DELIVERED_PROOFS_REASON))
             if proofs and (refused_at is None or worktree.updated_at is None or refused_at < worktree.updated_at):
-                return RuleAnswer.refused_for_each(self.nudges(worktree, proofs))
+                return RuleAnswer.refusals(self.nudges(worktree, proofs))
         return RuleAnswer.allowed("no committed proof needs a check at this stop")
 
     def nudges(self, worktree: Worktree, proofs: list[Proof]) -> list[Nudge]:

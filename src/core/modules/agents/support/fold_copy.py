@@ -21,7 +21,7 @@ class FoldCopy:
         return folder
 
     @classmethod
-    def before_attempt(cls, database: Database, home: JournalHome) -> Path:
+    def prepare_attempt(cls, database: Database, home: JournalHome) -> Path:
         target = cls.folder(home) / ATTEMPT_COPY
         unfinished = target.with_name(target.name + UNFINISHED_SUFFIX)
         unfinished.unlink(missing_ok=True)
@@ -30,7 +30,7 @@ class FoldCopy:
         return target
 
     @classmethod
-    def for_check(cls, database: Database, home: JournalHome, timestamp: Timestamp) -> Path:
+    def check_copy(cls, database: Database, home: JournalHome, timestamp: Timestamp) -> Path:
         target = cls.folder(home) / f"fold-{timestamp.value.strftime('%Y%m%d-%H%M%S')}.db"
         database.write_backup(target)
         return target

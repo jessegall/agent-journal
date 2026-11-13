@@ -13,11 +13,11 @@ class NoticeKind(StrEnum):
     FROZEN = "frozen"
 
     @property
-    def is_about_reading(self) -> bool:
+    def concerns_reading(self) -> bool:
         return self in (NoticeKind.SILENT, NoticeKind.SPARSE)
 
     @classmethod
-    def of(cls, state: CadenceState) -> "NoticeKind | None":
+    def cadence_notice(cls, state: CadenceState) -> "NoticeKind | None":
         match state:
             case CadenceState.SILENT:
                 return cls.SILENT

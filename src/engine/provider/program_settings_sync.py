@@ -52,14 +52,14 @@ class ProgramSettingsSync:
 
     def prepare(self, program: str) -> tuple[Path, ...]:
         settings = self.settings(program)
-        with self.refused_on_failure(program):
+        with self.failure_refusal(program):
             self.backup.backup_copies(settings)
             self.clean_project_files(program)
             return self.writer.write(settings)
 
     def write(self, program: str) -> tuple[Path, ...]:
         settings = self.settings(program)
-        with self.refused_on_failure(program):
+        with self.failure_refusal(program):
             self.clean_project_files(program)
             return self.writer.write(settings)
 
@@ -94,7 +94,7 @@ class ProgramSettingsSync:
         return tuple(path for provider in self.providers.all() for path in self.write(provider.name))
 
     @contextmanager
-    def refused_on_failure(self, program: str) -> Generator[None]:
+    def failure_refusal(self, program: str) -> Generator[None]:
         try:
             yield
         except OSError as error:

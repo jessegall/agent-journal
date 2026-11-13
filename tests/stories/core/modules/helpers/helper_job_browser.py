@@ -30,7 +30,7 @@ def test_resumed_helper_shows_its_new_job(new_story, monkeypatch):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_success(f'helper send {agent_number(story, helper.id)} "Review plan 1093"', actor=story.agent)
     launcher.drain_requests()
     launcher.server.close()
@@ -40,7 +40,7 @@ def test_resumed_helper_shows_its_new_job(new_story, monkeypatch):
 
 def test_a_title_given_when_a_helper_is_started_is_saved_and_shown(new_story):
     story = new_story(fixture=StartedHelper)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_success(f'helper start {RESEARCHER_PROFILE.name} --brief "Read src/cart.py and its tests" --title "Cart review" --fresh "another file" --environment main', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
@@ -56,7 +56,7 @@ def test_a_title_given_with_a_new_job_replaces_the_title_of_the_helper(new_story
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_success(f'helper send {agent_number(story, helper.id)} "Review plan 1093" --title "Plan review"', actor=story.agent)
     launcher.drain_requests()
     launcher.server.close()

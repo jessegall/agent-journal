@@ -282,7 +282,7 @@ def test_default_models_are_effective_and_native_profiles_still_publish(profile_
     native = story.home.project_folder / ".claude/agents/journal-researcher.md"
     expect_value(native.is_file(), True)
     expect_value("tools:" in FileAccess.shared().read(native), False)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.run(f'helper start {RESEARCHER_PROFILE.name} --model haiku --brief "Read the cart" --environment main', actor=story.agent)
     launcher.server.close()
     expect_value(profile_row(story, f"{RESEARCHER_PROFILE.name}")["uses"], 1)

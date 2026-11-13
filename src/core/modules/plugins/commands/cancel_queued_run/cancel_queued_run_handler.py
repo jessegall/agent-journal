@@ -18,7 +18,7 @@ class CancelQueuedRunHandler(Handler[CancelQueuedRun, QueuedRun]):
 
     def handle(self, command: CancelQueuedRun, context: Context) -> QueuedRun:
         run = self.queries.query(QueuedRun).find(command.run_id)
-        if run.state.is_over:
+        if run.state.is_final:
             raise Refusal(f"run {run.id} is over already: it {run.state.value}")
         self.bus.dispatch(StopProcess(run.process_id), context)
         return self.queries.query(QueuedRun).find(run.id)

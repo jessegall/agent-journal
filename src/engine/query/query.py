@@ -247,13 +247,13 @@ class Query(Generic[M]):
         select = self.scoped(self.select.column(column).sliced(limit + 1, 0).named(limit + 1))
         if select.is_empty:
             return []
-        values = [Query.of_kind(row[0], kind, column) for row in self.database.rows(select.statement())]
+        values = [Query.categorized(row[0], kind, column) for row in self.database.rows(select.statement())]
         if len(values) > limit:
             self.database.report_cut(select.statement().sql, limit)
         return values[:limit]
 
     @staticmethod
-    def of_kind(value: object, kind: type[V], column: str) -> V:
+    def categorized(value: object, kind: type[V], column: str) -> V:
         if not isinstance(value, kind):
             raise ColumnKindError(f"{column} holds {type(value).__name__} {value!r}, not {kind.__name__}")
         return value

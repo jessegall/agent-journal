@@ -110,7 +110,7 @@ class Parts:
             SimpleNamespace(write=lambda level, text: self.log_lines.append(text)), SamplePolicy(final))
 
     def launcher(self, *answers: bytes) -> FakeLauncher:
-        return FakeLauncher.listening(self.folder / "launcher", request_count=len(answers), answers=answers)
+        return FakeLauncher.accepting(self.folder / "launcher", request_count=len(answers), answers=answers)
 
     def executed(self, command_type: type) -> list[object]:
         return [command for command in self.bus.commands if isinstance(command, command_type)]

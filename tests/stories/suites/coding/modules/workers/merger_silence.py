@@ -54,7 +54,7 @@ def worker_with_merger(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         story.expect_success('worker report "Converted the window"', actor=worker)
         story.run_listeners()

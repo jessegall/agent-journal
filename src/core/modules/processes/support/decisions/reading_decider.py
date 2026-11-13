@@ -15,12 +15,12 @@ class ReadingDecider:
     agent must do; it reads nothing and keeps nothing."""
 
     def decide(self, case: ReadingCase) -> ReadingDecision:
-        if case.is_not_needed:
-            return ReadingDecision.nothing(ReaderState.UNNEEDED)
+        if case.is_unneeded:
+            return ReadingDecision.empty(ReaderState.UNNEEDED)
         if case.unreadable_reason is not None:
             return self.unreadable(case)
-        if case.reader_is_suitable and not case.reader_failed and not case.count_missing:
-            return ReadingDecision.nothing(ReaderState.SUITABLE)
+        if case.has_suitable_reader and not case.reader_failed and not case.count_missing:
+            return ReadingDecision.empty(ReaderState.SUITABLE)
         state = self.state_without_suitable_reader(case)
         level = self.level(case)
         return ReadingDecision.pressing(state, self.action(case, level), level, self.reason(case, state), case.available_exits(level))
@@ -40,7 +40,7 @@ class ReadingDecider:
 
     @staticmethod
     def level(case: ReadingCase) -> PressureLevel:
-        if case.is_request_waiting_for_reader:
+        if case.is_request_waiting:
             return PressureLevel.BLOCK
         if case.output_hidden:
             return PressureLevel.PREVENT
@@ -60,7 +60,7 @@ class ReadingDecider:
     def reason(case: ReadingCase, state: ReaderState) -> ReasonCode:
         if case.output_hidden:
             return ReasonCode.REDIRECTED
-        if case.is_request_waiting_for_reader:
+        if case.is_request_waiting:
             return ReasonCode.REQUEST_WAITING
         if case.count_missing:
             return ReasonCode.COUNT_MISSING

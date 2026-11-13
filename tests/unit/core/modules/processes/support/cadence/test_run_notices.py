@@ -70,4 +70,4 @@ def test_damaged_text_reads_as_no_record(tmp_path):
 
 
 def test_streaming_has_no_notice_kind():
-    assert (NoticeKind.of(CadenceState.STREAMING), NoticeKind.of(CadenceState.SPARSE)) == (None, NoticeKind.SPARSE)
+    assert (NoticeKind.cadence_notice(CadenceState.STREAMING), NoticeKind.cadence_notice(CadenceState.SPARSE)) == (None, NoticeKind.SPARSE)

@@ -7,4 +7,4 @@ def agent_number(story, agent_id: int) -> int:
 
 
 def agent_label(story, agent_id: int) -> str:
-    return AgentLabel.from_agent(story.row(Agent, agent_id)).text
+    return AgentLabel.labelled(story.row(Agent, agent_id)).text

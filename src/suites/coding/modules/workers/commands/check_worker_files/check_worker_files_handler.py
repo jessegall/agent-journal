@@ -30,7 +30,7 @@ class CheckWorkerFilesHandler(Handler[CheckWorkerFiles, str]):
         require_merger(self.agents, context)
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
-            raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} has no worktree", "journal worker-worktree list shows the worktrees")
+            raise Refusal(f"{AgentLabel.labelled_row(command.worker_id, self.numbers, "worker").text} has no worktree", "journal worker-worktree list shows the worktrees")
         worker_files = set(self.git.worker_files(worktree))
         refused = set(self.refused_files(worktree))
         lines = [self.line("own and refused", worker_files & refused), self.line("refused only", refused - worker_files), self.line("own only", worker_files - refused)]

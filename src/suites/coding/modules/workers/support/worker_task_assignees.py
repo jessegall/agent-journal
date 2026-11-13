@@ -27,7 +27,7 @@ class WorkerTaskAssignees(TaskAssignees):
             return
         worktree = self.worktrees.worker_worktree(agent.id)
         if worktree is None or worktree.state is not WorktreeState.CUT:
-            raise Refusal(f"{AgentLabel.from_agent(agent).text} is a {agent.role} and takes no task", "only the main agent and a worker with a cut worktree take a task")
+            raise Refusal(f"{AgentLabel.labelled(agent).text} is a {agent.role} and takes no task", "only the main agent and a worker with a cut worktree take a task")
 
     def check_reassignment(self, task: Task) -> None:
         if task.holder_id is None or self.assignments.actor(task) != task.holder_id or self.worktrees.worker_worktree(task.holder_id) is None:
@@ -36,5 +36,5 @@ class WorkerTaskAssignees(TaskAssignees):
             return
         if self.tasks.holder(task.holder_id).filter(state=TaskState.TESTING).exists():
             return
-        label = AgentLabel.from_row_id(task.holder_id, self.numbers, "worker")
+        label = AgentLabel.labelled_row(task.holder_id, self.numbers, "worker")
         raise Refusal(f"task {task.id} is the last of {label.text}", f"journal worker release {label.number} \"<why>\" takes it back")

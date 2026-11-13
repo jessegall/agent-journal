@@ -32,7 +32,7 @@ class ProjectManifests:
         names: set[str] = set()
         commands: set[str] = set()
         for matched in read:
-            entry = self.named(matched.tool, matched.place, matched.command, tool_counts[matched.tool] == 1 or matched.place == ROOT, names, commands)
+            entry = self.command_entry(matched.tool, matched.place, matched.command, tool_counts[matched.tool] == 1 or matched.place == ROOT, names, commands)
             manifests.append(ProjectManifest(str(PurePosixPath(matched.place) / matched.file_name) if matched.place != ROOT else matched.file_name, matched.language, entry))
         return tuple(manifests)
 
@@ -55,7 +55,7 @@ class ProjectManifests:
         if "go.mod" in file_names:
             read.append(ManifestReading(place, "go", "go", "go test -count=1" if place == ROOT else f"go -C {place} test -count=1", "go.mod"))
         if "composer.json" in file_names:
-            read.append(ManifestReading(place, "php", "phpunit", self.inside(place, "vendor/bin/phpunit"), "composer.json"))
+            read.append(ManifestReading(place, "php", "phpunit", self.nested_path(place, "vendor/bin/phpunit"), "composer.json"))
         if "Cargo.toml" in file_names:
             read.append(ManifestReading(place, "rust", "cargo", "cargo test" if place == ROOT else f"cargo test --manifest-path {place}/Cargo.toml", "Cargo.toml"))
         if "Gemfile" in file_names:
@@ -90,7 +90,7 @@ class ProjectManifests:
         return "python3"
 
     @staticmethod
-    def inside(place: str, path: str) -> str:
+    def nested_path(place: str, path: str) -> str:
         return path if place == ROOT else f"{place}/{path}"
 
     @staticmethod
@@ -100,7 +100,7 @@ class ProjectManifests:
         return f"{tool}-{suffix}" if suffix else ""
 
     @staticmethod
-    def named(tool: str, place: str, command: str | None, bare: bool, names: set[str], commands: set[str]) -> WorkerTestCommandEntry | None:
+    def command_entry(tool: str, place: str, command: str | None, bare: bool, names: set[str], commands: set[str]) -> WorkerTestCommandEntry | None:
         if command is None or command in commands:
             return None
         suffix = NAME_LETTERS.sub("-", PurePosixPath(place).name.lower()).strip("-")

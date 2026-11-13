@@ -49,7 +49,7 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
         review = self.log_lines.review(worktree)
         sections = [self.task_section(task, review.summary(task), [proof for proof in review.proofs if proof.task_id == task.id]) for task in review.tasks]
         important = "important lines: pass this worker to the main agent\n" if review.has_important_lines() else ""
-        text = f"{messages}\n{AgentLabel.from_row_id(worker_id, self.numbers, "worker").text}\n{important}{self.merge_ask.text(worktree)}\n" + "\n\n".join(sections)
+        text = f"{messages}\n{AgentLabel.labelled_row(worker_id, self.numbers, "worker").text}\n{important}{self.merge_ask.text(worktree)}\n" + "\n\n".join(sections)
         output_id = self.record_lines(lines, text, command, visit, context)
         self.log_read.record(worktree, output_id, context)
         return text

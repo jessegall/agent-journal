@@ -13,5 +13,5 @@ class ScreenReading:
     nodes: tuple[ScreenNode, ...]
 
     @staticmethod
-    def revision_of(nodes: tuple[ScreenNode, ...]) -> str:
+    def screen_revision(nodes: tuple[ScreenNode, ...]) -> str:
         return hashlib.sha256(repr([(node.key, node.value, node.source) for node in nodes]).encode()).hexdigest()[:12]

@@ -29,7 +29,7 @@ class AgentTipSubcommand(ReadSubcommand[AgentTip]):
         agent = self.queries.query(Agent).find(arguments.agent_id)
         facts = self.usage.listing(True, agent.id, [agent]).agents[0]
         title = facts.profile_title or (MAIN_TITLE if agent.role == MAIN_ROLE else agent.role.capitalize())
-        return AgentTip(agent.id, title, agent.display_name, agent.program, facts.model, facts.effort, AgentLabel.from_agent(agent).text if facts.job_enabled else "",
+        return AgentTip(agent.id, title, agent.display_name, agent.program, facts.model, facts.effort, AgentLabel.labelled(agent).text if facts.job_enabled else "",
                         agent.activity, agent.retired_at is not None, self.state_start(agent), facts.last_activity)
 
     @staticmethod

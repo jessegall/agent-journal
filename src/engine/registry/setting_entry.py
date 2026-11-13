@@ -43,7 +43,7 @@ class SettingEntry:
                    stored["secret"], stored["scope"], tuple(stored["choices"]), stored["toggleable"], stored["enabled"], stored.get("target", ""), stored.get("person_set", False), stored.get("rule", ""), stored.get("requires_main_agent", False), tuple(stored.get("required_settings", ())), stored.get("screen", ""), stored.get("section", ""), stored.get("component", ""))
 
     def source_component(self) -> SettingComponent:
-        return SettingComponent(self.component) if self.component else SettingComponent.default_for(SettingType(self.type))
+        return SettingComponent(self.component) if self.component else SettingComponent.default_component(SettingType(self.type))
 
     def problems(self, value: object) -> list[str]:
         return list(SettingRuleText().problems(self.rule, self.key, value))

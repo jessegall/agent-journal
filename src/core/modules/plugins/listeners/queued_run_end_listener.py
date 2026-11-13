@@ -26,7 +26,7 @@ class QueuedRunEndListener(SaveListener[ProcessEnded]):
         if not process.plugin:
             return
         run = self.queries.query(QueuedRun).filter(process_id=process.id).first()
-        if run is None or run.state.is_over:
+        if run is None or run.state.is_final:
             return
         self.machine.release(process)
         self.repository.update(run, context, state=self.ending(process), exit_code=process.exit_code, duration_ms=self.duration_ms(process),

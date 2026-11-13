@@ -28,7 +28,7 @@ def ended(sample: bytes, exit_code: int, age_seconds: int = 120) -> ReadingCase:
 
 
 def test_a_long_test_run_needs_a_reader():
-    assert not RUNNING_TESTS.is_not_needed
+    assert not RUNNING_TESTS.is_unneeded
 
 
 @pytest.mark.parametrize("case", [
@@ -40,17 +40,17 @@ def test_a_long_test_run_needs_a_reader():
     ended(TEST_OUTPUT, exit_code=0, age_seconds=3),
 ], ids=["read", "journal", "asking flag", "plugin run", "rejected", "short success"])
 def test_reads_journal_commands_asking_flags_plugin_runs_rejected_and_short_successful_runs_need_no_reader(case):
-    assert case.is_not_needed
+    assert case.is_unneeded
 
 
 def test_a_short_run_that_failed_still_needs_a_reader():
-    assert not ended(b"1 failed\n", exit_code=1, age_seconds=3).is_not_needed
+    assert not ended(b"1 failed\n", exit_code=1, age_seconds=3).is_unneeded
 
 
 def test_a_reader_is_suitable_only_when_its_judgement_finds_nothing_missing():
-    assert not RUNNING_TESTS.reader_is_suitable
-    assert replace(RUNNING_TESTS, reader_layer=ReaderLayer.PROJECT, reader_judgement=ReaderJudgement()).reader_is_suitable
-    assert not replace(RUNNING_TESTS, reader_layer=ReaderLayer.STOCK, reader_judgement=ReaderJudgement(missing=tuple(["--count"]))).reader_is_suitable
+    assert not RUNNING_TESTS.has_suitable_reader
+    assert replace(RUNNING_TESTS, reader_layer=ReaderLayer.PROJECT, reader_judgement=ReaderJudgement()).has_suitable_reader
+    assert not replace(RUNNING_TESTS, reader_layer=ReaderLayer.STOCK, reader_judgement=ReaderJudgement(missing=tuple(["--count"]))).has_suitable_reader
 
 
 def test_the_unreadable_reason_comes_from_a_mark_first_then_from_the_output():

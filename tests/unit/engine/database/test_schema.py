@@ -96,7 +96,7 @@ class PostponedOnce(Migration):
     def run(self, database: Database) -> None:
         self.runs += 1
         if self.runs == 1:
-            raise MigrationDeferredError.because("not yet")
+            raise MigrationDeferredError.explained("not yet")
 
 
 def test_a_deferred_migration_is_not_recorded_and_runs_again(database):

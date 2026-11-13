@@ -45,7 +45,7 @@ class WorkerTestFailures:
             self.record(worker_id, task_id, FailedTestSource.WORKER_RUN, test_name, context)
 
     def record(self, worker_id: int, task_id: int, source: FailedTestSource, test_name: str, context: Context) -> None:
-        self.system_log.write(LogLevel.WARNING, f"{AgentLabel.from_row_id(worker_id, self.numbers, "worker").text}, task {task_id}: {source} failed: {test_name}")
+        self.system_log.write(LogLevel.WARNING, f"{AgentLabel.labelled_row(worker_id, self.numbers, "worker").text}, task {task_id}: {source} failed: {test_name}")
         self.repository.save(WorkerTestFailure(worker_id=worker_id, task_id=task_id, source=source, test_name=test_name), context)
 
     def flagged_lines(self, task_ids: Sequence[int]) -> Mapping[int, tuple[str, ...]]:

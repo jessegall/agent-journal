@@ -38,10 +38,10 @@ class FoldMainAgentsMigration(RebuildMigration):
         home = JournalHome(database.file().parent)
         log = SystemLogWriter(home, clock)
         try:
-            copy = FoldCopy.before_attempt(database, home)
+            copy = FoldCopy.prepare_attempt(database, home)
             counts = fold.run(folds, clock.timestamp().text)
         except (Refusal, sqlite3.Error, OSError) as error:
             log.write(LogLevel.ERROR, f"The fold of main agents rolled back and runs again at the next start: {error}")
-            raise MigrationDeferredError.because(f"the fold of main agents failed: {error}") from error
+            raise MigrationDeferredError.explained(f"the fold of main agents failed: {error}") from error
         log.write(LogLevel.INFORMATION, f"Folded {sum(len(fold.folded) for fold in folds)} main agent rows into {len(folds)} "
                                         f"survivors; {sum(counts.removed.get(table, 0) for table in counts.tables_prior)} rows settled. Copy: {copy}")

@@ -12,7 +12,7 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 def test_a_dispatch_with_the_launcher_running_hands_it_the_worker_to_start_in_its_worktree(new_story, program, model, skills_folder):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
-    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET))
+    launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET))
     worker_id = story.new_row_id(f"worker dispatch --test-command python=pytest --program {program} --model {model} 1", actor=story.agent)
     story.run_listeners()
     launcher.expect_started(worker_id, worker_session(story, Actor(worker_id, ActorType.AGENT)), repository.worktree_folder(worker_id))

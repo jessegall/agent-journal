@@ -28,7 +28,7 @@ def test_a_cold_replacement_a_refusal_at_the_kept_limit_and_a_profile_moved_to_a
     cooling.expect_success(KEPT_LIMIT, actor=cooling.user)
     refusal = refusal_text(cooling, SECOND_HELPER)
     cooling.expect_success(CODEX_SAVE, actor=cooling.user)
-    launcher = FakeLauncher.listening(cooling.home.socket("launcher"), answer=b"started 702\n")
+    launcher = FakeLauncher.accepting(cooling.home.socket("launcher"), answer=b"started 702\n")
     cooling.run(f'helper send {replaced.number} "Read src/tax.py"', actor=cooling.agent)
     cooling.run_listeners()
     launcher.server.close()

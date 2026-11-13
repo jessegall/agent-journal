@@ -20,7 +20,7 @@ SHARED_TERMS = 12
 LONG_REFERENCE_LINES = 300
 
 
-def shipped_skill_files() -> list[Path]:
+def published_skill_files() -> list[Path]:
     return sorted(path for path in SOURCE.rglob("skills/*/SKILL.md") if "node_modules" not in path.parts)
 
 
@@ -76,27 +76,27 @@ def reference_faults(path: Path) -> list[str]:
 
 
 def test_every_shipped_description_is_one_imperative_sentence_with_a_read_it_half():
-    expect_absent_value([fault for path in shipped_skill_files() for fault in description_faults(path)])
+    expect_absent_value([fault for path in published_skill_files() for fault in description_faults(path)])
 
 
 def test_the_declared_description_is_the_front_matter_description(new_story):
     story = new_story(fixture=BuilderStarted)
     declared = {skill.folder: skill.description for skill in Registry.read(story.container.get(Database)).skills}
-    saved = {path.parent.name: front_matter_description(path) for path in shipped_skill_files()}
+    saved = {path.parent.name: front_matter_description(path) for path in published_skill_files()}
     expect_absent_value(sorted(f"{folder}: declared as {declared[folder]!r}" for folder in declared.keys() & saved.keys() if declared[folder] != saved[folder]))
 
 
 def test_the_hub_names_every_shipped_skill():
     rows = [line.strip("|").split("|") for line in HUB.read_text().splitlines() if line.startswith("|")]
-    faults = [hub_row_fault(path.parent.name, rows) for path in shipped_skill_files()]
+    faults = [hub_row_fault(path.parent.name, rows) for path in published_skill_files()]
     expect_absent_value([fault for fault in faults if fault is not None])
 
 
 def test_no_two_shipped_skills_share_twelve_words():
-    runs = {path.parent.name: word_runs(path) for path in shipped_skill_files()}
+    runs = {path.parent.name: word_runs(path) for path in published_skill_files()}
     shared = ((first, second, runs[first] & runs[second]) for first, second in combinations(sorted(runs), 2))
     expect_absent_value([f"{first} and {second}: {' '.join(min(common))}" for first, second, common in shared if common])
 
 
 def test_every_pointer_names_a_file_that_exists_and_every_reference_is_named():
-    expect_absent_value([fault for path in shipped_skill_files() for fault in reference_faults(path)])
+    expect_absent_value([fault for path in published_skill_files() for fault in reference_faults(path)])

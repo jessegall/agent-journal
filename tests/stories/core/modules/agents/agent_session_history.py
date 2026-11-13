@@ -63,7 +63,7 @@ def agent_count(story) -> int:
 
 
 def job_launch(story, launcher_answer: bytes = b"started 701\n") -> dict:
-    launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=launcher_answer)
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=launcher_answer)
     story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()

@@ -16,7 +16,7 @@ class WorkerProgramWait:
     @staticmethod
     def source(worker: Agent) -> str:
         stopped_at = worker.ended_at if worker.ended_at is not None else worker.creation_timestamp()
-        return ReportWorkerProgramRecovery.source_of(worker.id, stopped_at)
+        return ReportWorkerProgramRecovery.recovery_source(worker.id, stopped_at)
 
     def notify_wait(self, worker: Agent, context: Context) -> None:
         source = self.source(worker)

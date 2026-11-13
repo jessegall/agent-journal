@@ -96,7 +96,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
         if command.task_ids:
             self.kept_tasks.check_tasks(command.task_ids, actor.id)
         if self.worktrees.newest_worktree(worker.id) is None:
-            raise Refusal(f"{AgentLabel.from_agent(worker).text} has no worktree", "journal worker dispatch <task> starts a new one")
+            raise Refusal(f"{AgentLabel.labelled(worker).text} has no worktree", "journal worker dispatch <task> starts a new one")
 
     def prepare(self, command: SendWorker, actor: Actor) -> None:
         worker = self.rows.required(Agent, command.worker_id)
@@ -178,7 +178,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
         if worktree is None and self.task_ids:
             return self.kept_tasks.waiting(self.rows.required(Agent, command.worker_id), self.task_ids, context)
         if worktree is None:
-            raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} has no worktree", "journal worker dispatch <task> starts a new one")
+            raise Refusal(f"{AgentLabel.labelled_row(command.worker_id, self.numbers, "worker").text} has no worktree", "journal worker dispatch <task> starts a new one")
         worker = self.rows.required(Agent, command.worker_id)
         if not command.sandboxed:
             worker = self.bus.run_with_context(SwitchWorkerSandbox(worker.id, False), context)

@@ -26,4 +26,4 @@ class ShowMainAgentsSubcommand(ReadSubcommand[tuple[Agent, ...]]):
     def write_output(self, value: object, output: Output) -> None:
         if is_tuple(value):
             agents = [agent for agent in value if isinstance(agent, Agent)]
-            output.write("\n".join(f"{AgentLabel.from_agent(agent).text}, session {agent.session}" for agent in agents), {"rows": [{"id": agent.id} for agent in agents]})
+            output.write("\n".join(f"{AgentLabel.labelled(agent).text}, session {agent.session}" for agent in agents), {"rows": [{"id": agent.id} for agent in agents]})

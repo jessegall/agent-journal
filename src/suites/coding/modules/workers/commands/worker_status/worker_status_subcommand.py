@@ -87,7 +87,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
         if agent_id is None:
             return "no one"
         agent = self.queries.query(Agent).find(agent_id)
-        return "the merger" if agent.profile == MERGER_PROFILE else AgentLabel.from_agent(agent).text
+        return "the merger" if agent.profile == MERGER_PROFILE else AgentLabel.labelled(agent).text
 
     # The worker's assigned tasks another agent has started, which it can neither prove nor commit.
     def foreign_holder_lines(self, worker_id: int) -> tuple[Task, ...]:
@@ -98,10 +98,10 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
 
     def kept_status(self, worker_id: int) -> KeptWorkerStatus | Refusal:
         if self.worktrees.newest_worktree(worker_id) is None:
-            return Refusal(f"{AgentLabel.from_row_id(worker_id, self.numbers).text} has no worker worktree")
+            return Refusal(f"{AgentLabel.labelled_row(worker_id, self.numbers).text} has no worker worktree")
         worker = self.queries.query(Agent).find(worker_id)
         if worker.retired_at is not None:
-            return Refusal(f"{AgentLabel.from_agent(worker).text} is retired")
+            return Refusal(f"{AgentLabel.labelled(worker).text} is retired")
         return KeptWorkerStatus(worker)
 
     def write_output(self, value: object, output: Output) -> None:

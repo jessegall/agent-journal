@@ -24,4 +24,4 @@ class LaunchAgentSubcommand(Subcommand[LaunchAgent, Agent]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Agent):
-            output.line(f"started {AgentLabel.from_agent(value).text}")
+            output.line(f"started {AgentLabel.labelled(value).text}")

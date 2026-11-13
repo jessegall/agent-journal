@@ -20,7 +20,7 @@ class AgentRowNumbers(RowNumbers):
 
     def row_id(self, model_name: str, number: int, environment_id: int | None) -> int:
         label = f"agent {number}"
-        environment = self.environment_of(label, environment_id)
+        environment = self.agent_environment(label, environment_id)
         with self.scopes.opened(None, environment):
             survivor_id = self.folds.number_holder(number)
         return survivor_id if survivor_id is not None else self.environment_agent(model_name, environment, label, number=number).id
@@ -43,14 +43,14 @@ class AgentRowNumbers(RowNumbers):
         return self.environment_agent(model_name, environment_id, f"agent with row {row_id}", id=self.folds.agent_id(row_id)).number
 
     @staticmethod
-    def environment_of(label: str, environment_id: int | None) -> int:
+    def agent_environment(label: str, environment_id: int | None) -> int:
         if environment_id is None:
             raise Refusal(f"{label} is read in an environment, and this line runs in none", "name the environment with --environment")
         return environment_id
 
     def environment_agent(self, model_name: str, environment_id: int | None, label: str, **column: int) -> Agent:
         self.check_model(model_name)
-        environment_id = self.environment_of(label, environment_id)
+        environment_id = self.agent_environment(label, environment_id)
         with self.scopes.opened(None, environment_id):
             agent = self.queries.query(Agent).filter(**column).first()
         if agent is None:

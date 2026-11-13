@@ -50,4 +50,4 @@ class EscalationCounter:
     @staticmethod
     def counted(runs_newest_first: Sequence[KeyRun]) -> int:
         unreset = takewhile(lambda run: not run.reset_after, runs_newest_first)
-        return sum(1 for run in unreset if run.state.lacks_a_reader)
+        return sum(1 for run in unreset if run.state.is_readerless)

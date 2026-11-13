@@ -37,7 +37,7 @@ class MainFold:
         self.inserts = RowInsert(database)
 
     def plan(self) -> tuple[EnvironmentFold, ...]:
-        return MainFoldPlan.folds([MainRow.from_row(row) for row in self.rewrite.matching_rows(AGENTS_TABLE, "role", AgentRole.MAIN.value)])
+        return MainFoldPlan.folds([MainRow.parsed(row) for row in self.rewrite.matching_rows(AGENTS_TABLE, "role", AgentRole.MAIN.value)])
 
     def run(self, folds: tuple[EnvironmentFold, ...], folded_at: str) -> FoldCounts:
         counts = FoldCounts()
@@ -101,14 +101,14 @@ class MainFold:
                 continue
             for column, model_column in MainFold.agent_parts(columns, table, unique.columns):
                 for group in self.clashing_groups(fold, unique, column, model_column):
-                    self.remove_clashing(FoldClashRules.settled(table, group, fold.survivor.id, column), table, fold, columns, counts, fold_id, folded_at)
+                    self.remove_clashing(FoldClashRules.resolution(table, group, fold.survivor.id, column), table, fold, columns, counts, fold_id, folded_at)
 
     def remove_clashing(self, resolved: SettledClash, table: str, fold: EnvironmentFold, columns: AgentColumns, counts: FoldCounts, fold_id: int, folded_at: str) -> None:
         for removed in resolved.removed:
             self.inserts.insert(FOLD_TABLES[1], {"environment_id": fold.environment_id, "fold_id": fold_id, "table_name": table,
                                                  "row": json.dumps(removed, default=str), "rule": resolved.rule,
                                                  "created_at": folded_at, "updated_at": folded_at})
-            counts.add_removed(table, MainFold.references_held(columns, table, removed, fold), resolved.rule)
+            counts.add_removed(table, MainFold.agent_references(columns, table, removed, fold), resolved.rule)
         self.rewrite.delete_past_state_rule(table, [int(row["id"]) for row in resolved.removed])
 
     @staticmethod
@@ -118,7 +118,7 @@ class MainFold:
         return plain + pairs
 
     @staticmethod
-    def references_held(columns: AgentColumns, table: str, row: dict[str, object], fold: EnvironmentFold) -> list[str]:
+    def agent_references(columns: AgentColumns, table: str, row: dict[str, object], fold: EnvironmentFold) -> list[str]:
         ids = {fold.survivor.id, *(agent.id for agent in fold.folded)}
         plain = [f"{table}.{column}" for owner, column in columns.plain if owner == table and row[column] in ids]
         pairs = [f"{table}.{model_column}/{id_column}" for owner, model_column, id_column in columns.pairs

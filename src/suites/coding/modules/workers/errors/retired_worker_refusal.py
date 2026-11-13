@@ -8,4 +8,4 @@ class RetiredWorkerRefusal(Refusal):
 
     @classmethod
     def create(cls, worker: Agent) -> "RetiredWorkerRefusal":
-        return cls(f"{AgentLabel.from_agent(worker).text} is retired, for good", "journal worker dispatch <task> starts a new one")
+        return cls(f"{AgentLabel.labelled(worker).text} is retired, for good", "journal worker dispatch <task> starts a new one")

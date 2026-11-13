@@ -26,7 +26,7 @@ def test_workers_receive_the_main_agents_servers_and_keys_outside_the_prompt(new
     for name in ("playwright", "github", "linear"):
         story.expect_success(f"mcp install {name}", actor=story.user)
     story.expect_success(f"mcp key github {KEY}", actor=story.user)
-    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=b"started\n", request_count=3)
+    launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET), answer=b"started\n", request_count=3)
     worker = dispatched_worker(story, f"worker dispatch --test-command python=pytest --program {program} --model {model} 1")
     story.run_listeners()
     folder = repository.worktree_folder(worker.id)

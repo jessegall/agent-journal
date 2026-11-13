@@ -19,5 +19,5 @@ class AssigneeLabel:
     def text(self, actor_id: int) -> str:
         agent = self.assignments.agent_row(actor_id)
         if agent is not None:
-            return AgentLabel.from_agent(agent).text
+            return AgentLabel.labelled(agent).text
         return self.queries.query(ActorRecord).find(actor_id).name

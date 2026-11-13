@@ -50,9 +50,9 @@ def test_the_finished_line_of_an_update_follows_its_result_and_a_clash_ending_wi
 
 
 def test_an_update_already_on_its_base_is_current_a_moved_one_updated_and_markers_a_clash():
-    assert UpdateWorkerHandler.result_of(WorktreeUpdate.current("abc")) is UpdateResult.CURRENT
-    assert UpdateWorkerHandler.result_of(WorktreeUpdate("abc")) is UpdateResult.UPDATED
-    assert UpdateWorkerHandler.result_of(WorktreeUpdate("abc", tuple(["cart.py"]), "s1")) is UpdateResult.CONFLICTS
+    assert UpdateWorkerHandler.classified(WorktreeUpdate.current("abc")) is UpdateResult.CURRENT
+    assert UpdateWorkerHandler.classified(WorktreeUpdate("abc")) is UpdateResult.UPDATED
+    assert UpdateWorkerHandler.classified(WorktreeUpdate("abc", tuple(["cart.py"]), "s1")) is UpdateResult.CONFLICTS
 
 
 def test_the_accepted_line_of_an_update_tells_the_worker_not_to_edit_files_meanwhile():

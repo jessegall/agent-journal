@@ -87,7 +87,7 @@ def test_a_dispatch_at_the_kept_limit_is_refused_naming_the_idle_worker_to_send_
     number = agent_number(story, story.worker.id)
     story.expect_success(KEPT_LIMIT)
     task_id = story.new_row_id('task make "Add the tax" --brief "Add the tax to the cart total"', actor=story.agent)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     outcome = story.run(DISPATCH.removesuffix(" 1") + f" {task_id}", actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()

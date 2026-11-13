@@ -52,5 +52,5 @@ class TaskWaitTargets:
             raise Refusal("the main agent is no helper", "name a helper")
         job = self.queries.query(HelperJob).filter(helper_id=row_id).newest().first()
         if job is None or job.ended_at is not None:
-            raise Refusal(f"{AgentLabel.from_agent(helper).text} has no open job", "nothing waits on it; carry on with the task")
+            raise Refusal(f"{AgentLabel.labelled(helper).text} has no open job", "nothing waits on it; carry on with the task")
         return f"helpers:{helper.id}:{job.id}"

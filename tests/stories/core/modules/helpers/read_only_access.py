@@ -31,7 +31,7 @@ class StartedCodexHelper(StoryFixture):
     parent = UserBuilder
 
     def steps(self, story):
-        launcher = FakeLauncher.listening(story.home.socket("launcher"))
+        launcher = FakeLauncher.accepting(story.home.socket("launcher"))
         story.run(f'helper start {RESEARCHER_PROFILE.name} --program codex --model gpt-6-luna --brief "Read src/cart.py" --environment main', actor=story.agent)
         story.run_listeners()
         launcher.drain_requests()
@@ -155,7 +155,7 @@ def main_story(new_story):
 @pytest.mark.parametrize("name, category", [("Agent", ToolType.AGENT), ("Task", ToolType.AGENT), ("collaborationspawn_agent", ToolType.AGENT), ("spawn_agent", ToolType.UNCATEGORISED), ("collaborationwait", ToolType.UNCATEGORISED)])
 def test_a_programs_own_subagent_tool_is_refused_with_the_way_on(new_story, name, category):
     story = main_story(new_story)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_hook_refusal("s-1", tool(name, category), "Start a helper for this")
     launcher.server.close()
 

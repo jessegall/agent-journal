@@ -12,7 +12,7 @@ class KeptWorkerStatus:
 
     @property
     def line(self) -> str:
-        return (f"{AgentLabel.from_agent(self.worker).text} is idle with no worktree: journal worker send {self.worker.number} \"<job>\" "
+        return (f"{AgentLabel.labelled(self.worker).text} is idle with no worktree: journal worker send {self.worker.number} \"<job>\" "
                 "cuts a new one from the environment's branch")
 
     def listed(self) -> dict[str, object]:

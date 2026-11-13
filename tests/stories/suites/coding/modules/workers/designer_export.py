@@ -13,7 +13,7 @@ REFUSED = "This driver only reads and searches"
 
 
 def started_designer(story):
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_success(SAVE_DESIGNER, actor=story.user)
     story.run(START_DESIGNER, actor=story.agent)
     story.run_listeners()

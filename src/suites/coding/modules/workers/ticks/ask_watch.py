@@ -25,7 +25,7 @@ class AskWatch:
             if line.worker_id in forwarded_workers:
                 continue
             with container.get(Scopes).row_scope(line):
-                deadline = AskDeadline.from_line(line, container.get(SettingValues).number(QUESTION_VISITS_LIMIT))
+                deadline = AskDeadline.parsed(line, container.get(SettingValues).number(QUESTION_VISITS_LIMIT))
                 is_worker_removed = container.get(WorktreeQuery).worker_worktree(line.worker_id) is None
                 if is_worker_removed or deadline.is_forward_due(timestamp):
                     forwarded_workers.add(line.worker_id)

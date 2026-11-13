@@ -65,7 +65,7 @@ def test_when_no_program_has_an_allowed_model_the_job_is_refused_as_a_start_is_a
 def test_a_start_of_the_profile_is_refused_with_the_send_line_of_the_idle_agent_though_its_conversation_is_gone(new_story):
     story = story_with_profile_file(new_story, EndedEachLaunchHelper)
     number = agent_number(story, helper_agent(story).id)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_refusal(TILL_START, f'helper {number} is idle: journal helper send {number} "<job>"', actor=story.agent)
     story.expect_success(f'{TILL_START} --fresh "A second view"', actor=story.agent)
     launcher.drain_requests()

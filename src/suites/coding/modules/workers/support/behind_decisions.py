@@ -35,7 +35,7 @@ class BehindDecisions:
     def worktree(self, worker_id: int) -> Worktree:
         worktree = self.worktrees.worker_worktree(worker_id)
         if worktree is None:
-            raise Refusal(f"no {AgentLabel.from_row_id(worker_id, self.numbers, 'worker').text} with a worktree in this environment")
+            raise Refusal(f"no {AgentLabel.labelled_row(worker_id, self.numbers, 'worker').text} with a worktree in this environment")
         return worktree
 
     def check(self, worktree: Worktree, wanted: Callable[[WorktreeBehindCheck], bool]) -> WorktreeBehindCheck | None:

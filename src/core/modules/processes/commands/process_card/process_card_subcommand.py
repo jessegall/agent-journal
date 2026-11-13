@@ -38,7 +38,7 @@ class ProcessCardSubcommand(ReadSubcommand[ProcessCard]):
         process = self.processes.find(arguments.process_id)
         visible = RunVisibility.select_visible_part(process, tuple(parts)) or (parts[0] if parts else None)
         reader = self.readers.find(kept.reader_id) if kept is not None and kept.reader_id else None
-        terms = RunCommandWords.of_parts(parts)
+        terms = RunCommandWords.part_words(parts)
         return ProcessCard(process, kept, RunTitle.temporary(visible), reader, visible.category if visible else CommandCategory.UNKNOWN, any(part.reader_request_id is not None for part in parts),
                            self.reading_text(process.id, visible), terms, self.flagged_terms(terms))
 

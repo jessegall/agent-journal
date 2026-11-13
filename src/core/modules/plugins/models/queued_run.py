@@ -31,11 +31,11 @@ class QueuedRun(EnvironmentScoped, Model):
     timed_out: bool = False
 
     def line(self) -> str:
-        if not self.state.is_over:
+        if not self.state.is_final:
             return f"run {self.id} of {self.plugin} {self.kind} is {self.state.value}: output {self.process_id}"
         return f"run {self.id} of {self.plugin} {self.kind} {self.state.value} with exit code {self.exit_code} after {self.duration_ms} ms: output {self.process_id}"
 
     def change_name(self, old_row: Model | None) -> str | None:
-        if isinstance(old_row, QueuedRun) and not old_row.state.is_over and self.state.is_over:
+        if isinstance(old_row, QueuedRun) and not old_row.state.is_final and self.state.is_final:
             return ENDED
         return None

@@ -97,6 +97,6 @@ def test_the_planner_turns_stories_into_story_books_of_one_task_each(bundled_sto
 
 def test_with_helpers_switched_off_the_main_agent_cannot_start_a_functional_designer(bundled_story):
     bundled_story.expect_success(f"setting set {STARTS_HELPERS_SETTING} false --project", actor=bundled_story.user)
-    launcher = FakeLauncher.listening(bundled_story.home.socket("launcher"), request_count=1)
+    launcher = FakeLauncher.accepting(bundled_story.home.socket("launcher"), request_count=1)
     bundled_story.expect_refusal(f'helper start {FUNCTIONAL_DESIGNER} --brief "Design the cart" --environment main', "starts no read-only helper", actor=bundled_story.agent)
     launcher.server.close()

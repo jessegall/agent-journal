@@ -60,7 +60,7 @@ class CadenceWatch:
     def judged(self, container: Container, process: Process, part: ProcessPart, cadence: RunCadence, hang: int) -> None:
         notices = container.get(RunNotices)
         state = cadence.state()
-        notice = NoticeKind.of(state)
+        notice = NoticeKind.cadence_notice(state)
         if notice is None:
             notices.cleared(process.id)
             return

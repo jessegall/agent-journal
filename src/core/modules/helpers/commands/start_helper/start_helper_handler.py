@@ -91,5 +91,5 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
             helper = next((helper for helper in self.kept.kept(profile.name) if helper.id == job.helper_id), None)
             if helper is not None:
                 self.kept.check_program(helper)
-            label = AgentLabel.from_row_id(job.helper_id, self.numbers, HELPER_WORD)
+            label = AgentLabel.labelled_row(job.helper_id, self.numbers, HELPER_WORD)
             raise Refusal(f"{label.text} knows these files", f"journal helper send {label.number} \"<job>\", or start a new one with --fresh")

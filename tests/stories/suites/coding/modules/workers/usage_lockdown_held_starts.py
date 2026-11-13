@@ -95,6 +95,6 @@ def test_the_merger_is_not_started_by_the_retry_at_the_limit_and_is_started_afte
         MergerRetry()(story.container)
     story.expect_rows(merger_agent(story) is None)
     story.expect_success("usage-limit delete 1", actor=owner)
-    FakeLauncher.listening(story.home.socket("launcher"))
+    FakeLauncher.accepting(story.home.socket("launcher"))
     MergerRetry()(story.container)
     story.expect_rows(merger_agent(story) is not None)

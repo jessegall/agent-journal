@@ -21,7 +21,7 @@ class StartedDesigner(StoryFixture):
 
     def steps(self, story):
         story.expect_success(f"setting set {DESIGNER_ENABLED_SETTING} true --project", actor=story.user)
-        launcher = FakeLauncher.listening(story.home.socket("launcher"))
+        launcher = FakeLauncher.accepting(story.home.socket("launcher"))
         story.expect_success(f'helper start {DESIGNER_PROFILE.name} --brief "Design the settings page" --environment main', actor=story.agent)
         story.run_listeners()
         launcher.drain_requests()
@@ -35,7 +35,7 @@ class StartedResearcher(StoryFixture):
     parent = UserBuilder
 
     def steps(self, story):
-        launcher = FakeLauncher.listening(story.home.socket("launcher"))
+        launcher = FakeLauncher.accepting(story.home.socket("launcher"))
         story.run(f'helper start {RESEARCHER_PROFILE.name} --brief "Read src/cart.py" --environment main', actor=story.agent)
         story.run_listeners()
         launcher.drain_requests()

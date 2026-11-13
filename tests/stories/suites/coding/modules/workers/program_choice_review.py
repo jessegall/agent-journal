@@ -116,7 +116,7 @@ def test_both_plans_reuse_stays_on_the_chosen_program_counts_each_helper_job(spl
     story.expect_success(f'agent end {helper_id}', actor=story.user)
     helper = story.container.get(Queries).query(Agent).find(helper_id)
     resumable_session(story, helper, monkeypatch)
-    launcher = FakeLauncher.listening(story.home.socket('launcher'))
+    launcher = FakeLauncher.accepting(story.home.socket('launcher'))
     story.expect_success(f'helper send {agent_number(story, helper_id)} "Read the next queue"', actor=story.agent)
     story.run_listeners()
     counts = json.loads(story.run('worker split --json').output_text)['rows']
@@ -167,7 +167,7 @@ def test_split_with_none_eligible_differs_from_unset(unavailable_split, agent_ro
         story.expect_refusal('worker dispatch --test-command python=pytest 1', ends_at, actor=story.agent)
         story.expect_text('worker-worktree list', 'nothing found')
         return
-    FakeLauncher.listening(story.home.socket('launcher'))
+    FakeLauncher.accepting(story.home.socket('launcher'))
     story.expect_refusal(START, ends_at, actor=story.agent)
     story.expect_text('agent list --role helper', 'nothing found')
 
@@ -180,7 +180,7 @@ def outage_helper_story(split_story, monkeypatch):
     helper = story.container.get(Queries).query(Agent).find(helper_id)
     resumable_session(story, helper, monkeypatch)
     _, ends_at = outage(story, 'claude')
-    FakeLauncher.listening(story.home.socket('launcher'))
+    FakeLauncher.accepting(story.home.socket('launcher'))
     return story, helper_id, ends_at
 
 
@@ -196,7 +196,7 @@ def test_helper_send_on_an_out_program_says_until_when_resume_keeps_its_job(star
     story, helper_id = started_split_helper
     story.expect_success(f'helper send {agent_number(story, helper_id)} "Read the next file" --steer', actor=story.agent)
     outage(story, 'claude')
-    launcher = FakeLauncher.listening(story.home.socket('launcher'), request_count=2)
+    launcher = FakeLauncher.accepting(story.home.socket('launcher'), request_count=2)
     story.expect_success(f'agent end {helper_id}', actor=story.user)
     story.run_listeners()
     helper = story.container.get(Queries).query(Agent).find(helper_id)
@@ -523,7 +523,7 @@ def test_codex_hooks_run_in_the_worker_folder(new_story, monkeypatch, program, m
     monkeypatch.setenv("CODEX_HOME", str(story.home.folder / "codex-home"))
     binary = GoBuild.built("journal-hook", story.home.folder / "journal-hook-test")
     ProgramHooks.hooks(CodexProvider, repository.folder).write(shlex.quote(str(binary)), story.home.project_folder)
-    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=b"started\n")
+    launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET), answer=b"started\n")
     worker = dispatched_worker(story, f"worker dispatch --test-command python=pytest --program {program} --model {model} 1")
     story.run_listeners()
     folder = repository.worktree_folder(worker.id)

@@ -29,9 +29,9 @@ class ChooseAgentControlHandler(Handler[ChooseAgentControl, Agent]):
         if not choices:
             raise Refusal(f"{command.key} {command.value} is not a choice the agent bar offers", f"journal agent controls {agent.number} lists them")
         if agent.is_unrelated_agent(context.actor):
-            raise Refusal(f"{AgentLabel.from_agent(agent).text} is neither you nor your helper", "an agent chooses only for itself and its helpers")
+            raise Refusal(f"{AgentLabel.labelled(agent).text} is neither you nor your helper", "an agent chooses only for itself and its helpers")
         if agent.ended_at is not None:
-            raise Refusal(f"{AgentLabel.from_agent(agent).text} has ended")
+            raise Refusal(f"{AgentLabel.labelled(agent).text} has ended")
         if command.key != CONTEXT_CONTROL_KEY:
             self.typing.type_line(agent, choices[0].line)
             return agent

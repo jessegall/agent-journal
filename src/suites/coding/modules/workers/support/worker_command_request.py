@@ -37,5 +37,5 @@ class WorkerCommandRequest:
     def write_output(self, value: object, output: Output) -> bool:
         if not isinstance(value, WorkerOperation):
             return False
-        output.line(f"{AgentLabel.from_row_id(value.worker_id, self.numbers, "worker").text} command accepted: output {value.process_id}; stop or go on working, you hear when it ends")
+        output.line(f"{AgentLabel.labelled_row(value.worker_id, self.numbers, "worker").text} command accepted: output {value.process_id}; stop or go on working, you hear when it ends")
         return True

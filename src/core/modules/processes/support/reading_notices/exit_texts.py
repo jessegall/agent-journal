@@ -25,10 +25,10 @@ class ExitTexts:
 
     @staticmethod
     def listed(exits: Sequence[ReadingExit], name: str, output: int) -> str:
-        return "; ".join(ExitTexts.said(EXIT_TEXTS[route], name, output) for route in exits)
+        return "; ".join(ExitTexts.filled(EXIT_TEXTS[route], name, output) for route in exits)
 
     @staticmethod
-    def said(text: ExitText, name: str, output: int) -> str:
+    def filled(text: ExitText, name: str, output: int) -> str:
         sentence = text.sentence.format(name=name, output=output)
         return f"{sentence}: {text.command.format(name=name, output=output)}" if text.command else sentence
 

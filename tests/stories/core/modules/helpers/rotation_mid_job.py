@@ -36,7 +36,7 @@ def steered(story) -> None:
 
 
 def launches_after_the_program_died(story) -> list[dict]:
-    launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"started 701\n")
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"started 701\n")
     story.expect_success(f"agent end {helper_agent(story).id}", actor=story.user)
     story.run_listeners()
     launcher.drain_requests()
@@ -71,7 +71,7 @@ def test_a_paused_main_agent_that_resumes_gets_the_same_session_of_its_helper_ba
     working.expect_success(f"agent pause {agent_number(working, working.agent.id)}", actor=working.user)
     working.expect_success(f"agent end {helper.id}", actor=working.user)
     working.run_listeners()
-    launcher = FakeLauncher.listening(working.home.socket("launcher"), answer=b"started 701\n")
+    launcher = FakeLauncher.accepting(working.home.socket("launcher"), answer=b"started 701\n")
     working.expect_success(f"agent resume {agent_number(working, working.agent.id)}", actor=working.user)
     working.run_listeners()
     launcher.drain_requests()
@@ -124,7 +124,7 @@ def test_a_stopped_helper_ends_its_job_as_stopped_and_the_next_send_makes_a_new_
 
 
 def launches_at_the_next_round(story) -> list[dict]:
-    launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"started 702\n")
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"started 702\n")
     UnstartedJobStarts()(story.container)
     story.run_listeners()
     launcher.drain_requests()

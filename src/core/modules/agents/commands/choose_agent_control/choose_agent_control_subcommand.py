@@ -27,4 +27,4 @@ class ChooseAgentControlSubcommand(Subcommand[ChooseAgentControl, Agent]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Agent):
-            output.line(f"applied to {AgentLabel.from_agent(value).text}")
+            output.line(f"applied to {AgentLabel.labelled(value).text}")

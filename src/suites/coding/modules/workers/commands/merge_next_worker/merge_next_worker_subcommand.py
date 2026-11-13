@@ -33,7 +33,7 @@ class MergeNextWorkerSubcommand(Subcommand[MergeNextWorker, MergeOutcome]):
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, MergeOutcome):
             commit = value.worktree.commit_before_merge
-            output.line(f"{AgentLabel.from_row_id(value.worktree.session_agent_id, self.numbers, "worker").text} merged into {value.worktree.base_branch}")
+            output.line(f"{AgentLabel.labelled_row(value.worktree.session_agent_id, self.numbers, "worker").text} merged into {value.worktree.base_branch}")
             for line in self.settings.texts(MERGER_COMMANDS):
                 output.line(f"run: {line.replace('{commit}', str(commit))}")
             output.line(f"merged from {commit}")

@@ -30,7 +30,7 @@ def rotating(new_story, monkeypatch):
 
 
 def job_launch(story, actor=None) -> dict:
-    launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"started 701\n")
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"started 701\n")
     story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"', actor=actor or story.agent)
     story.run_listeners()
     launcher.drain_requests()
@@ -112,7 +112,7 @@ def test_a_profile_with_no_program_follows_the_program_split_at_each_launch(help
     story = helper_split_story
     story.expect_success(SAVE_ROTATING.replace(" --program claude", ""), actor=story.user)
     set_split(story, "claude 100,codex 0", viewer=helper_viewer)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.run(START_ROTATING, actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
@@ -135,7 +135,7 @@ def test_when_no_program_can_start_the_send_is_refused_and_nothing_changes(rotat
     helper = helper_agent(rotating)
     installed_program_checks(rotating)
     monkeypatch.setattr(shutil, "which", lambda name: None)
-    launcher = FakeLauncher.listening(rotating.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(rotating.home.socket("launcher"))
     start = rotating.run('helper start rotating --brief "Read src/tax.py" --fresh "A second view" --environment main', actor=rotating.agent)
     job_refusal = rotating.run(f'helper send {agent_number(rotating, helper.id)} "{JOB}"', actor=rotating.agent)
     rotating.expect_rows(start.code != 0, job_refusal.code != 0, job_refusal.output_text.partition(":")[0] == start.output_text.partition(":")[0], detail=f"{start.output_text} / {job_refusal.output_text}")

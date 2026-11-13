@@ -85,7 +85,7 @@ class WorkerQuestions:
         return (*open_texts, *(line.status_text() for line in closed))
 
     def due_workers(self, visits_limit: int, timestamp: Timestamp) -> tuple[int, ...]:
-        return tuple(dict.fromkeys(line.worker_id for line in self.open_lines() if AskDeadline.from_line(line, visits_limit).is_forward_due(timestamp)))
+        return tuple(dict.fromkeys(line.worker_id for line in self.open_lines() if AskDeadline.parsed(line, visits_limit).is_forward_due(timestamp)))
 
     def close_idle_line(self, line: MergerLine, context: Context) -> None:
         self.record(line, AskOutcome.MOOT, "the worker works again", context)
@@ -102,6 +102,6 @@ class WorkerQuestions:
         if wait is not None and wait.state is WaitState.OPEN and outcome is not AskOutcome.FORWARDED:
             self.bus.dispatch(EndWait(wait.id, outcome=outcome.worker_line(text)), context)
         if line.task_id is not None:
-            worker = AgentLabel.from_row_id(line.worker_id, self.numbers, "worker").text
+            worker = AgentLabel.labelled_row(line.worker_id, self.numbers, "worker").text
             self.bus.dispatch(MakeTaskLog(line.task_id, f"the question of {worker} (line {line.id}) ended as {outcome.description()}: {text}"), context)
         return closed

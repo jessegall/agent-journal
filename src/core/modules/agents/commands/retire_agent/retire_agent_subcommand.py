@@ -25,4 +25,4 @@ class RetireAgentSubcommand(Subcommand[RetireAgent, Agent]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Agent):
-            output.line(f"retired {AgentLabel.from_agent(value).text}")
+            output.line(f"retired {AgentLabel.labelled(value).text}")

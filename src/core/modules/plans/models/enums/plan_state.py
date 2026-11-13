@@ -13,5 +13,5 @@ class PlanState(StrEnum):
     CANCELLED = "cancelled"
 
     @property
-    def can_be_focused(self) -> bool:
+    def is_focusable(self) -> bool:
         return self in (PlanState.STARTED, PlanState.APPROVED)

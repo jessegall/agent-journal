@@ -21,5 +21,5 @@ class EndAgentHandler(Handler[EndAgent, Agent]):
     def handle(self, command: EndAgent, context: Context) -> Agent:
         agent = self.rows.required(Agent, command.row_id)
         if agent.ended_at is not None:
-            raise CompletedCommandError(f"{AgentLabel.from_agent(agent).text} has ended already", f"journal agent show {agent.number}")
+            raise CompletedCommandError(f"{AgentLabel.labelled(agent).text} has ended already", f"journal agent show {agent.number}")
         return self.dispatcher.end_session(agent, context)

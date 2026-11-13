@@ -36,10 +36,10 @@ class PlanRowAuthors(PlanAuthors):
     def plan_ids(self, edits: Sequence[PlanEdit]) -> dict[PlanEdit, int | None]:
         phases = self.phase_plan_ids([edit.row_id for edit in edits if edit.line.startswith("phase")])
         tasks = self.task_plan_ids([edit.row_id for edit in edits if edit.line.startswith("task")])
-        return {edit: self.plan_id_of(edit, phases, tasks) for edit in edits}
+        return {edit: self.author_plan_id(edit, phases, tasks) for edit in edits}
 
     @staticmethod
-    def plan_id_of(edit: PlanEdit, phases: dict[int, int], tasks: dict[int, int]) -> int | None:
+    def author_plan_id(edit: PlanEdit, phases: dict[int, int], tasks: dict[int, int]) -> int | None:
         if edit.line.startswith("plan"):
             return edit.row_id
         if edit.line.startswith("phase"):

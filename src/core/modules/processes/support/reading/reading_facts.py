@@ -78,7 +78,7 @@ class ReadingFacts:
         return None if selected is None else selected.reader
 
     def measured_reason(self, process: Process, part: ProcessPart) -> UnreadableReason | None:
-        return OutputFacts.reason_at_end(self.output(process, part, ReadingMoment.END))
+        return OutputFacts.end_reason(self.output(process, part, ReadingMoment.END))
 
     def reader_failed(self, process: Process, reader: Reader | None, point: ReadingMoment) -> bool:
         return reader is not None and point is ReadingMoment.END and ReaderRun.has_failed(reader, self.folder.reader_lines(process.id))

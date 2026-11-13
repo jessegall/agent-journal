@@ -35,7 +35,7 @@ class ChangeAgentDriverSubcommand(Subcommand[ChangeAgentDriver, Agent]):
             output.line(self.answer(value))
 
     def answer(self, agent: Agent) -> str:
-        label = AgentLabel.from_agent(agent).text
+        label = AgentLabel.labelled(agent).text
         changed_line = f"{label} runs on {agent.program} {agent.program_model} from its next session"
         program_state = self.states.outage_state(agent.program)
         if program_state.is_ready:

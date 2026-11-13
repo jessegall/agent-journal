@@ -28,7 +28,7 @@ def reported_cost(story, session: str, spent_usd: float) -> None:
 
 def finished_job(story) -> None:
     """Sends the helper its next job, lets the launcher start it and ends the helper."""
-    launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"started 701\n")
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"started 701\n")
     story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()

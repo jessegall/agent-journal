@@ -32,5 +32,5 @@ class WaitingMessageRunListener(CommitListener[Created[Message]]):
         foreground = self.processes.agent(target.id).filter(state=ProcessState.RUNNING)
         processes = self.kept.read(foreground, lambda: tuple(foreground.get()), name="processes.message_foreground_runs")
         for process in processes:
-            if process.category.can_go_to_background:
+            if process.category.is_backgroundable:
                 self.folder.ask_move(process.id)

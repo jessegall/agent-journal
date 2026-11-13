@@ -41,7 +41,7 @@ def open_merged_worktree(new_story, monkeypatch):
 def test_a_task_sent_to_a_worker_whose_merged_worktree_is_still_open_gets_a_worktree_with_the_project_files(open_merged_worktree):
     story, repository, worker = open_merged_worktree.story, open_merged_worktree.repository, open_merged_worktree.worker
     task_id = story.new_row_id('task make "The next task" --brief "Keep the total in cents"', actor=story.agent)
-    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=b"started 123456789\n")
+    launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET), answer=b"started 123456789\n")
     try:
         story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task {task_id}", actor=story.agent)
         story.run_listeners()

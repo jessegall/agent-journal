@@ -50,7 +50,7 @@ class UnblockerFacts:
             return WaitingLine(task.id, WaitingReason.DIFFERENT_HOLDER, "which is started")
         if self.is_asker(holder):
             return WaitingLine(task.id, WaitingReason.ASKER_HOLDER, "which you hold")
-        return WaitingLine(task.id, WaitingReason.DIFFERENT_HOLDER, f"which {AgentLabel.from_agent(holder).text} holds")
+        return WaitingLine(task.id, WaitingReason.DIFFERENT_HOLDER, f"which {AgentLabel.labelled(holder).text} holds")
 
     def is_asker(self, agent: Agent) -> bool:
         return agent.id == self.asker.id or agent.role == MAIN_ROLE == self.asker.role
@@ -65,7 +65,7 @@ class UnblockerFacts:
 
     def assignee_text(self, task: Task) -> str:
         assignee = self.agents.get(self.assignees[task.id]) if task.id in self.assignees else None
-        return "which is not assigned to you" if assignee is None else f"which is assigned to {AgentLabel.from_agent(assignee).text}"
+        return "which is not assigned to you" if assignee is None else f"which is assigned to {AgentLabel.labelled(assignee).text}"
 
     def plan_line(self, task: Task, place: PlanTask) -> WaitingLine | None:
         plan = self.plans[place.plan_id]

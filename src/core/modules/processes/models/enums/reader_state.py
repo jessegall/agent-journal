@@ -15,7 +15,7 @@ class ReaderState(StrEnum):
     UNREADABLE = "unreadable"
 
     @property
-    def lacks_a_reader(self) -> bool:
+    def is_readerless(self) -> bool:
         return self in (ReaderState.POOR, ReaderState.MISSING, ReaderState.DRAFTABLE)
 
     @property
@@ -33,5 +33,5 @@ class ReaderState(StrEnum):
                 return ReasonCode.NONE
 
     @property
-    def is_settled(self) -> bool:
+    def is_resolved(self) -> bool:
         return self in (ReaderState.UNNEEDED, ReaderState.SUITABLE)

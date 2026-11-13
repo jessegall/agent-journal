@@ -40,12 +40,12 @@ class UpdateWorkerHandler(Handler[UpdateWorker, UpdateOutcome]):
         except Refusal as refusal:
             self.bus.run(RecordFailedUpdate(actor.id, refusal.text), actor, environment_id=worktree.environment_id)
             raise
-        self.result = self.result_of(self.update)
+        self.result = self.classified(self.update)
         if self.result is UpdateResult.UPDATED:
             self.git.rebuild(worktree, self.environments.find(worktree.environment_id).folder)
 
     @staticmethod
-    def result_of(update: WorktreeUpdate) -> UpdateResult:
+    def classified(update: WorktreeUpdate) -> UpdateResult:
         if not update.is_clean():
             return UpdateResult.CONFLICTS
         return UpdateResult.CURRENT if update.unchanged else UpdateResult.UPDATED

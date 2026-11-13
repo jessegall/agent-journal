@@ -13,5 +13,5 @@ class MainRow:
     ended_at: str | None
 
     @classmethod
-    def from_row(cls, row: Mapping[str, object]) -> "MainRow":
+    def parsed(cls, row: Mapping[str, object]) -> "MainRow":
         return cls(int(row["id"]), int(row["environment_id"]), int(row["number"]), str(row["role"]), None if row["ended_at"] is None else str(row["ended_at"]))

@@ -42,7 +42,7 @@ class PluginCommandRunner:
     def run(self, agent_id: int, line: str, is_readonly: bool, plugin: str, actor: Actor, started_at: Timestamp, category: str = "") -> PluginCommandRun:
         checkout = self.checkouts.checkout(agent_id)
         if not checkout.exists:
-            raise Refusal(f"the checkout of {AgentLabel.from_agent(self.queries.query(Agent).find(agent_id)).text} was removed, so nothing can run in it", "read its files with journal plugin file --from base")
+            raise Refusal(f"the checkout of {AgentLabel.labelled(self.queries.query(Agent).find(agent_id)).text} was removed, so nothing can run in it", "read its files with journal plugin file --from base")
         if not self.runner.is_installed():
             raise Refusal(f"the journal has no runner at {self.runner.path}", "install it again")
         start = StartProcess.single_part(agent_id, line, str(checkout.root), self.category(plugin, category), RUN_LIMIT_SECONDS, plugin, category)

@@ -6,7 +6,7 @@ from core.modules.plans.support.plan_checkpoints import PlanCheckpoints
 
 
 def worker_reach(state: CheckpointState, task_ids: tuple[int, ...]) -> CheckpointReach:
-    return replace(CheckpointReach.started_on_agent_commit(1, 2, 3, task_ids), id=4, state=state)
+    return replace(CheckpointReach.agent_commit_start(1, 2, 3, task_ids), id=4, state=state)
 
 
 def test_a_window_passed_on_the_workers_commit_with_the_same_tasks_is_passed():

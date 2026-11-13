@@ -339,7 +339,7 @@ def test_a_passed_checkpoint_launches_its_read_only_reviewer_on_the_sonnet_model
     story = new_story(fixture=ReachedCheckpoint)
     story.expect_success(QUICK_REVIEW, actor=story.user)
     story.expect_rows(rows(story, REVIEWS) == [], detail="no review before the tests pass")
-    launcher = FakeLauncher.listening(story.home.socket("launcher"), request_count=2)
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"), request_count=2)
     pass_reach(story, 1)
     launcher.drain_requests()
     launcher.server.close()

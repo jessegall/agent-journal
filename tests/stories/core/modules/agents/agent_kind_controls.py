@@ -107,7 +107,7 @@ def test_s19_inheritance_a_strict_route_to_a_program_the_options_forbid_creates_
 
 
 def stopped_worker(story):
-    launcher = FakeLauncher.listening(story.home.socket("launcher"), request_count=4)
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"), request_count=4)
     worker = dispatch(story)
     story.run_listeners()
     exit_program(story, worker)
@@ -117,7 +117,7 @@ def stopped_worker(story):
 def test_s11_lifecycle_new_helpers_off_refuses_a_helper_start_and_starts_nothing(new_story):
     story = new_story(fixture=UserBuilder)
     set_options(story, "helper allow_new=off")
-    launcher = FakeLauncher.listening(story.home.socket("launcher"), request_count=1)
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"), request_count=1)
     story.expect_refusal(START, "new helper sessions are switched off", actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()

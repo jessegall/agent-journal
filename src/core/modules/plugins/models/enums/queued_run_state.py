@@ -12,5 +12,5 @@ class QueuedRunState(StrEnum):
     CANCELLED = "cancelled"
 
     @property
-    def is_over(self) -> bool:
+    def is_final(self) -> bool:
         return self in (QueuedRunState.ENDED, QueuedRunState.LIMIT_REACHED, QueuedRunState.CANCELLED)

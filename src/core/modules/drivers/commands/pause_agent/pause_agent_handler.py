@@ -25,9 +25,9 @@ class PauseAgentHandler(Handler[PauseAgent, Agent]):
     def handle(self, command: PauseAgent, context: Context) -> Agent:
         agent = self.queries.query(Agent).find(command.agent_id)
         if agent.ended_at is not None:
-            raise Refusal(f"{AgentLabel.from_agent(agent).text} has ended")
+            raise Refusal(f"{AgentLabel.labelled(agent).text} has ended")
         if agent.paused_at is not None:
-            raise Refusal(f"{AgentLabel.from_agent(agent).text} is paused already")
+            raise Refusal(f"{AgentLabel.labelled(agent).text} is paused already")
         paused = self.repository.update(agent, context, paused_at=context.timestamp)
         self.nudger.send(agent.id, PAUSED_REFUSAL, PAUSE_SOURCE, context)
         return paused

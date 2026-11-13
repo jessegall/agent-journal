@@ -34,7 +34,7 @@ class SettingComponent(StrEnum):
                 return tuple([SettingType.LIST])
 
     @classmethod
-    def default_for(cls, category: SettingType) -> "SettingComponent":
+    def default_component(cls, category: SettingType) -> "SettingComponent":
         match category:
             case SettingType.FLAG:
                 return cls.TOGGLE

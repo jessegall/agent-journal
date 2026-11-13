@@ -152,4 +152,4 @@ class AgentDispatcher:
         return session.end_reason if session is not None and session.end_reason else FINISHED_REASON
 
     def record(self, agent: Agent, text: str) -> None:
-        self.system_log.write(LogLevel.INFORMATION, f"{AgentLabel.from_agent(agent).text} {text}")
+        self.system_log.write(LogLevel.INFORMATION, f"{AgentLabel.labelled(agent).text} {text}")

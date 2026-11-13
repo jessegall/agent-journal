@@ -27,9 +27,9 @@ class StopAgentHandler(Handler[StopAgent, Agent]):
     def prepare(self, command: StopAgent, actor: Actor) -> None:
         agent = self.queries.query(Agent).find(command.agent_id)
         if agent.ended_at is not None:
-            raise Refusal(f"{AgentLabel.from_agent(agent).text} has ended already")
+            raise Refusal(f"{AgentLabel.labelled(agent).text} has ended already")
         if agent.pid is None and not self.program.stop(agent) and not agent.is_main:
-            raise Refusal(f"the journal does not know the process of {AgentLabel.from_agent(agent).text}", "stop it in its own terminal")
+            raise Refusal(f"the journal does not know the process of {AgentLabel.labelled(agent).text}", "stop it in its own terminal")
         if agent.pid is not None:
             self.program.stop(agent)
 

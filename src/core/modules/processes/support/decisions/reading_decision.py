@@ -21,10 +21,10 @@ class ReadingDecision:
 
     def __post_init__(self) -> None:
         if self.level > PressureLevel.SUGGEST and all(option.needs_other_party for option in self.exits):
-            raise DecisionWithoutExitError.at_level(self.level)
+            raise DecisionWithoutExitError.level_error(self.level)
 
     @classmethod
-    def nothing(cls, state: ReaderState) -> "ReadingDecision":
+    def empty(cls, state: ReaderState) -> "ReadingDecision":
         return cls(state, ReaderAction.NOTHING, PressureLevel.SUGGEST, ReasonCode.NONE, ())
 
     @classmethod

@@ -68,7 +68,7 @@ class HookEndpoint:
         if not files.phase().runs_programs:
             files.block_session(sender.session)
             self.kept_row(sender, program)
-            return self.held(sender)
+            return self.locked(sender)
         try:
             request = QueueRequest.started(sender.name, sender.event_name, sender.session)
             with self.context.hook_database.used(sender.priority, sender.limit_seconds, sender.owner, request) as database:
@@ -162,7 +162,7 @@ class HookEndpoint:
         RequestLog(self.context.home, FileAccess.shared()).append(RequestLogEntry(None, None, ProcessKind.HOOK, line, REFUSED_HOOK_EXIT_CODE, self.context.clock.timestamp().text, sender.session))
 
     @staticmethod
-    def held(sender: HookSender) -> HookReply:
+    def locked(sender: HookSender) -> HookReply:
         if sender.needs_check:
             return HookReply(refusal=SERVER_UPDATING)
         return HookReply.allowed(SERVER_UPDATING)

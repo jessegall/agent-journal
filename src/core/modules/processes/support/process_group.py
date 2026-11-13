@@ -21,12 +21,12 @@ class ProcessGroup:
             os.killpg(leader_pid, signal.SIGTERM)
         except (ProcessLookupError, PermissionError):
             return
-        timer = threading.Timer(KILL_AFTER_SECONDS, cls.kill_left, (leader_pid, process_id))
+        timer = threading.Timer(KILL_AFTER_SECONDS, cls.kill_remaining, (leader_pid, process_id))
         timer.daemon = True
         timer.start()
 
     @classmethod
-    def kill_left(cls, leader_pid: int, process_id: int) -> None:
+    def kill_remaining(cls, leader_pid: int, process_id: int) -> None:
         if not cls.is_run(leader_pid, process_id):
             return
         try:

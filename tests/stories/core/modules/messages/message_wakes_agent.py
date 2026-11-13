@@ -20,7 +20,7 @@ MESSAGE = 'message send "Look at src/cart.py again" --to agent:{number} --enviro
 def helper_story(new_story):
     story = new_story(fixture=StartedHelper)
     story.helper = Actor(helper_agent(story).id, ActorType.AGENT)
-    story.launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=b"started 4242\n")
+    story.launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET), answer=b"started 4242\n")
     yield story
     story.launcher.server.close()
 

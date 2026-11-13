@@ -11,4 +11,4 @@ class WorkerOwnRuns:
         self.queries = queries
 
     def is_worker_run(self, process: Process) -> bool:
-        return process.is_agents_own_work or self.queries.query(Proof).filter(process_id=process.id).exists()
+        return process.is_agent_work or self.queries.query(Proof).filter(process_id=process.id).exists()

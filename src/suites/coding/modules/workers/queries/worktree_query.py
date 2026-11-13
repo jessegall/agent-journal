@@ -33,13 +33,13 @@ class WorktreeQuery(Query[Worktree], KeptRowChanges[Worktree]):
     def required_worker_worktree(self, agent_id: int) -> Worktree:
         worktree = self.worker_worktree(agent_id)
         if worktree is None:
-            raise Refusal(f"{AgentLabel.from_row_id(agent_id, self.numbers, "worker").text} has no worktree", "journal worker-worktree list shows the worktrees")
+            raise Refusal(f"{AgentLabel.labelled_row(agent_id, self.numbers, "worker").text} has no worktree", "journal worker-worktree list shows the worktrees")
         return worktree
 
     def required_newest_worktree(self, agent_id: int) -> Worktree:
         worktree = self.newest_worktree(agent_id)
         if worktree is None:
-            raise Refusal(f"{AgentLabel.from_row_id(agent_id, self.numbers, "worker").text} has had no worktree", "journal worker-worktree list shows the worktrees")
+            raise Refusal(f"{AgentLabel.labelled_row(agent_id, self.numbers, "worker").text} has had no worktree", "journal worker-worktree list shows the worktrees")
         return worktree
 
     def is_first_worktree(self, worktree: Worktree) -> bool:

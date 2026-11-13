@@ -64,7 +64,7 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
     def is_earlier_run(self, agent: Agent, command: RecordProgramExit) -> bool:
         if command.pid is None or agent.pid is None or command.pid == agent.pid:
             return False
-        self.system_log.write(LogLevel.INFORMATION, f"{AgentLabel.from_agent(agent).text}: the exit of process {command.pid} changed nothing, since process {agent.pid} runs now")
+        self.system_log.write(LogLevel.INFORMATION, f"{AgentLabel.labelled(agent).text}: the exit of process {command.pid} changed nothing, since process {agent.pid} runs now")
         return True
 
     def needs_exit_report(self, agent: Agent) -> bool:

@@ -42,7 +42,7 @@ class MergeFinishedTasksHandler(Handler[MergeFinishedTasks, MergeOutcome]):
     def handle(self, command: MergeFinishedTasks, context: Context) -> MergeOutcome:
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
-            raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} has no worktree to merge from", "journal worker-worktree list shows the worktrees")
+            raise Refusal(f"{AgentLabel.labelled_row(command.worker_id, self.numbers, "worker").text} has no worktree to merge from", "journal worker-worktree list shows the worktrees")
         self.checks.check_base_branch(worktree)
         environment = self.environments.find(worktree.environment_id)
         commit = self.target_commit(worktree, command.target)
@@ -51,9 +51,9 @@ class MergeFinishedTasksHandler(Handler[MergeFinishedTasks, MergeOutcome]):
         uncommitted = self.git.uncommitted_overlap(environment.folder, worktree)
         if uncommitted:
             raise Refusal(f"the checkout of environment {environment.name} has uncommitted changes to {', '.join(uncommitted)}",
-                          f"{AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text} changes them too: commit or stash them, then merge again")
+                          f"{AgentLabel.labelled_row(worktree.session_agent_id, self.numbers, "worker").text} changes them too: commit or stash them, then merge again")
         numbers = ", ".join(str(task.id) for task in tasks)
-        self.git.merge_revision(environment.folder, commit, f"tasks {numbers}, from {AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text}")
+        self.git.merge_revision(environment.folder, commit, f"tasks {numbers}, from {AgentLabel.labelled_row(worktree.session_agent_id, self.numbers, "worker").text}")
         reasons = self.wait_text.merged_reasons(worktree, [task.id for task in tasks])
         for task in tasks:
             if task.state is TaskState.TESTING:
@@ -64,10 +64,10 @@ class MergeFinishedTasksHandler(Handler[MergeFinishedTasks, MergeOutcome]):
         if self.range.is_task_number(target):
             commit = self.range.task_commit(worktree, int(target))
             if commit is None:
-                raise Refusal(f"task {target} has no commit on the branch of {AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text}", "name a task the worker has handed in")
+                raise Refusal(f"task {target} has no commit on the branch of {AgentLabel.labelled_row(worktree.session_agent_id, self.numbers, "worker").text}", "name a task the worker has handed in")
             return commit
         if not self.range.is_branch_commit(worktree, target):
-            raise Refusal(f"commit {target} is not on the branch of {AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text}", "journal worker logs lists its tasks: give one of them or one of its commits")
+            raise Refusal(f"commit {target} is not on the branch of {AgentLabel.labelled_row(worktree.session_agent_id, self.numbers, "worker").text}", "journal worker logs lists its tasks: give one of them or one of its commits")
         return target
 
     def finished_tasks(self, worktree: Worktree, commit: str) -> list[Task]:

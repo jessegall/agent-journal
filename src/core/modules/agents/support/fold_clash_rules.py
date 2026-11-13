@@ -49,7 +49,7 @@ class FoldClashRules:
     fold and names itself, so no clash is settled by guessing."""
 
     @staticmethod
-    def settled(table: str, rows: Sequence[Row], survivor_id: int, agent_column: str) -> SettledClash:
+    def resolution(table: str, rows: Sequence[Row], survivor_id: int, agent_column: str) -> SettledClash:
         if table not in RULES:
             raise Refusal(f"the fold has no rule for a clash on table {table}", "add a rule for it in FoldClashRules before the fold runs")
         name, choose = RULES[table]

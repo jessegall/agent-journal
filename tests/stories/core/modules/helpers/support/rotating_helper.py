@@ -25,7 +25,7 @@ class EndedEachLaunchHelper(StoryFixture):
 
     def steps(self, story):
         story.expect_success(self.save_line, actor=story.user)
-        launcher = FakeLauncher.listening(story.home.socket("launcher"))
+        launcher = FakeLauncher.accepting(story.home.socket("launcher"))
         story.run(self.start_line, actor=story.agent)
         story.run_listeners()
         launcher.drain_requests()
@@ -57,7 +57,7 @@ class StartedEachLaunchHelper(StoryFixture):
 
     def steps(self, story):
         story.expect_success(self.save_line, actor=story.user)
-        launcher = FakeLauncher.listening(story.home.socket("launcher"))
+        launcher = FakeLauncher.accepting(story.home.socket("launcher"))
         story.run(START_ROTATING, actor=story.agent)
         story.run_listeners()
         launcher.drain_requests()

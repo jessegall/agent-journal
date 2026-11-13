@@ -3,5 +3,5 @@ class MigrationDeferredError(Exception):
     as applied; the migration has already said why where a user reads it."""
 
     @classmethod
-    def because(cls, reason: str) -> "MigrationDeferredError":
+    def explained(cls, reason: str) -> "MigrationDeferredError":
         return cls(f"the migration runs again at the next start: {reason}")

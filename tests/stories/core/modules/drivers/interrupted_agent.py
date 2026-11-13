@@ -28,7 +28,7 @@ class InterruptedMain(StoryFixture):
 
 def interrupted_story(new_story, silent_answer: bytes) -> tuple[Story, FakeLauncher]:
     story = new_story(fixture=InterruptedMain)
-    return story, FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=silent_answer, request_count=1)
+    return story, FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET), answer=silent_answer, request_count=1)
 
 
 def wake_lines(story: Story) -> list[AgentLine]:

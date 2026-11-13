@@ -55,7 +55,7 @@ class AgentsMove(VersionFourMove):
             elif role not in roles:
                 report.skip(TABLE, row["id"], f"role {row['role']} is none of {', '.join(roles)}")
             elif role == AgentRole.MAIN.value and row["environment_id"] in main_rows:
-                report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.session_of(rows, main_rows[row["environment_id"]], row, context)))
+                report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.agent_session(rows, main_rows[row["environment_id"]], row, context)))
             else:
                 created = row["created_at"] or context.timestamp
                 ended = self.end_timestamp(row, role, created, latest_ids)
@@ -87,7 +87,7 @@ class AgentsMove(VersionFourMove):
                 report.note(f"session {session} made rows but had no agent row, no known role and program: its rows name the core")
                 continue
             if role == AgentRole.MAIN.value and span["environment_id"] in main_rows:
-                self.session_of(rows, main_rows[span["environment_id"]], {"environment_id": span["environment_id"], "session": session, "provider": program,
+                self.agent_session(rows, main_rows[span["environment_id"]], {"environment_id": span["environment_id"], "session": session, "provider": program,
                                                                            "created_at": span["first_at"], "updated_at": span["last_at"]}, context)
             else:
                 moved_id = self.insert(rows, session, span["environment_id"], program, role, CORE_ACTOR_ID, span["first_at"], span["last_at"], span["last_at"])
@@ -130,7 +130,7 @@ class AgentsMove(VersionFourMove):
         return str(span["creator"]).partition(SEPARATOR)[2]
 
     @staticmethod
-    def session_of(rows: RowInsert, main_id: int, row: Mapping[str, object], context: MoveContext) -> int:
+    def agent_session(rows: RowInsert, main_id: int, row: Mapping[str, object], context: MoveContext) -> int:
         started = row["created_at"] or context.timestamp
         rows.insert(SESSIONS_TABLE, {"environment_id": row["environment_id"], "session_agent_id": main_id, "session": row["session"], "program": row["provider"],
                                      "started_at": started, "ended_at": row["updated_at"] or started, "end_reason": EndReason.PERSON_REPLACEMENT.value,

@@ -107,7 +107,7 @@ class PlanCheckpoints:
     def reach_agent_commit(self, plan_id: int, phase_id: int, task_ids: tuple[int, ...], context: Context) -> CheckpointReach | None:
         if phase_id in self.running_phase_ids(self.reaches(plan_id)):
             return None
-        return self.repository.save(CheckpointReach.started_on_agent_commit(context.actor.id, plan_id, phase_id, task_ids), context)
+        return self.repository.save(CheckpointReach.agent_commit_start(context.actor.id, plan_id, phase_id, task_ids), context)
 
     @staticmethod
     def running_phase_ids(reaches: tuple[CheckpointReach, ...]) -> frozenset[int]:

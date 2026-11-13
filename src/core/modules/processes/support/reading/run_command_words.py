@@ -15,12 +15,12 @@ class RunCommandWords:
         self.parts = parts
 
     def words(self, process: Process) -> str:
-        terms = RunCommandWords.of_parts(self.parts.run_parts(process.id))
+        terms = RunCommandWords.part_words(self.parts.run_parts(process.id))
         if not terms:
             raise Refusal(f"output {process.id} runs no command a reader reads", "only a command that prints output is marked")
         return terms
 
     @staticmethod
-    def of_parts(parts: Sequence[ProcessPart]) -> str:
+    def part_words(parts: Sequence[ProcessPart]) -> str:
         part = next((part for part in parts if part.category.is_watched), None) or next((part for part in parts if part.category.has_reader), None)
         return SilentStartRuns.name(part.text, part.program, part.category) if part is not None else ""

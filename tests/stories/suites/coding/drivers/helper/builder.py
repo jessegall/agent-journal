@@ -37,7 +37,7 @@ def test_a_main_agent_with_auto_on_given_a_task_is_told_its_brief(new_story):
 
 def test_a_main_agent_with_auto_on_the_journal_started_is_told_to_introduce_itself(new_story):
     story = new_story(fixture=CodingEnvironment)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_text("agent launch claude --environment main", "started main agent", actor=user)
     launcher.drain_requests()

@@ -103,7 +103,7 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
         staging = self.staging.read(committed)
         tasks = tuple(task for task in self.commit_tasks(committed, staging) if task.id in committed.commit_tasks())
         open_tasks = staging.started_except(committed.commit_tasks())
-        worker_label = AgentLabel.from_row_id(context.actor.id, self.numbers, "worker").text
+        worker_label = AgentLabel.labelled_row(context.actor.id, self.numbers, "worker").text
         for task in tasks:
             self.differences.record(task.id, command.differences, context)
             self.bus.dispatch(MakeTaskLog(task.id, f"committed in {committed.commit_short_id} by {worker_label}"), replace(context, actor=Actor.core()))

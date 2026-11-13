@@ -26,7 +26,7 @@ class UnreadableMarks:
         return self.marks.standing().matching_terms(UnreadableMarks.covering_words(command)).newest().first()
 
     def flagged_among(self, commands: Sequence[str]) -> frozenset[str]:
-        covering, terms = UnreadableMarks.covered_by(commands)
+        covering, terms = UnreadableMarks.covering_mark(commands)
         flagged = set(self.marks.standing().matching_terms(terms).pluck("words", str))
         return frozenset(command for command, leading in covering.items() if flagged.intersection(leading))
 
@@ -34,7 +34,7 @@ class UnreadableMarks:
         return self.flagged(command) is not None
 
     def last_flagged_among(self, commands: Sequence[str]) -> dict[str, Timestamp | None]:
-        covering, terms = UnreadableMarks.covered_by(commands)
+        covering, terms = UnreadableMarks.covering_mark(commands)
         newest: dict[str, Timestamp] = {}
         for mark in self.marks.matching_terms(terms).every_row(TERM_MARKS_REASON):
             made_at = mark.creation_timestamp()
@@ -71,7 +71,7 @@ class UnreadableMarks:
         return [" ".join(terms[:count]) for count in range(1, len(terms) + 1)]
 
     @staticmethod
-    def covered_by(commands: Sequence[str]) -> tuple[dict[str, list[str]], list[str]]:
+    def covering_mark(commands: Sequence[str]) -> tuple[dict[str, list[str]], list[str]]:
         covering = {command: UnreadableMarks.covering_words(command) for command in dict.fromkeys(commands)}
         return covering, sorted({word for leading in covering.values() for word in leading})
 

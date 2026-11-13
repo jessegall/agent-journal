@@ -25,7 +25,7 @@ class KeepRevisionHandler(Handler[KeepRevision, DocRevision]):
         if opened is not None:
             if context.actor.is_agent() and opened.author_id != context.actor.id:
                 author = self.queries.query(Agent).filter(id=opened.author_id).first()
-                raise Refusal(f"doc {command.doc_id} is open by {AgentLabel.from_agent(author).text if author is not None else 'a user'}")
+                raise Refusal(f"doc {command.doc_id} is open by {AgentLabel.labelled(author).text if author is not None else 'a user'}")
             latest = self.queries.query(DocRevision).find(opened.revision_id) if opened.revision_id is not None else self.revisions.latest(command.doc_id)
             if latest is None:
                 raise Refusal(f"doc {command.doc_id} has no saved text")

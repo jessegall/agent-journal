@@ -58,7 +58,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
 
     def delivered_worktree(self, worker_id: int) -> Worktree:
         worktree = self.worktrees.worker_worktree(worker_id)
-        label = AgentLabel.from_row_id(worker_id, self.numbers, "worker").text
+        label = AgentLabel.labelled_row(worker_id, self.numbers, "worker").text
         unit = self.units.unit(worker_id)
         if worktree is not None and worktree.state is WorktreeState.CUT and unit.has_several_tasks:
             raise Refusal(f"{label} works {unit.merge_name} and has not asked for its merge", "merge its committed work so far with --up-to <task>")
@@ -80,7 +80,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         uncommitted = self.git.uncommitted_overlap(environment.folder, worktree)
         if uncommitted:
             raise Refusal(f"the checkout of environment {environment.name} has uncommitted changes to {', '.join(uncommitted)}",
-                          f"{AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text} changes them too: commit or stash them, then merge again")
+                          f"{AgentLabel.labelled_row(worktree.session_agent_id, self.numbers, "worker").text} changes them too: commit or stash them, then merge again")
         conflicts = self.git.rebased_commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.session_agent_id}")
         if conflicts:
             return self.bus.run_with_context(RecordWorktreeMerge(worktree.id, conflicts), context)
@@ -90,7 +90,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         refusal = self.refused_merge(worktree, environment, commit_before_merge, context)
         if refusal:
             return MergeOutcome(self.rows.required(Worktree, worktree.id), (), refusal)
-        self.git.merge(environment.folder, worktree, f"{self.merged_name(worktree, task)}: {task.title}, from {AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text}")
+        self.git.merge(environment.folder, worktree, f"{self.merged_name(worktree, task)}: {task.title}, from {AgentLabel.labelled_row(worktree.session_agent_id, self.numbers, "worker").text}")
         commit_after_merge = self.git.tip(environment.folder, worktree.base_branch)
         followup = self.followups.record_followup(worktree, environment.folder, commit_before_merge, commit_after_merge, context)
         if followup is not None:
@@ -139,8 +139,8 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         self.checks.check_base_branch(worktree)
         waiting = self.followups.blocked_followup(worktree)
         if waiting is not None and self.followups.planned(worktree.id) is None:
-            raise Refusal(f"the merge of {AgentLabel.from_row_id(waiting.worker_id, self.numbers, "worker").text} still has required commands to run in environment {environment.name}",
-                          f"merge {AgentLabel.from_row_id(waiting.worker_id, self.numbers, "worker").text} again to finish them, with --reconcile if a step ended uncertain")
+            raise Refusal(f"the merge of {AgentLabel.labelled_row(waiting.worker_id, self.numbers, "worker").text} still has required commands to run in environment {environment.name}",
+                          f"merge {AgentLabel.labelled_row(waiting.worker_id, self.numbers, "worker").text} again to finish them, with --reconcile if a step ended uncertain")
         head = self.git.head(environment.folder)
         if head != worktree.base_branch:
             raise Refusal(f"the checkout of environment {environment.name} is on {head}, not on {worktree.base_branch}; the merge waits until it is back",

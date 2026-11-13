@@ -28,7 +28,7 @@ def test_h3_a_worker_compacted_before_its_job_is_not_compacted_a_second_time_aft
     launcher.server.close()
     story.home.socket(LAUNCHER_SOCKET).unlink()
     has_context(story, worker, LIMIT)
-    following = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET))
+    following = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET))
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
     story.run_listeners()
     following.drain_requests()

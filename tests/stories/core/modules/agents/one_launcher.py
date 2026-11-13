@@ -24,7 +24,7 @@ def slow_launcher(new_story):
     connect to it is refused, and the link beside the socket names a process that runs."""
     story = new_story(fixture=EndedHelper)
     socket_path = story.home.socket(LAUNCHER_SOCKET)
-    FakeLauncher.listening(socket_path).server.close()
+    FakeLauncher.accepting(socket_path).server.close()
     owner_link = socket_path.with_name(socket_path.name + ".pid")
     owner_link.unlink(missing_ok=True)
     owner_link.symlink_to(str(os.getpid()))

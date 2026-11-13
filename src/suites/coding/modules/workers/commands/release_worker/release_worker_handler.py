@@ -36,7 +36,7 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
     def handle(self, command: ReleaseWorker, context: Context) -> ReleaseOutcome:
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
-            raise Refusal(f"{AgentLabel.from_row_id(command.worker_id, self.numbers, "worker").text} has no worktree out", "journal worker-worktree list shows the worktrees")
+            raise Refusal(f"{AgentLabel.labelled_row(command.worker_id, self.numbers, "worker").text} has no worktree out", "journal worker-worktree list shows the worktrees")
         if worktree.commit_count and worktree.state is WorktreeState.CUT and not command.abandons_commits:
             number = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)
             raise Refusal(f"worker {number} has committed work", f'merge it with journal worker merge {number} --up-to <task>, or release with --abandon "<why>"')

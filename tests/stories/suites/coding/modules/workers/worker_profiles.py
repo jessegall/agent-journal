@@ -11,7 +11,7 @@ from suites.coding.support.shipped_profiles import WORKER_SENIOR_PROFILE
 def dispatched_brief(new_story, line):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_success(line, actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()

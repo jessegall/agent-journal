@@ -24,7 +24,7 @@ class SettingScreen:
         entries = tuple(entry for entry in self.declared.all() if entry.screen == screen and entry.type != REFERENCE_TYPE)
         sections = list(dict.fromkeys(entry.section for entry in entries))
         nodes = tuple(self.node(entry) for entry in sorted(entries, key=lambda entry: sections.index(entry.section)))
-        return ScreenReading(screen, ScreenReading.revision_of(nodes), nodes)
+        return ScreenReading(screen, ScreenReading.screen_revision(nodes), nodes)
 
     def node(self, entry: SettingEntry) -> ScreenNode:
         current = self.reader.current(entry.key)

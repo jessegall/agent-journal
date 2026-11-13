@@ -46,7 +46,7 @@ def mergers(story) -> list[Agent]:
 
 
 def merger_launch(story) -> dict:
-    launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"started 701\n")
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"started 701\n")
     story.container.get(Bus).run(StartMerger(FALLBACK_LINE), Actor.core(), environment_id=1)
     story.run_listeners()
     launcher.drain_requests()

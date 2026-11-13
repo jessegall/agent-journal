@@ -29,9 +29,9 @@ class ResumeAgentHandler(Handler[ResumeAgent, Agent]):
     def handle(self, command: ResumeAgent, context: Context) -> Agent:
         agent = self.queries.query(Agent).find(command.agent_id)
         if agent.paused_at is None:
-            raise Refusal(f"{AgentLabel.from_agent(agent).text} is not paused")
+            raise Refusal(f"{AgentLabel.labelled(agent).text} is not paused")
         if context.approval_id is None and (context.actor.id == agent.id or self.queries.query(Agent).filter(id=context.actor.id, parent_id=agent.id).exists()):
-            raise UserApprovalRefusal(f"Resume the paused {AgentLabel.from_agent(agent).text}?", command=command)
+            raise UserApprovalRefusal(f"Resume the paused {AgentLabel.labelled(agent).text}?", command=command)
         resumed = self.repository.save(replace(agent, paused_at=None), context)
         self.nudger.send(agent.id, AGENT_RESUMED, RESUME_SOURCE, context)
         return resumed

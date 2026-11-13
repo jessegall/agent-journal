@@ -34,7 +34,7 @@ class MakeProofHandler(Handler[MakeProof, Proof]):
             raise Refusal("only a worker with a worktree out makes proofs", "journal worker-worktree list shows the worktrees")
         task_proofs = self.proofs.worktree_proofs(worktree.id).filter(task_id=command.task_id)
         task = self.rows.required(Task, command.task_id)
-        if self.access.is_held_by_another(task, context.actor.id) or not self.access.is_holder(task, context.actor.id) and not task_proofs.exists():
+        if self.access.has_foreign_holder(task, context.actor.id) or not self.access.is_holder(task, context.actor.id) and not task_proofs.exists():
             raise self.access.refusal(task, context.actor.id)
         if command.point < FIRST_POINT:
             raise Refusal(f"the points of a brief start at {FIRST_POINT}, not {command.point}", f"journal task show {command.task_id} lists them")

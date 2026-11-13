@@ -11,12 +11,12 @@ class TaskAssignees:
 
     def check_running(self, agent: Agent) -> None:
         if agent.ended_at is not None:
-            raise Refusal(f"{AgentLabel.from_agent(agent).text} has ended", "journal agent list shows who is running")
+            raise Refusal(f"{AgentLabel.labelled(agent).text} has ended", "journal agent list shows who is running")
         self.check(agent)
 
     def check(self, agent: Agent) -> None:
         if agent.role != AgentRole.MAIN:
-            raise Refusal(f"{AgentLabel.from_agent(agent).text} is a {agent.role} and takes no task", "only the main agent takes a task, to hand it out")
+            raise Refusal(f"{AgentLabel.labelled(agent).text} is a {agent.role} and takes no task", "only the main agent takes a task, to hand it out")
 
     def check_reassignment(self, task: Task) -> None:
         pass

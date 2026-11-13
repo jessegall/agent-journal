@@ -1,6 +1,6 @@
 import json
 
-from tests.stories.suites.coding.modules.workers.compaction_never_twice import AutoCompacted, STATUS_FILE_AGE, modified_at_story_time, set_context_older_than_compaction
+from tests.stories.suites.coding.modules.workers.compaction_never_twice import AutoCompacted, STATUS_FILE_AGE, modified_at_story_time, age_context_past_compaction
 from tests.stories.suites.coding.modules.workers.context_limit import LIMIT_TOKENS, has_context, typing_recorded
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
@@ -15,7 +15,7 @@ def shown_context(person, story) -> dict:
 
 def test_i5_the_viewer_shows_the_context_as_unknown_after_a_compaction_until_the_program_reports_a_new_size(new_story):
     story = typing_recorded(new_story(fixture=AutoCompacted))
-    set_context_older_than_compaction(story, LIMIT_TOKENS)
+    age_context_past_compaction(story, LIMIT_TOKENS)
     with viewer_client(story) as person:
         stale = shown_context(person, story)
         story.advance(STATUS_FILE_AGE)

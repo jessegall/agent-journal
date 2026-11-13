@@ -49,11 +49,11 @@ class ReadingCase:
     readers_forced: bool
 
     @property
-    def is_request_waiting_for_reader(self) -> bool:
+    def is_request_waiting(self) -> bool:
         return self.reader_required and self.waiting_request
 
     @property
-    def is_not_needed(self) -> bool:
+    def is_unneeded(self) -> bool:
         return (not self.category.has_reader or self.has_asking_flag or self.is_plugin_run or self.was_rejected
                 or self.is_short_success or self.is_no_sample)
 
@@ -71,7 +71,7 @@ class ReadingCase:
         return self.moment is ReadingMoment.END and self.exit_code == 0 and self.age_seconds < SHORT_RUN_SECONDS
 
     @property
-    def reader_is_suitable(self) -> bool:
+    def has_suitable_reader(self) -> bool:
         return self.reader_judgement is not None and self.reader_judgement.is_valid
 
     @property
@@ -85,7 +85,7 @@ class ReadingCase:
     @property
     def measured_unreadable_reason(self) -> UnreadableReason | None:
         if self.moment is ReadingMoment.END:
-            return OutputFacts.reason_at_end(self.output)
+            return OutputFacts.end_reason(self.output)
         return OutputFacts.measured_reason(self.output, self.cadence_state)
 
     def available_exits(self, level: PressureLevel) -> tuple[ReadingExit, ...]:

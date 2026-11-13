@@ -48,7 +48,7 @@ def test_443_the_map_command_prints_seven_top_folders_with_one_line_for_every_on
 def test_444_the_engine_areas_show_contract_areas_first_and_internal_ones_after_with_one_line_for_every_area(new_story):
     story = new_story()
     lines = top_folder_lines("engine")
-    areas = sorted(folder.name for folder in (SOURCE / "engine").iterdir() if folder.is_dir() and folder.name not in ("__pycache__", "errors", "enums") and not CodeMap.has_only_caches(folder))
+    areas = sorted(folder.name for folder in (SOURCE / "engine").iterdir() if folder.is_dir() and folder.name not in ("__pycache__", "errors", "enums") and not CodeMap.has_cache_files_alone(folder))
     shown = [line.split("  ")[2] for line in lines if line.startswith("    ")]
     story.expect_rows(lines.index("  contract") < lines.index("  internal"), sorted(shown) == areas, detail=str(sorted(set(areas) ^ set(shown))))
     story.expect_rows(all(len(line.strip().split("  ", 1)) == 2 for line in lines if line.startswith("    ")), detail="an area line has no summary")

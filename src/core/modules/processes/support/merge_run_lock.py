@@ -16,7 +16,7 @@ class MergeRunLock:
         self.path = home.folder / "runtime" / MERGE_LOCK_FILE
 
     @contextmanager
-    def held(self) -> Generator[None]:
+    def locked(self) -> Generator[None]:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with FileAccess.shared().writer(self.path, "a") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)

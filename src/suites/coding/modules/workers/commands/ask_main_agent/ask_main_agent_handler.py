@@ -46,7 +46,7 @@ class AskMainAgentHandler(Handler[AskMainAgent, None]):
     def refuse_repeated(self, worker_id: int) -> None:
         line = self.escalations.open_line(worker_id)
         if line is not None and line.closed_at is not None:
-            worker = AgentLabel.from_row_id(worker_id, self.numbers, "worker").text
+            worker = AgentLabel.labelled_row(worker_id, self.numbers, "worker").text
             raise Refusal(f"{worker} is with the main agent since {line.closed_at.value.strftime(CLOCK_FORMAT)} (line {line.id}): you need not tell it again")
 
     def worker_lines(self, worker_id: int | None) -> list[str]:

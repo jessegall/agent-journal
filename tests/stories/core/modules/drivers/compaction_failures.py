@@ -12,7 +12,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.drivers.compaction_askers import SHELL_WINDOW, control
 from tests.stories.core.modules.drivers.context_compactions import compactions
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.compaction_never_twice import MissingLauncherTyping, compacted, expect_compaction_count, set_context_older_than_compaction
+from tests.stories.suites.coding.modules.workers.compaction_never_twice import MissingLauncherTyping, compacted, expect_compaction_count, age_context_past_compaction
 from tests.stories.suites.coding.modules.workers.context_limit import LIMIT_TOKENS, PRE_COMPACT, SESSION, LimitEnabled, has_context, stops, typing_recorded
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 from core.modules.drivers.support.driver_nudges import COMPACTION_NOTICE
@@ -71,7 +71,7 @@ def test_f1_a_line_that_never_starts_fails_after_ten_minutes_and_the_person_and_
 def test_f9_after_a_request_that_failed_a_person_sends_the_compaction_by_hand_and_it_takes_the_place_of_the_failed_row(limited):
     limited.advance(FAULT_WAIT)
     faults_reported(limited)
-    FakeLauncher.listening(limited.home.socket("launcher"))
+    FakeLauncher.accepting(limited.home.socket("launcher"))
     with viewer_client(limited) as person:
         person.value(SHELL_WINDOW, control(limited, "compact"))
     limited.expect_rows(states(limited)[-1] is CompactionState.REQUESTED, len(states(limited)) == 2, detail=str(states(limited)))
@@ -92,7 +92,7 @@ def test_f2_a_missing_launcher_fails_the_request_with_its_cause_and_the_person_i
 
 def test_f3_a_compaction_whose_size_is_never_reported_is_told_once_and_asks_for_no_second_compaction(limited):
     compacted(limited, "manual")
-    set_context_older_than_compaction(limited, LIMIT_TOKENS)
+    age_context_past_compaction(limited, LIMIT_TOKENS)
     limited.advance(FAULT_WAIT)
     limited.hook(SESSION, HookSamples.prompt("go on"))
     faults_reported(limited)

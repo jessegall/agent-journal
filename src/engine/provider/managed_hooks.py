@@ -91,7 +91,7 @@ class ManagedHooks:
     @contextmanager
     def _locked(self) -> Generator[None]:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        with FileLock.held(self.path.with_suffix(".lock")):
+        with FileLock.locked(self.path.with_suffix(".lock")):
             yield
 
     def _read(self) -> list[ManagedHook]:

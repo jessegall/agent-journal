@@ -67,7 +67,7 @@ class OutputFacts:
 
     # Why no reader can read the output of an ended run, from its measures: a run that ended on a prompt waited at it.
     @staticmethod
-    def reason_at_end(output: "OutputFacts | None") -> UnreadableReason | None:
+    def end_reason(output: "OutputFacts | None") -> UnreadableReason | None:
         if output is None or output.unreadable_reason is not None:
             return None if output is None else output.unreadable_reason
         return UnreadableReason.INTERACTIVE if output.ends_with_prompt else None

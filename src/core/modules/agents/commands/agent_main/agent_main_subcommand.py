@@ -26,6 +26,6 @@ class AgentMainSubcommand(ReadSubcommand[Agent | None]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Agent):
-            output.write(f"{AgentLabel.from_agent(value).text}, agent:{value.number}, session {value.session}, row id {value.id}", {"id": value.id, "number": value.number})
+            output.write(f"{AgentLabel.labelled(value).text}, agent:{value.number}, session {value.session}, row id {value.id}", {"id": value.id, "number": value.number})
             return
         output.write("no main agent is running", {"id": None, "number": None})

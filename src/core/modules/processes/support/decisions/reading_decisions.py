@@ -31,6 +31,6 @@ class ReadingDecisions:
         if stored is not None:
             return self.repository.update(stored, context, **values)
         command_key = SilentStartRuns.name(part.text, part.program, part.category)
-        if point is ReadingMoment.END and decision.state.lacks_a_reader:
+        if point is ReadingMoment.END and decision.state.is_readerless:
             self.run_counts.add_run(command_key, context)
         return self.repository.save(ReadingDecisionRow(process_id=process.id, part_position=part.position, command_key=command_key, moment=point, **values), context)

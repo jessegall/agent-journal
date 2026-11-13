@@ -7,7 +7,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.drivers.context_compactions import compactions
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.compaction_never_twice import compacted, expect_compaction_count, set_context_older_than_compaction
+from tests.stories.suites.coding.modules.workers.compaction_never_twice import compacted, expect_compaction_count, age_context_past_compaction
 from tests.stories.suites.coding.modules.workers.context_limit import COMPACTION_START, LIMIT_TOKENS, SESSION, LimitEnabled, has_context, stops, typing_recorded
 
 TERMINAL_COMPACTIONS = 10
@@ -30,7 +30,7 @@ def test_c4_j3_a_session_start_that_claims_a_compaction_twice_ends_one_row_with_
     limited.hook(SESSION, COMPACTION_START)
     limited.hook(SESSION, COMPACTION_START)
     limited.run_listeners()
-    set_context_older_than_compaction(limited, LIMIT_TOKENS)
+    age_context_past_compaction(limited, LIMIT_TOKENS)
     stops(limited)
     expect_compaction_count(limited, 0)
     ended = compactions(limited)

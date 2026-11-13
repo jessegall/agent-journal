@@ -62,7 +62,7 @@ class ProgramSettingsBackup:
 
     def _stored(self, program: str, name: str, data: bytes) -> Path | None:
         folder = PrivateFolders.made(self.home.program_settings_backups / program)
-        with FileLock.held(folder / LOCK_NAME):
+        with FileLock.locked(folder / LOCK_NAME):
             newest = self.newest(program, name)
             if newest is not None and KeptBytes.read(newest) == data:
                 return None
@@ -74,7 +74,7 @@ class ProgramSettingsBackup:
     def rejected(self, program: str, path: Path, data: bytes) -> Path:
         name = f"{REJECTED_PREFIX}{path.name}"
         folder = PrivateFolders.made(self.home.program_settings_backups / program)
-        with FileLock.held(folder / LOCK_NAME):
+        with FileLock.locked(folder / LOCK_NAME):
             copy = self.free_name(folder, name)
             FileAccess.shared().write_whole(copy, data, COPY_MODE)
             for stale in self.copies(program, name)[:-NEWEST_COPIES]:

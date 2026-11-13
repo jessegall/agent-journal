@@ -23,6 +23,6 @@ class TypeTerminalLineHandler(Handler[TypeTerminalLine, Agent]):
             raise Refusal("give the line to type")
         agent = self.queries.query(Agent).find(command.agent_id)
         if agent.ended_at is not None:
-            raise Refusal(f"{AgentLabel.from_agent(agent).text} has ended, so it has no terminal to type in")
+            raise Refusal(f"{AgentLabel.labelled(agent).text} has ended, so it has no terminal to type in")
         self.typing.type_line(agent, command.line)
         return agent

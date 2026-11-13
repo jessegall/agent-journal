@@ -16,4 +16,4 @@ class StockDigestMigration(Migration):
     def run(self, database: Database) -> None:
         super().run(database)
         for stock in STOCK_READERS:
-            database.update(Statement("UPDATE readers SET shipped_digest = ? WHERE name = ? AND creator_id = ?", [StockDigest.of(stock), stock.name, CORE_ACTOR_ID]))
+            database.update(Statement("UPDATE readers SET shipped_digest = ? WHERE name = ? AND creator_id = ?", [StockDigest.digest(stock), stock.name, CORE_ACTOR_ID]))

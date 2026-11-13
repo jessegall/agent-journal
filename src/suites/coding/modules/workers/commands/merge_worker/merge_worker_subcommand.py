@@ -53,7 +53,7 @@ class MergeWorkerSubcommand(Subcommand[Command[object], MergeOutcome]):
             return
         output.row(value.worktree)
         if value.refusal:
-            output.line(f"the merge of {AgentLabel.from_row_id(value.worktree.session_agent_id, self.numbers, "worker").text} was refused before anything was merged: {value.refusal}; the findings went back to the worker")
+            output.line(f"the merge of {AgentLabel.labelled_row(value.worktree.session_agent_id, self.numbers, "worker").text} was refused before anything was merged: {value.refusal}; the findings went back to the worker")
         if value.conflicts:
             output.line(f"merging {value.worktree.base_branch} in clashed on {', '.join(value.conflicts)}: task {value.worktree.task_id} went back to"
-                        f" {AgentLabel.from_row_id(value.worktree.session_agent_id, self.numbers, "worker").text}")
+                        f" {AgentLabel.labelled_row(value.worktree.session_agent_id, self.numbers, "worker").text}")

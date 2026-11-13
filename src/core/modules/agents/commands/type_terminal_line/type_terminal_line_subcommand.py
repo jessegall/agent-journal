@@ -24,4 +24,4 @@ class TypeTerminalLineSubcommand(Subcommand[TypeTerminalLine, Agent]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Agent):
-            output.line(f"typed in the terminal of {AgentLabel.from_agent(value).text}")
+            output.line(f"typed in the terminal of {AgentLabel.labelled(value).text}")

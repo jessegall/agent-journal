@@ -16,7 +16,7 @@ from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 def test_a_failed_launch_tells_the_main_agent(new_story, answer):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
-    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=answer) if answer is not None else None
+    launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET), answer=answer) if answer is not None else None
     worker = dispatched_worker(story)
     story.run_listeners()
     if launcher is not None:
@@ -28,7 +28,7 @@ def test_a_failed_resume_tells_the_main_agent_once_while_the_retries_go_on(new_s
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_success(f"setting set {MERGER_ENABLED} false --project")
-    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answers=(b"started\n", b"failed\n"), request_count=5)
+    launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET), answers=(b"started\n", b"failed\n"), request_count=5)
     worker = checked_worker(story, repository)
     story.run_listeners()
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "failed to start")

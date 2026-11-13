@@ -32,7 +32,7 @@ class ProcessKind(StrEnum):
         return not (self.is_priority_zero or self.is_quick)
 
     @property
-    def can_go_to_background(self) -> bool:
+    def is_backgroundable(self) -> bool:
         return not self.is_priority_zero
 
     @property

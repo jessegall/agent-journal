@@ -46,7 +46,7 @@ class FoldMainsCheckHandler(Handler[FoldMainsCheck, str]):
         self.home, self.database = home, database
 
     def handle(self, command: FoldMainsCheck, context: Context) -> str:
-        copy = Database.configured(sqlite3.connect(FoldCopy.for_check(self.database, self.home, context.timestamp), autocommit=True))
+        copy = Database.configured(sqlite3.connect(FoldCopy.check_copy(self.database, self.home, context.timestamp), autocommit=True))
         try:
             started = time.monotonic()
             fold = MainFold(copy)

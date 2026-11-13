@@ -25,4 +25,4 @@ class ReadingCardText:
 
     @staticmethod
     def text(decision: ReadingDecisionRow) -> str | None:
-        return None if decision.state.is_settled else CARD_TEXTS.get(decision.reason)
+        return None if decision.state.is_resolved else CARD_TEXTS.get(decision.reason)

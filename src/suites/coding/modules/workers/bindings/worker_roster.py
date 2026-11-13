@@ -34,9 +34,9 @@ class WorkerRoster(AgentRoster[Agent]):
         folder = self.queries.query(Environment).find(agent.environment_id).folder
         for worktree in self.queries.query(Worktree).filter(session_agent_id=agent.id).with_removed().every_row(RETIRED_WORKER_REASON):
             if self.own_changes.has_worker_changes(agent, worktree):
-                return f"{AgentLabel.from_agent(agent).text} has uncommitted files in {worktree.folder}: commit or remove them, then retire it"
+                return f"{AgentLabel.labelled(agent).text} has uncommitted files in {worktree.folder}: commit or remove them, then retire it"
             if self.git.has_unmerged_branch(folder, worktree):
-                return f"{AgentLabel.from_agent(agent).text} has unmerged work on {worktree.branch}: journal worker merge {agent.number}, or merge the branch by hand"
+                return f"{AgentLabel.labelled(agent).text} has unmerged work on {worktree.branch}: journal worker merge {agent.number}, or merge the branch by hand"
         return ""
 
     def release(self, agent: Agent, actor: Actor) -> None:

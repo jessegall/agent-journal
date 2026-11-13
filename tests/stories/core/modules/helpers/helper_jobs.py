@@ -27,7 +27,7 @@ class StartedHelper(StoryFixture):
     parent = UserBuilder
 
     def steps(self, story):
-        launcher = FakeLauncher.listening(story.home.socket("launcher"))
+        launcher = FakeLauncher.accepting(story.home.socket("launcher"))
         story.run(START, actor=story.agent)
         story.run_listeners()
         launcher.drain_requests()
@@ -74,7 +74,7 @@ def test_a_send_to_a_running_helper_adds_to_its_open_job(new_story):
 def test_a_send_to_an_ended_helper_opens_a_new_job_and_resumes_it(new_story, monkeypatch):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     resumable_session(story, helper_agent(story), monkeypatch)
     story.expect_success(f'helper send {agent_number(story, helper.id)} "{JOB}"', actor=story.agent)
     story.run_listeners()
@@ -122,7 +122,7 @@ def test_a_helper_that_ends_closes_its_job(new_story):
 
 def test_fresh_starts_a_new_helper_on_files_an_ended_one_knows(new_story):
     story = new_story(fixture=EndedHelper)
-    FakeLauncher.listening(story.home.socket("launcher"))
+    FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_success(f"{START} --fresh 'A second reader'", actor=story.agent)
 
 
@@ -130,7 +130,7 @@ def test_among_300_finished_jobs_a_job_on_the_same_files_is_refused_for_the_help
     story = new_story(fixture=EndedHelper)
     seeded_finished_jobs(story, story.agent.id, helper_agent(story).id, 300)
     limit_reads(story)
-    FakeLauncher.listening(story.home.socket("launcher"))
+    FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_refusal(START, "knows these files", actor=story.agent)
     story.expect_success(f'helper start {RESEARCHER_PROFILE.name} --brief "Read src/queue.py" --environment main', actor=story.agent)
 

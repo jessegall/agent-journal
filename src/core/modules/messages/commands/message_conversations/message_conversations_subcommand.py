@@ -48,7 +48,7 @@ class MessageConversationsSubcommand(ReadSubcommand[tuple[RecentConversation, ..
         rows = {message.id: message for query in (latest_messages.addressed(agent_id), latest_messages.filter(creator_id=agent_id)) for message in query.newest().take(RECENT_MESSAGES)}
         grouped: dict[str, list[Message]] = {}
         agent_ids = sorted({row_id for message in rows.values() for row_id in (message.creator_id, message.target_agent_id) if row_id is not None})
-        labels = {agent.id: AgentLabel.from_agent(agent).text for agent in self.queries.query(Agent).matching(Among("id", agent_ids)).every_row(LABELS_REASON)} if agent_ids else {}
+        labels = {agent.id: AgentLabel.labelled(agent).text for agent in self.queries.query(Agent).matching(Among("id", agent_ids)).every_row(LABELS_REASON)} if agent_ids else {}
         for message in sorted(rows.values(), key=lambda row: row.id):
             grouped.setdefault(self.actor(message, agent_id, labels), []).append(message)
         conversations = (RecentConversation(actor, agent_id, tuple(messages)) for actor, messages in grouped.items())

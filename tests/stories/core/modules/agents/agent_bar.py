@@ -110,7 +110,7 @@ def stale_launcher_socket(story) -> None:
 
 
 def different_program_launcher(story) -> None:
-    FakeLauncher.listening(story.home.socket("launcher"))
+    FakeLauncher.accepting(story.home.socket("launcher"))
 
 
 @pytest.fixture(params=[missing_launcher, stale_launcher_socket, different_program_launcher])
@@ -141,7 +141,7 @@ def launch_settings_handed(story, program: str, request: dict) -> bool:
 @pytest.mark.parametrize("program", ["claude", "codex"])
 def test_launch_hands_the_launcher_the_program_in_the_environments_folder_under_a_new_agent_row(new_story, program):
     story = new_story(fixture=UserJoined)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_text(f"agent launch {program} --environment main", "started main agent", actor=story.user)
     launcher.drain_requests()
     request = launcher.requests[0]

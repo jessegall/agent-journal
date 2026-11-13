@@ -12,7 +12,7 @@ class StockDigest:
     stored row can tell whether the shipped entry changed since the core last wrote it."""
 
     @staticmethod
-    def of(stock: StockReader) -> str:
+    def digest(stock: StockReader) -> str:
         reader = stock.applied(None)
         fields = {field: getattr(reader, field) for field in sorted(READER_FIELDS)}
         return hashlib.sha256(json.dumps(fields, sort_keys=True, default=str).encode()).hexdigest()[:DIGEST_CHARACTERS]

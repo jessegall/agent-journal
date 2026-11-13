@@ -48,7 +48,7 @@ class WorkerCommand:
                           ("journal", "journal-tasks", "journal-shell", "journal-workers"))
         profile = self.profiles.effective(worker.profile or self.types.find(worker.role).default_profile)
         session_line = self.session_lines.line(worker)
-        identity = f"You are {AgentLabel.from_agent(worker).text}." if session_line is None else f"You are {AgentLabel.from_agent(worker).text}.\n{session_line}"
+        identity = f"You are {AgentLabel.labelled(worker).text}." if session_line is None else f"You are {AgentLabel.labelled(worker).text}.\n{session_line}"
         brief = (f"{identity}\n{profile.body}\n\n{self.task_line(worker, task)}\n{task.brief}\n{job}\n"
                  f"Load these skills before your first write:\n{reads}\n"
                  f"Run journal overview, then journal task overview {worktree.task_id} before changing project files. Load the architectural skills required by the files you change in {skills}.\n"
@@ -73,7 +73,7 @@ class WorkerCommand:
 
     def launched(self, worker: Agent, worktree: Worktree, environment: Environment, session: SessionStart, brief: str) -> LaunchCommand:
         if not worker.program_model.strip():
-            raise Refusal(f"{AgentLabel.from_agent(worker).text} has no recorded model", "dispatch a worker with --model <model>")
+            raise Refusal(f"{AgentLabel.labelled(worker).text} has no recorded model", "dispatch a worker with --model <model>")
         files = self.servers.write_folder(Path(worktree.folder))
         self.libraries.exclude(worktree.folder, [str(path) for path in files])
         return self.helpers.launched(worker, session, brief)

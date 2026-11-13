@@ -22,7 +22,7 @@ class WorkerRunAnswer:
     def write(self, value: object, output: Output) -> bool:
         if not isinstance(value, WorkerOperation):
             return False
-        output.line(f"{AgentLabel.from_row_id(value.worker_id, self.numbers, "worker").text} command accepted: output {value.process_id}; {self.operation_instruction(value)}")
+        output.line(f"{AgentLabel.labelled_row(value.worker_id, self.numbers, "worker").text} command accepted: output {value.process_id}; {self.operation_instruction(value)}")
         return True
 
     def operation_instruction(self, operation: WorkerOperation) -> str:

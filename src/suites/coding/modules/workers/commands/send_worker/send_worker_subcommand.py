@@ -89,7 +89,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
 
     def check_test_commands(self, worker: Agent, commands: tuple[WorkerTestCommandEntry, ...], caller: Caller) -> None:
         if not commands and caller.actor.type is ActorType.AGENT and not self.test_names.rows(worker.id):
-            raise Refusal(f"{AgentLabel.from_agent(worker).text} has no test command for new work", TEST_COMMAND_EXAMPLE)
+            raise Refusal(f"{AgentLabel.labelled(worker).text} has no test command for new work", TEST_COMMAND_EXAMPLE)
 
     def write_output(self, value: object, output: Output) -> None:
         if self.requests.write_output(value, output):
@@ -99,12 +99,12 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
 
     def answer(self, worker: Agent) -> str:
         if worker.paused_at is not None:
-            return f"{AgentLabel.from_agent(worker).text} is paused: the job waits until journal agent resume {worker.number}"
+            return f"{AgentLabel.labelled(worker).text} is paused: the job waits until journal agent resume {worker.number}"
         if worker.ended_at is None:
-            return f"{AgentLabel.from_agent(worker).text} takes the job" if worker.pid is not None else f"{AgentLabel.from_agent(worker).text} takes the job at its next hook; its process is not recorded, so the journal cannot say whether it runs: journal worker status {worker.number}"
+            return f"{AgentLabel.labelled(worker).text} takes the job" if worker.pid is not None else f"{AgentLabel.labelled(worker).text} takes the job at its next hook; its process is not recorded, so the journal cannot say whether it runs: journal worker status {worker.number}"
         program_state = self.resume.program_state(worker)
         if not program_state.is_ready:
-            return f"{AgentLabel.from_agent(worker).text} waits on {worker.program}: {program_state.wait_line}; the job starts when it is back"
+            return f"{AgentLabel.labelled(worker).text} waits on {worker.program}: {program_state.wait_line}; the job starts when it is back"
         if not self.home.socket(LAUNCHER_SOCKET).exists():
-            return f"{AgentLabel.from_agent(worker).text} is not running and has the job waiting; an ended worker needs the launcher to start again"
-        return f"{AgentLabel.from_agent(worker).text} was not running: the job waits until it starts, and you are told if it does not"
+            return f"{AgentLabel.labelled(worker).text} is not running and has the job waiting; an ended worker needs the launcher to start again"
+        return f"{AgentLabel.labelled(worker).text} was not running: the job waits until it starts, and you are told if it does not"

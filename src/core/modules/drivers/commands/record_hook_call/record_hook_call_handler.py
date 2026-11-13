@@ -108,7 +108,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                                              metadata=Metadata({DRIVERS_MODULE: metadata})), context)
         refusing = [check.refusal_text for check in answers.stop_checks if check.is_refusal]
         if refusing:
-            self.system_log.write(LogLevel.INFORMATION, f"stop {call.id} {AgentLabel.from_agent(agent).text} refused: {'; '.join(refusing)}"[:LOG_LINE_CHARACTERS])
+            self.system_log.write(LogLevel.INFORMATION, f"stop {call.id} {AgentLabel.labelled(agent).text} refused: {'; '.join(refusing)}"[:LOG_LINE_CHARACTERS])
         self.nudges.write(agent.id, answers, context)
         self.required_commands.open(agent.id, answers.delivered_nudges, context)
         self.timing.stamp("call_saved")

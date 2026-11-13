@@ -83,4 +83,4 @@ class KeptHelpers:
             raise lockdown.start_refusal("helper")
         state = self.program_state(helper)
         if not state.is_ready:
-            raise Refusal(f"{AgentLabel.from_agent(helper).text} waits on {helper.program}: {state.wait_line}", f"journal helper send {helper.number} after it is back")
+            raise Refusal(f"{AgentLabel.labelled(helper).text} waits on {helper.program}: {state.wait_line}", f"journal helper send {helper.number} after it is back")

@@ -122,7 +122,7 @@ def test_native_module_profiles_are_published_for_codex_only_where_it_has_a_fold
 
 def test_starting_a_helper_under_a_profile_counts_its_use(new_story):
     story = saved_profile_story(new_story)
-    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.run('helper start critic --model haiku --brief "Find where totals are counted" --environment main', actor=story.agent)
     launcher.server.close()
     story.expect_text("profile list", "critic  helper  sonnet  used 1", actor=story.user)
