@@ -11,7 +11,7 @@ from tests.stories.core.support.fixtures import UserJoined
 
 WAIT_SECONDS = 30.0
 PRUNING_SECONDS = 600
-OUTPUT_READING_SECONDS = 1
+OUTPUT_READER_SECONDS = 1
 TICK_WORKERS_KEY = "journal.core.processes.tick-workers"
 
 
@@ -52,52 +52,52 @@ def tick_handler(name: str, handler, seconds: int) -> TickHandler:
 
 def test_a_forty_second_process_pruning_holds_one_worker(new_story):
     story = new_story(fixture=UserJoined)
-    clock, pruning, output_reading, agent_checks = TickClock(), BlockedHandler(), CountedHandler(), CountedHandler()
-    handlers = [tick_handler("process pruning", pruning, PRUNING_SECONDS), tick_handler("output reading", output_reading, OUTPUT_READING_SECONDS),
-                tick_handler("agent checks", agent_checks, OUTPUT_READING_SECONDS)]
+    clock, pruning, output_reader, agent_checks = TickClock(), BlockedHandler(), CountedHandler(), CountedHandler()
+    handlers = [tick_handler("process pruning", pruning, PRUNING_SECONDS), tick_handler("output reading", output_reader, OUTPUT_READER_SECONDS),
+                tick_handler("agent checks", agent_checks, OUTPUT_READER_SECONDS)]
     ticker = Ticker(story.home, handlers, lambda: None, clock)
     ticker.start()
     clock.now = PRUNING_SECONDS
     ticker.tick()
-    story.expect_rows(pruning.started.wait(WAIT_SECONDS), output_reading.ended.wait(WAIT_SECONDS), agent_checks.ended.wait(WAIT_SECONDS))
+    story.expect_rows(pruning.started.wait(WAIT_SECONDS), output_reader.ended.wait(WAIT_SECONDS), agent_checks.ended.wait(WAIT_SECONDS))
     for _ in range(3):
-        output_reading.ended.clear()
-        clock.now += OUTPUT_READING_SECONDS
+        output_reader.ended.clear()
+        clock.now += OUTPUT_READER_SECONDS
         ticker.tick()
-        story.expect_rows(output_reading.ended.wait(WAIT_SECONDS))
+        story.expect_rows(output_reader.ended.wait(WAIT_SECONDS))
     pruning.released.set()
     ticker.stop(WAIT_SECONDS)
-    story.expected(pruning.run_count == 1 and output_reading.run_count == 4, f"pruning ran {pruning.run_count}, output reading {output_reading.run_count} times")
+    story.expected(pruning.run_count == 1 and output_reader.run_count == 4, f"pruning ran {pruning.run_count}, output reading {output_reader.run_count} times")
 
 
 def test_output_reading_is_not_queued_again_while_it_runs(new_story):
     story = new_story(fixture=UserJoined)
-    clock, output_reading = TickClock(), BlockedHandler()
-    ticker = Ticker(story.home, [tick_handler("output reading", output_reading, OUTPUT_READING_SECONDS)], lambda: None, clock)
+    clock, output_reader = TickClock(), BlockedHandler()
+    ticker = Ticker(story.home, [tick_handler("output reading", output_reader, OUTPUT_READER_SECONDS)], lambda: None, clock)
     ticker.start()
-    clock.now = OUTPUT_READING_SECONDS
+    clock.now = OUTPUT_READER_SECONDS
     ticker.tick()
-    story.expect_rows(output_reading.started.wait(WAIT_SECONDS))
+    story.expect_rows(output_reader.started.wait(WAIT_SECONDS))
     for _ in range(5):
-        clock.now += OUTPUT_READING_SECONDS
+        clock.now += OUTPUT_READER_SECONDS
         ticker.tick()
-    output_reading.released.set()
+    output_reader.released.set()
     ticker.join(WAIT_SECONDS)
     ticker.stop(WAIT_SECONDS)
-    story.expected(output_reading.run_count == 1, f"output reading ran {output_reading.run_count} times")
+    story.expected(output_reader.run_count == 1, f"output reading ran {output_reader.run_count} times")
 
 
 def test_the_ticker_names_a_handler_that_waited_longer_than_its_interval(new_story):
     story = new_story(fixture=UserJoined)
-    clock, pruning, output_reading = TickClock(), BlockedHandler(), CountedHandler()
-    ticker = Ticker(story.home, [tick_handler("process pruning", pruning, PRUNING_SECONDS), tick_handler("output reading", output_reading, OUTPUT_READING_SECONDS)], lambda: None, clock)
+    clock, pruning, output_reader = TickClock(), BlockedHandler(), CountedHandler()
+    ticker = Ticker(story.home, [tick_handler("process pruning", pruning, PRUNING_SECONDS), tick_handler("output reading", output_reader, OUTPUT_READER_SECONDS)], lambda: None, clock)
     ticker.start(1)
     clock.now = PRUNING_SECONDS
     ticker.tick()
     story.expect_rows(pruning.started.wait(WAIT_SECONDS))
     clock.now += 5
     pruning.released.set()
-    story.expect_rows(output_reading.ended.wait(WAIT_SECONDS))
+    story.expect_rows(output_reader.ended.wait(WAIT_SECONDS))
     ticker.join(WAIT_SECONDS)
     ticker.stop(WAIT_SECONDS)
     lines = [line for line in story.home.system_log.read_text().splitlines() if "the ticker could not keep up" in line]
