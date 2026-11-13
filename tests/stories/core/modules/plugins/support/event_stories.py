@@ -5,6 +5,7 @@ from typing import cast
 
 from engine.cli.console import Console
 from server.work.listeners.listener_thread import ListenerThread
+from server.work.listeners.listener_wake_router import ListenerWakeRouter
 from server.work.listeners.listener_wake import ListenerWake
 
 import pytest
@@ -102,7 +103,7 @@ def script_calls(story: Story, script: str, plugin: str = "events") -> list[dict
 
 
 def server_commands(story: Story) -> None:
-    story.container.get(Console).commit_listeners = ListenerWake(ListenerThread(lambda: None, lambda error: None))
+    story.container.get(Console).commit_listeners = ListenerWake(ListenerWakeRouter.waking(ListenerThread(lambda: None, lambda error: None)))
 
 
 def plugin_data(story: Story, name: str, plugin: str = "events") -> Path:

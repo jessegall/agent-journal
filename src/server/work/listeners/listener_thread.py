@@ -1,5 +1,5 @@
 import threading
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
 
 from engine.listener.commit.listener_set import ListenerSet
 
@@ -8,14 +8,14 @@ STOP_LIMIT_SECONDS = 1.5
 
 
 class ListenerThread:
-    """The server's one runner of commit listeners: a thread that runs a round when a write wakes it, and once
-    a period besides, so events a direct run logged are handled too. An error in a round is reported and the
+    """A server thread that runs commit listeners: a round when a write it hears wakes it, and once a period
+    besides, so events a direct run logged are handled too. An error in a round is reported and the
     next round runs. A stop signals the thread at once and never waits long for a round that is running."""
 
     def __init__(self, round_runner: Callable[[], None], error_reporter: Callable[[Exception], None], period_seconds: float = LISTENER_PERIOD_SECONDS,
-                 name: str = "listeners", linked_threads: "Sequence[ListenerThread]" = (), stop_callback: Callable[[], None] = lambda: None) -> None:
-        self.round_runner, self.error_reporter, self.period_seconds, self.linked_threads = round_runner, error_reporter, period_seconds, linked_threads
-        self.stop_callback = stop_callback
+                 name: str = "listeners", stop_callback: Callable[[], None] = lambda: None, after_round: Callable[[], None] = lambda: None) -> None:
+        self.round_runner, self.error_reporter, self.period_seconds = round_runner, error_reporter, period_seconds
+        self.stop_callback, self.after_round = stop_callback, after_round
         self.wake_event, self.stop_event = threading.Event(), threading.Event()
         self.thread = threading.Thread(target=self.loop, name=name, daemon=True)
 
@@ -24,8 +24,6 @@ class ListenerThread:
 
     def wake(self) -> None:
         self.wake_event.set()
-        for thread in self.linked_threads:
-            thread.wake()
 
     def loop(self) -> None:
         ListenerSet.guard_current_thread()
@@ -44,6 +42,8 @@ class ListenerThread:
                 self.round_runner()
             except Exception as error:
                 self.error_reporter(error)
+            # what this round's listeners wrote wakes the threads that hear it
+            self.after_round()
 
     def signal_stop(self) -> None:
         self.stop_event.set()

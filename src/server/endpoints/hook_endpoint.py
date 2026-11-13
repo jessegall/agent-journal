@@ -79,7 +79,7 @@ class HookEndpoint:
             return self.unchecked(sender, error)
         finally:
             self.timing.stamp("hook_answered")
-            self.context.listener_thread.wake()
+            self.context.listener_wakes.wake()
 
     def answer_lost(self, reply: HookReply) -> None:
         if reply.hook_call_id is None:

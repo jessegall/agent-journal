@@ -22,7 +22,7 @@ def journal_home(folder: Path) -> JournalHome:
 @pytest.mark.parametrize("event,refused", [("stop", True), ("pre_tool_use", False)])
 def test_an_old_hook_runner_gets_an_immediate_unchecked_answer(event, refused, tmp_path):
     context = SimpleNamespace(home=journal_home(tmp_path), hook_database=SimpleNamespace(used=lambda priority, limit, owner, request: nullcontext()), hook_limit_seconds=1, agent_hook_limit_seconds=1, stop_limit_seconds=1, clock=Clock(),
-                              listener_thread=SimpleNamespace(wake=Mock()))
+                              listener_wakes=SimpleNamespace(wake=Mock()))
     endpoint = HookEndpoint(Mock(), context)
     endpoint.routed_answer = Mock(side_effect=OldHookRunnerError.detected())
     reply = endpoint.answer({"event": event}, "claude", {})
@@ -35,7 +35,7 @@ def test_an_old_hook_runner_gets_an_immediate_unchecked_answer(event, refused, t
 def test_a_hook_takes_its_place_in_the_queue_by_its_role(role, priority, limit, tmp_path):
     used = Mock(return_value=nullcontext())
     context = SimpleNamespace(home=journal_home(tmp_path), hook_database=SimpleNamespace(used=used), hook_limit_seconds=1, agent_hook_limit_seconds=45, stop_limit_seconds=1, clock=Clock(),
-                              listener_thread=SimpleNamespace(wake=Mock()))
+                              listener_wakes=SimpleNamespace(wake=Mock()))
     endpoint = HookEndpoint(Mock(), context)
     endpoint.routed_answer = Mock(side_effect=OldHookRunnerError.detected())
     endpoint.answer({"event": "pre_tool_use", "role": role, "session": "s-1"}, "claude", {})

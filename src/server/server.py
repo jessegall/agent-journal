@@ -46,6 +46,8 @@ from server.hook.hook_database import HookDatabase
 from server.viewer.request_trace import SETTINGS_REFRESH_SECONDS
 from server.work.journal_round import JournalRound
 from server.work.listeners.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
+from server.work.listeners.listener_wake_router import ListenerWakeRouter
+from engine.event.written_events import WrittenEvents
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from server.work.listeners.ordinary_listener_work import OrdinaryListenerWork
 from server.work.listeners.plugin_listener_work import PluginListenerWork
@@ -145,19 +147,23 @@ def main(argv: list[str]) -> int:
         return SECOND_SERVER_CODE
     turns = WriteTurnQueue(clock, WRITE_TURN_LIMIT_SECONDS, lambda slow_turn_text: files.log_line(slow_turn_text, LogLevel.WARNING))
     hook_database = HookDatabase(home, turns)
-    urgent_round = JournalRound(home, "urgent listener thread", UrgentListenerWork(), KeptRoundContainer(home, turns), hook_database.queue)
-    urgent_thread = ListenerThread(urgent_round.run, urgent_round.report, name="urgent listeners", stop_callback=urgent_round.close)
-    listener_round = JournalRound(home, "listener thread", OrdinaryListenerWork(), KeptRoundContainer(home, turns), hook_database.queue)
-    plugin_round = JournalRound(home, "plugin listener thread", PluginListenerWork(), KeptRoundContainer(home, turns), hook_database.queue)
-    plugin_thread = ListenerThread(plugin_round.run, plugin_round.report, name="plugin listeners", stop_callback=plugin_round.close)
-    stop_round = JournalRound(home, "program stop thread", ProgramStopListenerWork(), KeptRoundContainer(home, turns), hook_database.queue)
-    stop_thread = ListenerThread(stop_round.run, stop_round.report, name="program stops", stop_callback=stop_round.close)
-    listener_thread = ListenerThread(listener_round.run, listener_round.report, linked_threads=(urgent_thread, plugin_thread, stop_thread), stop_callback=listener_round.close)
-    ticker = Ticker(home, Ticker.module_handlers(finder), listener_thread.wake, queue=hook_database.queue, containers=partial(KeptRoundContainer, turns=turns))
-    phones = PhoneSessions(home, listener_thread, turns)
+    urgent_kept, listener_kept, plugin_kept, stop_kept = (KeptRoundContainer(home, turns) for _ in range(4))
+    urgent_round = JournalRound(home, "urgent listener thread", UrgentListenerWork(), urgent_kept, hook_database.queue)
+    listener_round = JournalRound(home, "listener thread", OrdinaryListenerWork(), listener_kept, hook_database.queue)
+    plugin_round = JournalRound(home, "plugin listener thread", PluginListenerWork(), plugin_kept, hook_database.queue)
+    stop_round = JournalRound(home, "program stop thread", ProgramStopListenerWork(), stop_kept, hook_database.queue)
+    wakes = ListenerWakeRouter(WrittenEvents.shared(), [])
+    urgent_thread = ListenerThread(urgent_round.run, urgent_round.report, name="urgent listeners", stop_callback=urgent_round.close, after_round=wakes.wake)
+    plugin_thread = ListenerThread(plugin_round.run, plugin_round.report, name="plugin listeners", stop_callback=plugin_round.close, after_round=wakes.wake)
+    stop_thread = ListenerThread(stop_round.run, stop_round.report, name="program stops", stop_callback=stop_round.close, after_round=wakes.wake)
+    listener_thread = ListenerThread(listener_round.run, listener_round.report, stop_callback=listener_round.close, after_round=wakes.wake)
+    wakes.threads = [(urgent_thread, urgent_kept.listener_set), (listener_thread, listener_kept.listener_set), (plugin_thread, plugin_kept.listener_set),
+                     (stop_thread, stop_kept.listener_set)]
+    ticker = Ticker(home, Ticker.module_handlers(finder), wakes.wake, queue=hook_database.queue, containers=partial(KeptRoundContainer, turns=turns))
+    phones = PhoneSessions(home, wakes, turns)
     login = ViewerLogin(phones, ShareSessions(phones.journal_output, clock), SessionFile(home.viewer_sessions_file))
     reported_findings = ReportedFindings()
-    routes = ViewerRoutes(home, listener_thread, login, reported_findings, hook_database.queue, clock, turns)
+    routes = ViewerRoutes(home, wakes, login, reported_findings, hook_database.queue, clock, turns)
     inherited_viewer = waiting_server.viewer_socket() if waiting_server else None
     tunnel = ServerTunnel(home, turns)
     if hosting.is_hosted:
@@ -189,7 +195,7 @@ def main(argv: list[str]) -> int:
     ticker.register(TickHandler(TickInterval(seconds=BACKUP_CHECK_SECONDS), lambda container: backup.follow(), "database copies", starts_immediately=True))
     idle_exit = InactiveServerShutdown(clock, lambda reason: (files.log_line(reason), server.request_stop()))
     ticker.register(TickHandler(TickInterval(seconds=IDLE_CHECK_SECONDS), idle_exit.follow, "idle server exit"))
-    server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, clock.timestamp(), listener_thread, hook_database, viewer, tunnel, reported_findings, journal_door),
+    server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, clock.timestamp(), wakes, hook_database, viewer, tunnel, reported_findings, journal_door),
                            waiting_server.journal_socket() if waiting_server else None)
     ticker.register(TickHandler(TickInterval(seconds=SETTINGS_REFRESH_SECONDS), lambda container: server.context.request_trace.refresh(container), "request log settings"))
     if waiting_server is not None:
@@ -215,7 +221,8 @@ def main(argv: list[str]) -> int:
             files.log_line(f"the plugin services could not be started: {error}", LogLevel.ERROR)
     settings_container = synced_database_container(home, hook_database.databases[0])
     server.context.request_trace.refresh(settings_container)
-    listener_thread.wake()
+    for thread in (listener_thread, urgent_thread, plugin_thread, stop_thread):
+        thread.wake()
     listener_thread.start()
     urgent_thread.start()
     if not viewer.closed_doors.closes_service(ClosedService.PLUGIN_SCRIPTS):

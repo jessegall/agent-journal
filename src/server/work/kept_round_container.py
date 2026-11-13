@@ -9,6 +9,7 @@ from engine.database.registry_table import RegistryTable
 from engine.database.registry_version import RegistryVersion
 from engine.database.write_turns import WriteTurns
 from engine.listener.commit.commit_listener_runner import CommitListenerRunner
+from engine.listener.commit.listener_set import ListenerSet
 from engine.enums.log_level import LogLevel
 from engine.journal.journal_home import JournalHome
 from engine.log.system_log_writer import SystemLogWriter
@@ -86,6 +87,11 @@ class KeptRoundContainer(RoundContainer):
 
     def log(self, text: str) -> None:
         SystemLogWriter(self.home, Clock()).write(LogLevel.WARNING, text)
+
+    # the listeners the thread's runner built, none before its first round
+    def listener_set(self) -> ListenerSet | None:
+        runner = self.container.instances.get(CommitListenerRunner) if self.container is not None else None
+        return runner.__dict__.get("listener_set") if isinstance(runner, CommitListenerRunner) else None
 
     def close(self) -> None:
         if self.container is None:

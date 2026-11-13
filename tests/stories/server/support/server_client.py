@@ -45,6 +45,7 @@ from engine.testing.stories.hook_priorities import MAIN_AGENT_HOOK_PRIORITY
 from server.work.journal_round import JournalRound
 from server.work.kept_round_container import KeptRoundContainer
 from server.work.listeners.listener_thread import ListenerThread
+from server.work.listeners.listener_wake_router import ListenerWakeRouter
 from server.work.listeners.listener_wake import ListenerWake
 from server.work.listeners.listener_work import ListenerWork
 from server.request.request_handler import EXIT_CODE_TRAILER, RequestHandler
@@ -266,7 +267,7 @@ class ServerStory:
 
     def expect_busy_timeout(self, seconds: float) -> None:
         idle_thread = ListenerThread(lambda: None, lambda error: None)
-        assert CliEndpoint(self.story.home, ListenerWake(idle_thread), ReportedFindings()).line_run.busy_timeout_seconds == seconds
+        assert CliEndpoint(self.story.home, ListenerWake(ListenerWakeRouter.waking(idle_thread)), ReportedFindings()).line_run.busy_timeout_seconds == seconds
 
     def expect_stale_answer_released_files(self, line: str, task_listing: LineOutcome) -> None:
         answer = request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "folder": "/"})
@@ -372,13 +373,14 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
         hook_database = HookDatabase(home, running_hooks_count=STORY_RUNNING_HOOKS_COUNT)
         listener_round = JournalRound(home, "listener thread", ListenerWork(), KeptRoundContainer(home), hook_database.queue)
         listener_thread = ListenerThread(listener_round.run, listener_round.report, stop_callback=listener_round.close)
-        phones = PhoneSessions(home, listener_thread)
+        wakes = ListenerWakeRouter.waking(listener_thread)
+        phones = PhoneSessions(home, wakes)
         login = ViewerLogin(phones, ShareSessions(phones.journal_output, clock))
         reported = ReportedFindings()
-        context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, clock.timestamp(), listener_thread,
-                                hook_database, viewer_factory(login, ViewerRoutes(home, listener_thread, login, reported, hook_database.queue, clock)), ServerTunnel(home), reported, journal_door, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS, STORY_STOP_LIMIT_SECONDS)
+        context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, clock.timestamp(), wakes,
+                                hook_database, viewer_factory(login, ViewerRoutes(home, wakes, login, reported, hook_database.queue, clock)), ServerTunnel(home), reported, journal_door, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS, STORY_STOP_LIMIT_SECONDS)
         context.request_trace.refresh(synced_database_container(home, hook_database.databases[0]))
-        context.viewer.routes.line_route = StoryLineRoute(home, listener_thread, reported, completion_callback=context.request_trace.completed)
+        context.viewer.routes.line_route = StoryLineRoute(home, wakes, reported, completion_callback=context.request_trace.completed)
         context.viewer.routes.line_route.line_run.request_queue = hook_database.queue
         server = JournalServer(str(files.socket), RequestHandler, context)
         if listener_thread_started:

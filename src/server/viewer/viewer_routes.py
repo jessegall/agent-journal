@@ -2,7 +2,7 @@ from engine.database.write_turns import WriteTurns
 from engine.time.clock import Clock
 from engine.database.reported_findings import ReportedFindings
 from engine.journal.journal_home import JournalHome
-from server.work.listeners.listener_thread import ListenerThread
+from server.work.listeners.listener_wake_router import ListenerWakeRouter
 from server.viewer.buttons_route import ButtonsRoute
 from server.viewer.chat_declarations_route import ChatDeclarationsRoute
 from server.hook.server_queue import ServerQueue
@@ -28,12 +28,12 @@ class ViewerRoutes:
     skills, the files the chat carries, the session the cookie opened, a share link's opening,
     what waits on the user, and whether the server is restarting."""
 
-    def __init__(self, home: JournalHome, listener_thread: ListenerThread, login: ViewerLogin, reported: ReportedFindings, queue: ServerQueue, clock: Clock,
+    def __init__(self, home: JournalHome, wakes: ListenerWakeRouter, login: ViewerLogin, reported: ReportedFindings, queue: ServerQueue, clock: Clock,
                  turns: WriteTurns | None = None) -> None:
         self.queue, self.clock = queue, clock
         self.request_trace = RequestTrace(home, clock)
         self.priorities = self.request_trace.priorities
-        self.line_route, self.event_stream = LineRoute(home, listener_thread, reported, queue, self.request_trace.completed, turns), EventStream(home, turns)
+        self.line_route, self.event_stream = LineRoute(home, wakes, reported, queue, self.request_trace.completed, turns), EventStream(home, turns)
         self.window_data = WindowDataRoute(self.priorities, self.line_route)
         self.module_files, self.windows_route = ModuleFiles(home, turns), WindowsRoute(home, turns)
         self.buttons_route = ButtonsRoute(home, turns)

@@ -15,6 +15,7 @@ from server.viewer.viewer_key_route import ViewerKeyRoute
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_routes import ViewerRoutes
 from server.work.listeners.listener_thread import ListenerThread
+from server.work.listeners.listener_wake_router import ListenerWakeRouter
 
 LIMIT_SECONDS = 30.0
 
@@ -24,9 +25,10 @@ def test_server_databases_share_one_turn_queue(tmp_path):
     turns = WriteTurnQueue(clock, LIMIT_SECONDS, lambda slow_turn_text: None)
     hook_database = HookDatabase(home, turns, running_hooks_count=1)
     listener_thread = ListenerThread(lambda: None, lambda error: None)
-    phones = PhoneSessions(home, listener_thread, turns)
+    wakes = ListenerWakeRouter.waking(listener_thread)
+    phones = PhoneSessions(home, wakes, turns)
     login = ViewerLogin(phones, ShareSessions(phones.journal_output, clock))
-    routes = ViewerRoutes(home, listener_thread, login, ReportedFindings(), hook_database.queue, clock, turns)
+    routes = ViewerRoutes(home, wakes, login, ReportedFindings(), hook_database.queue, clock, turns)
     openers = [phones.line_run, routes.line_route.line_run, routes.event_stream, routes.module_files, routes.windows_route, routes.buttons_route,
                routes.chat_declarations_route, routes.session_route, routes.waiting_route, routes.skills_route, ViewerKeyRoute(home, login, turns),
                ServerTunnel(home, turns), ServerBackup(home, clock, turns), ServerPluginServices(home, turns)]

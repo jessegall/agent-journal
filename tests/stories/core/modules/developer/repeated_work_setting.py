@@ -12,6 +12,7 @@ from engine.cli.line_run import LineRun
 from engine.database.repeated_work import READ_LIMIT_REPEATS, READ_TEXT_LIMIT_REPEATS, SHOWN_CALLS
 from engine.database.reported_findings import ReportedFindings
 from server.work.listeners.listener_thread import ListenerThread
+from server.work.listeners.listener_wake_router import ListenerWakeRouter
 from server.viewer.line_route import LineRoute
 from engine.database.statement import Statement
 from engine.query.queries import Queries
@@ -170,7 +171,7 @@ def test_a_viewer_line_and_a_cli_line_share_the_reported_findings(new_story, mon
     story = new_story(fixture=RepeatedWorkEnabled)
     replace_console_run(monkeypatch, repeated_row_read(106281, 106286))
     shared = ReportedFindings()
-    viewer_run = LineRoute(story.home, ListenerThread(lambda: None, lambda error: None), shared).line_run
+    viewer_run = LineRoute(story.home, ListenerWakeRouter.waking(ListenerThread(lambda: None, lambda error: None)), shared).line_run
     run_as_core(story, LineRun(story.home, reported=shared))
     run_as_core(story, viewer_run)
     story.expect_rows(viewer_run.reported is shared, len(reported(story)) == 1)
