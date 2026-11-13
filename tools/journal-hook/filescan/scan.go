@@ -192,38 +192,38 @@ func withMoves(root string, changes []Change, removedTexts map[string]string) []
 	pathsByText := map[string]string{}
 	for path, text := range removedTexts {
 		if text != "" {
-			if other, shared := pathsByText[text]; !shared || path < other {
+			if earlierPath, hasEarlier := pathsByText[text]; !hasEarlier || path < earlierPath {
 				pathsByText[text] = path
 			}
 		}
 	}
 	movedPaths := map[string]bool{}
-	moved := []Change{}
+	changesWithMoves := []Change{}
 	for _, change := range changes {
 		if change.Diff.Existed {
-			moved = append(moved, change)
+			changesWithMoves = append(changesWithMoves, change)
 			continue
 		}
 		text := readText(root, change.Diff.Path)
-		from, found := "", false
+		oldPath, isMove := "", false
 		if text != nil {
-			from, found = pathsByText[*text]
+			oldPath, isMove = pathsByText[*text]
 		}
-		if !found {
-			moved = append(moved, change)
+		if !isMove {
+			changesWithMoves = append(changesWithMoves, change)
 			continue
 		}
 		delete(pathsByText, *text)
-		movedPaths[from] = true
-		moved = append(moved, Change{Diff: event.DiffCount{Path: change.Diff.Path}, Rows: []event.DiffRow{}, MovedFrom: from})
+		movedPaths[oldPath] = true
+		changesWithMoves = append(changesWithMoves, Change{Diff: event.DiffCount{Path: change.Diff.Path}, Rows: []event.DiffRow{}, MovedFrom: oldPath})
 	}
-	kept := []Change{}
-	for _, change := range moved {
+	withoutDeletions := []Change{}
+	for _, change := range changesWithMoves {
 		if change.MovedFrom != "" || !movedPaths[change.Diff.Path] {
-			kept = append(kept, change)
+			withoutDeletions = append(withoutDeletions, change)
 		}
 	}
-	return kept
+	return withoutDeletions
 }
 
 // unchangedSince is the fingerprint of each file last modified before since: what a first scan takes as it was. With no

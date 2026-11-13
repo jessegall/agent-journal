@@ -14,9 +14,10 @@ QUEUED_EVENT = "proof.queue"
 
 class WorkerTestListener(CommitListener[Moved[Proof]]):
     """Moves a worker's proof tests along: a queued test starts when there is room, and a test moved to running
-    is launched."""
+    is launched. It runs in the urgent round, so a launch never waits behind the other events (report 1441)."""
 
     name = "workers.tests"
+    run_order = -1
     moves = [ProofLifecycle.queue, ProofLifecycle.run]
 
     def __init__(self, starts: WorkerTestStarts, launch: WorkerTestLaunch, rows: EventRows) -> None:

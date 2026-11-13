@@ -2,7 +2,9 @@ import json
 import os
 from datetime import timedelta
 
+from engine.command.bus import Bus
 from engine.enums.command_category import CommandCategory
+from core.modules.processes.commands.start_process.start_process import StartProcess
 from engine.module.module_finder import ModuleFinder
 from core.modules.processes.support.group_cpu_time import GroupCpuTime
 from core.modules.processes.support.output_folder import OutputFolder
@@ -155,6 +157,25 @@ def test_a_quiet_run_its_agent_read_is_kept_past_the_hang_time_and_stopped_once_
     story.advance(timedelta(seconds=HANG_SECONDS))
     watch_tick(story)
     story.expect_text("process show 1", "state: stopped", actor=story.agent)
+
+
+class ActiveCommit(StoryFixture):
+    """The main agent's journal commit command runs in the background."""
+
+    parent = BuilderStarted
+
+    def steps(self, story: Story) -> None:
+        moved_run(story, "journal worker-operation run 2")
+
+
+def test_a_silent_journal_command_waiting_on_its_agents_queued_run_is_never_stopped_as_hung(new_story):
+    story = new_story(fixture=ActiveCommit)
+    started_tree(story, 12.0)
+    judge = story.container.get(Bus).run(StartProcess.single_part(story.agent.id, "pytest tests/web -q", "/work/main", CommandCategory.TEST_RUN, 30), story.agent, environment_id=1)
+    story.advance(timedelta(seconds=HANG_SECONDS + 30))
+    watch_tick(story)
+    story.expect_rows(judge.is_queue_run)
+    story.expect_text("process show 1", "state: background", actor=story.agent)
 
 
 TICK = timedelta(seconds=10)

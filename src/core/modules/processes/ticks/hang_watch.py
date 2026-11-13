@@ -18,6 +18,7 @@ from core.modules.processes.support.process_settings import ProcessSettings
 
 RUNNING_REASON = "the tick looks at every run that is running"
 STOP_AFTER_CHECKS = 3
+JOURNAL_LINE_START = "journal "
 
 
 class HangWatch:
@@ -27,7 +28,8 @@ class HangWatch:
     its output and decide, again after each hang seconds until it reads the run's output, and the
     run is stopped when three asks stay unanswered. The tree's processor time and the moment it last
     changed are kept in the run's folder, with the asks made. One listing of the machine's processes
-    serves every run of a tick."""
+    serves every run of a tick. A journal command whose agent started a queued run after it, still open, waits
+    for that run, as a commit waits for its judge, and is never stopped as hung while it waits."""
 
     def __call__(self, container: Container) -> bool:
         running = tuple(container.get(ProcessQuery).running().every_row(RUNNING_REASON))
@@ -35,8 +37,12 @@ class HangWatch:
         if listing is None:
             return False
         limits = {environment_id: self.limits(container, environment_id) for environment_id in {process.environment_id for process in running}}
-        acted = [process for process in running if self.acted(container, process, listing, limits[process.environment_id])]
+        acted = [process for process in running if not self.is_waiting(process, running) and self.acted(container, process, listing, limits[process.environment_id])]
         return bool(acted)
+
+    @staticmethod
+    def is_waiting(process: Process, running: tuple[Process, ...]) -> bool:
+        return process.line.startswith(JOURNAL_LINE_START) and any(other.is_queue_run and other.session_agent_id == process.session_agent_id and other.id > process.id for other in running)
 
     @staticmethod
     def limits(container: Container, environment_id: int) -> HangLimits:

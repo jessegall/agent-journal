@@ -109,14 +109,14 @@ def merged_work(new_story, monkeypatch):
 
 def test_empty_merger_checks_keep_mechanical_judging(merged_work):
     story, worker, merger = merged_work.story, merged_work.worker, merged_work.merger
-    story.expect_no_text(f"merger merge {agent_number(story, worker.id)}", "run:", actor=merger)
+    story.expect_no_text(f"merger merge --wait {agent_number(story, worker.id)}", "run:", actor=merger)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 
 
 def test_s39_configured_merger_checks_are_listed_after_the_merge_with_the_commit(merged_work):
     story, worker, merger = merged_work.story, merged_work.worker, merged_work.merger
     story.expect_success(f"setting set {MERGER_COMMANDS} '[\"journal sins --branch={{commit}}\"]' --project", actor=story.user)
-    story.expect_text(f"merger merge {agent_number(story, worker.id)}", "run: journal sins --branch=", actor=merger)
+    story.expect_text(f"merger merge --wait {agent_number(story, worker.id)}", "run: journal sins --branch=", actor=merger)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 
 

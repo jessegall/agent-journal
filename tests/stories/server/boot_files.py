@@ -1,16 +1,12 @@
-import shutil
-
 from engine.testing.stories.story_fixture import StoryFixture
 from server.work.booting_work import BootingWork
 from tests.stories.core.modules.plugins.support.plugin_samples import sample_plugin_folder
+from tests.stories.core.modules.skills.support.removed_skill import is_skill_restored
 from tests.stories.core.modules.skills.support.skill_samples import PATH
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 READER = "cart-test"
-PLUGIN_SKILL = "sample-rules"
-JOURNAL_SKILL = "journal-notes"
 SKILLS_MODULE = f"{PATH}:GoodSkillsModule"
-SKILLS_FOLDER = ".claude/skills"
 
 
 def booted(story):
@@ -35,16 +31,9 @@ def installed_plugin(new_story):
     return story
 
 
-def skill_files(story, name):
-    return [story.home.project_folder / SKILLS_FOLDER / name / "SKILL.md"]
-
-
-def test_a_boot_puts_back_the_journals_skills_for_every_program(new_story):
+def test_a_boot_puts_back_the_journals_skills(new_story):
     story = installed_plugin(new_story)
-    for skill_file in skill_files(story, JOURNAL_SKILL):
-        shutil.rmtree(skill_file.parent)
-    booted(story)
-    story.expect_rows(*(skill_file.is_file() for skill_file in skill_files(story, JOURNAL_SKILL)))
+    story.expect_rows(is_skill_restored(story, booted))
 
 
 def test_a_boot_keeps_an_installed_plugin_switched_on(new_story):

@@ -169,6 +169,23 @@ def test_only_the_merger_runs_its_commands(new_story):
     story.expect_refusal('merger pass 1 "odd"', "only the merger runs this", actor=story.agent)
 
 
+def test_the_mergers_merge_waits_its_turn_in_the_queue_as_a_worker_operation(new_story, monkeypatch):
+    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
+    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
+    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
+    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
+    try:
+        ended(story, started[0], 0)
+    finally:
+        launcher.server.close()
+        story.home.socket("launcher").unlink(missing_ok=True)
+    actor = Actor(merger_agent(story).id, ActorType.AGENT)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_text(f"merger merge {agent_number(story, worker.id)}", "command accepted: output", actor=actor)
+    story.expect_text("merger next", agent_label(story, worker.id), actor=actor)
+
+
 def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent_is_nudged_once(new_story, monkeypatch):
     monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
@@ -186,7 +203,7 @@ def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent
     story.expect_text("merger next", agent_label(story, worker.id), "brief:", "proof 1", actor=actor)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f'setting set {MERGER_COMMANDS} \'["journal sins --branch={{commit}}"]\' --project', actor=story.user)
-    story.expect_text(f"merger merge {agent_number(story, worker.id)}", f"{agent_label(story, worker.id)} merged into", "run: journal sins --branch=", actor=actor)
+    story.expect_text(f"merger merge --wait {agent_number(story, worker.id)}", f"{agent_label(story, worker.id)} merged into", "run: journal sins --branch=", actor=actor)
     story.expect_text("merger next", "no worker waits", actor=actor)
     expect_marks_text(story, f"Worker {agent_number(story, worker.id)} had")
     story.hook(merger.session, HookSamples.stop())
@@ -283,7 +300,7 @@ def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkey
         repository.checkout(ENVIRONMENT_BRANCH)
         story.expect_text("merger next", agent_label(story, worker.id), actor=actor)
         (repository.folder / "cart.py").chmod(0o755)
-        story.expect_refusal(f"merger merge {agent_number(story, worker.id)}", "uncommitted changes to cart.py", actor=actor)
+        story.expect_refusal(f"merger merge --wait {agent_number(story, worker.id)}", "uncommitted changes to cart.py", actor=actor)
         story.expect_success('merger tell "The merge waits for cart.py to be committed" --tried "Read the checkout" --option "Commit it" --option "Wait" --recommend "Commit it"', actor=actor)
         story.hook(merger.session, HookSamples.stop())
         story.expect_success(f"agent exited {merger.id} 0")
@@ -306,7 +323,7 @@ def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkey
         MergerRetry()(story.container)
         story.expect_rows(queries.query(HelperJob).filter(helper_id=merger.id).count() == job_count + 1)
         story.expect_text("merger next", agent_label(story, worker.id), actor=actor)
-        story.expect_success(f"merger merge {agent_number(story, worker.id)}", actor=actor)
+        story.expect_success(f"merger merge --wait {agent_number(story, worker.id)}", actor=actor)
         story.expect_text("task show 1", "state: completed", actor=story.agent)
     finally:
         launcher.server.close()
@@ -429,7 +446,7 @@ def test_a_merge_the_merger_starts_runs_in_the_foreground_and_is_reported_once_a
     story.expect_rows("--limit 0" in rewritten, "--queue" not in rewritten, "--background" not in rewritten)
     actor = Actor(merger.id, ActorType.AGENT)
     story.expect_text("merger next", agent_label(story, worker.id), actor=actor)
-    story.expect_text(f"merger merge {agent_number(story, worker.id)}", f"{agent_label(story, worker.id)} merged into", actor=actor)
+    story.expect_text(f"merger merge --wait {agent_number(story, worker.id)}", f"{agent_label(story, worker.id)} merged into", actor=actor)
     story.expect_text("merger next", "no worker waits", actor=actor)
     story.expect_rows(len(merged_worker_lines(story, worker)) == 1, not any("could not be confirmed" in row.text for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).every_row(TEST_ROWS_REASON)))
 
@@ -448,7 +465,7 @@ def test_explaining_a_merge_runs_the_merge_inside_the_explanation_without_the_tr
     actor = Actor(merger_agent(story).id, ActorType.AGENT)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_text("merger next", agent_label(story, worker.id), actor=actor)
-    story.expect_success(f"merger merge {agent_number(story, worker.id)} --explain", actor=actor)
+    story.expect_success(f"merger merge --wait {agent_number(story, worker.id)} --explain", actor=actor)
     story.expect_rows(len(merged_worker_lines(story, worker)) == 0)
 
 

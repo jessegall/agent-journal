@@ -97,9 +97,9 @@ def test_another_thread_asks_for_its_own_turn(turns):
             pass
 
     with turns.write_turn():
-        other = threading.Thread(target=ask)
-        other.start()
-        other.join()
+        second_writer = threading.Thread(target=ask)
+        second_writer.start()
+        second_writer.join()
     assert turns.steps.count("take") == 2
 
 
