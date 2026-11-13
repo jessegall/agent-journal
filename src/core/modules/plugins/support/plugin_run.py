@@ -37,12 +37,12 @@ class PluginRun:
             return PluginRunOutcome(None, str(fault), fault.is_late, fault.is_server_stop, tuple([fault.fault_record(plugin.id, request.location)]))
         return PluginRunOutcome(answer, records=tuple([ClearPluginFaults(plugin.id)]) if plugin.last_fault else ())
 
-    def recorded_run(self, request: PluginRunRequest, environment_id: int | None) -> PluginRunOutcome:
+    def recorded_run(self, request: PluginRunRequest) -> PluginRunOutcome:
         outcome = self.run(request)
         self.record(request, outcome)
         if request.form is not EventForm.GUARD or outcome.answer is None:
             return outcome
-        return replace(outcome, answer=self.judge.settled(outcome.answer, request.runnable.plugin.name, request.agent_id, environment_id))
+        return replace(outcome, answer=self.judge.settled(outcome.answer, request.runnable.plugin.name, request.agent_id))
 
     def record(self, request: PluginRunRequest, outcome: PluginRunOutcome, cause_id: int | None = None) -> None:
         if outcome.is_server_stop:

@@ -34,7 +34,7 @@ class PluginStepCheck:
                 continue
             request = PluginRunRequest(runnable, PluginEvent(guard.key if guard else event, data), EventForm.GUARD, None if guard else manifest.window_ms(event, STEP_CEILING_MS),
                                        f"at {event}", environment.name, timestamp, agent_id, guard.script if guard else "")
-            outcome = self.runs.recorded_run(request, environment.id)
+            outcome = self.runs.recorded_run(request)
             answer = outcome.answer
             if answer is None:
                 self.line_sender(agent_id, environment, f"[plugin {plugin.name}] could not judge this step: {outcome.fault_text}")

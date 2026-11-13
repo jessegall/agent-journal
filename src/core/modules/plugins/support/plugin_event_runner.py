@@ -45,7 +45,7 @@ class PluginEventRunner:
             return None
         environment = self.queries.query(Environment).find(environment_id).name if environment_id is not None else ""
         request = PluginRunRequest(check.runnable, PluginEvent(key, data), form, subscription.limit_ms, location, environment, self.clock.timestamp(), agent_id, subscription.script, wait_callback=wait_callback)
-        outcome = self.runs.recorded_run(request, environment_id)
+        outcome = self.runs.recorded_run(request)
         if outcome.is_late:
             self.note_late(plugin, form, key, subscription.limit_ms)
         if outcome.answer is None:

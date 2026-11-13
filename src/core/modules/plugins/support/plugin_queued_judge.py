@@ -1,9 +1,9 @@
 from dataclasses import replace
 
 from engine.actor.actor import Actor
-from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
-from core.modules.plugins.commands.run_plugin_command.run_plugin_command import RunPluginCommand
+from core.modules.plugins.support.plugin_command_runner import PluginCommandRunner
+from engine.time.clock import Clock
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 
 
@@ -13,16 +13,16 @@ class PluginQueuedJudge:
     limit applies to it. A run that exits with 0 lets the step go on; any other exit refuses it,
     with what the run printed as the reason."""
 
-    def __init__(self, bus: Bus) -> None:
-        self.bus = bus
+    def __init__(self, runner: PluginCommandRunner, clock: Clock) -> None:
+        self.runner, self.clock = runner, clock
 
-    def settled(self, answer: PluginAnswer, plugin: str, agent_id: int | None, environment_id: int | None) -> PluginAnswer:
+    def settled(self, answer: PluginAnswer, plugin: str, agent_id: int | None) -> PluginAnswer:
         if not answer.is_queue() or answer.run is None:
             return answer
         if agent_id is None:
             return self.refused(answer, f"plugin {plugin} queued a judge run, which runs in the checkout of an agent, and nothing here was done by an agent")
         try:
-            run = self.bus.run(RunPluginCommand(agent_id, answer.run.line(), False, plugin, answer.run.kind), Actor.core(), environment_id=environment_id)
+            run = self.runner.run(agent_id, answer.run.line(), False, plugin, Actor.core(), self.clock.timestamp(), answer.run.kind)
         except Refusal as refusal:
             return self.refused(answer, str(refusal))
         if run.exit_code == 0:
