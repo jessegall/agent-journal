@@ -1,14 +1,18 @@
 from engine.command.context import Context
+from engine.driver.nudger import Nudger
+from engine.enums.agent_role import AgentRole
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from engine.row.metadata import Metadata
 from core.modules.assign_rules.models.assign_decision import AssignDecision
 from core.modules.assign_rules.models.assign_rule import AssignRule
 from core.modules.assign_rules.models.enums.decision_outcome import DecisionOutcome
 from core.modules.assign_rules.models.support.task_facts import TaskFacts
 from core.modules.assign_rules.support.assign_rules_mode import AssignRulesMode
+from core.modules.assign_rules.support.assign_rules_nudges import RULE_GIVEN_SOURCE, TASK_GIVEN_BY_RULE
+from core.modules.assign_rules.support.decision_note import DecisionNote
 from core.modules.assign_rules.support.rule_conditions import RuleConditions
+from core.modules.assign_rules.support.rule_mark import RuleMark
 from core.modules.assign_rules.support.targets.decision_batch import DecisionBatch
 from core.modules.assign_rules.support.targets.rule_targets import RuleTargets
 from core.modules.assign_rules.support.targets.usable import Usable
@@ -18,7 +22,6 @@ from core.modules.tasks.models.enums.task_state import UNSTARTED_STATES
 from core.modules.tasks.models.task import Task
 
 RULES_REASON = "a task is judged against every enabled rule of its environment"
-RULES_MODULE = "journal.core.assign_rules"
 
 
 class AssignRules:
@@ -26,29 +29,31 @@ class AssignRules:
     decision about it. The first matching rule whose target can take the task gives it to that target, by the
     journal, with the rule named on the assignment; a rule whose target cannot, or whose assignment is refused,
     is skipped with the reason. A task is given by a rule once in its life, only while it is open or blocked and
-    has no assignee. A task in a plan goes with its plan, unless a rule names the plan. While the mode does not
-    assign, the winner is recorded as a dry run."""
+    has no assignee. A task in a plan goes with its plan, unless a rule names the plan. A main agent given a
+    task hears so. While the mode does not assign, the winner is recorded as a dry run."""
 
     def __init__(self, queries: Queries, facts_reader: TaskFactsReader, repository: Repository, mode: AssignRulesMode, targets: RuleTargets,
-                 conditions: RuleConditions, assignments: Assignments) -> None:
+                 conditions: RuleConditions, assignments: Assignments, nudger: Nudger) -> None:
         self.queries, self.facts_reader, self.repository, self.mode, self.targets = queries, facts_reader, repository, mode, targets
-        self.conditions, self.assignments = conditions, assignments
+        self.conditions, self.assignments, self.nudger = conditions, assignments, nudger
 
     def has_enabled_rules(self) -> bool:
         return self.queries.query(AssignRule).filter(enabled=True).exists()
 
+    def stored_decision(self, task: Task) -> AssignDecision | None:
+        return self.queries.query(AssignDecision).filter(task_id=task.id).first()
+
     def decide(self, task: Task, batch: DecisionBatch, context: Context) -> AssignDecision:
-        stored = self.queries.query(AssignDecision).filter(task_id=task.id).first()
+        stored = self.stored_decision(task)
         if stored is not None and stored.outcome is DecisionOutcome.ASSIGNED:
             return stored
-        if self.assignments.actor(task) is not None:
-            return self.record(task, stored, DecisionOutcome.HAS_ASSIGNEE, None, None, "the task has an assignee", context)
-        if task.state not in UNSTARTED_STATES:
-            return self.record(task, stored, DecisionOutcome.SKIPPED, None, None, f"the task is {task.state}", context)
+        unfree = self.unfree(task)
+        if unfree is not None:
+            return self.record(task, stored, unfree.outcome, None, None, unfree.reason, context)
         facts = self.facts_reader.read(task)
         rules = self.matching_rules(facts)
         if not rules and facts.plan_id is not None:
-            return self.record(task, stored, DecisionOutcome.PLANNED, None, None, f"in plan {facts.plan_id}: assign the plan", context)
+            return self.record(task, stored, DecisionOutcome.PLANNED, None, None, self.planned_reason(facts), context)
         skipped_rules: list[AssignRule] = []
         skipped: list[str] = []
         for place, rule in enumerate(rules):
@@ -64,6 +69,35 @@ class AssignRules:
             return self.record(task, stored, DecisionOutcome.SKIPPED, skipped_rules[0], None, "; ".join(skipped), context)
         return self.record(task, stored, DecisionOutcome.UNMATCHED, None, None, "no rule matches", context)
 
+    def preview(self, task: Task, stored: AssignDecision | None) -> str:
+        if stored is not None and stored.outcome is DecisionOutcome.ASSIGNED:
+            return "a rule gave the task already, and a rule gives a task once"
+        unfree = self.unfree(task)
+        if unfree is not None:
+            return unfree.reason
+        facts = self.facts_reader.read(task)
+        rules = self.matching_rules(facts)
+        if not rules:
+            return "no rule matches" if facts.plan_id is None else self.planned_reason(facts)
+        skipped: list[str] = []
+        for rule in rules:
+            usable = self.targets.usable(rule, DecisionBatch())
+            if usable.actor_id is not None:
+                return "; ".join([*skipped, f"rule {rule.id} would give it to {rule.target_name}"])
+            skipped.append(f"rule {rule.id} would be skipped: {usable.reason}")
+        return "; ".join(skipped)
+
+    def unfree(self, task: Task) -> DecisionNote | None:
+        if self.assignments.actor(task) is not None:
+            return DecisionNote(DecisionOutcome.HAS_ASSIGNEE, "the task has an assignee")
+        if task.state not in UNSTARTED_STATES:
+            return DecisionNote(DecisionOutcome.SKIPPED, f"the task is {task.state}")
+        return None
+
+    @staticmethod
+    def planned_reason(facts: TaskFacts) -> str:
+        return f"in plan {facts.plan_id}: assign the plan"
+
     def assignment_refusal(self, task: Task, rule: AssignRule, actor_id: int, context: Context) -> str | None:
         if not self.mode.assigns():
             return None
@@ -72,8 +106,14 @@ class AssignRules:
         except Refusal as refusal:
             return refusal.reason
         given = next(assignment for assignment in self.assignments.assignments(task) if assignment.actor_id == actor_id)
-        self.repository.save_metadata(given, Metadata({**given.metadata.values, RULES_MODULE: {"rule": rule.id}}), context)
+        self.repository.save_metadata(given, RuleMark(rule.id).marked(given.metadata), context)
+        self.nudge_main_agent(task, rule, actor_id, context)
         return None
+
+    def nudge_main_agent(self, task: Task, rule: AssignRule, actor_id: int, context: Context) -> None:
+        agent = self.assignments.agent_row(actor_id)
+        if agent is not None and agent.role == AgentRole.MAIN:
+            self.nudger.send(agent.id, TASK_GIVEN_BY_RULE, RULE_GIVEN_SOURCE, context, task=task.id, rule=rule.id)
 
     def matched(self, task: Task, stored: AssignDecision | None, rule: AssignRule, usable: Usable, skipped: list[str], later: list[AssignRule],
                 context: Context) -> AssignDecision:

@@ -12,7 +12,10 @@ const props = defineProps({row: {type: Object, required: true}});
 const emit = defineEmits(["priority"]);
 const held = computed(() => HELD_STATES.has(props.row.state));
 const named = computed(() => namedPriority(props.row.priority));
-const tipLabel = computed(() => agentLabel(`Worker ${props.row.assigned_actor_id}`, props.row.is_main_assignee));
+const agentName = computed(() => agentLabel(`Worker ${props.row.assigned_actor_id}`, props.row.is_main_assignee));
+// a task a rule gave names the rule after the agent, and a click opens that rule instead of the agent
+const tipLabel = computed(() => (props.row.assignment_reason ? `${agentName.value} ${props.row.assignment_reason}` : agentName.value));
+const assigneeRef = computed(() => props.row.assignment_ref || `agents:${props.row.assigned_actor_id}`);
 const assigneeType = computed(() => (props.row.assigned_type === PERSON_TYPE ? "person" : "agent"));
 const open = ref(false);
 const levels = PRIORITY_LEVELS.toReversed();
@@ -34,8 +37,8 @@ function pick(key) {
                     </HoverTip>
                 </template>
                 <template #agent>
-                    <AgentTip as="button" :agent-id="row.assigned_actor_id" :label="tipLabel" :class="['cell', 'agent', {queued: !held}]" place="right" data-task-agent :data-held="held ? '' : null" :aria-label="tipLabel" @click="peekRef(`agents:${row.assigned_actor_id}`)">
-                        <span class="mark"><AgentBadge :name="tipLabel" :main="row.is_main_assignee" icon-only /></span>
+                    <AgentTip as="button" :agent-id="row.assigned_actor_id" :label="tipLabel" :class="['cell', 'agent', {queued: !held}]" place="right" data-task-agent :data-held="held ? '' : null" :aria-label="tipLabel" @click="peekRef(assigneeRef)">
+                        <span class="mark"><AgentBadge :name="agentName" :main="row.is_main_assignee" icon-only /></span>
                     </AgentTip>
                 </template>
             </SwitchCase>

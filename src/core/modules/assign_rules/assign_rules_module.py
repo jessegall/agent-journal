@@ -14,6 +14,7 @@ from core.modules.assign_rules.commands.switch_assign_rule.disable_assign_rule_s
 from core.modules.assign_rules.commands.switch_assign_rule.enable_assign_rule_subcommand import EnableAssignRuleSubcommand
 from core.modules.assign_rules.commands.switch_assign_rule.switch_assign_rule_handler import SwitchAssignRuleHandler
 from core.modules.assign_rules.commands.try_assign_rule.try_assign_rule_subcommand import TryAssignRuleSubcommand
+from core.modules.assign_rules.commands.try_assign_rule.why_assign_rule_subcommand import WhyAssignRuleSubcommand
 from core.modules.assign_rules.commands.judge_task.judge_task_handler import JudgeTaskHandler
 from core.modules.assign_rules.guards.assign_rule_person_guard import AssignRulePersonGuard
 from core.modules.assign_rules.listeners.auto_assign_tag_listener import AutoAssignTagListener
@@ -26,6 +27,9 @@ from core.modules.assign_rules.migrations.m002_decision_indexes import DecisionI
 from core.modules.assign_rules.models.assign_decision import AssignDecision
 from core.modules.assign_rules.models.assign_rule import AssignRule
 from core.modules.assign_rules.models.assign_rule_condition import AssignRuleCondition
+from core.modules.assign_rules.support.assign_rules_nudges import ASSIGN_RULES_NUDGES
+from core.modules.assign_rules.support.rule_assignment_reasons import RuleAssignmentReasons
+from core.modules.assignments.support.assignment_reasons import AssignmentReasons
 
 EXCLUDED_WRITES = ["make", "edit", "delete"]
 
@@ -38,11 +42,13 @@ class AssignRulesModule(Module):
     seed_reason = "a rule assigns new tasks, which the demo does not make"
     move_reason = "version 4 has no assign rules"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.plans", "journal.core.assignments"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.assignments"]
     models = [ModelDeclaration(AssignRule, excluded_subcommands=EXCLUDED_WRITES), ModelDeclaration(AssignRuleCondition, excluded_subcommands=EXCLUDED_WRITES), ModelDeclaration(AssignDecision, excluded_subcommands=EXCLUDED_WRITES)]
     migrations = [AssignRulesMigration, DecisionIndexesMigration]
     listeners = [AutoAssignTaskListener, AutoAssignTagListener]
     handlers = [RecordAssignDecisionHandler, JudgeTaskHandler, MakeAssignRuleHandler, EditAssignRuleHandler, MoveAssignRuleHandler, SwitchAssignRuleHandler, DeleteAssignRuleHandler]
     subcommands = [MakeAssignRuleSubcommand, EditAssignRuleSubcommand, MoveAssignRuleSubcommand, EnableAssignRuleSubcommand, DisableAssignRuleSubcommand, DeleteAssignRuleSubcommand,
-                   TryAssignRuleSubcommand, RecordAssignDecisionSubcommand, AssignRuleBoardSubcommand, CountAssignRuleSubcommand]
+                   TryAssignRuleSubcommand, WhyAssignRuleSubcommand, RecordAssignDecisionSubcommand, AssignRuleBoardSubcommand, CountAssignRuleSubcommand]
     guards = [AssignRulePersonGuard, AssignRuleTargetGuard]
+    bindings = {AssignmentReasons: RuleAssignmentReasons}
+    nudges = ASSIGN_RULES_NUDGES

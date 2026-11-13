@@ -12,6 +12,7 @@ from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_card import TaskCard
+from core.modules.tasks.support.task_assignment_reasons import TaskAssignmentReasons
 from core.modules.tasks.support.task_board import TaskBoard
 from core.modules.tasks.support.task_group import TaskGroup
 from core.modules.tasks.support.task_board_cards import FINISHED_STATES, TaskBoardCards
@@ -36,8 +37,8 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
     name = "board"
     environment_refusal = "the board is shown for one environment"
 
-    def __init__(self, cards: TaskBoardCards, book: StateBook) -> None:
-        self.cards, self.book = cards, book
+    def __init__(self, cards: TaskBoardCards, book: StateBook, reasons: TaskAssignmentReasons) -> None:
+        self.cards, self.book, self.reasons = cards, book, reasons
 
     def added_states(self) -> tuple[str, ...]:
         lifecycle = self.book.lifecycle(Task)
@@ -52,13 +53,17 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
         parser.add_argument("--hide-plan-tasks", default="", help="the groups, with commas, that leave out the tasks of a plan")
 
     def read(self, arguments: Namespace, caller: Caller) -> TaskBoard:
+        groups = self.groups(arguments)
+        return TaskBoard(groups, self.reasons.task_reasons([task.id for group in groups for task in group.rows]))
+
+    def groups(self, arguments: Namespace) -> tuple[TaskGroup, ...]:
         if arguments.state is not None:
             if arguments.state in FINISHED_STATES:
-                return TaskBoard(tuple([self.finished_group(arguments.state, arguments)]))
-            return TaskBoard(tuple([self.group(arguments.state, arguments)]))
+                return tuple([self.finished_group(arguments.state, arguments)])
+            return tuple([self.group(arguments.state, arguments)])
         active_groups = tuple(self.group(state, arguments) for state in (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED, TaskState.OPEN, *self.added_states()))
         finished = tuple(self.finished_group(state, arguments) for state in FINISHED_STATES)
-        return TaskBoard((*active_groups, *finished))
+        return (*active_groups, *finished)
 
     def shown_cards(self, state: TaskState | str, arguments: Namespace) -> Query[TaskCard]:
         cards = self.cards.cards(state, arguments.tag)
