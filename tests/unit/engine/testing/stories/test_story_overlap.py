@@ -164,9 +164,9 @@ def test_a_fixture_that_builds_on_another_and_adds_no_step_is_named():
         def steps(self, story):
             story.expect_success("task list")
 
-    named = StoryOverlap.empty_fixture_lines([Base, Empty, Inherits, Adds])
-    assert [line.rpartition(".")[2] for line in named] == ["Empty", "Inherits"], named
-    assert all("adds no step to Base" in line for line in named)
+    matching = StoryOverlap.empty_fixture_lines([Base, Empty, Inherits, Adds])
+    assert [line.rpartition(".")[2] for line in matching] == ["Empty", "Inherits"], matching
+    assert all("adds no step to Base" in line for line in matching)
 
 
 def overlap_with_checks(stories: dict[str, tuple[list[str], list[str]]]) -> list[str]:

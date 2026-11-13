@@ -34,12 +34,12 @@ class UpdateWorkerSubcommand(Subcommand[Command[object], UpdateOutcome]):
         parser.add_argument("worker_id", type=AgentNumber, nargs="?", help="the main agent orders this worker to update")
 
     def command(self, arguments: Namespace, caller: Caller) -> Command[object]:
-        named = arguments.worker_id
-        if named is None or named == caller.actor.id:
+        matching = arguments.worker_id
+        if matching is None or matching == caller.actor.id:
             return self.requests.command(UpdateWorker(caller.process_id), caller.actor.id, ["worker", self.name], arguments, caller)
         if not self.agents.is_main(caller.actor.id):
             raise Refusal(OWN_WORKTREE_ONLY, "run journal worker update with no worker to update your own")
-        return OrderWorkerUpdate(named, MAIN_AGENT_ORDER)
+        return OrderWorkerUpdate(matching, MAIN_AGENT_ORDER)
 
     def write_output(self, value: object, output: Output) -> None:
         if self.run_answer.write(value, output):

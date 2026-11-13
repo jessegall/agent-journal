@@ -40,9 +40,9 @@ class SettingViewCheck:
         problems = []
         for path in self.view_files():
             relative = path.relative_to(self.project_folder).as_posix()
-            named = self.named_keys(FileAccess.shared().read(path), keys)
-            if named and relative not in self.allowed:
-                problems.append(f"{relative} names the declared settings {', '.join(named)}: draw them from their declaration")
+            matching = self.named_keys(FileAccess.shared().read(path), keys)
+            if matching and relative not in self.allowed:
+                problems.append(f"{relative} names the declared settings {', '.join(matching)}: draw them from their declaration")
         return problems
 
     def unknown_allowances(self) -> list[str]:

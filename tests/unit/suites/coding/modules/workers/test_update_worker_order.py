@@ -18,9 +18,9 @@ class Requests:
         return OWN_RUN
 
 
-def asked(caller_id: int, named: int | None):
+def asked(caller_id: int, matching: int | None):
     subcommand = UpdateWorkerSubcommand(Requests(), None, Agents())
-    return subcommand.command(SimpleNamespace(worker_id=named), SimpleNamespace(actor=Actor(caller_id, ActorType.AGENT), process_id=None))
+    return subcommand.command(SimpleNamespace(worker_id=matching), SimpleNamespace(actor=Actor(caller_id, ActorType.AGENT), process_id=None))
 
 
 def test_the_main_agent_naming_a_worker_orders_its_update():

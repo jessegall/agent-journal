@@ -26,12 +26,12 @@ class MergeAskSection:
         return frozenset(row.worktree_id for row in self.queries.query(MergeAsk).filter(state=MergeAskState.WAITING).every_row(MERGE_QUEUE_REASON))
 
     def text(self, worktree: Worktree) -> str:
-        merge_ask = self.queries.query(MergeAsk).filter(worktree_id=worktree.id, state=MergeAskState.WAITING).first()
-        if merge_ask is None:
+        merge_request = self.queries.query(MergeAsk).filter(worktree_id=worktree.id, state=MergeAskState.WAITING).first()
+        if merge_request is None:
             return ""
-        quoted = "\n".join(f"> {line}" for line in merge_ask.note.splitlines())
+        quoted = "\n".join(f"> {line}" for line in merge_request.note.splitlines())
         passes = [PASSED_TEXT.format(phase=phase_id, commit=commit) for phase_id, commit in self.runs.passed_commits(worktree.id).items()]
         environment = self.environments.find(worktree.environment_id)
-        is_moved = not self.git.is_ancestor(environment.folder, self.git.tip(environment.folder, worktree.base_branch), merge_ask.commit_id)
+        is_moved = not self.git.is_ancestor(environment.folder, self.git.tip(environment.folder, worktree.base_branch), merge_request.commit_id)
         moved = (MOVED_TEXT if is_moved else UNMOVED_TEXT).format(branch=worktree.base_branch)
-        return "\n".join([HEAD_TEXT.format(merge_ask=merge_ask.id, unit=merge_ask.unit_name, commit=merge_ask.commit_id), NOTE_TEXT, quoted, *passes, moved])
+        return "\n".join([HEAD_TEXT.format(merge_ask=merge_request.id, unit=merge_request.unit_name, commit=merge_request.commit_id), NOTE_TEXT, quoted, *passes, moved])

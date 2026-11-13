@@ -33,7 +33,7 @@ def test_an_ended_worker_whose_question_the_main_agent_holds_starts_no_merger_fo
     story.expect_success(REQUEST_MERGE, actor=worker.worker)
     worker.program_ended()
     story.expect_success(MERGER_ON, actor=story.user)
-    asks = [ask.state.value for ask in story.story_rows(MergeAsk)]
+    asks = [request.state.value for request in story.story_rows(MergeAsk)]
     story.expect_rows(asks == ["waiting"], is_with_main_agent(story, worker.worker.id), detail=f"asks {asks}")
     merger_can_start(monkeypatch)
     with running_launcher(story):

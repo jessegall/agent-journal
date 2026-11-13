@@ -12,8 +12,8 @@ from core.modules.processes.support.cadence.run_silences import CHECKED_MARK
 from core.modules.processes.support.held_runs import HeldRuns
 from core.modules.processes.support.output_folder import OutputFolder
 
-MAIN_POLL_ADVICE = "set a monitor with journal output monitor {process}"
-HELPER_POLL_ADVICE = "go idle: the journal wakes you when it ends"
+MAIN_POLL_HINT = "set a monitor with journal output monitor {process}"
+HELPER_POLL_HINT = "go idle: the journal wakes you when it ends"
 
 
 class RepeatReads:
@@ -50,8 +50,8 @@ class RepeatReads:
 
     def poll_advice(self, actor: Actor) -> str:
         if self.queries.query(Agent).find(actor.id).role == AgentRole.MAIN:
-            return MAIN_POLL_ADVICE
-        return HELPER_POLL_ADVICE
+            return MAIN_POLL_HINT
+        return HELPER_POLL_HINT
 
     def is_held(self, process_id: int, context: Context) -> bool:
         blocked_run = self.held_runs.found(context.actor.id, context.timestamp)

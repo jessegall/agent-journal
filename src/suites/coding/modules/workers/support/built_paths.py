@@ -30,9 +30,9 @@ class BuiltPaths:
     # when the pattern names no folder without wildcards.
     def folder(self, path: str) -> str:
         pattern = next(pattern for pattern in self.patterns if PurePosixPath(path).full_match(pattern))
-        named = [part for part in PurePosixPath(pattern).parts if part != ANY_FOLDERS]
-        if not named or any(wildcard in part for part in named for wildcard in WILDCARDS):
+        matching = [part for part in PurePosixPath(pattern).parts if part != ANY_FOLDERS]
+        if not matching or any(wildcard in part for part in matching for wildcard in WILDCARDS):
             return str(PurePosixPath(path).parent)
-        literal = "/".join(named)
+        literal = "/".join(matching)
         start = f"/{path}".find(f"/{literal}/")
         return path[:start + len(literal)] if start >= 0 else str(PurePosixPath(path).parent)

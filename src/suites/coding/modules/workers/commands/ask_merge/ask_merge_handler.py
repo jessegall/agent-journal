@@ -33,12 +33,12 @@ class AskMergeHandler(Handler[AskMerge, MergeAskOutcome]):
     def handle(self, command: AskMerge, context: Context) -> MergeAskOutcome:
         part = self.scope.checked(command.worker_id, command.note, command.up_to)
         task_ids = ",".join(str(task_id) for task_id in part.task_ids)
-        merge_ask = self.repository.save(MergeAsk(creator_id=context.actor.id, worktree_id=part.worktree.id, commit_id=part.commit_id, task_ids=task_ids, unit_name=part.unit.merge_name,
+        merge_request = self.repository.save(MergeAsk(creator_id=context.actor.id, worktree_id=part.worktree.id, commit_id=part.commit_id, task_ids=task_ids, unit_name=part.unit.merge_name,
                                                   note=command.note, is_whole=part.is_whole), context)
         worktree = part.worktree
         if part.is_whole:
             worktree = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, merge_ready_at=context.timestamp), context)
         if not self.settings.flag(MERGER_ENABLED):
             worker = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)
-            self.main_line.send_nudge(UNIT_MERGE_WAITS.nudge(worker=worker, merge_ask=merge_ask.id), UNIT_MERGE_WAITS.key, context)
-        return MergeAskOutcome(merge_ask, worktree, part.unit)
+            self.main_line.send_nudge(UNIT_MERGE_WAITS.nudge(worker=worker, merge_ask=merge_request.id), UNIT_MERGE_WAITS.key, context)
+        return MergeAskOutcome(merge_request, worktree, part.unit)

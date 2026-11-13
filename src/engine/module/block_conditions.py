@@ -21,8 +21,8 @@ class BlockConditions:
         texts: dict[str, list[str]] = {}
         for name, text in conditions:
             texts.setdefault(name, []).append(text)
-        for name, named_texts in texts.items():
-            self.classes.get(name, UnregisteredCondition).prepare(named_texts, container)
+        for name, matching_texts in texts.items():
+            self.classes.get(name, UnregisteredCondition).prepare(matching_texts, container)
 
     def built(self, name: str, text: str) -> BlockCondition:
         return self.classes.get(name, UnregisteredCondition).stored(text)

@@ -28,8 +28,8 @@ def written_person_files() -> list[Path]:
 
 def copies(story, program: str, name: str) -> list[Path]:
     folder = story.home.folder / "backups" / "program-settings" / program
-    named = [copy for copy in folder.iterdir() if (match := COPY_NAME.match(copy.name)) and match["name"] == name] if folder.is_dir() else []
-    return sorted(named)
+    matching = [copy for copy in folder.iterdir() if (match := COPY_NAME.match(copy.name)) and match["name"] == name] if folder.is_dir() else []
+    return sorted(matching)
 
 
 def manage_claude(story) -> None:

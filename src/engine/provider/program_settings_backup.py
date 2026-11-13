@@ -47,8 +47,8 @@ class ProgramSettingsBackup:
         folder = self.home.program_settings_backups / program
         if not folder.is_dir():
             return []
-        named = [(match, copy) for copy in folder.iterdir() if (match := COPY_NAME.match(copy.name)) is not None and match["name"] == name]
-        return [copy for match, copy in sorted(named, key=lambda pair: (pair[0]["stamp"], int(pair[0]["number"] or 0)))]
+        matching = [(match, copy) for copy in folder.iterdir() if (match := COPY_NAME.match(copy.name)) is not None and match["name"] == name]
+        return [copy for match, copy in sorted(matching, key=lambda pair: (pair[0]["stamp"], int(pair[0]["number"] or 0)))]
 
     def _copied(self, program: str, path: Path, name: str) -> Path | None:
         if not path.is_file():

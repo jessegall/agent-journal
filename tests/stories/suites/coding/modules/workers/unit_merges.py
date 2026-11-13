@@ -10,7 +10,7 @@ from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 """Book E of doc 1252: the merge of an asked unit, and every way it comes back."""
 
-MERGE_ASK = "merge-ask show 1 --environment main"
+MERGE_REQUEST = "merge-ask show 1 --environment main"
 
 
 def asked_list(new_story, monkeypatch) -> StoryWorker:
@@ -35,7 +35,7 @@ def asked_plan(new_story, monkeypatch) -> StoryWorker:
 
 def test_65_the_merger_reads_the_ask(new_story, monkeypatch):
     worker = asked_list(new_story, monkeypatch)
-    worker.story.expect_text(MERGE_ASK, "the cart, all three tasks", "state: waiting", "unit_name: tasks 1, 2, 3", actor=worker.story.agent)
+    worker.story.expect_text(MERGE_REQUEST, "the cart, all three tasks", "state: waiting", "unit_name: tasks 1, 2, 3", actor=worker.story.agent)
 
 
 def test_66_one_merge_closes_every_asked_task_with_its_log_line(new_story, monkeypatch):
@@ -91,7 +91,7 @@ def test_a_send_onto_a_waiting_ask_keeps_the_ask_and_queues_the_task(new_story, 
     worker = asked_list(new_story, monkeypatch)
     task_id = worker.story.new_row_id('task make "Receipts" --brief "Print them" --environment main', actor=worker.story.agent)
     worker.story.run(f"worker send {agent_number(worker.story, worker.worker.id)} --task {task_id}", actor=worker.story.agent)
-    worker.story.expect_text(MERGE_ASK, "state: waiting", actor=worker.story.agent)
+    worker.story.expect_text(MERGE_REQUEST, "state: waiting", actor=worker.story.agent)
 
 
 @pytest.mark.real_git
@@ -102,8 +102,8 @@ def test_a_part_asked_before_a_rebase_is_merged_by_its_tasks(new_story, monkeypa
     worker.story.expect_success('worker ask-merge "the first task" --up-to 1', actor=worker.worker)
     worker.repository.committed("readme.md", "moved\n", "The branch moves")
     commit_tasks_singly(worker, tuple([2]))
-    merge_ask = worker.story.run(MERGE_ASK, actor=worker.story.agent).output_text
-    worker.story.expect_rows("task_ids: 1" in merge_ask, "is_whole: false" in merge_ask.lower(), detail=merge_ask)
+    merge_request = worker.story.run(MERGE_REQUEST, actor=worker.story.agent).output_text
+    worker.story.expect_rows("task_ids: 1" in merge_request, "is_whole: false" in merge_request.lower(), detail=merge_request)
 
 
 def test_the_merge_commit_of_a_unit_names_every_task_it_brings_in(new_story, monkeypatch):

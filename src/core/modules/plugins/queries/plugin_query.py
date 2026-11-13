@@ -14,8 +14,8 @@ class PluginQuery(Query[Plugin]):
         self.kept = kept
 
     def find_name(self, name: str) -> Plugin:
-        named = self.filter(name=name)
-        plugin = self.kept.read(named, named.first, name="plugins.find_name")
+        matching = self.filter(name=name)
+        plugin = self.kept.read(matching, matching.first, name="plugins.find_name")
         if plugin is None:
             raise Refusal(f"no plugin named {name} is installed", "journal plugin list shows them")
         return plugin
@@ -25,5 +25,5 @@ class PluginQuery(Query[Plugin]):
         return list(self.kept.read(enabled, lambda: tuple(enabled.get()), name="plugins.enabled_plugins"))
 
     def is_installed(self, name: str) -> bool:
-        named = self.filter(name=name)
-        return self.kept.read(named, named.exists, name="plugins.installed")
+        matching = self.filter(name=name)
+        return self.kept.read(matching, matching.exists, name="plugins.installed")

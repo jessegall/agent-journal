@@ -63,9 +63,9 @@ class AddReaderHandler(Handler[AddReader, Reader]):
     # A journal command has no reader: it stays in the foreground and the agent reads its answer whole.
     @staticmethod
     def refuse_journal_commands(reader: Reader) -> None:
-        named = [pattern.strip() for pattern in reader.commands.split(",") if pattern.strip().split(" ", 1)[0] == JOURNAL_PROGRAM]
-        if named:
-            raise Refusal(f"reader {reader.name} matches the journal command {named[0]}, and a journal command has no reader", "match commands of other programs only")
+        matching = [pattern.strip() for pattern in reader.commands.split(",") if pattern.strip().split(" ", 1)[0] == JOURNAL_PROGRAM]
+        if matching:
+            raise Refusal(f"reader {reader.name} matches the journal command {matching[0]}, and a journal command has no reader", "match commands of other programs only")
 
     @staticmethod
     def check_patterns(command: AddReader) -> None:

@@ -58,6 +58,6 @@ class QueueWorkerOperationHandler(Handler[QueueWorkerOperation, WorkerOperation]
             self.assign_sent_tasks(worker, command.command, context)
         return operation
 
-    def assign_sent_tasks(self, worker: Agent, send: SendWorker, context: Context) -> None:
-        delivered = [task for task in self.kept_tasks.read_tasks(send.task_ids) if task.state in (TaskState.OPEN, TaskState.BLOCKED)]
+    def assign_sent_tasks(self, worker: Agent, deliver: SendWorker, context: Context) -> None:
+        delivered = [task for task in self.kept_tasks.read_tasks(deliver.task_ids) if task.state in (TaskState.OPEN, TaskState.BLOCKED)]
         self.kept_tasks.delegate(worker, delivered, context)

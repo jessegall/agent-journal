@@ -31,11 +31,11 @@ class MergeNextWorkerHandler(Handler[MergeNextWorker, MergeOutcome]):
         require_merger(self.agents, context)
         self.visits.close_newest(context)
         self.operations.check_available(command.worker_id)
-        part_ask = self.part_ask(command.worker_id)
-        if part_ask is None:
+        part_request = self.part_ask(command.worker_id)
+        if part_request is None:
             return self.bus.dispatch(MergeWorker(command.worker_id, command.read_important), context)
-        outcome = self.bus.dispatch(MergeFinishedTasks(command.worker_id, str(part_ask.tasks()[-1])), context)
-        self.repository.save_change(part_ask, part_ask.moved(MergeAskLifecycle.merge), context)
+        outcome = self.bus.dispatch(MergeFinishedTasks(command.worker_id, str(part_request.tasks()[-1])), context)
+        self.repository.save_change(part_request, part_request.moved(MergeAskLifecycle.merge), context)
         return outcome
 
     def part_ask(self, worker_id: int) -> MergeAsk | None:

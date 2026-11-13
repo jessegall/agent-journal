@@ -66,8 +66,8 @@ class Select:
     @property
     def source(self) -> str:
         table = self.derived.sql() if self.derived is not None else self.table
-        named = table if self.alias is None else f"{table} AS {self.alias}"
-        return " ".join((named, *(join.sql for join in self.joins)))
+        matching = table if self.alias is None else f"{table} AS {self.alias}"
+        return " ".join((matching, *(join.sql for join in self.joins)))
 
     def named(self, rows: int) -> "Select":
         return replace(self, named_limit=rows)

@@ -19,8 +19,8 @@ class SendMergedWorkerLineHandler(Handler[SendMergedWorkerLine, None]):
 
     def handle(self, command: SendMergedWorkerLine, context: Context) -> None:
         worker = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)
-        merged_ask = self.queries.query(MergeAsk).filter(worktree_id=command.worktree_id, state=MergeAskState.MERGED).newest().first()
-        if merged_ask is None:
+        merged_request = self.queries.query(MergeAsk).filter(worktree_id=command.worktree_id, state=MergeAskState.MERGED).newest().first()
+        if merged_request is None:
             self.main_line.send_nudge(WORKER_MERGED.nudge(worker=worker), WORKER_MERGED.key, context)
             return
-        self.main_line.send_nudge(UNIT_MERGED.nudge(worker=worker, count=len(merged_ask.tasks()), merge_ask=merged_ask.id), UNIT_MERGED.key, context)
+        self.main_line.send_nudge(UNIT_MERGED.nudge(worker=worker, count=len(merged_request.tasks()), merge_ask=merged_request.id), UNIT_MERGED.key, context)

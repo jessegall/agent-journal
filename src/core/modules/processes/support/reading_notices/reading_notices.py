@@ -105,6 +105,6 @@ class ReadingNotices:
         if SELECTED_NONE in missed:
             return tuple([READER_MISSED.nudge(reader=reader.name, lines=output.line_count, output=process.id)])
         values = {"reader": reader.name, "kept": output.reader_lines, "lines": output.line_count, "output": process.id}
-        advice = [nudge for miss, nudge in MISS_NUDGES.items() if miss in missed and (nudge[0] is not READER_SUMMARY_MISSING or reader.summary_pattern)]
-        nudges = (declaration.nudge(**{field: values[field] for field in fields}) for declaration, fields in advice)
+        hint = [nudge for miss, nudge in MISS_NUDGES.items() if miss in missed and (nudge[0] is not READER_SUMMARY_MISSING or reader.summary_pattern)]
+        nudges = (declaration.nudge(**{field: values[field] for field in fields}) for declaration, fields in hint)
         return tuple({nudge.text: nudge for nudge in nudges}.values())

@@ -43,10 +43,10 @@ def description_faults(path: Path) -> list[str]:
 
 
 def hub_row_fault(folder: str, rows: list[list[str]]) -> str | None:
-    named = [row for row in rows if any(re.search(rf"(?<![\w-]){re.escape(folder)}(?![\w-])", cell) for cell in row)]
-    if not named:
+    matching = [row for row in rows if any(re.search(rf"(?<![\w-]){re.escape(folder)}(?![\w-])", cell) for cell in row)]
+    if not matching:
         return f"{folder}: the hub has no row for it"
-    if not any(sum(cell.strip().lower() in AUDIENCES for cell in row) == 1 for row in named):
+    if not any(sum(cell.strip().lower() in AUDIENCES for cell in row) == 1 for row in matching):
         return f"{folder}: its hub row has no audience tag"
     return None
 
@@ -59,15 +59,15 @@ def word_runs(path: Path) -> set[tuple[str, ...]]:
 
 def reference_faults(path: Path) -> list[str]:
     name, text, folder = path.parent.name, path.read_text(), path.parent / "references"
-    named = set(POINTER.findall(text))
-    faults = [f"{name}: points at references/{file}, which is not there" for file in sorted(named) if not (folder / file).is_file()]
+    matching = set(POINTER.findall(text))
+    faults = [f"{name}: points at references/{file}, which is not there" for file in sorted(matching) if not (folder / file).is_file()]
     if not folder.is_dir():
         return faults
     for entry in sorted(folder.iterdir()):
         if entry.is_dir():
             faults.append(f"{name}: references/{entry.name} is a nested folder")
             continue
-        if entry.name not in named:
+        if entry.name not in matching:
             faults.append(f"{name}: never names references/{entry.name}")
         lines = entry.read_text().splitlines()
         if len(lines) > LONG_REFERENCE_LINES and "contents" not in "\n".join(lines[:5]).lower():

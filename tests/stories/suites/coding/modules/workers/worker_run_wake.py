@@ -12,7 +12,7 @@ from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestr
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
-ASK = "worker ask 'the build tool is missing' --about tool"
+REQUEST = "worker ask 'the build tool is missing' --about tool"
 
 
 def story_with_worker(new_story):
@@ -41,7 +41,7 @@ def expect_run_ended_line_absent(story, worker, run) -> None:
 
 def test_a_worker_that_asked_then_started_a_run_and_stopped_is_woken_when_the_run_ends(new_story):
     story, worker = story_with_worker(new_story)
-    story.expect_success(ASK, actor=worker)
+    story.expect_success(REQUEST, actor=worker)
     story.advance(timedelta(minutes=1))
     run, bus = start_background_run(story, worker)
     story.run(f"agent end {worker.id}", actor=worker)

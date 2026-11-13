@@ -49,9 +49,9 @@ class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
         reasons = dict.fromkeys(task_ids, command.reason) if command.reason else self.wait_text.merged_reasons(worktree, task_ids)
         for delivered in delivered_tasks:
             self.repository.save_change(delivered, delivered.close(context.timestamp, context.actor, reasons[delivered.id]), context)
-        waiting_ask = self.queries.query(MergeAsk).filter(worktree_id=worktree.id, state=MergeAskState.WAITING).first()
-        if waiting_ask is not None:
-            self.repository.save_change(waiting_ask, waiting_ask.moved(MergeAskLifecycle.merge), context)
+        waiting_request = self.queries.query(MergeAsk).filter(worktree_id=worktree.id, state=MergeAskState.WAITING).first()
+        if waiting_request is not None:
+            self.repository.save_change(waiting_request, waiting_request.moved(MergeAskLifecycle.merge), context)
         merged = replace(worktree.merge(context.timestamp, context.actor), commit_before_merge=command.commit_before_merge, commit_after_merge=command.commit_after_merge,
                          merged_task_ids=worktree.with_merged([delivered.id for delivered in delivered_tasks]))
         return MergeOutcome(self.repository.save_change(worktree, merged, context), ())

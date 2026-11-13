@@ -20,6 +20,6 @@ def test_a_session_that_made_rows_but_has_no_version_4_agent_row_moves_as_a_past
 
 def test_each_environment_keeps_one_main_agent_with_its_older_main_sessions_as_past_sessions(new_story):
     story = upgraded_story(new_story)
-    mains = json.loads(story.run("agent list --role main --json").output_text)["rows"]
-    environments = [row["environment_id"] for row in mains]
-    story.expect_rows(len(environments) == len(set(environments)), detail=str(mains))
+    main_agents = json.loads(story.run("agent list --role main --json").output_text)["rows"]
+    environments = [row["environment_id"] for row in main_agents]
+    story.expect_rows(len(environments) == len(set(environments)), detail=str(main_agents))

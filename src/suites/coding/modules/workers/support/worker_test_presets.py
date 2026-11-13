@@ -29,9 +29,9 @@ class WorkerTestPresets:
             entries[entry.name] = entry
         return self.distinct(entries.values())
 
-    def with_named(self, folder: str, named: tuple[WorkerTestCommandEntry, ...]) -> tuple[WorkerTestCommandEntry, ...]:
-        names = {entry.name for entry in named}
-        return self.distinct((*named, *(entry for entry in self.presets(folder) if entry.name not in names)))
+    def with_named(self, folder: str, matching: tuple[WorkerTestCommandEntry, ...]) -> tuple[WorkerTestCommandEntry, ...]:
+        names = {entry.name for entry in matching}
+        return self.distinct((*matching, *(entry for entry in self.presets(folder) if entry.name not in names)))
 
     @staticmethod
     def distinct(entries: Iterable[WorkerTestCommandEntry]) -> tuple[WorkerTestCommandEntry, ...]:

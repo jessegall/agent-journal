@@ -252,8 +252,8 @@ def test_profile_with_tools_stays_on_its_program(split_story, split_viewer):
     helper_id, _ = started(story, 'helper start tool-reader --brief "Read the design" --environment main')
     story.expect_text(f'agent show {agent_number(story, helper_id)}', 'program: claude')
     set_split(story, 'claude 100,codex 0', viewer=split_viewer)
-    named_id, _ = started(story, 'helper start codex-tools --brief "Read the design" --environment main')
-    story.expect_text(f'agent show {agent_number(story, named_id)}', 'program: codex')
+    matching_id, _ = started(story, 'helper start codex-tools --brief "Read the design" --environment main')
+    story.expect_text(f'agent show {agent_number(story, matching_id)}', 'program: codex')
 
 
 def test_profile_with_tools_stays_on_its_program_for_a_worker(split_story, split_viewer):

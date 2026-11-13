@@ -29,6 +29,6 @@ class ConditionJoin:
     @property
     def sql(self) -> str:
         source = self.source if isinstance(self.source, str) else self.source.sql()
-        named = source if self.alias is None else f"{source} AS {self.alias}"
+        matching = source if self.alias is None else f"{source} AS {self.alias}"
         on = f" ON {Inlined(self.condition).text()}" if self.condition is not None else ""
-        return f"{'LEFT JOIN' if self.left else 'JOIN'} {named}{on}"
+        return f"{'LEFT JOIN' if self.left else 'JOIN'} {matching}{on}"

@@ -25,10 +25,10 @@ class SendReadersNoticeHandler(Handler[SendReadersNotice, None]):
         fields_missing = self.audit.fields_missing_count()
         broken = self.audit.readers_needing_repair()
         behind = self.audit.readers_behind()
-        mains = MainAgentFinder.rows(self.queries)
-        for agent in mains:
+        main_agents = MainAgentFinder.rows(self.queries)
+        for agent in main_agents:
             last_audit_at = self.audit.last_audit_at(agent)
-            missing_readers = self.audit.missing_reader_decisions(last_audit_at, [main.id for main in mains])
+            missing_readers = self.audit.missing_reader_decisions(last_audit_at, [main.id for main in main_agents])
             agent_marks = self.audit.agent_marks_count(last_audit_at)
             if fields_missing:
                 self.nudger.send(agent.id, READERS_MISSING_FIELDS, AUDIT_SOURCE, context, count=fields_missing)

@@ -25,5 +25,5 @@ def test_a_hook_call_names_the_rule_that_stalled_with_its_milliseconds(new_story
     monkeypatch.setattr(RunnerRewriteRule, "answer", stalled)
     reply = story.hook("s-1", LISTING)
     rules = story.container.get(Queries).query(HookCall).find(reply.hook_call_id).metadata.module_part(DRIVERS_MODULE)["rules"]
-    named = [rule for rule in rules if rule["rule"] == RunnerRewriteRule.name]
-    story.expect_rows(len(named) == 1, named[0].get("milliseconds", 0) >= STALL_SECONDS * 1000, detail=str(rules))
+    matching = [rule for rule in rules if rule["rule"] == RunnerRewriteRule.name]
+    story.expect_rows(len(matching) == 1, matching[0].get("milliseconds", 0) >= STALL_SECONDS * 1000, detail=str(rules))
