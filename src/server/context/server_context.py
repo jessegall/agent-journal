@@ -6,16 +6,14 @@ from engine.provider.transcript_entries import TranscriptEntries
 from engine.time.timestamp import Timestamp
 from server.handover.code_version import CodeVersion
 from server.hook.hook_database import HookDatabase
+from server.hook.hook_limits import AGENT_HOOK_LIMIT_SECONDS, HOOK_LIMIT_SECONDS, STOP_LIMIT_SECONDS
 from server.door.journal_door import JournalDoor
 from server.work.listener_thread import ListenerThread
 from engine.serving.server_files import ServerFiles
 from server.tick.server_tunnel import ServerTunnel
 from server.viewer.viewer_endpoint import ViewerEndpoint
-from server.request.request_trace import RequestTrace
+from server.viewer.request_trace import RequestTrace
 
-HOOK_LIMIT_SECONDS = 3.5
-STOP_LIMIT_SECONDS = 20.0
-AGENT_HOOK_LIMIT_SECONDS = 45.0
 
 
 @dataclass(frozen=True)

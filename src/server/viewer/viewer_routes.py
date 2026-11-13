@@ -18,7 +18,7 @@ from server.viewer.skills_route import SkillsRoute
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.waiting_route import WaitingRoute
 from server.viewer.windows_route import WindowsRoute
-from server.request.request_trace import RequestTrace
+from server.viewer.request_trace import RequestTrace
 
 
 class ViewerRoutes:

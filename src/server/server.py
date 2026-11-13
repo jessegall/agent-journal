@@ -39,11 +39,11 @@ from server.door.hosted_journal_door import HostedJournalDoor
 from server.door.local_journal_door import LocalJournalDoor
 from server.request.journal_server import JournalServer
 from engine.serving.server_limits import DRAIN_LIMIT_SECONDS
-from server.request.server_context import ServerContext
+from server.context.server_context import ServerContext
 from server.tick.server_plugin_services import ServerPluginServices
 from server.tick.server_tunnel import ServerTunnel
 from server.hook.hook_database import HookDatabase
-from server.request.request_trace import SETTINGS_REFRESH_SECONDS
+from server.viewer.request_trace import SETTINGS_REFRESH_SECONDS
 from server.work.journal_round import JournalRound
 from server.work.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
 from engine.process.plugin_script_processes import PluginScriptProcesses

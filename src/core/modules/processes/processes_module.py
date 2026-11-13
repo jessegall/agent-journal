@@ -8,7 +8,7 @@ from engine.process.door.request_records import RequestRecords
 from core.modules.processes.support.process_row_wrapper import ProcessRowWrapper
 from core.modules.processes.commands.record_request_run.record_request_run_handler import RecordRequestRunHandler
 from core.modules.processes.commands.record_request_runs.record_request_runs_handler import RecordRequestRunsHandler
-from core.modules.processes.support.process_run_placement import ProcessRunPlacement
+from core.modules.processes.bindings.process_run_placement import ProcessRunPlacement
 from core.modules.processes.support.agent_run_pauses import AgentRunPauses
 from core.modules.processes.migrations.m065_environment_index import ReadersEnvironmentIndexMigration
 from core.modules.processes.migrations.m066_process_kind import ProcessKindMigration

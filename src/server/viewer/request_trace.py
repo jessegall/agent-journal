@@ -19,11 +19,11 @@ from core.modules.developer.support.hook_request_log import HookRequestLog
 from engine.enums.hook_answer import HookAnswer
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING, HOOK_REQUEST_LOG_SIZE_SETTING
 from engine.setting.setting_values import SettingValues
-from server.request.request_trace_entry import RequestTraceEntry
+from server.viewer.request_trace_entry import RequestTraceEntry
 from server.viewer.read_attribution import ReadAttribution
 from server.viewer.viewer_request_record import ViewerRequestRecord
 from server.viewer.window_priorities import WindowPriorities
-from server.request.request_trace_settings import RequestTraceSettings
+from server.viewer.request_trace_settings import RequestTraceSettings
 
 SETTINGS_REFRESH_SECONDS = 5.0
 

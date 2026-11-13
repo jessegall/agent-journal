@@ -8,7 +8,7 @@ from engine.cli.line_run import LineRun
 from engine.container.container import Container
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
-from server.endpoints.cli_endpoint import CLI_LIMIT_SECONDS
+from server.work.request_limits import CLI_LIMIT_SECONDS
 from server.work.listener_thread import ListenerThread
 from server.work.listener_wake import ListenerWake
 from server.viewer.paired_phone import PairedPhone

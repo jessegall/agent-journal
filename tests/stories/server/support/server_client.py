@@ -39,7 +39,7 @@ from server.door.journal_door import JournalDoor
 from server.door.local_journal_door import LocalJournalDoor
 from server.request.journal_server import JournalServer
 from engine.serving.server_limits import DRAIN_LIMIT_SECONDS
-from server.request.server_context import ServerContext
+from server.context.server_context import ServerContext
 from server.hook.hook_database import HookDatabase
 from server.enums.queue_priority import QueuePriority
 from server.work.journal_round import JournalRound

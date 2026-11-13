@@ -7,8 +7,8 @@ from engine.database.reported_findings import ReportedFindings
 from engine.journal.journal_home import JournalHome
 from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from server.endpoints.cli_request import CliRequest
+from server.work.request_limits import CLI_LIMIT_SECONDS
 
-CLI_LIMIT_SECONDS = 600.0
 
 
 class CliEndpoint:

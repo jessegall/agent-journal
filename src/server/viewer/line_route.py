@@ -29,7 +29,7 @@ from engine.caller.caller import Caller
 from engine.registry.errors.stale_registry_error import StaleRegistryError
 from engine.subcommand.subcommand import Subcommand
 from core.modules.viewer.commands.support.window_lines import WindowLines
-from server.endpoints.cli_endpoint import CLI_LIMIT_SECONDS
+from server.work.request_limits import CLI_LIMIT_SECONDS
 from server.work.listener_thread import ListenerThread
 from server.work.listener_wake import ListenerWake
 from server.viewer.line_answer import LineAnswer

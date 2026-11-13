@@ -1,5 +1,5 @@
 import os
-from server.request.server_context import ServerContext
+from server.context.server_context import ServerContext
 from server.endpoints.health import Health
 
 

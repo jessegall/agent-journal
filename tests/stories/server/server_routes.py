@@ -4,7 +4,7 @@ from tests.stories.core.support import story_lines as lines
 import os
 
 from engine.cli.console import REFUSED_CODE
-from server.endpoints.cli_endpoint import CLI_LIMIT_SECONDS
+from server.work.request_limits import CLI_LIMIT_SECONDS
 from tests.stories.server.support.server_client import expect_timing_lines, expect_timing_report_steps, server_story
 
 

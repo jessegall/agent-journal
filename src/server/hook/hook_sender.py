@@ -6,7 +6,7 @@ from engine.driver.hook_event import HookEvent
 from engine.enums.hook_event_name import HookEventName
 from engine.types.type_guards import is_mapping
 from server.enums.queue_priority import QueuePriority
-from server.request.server_context import AGENT_HOOK_LIMIT_SECONDS, HOOK_LIMIT_SECONDS, STOP_LIMIT_SECONDS
+from server.hook.hook_limits import AGENT_HOOK_LIMIT_SECONDS, HOOK_LIMIT_SECONDS, STOP_LIMIT_SECONDS
 
 
 @dataclass(frozen=True)

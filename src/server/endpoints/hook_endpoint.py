@@ -37,7 +37,7 @@ from server.hook.hook_headers import HookHeaders
 from server.errors.hook_database_busy_error import HookDatabaseBusyError
 from server.enums.queue_priority import QueuePriority
 from server.hook.queue_request import QueueRequest
-from server.request.server_context import ServerContext
+from server.context.server_context import ServerContext
 
 
 LEAST_BUSY_SECONDS = 0.1

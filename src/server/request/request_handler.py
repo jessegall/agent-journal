@@ -14,7 +14,7 @@ from engine.performance.timing_log import TimingLog
 from engine.caller.caller_request import CallerRequest
 from engine.errors.refusal import Refusal
 from engine.types.type_guards import is_mapping
-from server.request.client_disconnected import client_disconnected
+from server.work.client_disconnected import client_disconnected
 from server.hook.queue_request import QueueRequest
 from engine.caller.caller_request import SESSION_VARIABLE
 from server.viewer.viewer_key_route import ViewerKeyRoute
@@ -27,7 +27,7 @@ from server.endpoints.health_endpoint import HealthEndpoint
 from server.endpoints.hook_endpoint import HookEndpoint
 from engine.driver.errors.hook_event_error import HookEventError
 from engine.provider.errors.unknown_program_error import UnknownProgramError
-from server.request.server_instance import server_instance
+from server.work.server_instance import server_instance
 from server.request.journal_server import JournalServer
 from server.work.listener_wake import ListenerWake
 from server.door.socket_peer import socket_peer
