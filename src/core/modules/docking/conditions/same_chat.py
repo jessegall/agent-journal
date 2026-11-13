@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
-from engine.query.conditions.all_of import AllOf
-from engine.query.conditions.any_of import AnyOf
+from engine.query.conditions.conjunction import Conjunction
+from engine.query.conditions.disjunction import Disjunction
 from engine.query.conditions.equal import Equal
 from engine.query.conditions.exists import Exists
 from engine.query.conditions.is_null import IsNull
@@ -22,5 +22,5 @@ class SameChat:
     def statement(self) -> Statement:
         helper_reader = Exists(Select("agents").matching(Equal("id", self.agent_id)).matching(Equal("role", MAIN_ROLE, negated=True)), negated=True)
         main_agents = Select("agents").matching(Equal("role", MAIN_ROLE)).column("id")
-        shared = AllOf([helper_reader, AnyOf([IsNull("session_agent_id"), SubqueryMatch("session_agent_id", main_agents)])])
-        return AnyOf([Equal("session_agent_id", self.agent_id), shared]).statement()
+        shared = Conjunction([helper_reader, Disjunction([IsNull("session_agent_id"), SubqueryMatch("session_agent_id", main_agents)])])
+        return Disjunction([Equal("session_agent_id", self.agent_id), shared]).statement()

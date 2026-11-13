@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.modules.processes.errors.decision_without_exit_error import DecisionWithoutExitError
+from core.modules.processes.errors.exitless_decision_error import ExitlessDecisionError
 from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.models.enums.reader_action import ReaderAction
 from core.modules.processes.models.enums.reader_state import ReaderState
@@ -21,7 +21,7 @@ class ReadingDecision:
 
     def __post_init__(self) -> None:
         if self.level > PressureLevel.SUGGEST and all(option.needs_other_party for option in self.exits):
-            raise DecisionWithoutExitError.level_error(self.level)
+            raise ExitlessDecisionError.level_error(self.level)
 
     @classmethod
     def empty(cls, state: ReaderState) -> "ReadingDecision":

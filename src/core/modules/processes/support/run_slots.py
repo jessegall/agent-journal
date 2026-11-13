@@ -21,7 +21,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
 from core.modules.processes.support.run_admission import RunAdmission
-from core.modules.processes.support.process_kind_limits import ProcessKindLimits
+from core.modules.processes.support.process_type_limits import ProcessTypeLimits
 
 SLOT_RUNS_REASON = "the run slots are shared out over every running and queued run"
 
@@ -30,7 +30,7 @@ class RunSlots:
     """Admits every run, granting immediate runs and giving waiting runs capacity in order; a run of a kind with
     its own limit also waits while that many of its kind run."""
 
-    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt, admission: RunAdmission, clock: Clock, listings: RunCounts, rows: EventRows, kept: KeptRows, scopes: Scopes, outputs: OutputQuery, category_limits: ProcessKindLimits) -> None:
+    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt, admission: RunAdmission, clock: Clock, listings: RunCounts, rows: EventRows, kept: KeptRows, scopes: Scopes, outputs: OutputQuery, category_limits: ProcessTypeLimits) -> None:
         self.queries, self.repository, self.folder, self.settings, self.halt = queries, repository, folder, settings, halt
         self.admission, self.clock, self.listings = admission, clock, listings
         self.rows, self.kept, self.scopes, self.outputs = rows, kept, scopes, outputs

@@ -16,7 +16,7 @@ from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.run_title import RunTitle
-from core.modules.processes.support.running_output_readers import RunningOutputReaders
+from core.modules.processes.support.active_output_readers import ActiveOutputReaders
 from engine.event.changed import Changed
 from engine.event.deleted import Deleted
 from engine.command.context import Context
@@ -32,7 +32,7 @@ class ReaderRequestCompleteListener(SaveListener[Changed[Reader]]):
     disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, requests: ReaderRequestQuery, judge: ReaderJudge, repository: Repository, clock: Clock, bus: Bus, rows: ReaderRows,
-                 running: RunningOutputReaders) -> None:
+                 running: ActiveOutputReaders) -> None:
         self.queries, self.requests, self.judge, self.repository, self.clock, self.bus, self.rows = queries, requests, judge, repository, clock, bus, rows
         self.running = running
 

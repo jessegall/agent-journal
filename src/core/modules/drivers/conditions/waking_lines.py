@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from engine.database.statement import Statement
 from engine.query.conditions.among import Among
-from engine.query.conditions.any_of import AnyOf
+from engine.query.conditions.disjunction import Disjunction
 from engine.query.conditions.equal import Equal
 
 
@@ -14,4 +14,4 @@ class WakingLines:
     sources: Sequence[str]
 
     def statement(self) -> Statement:
-        return AnyOf([Equal("wakes_agent", True), Among("source", list(self.sources))]).statement()
+        return Disjunction([Equal("wakes_agent", True), Among("source", list(self.sources))]).statement()

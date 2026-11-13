@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
-from engine.query.conditions.duration_at_least import DurationAtLeast
+from engine.query.conditions.minimum_duration import MinimumDuration
 
 
 @dataclass(frozen=True)
@@ -11,4 +11,4 @@ class PartRunSeconds:
     seconds: int
 
     def statement(self) -> Statement:
-        return DurationAtLeast("started_at", "ended_at", self.seconds).statement()
+        return MinimumDuration("started_at", "ended_at", self.seconds).statement()

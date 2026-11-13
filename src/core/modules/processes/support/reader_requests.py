@@ -23,7 +23,7 @@ from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.reader_demands import ReaderDemands
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.run_counts import RunCounts
-from core.modules.processes.support.unreadable.unreadable_marks import UnreadableMarks
+from core.modules.processes.support.unreadable.unreadable_mark_registry import UnreadableMarkRegistry
 
 
 COUNT_MISSING_REASON = "no reader counts the tests of {command}"
@@ -34,7 +34,7 @@ class ReaderRequests:
 
     def __init__(self, queries: Queries, requests: ReaderRequestQuery, parts: ProcessPartQuery, repository: Repository,
                  demands: ReaderDemands, settings: ProcessSettings, clock: Clock, suites: SuiteChoice, judge: ReaderJudge, counts: RunCounts,
-                 marks: UnreadableMarks) -> None:
+                 marks: UnreadableMarkRegistry) -> None:
         self.counts, self.marks = counts, marks
         self.queries, self.requests, self.parts, self.repository = queries, requests, parts, repository
         self.demands, self.settings, self.clock = demands, settings, clock

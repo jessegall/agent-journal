@@ -1,7 +1,7 @@
 from engine.module.driver_entries import DRIVERS_MODULE
 from engine.query.conditions.condition import Condition
 from engine.query.condition_join import ConditionJoin
-from engine.query.conditions.all_of import AllOf
+from engine.query.conditions.conjunction import Conjunction
 from engine.query.conditions.column_compare import ColumnCompare
 from engine.query.conditions.equal import Equal
 from engine.query.conditions.exists import Exists
@@ -12,7 +12,7 @@ from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.query.enums.comparison_operator import ComparisonOperator
 from engine.query.enums.sql_function import SqlFunction
 from engine.query.expressions.aliased import Aliased
-from engine.query.expressions.case_when import CaseWhen
+from engine.query.expressions.case_expression import CaseExpression
 from engine.query.expressions.column import Column
 from engine.query.expressions.comparison import Comparison
 from engine.query.expressions.count_all import CountAll
@@ -56,14 +56,14 @@ def listed_tasks(part: int, condition: Condition) -> Select:
                                      Aliased(Literal(part), "part")).matching(condition)
 
 
-def running_window(expression: Expression) -> CaseWhen:
-    return CaseWhen([(IsNull("agents.ended_at"), empty_fallback(expression))], Literal(""))
+def running_window(expression: Expression) -> CaseExpression:
+    return CaseExpression([(IsNull("agents.ended_at"), empty_fallback(expression))], Literal(""))
 
 
 OPEN_BLOCKS = agent_rows("agent_blocks").matching(IsNull("agent_blocks.closed_at"))
-BLOCKED_TASKS = AllOf([Comparison(Column("agents.role"), ComparisonOperator.UNEQUAL, Literal("main")), ColumnCompare("tasks.holder_id", "=", "agents.id"),
+BLOCKED_TASKS = Conjunction([Comparison(Column("agents.role"), ComparisonOperator.UNEQUAL, Literal("main")), ColumnCompare("tasks.holder_id", "=", "agents.id"),
                     Comparison(FunctionCall(SqlFunction.COALESCE, [TASK_ACTOR, Literal(0)]), ComparisonOperator.UNEQUAL, Column("agents.id"))])
-MAIN_STARTED = AllOf([Equal("agents.role", "main"), Comparison(Column("tasks.id"), ComparisonOperator.EQUAL, ScalarSubselect(
+MAIN_STARTED = Conjunction([Equal("agents.role", "main"), Comparison(Column("tasks.id"), ComparisonOperator.EQUAL, ScalarSubselect(
     Select("tasks").named_as("started").selecting(Column("started.id")).matching(ColumnCompare("started.holder_id", "=", "agents.id"))
     .matching(Equal("started.state", "started")).ordered("started.id", True).sliced(1, 0)))])
 LISTED = (listed_tasks(0, BLOCKED_TASKS).union(listed_tasks(0, MAIN_STARTED))
@@ -98,7 +98,7 @@ AGENT_CARDS_SELECT = Select("agents").selecting(
     Aliased(CARD_TASKS, "tasks"),
     Aliased(running_window(ScalarSubselect(OPEN_BLOCKS.selecting(FunctionCall(SqlFunction.MIN, [Column("agent_blocks.created_at")])))), "block_started_at"),
     Aliased(running_window(ScalarSubselect(OPEN_BLOCKS.selecting(Column("agent_blocks.nudge_text")).ordered("agent_blocks.id", False).sliced(1, 0))), "block_reason"),
-    Aliased(Inlined(AllOf([IsNull("agents.ended_at"), Exists(Select("tasks").matching(ColumnCompare("tasks.holder_id", "=", "agents.id"))
+    Aliased(Inlined(Conjunction([IsNull("agents.ended_at"), Exists(Select("tasks").matching(ColumnCompare("tasks.holder_id", "=", "agents.id"))
                                                             .matching(Equal("tasks.state", "blocked")))])), "task_blocked"),
     Aliased(empty_fallback(ScalarSubselect(agent_rows("hook_calls").selecting(Column("hook_calls.created_at")).ordered("hook_calls.id", True).sliced(1, 0))),
             "last_activity"),
@@ -109,7 +109,7 @@ AGENT_CARDS_SELECT = Select("agents").selecting(
     Aliased(FunctionCall(SqlFunction.COALESCE, [FunctionCall(SqlFunction.NULLIF, [Column("current_job.program"), Literal("")]), Column("agents.program")]),
             "helper_job_program"),
     Aliased(Column("current_job.new_session"), "helper_job_new_session"),
-    Aliased(Inlined(AllOf([HasValue("current_job.id"), HasValue("current_job.started_at"), IsNull("current_job.ended_at")])), "is_helper_job_open"),
+    Aliased(Inlined(Conjunction([HasValue("current_job.id"), HasValue("current_job.started_at"), IsNull("current_job.ended_at")])), "is_helper_job_open"),
     Aliased(FunctionCall(SqlFunction.JSON_EXTRACT, [Column("agents.metadata"), Literal(COMPACTION_PATH)]), "compaction_ended_at"),
     Aliased(row_count(agent_rows("agent_sessions")), "session_count"),
     Aliased(ScalarSubselect(agent_rows("agent_sessions").selecting(Column("agent_sessions.end_reason"))
@@ -137,5 +137,5 @@ AGENT_FILTER_OPTIONS_SELECT = Select("agents").selecting(
 
 AGENT_COUNTS_SELECT = Select("agents").selecting(
     Column("environment_id"), Column("role"), Column("profile"), Aliased(CountAll(), "kept"),
-    Aliased(FunctionCall(SqlFunction.SUM, [CaseWhen([(IsNull("ended_at"), Literal(1))], Literal(0))]), "running"),
+    Aliased(FunctionCall(SqlFunction.SUM, [CaseExpression([(IsNull("ended_at"), Literal(1))], Literal(0))]), "running"),
 ).matching(IsNull("retired_at")).grouped("environment_id", "role", "profile").view_sql()

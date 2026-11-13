@@ -36,7 +36,7 @@ the query builder's methods.
   on why every row is needed, and each walk is listed in `tests/snapshots/every_row_reads.txt`.
 - `count()`, `exists()`, `group_by(...).count_by()`, `counts_after(column, starts)` and `pluck(column)` count and
   read in the database, so no row is loaded to be counted.
-- A condition composes the classes of `engine/query/conditions/` (`Equal`, `Among`, `AnyOf`, `AllOf`, `Exists`,
+- A condition composes the classes of `engine/query/conditions/` (`Equal`, `Among`, `Disjunction`, `Conjunction`, `Exists`,
   `SubqueryMatch` on a `Select`) and returns their statement.
 
 ## The conditions that keep their text

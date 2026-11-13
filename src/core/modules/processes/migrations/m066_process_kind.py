@@ -1,7 +1,7 @@
 from engine.database.migration import Migration
 
 
-class ProcessKindMigration(Migration):
+class ProcessTypeColumnMigration(Migration):
     """Gives a process the kind its plugin declared for it, so the runs of one kind can be limited apart."""
 
     number = 66

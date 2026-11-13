@@ -6,7 +6,7 @@ from engine.database.kept_rows import KeptRows
 from engine.query.conditions.greater import Greater
 from engine.time.timestamp import Timestamp
 from engine.query.conditions.is_null import IsNull
-from engine.query.conditions.any_of import AnyOf
+from engine.query.conditions.disjunction import Disjunction
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.listener.rows.event_rows import EventRows
@@ -46,7 +46,7 @@ class WorkerPlaces:
 
     def kept_workers_excluding(self, parent_id: int) -> tuple[Agent, ...]:
         workers = self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(IsNull("retired_at"))
-        workers = workers.matching(AnyOf([IsNull("parent_id"), workers.compared("parent_id", "!=", parent_id)]))
+        workers = workers.matching(Disjunction([IsNull("parent_id"), workers.compared("parent_id", "!=", parent_id)]))
         return tuple(workers.every_row(KEPT_WORKERS_REASON))
 
     def kept_limit(self) -> int:

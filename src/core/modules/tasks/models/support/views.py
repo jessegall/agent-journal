@@ -1,9 +1,9 @@
 from engine.agent.agent_name import agent_name
 from engine.query.conditions.condition import Condition
 from engine.query.condition_join import ConditionJoin
-from engine.query.conditions.all_of import AllOf
+from engine.query.conditions.conjunction import Conjunction
 from engine.query.conditions.among import Among
-from engine.query.conditions.any_of import AnyOf
+from engine.query.conditions.disjunction import Disjunction
 from engine.query.conditions.column_compare import ColumnCompare
 from engine.query.conditions.equal import Equal
 from engine.query.conditions.excluding import Excluding
@@ -13,7 +13,7 @@ from engine.query.conditions.is_null import IsNull
 from engine.query.enums.comparison_operator import ComparisonOperator
 from engine.query.enums.sql_function import SqlFunction
 from engine.query.expressions.aliased import Aliased
-from engine.query.expressions.case_when import CaseWhen
+from engine.query.expressions.case_expression import CaseExpression
 from engine.query.expressions.cast_integer import CastInteger
 from engine.query.expressions.column import Column
 from engine.query.expressions.comparison import Comparison
@@ -44,11 +44,11 @@ def zero_fallback(expression: Expression) -> FunctionCall:
 
 # Matches the agent named helper that works a task: its assigned actor, else its holder, and a main agent only when it
 # is assigned the task and nobody holds it.
-def task_helper_match() -> AllOf:
+def task_helper_match() -> Conjunction:
     task_agent = FunctionCall(SqlFunction.COALESCE, [TASK_ACTOR, Column("tasks.holder_id")])
-    return AllOf([Comparison(Column("helper.id"), ComparisonOperator.EQUAL, task_agent),
-                  AnyOf([Comparison(Column("helper.role"), ComparisonOperator.UNEQUAL, Literal("main")),
-                         AllOf([Comparison(Column("helper.id"), ComparisonOperator.EQUAL, TASK_ACTOR), IsNull("tasks.holder_id")])])])
+    return Conjunction([Comparison(Column("helper.id"), ComparisonOperator.EQUAL, task_agent),
+                  Disjunction([Comparison(Column("helper.role"), ComparisonOperator.UNEQUAL, Literal("main")),
+                         Conjunction([Comparison(Column("helper.id"), ComparisonOperator.EQUAL, TASK_ACTOR), IsNull("tasks.holder_id")])])])
 
 
 def open_task_waits() -> Select:
@@ -56,9 +56,9 @@ def open_task_waits() -> Select:
 
 
 USER_TASK_WAIT = Exists(open_task_waits().matching(Equal("target", "user")))
-AUTOMATIC_TASK_WAIT = Exists(open_task_waits().matching(AnyOf([Comparison(Column("command"), ComparisonOperator.UNEQUAL, Literal("")),
+AUTOMATIC_TASK_WAIT = Exists(open_task_waits().matching(Disjunction([Comparison(Column("command"), ComparisonOperator.UNEQUAL, Literal("")),
                                                                 Comparison(Column("target"), ComparisonOperator.UNEQUAL, Literal("user"))])))
-PURELY_AUTOMATIC = Aliased(Inlined(AllOf([AUTOMATIC_TASK_WAIT, Excluding(USER_TASK_WAIT)])), "automatic")
+PURELY_AUTOMATIC = Aliased(Inlined(Conjunction([AUTOMATIC_TASK_WAIT, Excluding(USER_TASK_WAIT)])), "automatic")
 TASK_TAGS = Aliased(ScalarSubselect(Select("words").reading(ScalarSubselect(
     Select("task_tags").selecting(Column("word")).matching(ColumnCompare("task_id", "=", "tasks.id")).ordered("word", False)))
     .selecting(JsonList(Column("word")))), "tags")
@@ -78,7 +78,7 @@ OPEN_DEPENDENCIES_SELECT = (
     .joined(ConditionJoin("tasks", condition=ColumnCompare("tasks.id", "=", "task_dependencies.dependency_id")))
     .joined(ConditionJoin("tasks", condition=ColumnCompare("dependent.id", "=", "task_dependencies.task_id"), alias="dependent"))
     .matching(IsNull("tasks.closed_at"))
-    .matching(Excluding(AllOf([Among("tasks.state", ["started", "testing"]), HasValue(TASK_ACTOR.sql()),
+    .matching(Excluding(Conjunction([Among("tasks.state", ["started", "testing"]), HasValue(TASK_ACTOR.sql()),
                                Comparison(TASK_ACTOR, ComparisonOperator.IS, DEPENDENT_ACTOR)])))
 ).view_sql()
 
@@ -87,7 +87,7 @@ def actor_value(column: str) -> ScalarSubselect:
     return ScalarSubselect(Select("actors").selecting(Column(column)).matching(Comparison(Column("actors.id"), ComparisonOperator.EQUAL, TASK_ACTOR)))
 
 
-ASSIGNED_NAME = ScalarSubselect(Select("actors").selecting(CaseWhen(
+ASSIGNED_NAME = ScalarSubselect(Select("actors").selecting(CaseExpression(
     [(Equal("actors.type", "agent"), ScalarSubselect(Select("agents").selecting(agent_name("agents")).matching(ColumnCompare("agents.id", "=", "actors.id"))))],
     Column("actors.name"))).matching(Comparison(Column("actors.id"), ComparisonOperator.EQUAL, TASK_ACTOR)))
 MAIN_ASSIGNEE = ScalarSubselect(Select("agents").selecting(is_main("agents")).matching(Comparison(Column("agents.id"), ComparisonOperator.EQUAL, TASK_ACTOR)))
@@ -139,7 +139,7 @@ TASK_BLOCK_REVIEWS_SELECT = Select("tasks").selecting(
                                            FunctionCall(SqlFunction.COALESCE, [LAST_REVIEW_NOTICE, Literal("")])]), "reviewed_at"),
     Aliased(FunctionCall(SqlFunction.MAX, [Column("tasks.updated_at"), FunctionCall(SqlFunction.COALESCE, [NEWEST_RENEWAL, Literal("")])]), "moved_at"),
     Aliased(Inlined(USER_TASK_WAIT), "user_wait"), Aliased(Inlined(AUTOMATIC_TASK_WAIT), "automatic"),
-).joined(ConditionJoin("agents", condition=AllOf([ColumnCompare("agents.environment_id", "=", "tasks.environment_id"), Equal("agents.role", "main")]))).view_sql()
+).joined(ConditionJoin("agents", condition=Conjunction([ColumnCompare("agents.environment_id", "=", "tasks.environment_id"), Equal("agents.role", "main")]))).view_sql()
 
 
 def environment_count(table: str, condition: Condition) -> ScalarSubselect:

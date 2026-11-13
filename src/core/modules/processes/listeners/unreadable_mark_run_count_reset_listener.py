@@ -3,7 +3,7 @@ from engine.event.created import Created
 from engine.listener.save_listener import SaveListener
 from core.modules.processes.models.unreadable_mark import UnreadableMark
 from core.modules.processes.support.decisions.command_run_counts import CommandRunCounts
-from core.modules.processes.support.unreadable.unreadable_marks import UnreadableMarks
+from core.modules.processes.support.unreadable.unreadable_mark_registry import UnreadableMarkRegistry
 
 
 class UnreadableMarkRunCountResetListener(SaveListener[Created[UnreadableMark]]):
@@ -15,4 +15,4 @@ class UnreadableMarkRunCountResetListener(SaveListener[Created[UnreadableMark]])
         self.run_counts = run_counts
 
     def handle(self, event: Created[UnreadableMark], context: Context) -> None:
-        self.run_counts.reset(lambda command_key: UnreadableMarks.covers(event.row.terms, command_key), context)
+        self.run_counts.reset(lambda command_key: UnreadableMarkRegistry.covers(event.row.terms, command_key), context)

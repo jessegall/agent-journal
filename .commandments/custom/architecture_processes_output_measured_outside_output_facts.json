@@ -28,7 +28,7 @@
                 "testCode": true
             },
             {
-                "fileMatches": "(^|/)core/modules/processes/support/(output_folder\\.py$|reading/|cadence/|held_runs\\.py$|reader_run\\.py$|reader_judge\\.py$|grown_outputs\\.py$|reader_drafting\\.py$)"
+                "fileMatches": "(^|/)core/modules/processes/support/(output_folder\\.py$|reading/|cadence/|blocked_runs\\.py$|reader_run\\.py$|reader_judge\\.py$|grown_outputs\\.py$|reader_drafting\\.py$)"
             },
             {
                 "fileMatches": "(^|/)core/modules/processes/commands/(read_output|page_output|peek_output)/"

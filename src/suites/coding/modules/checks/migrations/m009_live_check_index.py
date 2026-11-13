@@ -1,7 +1,7 @@
 from engine.database.migration import Migration
 
 
-class LiveCheckIndexMigration(Migration):
+class ActiveCheckIndexMigration(Migration):
     """Indexes the checks that are not removed by id, so walking them in order reads only the live ones."""
 
     number = 9

@@ -1,9 +1,9 @@
 from engine.query.condition_join import ConditionJoin
-from engine.query.conditions.any_of import AnyOf
+from engine.query.conditions.disjunction import Disjunction
 from engine.query.enums.comparison_operator import ComparisonOperator
 from engine.query.enums.sql_function import SqlFunction
 from engine.query.expressions.aliased import Aliased
-from engine.query.expressions.case_when import CaseWhen
+from engine.query.expressions.case_expression import CaseExpression
 from engine.query.expressions.cast_integer import CastInteger
 from engine.query.expressions.column import Column
 from engine.query.expressions.comparison import Comparison
@@ -46,7 +46,7 @@ EVENT_NAME = first_value(EVENT, payload("$.body.hook_event_name"), Literal("hook
 DAY = text_part(1, Literal(10))
 AGENT = payload("$.agent")
 HELPER_LABEL = ScalarSubselect(
-    Select("registry").selecting(Concat([payload("$.label", "value"), CaseWhen(
+    Select("registry").selecting(Concat([payload("$.label", "value"), CaseExpression(
         [(Comparison(first_value(AGENT, Literal("")), ComparisonOperator.UNEQUAL, Literal("")), Concat([Literal(" "), AGENT]))], Literal(""))]))
     .joined(ConditionJoin(JsonEach(Column("registry.entries"), "$.helper_types")))
     .matching(Comparison(payload("$.key", "value"), ComparisonOperator.EQUAL, payload("$.role"))))
@@ -56,9 +56,9 @@ HOOK_REQUEST_ROWS_SELECT = Select("hook_requests").selecting(
     Aliased(payload("$.received_at"), "received_at"),
     Aliased(payload("$.program"), "program"),
     Aliased(CastInteger(first_value(FunctionCall(SqlFunction.NULLIF, [AGENT, Literal("")]), Literal("0"))), "agent_id"),
-    Aliased(CaseWhen([(role_equals("viewer"), Literal("viewer")), (role_equals("cli"), Literal("command line"))], Literal("hook")), "category"),
-    Aliased(CaseWhen([
-        (AnyOf([Comparison(Concat([EVENT_TEXT, Literal(" ")]), ComparisonOperator.LIKE, Literal(event)) for event in BOOKKEEPING_EVENTS]),
+    Aliased(CaseExpression([(role_equals("viewer"), Literal("viewer")), (role_equals("cli"), Literal("command line"))], Literal("hook")), "category"),
+    Aliased(CaseExpression([
+        (Disjunction([Comparison(Concat([EVENT_TEXT, Literal(" ")]), ComparisonOperator.LIKE, Literal(event)) for event in BOOKKEEPING_EVENTS]),
          Literal("process bookkeeping")),
         (Comparison(FunctionCall(SqlFunction.INSTR, [EVENT_TEXT, Literal(" ")]), ComparisonOperator.GREATER, Literal(0)),
          FunctionCall(SqlFunction.SUBSTR, [EVENT, Literal(1), Subtraction(SPACE_AT, Literal(1))])),
@@ -68,7 +68,7 @@ HOOK_REQUEST_ROWS_SELECT = Select("hook_requests").selecting(
     Aliased(payload("$.duration_ms"), "duration_ms"),
     Aliased(first_value(payload("$.queued_ms"), Literal(0)), "queued_ms"),
     Aliased(CastInteger(first_value(payload('$.headers."X-Journal-Retries"'), Literal(0))), "retries"),
-    Aliased(CaseWhen([(role_equals("viewer"), Literal("Viewer")), (role_equals("cli"), Literal("Command line"))], first_value(HELPER_LABEL, Literal("Main agent"))),
+    Aliased(CaseExpression([(role_equals("viewer"), Literal("Viewer")), (role_equals("cli"), Literal("Command line"))], first_value(HELPER_LABEL, Literal("Main agent"))),
             "sender"),
     Aliased(payload("$.outcome"), "outcome"),
     Aliased(EVENT_NAME, "event"),

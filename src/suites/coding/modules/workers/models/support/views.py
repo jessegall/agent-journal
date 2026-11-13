@@ -1,8 +1,8 @@
 from engine.query.conditions.condition import Condition
 from engine.query.condition_join import ConditionJoin
-from engine.query.conditions.all_of import AllOf
+from engine.query.conditions.conjunction import Conjunction
 from engine.query.conditions.among import Among
-from engine.query.conditions.any_of import AnyOf
+from engine.query.conditions.disjunction import Disjunction
 from engine.query.conditions.column_compare import ColumnCompare
 from engine.query.conditions.equal import Equal
 from engine.query.conditions.exists import Exists
@@ -12,7 +12,7 @@ from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.query.enums.comparison_operator import ComparisonOperator
 from engine.query.enums.sql_function import SqlFunction
 from engine.query.expressions.aliased import Aliased
-from engine.query.expressions.case_when import CaseWhen
+from engine.query.expressions.case_expression import CaseExpression
 from engine.query.expressions.column import Column
 from engine.query.expressions.comparison import Comparison
 from engine.query.expressions.function_call import FunctionCall
@@ -57,7 +57,7 @@ RUNNING_PROOF = Exists(Select("proofs").joined(ConditionJoin("processes", condit
 
 WORKER_WORK_REVIEW_SELECT = worktrees().selecting(
     Aliased(Column(WORKER), "agent_id"), Column("worktree.environment_id"),
-    Aliased(CaseWhen([
+    Aliased(CaseExpression([
         (worktree_state("cut"), Literal("changes requested")),
         (HasValue("worktree.returned_at"), Literal("with the main agent")),
         (RUNNING_PROOF, Literal("tests running")),
@@ -77,7 +77,7 @@ WORKER_POINTS_SELECT = Select("worker_worktrees").selecting(
 ).joined(ConditionJoin("tasks", condition=ColumnCompare("tasks.id", "=", "worker_worktrees.task_id"))).view_sql()
 
 RUNNING_PROCESSES = worker_rows("processes", "session_agent_id").matching(Among("processes.state", RUNNING_STATES))
-STARTED_WAIT = CaseWhen([
+STARTED_WAIT = CaseExpression([
     (IsNull("agents.ended_at"), Literal("")),
     (Exists(worker_rows("reader_requests", "creator_id").matching(IsNull("reader_requests.completed_at"))), Literal("reader")),
     (Exists(RUNNING_PROCESSES.matching(HasValue("processes.queued_at"))), Literal("place in the queue")),
@@ -88,12 +88,12 @@ UNFINISHED_ASSIGNED = Exists(Select("tasks").matching(Comparison(TASK_ACTOR, Com
 
 WORKER_WAITS_SELECT = worktrees().selecting(
     Aliased(Column(WORKER), "agent_id"), Column("worktree.environment_id"),
-    Aliased(CaseWhen([
+    Aliased(CaseExpression([
         (Exists(worker_rows("tasks", "holder_id").matching(Equal("tasks.state", "started"))), STARTED_WAIT),
         (worktree_proofs(Among("proofs.state", WAITING_PROOF_STATES)), Literal("tests")),
-        (AllOf([worktree_state("delivered"), worktree_proofs(Equal("proofs.state", "shown"))]), Literal("proof check")),
+        (Conjunction([worktree_state("delivered"), worktree_proofs(Equal("proofs.state", "shown"))]), Literal("proof check")),
         (worktree_state("delivered"), Literal("merge")),
-        (AllOf([worktree_state("cut"), UNFINISHED_ASSIGNED]), Literal("a job")),
+        (Conjunction([worktree_state("cut"), UNFINISHED_ASSIGNED]), Literal("a job")),
         (HasValue("agents.ended_at"), Literal("a job")),
     ], Literal("")), "reason"),
 ).joined(WORKER_AGENT).matching(IsNull("worktree.removed_at")).matching(LATEST_WORKTREE).view_sql()
@@ -104,8 +104,8 @@ WORKER_PROGRESS_SELECT = worktrees().selecting(
     Aliased(Column(WORKER), "agent_id"), Column("worktree.environment_id"), Column("worktree.branch"), Column("worktree.task_id"),
     Aliased(STARTED_AT, "started_at"), Aliased(Column("worktree.removed_at"), "finished_at"),
     Aliased(FunctionCall(SqlFunction.COUNT, [Column("tasks.id")]), "task_count"),
-    Aliased(FunctionCall(SqlFunction.COUNT, [CaseWhen([(Among("tasks.state", ("completed", "testing")), Literal(1))])]), "completed_count"),
-).joined(ConditionJoin("tasks", left=True, condition=AllOf([
+    Aliased(FunctionCall(SqlFunction.COUNT, [CaseExpression([(Among("tasks.state", ("completed", "testing")), Literal(1))])]), "completed_count"),
+).joined(ConditionJoin("tasks", left=True, condition=Conjunction([
     SubqueryMatch("tasks.id", WORKER_TASK_IDS),
-    AnyOf([IsNull("tasks.closed_at"), Comparison(Column("tasks.closed_at"), ComparisonOperator.MINIMUM, STARTED_AT)])]))).matching(
+    Disjunction([IsNull("tasks.closed_at"), Comparison(Column("tasks.closed_at"), ComparisonOperator.MINIMUM, STARTED_AT)])]))).matching(
     LATEST_WORKTREE).grouped("worktree.environment_id", "worktree.id").view_sql()

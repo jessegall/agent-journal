@@ -9,7 +9,7 @@ from engine.query.enums.comparison_operator import ComparisonOperator
 from engine.query.enums.sql_function import SqlFunction
 from engine.query.errors.unnamed_expression_error import UnnamedExpressionError
 from engine.query.expressions.aliased import Aliased
-from engine.query.expressions.case_when import CaseWhen
+from engine.query.expressions.case_expression import CaseExpression
 from engine.query.expressions.cast_integer import CastInteger
 from engine.query.expressions.column import Column
 from engine.query.expressions.comparison import Comparison
@@ -64,9 +64,9 @@ def test_a_condition_is_written_with_its_values_in_place():
 
 
 def test_a_case_writes_its_branches_and_otherwise():
-    case = CaseWhen([(Equal("tasks.state", "cancelled"), Literal("cancelled"))], Literal("completed"))
+    case = CaseExpression([(Equal("tasks.state", "cancelled"), Literal("cancelled"))], Literal("completed"))
     assert case.sql() == "CASE WHEN (tasks.state = 'cancelled') THEN 'cancelled' ELSE 'completed' END"
-    assert CaseWhen([(Equal("role", "main"), Column("id"))]).sql() == "CASE WHEN (role = 'main') THEN id ELSE NULL END"
+    assert CaseExpression([(Equal("role", "main"), Column("id"))]).sql() == "CASE WHEN (role = 'main') THEN id ELSE NULL END"
 
 
 def test_a_scalar_subselect_and_exists_write_their_select():

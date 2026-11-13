@@ -1,7 +1,7 @@
 from engine.database.migration import Migration
 
 
-class LiveDeliveredWorktreeIndexMigration(Migration):
+class ActiveDeliveredWorktreeIndexMigration(Migration):
     """Indexes the delivered worktrees still in use, so the work review of the worker cards reads only them."""
 
     number = 79

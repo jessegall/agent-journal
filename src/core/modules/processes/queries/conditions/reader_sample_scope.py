@@ -5,7 +5,7 @@ from engine.database.statement import Statement
 from engine.query.conditions.equal import Equal
 from engine.query.select import Select
 from engine.query.conditions.subquery_match import SubqueryMatch
-from engine.query.conditions.all_of import AllOf
+from engine.query.conditions.conjunction import Conjunction
 from core.modules.processes.queries.conditions.command_matches import PART_COMMAND
 
 
@@ -18,4 +18,4 @@ class ReaderSampleScope:
 
     def statement(self) -> Statement:
         runs = Select("processes").matching(Equal("session_agent_id", self.agent_id)).column("id")
-        return AllOf([SubqueryMatch("process_id", runs), Equal(PART_COMMAND, self.command)]).statement()
+        return Conjunction([SubqueryMatch("process_id", runs), Equal(PART_COMMAND, self.command)]).statement()

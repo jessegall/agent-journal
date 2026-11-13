@@ -6,14 +6,14 @@ from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.journal.journal_home import JournalHome
 from engine.query.conditions.among import Among
-from engine.query.conditions.all_of import AllOf
-from engine.query.conditions.any_of import AnyOf
+from engine.query.conditions.conjunction import Conjunction
+from engine.query.conditions.disjunction import Disjunction
 from engine.query.conditions.column_compare import ColumnCompare
-from engine.query.conditions.duration_at_least import DurationAtLeast
-from engine.query.conditions.glob_match import GlobMatch
-from engine.query.conditions.interval_passed_since import IntervalPassedSince
+from engine.query.conditions.minimum_duration import MinimumDuration
+from engine.query.conditions.glob_condition import GlobCondition
+from engine.query.conditions.elapsed_interval import ElapsedInterval
 from engine.query.conditions.json_list_empty import JsonListEmpty
-from engine.query.conditions.row_value_before import RowValueBefore
+from engine.query.conditions.prior_row_value import PriorRowValue
 from engine.query.conditions.text_contains import TextContains
 from engine.query.errors.unknown_operator_error import UnknownOperatorError
 from engine.query.conditions.equal import Equal
@@ -111,23 +111,23 @@ def test_a_prefix_uses_the_text_index(tmp_path):
 
 
 def test_any_of_joins_its_conditions_with_or_and_matches_nothing_when_empty():
-    assert AnyOf([Equal("state", "open"), IsNull("closed_at")]).statement() == Statement("(state = ? OR closed_at IS NULL)", ["open"])
-    assert AnyOf([]).statement() == Statement("0")
+    assert Disjunction([Equal("state", "open"), IsNull("closed_at")]).statement() == Statement("(state = ? OR closed_at IS NULL)", ["open"])
+    assert Disjunction([]).statement() == Statement("0")
 
 
 def test_all_of_joins_its_conditions_with_and_and_matches_every_row_when_empty():
-    assert AllOf([Equal("state", "open"), Greater("id", 4)]).statement() == Statement("(state = ? AND id > ?)", ["open", 4])
-    assert AllOf([]).statement() == Statement("1")
+    assert Conjunction([Equal("state", "open"), Greater("id", 4)]).statement() == Statement("(state = ? AND id > ?)", ["open", 4])
+    assert Conjunction([]).statement() == Statement("1")
 
 
 def test_the_new_conditions_give_their_sql_and_parameters_in_order():
-    assert GlobMatch("key", "mark:round:*").statement() == Statement("key GLOB ?", ["mark:round:*"])
+    assert GlobCondition("key", "mark:round:*").statement() == Statement("key GLOB ?", ["mark:round:*"])
     assert ColumnCompare("tasks.id", "=", "proofs.task_id").statement() == Statement("tasks.id = proofs.task_id")
     assert TextContains("last_output", "not found").statement() == Statement("instr(last_output, ?) > 0", ["not found"])
-    assert RowValueBefore(("closed_at", "id"), ("2026", 9)).statement() == Statement("(closed_at, id) < (?, ?)", ("2026", 9))
+    assert PriorRowValue(("closed_at", "id"), ("2026", 9)).statement() == Statement("(closed_at, id) < (?, ?)", ("2026", 9))
     assert JsonListEmpty("targets").statement() == Statement("json_array_length(targets) = 0")
-    assert DurationAtLeast("started_at", "ended_at", 60).statement() == Statement("started_at > '' AND ended_at > '' AND (julianday(ended_at) - julianday(started_at)) * 86400 >= ?", [60])
-    assert IntervalPassedSince("last_run_at", "interval_minutes", "2026-11-12T10:00:00").statement() == Statement(
+    assert MinimumDuration("started_at", "ended_at", 60).statement() == Statement("started_at > '' AND ended_at > '' AND (julianday(ended_at) - julianday(started_at)) * 86400 >= ?", [60])
+    assert ElapsedInterval("last_run_at", "interval_minutes", "2026-11-12T10:00:00").statement() == Statement(
         "(last_run_at IS NULL OR datetime(last_run_at, '+' || interval_minutes || ' minutes') <= datetime(?))", ["2026-11-12T10:00:00"])
 
 

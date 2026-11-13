@@ -1,5 +1,5 @@
 from engine.query.conditions.among import Among
-from engine.query.conditions.any_of import AnyOf
+from engine.query.conditions.disjunction import Disjunction
 from engine.query.conditions.column_compare import ColumnCompare
 from engine.query.conditions.equal import Equal
 from engine.query.conditions.exists import Exists
@@ -25,5 +25,5 @@ TARGETS = ScalarSubselect(wait_targets().selecting(FunctionCall(SqlFunction.GROU
 WAITING_ROWS_SELECT = Select("waits").selecting(
     *(Column(f"waits.{name}") for name in ("id", "focus", "state", "opened_at")),
     Aliased(FunctionCall(SqlFunction.COALESCE, [TARGETS, Literal("")]), "targets"),
-).matching(Equal("waits.state", "open")).matching(AnyOf([
+).matching(Equal("waits.state", "open")).matching(Disjunction([
     Among("waits.type", PERSON_WAIT_TYPES), Exists(wait_targets().matching(Equal("wait_targets.row_table", "questions")))])).view_sql()

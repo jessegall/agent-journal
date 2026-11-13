@@ -1,4 +1,4 @@
-from core.modules.processes.models.enums.notice_kind import NoticeKind
+from core.modules.processes.models.enums.notice_type import NoticeType
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.support.cadence.cadence_notice import CadenceNotice
@@ -12,18 +12,18 @@ class CadenceNudges:
     text of the output or of the command goes into a notice."""
 
     @staticmethod
-    def notice(category: NoticeKind, process: Process, part: ProcessPart, seconds: int, limit: int) -> CadenceNotice:
+    def notice(category: NoticeType, process: Process, part: ProcessPart, seconds: int, limit: int) -> CadenceNotice:
         command = part.command or part.text
         hint = StreamingHints.hint(command)
         match category:
-            case NoticeKind.SILENT if part.saved_command:
+            case NoticeType.SILENT if part.saved_command:
                 declaration = SILENT_SAVED_PACKAGES if StreamingHints.is_serial_packages_run(command) else SILENT_SAVED_RUN
                 return CadenceNotice(declaration, {"name": part.saved_command, "seconds": seconds})
-            case NoticeKind.SILENT:
+            case NoticeType.SILENT:
                 return CadenceNotice(SILENT_RUN, {"output": process.id, "seconds": seconds, "hint": hint})
-            case NoticeKind.STOPPED_WRITING:
+            case NoticeType.STOPPED_WRITING:
                 return CadenceNotice(STALLED_RUN, {"output": process.id, "seconds": seconds, "hint": hint})
-            case NoticeKind.SPARSE:
+            case NoticeType.SPARSE:
                 return CadenceNotice(RUN_SPARSE, {"output": process.id, "seconds": seconds, "hint": hint})
-            case NoticeKind.FROZEN:
+            case NoticeType.FROZEN:
                 return CadenceNotice(RUN_FROZEN, {"output": process.id, "seconds": seconds, "limit": limit})

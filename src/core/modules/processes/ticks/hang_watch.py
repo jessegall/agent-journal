@@ -4,14 +4,14 @@ from engine.command.bus import Bus
 from engine.container.container import Container
 from engine.enums.command_category import CommandCategory
 from engine.scope.scopes import Scopes
-from core.modules.processes.commands.ask_agent_to_look.ask_agent_to_look import AskAgentToLook
+from core.modules.processes.commands.request_output_check.request_output_check import RequestOutputCheck
 from core.modules.processes.commands.stop_hung_process.stop_hung_process import StopHungProcess
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.support.hang_limits import HangLimits
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.group_cpu_time import GroupCpuTime
-from core.modules.processes.support.look_asks import LookAsks
+from core.modules.processes.support.output_check_requests import OutputCheckRequests
 from core.modules.processes.support.output_folder import CPU_FILE, OutputFolder
 from core.modules.processes.support.cadence.run_silences import RunSilences
 from core.modules.processes.support.process_settings import ProcessSettings
@@ -65,7 +65,7 @@ class HangWatch:
         return True
 
     def checked(self, container: Container, process: Process, silent: int, current_time: float, limits: HangLimits) -> bool:
-        asks = container.get(LookAsks)
+        asks = container.get(OutputCheckRequests)
         if process.category is not CommandCategory.TEST_RUN or silent < limits.check:
             asks.clear(process.id)
             return False
@@ -76,7 +76,7 @@ class HangWatch:
             self.stop(container, process, silent)
             return True
         asks.record_ask(process.id, current_time)
-        container.get(Bus).run(AskAgentToLook(process.id, silent), Actor.core(), environment_id=process.environment_id)
+        container.get(Bus).run(RequestOutputCheck(process.id, silent), Actor.core(), environment_id=process.environment_id)
         return True
 
     @staticmethod

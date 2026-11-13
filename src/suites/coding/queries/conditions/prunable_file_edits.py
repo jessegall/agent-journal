@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
-from engine.query.conditions.any_of import AnyOf
+from engine.query.conditions.disjunction import Disjunction
 from engine.query.conditions.below_newest import BelowNewest
 from engine.query.conditions.below_newest_per import BelowNewestPer
 
@@ -16,4 +16,4 @@ class PrunableFileEdits:
     agent_edit_limit: int
 
     def statement(self) -> Statement:
-        return AnyOf([BelowNewest(self.table, self.kept_rows), BelowNewestPer(self.table, "session_agent_id", self.agent_edit_limit)]).statement()
+        return Disjunction([BelowNewest(self.table, self.kept_rows), BelowNewestPer(self.table, "session_agent_id", self.agent_edit_limit)]).statement()

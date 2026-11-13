@@ -19,7 +19,7 @@ from core.modules.plugins.support.manifest_config import ManifestConfig
 from core.modules.plugins.support.manifest_dashboard import ManifestDashboard
 from core.modules.plugins.support.manifest_instruction_block import ManifestInstructionBlock
 from core.modules.plugins.support.manifest_service import ManifestService
-from core.modules.plugins.support.manifest_process_kind import ManifestProcessKind
+from core.modules.plugins.support.manifest_run_type import ManifestRunType
 from core.modules.plugins.models.enums.run_scope import RunScope
 from engine.enums.command_category import CommandCategory
 from core.modules.plugins.support.manifest_setting import ManifestSetting
@@ -75,7 +75,7 @@ class PluginManifest:
     hook_stamp: str = ""
     instruction_blocks: tuple[ManifestInstructionBlock, ...] = ()
     injected_instructions: tuple[str, ...] = ()
-    process_categories: tuple[ManifestProcessKind, ...] = ()
+    process_categories: tuple[ManifestRunType, ...] = ()
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -180,17 +180,17 @@ class PluginManifest:
                                      entry["answers"] is True if "answers" in entry else False) for entry in entries)
 
     @staticmethod
-    def read_process_categories(processes: object) -> tuple[ManifestProcessKind, ...]:
+    def read_process_categories(processes: object) -> tuple[ManifestRunType, ...]:
         categories = {category.value: category for category in CommandCategory}
         scopes = {scope.value: scope for scope in RunScope}
         entries = [entry for entry in processes if is_mapping(entry) and "kind" in entry and str(entry.get("category", PLUGIN_RUN_CATEGORY)) in categories
                    and str(entry.get("scope", RunScope.PROJECT)) in scopes] if is_list(processes) else []
-        return tuple(ManifestProcessKind(str(entry["kind"]), str(entry["title"]) if "title" in entry else str(entry["kind"]), categories[str(entry.get("category", PLUGIN_RUN_CATEGORY))],
+        return tuple(ManifestRunType(str(entry["kind"]), str(entry["title"]) if "title" in entry else str(entry["kind"]), categories[str(entry.get("category", PLUGIN_RUN_CATEGORY))],
                                          str(entry["at_once"]) if "at_once" in entry else "", scopes[str(entry.get("scope", RunScope.PROJECT))],
                                          memory if isinstance(memory := entry.get("memory_mb", 0), int) and memory > 0 else 0, entry.get("coalesce") is True)
                      for entry in entries)
 
-    def process_category(self, category: str) -> ManifestProcessKind | None:
+    def process_category(self, category: str) -> ManifestRunType | None:
         return next((declared for declared in self.process_categories if declared.run_name == category), None)
 
     @staticmethod

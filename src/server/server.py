@@ -62,7 +62,7 @@ from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_routes import ViewerRoutes
 from server.request.request_handler import RequestHandler
 from server.tick.server_backup import ServerBackup
-from server.tick.idle_server_exit import IdleServerExit
+from server.tick.idle_server_shutdown import IdleServerShutdown
 from engine.serving.server_files import ServerFiles
 from server.handover.waiting_server import WaitingServer
 
@@ -178,7 +178,7 @@ def main(argv: list[str]) -> int:
         ticker.register(TickHandler(TickInterval(seconds=SERVICES_CHECK_SECONDS), lambda container: plugin_services.follow(), "plugin services", starts_immediately=True))
         ticker.register(TickHandler(TickInterval(seconds=HEALTH_CHECK_SECONDS), lambda container: plugin_services.check_health(), "plugin health"))
     ticker.register(TickHandler(TickInterval(seconds=BACKUP_CHECK_SECONDS), lambda container: backup.follow(), "database copies", starts_immediately=True))
-    idle_exit = IdleServerExit(clock, lambda reason: (files.log_line(reason), server.request_stop()))
+    idle_exit = IdleServerShutdown(clock, lambda reason: (files.log_line(reason), server.request_stop()))
     ticker.register(TickHandler(TickInterval(seconds=IDLE_CHECK_SECONDS), idle_exit.follow, "idle server exit"))
     server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, clock.timestamp(), listener_thread, hook_database, viewer, tunnel, reported_findings, journal_door),
                            waiting_server.journal_socket() if waiting_server else None)

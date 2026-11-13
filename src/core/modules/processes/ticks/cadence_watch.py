@@ -9,13 +9,13 @@ from engine.time.clock import Clock
 from engine.time.timestamp import Timestamp
 from core.modules.processes.commands.warn_cadence.warn_cadence import WarnCadence
 from core.modules.processes.models.enums.cadence_state import CadenceState
-from core.modules.processes.models.enums.notice_kind import NoticeKind
+from core.modules.processes.models.enums.notice_type import NoticeType
 from core.modules.processes.models.enums.part_state import PartState
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.support.cadence.cadence_log import CadenceLog
 from core.modules.processes.support.cadence.judged_runs import JudgedRuns
-from core.modules.processes.support.cadence.marked_commands import MarkedCommands
+from core.modules.processes.support.cadence.flagged_commands import FlaggedCommands
 from core.modules.processes.support.cadence.run_cadence import RunCadence
 from core.modules.processes.support.cadence.run_cadences import RunCadences
 from core.modules.processes.support.cadence.run_notices import RunNotices
@@ -60,11 +60,11 @@ class CadenceWatch:
     def judged(self, container: Container, process: Process, part: ProcessPart, cadence: RunCadence, hang: int) -> None:
         notices = container.get(RunNotices)
         state = cadence.state()
-        notice = NoticeKind.cadence_notice(state)
+        notice = NoticeType.cadence_notice(state)
         if notice is None:
             notices.cleared(process.id)
             return
-        if container.get(MarkedCommands).skips(notice, SilentStartRuns.name(part.text, part.program, part.category)):
+        if container.get(FlaggedCommands).skips(notice, SilentStartRuns.name(part.text, part.program, part.category)):
             return
         self.warned(container, process, part, notice, self.seconds(state, cadence), hang, cadence.clock_seconds)
 
@@ -76,10 +76,10 @@ class CadenceWatch:
         silence = container.get(RunSilences).seconds(process, current)
         if silence < hang // 2 or clock_seconds - float(recorded[1]) < hang // 2:
             return
-        self.warned(container, process, part, NoticeKind.FROZEN, silence, hang, clock_seconds)
+        self.warned(container, process, part, NoticeType.FROZEN, silence, hang, clock_seconds)
 
     @staticmethod
-    def warned(container: Container, process: Process, part: ProcessPart, notice: NoticeKind, seconds: int, hang: int, clock_seconds: float) -> None:
+    def warned(container: Container, process: Process, part: ProcessPart, notice: NoticeType, seconds: int, hang: int, clock_seconds: float) -> None:
         notices = container.get(RunNotices)
         if not notices.allowed(process.id, notice, clock_seconds):
             return

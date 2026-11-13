@@ -1,5 +1,5 @@
 from core.modules.tasks.support.task_wait_attempts import TaskWaitAttempts
-from suites.coding.modules.checks.migrations.m009_live_check_index import LiveCheckIndexMigration
+from suites.coding.modules.checks.migrations.m009_live_check_index import ActiveCheckIndexMigration
 from suites.coding.modules.checks.support.check_task_wait_attempts import CheckTaskWaitAttempts
 from suites.coding.modules.checks.migrations.m008_open_check_hidden_index import OpenCheckHiddenIndexMigration
 from suites.coding.modules.checks.migrations.m007_check_task_wait_index import CheckTaskWaitIndexMigration
@@ -75,7 +75,7 @@ class ChecksModule(Module):
     models = [ModelDeclaration(Check, query=CheckQuery, excluded_subcommands=BUILT)]
     inspectors = [CHECK_INSPECTOR]
     listeners = [TaskWaitCheckListener, TaskWaitPassListener, EndedCheckRunsListener]
-    migrations = [LiveCheckIndexMigration, OpenCheckHiddenIndexMigration, CheckTaskWaitIndexMigration, OpenCheckResultIndexMigration, ChecksTableMigration, CheckTaskWaitMigration, CheckHiddenMigration, CheckRunPercentMigration, OpenTaskWaitIndexMigration]
+    migrations = [ActiveCheckIndexMigration, OpenCheckHiddenIndexMigration, CheckTaskWaitIndexMigration, OpenCheckResultIndexMigration, ChecksTableMigration, CheckTaskWaitMigration, CheckHiddenMigration, CheckRunPercentMigration, OpenTaskWaitIndexMigration]
     handlers = [MakeCheckHandler, EditCheckHandler, RecordCheckRunHandler, RecordCheckProgressHandler, StartCheckHandler, StopCheckHandler, RemoveCheckHandler, ReportCheckHandler]
     subcommands = [CheckRunsSubcommand, MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StartCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand, CheckShowSubcommand]
     driver_rules = [FailedCheckRule, BrokenTaskWaitRule]

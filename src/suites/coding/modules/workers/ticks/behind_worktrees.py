@@ -12,7 +12,7 @@ from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.commands.announce_behind_checks.announce_behind_checks import AnnounceBehindChecks
 from suites.coding.modules.workers.commands.check_worktree_behind.check_worktree_behind import CheckWorktreeBehind
 from suites.coding.modules.workers.models.enums.behind_route import BehindRoute
-from suites.coding.modules.workers.commands.record_behind_look.record_behind_look import RecordBehindLook
+from suites.coding.modules.workers.commands.record_stale_check.record_stale_check import RecordStaleCheck
 from suites.coding.modules.workers.commands.remind_behind_updates.remind_behind_updates import RemindBehindUpdates
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
@@ -34,7 +34,7 @@ class BehindWorktrees:
             routes = {worktree.id: self.checked(container, worktree.id, environment_id) for worktree in due}
             if not due:
                 continue
-            container.get(Bus).run(RecordBehindLook(), Actor.core(), environment_id=environment_id)
+            container.get(Bus).run(RecordStaleCheck(), Actor.core(), environment_id=environment_id)
             merger_checks = tuple(worktree_id for worktree_id, route in routes.items() if route is BehindRoute.MERGER)
             if merger_checks:
                 self.announced(container, merger_checks, environment_id)

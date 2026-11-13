@@ -47,7 +47,7 @@ from core.modules.claude_code.providers.support.claude_inbox import ClaudeInbox
 from core.modules.claude_code.providers.support.claude_kept_skills import ClaudeKeptSkills
 from core.modules.claude_code.providers.support.claude_peer_notes import ClaudePeerNotes
 from core.modules.claude_code.providers.support.claude_trust import ClaudeTrust
-from core.modules.claude_code.providers.support.claude_live_settings import ClaudeLiveSettings
+from core.modules.claude_code.providers.support.claude_current_settings import ClaudeCurrentSettings
 from engine.enums.agent_setting import AgentSetting
 from engine.journal.journal_home import JOURNAL_FOLDER
 
@@ -241,7 +241,7 @@ class ClaudeCodeProvider(Provider):
 
     def change_agent_setting(self, folder: Path, setting: AgentSetting, value: int) -> None:
         lowest, highest = RUNTIME_SETTING_RANGES[setting]
-        ClaudeLiveSettings(folder).write(RUNTIME_SETTING_KEYS[setting], min(max(value, lowest), highest))
+        ClaudeCurrentSettings(folder).write(RUNTIME_SETTING_KEYS[setting], min(max(value, lowest), highest))
 
     def user_hook_files(self) -> tuple[Path, ...]:
         return tuple([self.folders.folder(CONFIG_VARIABLE, ".claude") / "settings.json"])

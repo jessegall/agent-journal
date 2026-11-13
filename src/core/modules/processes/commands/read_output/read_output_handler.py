@@ -8,7 +8,7 @@ from core.modules.processes.commands.read_output.read_output import ReadOutput
 from core.modules.processes.models.enums.output_state import OutputState
 from core.modules.processes.models.output import Output
 from core.modules.processes.queries.output_query import OutputQuery
-from core.modules.processes.support.look_asks import LookAsks
+from core.modules.processes.support.output_check_requests import OutputCheckRequests
 from core.modules.processes.commands.read_output.support.output_texts import OutputTexts
 from core.modules.processes.commands.read_output.support.repeat_reads import RepeatReads
 
@@ -19,7 +19,7 @@ class ReadOutputHandler(Handler[ReadOutput, OutputLines]):
 
     command = ReadOutput
 
-    def __init__(self, texts: OutputTexts, outputs: OutputQuery, repository: Repository, repeats: RepeatReads, delivery: OutputDelivery, looks: LookAsks) -> None:
+    def __init__(self, texts: OutputTexts, outputs: OutputQuery, repository: Repository, repeats: RepeatReads, delivery: OutputDelivery, looks: OutputCheckRequests) -> None:
         self.texts, self.outputs, self.repository, self.repeats, self.delivery, self.looks = texts, outputs, repository, repeats, delivery, looks
 
     def handle(self, command: ReadOutput, context: Context) -> OutputLines:

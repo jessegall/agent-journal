@@ -14,8 +14,8 @@ from core.modules.processes.support.reading_notices.reading_card_text import Rea
 from core.modules.processes.support.process_card import ProcessCard
 from core.modules.processes.support.run_title import RunTitle
 from core.modules.processes.support.run_visibility import RunVisibility
-from core.modules.processes.support.reading.run_command_words import RunCommandWords
-from core.modules.processes.support.unreadable.unreadable_marks import UnreadableMarks
+from core.modules.processes.support.reading.run_command_terms import RunCommandTerms
+from core.modules.processes.support.unreadable.unreadable_mark_registry import UnreadableMarkRegistry
 
 
 class ProcessCardSubcommand(ReadSubcommand[ProcessCard]):
@@ -25,7 +25,7 @@ class ProcessCardSubcommand(ReadSubcommand[ProcessCard]):
     name = "card"
 
     def __init__(self, processes: ProcessQuery, outputs: OutputQuery, parts: ProcessPartQuery, readers: ReaderQuery, decisions: ReadingDecisionQuery,
-                 marks: UnreadableMarks) -> None:
+                 marks: UnreadableMarkRegistry) -> None:
         self.processes, self.outputs, self.parts, self.readers = processes, outputs, parts, readers
         self.decisions, self.marks = decisions, marks
 
@@ -38,7 +38,7 @@ class ProcessCardSubcommand(ReadSubcommand[ProcessCard]):
         process = self.processes.find(arguments.process_id)
         visible = RunVisibility.select_visible_part(process, tuple(parts)) or (parts[0] if parts else None)
         reader = self.readers.find(kept.reader_id) if kept is not None and kept.reader_id else None
-        terms = RunCommandWords.part_words(parts)
+        terms = RunCommandTerms.part_words(parts)
         return ProcessCard(process, kept, RunTitle.temporary(visible), reader, visible.category if visible else CommandCategory.UNKNOWN, any(part.reader_request_id is not None for part in parts),
                            self.reading_text(process.id, visible), terms, self.flagged_terms(terms))
 

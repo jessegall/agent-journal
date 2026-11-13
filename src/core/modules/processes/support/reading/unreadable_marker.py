@@ -10,7 +10,7 @@ from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
 from core.modules.processes.support.reading.reading_facts import ReadingFacts
-from core.modules.processes.support.unreadable.unreadable_marks import UnreadableMarks
+from core.modules.processes.support.unreadable.unreadable_mark_registry import UnreadableMarkRegistry
 from core.modules.processes.support.silent_start_runs import SilentStartRuns
 
 RUNS_COMPARED = 2
@@ -21,7 +21,7 @@ class UnreadableMarker:
     gave the same measured reason, and lifts the mark when a marked command printed readable lines on two
     ended runs in a row since it was marked. It goes by measures only, never by the words a run printed."""
 
-    def __init__(self, facts: ReadingFacts, decisions: ReadingDecisionQuery, marks: UnreadableMarks, rows: EventRows, outputs: OutputQuery,
+    def __init__(self, facts: ReadingFacts, decisions: ReadingDecisionQuery, marks: UnreadableMarkRegistry, rows: EventRows, outputs: OutputQuery,
                  parts: ProcessPartQuery) -> None:
         self.facts, self.decisions, self.marks, self.rows, self.outputs, self.parts = facts, decisions, marks, rows, outputs, parts
 

@@ -7,7 +7,7 @@ from engine.query.conditions.is_null import IsNull
 from engine.query.enums.comparison_operator import ComparisonOperator
 from engine.query.enums.sql_function import SqlFunction
 from engine.query.expressions.aliased import Aliased
-from engine.query.expressions.case_when import CaseWhen
+from engine.query.expressions.case_expression import CaseExpression
 from engine.query.expressions.column import Column
 from engine.query.expressions.comparison import Comparison
 from engine.query.expressions.concat import Concat
@@ -85,8 +85,8 @@ PLAN_EVENT_ROWS_SELECT = (
     ).joined(PLACE_TASK)
     .union(Select("plan_tasks").selecting(
         Column("plan_tasks.plan_id"), Concat([Literal("ended:"), Column("tasks.id")]), Column("tasks.closed_at"),
-        CaseWhen([(CANCELLED, Literal("cancelled"))], Literal("completed")), Column("tasks.id"), Column("tasks.title"),
-        CaseWhen([(CANCELLED, Column("tasks.reason"))], Column("tasks.outcome")),
+        CaseExpression([(CANCELLED, Literal("cancelled"))], Literal("completed")), Column("tasks.id"), Column("tasks.title"),
+        CaseExpression([(CANCELLED, Column("tasks.reason"))], Column("tasks.outcome")),
     ).joined(PLACE_TASK).matching(HasValue("tasks.closed_at")))
     .union(Select("task_logs").selecting(
         Column("plan_tasks.plan_id"), Concat([Literal("logged:"), Column("task_logs.id")]), Column("task_logs.created_at"), Literal("logged"),

@@ -43,8 +43,8 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
   `roles = [AgentRole.MAIN]` and says no reason. Add `main_only_because` with one line, or let the rule answer every role.
 - **`reader-chosen-outside-reader-layers`** - readers are put in order by id or by default flag outside `ReaderLayers`.
   Order them with `ReaderLayers.ordered`: project, plugin, stock; default first, then the newest.
-- **`unreadable-mark-outside-unreadable-marks`** - an unreadable mark is made or removed outside `UnreadableMarks` and the
-  mark and lift commands. Make and lift marks through `UnreadableMarks`, so the reason and the actor are recorded.
+- **`unreadable-mark-outside-unreadable-marks`** - an unreadable mark is made or removed outside `UnreadableMarkRegistry` and the
+  mark and lift commands. Make and lift marks through `UnreadableMarkRegistry`, so the reason and the actor are recorded.
 - **`run-shown-by-category-outside-run-visibility`** - code outside `RunVisibility` and `PartVisibility` decides by
   `is_watched` or `is_visible` which runs show a card, a mark or a dock item. Ask `visible_part`.
 - **`nudge-carries-row-data`** - a nudge declaration of the processes or aliases module puts a command, a title, a line

@@ -6,7 +6,7 @@ from engine.query.queries import Queries
 from engine.setting.setting_values import SettingValues
 from engine.time.clock import Clock
 from core.modules.processes.models.process import Process
-from suites.coding.modules.workers.commands.queue_worker_tests.end_stuck_proof_run import EndStuckProofRun
+from suites.coding.modules.workers.commands.queue_worker_tests.end_stalled_proof_run import EndStalledProofRun
 from suites.coding.modules.workers.commands.queue_worker_tests.queue_stalled_tests import QueueStalledTests
 from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test import ENDED_RUN_NOTE, REMOVED_RUN_NOTE, RecordWorkerTest
 from suites.coding.modules.workers.commands.queue_worker_tests.start_worker_tests import StartWorkerTests
@@ -51,7 +51,7 @@ class StalledWorkerTestRuns:
             elif process.ended_at is not None and process.ended_at.elapsed_seconds(current) > ENDED_GRACE_SECONDS:
                 record = RecordWorkerTest(proof.id, process.succeeded, ENDED_RUN_NOTE.format(process=process.id))
             elif proof.update_timestamp().elapsed_seconds(current) >= hung_seconds:
-                record = EndStuckProofRun(proof.id, hung_minutes)
+                record = EndStalledProofRun(proof.id, hung_minutes)
             else:
                 continue
             container.get(Bus).run(record, Actor.core(), environment_id=environments[proof.worktree_id])

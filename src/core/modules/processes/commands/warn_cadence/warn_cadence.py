@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from core.modules.processes.models.enums.notice_kind import NoticeKind
+from core.modules.processes.models.enums.notice_type import NoticeType
 from core.modules.processes.models.process import Process
 
 
@@ -13,6 +13,6 @@ class WarnCadence(Command[Process]):
 
     process_id: int
     part_position: int
-    notice_type: NoticeKind
+    notice_type: NoticeType
     seconds: int
     limit: int

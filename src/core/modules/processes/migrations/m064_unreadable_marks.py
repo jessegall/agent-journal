@@ -2,7 +2,7 @@ from engine.database.migration import Migration
 from core.modules.processes.migrations.m001_processes import COMMON
 
 
-class UnreadableMarksMigration(Migration):
+class UnreadableMarkTableMigration(Migration):
     """Keeps the commands, by their leading words, whose output no reader can read, found by those words and by
     when they were marked."""
 

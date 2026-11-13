@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
-from engine.query.conditions.interval_passed_since import IntervalPassedSince
+from engine.query.conditions.elapsed_interval import ElapsedInterval
 from engine.query.conditions.greater import Greater
-from engine.query.conditions.all_of import AllOf
+from engine.query.conditions.conjunction import Conjunction
 
 
 @dataclass(frozen=True)
@@ -14,4 +14,4 @@ class IntervalPassed:
     present: str
 
     def statement(self) -> Statement:
-        return AllOf([Greater("interval_minutes", 0), IntervalPassedSince("last_run_at", "interval_minutes", self.present)]).statement()
+        return Conjunction([Greater("interval_minutes", 0), ElapsedInterval("last_run_at", "interval_minutes", self.present)]).statement()

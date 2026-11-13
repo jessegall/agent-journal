@@ -63,7 +63,7 @@ from core.modules.messages.listeners.allowed_stop_listener import AllowedStopLis
 from core.modules.messages.listeners.waiting_message_listener import WaitingMessageListener
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.listeners.message_rows_listener import MessageRowsListener
-from core.modules.messages.listeners.tagged_image_hold_listener import TaggedImageHoldListener
+from core.modules.messages.listeners.tagged_image_block_listener import TaggedImageBlockListener
 from core.modules.messages.listeners.report_pin_listener import ReportPinListener
 from core.modules.environments.support.environment_activity import EnvironmentActivity
 from core.modules.messages.bindings.message_environment_activity import MessageEnvironmentActivity
@@ -159,5 +159,5 @@ class MessagesModule(Module):
                                keywords=("flowchart", "flow chart", "diagram")),
               SkillDeclaration("journal-messages", "Read and answer the user's messages and ask the user questions; read it before the first message command of a session",
                                keywords=("message", "reply", "question"), commands=("message", "question"))]
-    listeners = [NewSessionWorkSourceListener, ReportPinListener, MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, ReleasedMessageLineListener, AllowedStopListener, DeletedWorkSourceListener, DeletedAgentWorkSourceListener, TaggedImageHoldListener]
+    listeners = [NewSessionWorkSourceListener, ReportPinListener, MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, ReleasedMessageLineListener, AllowedStopListener, DeletedWorkSourceListener, DeletedAgentWorkSourceListener, TaggedImageBlockListener]
     seeders = [MessagesSeeder]

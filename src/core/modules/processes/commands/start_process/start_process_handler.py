@@ -17,7 +17,7 @@ from core.modules.processes.support.run_title import RunTitle
 from core.modules.processes.support.reader_requests import ReaderRequests
 from core.modules.processes.support.run_slots import RunSlots
 from core.modules.processes.support.part_visibility import PartVisibility
-from core.modules.processes.support.reading.shadow_decisions import ShadowDecisions
+from core.modules.processes.support.reading.recorded_decisions import RecordedDecisions
 
 
 class StartProcessHandler(Handler[StartProcess, Process]):
@@ -28,7 +28,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
     command = StartProcess
     runs_once = True
 
-    def __init__(self, repository: Repository, folder: OutputFolder, readers: ReaderRows, requests: ReaderRequests, slots: RunSlots, visibility: PartVisibility, rows: EventRows, trial: ShadowDecisions) -> None:
+    def __init__(self, repository: Repository, folder: OutputFolder, readers: ReaderRows, requests: ReaderRequests, slots: RunSlots, visibility: PartVisibility, rows: EventRows, trial: RecordedDecisions) -> None:
         self.repository, self.folder, self.readers = repository, folder, readers
         self.shadow = trial
         self.requests = requests

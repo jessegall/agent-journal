@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
-from engine.query.conditions.all_of import AllOf
-from engine.query.conditions.any_of import AnyOf
+from engine.query.conditions.conjunction import Conjunction
+from engine.query.conditions.disjunction import Disjunction
 from engine.query.conditions.equal import Equal
 from core.modules.documents.references.row_ref import RowRef
 
@@ -20,6 +20,6 @@ class LinkCounterparts:
     counterparts: tuple[RowRef, ...]
 
     def statement(self) -> Statement:
-        pairs = [AnyOf([AllOf([*end("source", self.reference), *end("target", counterpart)]), AllOf([*end("target", self.reference), *end("source", counterpart)])])
+        pairs = [Disjunction([Conjunction([*end("source", self.reference), *end("target", counterpart)]), Conjunction([*end("target", self.reference), *end("source", counterpart)])])
                  for counterpart in self.counterparts]
-        return AnyOf(pairs).statement()
+        return Disjunction(pairs).statement()

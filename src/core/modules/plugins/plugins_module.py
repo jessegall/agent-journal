@@ -9,8 +9,8 @@ from core.modules.plugins.commands.queued_run_read.queued_run_read_subcommand im
 from core.modules.plugins.commands.queued_run_show.queued_run_show_subcommand import QueuedRunShowSubcommand
 from core.modules.plugins.listeners.queued_run_admission_listener import QueuedRunAdmissionListener
 from core.modules.plugins.listeners.queued_run_end_listener import QueuedRunEndListener
-from core.modules.processes.support.process_kind_limits import ProcessKindLimits
-from core.modules.plugins.support.plugin_process_kind_limits import PluginProcessKindLimits
+from core.modules.processes.support.process_type_limits import ProcessTypeLimits
+from core.modules.plugins.support.plugin_run_limits import PluginRunLimits
 from core.modules.plugins.migrations.m010_environment_index import PluginRowsEnvironmentIndexMigration
 from core.modules.plugins.commands.send_plugin_step_line.send_plugin_step_line_handler import SendPluginStepLineHandler
 from core.modules.plugins.commands.log_plugin_line.log_plugin_line_handler import LogPluginLineHandler
@@ -154,7 +154,7 @@ class PluginsModule(Module):
                 SettingValue("condition_limit_seconds", "Service condition limit", "The most seconds a plugin service's condition may take before it counts as failed.",
                              SettingType.NUMBER, default=10, scope=SettingScope.PROJECT)]
     driver_rules = [PluginRule, PluginProgramRule]
-    bindings = {ProjectReads: PluginProjectReads, ProcessKindLimits: PluginProcessKindLimits}
+    bindings = {ProjectReads: PluginProjectReads, ProcessTypeLimits: PluginRunLimits}
     declared_plugin_events = [*PLAIN_EVENTS.values(), "tool_starting", "command_starting", "file_edited"]
     marks = PLUGIN_MARKS
     tick_handlers = [TickHandler(TickInterval(seconds=1), PluginCardReading(), "plugin card reading"),

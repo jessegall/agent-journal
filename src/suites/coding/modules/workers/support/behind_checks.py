@@ -7,7 +7,7 @@ from suites.coding.modules.workers.models.enums.behind_check_state import Behind
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
-from suites.coding.modules.workers.models.worktree_behind_look import WorktreeBehindLook
+from suites.coding.modules.workers.models.worktree_stale_check_time import WorktreeStaleCheckTime
 from suites.coding.modules.workers.support.worker_settings import STALE_CHECK_MINUTES, STALE_CHECK_COMMITS, STALE_RECHECK_COMMITS, WORKTREE_UPDATES
 
 CHECKS_REASON = "every behind check of the worktree is weighed"
@@ -36,8 +36,8 @@ class BehindChecks:
         check = self.last_check()
         return check is None or current_time.value - check.checked_at.value >= timedelta(minutes=self.settings.number(STALE_CHECK_MINUTES))
 
-    def last_check(self) -> WorktreeBehindLook | None:
-        return self.queries.query(WorktreeBehindLook).first()
+    def last_check(self) -> WorktreeStaleCheckTime | None:
+        return self.queries.query(WorktreeStaleCheckTime).first()
 
     def opens(self, worktree: Worktree, commits_lagging: int) -> bool:
         if commits_lagging < self.settings.number(STALE_CHECK_COMMITS):

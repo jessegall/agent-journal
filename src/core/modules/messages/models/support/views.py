@@ -1,5 +1,5 @@
 from engine.query.condition_join import ConditionJoin
-from engine.query.conditions.any_of import AnyOf
+from engine.query.conditions.disjunction import Disjunction
 from engine.query.conditions.column_compare import ColumnCompare
 from engine.query.conditions.equal import Equal
 from engine.query.conditions.is_null import IsNull
@@ -37,7 +37,7 @@ CHAT_MESSAGES_SELECT = Select("messages").selecting(
 
 MAIN_CHAT_MARKS_SELECT = Select("chat_marks").selecting(
     *(Column(name) for name in MARK_COLUMNS), Aliased(Column("key"), "mark_key"), *(Column(name) for name in MARK_DETAIL_COLUMNS),
-).matching(AnyOf([IsNull("session_agent_id"), SubqueryMatch("session_agent_id", Select("agents").selecting(Column("id")).matching(Equal("role", "main")))])
+).matching(Disjunction([IsNull("session_agent_id"), SubqueryMatch("session_agent_id", Select("agents").selecting(Column("id")).matching(Equal("role", "main")))])
            ).view_sql()
 
 ATTACHED_FILES_SELECT = Select("messages").selecting(

@@ -1,6 +1,6 @@
 import pytest
 
-from core.modules.processes.errors.decision_without_exit_error import DecisionWithoutExitError
+from core.modules.processes.errors.exitless_decision_error import ExitlessDecisionError
 from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.models.enums.reader_action import ReaderAction
 from core.modules.processes.models.enums.reader_state import ReaderState
@@ -22,9 +22,9 @@ def test_every_level_above_a_suggestion_is_one_of_three():
 
 @pytest.mark.parametrize("level", PRESSING_LEVELS)
 def test_a_decision_above_a_suggestion_with_exits_only_others_take_cannot_be_built(level):
-    with pytest.raises(DecisionWithoutExitError):
+    with pytest.raises(ExitlessDecisionError):
         pressing(level, DIFFERENT_PARTY_EXITS)
-    with pytest.raises(DecisionWithoutExitError):
+    with pytest.raises(ExitlessDecisionError):
         pressing(level, ())
 
 

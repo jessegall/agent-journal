@@ -6,8 +6,8 @@ from core.modules.processes.commands.lift_run_unreadable.lift_run_unreadable imp
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.unreadable_mark import UnreadableMark
 from core.modules.processes.support.reading_notices.reading_notices import ReadingNotices
-from core.modules.processes.support.reading.run_command_words import RunCommandWords
-from core.modules.processes.support.unreadable.unreadable_marks import UnreadableMarks
+from core.modules.processes.support.reading.run_command_terms import RunCommandTerms
+from core.modules.processes.support.unreadable.unreadable_mark_registry import UnreadableMarkRegistry
 
 SOURCE = "processes.readable-by-person"
 
@@ -18,7 +18,7 @@ class LiftRunUnreadableHandler(Handler[LiftRunUnreadable, UnreadableMark]):
 
     command = LiftRunUnreadable
 
-    def __init__(self, rows: EventRows, terms: RunCommandWords, marks: UnreadableMarks, nudger: Nudger) -> None:
+    def __init__(self, rows: EventRows, terms: RunCommandTerms, marks: UnreadableMarkRegistry, nudger: Nudger) -> None:
         self.rows, self.words, self.marks, self.nudger = rows, terms, marks, nudger
 
     def handle(self, command: LiftRunUnreadable, context: Context) -> UnreadableMark:

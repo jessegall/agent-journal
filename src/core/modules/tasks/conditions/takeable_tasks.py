@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
-from engine.query.conditions.all_of import AllOf
-from engine.query.conditions.any_of import AnyOf
+from engine.query.conditions.conjunction import Conjunction
+from engine.query.conditions.disjunction import Disjunction
 from engine.query.conditions.equal import Equal
 from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.query.select import Select
@@ -26,5 +26,5 @@ class TakeableTasks:
             main_agents = Select("agents").matching(Equal("role", MAIN_ROLE)).column("id")
             target_main = assigned.matching(SubqueryMatch("actor_id", main_agents)).column("subject_id")
             unassigned = SubqueryMatch("id", assigned.column("subject_id"), negated=True)
-            return AllOf([Equal("state", OPEN_STATE), AnyOf([unassigned, SubqueryMatch("id", target_main)])]).statement()
-        return AllOf([Equal("state", OPEN_STATE), SubqueryMatch("id", assigned.matching(Equal("actor_id", self.agent_id)).column("subject_id"))]).statement()
+            return Conjunction([Equal("state", OPEN_STATE), Disjunction([unassigned, SubqueryMatch("id", target_main)])]).statement()
+        return Conjunction([Equal("state", OPEN_STATE), SubqueryMatch("id", assigned.matching(Equal("actor_id", self.agent_id)).column("subject_id"))]).statement()

@@ -37,7 +37,7 @@ from engine.query.errors.unknown_table_error import UnknownTableError
 from engine.query.join import Join
 from engine.query.errors.unknown_operator_error import UnknownOperatorError
 from engine.query.errors.unnamed_column_error import UnnamedColumnError
-from engine.query.errors.column_kind_error import ColumnKindError
+from engine.query.errors.column_type_error import ColumnTypeError
 
 
 M = TypeVar("M", bound=Model | ViewModel, covariant=True)
@@ -255,7 +255,7 @@ class Query(Generic[M]):
     @staticmethod
     def converted_value(value: object, value_type: type[V], column: str) -> V:
         if not isinstance(value, value_type):
-            raise ColumnKindError(f"{column} holds {type(value).__name__} {value!r}, not {value_type.__name__}")
+            raise ColumnTypeError(f"{column} holds {type(value).__name__} {value!r}, not {value_type.__name__}")
         return value
 
     def page(self, number: int = 1, size: int = PAGE_SIZE_ROWS) -> Page[M]:

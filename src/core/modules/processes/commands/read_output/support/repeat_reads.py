@@ -9,7 +9,7 @@ from core.modules.drivers.support.context_resets import ContextResets
 from core.modules.processes.commands.read_output.read_output import ReadOutput
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.cadence.run_silences import CHECKED_MARK
-from core.modules.processes.support.held_runs import HeldRuns
+from core.modules.processes.support.blocked_runs import BlockedRuns
 from core.modules.processes.support.output_folder import OutputFolder
 
 MAIN_POLL_HINT = "set a monitor with journal output monitor {process}"
@@ -24,7 +24,7 @@ class RepeatReads:
     since the journal tells the agent when it ends, or until the run is held for printing nothing, which asks
     for a read."""
 
-    def __init__(self, queries: Queries, folder: OutputFolder, resets: ContextResets, blocked_runs: HeldRuns) -> None:
+    def __init__(self, queries: Queries, folder: OutputFolder, resets: ContextResets, blocked_runs: BlockedRuns) -> None:
         self.queries, self.folder, self.resets, self.held_runs = queries, folder, resets, blocked_runs
 
     def check(self, command: ReadOutput, context: Context) -> None:

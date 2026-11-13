@@ -7,8 +7,8 @@ from core.modules.processes.models.enums.unreadable_reason import UnreadableReas
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.unreadable_mark import UnreadableMark
 from core.modules.processes.support.reading_notices.reading_notices import ReadingNotices
-from core.modules.processes.support.reading.run_command_words import RunCommandWords
-from core.modules.processes.support.unreadable.unreadable_marks import UnreadableMarks
+from core.modules.processes.support.reading.run_command_terms import RunCommandTerms
+from core.modules.processes.support.unreadable.unreadable_mark_registry import UnreadableMarkRegistry
 
 SOURCE = "processes.unreadable-by-person"
 
@@ -19,7 +19,7 @@ class MarkRunUnreadableHandler(Handler[MarkRunUnreadable, UnreadableMark]):
 
     command = MarkRunUnreadable
 
-    def __init__(self, rows: EventRows, terms: RunCommandWords, marks: UnreadableMarks, nudger: Nudger) -> None:
+    def __init__(self, rows: EventRows, terms: RunCommandTerms, marks: UnreadableMarkRegistry, nudger: Nudger) -> None:
         self.rows, self.words, self.marks, self.nudger = rows, terms, marks, nudger
 
     def handle(self, command: MarkRunUnreadable, context: Context) -> UnreadableMark:

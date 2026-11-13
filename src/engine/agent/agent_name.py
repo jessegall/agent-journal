@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from engine.enums.agent_role import AgentRole
 from engine.query.conditions.equal import Equal
 from engine.query.enums.sql_function import SqlFunction
-from engine.query.expressions.case_when import CaseWhen
+from engine.query.expressions.case_expression import CaseExpression
 from engine.query.expressions.column import Column
 from engine.query.expressions.concat import Concat
 from engine.query.expressions.function_call import FunctionCall
@@ -33,8 +33,8 @@ class AgentName:
 
 # The name of the agent row an alias stands for, as the code names it: Main agent, or its role and its number, such as
 # Helper 848.
-def agent_name(alias: str) -> CaseWhen:
+def agent_name(alias: str) -> CaseExpression:
     role = Column(f"{alias}.role")
     capital = FunctionCall(SqlFunction.UPPER, [FunctionCall(SqlFunction.SUBSTR, [role, Literal(1), Literal(1)])])
-    return CaseWhen([(Equal(f"{alias}.role", MAIN_ROLE), Literal(MAIN_NAME))],
+    return CaseExpression([(Equal(f"{alias}.role", MAIN_ROLE), Literal(MAIN_NAME))],
                     Concat([capital, FunctionCall(SqlFunction.SUBSTR, [role, Literal(2)]), Literal(" "), Column(f"{alias}.number")]))

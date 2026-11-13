@@ -13,7 +13,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_nudges import REDIRECTED_RUN, READING_PREVENTED, SILENT_START_FIXED, SILENT_START_READY, SILENT_START_REFUSED, SILENT_START_TAUGHT
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
-from core.modules.processes.support.unreadable.unreadable_marks import UnreadableMarks
+from core.modules.processes.support.unreadable.unreadable_mark_registry import UnreadableMarkRegistry
 from core.modules.processes.support.run_shape import RunShape
 from core.modules.processes.support.run_shapes import INSPECTED_CHARACTERS, RunShapes
 from core.modules.processes.support.silent_run import SilentRun
@@ -35,7 +35,7 @@ class ReadingEnforcer:
     its next start with every exit stated. A command marked unreadable is asked nothing, and a
     command that takes an exit always passes."""
 
-    def __init__(self, runs: SilentStartRuns, folder: OutputFolder, readers: ReaderRows, marks: UnreadableMarks, run_counts: CommandRunCounts, decisions: ReadingDecisionQuery) -> None:
+    def __init__(self, runs: SilentStartRuns, folder: OutputFolder, readers: ReaderRows, marks: UnreadableMarkRegistry, run_counts: CommandRunCounts, decisions: ReadingDecisionQuery) -> None:
         self.runs, self.folder, self.readers, self.marks, self.run_counts, self.decisions = runs, folder, readers, marks, run_counts, decisions
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
