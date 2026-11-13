@@ -11,7 +11,6 @@ from engine.enums.window_priority import WindowPriority
 from engine.enums.execution_priority import ExecutionPriority
 from engine.execution.current_execution import CurrentExecution
 from server.errors.hook_database_busy_error import HookDatabaseBusyError
-from server.enums.queue_priority import QueuePriority
 from server.hook.queue_request import QueueRequest
 
 RUNNING_HOOKS_COUNT = 3
@@ -33,7 +32,7 @@ class ServerQueue(RequestQueue):
         self.sent_at: dict[str, list[float]] = {}
         self.main_hook_seconds, self.agent_hook_seconds = 0.0, 0.0
         self.changed = threading.Condition()
-        self.waiting_hooks: list[tuple[QueuePriority, int, str]] = []
+        self.waiting_hooks: list[tuple[int, int, str]] = []
         self.running_owners: list[str] = []
         self.arrivals = itertools.count()
         self.waiting_requests: dict[int, QueueRequest] = {}
@@ -93,12 +92,12 @@ class ServerQueue(RequestQueue):
         return len(self.running_owners)
 
     @contextmanager
-    def hook_turn(self, priority: QueuePriority, wait_seconds: float, owner: str = "", request: QueueRequest | None = None) -> Generator[None]:
-        request = request or QueueRequest.started("Main agent" if priority is QueuePriority.MAIN_AGENT_HOOK else "Worker", "hook")
-        place = (priority, next(self.arrivals), owner)
+    def hook_turn(self, priority: ExecutionPriority, wait_seconds: float, owner: str = "", request: QueueRequest | None = None) -> Generator[None]:
+        request = request or QueueRequest.started("Main agent" if priority is ExecutionPriority.IMMEDIATE else "Worker", "hook")
+        place = (priority.rank, next(self.arrivals), owner)
         self.start_hook(place, wait_seconds, request)
         try:
-            with CurrentExecution(priority.execution_priority, "hook", request.event).applied():
+            with CurrentExecution(priority, "hook", request.event).applied():
                 yield
         finally:
             with self.changed:
@@ -106,7 +105,7 @@ class ServerQueue(RequestQueue):
                 del self.running_requests[place[1]]
                 self.changed.notify_all()
 
-    def start_hook(self, place: tuple[QueuePriority, int, str], wait_seconds: float, request: QueueRequest) -> None:
+    def start_hook(self, place: tuple[int, int, str], wait_seconds: float, request: QueueRequest) -> None:
         deadline = monotonic() + wait_seconds
         with self.changed:
             self.waiting_hooks.append(place)
@@ -125,7 +124,7 @@ class ServerQueue(RequestQueue):
                 del self.waiting_requests[place[1]]
                 self.changed.notify_all()
 
-    def is_next(self, place: tuple[QueuePriority, int, str]) -> bool:
+    def is_next(self, place: tuple[int, int, str]) -> bool:
         if self.running_hooks >= self.running_hooks_count:
             return False
         return place == min((waiting for waiting in self.waiting_hooks if waiting[2] not in self.running_owners), default=None)

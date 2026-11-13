@@ -35,7 +35,7 @@ from server.hook.hook_sender import HookSender
 from server.hook.raw_hook_body import RawHookBody, is_raw_body
 from server.hook.hook_headers import HookHeaders
 from server.errors.hook_database_busy_error import HookDatabaseBusyError
-from server.enums.queue_priority import QueuePriority
+from engine.enums.execution_priority import ExecutionPriority
 from server.hook.queue_request import QueueRequest
 from server.context.server_context import ServerContext
 
@@ -87,7 +87,7 @@ class HookEndpoint:
         retries = HookDeliveryRetries(self.context.home)
         retries.keep(reply.hook_call_id)
         try:
-            with self.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, self.context.hook_limit_seconds) as database:
+            with self.context.hook_database.used(ExecutionPriority.IMMEDIATE, self.context.hook_limit_seconds) as database:
                 database.set_busy_timeout(self.context.hook_limit_seconds)
                 retries.retry(synced_database_container(self.context.home, database))
         except HookDatabaseBusyError as error:

@@ -41,7 +41,7 @@ from server.request.journal_server import JournalServer
 from engine.serving.server_limits import DRAIN_LIMIT_SECONDS
 from server.context.server_context import ServerContext
 from server.hook.hook_database import HookDatabase
-from server.enums.queue_priority import QueuePriority
+from engine.testing.stories.hook_priorities import MAIN_AGENT_HOOK_PRIORITY
 from server.work.journal_round import JournalRound
 from server.work.listeners.listener_thread import ListenerThread
 from server.work.listeners.listener_wake import ListenerWake
@@ -90,7 +90,7 @@ class ServerStory:
         self.story, self.socket_path, self.context = story, socket_path, context
 
     def expect_locked_hook_answer(self, body: object, text: str, locked_seconds: float = LOCKED_HOOK_WAIT_SECONDS) -> None:
-        with self.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, locked_seconds):
+        with self.context.hook_database.used(MAIN_AGENT_HOOK_PRIORITY, locked_seconds):
             self.expect_hook_answer("/hook", body, 200, text)
 
     def post_hook_disconnect(self, body: dict[str, object]) -> None:
@@ -107,7 +107,7 @@ class ServerStory:
                 finished.set()
 
         with patch.object(HookEndpoint, "answer_lost", drop_record):
-            with self.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, LOCKED_HOOK_WAIT_SECONDS), socket.socket(socket.AF_UNIX) as connection:
+            with self.context.hook_database.used(MAIN_AGENT_HOOK_PRIORITY, LOCKED_HOOK_WAIT_SECONDS), socket.socket(socket.AF_UNIX) as connection:
                 connection.connect(str(self.socket_path))
                 connection.sendall(f"POST /hook HTTP/1.1\r\nHost: journal\r\nContent-Length: {len(data)}\r\nConnection: close\r\n\r\n".encode() + data)
                 queue = self.context.hook_database.queue

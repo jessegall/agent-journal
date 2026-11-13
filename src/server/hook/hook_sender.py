@@ -5,8 +5,12 @@ from engine.enums.agent_role import AgentRole
 from engine.driver.hook_event import HookEvent
 from engine.enums.hook_event_name import HookEventName
 from engine.types.type_guards import is_mapping
-from server.enums.queue_priority import QueuePriority
+from engine.enums.execution_priority import ExecutionPriority
 from server.hook.hook_limits import AGENT_HOOK_LIMIT_SECONDS, HOOK_LIMIT_SECONDS, STOP_LIMIT_SECONDS
+
+# the main agent's hooks go first and never wait out a limit; the hooks of other agents come next
+MAIN_AGENT_HOOK_PRIORITY = ExecutionPriority.IMMEDIATE
+AGENT_HOOK_PRIORITY = ExecutionPriority.RESERVED
 
 
 @dataclass(frozen=True)
@@ -18,7 +22,7 @@ class HookSender:
     session: str
     event_name: str
     event: HookEventName | None
-    priority: QueuePriority
+    priority: ExecutionPriority
     limit_seconds: float
 
     @classmethod
@@ -31,7 +35,7 @@ class HookSender:
         normalized_name = event_name.replace("_", "").casefold()
         event = next((event for event in HookEventName if event.value.replace("_", "").casefold() == normalized_name), None)
         is_main = role == AgentRole.MAIN
-        priority = QueuePriority.MAIN_AGENT_HOOK if is_main else QueuePriority.AGENT_HOOK
+        priority = MAIN_AGENT_HOOK_PRIORITY if is_main else AGENT_HOOK_PRIORITY
         limit_seconds = main_limit_seconds if is_main else agent_limit_seconds
         if event is HookEventName.STOP:
             limit_seconds = max(limit_seconds, stop_limit_seconds)

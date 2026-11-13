@@ -5,7 +5,7 @@ from engine.database.database import Database
 from engine.enums.execution_priority import ExecutionPriority
 from engine.execution.current_execution import CurrentExecution
 from engine.testing.stories.story import Story
-from server.enums.queue_priority import QueuePriority
+from server.hook.hook_sender import AGENT_HOOK_PRIORITY, MAIN_AGENT_HOOK_PRIORITY
 from server.execution.write_turn_queue import WriteTurnQueue
 
 WAIT_LIMIT_SECONDS = 30.0
@@ -58,7 +58,7 @@ class StoryWriteTurns(WriteTurnQueue):
     # Keeps the turn while the hooks of other agents and then the main agent's hook ask for it, and gives the order
     # they got it in.
     def hook_turn_order(self, agent_count: int) -> list[str]:
-        asks = [(f"agent hook {number}", QueuePriority.AGENT_HOOK) for number in range(1, agent_count + 1)] + [(MAIN_AGENT_HOOK, QueuePriority.MAIN_AGENT_HOOK)]
+        asks = [(f"agent hook {number}", AGENT_HOOK_PRIORITY) for number in range(1, agent_count + 1)] + [(MAIN_AGENT_HOOK, MAIN_AGENT_HOOK_PRIORITY)]
         threads = [Thread(target=self.request_turn, args=(name, priority)) for name, priority in asks]
         with self.write_turn():
             for waiting_count, thread in enumerate(threads, start=1):
@@ -68,8 +68,8 @@ class StoryWriteTurns(WriteTurnQueue):
             thread.join(WAIT_LIMIT_SECONDS)
         return self.order
 
-    def request_turn(self, name: str, priority: QueuePriority) -> None:
-        with CurrentExecution(priority.execution_priority, "hook", name).applied(), self.write_turn():
+    def request_turn(self, name: str, priority: ExecutionPriority) -> None:
+        with CurrentExecution(priority, "hook", name).applied(), self.write_turn():
             self.order.append(name)
 
     def expect_waiters(self, count: int) -> None:

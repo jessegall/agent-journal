@@ -3,7 +3,7 @@ import json
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
 
-from server.enums.queue_priority import QueuePriority
+from engine.testing.stories.hook_priorities import AGENT_HOOK_PRIORITY, MAIN_AGENT_HOOK_PRIORITY
 
 import pytest
 
@@ -192,7 +192,7 @@ def test_a_hook_shows_the_time_it_waited_for_another(recording_server):
     server = recording_server
     sample = HookSamples.sample("post_tool_use").with_fields(firing="queued")
     with ThreadPoolExecutor(1) as pool:
-        with server.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, 1):
+        with server.context.hook_database.used(MAIN_AGENT_HOOK_PRIORITY, 1):
             answer = pool.submit(server.expect_hook_answer, "/hook", dict(sample.body), 200, '"refusal":')
             queue = server.context.hook_database.queue
             with queue.changed:
@@ -234,7 +234,7 @@ def test_queue_inspector_shows_hook_priority_without_waiting(recording_server):
     worker = HookSamples.sample("post_tool_use").with_fields(session="s-queue-worker", role="worker", firing="queue-worker")
     main = HookSamples.sample("post_tool_use").with_fields(role="main", firing="queue-main")
     with ThreadPoolExecutor(2) as pool:
-        with server.context.hook_database.used(QueuePriority.AGENT_HOOK, 1):
+        with server.context.hook_database.used(AGENT_HOOK_PRIORITY, 1):
             first = pool.submit(server.expect_hook_answer, "/hook", dict(worker.body), 200, '"refusal":')
             with server.context.hook_database.queue.changed:
                 server.story.expect_rows(server.context.hook_database.queue.changed.wait_for(lambda: len(server.context.hook_database.queue.waiting_hooks) == 1, timeout=0.4))
@@ -252,7 +252,7 @@ def test_queue_inspector_shows_a_waiting_viewer_without_waiting_for_the_hook(rec
     server = recording_server
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
     with ThreadPoolExecutor(1) as pool:
-        with server.context.hook_database.used(QueuePriority.AGENT_HOOK, 1):
+        with server.context.hook_database.used(AGENT_HOOK_PRIORITY, 1):
             answer = pool.submit(server.viewer_line_value, cookie, {"line": ["task", "list"], "environment": "main", "window": "tasks.tasks"})
             with server.context.hook_database.queue.changed:
                 server.story.expect_rows(server.context.hook_database.queue.changed.wait_for(lambda: bool(server.context.hook_database.queue.waiting_viewers), timeout=0.4))
@@ -290,7 +290,7 @@ def test_inspection_reads_alone_and_in_a_batch_skip_hooks_and_the_request_log(re
     request = {"line": ["developer", command], "environment": "main", "window": window}
     server.context.hook_database.queue.viewer_wait_limit_seconds = 5
     with ThreadPoolExecutor(1) as pool:
-        with server.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, 1):
+        with server.context.hook_database.used(MAIN_AGENT_HOOK_PRIORITY, 1):
             single = pool.submit(server.viewer_line_value, cookie, request)
             single.result(timeout=3)
             batch = pool.submit(viewer_answer, server.viewer_port(), "/api/lines", cookie, "", {"lines": [request, request]})

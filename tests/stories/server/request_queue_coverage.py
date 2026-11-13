@@ -4,7 +4,7 @@ from threading import Event
 from engine.testing.examples.hook_samples import HookSamples
 from server.endpoints.cli_endpoint import CliEndpoint
 from server.endpoints.hook_endpoint import HookEndpoint
-from server.enums.queue_priority import QueuePriority
+from engine.testing.stories.hook_priorities import AGENT_HOOK_PRIORITY, MAIN_AGENT_HOOK_PRIORITY
 from server.hook.queue_request import QueueRequest
 from server.work.journal_round import JournalRound
 from server.work.round_work import RoundWork
@@ -94,7 +94,7 @@ def test_a_main_agent_hook_goes_ahead_of_a_waiting_cli_line(recording_server, mo
     monkeypatch.setattr(HookEndpoint, "prepared_answer", hook)
     body = dict(HookSamples.sample("post_tool_use").with_fields(session="s-1", environment="main", role="main", firing="ahead-of-cli").body)
     with ThreadPoolExecutor(2) as pool:
-        with server.context.hook_database.used(QueuePriority.AGENT_HOOK, 1):
+        with server.context.hook_database.used(AGENT_HOOK_PRIORITY, 1):
             command = pool.submit(server.expect_cli_exit, "task list", "/", 0, "")
             with queue.changed:
                 server.story.expect_rows(queue.changed.wait_for(lambda: bool(queue.waiting_cli), timeout=2))
@@ -110,7 +110,7 @@ def test_a_cli_line_runs_after_its_wait_limit_even_while_a_hook_is_held(recordin
     server = recording_server
     server.context.hook_database.queue.cli_wait_limit_seconds = 0.05
     with ThreadPoolExecutor(1) as pool:
-        with server.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, 1):
+        with server.context.hook_database.used(MAIN_AGENT_HOOK_PRIORITY, 1):
             command = pool.submit(server.expect_cli_exit, "task list", "/", 0, "")
             command.result(timeout=2)
 
@@ -138,6 +138,6 @@ def test_a_tick_round_does_not_wait_behind_a_running_hook(recording_server):
     queue.cli_wait_limit_seconds = LONG_WAIT_LIMIT_SECONDS
     work = BlockedRound()
     work.release.set()
-    with server.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, 1):
+    with server.context.hook_database.used(MAIN_AGENT_HOOK_PRIORITY, 1):
         JournalRound(server.story.home, "output reading", work, queue=queue).run()
         server.story.expect_rows(work.entered.is_set())

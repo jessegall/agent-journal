@@ -3,19 +3,20 @@ import pytest
 from engine.driver.hook_event import HookEvent
 from engine.enums.hook_event_name import HookEventName
 from server.hook.hook_sender import HookSender
-from server.enums.queue_priority import QueuePriority
+from server.hook.hook_sender import AGENT_HOOK_PRIORITY, MAIN_AGENT_HOOK_PRIORITY
 
 
-@pytest.mark.parametrize("role", ["main", "worker", "helper", ""])
-def test_raw_and_prepared_hooks_have_the_same_queue_owner_and_requirements(role):
+@pytest.mark.parametrize("role,priority,limit_seconds", [("main", MAIN_AGENT_HOOK_PRIORITY, 3.5), ("worker", AGENT_HOOK_PRIORITY, 45),
+                                                          ("helper", AGENT_HOOK_PRIORITY, 45), ("", MAIN_AGENT_HOOK_PRIORITY, 3.5)])
+def test_raw_and_prepared_hooks_have_the_same_queue_owner_and_requirements(role, priority, limit_seconds):
     prepared = HookSender.parsed({"role": role, "session": "session-42", "event": "pre_tool_use"}, 3.5, 45)
     raw = HookSender.parsed({"role": role, "session_id": "session-42", "hook_event_name": "PreToolUse"}, 3.5, 45)
     assert prepared.owner == raw.owner == "session-42"
     assert prepared.priority == raw.priority
     assert prepared.limit_seconds == raw.limit_seconds
     assert prepared.needs_check == raw.needs_check == HookEvent.is_checked_role(role)
-    assert prepared.priority is (QueuePriority.AGENT_HOOK if role in ("worker", "helper") else QueuePriority.MAIN_AGENT_HOOK)
-    assert prepared.limit_seconds == (45 if role in ("worker", "helper") else 3.5)
+    assert prepared.priority is priority
+    assert prepared.limit_seconds == limit_seconds
 
 
 @pytest.mark.parametrize("event,raw_name", [(HookEventName.STOP, "Stop"), (HookEventName.POST_TOOL_USE, "PostToolUse")])
