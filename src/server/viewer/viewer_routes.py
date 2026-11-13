@@ -39,5 +39,5 @@ class ViewerRoutes:
         self.waiting_route, self.server_state_route = WaitingRoute(home), ServerStateRoute(home, clock)
         self.skills_route = SkillsRoute(home)
         self.share_route = ShareRoute(login.shares)
-        self.notices_route = PushRoute(login, login.phones)
+        self.notices_route = PushRoute(login.phones)
         self.file_route = FileRoute(home)
