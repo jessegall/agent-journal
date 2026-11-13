@@ -27,7 +27,7 @@ class ListenerSet:
             self.event_matches[event_name] = any(entry.event.matches(event_name) for entry in self.entries)
         return self.event_matches[event_name]
 
-    def instance_of(self, entry: ListenerEntry) -> object:
+    def instance(self, entry: ListenerEntry) -> object:
         return self.instances[entry.name]
 
     def close(self) -> None:

@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from engine.testing.stories.story import Story
+from engine.listener.commit.listener_set import ListenerSet
 from tests.stories.support.program_states import bind_ready_programs
 from tests.stories.suites.coding.modules.workers.support.memory_git.git_choice import REAL_GIT
 from core.modules.plugins.support.machine_runs import MACHINE_FOLDER_VARIABLE
