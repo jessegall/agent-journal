@@ -1,6 +1,7 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
 import {useWindow} from "@journal/window-kit";
+import AssignRuleActivity from "./AssignRuleActivity.vue";
 
 // the assign tab: the targets a person gives rules to, the rules of the chosen one in the order where the first match
 // wins, and a form for a new rule; every change names the revision of the rules it was made from, so a change made
@@ -98,10 +99,7 @@ async function countRecent() {
                         <template v-if="rule.warning">
                             <span class="warning" data-assign-warning>{{ rule.warning }}</span>
                         </template>
-                        <span class="activity" data-assign-activity>{{ rule.activity.text }}</span>
-                        <template v-if="rule.activity.last_skip">
-                            <span class="activity" data-assign-last-skip>Last skipped: {{ rule.activity.last_skip }}</span>
-                        </template>
+                        <AssignRuleActivity :activity="rule.activity" />
                         <template v-if="!readOnly">
                             <span class="actions">
                                 <button type="button" title="Move the rule up" :disabled="rule.position === 1" @click="move(rule, -1)">↑</button>
@@ -141,7 +139,7 @@ async function countRecent() {
                             <p class="warning" data-assign-main-warning>The main agent writes no code here, so a rule that gives it a task is skipped.</p>
                         </template>
                         <div class="trial">
-                            <input v-model="trialTask" type="number" min="1" aria-label="Task to try the rule on" placeholder="Task number" data-assign-trial-task />
+                            <input v-model="trialTask" type="number" min="1" aria-label="Task number for the trial" placeholder="Task number" data-assign-trial-task />
                             <button type="button" :disabled="!trialTask" data-assign-try @click="tryRule">Try on this task</button>
                             <button type="button" data-assign-count @click="countRecent">Count the last 20 tasks</button>
                         </div>
@@ -181,7 +179,6 @@ async function countRecent() {
 .place { min-width: 18px; color: var(--text-3); }
 .summary { flex: 1; }
 .warning { color: var(--warn); font-size: 12px; }
-.activity { color: var(--text-3); font-size: 11.5px; }
 .actions { display: flex; gap: 4px; }
 .editor { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
 .condition { display: flex; gap: 6px; }

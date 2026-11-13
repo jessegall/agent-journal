@@ -1,11 +1,8 @@
-
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.assign_rules.support.rule_steps import COMPLEXITY_RULE, ENVIRONMENT, recorded_decision, SonnetWorkerAndFreeTask
 
 SECOND = "--environment second"
-
-
 
 
 class SecondEnvironment(StoryFixture):

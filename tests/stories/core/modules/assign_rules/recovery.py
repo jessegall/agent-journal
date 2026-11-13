@@ -12,12 +12,6 @@ RETRY_TICK = "assign rules retry"
 MISSING_AGENT_ID = 999
 
 
-
-
-
-
-
-
 class MainAgentEnded(StoryFixture):
     """Ada's rule 1 gives any task to the main agent, and the main agent, session s-1, has ended."""
 
@@ -88,7 +82,7 @@ def test_the_same_task_judged_twice_changes_nothing_the_second_time(new_story):
 
 def test_a_rule_whose_agent_row_is_gone_is_skipped_and_shown_broken_and_the_next_rule_applies(new_story):
     story = new_story(fixture=OrchestratorWithPerson)
-    missing_agent_rule = story.seed(AgentRuleSeed, 1, environment_id=1, creator_id=story.user.id, position=1, agent_id=MISSING_AGENT_ID)[0]
+    missing_agent_rule = story.seed(AgentRuleSeed, 1, environment_id=1, creator_id=story.user.id, position=1, target_agent_id=MISSING_AGENT_ID)[0]
     story.seed(RuleConditionSeed, 1, rule_id=missing_agent_rule, field="any", operator="any")
     main_rule = story.new_row_id(rule_line("any"), actor=story.user)
     task_id = new_task(story, "Fix the clock")

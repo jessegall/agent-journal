@@ -81,14 +81,14 @@ class AssignBoardReader:
 
     def board_rule(self, rule: AssignRule, lines: tuple[ConditionLine, ...], agent_rows: dict[int, Agent], activity: RuleActivity) -> BoardRule:
         conditions = tuple(BoardCondition(line.field, line.operator, line.value, line.label) for line in lines)
-        warning = self.agent_warning(rule.agent_id, agent_rows) if rule.target is RuleTarget.AGENT else ""
+        warning = self.agent_warning(rule.target_agent_id, agent_rows) if rule.target is RuleTarget.AGENT else ""
         return BoardRule(rule.id, rule.position, rule.enabled, rule.target, self.target_key(rule), rule.target_name, rule.queue_limit, conditions, warning, activity)
 
     @staticmethod
     def target_key(rule: AssignRule) -> str:
         match rule.target:
             case RuleTarget.AGENT:
-                return f"agent:{rule.agent_id}"
+                return f"agent:{rule.target_agent_id}"
             case RuleTarget.MODEL:
                 return f"model:{rule.program}:{rule.program_model}"
             case _:

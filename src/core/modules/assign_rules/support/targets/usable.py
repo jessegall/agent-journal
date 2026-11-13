@@ -7,4 +7,4 @@ class Usable:
     notes a limit or a pause."""
 
     actor_id: int | None
-    reason: str
+    reason: str | None

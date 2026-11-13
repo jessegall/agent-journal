@@ -1,4 +1,6 @@
 import json
+from collections.abc import Callable, Mapping
+from typing import TypeVar
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
@@ -13,6 +15,7 @@ ENVIRONMENT = "--environment main"
 COMPLEXITY_RULE = 1
 MIGRATION_RULE = 2
 FREE_TASK_ID = 2
+ListedRow = TypeVar("ListedRow")
 
 
 def rule_line(*conditions: str, target: str = "main") -> str:
@@ -34,9 +37,12 @@ def new_task(story: Story, flags: str) -> int:
     return story.new_row_id(f"task make {flags} {ENVIRONMENT}", actor=story.user)
 
 
+def listed_rows(story: Story, line: str, parse: Callable[[Mapping[str, object]], ListedRow]) -> list[ListedRow]:
+    return [parse(row) for row in json.loads(story.run(f"{line} --json {ENVIRONMENT}").output_text)["rows"]]
+
+
 def listed_decisions(story: Story, task_id: int) -> list[DecisionRow]:
-    rows = json.loads(story.run(f"assign-decision list --task {task_id} --json {ENVIRONMENT}", actor=story.user).output_text)["rows"]
-    return [DecisionRow.parsed(row) for row in rows]
+    return listed_rows(story, f"assign-decision list --task {task_id}", DecisionRow.parsed)
 
 
 def task_decision(story: Story, task_id: int) -> DecisionRow:
@@ -46,12 +52,11 @@ def task_decision(story: Story, task_id: int) -> DecisionRow:
 
 
 def recorded_decision(story: Story, task_id: int, environment: str = ENVIRONMENT) -> DecisionRow:
-    return DecisionRow.parsed(json.loads(story.run(f"assign-decision record {task_id} --json {environment}", actor=story.user).output_text.splitlines()[0]))
+    return DecisionRow.parsed(json.loads(story.run(f"assign-decision record {task_id} --json {environment}").output_text.splitlines()[0]))
 
 
 def task_assignments(story: Story, task_id: int) -> list[GivenRow]:
-    rows = json.loads(story.run(f"assignment list --subject-model task --subject {task_id} --json {ENVIRONMENT}", actor=story.user).output_text)["rows"]
-    return [GivenRow.parsed(row) for row in rows]
+    return listed_rows(story, f"assignment list --subject-model task --subject {task_id}", GivenRow.parsed)
 
 
 class TwoPersonRules(StoryFixture):
@@ -65,7 +70,7 @@ class TwoPersonRules(StoryFixture):
         story.run(rule_line("title has_word migration"), actor=story.user)
 
     def expect(self, story: Story) -> None:
-        story.expect_rows(rule_places(story) == {COMPLEXITY_RULE: 1, MIGRATION_RULE: 2}, detail=str(rule_places(story)))
+        story.expect_rows(rule_places(story) == {COMPLEXITY_RULE: 1, MIGRATION_RULE: 2}, detail=rule_places(story))
 
 
 class PersonRulesAndWorker(StoryFixture):

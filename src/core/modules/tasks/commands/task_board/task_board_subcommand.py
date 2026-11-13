@@ -1,3 +1,4 @@
+from dataclasses import replace
 from engine.query.conditions.less import Less
 from engine.query.conditions.condition import Condition
 from core.modules.tasks.conditions.closed_task_cursor import ClosedTaskCursor
@@ -54,7 +55,8 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
 
     def read(self, arguments: Namespace, caller: Caller) -> TaskBoard:
         groups = self.groups(arguments)
-        return TaskBoard(groups, self.reasons.task_reasons([task.id for group in groups for task in group.rows]))
+        reasons = self.reasons.task_reasons([task.id for group in groups for task in group.rows])
+        return TaskBoard(tuple(replace(group, reasons=reasons) for group in groups))
 
     def groups(self, arguments: Namespace) -> tuple[TaskGroup, ...]:
         if arguments.state is not None:

@@ -4,7 +4,7 @@ from engine.event.created import Created
 from engine.event.logged_event import LoggedEvent
 from engine.listener.commit.commit_listener import CommitListener
 from core.modules.agents.models.agent import Agent
-from core.modules.assign_rules.commands.record_assign_decision.retry_assign_decisions import RetryAssignDecisions
+from core.modules.assign_rules.commands.record_assign_decision.judge_skipped_tasks import JudgeSkippedTasks
 
 
 class AgentStartRetryListener(CommitListener[Created[Agent]]):
@@ -17,4 +17,4 @@ class AgentStartRetryListener(CommitListener[Created[Agent]]):
         self.bus = bus
 
     def handle(self, event: Created[Agent], logged: LoggedEvent) -> None:
-        self.bus.run(RetryAssignDecisions(), Actor.core(), environment_id=event.row.environment_id, cause_id=logged.id)
+        self.bus.run(JudgeSkippedTasks(), Actor.core(), environment_id=event.row.environment_id, cause_id=logged.id)

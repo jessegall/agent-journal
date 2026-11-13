@@ -435,9 +435,9 @@ class Story:
                 self.container.bind(class_type, replacement)
         return code, stream.getvalue()
 
-    def expect_rows(self, *checks: object, detail: str = "") -> None:
+    def expect_rows(self, *checks: object, detail: object | None = None) -> None:
         self.checked("rows")
-        self.expected(all(checks), detail or f"a row check failed: {checks}")
+        self.expected(all(checks), f"a row check failed: {checks}" if detail is None else str(detail))
 
 
 def story_container(home: JournalHome, clock: ManualClock, process_table: "FixedProcessTable", journal: StoryJournal = COMMITTING_JOURNAL) -> Container:

@@ -2,7 +2,7 @@ from engine.event.created import Created
 from engine.event.deleted import Deleted
 from engine.event.logged_event import LoggedEvent
 from engine.listener.commit.commit_listener import CommitListener
-from core.modules.assign_rules.listeners.task_judging import TaskJudging
+from core.modules.assign_rules.listeners.support.task_judging import TaskJudging
 from core.modules.tasks.models.task_tag import TaskTag
 
 

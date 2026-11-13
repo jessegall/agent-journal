@@ -15,7 +15,7 @@ class EditAssignRule(EditCommand[AssignRule]):
     target clears the agent, program and model the command does not give."""
 
     target: RuleTarget | None = None
-    agent_id: int | None = None
+    target_agent_id: int | None = None
     program: str | None = None
     program_model: str | None = None
     queue_limit: int | None = None
@@ -25,5 +25,5 @@ class EditAssignRule(EditCommand[AssignRule]):
     def rule_changes(self) -> dict[str, object]:
         if self.target is None:
             return {name: value for name, value in self.changed_fields().items() if name not in (CONDITIONS_FIELD, REVISION_FIELD)}
-        target_fields = {"target": self.target, "agent_id": self.agent_id, "program": self.program or "", "program_model": self.program_model or ""}
+        target_fields = {"target": self.target, "target_agent_id": self.target_agent_id, "program": self.program or "", "program_model": self.program_model or ""}
         return target_fields if self.queue_limit is None else {**target_fields, "queue_limit": self.queue_limit}

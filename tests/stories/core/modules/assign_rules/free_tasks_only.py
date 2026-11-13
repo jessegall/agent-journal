@@ -2,20 +2,15 @@ import json
 
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
-from tests.stories.core.modules.assign_rules.support.rule_steps import ENVIRONMENT, rule_line, task_assignments, task_decision
+from tests.stories.core.modules.assign_rules.support.given_row import GivenRow
+from tests.stories.core.modules.assign_rules.support.rule_steps import condition_values, ENVIRONMENT, rule_line, task_assignments, task_decision
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenBuilderWithPerson, OrchestratorWithPerson
 
 TASK_ID = 1
 
 
-
-
-
-
-
-
-def rule_given(story: Story, task_id: int) -> list[dict]:
+def rule_given(story: Story, task_id: int) -> list[GivenRow]:
     return [row for row in task_assignments(story, task_id) if row.rule_id is not None]
 
 
@@ -29,7 +24,7 @@ class AnyTaskRule(StoryFixture):
         story.run(rule_line("any"), actor=story.user)
 
     def expect(self, story: Story) -> None:
-        story.expect_text(f"assign-rule list {ENVIRONMENT}", "main", actor=story.user)
+        story.expect_rows(condition_values(story, 1) == [""], detail=condition_values(story, 1))
 
 
 class PlanAndPhase(StoryFixture):
@@ -56,7 +51,7 @@ class BuilderPlanAndPhase(StoryFixture):
         story.run('phase make --plan 1 "First" --goal "it works"', actor=story.agent)
 
     def expect(self, story: Story) -> None:
-        story.expect_text(f"plan show 1 {ENVIRONMENT}", "The rebuild", actor=story.user)
+        story.expect_text(f"assign-rule list {ENVIRONMENT}", "main", actor=story.user)
 
 
 def test_a_task_assigned_by_hand_is_skipped_and_keeps_its_assignee(new_story):

@@ -42,7 +42,7 @@ class RuleTargets:
         return self.checked(main, rule, batch)
 
     def rule_agent(self, rule: AssignRule, batch: DecisionBatch) -> Usable:
-        agent = None if rule.agent_id is None else self.assignments.agent_row(rule.agent_id)
+        agent = None if rule.target_agent_id is None else self.assignments.agent_row(rule.target_agent_id)
         if agent is None:
             return Usable(None, f"the agent of rule {rule.id} is gone")
         usable = self.checked(agent, rule, batch)
@@ -91,4 +91,4 @@ class RuleTargets:
         open_tasks = self.open_task_count(agent, batch)
         if rule.queue_limit and open_tasks >= rule.queue_limit:
             return Usable(None, f"{label} holds {open_tasks} of {rule.queue_limit}")
-        return Usable(agent.id, "")
+        return Usable(agent.id, None)

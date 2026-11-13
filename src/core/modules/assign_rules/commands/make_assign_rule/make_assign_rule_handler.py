@@ -5,27 +5,28 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.assign_rules.commands.make_assign_rule.make_assign_rule import MakeAssignRule
 from core.modules.assign_rules.support.rule_revision import RuleRevision
-from core.modules.assign_rules.models.assign_rule import ENVIRONMENT_COLUMN, AssignRule
+from core.modules.assign_rules.models.assign_rule import AssignRule
 from core.modules.assign_rules.support.rule_conditions import RuleConditions
 from core.modules.assign_rules.support.rule_limits import RuleLimits
-from core.modules.plans.support.positions import Positions
 
 
 class MakeAssignRuleHandler(Handler[MakeAssignRule, AssignRule]):
-    """Adds a rule after the environment's last rule, within the limits of rules and conditions."""
+    """Adds a rule after the environment's last rule, within the limits of rules and conditions; the places of
+    the rules have no gaps, so the new place follows the count."""
 
     command = MakeAssignRule
 
-    def __init__(self, queries: Queries, repository: Repository, positions: Positions, conditions: RuleConditions, revision: RuleRevision) -> None:
-        self.queries, self.repository, self.positions, self.conditions, self.revision = queries, repository, positions, conditions, revision
+    def __init__(self, queries: Queries, repository: Repository, conditions: RuleConditions, revision: RuleRevision) -> None:
+        self.queries, self.repository, self.conditions, self.revision = queries, repository, conditions, revision
 
     def handle(self, command: MakeAssignRule, context: Context) -> AssignRule:
         self.revision.check(command.revision)
         if context.environment_id is None:
             raise Refusal("a rule belongs to an environment", "add --environment <name>")
         RuleLimits.check_condition_count(len(command.conditions))
-        RuleLimits.check_rule_count(self.queries.query(AssignRule).filter(environment_id=context.environment_id).count())
-        rule = self.repository.save(AssignRule(creator_id=context.actor.id, environment_id=context.environment_id, position=self.positions.next_position(AssignRule, ENVIRONMENT_COLUMN, context.environment_id),
-                                               target=command.target, agent_id=command.agent_id, program=command.program, program_model=command.program_model, queue_limit=command.queue_limit), context)
+        rule_count = self.queries.query(AssignRule).count()
+        RuleLimits.check_rule_count(rule_count)
+        rule = self.repository.save(AssignRule(creator_id=context.actor.id, position=rule_count + 1,
+                                               target=command.target, target_agent_id=command.target_agent_id, program=command.program, program_model=command.program_model, queue_limit=command.queue_limit), context)
         self.conditions.save(rule, command.conditions, context)
         return rule

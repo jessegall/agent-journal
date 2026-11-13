@@ -1,21 +1,15 @@
-from tests.stories.core.modules.tasks.support.holder_assignee_check import assignee_of
+from tests.stories.core.modules.assign_rules.support.rule_steps import recorded_decision, task_assignments
 import pytest
 
-from engine.actor.actor import Actor
-from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.database.statement import Statement
-from core.modules.assign_rules.commands.record_assign_decision.record_assign_decision import RecordAssignDecision
 from core.modules.assign_rules.models.enums.condition_field import ConditionField
 from core.modules.assign_rules.models.enums.condition_operator import ConditionOperator
 from core.modules.assign_rules.models.enums.creator_type import CreatorType
-from core.modules.assign_rules.models.enums.decision_outcome import DecisionOutcome
 from core.modules.assign_rules.models.support.condition_checks import check_condition
 from core.modules.assign_rules.models.support.task_facts import TaskFacts
 from core.modules.assign_rules.support.task_facts_reader import TaskFactsReader
-from engine.query.queries import Queries
 from core.modules.tasks.models.support.task_priority import TaskPriority
-from core.modules.tasks.models.task import Task
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.support.story_checks import expect_absent_value
 
@@ -88,30 +82,29 @@ def insert_rule(story, position, enabled=1, field=ConditionField.ANY, operator=C
 
 
 def decide(story):
-    return story.container.get(Bus).run(RecordAssignDecision(tuple([TASK_ID])), Actor.core(), environment_id=story.environment_id)[0]
+    return recorded_decision(story, TASK_ID)
 
 
 def test_no_rule_leaves_the_task_free_and_says_so(rule_story):
     decision = decide(rule_story)
-    rule_story.expect_rows(decision.outcome is DecisionOutcome.UNMATCHED, decision.rule_id is None, decision.actor_id is None)
+    rule_story.expect_rows(decision.outcome == "unmatched", decision.rule_id is None, decision.actor_id is None)
 
 
 def test_a_rule_that_does_not_match_is_passed_over(rule_story):
     insert_rule(rule_story, 1, field=ConditionField.TITLE, operator=ConditionOperator.HAS_WORD, value="migration")
-    rule_story.expect_rows(decide(rule_story).outcome is DecisionOutcome.UNMATCHED)
+    rule_story.expect_rows(decide(rule_story).outcome == "unmatched")
 
 
 def test_the_first_matching_rule_by_position_gives_the_task_to_its_target(rule_story):
     insert_rule(rule_story, 2)
     first = insert_rule(rule_story, 1)
     decision = decide(rule_story)
-    task = rule_story.container.get(Queries).query(Task).find(TASK_ID)
-    rule_story.expect_rows(decision.outcome is DecisionOutcome.ASSIGNED, decision.rule_id == first, assignee_of(rule_story, task) == rule_story.agent.id)
+    rule_story.expect_rows(decision.outcome == "assigned", decision.rule_id == first, [given.actor_id for given in task_assignments(rule_story, TASK_ID)] == [rule_story.agent.id])
 
 
 def test_a_disabled_rule_is_not_used(rule_story):
     insert_rule(rule_story, 1, enabled=0)
-    rule_story.expect_rows(decide(rule_story).outcome is DecisionOutcome.UNMATCHED)
+    rule_story.expect_rows(decide(rule_story).outcome == "unmatched")
 
 
 def test_a_second_judgement_updates_the_one_decision(rule_story):

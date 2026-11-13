@@ -1,4 +1,3 @@
-
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.testing.stories.story import Story
@@ -16,11 +15,9 @@ def worker_flags(story: Story, worker: Actor) -> str:
     return f"--target agent --agent {agent_number(story, worker.id)}"
 
 
-
-
 def expect_decision(story: Story, outcome: str, actor_id: int | None, *reason_parts: str) -> None:
     made = recorded_decision(story, FREE_TASK_ID)
-    story.expect_rows(made.outcome == outcome, made.actor_id == actor_id, all(part in made.reason for part in reason_parts), detail=str(made))
+    story.expect_rows(made.outcome == outcome, made.actor_id == actor_id, all(part in made.reason for part in reason_parts), detail=made)
 
 
 def test_a_kind_rule_finds_a_worker_whose_model_has_the_word(new_story):

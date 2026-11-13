@@ -14,10 +14,10 @@ class RuleArguments:
     @staticmethod
     def add(parser: ArgumentParser, target_required: bool) -> None:
         parser.add_argument("--target", type=RuleTarget, choices=tuple(RuleTarget), required=target_required)
-        parser.add_argument("--agent", dest="agent_id", type=AgentNumber)
+        parser.add_argument("--agent", dest="target_agent_id", type=AgentNumber)
         parser.add_argument("--program")
         parser.add_argument("--model", dest="program_model")
-        parser.add_argument("--queue-limit", type=int, help="the most open tasks the target may hold for the rule to give it one; 0 holds no limit")
+        parser.add_argument("--queue-limit", type=int, help="the most open tasks the target may have before the rule skips it; 0 means no limit")
         RuleArguments.add_revision(parser)
         parser.add_argument("--condition", dest="conditions", action="append", help=CONDITION_HELP)
 

@@ -19,7 +19,7 @@ class AssignRule(EnvironmentScoped, Positioned):
     environment_id: int = 0
     enabled: bool = True
     target: RuleTarget
-    agent_id: int | None = None
+    target_agent_id: int | None = None
     program: str = ""
     program_model: str = ""
     queue_limit: int = 0
@@ -28,7 +28,7 @@ class AssignRule(EnvironmentScoped, Positioned):
     def target_name(self) -> str:
         match self.target:
             case RuleTarget.AGENT:
-                return f"agent {self.agent_id}"
+                return f"agent {self.target_agent_id}"
             case RuleTarget.MODEL:
                 return f"{self.program} {self.program_model}"
             case _:

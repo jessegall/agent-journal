@@ -20,5 +20,5 @@ class EditAssignRuleSubcommand(Subcommand[EditAssignRule, AssignRule]):
 
     def command(self, arguments: Namespace, caller: Caller) -> EditAssignRule:
         conditions = None if arguments.conditions is None else RuleArguments.conditions(arguments)
-        return EditAssignRule(row_id=arguments.row_id, target=arguments.target, agent_id=arguments.agent_id, program=arguments.program,
+        return EditAssignRule(row_id=arguments.row_id, target=arguments.target, target_agent_id=arguments.target_agent_id, program=arguments.program,
                               program_model=arguments.program_model, queue_limit=arguments.queue_limit, conditions=conditions, revision=arguments.revision)

@@ -23,15 +23,15 @@ class AssignRuleTargetGuard(Guard[Created[AssignRule] | Updated[AssignRule]]):
     def check(self, event: Created[AssignRule] | Updated[AssignRule], context: Context) -> None:
         rule = event.row
         if rule.queue_limit < 0:
-            raise Refusal(f"the most open tasks a target may hold is 0 or more, not {rule.queue_limit}", "give 0 for no limit")
+            raise Refusal(f"the queue limit is 0 or more, not {rule.queue_limit}", "use 0 for no limit")
         if rule.target is RuleTarget.MODEL and not (rule.program and rule.program_model):
-            raise Refusal("a rule for a program and model names both", "add --program <program> --model <model>")
+            raise Refusal("a rule for a program and model needs both", "add --program <program> --model <model>")
         if rule.target is not RuleTarget.AGENT:
             return
-        if rule.agent_id is None:
-            raise Refusal("a rule for one agent names the agent", "add --agent <number>")
-        agent = self.rows.find(Agent, rule.agent_id)
+        if rule.target_agent_id is None:
+            raise Refusal("a rule for one agent needs the agent", "add --agent <number>")
+        agent = self.rows.find(Agent, rule.target_agent_id)
         if agent is None or agent.environment_id != rule.environment_id:
-            raise Refusal(f"agent {rule.agent_id} works in another environment", "give the rule to an agent of the rule's own environment")
+            raise Refusal(f"agent {rule.target_agent_id} works in another environment", "give the rule to an agent of the rule's own environment")
         if agent.role in tuple(HelperRole):
             raise Refusal("helpers take no task", "give the rule to the main agent or to an agent that takes tasks")

@@ -1,21 +1,14 @@
-
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
-from tests.stories.core.modules.assign_rules.support.rule_steps import COMPLEXITY_RULE, ENVIRONMENT, MIGRATION_RULE, new_task, TwoPersonRules, rule_line, SonnetWorkerAndFreeTask, task_assignments, task_decision
+from tests.stories.core.modules.assign_rules.support.rule_steps import COMPLEXITY_RULE, condition_values, ENVIRONMENT, MIGRATION_RULE, new_task, TwoPersonRules, rule_line, SonnetWorkerAndFreeTask, task_assignments, task_decision
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
 
 FIRST_RULE = 1
 SECOND_RULE = 2
-
-
-
-
-
-
 
 
 class WorkerAndMainRules(StoryFixture):
@@ -46,7 +39,7 @@ class RetiredWorkerAndMainRule(StoryFixture):
         story.run(rule_line("any"), actor=story.user)
 
     def expect(self, story: Story) -> None:
-        story.expect_text(f"assign-rule list {ENVIRONMENT}", "main", actor=story.user)
+        story.expect_text(f"assign-rule board {ENVIRONMENT}", "its agent is retired", actor=story.user)
 
 
 class BackendRule(StoryFixture):
@@ -58,7 +51,7 @@ class BackendRule(StoryFixture):
         story.run(rule_line("tag has backend"), actor=story.user)
 
     def expect(self, story: Story) -> None:
-        story.expect_text(f"assign-rule list {ENVIRONMENT}", "main", actor=story.user)
+        story.expect_rows(condition_values(story, 1) == ["backend"], detail=condition_values(story, 1))
 
 
 def test_a_new_task_that_meets_a_rule_is_given_at_once_with_the_rule_on_the_assignment(new_story):

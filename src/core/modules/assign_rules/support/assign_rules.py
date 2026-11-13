@@ -123,7 +123,7 @@ class AssignRules:
 
     def matched(self, task: Task, stored: AssignDecision | None, rule: AssignRule, usable: Usable, skipped: list[str], later_rules: list[AssignRule],
                 context: Context) -> AssignDecision:
-        target_note = f" ({usable.reason})" if usable.reason else ""
+        target_note = "" if usable.reason is None else f" ({usable.reason})"
         later_matches = [f"also matched: {', '.join(f'rule {matched_rule.id}' for matched_rule in later_rules)}"] if later_rules else []
         if not self.mode.is_assigning():
             return self.record(task, stored, DecisionOutcome.DRY_RUN, rule, usable.actor_id, "; ".join([*skipped, f"rule {rule.id} matches, target {rule.target_name}{target_note}", *later_matches]), context)

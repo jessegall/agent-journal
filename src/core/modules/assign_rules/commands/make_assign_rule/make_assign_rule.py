@@ -12,7 +12,7 @@ class MakeAssignRule(Command[AssignRule]):
 
     target: RuleTarget
     conditions: tuple[ConditionLine, ...]
-    agent_id: int | None = None
+    target_agent_id: int | None = None
     program: str = ""
     program_model: str = ""
     queue_limit: int = 0

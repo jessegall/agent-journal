@@ -33,7 +33,6 @@ def test_the_9th_condition_of_a_rule_is_refused_naming_the_limit(new_story):
 def test_a_word_over_40_characters_is_refused_naming_the_limit(new_story):
     story = new_story(fixture=OrchestratorWithPerson)
     story.expect_refusal(rule_line(f"title has_word {'a' * 41}"), "at most 40 characters", actor=story.user)
-    story.expect_text(rule_line(f"title has_word {'a' * 41}"), "use a shorter word", actor=story.user) if False else None
 
 
 def test_a_phrase_of_more_than_5_words_is_refused_naming_the_limit(new_story):

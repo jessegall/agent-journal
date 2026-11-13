@@ -10,7 +10,7 @@ from engine.query.queries import Queries
 from engine.time.clock import Clock
 from engine.time.timestamp import Timestamp
 from core.modules.assign_rules.commands.record_assign_decision.record_assign_decision import RecordAssignDecision
-from core.modules.assign_rules.commands.record_assign_decision.retry_assign_decisions import RetryAssignDecisions
+from core.modules.assign_rules.commands.record_assign_decision.judge_skipped_tasks import JudgeSkippedTasks
 from core.modules.assign_rules.models.assign_decision import AssignDecision
 from core.modules.assign_rules.models.assign_rule import AssignRule
 from core.modules.assign_rules.queries.assign_decision_query import AssignDecisionQuery
@@ -22,17 +22,17 @@ UNDECIDED_WAIT = timedelta(minutes=1)
 MOST_RETRIED_TASKS = 100
 
 
-class RetryAssignDecisionsHandler(Handler[RetryAssignDecisions, int]):
+class JudgeSkippedTasksHandler(Handler[JudgeSkippedTasks, int]):
     """Finds the tasks to judge again, a bounded number, and judges each environment's tasks as one batch in
     that environment: a task a rule was skipped for, and a free task made after the environment's first rule
     that a stop left with no decision for a minute."""
 
-    command = RetryAssignDecisions
+    command = JudgeSkippedTasks
 
     def __init__(self, queries: Queries, decisions: AssignDecisionQuery, tasks: TaskQuery, clock: Clock, bus: Bus) -> None:
         self.queries, self.decisions, self.tasks, self.clock, self.bus = queries, decisions, tasks, clock, bus
 
-    def handle(self, command: RetryAssignDecisions, context: Context) -> int:
+    def handle(self, command: JudgeSkippedTasks, context: Context) -> int:
         first_rules = self.first_rule_times()
         if not first_rules:
             return 0
