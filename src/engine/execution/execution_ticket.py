@@ -9,7 +9,7 @@ from engine.time.timestamp import Timestamp
 @dataclass(frozen=True)
 class ExecutionTicket:
     """An execution's place in its lane: its class and priorities, who started it, its line and times, the ticket
-    that waits for it, and whether a reader request for it is open."""
+    that waits for it, whether a reader request for it is open, and the run it stands for, 0 before it has one."""
 
     execution_class: ExecutionClass
     first_priority: ExecutionPriority
@@ -20,6 +20,7 @@ class ExecutionTicket:
     raised_at: Timestamp
     parent: "ExecutionTicket | None" = None
     has_open_reader_request: bool = False
+    run_id: int = 0
 
     def waited_child(self, execution_class: ExecutionClass, line: str, entered_at: Timestamp) -> "ExecutionTicket":
         priority = max(execution_class.priority, self.priority)

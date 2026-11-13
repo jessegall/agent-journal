@@ -15,48 +15,65 @@ from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
-from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
 from core.modules.processes.support.run_admission import RunAdmission
 from core.modules.processes.support.process_type_limits import ProcessTypeLimits
+from core.modules.processes.support.execution_tickets import ExecutionTickets
+from core.modules.processes.support.stored_execution_classes import StoredExecutionClasses
+from engine.enums.execution_lane import ExecutionLane
+from engine.enums.log_level import LogLevel
+from engine.execution.execution_order import ExecutionOrder
+from engine.execution.execution_ticket import ExecutionTicket
+from engine.log.system_log_writer import SystemLogWriter
 
 SLOT_RUNS_REASON = "the run slots are shared out over every running and queued run"
 
 
 class RunSlots:
-    """Admits every run, granting immediate runs and giving waiting runs capacity in order; a run of a kind with
-    its own limit also waits while that many of its kind run."""
+    """Admits the waiting runs of the short and long lanes in the order the one decision gives, by room, priority,
+    limits and waits; a plugin's kind of run also waits for its own count and memory."""
 
-    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt, admission: RunAdmission, clock: Clock, listings: RunCounts, rows: EventRows, kept: KeptRows, scopes: Scopes, outputs: OutputQuery, category_limits: ProcessTypeLimits) -> None:
+    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt, admission: RunAdmission, clock: Clock, listings: RunCounts, rows: EventRows, kept: KeptRows, scopes: Scopes, outputs: OutputQuery, category_limits: ProcessTypeLimits,
+                 classes: StoredExecutionClasses, tickets: ExecutionTickets, system_log: SystemLogWriter) -> None:
+        self.classes, self.tickets, self.system_log = classes, tickets, system_log
         self.queries, self.repository, self.folder, self.settings, self.halt = queries, repository, folder, settings, halt
         self.admission, self.clock, self.listings = admission, clock, listings
         self.rows, self.kept, self.scopes, self.outputs = rows, kept, scopes, outputs
         self.kind_limits = category_limits
 
+    # each lane's waiting runs start in the order of the one decision; a raise is kept on its row so a restart and the
+    # page see it, and the halt holds only the long lane
     def grant(self, context: Context) -> None:
-        queued = sorted((process for process in self.running() if process.queued_at is not None), key=lambda process: (process.priority.rank, process.id))
-        parts = self.admission.waiting_parts(queued)
-        processes = self.rows.required_index(Process, [waiting.id for waiting in queued])
-        agents = self.rows.required_index(Agent, [waiting.session_agent_id for waiting in queued])
-        categories = self.kind_limits.admissions(queued)
-        for waiting in queued:
-            agent = agents[waiting.session_agent_id]
-            needs_slot = self.admission.needs_slot(waiting, agent)
-            if not self.admission.may_start(waiting, agent, parts[waiting.id], self.clock.timestamp()) or categories.is_blocked(waiting, self.admitted_runs()):
-                continue
-            process = processes[waiting.id]
-            used_slots = sum(self.admission.uses_slot(run) for run in self.running() if run.queued_at is None)
-            room = self.settings.integer(ProcessSetting.RUN_BATCH_SIZE) - used_slots
-            if needs_slot and (self.halt.is_halted or room <= 0):
-                continue
-            self.folder.write_slot(process.id)
-            admitted = replace(process, queued_at=None, slot_assigned=needs_slot, started_at=context.timestamp)
-            saved = self.repository.save_change(process, admitted, context)
-            self.remember(saved)
-            categories.admitted(saved)
+        running, limits, current_time = self.running(), self.classes.lane_limits(), self.clock.timestamp()
+        order = ExecutionOrder(limits)
+        waiting = [process for process in running if process.queued_at is not None]
+        processes = self.rows.required_index(Process, [process.id for process in waiting])
+        categories = self.kind_limits.admissions(waiting)
+        for lane in (ExecutionLane.SHORT, ExecutionLane.LONG):
+            lane_tickets = self.tickets.of_rows(running, lane)
+            is_halted = self.halt.is_halted and lane is ExecutionLane.LONG
+            for ticket in order.raised(lane_tickets.waiting, current_time, is_halted):
+                self.keep_raise(processes[ticket.run_id], ticket, context)
+            if order.over_ceiling(lane_tickets.running):
+                self.system_log.write(LogLevel.WARNING, f"{len(lane_tickets.running)} immediate runs share the {lane} lane, past its ceiling of {limits.immediate_ceiling}")
+            for ticket in order.starting(lane_tickets.waiting, lane_tickets.running, current_time, is_halted):
+                process = processes[ticket.run_id]
+                if categories.is_blocked(process, self.admitted_runs()):
+                    continue
+                self.folder.write_slot(process.id)
+                admitted = replace(process, queued_at=None, slot_assigned=lane is ExecutionLane.LONG, started_at=context.timestamp)
+                saved = self.repository.save_change(process, admitted, context)
+                self.remember(saved)
+                categories.admitted(saved)
+
+    def keep_raise(self, process: Process, ticket: ExecutionTicket, context: Context) -> None:
+        if ticket.priority == process.priority:
+            return
+        saved = self.repository.save_change(process, replace(process, priority=ticket.priority, raised_at=ticket.raised_at), context)
+        self.remember(saved)
 
     # a run that waits in no lane, an immediate one or a merge the journal runs itself, has its slot written at once
     def grant_at_once(self, process: Process) -> None:

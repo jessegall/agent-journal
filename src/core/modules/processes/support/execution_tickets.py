@@ -39,9 +39,9 @@ class ExecutionTickets:
         starter = self.starter(process, agent)
         execution_class = self.execution_class(process, starter, kind_classes)
         entered_at = process.queued_at or process.started_at or process.creation_timestamp()
-        waits_for_reader = process.queued_at is not None and not self.admission.may_start(process, agent, parts.get(process.id, ()), self.clock.timestamp())
+        waits_for_reader = process.queued_at is not None and self.admission.waits_for_reader(process, parts.get(process.id, ()), self.clock.timestamp())
         return ExecutionTicket(execution_class, process.first_priority, process.priority, starter, process.line, entered_at, process.raised_at or entered_at,
-                               has_open_reader_request=waits_for_reader)
+                               has_open_reader_request=waits_for_reader, run_id=process.id)
 
     def execution_class(self, process: Process, starter: ExecutionStarter, kind_classes: dict[tuple[str, str], ExecutionClass]) -> ExecutionClass:
         if process.plugin and (process.plugin, process.run_name) in kind_classes:
