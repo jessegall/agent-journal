@@ -4,7 +4,8 @@ from engine.query.queries import Queries
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 
-FREE_PLACE_TEXT = "can go to a worker and a place is free"
+FREE_PLACE_TEXT = "can go to a worker"
+OPEN_TASKS_TEXT = "wait for a worker"
 UNFINISHED_TASKS_TEXT = "are yours and unfinished"
 
 

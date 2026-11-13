@@ -73,7 +73,7 @@ def test_the_settings_of_a_helper_type_screen_are_not_on_advanced():
 def test_the_workers_screen_holds_its_settings_and_no_merger_setting():
     screens = {value.key: value.screen for value in DECLARED}
     workers = sorted(key for key, screen in screens.items() if screen == "helper-type.workers")
-    assert workers == sorted(["worker-run-limit", "worker-kept-limit", "worker-batch-size", "most-open-tasks", "workers-start-read-only-helpers", "idle-worker-minutes", "worker-idle-hours"])
+    assert workers == sorted(["worker-run-limit", "worker-kept-limit", "worker-batch-size", "most-open-tasks", "workers-start-read-only-helpers", "idle-worker-minutes", "worker-idle-hours", "strongest-model-least-complexity"])
     assert "merger-wait-minutes" not in workers
 
 

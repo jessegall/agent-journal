@@ -8,7 +8,7 @@ from suites.coding.modules.workers.support.available_work import AvailableWork
 from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
 from suites.coding.modules.workers.support.main_agent_work import MainAgentWork
 from suites.coding.support.next_task import NextTask
-from suites.coding.support.stop_notices import FREE_PLACE_TEXT, UNFINISHED_TASKS_TEXT, StopNotices
+from suites.coding.support.stop_notices import FREE_PLACE_TEXT, OPEN_TASKS_TEXT, UNFINISHED_TASKS_TEXT, StopNotices
 from suites.coding.support.coding_nudges import FREE_WORKER_PLACE, OPEN_TASKS_WAIT, TASK_ASSIGNMENT, UNFINISHED_TASKS
 
 
@@ -33,11 +33,11 @@ class StopWithOpenWorkRule(DriverRule):
         available = self.work.answer(hook.agent_id)
         if available.assigned_task is not None:
             return RuleAnswer.refused(TASK_ASSIGNMENT.nudge(task=available.assigned_task.id)).running(StartTask(available.assigned_task.id))
-        if available.delegatable and self.options.options().continues_work:
-            return RuleAnswer.refused(OPEN_TASKS_WAIT.nudge(tasks=", ".join(str(task_id) for task_id in available.delegatable)))
         if available.delegatable:
-            notice = FREE_WORKER_PLACE.nudge(count=available.free_places, tasks=", ".join(str(task_id) for task_id in available.delegatable))
-            if not self.notices.has_notice(hook.agent_id, notice.text, FREE_PLACE_TEXT):
+            tasks = ", ".join(str(task_id) for task_id in available.delegatable)
+            continues = self.options.options().continues_work
+            notice = OPEN_TASKS_WAIT.nudge(tasks=tasks) if continues else FREE_WORKER_PLACE.nudge(count=available.free_places, tasks=tasks)
+            if not self.notices.has_notice(hook.agent_id, notice.text, OPEN_TASKS_TEXT if continues else FREE_PLACE_TEXT):
                 return RuleAnswer.refused(notice)
         return self.unfinished_answer(hook)
 

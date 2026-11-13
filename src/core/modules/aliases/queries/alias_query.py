@@ -30,4 +30,4 @@ class AliasQuery(Query[Alias]):
         return self.filter(category=category)
 
     def first_beginning(self, command: str, category: CommandCategory) -> Alias | None:
-        return next((alias for alias in self.of_category(category).every_row(BEGINNING_REASON) if alias.begins(command)), None)
+        return next((alias for alias in self.with_category(category).every_row(BEGINNING_REASON) if alias.begins(command)), None)

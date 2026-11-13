@@ -31,7 +31,9 @@ class WaitNode:
 
 class WaitCircle:
     """Finds the circle a new wait would close through tasks and plans: a task waits on a task or a plan, a plan on
-    a plan, and a plan on its own unfinished tasks. A wait that comes back to the one that waits never ends."""
+    a plan, and a plan on its own unfinished tasks. A wait that comes back to the one that waits never ends. The walk
+    goes back from the one that waits through what waits on it, so many new waits on one target each read their own
+    rows."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
@@ -39,41 +41,41 @@ class WaitCircle:
     def find_circle(self, waiter: WaitNode, target: WaitNode) -> tuple[WaitNode, ...]:
         if waiter == target:
             return ()
-        parents: dict[WaitNode, WaitNode | None] = {target: None}
-        frontier = [target]
-        while frontier and waiter not in parents:
+        children: dict[WaitNode, WaitNode | None] = {waiter: None}
+        frontier = [waiter]
+        while frontier and target not in children:
             reached = []
-            for node, after in self.next_nodes(frontier):
-                if after in parents:
+            for node, before in self.waiting_on(frontier):
+                if before in children:
                     continue
-                parents[after] = node
-                reached.append(after)
+                children[before] = node
+                reached.append(before)
             frontier = reached
-        if waiter not in parents:
+        if target not in children:
             return ()
-        path = [waiter]
-        while path[-1] != target:
-            path.append(parents[path[-1]])
-        return (waiter, *reversed(path))
+        path = [target]
+        while path[-1] != waiter:
+            path.append(children[path[-1]])
+        return (waiter, *path)
 
-    def next_nodes(self, frontier: Iterable[WaitNode]) -> list[tuple[WaitNode, WaitNode]]:
+    def waiting_on(self, frontier: Iterable[WaitNode]) -> list[tuple[WaitNode, WaitNode]]:
         nodes = tuple(frontier)
         task_ids = {node.row_id: node for node in nodes if node.node_type == TASK}
         plan_ids = {node.row_id: node for node in nodes if node.node_type == PLAN}
+        targets = {f"{prefix}:{node.row_id}": node for node in nodes for prefix, node_type in TARGET_TYPES.items() if node.node_type == node_type}
         edges: list[tuple[WaitNode, WaitNode]] = []
         if task_ids:
-            for edge in self.queries.query(TaskEdge).matching(Among("task_id", list(task_ids))).every_row(WAITS_REASON):
-                found.append((task_ids[edge.task_id], WaitNode(TASK, edge.blocker_id)))
-            for wait in self.queries.query(TaskWait).matching(Among("task_id", list(task_ids))).matching(IsNull("ended_at")).every_row(WAITS_REASON):
-                kind, _, row_id = wait.target.partition(":")
-                if kind in TARGET_KINDS and row_id.isdigit():
-                    found.append((task_ids[wait.task_id], WaitNode(TARGET_KINDS[kind], int(row_id))))
+            for edge in self.queries.query(TaskEdge).matching(Among("blocker_id", list(task_ids))).every_row(WAITS_REASON):
+                edges.append((task_ids[edge.blocker_id], WaitNode(TASK, edge.task_id)))
+            for place in self.queries.query(PlanTask).matching(Among("task_id", list(task_ids))).matching(Among("state", list(UNFINISHED_STATES))).every_row(WAITS_REASON):
+                edges.append((task_ids[place.task_id], WaitNode(PLAN, place.plan_id)))
+        if targets:
+            for wait in self.queries.query(TaskWait).matching(Among("target", list(targets))).matching(IsNull("ended_at")).every_row(WAITS_REASON):
+                edges.append((targets[wait.target], WaitNode(TASK, wait.task_id)))
         if plan_ids:
-            for wait in self.queries.query(PlanWait).matching(Among("plan_id", list(plan_ids))).matching(IsNull("ended_at")).every_row(WAITS_REASON):
-                found.append((plan_ids[wait.plan_id], WaitNode(PLAN, wait.blocker_id)))
-            for place in self.queries.query(PlanTask).matching(Among("plan_id", list(plan_ids))).matching(Among("state", list(UNFINISHED_STATES))).every_row(WAITS_REASON):
-                found.append((plan_ids[place.plan_id], WaitNode(TASK, place.task_id)))
-        return found
+            for wait in self.queries.query(PlanWait).matching(Among("blocker_id", list(plan_ids))).matching(IsNull("ended_at")).every_row(WAITS_REASON):
+                edges.append((plan_ids[wait.blocker_id], WaitNode(PLAN, wait.plan_id)))
+        return edges
 
     def refuse_circle(self, waiter: WaitNode, target: WaitNode) -> None:
         circle = self.find_circle(waiter, target)

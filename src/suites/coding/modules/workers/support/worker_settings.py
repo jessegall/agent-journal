@@ -1,3 +1,4 @@
+from core.modules.helpers.support.helper_settings import HELPER_TYPES_SCREEN
 from engine.setting.ruled_settings import ruled_settings
 from engine.enums.setting_scope import SettingScope
 from engine.enums.setting_type import SettingType
@@ -18,6 +19,8 @@ MERGE_COMMANDS_NAME = "merge-commands"
 MERGE_COMMANDS = f"{MODULE_KEY}.{MERGE_COMMANDS_NAME}"
 MERGE_BUILT_PATHS = f"{MODULE_KEY}.merge-built-paths"
 MERGE_BUILD_COMMAND = f"{MODULE_KEY}.merge-build-command"
+MERGE_HOOKS_NAME = "merge-hooks"
+MERGE_HOOKS = f"{MODULE_KEY}.{MERGE_HOOKS_NAME}"
 WORKER_RUN_LIMIT = f"{MODULE_KEY}.worker-run-limit"
 WORKER_KEPT_LIMIT = f"{MODULE_KEY}.worker-kept-limit"
 WORKER_INSTRUCTION_FILES_SETTING = f"{MODULE_KEY}.worker-instruction-files"
@@ -124,6 +127,8 @@ WORKER_SETTING_VALUES = [
                  SettingType.LIST, default=("**/web/dist/**", "src/core/modules/viewer/web/dist/**"), person_set=True, screen="helper-type.workers", section="Merging"),
     SettingValue("merge-build-command", "Build command after a merge", "The command that builds the built files again after a merge, run in the checkout that was merged into.",
                  SettingType.TEXT, default="npm --prefix src/viewer run build", person_set=True, screen="helper-type.workers", section="Merging"),
+    SettingValue(MERGE_HOOKS_NAME, "Merge hooks of a profile", "Entries of profile: command, run in the main checkout after a worker of that profile is merged.",
+                 SettingType.LIST, default=(), person_set=True, screen=HELPER_TYPES_SCREEN, section="When merged"),
 ]
 WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         WORKER_KEPT_LIMIT: NumberRule(0),
@@ -160,7 +165,7 @@ WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         CHECK_HISTORY_DAYS: NumberRule(1),
                         MERGER_COMMANDS: ListRule(),
                         PROTECTED_FOLDERS: ListRule(),
-                        MERGE_COMMANDS: ListRule()}
+                        MERGE_COMMANDS: ListRule(), MERGE_HOOKS: ListRule()}
 WORKER_SETTINGS = ruled_settings(MODULE_KEY, WORKER_SETTING_VALUES, WORKER_SETTING_RULES)
 TEST_COMMAND_PAIR = CommandPairRule(AFFECTED_TESTS_COMMAND, PROJECT_TEST_COMMAND)
 TEST_LIMIT_SECONDS = 3600

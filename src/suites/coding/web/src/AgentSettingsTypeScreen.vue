@@ -1,9 +1,9 @@
 <script setup>
 import {computed, onMounted, watch} from "vue";
 import {useWindow} from "@journal/window-kit";
-import {SettingBackPath, SettingPerTypeOverrideRow, SettingRow, SettingThreeWayCap, SettingsScreen} from "@journal/setting-components";
+import {SettingBackPath, SettingEntryList, SettingPerTypeOverrideRow, SettingRow, SettingThreeWayCap, SettingsScreen} from "@journal/setting-components";
 import AgentTypeAgents from "../../../../core/modules/agents/web/src/AgentTypeAgents.vue";
-import {CAP_SIZES, CONTEXT_KINDS, CONTEXT_PROFILES, CONTEXT_TOKENS, PROFILE_LIMITS, READ_ONLY_KEPT, READ_ONLY_RUN, valueOf} from "./helperRows.js";
+import {CAP_SIZES, CONTEXT_KINDS, CONTEXT_PROFILES, CONTEXT_TOKENS, MERGE_HOOKS, PROFILE_LIMITS, READ_ONLY_KEPT, READ_ONLY_RUN, valueOf} from "./helperRows.js";
 
 // the screen of one helper type over the table: its settings on the left, drawn from what they declare and kept in
 // the one draft of the modal, and its agents on the right. A profile has no settings of its own to draw: it shows
@@ -55,6 +55,20 @@ function chooseCap({mode, size}) {
     props.draft.set(CONTEXT_PROFILES, mode === "kind" ? others : [...others, `${capProfile.value}:${mode === "none" ? NO_CAP : size}`]);
 }
 
+// the commands run after a worker of this profile is merged: its entries profile: command in the list of merge hooks
+const WORKER_ROLE = "worker";
+const hookProfile = computed(() => (props.row.role === WORKER_ROLE ? capProfile.value : ""));
+const hookEntries = computed(() => (props.draft.value(MERGE_HOOKS) ?? []).map((text) => {
+    const at = text.indexOf(":");
+    return {name: text.slice(0, at).trim(), command: text.slice(at + 1).trim()};
+}));
+const ownHooks = computed(() => hookEntries.value.filter((entry) => entry.name === hookProfile.value).map((entry) => entry.command));
+
+function changeHooks(commands) {
+    const others = hookEntries.value.filter((entry) => entry.name !== hookProfile.value).map((entry) => `${entry.name}: ${entry.command}`);
+    props.draft.set(MERGE_HOOKS, [...others, ...commands.map((command) => `${hookProfile.value}: ${command}`)]);
+}
+
 const openAgent = (agent) => view.open("agents.agents", agent.id);
 </script>
 
@@ -69,6 +83,11 @@ const openAgent = (agent) => view.open("agents.agents", agent.id);
                 </template>
                 <template v-else>
                     <SettingsScreen :nodes="nodes" :draft="draft" :read-only="readOnly" />
+                </template>
+                <template v-if="hookProfile">
+                    <SettingRow label="When merged" help="Commands run in the main checkout after a worker of this profile is merged. One that fails is told to the main agent; the merge stands." :source="ownHooks.length ? 'own' : 'default'" data-merge-hooks>
+                        <SettingEntryList :model-value="ownHooks" placeholder="a command" :disabled="readOnly" @update:model-value="changeHooks" />
+                    </SettingRow>
                 </template>
                 <template v-if="capProfile">
                     <SettingRow label="Context cap" help="The context size at which this type is compacted." :source="capMode === 'own' || capMode === 'none' ? 'own' : 'default'" data-context-cap>

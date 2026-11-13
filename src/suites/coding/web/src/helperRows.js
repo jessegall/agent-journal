@@ -9,6 +9,7 @@ export const CONTEXT_PROFILES = `${CORE}.context-limit-profiles`;
 export const PROFILE_LIMITS = `${CORE}.read-only-helper-profile-limits`;
 export const READ_ONLY_RUN = `${CORE}.read-only-helper-run-limit`;
 export const READ_ONLY_KEPT = `${CORE}.read-only-helper-kept-limit`;
+export const MERGE_HOOKS = "journal.suites.coding.workers.merge-hooks";
 
 const NO_CAP = "none";
 const sizeWord = (tokens) => `${tokens / 1000}k`;
