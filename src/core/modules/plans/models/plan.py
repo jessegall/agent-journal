@@ -43,6 +43,9 @@ class Plan(EnvironmentScoped, Model, StateHolder, Assignable):
     def start(self, timestamp: Timestamp, actor: Actor) -> "Plan":
         return self.moved(PlanLifecycle.start, started_at=self.started_at or timestamp)
 
+    def unblock(self, timestamp: Timestamp, actor: Actor) -> "Plan":
+        return self.moved(PlanLifecycle.unblock, reason="")
+
     def close(self, timestamp: Timestamp, actor: Actor) -> "Plan":
         return self.moved(PlanLifecycle.close, closed_at=timestamp)
 

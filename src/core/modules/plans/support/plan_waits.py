@@ -3,7 +3,6 @@ from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.plans.models.enums.plan_state import PlanState
-from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_wait import PlanWait
 from core.modules.plans.support.plan_main_agents import PlanMainAgents
@@ -45,7 +44,7 @@ class PlanWaits:
         for waiting in waiting_plans:
             if waiting.state is not PlanState.BLOCKED or self.open_waits(waiting.id):
                 continue
-            self.repository.save_change(waiting, waiting.moved(PlanLifecycle.unblock), context)
+            self.repository.save_change(waiting, waiting.unblock(context.timestamp, context.actor), context)
             self.main_agents.send(waiting, PLAN_OPENED, WAIT_ENDED_SOURCE, context)
 
     def end_open_waits(self, plan: Plan, context: Context) -> None:

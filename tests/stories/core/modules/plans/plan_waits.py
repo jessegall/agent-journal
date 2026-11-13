@@ -33,6 +33,7 @@ def test_a_plan_blocked_on_two_plans_opens_when_the_second_ends_and_the_main_age
     story.expect_success('plan cancel 3 --reason "Not needed either"', actor=story.user)
     story.expect_text("plan show 1", "state: started", actor=story.user)
     story.expect_rows(inspected(story, 1)["blocker_ids"] == [])
+    story.expect_absent("plan show 1", "waits on plan", actor=story.user)
     story.expect_text(f"agent-line list --agent {story.agent.id}", "plan:1 is open again", actor=story.user)
 
 
@@ -42,6 +43,7 @@ def test_a_plan_blocked_with_only_a_reason_stays_blocked_until_it_is_unblocked(n
     story.expect_success('plan cancel 2 --reason "Not needed"', actor=story.user)
     story.expect_text("plan show 1", "state: blocked", actor=story.user)
     story.expect_success("plan unblock 1", "state: started", actor=story.user)
+    story.expect_absent("plan show 1", "a pause", actor=story.user)
 
 
 def test_a_plan_cannot_wait_on_itself_a_finished_plan_or_a_plan_that_waits_on_it(new_story):
