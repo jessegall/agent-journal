@@ -34,7 +34,8 @@ func checkedSandbox(program string, writable []string, limit readLimit) (shellSa
 	if err != nil {
 		return sandbox, err
 	}
-	probe, err := os.CreateTemp("", "journal-write-probe-")
+	// The temporary folder is writable in a worker's sandbox (/tmp, an inherited TMPDIR); the runner's own folder never is.
+	probe, err := os.CreateTemp(filepath.Dir(program), "journal-write-probe-")
 	if err != nil {
 		return sandbox, err
 	}
