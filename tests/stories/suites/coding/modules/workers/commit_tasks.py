@@ -13,6 +13,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, proofs, prove_task, unplanned_holding_worker
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker
+from suites.coding.modules.workers.support.worker_settings import PROTECTED_FOLDERS
 
 LEFT_OUT = "the rounding is left out"
 FOUR_POINT_BRIEF = "- the tax is read\n- the tax is added\n- the tax is shown\n- the tax is rounded"
@@ -108,7 +109,7 @@ def test_30_a_rule_of_a_plugin_refuses_a_file_of_a_commit_of_two_tasks_and_both_
 
 def test_31_a_change_in_a_protected_folder_refuses_a_commit_of_two_tasks(two_proved):
     story = two_proved.story
-    story.expect_success('setting set journal.suites.coding.workers.protected-folders \'["task_2.txt"]\' --project', actor=story.user)
+    story.expect_success(f'setting set {PROTECTED_FOLDERS} \'["task_2.txt"]\' --project', actor=story.user)
     expect_refused_with(story, COMMIT, "task_2.txt is protected", "undo the change in that folder", actor=two_proved.worker)
     story.expect_rows(states(two_proved) == [ProofState.SHOWN] * 2, detail=str(states(two_proved)))
 

@@ -21,6 +21,7 @@ from tests.stories.core.modules.plugins.support.event_stories import event_plugi
 from tests.stories.core.modules.plugins.support.plugin_samples import sample_plugin_folder
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from core.modules.plugins.support.plugin_event_entry import CEILING_SETTING
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -32,7 +33,7 @@ def installed_story(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.run(f"plugin install {sample_plugin_folder(story.home.folder.parent)} --yes", actor=story.user)
-    story.run("setting set journal.core.plugins.hold_window_ms 5000 --project", actor=story.user)
+    story.run(f"setting set {CEILING_SETTING} 5000 --project", actor=story.user)
     return story
 
 
@@ -103,7 +104,7 @@ def test_a_queue_file_that_is_not_json_is_set_aside_as_the_plugins_fault_and_the
 def test_a_hook_with_several_held_events_starts_each_plugin_program_once_and_reads_the_login_path_once(new_story, monkeypatch):
     story = install_runner(event_plugin_story(new_story, program="see.sh", hears=["command_starting"], holds=["command_starting"]))
     install_event_plugin(story, program="see.sh", hears=["command_starting"], holds=["command_starting"], name="second")
-    story.run("setting set journal.core.plugins.hold_window_ms 5000 --project", actor=story.user)
+    story.run(f"setting set {CEILING_SETTING} 5000 --project", actor=story.user)
     login_path = LoginPath(story.home)
     login_path.file.parent.mkdir(parents=True, exist_ok=True)
     login_path.file.write_text("/usr/bin:/bin")

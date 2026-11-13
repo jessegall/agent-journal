@@ -8,6 +8,7 @@ from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 MARKS = "chat-mark list --environment 1 --oldest"
 NEWEST_MARKS = "chat-mark list --environment 1"
@@ -62,7 +63,7 @@ def test_a_run_that_is_saved_shows_no_mark_until_its_part_starts(saved_command):
 
 def test_a_queued_run_shows_no_mark_until_its_part_starts(new_story):
     story, _ = saved_run(new_story)
-    story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --environment main", actor=story.user)
     waiting = start_process(story, "make second", category=CommandCategory.BUILD)
     story.run_listeners()
     story.expect_absent(MARKS, "process:2", actor=story.user)

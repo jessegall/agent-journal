@@ -41,7 +41,7 @@ def test_the_open_tasks_assigned_to_an_actor_are_read_through_the_index_on_the_a
     expect_value_with(query_plan(new_story, HOT_QUERIES[3]), "assignments_actor")
 
 
-FIXED_READS = ("SELECT * FROM helper_jobs WHERE profile = 'journal-researcher' AND session_agent_id IN (SELECT id FROM agents WHERE role = 'main') AND ended_at IS NOT NULL"
+FIXED_READS = (f"SELECT * FROM helper_jobs WHERE profile = '{RESEARCHER_PROFILE.name}' AND session_agent_id IN (SELECT id FROM agents WHERE role = 'main') AND ended_at IS NOT NULL"
                " AND helper_id IS NOT NULL ORDER BY id DESC LIMIT 50",
                "SELECT * FROM helper_jobs WHERE ended_at IS NULL AND helper_id = 1 LIMIT 1",
                f"SELECT * FROM helper_jobs WHERE profile = '{RESEARCHER_PROFILE.name}' AND ended_at IS NOT NULL ORDER BY id DESC LIMIT 50",

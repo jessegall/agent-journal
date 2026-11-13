@@ -12,6 +12,7 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.modules.processes.support.reader_block_fixtures import worker_run
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 
 class AdmissionQueue(StoryFixture):
@@ -21,8 +22,8 @@ class AdmissionQueue(StoryFixture):
 
     def steps(self, story):
         story.run("agent start s-reader claude worker --environment main")
-        story.run("setting set journal.core.processes.readers-forced off --environment main", actor=story.user)
-        story.run("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
+        story.run(f"setting set {ProcessSetting.READERS_FORCED.key} off --environment main", actor=story.user)
+        story.run(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --environment main", actor=story.user)
 
 
 def test_main_run_is_granted_through_run_slots_at_once_while_worker_waits(new_story):
@@ -55,8 +56,8 @@ def test_plain_journal_command_is_admitted_and_absent_from_queue(new_story):
 
 def test_queue_foreground_wait_defaults_to_five_seconds_and_can_change(new_story):
     story = install_runner(new_story(fixture=AdmissionQueue))
-    story.expect_text("setting show journal.core.processes.queue-wait-seconds --environment main", "value: 5", actor=story.user)
-    story.expect_success("setting set journal.core.processes.queue-wait-seconds 2 --environment main", actor=story.user)
+    story.expect_text(f"setting show {ProcessSetting.QUEUE_WAIT_SECONDS.key} --environment main", "value: 5", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.QUEUE_WAIT_SECONDS.key} 2 --environment main", actor=story.user)
     reply = story.hook("s-1", HookSamples.shell("make package", ShellPart("make", CommandCategory.BUILD, ["package"])))
     story.expect_rows("JOURNAL_RUN_QUEUE_WAIT=2" in str(reply.updated_input))
 

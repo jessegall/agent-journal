@@ -31,7 +31,7 @@ def test_the_skills_of_a_profile_are_listed_with_the_ones_made_for_its_type_and_
     story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_text(f"profile skills --profile {RESEARCHER_PROFILE.name}", "journal-tasks: on", f"{MAIN_SKILL}: off", actor=story.user)
-    story.expect_success(f"profile save journal-researcher --description 'Researches a question' --skills {LISTED},{MAIN_SKILL}", actor=story.user)
+    story.expect_success(f"profile save {RESEARCHER_PROFILE.name} --description 'Researches a question' --skills {LISTED},{MAIN_SKILL}", actor=story.user)
     story.expect_text(f"profile skills --profile {RESEARCHER_PROFILE.name}", f"{MAIN_SKILL}: on", "journal-memory: off", actor=story.user)
 
 

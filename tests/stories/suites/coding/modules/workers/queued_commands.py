@@ -36,6 +36,7 @@ from tests.stories.core.modules.documents.support.trail_fixtures import Selected
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, FIRST_PROOF, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -103,7 +104,7 @@ def worker_git_command(worker_command, name):
 def test_worker_commands_return_before_slow_git_and_notify_once(worker_git_command, monkeypatch, name, method, queue_full):
     story, repository, worker, launches = worker_git_command
     if queue_full:
-        story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main")
+        story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --environment main")
         bus = story.container.get(Bus)
         environment_id = story.row(Agent, worker.id).environment_id
         running_test = bus.run(StartProcess.single_part(worker.id, "pytest held.py", str(repository.folder), CommandCategory.TEST_RUN, 60),

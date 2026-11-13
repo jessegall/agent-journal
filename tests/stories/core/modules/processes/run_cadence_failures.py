@@ -8,6 +8,7 @@ from tests.stories.core.modules.processes.support.cadence_probe import (cadence_
                                                                        kept_lines, printed, record_text, removed_output, ring, tick_cost, ticks)
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 MAIN = "s-1"
 NOT_STREAMING = "so it is not streaming"
@@ -86,7 +87,7 @@ def test_two_environments_judge_their_runs_by_their_own_thresholds(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
     story.expect_success("environment make elsewhere /work/elsewhere", actor=story.user)
     other = Actor(story.new_row_id("agent start s-elsewhere claude main --environment elsewhere"), ActorType.AGENT)
-    story.expect_success("setting set journal.core.processes.first-output-seconds 60 --environment elsewhere", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.FIRST_OUTPUT_SECONDS.key} 60 --environment elsewhere", actor=story.user)
     here = moved_run(story, "make here", CommandCategory.BUILD)
     there = elsewhere_run(story, other)
     ticks(story, 30)

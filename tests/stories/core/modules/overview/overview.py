@@ -20,6 +20,7 @@ from tests.stories.support.story_checks import expect_value, expect_value_with, 
 from core.modules.overview.support.overview_nudges import OVERVIEW_LINE
 from core.modules.overview.support.overview_nudges import OVERVIEW_REFUSAL
 from engine.testing.expectations.expect_nudge import said
+from core.modules.overview.support.overview_settings import COMMANDS_KEY
 
 
 def test_the_overview_shows_each_default_command_under_its_heading(new_story):
@@ -42,7 +43,7 @@ def test_the_overview_shows_each_default_command_under_its_heading(new_story):
 
 def test_the_user_chooses_what_the_overview_shows(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_success('setting set journal.core.overview.commands "task board" --project', actor=story.user)
+    story.expect_success(f'setting set {COMMANDS_KEY} "task board" --project', actor=story.user)
     answer = json.loads(story.run("overview --json", actor=story.user).output_text)
     expect_command_section_sections(answer, ["task board"])
     story.expect_no_text("overview", "question list", actor=story.user)
@@ -50,7 +51,7 @@ def test_the_user_chooses_what_the_overview_shows(new_story):
 
 def test_a_command_that_fails_shows_why_and_the_others_still_run(new_story):
     story = new_story(fixture=UserJoined)
-    story.run('setting set journal.core.overview.commands "nothing here,task board" --project', actor=story.user)
+    story.run(f'setting set {COMMANDS_KEY} "nothing here,task board" --project', actor=story.user)
     text = story.run("overview", actor=story.user)
     text.expect_text("## nothing here")
     text.expect_text("## task board")

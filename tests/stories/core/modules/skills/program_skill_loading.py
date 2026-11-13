@@ -5,11 +5,12 @@ from core.modules.skills.support.skill_requirement import SkillRequirement
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.modules.skills.due import environment, start, drain_countdown
+from core.modules.skills.support.start_skills import SESSION_START_KEY
 
 
 def test_each_program_names_how_it_loads_a_required_skill(new_story):
     story = environment(new_story)
-    story.run('setting make journal.core.skills.session-start \'["journal-notes"]\'')
+    story.run(f'setting make {SESSION_START_KEY} \'["journal-notes"]\'')
     story.container.bind(SkillRequirement, SkillRequirement())
     start(story)
     drain_countdown(story, HookSamples.edit('src/cart.py'), 'journal-notes')

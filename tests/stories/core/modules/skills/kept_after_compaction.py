@@ -10,6 +10,7 @@ from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.skills.due import DUE, expect_due, expect_skills_absent, start
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
+from core.modules.skills.support.start_skills import AFTER_COMPACTION_KEY
 
 PRE_COMPACT = HookSamples.sample("compact").with_fields(accepts_lines=False)
 FIRST_TOOL_USE = HookSamples.shell("journal overview", ShellPart("journal", CommandCategory.JOURNAL, ["overview"]))
@@ -22,7 +23,7 @@ class CompactionSkills(StoryFixture):
     def steps(self, story):
         story.container.bind(SkillRequirement, SkillRequirement())
         story.run("skill write")
-        story.run(f"setting make journal.core.skills.after-compaction {AFTER_COMPACTION}")
+        story.run(f"setting make {AFTER_COMPACTION_KEY} {AFTER_COMPACTION}")
 
 
 class CompactingClaude(StoryFixture):

@@ -1,6 +1,7 @@
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.fixtures.started_sequence import StartedSequence
 from tests.stories.core.modules.sequences.support.step_blocks import run_with_hook, expect_tools_allowed, repair_legacy_blocks
+from core.modules.sequences.support.sequence_nudges import STEP_WAITS
 
 
 def test_each_step_needs_one_follow_and_finishing_releases_commands(new_story):
@@ -8,9 +9,9 @@ def test_each_step_needs_one_follow_and_finishing_releases_commands(new_story):
     run_with_hook(story, "sequence follow")
     expect_tools_allowed(story)
     run_with_hook(story, "sequence next")
-    story.expect_hook_refusal("s-1", HookSamples.edit("cart.py"), "sequence:1 step 2 is waiting")
+    story.expect_hook_refusal("s-1", HookSamples.edit("cart.py"), STEP_WAITS.nudge(sequence=1, step=2).text)
     run_with_hook(story, "sequence show 1")
-    story.expect_hook_refusal("s-1", HookSamples.edit("cart.py"), "sequence:1 step 2 is waiting")
+    story.expect_hook_refusal("s-1", HookSamples.edit("cart.py"), STEP_WAITS.nudge(sequence=1, step=2).text)
     run_with_hook(story, "sequence follow")
     run_with_hook(story, "sequence next")
     expect_tools_allowed(story)

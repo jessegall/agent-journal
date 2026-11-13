@@ -3,6 +3,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.questions.marks import PersonQuestion
 from core.modules.messages.models.message import Message
 from tests.stories.core.modules.chat.support.mark_samples import expect_mark_count
+from core.modules.questions.support.question_nudges import QUESTION_ANSWERED
 
 
 def test_a_stopped_agent_is_woken_by_a_persons_answer(new_story):
@@ -12,7 +13,7 @@ def test_a_stopped_agent_is_woken_by_a_persons_answer(new_story):
     story.expect_success("question answer 1 --answer sqlite", actor=story.user)
     story.tick("s-1")
     lines = story.story_rows(AgentLine)
-    answered = [line for line in lines if "question:1 is answered" in line.text]
+    answered = [line for line in lines if QUESTION_ANSWERED.nudge(question=1).text in line.text]
     story.expect_rows(len(answered) == 1, any(line.wakes_agent for line in lines), detail=str(lines))
 
 

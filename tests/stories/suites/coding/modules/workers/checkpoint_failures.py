@@ -19,6 +19,8 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import PHAS
 from suites.coding.modules.workers.support.worker_nudges import WORKER_PHASE_TESTS_FAILED
 from engine.testing.expectations.expect_nudge import said
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
+from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND
+from suites.coding.modules.workers.support.worker_settings import PROJECT_TEST_COMMAND
 
 SELECTED_TEST = "python3 run_tests.py"
 FIXED_CART = "TOTAL = 2\n"
@@ -121,8 +123,8 @@ def test_183_a_failure_that_names_no_task_goes_to_the_task_completed_last_and_th
 
 def test_175_183_the_run_makes_the_selected_run_over_the_files_the_window_changed_and_its_failure_goes_to_a_task(committed_window):
     worker, story = committed_window, committed_window.story
-    story.expect_success(f'setting set journal.suites.coding.workers.affected-tests-command "{PICKER}" --environment main')
-    story.expect_success(f'setting set journal.suites.coding.workers.project-test-command "{SELECTED_TEST}" --environment main')
+    story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "{PICKER}" --environment main')
+    story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "{SELECTED_TEST}" --environment main')
     merge(worker)
     picks = [line for line in run_lines(worker) if line.startswith(PICKER)]
     story.expect_rows(len(picks) == 1, "cart.py" in "".join(picks), detail=str(run_lines(worker)))

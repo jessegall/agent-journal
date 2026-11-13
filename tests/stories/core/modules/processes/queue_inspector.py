@@ -8,12 +8,13 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.agent_labels import agent_number
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 
 def test_the_inspector_reads_live_spots_wait_order_start_times_and_recent_output(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
     story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=story.user)
-    story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start inspector-worker claude worker --environment main"), ActorType.AGENT)
     first = start_process(story, "make package", category=CommandCategory.BUILD)
     story.advance(timedelta(seconds=5))
@@ -46,7 +47,7 @@ def test_the_finished_list_reads_as_many_as_asked_and_counts_them_all(new_story)
 
 def test_the_inspector_reads_main_agent_spots_and_the_queue_halt_reason(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
-    story.expect_success("setting set journal.core.processes.main-runs-take-slots on --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.MAIN_RUNS_USE_SLOTS.key} on --environment main", actor=story.user)
     main = start_process(story, "make main", category=CommandCategory.BUILD)
     story.expect_success('queue halt "Machine maintenance"', actor=story.user)
     queue = json.loads(story.run("queue inspect --environment 1 --json", actor=story.user).output_text)
@@ -70,7 +71,7 @@ def test_an_agents_processes_tab_lists_only_that_agents_running_waiting_and_fini
     worker = story.new_row_id("agent start processes-worker claude worker --environment main")
     other = story.new_row_id("agent start other-worker claude worker --environment main")
     story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=story.user)
-    story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --environment main", actor=story.user)
     story.agent = Actor(worker, ActorType.AGENT)
     finished = start_process(story, "make previous", category=CommandCategory.BUILD)
     end_run(story, finished, "done\n")

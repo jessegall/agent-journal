@@ -10,12 +10,13 @@ from tests.stories.core.modules.processes.support.reader_block_fixtures import w
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
 from tests.stories.suites.coding.modules.workers.test_queue import PROOF, recording_launch
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 
 def test_a_proof_test_waits_in_the_queue_until_the_run_holding_the_spot_ends(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
     recording_launch(monkeypatch)
-    story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --environment main", actor=story.user)
     story.run("agent start s-reader claude worker --environment main")
     holder = worker_run(story, "make holder")
     repository = repository_environment(story)

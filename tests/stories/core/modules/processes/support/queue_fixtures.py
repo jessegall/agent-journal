@@ -1,5 +1,6 @@
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 
 class QueueAgents(StoryFixture):
@@ -9,4 +10,4 @@ class QueueAgents(StoryFixture):
 
     def steps(self, story):
         story.run("agent start queue-worker claude worker --environment main")
-        story.run("setting set journal.core.processes.readers-forced off --environment main", actor=story.user)
+        story.run(f"setting set {ProcessSetting.READERS_FORCED.key} off --environment main", actor=story.user)

@@ -11,13 +11,14 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 
 def test_the_process_queue_runs_live_in_the_viewer_with_saved_controls_and_inline_output(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
     story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
-    story.expect_success("setting set journal.core.processes.readers-forced false --environment main")
-    story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.READERS_FORCED.key} false --environment main")
+    story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start browser-worker claude worker --environment main"), ActorType.AGENT)
     task_id = story.new_row_id('task make "Build the package" --brief "Build and check the package" --environment main', actor=story.user)
     story.expect_success(f"task start {task_id}", actor=story.agent)
@@ -36,8 +37,8 @@ def test_the_process_queue_runs_live_in_the_viewer_with_saved_controls_and_inlin
 def test_the_process_queue_says_in_the_viewer_that_an_update_waits_and_the_commands_keep_their_order(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
     story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
-    story.expect_success("setting set journal.core.processes.readers-forced false --environment main", actor=story.user)
-    story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.READERS_FORCED.key} false --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start browser-worker claude worker --environment main"), ActorType.AGENT)
     running = start_process(story, "make package", category=CommandCategory.BUILD)
     waiting = start_process(story, "make checks", category=CommandCategory.TEST_RUN)

@@ -4,10 +4,11 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.instruction_files import PROJECT_TEXT, project_with_instructions, worktree_file_text
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker
 from tests.stories.support.story_checks import expect_value
+from suites.coding.support.shipped_profiles import WORKER_MEDIOR_PROFILE
 
 CHANGED = "Work through the notes in this new way."
 SECOND_CHANGE = "Work through the notes in yet another way."
-CHANGE_PROFILE = f'profile save journal-worker-medior --description "Works on one task" --body "{CHANGED}"'
+CHANGE_PROFILE = f'profile save {WORKER_MEDIOR_PROFILE.name} --description "Works on one task" --body "{CHANGED}"'
 OLD_TIME = 1_700_000_000
 
 

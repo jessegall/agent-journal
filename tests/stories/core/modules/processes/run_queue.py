@@ -11,6 +11,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.modules.processes.support.queue_fixtures import QueueAgents
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -52,7 +53,7 @@ def test_a_main_agents_run_neither_waits_nor_holds_a_spot(new_story):
 def test_each_environment_queues_its_runs_by_its_own_batch_size(new_story):
     story = install_runner(new_story(fixture=QueueAgents))
     story.run("environment make web /work/web", actor=story.user)
-    story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment web", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --environment web", actor=story.user)
     story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment web", actor=story.user)
     main_first, main_second, main_third = queued(story, "make one"), queued(story, "make two"), queued(story, "make three")
     story.agent = Actor(story.new_row_id("agent start s-9 claude worker --environment web"), ActorType.AGENT)

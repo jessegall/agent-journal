@@ -5,6 +5,7 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.modules.triggers.trigger_details import AgentsEnableTriggers
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.expectations.expect_row import expect_row
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -34,7 +35,7 @@ def test_command_output_goes_to_the_agent_that_fired_it_once(new_story, tmp_path
 
 def test_an_old_trigger_run_is_removed_with_its_process(new_story):
     story = install_runner(new_story(fixture=AgentsEnableTriggers))
-    story.expect_success("setting set journal.core.processes.processes-kept 1 --environment main", actor=story.agent)
+    story.expect_success(f"setting set {ProcessSetting.PROCESSES_KEPT.key} 1 --environment main", actor=story.agent)
     story.expect_success('''trigger make cart "Mind the cart" --extra-actions '[{"type":"run","target":"pwd"}]' ''', actor=story.agent)
     story.hook("s-1", HookSamples.prompt("Fix the cart"))
     story.run_listeners()

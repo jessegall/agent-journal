@@ -9,9 +9,10 @@ from tests.stories.core.modules.plugins.support.judge_scope_plugin import judge_
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
+from core.modules.plugins.support.plugin_event_entry import CEILING_SETTING
 
 PROGRAM = "commandments-release"
-HOLD_LIMIT_SETTING = "journal.core.plugins.hold_window_ms"
+HOLD_LIMIT_SETTING = f"{CEILING_SETTING}"
 REASON ="a worker judges only its own work"
 
 

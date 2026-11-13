@@ -8,13 +8,14 @@ from engine.query.queries import Queries
 from tests.stories.core.modules.helpers.helper_jobs import JOB, START, EndedHelper, helper_agent, read_jobs, resumable_session
 from tests.stories.core.modules.helpers.lifetime_reviewers import launches, refusal_text
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
+from core.modules.helpers.support.helper_settings import HELPER_PROFILE_LIMITS
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
 MEMORY_TEXT = "The cart rounds each line before it adds them"
 NEW_AGENT_REASON = "A second reader for the tax file"
 TAX_START = f'helper start {RESEARCHER_PROFILE.name} --brief "Read src/tax.py" --environment main'
-KEPT_LIMIT = "setting set journal.core.helpers.read-only-helper-profile-limits '[\"journal-researcher:8:2\"]' --project"
+KEPT_LIMIT = f"setting set {HELPER_PROFILE_LIMITS} '[\"{RESEARCHER_PROFILE.name}:8:2\"]' --project"
 
 
 @pytest.fixture

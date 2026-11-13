@@ -2,8 +2,9 @@ from engine.enums.command_category import CommandCategory
 from tests.stories.core.modules.processes.run_queue import has_slot, queued, waits, expect_absent_slot, expect_slot, expect_waits
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.modules.processes.support.queue_fixtures import QueueAgents
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
-SETTING = "journal.core.processes.main-runs-take-slots"
+SETTING = f"{ProcessSetting.MAIN_RUNS_USE_SLOTS.key}"
 
 
 def story_with_main_runs(new_story, setting: bool, main_runs: int = 1):

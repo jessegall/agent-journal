@@ -27,6 +27,7 @@ from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_S
 from core.modules.developer.support.developer_settings import REPEATED_WORK_SETTING
 from core.modules.docking.support.dock_limits import MOST_ITEMS_SETTING
 from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 
 @dataclass(frozen=True)
@@ -102,7 +103,7 @@ def viewer_workload() -> ViewerWorkload:
         {"journal.core.developer.tools": True, f"{REPEATED_WORK_SETTING}": True,
          f"{HOOK_REQUEST_LOG_SETTING}": True,
          f"{HOOK_REQUEST_LOG_SIZE_SETTING}": 10000,
-         f"{MOST_ITEMS_SETTING}": 10, "journal.core.processes.orphan-seconds": 600})
+         f"{MOST_ITEMS_SETTING}": 10, f"{ProcessSetting.ORPHAN_SECONDS.key}": 600})
 
 
 class ViewerReadDataset(StoryFixture):

@@ -53,6 +53,7 @@ from core.modules.helpers.support.helper_nudges import HELPER_PROGRAM_FAULT
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 from suites.coding.support.shipped_profiles import PLANNER_PROFILE
+from suites.coding.modules.workers.support.worker_settings import MERGER_COMMANDS
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -138,7 +139,7 @@ def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    story.expect_success(f"setting set journal.suites.coding.workers.merger-on {str(merger_enabled).lower()} --project", actor=story.user)
+    story.expect_success(f"setting set {MERGER_ENABLED} {str(merger_enabled).lower()} --project", actor=story.user)
     repository = repository_environment(story)
     started = recording_launch(monkeypatch)
     worker = dispatched_worker(story)
@@ -184,7 +185,7 @@ def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent
     actor = Actor(merger.id, ActorType.AGENT)
     story.expect_text("merger next", agent_label(story, worker.id), "brief:", "proof 1", actor=actor)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success('setting set journal.suites.coding.workers.merger-commands \'["journal sins --branch={commit}"]\' --project', actor=story.user)
+    story.expect_success(f'setting set {MERGER_COMMANDS} \'["journal sins --branch={{commit}}"]\' --project', actor=story.user)
     story.expect_text(f"merger merge {agent_number(story, worker.id)}", f"{agent_label(story, worker.id)} merged into", "run: journal sins --branch=", actor=actor)
     story.expect_text("merger next", "no worker waits", actor=actor)
     expect_marks_text(story, f"Worker {agent_number(story, worker.id)} had")

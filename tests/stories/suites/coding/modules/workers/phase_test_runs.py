@@ -3,6 +3,7 @@ import pytest
 from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_reply_refusal
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, start_planned_worker, unplanned_worker
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 FLAG = "No test runs left"
 RULE = "workers.phase-tests"
@@ -16,7 +17,7 @@ def planned_worker(new_story, monkeypatch):
 
 
 def test_the_worker_hears_the_flag_before_a_reader_request_holds_the_run(planned_worker):
-    planned_worker.story.expect_success("setting set journal.core.processes.readers-forced on --environment main")
+    planned_worker.story.expect_success(f"setting set {ProcessSetting.READERS_FORCED.key} on --environment main")
     expect_reply_refusal(planned_worker.run_test(), FLAG)
 
 

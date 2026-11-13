@@ -8,6 +8,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted, CodingEnv
 from engine.enums.tool_type import ToolType
 from core.modules.questions.support.question_nudges import QUESTION_CLOSED
 from engine.testing.expectations.expect_nudge import said
+from core.modules.questions.support.question_nudges import QUESTION_ANSWERED
 
 QUESTION_LINE = 'question ask "Which database?" --context "A story asks this so its card and answer can be checked." --options sqlite postgres --environment main'
 QUESTION_TOOL = HookSamples.sample("pre_tool_use", {"name": "AskUserQuestion", "category": ToolType.QUESTION, "files": [], "diff": None})
@@ -65,7 +66,7 @@ def test_an_agent_that_asked_stays_under_the_wait_overlay_in_its_driver_run(new_
 def test_a_late_answer_is_told_to_the_agent_once(new_story):
     story = new_story(fixture=BuilderQuestion)
     story.run("question answer 1 --answer sqlite")
-    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), "question:1 is answered")
+    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), QUESTION_ANSWERED.nudge(question=1).text)
     story.expect_absent_hook_line("s-1", HookSamples.prompt("and on"), "question 1 is answered")
 
 

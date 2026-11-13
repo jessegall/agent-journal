@@ -10,6 +10,7 @@ from core.modules.skills.support.start_skills import StartSkills
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.skills.support.skills_page_fixture import SkillsPageReady, SkillTriggerReady, skills_server, skills_page_story
+from core.modules.skills.support.start_skills import SESSION_START_KEY
 
 
 def line(server, cookie, *arguments):
@@ -54,7 +55,7 @@ def test_main_only_and_compaction_choices_do_not_overwrite_other_skills(skills_p
 
 def test_environment_overrides_are_reported_while_switches_change_the_project(skills_page_story):
     story = skills_page_story
-    story.expect_success('setting set journal.core.skills.session-start \'["journal"]\' --environment main')
+    story.expect_success(f'setting set {SESSION_START_KEY} \'["journal"]\' --environment main')
     with skills_server(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         line(server, cookie, "skill", "set-required", "project-notes", "--agents", "all")

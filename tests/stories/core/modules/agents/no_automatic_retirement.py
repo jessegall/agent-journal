@@ -6,9 +6,10 @@ from tests.stories.core.modules.helpers.cold_sessions import with_job
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.core.modules.helpers.lifetime_reviewers import refusal_text
 from tests.stories.core.modules.helpers.support.rotating_helper import ROTATING_BODY, EndedColdRotationHelper, story_with_profile_file
+from core.modules.helpers.support.helper_settings import HELPER_PROFILE_LIMITS
 
 SILENT_MINUTES = 180
-KEPT_LIMIT = "setting set journal.core.helpers.read-only-helper-profile-limits '[\"cooling:8:1\"]' --project"
+KEPT_LIMIT = f"setting set {HELPER_PROFILE_LIMITS} '[\"cooling:8:1\"]' --project"
 SECOND_HELPER = "helper start cooling --brief 'Read src/tax.py' --fresh 'A second reader' --environment main"
 CODEX_SAVE = 'profile save cooling --description "Reads one file" --body "' + ROTATING_BODY + '" --occupant when-cold --program codex --reason needed'
 

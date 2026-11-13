@@ -7,6 +7,8 @@ from suites.coding.modules.workers.support.worker_settings import DISPATCHES_WOR
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.drivers.main.orchestrator import ReadyPlanTaskOrchestrator
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
+from core.modules.tasks.support.task_nudges import CURRENT_TASK
 
 
 @pytest.fixture
@@ -42,7 +44,7 @@ def test_a_refused_stop_keeps_later_checks_without_applying_their_commands(stop_
     story.expect_success("task start 1", actor=story.agent)
     record = stop_record(stop_server)
     checks = {check["rule"]: check for check in record["stop_checks"]}
-    story.expect_rows(record["answer"] == "refused", "task:1 is in hand" in checks["tasks.carry-on-at-stop"]["reason"],
+    story.expect_rows(record["answer"] == "refused", CURRENT_TASK.nudge(task=1).text in checks["tasks.carry-on-at-stop"]["reason"],
                       not checks["coding.main-stop"]["applied"],
                       "Tasks 1 are yours and unfinished" in checks["coding.main-stop"]["reason"])
     lines = [line for line in story.system_log_text().splitlines() if "stop " in line and "refused" in line]
@@ -52,7 +54,7 @@ def test_a_refused_stop_keeps_later_checks_without_applying_their_commands(stop_
 @pytest.mark.parametrize("places,dispatches,answer", [(0, "true", "allowed"), (1, "true", "refused"), (1, "false", "allowed")])
 def test_an_approved_plan_waiting_to_start_checks_worker_capacity_and_whether_the_main_agent_dispatches(new_story, places, dispatches, answer):
     story = new_story(fixture=ReadyPlanTaskOrchestrator)
-    story.expect_success(f"setting set journal.suites.coding.workers.worker-run-limit {places} --environment main")
+    story.expect_success(f"setting set {WORKER_RUN_LIMIT} {places} --environment main")
     story.expect_success(f"setting set {DISPATCHES_WORKERS_SETTING} {dispatches} --environment main")
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))

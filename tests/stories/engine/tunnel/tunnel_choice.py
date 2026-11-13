@@ -2,8 +2,9 @@ from engine.enums.tunnel_state import TunnelState
 from core.modules.tunnel.support.tunnels import Tunnels
 from tests.stories.engine.tunnel.support.tunnel_samples import PATH, SAMPLE_ADDRESS
 from tests.stories.core.support.fixtures import UserJoined
+from core.modules.tunnel.support.tunnels import SERVICE_SETTING
 
-SERVICE = "journal.core.tunnel.service"
+SERVICE = f"{SERVICE_SETTING}"
 VIEWER_PORT = 8000
 
 

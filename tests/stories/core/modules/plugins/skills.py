@@ -28,6 +28,7 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from tests.stories.support.story_checks import expect_value
+from core.modules.plugins.support.plugin_event_entry import CEILING_SETTING
 
 GIT_REMOTE_SAMPLE = HookSamples.shell("git fetch", ShellPart("git", CommandCategory.VERSION_CONTROL, ["fetch"]))
 UPLOAD_SAMPLE = HookSamples.shell("git push", ShellPart("git", CommandCategory.VERSION_CONTROL, ["push"]))
@@ -104,7 +105,7 @@ def start_service_socket(path: Path, lines: list[str]) -> socket.socket:
 
 def test_s41_the_skills_reach_an_answering_service(new_story):
     story = rules_plugin(new_story, program="see.sh", hears=["command_starting"], holds=[{"event": "command_starting", "window_ms": 5000}], services=[{"name": "answers", "command": ["see.sh"], "answers": True}])
-    story.run("setting set journal.core.plugins.hold_window_ms 5000 --project", actor=story.user)
+    story.run(f"setting set {CEILING_SETTING} 5000 --project", actor=story.user)
     mark_rules_loaded(story, skill_digest(story, "sample-rules"))
     lines: list[str] = []
     server = start_service_socket(story.container.get(PluginSocketPaths).answers("events", "answers"), lines)

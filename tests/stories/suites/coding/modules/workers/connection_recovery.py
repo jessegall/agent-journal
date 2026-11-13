@@ -33,6 +33,7 @@ from suites.coding.modules.workers.support.worker_settings import IDLE_WORKER_RE
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -121,7 +122,7 @@ def offline_recovery(recovery):
 
 @pytest.fixture
 def running_command_recovery(recovery):
-    recovery.story.expect_success("setting set journal.core.processes.readers-forced off --environment main")
+    recovery.story.expect_success(f"setting set {ProcessSetting.READERS_FORCED.key} off --environment main")
     recovery.story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main")
     return recovery
 

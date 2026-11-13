@@ -32,6 +32,7 @@ from tests.stories.core.support.agent_labels import agent_label
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_FAILURE_LIMIT
 from suites.coding.upgrade.coding_settings_move import LISTED_KEY
+from suites.coding.modules.workers.support.worker_settings import MERGER_COMMANDS
 RUNS = f"{WORKER_PHASE_TEST_RUNS}"
 COMMAND_TYPES = f"{LISTED_KEY}"
 
@@ -114,7 +115,7 @@ def test_empty_merger_checks_keep_mechanical_judging(merged_work):
 
 def test_s39_configured_merger_checks_are_listed_after_the_merge_with_the_commit(merged_work):
     story, worker, merger = merged_work.story, merged_work.worker, merged_work.merger
-    story.expect_success("setting set journal.suites.coding.workers.merger-commands '[\"journal sins --branch={commit}\"]' --project", actor=story.user)
+    story.expect_success(f"setting set {MERGER_COMMANDS} '[\"journal sins --branch={{commit}}\"]' --project", actor=story.user)
     story.expect_text(f"merger merge {agent_number(story, worker.id)}", "run: journal sins --branch=", actor=merger)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 

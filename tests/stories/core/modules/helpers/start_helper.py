@@ -116,7 +116,7 @@ def test_a_start_with_no_model_anywhere_is_refused_naming_the_flag(new_story):
     (f"{START} --program codex --model not-a-model", "may run"),
     ('helper start nobody --brief "Read" --environment main', "journal profile list"),
     (f'helper start {WORKER_SENIOR_PROFILE.name} --brief "Read" --environment main', f"{WORKER_SENIOR_PROFILE.name} is a Worker: use journal worker dispatch"),
-    (f'helper start journal-researcher --brief "{"x" * 100001}" --environment main', "journal doc make"),
+    (f'helper start {RESEARCHER_PROFILE.name} --brief "{"x" * 100001}" --environment main', "journal doc make"),
 ], ids=["model", "profile", "worker profile", "long brief"])
 def test_a_refused_start_leaves_no_row(new_story, line, reason):
     story = new_story(fixture=LauncherRuns)
@@ -161,7 +161,7 @@ def test_each_environment_counts_its_own_helpers(new_story):
 def test_a_long_brief_arrives_whole(new_story):
     story = new_story(fixture=LauncherRuns)
     brief = "x" * 6000
-    _, launcher = started(story, f'helper start journal-researcher --brief "{brief}" --environment main')
+    _, launcher = started(story, f'helper start {RESEARCHER_PROFILE.name} --brief "{brief}" --environment main')
     story.expect_rows(brief in " ".join(launcher.requests[0]["command"]))
 
 
@@ -204,7 +204,7 @@ def refuse_claude(monkeypatch):
 
 
 def save_profile(story, flags):
-    story.expect_success(f'profile save journal-researcher --description "Reads and reports" --program claude {flags} --environment main', actor=story.user)
+    story.expect_success(f'profile save {RESEARCHER_PROFILE.name} --description "Reads and reports" --program claude {flags} --environment main', actor=story.user)
 
 
 def test_a_profile_that_always_uses_its_program_is_refused_when_it_cannot_start(new_story, monkeypatch):

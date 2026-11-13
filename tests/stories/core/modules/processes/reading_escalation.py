@@ -20,6 +20,7 @@ from core.modules.processes.support.process_nudges import BLOCK_LIFTED
 from core.modules.processes.support.process_nudges import HOLD_LIFTED
 from engine.testing.expectations.expect_nudge import said
 from core.modules.processes.support.process_nudges import READER_BLOCK
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -84,7 +85,7 @@ def test_adding_the_reader_resets_the_count_and_the_next_start_goes_on(new_story
 
 def test_a_worker_is_blocked_while_its_reader_request_waits_and_freed_when_it_expires(new_story):
     story = new_story(fixture=ForcedReaders)
-    story.expect_success("setting set journal.core.processes.reader-block-minutes 2 --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.READER_BLOCK_MINUTES.key} 2 --environment main", actor=story.user)
     worker = reader_worker(story)
     worker_run(story)
     story.expect_hook_refusal("s-reader", EDIT, said(READER_BLOCK))

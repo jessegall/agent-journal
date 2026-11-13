@@ -1,7 +1,8 @@
 from engine.database.database import Database
 from tests.stories.core.support.fixtures import UserJoined
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
-KEY = "journal.core.processes.foreground-seconds"
+KEY = f"{ProcessSetting.FOREGROUND_SECONDS.key}"
 SETTING_READ_LINE = f"setting show {KEY}"
 
 

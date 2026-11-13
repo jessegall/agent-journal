@@ -33,6 +33,7 @@ from engine.testing.expectations.expect_reply import expect_reply_line
 from suites.coding.modules.workers.support.worker_nudges import READER_SAMPLE_READY
 from engine.testing.expectations.expect_nudge import said
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -48,7 +49,7 @@ def kept_reader_sample(new_story):
 @pytest.fixture
 def requested_reader_story(new_story):
     story = new_story(fixture=ForcedReaders)
-    story.run("setting set journal.core.processes.reader-save-tries 0 --environment main")
+    story.run(f"setting set {ProcessSetting.READER_SAVE_TRIES.key} 0 --environment main")
     install_runner(story)
     worker_run(story)
     return story
@@ -81,7 +82,7 @@ def test_a_main_agent_a_person_and_a_module_can_add_readers(new_story):
 
 def test_a_worker_run_with_a_poor_reader_or_none_gets_only_the_ended_line(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.run("setting set journal.core.processes.readers-forced off --environment main")
+    story.run(f"setting set {ProcessSetting.READERS_FORCED.key} off --environment main")
     story.run('reader add poor --commands "poor-build*" --lines "never printed" --summary "never printed"', actor=story.agent)
     worker = Actor(story.new_row_id("agent start s-8 claude worker --environment main"), ActorType.AGENT)
     bus = story.container.get(Bus)
@@ -160,7 +161,7 @@ def test_the_hold_runs_out_and_the_run_starts_with_no_reader(kept_reader_sample)
 
 def test_readers_forced_off_creates_no_request_block_or_wait(new_story):
     story = new_story(fixture=ForcedReaders)
-    story.run("setting set journal.core.processes.readers-forced off --environment main")
+    story.run(f"setting set {ProcessSetting.READERS_FORCED.key} off --environment main")
     process = worker_run(story)
     story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists(), story.container.get(OutputFolder).has_slot(process.id))
     story.expect_rows(not story.container.get(Queries).query(AgentBlock).filter(session_agent_id=reader_worker(story).id).exists())
@@ -178,7 +179,7 @@ def test_with_no_main_agent_the_worker_is_not_held_and_its_run_goes_on(new_story
 def test_a_stopped_worker_is_started_again_when_its_waiting_run_ends(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    story.run("setting set journal.core.processes.readers-forced on --environment main")
+    story.run(f"setting set {ProcessSetting.READERS_FORCED.key} on --environment main")
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     bus = story.container.get(Bus)
     process = bus.run(StartProcess.single_part(worker.id, "stopped-build run", "/work", CommandCategory.BUILD, 30), worker, environment_id=1)
@@ -232,7 +233,7 @@ def test_a_skipped_block_does_not_free_the_worker_and_comes_back(notified_reader
 
 def test_with_no_main_agent_the_worker_is_not_held_and_the_next_main_agent_is_told(new_story):
     story = new_story(fixture=ForcedReaders)
-    story.run("setting set journal.core.processes.reader-save-tries 0 --environment main")
+    story.run(f"setting set {ProcessSetting.READER_SAVE_TRIES.key} 0 --environment main")
     story.run(f"agent end {story.agent.id}", actor=story.agent)
     worker_run(story, "next-build run")
     story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))

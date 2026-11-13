@@ -10,6 +10,7 @@ from tests.stories.suites.coding.modules.workers.support.commit_command import C
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DISPATCH, FIRST_PROOF, checked_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.queued_judge_plugin import PLUGIN_NAME, judge_script, queue_answer, queuing_plugin_folder
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 JUDGED = "judged.txt"
 SECOND_DISPATCH = "worker dispatch --test-command python=pytest --model sonnet 2"
@@ -27,7 +28,7 @@ def queuing_story(new_story, body: str, event_name: str = "worker_delivering"):
     story.judge = judge_script(story.home.folder.parent, body.format(marks=story.marks))
     story.expect_success(f"plugin install {queuing_plugin_folder(story.home.folder.parent / 'sources', story.judge, event_name)} --yes", actor=story.user)
     recording_runner_at(story.home)
-    story.expect_success("setting set journal.core.processes.run-batch-size 3 --project", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 3 --project", actor=story.user)
     story.repository = repository_environment(story)
     return story
 

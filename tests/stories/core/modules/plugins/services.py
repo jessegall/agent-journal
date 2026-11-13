@@ -39,6 +39,8 @@ from tests.stories.core.modules.plugins.support.service_samples import SERVICE, 
 from core.modules.plugins.models.plugin import Plugin
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from core.modules.plugins.support.plugin_event_entry import CEILING_SETTING
+from core.modules.plugins.support.plugin_services import CONDITION_LIMIT_SETTING
 
 END_LIMIT_SECONDS = 5
 SERVED = ("served", "answers")
@@ -49,7 +51,7 @@ def served_story(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.run(f"plugin install {service_plugin_folder(story.home.folder.parent)} --yes", actor=story.user)
-    story.run("setting set journal.core.plugins.hold_window_ms 5000 --project", actor=story.user)
+    story.run(f"setting set {CEILING_SETTING} 5000 --project", actor=story.user)
     story.services, story.processes = story.container.get(PluginServices), ServiceProcesses()
     story.services.follow(story.processes)
     return story
@@ -182,7 +184,7 @@ def server_kept_story(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.run(f"plugin install {service_plugin_folder(story.home.folder.parent)} --yes", actor=story.user)
-    story.run("setting set journal.core.plugins.hold_window_ms 5000 --project", actor=story.user)
+    story.run(f"setting set {CEILING_SETTING} 5000 --project", actor=story.user)
     story.services, story.processes = story.container.get(PluginServices), ServiceProcesses.shared(story.home)
     story.processes.serving = True
     story.services.follow(story.processes)
@@ -283,7 +285,7 @@ def conditioned_story(new_story, condition: str):
     manifest["services"][0]["when"] = condition
     (folder / "journal-plugin.json").write_text(json.dumps(manifest))
     story.run(f"plugin install {folder} --yes", actor=story.user)
-    story.run("setting set journal.core.plugins.condition_limit_seconds 1 --project", actor=story.user)
+    story.run(f"setting set {CONDITION_LIMIT_SETTING} 1 --project", actor=story.user)
     story.services, story.processes = story.container.get(PluginServiceRound), ServiceProcesses()
     return story
 

@@ -14,6 +14,7 @@ from tests.stories.core.modules.templates.support.sending_templates import Sendi
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.checks.checks import StoppedCheck
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
+from core.modules.library.support.library_address import ADDRESS_SETTING
 
 
 @pytest.fixture
@@ -33,7 +34,7 @@ def test_a_person_adds_an_agents_mcp_server_request_in_the_viewer(approval_story
 
 def test_a_person_changes_the_shared_server_address_through_the_same_dock(approval_story):
     story = approval_story
-    key = "journal.core.library.address"
+    key = f"{ADDRESS_SETTING}"
     story.expect_refusal(f"setting set {key} https://shared.example --project --reason needed", "A user was asked in the dock", actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).first()
     with viewer_client(story) as viewer:

@@ -41,7 +41,7 @@ class PersonOrchestrator(StoryFixture):
 @pytest.fixture(params=[True, False], ids=["merger-on", "merger-off"])
 def waiting_place(new_story, monkeypatch, request):
     story = new_story(fixture=PersonOrchestrator)
-    story.expect_success(f"setting set journal.suites.coding.workers.merger-on {str(request.param).lower()} --project", actor=story.user)
+    story.expect_success(f"setting set {MERGER_ENABLED} {str(request.param).lower()} --project", actor=story.user)
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)

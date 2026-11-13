@@ -25,6 +25,7 @@ from engine.serving.server_files import ServerFiles
 from tests.stories.support.story_checks import expect_value_4
 from tests.stories.server.support.server_client import request_answer
 from tests.stories.server.support.file_changes import FileChanges
+from core.modules.updates.models.enums.update_setting import UpdateSetting
 
 pytestmark = pytest.mark.install_job
 
@@ -164,7 +165,7 @@ def publish_release(home, folder, source):
         target.add(source, arcname="src", filter=included)
     checksum = hashlib.sha256(archive.read_bytes()).hexdigest()
     (folder / "checksums.txt").write_text(f"{checksum}  agent-journal.tar.gz\n")
-    answer = cli_answer(home, ["setting", "set", "journal.core.updates.release-address", folder.as_uri(), "--project"])
+    answer = cli_answer(home, ["setting", "set", f"{UpdateSetting.RELEASE_ADDRESS.key}", folder.as_uri(), "--project"])
     expect_row(answer, exit_code=0)
 
 

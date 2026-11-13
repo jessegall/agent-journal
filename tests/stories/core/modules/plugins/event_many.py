@@ -6,6 +6,7 @@ from tests.stories.core.modules.plugins.support.event_stories import (
     script_calls, tasks_titled)
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 NOTE_COUNT = 30
 ROUND_LIMIT = 20
@@ -16,7 +17,7 @@ SECOND_PIN_LINE = f'pin make "{SECOND_PIN_TITLE}" --link https://example.org/mor
 
 def test_s33_a_command_on_thirty_rows_stops_asking_after_twenty_rounds_and_still_commits(new_story):
     story = event_plugin_story(new_story, {"event": NOTE_CREATED, "guard": "see.sh"}, modules=[NOTES])
-    story.expect_success(f"setting set journal.core.processes.run-batch-size {NOTE_COUNT * 2} --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} {NOTE_COUNT * 2} --environment main", actor=story.user)
     story.container.get(Bus).run(ManyNotes(NOTE_COUNT), story.user)
     notes = list(story.story_rows(EventNote))
     story.expect_rows(len(notes) == NOTE_COUNT, len(script_calls(story, "see.sh")) == ROUND_LIMIT, "were skipped" in story.system_log_text())

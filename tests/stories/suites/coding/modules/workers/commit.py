@@ -17,6 +17,7 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_REFUSED
 from engine.testing.expectations.expect_nudge import said
 from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND
 from suites.coding.modules.workers.support.worker_settings import PROJECT_TEST_COMMAND
+from suites.coding.modules.workers.support.worker_settings import PROTECTED_FOLDERS
 
 LEFT_OUT = "the rounding is left out"
 FIXED_CART = "TOTAL = 3\n"
@@ -112,7 +113,7 @@ def test_210_a_plugin_that_holds_an_event_of_a_delivery_is_asked_at_a_commit(new
 
 def test_31_a_change_in_a_protected_folder_refuses_the_commit(working):
     story, repository, worker = working
-    story.expect_success('setting set journal.suites.coding.workers.protected-folders \'["cart.py"]\' --project', actor=story.user)
+    story.expect_success(f'setting set {PROTECTED_FOLDERS} \'["cart.py"]\' --project', actor=story.user)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(FIRST_PROOF, actor=worker)
     expect_refused_with(story, COMMIT, "cart.py is protected", "undo the change in that folder", AskTopic.TOOL.question_line(), actor=worker)

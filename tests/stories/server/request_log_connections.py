@@ -22,7 +22,7 @@ def logging_server(new_story):
 @pytest.mark.parametrize("enabled", [False, True])
 def test_a_batch_uses_no_logging_connection_when_off_and_one_reused_connection_when_on(new_story, monkeypatch, enabled):
     story = new_story(fixture=HookRecordingEnabled)
-    story.expect_success(f"setting set journal.core.developer.tools.hooks.request-log {str(enabled).lower()} --project", actor=story.user)
+    story.expect_success(f"setting set {HOOK_REQUEST_LOG_SETTING} {str(enabled).lower()} --project", actor=story.user)
     with server_story(story, listener_thread_started=False) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         log = server.context.request_trace

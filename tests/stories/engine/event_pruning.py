@@ -44,7 +44,7 @@ def total_events(story) -> int:
 def test_the_event_log_keeps_only_the_newest_changes_the_setting_names(new_story, kept, is_pruned):
     story = new_story(fixture=HookAndTaskLogged)
     event_total = total_events(story)
-    story.expect_success(f"setting set journal.core.drivers.event-count {kept} --project")
+    story.expect_success(f"setting set {EVENT_COUNT_SETTING} {kept} --project")
     story.expect_success("event prune")
     expect_value(total_events(story) < event_total, is_pruned)
 

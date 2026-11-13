@@ -15,6 +15,7 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from tests.stories.support.story_checks import expect_value
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 RAW_TEST = HookSamples.shell("pytest tests/one.py", ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/one.py"]))
 WORKER = "s-reader"
@@ -60,7 +61,7 @@ def unlimited_runs(forced):
 
 @pytest.fixture
 def readers_disabled(forced):
-    forced.run("setting set journal.core.processes.readers-forced off --environment main")
+    forced.run(f"setting set {ProcessSetting.READERS_FORCED.key} off --environment main")
     return forced
 
 

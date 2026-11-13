@@ -28,6 +28,7 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_ENDED_WIT
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RESTARTED
 from engine.testing.expectations.expect_nudge import said
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 MAIN_SESSION = "s-1"
 PROCESS_START = "2026-10-31T09:00:00+00:00"
@@ -66,7 +67,7 @@ def test_a_worker_that_says_stuck_while_its_run_goes_tells_its_main_agent_nothin
     repository_environment(story)
     main = story.agent
     worker = dispatched_worker(story)
-    story.expect_success("setting set journal.core.processes.readers-forced off --environment main")
+    story.expect_success(f"setting set {ProcessSetting.READERS_FORCED.key} off --environment main")
     story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main")
     story.agent = worker
     start_process(story, "make check", category=CommandCategory.TEST_RUN)

@@ -23,6 +23,7 @@ from tests.stories.core.modules.plugins.support.event_stories import (
     REFUSAL, SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, EventPluginStarted, deliveries, event_plugin_story, install_event_plugin, logged_events, plugin_data, plugin_page, plugin_row, script_calls, tasks_titled)
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.modules.drivers.support.confirmed_skips import confirmed_skip
+from core.modules.plugins.support.plugin_event_entry import CEILING_SETTING
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -32,7 +33,7 @@ MESSAGE_SCRIPT = f"""echo '{{"v": 1, "tell": "{GUARD_MESSAGE}", "cards": [{{"kin
 COMMAND_STARTING = "core.plugins.command_starting"
 GUARD_SKIP = "plugins.event-guard"
 SKIP_REASON = '--skip-reason "the plugin is wrong here"'
-GUARD_LIMIT_SETTING = "setting set journal.core.plugins.hold_window_ms {} --project"
+GUARD_LIMIT_SETTING = f"setting set {CEILING_SETTING} {{}} --project"
 CEILING_MS = 1000
 STOP_LIMIT_SECONDS = 5
 BLOCKED_SCRIPT = 'mkfifo "$JOURNAL_PLUGIN_DATA/never-written"\nread answer < "$JOURNAL_PLUGIN_DATA/never-written"'

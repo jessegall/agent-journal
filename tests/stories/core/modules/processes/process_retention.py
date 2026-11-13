@@ -18,6 +18,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, start_process
 from tests.stories.core.modules.processes.support.reader_block_fixtures import worker_run
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -31,7 +32,7 @@ class ProcessLog(StoryFixture):
     parent = UserBuilder
 
     def steps(self, story):
-        story.run("setting set journal.core.processes.processes-kept 2 --environment main", actor=story.user)
+        story.run(f"setting set {ProcessSetting.PROCESSES_KEPT.key} 2 --environment main", actor=story.user)
 
 
 def test_old_processes_parts_outputs_and_folders_are_removed_together(new_story):
@@ -110,7 +111,7 @@ def test_each_environment_keeps_its_own_process_count(new_story):
     ended_run(story, "make main-first", "first\n")
     ended_run(story, "make main-second", "second\n")
     story.run("environment make web /work/web", actor=story.user)
-    story.expect_success("setting set journal.core.processes.processes-kept 1 --environment web", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.PROCESSES_KEPT.key} 1 --environment web", actor=story.user)
     web = Actor(story.new_row_id("agent start web-main claude main --environment web"), ActorType.AGENT)
     bus = story.container.get(Bus)
     for number in range(2):
@@ -126,7 +127,7 @@ def test_pruning_twenty_ended_runs_at_once_reads_each_table_that_names_them_once
     for number in range(22):
         ended_run(story, f"make step-{number}", "done\n")
         story.run_listeners()
-    story.run("setting set journal.core.processes.processes-kept 2 --environment main", actor=story.user)
+    story.run(f"setting set {ProcessSetting.PROCESSES_KEPT.key} 2 --environment main", actor=story.user)
     connection = story.container.get(Database).connection
     statements: list[str] = []
     connection.set_trace_callback(statements.append)

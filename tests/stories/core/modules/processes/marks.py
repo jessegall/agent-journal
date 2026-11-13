@@ -24,6 +24,7 @@ from tests.stories.core.support.fixtures import UserJoined
 from engine.testing.expectations.expect_row import expect_row
 from core.modules.processes.support.process_nudges import RUN_NAME
 from engine.testing.expectations.expect_nudge import said
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -203,8 +204,8 @@ def process_story(new_story):
 
 def test_a_run_that_waited_in_the_queue_docks_only_after_5_seconds_of_running(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
-    story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
-    story.expect_success("setting set journal.core.processes.readers-forced false --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.READERS_FORCED.key} false --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start queue-worker claude worker --environment main"), ActorType.AGENT)
     first = started_run(story, "deploy one", category=CommandCategory.BUILD)
     second = start_process(story, "deploy two", category=CommandCategory.BUILD)

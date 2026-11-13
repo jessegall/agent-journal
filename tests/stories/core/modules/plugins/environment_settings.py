@@ -9,6 +9,7 @@ from tests.stories.core.modules.plugins.support.plugin_samples import sample_plu
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
+from core.modules.plugins.support.plugin_event_entry import CEILING_SETTING
 
 
 @pytest.fixture
@@ -19,7 +20,7 @@ def configured_plugin(new_story):
     program.write_text(program.read_text().replace('line=$(cat)', 'line=$(cat)\nprintf "%s\\n" "$line" >> "$JOURNAL_PLUGIN_DATA/inputs"'))
     with viewer_client(story) as viewer:
         viewer.value("plugins.plugins", ["plugin", "install", str(folder), "--yes"])
-        viewer.value("settings.settings", ["setting", "set", "journal.core.plugins.hold_window_ms", "5000", "--project"])
+        viewer.value("settings.settings", ["setting", "set", f"{CEILING_SETTING}", "5000", "--project"])
         viewer.value("plugins.plugins", ["plugin", "configure", "sample", "level", "2"])
         viewer.value("viewer.shell", ["environment", "make", "sandbox", "/work/sandbox", "--test", "--test-agent-id", str(story.agent.id)])
         viewer.server.viewer_line_value(viewer.cookie, {"window": "plugins.plugins", "environment": "sandbox",

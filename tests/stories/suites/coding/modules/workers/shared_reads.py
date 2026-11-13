@@ -19,6 +19,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import (
 from tests.stories.suites.coding.modules.workers.support.program_split import SplitViewer
 from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
+from suites.coding.modules.workers.support.worker_settings import WORKER_KEPT_LIMIT
 
 
 class WorkerReadsStory(NamedTuple):
@@ -86,7 +87,7 @@ def test_agent_cards_read_pending_work_once_when_the_cache_changes(pending_worke
 
 def test_an_approved_plan_stop_shares_several_pending_workers(pending_workers, pending_viewer):
     story, workers = pending_workers
-    story.expect_success(f"setting set journal.suites.coding.workers.worker-kept-limit {len(workers)} --environment main")
+    story.expect_success(f"setting set {WORKER_KEPT_LIMIT} {len(workers)} --environment main")
     plan_id = story.new_row_id('plan make "Next cart work" --brief "Finish the cart"', actor=story.agent)
     phase_id = story.new_row_id(f'phase make --plan {plan_id} "Cart" --goal "The cart is finished"', actor=story.agent)
     story.expect_success(f'task make "Finish" --phase {phase_id}', actor=story.agent)

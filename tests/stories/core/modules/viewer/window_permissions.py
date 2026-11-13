@@ -1,6 +1,7 @@
 from tests.stories.core.modules.viewer.support.window_samples import GRANTING_NOTES, NOTES, WIDER_NOTES
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
+from core.modules.drivers.models.support.views import SUITE_SETTING
 
 ALLOW_READS = "window allow notes.board --type reads --reason needed --environment main"
 PERMISSIONS = "window permissions notes.board --environment main"
@@ -64,6 +65,6 @@ def test_a_window_the_journal_does_not_ship_never_runs_the_lines_that_give_right
     window.story.expect_success("window allow notes.board --type runs --environment main", actor=window.story.user)
     window.expect_window_refusal("notes.board", "window allow notes.board --type reads", "notes.board may never run window allow")
     window.expect_window_refusal("notes.board", "window trust notes", "notes.board may never run window trust")
-    window.expect_window_refusal("notes.board", "setting make journal.core.drivers.suite '\"notes\"'", "notes.board may never run setting make")
+    window.expect_window_refusal("notes.board", f"setting make {SUITE_SETTING} '\"notes\"'", "notes.board may never run setting make")
     window.expect_window_refusal("notes.board", "setting edit 1 --value 1", "notes.board may never run setting edit")
     window.expect_window_refusal("notes.board", "viewer-layout save --suite notes --page home --layout {}", "notes.board may never run viewer-layout save")

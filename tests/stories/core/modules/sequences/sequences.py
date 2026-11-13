@@ -15,6 +15,7 @@ from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value
 from core.modules.sequences.support.sequence_nudges import STEP_EDIT_BAN
 from engine.testing.expectations.expect_nudge import said
+from core.modules.sequences.support.sequence_nudges import STEP_WAITS
 
 
 class ReleaseSequence(StoryFixture):
@@ -54,7 +55,7 @@ def test_next_before_the_step_is_taken_up_is_refused_with_the_follow_command(run
 
 def test_a_step_not_taken_up_holds_the_agents_edits(running_release):
     story = running_release
-    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "sequence:1 step 1 is waiting")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), STEP_WAITS.nudge(sequence=1, step=1).text)
 
 
 def test_abandoning_names_the_steps_left_undone_and_goes_through_with_sure(running_release):

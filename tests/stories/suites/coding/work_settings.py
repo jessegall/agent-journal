@@ -5,6 +5,7 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 from suites.coding.support.coding_settings import KEEP_RUNNING_SETTING
+from core.modules.helpers.support.helper_settings import HELPER_RUN_LIMIT
 
 AUTO = f"{AUTO_MODE_SETTING}"
 CONTINUE_SETTING = f"{KEEP_RUNNING_SETTING}"
@@ -45,7 +46,7 @@ def test_s51_a_stale_draft_is_refused_and_changes_no_row(new_story):
 def test_s54_one_invalid_value_in_an_apply_changes_none_of_the_controls(new_story):
     story = new_story(fixture=UserBuilder)
     story.expect_refusal(f"work-settings apply --revision {revision(story, story.user)} --environment main {AUTO}=off {MERGER}=maybe", "not 'maybe'", actor=story.user)
-    story.expect_refusal(f"work-settings apply --revision {revision(story, story.user)} --environment main {AUTO}=off journal.core.helpers.read-only-helper-run-limit=9", "not a work control", actor=story.user)
+    story.expect_refusal(f"work-settings apply --revision {revision(story, story.user)} --environment main {AUTO}=off {HELPER_RUN_LIMIT}=9", "not a work control", actor=story.user)
     story.expect_text("work-settings show --environment main", f"{AUTO}: on", f"{MERGER}: on", actor=story.user)
 
 

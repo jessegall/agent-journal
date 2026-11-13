@@ -11,6 +11,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -83,7 +84,7 @@ def test_an_idle_main_agent_is_asked_to_help_after_failed_saves(exhausted_worker
 
 def test_the_failed_save_limit_can_be_configured(worker_reader_sample):
     story = worker_reader_sample
-    story.expect_success("setting set journal.core.processes.reader-save-tries 1 --environment main")
+    story.expect_success(f"setting set {ProcessSetting.READER_SAVE_TRIES.key} 1 --environment main")
     story.expect_refusal('reader add broken --commands "custom-build*" --lines "["', "does not compile", actor=reader_worker(story))
     story.expect_refusal("reader draft 1 --save", "main agent", actor=reader_worker(story))
     story.expect_hook_allowed("s-1", HookSamples.prompt("help"), "Reader request 1")
@@ -91,7 +92,7 @@ def test_the_failed_save_limit_can_be_configured(worker_reader_sample):
 
 def test_incomplete_draft_saves_count_toward_the_same_limit(worker_reader_sample):
     story = worker_reader_sample
-    story.run("setting set journal.core.processes.reader-save-tries 1 --environment main")
+    story.run(f"setting set {ProcessSetting.READER_SAVE_TRIES.key} 1 --environment main")
     process = worker_run(story, "custom-test run", CommandCategory.TEST_RUN)
     end_run(story, process, "building\ncompiling\nwaiting\nworking\n")
     story.expect_refusal("reader draft 2 --save", "could not fill", actor=reader_worker(story))

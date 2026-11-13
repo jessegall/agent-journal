@@ -5,13 +5,14 @@ from engine.enums.hook_answer import HookAnswer
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from engine.testing.expectations.expect_row import expect_row
+from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SIZE_SETTING
 
 HEADERS = {"X-Journal-Hook-Id": "firing-1", "X-Journal-Env": "main"}
 
 
 def logging_story(new_story, size: int = 3):
     story = new_story(fixture=HookRecordingEnabled)
-    story.expect_success(f"setting set journal.core.developer.tools.hooks.request-log-size {size} --project", actor=story.user)
+    story.expect_success(f"setting set {HOOK_REQUEST_LOG_SIZE_SETTING} {size} --project", actor=story.user)
     return story
 
 

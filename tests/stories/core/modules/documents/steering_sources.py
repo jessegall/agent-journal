@@ -8,6 +8,7 @@ from tests.stories.core.modules.documents.support.trail_fixtures import feature,
 from tests.stories.core.support.agent_labels import agent_number
 from core.modules.messages.support.message_nudges import MESSAGE_UPDATED
 from engine.testing.expectations.expect_nudge import said
+from core.modules.questions.support.question_nudges import QUESTION_ANSWERED
 
 
 class EditedActiveRequest(StoryFixture):
@@ -44,7 +45,7 @@ def test_an_answered_question_tells_the_agent_once_and_names_no_message(scenario
     scenario.command('question ask "Which tax?" --context "A story asks this so its card and answer can be checked." --options "Local" "Export"')
     scenario.person("questions.questions", "question", "answer", "1", "--answer", "Local")
     lines = "\n".join(scenario.story.hook("s-1", HookSamples.prompt("go on")).lines)
-    scenario.story.expect_rows(lines.count("question:1 is answered") == 1, "answer source" not in lines, detail=lines)
+    scenario.story.expect_rows(lines.count(QUESTION_ANSWERED.nudge(question=1).text) == 1, "answer source" not in lines, detail=lines)
 
 
 def test_answer_notification_does_not_replace_active_request(scenario):

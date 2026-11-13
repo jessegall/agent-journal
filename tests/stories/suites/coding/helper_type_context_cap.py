@@ -47,5 +47,5 @@ def test_a_cap_set_on_the_planner_screen_is_the_cap_its_bar_shows_its_percent_of
         save_status_file(story, session, {"context_window": {"used_percentage": WINDOW_PERCENT, "total_input_tokens": USED_TOKENS}})
     rows = bar_rows(story)
     planner, researcher = rows["planner-session"], rows["researcher-session"]
-    expect_value((f"journal-planner:{PLANNER_CAP}" in shown_cap, planner["context_percent"], planner["context_limit_tokens"], researcher["context_percent"], researcher["context_limit_tokens"]),
+    expect_value((f"{PLANNER_PROFILE.name}:{PLANNER_CAP}" in shown_cap, planner["context_percent"], planner["context_limit_tokens"], researcher["context_percent"], researcher["context_limit_tokens"]),
                  (True, 50, PLANNER_CAP, WINDOW_PERCENT, None))

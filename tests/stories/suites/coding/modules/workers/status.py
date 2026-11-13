@@ -14,6 +14,7 @@ from tests.stories.suites.coding.modules.workers.support.commit_command import C
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment, worker_session
 from core.modules.processes.support.process_nudges import READ_COMMAND_OUTPUT
 from engine.testing.expectations.expect_nudge import said
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 
 @pytest.fixture
@@ -45,7 +46,7 @@ def test_worker_status_lists_tests_waiting_for_the_queue(worker_batch, monkeypat
     story, repository, worker = worker_batch
     monkeypatch.setattr(WorkerTestLaunch, "start", lambda *_arguments: None)
     monkeypatch.setattr(WorkerTestLaunch, "start_waited", lambda *_arguments: None)
-    story.expect_success("setting make journal.core.processes.run-batch-size 0 --environment main")
+    story.expect_success(f"setting make {ProcessSetting.RUN_BATCH_SIZE.key} 0 --environment main")
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart story" --test "python tests/cart.py"', actor=worker)
     story.expect_success(COMMIT, actor=worker)

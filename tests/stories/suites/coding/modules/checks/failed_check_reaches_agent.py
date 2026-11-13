@@ -4,8 +4,9 @@ from pathlib import Path
 from engine.testing.expectations.expect_reply import expect_absent_reply_line, expect_reply_line
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from suites.coding.modules.checks.support.check_nudges import CHECK_FAILED
 
-FAILED = "check:1 failed"
+FAILED = CHECK_FAILED.nudge(check=1).text
 
 
 def failing_switch(story, tmp_path: Path) -> Path:

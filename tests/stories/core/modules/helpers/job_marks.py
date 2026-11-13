@@ -18,7 +18,7 @@ def test_a_steer_to_a_running_helper_shows_a_steered_mark_and_not_a_started_one(
     scenario.command(f'helper send {agent_number(story, helper.id)} "{STEERING}" --steer')
     story.run_listeners()
     story.expect_text(MARKS, f"Steered {agent_label(story, helper.id)}: {STEERING}", f"Started {PLANNER_PROFILE.name}")
-    story.expect_no_text(MARKS, f"Started journal-planner . sonnet: {STEERING}")
+    story.expect_no_text(MARKS, f"Started {PLANNER_PROFILE.name} . sonnet: {STEERING}")
 
 
 def test_a_next_job_for_an_ended_helper_shows_a_sent_a_job_mark(new_story, monkeypatch):

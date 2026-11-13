@@ -14,10 +14,12 @@ from tunnels.tunler.support.tunler_tunnel import TunlerTunnel
 from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_value
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
+from core.modules.tunnel.support.tunnels import SERVICE_SETTING
+from tunnels.tunler.support.tunler_tunnel import SUBDOMAIN_SETTING
 
 MODULE = "tunnels.tunler.tunler_module:TunlerModule"
-SUBDOMAIN_SETTING = "journal.tunnels.tunler.subdomain"
-SERVICE_SETTING = "journal.core.tunnel.service"
+SUBDOMAIN_SETTING = f"{SUBDOMAIN_SETTING}"
+SERVICE_SETTING = f"{SERVICE_SETTING}"
 TEAM_DOMAIN = f"cart-team.{TUNLER_HOST}"
 SPARE_DOMAIN = f"old-shop.{TUNLER_HOST}"
 VIEWER_PORT = 8000

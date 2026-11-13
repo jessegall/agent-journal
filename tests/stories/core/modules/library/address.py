@@ -1,6 +1,7 @@
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from core.modules.library.support.library_address import ADDRESS_SETTING
 
-ADDRESS = "journal.core.library.address"
+ADDRESS = f"{ADDRESS_SETTING}"
 
 
 def test_an_agent_cannot_reset_the_address_a_person_set(new_story):

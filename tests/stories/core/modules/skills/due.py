@@ -14,6 +14,8 @@ from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.modules.skills.support.skill_samples import PATH
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
 from tests.stories.support.story_checks import expect_value, expect_value_with, expect_value_without
+from core.modules.skills.support.start_skills import AFTER_COMPACTION_KEY
+from core.modules.skills.support.start_skills import SESSION_START_KEY
 
 DUE = f"{PATH}:DueSkillsModule"
 JOURNAL_TASK_LIST = HookSamples.shell("journal task list", ShellPart("journal", CommandCategory.JOURNAL, ["task", "list"]))
@@ -71,7 +73,7 @@ def read_digest(story, skill: str) -> str:
 
 def test_the_session_start_setting_names_the_skills_instead(skill_environment):
     story = skill_environment
-    story.run("setting make journal.core.skills.session-start '[\"journal-notes\"]'")
+    story.run(f"setting make {SESSION_START_KEY} '[\"journal-notes\"]'")
     start(story)
     expect_due(story, "journal-notes")
     expect_skills_absent(story, *DEFAULTS)
@@ -159,7 +161,7 @@ def started_skill_environment(skill_environment):
 @pytest.fixture
 def compacted_environment(skill_environment):
     story = skill_environment
-    story.run("setting make journal.core.skills.after-compaction '[\"journal-chores\"]'")
+    story.run(f"setting make {AFTER_COMPACTION_KEY} '[\"journal-chores\"]'")
     start(story)
     story.hook("s-1", HookSamples.sample("compact"))
     story.hook("s-1", HookSamples.session_start())

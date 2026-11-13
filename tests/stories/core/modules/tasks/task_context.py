@@ -23,6 +23,7 @@ from core.modules.tasks.support.task_brief_requirement import TaskBriefRequireme
 from tests.stories.core.modules.documents.support.trail_fixtures import feature, linked_scenario, LinkedTrail, Scenario
 from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
 from tests.stories.core.support.agent_labels import agent_number
+from core.modules.tasks.support.task_nudges import TASK_BRIEF_FIRST
 
 
 class SourcelessTask(StoryFixture):
@@ -125,10 +126,10 @@ def test_start_return_and_compaction_require_the_same_context(started_context):
     linked_scenario.command("task start 2")
     linked_scenario.command("task overview 2")
     linked_scenario.story.hook("s-1", HookSamples.sample("compact"))
-    linked_scenario.story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "Read task 2 first")
+    linked_scenario.story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), TASK_BRIEF_FIRST.nudge(task=2).text)
     linked_scenario.command("task overview 2")
     linked_scenario.command('task close 2 --outcome "Interrupting work is complete"')
-    linked_scenario.story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "Read task 1 first")
+    linked_scenario.story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), TASK_BRIEF_FIRST.nudge(task=1).text)
     second = linked_scenario.command("task overview 1")
     feature("Original cart request" in first.output_text and "Original cart request" in second.output_text, second.output_text)
     linked_scenario.story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
@@ -259,6 +260,6 @@ def test_overview_failure_does_not_record_a_read_or_release_the_gate(started_con
     feature(outcome.code != 0 and "missing_context_column" in outcome.output_text, outcome.output_text)
     with story.container.get(Scopes).read_scope((), story.agent.id, 1):
         feature(not story.container.get(Queries).query(TaskRead).filter(task_id=1, session_agent_id=story.agent.id).exists(), "failed overview recorded TaskRead")
-    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "Read task 1 first")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), TASK_BRIEF_FIRST.nudge(task=1).text)
     linked_scenario.command("task overview 1")
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))

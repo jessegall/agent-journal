@@ -19,7 +19,7 @@ JOURNAL_AGENT_LIST = HookSamples.shell("journal agent list", ShellPart("journal"
 
 def notes_due(new_story):
     story = environment(new_story)
-    story.run("setting make journal.core.skills.session-start '[\"journal-notes\"]'")
+    story.run(f"setting make {SESSION_START_KEY} '[\"journal-notes\"]'")
     start(story)
     return story
 
@@ -40,7 +40,7 @@ def test_reading_the_due_skill_during_the_countdown_ends_it(due_notes):
 
 def test_each_part_of_a_shell_line_that_reads_a_skill_loads_that_skill_at_once(exhausted_notes):
     story = install_runner(exhausted_notes)
-    story.run("setting make journal.core.skills.session-start '[\"journal-notes\", \"journal-tasks\"]'")
+    story.run(f"setting make {SESSION_START_KEY} '[\"journal-notes\", \"journal-tasks\"]'")
     line = "sed -n 1,240p .claude/skills/journal-notes/SKILL.md && sed -n 1,240p .claude/skills/journal-tasks/SKILL.md && ls src"
     parts = (ShellPart("sed", CommandCategory.READ, ["-n", "1,240p", ".claude/skills/journal-notes/SKILL.md"]), ShellPart("sed", CommandCategory.READ, ["-n", "1,240p", ".claude/skills/journal-tasks/SKILL.md"]), ShellPart("ls", CommandCategory.READ, ["src"]))
     story.hook("s-1", HookSamples.shell(line, *parts))

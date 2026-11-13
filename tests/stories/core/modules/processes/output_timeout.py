@@ -12,6 +12,7 @@ from tests.stories.core.modules.processes.run_queue import queued
 from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, install_runner, moved_run, start_process
 from tests.stories.core.modules.processes.support.queue_fixtures import QueueAgents
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 
 def timeout_tick(story):
@@ -94,7 +95,7 @@ def test_a_run_ending_before_its_timeout_is_not_reported_as_timed_out(new_story)
 
 def test_time_waiting_in_the_queue_does_not_consume_the_timeout(new_story):
     story = new_story(fixture=QueueAgents)
-    story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --environment main", actor=story.user)
     active = queued(story, "make active")
     waiting = queued(story, "make waiting")
     story.expect_success(f"output timeout {waiting.id} 10s", actor=story.user)

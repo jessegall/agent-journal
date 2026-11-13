@@ -3,9 +3,10 @@ import tarfile
 from pathlib import Path
 
 from tests.stories.core.support.fixtures import UserJoined
+from core.modules.updates.models.enums.update_setting import UpdateSetting
 
 ARCHIVE = "agent-journal.tar.gz"
-ADDRESS_SETTING = "journal.core.updates.release-address"
+ADDRESS_SETTING = f"{UpdateSetting.RELEASE_ADDRESS.key}"
 
 
 def published(folder: Path, marker: str) -> Path:

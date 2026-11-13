@@ -6,11 +6,12 @@ from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.modules.skills.support.unread_skills import UnreadSkills
 from core.modules.skills.support.agent_skill_rows import AgentSkillRows
 from tests.stories.core.modules.skills.due import environment, start
+from core.modules.skills.support.start_skills import SESSION_START_KEY
 
 
 def test_one_request_asks_for_the_due_skills_of_an_agent_many_times_and_reads_them_once(new_story):
     story = environment(new_story)
-    story.run('setting make journal.core.skills.session-start \'["journal-notes"]\'')
+    story.run(f'setting make {SESSION_START_KEY} \'["journal-notes"]\'')
     story.container.bind(SkillRequirement, SkillRequirement())
     start(story)
     unread = story.container.get(UnreadSkills)

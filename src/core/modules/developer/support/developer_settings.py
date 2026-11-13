@@ -16,6 +16,7 @@ REPEATED_WORK_SETTING = f"{TOOLS_SETTING}.repeated-work"
 PREVENT_LAZY_LOADING_SETTING = f"{TOOLS_SETTING}.prevent-lazy-loading"
 READ_LIMIT_SETTING = f"{TOOLS_SETTING}.read-limit"
 PRIVATE_DATA_SETTING = f"{TOOLS_SETTING}.private-data"
+MARK_MOTION_SETTING = f"{TOOLS_SETTING}.mark-motion"
 DEVELOPER_SETTINGS = [
     SettingGroup("tools", "Developer tools", "Enable tools for developing the journal. Turning this off disables all developer tools.", toggleable=True, enabled=False,
                  children=[SettingGroup("hooks", "Agent tool calls", "Shows details of each agent tool call in the terminal.", toggleable=True,

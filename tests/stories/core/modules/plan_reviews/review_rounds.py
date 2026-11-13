@@ -11,6 +11,7 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 from tests.stories.support.story_checks import expect_value
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -116,7 +117,7 @@ def test_the_end_the_review_button_closes_the_round_with_no_report(rounds, cooki
 
 def start_helper(story, brief: str) -> Agent:
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    story.expect_success(f'helper start journal-researcher --brief "{brief}" --environment main', actor=story.agent)
+    story.expect_success(f'helper start {RESEARCHER_PROFILE.name} --brief "{brief}" --environment main', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
     launcher.server.close()

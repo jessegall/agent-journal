@@ -18,6 +18,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted, OpenTaskO
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_updated_input_hook
+from core.modules.processes.support.process_nudges import OUTPUT_ENDED
 
 ALIAS_LINE = HookSamples.shell("journal sins --changes", ShellPart("journal", CommandCategory.PROCESS, ["sins", "--changes"], subcommand="sins"))
 
@@ -86,7 +87,7 @@ def test_a_background_alias_run_that_is_no_test_or_build_ends_with_an_ended_line
     story.advance(timedelta(seconds=1))
     story.run_listeners()
     story.expect_absent("chat-mark list --json", "process:1")
-    story.expect_hook_allowed("s-1", HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"])), "Output 1 ended")
+    story.expect_hook_allowed("s-1", HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"])), OUTPUT_ENDED.nudge(output=1).text)
 
 
 def test_a_check_alias_goes_through_the_run_queue(new_story):

@@ -23,7 +23,7 @@ def agent_limits_server(new_story):
     story.expect_success(f"setting set {KEPT} 5 --project", actor=story.user)
     story.expect_success(f"setting set {RUN} 1 --environment main", actor=story.user)
     story.expect_success(f"setting set {KEPT} 0 --environment main", actor=story.user)
-    story.expect_success(f'setting set {PROFILES} \'["journal-researcher:2:3"]\' --project', actor=story.user)
+    story.expect_success(f'setting set {PROFILES} \'["{RESEARCHER_PROFILE.name}:2:3"]\' --project', actor=story.user)
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         yield server, cookie
@@ -88,7 +88,7 @@ def test_a_person_sets_one_profiles_counts_through_the_profile_screen_route(agen
 
 def test_an_agent_cannot_set_a_profiles_counts(agent_limits_server):
     server, cookie = agent_limits_server
-    server.story.expect_refusal("agent profile-limits helper journal-researcher --running 9 --kept 9 --environment main --reason \"fewer\"", "A user was asked", actor=server.story.agent)
+    server.story.expect_refusal(f"agent profile-limits helper {RESEARCHER_PROFILE.name} --running 9 --kept 9 --environment main --reason \"fewer\"", "A user was asked", actor=server.story.agent)
     helper = next(row for row in line(server, cookie, ["agent", "limits"])["rows"] if row["key"] == "helper")
     profile = next(row for row in helper["profiles"] if row["profile"] == f"{RESEARCHER_PROFILE.name}")
     server.story.expect_rows((profile["run_limit"], profile["kept_limit"]) == (2, 3))

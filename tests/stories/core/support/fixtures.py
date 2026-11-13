@@ -6,6 +6,7 @@ from engine.enums.actor_type import ActorType
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.plan_steps import ready_plan
+from core.modules.plans.support.plan_nudges import PLAN_APPROVED
 
 
 class MainEnvironment(StoryFixture):
@@ -282,7 +283,7 @@ class MessageAnswered(StoryFixture):
 
 
 class StartedPlanTask(StoryFixture):
-    """Plan 1 approved and started, its first task started by the agent, the second still open."""
+    f"""{PLAN_APPROVED.nudge(plan=1).text} and started, its first task started by the agent, the second still open."""
 
     parent = PlanTasksPlaced
 

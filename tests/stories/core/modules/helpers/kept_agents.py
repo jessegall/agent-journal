@@ -189,14 +189,14 @@ def test_a_person_sets_the_limits_of_a_profile_and_a_number_in_a_profile_file_is
     story = new_story(fixture=StartedHelper)
     limits = story.container.get(AgentTypeLimits)
     story.expect_rows(limits.lookup("helper", f"{RESEARCHER_PROFILE.name}") == TypeLimits(4, 8), limits.lookup("main") is None)
-    story.expect_success('setting set journal.core.helpers.read-only-helper-profile-limits \'["journal-researcher:1:2"]\' --project', actor=story.user)
+    story.expect_success(f'setting set {HELPER_PROFILE_LIMITS} \'["{RESEARCHER_PROFILE.name}:1:2"]\' --project', actor=story.user)
     story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", f"{RESEARCHER_PROFILE.name}") == TypeLimits(1, 2))
     story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", f"{PLANNER_PROFILE.name}") == TypeLimits(4, 8))
 
 
 def test_at_the_run_limit_a_start_of_that_profile_is_refused_and_another_profile_starts(new_story):
     story = new_story(fixture=StartedHelper)
-    story.expect_success('setting set journal.core.helpers.read-only-helper-profile-limits \'["journal-researcher:1:8"]\' --project', actor=story.user)
+    story.expect_success(f'setting set {HELPER_PROFILE_LIMITS} \'["{RESEARCHER_PROFILE.name}:1:8"]\' --project', actor=story.user)
     expect_start_refused(story, f"1 of {RESEARCHER_PROFILE.name} run")
     story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", f"{DEBUGGER_PROFILE.name}") == TypeLimits(4, 8))
 
@@ -204,7 +204,7 @@ def test_at_the_run_limit_a_start_of_that_profile_is_refused_and_another_profile
 def test_at_the_kept_maximum_a_new_start_is_refused_naming_the_idle_helper_and_the_person_who_retires(new_story):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
-    story.expect_success('setting set journal.core.helpers.read-only-helper-profile-limits \'["journal-researcher:4:1"]\' --project', actor=story.user)
+    story.expect_success(f'setting set {HELPER_PROFILE_LIMITS} \'["{RESEARCHER_PROFILE.name}:4:1"]\' --project', actor=story.user)
     expect_start_refused(story, f"send the job to idle helper {agent_number(story, helper.id)}, or ask the user to retire one")
 
 
@@ -212,7 +212,7 @@ def test_launches_in_flight_count(new_story, monkeypatch):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
-    story.expect_success('setting set journal.core.helpers.read-only-helper-profile-limits \'["journal-researcher:1:8"]\' --project', actor=story.user)
+    story.expect_success(f'setting set {HELPER_PROFILE_LIMITS} \'["{RESEARCHER_PROFILE.name}:1:8"]\' --project', actor=story.user)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
     story.expect_success(f'helper send {agent_number(story, helper.id)} "One more job"', actor=story.agent)
     story.expect_refusal(f"helper start {RESEARCHER_PROFILE.name} --fresh 'A second reader' --brief 'Read src/other.py' --environment main", f"1 of {RESEARCHER_PROFILE.name} run", actor=story.agent)
@@ -314,7 +314,7 @@ def test_same_reviewer_same_plan_is_refused(new_story, monkeypatch):
 
 def test_refusals_fit_and_a_kept_limit_with_all_running_says_to_ask_the_person(new_story):
     story = new_story(fixture=StartedHelper)
-    story.expect_success('setting set journal.core.helpers.read-only-helper-profile-limits \'["journal-researcher:4:1"]\' --project', actor=story.user)
+    story.expect_success(f'setting set {HELPER_PROFILE_LIMITS} \'["{RESEARCHER_PROFILE.name}:4:1"]\' --project', actor=story.user)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
     outcome = story.run(f"helper start {RESEARCHER_PROFILE.name} --brief 'Read src/other.py' --environment main", actor=story.agent)
     launcher.server.close()
@@ -325,7 +325,7 @@ def test_refusals_fit_and_a_kept_limit_with_all_running_says_to_ask_the_person(n
 def test_the_agent_mix_counts_the_jobs_and_the_idle_agents_of_each_model(new_story):
     story = new_story(fixture=ReportedHelper)
     helper = helper_agent(story)
-    story.expect_text("agent mix", f"journal-researcher, {helper.program_model}: jobs 1, kept 1, idle", actor=story.agent)
+    story.expect_text("agent mix", f"{RESEARCHER_PROFILE.name}, {helper.program_model}: jobs 1, kept 1, idle", actor=story.agent)
 
 
 def test_an_idle_helper_on_another_model_is_not_reused_and_a_start_on_its_own_model_is(new_story, monkeypatch):
@@ -334,8 +334,8 @@ def test_an_idle_helper_on_another_model_is_not_reused_and_a_start_on_its_own_mo
     resumable_session(story, helper, monkeypatch)
     other_model = "opus" if helper.program_model != "opus" else "sonnet"
     launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"started 703\n", request_count=2)
-    story.expect_refusal(f'helper start journal-researcher --model {helper.program_model} --brief "Read src/queue.py" --environment main', f"helper {agent_number(story, helper.id)} is idle", actor=story.agent)
-    started = story.new_row_id(f'helper start journal-researcher --model {other_model} --brief "Read src/tax.py" --environment main', actor=story.agent)
+    story.expect_refusal(f'helper start {RESEARCHER_PROFILE.name} --model {helper.program_model} --brief "Read src/queue.py" --environment main', f"helper {agent_number(story, helper.id)} is idle", actor=story.agent)
+    started = story.new_row_id(f'helper start {RESEARCHER_PROFILE.name} --model {other_model} --brief "Read src/tax.py" --environment main', actor=story.agent)
     launcher.drain_requests()
     launcher.server.close()
     story.home.socket("launcher").unlink()

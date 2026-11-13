@@ -15,6 +15,7 @@ from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.program_split import set_split
 from suites.coding.support.shipped_profiles import PLAN_REVIEWER_PROFILE
+from core.modules.helpers.support.helper_settings import HELPER_PROFILE_LIMITS
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -23,7 +24,7 @@ __all__ = ["helper_split_story", "helper_viewer"]
 REVIEWER = f"{PLAN_REVIEWER_PROFILE.name}"
 START_REVIEW = f"helper start {PLAN_REVIEWER_PROFILE.name} --plan {{plan}} --brief 'Review plan {{plan}}' --environment main"
 NEW_AGENT_REASON = "A second view of the plan"
-LIMITS = "setting set journal.core.helpers.read-only-helper-profile-limits '[\"journal-plan-reviewer:8:3\"]' --project"
+LIMITS = f"setting set {HELPER_PROFILE_LIMITS} '[\"{PLAN_REVIEWER_PROFILE.name}:8:3\"]' --project"
 REVIEW_MEMORY = "Plan 5 lacked a phase for the migration"
 
 

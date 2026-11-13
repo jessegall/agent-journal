@@ -10,6 +10,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.modules.workers.support.worker_nudges import BLOCKED_WORKER_TASK
 
 __all__ = ["missing_program", "running_worker", "worker_story"]
 
@@ -67,7 +68,7 @@ def test_a_worker_whose_task_the_main_agent_blocks_is_told(worker_on_a_task):
     story = worker_on_a_task
     story.expect_success(BLOCK, actor=story.agent)
     lines = worker_lines(story)
-    story.expect_rows("task:1 was blocked" in lines, detail=lines)
+    story.expect_rows(BLOCKED_WORKER_TASK.nudge(task=1).text in lines, detail=lines)
 
 
 def test_a_stopped_worker_whose_blocked_task_opens_is_started_again(running_worker):

@@ -3,8 +3,9 @@ import pytest
 from tests.stories.engine.tunnel.support.tunnel_samples import PATH, SAMPLE_ADDRESS
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story
+from core.modules.tunnel.support.tunnels import SERVICE_SETTING
 
-SERVICE = "journal.core.tunnel.service"
+SERVICE = f"{SERVICE_SETTING}"
 
 
 def tunnel_journal(new_story):
