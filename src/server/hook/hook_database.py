@@ -2,6 +2,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 
 from engine.database.database import Database
+from engine.database.write_turns import WriteTurns
 from engine.journal.journal_home import JournalHome
 from server.enums.queue_priority import QueuePriority
 from server.hook.queue_request import QueueRequest
@@ -13,8 +14,9 @@ CLOSE_WAIT_SECONDS = 60.0
 class HookDatabase:
     """The database connections hooks use, one per running hook, with turns chosen by the server queue."""
 
-    def __init__(self, home: JournalHome, running_hooks_count: int = RUNNING_HOOKS_COUNT) -> None:
-        self.databases = [Database.shared(home) for _ in range(running_hooks_count)]
+    def __init__(self, home: JournalHome, turns: WriteTurns | None = None, running_hooks_count: int = RUNNING_HOOKS_COUNT) -> None:
+        self.turns = turns
+        self.databases = [Database.shared(home, turns) for _ in range(running_hooks_count)]
         self.free_databases = list(self.databases)
         self.queue = ServerQueue(running_hooks_count)
 

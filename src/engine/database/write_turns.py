@@ -16,28 +16,28 @@ class WriteTurns(ABC):
     def write_turn(self) -> Generator[None]:
         depth = self.depth.count
         if depth == 0:
-            self.take()
+            self.acquire()
         self.depth.count = depth + 1
         try:
             yield
         finally:
             self.depth.count = depth
             if depth == 0:
-                self.give_back()
+                self.release()
 
     @abstractmethod
-    def take(self) -> None: ...
+    def acquire(self) -> None: ...
 
     @abstractmethod
-    def give_back(self) -> None: ...
+    def release(self) -> None: ...
 
 
 class NeverWaitingWriteTurns(WriteTurns):
     """Turns that hold nothing and never wait, for every process but the server: an install, or a command run
     while the server is stopped."""
 
-    def take(self) -> None:
+    def acquire(self) -> None:
         return None
 
-    def give_back(self) -> None:
+    def release(self) -> None:
         return None

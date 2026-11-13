@@ -52,7 +52,12 @@ class SkillFiles:
         projects = self.projects.projects()
         published: dict[str, bool] = {}
         for skill in skills:
-            text = SkillContents.read(Path(skill.path)).text
+            source = Path(skill.path)
+            # a skill whose file the registry still names but that is gone is left out; the others are written all the same
+            if not source.is_file():
+                published[skill.folder] = False
+                continue
+            text = SkillContents.read(source).text
             published[skill.folder] = any(tuple(self.publish(project, skill, text) for project in projects))
         return published
 

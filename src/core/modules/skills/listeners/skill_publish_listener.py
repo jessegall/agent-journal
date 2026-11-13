@@ -8,7 +8,8 @@ from engine.event.upgrade_finished import UpgradeFinished
 
 
 class SkillPublishListener(CommitListener[FilePublishing | UpgradeFinished]):
-    """Replaces generated journal skills when modules change, the server starts or an upgrade finishes."""
+    """Writes every declared journal skill when modules change, the server starts or an upgrade finishes, and only then
+    removes the ones no module declares any more, so a project never has fewer skills than before."""
 
     name = "skills.publish"
 
@@ -16,5 +17,5 @@ class SkillPublishListener(CommitListener[FilePublishing | UpgradeFinished]):
         self.registry, self.files = registry, files
 
     def handle(self, event: FilePublishing | UpgradeFinished, logged: LoggedEvent) -> None:
-        self.files.remove_all()
         self.files.write_all(self.registry.skills)
+        self.files.clear(self.registry.skills)

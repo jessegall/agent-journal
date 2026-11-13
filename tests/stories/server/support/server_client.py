@@ -368,7 +368,7 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
         files = ServerFiles(home)
         assert files.acquire_lock(), "a server already holds the lock of this journal"
         files.clear_leftover_socket()
-        hook_database = HookDatabase(home, STORY_RUNNING_HOOKS_COUNT)
+        hook_database = HookDatabase(home, running_hooks_count=STORY_RUNNING_HOOKS_COUNT)
         listener_round = JournalRound(home, "listener thread", ListenerWork(), queue=hook_database.queue)
         listener_thread = ListenerThread(listener_round.run, listener_round.report)
         phones = PhoneSessions(home, listener_thread)

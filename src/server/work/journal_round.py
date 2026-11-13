@@ -5,6 +5,7 @@ from engine.time.clock import Clock
 from engine.container.container import Container
 from engine.log.exception_sink import ExceptionSink
 from engine.database.database import Database
+from engine.database.write_turns import WriteTurns
 from engine.log.error_log import ErrorLog
 from engine.log.system_log_writer import SystemLogWriter
 from engine.module.journal_container import synced_database_container
@@ -18,8 +19,8 @@ from server.hook.queue_request import QueueRequest
 BACKGROUND_BUSY_TIMEOUT_SECONDS = 60.0
 
 
-def background_container(home: JournalHome) -> Container:
-    database = Database.opened(home)
+def background_container(home: JournalHome, turns: WriteTurns | None = None) -> Container:
+    database = Database.opened(home, turns)
     database.set_busy_timeout(BACKGROUND_BUSY_TIMEOUT_SECONDS)
     try:
         return synced_database_container(home, database)
