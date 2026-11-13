@@ -1,3 +1,4 @@
+from server.execution.session_starters import SessionStarters
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
@@ -32,11 +33,13 @@ def test_an_old_hook_runner_gets_an_immediate_unchecked_answer(event, refused, t
 
 
 @pytest.mark.parametrize("role,priority,limit", [("worker", AGENT_HOOK_PRIORITY, 45), ("helper", AGENT_HOOK_PRIORITY, 45), ("main", MAIN_AGENT_HOOK_PRIORITY, 1), (None, MAIN_AGENT_HOOK_PRIORITY, 1)])
-def test_a_hook_takes_its_place_in_the_queue_by_its_role(role, priority, limit, tmp_path):
+def test_a_hook_takes_its_place_in_the_queue_by_its_role(role, priority, limit, tmp_path, monkeypatch):
+    # the role comes from the server's record of the session; one it has no row for counts as main
+    monkeypatch.setattr(SessionStarters, "shared", staticmethod(lambda home: SimpleNamespace(role=lambda session: role or "main")))
     used = Mock(return_value=nullcontext())
     context = SimpleNamespace(home=journal_home(tmp_path), hook_database=SimpleNamespace(used=used), hook_limit_seconds=1, agent_hook_limit_seconds=45, stop_limit_seconds=1, clock=Clock(),
                               listener_wakes=SimpleNamespace(wake=Mock()))
     endpoint = HookEndpoint(Mock(), context)
     endpoint.routed_answer = Mock(side_effect=OldHookRunnerError.detected())
-    endpoint.answer({"event": "pre_tool_use", "role": role, "session": "s-1"}, "claude", {})
+    endpoint.answer({"event": "pre_tool_use", "session": "s-1"}, "claude", {})
     used.assert_called_once_with(priority, limit, "s-1", ANY)
