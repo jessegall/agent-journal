@@ -35,15 +35,15 @@ class ShareRoute:
         return self.password_opening(token, authorization)
 
     def password_opening(self, token: str, authorization: str | None) -> ShareOpening:
-        if self.tries.is_blocked(token):
-            return ShareOpening(PASSWORD_TRY_LIMIT_STATUS)
         password = self.password(authorization)
         if password is None:
             return ShareOpening(PASSWORD_NEEDED)
+        if not self.tries.admits(token):
+            return ShareOpening(PASSWORD_TRY_LIMIT_STATUS)
         key = self.shares.unlock(token, password)
         if key is None:
-            self.tries.count(token)
             return ShareOpening(PASSWORD_NEEDED)
+        self.tries.remove_newest_attempt(token)
         self.shares.count_view(token)
         return ShareOpening(OPEN, f"{token}{COOKIE_SEPARATOR}{key}")
 

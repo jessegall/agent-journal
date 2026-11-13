@@ -21,7 +21,7 @@ class SecretField:
     @staticmethod
     def free_stem(title: str, names: tuple[str, ...], used_variables: frozenset[str]) -> str:
         title_stem = "_".join("".join(character if character.isalnum() else " " for character in title).upper().split())
-        stems = (title_stem, *(f"{title_stem}_{number}" for number in count(2)))
+        stems = (title_stem if number == 1 else f"{title_stem}_{number}" for number in count(1))
         return next(stem for stem in stems if not any(f"{stem}_{name.upper()}" in used_variables for name in names))
 
     @classmethod

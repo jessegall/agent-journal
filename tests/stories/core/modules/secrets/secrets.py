@@ -1,7 +1,10 @@
+import shutil
 import stat
 
 from engine.database.database import Database
 from engine.database.statement import Statement
+from engine.journal.journal_home import JournalHome
+from engine.private.private_folder import PROJECT_ID_FILE
 from core.modules.secrets.migrations.m003_erased_deleted_secrets import ErasedDeletedSecretsMigration
 
 from tests.stories.core.modules.secrets.support.private_home import REPLACEMENT_VALUE, VALUE, filled_story, private_folder, values_text
@@ -133,12 +136,21 @@ def test_an_agent_that_deletes_a_secret_asks_the_user(new_story):
     story.expect_text("secret list", "Github", actor=story.agent)
 
 
-def test_a_secret_deleted_before_deletion_erased_it_loses_its_value_when_the_migration_drops_its_row(new_story, private_folder):
+OLD_SECRETS_TABLE = ("CREATE TABLE secrets (id INTEGER PRIMARY KEY, fields TEXT NOT NULL, deleted_at TEXT)",
+                     "CREATE INDEX secrets_active ON secrets (deleted_at, id) WHERE deleted_at IS NULL")
+OLD_SECRET_ROW = "INSERT INTO secrets (id, fields, deleted_at) VALUES (?, ?, ?)"
+
+
+def test_a_secret_deleted_before_deletion_erased_it_loses_its_value_when_the_migration_drops_its_row(new_story, private_folder, tmp_path):
     story = filled_story(new_story, 'secret make "Stripe"', f"secret fill 2 key {REPLACEMENT_VALUE}")
-    database = story.container.get(Database)
-    for statement in ("ALTER TABLE secrets ADD COLUMN deleted_at TEXT", "CREATE INDEX secrets_active ON secrets (deleted_at, id) WHERE deleted_at IS NULL",
-                      "UPDATE secrets SET deleted_at = '2026-11-01T00:00:00+00:00' WHERE id = 1"):
-        database.update(Statement(statement))
-    ErasedDeletedSecretsMigration().run(database)
-    story.expect_refusal("secret show 1", "no secret", actor=story.agent)
+    old_home = JournalHome(tmp_path / "old-journal")
+    old_home.folder.mkdir()
+    shutil.copy(story.home.folder / PROJECT_ID_FILE, old_home.folder / PROJECT_ID_FILE)
+    old_database = Database.opened(old_home)
+    for statement in OLD_SECRETS_TABLE:
+        old_database.update(Statement(statement))
+    old_database.insert(Statement(OLD_SECRET_ROW, [1, '[{"name": "key", "hidden": true, "variable": "GITHUB_KEY"}]', "2026-11-01T00:00:00+00:00"]))
+    old_database.insert(Statement(OLD_SECRET_ROW, [2, '[{"name": "key", "hidden": true, "variable": "STRIPE_KEY"}]', None]))
+    ErasedDeletedSecretsMigration().run(old_database)
+    old_database.close()
     story.expect_rows(VALUE not in values_text(private_folder), "GITHUB_KEY" not in values_text(private_folder), REPLACEMENT_VALUE in values_text(private_folder))
