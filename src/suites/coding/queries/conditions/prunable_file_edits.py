@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
+from engine.query.conditions.any_of import AnyOf
 from engine.query.conditions.below_newest import BelowNewest
+from engine.query.conditions.below_newest_per import BelowNewestPer
 
 
 @dataclass(frozen=True)
@@ -14,8 +16,4 @@ class PrunableFileEdits:
     kept_per_agent: int
 
     def statement(self) -> Statement:
-        below_newest = BelowNewest(self.table, self.kept_rows).statement()
-        return Statement(
-            f"({below_newest.sql}) OR id IN (SELECT id FROM (SELECT id, ROW_NUMBER() OVER (PARTITION BY session_agent_id ORDER BY id DESC) AS place"
-            f' FROM "{self.table}") WHERE place > ?)',
-            [*below_newest.parameters, self.kept_per_agent])
+        return AnyOf([BelowNewest(self.table, self.kept_rows), BelowNewestPer(self.table, "session_agent_id", self.kept_per_agent)]).statement()

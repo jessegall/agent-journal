@@ -2,10 +2,9 @@ import json
 from dataclasses import dataclass, field
 
 from engine.database.database import Database
-from engine.database.reference_rewrite import SCHEMA_REASON, ReferenceRewrite
+from engine.database.reference_rewrite import ReferenceRewrite
 from engine.database.row_insert import RowInsert
 from engine.database.schema_columns import SchemaColumns
-from engine.database.statement import Statement
 from engine.enums.agent_role import AgentRole
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import MAIN_NUMBER
@@ -17,7 +16,6 @@ from core.modules.agents.support.reference_columns import FOLD_TABLES
 
 SESSIONS = ("agent_sessions", "session_agent_id")
 ACTORS_TABLE = "actors"
-MAIN_ROWS = Statement("SELECT * FROM agents WHERE role = ?", [AgentRole.MAIN.value], scan_reason=SCHEMA_REASON)
 
 
 @dataclass
@@ -61,7 +59,7 @@ class MainFold:
         self.inserts = RowInsert(database)
 
     def plan(self) -> tuple[EnvironmentFold, ...]:
-        return MainFoldPlan.folds([MainRow.from_row(row) for row in self.database.rows(MAIN_ROWS)])
+        return MainFoldPlan.folds([MainRow.from_row(row) for row in self.rewrite.rows_where(AGENTS_TABLE, "role", AgentRole.MAIN.value)])
 
     def run(self, folds: tuple[EnvironmentFold, ...], folded_at: str) -> FoldCounts:
         counts = FoldCounts()
@@ -70,16 +68,13 @@ class MainFold:
         schema = SchemaColumns(self.database).columns()
         columns = ReferenceColumns.agent_columns(schema)
         tables = sorted({column.table for column in schema})
-        self.database.update(Statement("PRAGMA foreign_keys = OFF"))
-        try:
+        with self.rewrite.without_foreign_keys():
             with self.database.transaction():
                 counts.tables_before = self.rewrite.table_counts(tables)
                 for fold in folds:
                     self.fold(fold, columns, counts, folded_at)
                 counts.tables_after = self.rewrite.table_counts(tables)
                 self.check(counts, sum(len(fold.folded) for fold in folds))
-        finally:
-            self.database.update(Statement("PRAGMA foreign_keys = ON"))
         return counts
 
     def check(self, counts: FoldCounts, folded_count: int) -> None:
@@ -103,7 +98,7 @@ class MainFold:
             counts.add_reference(name, before[name], after)
         self.rewrite.delete(AGENTS_TABLE, folded_ids)
         self.rewrite.delete(ACTORS_TABLE, folded_ids)
-        self.database.update(Statement('UPDATE "agents" SET number = ? WHERE id = ?', [MAIN_NUMBER, fold.survivor.id]))
+        self.rewrite.set_value(AGENTS_TABLE, "number", MAIN_NUMBER, fold.survivor.id)
 
     def reference_counts(self, columns: AgentColumns, ids: list[int]) -> dict[str, int]:
         plain = {f"{table}.{column}": self.rewrite.count(table, column, ids) for table, column in columns.plain}

@@ -1,4 +1,6 @@
 import json
+from collections.abc import Iterator
+from contextlib import contextmanager
 
 from engine.database.database import Database
 from engine.database.statement import Statement
@@ -18,6 +20,22 @@ class ReferenceRewrite:
 
     def __init__(self, database: Database) -> None:
         self.database = database
+
+    def rows_where(self, table: str, column: str, value: object) -> list[dict[str, object]]:
+        found = self.database.rows(Statement(f'SELECT * FROM "{table}" WHERE "{column}" = ?', [value], scan_reason=SCHEMA_REASON))
+        return [dict(row) for row in found]
+
+    def set_value(self, table: str, column: str, value: object, row_id: int) -> None:
+        self.database.update(Statement(f'UPDATE "{table}" SET "{column}" = ? WHERE id = ?', [value, row_id]))
+
+    @contextmanager
+    def without_foreign_keys(self) -> Iterator[None]:
+        """Turns the foreign key checks off while a fold moves rows between ids, and on again after."""
+        self.database.update(Statement("PRAGMA foreign_keys = OFF"))
+        try:
+            yield
+        finally:
+            self.database.update(Statement("PRAGMA foreign_keys = ON"))
 
     @staticmethod
     def marks(ids: list[int]) -> str:
