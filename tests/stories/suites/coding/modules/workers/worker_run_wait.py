@@ -93,22 +93,17 @@ def test_a_named_test_that_ends_in_time_is_not_asked_to_move(worker):
     expect_value(worker.story.container.get(OutputFolder).has_move_request(newest_run(worker.story).id), False)
 
 
-def test_a_changed_setting_changes_how_long_a_named_test_holds(worker):
-    set_seconds(worker.story, 5)
-    start_seconds = worker.story.clock.slept_seconds
-    worker.story.run(TEST_RUN, actor=worker.worker)
-    expect_value(worker.story.clock.slept_seconds - start_seconds, 5)
-
-
-def test_a_named_test_launches_held_with_the_settings_queue_wait(worker, launches):
+def test_a_named_test_launches_and_holds_the_call_with_the_settings_queue_wait(worker, launches):
     worker.story.run(TEST_RUN, actor=worker.worker)
     worker.story.run_listeners()
     expect_value_with(launches[0], f"{QUEUE_WAIT_VARIABLE}=60")
     expect_value_without(launches[0], "--background")
     set_seconds(worker.story, 90)
+    start_seconds = worker.story.clock.slept_seconds
     worker.story.run(TEST_RUN, actor=worker.worker)
     worker.story.run_listeners()
     expect_value_with(launches[1], f"{QUEUE_WAIT_VARIABLE}=90")
+    expect_value(worker.story.clock.slept_seconds - start_seconds, 90)
 
 
 def test_the_commands_card_in_the_workers_chat_shows_what_its_named_test_printed(worker):

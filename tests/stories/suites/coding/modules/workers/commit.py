@@ -50,12 +50,14 @@ def moved_base(new_story):
     return story, repository, moved_base_worker(story, repository)
 
 
-def test_24_a_commit_of_a_proved_task_says_committed_queues_its_tests_and_puts_the_task_in_testing(proved):
+def test_24_25_a_commit_of_a_proved_task_queues_its_tests_puts_the_task_in_testing_and_is_named_for_its_task_in_git(proved):
     outcome = proved.story.run(COMMIT, actor=proved.worker)
     proved.story.run_listeners()
     proved.story.expect_text("task show 1", "state: testing", actor=proved.story.agent)
     proved.story.expect_text("worker status", "tests of task 1 are queued", actor=proved.worker)
+    proved.story.expect_text("worker-worktree show 1", "state: delivered", actor=proved.story.agent)
     proved.story.expect_rows(outcome.code == 0, "committed task 1 as " in outcome.output_text, len(proved.started) == 1, detail=outcome.output_text)
+    proved.repository.expect_commit(proved.repository.worker_branch(proved.worker.id), "task 1: Fix the cart", f"Journal: worker worker-{proved.worker.id}")
 
 
 def test_29_a_commit_asks_for_the_differences_and_what_differs_becomes_an_important_log_line(proved):
@@ -133,12 +135,6 @@ def test_35_a_commit_with_no_proof_at_all_is_refused_as_nothing_staged(working):
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     expect_refused_with(story, COMMIT, "nothing is staged", "journal proof make", actor=worker)
     story.expect_text("worker status", "journal proof make", actor=worker)
-
-
-def test_25_the_commit_in_git_is_named_for_its_task_and_carries_the_worker(proved):
-    proved.story.expect_success(COMMIT, actor=proved.worker)
-    proved.story.expect_text("worker-worktree show 1", "state: delivered", actor=proved.story.agent)
-    proved.repository.expect_commit(proved.repository.worker_branch(proved.worker.id), "task 1: Fix the cart", f"Journal: worker worker-{proved.worker.id}")
 
 
 def test_34_a_commit_of_a_worktree_with_no_change_is_refused_and_the_hint_names_the_differences(working):
