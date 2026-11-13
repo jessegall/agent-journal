@@ -9,8 +9,9 @@ class JsonEach(Expression):
     """The items of a JSON list or object as rows of key and value, read as a source; a path picks a part of it."""
 
     expression: Expression
-    path: str = ""
+    path: str | None = None
 
     def sql(self) -> str:
-        path = f", {Literal(self.path).sql()}" if self.path else ""
-        return f"json_each({self.expression.sql()}{path})"
+        if self.path is None:
+            return f"json_each({self.expression.sql()})"
+        return f"json_each({self.expression.sql()}, {Literal(self.path).sql()})"

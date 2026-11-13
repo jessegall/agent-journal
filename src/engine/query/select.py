@@ -23,7 +23,7 @@ class Select:
     joins: tuple[Join | ConditionJoin, ...] = ()
     group_columns: tuple[str, ...] = ()
     expressions: tuple[Expression, ...] = ()
-    alias: str = ""
+    alias: str | None = None
     derived: Expression | None = None
     unions: tuple[tuple[bool, "Select"], ...] = ()
 
@@ -66,7 +66,7 @@ class Select:
     def source(self) -> str:
         """The table of the read with the tables it joins."""
         table = self.derived.sql() if self.derived is not None else self.table
-        named = f"{table} AS {self.alias}" if self.alias else table
+        named = table if self.alias is None else f"{table} AS {self.alias}"
         return " ".join((named, *(join.sql for join in self.joins)))
 
     def named(self, rows: int) -> "Select":

@@ -14,21 +14,21 @@ class ConditionJoin:
     source: str | Expression
     left: bool = False
     condition: Condition | None = None
-    alias: str = ""
+    alias: str | None = None
 
     def __post_init__(self) -> None:
         if isinstance(self.source, str):
             SqlName(self.source)
-        if self.alias:
+        if self.alias is not None:
             SqlName(self.alias)
 
     @property
     def table(self) -> str:
-        return self.alias or str(self.source)
+        return str(self.source) if self.alias is None else self.alias
 
     @property
     def sql(self) -> str:
         source = self.source if isinstance(self.source, str) else self.source.sql()
-        named = f"{source} AS {self.alias}" if self.alias else source
+        named = source if self.alias is None else f"{source} AS {self.alias}"
         on = f" ON {Inlined(self.condition).text()}" if self.condition is not None else ""
         return f"{'LEFT JOIN' if self.left else 'JOIN'} {named}{on}"

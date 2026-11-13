@@ -24,7 +24,7 @@ def oldest(rows: Sequence[Row], survivor_id: int, agent_column: str) -> Row:
 
 
 def latest_read(rows: Sequence[Row], survivor_id: int, agent_column: str) -> Row:
-    return max(rows, key=lambda row: (str(row.get("read_at") or ""), int(row["id"])))
+    return max(rows, key=lambda row: (row.get("read_at") is not None, str(row.get("read_at")), int(row["id"])))
 
 
 def survivors_else_newest(rows: Sequence[Row], survivor_id: int, agent_column: str) -> Row:

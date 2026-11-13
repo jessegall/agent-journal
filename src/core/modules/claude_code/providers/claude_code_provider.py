@@ -258,7 +258,8 @@ class ClaudeCodeProvider(Provider):
         state = self.state_file()
         person_state = self.person_settings(KeptBytes.read(state)) if state.is_file() and os.access(state, os.R_OK) else {}
         servers = person_state.get(SERVERS_KEY, {}) if person_state is not None else {}
-        unreadable = (*unreadable, *([state] if person_state is None else []))
+        if person_state is None:
+            unreadable = (*unreadable, state)
         server_file = SettingsFile(self.server_file(home), json.dumps({SERVERS_KEY: servers if is_mapping(servers) else {}}, indent=2, sort_keys=True) + "\n")
         return ProgramSettings(self.name, (SettingsFile(path, json.dumps(settings, indent=2, sort_keys=True) + "\n"), server_file),
                                person_files=self.user_hook_files(), person_data=person_data, unreadable_person_files=unreadable)

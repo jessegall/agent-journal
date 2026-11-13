@@ -208,7 +208,7 @@ class RepeatedWork(PointTally):
     @staticmethod
     def has_page_bounds(page: re.Match[str], statement: Statement) -> bool:
         parameters = iter(statement.parameters)
-        limit, offset = (next(parameters) if value == "?" else int(value or 0) for value in page.groups()[1:])
+        limit, offset = (next(parameters) if value == "?" else 0 if value is None else int(value) for value in page.groups()[1:])
         return isinstance(limit, int) and limit > 0 and isinstance(offset, int) and offset >= 0
 
     @staticmethod

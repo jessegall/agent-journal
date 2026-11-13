@@ -11,5 +11,4 @@ class AgentRoleProfileCondition:
     profiles: list[str]
 
     def statement(self) -> Statement:
-        conditions = [*([Among("role", self.roles)] if self.roles else []), *([Among("coalesce(nullif(profile, ''), job_profile)", self.profiles)] if self.profiles else [])]
-        return AnyOf(conditions).statement()
+        return AnyOf([Among("role", self.roles), Among("coalesce(nullif(profile, ''), job_profile)", self.profiles)]).statement()
