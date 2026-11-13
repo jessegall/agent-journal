@@ -50,6 +50,7 @@ class CommitListenerRunner(RoundState):
         self.positions: dict[str, int] = {}
         self.positions_stale = False
         self.held_listeners: set[str] = set()
+        self.heard_names: dict[tuple[str, str], bool] = {}
 
     def reset(self) -> None:
         self.positions = {}
@@ -120,12 +121,22 @@ class CommitListenerRunner(RoundState):
         events = self.log.events_after(min(positions[entry.name] for entry in entries)) if entries else []
         if not events:
             return False
-        due_entries = [entry for entry in entries if any(event.id > positions[entry.name] and entry.event.matches(event.event) for event in events)]
+        # a lagging cursor asks each distinct event name once, not each event
+        newest_ids: dict[str, int] = {}
+        for event in events:
+            newest_ids[event.event] = event.id
+        due_entries = [entry for entry in entries if any(newest_id > positions[entry.name] and self.hears(entry, name) for name, newest_id in newest_ids.items())]
         due_names = {entry.name for entry in due_entries}
         moved_count = self.cursors.advance_all([entry.name for entry in entries if entry.name not in due_names], events[-1].id)
         positions.update({entry.name: events[-1].id for entry in entries if entry.name not in due_names})
         progress = [self.run_entry(entry, urgent_entries, events) for entry in due_entries]
         return bool(moved_count) or any(progress)
+
+    def hears(self, entry: ListenerEntry, event_name: str) -> bool:
+        key = (entry.name, event_name)
+        if key not in self.heard_names:
+            self.heard_names[key] = entry.event.matches(event_name)
+        return self.heard_names[key]
 
     def known_positions(self, entries: list[ListenerEntry]) -> dict[str, int]:
         if any(entry.name not in self.positions for entry in entries):
@@ -154,7 +165,7 @@ class CommitListenerRunner(RoundState):
         position = self.positions[entry.name]
         events = [event for event in round_events if event.id > position]
         progress = False
-        matching = [event for event in events if entry.event.matches(event.event)]
+        matching = [event for event in events if self.hears(entry, event.event)]
         if not self.is_prepared(entry, matching, position):
             return progress
         for event in matching:

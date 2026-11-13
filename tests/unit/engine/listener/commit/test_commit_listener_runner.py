@@ -354,3 +354,14 @@ def test_a_listener_of_a_slow_round_is_never_held_by_the_time_limit(tmp_path, mo
     runner = container.get(CommitListenerRunner)
     runner.run_program_stops()
     assert (HANDLED, runner.held_listeners) == (["pause 1", "pause 2"], set())
+
+
+def test_a_lagging_cursor_asks_each_distinct_name_once(tmp_path, monkeypatch):
+    container = container_with(tmp_path, PausedItemCounter)
+    for number in range(40):
+        container.get(Bus).run(MakeItem(title=f"Book {number}"), AGENT)
+    asked: list[str] = []
+    matches = EventPattern.matches
+    monkeypatch.setattr(EventPattern, "matches", lambda pattern, name: asked.append(name) or matches(pattern, name))
+    container.get(CommitListenerRunner).run()
+    assert len(asked) == len(set(asked))
