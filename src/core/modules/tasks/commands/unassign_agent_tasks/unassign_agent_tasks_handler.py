@@ -1,4 +1,4 @@
-from core.modules.tasks.queries.task_query import TASK_PAGE_ROWS, TaskQuery
+from core.modules.tasks.queries.task_query import TaskQuery
 
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -21,6 +21,6 @@ class UnassignAgentTasksHandler(Handler[UnassignAgentTasks, None]):
         self.queries, self.waits, self.assignments = queries, waits, assignments
 
     def handle(self, command: UnassignAgentTasks, context: Context) -> None:
-        tasks = tuple(self.queries.query(Task).matching(TaskQuery.assignee(command.agent_id)).matching(Among("state", (TaskState.OPEN, TaskState.STARTED))).oldest().all_rows(TASK_PAGE_ROWS))
+        tasks = tuple(self.queries.query(Task).matching(TaskQuery.assignee(command.agent_id)).matching(Among("state", (TaskState.OPEN, TaskState.STARTED))).oldest().every_row("every open or started task the agent is assigned"))
         self.assignments.unassign_rows(tasks, context)
         self.waits.update_tasks([task.id for task in tasks], context)
