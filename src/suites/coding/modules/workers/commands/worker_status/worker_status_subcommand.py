@@ -72,9 +72,9 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
         point = self.guidance.point(worker_id)
         waiting_tasks = tuple(self.tasks.assignee_tasks(worker_id).filter(state=TaskState.TESTING).every_row(UNIT_TASKS_REASON))
         return WorkerStatus(worker_id, worker.number, worktree, current_task, self.tasks.started_tasks(worker_id), point.round.required_staging(), waiting_tasks, self.open_tasks.startable(point.round), tests, assignments, skills, worker.program, self.resume.program_state(worker) if worker.ended_at is not None else None, point, worker.paused_at is not None, self.questions.status_lines(worker_id), worker.standing,
-                            self.unit_line(worker_id, worktree.id), self.behind_line(worktree), self.held_by_others(worker_id))
+                            self.unit_line(worker_id, worktree.id), self.stale_line(worktree), self.held_by_others(worker_id))
 
-    def behind_line(self, worktree: Worktree) -> str:
+    def stale_line(self, worktree: Worktree) -> str:
         try:
             counted = f"{self.git.behind(worktree)} behind {worktree.base_branch}"
         except Refusal as refusal:

@@ -44,7 +44,7 @@ class StopWithOpenWorkRule(DriverRule):
     def unfinished_answer(self, hook: AgentHook) -> RuleAnswer:
         if self.work.is_stop_compacting(hook.agent_id):
             return RuleAnswer.allowed("this stop compacts the context of the main agent")
-        task_ids = self.assigner.own_tasks([hook.agent_id]).get(hook.agent_id, ())
+        task_ids = self.assigner.agent_tasks([hook.agent_id]).get(hook.agent_id, ())
         if task_ids and hook.agent_id not in self.unfinished_work.waiting_agents([hook.agent_id], hook.timestamp):
             notice = UNFINISHED_TASKS.nudge(tasks=", ".join(str(task_id) for task_id in task_ids))
             if not self.notices.has_notice(hook.agent_id, notice.text, UNFINISHED_TASKS_TEXT):

@@ -45,7 +45,7 @@ class CheckWorktreeBehindHandler(Handler[CheckWorktreeBehind, BehindRoute]):
 
     def may_fast_forward(self, worktree: Worktree) -> bool:
         is_idle = self.operations.active(worktree.session_agent_id) is None
-        return self.checks.opens(worktree, self.behind) and is_idle and not self.git.has_own_work(worktree)
+        return self.checks.opens(worktree, self.behind) and is_idle and not self.git.has_worker_work(worktree)
 
     def handle(self, command: CheckWorktreeBehind, context: Context) -> BehindRoute:
         worktree = self.rows.required(Worktree, command.worktree_id)

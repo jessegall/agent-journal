@@ -32,7 +32,7 @@ class RequestReaderHandler(Handler[RequestReader, ReaderRequest]):
         if not context.actor.is_person():
             raise Refusal("only a user asks for a reader this way", "an agent draws a reader with journal reader draft")
         process = self.processes.find(command.process_id)
-        parts = self.parts.parts_of(process.id)
+        parts = self.parts.run_parts(process.id)
         part = next((part for part in parts if part.category.is_watched), parts[0] if parts else None)
         if part is None or part.reader_request_id is not None:
             raise Refusal(f"output {process.id} has no command to draw a reader for, or one was asked already")

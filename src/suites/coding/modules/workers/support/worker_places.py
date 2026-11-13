@@ -44,7 +44,7 @@ class WorkerPlaces:
         workers = self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(IsNull("retired_at")).newest()
         return self.kept.read(workers, lambda: tuple(workers.every_row(KEPT_WORKERS_REASON)), name="workers.kept")
 
-    def kept_workers_outside(self, parent_id: int) -> tuple[Agent, ...]:
+    def kept_workers_excluding(self, parent_id: int) -> tuple[Agent, ...]:
         workers = self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(IsNull("retired_at"))
         workers = workers.matching(AnyOf([IsNull("parent_id"), workers.compared("parent_id", "!=", parent_id)]))
         return tuple(workers.every_row(KEPT_WORKERS_REASON))

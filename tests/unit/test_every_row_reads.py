@@ -10,7 +10,7 @@ SOURCE = ROOT / "src"
 SNAPSHOT = ROOT / "tests" / "snapshots" / "every_row_reads.txt"
 QUERY_FILE = SOURCE / "engine" / "query" / "query.py"
 FEWEST_REASON_WORDS = 4
-WALK_METHODS = ("every_row", "every_by_weight")
+WALK_METHODS = ("every_row", "all_weighted")
 
 
 class UnnamedReasonError(AssertionError):

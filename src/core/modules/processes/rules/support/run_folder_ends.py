@@ -20,6 +20,6 @@ class RunFolderEnds:
         return [*self.parts_ended(process), EndProcess(process.id, code, byte_count, line_count)]
 
     def parts_ended(self, process: Process) -> list[Command[object]]:
-        rows = self.parts.parts_of(process.id)
+        rows = self.parts.run_parts(process.id)
         statuses = ((part, self.folder.status(process.id, part.position)) for part in rows if part.ended_at is None)
         return [EndProcessPart(process.id, part.position, status) for part, status in statuses if status is not None]

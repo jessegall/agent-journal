@@ -13,7 +13,7 @@ class AssigneeLabel:
     def __init__(self, queries: Queries, assignments: Assignments) -> None:
         self.queries, self.assignments = queries, assignments
 
-    def of_task(self, task: Task) -> str:
+    def task_label(self, task: Task) -> str:
         actor_id = self.assignments.actor(task)
         return NOBODY if actor_id is None else self.text(actor_id)
 

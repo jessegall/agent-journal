@@ -10,7 +10,7 @@ class PolledWait:
     limit_seconds: float
     pause_seconds: float
 
-    def until(self, condition: Callable[[], bool]) -> bool:
+    def poll(self, condition: Callable[[], bool]) -> bool:
         deadline = time.monotonic() + self.limit_seconds
         while not condition():
             if time.monotonic() >= deadline:

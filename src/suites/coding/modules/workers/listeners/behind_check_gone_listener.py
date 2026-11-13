@@ -18,4 +18,4 @@ class BehindCheckGoneListener(SaveListener[Moved[Worktree]]):
         self.closing = closing
 
     def handle(self, event: Moved[Worktree], context: Context) -> None:
-        self.closing.close_gone(event.row, context)
+        self.closing.close_removed(event.row, context)

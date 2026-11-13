@@ -21,7 +21,7 @@ class LeftoverProcess:
         if not cls.runs_program(pid, program):
             return True
         cls.signal(pid, signal.SIGTERM)
-        if PolledWait(STOP_LIMIT_SECONDS, POLL_SECONDS).until(lambda: not cls.is_running(pid)):
+        if PolledWait(STOP_LIMIT_SECONDS, POLL_SECONDS).poll(lambda: not cls.is_running(pid)):
             return True
         cls.signal(pid, signal.SIGKILL)
         return False

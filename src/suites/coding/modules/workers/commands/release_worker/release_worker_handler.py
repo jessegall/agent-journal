@@ -40,7 +40,7 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
         if worktree.commit_count and worktree.state is WorktreeState.CUT and not command.abandons_commits:
             number = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)
             raise Refusal(f"worker {number} has committed work", f'merge it with journal worker merge {number} --up-to <task>, or release with --abandon "<why>"')
-        if worktree.state is WorktreeState.CUT and not command.abandons_commits and self.own_changes.has_own_changes(self.agents.find(command.worker_id), worktree):
+        if worktree.state is WorktreeState.CUT and not command.abandons_commits and self.own_changes.has_worker_changes(self.agents.find(command.worker_id), worktree):
             number = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)
             raise Refusal(f"worker {number} has uncommitted files in {worktree.folder}", 'commit or remove them, or release with --abandon "<why>"')
         folder = self.environments.find(worktree.environment_id).folder

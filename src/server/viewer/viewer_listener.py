@@ -29,7 +29,7 @@ class ViewerListener(ViewerEndpoint, HTTPServer):
 
     def __init__(self, login: ViewerLogin, routes: ViewerRoutes, tunnel_address: Callable[[], str | None], last_port: int = 0, port_wait_seconds: float = PORT_WAIT_SECONDS,
                  inherited_socket: socket.socket | None = None) -> None:
-        if not PolledWait(port_wait_seconds, PORT_POLL_SECONDS).until(lambda: self.binds(last_port, inherited_socket)):
+        if not PolledWait(port_wait_seconds, PORT_POLL_SECONDS).poll(lambda: self.binds(last_port, inherited_socket)):
             super().__init__((VIEWER_ADDRESS, 0), ViewerRequestHandler)
         self.attach(login, routes, LocalDoor(self.host, tunnel_address), LocalHeaders(), OpenDoors())
 

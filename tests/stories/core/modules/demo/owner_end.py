@@ -28,7 +28,7 @@ def test_the_server_of_a_demo_ends_with_the_process_it_was_started_for(new_story
         story.expect_rows(outcome.code == 0, is_running(pid))
         owner.kill()
         owner.wait(timeout=10)
-        story.expect_rows(PolledWait(SERVER_END_SECONDS, 0.5).until(lambda: not is_running(pid)))
+        story.expect_rows(PolledWait(SERVER_END_SECONDS, 0.5).poll(lambda: not is_running(pid)))
     finally:
         if is_running(pid):
             os.kill(pid, signal.SIGTERM)

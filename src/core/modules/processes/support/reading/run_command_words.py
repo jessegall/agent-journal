@@ -15,7 +15,7 @@ class RunCommandWords:
         self.parts = parts
 
     def words(self, process: Process) -> str:
-        terms = RunCommandWords.of_parts(self.parts.parts_of(process.id))
+        terms = RunCommandWords.of_parts(self.parts.run_parts(process.id))
         if not terms:
             raise Refusal(f"output {process.id} runs no command a reader reads", "only a command that prints output is marked")
         return terms

@@ -31,7 +31,7 @@ class BehindCheckClosing:
     def failed(self, worktree: Worktree, reason: str, context: Context) -> tuple[WorktreeBehindCheck, ...]:
         return tuple(self.repository.save_change(check, check.failed(reason), context) for check in self.checks(worktree, CONFLICTABLE_STATES))
 
-    def close_gone(self, worktree: Worktree, context: Context) -> None:
+    def close_removed(self, worktree: Worktree, context: Context) -> None:
         for check in self.checks(worktree, REMOVABLE_STATES):
             self.repository.save_change(check, check.gone(), context)
 

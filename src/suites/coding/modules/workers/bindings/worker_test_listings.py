@@ -41,7 +41,7 @@ class WorkerTestListings(RunCounts):
         return self.output_parts(process, self.outputs.process_output(process.id)) if self.is_counted(process, agent) else ()
 
     def is_counted(self, process: Process, agent: Agent) -> bool:
-        return process.is_queue_run and self.own_runs.is_own(process) and self.settings.number(WORKER_TEST_LIMIT) > 0 and agent.role == CodingHelperRole.WORKER
+        return process.is_queue_run and self.own_runs.is_worker_run(process) and self.settings.number(WORKER_TEST_LIMIT) > 0 and agent.role == CodingHelperRole.WORKER
 
     def output_parts(self, process: Process, output: Output | None) -> tuple[PartTestListing, ...]:
         readers = self.readers.all()
@@ -61,7 +61,7 @@ class WorkerTestListings(RunCounts):
             return False
         return self.counting_reader(part, None, self.readers.all()) is None
 
-    def asks_beyond_counts(self) -> bool:
+    def exceeds_counts(self) -> bool:
         return False
 
     def line(self, process: Process) -> str:

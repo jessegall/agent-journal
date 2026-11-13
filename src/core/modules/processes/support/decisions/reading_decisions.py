@@ -22,7 +22,7 @@ class ReadingDecisions:
     # The kept decision of each part of a run at one moment, by the part's position, read again only after the decisions
     # of that run changed, so storing and telling them read once.
     def kept(self, process: Process, moment: ReadingMoment) -> dict[int, ReadingDecisionRow]:
-        decisions = self.decisions.for_process(process.id).filter(moment=moment)
+        decisions = self.decisions.process_decisions(process.id).filter(moment=moment)
         rows = self.kept_rows.read(decisions, lambda: tuple(decisions.get()), name="processes.kept_decisions")
         return {row.part_position: row for row in rows}
 

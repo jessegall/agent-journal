@@ -34,7 +34,7 @@ class ProcessCardSubcommand(ReadSubcommand[ProcessCard]):
 
     def read(self, arguments: Namespace, caller: Caller) -> ProcessCard:
         kept = self.outputs.process(arguments.process_id).first()
-        parts = self.parts.parts_of(arguments.process_id)
+        parts = self.parts.run_parts(arguments.process_id)
         process = self.processes.find(arguments.process_id)
         visible = RunVisibility.select_visible_part(process, tuple(parts)) or (parts[0] if parts else None)
         reader = self.readers.find(kept.reader_id) if kept is not None and kept.reader_id else None
@@ -47,7 +47,7 @@ class ProcessCardSubcommand(ReadSubcommand[ProcessCard]):
         return mark.words if mark is not None else ""
 
     def reading_text(self, process_id: int, visible: ProcessPart | None) -> str | None:
-        decision = self.decisions.end_for_part(process_id, visible.position) if visible is not None else None
+        decision = self.decisions.part_end_decision(process_id, visible.position) if visible is not None else None
         return None if decision is None else ReadingCardText.text(decision)
 
     def write_output(self, value: object, output: CommandOutput) -> None:

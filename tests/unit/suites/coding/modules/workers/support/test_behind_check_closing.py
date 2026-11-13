@@ -55,7 +55,7 @@ def test_an_update_with_markers_moves_an_ordered_check_to_conflicted_and_the_set
 
 def test_a_worktree_that_leaves_its_cut_state_closes_any_of_its_checks_as_gone():
     store = Store(State.OPEN, State.ORDERED, State.CONFLICTED, State.PASSED)
-    closing(store).close_gone(WORKTREE, None)
+    closing(store).close_removed(WORKTREE, None)
     assert store.states() == [State.GONE] * 4
 
 

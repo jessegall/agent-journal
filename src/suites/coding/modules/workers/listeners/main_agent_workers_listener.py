@@ -25,7 +25,7 @@ class MainAgentWorkersListener(SaveListener[Created[AgentSession]]):
         agent = self.queries.query(Agent).find(event.row.session_agent_id)
         if not agent.is_main:
             return
-        kept_ids = {worker.id for worker in self.places.kept_workers_outside(agent.id)}
+        kept_ids = {worker.id for worker in self.places.kept_workers_excluding(agent.id)}
         worker_ids = sorted(kept_ids | {worktree.session_agent_id for worktree in self.worktrees.open_worktrees()})
         for worker in self.queries.query(Agent).find_many(worker_ids):
             if worker.parent_id != agent.id:

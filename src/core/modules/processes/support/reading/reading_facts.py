@@ -46,14 +46,14 @@ class ReadingFacts:
         self.resets, self.folder, self.settings, self.suites, self.rows, self.clock, self.cadences = resets, folder, settings, suites, rows, clock, cadences
         self.run, self.counts = run, counts
 
-    def cases_for(self, process: Process, parts: Sequence[ProcessPart], point: ReadingMoment) -> list[ReadingCase]:
+    def gathered_cases(self, process: Process, parts: Sequence[ProcessPart], point: ReadingMoment) -> list[ReadingCase]:
         keys = [SilentStartRuns.name(part.text, part.program, part.category) for part in parts]
         runs = self.run_counts.runs_without_reader(keys)
         waiting = self.waiting_commands(process, [part.command or part.text for part in parts])
         flagged = self.resets.flagged_keys(keys)
-        return [self.case_for(process, part, point, runs[key], (part.command or part.text) in waiting, key in flagged) for part, key in zip(parts, keys)]
+        return [self.gathered_case(process, part, point, runs[key], (part.command or part.text) in waiting, key in flagged) for part, key in zip(parts, keys)]
 
-    def case_for(self, process: Process, part: ProcessPart, point: ReadingMoment, runs_without_change: int, request_is_waiting: bool, is_flagged: bool) -> ReadingCase:
+    def gathered_case(self, process: Process, part: ProcessPart, point: ReadingMoment, runs_without_change: int, request_is_waiting: bool, is_flagged: bool) -> ReadingCase:
         agent = self.rows.required(Agent, process.session_agent_id)
         command = part.command or part.text
         command_key = SilentStartRuns.name(part.text, part.program, part.category)
@@ -62,7 +62,7 @@ class ReadingFacts:
         return ReadingCase(command_key=command_key, category=part.category, classification_known=part.category is not CommandCategory.UNKNOWN,
                            has_asking_flag=ReaderDemands.is_help_request(command), output_hidden=part.piped, is_saved_command=bool(part.saved_command),
                            is_plugin_run=bool(process.plugin), moment=point, age_seconds=self.age_seconds(process), run_state=process.state,
-                           cadence_state=self.cadences.for_process(process, self.clock.timestamp()).state(),
+                           cadence_state=self.cadences.process_cadence(process, self.clock.timestamp()).state(),
                            exit_code=part.exit_code, reader_layer=self.layer(reader), reader_judgement=self.judgement(process, part, reader),
                            reader_is_default=reader is not None and reader.is_default, reader_failed=self.reader_failed(process, reader, point),
                            count_missing=self.counts.count_missing(process, part),

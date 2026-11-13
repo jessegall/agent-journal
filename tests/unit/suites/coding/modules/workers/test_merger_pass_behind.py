@@ -24,7 +24,7 @@ class Waiting:
     def __init__(self, waits: bool) -> None:
         self.waits = waits
 
-    def may_be_passed(self, worktree) -> bool:
+    def is_passable(self, worktree) -> bool:
         return self.waits
 
 

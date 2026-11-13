@@ -68,7 +68,7 @@ class NextTask(TaskAssigner[Task]):
             return planned
         return open_task if open_task is not None else self.reserved(agent_id, excluded_id)
 
-    def own_tasks(self, agent_ids: Sequence[int]) -> dict[int, tuple[int, ...]]:
+    def agent_tasks(self, agent_ids: Sequence[int]) -> dict[int, tuple[int, ...]]:
         tasks = self.queries.query(Task).matching(Among("state", [TaskState.OPEN, TaskState.STARTED])).ordered("id")
         blocked = tuple(tasks.matching(Among("holder_id", agent_ids)).every_row(AGENT_TASKS_REASON))
         assigned = tuple(tasks.matching(AssigneeAmong(Task, tuple(agent_ids))).every_row(AGENT_TASKS_REASON))

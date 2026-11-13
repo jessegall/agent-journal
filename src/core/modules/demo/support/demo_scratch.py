@@ -58,7 +58,7 @@ class DemoScratch:
 
     def viewer_port(self, server: subprocess.Popen[bytes]) -> int:
         ports: list[int] = []
-        if PolledWait(SERVER_START_SECONDS, HEALTH_POLL_SECONDS).until(lambda: self.has_answered(server, ports)):
+        if PolledWait(SERVER_START_SECONDS, HEALTH_POLL_SECONDS).poll(lambda: self.has_answered(server, ports)):
             return ports[0]
         server.terminate()
         raise Refusal(f"the demo's server did not answer within {SERVER_START_SECONDS} seconds", "start it again")

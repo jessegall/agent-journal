@@ -24,7 +24,7 @@ class LauncherService:
             return False
         subprocess.Popen([str(binary), SERVICE_ARGUMENT, STANDALONE_ARGUMENT], env={**os.environ, "JOURNAL_HOME": str(self.home.folder)},
                          stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
-        return PolledWait(START_LIMIT_SECONDS, POLL_SECONDS).until(self.can_connect)
+        return PolledWait(START_LIMIT_SECONDS, POLL_SECONDS).poll(self.can_connect)
 
     def can_connect(self) -> bool:
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:

@@ -44,7 +44,7 @@ class UnreadableMarker:
 
     # The part of the run of the same command that ended before this one, while its output is kept.
     def previous_run(self, process: Process, command_key: str) -> tuple[Process, ProcessPart] | None:
-        rows = self.decisions.for_command_key(command_key).filter(moment=ReadingMoment.END).descending("decided_at", "id").take(RUNS_COMPARED)
+        rows = self.decisions.command_key_decisions(command_key).filter(moment=ReadingMoment.END).descending("decided_at", "id").take(RUNS_COMPARED)
         row = next((row for row in rows if row.process_id != process.id), None)
         if row is None:
             return None

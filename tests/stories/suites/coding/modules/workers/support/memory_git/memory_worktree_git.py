@@ -91,7 +91,7 @@ class MemoryWorktreeGit(WorktreeGit):
         start, end = self.history.commits[self.history.merge_base(head, base)].tree, self.history.commits[base].tree
         return sum(len(set(start.get(name, "").splitlines()) ^ set(end.get(name, "").splitlines())) for name in names)
 
-    def has_own_work(self, worktree: Worktree) -> bool:
+    def has_worker_work(self, worktree: Worktree) -> bool:
         head = self.history.branches[self.history.folder_branch(Path(worktree.folder))]
         return not self.history.is_ancestor(head, self.tip(worktree.folder, worktree.base_branch)) or bool(self.uncommitted_names(worktree.folder))
 

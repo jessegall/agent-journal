@@ -46,7 +46,7 @@ class ScriptPipes:
     def wait_end(self, limit_ms: int | None, wait_callback: Callable[[], None] | None) -> None:
         self.next_line_at = time.monotonic() + WAIT_LINE_SECONDS
         limit_seconds = math.inf if limit_ms is None else limit_ms / 1000
-        if not PolledWait(limit_seconds, PIPE_POLL_SECONDS).until(lambda: self.has_ended(wait_callback)):
+        if not PolledWait(limit_seconds, PIPE_POLL_SECONDS).poll(lambda: self.has_ended(wait_callback)):
             self.stop_group(self.process)
             raise PluginLateError(f"it ran past {limit_ms} ms")
         if self.exceeds_answer_limit():

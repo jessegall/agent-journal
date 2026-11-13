@@ -19,4 +19,4 @@ class ReaderBlockListener(SaveListener[Created[ProcessPart]]):
         part = event.row
         if part.reader_request_id is None:
             return
-        self.blocks.block_for_request(self.rows.required(Process, part.process_id), part, context)
+        self.blocks.request_block(self.rows.required(Process, part.process_id), part, context)

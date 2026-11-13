@@ -22,7 +22,7 @@ class WorkerFolders(AgentFolders):
         parents = {parent.id: parent for parent in self.agents.find_many(parent_ids)}
         environments = {row.id: row for row in self.environments.find_many(list({agent.environment_id for agent in agents}))}
         ids = tuple({agent.id for agent in agents} | set(parents))
-        worktrees = self.worktrees.of_agents(ids)
+        worktrees = self.worktrees.agent_worktrees(ids)
         latest = {worktree.session_agent_id: worktree for worktree in worktrees}
         active = {worktree.session_agent_id: worktree for worktree in worktrees if worktree.removed_at is None}
         locations: dict[int, tuple[bool, Path]] = {}

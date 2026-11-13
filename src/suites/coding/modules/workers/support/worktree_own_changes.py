@@ -12,7 +12,7 @@ class WorktreeOwnChanges:
     def __init__(self, git: WorktreeGit, managed_files: JournalManagedFiles) -> None:
         self.git, self.managed_files = git, managed_files
 
-    def has_own_changes(self, agent: Agent, worktree: Worktree) -> bool:
+    def has_worker_changes(self, agent: Agent, worktree: Worktree) -> bool:
         if worktree.removed_at is not None or not Path(worktree.folder).exists():
             return False
         return any(not self.managed_files.has(agent, path) for path in self.git.uncommitted_files(worktree.folder))

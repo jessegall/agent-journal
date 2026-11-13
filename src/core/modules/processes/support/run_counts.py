@@ -12,7 +12,7 @@ class RunCounts:
     def count_missing(self, process: Process, part: ProcessPart) -> bool:
         return False
 
-    def asks_beyond_counts(self) -> bool:
+    def exceeds_counts(self) -> bool:
         return True
 
     def line(self, process: Process) -> str:

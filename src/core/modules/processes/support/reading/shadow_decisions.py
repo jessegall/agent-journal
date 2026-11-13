@@ -35,7 +35,7 @@ class ShadowDecisions:
         self.store_parts(process, parts, ReadingMoment.START, {}, context)
 
     def store_parts(self, process: Process, parts: Sequence[ProcessPart], moment: ReadingMoment, stored: Mapping[int, ReadingDecisionRow], context: Context) -> None:
-        for part, case in zip(parts, self.facts.cases_for(process, parts, moment)):
+        for part, case in zip(parts, self.facts.gathered_cases(process, parts, moment)):
             self.store_part(process, part, case, stored, context)
 
     def store_part(self, process: Process, part: ProcessPart, case: ReadingCase, stored: Mapping[int, ReadingDecisionRow], context: Context) -> None:

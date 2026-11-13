@@ -22,7 +22,7 @@ class ServerStop:
     def stop(self, limit_seconds: float = DRAIN_LIMIT_SECONDS + STOP_MARGIN_SECONDS) -> str:
         if not self.posts_stop():
             return SERVER_ABSENT
-        if not PolledWait(limit_seconds, POLL_SECONDS).until(self.is_stopped):
+        if not PolledWait(limit_seconds, POLL_SECONDS).poll(self.is_stopped):
             raise ServerWontStopError(f"the server did not stop in {limit_seconds:g} seconds")
         return STOPPED
 

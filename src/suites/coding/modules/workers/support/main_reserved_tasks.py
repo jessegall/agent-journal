@@ -15,4 +15,4 @@ class MainReservedTasks:
     def check(self, task_ids: Sequence[int]) -> None:
         reserved = self.kept.scoped_current(self.tasks.main_reserved(task_ids).first, name=f"workers.main_reserved:{tuple(task_ids)}")
         if reserved is not None:
-            raise Refusal(f"task {reserved.id} is assigned to {self.labels.of_task(reserved)}", f"journal task assign {reserved.id} --to <worker> moves it")
+            raise Refusal(f"task {reserved.id} is assigned to {self.labels.task_label(reserved)}", f"journal task assign {reserved.id} --to <worker> moves it")

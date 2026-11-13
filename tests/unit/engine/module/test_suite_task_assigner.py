@@ -28,7 +28,7 @@ class EmptyHandsAssigner(TaskAssigner[object]):
     def urgent(self, excluded_id: int | None = None) -> object | None:
         return None
 
-    def own_tasks(self, agent_ids):
+    def agent_tasks(self, agent_ids):
         return {}
 
     def blocked_tasks(self):

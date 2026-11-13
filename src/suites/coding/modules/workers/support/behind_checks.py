@@ -24,11 +24,11 @@ class BehindChecks:
     def __init__(self, queries: Queries, settings: SettingValues) -> None:
         self.queries, self.settings = queries, settings
 
-    def is_on(self) -> bool:
+    def is_enabled(self) -> bool:
         return self.settings.flag(WORKTREE_UPDATES) and self.settings.number(STALE_CHECK_COMMITS) > 0
 
     def due_worktrees(self, now: Timestamp) -> tuple[Worktree, ...]:
-        if not self.is_on() or not self.is_check_due(now):
+        if not self.is_enabled() or not self.is_check_due(now):
             return ()
         return tuple(self.queries.query(Worktree).filter(state=WorktreeState.CUT).every_row(CUT_WORKTREES_REASON))
 
@@ -48,5 +48,5 @@ class BehindChecks:
         remaining = next((check for check in checks if check.state is BehindCheckState.LEFT), None)
         return remaining is None or behind >= remaining.behind + self.settings.number(BEHIND_RECHECK_COMMITS)
 
-    def may_be_passed(self, worktree: Worktree) -> bool:
-        return any(check.may_be_passed() for check in self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).every_row(CHECKS_REASON))
+    def is_passable(self, worktree: Worktree) -> bool:
+        return any(check.is_passable() for check in self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).every_row(CHECKS_REASON))

@@ -27,6 +27,6 @@ class ReturnWorkerSubcommand(Subcommand[Command[None], None]):
 
     def command(self, arguments: Namespace, caller: Caller) -> Command[None]:
         worktree = self.worktrees.worker_worktree(arguments.worker_id)
-        if worktree is not None and worktree.state is WorktreeState.CUT and self.checks.may_be_passed(worktree):
+        if worktree is not None and worktree.state is WorktreeState.CUT and self.checks.is_passable(worktree):
             return PassBehindCheck(arguments.worker_id, arguments.reason)
         return ReturnWorker(arguments.worker_id, arguments.reason)

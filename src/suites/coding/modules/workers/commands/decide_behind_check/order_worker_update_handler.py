@@ -8,7 +8,7 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.modules.workers.commands.decide_behind_check.order_worker_update import OrderWorkerUpdate
-from suites.coding.modules.workers.commands.merger.require_merger import require_merger_or_main_agent
+from suites.coding.modules.workers.commands.merger.require_merger import require_merging_agent
 from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
@@ -42,7 +42,7 @@ class OrderWorkerUpdateHandler(Handler[OrderWorkerUpdate, None]):
         self.behind, self.tip = facts.behind, facts.base_tip
 
     def handle(self, command: OrderWorkerUpdate, context: Context) -> None:
-        deciding = require_merger_or_main_agent(self.agents, context)
+        deciding = require_merging_agent(self.agents, context)
         worktree = self.decisions.worktree(command.worker_id)
         check = self.decisions.check(worktree, WorktreeBehindCheck.open_for_decision) or self.opened(worktree, deciding.id, context)
         self.repository.save_change(check, check.ordered(deciding.id, command.why), context)

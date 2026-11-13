@@ -99,7 +99,7 @@ class ServerScratch:
             connection.close()
 
     def wait_healthy(self, limit_seconds: float = 30) -> None:
-        assert PolledWait(limit_seconds, 0.1).until(self.healthy), "the server did not answer"
+        assert PolledWait(limit_seconds, 0.1).poll(self.healthy), "the server did not answer"
 
     def stop_with(self, client: Path, limit_seconds: float = 60) -> None:
         """Stops the server a client started with the client's own stop, again while the server says it is still
@@ -110,7 +110,7 @@ class ServerScratch:
             answers.append(subprocess.run([str(client), "server", "stop"], env=self.environment(), capture_output=True, text=True, timeout=TIMEOUT_SECONDS))
             return answers[-1].returncode == 0
 
-        assert PolledWait(limit_seconds, 1).until(stopped), (answers[-1].stdout, answers[-1].stderr)
+        assert PolledWait(limit_seconds, 1).poll(stopped), (answers[-1].stdout, answers[-1].stderr)
 
     def lock_free(self) -> bool:
         with (self.home.folder / "server.lock").open("a") as lock_file:
@@ -138,7 +138,7 @@ class ServerScratch:
             process.kill()
             process.wait(timeout=10)
         pid = self.server_pid()
-        PolledWait(SERVER_EXIT_SECONDS, 0.05).until(lambda: pid is None or not self.is_running(pid))
+        PolledWait(SERVER_EXIT_SECONDS, 0.05).poll(lambda: pid is None or not self.is_running(pid))
         self.left_running = pid if pid is not None and self.is_running(pid) else None
         if self.left_running is not None:
             os.kill(self.left_running, signal.SIGKILL)

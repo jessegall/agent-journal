@@ -85,7 +85,7 @@ class ReaderRequests:
         part = ProcessPart(process_id=process.id, position=0, text=spec.text, program=spec.program, command=spec.command, piped=spec.piped, category=spec.category)
         if self.counts.count_missing(process, part):
             return COUNT_MISSING_REASON.format(command=spec.command or spec.text)
-        return self.demands.reason(spec, reader, scope) if self.counts.asks_beyond_counts() else ""
+        return self.demands.reason(spec, reader, scope) if self.counts.exceeds_counts() else ""
 
     @staticmethod
     def command_key(spec: PartSpec) -> str:

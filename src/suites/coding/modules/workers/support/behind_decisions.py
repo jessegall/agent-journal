@@ -23,7 +23,7 @@ class BehindDecisions:
         return self.found(worker_id, WorktreeBehindCheck.open_for_decision)
 
     def passable(self, worker_id: int) -> tuple[Worktree, WorktreeBehindCheck]:
-        return self.found(worker_id, WorktreeBehindCheck.may_be_passed)
+        return self.found(worker_id, WorktreeBehindCheck.is_passable)
 
     def found(self, worker_id: int, wanted: Callable[[WorktreeBehindCheck], bool]) -> tuple[Worktree, WorktreeBehindCheck]:
         worktree = self.worktree(worker_id)

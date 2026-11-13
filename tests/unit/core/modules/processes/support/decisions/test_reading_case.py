@@ -68,16 +68,16 @@ def test_the_unreadable_reason_comes_from_a_mark_first_then_from_the_output():
     (PressureLevel.HOLD, (ReadingExit.READ_OUTPUT, ReadingExit.STOP_RUN, ReadingExit.PERSON_RELEASES)),
 ])
 def test_each_level_has_its_exits(level, exits):
-    assert RUNNING_TESTS.exits_for(level) == exits
+    assert RUNNING_TESTS.available_exits(level) == exits
 
 
 @pytest.mark.parametrize("level", [level for level in PressureLevel if level > PressureLevel.SUGGEST])
 def test_every_level_above_a_suggestion_has_an_exit_the_agent_takes_on_its_own(level):
-    assert any(not option.needs_other_party for option in RUNNING_TESTS.exits_for(level))
+    assert any(not option.needs_other_party for option in RUNNING_TESTS.available_exits(level))
 
 
 def test_a_command_of_unknown_type_can_also_be_classified():
-    assert replace(RUNNING_TESTS, classification_known=False).exits_for(PressureLevel.PREVENT)[-1] is ReadingExit.CLASSIFY
+    assert replace(RUNNING_TESTS, classification_known=False).available_exits(PressureLevel.PREVENT)[-1] is ReadingExit.CLASSIFY
 
 
 @pytest.mark.parametrize("cadence, reason", [

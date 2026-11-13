@@ -22,7 +22,7 @@ class ProcessPartQuery(Query[ProcessPart]):
     def process(self, process_id: int) -> Self:
         return self.filter(process_id=process_id).ordered("position")
 
-    def parts_of(self, process_id: int) -> tuple[ProcessPart, ...]:
+    def run_parts(self, process_id: int) -> tuple[ProcessPart, ...]:
         return tuple(self.process(process_id).every_row(RUN_PARTS_REASON))
 
     def kept_samples(self, patterns: Sequence[str]) -> Self:

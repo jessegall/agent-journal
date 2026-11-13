@@ -45,7 +45,7 @@ class Git:
     def behind_tip(self, worktree: Worktree, base: str) -> int:
         return self.count
 
-    def has_own_work(self, worktree: Worktree) -> bool:
+    def has_worker_work(self, worktree: Worktree) -> bool:
         return self.own_work
 
     def fast_forward(self, worktree: Worktree, tip: str) -> bool:

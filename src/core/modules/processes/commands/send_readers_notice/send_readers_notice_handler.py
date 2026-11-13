@@ -24,7 +24,7 @@ class SendReadersNoticeHandler(Handler[SendReadersNotice, None]):
     def handle(self, command: SendReadersNotice, context: Context) -> None:
         fields_missing = self.audit.fields_missing_count()
         broken = self.audit.readers_needing_repair()
-        behind = self.audit.readers_behind()
+        behind = self.audit.stale_readers()
         main_agents = MainAgentFinder.rows(self.queries)
         for agent in main_agents:
             last_audit_at = self.audit.last_audit_at(agent)

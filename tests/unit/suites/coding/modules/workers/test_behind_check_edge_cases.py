@@ -67,7 +67,7 @@ def test_after_a_takeover_the_reminder_goes_to_the_new_owner_of_the_worktree():
 def test_a_worktree_released_or_retired_closes_its_open_or_ordered_check_as_gone():
     assert WorktreeLifecycle.abandon in BehindCheckGoneListener.moves and WorktreeLifecycle.remove in BehindCheckGoneListener.moves
     checks = Checks(State.OPEN, State.ORDERED)
-    BehindCheckClosing(checks, checks).close_gone(WORKTREE, None)
+    BehindCheckClosing(checks, checks).close_removed(WORKTREE, None)
     assert checks.states() == [State.GONE, State.GONE]
 
 

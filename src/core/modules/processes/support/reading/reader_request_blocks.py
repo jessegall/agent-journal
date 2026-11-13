@@ -34,7 +34,7 @@ class ReaderRequestBlocks:
         self.requests, self.request_text, self.notices, self.writers, self.attempts = requests, request_text, notices, writers, attempts
         self.bus, self.clock = bus, clock
 
-    def block_for_request(self, process: Process, part: ProcessPart, context: Context) -> None:
+    def request_block(self, process: Process, part: ProcessPart, context: Context) -> None:
         request = self.requests.find(part.reader_request_id)
         if request.completed_at is not None or request.expires_at <= self.clock.timestamp():
             return

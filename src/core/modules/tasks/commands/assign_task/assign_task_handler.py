@@ -48,5 +48,5 @@ class AssignTaskHandler(Handler[AssignTask, Task]):
 
     def release(self, task: Task, label: str, context: Context) -> Task:
         if task.state is TaskState.BLOCKED:
-            return self.repository.save(task.drop_hold(context.timestamp, context.actor, f"assigned to {label}"), context)
+            return self.repository.save(task.release_block(context.timestamp, context.actor, f"assigned to {label}"), context)
         return self.repository.save(task.release(context.timestamp, context.actor, f"assigned to {label}"), context)

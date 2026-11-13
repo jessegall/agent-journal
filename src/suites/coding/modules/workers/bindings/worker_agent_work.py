@@ -16,7 +16,7 @@ class WorkerAgentWork(AgentWork):
         self.queries, self.kept, self.units, self.worktrees = queries, kept, units, worktrees
 
     def unit_names(self, agent_ids: Sequence[int]) -> Mapping[int, str]:
-        working_ids = {worktree.session_agent_id for worktree in self.worktrees.of_agents(agent_ids) if worktree.removed_at is None}
+        working_ids = {worktree.session_agent_id for worktree in self.worktrees.agent_worktrees(agent_ids) if worktree.removed_at is None}
         return {worker_id: self.units.unit(worker_id).card_name for worker_id in sorted(working_ids)}
 
     def merged_work(self, agent_ids: Sequence[int]) -> Mapping[int, MergedWork]:

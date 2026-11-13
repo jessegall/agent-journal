@@ -57,9 +57,9 @@ class WorktreeQuery(Query[Worktree], KeptRowChanges[Worktree]):
 
     # The worktrees of these agents that a merge took work from, a whole one or a part.
     def merged_among(self, agent_ids: Sequence[int]) -> tuple[Worktree, ...]:
-        return tuple(worktree for worktree in self.of_agents(agent_ids) if worktree.merged_at is not None or worktree.merged_task_ids)
+        return tuple(worktree for worktree in self.agent_worktrees(agent_ids) if worktree.merged_at is not None or worktree.merged_task_ids)
 
-    def of_agents(self, agent_ids: Sequence[int]) -> tuple[Worktree, ...]:
+    def agent_worktrees(self, agent_ids: Sequence[int]) -> tuple[Worktree, ...]:
         worktrees = self.with_removed().matching(Among("session_agent_id", tuple(sorted(set(agent_ids)))))
         return self.kept.read(worktrees, lambda: tuple(worktrees.every_row(WORKTREES_REASON)), name="workers.agent_worktrees")
 

@@ -19,7 +19,7 @@ class RunDrain:
 
     def wait(self) -> None:
         self.files.mark_run_lock()
-        PolledWait(self.limit_seconds, self.poll_seconds).until(lambda: not self.running_folders())
+        PolledWait(self.limit_seconds, self.poll_seconds).poll(lambda: not self.running_folders())
 
     def running_folders(self) -> tuple[int, ...]:
         return tuple(process_id for process_id in self.outputs.running_ids() if str(process_id) != os.environ.get(PROCESS_VARIABLE))

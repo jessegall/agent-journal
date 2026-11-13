@@ -30,4 +30,4 @@ class ExecutionGate:
             return True
         if self.database.has_transaction:
             raise Refusal("the journal is updating, so this run inside a write cannot wait for it", "run it again once the journal reports it started")
-        return PolledWait(PAUSE_LIMIT_SECONDS, PAUSE_CHECK_SECONDS).until(lambda: files.phase().runs_programs)
+        return PolledWait(PAUSE_LIMIT_SECONDS, PAUSE_CHECK_SECONDS).poll(lambda: files.phase().runs_programs)

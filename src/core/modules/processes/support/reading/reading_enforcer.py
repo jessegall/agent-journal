@@ -91,7 +91,7 @@ class ReadingEnforcer:
         return RuleAnswer(refusal=refused.text, nudges=(refused, ready), last=True)
 
     def prevented(self, name: str) -> RuleAnswer:
-        last = self.decisions.for_command_key(name).filter(moment=ReadingMoment.END).descending("decided_at", "id").first()
+        last = self.decisions.command_key_decisions(name).filter(moment=ReadingMoment.END).descending("decided_at", "id").first()
         output = last.process_id if last is not None else 0
         return RuleAnswer.refused(READING_PREVENTED.nudge(output=output, name=name))
 

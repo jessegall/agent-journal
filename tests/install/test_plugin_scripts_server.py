@@ -72,7 +72,7 @@ def poll_line(pipe: Path, process: subprocess.Popen[str] | None = None, limit_se
 
 
 def expect_process_ended(pid: int) -> None:
-    assert PolledWait(STARTED_LIMIT_SECONDS, READ_SLICE_SECONDS).until(lambda: not process_exists(pid)), f"process {pid} is still running"
+    assert PolledWait(STARTED_LIMIT_SECONDS, READ_SLICE_SECONDS).poll(lambda: not process_exists(pid)), f"process {pid} is still running"
 
 
 def process_exists(pid: int) -> bool:
@@ -158,7 +158,7 @@ def test_s17_a_commit_script_that_never_ends_holds_up_no_listener_and_a_server_s
     expect_line(journal, client, *SECOND_JOB_LINE)
     assert "started" in poll_line(start_pipe)
     expect_line(journal, client, "task", "make", LATER_JOB_TITLE, "--brief", "Do it", "--environment", "main")
-    assert PolledWait(STARTED_LIMIT_SECONDS, READ_SLICE_SECONDS).until(
+    assert PolledWait(STARTED_LIMIT_SECONDS, READ_SLICE_SECONDS).poll(
         lambda: LATER_JOB_TITLE in expect_line(journal, client, "chat-mark", "list", "--environment", "main")), "the journal's own listeners waited on the script"
     journal.stop_with(client)
     expect_process_ended(int(script_pid.read_text()))
@@ -177,7 +177,7 @@ def test_a_commit_delivery_a_server_stop_cut_short_and_one_still_queued_run_afte
     assert run_log.read_text().split() == ["run"]
     journal.start_server()
     journal.wait_healthy()
-    assert PolledWait(STARTED_LIMIT_SECONDS, READ_SLICE_SECONDS).until(lambda: len(run_log.read_text().split()) >= 3), run_log.read_text()
+    assert PolledWait(STARTED_LIMIT_SECONDS, READ_SLICE_SECONDS).poll(lambda: len(run_log.read_text().split()) >= 3), run_log.read_text()
 
 
 def test_s58_a_journal_line_inside_plugin_run_stays_marked_as_the_plugin(journal, client):
@@ -245,5 +245,5 @@ def test_s76_the_caller_goes_away_while_a_guard_runs_and_nothing_is_written(jour
     assert "started" in poll_line(start_pipe, process)
     process.kill()
     process.communicate()
-    assert PolledWait(2 * MINUTE_SECONDS, READ_SLICE_SECONDS).until(lambda: not (page.card() and any(row["started_at"] for row in page.card()))), "the script outlived its caller"
+    assert PolledWait(2 * MINUTE_SECONDS, READ_SLICE_SECONDS).poll(lambda: not (page.card() and any(row["started_at"] for row in page.card()))), "the script outlived its caller"
     assert row_counts(journal)[0] == initial_counts[0]

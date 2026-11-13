@@ -86,5 +86,5 @@ class CodeHandover:
             connection.close()
 
     def wait_new_server(self, running_pid: str) -> None:
-        if not PolledWait(TAKEOVER_LIMIT_SECONDS, PID_POLL_SECONDS).until(lambda: self.server_pid() != running_pid):
+        if not PolledWait(TAKEOVER_LIMIT_SECONDS, PID_POLL_SECONDS).poll(lambda: self.server_pid() != running_pid):
             raise Refusal("the new server did not take over", f"read {self.files.log}")

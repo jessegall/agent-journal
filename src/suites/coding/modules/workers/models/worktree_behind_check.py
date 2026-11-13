@@ -84,7 +84,7 @@ class WorktreeBehindCheck(EnvironmentScoped, Model):
     def held(self) -> "WorktreeBehindCheck":
         return self.taken(BehindCheckLifecycle.hold)
 
-    def may_be_passed(self) -> bool:
+    def is_passable(self) -> bool:
         return self.state in PASSABLE_STATES
 
     def taken(self, move: Move, **values: object) -> "WorktreeBehindCheck":

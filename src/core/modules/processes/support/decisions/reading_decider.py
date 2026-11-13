@@ -23,12 +23,12 @@ class ReadingDecider:
             return ReadingDecision.nothing(ReaderState.SUITABLE)
         state = self.state_without_suitable_reader(case)
         level = self.level(case)
-        return ReadingDecision.pressing(state, self.action(case, level), level, self.reason(case, state), case.exits_for(level))
+        return ReadingDecision.pressing(state, self.action(case, level), level, self.reason(case, state), case.available_exits(level))
 
     @staticmethod
     def unreadable(case: ReadingCase) -> ReadingDecision:
         action = ReaderAction.NOTHING if case.has_unreadable_mark else ReaderAction.DECLARE_UNREADABLE
-        return ReadingDecision.pressing(ReaderState.UNREADABLE, action, PressureLevel.SUGGEST, ReasonCode.UNREADABLE, case.exits_for(PressureLevel.SUGGEST))
+        return ReadingDecision.pressing(ReaderState.UNREADABLE, action, PressureLevel.SUGGEST, ReasonCode.UNREADABLE, case.available_exits(PressureLevel.SUGGEST))
 
     @staticmethod
     def state_without_suitable_reader(case: ReadingCase) -> ReaderState:

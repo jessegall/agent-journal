@@ -52,7 +52,7 @@ class CadenceWatch:
         if growths != prior_growths:
             container.get(RunNotices).clear_frozen(process.id)
         hang = HangWatch.limits(container, process.environment_id).hang
-        cadence = container.get(RunCadences).for_process(process, current)
+        cadence = container.get(RunCadences).process_cadence(process, current)
         self.judged(container, process, part, cadence, hang)
         self.frozen(container, process, part, current, hang)
         return growths != prior_growths

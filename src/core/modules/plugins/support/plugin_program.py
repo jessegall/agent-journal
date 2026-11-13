@@ -54,8 +54,8 @@ class PluginProgram:
         manifest = call.manifest
         folder = self.folders.code(manifest.name)
         self.write_settings(manifest.name, call.settings, call.environment)
-        checkout, facts = self.checkout_and_facts(call)
-        line = self.line_of(call, limit_ms, checkout, facts)
+        checkout, facts = self.checkout_facts(call)
+        line = self.script_line(call, limit_ms, checkout, facts)
         if call.form is not EventForm.COMMIT:
             self.scripts.keep_line(manifest.name, line)
         explicit_service = call.script.removeprefix(SERVICE_PREFIX) if call.script.startswith(SERVICE_PREFIX) else ""
@@ -128,15 +128,15 @@ class PluginProgram:
             return None
         return Checkout.project_checkout(Path(environment.folder), environment.branch)
 
-    def checkout_and_facts(self, call: PluginCall) -> tuple[Checkout | None, AgentFacts]:
+    def checkout_facts(self, call: PluginCall) -> tuple[Checkout | None, AgentFacts]:
         facts = call.facts if call.facts is not None else self.facts(call.agent_id, call.file_checkout)
         return call.file_checkout or self.granted_checkout(call) or facts.checkout, facts
 
     def line(self, call: PluginCall, limit_ms: int | None) -> str:
-        checkout, facts = self.checkout_and_facts(call)
-        return self.line_of(call, limit_ms, checkout, facts)
+        checkout, facts = self.checkout_facts(call)
+        return self.script_line(call, limit_ms, checkout, facts)
 
-    def line_of(self, call: PluginCall, limit_ms: int | None, checkout: Checkout | None, facts: AgentFacts) -> str:
+    def script_line(self, call: PluginCall, limit_ms: int | None, checkout: Checkout | None, facts: AgentFacts) -> str:
         fields = {"v": LINE_VERSION, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "agent": call.agent_id, "role": facts.role, "window_ms": limit_ms,
                   "skills": list(facts.skills), "checkout": checkout.values() if checkout is not None else {}, "settings": dict(call.settings), "data": dict(call.event.data)}
         if call.events:

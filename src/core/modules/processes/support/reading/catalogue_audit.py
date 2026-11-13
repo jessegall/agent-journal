@@ -39,7 +39,7 @@ class CatalogueAudit:
         self.reader_rows, self.judge, self.decisions, self.queries, self.outputs, self.marks = reader_rows, judge, decisions, queries, outputs, marks
         self.edits = edits
 
-    def readers_behind(self) -> tuple[tuple[Reader, str], ...]:
+    def stale_readers(self) -> tuple[tuple[Reader, str], ...]:
         stock_rows = {reader.name: reader for reader in self.reader_rows.all() if reader.is_stock}
         edited = self.edits.edited_ids(stock_rows.values())
         return tuple((stock_rows[stock.name], StockDigest.of(stock)) for stock in STOCK_READERS
@@ -59,7 +59,7 @@ class CatalogueAudit:
         return last_audit.creation_timestamp() if last_audit is not None else main_agent.creation_timestamp()
 
     def missing_reader_decisions(self, last_audit_at: Timestamp, main_agent_ids: Sequence[int]) -> int:
-        return self.decisions.lacking_a_reader_at_end().of_runs_outside(main_agent_ids).after(last_audit_at).count()
+        return self.decisions.readerless_endings().excluding_agents(main_agent_ids).after(last_audit_at).count()
 
     # How many commands agents marked unreadable since the main agent last heard the audit; marks of the engine and of a
     # user are not counted.

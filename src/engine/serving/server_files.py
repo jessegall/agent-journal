@@ -70,7 +70,7 @@ class ServerFiles:
         return self.lock_file.fileno()
 
     def acquire_waiting(self, wait_seconds: float) -> bool:
-        return PolledWait(wait_seconds, LOCK_POLL_SECONDS).until(self.acquire_lock)
+        return PolledWait(wait_seconds, LOCK_POLL_SECONDS).poll(self.acquire_lock)
 
     @contextmanager
     def locked(self, wait_seconds: float) -> Generator[None]:

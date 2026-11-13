@@ -70,7 +70,7 @@ class Task(EnvironmentScoped, Model, StateHolder, Assignable):
     def release(self, timestamp: Timestamp, actor: Actor, reason: str) -> "Task":
         return self.moved(TaskLifecycle.release, reason=reason, holder_id=None)
 
-    def drop_hold(self, timestamp: Timestamp, actor: Actor, reason: str) -> "Task":
+    def release_block(self, timestamp: Timestamp, actor: Actor, reason: str) -> "Task":
         return self.moved(TaskLifecycle.drop_hold, reason=reason, holder_id=None)
 
     def reopen(self, timestamp: Timestamp, actor: Actor) -> "Task":

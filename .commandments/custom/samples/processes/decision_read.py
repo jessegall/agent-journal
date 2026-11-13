@@ -10,4 +10,4 @@ class StoredDecisionRule(DriverRule):
 
     def answer(self, hook):
         # @righteous architecture_processes_reading_judged_outside_the_decider
-        return self.decisions.for_command_key(hook.name).first()
+        return self.decisions.command_key_decisions(hook.name).first()

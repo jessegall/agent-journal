@@ -88,5 +88,5 @@ class ReadingCase:
             return OutputFacts.reason_at_end(self.output)
         return OutputFacts.measured_reason(self.output, self.cadence_state)
 
-    def exits_for(self, level: PressureLevel) -> tuple[ReadingExit, ...]:
+    def available_exits(self, level: PressureLevel) -> tuple[ReadingExit, ...]:
         return level.exits if self.classification_known else (*level.exits, ReadingExit.CLASSIFY)

@@ -343,7 +343,7 @@ class WorktreeGit:
 
     def behind_tip(self, worktree: Worktree, base: str) -> int:
         listing = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-list", "--first-parent", "--parents", f"HEAD..{base}").stdout
-        return sum(1 for line in listing.splitlines() if line and not self.is_own_merge(worktree, line.split()[1:]))
+        return sum(1 for line in listing.splitlines() if line and not self.is_worker_merge(worktree, line.split()[1:]))
 
     def base_changes(self, worktree: Worktree, base: str) -> tuple[BaseCommit, ...]:
         start = self.merge_base(worktree.folder, base, "HEAD")
@@ -354,7 +354,7 @@ class WorktreeGit:
             if len(fields) < 4:
                 continue
             short_id, parents, subject, names = fields[0].strip(NAME_SEPARATOR + "\n"), fields[1].split(), fields[2], FIELD_SEPARATOR.join(fields[3:])
-            if not self.is_own_merge(worktree, parents):
+            if not self.is_worker_merge(worktree, parents):
                 changes.append(BaseCommit.parsed(short_id, subject, names))
         return tuple(changes)
 
@@ -366,14 +366,14 @@ class WorktreeGit:
         counts = (line.split("\t")[:2] for line in listing.splitlines() if line)
         return sum(int(added) + int(deleted) for added, deleted in counts if added.isdigit() and deleted.isdigit())
 
-    def has_own_work(self, worktree: Worktree) -> bool:
+    def has_worker_work(self, worktree: Worktree) -> bool:
         own = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-list", "--count", f"{worktree.base_branch}..HEAD").stdout.strip()
         return own != "0" or bool(self.uncommitted_files(worktree.folder))
 
     def fast_forward(self, worktree: Worktree, tip: str) -> bool:
         return self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "merge", "--ff-only", tip).returncode == 0
 
-    def is_own_merge(self, worktree: Worktree, parents: list[str]) -> bool:
+    def is_worker_merge(self, worktree: Worktree, parents: list[str]) -> bool:
         return len(parents) > 1 and self.is_ancestor(worktree.folder, parents[1], "HEAD")
 
     def update(self, worktree: Worktree) -> WorktreeUpdate:

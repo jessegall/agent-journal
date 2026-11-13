@@ -17,7 +17,7 @@ class AliasSilence:
         self.aliases, self.parts, self.silent_runs, self.bus = aliases, parts, silent_runs, bus
 
     def watch(self, process: Process, timestamp: Timestamp) -> None:
-        saved_parts = [part for part in self.parts.parts_of(process.id) if part.saved_command]
+        saved_parts = [part for part in self.parts.run_parts(process.id) if part.saved_command]
         silent_match = self.silent_runs.silent_part(process, timestamp) if saved_parts else None
         for part in saved_parts:
             alias = self.aliases.saved(part.saved_command)

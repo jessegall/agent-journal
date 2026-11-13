@@ -71,7 +71,7 @@ class Database:
     def file(self) -> Path:
         return Path(self.connection.execute("PRAGMA database_list").fetchone()[2])
 
-    def backup_to(self, target: Path) -> None:
+    def write_backup(self, target: Path) -> None:
         source = sqlite3.connect(f"{self.file().as_uri()}?mode=ro", uri=True)
         copy = sqlite3.connect(target)
         try:

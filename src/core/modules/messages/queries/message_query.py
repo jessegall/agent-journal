@@ -29,10 +29,10 @@ class MessageQuery(Query[Message]):
         self.kept = kept
 
     def latest_agent_message(self, creator_id: int) -> Message | None:
-        messages = self.agent_messages_of(creator_id)
+        messages = self.creator_messages(creator_id)
         return self.kept.read(messages, messages.first, name="messages.latest_agent_message")
 
-    def agent_messages_of(self, creator_id: int) -> Self:
+    def creator_messages(self, creator_id: int) -> Self:
         return self.filter(creator_id=creator_id, type=MessageType.AGENT).newest()
 
     def latest_turn_reply(self, creator_id: int, start_at: Timestamp, end_at: Timestamp) -> Message | None:
@@ -56,7 +56,7 @@ class MessageQuery(Query[Message]):
         def newest(previous: Message | None) -> Message:
             return message if previous is None or message.id >= previous.id else previous
 
-        self.kept.update(self.agent_messages_of(message.creator_id), newest, name="messages.latest_agent_message")
+        self.kept.update(self.creator_messages(message.creator_id), newest, name="messages.latest_agent_message")
 
     def person_messages_during(self, agent_id: int, start_text: str, end_at: Timestamp) -> Self:
         return self.addressed(agent_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(Greater("created_at", start_text)).matching(Maximum("created_at", end_at.text))

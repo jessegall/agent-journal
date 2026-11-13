@@ -25,12 +25,12 @@ class FoldCopy:
         target = cls.folder(home) / ATTEMPT_COPY
         unfinished = target.with_name(target.name + UNFINISHED_SUFFIX)
         unfinished.unlink(missing_ok=True)
-        database.backup_to(unfinished)
+        database.write_backup(unfinished)
         unfinished.replace(target)
         return target
 
     @classmethod
     def for_check(cls, database: Database, home: JournalHome, timestamp: Timestamp) -> Path:
         target = cls.folder(home) / f"fold-{timestamp.value.strftime('%Y%m%d-%H%M%S')}.db"
-        database.backup_to(target)
+        database.write_backup(target)
         return target

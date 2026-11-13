@@ -14,7 +14,7 @@ class RunCadences:
     def __init__(self, container: Container, log: CadenceLog) -> None:
         self.container, self.log = container, log
 
-    def for_process(self, process: Process, current: Timestamp) -> RunCadence:
+    def process_cadence(self, process: Process, current: Timestamp) -> RunCadence:
         clock_seconds = current.value.timestamp()
         started = (process.started_at or process.creation_timestamp()).value.timestamp()
         limits = CadenceLimitsReader.limits(self.container, process.environment_id)

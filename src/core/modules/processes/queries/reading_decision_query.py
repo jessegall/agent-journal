@@ -23,24 +23,24 @@ class ReadingDecisionQuery(Query[ReadingDecisionRow]):
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, ReadingDecisionRow)
 
-    def for_process(self, process_id: int) -> Self:
+    def process_decisions(self, process_id: int) -> Self:
         return self.filter(process_id=process_id)
 
-    def newest_for_part(self, process_id: int, part_position: int) -> ReadingDecisionRow | None:
+    def newest_part_decision(self, process_id: int, part_position: int) -> ReadingDecisionRow | None:
         return self.filter(process_id=process_id, part_position=part_position).descending("decided_at", "id").first()
 
-    def end_for_part(self, process_id: int, part_position: int) -> ReadingDecisionRow | None:
+    def part_end_decision(self, process_id: int, part_position: int) -> ReadingDecisionRow | None:
         return self.filter(process_id=process_id, part_position=part_position, moment=ReadingMoment.END).first()
 
-    def for_command_key(self, command_key: str) -> Self:
+    def command_key_decisions(self, command_key: str) -> Self:
         return self.filter(command_key=command_key)
 
     def after(self, timestamp: Timestamp) -> Self:
         return self.matching(Greater("decided_at", timestamp.text))
 
-    def lacking_a_reader_at_end(self) -> Self:
+    def readerless_endings(self) -> Self:
         return self.filter(moment=ReadingMoment.END).matching(Among("state", LACKING_STATES))
 
-    def of_runs_outside(self, agent_ids: Sequence[int]) -> Self:
+    def excluding_agents(self, agent_ids: Sequence[int]) -> Self:
         runs = Select("processes").matching(Among("session_agent_id", agent_ids, negated=True)).column("id")
         return self.matching(SubqueryMatch("process_id", runs))
