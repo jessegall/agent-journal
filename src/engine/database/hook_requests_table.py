@@ -22,8 +22,14 @@ class HookRequestsTable:
     def record_many(self, payloads: Sequence[str], size: int) -> None:
         with self.database.transaction():
             for payload in payloads:
-                self.database.insert(Statement("INSERT INTO hook_requests (payload) VALUES (?)", [payload]))
-            self.database.update(Statement(
+                self.insert(payload)
+            self.trim(size)
+
+    def insert(self, payload: str) -> None:
+        self.database.insert(Statement("INSERT INTO hook_requests (payload) VALUES (?)", [payload]))
+
+    def trim(self, size: int) -> None:
+        self.database.update(Statement(
                 "DELETE FROM hook_requests WHERE id NOT IN (SELECT id FROM hook_requests ORDER BY id DESC LIMIT ?)"
                 f" AND id NOT IN (SELECT id FROM hook_requests WHERE json_extract(payload, '$.body.hook_event_name') IN {KEPT_EVENTS} ORDER BY id DESC LIMIT ?)",
                 [size, size],

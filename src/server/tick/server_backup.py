@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 from engine.file.file_access import FileAccess
+=======
+from engine.database.write_turns import WriteTurns
+>>>>>>> 79f9b35780 (task 9369: Callers that write outside a transaction, and the server binds the turn)
 import sqlite3
 from pathlib import Path
 
@@ -21,11 +25,11 @@ class ServerBackup:
     asks for it (0, the default, never), under a name of its own until it is whole; each check keeps only the
     newest copies a setting counts, at least one, and a write removes a partial copy a failed write left."""
 
-    def __init__(self, home: JournalHome, clock: Clock) -> None:
-        self.home, self.clock = home, clock
+    def __init__(self, home: JournalHome, clock: Clock, turns: WriteTurns | None = None) -> None:
+        self.home, self.clock, self.turns = home, clock, turns
 
     def follow(self) -> None:
-        container = synced_container(self.home)
+        container = synced_container(self.home, self.turns)
         try:
             settings = container.get(SettingValues)
             minutes, count = settings.project.number(BACKUP_MINUTES_SETTING), settings.project.number(BACKUP_COUNT_SETTING)

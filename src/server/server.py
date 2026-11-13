@@ -153,12 +153,12 @@ def main(argv: list[str]) -> int:
     stop_thread = ListenerThread(stop_round.run, stop_round.report, name="program stops")
     listener_thread = ListenerThread(listener_round.run, listener_round.report, linked_threads=(urgent_thread, plugin_thread, stop_thread))
     ticker = Ticker(home, Ticker.module_handlers(finder), listener_thread.wake, queue=hook_database.queue, container=round_container)
-    phones = PhoneSessions(home, listener_thread)
+    phones = PhoneSessions(home, listener_thread, turns)
     login = ViewerLogin(phones, ShareSessions(phones.journal_output, clock), SessionFile(home.viewer_sessions_file))
     reported_findings = ReportedFindings()
-    routes = ViewerRoutes(home, listener_thread, login, reported_findings, hook_database.queue, clock)
+    routes = ViewerRoutes(home, listener_thread, login, reported_findings, hook_database.queue, clock, turns)
     inherited_viewer = waiting_server.viewer_socket() if waiting_server else None
-    tunnel = ServerTunnel(home)
+    tunnel = ServerTunnel(home, turns)
     if hosting.is_hosted:
         viewer = ViewerSocketListener(login, routes, files.viewer_socket, hosting.mode.proxy_user, hosting.mode.public_origin, HostProbe().user_id(hosting.mode.proxy_user), inherited_viewer)
         try:
@@ -171,8 +171,8 @@ def main(argv: list[str]) -> int:
         journal_door = LocalJournalDoor()
         FileAccess.write(home.viewer_port_file, str(viewer.port))
     ticker_thread = ListenerThread(ticker.tick, lambda error: files.log_line(f"the ticker could not tick: {error}", LogLevel.ERROR), TICK_PERIOD_SECONDS, "ticker")
-    plugin_services = ServerPluginServices(home)
-    backup = ServerBackup(home, clock)
+    plugin_services = ServerPluginServices(home, turns)
+    backup = ServerBackup(home, clock, turns)
 
     def check_code(container: Container) -> None:
         code_version.check()
@@ -200,8 +200,13 @@ def main(argv: list[str]) -> int:
     files.log_line(f"listening on {files.socket}")
     if threading.current_thread() is threading.main_thread():
         signal.signal(signal.SIGTERM, lambda signal_number, frame: server.request_stop())
+<<<<<<< HEAD
         faulthandler.register(signal.SIGUSR1, file=FileAccess.lifetime_writer(home.stacks_file), all_threads=True)
     for starting_round in (JournalRound(home, "code sync", CodeSyncWork(), opened_container),JournalRound(home, "booting", BootingWork())):
+=======
+        faulthandler.register(signal.SIGUSR1, file=FileAccess.shared().lifetime_writer(home.stacks_file), all_threads=True)
+    for starting_round in (JournalRound(home, "code sync", CodeSyncWork(), partial(opened_container, turns=turns)), JournalRound(home, "booting", BootingWork(), round_container)):
+>>>>>>> 79f9b35780 (task 9369: Callers that write outside a transaction, and the server binds the turn)
         try:
             starting_round.run()
         except Exception as error:

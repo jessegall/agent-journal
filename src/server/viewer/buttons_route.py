@@ -1,3 +1,4 @@
+from engine.database.write_turns import WriteTurns
 from engine.database.database import Database
 from engine.environment.environment_names import EnvironmentNames
 from engine.module.journal_container import synced_container
@@ -17,11 +18,11 @@ from server.errors.unknown_environment_error import UnknownEnvironmentError
 class ButtonsRoute:
     """Lists active buttons and the command lines a user has yet to allow."""
 
-    def __init__(self, home: JournalHome) -> None:
-        self.home = home
+    def __init__(self, home: JournalHome, turns: WriteTurns | None = None) -> None:
+        self.home, self.turns = home, turns
 
     def buttons(self, environment: str, person_id: int) -> ButtonsListing:
-        container = synced_container(self.home)
+        container = synced_container(self.home, self.turns)
         try:
             try:
                 environment_id = container.get(EnvironmentNames).environment_id(environment)

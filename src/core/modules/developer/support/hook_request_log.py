@@ -53,10 +53,11 @@ class HookRequestLog:
         return self.save(program, headers, body, duration_ms, outcome, queued_ms, agent.role if agent is not None else "main", str(agent.id) if agent is not None else "")
 
     def save(self, program: str, headers: Mapping[str, str], body: object, duration_ms: float, outcome: HookAnswer, queued_ms: float, role: str, agent: str) -> bool:
-        self.table.record(self.payload(program, headers, body, duration_ms, outcome, queued_ms, role, agent), max(self.settings.project.number(HOOK_REQUEST_LOG_SIZE_SETTING), 1))
+        self.table.record(HookRequestLog.payload(self.clock, program, headers, body, duration_ms, outcome, queued_ms, role, agent), max(self.settings.project.number(HOOK_REQUEST_LOG_SIZE_SETTING), 1))
         return True
 
-    def payload(self, program: str, headers: Mapping[str, str], body: object, duration_ms: float, outcome: HookAnswer, queued_ms: float, role: str, agent: str) -> str:
-        received_at = (self.clock.timestamp().value - timedelta(milliseconds=duration_ms)).isoformat(timespec="microseconds")
+    @staticmethod
+    def payload(clock: Clock, program: str, headers: Mapping[str, str], body: object, duration_ms: float, outcome: HookAnswer, queued_ms: float, role: str, agent: str) -> str:
+        received_at = (clock.timestamp().value - timedelta(milliseconds=duration_ms)).isoformat(timespec="microseconds")
         return json.dumps({"received_at": received_at, "program": program,
                               "headers": dict(headers), "body": body, "duration_ms": duration_ms, "queued_ms": queued_ms, "role": role, "agent": agent, "outcome": outcome.value})
