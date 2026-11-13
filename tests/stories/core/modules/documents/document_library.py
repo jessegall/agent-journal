@@ -56,10 +56,11 @@ def test_the_library_shows_open_or_closed_texts_when_asked(new_story):
     expect_row(library(story, "document library"), total=2)
 
 
-def test_the_documents_window_reads_the_library_and_a_text_by_number(new_story):
+def test_the_documents_window_reads_the_library_and_the_documents_page_reads_a_text_by_number(new_story):
     window = WindowStory(new_story(fixture=UserJoined))
     window.expect_window_allowed("documents.documents", "document library --type report --state closed --before 25")
-    window.expect_window_allowed("documents.documents", "doc show 1 --json")
+    window.expect_window_allowed("documents.page", "document library --type report --state closed --before 25")
+    window.expect_window_allowed("documents.page", "doc show 1 --json")
 
 
 def test_the_documents_window_can_stand_in_a_pane_or_on_a_page_of_its_own(new_story):

@@ -49,9 +49,9 @@ def said(condition) -> tuple[str, list[object]]:
 
 
 def test_task_conditions_write_the_statements_they_wrote_by_hand():
-    assert said(UnfinishedTaskHolder()) == ("id IN (SELECT delegated_to FROM tasks WHERE closed_at IS NULL AND delegated_to IS NOT NULL AND state IN (?, ?, ?))", ["open", "started", "testing"])
-    assert said(TakeableTasks(4, True)) == ("(state = ? AND (delegated_to IS NULL OR delegated_to IN (SELECT id FROM agents WHERE role = ?)))", ["open", "main"])
-    assert said(TakeableTasks(4, False)) == ("(state = ? AND delegated_to = ?)", ["open", 4])
+    assert said(UnfinishedTaskHolder()) == ("id IN (SELECT actor_id FROM assignments WHERE subject_model = ? AND subject_id IN (SELECT id FROM tasks WHERE closed_at IS NULL AND state IN (?, ?, ?)))", ["task", "open", "started", "testing"])
+    assert said(TakeableTasks(4, True)) == ("(state = ? AND (id NOT IN (SELECT subject_id FROM assignments WHERE subject_model = ?) OR id IN (SELECT subject_id FROM assignments WHERE subject_model = ? AND actor_id IN (SELECT id FROM agents WHERE role = ?))))", ["open", "task", "task", "main"])
+    assert said(TakeableTasks(4, False)) == ("(state = ? AND id IN (SELECT subject_id FROM assignments WHERE subject_model = ? AND actor_id = ?))", ["open", "task", 4])
     assert said(ClosedTaskCursor("2026", 9)) == ("(closed_at, id) < (?, ?)", ["2026", 9])
 
 

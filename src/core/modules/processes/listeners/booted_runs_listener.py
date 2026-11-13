@@ -9,6 +9,8 @@ from core.modules.processes.rules.support.run_folder_ends import RunFolderEnds
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from core.modules.processes.support.output_folder import OutputFolder
 
+BOOT_RUNS_REASON = "at a start every run marked running is checked for a process that is gone"
+
 
 class BootedRunsListener(CommitListener[JournalBooting]):
     """As the journal starts, ends each run still marked running whose process is gone, at once and not after the
@@ -21,7 +23,7 @@ class BootedRunsListener(CommitListener[JournalBooting]):
         self.bus, self.processes, self.folder, self.ends = bus, processes, folder, ends
 
     def handle(self, event: JournalBooting, logged: LoggedEvent) -> None:
-        for process in tuple(self.processes.running().oldest().all_rows()):
+        for process in tuple(self.processes.running().oldest().every_row(BOOT_RUNS_REASON)):
             if self.folder.has_leader_process(process.id):
                 continue
             try:

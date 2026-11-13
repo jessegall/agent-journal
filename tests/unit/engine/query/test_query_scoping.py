@@ -16,7 +16,7 @@ from engine.time.timestamp import Timestamp
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
-COMMON = "version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL DEFAULT '', updated_at TEXT NOT NULL DEFAULT ''"
+COMMON = "version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL DEFAULT '2026-11-01T00:00:00+00:00', updated_at TEXT NOT NULL DEFAULT '2026-11-01T00:00:00+00:00'"
 WALK_REASON = "the test reads every shelf"
 
 

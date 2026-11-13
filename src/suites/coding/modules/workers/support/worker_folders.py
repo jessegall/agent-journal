@@ -3,13 +3,11 @@ from pathlib import Path
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from core.modules.agents.models.agent import Agent
 from engine.journal.journal_home import JournalHome
-from engine.query.conditions.among import Among
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
-AGENT_FOLDERS_REASON = "the folder of every agent asked about comes from its newest worktree"
 
 
 class WorkerFolders(AgentFolders):
@@ -24,7 +22,7 @@ class WorkerFolders(AgentFolders):
         parents = {parent.id: parent for parent in self.agents.find_many(parent_ids)}
         environments = {row.id: row for row in self.environments.find_many(list({agent.environment_id for agent in agents}))}
         ids = tuple({agent.id for agent in agents} | set(parents))
-        worktrees = self.worktrees.with_removed().matching(Among("session_agent_id", ids)).every_row(AGENT_FOLDERS_REASON)
+        worktrees = self.worktrees.of_agents(ids)
         latest = {worktree.session_agent_id: worktree for worktree in worktrees}
         active = {worktree.session_agent_id: worktree for worktree in worktrees if worktree.removed_at is None}
         locations: dict[int, tuple[bool, Path]] = {}

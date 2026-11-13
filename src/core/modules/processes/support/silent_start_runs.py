@@ -26,7 +26,7 @@ class SilentStartRuns:
         ended = self.processes.ended().with_part(Prefix("text", name)).newest().take(RUNS_READ)
         silent_runs: list[SilentRun] = []
         for process in ended:
-            part = next((part for part in self.parts.process(process.id).get() if self.name(part.text, part.program, part.category) == name), None)
+            part = next((part for part in self.parts.parts_of(process.id) if self.name(part.text, part.program, part.category) == name), None)
             if part is not None and process.ended_at is not None:
                 output = self.outputs.process_output(process.id)
                 started_at = process.started_at or process.creation_timestamp()

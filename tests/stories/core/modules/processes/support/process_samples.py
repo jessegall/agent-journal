@@ -1,3 +1,6 @@
+from pathlib import Path
+from engine.checkout.checkout import Checkout
+from core.modules.environments.models.environment import Environment
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
 from core.modules.processes.models.process_part import ProcessPart
 from engine.query.queries import Queries
@@ -58,6 +61,8 @@ def runner_line(story: Story, process_id: int, line: str, limit: int = 15, backg
         variables += " JOURNAL_RUN_QUEUE_WAIT=5"
     if progress_count:
         variables += f" JOURNAL_RUN_PROGRESS_LISTING={shlex.quote(progress_count)} JOURNAL_RUN_PROGRESS_POSITION={progress_position} JOURNAL_RUN_PROGRESS_PATTERN={shlex.quote(progress_pattern)}"
+    environment = story.container.get(Queries).query(Environment).find(1)
+    variables += "".join(f" {name}={shlex.quote(value)}" for name, value in Checkout.project_checkout(Path(environment.folder), environment.branch).root_variables().items())
     return f"JOURNAL_AGENT_SESSION={shlex.quote(session)} JOURNAL_RUNNER_PROCESS={process_id}{variables} {shlex.quote(str(story.home.folder.resolve() / 'bin' / 'journal-run'))} --process {process_id} --limit {limit}{flag} -- {shlex.quote(line)}"
 
 

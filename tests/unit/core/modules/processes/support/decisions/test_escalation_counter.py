@@ -44,17 +44,9 @@ class DecisionsSample:
     def descending(self, *columns: str) -> "DecisionsSample":
         return self
 
-    def limit(self, size: int, reason: str) -> "LimitedDecisions":
+    def take(self, size: int) -> list[DecisionSample]:
         matching = [row for row in self.rows if row.command_key in self.keys and row.moment is self.moment]
-        return LimitedDecisions(sorted(matching, key=lambda row: row.decided_at, reverse=True)[:size])
-
-
-@dataclass
-class LimitedDecisions:
-    rows: list[DecisionSample]
-
-    def get(self) -> list[DecisionSample]:
-        return self.rows
+        return sorted(matching, key=lambda row: row.decided_at, reverse=True)[:size]
 
 
 @dataclass

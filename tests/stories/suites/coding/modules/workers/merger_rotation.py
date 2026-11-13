@@ -29,7 +29,7 @@ TWO_PROGRAM_SAVE = "profile save journal-merger --program claude --fallback-prog
 @pytest.fixture
 def merging(new_story, monkeypatch):
     merger_can_start(monkeypatch)
-    monkeypatch.setattr(MergerWork, "waits", lambda work: True)
+    monkeypatch.setattr(MergerWork, "has_waiting_work", lambda work: True)
     story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     return story
