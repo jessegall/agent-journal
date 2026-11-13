@@ -17,10 +17,10 @@ INTERRUPTED_EXIT_CODE = 130
 
 
 class QueuedRunFollow:
-    """Keeps the caller of a queued run until it ends: while it waits it says how many runs are ahead of it each
-    time that number changes, then prints the run's lines as they come, and answers its exit code. A caller that
-    hangs up, such as a terminal stopped with Ctrl+C, takes its run with it: a waiting run leaves the queue and a
-    running one is stopped with its whole tree."""
+    """Keeps the caller of a queued run until it ends: while it waits it says how many runs are ahead of it
+    each time that number changes, then prints the run's lines as they come, and answers its exit code. A
+    caller that hangs up, such as a terminal stopped with Ctrl+C, takes its run with it: a waiting run leaves
+    the queue and a running one is stopped with its whole tree."""
 
     def __init__(self, folder: OutputFolder, queries: Queries, clock: Clock, bus: Bus, actors: ModuleActors) -> None:
         self.folder, self.queries, self.clock, self.bus, self.actors = folder, queries, clock, bus, actors
