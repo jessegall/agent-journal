@@ -43,7 +43,11 @@ class HelperTypeEntry:
                    tuple(stored.get("job_command", ())), stored.get("job_task_flag", ""), stored.get("line", ""))
 
     def is_a(self, helper_type: type[HelperType]) -> bool:
-        return helper_type.key == self.key or helper_type.key in self.bases
+        return helper_type.key in self.type_keys()
 
     def extends(self, base: str) -> bool:
-        return base == self.key or base in self.bases
+        return base in self.type_keys()
+
+    def type_keys(self) -> tuple[str, ...]:
+        """Its own key, then the keys of the types it extends, nearest first."""
+        return (self.key, *self.bases)
