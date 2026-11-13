@@ -95,3 +95,15 @@ def test_the_head_of_the_output_reaches_no_further_than_the_characters_asked_for
     processes.write_output(4, 1, "abcdef")
     processes.write_output(4, 2, "ghijkl")
     assert (processes.head_output(4, 3), processes.head_output(4, 8), processes.head_output(4, 100)) == ("abc", "abcdefgh", "abcdefghijkl")
+
+
+def test_a_sample_judged_for_a_reader_is_read_whole_when_small_and_as_its_first_and_last_page_of_whole_lines_when_large(tmp_path):
+    processes = folder(tmp_path)
+    processes.write_start(4, "a && b", ["a", "b"])
+    processes.write_output(4, 1, "small\n")
+    processes.write_output(4, 2, "".join(f"line {number} {'x' * 60}\n" for number in range(1, 100001)))
+    large = processes.sample_text(4, 2)
+    lines = large.splitlines()
+    assert (processes.sample_text(4, 1), lines[0], lines[-1]) == ("small\n", f"line 1 {'x' * 60}", f"line 100000 {'x' * 60}")
+    assert len(large) <= 2 * (1 << 20) and all(line.startswith("line ") and line.endswith("x" * 60) for line in lines)
+    assert processes.sample_text(4, 0).startswith("small\nline 1 ")

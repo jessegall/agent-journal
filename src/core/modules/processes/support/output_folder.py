@@ -238,6 +238,23 @@ class OutputFolder:
             handle.seek(offset)
             return handle.read()
 
+    # A part's text read for judging a reader: whole up to two pages, else its first and its last page cut to whole
+    # lines, so a run that printed many megabytes is never read whole inside a write.
+    def sample_text(self, process_id: int, position: int) -> str:
+        paths = [self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out"] if position else self.output_paths(process_id)
+        return ColourCodes.removed(b"".join(self.edges(path) for path in paths if path.exists()).decode("utf-8", errors="replace"))
+
+    @staticmethod
+    def edges(path: Path) -> bytes:
+        size = path.stat().st_size
+        with path.open("rb") as handle:
+            if size <= 2 * PAGE_BYTES:
+                return handle.read()
+            head = handle.read(PAGE_BYTES)
+            handle.seek(size - PAGE_BYTES)
+            tail = handle.read()
+        return head[:head.rfind(b"\n") + 1] + tail[tail.find(b"\n") + 1:]
+
     def reader_text(self, process_id: int, position: int) -> str:
         return ColourCodes.removed(self.output(process_id, position)) if position else self.all_output(process_id)
 

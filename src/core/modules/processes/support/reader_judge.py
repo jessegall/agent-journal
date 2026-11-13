@@ -9,7 +9,6 @@ from core.modules.processes.models.output import Output
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope
-from core.modules.processes.support.colour_codes import ColourCodes
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.reader_judgement import ReaderJudgement
 from core.modules.processes.support.reader_run import ReaderRun
@@ -154,7 +153,7 @@ class ReaderJudge:
         return {reader.id: tuple(part for part in samples[reader.id] if ReaderSelection.reads(reader, part)) for reader in readers}
 
     def output_text(self, process_id: int, position: int) -> str:
-        return ColourCodes.removed(self.folder.output(process_id, position) if position else self.folder.all_output(process_id))
+        return self.folder.sample_text(process_id, position)
 
     def command_samples(self, reader: Reader, scope: ReaderSampleScope) -> tuple[ProcessPart, ...]:
         parts = self.parts.kept_samples(["*"]).matching(scope).take(SAMPLE_PARTS)
