@@ -1,3 +1,5 @@
+import pytest
+
 from engine.command.bus import Bus
 from engine.enums.command_category import CommandCategory
 from core.modules.processes.commands.store_end_decisions.store_end_decisions import StoreEndDecisions
@@ -29,15 +31,9 @@ def test_three_ended_runs_without_a_reader_count_three(new_story):
     story.expect_rows(runs_without_reader(story) == 3, detail=str(runs_without_reader(story)))
 
 
-def test_a_reader_saved_for_the_command_sets_its_count_back_to_zero(new_story):
+@pytest.mark.parametrize("line", [BUILD_READER, UNREADABLE])
+def test_a_reader_saved_for_the_command_or_a_mark_that_it_cannot_be_read_sets_its_count_back_to_zero(new_story, line):
     story = new_story(fixture=BuilderStarted)
     ended_builds(story, 2)
-    story.expect_success(BUILD_READER, actor=story.agent)
-    story.expect_rows(runs_without_reader(story) == 0, detail=str(runs_without_reader(story)))
-
-
-def test_a_mark_that_the_output_cannot_be_read_sets_the_count_back_to_zero(new_story):
-    story = new_story(fixture=BuilderStarted)
-    ended_builds(story, 2)
-    story.expect_success(UNREADABLE, actor=story.agent)
+    story.expect_success(line, actor=story.agent)
     story.expect_rows(runs_without_reader(story) == 0, detail=str(runs_without_reader(story)))
