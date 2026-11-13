@@ -109,7 +109,7 @@ def test_delivery_holds_the_place_while_tests_and_the_merger_run_then_merge_free
         actor = Actor(merger.id, ActorType.AGENT)
         story.expect_text("merger next", agent_label(story, first.id), actor=actor)
         repository.checkout(ENVIRONMENT_BRANCH)
-        story.expect_success(f"merger merge {agent_number(story, first.id)}", actor=actor)
+        story.expect_success(f"merger merge --wait {agent_number(story, first.id)}", actor=actor)
     else:
         story.expect_rows(merger is None)
         repository.checkout(ENVIRONMENT_BRANCH)
