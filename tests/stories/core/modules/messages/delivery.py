@@ -32,6 +32,9 @@ from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_lines_2, expect_lines_3, expect_refusal_hook
 from core.modules.messages.support.message_nudges import MESSAGE_UPDATED
 from engine.testing.expectations.expect_nudge import said
+from core.modules.messages.support.message_nudges import IMAGE_TAG_REQUEST, NEW_MESSAGE
+from core.modules.drivers.support.driver_nudges import AGENT_COMPACTED
+from core.modules.drivers.support.line_typing import TERMINAL_PREFIX
 
 
 READ_MESSAGE_HOOK = HookSamples.shell("journal message read 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")).with_fields(event="post_tool_use")
@@ -416,7 +419,7 @@ def test_a_message_with_an_image_tells_the_agent_to_look_at_it(image_message):
     story = image_message
     story.container.get(Database).connection.execute("UPDATE messages SET files = ? WHERE id = 1", ['["shot.png", "notes.txt"]'])
     lines = story.hook("s-1", READ_MESSAGE_HOOK).lines
-    expect_lines_5('message:1 has image "shot.png": tag it with what it shows', lines)
+    expect_lines_5(IMAGE_TAG_REQUEST.nudge(message=1, name="shot.png").text, lines)
     expect_absent_notes_lines("notes.txt", "attaches an image", lines)
 
 
@@ -745,7 +748,7 @@ def test_a_message_is_typed_at_once_to_an_agent_back_from_a_compaction_a_person_
     story.hook("s-1", HookSamples.session_start().with_raw({"source": "compact"}))
     post_message(story, "Are you back")
     story.run_listeners()
-    expect_terminal_lines(typing, ["[journal] Your context was compacted: read the overview, then continue your work", "[journal] New message 1: read it"])
+    expect_terminal_lines(typing, [TERMINAL_PREFIX + AGENT_COMPACTED.nudge().text, TERMINAL_PREFIX + NEW_MESSAGE.nudge(message=1).text])
 
 
 def test_after_an_automatic_compaction_the_turn_goes_on_and_no_line_is_typed(new_story):

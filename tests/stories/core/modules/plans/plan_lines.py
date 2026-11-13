@@ -18,6 +18,7 @@ from engine.testing.expectations.expect_nudge import said
 from core.modules.plans.support.plan_nudges import CHECKPOINT_REACHED
 from core.modules.plans.support.plan_nudges import PLAN_FINISHED
 from core.modules.plans.support.plan_nudges import PLAN_STALLED
+from core.modules.tasks.support.task_nudges import TASK_RETURN_REMINDER
 
 
 def task_end(task_id):
@@ -55,7 +56,7 @@ def closed_lines(story, task_id):
 
 def test_ending_a_task_names_the_task_now_in_hand_once_and_the_phase_it_ended(completed_cart_phase):
     story, lines = completed_cart_phase
-    expect_lines_3(lines, "task:2", ["Back to task:2: continue, close or release it"])
+    expect_lines_3(lines, "task:2", [TASK_RETURN_REMINDER.nudge(task=2).text])
     expect_value_with(lines, "plan 1: phase Build done")
 
 

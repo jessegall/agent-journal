@@ -18,6 +18,8 @@ from tests.stories.core.modules.messages.delivery import KeptTyping, MessagingSe
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value, expect_value_with, expect_value_without
 from core.modules.overview.support.overview_nudges import OVERVIEW_LINE
+from core.modules.overview.support.overview_nudges import OVERVIEW_REFUSAL
+from engine.testing.expectations.expect_nudge import said
 
 
 def test_the_overview_shows_each_default_command_under_its_heading(new_story):
@@ -74,11 +76,11 @@ def test_after_a_session_start_nothing_passes_before_the_overview_but_reading_a_
     story = overview_story(new_story)
     story.hook("s-1", HookSamples.session_start())
     story.run_listeners()
-    story.expect_hook_refusal("s-1", EDIT, "Read the overview first")
-    story.expect_hook_refusal("s-1", LISTING, "Read the overview first")
-    story.expect_hook_refusal("s-1", JOURNAL_LINE, "Read the overview first")
+    story.expect_hook_refusal("s-1", EDIT, said(OVERVIEW_REFUSAL))
+    story.expect_hook_refusal("s-1", LISTING, said(OVERVIEW_REFUSAL))
+    story.expect_hook_refusal("s-1", JOURNAL_LINE, said(OVERVIEW_REFUSAL))
     again = story.hook("s-1", EDIT).refusal
-    story.expect_rows("Read the overview first" in again, "refusal skip" not in again, detail=again)
+    story.expect_rows(said(OVERVIEW_REFUSAL).is_in(again), "refusal skip" not in again, detail=again)
     story.expect_hook_allowed("s-1", SKILL_READ)
     story.expect_hook_allowed("s-1", OVERVIEW_HOOK)
     story.expect_hook_allowed("s-1", EDIT)
@@ -103,7 +105,7 @@ def test_a_compaction_blocks_again_and_a_resume_does_not(new_story):
     story.hook("s-1", RESUME)
     story.expect_hook_allowed("s-1", EDIT)
     story.hook("s-1", COMPACTION)
-    story.expect_hook_refusal("s-1", EDIT, "Read the overview first")
+    story.expect_hook_refusal("s-1", EDIT, said(OVERVIEW_REFUSAL))
 
 
 class CartWork(StoryFixture):
@@ -141,7 +143,7 @@ def test_a_whole_compaction_tells_the_agent_only_to_run_the_overview(compacted):
     expect_value(list(compaction_lines), [])
     expect_value(list(start_lines), [OVERVIEW_LINE.nudge().text])
     story.expect_hook_silent("s-1", SKILL_READ)
-    story.expect_hook_refusal("s-1", EDIT, "Read the overview first")
+    story.expect_hook_refusal("s-1", EDIT, said(OVERVIEW_REFUSAL))
     story.expect_hook_allowed("s-1", OVERVIEW_HOOK)
     story.expect_hook_allowed("s-1", EDIT, "New message 1")
 
