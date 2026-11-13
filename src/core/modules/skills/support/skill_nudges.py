@@ -8,7 +8,8 @@ READ_SKILL_FIRST = NudgeDeclaration("skills.read_skill_first", NudgeType.REFUSAL
                                   path_fields=["instruction"])
 READ_COMMAND_SKILL_FIRST = NudgeDeclaration("skills.read_command_skill_first", NudgeType.REFUSAL, "This command needs a skill you have not read: {instruction}",
                                           path_fields=["instruction"])
+SKILL_ALREADY_LOADED = NudgeDeclaration("skills.already_loaded", NudgeType.REFUSAL, "The skill {skill} is loaded in your context already: use what you read, or skip this refusal if you must read it again")
 SKILL_COUNTDOWN = CountDown("skills.skill_countdown", "load skill {skill}", ToolUseSpan(SKILL_TOOL_USES))
 UNREAD_SKILLS = NudgeDeclaration("skills.unread_skills", NudgeType.REFUSAL, "Unread skills: {skills}: read them first")
 
-SKILL_NUDGES = [READ_SKILL_FIRST, READ_COMMAND_SKILL_FIRST, SKILL_COUNTDOWN.declaration, UNREAD_SKILLS]
+SKILL_NUDGES = [READ_SKILL_FIRST, SKILL_ALREADY_LOADED, READ_COMMAND_SKILL_FIRST, SKILL_COUNTDOWN.declaration, UNREAD_SKILLS]
