@@ -4,6 +4,7 @@ from contextlib import contextmanager
 
 from engine.database.database import Database
 from engine.database.statement import Statement
+from engine.database.unique_key import UniqueKey
 
 SCHEMA_REASON = "The fold of main agents walks the rows that hold a folded agent, once, in one transaction."
 STATE_DELETE_RULE_SUFFIX = "_rule_state_delete"
@@ -24,9 +25,6 @@ class ReferenceRewrite:
     def rows_where(self, table: str, column: str, value: object) -> list[dict[str, object]]:
         found = self.database.rows(Statement(f'SELECT * FROM "{table}" WHERE "{column}" = ?', [value], scan_reason=SCHEMA_REASON))
         return [dict(row) for row in found]
-
-    def set_value(self, table: str, column: str, value: object, row_id: int) -> None:
-        self.database.update(Statement(f'UPDATE "{table}" SET "{column}" = ? WHERE id = ?', [value, row_id]))
 
     @contextmanager
     def without_foreign_keys(self) -> Iterator[None]:
@@ -73,16 +71,16 @@ class ReferenceRewrite:
             self.database.update(Statement(saved[0]["sql"]))
         return removed
 
-    def unique_keys(self) -> list[tuple[str, tuple[str, ...], str]]:
+    def unique_keys(self) -> list[UniqueKey]:
         found = []
         for index in self.database.rows(UNIQUE_INDEXES):
             columns = self.database.rows(Statement(f'SELECT name FROM pragma_index_info("{index["index_name"]}")', scan_reason=SCHEMA_REASON))
             guarded = str(index["index_sql"]).split(WHERE_WORD, 1)[1] if index["partial"] else "1 = 1"
-            found.append((index["table_name"], tuple(str(column["name"]) for column in columns if column["name"] is not None), guarded))
+            found.append(UniqueKey(str(index["table_name"]), tuple(str(column["name"]) for column in columns if column["name"] is not None), guarded))
         return found
 
-    def guarded_rows(self, table: str, column: str, ids: list[int], guarded: str) -> list[dict[str, object]]:
-        found = self.database.rows(Statement(f'SELECT * FROM "{table}" WHERE "{column}" IN ({self.marks(ids)}) AND ({guarded})', list(ids), scan_reason=SCHEMA_REASON))
+    def guarded_rows(self, unique: UniqueKey, column: str, ids: list[int]) -> list[dict[str, object]]:
+        found = self.database.rows(Statement(f'SELECT * FROM "{unique.table}" WHERE "{column}" IN ({self.marks(ids)}) AND ({unique.guarded})', list(ids), scan_reason=SCHEMA_REASON))
         return [dict(row) for row in found]
 
     def table_counts(self, tables: list[str]) -> dict[str, int]:

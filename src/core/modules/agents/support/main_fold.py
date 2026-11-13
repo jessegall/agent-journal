@@ -13,6 +13,8 @@ from core.modules.agents.support.main_fold_plan import EnvironmentFold, MainFold
 from core.modules.agents.support.reference_columns import AGENT_MODEL_NAMES, AgentColumns, ReferenceColumns
 from core.modules.agents.models.agent import AGENTS_TABLE
 from core.modules.agents.support.reference_columns import FOLD_TABLES
+from engine.database.row_insert import RowInsert
+from engine.database.unique_key import UniqueKey
 
 SESSIONS = ("agent_sessions", "session_agent_id")
 ACTORS_TABLE = "actors"
@@ -98,7 +100,7 @@ class MainFold:
             counts.add_reference(name, before[name], after)
         self.rewrite.delete(AGENTS_TABLE, folded_ids)
         self.rewrite.delete(ACTORS_TABLE, folded_ids)
-        self.rewrite.set_value(AGENTS_TABLE, "number", MAIN_NUMBER, fold.survivor.id)
+        RowInsert(self.database).set_value(AGENTS_TABLE, fold.survivor.id, "number", MAIN_NUMBER)
 
     def reference_counts(self, columns: AgentColumns, ids: list[int]) -> dict[str, int]:
         plain = {f"{table}.{column}": self.rewrite.count(table, column, ids) for table, column in columns.plain}
@@ -117,11 +119,12 @@ class MainFold:
                                                     "created_at": folded_at, "updated_at": folded_at})
 
     def settle_clashes(self, fold: EnvironmentFold, columns: AgentColumns, counts: FoldCounts, fold_id: int, folded_at: str) -> None:
-        for table, key, guarded in self.rewrite.unique_keys():
+        for unique in self.rewrite.unique_keys():
+            table = unique.table
             if table in FOLD_TABLES:
                 continue
-            for column, model_column in MainFold.agent_parts(columns, table, key):
-                for group in self.clashing_groups(fold, table, key, column, model_column, guarded):
+            for column, model_column in MainFold.agent_parts(columns, table, unique.columns):
+                for group in self.clashing_groups(fold, unique, column, model_column):
                     settled = FoldClashRules.settled(table, group, fold.survivor.id, column)
                     for removed in settled.removed:
                         self.inserts.insert(FOLD_TABLES[1], {"environment_id": fold.environment_id, "fold_id": fold_id, "table_name": table,
@@ -144,12 +147,12 @@ class MainFold:
                  if owner == table and row[model_column] in AGENT_MODEL_NAMES and row[id_column] in ids]
         return plain + pairs
 
-    def clashing_groups(self, fold: EnvironmentFold, table: str, key: tuple[str, ...], column: str, model_column: str | None, guarded: str) -> list[list[dict[str, object]]]:
+    def clashing_groups(self, fold: EnvironmentFold, unique: UniqueKey, column: str, model_column: str | None) -> list[list[dict[str, object]]]:
         folded_ids = {agent.id for agent in fold.folded}
         groups: dict[tuple[object, ...], list[dict[str, object]]] = {}
-        for row in self.rewrite.guarded_rows(table, column, [*folded_ids, fold.survivor.id], guarded):
+        for row in self.rewrite.guarded_rows(unique, column, [*folded_ids, fold.survivor.id]):
             if model_column is not None and row[model_column] not in AGENT_MODEL_NAMES:
                 continue
-            folded_key = tuple(fold.survivor.id if name == column and row[name] in folded_ids else row[name] for name in key)
+            folded_key = tuple(fold.survivor.id if name == column and row[name] in folded_ids else row[name] for name in unique.columns)
             groups.setdefault(folded_key, []).append(row)
         return [rows for rows in groups.values() if len(rows) > 1]

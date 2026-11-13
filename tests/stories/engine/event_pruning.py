@@ -13,6 +13,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_value
 from core.modules.drivers.support.driver_settings import EVENT_COUNT_SETTING
+from engine.database.prune_window import PruneWindow
 
 HOOK_CALLS = "hook_calls"
 TASKS = "tasks"
@@ -53,7 +54,7 @@ def test_a_listener_that_has_not_passed_an_event_keeps_it(new_story):
     story = new_story(fixture=HookAndTaskLogged)
     event_total = total_events(story)
     story.container.get(Database).update(Statement("UPDATE listener_cursors SET event_id = 0 WHERE listener = (SELECT min(listener) FROM listener_cursors)"))
-    story.container.get(EventLog).prune(1, 0, MOST_EVENTS)
+    story.container.get(EventLog).prune(PruneWindow(1, 0, MOST_EVENTS))
     expect_value(total_events(story), event_total)
 
 

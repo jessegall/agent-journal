@@ -7,6 +7,7 @@ from engine.database.database import READ_LIMIT_ROWS, Database
 from engine.database.statement import Statement
 from engine.errors.missing_rows_error import MissingRowsError
 from engine.row.page import Page
+from engine.database.prune_window import PruneWindow
 
 T = TypeVar("T")
 
@@ -80,12 +81,12 @@ class BookkeepingTable:
     def id_span(self) -> int:
         return self.database.rows(Statement(f"SELECT coalesce(max(id) - min(id) + 1, 0) FROM {self.table}"))[0][0]
 
-    def delete_past_newest(self, kept: int, after_id: int, window: int) -> tuple[int, int]:
+    def delete_past_newest(self, window: PruneWindow) -> tuple[int, int]:
         end = self.database.rows(Statement(f"SELECT min(?, (SELECT coalesce(min(event_id), 0) FROM listener_cursors),"
-                                           f" (SELECT coalesce(max(id), 0) FROM {self.table}) - ?) AS end", (after_id + window, kept)))[0]["end"]
-        if end <= after_id:
-            return 0, after_id
-        return self.database.update(Statement(f"DELETE FROM {self.table} WHERE id > ? AND id <= ?", (after_id, end))), int(end)
+                                           f" (SELECT coalesce(max(id), 0) FROM {self.table}) - ?) AS end", (window.after_id + window.width, window.kept)))[0]["end"]
+        if end <= window.after_id:
+            return 0, window.after_id
+        return self.database.update(Statement(f"DELETE FROM {self.table} WHERE id > ? AND id <= ?", (window.after_id, end))), int(end)
 
     def oldest_id(self) -> int:
         return int(self.database.rows(Statement(f"SELECT coalesce(min(id), 1) AS id FROM {self.table}"))[0]["id"])

@@ -15,6 +15,7 @@ from engine.model.environment_or_project import EnvironmentOrProject
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
 from engine.model.tables import Tables
+from engine.database.prune_window import PruneWindow
 
 HIDDEN = "hidden"
 
@@ -129,8 +130,8 @@ class EventLog:
     def newest_id(self) -> int:
         return self.table.newest_id()
 
-    def prune(self, kept: int, after_id: int, window: int) -> tuple[int, int]:
-        return self.table.delete_past_newest(kept, after_id, window)
+    def prune(self, window: PruneWindow) -> tuple[int, int]:
+        return self.table.delete_past_newest(window)
 
     def oldest_id(self) -> int:
         return self.table.oldest_id()
