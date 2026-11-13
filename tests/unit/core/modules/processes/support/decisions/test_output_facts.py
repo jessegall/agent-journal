@@ -44,12 +44,12 @@ def test_carriage_returns_in_more_than_half_the_bytes_make_one_line():
 
 def test_an_output_that_ends_on_a_prompt_is_noted_and_is_no_reason_alone():
     waiting = facts(b"Installing\nProceed (y/n)?", exit_code=None)
-    assert (waiting.ends_on_prompt, waiting.unreadable_reason) == (True, None)
-    assert not facts(b"Installing\nProceed (y/n)?\n", exit_code=None).ends_on_prompt
+    assert (waiting.ends_with_prompt, waiting.unreadable_reason) == (True, None)
+    assert not facts(b"Installing\nProceed (y/n)?\n", exit_code=None).ends_with_prompt
 
 
 def test_a_rejected_command_is_noted():
-    assert facts(b"usage: tool [OPTIONS]\nunknown option --tail\n", exit_code=2).was_rejected
+    assert facts(b"usage: tool [OPTIONS]\nunknown option --tail\n", exit_code=2).rejected
 
 
 def test_a_start_that_crashed_is_noted():
@@ -57,8 +57,8 @@ def test_a_start_that_crashed_is_noted():
 
 
 def test_a_run_killed_before_its_end_is_cut_short():
-    assert facts(b"collected 3 items\n", exit_code=137).was_cut_short
-    assert not facts(TEST_OUTPUT).was_cut_short
+    assert facts(b"collected 3 items\n", exit_code=137).truncated
+    assert not facts(TEST_OUTPUT).truncated
 
 
 def test_bytes_that_are_not_valid_utf8_do_not_raise():

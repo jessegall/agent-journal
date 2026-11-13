@@ -10,11 +10,11 @@ class WorktreeUpdate:
     base_commit: str
     conflicts: tuple[str, ...] = ()
     stash_id: str = ""
-    was_current: bool = False
+    unchanged: bool = False
 
     @classmethod
     def current(cls, tip: str) -> "WorktreeUpdate":
-        return cls(tip, was_current=True)
+        return cls(tip, unchanged=True)
 
     def is_clean(self) -> bool:
         return not self.conflicts

@@ -78,7 +78,7 @@ def s35_the_instruction_files_do_not_clash(story, repository: GitRepository, wor
 class UpdateCase:
     """One story of the book: what the base holds before the worker is sent, then what happens after."""
 
-    before_dispatch: Callable[[GitRepository], None]
+    setup: Callable[[GitRepository], None]
     after_dispatch: Callable[..., None]
 
 
@@ -92,6 +92,6 @@ CASES = [UpdateCase(empty_setup, s25_uncommitted_changes_in_two_files_stay), Upd
 def test_a_worker_updates_its_worktree_onto_its_base_and_keeps_working(new_story, case):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story, real_git=True)
-    case.before_dispatch(repository)
+    case.setup(repository)
     worker = dispatched_worker(story)
     case.after_dispatch(story, repository, worker)

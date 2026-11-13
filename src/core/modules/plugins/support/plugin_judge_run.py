@@ -10,7 +10,7 @@ class PluginJudgeRun:
     """The run a plugin's queue answer asks the journal to queue: the kind of run its manifest declares under
     processes, and the command that judges."""
 
-    kind: str
+    category: str
     command: tuple[str, ...]
 
     @classmethod

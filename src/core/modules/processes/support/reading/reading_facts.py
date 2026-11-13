@@ -59,18 +59,18 @@ class ReadingFacts:
         command_key = SilentStartRuns.name(part.text, part.program, part.category)
         reader = self.reader(part)
         policy = self.suites.agent_policy()
-        return ReadingCase(command_key=command_key, category=part.category, classification_known=part.category is not CommandCategory.UNKNOWN,
+        return ReadingCase(command_key=command_key, category=part.category, classification_recognized=part.category is not CommandCategory.UNKNOWN,
                            has_asking_flag=ReaderDemands.is_help_request(command), output_hidden=part.piped, is_saved_command=bool(part.saved_command),
                            is_plugin_run=bool(process.plugin), moment=point, age_seconds=self.age_seconds(process), run_state=process.state,
                            cadence_state=self.cadences.process_cadence(process, self.clock.timestamp()).state(),
                            exit_code=part.exit_code, reader_layer=self.layer(reader), reader_judgement=self.judgement(process, part, reader),
-                           reader_is_default=reader is not None and reader.is_default, reader_failed=self.reader_failed(process, reader, point),
+                           default_reader=reader is not None and reader.is_default, reader_failed=self.reader_failed(process, reader, point),
                            count_missing=self.counts.count_missing(process, part),
                            draft_fits=self.draft_fits(process, part, reader, point), output=self.output(process, part, point),
                            runs_without_change=runs_without_change,
-                           request_is_waiting=waiting_request, was_skipped=self.resets.skipped_after(command_key, process.creation_timestamp()),
-                           has_unreadable_mark=is_flagged, role_must_have_reader=agent.role in policy.reader_request_roles,
-                           role_may_write_readers=self.writers.allows(Actor(agent.id, ActorType.AGENT)), role_uses_saved_commands=agent.role in policy.saved_command_roles,
+                           waiting_request=waiting_request, skipped=self.resets.skipped_after(command_key, process.creation_timestamp()),
+                           has_unreadable_mark=is_flagged, reader_required=agent.role in policy.reader_request_roles,
+                           reader_writing_allowed=self.writers.allows(Actor(agent.id, ActorType.AGENT)), role_uses_saved_commands=agent.role in policy.saved_command_roles,
                            readers_forced=self.settings.flag(ProcessSetting.READERS_FORCED))
 
     def reader(self, part: ProcessPart) -> Reader | None:

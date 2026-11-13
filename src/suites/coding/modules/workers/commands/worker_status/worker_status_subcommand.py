@@ -113,7 +113,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
             return
         pause_lines = [f"Paused: it takes no job until journal agent resume {value.worker_number}"] if value.is_paused else []
         unit_lines = [value.unit_line] if value.unit_line else []
-        lines = [value.point.line, *unit_lines, *value.question_lines, f"Point: {value.point.step}", f"Own test runs left: {value.runs_text}", f"Worker: {value.worker_number}", f"Worktree: {value.worktree.folder} on branch {value.worktree.branch}, cut from {value.worktree.base_branch}", value.behind_line, *pause_lines, f"Current task: {value.current_task.id} ({value.current_task.state}) {value.current_task.title}",
+        lines = [value.point.line, *unit_lines, *value.question_lines, f"Point: {value.point.step}", f"Own test runs left: {value.runs_text}", f"Worker: {value.worker_number}", f"Worktree: {value.worktree.folder} on branch {value.worktree.branch}, cut from {value.worktree.base_branch}", value.stale_line, *pause_lines, f"Current task: {value.current_task.id} ({value.current_task.state}) {value.current_task.title}",
                  f"Tasks started: {len(value.started_tasks)}", *(f"  task {task.id}: {task.title}" for task in value.started_tasks), *value.group_lines(),
                  f"Tests waiting: {value.tests.total}", *(f"  proof {proof.id} ({proof.state}): {proof.test_command}" for proof in value.tests.rows),
                  f"Assignments remaining: {value.assignments.total}", *(f"  task {task.id} ({task.state}): {task.title}" for task in value.assignments.rows),
@@ -129,7 +129,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
                                    "staged": [output.values(task) for task in value.staging.ready], "waiting": [output.values(task) for task in value.waiting_tasks],
                                    "startable": [output.values(task) for task in value.startable_tasks], "blocked": [output.values(task) for task in value.blocked_tasks],
                                    "tests": self.page_json(value.tests, output), "assignments": self.page_json(value.assignments, output),
-                                   "program": value.program, "program_state": value.program_state.listed() if value.program_state is not None else None, "paused": value.is_paused, "questions": list(value.question_lines), "standing": value.standing.value, "unit": value.unit_line, "behind": value.behind_line}
+                                   "program": value.program, "program_state": value.program_state.listed() if value.program_state is not None else None, "paused": value.is_paused, "questions": list(value.question_lines), "standing": value.standing.value, "unit": value.unit_line, "behind": value.stale_line}
         output.write("\n".join(lines), data)
 
     def page_json(self, page: Page[Proof] | Page[Task], output: Output) -> WorkerStatusPageJson:

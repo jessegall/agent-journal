@@ -67,13 +67,13 @@ class ProfileFolderMove:
         native = self.native_fields(path, text)
         profile = self.files.checked_type(native.copied(self.files.profile(path, native)))
         settings = {name: getattr(profile, name) for name in COPIED_FIELDS}
-        fields = ProfileFields(settings, path.stem, profile.agent_type, source_digest=digest, could_write=native.could_write)
+        fields = ProfileFields(settings, path.stem, profile.agent_type, source_digest=digest, writable=native.writable)
         if registered is not None:
             registered = self.files.checked_type(registered)
             fields = ProfileFields({name: value for name, value in settings.items() if value != getattr(registered, name)}, path.stem, module=registered.module,
-                                   module_text=self.digest.hex_digest(registered.body), source_digest=digest, could_write=native.could_write)
+                                   module_text=self.digest.hex_digest(registered.body), source_digest=digest, writable=native.writable)
         self.files.save_fields(fields)
-        if fields.could_write:
+        if fields.writable:
             self.system_log.write(LogLevel.WARNING, f"Copied profile {path.stem}: Could write before; access is read-only")
         return True
 
@@ -100,4 +100,4 @@ class ProfileFolderMove:
                                        "codex_model": "" if codex_model == "inherit" else codex_model,
                                        "mcp_tools": ProfileFormat.tools(native.get("mcp_tools", [])), "occupant": INDEPENDENT_OCCUPANTS[native.get("independent", False) is True]}
         agent_type = ProfileFormat.agent_type(str(native.get("type", native.get("kind", "helper"))))
-        return ProfileFields(settings, path.stem, agent_type, could_write=writable).native
+        return ProfileFields(settings, path.stem, agent_type, writable=writable).native

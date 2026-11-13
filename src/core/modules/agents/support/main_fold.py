@@ -46,7 +46,7 @@ class MainFold:
         tables = sorted({column.table for column in schema})
         with self.rewrite.without_foreign_keys():
             with self.database.transaction():
-                counts.tables_before = self.rewrite.table_counts(tables)
+                counts.tables_prior = self.rewrite.table_counts(tables)
                 for fold in folds:
                     self.fold(fold, columns, counts, folded_at)
                 counts.tables_after = self.rewrite.table_counts(tables)

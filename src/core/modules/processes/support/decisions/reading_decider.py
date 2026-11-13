@@ -44,13 +44,13 @@ class ReadingDecider:
             return PressureLevel.BLOCK
         if case.output_hidden:
             return PressureLevel.PREVENT
-        if case.was_skipped:
+        if case.skipped:
             return PressureLevel.SUGGEST
         return PressureLevel.PREVENT if case.runs_without_change >= PREVENT_AFTER_RUNS else PressureLevel.SUGGEST
 
     @staticmethod
     def action(case: ReadingCase, level: PressureLevel) -> ReaderAction:
-        if case.role_must_have_reader and level in ENFORCED_LEVELS:
+        if case.reader_required and level in ENFORCED_LEVELS:
             return ReaderAction.REQUIRE
         if case.moment is not ReadingMoment.END:
             return ReaderAction.NOTHING

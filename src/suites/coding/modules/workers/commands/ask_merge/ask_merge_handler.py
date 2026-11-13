@@ -34,9 +34,9 @@ class AskMergeHandler(Handler[AskMerge, MergeAskOutcome]):
         part = self.scope.checked(command.worker_id, command.note, command.up_to)
         task_ids = ",".join(str(task_id) for task_id in part.task_ids)
         merge_request = self.repository.save(MergeAsk(creator_id=context.actor.id, worktree_id=part.worktree.id, commit_id=part.commit_id, task_ids=task_ids, unit_name=part.unit.merge_name,
-                                                  note=command.note, is_whole=part.is_whole), context)
+                                                  note=command.note, is_whole=part.is_full), context)
         worktree = part.worktree
-        if part.is_whole:
+        if part.is_full:
             worktree = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, merge_ready_at=context.timestamp), context)
         if not self.settings.flag(MERGER_ENABLED):
             worker = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)

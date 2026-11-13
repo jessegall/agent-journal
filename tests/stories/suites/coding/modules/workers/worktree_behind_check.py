@@ -60,7 +60,7 @@ def behind_lines(story) -> list[str]:
 class LookCase:
     """One story of the book: the settings and base before the worker is sent, then what the look finds."""
 
-    before: Callable[..., None]
+    setup: Callable[..., None]
     after: Callable[..., None]
 
 
@@ -183,6 +183,6 @@ CASES = [LookCase(defaults, s1_three_merged_workers_open_one_check_and_start_the
 def test_a_look_notices_a_worktree_that_fell_behind_its_base(new_story, case):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story, real_git=True)
-    case.before(story, repository)
+    case.setup(story, repository)
     worker = delivered_worker(story, repository) if case.after is s9_a_delivered_worktree_is_skipped else dispatched_worker(story)
     case.after(story, repository, worker)

@@ -22,13 +22,13 @@ PREVENT = PressureLevel.PREVENT.exits
 BLOCK = PressureLevel.BLOCK.exits
 TEST_OUTPUT = b"collected 3 items\n\n===== 3 passed in 0.10s =====\n"
 
-MAIN_BUILD = ReadingCase(command_key="custom-build run", category=CommandCategory.BUILD, classification_known=True, has_asking_flag=False,
+MAIN_BUILD = ReadingCase(command_key="custom-build run", category=CommandCategory.BUILD, classification_recognized=True, has_asking_flag=False,
                          output_hidden=False, is_saved_command=False, is_plugin_run=False, moment=ReadingMoment.START, age_seconds=0,
-                         run_state=ProcessState.RUNNING, cadence_state=CadenceState.STREAMING, exit_code=None, reader_layer=None, reader_judgement=None, reader_is_default=False, reader_failed=False, count_missing=False,
-                         draft_fits=False, output=None, runs_without_change=0, request_is_waiting=False, was_skipped=False, has_unreadable_mark=False,
-                         role_must_have_reader=False, role_may_write_readers=True, role_uses_saved_commands=True, readers_forced=True)
-WORKER_BUILD = replace(MAIN_BUILD, role_must_have_reader=True, role_uses_saved_commands=False)
-HELPER_SEARCH = replace(MAIN_BUILD, category=CommandCategory.SEARCH, role_may_write_readers=False)
+                         run_state=ProcessState.RUNNING, cadence_state=CadenceState.STREAMING, exit_code=None, reader_layer=None, reader_judgement=None, default_reader=False, reader_failed=False, count_missing=False,
+                         draft_fits=False, output=None, runs_without_change=0, waiting_request=False, skipped=False, has_unreadable_mark=False,
+                         reader_required=False, reader_writing_allowed=True, role_uses_saved_commands=True, readers_forced=True)
+WORKER_BUILD = replace(MAIN_BUILD, reader_required=True, role_uses_saved_commands=False)
+HELPER_SEARCH = replace(MAIN_BUILD, category=CommandCategory.SEARCH, reader_writing_allowed=False)
 
 
 def ended(case: ReadingCase, sample: bytes = TEST_OUTPUT, exit_code: int = 0, age_seconds: int = 120) -> ReadingCase:
@@ -57,17 +57,17 @@ TABLE = {
     "missing at end": (ended(MAIN_BUILD), (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
     "poor at end": (with_reader(ended(MAIN_BUILD), ReaderJudgement(missing=tuple(["--summary"]))), (ReaderState.POOR, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
     "draftable at end": (replace(ended(MAIN_BUILD), draft_fits=True), (ReaderState.DRAFTABLE, ReaderAction.DRAFT_READY, PressureLevel.SUGGEST, SUGGEST)),
-    "worker with a waiting request": (replace(WORKER_BUILD, request_is_waiting=True), (ReaderState.MISSING, ReaderAction.REQUIRE, PressureLevel.BLOCK, BLOCK)),
+    "worker with a waiting request": (replace(WORKER_BUILD, waiting_request=True), (ReaderState.MISSING, ReaderAction.REQUIRE, PressureLevel.BLOCK, BLOCK)),
     "main after 0 runs": (ended(MAIN_BUILD), (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
     "main after 1 run": (replace(ended(MAIN_BUILD), runs_without_change=1), (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
     "main after 2 runs": (replace(ended(MAIN_BUILD), runs_without_change=2), (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.PREVENT, PREVENT)),
     "main after 3 runs": (replace(ended(MAIN_BUILD), runs_without_change=3), (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.PREVENT, PREVENT)),
     "worker after 2 runs": (replace(WORKER_BUILD, runs_without_change=2), (ReaderState.MISSING, ReaderAction.REQUIRE, PressureLevel.PREVENT, PREVENT)),
-    "skipped after 3 runs": (replace(ended(MAIN_BUILD), runs_without_change=3, was_skipped=True), (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
+    "skipped after 3 runs": (replace(ended(MAIN_BUILD), runs_without_change=3, skipped=True), (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
     "redirected line": (replace(MAIN_BUILD, output_hidden=True), (ReaderState.MISSING, ReaderAction.NOTHING, PressureLevel.PREVENT, PREVENT)),
     "suitable reader without the count a worker needs": (replace(with_reader(ended(WORKER_BUILD), ReaderJudgement()), count_missing=True),
                                                          (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
-    "unknown command": (replace(ended(MAIN_BUILD), category=CommandCategory.UNKNOWN, classification_known=False),
+    "unknown command": (replace(ended(MAIN_BUILD), category=CommandCategory.UNKNOWN, classification_recognized=False),
                         (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, (*SUGGEST, ReadingExit.CLASSIFY))),
 }
 
@@ -80,7 +80,7 @@ def test_the_decision_of_each_case(case, expected):
 
 @pytest.mark.parametrize("case, reason", [
     (replace(MAIN_BUILD, output_hidden=True), ReasonCode.REDIRECTED),
-    (replace(WORKER_BUILD, request_is_waiting=True), ReasonCode.REQUEST_WAITING),
+    (replace(WORKER_BUILD, waiting_request=True), ReasonCode.REQUEST_WAITING),
     (ended(MAIN_BUILD), ReasonCode.READER_MISSING),
     (replace(ended(MAIN_BUILD), draft_fits=True), ReasonCode.DRAFT_FITS),
     (replace(with_reader(ended(WORKER_BUILD), ReaderJudgement()), count_missing=True), ReasonCode.COUNT_MISSING),

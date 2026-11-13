@@ -37,7 +37,7 @@ class ReadBehindFactsSubcommand(ReadSubcommand[BehindFacts | Refusal]):
         if not isinstance(value, BehindFacts):
             super().write_output(value, output)
             return
-        output.write("\n".join(value.lines()), {"base_branch": value.base_branch, "behind": value.behind, "worker_files": list(value.worker_files), "overlap": list(value.overlap),
-                                                "same_folder": list(value.same_folder), "overlap_lines": value.overlap_lines, "has_uncommitted": value.has_uncommitted,
+        output.write("\n".join(value.lines()), {"base_branch": value.base_branch, "behind": value.commits_lagging, "worker_files": list(value.worker_files), "overlap": list(value.overlap),
+                                                "same_folder": list(value.shared_folder), "overlap_lines": value.overlap_lines, "has_uncommitted": value.has_uncommitted,
                                                 "program": value.program, "model": value.model,
                                                 "commits": [{"short_id": commit.short_id, "subject": commit.subject, "files": list(commit.files)} for commit in value.commits]})

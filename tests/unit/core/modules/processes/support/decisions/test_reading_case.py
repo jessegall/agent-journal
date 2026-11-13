@@ -15,11 +15,11 @@ from core.modules.processes.models.enums.reader_layer import ReaderLayer
 from core.modules.processes.support.decisions.reading_case import ReadingCase
 
 TEST_OUTPUT = b"collected 3 items\n\n===== 3 passed in 0.10s =====\n"
-RUNNING_TESTS = ReadingCase(command_key="pytest", category=CommandCategory.TEST_RUN, classification_known=True, has_asking_flag=False,
+RUNNING_TESTS = ReadingCase(command_key="pytest", category=CommandCategory.TEST_RUN, classification_recognized=True, has_asking_flag=False,
                             output_hidden=False, is_saved_command=False, is_plugin_run=False, moment=ReadingMoment.RUNNING, age_seconds=120,
-                            run_state=ProcessState.BACKGROUND, cadence_state=CadenceState.STREAMING, exit_code=None, reader_layer=None, reader_judgement=None, reader_is_default=False, reader_failed=False, draft_fits=False,
-                            output=None, runs_without_change=0, request_is_waiting=False, was_skipped=False, has_unreadable_mark=False, count_missing=False,
-                            role_must_have_reader=True, role_may_write_readers=True, role_uses_saved_commands=False, readers_forced=True)
+                            run_state=ProcessState.BACKGROUND, cadence_state=CadenceState.STREAMING, exit_code=None, reader_layer=None, reader_judgement=None, default_reader=False, reader_failed=False, draft_fits=False,
+                            output=None, runs_without_change=0, waiting_request=False, skipped=False, has_unreadable_mark=False, count_missing=False,
+                            reader_required=True, reader_writing_allowed=True, role_uses_saved_commands=False, readers_forced=True)
 
 
 def ended(sample: bytes, exit_code: int, age_seconds: int = 120) -> ReadingCase:
@@ -77,7 +77,7 @@ def test_every_level_above_a_suggestion_has_an_exit_the_agent_takes_on_its_own(l
 
 
 def test_a_command_of_unknown_type_can_also_be_classified():
-    assert replace(RUNNING_TESTS, classification_known=False).available_exits(PressureLevel.PREVENT)[-1] is ReadingExit.CLASSIFY
+    assert replace(RUNNING_TESTS, classification_recognized=False).available_exits(PressureLevel.PREVENT)[-1] is ReadingExit.CLASSIFY
 
 
 @pytest.mark.parametrize("cadence, reason", [

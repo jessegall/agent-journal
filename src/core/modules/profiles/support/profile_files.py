@@ -127,7 +127,7 @@ class ProfileFiles:
 
     def notes(self, path: Path, fields: ProfileFields) -> tuple[str, ...]:
         notes: list[str] = []
-        if fields.could_write:
+        if fields.writable:
             notes.append(WRITABLE_NOTE)
         if path.with_name(f"{path.stem}.clash.md").is_file():
             notes.append(f"Changed original kept in {path.stem}.clash.md")
@@ -143,14 +143,14 @@ class ProfileFiles:
 
     def save(self, profile: AgentProfile) -> AgentProfile:
         settings = {name: getattr(profile, name) for name in OVERLAID_FIELDS}
-        self.save_fields(ProfileFields(settings, profile.name, profile.agent_type, source_digest=profile.source_digest, could_write=WRITABLE_NOTE in profile.notes))
+        self.save_fields(ProfileFields(settings, profile.name, profile.agent_type, source_digest=profile.source_digest, writable=WRITABLE_NOTE in profile.notes))
         return self.stored(profile.name)
 
     def save_changes(self, registered: AgentProfile, profile: AgentProfile) -> AgentProfile:
         registered = self.checked_type(registered)
         settings = {name: getattr(profile, name) for name in OVERLAID_FIELDS if getattr(profile, name) != getattr(registered, name)}
         self.save_fields(ProfileFields(settings, profile.name, module=registered.module, module_text=self.digest.hex_digest(registered.body),
-                                                     source_digest=profile.source_digest, could_write=WRITABLE_NOTE in profile.notes))
+                                                     source_digest=profile.source_digest, writable=WRITABLE_NOTE in profile.notes))
         return self.stored(profile.name)
 
     def stored(self, name: str) -> AgentProfile:

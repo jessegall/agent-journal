@@ -22,7 +22,7 @@ class PluginQueuedJudge:
         if agent_id is None:
             return self.refused(answer, f"plugin {plugin} queued a judge run, which runs in the checkout of an agent, and nothing here was done by an agent")
         try:
-            run = self.runner.run(agent_id, answer.run.line(), False, plugin, Actor.core(), self.clock.timestamp(), answer.run.kind)
+            run = self.runner.run(agent_id, answer.run.line(), False, plugin, Actor.core(), self.clock.timestamp(), answer.run.category)
         except Refusal as refusal:
             return self.refused(answer, str(refusal))
         if run.exit_code == 0:

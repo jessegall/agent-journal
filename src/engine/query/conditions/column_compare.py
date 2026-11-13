@@ -12,9 +12,9 @@ class ColumnCompare:
 
     column: str
     operator: str
-    other_column: str
+    compared_column: str
 
     def statement(self) -> Statement:
         if self.operator not in COLUMN_OPERATORS:
             raise UnknownOperatorError(f"unknown operator {self.operator}; use one of {' '.join(COLUMN_OPERATORS)}")
-        return Statement(f"{self.column} {self.operator} {self.other_column}")
+        return Statement(f"{self.column} {self.operator} {self.compared_column}")

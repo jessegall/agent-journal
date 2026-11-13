@@ -40,7 +40,7 @@ class PluginProcessKindLimits(ProcessKindLimits):
             declared = manifests[plugin].process_category(category) if plugin in manifests else None
             if declared is None:
                 continue
-            limit = values[(plugin, environment)].get(declared.at_once_setting)
+            limit = values[(plugin, environment)].get(declared.concurrent_setting)
             rules[(plugin, category, environment)] = KindRule(declared, limit if isinstance(limit, int) and limit > 0 else None)
         needs_memory = any(rule.declared.memory_mb for rule in rules.values())
         machine = {(plugin, category): self.machine.count(plugin, category) for (plugin, category, _), rule in rules.items() if rule.declared.scope is RunScope.MACHINE}

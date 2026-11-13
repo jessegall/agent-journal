@@ -12,7 +12,7 @@ class Statement:
     parameters: Sequence[object] = ()
     scan_reason: str | None = field(default=None, compare=False)
     full_table_reason: str | None = field(default=None, compare=False)
-    named_limit_rows: int | None = field(default=None, compare=False)
+    declared_limit_rows: int | None = field(default=None, compare=False)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "parameters", tuple(self.parameters))

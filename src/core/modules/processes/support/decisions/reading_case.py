@@ -22,7 +22,7 @@ class ReadingCase:
 
     command_key: str
     category: CommandCategory
-    classification_known: bool
+    classification_recognized: bool
     has_asking_flag: bool
     output_hidden: bool
     is_saved_command: bool
@@ -34,23 +34,23 @@ class ReadingCase:
     exit_code: int | None
     reader_layer: ReaderLayer | None
     reader_judgement: ReaderJudgement | None
-    reader_is_default: bool
+    default_reader: bool
     reader_failed: bool
     count_missing: bool
     draft_fits: bool
     output: OutputFacts | None
     runs_without_change: int
-    request_is_waiting: bool
-    was_skipped: bool
+    waiting_request: bool
+    skipped: bool
     has_unreadable_mark: bool
-    role_must_have_reader: bool
-    role_may_write_readers: bool
+    reader_required: bool
+    reader_writing_allowed: bool
     role_uses_saved_commands: bool
     readers_forced: bool
 
     @property
     def is_request_waiting_for_reader(self) -> bool:
-        return self.role_must_have_reader and self.request_is_waiting
+        return self.reader_required and self.waiting_request
 
     @property
     def is_not_needed(self) -> bool:
@@ -60,11 +60,11 @@ class ReadingCase:
     # A run killed part way, or one that failed as it started, shows nothing a reader should read.
     @property
     def is_no_sample(self) -> bool:
-        return self.output is not None and (self.output.was_cut_short or (self.output.start_crashed and self.exit_code not in (None, 0)))
+        return self.output is not None and (self.output.truncated or (self.output.start_crashed and self.exit_code not in (None, 0)))
 
     @property
     def was_rejected(self) -> bool:
-        return self.output is not None and self.output.was_rejected
+        return self.output is not None and self.output.rejected
 
     @property
     def is_short_success(self) -> bool:
@@ -89,4 +89,4 @@ class ReadingCase:
         return OutputFacts.measured_reason(self.output, self.cadence_state)
 
     def available_exits(self, level: PressureLevel) -> tuple[ReadingExit, ...]:
-        return level.exits if self.classification_known else (*level.exits, ReadingExit.CLASSIFY)
+        return level.exits if self.classification_recognized else (*level.exits, ReadingExit.CLASSIFY)

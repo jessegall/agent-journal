@@ -43,7 +43,7 @@ class FoldMainsCheckHandler(Handler[FoldMainsCheck, str]):
         environments = [f"- environment {fold.environment_id}: agent {fold.survivor.id} survives as number 1; folded: "
                         + ", ".join(f"agent {agent.id} (number {agent.number})" for agent in fold.folded) for fold in folds]
         references = [f"| {name} | {before} | {after} |" for name, (before, after) in sorted(counts.references.items()) if before]
-        tables = [f"| {table} | {count} | {counts.tables_after.get(table)} |" for table, count in sorted(counts.tables_before.items())
+        tables = [f"| {table} | {count} | {counts.tables_after.get(table)} |" for table, count in sorted(counts.tables_prior.items())
                   if counts.tables_after.get(table) != count]
         rules = [f"- {rule}: {count} rows" for rule, count in sorted(counts.rules.items())] or ["- none"]
         return "\n".join(["## Survivors", "", *environments, "", "## References moved", "", "| Column | Before | After |", "| --- | --- | --- |",

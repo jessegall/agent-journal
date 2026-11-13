@@ -13,7 +13,7 @@ class PrunableFileEdits:
 
     table: str
     kept_rows: int
-    kept_per_agent: int
+    agent_edit_limit: int
 
     def statement(self) -> Statement:
-        return AnyOf([BelowNewest(self.table, self.kept_rows), BelowNewestPer(self.table, "session_agent_id", self.kept_per_agent)]).statement()
+        return AnyOf([BelowNewest(self.table, self.kept_rows), BelowNewestPer(self.table, "session_agent_id", self.agent_edit_limit)]).statement()

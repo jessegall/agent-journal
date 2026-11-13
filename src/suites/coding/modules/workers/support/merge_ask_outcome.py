@@ -13,11 +13,11 @@ ANSWER_TEXT = ("Asked for the merge of {unit}: {task_count} tasks in {commit_cou
 class MergeAskOutcome:
     """The ask saved for a worker's merge, with the line the worker reads."""
 
-    merge_ask: MergeAsk
+    merge_request: MergeAsk
     worktree: Worktree
     unit: WorkUnit
 
     def line(self) -> str:
-        if not self.merge_ask.is_whole:
-            return PART_TEXT.format(commit=self.merge_ask.commit_id, task_count=len(self.merge_ask.tasks()))
-        return ANSWER_TEXT.format(unit=self.unit.merge_name, task_count=self.unit.total_count, commit_count=self.worktree.commit_count, commit=self.merge_ask.commit_id)
+        if not self.merge_request.is_whole:
+            return PART_TEXT.format(commit=self.merge_request.commit_id, task_count=len(self.merge_request.tasks()))
+        return ANSWER_TEXT.format(unit=self.unit.merge_name, task_count=self.unit.total_count, commit_count=self.worktree.commit_count, commit=self.merge_request.commit_id)

@@ -15,15 +15,15 @@ class MetadataListDiffers:
 
     module: str
     key: str
-    kind_field: str
-    kind: object
+    category_field: str
+    category: object
     field: str
     value: object
 
     def statement(self) -> Statement:
-        if not MODULE_NAME.match(self.module) or not all(PLAIN_KEY.match(key) for key in (self.key, self.kind_field, self.field)):
+        if not MODULE_NAME.match(self.module) or not all(PLAIN_KEY.match(key) for key in (self.key, self.category_field, self.field)):
             raise MetadataKeyError(f"metadata is read by plain names, not {self.module}.{self.key}")
         elements = f"json_each(metadata, '$.\"{self.module}\".{self.key}')"
-        category_list = f"json_extract(value, '$.{self.kind_field}') = ?"
+        category_list = f"json_extract(value, '$.{self.category_field}') = ?"
         return Statement(f"(NOT EXISTS (SELECT 1 FROM {elements} WHERE {category_list}) OR EXISTS (SELECT 1 FROM {elements} WHERE {category_list} "
-                         f"AND coalesce(json_extract(value, '$.{self.field}'), '') != ?))", [self.kind, self.kind, self.value])
+                         f"AND coalesce(json_extract(value, '$.{self.field}'), '') != ?))", [self.category, self.category, self.value])

@@ -7,4 +7,4 @@ class HangLimits:
     to look when it is a busy test run."""
 
     hang: int
-    look: int
+    check: int

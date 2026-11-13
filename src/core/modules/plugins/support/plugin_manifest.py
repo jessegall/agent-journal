@@ -75,7 +75,7 @@ class PluginManifest:
     hook_stamp: str = ""
     instruction_blocks: tuple[ManifestInstructionBlock, ...] = ()
     injected_instructions: tuple[str, ...] = ()
-    process_kinds: tuple[ManifestProcessKind, ...] = ()
+    process_categories: tuple[ManifestProcessKind, ...] = ()
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -191,7 +191,7 @@ class PluginManifest:
                      for entry in entries)
 
     def process_category(self, category: str) -> ManifestProcessKind | None:
-        return next((declared for declared in self.process_kinds if declared.kind == category), None)
+        return next((declared for declared in self.process_categories if declared.run_name == category), None)
 
     @staticmethod
     def read_card_tones(cards: object) -> dict[str, str]:

@@ -9,11 +9,11 @@ from core.modules.plan_reviews.support.plan_review_settings import REVIEW_MODEL_
 
 @dataclass
 class SettingsSample:
-    chosen: str
+    selected: str
 
     def text(self, key: str) -> str:
         assert key == REVIEW_MODEL_SETTING
-        return self.chosen
+        return self.selected
 
 
 PROVIDERS = {"claude": ClaudeCodeProvider, "codex": CodexProvider}

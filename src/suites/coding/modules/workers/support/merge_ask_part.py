@@ -13,4 +13,4 @@ class MergeAskPart:
     unit: WorkUnit
     commit_id: str
     task_ids: tuple[int, ...]
-    is_whole: bool
+    is_full: bool

@@ -39,7 +39,7 @@ class OrderWorkerUpdateHandler(Handler[OrderWorkerUpdate, None]):
     def prepare(self, command: OrderWorkerUpdate, actor: Actor) -> None:
         worktree = self.decisions.worktree(command.worker_id)
         facts = self.reader.read(worktree, self.queries.query(Agent).find(command.worker_id))
-        self.behind, self.tip = facts.behind, facts.base_tip
+        self.behind, self.tip = facts.commits_lagging, facts.base_tip
 
     def handle(self, command: OrderWorkerUpdate, context: Context) -> None:
         deciding = require_merging_agent(self.agents, context)

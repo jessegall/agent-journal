@@ -12,7 +12,7 @@ class FoldCounts:
 
     references: dict[str, tuple[int, int]] = field(default_factory=dict)
     removed: dict[str, int] = field(default_factory=dict)
-    tables_before: dict[str, int] = field(default_factory=dict)
+    tables_prior: dict[str, int] = field(default_factory=dict)
     tables_after: dict[str, int] = field(default_factory=dict)
     rules: dict[str, int] = field(default_factory=dict)
 
@@ -29,6 +29,6 @@ class FoldCounts:
         moved = [f"{name}: {before} before, {after} after" for name, (before, after) in self.references.items()
                  if after != before - self.removed.get(name, 0)]
         gone = {AGENTS_TABLE: folded_count, ACTORS_TABLE: folded_count}
-        changed = [f"{table}: {count} rows before, {self.tables_after.get(table)} after" for table, count in self.tables_before.items()
+        changed = [f"{table}: {count} rows before, {self.tables_after.get(table)} after" for table, count in self.tables_prior.items()
                    if table not in FOLD_TABLES and self.tables_after.get(table) != count - gone.get(table, 0) - self.removed.get(table, 0)]
         return moved + changed

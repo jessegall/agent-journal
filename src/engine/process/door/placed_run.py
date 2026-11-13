@@ -11,7 +11,7 @@ class PlacedRun:
 
     request: ExecutionRequest
     process_id: int | None
-    holds_place: bool
+    has_place: bool
     agent_id: int | None = None
     environment_id: int | None = None
     is_main_agent: bool = False

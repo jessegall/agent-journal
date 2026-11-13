@@ -19,7 +19,7 @@ class Select:
     orders: tuple[Order, ...] = ()
     limit: int = 0
     offset: int = 0
-    named_limit: int = 0
+    declared_limit: int = 0
     joins: tuple[Join | ConditionJoin, ...] = ()
     group_columns: tuple[str, ...] = ()
     expressions: tuple[Expression, ...] = ()
@@ -70,7 +70,7 @@ class Select:
         return " ".join((matching, *(join.sql for join in self.joins)))
 
     def named(self, rows: int) -> "Select":
-        return replace(self, named_limit=rows)
+        return replace(self, declared_limit=rows)
 
     def column(self, column: str) -> "Select":
         return replace(self, columns=column)
@@ -93,7 +93,7 @@ class Select:
         for all_rows, different in self.unions:
             statement = statement.joined(different.core_statement(), " UNION ALL " if all_rows else " UNION ")
         statement = statement.joined(Statement(order + page), "")
-        return replace(statement, named_limit_rows=self.named_limit or None)
+        return replace(statement, named_limit_rows=self.declared_limit or None)
 
     # The SELECT without the selects it adds and without its order and page.
     def core_statement(self) -> Statement:

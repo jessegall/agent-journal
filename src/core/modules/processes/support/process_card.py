@@ -18,9 +18,9 @@ class ProcessCard:
     reader: Reader | None
     category: CommandCategory
     reader_requested: bool = False
-    reading_text: str | None = None
-    command_words: str = ""
-    marked_words: str = ""
+    read_text: str | None = None
+    command_terms: str = ""
+    flagged_terms: str = ""
 
     @property
     def title(self) -> str:
@@ -33,5 +33,5 @@ class ProcessCard:
         return {"id": process.id, "line": process.line, "state": process.state.value, "progress": process.progress, "created_at": process.created_at.text if process.created_at else None,
                 "ended_at": process.ended_at.text if process.ended_at else None, "title": self.title, "steps_passed": output.steps_passed if output else 0,
                 "steps_failed": output.steps_failed if output else 0, "summary": output.reader_summary if output else "",
-                "agent_id": process.session_agent_id, "reads_progress": bool(self.reader and (self.reader.progress_pattern or self.reader.step_pattern)), "reader_requested": self.reader_requested, "reading_text": self.reading_text,
-                "marked_words": self.marked_words, "markable": bool(self.command_words)}
+                "agent_id": process.session_agent_id, "reads_progress": bool(self.reader and (self.reader.progress_pattern or self.reader.step_pattern)), "reader_requested": self.reader_requested, "reading_text": self.read_text,
+                "marked_words": self.flagged_terms, "markable": bool(self.command_terms)}

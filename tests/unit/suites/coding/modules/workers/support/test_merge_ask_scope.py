@@ -156,7 +156,7 @@ def test_any_note_length_is_accepted():
 
 def test_an_ask_up_to_a_task_carries_every_earlier_commit():
     part = scope(started=tuple([SampleTask(9)])).checked(1, "the first part", "7")
-    assert (part.commit_id, part.task_ids, part.is_whole) == ("a1", tuple([7]), False)
+    assert (part.commit_id, part.task_ids, part.is_full) == ("a1", tuple([7]), False)
 
 
 def test_an_ask_up_to_an_uncommitted_task_is_refused():

@@ -147,9 +147,9 @@ def test_the_read_limit_still_refuses_a_hand_written_statement_over_fifty_rows(e
 def test_a_statement_is_checked_against_its_own_named_limit(entries: Query[LogEntry]):
     filled(entries, 250)
     entries.database.read_limit_rows = READ_LIMIT_ROWS
-    assert len(entries.database.rows(Statement("SELECT * FROM log_entries LIMIT 150", named_limit_rows=200))) == 150
+    assert len(entries.database.rows(Statement("SELECT * FROM log_entries LIMIT 150", declared_limit_rows=200))) == 150
     with pytest.raises(ReadLimitError):
-        entries.database.rows(Statement("SELECT * FROM log_entries", named_limit_rows=200))
+        entries.database.rows(Statement("SELECT * FROM log_entries", declared_limit_rows=200))
 
 
 def test_calling_all_rows_fails_because_the_method_is_gone():

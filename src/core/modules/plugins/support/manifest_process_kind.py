@@ -11,10 +11,10 @@ class ManifestProcessKind:
     this project or of the whole machine, the free memory in megabytes a run waits for, and whether a second
     waiting run of the same command in the same folder joins the first."""
 
-    kind: str
+    run_name: str
     title: str
     category: CommandCategory
-    at_once_setting: str
+    concurrent_setting: str
     scope: RunScope = RunScope.PROJECT
     memory_mb: int = 0
     coalesce: bool = False

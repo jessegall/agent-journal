@@ -24,5 +24,5 @@ class LookAsks:
             self.folder.write(process_id, CHECK_FILE, f"0 {clock_seconds}")
 
     def clear(self, process_id: int) -> None:
-        if self.state(process_id).ask_seconds:
+        if self.state(process_id).request_seconds:
             self.folder.write(process_id, CHECK_FILE, "")

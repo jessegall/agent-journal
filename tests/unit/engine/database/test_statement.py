@@ -12,5 +12,5 @@ def test_many_statements_join_with_a_separator_and_keep_their_parameters_in_orde
 
 
 def test_a_statement_carries_the_rows_it_names_and_compares_without_it():
-    matching = Statement("SELECT * FROM tasks", named_limit_rows=200)
-    assert matching.named_limit_rows == 200 and Statement("SELECT * FROM tasks").named_limit_rows is None and matching == Statement("SELECT * FROM tasks")
+    matching = Statement("SELECT * FROM tasks", declared_limit_rows=200)
+    assert matching.declared_limit_rows == 200 and Statement("SELECT * FROM tasks").declared_limit_rows is None and matching == Statement("SELECT * FROM tasks")

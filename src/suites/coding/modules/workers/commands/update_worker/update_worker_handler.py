@@ -48,7 +48,7 @@ class UpdateWorkerHandler(Handler[UpdateWorker, UpdateOutcome]):
     def result_of(update: WorktreeUpdate) -> UpdateResult:
         if not update.is_clean():
             return UpdateResult.CONFLICTS
-        return UpdateResult.CURRENT if update.was_current else UpdateResult.UPDATED
+        return UpdateResult.CURRENT if update.unchanged else UpdateResult.UPDATED
 
     def handle(self, command: UpdateWorker, context: Context) -> UpdateOutcome:
         worktree = self.worktrees.required_worker_worktree(context.actor.id)

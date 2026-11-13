@@ -65,7 +65,7 @@ def b14_the_merger_reads_the_facts(story, repository: GitRepository, worker_id: 
 class BehindCase:
     """One case of the book: what is done to the repository before the worker is sent, and after."""
 
-    before_dispatch: Callable[..., None]
+    setup: Callable[..., None]
     after_dispatch: Callable[..., tuple[str, ...]]
 
 
@@ -78,7 +78,7 @@ CASES = [BehindCase(unchanged_base, a2_own_commits_and_an_unmoved_base), BehindC
 def test_a_worktree_counts_the_first_parent_commits_of_its_base_it_lacks_and_the_merger_reads_their_facts(new_story, case):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story, real_git=True)
-    case.before_dispatch(story, repository)
+    case.setup(story, repository)
     worker = dispatched_worker(story)
     command, *texts = case.after_dispatch(story, repository, worker.id)
     story.expect_text(f"{command} {agent_number(story, worker.id)}", *texts, actor=story.agent)

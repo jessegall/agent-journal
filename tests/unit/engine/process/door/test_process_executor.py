@@ -58,14 +58,14 @@ def executor() -> tuple[ProcessExecutor, CountedPlacement]:
 def test_a_run_goes_through_the_queue_and_its_end_is_recorded_with_its_row(tmp_path: Path):
     door, placement = executor()
     execution = door.execute(ExecutionRequest(["echo", "done"], tmp_path, ProcessKind.SHELL, 5))
-    assert (execution.stdout, execution.process_id, placement.ended_runs[0][0].holds_place, placement.ended_runs[0][1].exit_code) == ("done\n", 1, True, 0)
+    assert (execution.stdout, execution.process_id, placement.ended_runs[0][0].has_place, placement.ended_runs[0][1].exit_code) == ("done\n", 1, True, 0)
 
 
 def test_a_quick_run_and_a_priority_zero_run_get_a_row_and_take_no_place(tmp_path: Path):
     door, placement = executor()
     door.execute(ExecutionRequest(["true"], tmp_path, ProcessKind.QUICK, 5))
     door.execute(ExecutionRequest(["true"], tmp_path, ProcessKind.READ, 5))
-    assert [(run.process_id, run.holds_place) for run, _ in placement.ended_runs] == [(1, False), (2, False)]
+    assert [(run.process_id, run.has_place) for run, _ in placement.ended_runs] == [(1, False), (2, False)]
 
 
 def test_a_run_past_its_limit_fails_naming_its_command_and_its_end_is_still_recorded(tmp_path: Path):

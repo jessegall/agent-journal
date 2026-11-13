@@ -22,7 +22,7 @@ class ProfileFields:
     module: str = ""
     module_text: str = ""
     source_digest: str = ""
-    could_write: bool = False
+    writable: bool = False
     tools: tuple[str, ...] = ()
 
     @classmethod
@@ -51,17 +51,17 @@ class ProfileFields:
     # tools could write.
     @property
     def native(self) -> "ProfileFields":
-        return replace(self, agent_type=self.agent_type or "helper", could_write=self.could_write or any(tool in WRITING_TOOLS for tool in self.tools))
+        return replace(self, agent_type=self.agent_type or "helper", writable=self.writable or any(tool in WRITING_TOOLS for tool in self.tools))
 
     # The profile a program's own agent file describes: the mcp tools of its tools line join its mcp tools, and a file
     # that could write only reads.
     def copied(self, profile: AgentProfile) -> AgentProfile:
         mcp_tools = tuple(dict.fromkeys((*profile.mcp_tools, *(tool for tool in self.tools if tool.startswith("mcp__")))))
-        return replace(profile, mcp_tools=mcp_tools, access=Access.READ if self.could_write else profile.access)
+        return replace(profile, mcp_tools=mcp_tools, access=Access.READ if self.writable else profile.access)
 
     def text(self) -> str:
         own = {"name": self.name, "agent_type": self.agent_type, "module_text": self.module_text, "module": self.module,
-               "source_digest": self.source_digest, "legacy_writing": "true" if self.could_write else ""}
+               "source_digest": self.source_digest, "legacy_writing": "true" if self.writable else ""}
         body = self.settings.get("body", "")
         lines = {**{name: value for name, value in self.settings.items() if name != "body" or value == ""}, **{name: value for name, value in own.items() if value}}
         return ProfileFormat.text(lines, str(body))

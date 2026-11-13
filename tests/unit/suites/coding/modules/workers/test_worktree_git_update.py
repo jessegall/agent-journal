@@ -43,7 +43,7 @@ def test_an_update_already_up_to_date_changes_nothing(tmp_path):
     repository, worktree = cut_worktree(tmp_path)
     head = own(worktree).tip("HEAD")
     update = git().update(worktree)
-    assert (update.base_commit, update.is_clean(), update.was_current, own(worktree).tip("HEAD")) == (repository.tip("base"), True, True, head)
+    assert (update.base_commit, update.is_clean(), update.unchanged, own(worktree).tip("HEAD")) == (repository.tip("base"), True, True, head)
 
 
 def test_a_failed_rebase_falls_back_to_a_merge_with_plain_markers(tmp_path):
