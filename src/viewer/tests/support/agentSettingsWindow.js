@@ -89,8 +89,10 @@ export const BOARD = () => ({
         {key: "model:claude:sonnet", target: "model", label: "claude sonnet", description: "Program: claude sonnet", agent_id: null, program: "claude", program_model: "sonnet", running: false, open_tasks: 0},
     ],
     rules: [
-        {id: 7, position: 1, enabled: true, target: "main", target_key: "main", target_name: "the main agent", queue_limit: 0, conditions: [], summary: "complexity is at least 4", warning: ""},
-        {id: 8, position: 2, enabled: false, target: "main", target_key: "main", target_name: "the main agent", queue_limit: 0, conditions: [], summary: "all of: tag has backend; text has the word migration", warning: "its agent is retired"},
+        {id: 7, position: 1, enabled: true, target: "main", target_key: "main", target_name: "the main agent", queue_limit: 0, conditions: [], summary: "complexity is at least 4", warning: "",
+            activity: {given_last_day: 3, has_matched: true, last_skip: "rule 7 skipped: worker 5 holds 3 of 3", text: "Tasks given in the last day: 3"}},
+        {id: 8, position: 2, enabled: false, target: "main", target_key: "main", target_name: "the main agent", queue_limit: 0, conditions: [], summary: "all of: tag has backend; text has the word migration", warning: "its agent is retired",
+            activity: {given_last_day: 0, has_matched: false, last_skip: "", text: "Never matched a task"}},
     ],
     fields: [
         {field: "complexity", operators: [operator("minimum", "is at least"), operator("maximum", "is at most"), operator("unset", "is not set", false)]},

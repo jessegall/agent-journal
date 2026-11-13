@@ -21,6 +21,13 @@ test("the main agent's rules show their place, their conditions in plain words a
     expect(element.querySelector("[data-assign-editor]").textContent).toContain("all of these conditions");
 });
 
+test("each rule shows the tasks it gave in the last day and its last skip, and a rule that never matched says so", async () => {
+    const {element} = await mount();
+    await choose(element, "assign");
+    expect(texts(element, "[data-assign-activity]")).toEqual(["Tasks given in the last day: 3", "Never matched a task"]);
+    expect(texts(element, "[data-assign-last-skip]")).toEqual(["Last skipped: rule 7 skipped: worker 5 holds 3 of 3"]);
+});
+
 test("adding a rule sends its target, its conditions and the revision read", async () => {
     const {element, runs} = await mount();
     await choose(element, "assign");
