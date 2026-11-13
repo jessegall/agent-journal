@@ -1,10 +1,10 @@
 from engine.driver.block_check import BlockCheck
-from engine.driver.block_condition import BlockCondition
+from core.modules.processes.support.block_conditions.process_condition import ProcessCondition
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.queries.process_query import ProcessQuery
 
 
-class OutputEnded(BlockCondition):
+class OutputEnded(ProcessCondition):
     """This run has ended."""
 
     name = "output-ended"

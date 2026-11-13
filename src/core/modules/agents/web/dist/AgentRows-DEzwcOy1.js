@@ -1,5 +1,10 @@
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
 import { openBlock as a, createElementBlock as s, withModifiers as ne, createElementVNode as y, createVNode as v, unref as i, withCtx as m, createTextVNode as h, Fragment as q, renderList as te, toDisplayString as g, createBlock as N, createCommentVNode as f, ref as z, computed as c, watch as ve, onUnmounted as Se, defineAsyncComponent as Xe, createSlots as et, resolveDynamicComponent as tt, normalizeClass as de, normalizeStyle as Re, renderSlot as Ce, onMounted as at, Teleport as nt, mergeProps as lt, toRef as Ie, withKeys as De, nextTick as qe } from "vue";
 import { TextInput as Ve, Btn as ee, TextArea as ot, TimeAgo as Ee, useWindow as Be, SwitchCase as Ge, peekRef as Te, Icon as ze, RunningCommand as st, FoldGroup as Je, TaskStatusIcon as it, loadWindowComponent as rt, coalesced as dt, READ_RATES as ut, eventMayBeChildOf as ct, InnerTabs as gt, TabBody as vt, EmptyState as He, HoverTip as ke, TaskBar as pt, useNow as Ke, agentTitle as mt, agentNumber as ht, age as ft, perHour as bt, sinceWords as kt, seenWords as yt, AgentTip as wt, SearchBar as Mt, Segmented as xt, MenuLabel as Oe, MenuItem as je, RowList as $t, toggleFilter as St } from "@journal/window-kit";
+========
+import { openBlock as a, createElementBlock as s, withModifiers as te, createElementVNode as b, createVNode as p, unref as i, withCtx as m, createTextVNode as h, Fragment as q, renderList as ne, toDisplayString as g, createBlock as N, createCommentVNode as f, ref as z, computed as c, watch as ve, onUnmounted as Ce, defineAsyncComponent as Xe, createSlots as et, resolveDynamicComponent as tt, normalizeClass as de, normalizeStyle as Re, renderSlot as Te, onMounted as at, Teleport as nt, mergeProps as lt, toRef as Ie, withKeys as De, nextTick as qe } from "vue";
+import { TextInput as Ve, Btn as ee, TextArea as ot, TimeAgo as Ee, useWindow as Be, SwitchCase as Ge, peekRef as we, Icon as ze, RunningCommand as st, FoldGroup as Je, TaskStatusIcon as it, loadWindowComponent as rt, coalesced as dt, READ_RATES as ut, eventMayBeChildOf as ct, InnerTabs as gt, TabBody as vt, EmptyState as He, HoverTip as ke, TaskBar as pt, useNow as Ke, agentTitle as mt, agentNumber as ht, age as ft, perHour as bt, sinceWords as kt, seenWords as yt, AgentTip as wt, SearchBar as Mt, Segmented as $t, MenuLabel as Oe, MenuItem as je, RowList as xt, toggleFilter as St } from "@journal/window-kit";
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
 import { _ as Z, T as Ct } from "./TranscriptRows-Crmxs6Un.js";
 const Tt = { class: "action-buttons" }, At = {
   __name: "AgentDriverForm",
@@ -8,10 +13,17 @@ const Tt = { class: "action-buttons" }, At = {
   setup(e) {
     return (l, t) => (a(), s("form", {
       "data-agent-driver-form": "",
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       onSubmit: t[3] || (t[3] = ne((o) => l.$emit("submit"), ["prevent"]))
     }, [
       t[6] || (t[6] = y("p", null, "Starts the next session on this program; the agent keeps its number and memories.", -1)),
       v(i(Ve), {
+========
+      onSubmit: t[3] || (t[3] = te((o) => l.$emit("submit"), ["prevent"]))
+    }, [
+      t[6] || (t[6] = b("p", null, "Starts the next session on this program; the agent keeps its number and memories.", -1)),
+      p(i(Ve), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
         "model-value": e.program,
         label: "Program",
         disabled: e.pending,
@@ -25,8 +37,13 @@ const Tt = { class: "action-buttons" }, At = {
         "data-agent-driver-model": "",
         "onUpdate:modelValue": t[1] || (t[1] = (o) => l.$emit("update:model", o))
       }, null, 8, ["model-value", "disabled"]),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       y("div", Tt, [
         v(i(ee), {
+========
+      b("div", Tt, [
+        p(i(ee), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           type: "submit",
           small: "",
           disabled: e.pending || !e.program.trim() || !e.model.trim(),
@@ -59,19 +76,33 @@ const Tt = { class: "action-buttons" }, At = {
   emits: ["submit", "cancel", "more", "update:task", "update:text"],
   setup(e) {
     return (l, t) => (a(), s("form", {
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       onSubmit: t[4] || (t[4] = ne((o) => l.$emit("submit"), ["prevent"]))
     }, [
       e.row.job_task_flag ? (a(), s(q, { key: 0 }, [
         y("label", Lt, [
           t[6] || (t[6] = h("Task ", -1)),
           y("select", {
+========
+      onSubmit: t[4] || (t[4] = te((o) => l.$emit("submit"), ["prevent"]))
+    }, [
+      e.row.job_task_flag ? (a(), s(q, { key: 0 }, [
+        b("label", Lt, [
+          t[6] || (t[6] = h("Task ", -1)),
+          b("select", {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
             value: e.task,
             disabled: e.pending || e.loading,
             "data-agent-job-task": "",
             onChange: t[0] || (t[0] = (o) => l.$emit("update:task", o.target.value))
           }, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
             t[5] || (t[5] = y("option", { value: "" }, "Choose an open task", -1)),
             (a(!0), s(q, null, te(e.tasks, (o) => (a(), s("option", {
+========
+            t[5] || (t[5] = b("option", { value: "" }, "Choose an open task", -1)),
+            (a(!0), s(q, null, ne(e.tasks, (o) => (a(), s("option", {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
               key: o.id,
               value: String(o.id)
             }, g(o.id) + ": " + g(o.title), 9, Bt))), 128))
@@ -92,15 +123,24 @@ const Tt = { class: "action-buttons" }, At = {
         !e.loading && !e.tasks.length && !e.failure ? (a(), s("p", It, "No open tasks.")) : f("", !0)
       ], 64)) : (a(), s("label", Ot, [
         t[8] || (t[8] = h("Job", -1)),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
         v(i(ot), {
+========
+        p(i(ot), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           value: e.text,
           disabled: e.pending,
           "data-agent-job-text": "",
           onInput: t[2] || (t[2] = (o) => l.$emit("update:text", o.target.value))
         }, null, 8, ["value", "disabled"])
       ])),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       y("div", Vt, [
         v(i(ee), {
+========
+      b("div", Vt, [
+        p(i(ee), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           type: "submit",
           small: "",
           disabled: e.pending || !e.jobReady,
@@ -131,18 +171,30 @@ const Tt = { class: "action-buttons" }, At = {
   setup(e) {
     return (l, t) => (a(), s("form", {
       "data-agent-retire-confirm": "",
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       onSubmit: t[2] || (t[2] = ne((o) => l.$emit("submit"), ["prevent"]))
     }, [
       t[5] || (t[5] = y("p", null, "Retirement is permanent. This agent cannot be resumed. Its record, its memories and its number stay.", -1)),
       v(i(Ve), {
+========
+      onSubmit: t[2] || (t[2] = te((o) => l.$emit("submit"), ["prevent"]))
+    }, [
+      t[5] || (t[5] = b("p", null, "Retirement is permanent. This agent cannot be resumed. Its record, its memories and its number stay.", -1)),
+      p(i(Ve), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
         "model-value": e.reason,
         label: "Reason",
         disabled: e.pending,
         "data-agent-retire-reason": "",
         "onUpdate:modelValue": t[0] || (t[0] = (o) => l.$emit("update:reason", o))
       }, null, 8, ["model-value", "disabled"]),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       y("div", Et, [
         v(i(ee), {
+========
+      b("div", Et, [
+        p(i(ee), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           type: "submit",
           small: "",
           disabled: e.pending || !e.reason.trim(),
@@ -176,6 +228,7 @@ const Tt = { class: "action-buttons" }, At = {
   setup(e) {
     return (l, t) => (a(), s("div", Dt, [
       e.sessions.length ? f("", !0) : (a(), s("p", qt, "This agent has no session in its history.")),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       y("ol", null, [
         (a(!0), s(q, null, te(e.sessions, (o) => (a(), s("li", {
           key: o.session,
@@ -194,6 +247,26 @@ const Tt = { class: "action-buttons" }, At = {
       ]),
       y("div", Ut, [
         v(i(ee), {
+========
+      b("ol", null, [
+        (a(!0), s(q, null, ne(e.sessions, (o) => (a(), s("li", {
+          key: o.session,
+          "data-agent-session": ""
+        }, [
+          b("span", null, g([o.program, o.model].filter(Boolean).join(" ")), 1),
+          o.started_at ? (a(), s("span", Ft, [
+            t[1] || (t[1] = h("Started ", -1)),
+            p(i(Ee), {
+              at: o.started_at
+            }, null, 8, ["at"])
+          ])) : f("", !0),
+          b("span", Pt, g(o.end_reason ? `Ended: ${o.end_reason.replaceAll("_", " ")}` : o.started_at ? "Running" : "Not started"), 1),
+          b("code", null, g(o.session), 1)
+        ]))), 128))
+      ]),
+      b("div", Ut, [
+        p(i(ee), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           small: "",
           onClick: t[0] || (t[0] = (o) => l.$emit("close"))
         }, {
@@ -215,14 +288,22 @@ const Tt = { class: "action-buttons" }, At = {
   __name: "AgentActions",
   props: { row: { type: Object, required: !0 }, held: { type: Boolean, default: !1 } },
   setup(e) {
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
     const l = e, t = Be(), o = z(""), r = z(""), n = z(""), b = z(""), x = z(""), C = z(""), L = z([]), I = z(0), F = z(!1), O = z(!1), W = z(!1), A = z(""), V = z(""), D = z([]), Y = c(() => !!l.row.retired_at || l.row.state === "retired"), J = c(() => !Y.value && !!l.row.ended_at), Q = c(() => {
+========
+    const l = e, t = Be(), o = z(""), r = z(""), n = z(""), k = z(""), $ = z(""), C = z(""), L = z([]), I = z(0), F = z(!1), O = z(!1), W = z(!1), A = z(""), V = z(""), D = z([]), _ = c(() => !!l.row.retired_at || l.row.state === "retired"), J = c(() => !_.value && !!l.row.ended_at), Q = c(() => {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       var R;
       return J.value && ((R = l.row.job_command) == null ? void 0 : R.length) && !l.row.resume_reason;
     }), le = c(() => Q.value && !O.value && (l.row.job_task_flag ? L.value.some((R) => String(R.id) === C.value) : !!r.value.trim()));
     function P(R) {
       o.value = R, r.value = "", n.value = "", C.value = "", A.value = "", V.value = "";
     }
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
     async function _() {
+========
+    async function Y() {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       P("job"), l.row.job_task_flag && (L.value = [], I.value = 0, F.value = !1, await w());
     }
     async function w() {
@@ -237,7 +318,11 @@ const Tt = { class: "action-buttons" }, At = {
         }
       }
     }
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
     async function p() {
+========
+    async function v() {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       await U(["process", "lift-hold", String(l.row.number)], "Hold lifted.");
     }
     async function U(R, T) {
@@ -251,7 +336,11 @@ const Tt = { class: "action-buttons" }, At = {
         }
       }
     }
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
     async function k() {
+========
+    async function y() {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       if (!le.value) return;
       const R = l.row.job_task_flag ? [l.row.job_task_flag, C.value] : [r.value.trim()];
       await U([...l.row.job_command, String(l.row.number), ...R], "Job sent.");
@@ -268,10 +357,17 @@ const Tt = { class: "action-buttons" }, At = {
       }
     }
     function d() {
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       P("driver"), b.value = l.row.program || "", x.value = "";
     }
     async function B() {
       !J.value || o.value !== "driver" || !b.value.trim() || !x.value.trim() || await U(["agent", "driver", String(l.row.number), "--program", b.value.trim(), "--model", x.value.trim()], "Driver changed.");
+========
+      P("driver"), k.value = l.row.program || "", $.value = "";
+    }
+    async function B() {
+      !J.value || o.value !== "driver" || !k.value.trim() || !$.value.trim() || await U(["agent", "driver", String(l.row.number), "--program", k.value.trim(), "--model", $.value.trim()], "Driver changed.");
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
     }
     async function E() {
       !J.value || o.value !== "retire" || !n.value.trim() || await U(["agent", "retire", String(l.row.number), "--reason", n.value.trim()], "Agent retired permanently.");
@@ -281,6 +377,7 @@ const Tt = { class: "action-buttons" }, At = {
       return a(), s("div", {
         class: "agent-actions",
         "data-agent-actions": "",
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
         onClick: T[10] || (T[10] = ne(() => {
         }, ["stop"])),
         onKeydown: T[11] || (T[11] = ne(() => {
@@ -288,6 +385,15 @@ const Tt = { class: "action-buttons" }, At = {
       }, [
         y("div", Kt, [
           v(i(ee), {
+========
+        onClick: T[10] || (T[10] = te(() => {
+        }, ["stop"])),
+        onKeydown: T[11] || (T[11] = te(() => {
+        }, ["stop"]))
+      }, [
+        b("div", Kt, [
+          p(i(ee), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
             small: "",
             "data-agent-history": "",
             disabled: W.value || O.value,
@@ -349,9 +455,15 @@ const Tt = { class: "action-buttons" }, At = {
             }, 8, ["disabled"])) : f("", !0)
           ], 64)) : f("", !0)
         ]),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
         v(i(Ge), { value: o.value }, {
           job: m(() => [
             v(Ht, {
+========
+        p(i(Ge), { value: o.value }, {
+          job: m(() => [
+            p(Ht, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
               task: C.value,
               "onUpdate:task": T[1] || (T[1] = (K) => C.value = K),
               text: r.value,
@@ -363,30 +475,50 @@ const Tt = { class: "action-buttons" }, At = {
               "more-tasks": F.value,
               failure: A.value,
               "job-ready": le.value,
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
               onSubmit: k,
+========
+              onSubmit: y,
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
               onMore: w,
               onCancel: T[3] || (T[3] = (K) => P(""))
             }, null, 8, ["task", "text", "row", "tasks", "pending", "loading", "more-tasks", "failure", "job-ready"])
           ]),
           driver: m(() => [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
             v(jt, {
               program: b.value,
               "onUpdate:program": T[4] || (T[4] = (K) => b.value = K),
               model: x.value,
               "onUpdate:model": T[5] || (T[5] = (K) => x.value = K),
+========
+            p(jt, {
+              program: k.value,
+              "onUpdate:program": T[4] || (T[4] = (K) => k.value = K),
+              model: $.value,
+              "onUpdate:model": T[5] || (T[5] = (K) => $.value = K),
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
               pending: W.value,
               onSubmit: B,
               onCancel: T[6] || (T[6] = (K) => P(""))
             }, null, 8, ["program", "model", "pending"])
           ]),
           history: m(() => [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
             v(Jt, {
+========
+            p(Jt, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
               sessions: D.value,
               onClose: T[7] || (T[7] = (K) => P(""))
             }, null, 8, ["sessions"])
           ]),
           retire: m(() => [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
             v(Wt, {
+========
+            p(Wt, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
               reason: n.value,
               "onUpdate:reason": T[8] || (T[8] = (K) => n.value = K),
               pending: W.value,
@@ -397,7 +529,11 @@ const Tt = { class: "action-buttons" }, At = {
           _: 1
         }, 8, ["value"]),
         A.value ? (a(), s("p", Zt, g(A.value), 1)) : f("", !0),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
         V.value ? (a(), s("p", _t, g(V.value), 1)) : f("", !0)
+========
+        V.value ? (a(), s("p", Yt, g(V.value), 1)) : f("", !0)
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       ], 32);
     };
   }
@@ -418,10 +554,17 @@ const Tt = { class: "action-buttons" }, At = {
         class: "agent-waiting",
         "data-agent-waiting": "",
         title: "Open the process queue",
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
         onClick: t[0] || (t[0] = ne((o) => i(Te)("test_queue:0"), ["stop"]))
       }, [
         h("Waiting: " + g(e.waitReason) + " ", 1),
         v(i(ze), {
+========
+        onClick: t[0] || (t[0] = te((o) => i(we)("test_queue:0"), ["stop"]))
+      }, [
+        h("Waiting: " + g(e.waitReason) + " ", 1),
+        p(i(ze), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           name: "arrow",
           size: 11
         })
@@ -441,17 +584,29 @@ const Tt = { class: "action-buttons" }, At = {
   props: { row: { type: Object, required: !0 } },
   setup(e) {
     return (l, t) => e.row.retired_at ? (a(), s("dl", na, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       y("div", null, [
         t[0] || (t[0] = y("dt", null, "Retired", -1)),
         y("dd", la, [
           v(i(Ee), {
+========
+      b("div", null, [
+        t[0] || (t[0] = b("dt", null, "Retired", -1)),
+        b("dd", la, [
+          p(i(Ee), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
             at: e.row.retired_at
           }, null, 8, ["at"])
         ])
       ]),
       e.row.retiring_actor_name ? (a(), s("div", oa, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
         t[1] || (t[1] = y("dt", null, "Retired by", -1)),
         y("dd", sa, g(e.row.retiring_actor_name), 1)
+========
+        t[1] || (t[1] = b("dt", null, "Retired by", -1)),
+        b("dd", sa, g(e.row.retiring_actor_name), 1)
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       ])) : f("", !0)
     ])) : f("", !0);
   }
@@ -469,18 +624,22 @@ const Tt = { class: "action-buttons" }, At = {
       onToggle: r[0] || (r[0] = (n) => t("toggle"))
     }, {
       default: m(() => [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
         (a(!0), s(q, null, te(e.section.tasks, (n) => (a(), s("button", {
+========
+        (a(!0), s(q, null, ne(e.section.tasks, (n) => (a(), s("button", {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           key: n.id,
           type: "button",
           class: "agent-task",
           "data-agent-delegated": n.id,
-          onClick: (b) => i(Te)(`tasks:${n.id}`)
+          onClick: (k) => i(we)(`tasks:${n.id}`)
         }, [
           v(i(it), {
             status: n.state
           }, null, 8, ["status"]),
-          y("span", ua, g(n.id), 1),
-          y("span", ca, g(n.title), 1),
+          b("span", ua, g(n.id), 1),
+          b("span", ca, g(n.title), 1),
           n.plan_id ? (a(), s("span", {
             key: 0,
             class: "agent-task-plan",
@@ -513,11 +672,12 @@ const Tt = { class: "action-buttons" }, At = {
   key: 1,
   class: "agent-label",
   "data-agent-no-job": ""
-}, Ma = "It ended without a report", xa = {
+}, Ma = "It ended without a report", $a = {
   __name: "AgentCardDetails",
   props: { row: { type: Object, required: !0 }, facts: { type: Object, default: null }, progress: { type: Object, default: null }, waitReason: { type: String, default: "" }, tasks: { type: Array, required: !0 }, stoppedWithWork: Boolean, open: Boolean },
   setup(e) {
     const l = e, t = ["started", "blocked", "open", "completed"], o = c(() => {
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       var k, u;
       return l.row.ended_at && ((u = (k = l.facts) == null ? void 0 : k.job_returned) != null && u.startsWith(Ma)) ? l.facts.job_returned : "";
     }), r = c(() => l.tasks.length ? t.map((k) => ({ state: k, label: k.slice(0, 1).toUpperCase() + k.slice(1), tasks: l.tasks.filter((u) => u.state === k || k === "started" && u.state === "testing" || k === "completed" && u.state === "cancelled") })) : []), n = /* @__PURE__ */ new Set(["completed"]), b = z({}), x = (k) => !(b.value[k] ?? n.has(k)), C = (k) => b.value = { ...b.value, [k]: x(k) }, L = Be(), { rows: I } = L.props.reports;
@@ -526,11 +686,22 @@ const Tt = { class: "action-buttons" }, At = {
     ve(D, (k) => {
       L.state.tab = (k == null ? void 0 : k.key) ?? "";
     }, { immediate: !0 }), Se(() => {
+========
+      var y, u;
+      return l.row.ended_at && ((u = (y = l.facts) == null ? void 0 : y.job_returned) != null && u.startsWith(Ma)) ? l.facts.job_returned : "";
+    }), r = c(() => l.tasks.length ? t.map((y) => ({ state: y, label: y.slice(0, 1).toUpperCase() + y.slice(1), tasks: l.tasks.filter((u) => u.state === y || y === "started" && u.state === "testing" || y === "completed" && u.state === "cancelled") })) : []), n = /* @__PURE__ */ new Set(["completed"]), k = z({}), $ = (y) => !(k.value[y] ?? n.has(y)), C = (y) => k.value = { ...k.value, [y]: $(y) }, L = Be(), { rows: I } = L.props.reports;
+    L.state["reports.agent"] = String(l.row.number);
+    const F = c(() => l.row.access === "read-only"), O = ["tasks", "transcript", "terminal", "file-feed", "processes", "reports", "memories"], W = c(() => [...L.tabs].sort((y, u) => (O.indexOf(y.key) < 0 ? O.length : O.indexOf(y.key)) - (O.indexOf(u.key) < 0 ? O.length : O.indexOf(u.key)))), A = c(() => !!l.row.retired_at || l.row.state === "retired"), V = () => F.value || A.value ? W.value.find((y) => y.key === "transcript") : W.value[0], D = z(V());
+    ve(D, (y) => {
+      L.state.tab = (y == null ? void 0 : y.key) ?? "";
+    }, { immediate: !0 }), Ce(() => {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       L.state.tab = "";
-    }), ve(W, (k) => {
-      k.some((u) => {
+    }), ve(W, (y) => {
+      y.some((u) => {
         var d;
         return u.key === ((d = D.value) == null ? void 0 : d.key);
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       }) || (D.value = k[0]);
     }), ve(() => l.open, (k) => {
       k && (D.value = V());
@@ -549,10 +720,31 @@ const Tt = { class: "action-buttons" }, At = {
     return Se(() => U == null ? void 0 : U()), ve(() => l.open, (k) => {
       k && w();
     }, { immediate: !0 }), (k, u) => {
+========
+      }) || (D.value = y[0]);
+    }), ve(() => l.open, (y) => {
+      y && (D.value = V());
+    });
+    const _ = Object.fromEntries(L.tabs.filter((y) => y.component).map((y) => [y.key, Xe(() => rt(y.component))])), J = z(!1), { data: Q } = L.props.tool, le = c(() => {
+      var y;
+      return ((y = Q.value) == null ? void 0 : y.tool) ?? "";
+    }), P = c(() => {
+      var y;
+      return ((y = Q.value) == null ? void 0 : y.note) ?? "";
+    }), Y = c(() => l.row.role !== "main" && (!l.row.ended_at || l.stoppedWithWork || l.waitReason));
+    async function w() {
+      !l.open || !Y.value || (L.state["tool.agent"] = String(l.row.number), await L.reload("tool"));
+    }
+    const v = dt(w, ut.agentCommand), U = L.follow(["hook_call.*", "process_part.*"], (y) => ct(y, "session_agent_id", /* @__PURE__ */ new Set([l.row.id])) && v());
+    return Ce(() => U == null ? void 0 : U()), ve(() => l.open, (y) => {
+      y && w();
+    }, { immediate: !0 }), (y, u) => {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       var d;
       return a(), s("div", {
         class: "agent-more",
         "data-agent-more": "",
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
         onClick: u[2] || (u[2] = ne(() => {
         }, ["stop"]))
       }, [
@@ -560,6 +752,15 @@ const Tt = { class: "action-buttons" }, At = {
         e.row.retirement_reason ? (a(), s("p", ma, "Retirement reason: " + g(e.row.retirement_reason), 1)) : f("", !0),
         o.value ? (a(), s("p", ha, g(o.value), 1)) : f("", !0),
         v(i(gt), {
+========
+        onClick: u[2] || (u[2] = te(() => {
+        }, ["stop"]))
+      }, [
+        p(ra, { row: e.row }, null, 8, ["row"]),
+        e.row.retirement_reason ? (a(), s("p", ma, "Retirement reason: " + g(e.row.retirement_reason), 1)) : f("", !0),
+        o.value ? (a(), s("p", ha, g(o.value), 1)) : f("", !0),
+        p(i(gt), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           class: "agent-tabs",
           tabs: W.value,
           active: D.value,
@@ -592,7 +793,7 @@ const Tt = { class: "action-buttons" }, At = {
                     type: "button",
                     class: "agent-report",
                     "data-peek": `messages:${E.id}`,
-                    onClick: (R) => i(Te)(`messages:${E.id}`)
+                    onClick: (R) => i(we)(`messages:${E.id}`)
                   }, g(E.text), 9, fa))), 128))
                 ]),
                 tasks: m(() => {
@@ -610,12 +811,17 @@ const Tt = { class: "action-buttons" }, At = {
                     (a(!0), s(q, null, te(r.value, (R) => (a(), N(pa, {
                       key: R.state,
                       section: R,
-                      open: x(R.state),
+                      open: $(R.state),
                       onToggle: (T) => C(R.state)
                     }, null, 8, ["section", "open", "onToggle"]))), 128)),
                     (E = e.facts) != null && E.instruction ? (a(), s(q, { key: 1 }, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
                       u[5] || (u[5] = y("p", { class: "agent-label" }, "Instruction", -1)),
                       y("div", ba, g(e.facts.instruction), 1)
+========
+                      u[5] || (u[5] = b("p", { class: "agent-label" }, "Instruction", -1)),
+                      b("div", ba, g(e.facts.instruction), 1)
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
                     ], 64)) : f("", !0)
                   ];
                 }),
@@ -631,13 +837,21 @@ const Tt = { class: "action-buttons" }, At = {
                           onToggle: u[1] || (u[1] = (R) => J.value = !J.value)
                         }, {
                           default: m(() => [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
                             y("div", ya, g(e.facts.instruction), 1)
+========
+                            b("div", ya, g(e.facts.instruction), 1)
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
                           ]),
                           _: 1
                         }, 8, ["open"])
                       ])) : e.facts && e.row.ended_at ? (a(), s("p", wa, "No job recorded")) : f("", !0)
                     ], 64)) : f("", !0),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
                     v(Ct, {
+========
+                    p(Ct, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
                       name: `transcript.${e.row.id}`,
                       padding: "0"
                     }, null, 8, ["name"])
@@ -669,7 +883,7 @@ const Tt = { class: "action-buttons" }, At = {
       ]);
     };
   }
-}, $a = /* @__PURE__ */ Z(xa, [["__scopeId", "data-v-fabbecdf"]]), Sa = { class: "line" }, Ca = {
+}, xa = /* @__PURE__ */ Z($a, [["__scopeId", "data-v-fabbecdf"]]), Sa = { class: "line" }, Ca = {
   key: 0,
   class: "line",
   "data-agent-since": ""
@@ -682,29 +896,46 @@ const Tt = { class: "action-buttons" }, At = {
   props: { state: { type: String, default: "" }, doing: { type: String, required: !0 }, since: { type: String, default: "" }, seen: { type: String, default: "" } },
   setup(e) {
     const l = /* @__PURE__ */ new Set(["running", "working", "thinking"]), t = e, o = c(() => l.has(t.state)), r = c(() => [t.doing, t.since, t.seen].filter(Boolean).join(". "));
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
     return (n, b) => (a(), N(i(ke), {
+========
+    return (n, k) => (a(), N(i(ke), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       as: "button",
       place: "corner",
       class: de(["agent-dot", { pulse: o.value }]),
       "data-state": e.state,
       "aria-label": r.value,
       "data-agent-status": "",
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       onClick: b[0] || (b[0] = ne(() => {
       }, ["stop"]))
     }, {
       tip: m(() => [
         y("b", Sa, g(e.doing), 1),
+========
+      onClick: k[0] || (k[0] = te(() => {
+      }, ["stop"]))
+    }, {
+      tip: m(() => [
+        b("b", Sa, g(e.doing), 1),
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
         e.since ? (a(), s("span", Ca, g(e.since), 1)) : f("", !0),
         e.seen ? (a(), s("span", Ta, g(e.seen), 1)) : f("", !0)
       ]),
       default: m(() => [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
         b[1] || (b[1] = y("i", null, null, -1))
+========
+        k[1] || (k[1] = b("i", null, null, -1))
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       ]),
       _: 1
     }, 8, ["class", "data-state", "aria-label"]));
   }
 }, ja = /* @__PURE__ */ Z(Aa, [["__scopeId", "data-v-1a0bc478"]]), La = { started: { words: "started" }, testing: { words: "being tested" }, blocked: { words: "blocked" } }, Ra = (e) => e.filter((l) => l.state !== "cancelled"), Fe = (e, l) => e.filter((t) => t.state === l).length, Ba = 5, Ia = (e, l) => e || l.split(/\s+/).slice(0, Ba).join(" ");
 function Oa({ tasks: e, inHand: l, perHour: t }) {
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
   const o = Ra(e), r = Fe(o, "completed"), n = La[l == null ? void 0 : l.state], b = o.filter((I) => I.state === "started").map((I) => ({ number: I.id, title: I.title })), x = Math.max(b.length, l && l.state !== "completed" ? 1 : 0), C = o.length - r - x, L = r === o.length;
   return {
     number: l.id,
@@ -714,6 +945,18 @@ function Oa({ tasks: e, inHand: l, perHour: t }) {
     count: `${r} of ${o.length}`,
     taskTip: `${r} of its ${o.length} tasks done${n ? `. This one is ${n.words}.` : "."}`,
     countTip: L ? `All ${o.length} tasks done` : `${r} done, ${x} in hand, ${C} to go`,
+========
+  const o = Ra(e), r = Fe(o, "completed"), n = La[l == null ? void 0 : l.state], k = o.filter((I) => I.state === "started").map((I) => ({ number: I.id, title: I.title })), $ = Math.max(k.length, l && l.state !== "completed" ? 1 : 0), C = o.length - r - $, L = r === o.length;
+  return {
+    number: l.id,
+    title: l.title,
+    started: k,
+    plan: l.plan_id ?? 0,
+    planTitle: l.plan_title ?? "",
+    count: `${r} of ${o.length}`,
+    taskTip: `${r} of its ${o.length} tasks done${n ? `. This one is ${n.words}.` : "."}`,
+    countTip: L ? `All ${o.length} tasks done` : `${r} done, ${$} in hand, ${C} to go`,
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
     paceTip: !L && t ? `About ${t} an hour.` : "",
     rate: !L && t ? `${Math.round(t)}/hour` : "",
     bar: { total: o.length, done: r, testing: Fe(o, "testing") }
@@ -731,14 +974,17 @@ const Va = {
   class: "task-line",
   "data-agent-task-line": ""
 }, Ea = {
-  key: 0,
+  key: 1,
   class: "tasks",
   "data-agent-tasks": ""
 }, Na = {
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
   key: 1,
   class: "tasks",
   "data-agent-tasks": ""
 }, Wa = {
+========
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
   key: 3,
   class: "plan",
   "data-agent-plan": ""
@@ -746,19 +992,31 @@ const Va = {
   key: 4,
   class: "rate",
   "data-agent-rate": ""
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
 }, qa = { key: 0 }, Fa = 3, Pa = {
+========
+}, Wa = { key: 0 }, Da = {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
   __name: "AgentTaskLine",
   props: { tasks: { type: Array, default: () => [] }, inHand: { type: Object, default: null }, job: { type: String, default: "" }, jobTitle: { type: String, default: "" }, jobLaunch: { type: String, default: "" }, perHour: { type: Number, default: 0 } },
   setup(e) {
     const l = e, t = c(() => l.inHand ? Oa({ tasks: l.tasks, inHand: l.inHand, perHour: l.perHour }) : null);
     return (o, r) => e.job && !t.value ? (a(), s("span", Va, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       v(i(ke), {
+========
+      p(i(ke), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
         as: "button",
         class: "task",
         "data-agent-job": ""
       }, {
         tip: m(() => [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
           y("b", null, g(e.job), 1)
+========
+          b("b", null, g(e.job), 1)
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
         ]),
         default: m(() => [
           h(g(i(Ia)(e.jobTitle, e.job)), 1)
@@ -767,6 +1025,7 @@ const Va = {
       }),
       e.jobLaunch ? (a(), s("span", za, g(e.jobLaunch), 1)) : f("", !0)
     ])) : t.value ? (a(), s(q, { key: 1 }, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       y("span", Ha, [
         t.value.started.length > Fa ? (a(), s("span", Ea, [
           v(i(ke), {
@@ -796,15 +1055,51 @@ const Va = {
               h(", ")
             ], 64)) : f("", !0),
             v(i(ke), {
+========
+      b("span", Ha, [
+        t.value.plan ? (a(), N(i(ke), {
+          key: 0,
+          as: "button",
+          class: "task",
+          "data-agent-plan": "",
+          "data-peek": `plans:${t.value.plan}`,
+          "aria-label": `Plan ${t.value.plan}: ${t.value.planTitle}`,
+          onClick: r[0] || (r[0] = te((n) => i(we)(`plans:${t.value.plan}`), ["stop"]))
+        }, {
+          tip: m(() => [
+            b("b", null, g(t.value.planTitle), 1),
+            b("span", null, "Task " + g(t.value.number) + ": " + g(t.value.title), 1)
+          ]),
+          default: m(() => [
+            h("Plan " + g(t.value.plan), 1)
+          ]),
+          _: 1
+        }, 8, ["data-peek", "aria-label"])) : t.value.started.length > 1 ? (a(), s("span", Ea, [
+          r[2] || (r[2] = h("Tasks ", -1)),
+          (a(!0), s(q, null, ne(t.value.started, (n, k) => (a(), s(q, {
+            key: n.number
+          }, [
+            k ? (a(), s(q, { key: 0 }, [
+              h(", ")
+            ], 64)) : f("", !0),
+            p(i(ke), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
               as: "button",
               class: "task",
               "data-agent-task": "",
               "data-peek": `tasks:${n.number}`,
               "aria-label": `Task ${n.number}: ${n.title}`,
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
               onClick: ne((x) => i(Te)(`tasks:${n.number}`), ["stop"])
             }, {
               tip: m(() => [
                 y("b", null, g(n.title), 1)
+========
+              onClick: te(($) => i(we)(`tasks:${n.number}`), ["stop"])
+            }, {
+              tip: m(() => [
+                b("b", null, g(n.title), 1)
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
               ]),
               default: m(() => [
                 h(g(n.number), 1)
@@ -819,28 +1114,46 @@ const Va = {
           "data-agent-task": "",
           "data-peek": `tasks:${t.value.number}`,
           "aria-label": `Task ${t.value.number}: ${t.value.title}`,
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
           onClick: r[0] || (r[0] = ne((n) => i(Te)(`tasks:${t.value.number}`), ["stop"]))
         }, {
           tip: m(() => [
             y("b", null, g(t.value.title), 1),
             y("span", null, g(t.value.taskTip), 1)
+========
+          onClick: r[1] || (r[1] = te((n) => i(we)(`tasks:${t.value.number}`), ["stop"]))
+        }, {
+          tip: m(() => [
+            b("b", null, g(t.value.title), 1),
+            b("span", null, g(t.value.taskTip), 1)
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           ]),
           default: m(() => [
             h("Task " + g(t.value.number), 1)
           ]),
           _: 1
         }, 8, ["data-peek", "aria-label"])),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
         t.value.plan ? (a(), s("span", Wa, "Plan " + g(t.value.plan), 1)) : f("", !0),
         t.value.rate ? (a(), s("span", Da, g(t.value.rate), 1)) : f("", !0),
         v(i(ke), {
+========
+        t.value.rate ? (a(), s("span", Na, g(t.value.rate), 1)) : f("", !0),
+        p(i(ke), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           class: "count",
           tabindex: "0",
           place: "right",
           "data-agent-count": ""
         }, {
           tip: m(() => [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
             y("b", null, g(t.value.countTip), 1),
             t.value.paceTip ? (a(), s("span", qa, g(t.value.paceTip), 1)) : f("", !0)
+========
+            b("b", null, g(t.value.countTip), 1),
+            t.value.paceTip ? (a(), s("span", Wa, g(t.value.paceTip), 1)) : f("", !0)
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           ]),
           default: m(() => [
             h(g(t.value.count), 1)
@@ -858,7 +1171,11 @@ const Va = {
       }, null, 8, ["total", "done", "testing"])
     ], 64)) : f("", !0);
   }
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
 }, Ua = /* @__PURE__ */ Z(Pa, [["__scopeId", "data-v-f07d5ab2"]]), Ga = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>', Ja = ["data-icon", "stroke-width", "innerHTML"], ae = {
+========
+}, qa = /* @__PURE__ */ Z(Da, [["__scopeId", "data-v-57f522ed"]]), Fa = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>', Pa = ["data-icon", "stroke-width", "innerHTML"], ae = {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
   __name: "Icon",
   props: {
     name: { type: String, default: "dot" },
@@ -892,7 +1209,11 @@ const Va = {
       more: "dots",
       chevron: "arrow"
     }, r = {
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       agent: Ga,
+========
+      agent: Fa,
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       time: '<circle cx="8" cy="8" r="5.5"/><path d="M8 4.5V8l2.4 1.5"/>',
       allowance: '<path d="M3 4.5h10v7H3zM5 6.5h1M10 9.5h1"/><circle cx="8" cy="8" r="1.4"/>',
       phone: '<rect x="4.5" y="1.5" width="7" height="13" rx="1.6"/><path d="M7 12.2h2"/>',
@@ -1002,7 +1323,7 @@ const Va = {
       family: '<rect x="6" y="1.8" width="4" height="3.4" rx="1"/><rect x="1.8" y="10.8" width="4" height="3.4" rx="1"/><rect x="10.2" y="10.8" width="4" height="3.4" rx="1"/><path d="M8 5.2v2.6M3.8 10.8V9.4q0-1.6 1.6-1.6h5.2q1.6 0 1.6 1.6v1.4"/>',
       loop: '<path d="M12.6 6.2A4.9 4.9 0 0 0 3.4 6M3.4 9.8a4.9 4.9 0 0 0 9.2.2"/><path d="M12.8 3v3.3H9.5M3.2 13V9.7h3.3"/>'
     };
-    return (n, b) => (a(), s("svg", {
+    return (n, k) => (a(), s("svg", {
       class: "ico",
       "data-icon": e.name,
       style: Re({
@@ -1017,6 +1338,7 @@ const Va = {
       "stroke-linejoin": "round",
       "aria-hidden": "true",
       innerHTML: r[o[e.name] || e.name] || r.dot
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
     }, null, 12, Ja));
   }
 }, Ka = {
@@ -1027,6 +1349,18 @@ const Va = {
   key: 1,
   class: "menu-item-text"
 }, _a = {
+========
+    }, null, 12, Pa));
+  }
+}, Ua = {
+  key: 0,
+  class: "menu-item-check",
+  "aria-hidden": "true"
+}, Ga = {
+  key: 1,
+  class: "menu-item-text"
+}, Ja = {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
   __name: "MenuItem",
   props: { on: Boolean, danger: Boolean, checked: { type: Boolean, default: null }, description: { type: String, default: "" } },
   setup(e) {
@@ -1034,6 +1368,7 @@ const Va = {
       type: "button",
       class: de(["menu-item", { on: e.on, danger: e.danger, described: e.description }])
     }, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       e.checked !== null ? (a(), s("span", Ka, g(e.checked ? "✓" : ""), 1)) : f("", !0),
       e.description ? (a(), s("span", Za, [
         y("span", null, [
@@ -1056,33 +1391,78 @@ const $e = /* @__PURE__ */ Z(Ya, [["render", Xa], ["__scopeId", "data-v-aa955b3e
   key: 0,
   class: "skills-none"
 }, an = {
+========
+      e.checked !== null ? (a(), s("span", Ua, g(e.checked ? "✓" : ""), 1)) : f("", !0),
+      e.description ? (a(), s("span", Ga, [
+        b("span", null, [
+          Te(l.$slots, "default", {}, void 0, !0)
+        ]),
+        b("small", null, g(e.description), 1)
+      ])) : Te(l.$slots, "default", {}, void 0, !0, 2)
+    ], 2));
+  }
+}, ye = /* @__PURE__ */ Z(Ja, [["__scopeId", "data-v-fec99974"]]), Ka = {}, Za = { class: "menu-label" };
+function Ya(e, l) {
+  return a(), s("span", Za, [
+    Te(e.$slots, "default", {}, void 0, !0)
+  ]);
+}
+const Se = /* @__PURE__ */ Z(Ka, [["render", Ya], ["__scopeId", "data-v-aa955b3e"]]), _a = {
+  class: "skills-menu",
+  "data-agent-skills-menu": ""
+}, Qa = {
+  key: 0,
+  class: "skills-none"
+}, Xa = {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
   __name: "AgentSkillsMenu",
   props: { skills: { type: Array, required: !0 } },
   emits: ["browse"],
   setup(e, { emit: l }) {
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
     const t = e, o = l, r = c(() => t.skills.filter((b) => b.state === "loaded")), n = c(() => t.skills.filter((b) => b.state !== "loaded"));
     return (b, x) => (a(), s("div", en, [
       v($e, null, {
         default: m(() => [...x[1] || (x[1] = [
+========
+    const t = e, o = l, r = c(() => t.skills.filter((k) => k.state === "loaded")), n = c(() => t.skills.filter((k) => k.state !== "loaded"));
+    return (k, $) => (a(), s("div", _a, [
+      p(Se, null, {
+        default: m(() => [...$[1] || ($[1] = [
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           h("Read in this conversation", -1)
         ])]),
         _: 1
       }),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       r.value.length ? f("", !0) : (a(), s("p", tn, "None yet. Compacting the conversation empties this list.")),
       (a(!0), s(q, null, te(r.value, (C) => (a(), s("p", {
+========
+      r.value.length ? f("", !0) : (a(), s("p", Qa, "None yet. Compacting the conversation empties this list.")),
+      (a(!0), s(q, null, ne(r.value, (C) => (a(), s("p", {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
         key: C.id,
         class: "skill-line",
         "data-agent-skill-read": ""
       }, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
         v(ae, {
+========
+        p(ae, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           name: "book",
           size: 12
         }),
         h(g(C.skill), 1)
       ]))), 128)),
       n.value.length ? (a(), s(q, { key: 1 }, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
         v($e, null, {
           default: m(() => [...x[2] || (x[2] = [
+========
+        p(Se, null, {
+          default: m(() => [...$[2] || ($[2] = [
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
             h("Still to read", -1)
           ])]),
           _: 1
@@ -1092,33 +1472,53 @@ const $e = /* @__PURE__ */ Z(Ya, [["render", Xa], ["__scopeId", "data-v-aa955b3e
           class: "skill-line waiting",
           "data-agent-skill-waiting": ""
         }, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
           v(ae, {
+========
+          p(ae, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
             name: "book",
             size: 12
           }),
           h(g(C.skill), 1)
         ]))), 128))
       ], 64)) : f("", !0),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       v(ye, {
         "data-agent-skills-browse": "",
         onClick: x[0] || (x[0] = (C) => o("browse"))
       }, {
         default: m(() => [...x[3] || (x[3] = [
+========
+      p(ye, {
+        "data-agent-skills-browse": "",
+        onClick: $[0] || ($[0] = (C) => o("browse"))
+      }, {
+        default: m(() => [...$[3] || ($[3] = [
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           h("Browse every skill", -1)
         ])]),
         _: 1
       })
     ]));
   }
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
 }, nn = /* @__PURE__ */ Z(an, [["__scopeId", "data-v-be514d47"]]), ln = ["disabled", "title"], on = { class: "gauge usage" }, sn = {
+========
+}, en = /* @__PURE__ */ Z(Xa, [["__scopeId", "data-v-be514d47"]]), tn = ["disabled", "title"], an = { class: "gauge usage" }, nn = {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
   __name: "AllowanceBar",
   props: { windows: { type: Array, default: () => [] }, disabled: Boolean },
   emits: ["open"],
   setup(e, { emit: l }) {
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
     const t = e, o = l, r = c(() => t.windows[0] ?? null), n = c(() => r.value && Number.isFinite(r.value.used_percent) ? Math.max(0, Math.min(100, Math.round(r.value.used_percent))) : null), b = c(() => n.value !== null && n.value >= 100), x = c(() => {
+========
+    const t = e, o = l, r = c(() => t.windows[0] ?? null), n = c(() => r.value && Number.isFinite(r.value.used_percent) ? Math.max(0, Math.min(100, Math.round(r.value.used_percent))) : null), k = c(() => n.value !== null && n.value >= 100), $ = c(() => {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       var L;
       return (L = r.value) != null && L.reset_epoch_seconds ? new Date(r.value.reset_epoch_seconds * 1e3).toLocaleString() : "";
-    }), C = c(() => b.value ? `At usage limit: the plan's ${r.value.title} allowance is used up${x.value ? `, starts again ${x.value}` : ""}` : `${n.value}% of the plan's ${r.value.title} allowance used${x.value ? `, starts again ${x.value}` : ""}`);
+    }), C = c(() => k.value ? `At usage limit: the plan's ${r.value.title} allowance is used up${$.value ? `, starts again ${$.value}` : ""}` : `${n.value}% of the plan's ${r.value.title} allowance used${$.value ? `, starts again ${$.value}` : ""}`);
     return (L, I) => n.value !== null ? (a(), s("button", {
       key: 0,
       type: "button",
@@ -1128,11 +1528,16 @@ const $e = /* @__PURE__ */ Z(Ya, [["render", Xa], ["__scopeId", "data-v-aa955b3e
       title: C.value,
       onClick: I[0] || (I[0] = (F) => o("open", F.currentTarget))
     }, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       v(ae, {
+========
+      p(ae, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
         name: "allowance",
         size: 12
       }),
       I[1] || (I[1] = h()),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       y("span", on, [
         y("span", {
           style: Re({ width: `${n.value}%` })
@@ -1142,6 +1547,17 @@ const $e = /* @__PURE__ */ Z(Ya, [["render", Xa], ["__scopeId", "data-v-aa955b3e
     ], 8, ln)) : f("", !0);
   }
 }, rn = /* @__PURE__ */ Z(sn, [["__scopeId", "data-v-a36f09dc"]]), dn = {
+========
+      b("span", an, [
+        b("span", {
+          style: Re({ width: `${n.value}%` })
+        }, null, 4)
+      ]),
+      h(" " + g(k.value ? "At usage limit" : `${n.value}%`), 1)
+    ], 8, tn)) : f("", !0);
+  }
+}, ln = /* @__PURE__ */ Z(nn, [["__scopeId", "data-v-a36f09dc"]]), on = {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
   __name: "DashboardBadge",
   props: { text: { type: String, required: !0 }, tone: { type: String, default: "" } },
   setup(e) {
@@ -1149,6 +1565,7 @@ const $e = /* @__PURE__ */ Z(Ya, [["render", Xa], ["__scopeId", "data-v-aa955b3e
       class: de(["badge", e.tone])
     }, g(e.text), 3));
   }
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
 }, un = /* @__PURE__ */ Z(dn, [["__scopeId", "data-v-9e7e1157"]]), cn = (e, l, t) => Math.max(l, Math.min(t, e)), Ze = /* @__PURE__ */ new WeakMap(), gn = (e, l) => Ze.set(e, l);
 function vn(e, l) {
   for (let t = l; t; t = Ze.get(t) ?? t.parentElement) if (t === e) return !0;
@@ -1159,10 +1576,26 @@ function pn(e, l) {
     var n, b;
     const r = ((n = e.value) == null ? void 0 : n.element) || ((b = e.value) == null ? void 0 : b.$el) || e.value;
     r && !vn(r, o.target) && l(o);
-  };
-  window.addEventListener("click", t), Se(() => window.removeEventListener("click", t));
+========
+}, sn = /* @__PURE__ */ Z(on, [["__scopeId", "data-v-9e7e1157"]]), rn = (e, l, t) => Math.max(l, Math.min(t, e)), Ze = /* @__PURE__ */ new WeakMap(), dn = (e, l) => Ze.set(e, l);
+function un(e, l) {
+  for (let t = l; t; t = Ze.get(t) ?? t.parentElement) if (t === e) return !0;
+  return !1;
 }
+function cn(e, l) {
+  const t = (o) => {
+    var n, k;
+    const r = ((n = e.value) == null ? void 0 : n.element) || ((k = e.value) == null ? void 0 : k.$el) || e.value;
+    r && !un(r, o.target) && l(o);
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
+  };
+  window.addEventListener("click", t), Ce(() => window.removeEventListener("click", t));
+}
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
 const be = 8, mn = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
+========
+const be = 8, gn = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
   __name: "MenuPanel",
   props: {
     anchor: { type: Object, default: null },
@@ -1176,12 +1609,20 @@ const be = 8, mn = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
   },
   emits: ["close"],
   setup(e, { expose: l, emit: t }) {
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
     const o = e, r = z(null), n = (d) => d ? `${d}px` : void 0, b = c(() => ({
+========
+    const o = e, r = z(null), n = (d) => d ? `${d}px` : void 0, k = c(() => ({
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       minWidth: n(o.minWidth),
       maxWidth: n(o.maxWidth),
       maxHeight: n(o.maxHeight),
       height: n(o.height)
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
     })), x = z({ w: 0, h: 0 }), C = z(o.anchor ? o.anchor.getBoundingClientRect() : null), L = () => ({ left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight }), I = (d) => ({
+========
+    })), $ = z({ w: 0, h: 0 }), C = z(o.anchor ? o.anchor.getBoundingClientRect() : null), L = () => ({ left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight }), I = (d) => ({
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       left: Math.max(0, d.left),
       top: Math.max(0, d.top),
       right: Math.min(window.innerWidth, d.right),
@@ -1199,6 +1640,7 @@ const be = 8, mn = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
     }
     function A(d) {
       const B = F(o.anchor), E = W(B, d);
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       return x.value.w <= E.across && x.value.h <= Math.max(E.below, E.above) ? B : L();
     }
     const V = c(() => {
@@ -1206,35 +1648,69 @@ const be = 8, mn = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       const d = C.value, B = A(d), E = W(B, d), { w: R, h: T } = x.value, se = o.align === "auto" ? d.left + d.right > B.left + B.right : o.align === "right", K = cn(se ? d.right - R : d.left, B.left + be, Math.max(B.left + be, B.right - R - be)), X = T > E.below && E.above > E.below ? { bottom: `${window.innerHeight - d.top + o.gap}px`, maxHeight: O(o.maxHeight, E.above) } : { top: `${d.bottom + o.gap}px`, maxHeight: O(o.maxHeight, E.below) };
       return { ...b.value, ...X, left: `${K}px`, maxWidth: O(o.maxWidth, E.across) };
     }), D = t, Y = () => [...r.value.querySelectorAll("button:not(:disabled)")];
+========
+      return $.value.w <= E.across && $.value.h <= Math.max(E.below, E.above) ? B : L();
+    }
+    const V = c(() => {
+      if (!C.value) return k.value;
+      const d = C.value, B = A(d), E = W(B, d), { w: R, h: T } = $.value, se = o.align === "auto" ? d.left + d.right > B.left + B.right : o.align === "right", K = rn(se ? d.right - R : d.left, B.left + be, Math.max(B.left + be, B.right - R - be)), X = T > E.below && E.above > E.below ? { bottom: `${window.innerHeight - d.top + o.gap}px`, maxHeight: O(o.maxHeight, E.above) } : { top: `${d.bottom + o.gap}px`, maxHeight: O(o.maxHeight, E.below) };
+      return { ...k.value, ...X, left: `${K}px`, maxWidth: O(o.maxWidth, E.across) };
+    }), D = t, _ = () => [...r.value.querySelectorAll("button:not(:disabled)")];
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
     function J(d) {
       const B = Y(), E = B.indexOf(document.activeElement);
       B[(E + d + B.length) % B.length].focus();
     }
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
     const Q = { ArrowDown: () => J(1), ArrowUp: () => J(-1), Escape: () => D("close") }, le = (d) => Q[d.key] && (d.preventDefault(), Q[d.key]()), P = () => r.value && (x.value = { w: r.value.offsetWidth, h: r.value.scrollHeight });
     let _ = 0;
+========
+    const Q = { ArrowDown: () => J(1), ArrowUp: () => J(-1), Escape: () => D("close") }, le = (d) => Q[d.key] && (d.preventDefault(), Q[d.key]()), P = () => r.value && ($.value = { w: r.value.offsetWidth, h: r.value.scrollHeight });
+    let Y = 0;
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
     const w = new ResizeObserver(() => {
       cancelAnimationFrame(_), _ = requestAnimationFrame(P);
     });
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
     pn(r, (d) => o.anchor && !o.anchor.contains(d.target) && D("close"));
     const p = (d, B) => ["top", "left", "right", "bottom"].some((E) => Math.abs(d[E] - B[E]) > 1), U = (d) => d.bottom < 0 || d.top > window.innerHeight;
     let k = 0;
+========
+    cn(r, (d) => o.anchor && !o.anchor.contains(d.target) && D("close"));
+    const v = (d, B) => ["top", "left", "right", "bottom"].some((E) => Math.abs(d[E] - B[E]) > 1), U = (d) => d.bottom < 0 || d.top > window.innerHeight;
+    let y = 0;
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
     function u() {
       if (o.anchor) {
         const d = o.anchor.getBoundingClientRect();
         if (!o.anchor.isConnected || U(d)) return D("close");
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
         p(d, C.value) && (C.value = d);
+========
+        v(d, C.value) && (C.value = d);
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       }
-      k = requestAnimationFrame(u);
+      y = requestAnimationFrame(u);
     }
     return at(() => {
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       o.anchor && r.value && gn(r.value, o.anchor), P(), r.value && w.observe(r.value), !o.plain && Y()[0] && Y()[0].focus(), u();
     }), Se(() => {
       w.disconnect(), cancelAnimationFrame(k), cancelAnimationFrame(_);
+========
+      o.anchor && r.value && dn(r.value, o.anchor), P(), r.value && w.observe(r.value), !o.plain && _()[0] && _()[0].focus(), u();
+    }), Ce(() => {
+      w.disconnect(), cancelAnimationFrame(y), cancelAnimationFrame(Y);
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
     }), l({ element: r }), (d, B) => (a(), N(nt, {
       to: "body",
       disabled: !e.anchor
     }, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       y("div", lt({
+========
+      b("div", lt({
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
         ref_key: "panel",
         ref: r
       }, d.$attrs, {
@@ -1242,10 +1718,11 @@ const be = 8, mn = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
         style: V.value,
         onKeydown: le
       }), [
-        Ce(d.$slots, "default", {}, void 0, !0)
+        Te(d.$slots, "default", {}, void 0, !0)
       ], 16)
     ], 8, ["disabled"]));
   }
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
 }), hn = /* @__PURE__ */ Z(mn, [["__scopeId", "data-v-3d203970"]]);
 async function fn(e, l, t) {
   if (!e) return t(l);
@@ -1255,10 +1732,22 @@ async function fn(e, l, t) {
   try {
     const C = await t(l);
     return x = C.ok, C;
+========
+}), vn = /* @__PURE__ */ Z(gn, [["__scopeId", "data-v-3d203970"]]);
+async function pn(e, l, t) {
+  if (!e) return t(l);
+  const { target: o, fields: r } = e, n = Object.fromEntries(Object.keys(r).map((C) => [C, o[C]])), k = () => Object.assign(o, n);
+  Object.assign(o, r);
+  let $ = !1;
+  try {
+    const C = await t(l);
+    return $ = C.ok, C;
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
   } finally {
-    x || b();
+    $ || k();
   }
 }
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
 function bn(e, l, t, { groups: o, programs: r }) {
   const n = z({}), b = z(""), x = z(!1), C = c(() => !!e.value && !e.value.ended_at), L = c(() => C.value && !!e.value.paused_at);
   async function I(A, V = null) {
@@ -1276,15 +1765,39 @@ function wn(e) {
   return e != null && e.is_open ? `${yn[e.change]} asked at ${new Date(e.requested_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "";
 }
 const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gauge" }, Sn = {
+========
+function mn(e, l, t, { groups: o, programs: r }) {
+  const n = z({}), k = z(""), $ = z(!1), C = c(() => !!e.value && !e.value.ended_at), L = c(() => C.value && !!e.value.paused_at);
+  async function I(A, V = null) {
+    k.value = "";
+    const D = await pn(V, A, l);
+    return k.value = D.ok ? "" : D.error, t(), D;
+  }
+  return { groups: o, programs: r, chosen: n, failure: k, asking: $, running: C, paused: L, choose: (A, V) => I(["agent", "control", String(e.value.number), A, V.value], { target: n, fields: { value: { ...n.value, [A]: V.label } } }), stop: () => ($.value = !1, I(["agent", "stop", String(e.value.number)], { target: e.value, fields: { ended_at: (/* @__PURE__ */ new Date()).toISOString() } })), start: (A) => I(["agent", "launch", A.name]) };
+}
+function hn(e) {
+  return e ? `Last compacted ${new Date(e.started_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "medium" })}` : "Not compacted yet";
+}
+const fn = { compact: "Compaction", clear: "Clear" };
+function bn(e) {
+  return e != null && e.is_open ? `${fn[e.change]} asked at ${new Date(e.requested_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "";
+}
+const kn = ["disabled", "title"], yn = ["disabled", "title"], wn = { class: "gauge" }, Mn = {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
   key: 1,
   class: "fact",
   "data-fact": "context-unknown",
   title: "The context was compacted or cleared and its new size is not reported yet"
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
 }, Cn = ["disabled", "title"], Tn = ["disabled"], An = ["disabled"], jn = {
+========
+}, $n = ["disabled", "title"], xn = ["disabled"], Sn = ["disabled"], Cn = {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
   key: 5,
   class: "fact",
   "data-fact": "branch",
   title: "Current branch"
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
 }, Ln = ["title"], Rn = {
   class: "context-compaction",
   "data-context-menu-compaction": ""
@@ -1300,6 +1813,23 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
   class: "context-compaction",
   "data-context-menu-open-change": ""
 }, Hn = 75, En = {
+========
+}, Tn = ["title"], An = {
+  class: "context-compaction",
+  "data-context-menu-compaction": ""
+}, jn = {
+  class: "context-meter",
+  "data-context-menu-meter": ""
+}, Ln = { class: "gauge" }, Rn = { class: "context-used" }, Bn = {
+  key: 0,
+  class: "context-cap",
+  "data-context-menu-cap": ""
+}, In = {
+  key: 1,
+  class: "context-compaction",
+  "data-context-menu-open-change": ""
+}, On = 75, Vn = {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
   __name: "InformationBar",
   props: {
     agent: { type: Object, default: null },
@@ -1316,12 +1846,18 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
   },
   emits: ["open", "changed", "skills"],
   setup(e, { emit: l }) {
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
     const t = e, o = l, r = bn(Ie(t, "agent"), t.run ?? (async () => ({ ok: !1, error: "nothing to ask" })), () => o("changed"), { groups: Ie(t, "controlGroups"), programs: Ie(t, "agentPrograms") }), n = z(null), b = z(""), x = c(() => r.groups.value.find((w) => w.key === b.value));
     function C(w, p) {
       n.value = w.currentTarget, b.value = p;
+========
+    const t = e, o = l, r = mn(Ie(t, "agent"), t.run ?? (async () => ({ ok: !1, error: "nothing to ask" })), () => o("changed"), { groups: Ie(t, "controlGroups"), programs: Ie(t, "agentPrograms") }), n = z(null), k = z(""), $ = c(() => r.groups.value.find((w) => w.key === k.value));
+    function C(w, v) {
+      n.value = w.currentTarget, k.value = v;
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
     }
     function L() {
-      n.value = null, b.value = "", r.asking.value = !1;
+      n.value = null, k.value = "", r.asking.value = !1;
     }
     const I = c(() => t.skills.filter((w) => w.state === "loaded"));
     function F(w) {
@@ -1346,11 +1882,16 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
       return ((w = V.value) == null ? void 0 : w.context_percent) == null ? null : Math.round(V.value.context_percent);
     }), Y = c(() => {
       var w;
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       return wn(((w = V.value) == null ? void 0 : w.context_change) ?? null);
+========
+      return bn(((w = V.value) == null ? void 0 : w.context_change) ?? null);
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
     }), J = (w) => `${Math.round(w / 1e3)}k`, Q = c(() => {
       var w;
       return !!((w = V.value) != null && w.context_limit_tokens);
     }), le = c(() => {
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       var w, p;
       return ((w = V.value) == null ? void 0 : w.context_limit_tokens) || ((p = V.value) == null ? void 0 : p.context_window_tokens) || 0;
     }), P = c(() => le.value ? `${J(V.value.context_tokens ?? 0)} of ${J(le.value)}` : ""), _ = c(() => {
@@ -1359,12 +1900,22 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
     });
     return (w, p) => {
       var U, k;
+========
+      var w, v;
+      return ((w = V.value) == null ? void 0 : w.context_limit_tokens) || ((v = V.value) == null ? void 0 : v.context_window_tokens) || 0;
+    }), P = c(() => le.value ? `${J(V.value.context_tokens ?? 0)} of ${J(le.value)}` : ""), Y = c(() => {
+      var w;
+      return (w = V.value) != null && w.cost_dollars ? `$${V.value.cost_dollars.toFixed(2)}` : "";
+    });
+    return (w, v) => {
+      var U, y;
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       return a(), s("div", {
         class: de(["information", { card: e.card }]),
         "data-information-bar": ""
       }, [
         e.agent ? (a(), s(q, { key: 0 }, [
-          y("button", {
+          b("button", {
             type: "button",
             class: "fact lead",
             disabled: e.card,
@@ -1372,16 +1923,28 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
             title: `Session ${e.agent.session}: stop it`,
             onClick: p[0] || (p[0] = (u) => C(u, "agent"))
           }, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
             v(ae, {
+========
+            p(ae, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
               name: "agents",
               size: 12
             }),
             h(" " + g(((U = e.agentPrograms.find((u) => u.name === e.agent.program)) == null ? void 0 : U.title) || e.agent.program), 1)
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
           ], 8, Mn),
           v(rn, {
             windows: e.usage.windows,
             disabled: e.card,
             onOpen: p[1] || (p[1] = (u) => o("open", "usage", u))
+========
+          ], 8, kn),
+          p(ln, {
+            windows: e.usage.windows,
+            disabled: e.card,
+            onOpen: v[1] || (v[1] = (u) => o("open", "usage", u))
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           }, null, 8, ["windows", "disabled"]),
           D.value !== null ? (a(), s("button", {
             key: 0,
@@ -1390,6 +1953,7 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
             disabled: e.card,
             "data-fact": "context",
             title: `Context ${D.value}% full: clear or compact it`,
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
             onClick: p[2] || (p[2] = (u) => O("context") ? C(u, "context") : o("open", "context", u.currentTarget))
           }, [
             v(ae, {
@@ -1399,16 +1963,36 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
             p[14] || (p[14] = h()),
             y("span", $n, [
               y("span", {
+========
+            onClick: v[2] || (v[2] = (u) => O("context") ? C(u, "context") : o("open", "context", u.currentTarget))
+          }, [
+            p(ae, {
+              name: "gauge",
+              size: 12
+            }),
+            v[14] || (v[14] = h()),
+            b("span", wn, [
+              b("span", {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
                 style: Re({ width: `${D.value}%` })
               }, null, 4)
             ]),
             h(" " + g(D.value) + "% ", 1)
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
           ], 8, xn)) : (k = V.value) != null && k.context_unknown ? (a(), s("span", Sn, [
             v(ae, {
               name: "gauge",
               size: 12
             }),
             p[15] || (p[15] = h(" Context: unknown", -1))
+========
+          ], 8, yn)) : (y = V.value) != null && y.context_unknown ? (a(), s("span", Mn, [
+            p(ae, {
+              name: "gauge",
+              size: 12
+            }),
+            v[15] || (v[15] = h(" Context: unknown", -1))
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           ])) : f("", !0),
           W.value ? (a(), s("button", {
             key: 2,
@@ -1419,12 +2003,20 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
             title: `${W.value}: change the model`,
             onClick: p[3] || (p[3] = (u) => O("model") ? C(u, "model") : null)
           }, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
             v(ae, {
+========
+            p(ae, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
               name: "model",
               size: 12
             }),
             h(" " + g(W.value), 1)
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
           ], 8, Cn)) : f("", !0),
+========
+          ], 8, $n)) : f("", !0),
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           O("effort") || e.card && A.value ? (a(), s("button", {
             key: 3,
             type: "button",
@@ -1434,23 +2026,39 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
             title: "Reasoning effort: change it",
             onClick: p[4] || (p[4] = (u) => C(u, "effort"))
           }, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
             v(ae, {
+========
+            p(ae, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
               name: "bolt",
               size: 12
             }),
             h(" " + g(A.value), 1)
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
           ], 8, Tn)) : f("", !0),
           _.value ? (a(), s("button", {
+========
+          ], 8, xn)) : f("", !0),
+          Y.value ? (a(), s("button", {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
             key: 4,
             type: "button",
             class: "fact",
             disabled: e.card,
             "data-fact": "cost",
             title: "The predicted API price of this session: open its breakdown",
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
             onClick: p[5] || (p[5] = (u) => o("open", "cost", u.currentTarget))
           }, g(_.value), 9, An)) : f("", !0),
           e.branch ? (a(), s("span", jn, [
             v(ae, {
+========
+            onClick: v[5] || (v[5] = (u) => o("open", "cost", u.currentTarget))
+          }, g(Y.value), 9, Sn)) : f("", !0),
+          e.branch ? (a(), s("span", Cn, [
+            p(ae, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
               name: "branch",
               size: 12
             }),
@@ -1462,9 +2070,15 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
             class: de(["fact", { none: !e.jobs }]),
             "data-fact": "jobs",
             title: "Jobs the agent scheduled for itself",
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
             onClick: p[6] || (p[6] = (u) => o("open", "jobs", u.currentTarget))
           }, [
             v(ae, {
+========
+            onClick: v[6] || (v[6] = (u) => o("open", "jobs", u.currentTarget))
+          }, [
+            p(ae, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
               name: "clock",
               size: 12
             }),
@@ -1478,34 +2092,53 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
             title: "View skills read by this agent",
             onClick: F
           }, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
             v(ae, {
+========
+            p(ae, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
               name: "book",
               size: 12
             }),
             h(" " + g(I.value.length), 1)
           ])) : f("", !0),
           e.fitness ? (a(), s(q, { key: 8 }, [
-            y("button", {
+            b("button", {
               type: "button",
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
               class: de(["fact", "fitness-fact", { low: e.fitness.is_measured && e.fitness.score < Hn }]),
               "data-fact": "fitness",
               title: "View the agent’s performance measures",
               onClick: p[7] || (p[7] = (u) => o("open", "fitness", u.currentTarget))
             }, [
               v(ae, {
+========
+              class: de(["fact", "fitness-fact", { low: e.fitness.is_measured && e.fitness.score < On }]),
+              "data-fact": "fitness",
+              title: "View the agent’s performance measures",
+              onClick: v[7] || (v[7] = (u) => o("open", "fitness", u.currentTarget))
+            }, [
+              p(ae, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
                 name: "heart",
                 size: 12
               }),
               h(" " + g(e.fitness.is_measured ? e.fitness.score : "–"), 1)
             ], 2),
-            y("button", {
+            b("button", {
               type: "button",
               class: de(["fact", "load-fact", e.fitness.workload_level]),
               "data-fact": "load",
               title: "Compare incoming messages with agent replies",
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
               onClick: p[8] || (p[8] = (u) => o("open", "load", u.currentTarget))
             }, [
               v(ae, {
+========
+              onClick: v[8] || (v[8] = (u) => o("open", "load", u.currentTarget))
+            }, [
+              p(ae, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
                 name: "weight",
                 size: 12
               }),
@@ -1519,6 +2152,7 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
           "data-agent-start": "",
           onClick: p[9] || (p[9] = (u) => C(u, "start"))
         }, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
           v(ae, {
             name: "agents",
             size: 12
@@ -1526,15 +2160,30 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
           p[16] || (p[16] = h(" Start an agent", -1))
         ])) : f("", !0),
         p[22] || (p[22] = y("span", { class: "space" }, null, -1)),
+========
+          p(ae, {
+            name: "agents",
+            size: 12
+          }),
+          v[16] || (v[16] = h(" Start an agent", -1))
+        ])) : f("", !0),
+        v[22] || (v[22] = b("span", { class: "space" }, null, -1)),
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
         i(r).failure.value ? (a(), s("span", {
           key: 2,
           class: "fact failure",
           role: "alert",
           "data-agent-failure": "",
           title: i(r).failure.value
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
         }, g(i(r).failure.value), 9, Ln)) : f("", !0),
         Ce(w.$slots, "default", {}, void 0, !0),
         n.value ? (a(), N(hn, {
+========
+        }, g(i(r).failure.value), 9, Tn)) : f("", !0),
+        Te(w.$slots, "default", {}, void 0, !0),
+        n.value ? (a(), N(vn, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           key: 3,
           anchor: n.value,
           "min-width": 190,
@@ -1543,27 +2192,47 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
           default: m(() => {
             var u;
             return [
-              b.value === "agent" ? (a(), s(q, { key: 0 }, [
+              k.value === "agent" ? (a(), s(q, { key: 0 }, [
                 i(r).asking.value ? (a(), s(q, { key: 0 }, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
                   v($e, { "data-agent-stop-ask": "" }, {
                     default: m(() => [...p[17] || (p[17] = [
+========
+                  p(Se, { "data-agent-stop-ask": "" }, {
+                    default: m(() => [...v[17] || (v[17] = [
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
                       h("Stop the agent? It stops what it is doing.", -1)
                     ])]),
                     _: 1
                   }),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
                   v(ye, {
+========
+                  p(ye, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
                     "data-agent-stop-confirm": "",
                     onClick: p[10] || (p[10] = (d) => (L(), i(r).stop()))
                   }, {
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
                     default: m(() => [...p[18] || (p[18] = [
+========
+                    default: m(() => [...v[18] || (v[18] = [
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
                       h("Stop it", -1)
                     ])]),
                     _: 1
                   }),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
                   v(ye, {
                     onClick: p[11] || (p[11] = (d) => i(r).asking.value = !1)
                   }, {
                     default: m(() => [...p[19] || (p[19] = [
+========
+                  p(ye, {
+                    onClick: v[11] || (v[11] = (d) => i(r).asking.value = !1)
+                  }, {
+                    default: m(() => [...v[19] || (v[19] = [
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
                       h("Keep it running", -1)
                     ])]),
                     _: 1
@@ -1573,19 +2242,33 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
                   "data-agent-stop": "",
                   onClick: p[12] || (p[12] = (d) => i(r).asking.value = !0)
                 }, {
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
                   default: m(() => [...p[20] || (p[20] = [
+========
+                  default: m(() => [...v[20] || (v[20] = [
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
                     h("Stop", -1)
                   ])]),
                   _: 1
                 }))
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
               ], 64)) : b.value === "start" ? (a(), s(q, { key: 1 }, [
                 v($e, null, {
                   default: m(() => [...p[21] || (p[21] = [
+========
+              ], 64)) : k.value === "start" ? (a(), s(q, { key: 1 }, [
+                p(Se, null, {
+                  default: m(() => [...v[21] || (v[21] = [
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
                     h("Start an agent", -1)
                   ])]),
                   _: 1
                 }),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
                 (a(!0), s(q, null, te(i(r).programs.value, (d) => (a(), N(ye, {
+========
+                (a(!0), s(q, null, ne(i(r).programs.value, (d) => (a(), N(ye, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
                   key: d.name,
                   "data-agent-program": d.name,
                   onClick: (B) => (L(), i(r).start(d))
@@ -1595,6 +2278,7 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
                   ]),
                   _: 2
                 }, 1032, ["data-agent-program", "onClick"]))), 128))
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
               ], 64)) : b.value === "skills" ? (a(), N(nn, {
                 key: 2,
                 skills: e.skills,
@@ -1619,16 +2303,46 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
                   P.value ? (a(), s("p", Vn, [
                     h(g(P.value) + " ", 1),
                     Q.value ? (a(), N(un, {
+========
+              ], 64)) : k.value === "skills" ? (a(), N(en, {
+                key: 2,
+                skills: e.skills,
+                onBrowse: v[13] || (v[13] = (d) => (L(), o("open", "skills", null)))
+              }, null, 8, ["skills"])) : $.value ? (a(), s(q, { key: 3 }, [
+                p(Se, null, {
+                  default: m(() => [
+                    h(g($.value.label), 1)
+                  ]),
+                  _: 1
+                }),
+                k.value === "context" ? (a(), s(q, { key: 0 }, [
+                  b("p", An, g(i(hn)(((u = V.value) == null ? void 0 : u.last_compaction) ?? null)), 1),
+                  b("div", jn, [
+                    b("span", Ln, [
+                      b("span", {
+                        style: Re({ width: `${D.value}%` })
+                      }, null, 4)
+                    ]),
+                    b("span", Rn, g(D.value) + "%", 1)
+                  ]),
+                  P.value ? (a(), s("p", Bn, [
+                    h(g(P.value) + " ", 1),
+                    Q.value ? (a(), N(sn, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
                       key: 0,
                       text: "Capped",
                       tone: "warn"
                     })) : f("", !0)
                   ])) : f("", !0)
                 ], 64)) : f("", !0),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
                 b.value === "context" && Y.value ? (a(), s("p", zn, g(Y.value), 1)) : (a(!0), s(q, { key: 2 }, te(x.value.choices, (d) => (a(), N(ye, {
+========
+                k.value === "context" && _.value ? (a(), s("p", In, g(_.value), 1)) : (a(!0), s(q, { key: 2 }, ne($.value.choices, (d) => (a(), N(ye, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
                   key: d.value,
                   "data-agent-choice": d.value,
-                  onClick: (B) => (i(r).choose(x.value.key, d), L())
+                  onClick: (B) => (i(r).choose($.value.key, d), L())
                 }, {
                   default: m(() => [
                     h(g(d.label), 1)
@@ -1643,17 +2357,33 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
       ], 2);
     };
   }
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
 }, Nn = /* @__PURE__ */ Z(En, [["__scopeId", "data-v-d7113347"]]), Wn = ["data-agent-open", "aria-expanded", "role", "tabindex"], Dn = {
   class: "agent-head",
   "data-agent-head": ""
 }, qn = {
+========
+}, zn = /* @__PURE__ */ Z(Vn, [["__scopeId", "data-v-d7113347"]]), Hn = ["data-agent-open", "aria-expanded", "role", "tabindex"], En = {
+  class: "agent-head",
+  "data-agent-head": ""
+}, Nn = {
   class: "agent-title",
   "data-agent-title": "",
   "data-agent-motion": ""
-}, Fn = {
+}, Wn = {
   class: "agent-name",
   "data-agent-name": "",
   "data-agent-motion": ""
+}, Dn = {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
+  class: "agent-title",
+  "data-agent-title": "",
+  "data-agent-motion": ""
+}, qn = {
+  class: "agent-name",
+  "data-agent-name": "",
+  "data-agent-motion": ""
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
 }, Pn = {
   class: "agent-title",
   "data-agent-title": "",
@@ -1682,10 +2412,33 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
   class: "agent-sandbox-off",
   "data-agent-sandbox-off": ""
 }, Yn = {
+========
+}, Fn = {
+  key: 0,
+  class: "agent-menu",
+  "data-agent-menu-panel": ""
+}, Pn = {
+  key: 1,
+  class: "agent-line"
+}, Un = {
+  class: "agent-identity",
+  "data-agent-identity": "",
+  "data-agent-motion": ""
+}, Gn = {
+  key: 0,
+  class: "agent-sandbox-off",
+  "data-agent-sandbox-off": ""
+}, Jn = {
+  key: 0,
+  class: "agent-sandbox-off",
+  "data-agent-sandbox-off": ""
+}, Kn = {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
   class: "agent-live-fact",
   "data-agent-motion": "",
   "data-agent-run-time": "",
   title: "How long this session has run"
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
 }, Qn = {
   key: 1,
   class: "agent-live-fact",
@@ -1695,11 +2448,26 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
   class: "agent-unit",
   "data-agent-unit": ""
 }, el = {
+========
+}, Zn = {
+  key: 1,
+  class: "agent-live-fact",
+  "data-agent-last-heard": ""
+}, Yn = {
+  key: 3,
+  class: "agent-unit",
+  "data-agent-unit": ""
+}, _n = {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
   __name: "AgentCard",
   props: { row: { type: Object, required: !0 }, facts: { type: Object, default: null }, progress: { type: Object, default: null }, waitReason: { type: String, default: "" }, open: Boolean },
   emits: ["toggle"],
   setup(e, { emit: l }) {
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
     const t = /* @__PURE__ */ new Set(["started", "testing", "blocked"]), o = ["completed", "testing"], r = { running: "Working", starting: "Starting", stopping: "Stopping", ended: "Idle: its process has stopped", failed: "Could not start", never_started: "Not started" }, n = e, b = l, x = Ke(), C = z(!1), L = c(() => mt(n.row, n.facts)), I = c(() => {
+========
+    const t = /* @__PURE__ */ new Set(["started", "testing", "blocked"]), o = ["completed", "testing"], r = { running: "Working", starting: "Starting", stopping: "Stopping", ended: "Idle: its process has stopped", failed: "Could not start", never_started: "Not started" }, n = e, k = l, $ = Ke(), C = z(!1), L = c(() => mt(n.row, n.facts)), I = c(() => {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       var M;
       return ((M = n.facts) == null ? void 0 : M.tasks) ?? [];
     }), F = c(() => I.value.filter((M) => M.state === "open")), O = c(() => I.value.find((M) => {
@@ -1714,58 +2482,89 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
     }), V = c(() => ht(n.row)), D = c(() => {
       var M, j;
       return [n.row.program, (M = n.facts) == null ? void 0 : M.model, (j = n.facts) == null ? void 0 : j.effort, V.value].filter(Boolean).join(" · ");
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
     }), Y = Be(), J = c(() => ft(n.row.process_started_at || n.row.created_at, x.value)), Q = /* @__PURE__ */ new Set(["open", "started", "testing"]), le = { fresh: "new conversation", resumed: "resumed" }, P = c(() => {
       var M, j;
       return [(M = n.facts) == null ? void 0 : M.helper_job_program, le[(j = n.facts) == null ? void 0 : j.occupant_launch]].filter(Boolean).join(", ");
     }), _ = c(() => {
+========
+    }), _ = Be(), J = c(() => ft(n.row.process_started_at || n.row.created_at, $.value)), Q = /* @__PURE__ */ new Set(["open", "started", "testing"]), le = { fresh: "new conversation", resumed: "resumed" }, P = c(() => {
+      var M, j;
+      return [(M = n.facts) == null ? void 0 : M.helper_job_program, le[(j = n.facts) == null ? void 0 : j.occupant_launch]].filter(Boolean).join(", ");
+    }), Y = c(() => {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       var M;
       return (M = n.facts) == null ? void 0 : M.work_status;
     }), w = c(() => !!n.row.ended_at && n.row.role !== "main" && I.value.some((M) => Q.has(M.state))), p = c(() => {
       var M, j;
       return n.row.state === "running" && ((M = n.facts) == null ? void 0 : M.state) === "at usage limit" && !!((j = n.facts) != null && j.usage_limit_ends_at);
-    }), U = (M) => new Date(M).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), k = c(() => n.row.halted_at ? `Stopped at the usage limit since ${U(n.row.halted_at)}, goes on at ${U(n.facts.usage_limit_ends_at)}` : `At usage limit: starts again ${new Date(n.facts.usage_limit_ends_at).toLocaleString()}`), u = c(() => {
+    }), U = (M) => new Date(M).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), y = c(() => n.row.halted_at ? `Stopped at the usage limit since ${U(n.row.halted_at)}, goes on at ${U(n.facts.usage_limit_ends_at)}` : `At usage limit: starts again ${new Date(n.facts.usage_limit_ends_at).toLocaleString()}`), u = c(() => {
       var M;
       return n.row.retired_at || n.row.state === "retired" ? "retired" : p.value || _.value || n.waitReason || w.value ? "waiting" : n.row.state === "running" && ((M = n.facts) == null ? void 0 : M.state) || n.row.state;
     }), d = c(() => {
       var M;
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       return p.value ? k.value : _.value ? `Status: ${_.value}` : n.waitReason ? `Waiting: ${n.waitReason}` : u.value === "blocked" ? (M = n.facts) != null && M.blocked_reason ? `Blocked: ${n.facts.blocked_reason}` : "Blocked" : w.value ? "Stopped with work left" : "";
+========
+      return v.value ? y.value : Y.value ? `Status: ${Y.value}` : n.waitReason ? `Waiting: ${n.waitReason}` : u.value === "blocked" ? (M = n.facts) != null && M.blocked_reason ? `Blocked: ${n.facts.blocked_reason}` : "Blocked" : w.value ? "Stopped with work left" : "";
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
     }), B = c(() => {
       var M;
       return ((M = n.progress) == null ? void 0 : M.completed_count) ?? I.value.filter((j) => o.includes(j.state)).length;
     }), E = c(() => {
       var M;
-      return bt(B.value, ((M = n.progress) == null ? void 0 : M.started_at) || n.row.created_at, n.progress ? n.progress.finished_at : n.row.ended_at, x.value);
+      return bt(B.value, ((M = n.progress) == null ? void 0 : M.started_at) || n.row.created_at, n.progress ? n.progress.finished_at : n.row.ended_at, $.value);
     }), R = c(() => n.row.role === "main" ? 0 : E.value), T = c(() => !!n.row.retired_at || n.row.state === "retired"), se = c(() => T.value ? "Retired" : u.value === "blocked" || u.value === "waiting" ? d.value || (u.value === "blocked" ? "Blocked" : "Waiting") : r[n.row.standing]), K = c(() => {
       var j;
       if (T.value) return n.row.retired_at;
       const M = u.value === "blocked" || u.value === "waiting";
       return n.row.ended_at || M && ((j = n.facts) == null ? void 0 : j.last_activity) || n.row.process_started_at || n.row.created_at;
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
     }), we = c(() => kt(K.value, x.value)), X = c(() => {
+========
+    }), Me = c(() => kt(K.value, $.value)), X = c(() => {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       var M;
-      return yt((M = n.facts) == null ? void 0 : M.last_activity, x.value);
+      return yt((M = n.facts) == null ? void 0 : M.last_activity, $.value);
     });
     return (M, j) => {
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       var ce, oe, pe, ue, ie, Me;
+========
+      var ce, oe, pe, ue, ie, $e;
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       return a(), s("div", {
         class: de(["agent-card", { open: e.open }]),
         "data-agent-open": e.row.id,
         "aria-expanded": e.open,
         role: e.open ? void 0 : "button",
         tabindex: e.open ? void 0 : 0,
-        onClick: j[2] || (j[2] = (ge) => !e.open && b("toggle")),
+        onClick: j[2] || (j[2] = (ge) => !e.open && k("toggle")),
         onKeydown: [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
           j[3] || (j[3] = De(ne((ge) => !e.open && b("toggle"), ["self", "prevent"]), ["enter"])),
           j[4] || (j[4] = De(ne((ge) => !e.open && b("toggle"), ["self", "prevent"]), ["space"]))
         ]
       }, [
         y("div", Dn, [
+========
+          j[3] || (j[3] = De(te((ge) => !e.open && k("toggle"), ["self", "prevent"]), ["enter"])),
+          j[4] || (j[4] = De(te((ge) => !e.open && k("toggle"), ["self", "prevent"]), ["space"]))
+        ]
+      }, [
+        b("div", En, [
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           e.open ? (a(), s("button", {
             key: 0,
             type: "button",
             class: "agent-back",
             title: "Back",
             "aria-label": "Back",
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
             onClick: j[0] || (j[0] = ne((ge) => b("toggle"), ["stop"]))
+========
+            onClick: j[0] || (j[0] = te((ge) => k("toggle"), ["stop"]))
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           }, [
             v(i(ze), {
               name: "chevronRight",
@@ -1774,15 +2573,25 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
             })
           ])) : f("", !0),
           e.open ? (a(), s(q, { key: 1 }, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
             y("span", qn, g(L.value.title), 1),
             y("span", Fn, g(L.value.subtext), 1),
             v(i(ee), {
+========
+            b("span", Nn, g(L.value.title), 1),
+            b("span", Wn, g(L.value.subtext), 1),
+            p(i(ee), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
               variant: "ghost",
               small: "",
               class: "agent-menu-button",
               "data-agent-menu": "",
               "aria-expanded": C.value,
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
               onClick: j[1] || (j[1] = ne((ge) => C.value = !C.value, ["stop"]))
+========
+              onClick: j[1] || (j[1] = te((ge) => C.value = !C.value, ["stop"]))
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
             }, {
               default: m(() => [...j[5] || (j[5] = [
                 h("Actions", -1)
@@ -1796,8 +2605,13 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
               class: "agent-who"
             }, {
               default: m(() => [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
                 y("span", Pn, g(L.value.title), 1),
                 y("span", Un, g(L.value.subtext), 1)
+========
+                b("span", Dn, g(L.value.title), 1),
+                b("span", qn, g(L.value.subtext), 1)
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
               ]),
               _: 1
             }, 8, ["agent-id", "label"]),
@@ -1808,17 +2622,30 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
             })
           ], 64))
         ]),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
         e.open && C.value ? (a(), s("div", Gn, [
           v(Qt, {
+========
+        e.open && C.value ? (a(), s("div", Fn, [
+          p(Qt, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
             row: e.row,
             held: u.value === "blocked"
           }, null, 8, ["row", "held"])
         ])) : f("", !0),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
         e.open ? f("", !0) : (a(), s("span", Jn, [
           y("span", Kn, g(D.value), 1),
           (ce = e.facts) != null && ce.sandbox_off ? (a(), s("span", Zn, "sandbox off")) : f("", !0)
         ])),
         e.open && !T.value ? (a(), N(Nn, {
+========
+        e.open ? f("", !0) : (a(), s("span", Pn, [
+          b("span", Un, g(D.value), 1),
+          (ce = e.facts) != null && ce.sandbox_off ? (a(), s("span", Gn, "sandbox off")) : f("", !0)
+        ])),
+        e.open && !T.value ? (a(), N(zn, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           key: 2,
           class: "agent-live",
           "agent-programs": i(Y).props.programs.rows.value,
@@ -1830,11 +2657,19 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
           default: m(() => {
             var ge, xe;
             return [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
               (ge = e.facts) != null && ge.sandbox_off ? (a(), s("span", _n, "sandbox off")) : f("", !0),
               y("span", Yn, "Run time: " + g(J.value), 1),
               (xe = e.facts) != null && xe.last_activity ? (a(), s("span", Qn, [
                 j[6] || (j[6] = h("Seen: ", -1)),
                 v(i(Ee), {
+========
+              (ge = e.facts) != null && ge.sandbox_off ? (a(), s("span", Jn, "sandbox off")) : f("", !0),
+              b("span", Kn, "Run time: " + g(J.value), 1),
+              (xe = e.facts) != null && xe.last_activity ? (a(), s("span", Zn, [
+                j[6] || (j[6] = h("Seen: ", -1)),
+                p(i(Ee), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
                   at: e.facts.last_activity
                 }, null, 8, ["at"])
               ])) : f("", !0)
@@ -1842,23 +2677,36 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
           }),
           _: 1
         }, 8, ["agent-programs", "agent", "branch", "usage"])) : f("", !0),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
         (ue = e.facts) != null && ue.unit_name ? (a(), s("div", Xn, "Unit: " + g(e.facts.unit_name), 1)) : f("", !0),
         e.open ? f("", !0) : (a(), N(Ua, {
+========
+        (ue = e.facts) != null && ue.unit_name ? (a(), s("div", Yn, "Unit: " + g(e.facts.unit_name), 1)) : f("", !0),
+        e.open ? f("", !0) : (a(), N(qa, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           key: 4,
           tasks: I.value,
           "in-hand": e.row.role !== "helper" && ((ie = e.facts) != null && ie.job_enabled) && W.value || null,
           job: e.row.role === "helper" ? A.value : "",
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
           "job-title": e.row.role === "helper" && ((Me = e.facts) == null ? void 0 : Me.helper_job_title) || "",
+========
+          "job-title": e.row.role === "helper" && (($e = e.facts) == null ? void 0 : $e.helper_job_title) || "",
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           "job-launch": e.row.role === "helper" ? P.value : "",
           "per-hour": R.value
         }, null, 8, ["tasks", "in-hand", "job", "job-title", "job-launch", "per-hour"])),
         v(ja, {
           state: u.value,
           doing: se.value,
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
           since: we.value,
+========
+          since: Me.value,
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           seen: X.value
         }, null, 8, ["state", "doing", "since", "seen"]),
-        e.open ? (a(), N($a, {
+        e.open ? (a(), N(xa, {
           key: 5,
           row: e.row,
           facts: e.facts,
@@ -1868,6 +2716,7 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
           "stopped-with-work": w.value,
           open: e.open
         }, null, 8, ["row", "facts", "progress", "wait-reason", "tasks", "stopped-with-work", "open"])) : f("", !0)
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       ], 42, Wn);
     };
   }
@@ -1883,6 +2732,23 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
       var H;
       return ((H = o.value.find(($) => $.agent_id === S.id)) == null ? void 0 : H.reason) ?? "";
     }, F = z("running"), O = z(""), W = JSON.parse(localStorage.getItem(Pe) || '{"roles":[],"profiles":[],"programs":[]}'), A = z(W), V = c(() => t.props.filters.data.value ?? { roles: [], profiles: [], states: [], upgrade_retired: 0 }), { rows: D } = t.props.programs, Y = c(() => A.value.roles.length + A.value.profiles.length + A.value.programs.length), J = (S, H) => {
+========
+      ], 42, Hn);
+    };
+  }
+}, Qn = /* @__PURE__ */ Z(_n, [["__scopeId", "data-v-9d316c36"]]), Xn = {
+  key: 1,
+  class: "agents-upgrade",
+  "data-agents-upgrade": ""
+}, el = ["data-agent-row", "data-agent-lingering"], Pe = "journal.agents.filters", Ue = 300 * 1e3, Le = "cubic-bezier(0.2, 0.9, 0.25, 1)", tl = {
+  __name: "AgentRows",
+  props: { empty: { type: String, required: !0 }, texts: { type: Object, default: () => ({}) } },
+  setup(e) {
+    const l = e, t = Be(), { rows: o } = t.props.waits, { rows: r } = t.props.progress, { rows: n, failure: k, loaded: $, more: C } = t.props.agents, L = (S) => r.value.find((H) => H.agent_id === S.id) ?? null, I = (S) => {
+      var H;
+      return ((H = o.value.find((x) => x.agent_id === S.id)) == null ? void 0 : H.reason) ?? "";
+    }, F = z("running"), O = z(""), W = JSON.parse(localStorage.getItem(Pe) || '{"roles":[],"profiles":[],"programs":[]}'), A = z(W), V = c(() => t.props.filters.data.value ?? { roles: [], profiles: [], states: [], upgrade_retired: 0 }), { rows: D } = t.props.programs, _ = c(() => A.value.roles.length + A.value.profiles.length + A.value.programs.length), J = (S, H) => {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       A.value = St(A.value, S, H);
     }, Q = () => {
       A.value = { roles: [], profiles: [], programs: [] };
@@ -1903,35 +2769,54 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
       return P.value += 25, _(), await t.reload("agents"), !0;
     }
     ve([F, O, A], () => {
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       P.value = 25, _(), t.reload("agents");
     }), _();
     const p = (S) => S.facts ?? null, U = n, k = Ke(), u = z([]), d = c(() => new Set(u.value.filter((S) => k.value - S.left < Ue).map((S) => S.row.id))), B = c(() => u.value.filter((S) => d.value.has(S.row.id)).map((S) => S.row)), E = c(() => [...U.value, ...B.value]);
+========
+      P.value = 25, Y(), t.reload("agents");
+    }), Y();
+    const v = (S) => S.facts ?? null, U = n, y = Ke(), u = z([]), d = c(() => new Set(u.value.filter((S) => y.value - S.left < Ue).map((S) => S.row.id))), B = c(() => u.value.filter((S) => d.value.has(S.row.id)).map((S) => S.row)), E = c(() => [...U.value, ...B.value]);
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
     let R = "", T = [];
     async function se(S) {
       await t.reload(`card.${S.id}`);
-      const H = t.props[`card.${S.id}`].rows.value.find(($) => $.id === S.id);
-      H != null && H.ended_at && !u.value.some(($) => $.row.id === S.id) && (u.value = [...u.value, { row: H, left: Date.now() }]);
+      const H = t.props[`card.${S.id}`].rows.value.find((x) => x.id === S.id);
+      H != null && H.ended_at && !u.value.some((x) => x.row.id === S.id) && (u.value = [...u.value, { row: H, left: Date.now() }]);
     }
     ve(n, (S) => {
-      const H = R === `${F.value}|${O.value}|${JSON.stringify(A.value)}` && F.value === "running", $ = H ? T.filter((G) => !S.some((me) => me.id === G.id)) : [];
-      R = `${F.value}|${O.value}|${JSON.stringify(A.value)}`, T = S, u.value = H ? u.value.filter((G) => k.value - G.left < Ue && !S.some((me) => me.id === G.row.id)) : [], $.forEach(se);
+      const H = R === `${F.value}|${O.value}|${JSON.stringify(A.value)}` && F.value === "running", x = H ? T.filter((G) => !S.some((me) => me.id === G.id)) : [];
+      R = `${F.value}|${O.value}|${JSON.stringify(A.value)}`, T = S, u.value = H ? u.value.filter((G) => y.value - G.left < Ue && !S.some((me) => me.id === G.row.id)) : [], x.forEach(se);
     }, { immediate: !0 });
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
     const K = c(() => !!O.value.trim() || Y.value > 0), we = c(() => l.texts[F.value] ?? { title: l.empty, hint: "" }), X = z(null), M = z(null), j = z(null), ce = z(null), oe = c(() => X.value === null ? null : t.props[`card.${X.value}`].rows.value.find((S) => S.id === X.value) ?? M.value), pe = c(() => oe.value ? [oe.value] : E.value), ue = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches, ie = z(!1);
     let Me = 0;
     async function ge(S) {
       if (ie.value) return;
       ie.value = !0, Me = ce.value.scrollTop;
+========
+    const K = c(() => !!O.value.trim() || _.value > 0), Me = c(() => l.texts[F.value] ?? { title: l.empty, hint: "" }), X = z(null), M = z(null), j = z(null), ce = z(null), oe = c(() => X.value === null ? null : t.props[`card.${X.value}`].rows.value.find((S) => S.id === X.value) ?? M.value), pe = c(() => oe.value ? [oe.value] : E.value), ue = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches, ie = z(!1);
+    let $e = 0;
+    async function ge(S) {
+      if (ie.value) return;
+      ie.value = !0, $e = ce.value.scrollTop;
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
       const H = j.value.querySelector(`[data-agent-open="${S.id}"]`);
       if (!ue()) {
         const he = [...j.value.querySelectorAll(".agent-row")].filter((re) => !re.contains(H));
         await Promise.all(he.map((re) => re.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, fill: "forwards" }).finished));
       }
-      const $ = [...H.querySelectorAll(".agent-head, .agent-line")], G = [...$, ...H.querySelectorAll("[data-agent-motion]")], me = G.map((he) => he.getBoundingClientRect());
+      const x = [...H.querySelectorAll(".agent-head, .agent-line")], G = [...x, ...H.querySelectorAll("[data-agent-motion]")], me = G.map((he) => he.getBoundingClientRect());
       if (M.value = S, X.value = S.id, t.reload(`card.${S.id}`), await qe(), !ue()) {
         const he = G.map((re) => re.getBoundingClientRect());
         G.forEach((re, Ae) => {
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
           const fe = $.findIndex((We) => We !== re && We.contains(re)), Ye = me[Ae].left - he[Ae].left - (fe < 0 ? 0 : me[fe].left - he[fe].left), Qe = me[Ae].top - he[Ae].top - (fe < 0 ? 0 : me[fe].top - he[fe].top);
           re.animate([{ transform: `translate(${Ye}px, ${Qe}px)` }, { transform: "none" }], { duration: 280, easing: Le });
+========
+          const fe = x.findIndex((We) => We !== re && We.contains(re)), _e = me[Ae].left - he[Ae].left - (fe < 0 ? 0 : me[fe].left - he[fe].left), Qe = me[Ae].top - he[Ae].top - (fe < 0 ? 0 : me[fe].top - he[fe].top);
+          re.animate([{ transform: `translate(${_e}px, ${Qe}px)` }, { transform: "none" }], { duration: 280, easing: Le });
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
         }), j.value.querySelectorAll(".agent-usage, .agent-more > .agent-command, .agent-tabs, .agent-tab-body").forEach((re) => {
           re.animate([{ opacity: 0, transform: "translateY(6px)" }, { opacity: 1, transform: "none" }], { duration: 240, delay: 60, easing: Le, fill: "backwards" });
         });
@@ -1941,19 +2826,28 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
     async function xe() {
       if (ie.value || !oe.value) return;
       ie.value = !0;
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       const S = j.value.querySelector(`[data-agent-open="${X.value}"]`), H = [...S.children], $ = ue() ? [] : H.map((G) => G.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: "forwards" }));
       await Promise.all($.map((G) => G.finished)), X.value = null, await qe(), ce.value.scrollTop = Me, $.forEach((G) => G.cancel()), ue() || (S.animate([{ transform: "translateY(-12px)" }, { transform: "none" }], { duration: 280, easing: Le }), j.value.querySelectorAll(".agent-row").forEach((G) => {
         G.contains(S) || G.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, easing: Le });
       })), ie.value = !1;
     }
     const _e = (S) => X.value === S.id ? xe() : ge(S);
+========
+      const S = j.value.querySelector(`[data-agent-open="${X.value}"]`), H = [...S.children], x = ue() ? [] : H.map((G) => G.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: "forwards" }));
+      await Promise.all(x.map((G) => G.finished)), X.value = null, await qe(), ce.value.scrollTop = $e, x.forEach((G) => G.cancel()), ue() || (S.animate([{ transform: "translateY(-12px)" }, { transform: "none" }], { duration: 280, easing: Le }), j.value.querySelectorAll(".agent-row").forEach((G) => {
+        G.contains(S) || G.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, easing: Le });
+      })), ie.value = !1;
+    }
+    const Ye = (S) => X.value === S.id ? xe() : ge(S);
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
     ve(O, (S) => S.trim() && (X.value = null)), ve(F, () => {
       X.value = null;
     });
     const Ne = (S) => {
       S.key === "Escape" && xe();
     };
-    return window.addEventListener("keydown", Ne), Se(() => window.removeEventListener("keydown", Ne)), (S, H) => (a(), s("div", {
+    return window.addEventListener("keydown", Ne), Ce(() => window.removeEventListener("keydown", Ne)), (S, H) => (a(), s("div", {
       ref_key: "agents",
       ref: j,
       class: de(["agents", { focused: oe.value, "card-changing": ie.value }])
@@ -1961,28 +2855,41 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
       oe.value ? f("", !0) : (a(), N(i(Mt), {
         key: 0,
         modelValue: O.value,
-        "onUpdate:modelValue": H[1] || (H[1] = ($) => O.value = $),
+        "onUpdate:modelValue": H[1] || (H[1] = (x) => O.value = x),
         placeholder: "Search agents",
         "menu-count": Y.value,
         "data-agents-search": ""
       }, {
         menu: m(() => [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
           v(i(Oe), null, {
+========
+          p(i(Oe), null, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
             default: m(() => [...H[2] || (H[2] = [
               h("Type", -1)
             ])]),
             _: 1
           }),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
           (a(!0), s(q, null, te(V.value.roles, ($) => (a(), N(i(je), {
             key: $,
+========
+          (a(!0), s(q, null, ne(V.value.roles, (x) => (a(), N(i(je), {
+            key: x,
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
             role: "menuitemcheckbox",
-            "aria-checked": A.value.roles.includes($),
-            checked: A.value.roles.includes($),
-            "data-filter-role": $,
-            onClick: (G) => J("roles", $)
+            "aria-checked": A.value.roles.includes(x),
+            checked: A.value.roles.includes(x),
+            "data-filter-role": x,
+            onClick: (G) => J("roles", x)
           }, {
             default: m(() => [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
               h(g(le($)), 1)
+========
+              h(g(le(x)), 1)
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
             ]),
             _: 2
           }, 1032, ["aria-checked", "checked", "data-filter-role", "onClick"]))), 128)),
@@ -1992,35 +2899,57 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
             ])]),
             _: 1
           })) : f("", !0),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
           (a(!0), s(q, null, te(V.value.profiles, ($) => (a(), N(i(je), {
             key: $.name,
+========
+          (a(!0), s(q, null, ne(V.value.profiles, (x) => (a(), N(i(je), {
+            key: x.name,
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
             role: "menuitemcheckbox",
-            "aria-checked": A.value.profiles.includes($.name),
-            checked: A.value.profiles.includes($.name),
-            "data-filter-profile": $.name,
-            onClick: (G) => J("profiles", $.name)
+            "aria-checked": A.value.profiles.includes(x.name),
+            checked: A.value.profiles.includes(x.name),
+            "data-filter-profile": x.name,
+            onClick: (G) => J("profiles", x.name)
           }, {
             default: m(() => [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
               h(g($.title), 1)
             ]),
             _: 2
           }, 1032, ["aria-checked", "checked", "data-filter-profile", "onClick"]))), 128)),
           v(i(Oe), null, {
+========
+              h(g(x.title), 1)
+            ]),
+            _: 2
+          }, 1032, ["aria-checked", "checked", "data-filter-profile", "onClick"]))), 128)),
+          p(i(Oe), null, {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
             default: m(() => [...H[4] || (H[4] = [
               h("Program", -1)
             ])]),
             _: 1
           }),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
           (a(!0), s(q, null, te(i(D), ($) => (a(), N(i(je), {
             key: $.name,
+========
+          (a(!0), s(q, null, ne(i(D), (x) => (a(), N(i(je), {
+            key: x.name,
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
             role: "menuitemcheckbox",
-            "aria-checked": A.value.programs.includes($.name),
-            checked: A.value.programs.includes($.name),
-            "data-filter-program": $.name,
-            onClick: (G) => J("programs", $.name)
+            "aria-checked": A.value.programs.includes(x.name),
+            checked: A.value.programs.includes(x.name),
+            "data-filter-program": x.name,
+            onClick: (G) => J("programs", x.name)
           }, {
             default: m(() => [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
               h(g($.title), 1)
+========
+              h(g(x.title), 1)
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
             ]),
             _: 2
           }, 1032, ["aria-checked", "checked", "data-filter-program", "onClick"]))), 128)),
@@ -2036,27 +2965,44 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
           })) : f("", !0)
         ]),
         default: m(() => [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
           v(i(xt), {
+========
+          p(i($t), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
             options: V.value.states,
             value: F.value,
-            onPick: H[0] || (H[0] = ($) => F.value = $)
+            onPick: H[0] || (H[0] = (x) => F.value = x)
           }, null, 8, ["options", "value"])
         ]),
         _: 1
       }, 8, ["modelValue", "menu-count"])),
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
       F.value === "retired" && V.value.upgrade_retired ? (a(), s("p", al, "Retired during the upgrade: " + g(V.value.upgrade_retired), 1)) : f("", !0),
       y("div", {
+========
+      F.value === "retired" && V.value.upgrade_retired ? (a(), s("p", Xn, "Retired during the upgrade: " + g(V.value.upgrade_retired), 1)) : f("", !0),
+      b("div", {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
         ref_key: "list",
         ref: ce,
         class: de(["agents-view", { "agents-view-open": oe.value }])
       }, [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
         i(x) && !i(b) && !pe.value.length && Y.value ? (a(), N(i(He), {
+========
+        i($) && !i(k) && !pe.value.length && _.value ? (a(), N(i(He), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           key: 0,
           title: "No agents match the filters",
           "data-filter-empty": ""
         }, {
           default: m(() => [
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
             v(i(ee), {
+========
+            p(i(ee), {
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
               small: "",
               "data-empty-clear": "",
               onClick: Q
@@ -2068,11 +3014,12 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
             })
           ]),
           _: 1
-        })) : (a(), N(i($t), {
+        })) : (a(), N(i(xt), {
           key: 1,
           moves: "",
           "leaves-at-once": ie.value,
           rows: pe.value,
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
           failure: i(b),
           loaded: i(x),
           more: !oe.value && i(C),
@@ -2096,13 +3043,44 @@ const Mn = ["disabled", "title"], xn = ["disabled", "title"], $n = { class: "gau
                 onToggle: (G) => _e($)
               }, null, 8, ["row", "facts", "progress", "wait-reason", "open", "onToggle"])
             ], 10, nl)
+========
+          failure: i(k),
+          loaded: i($),
+          more: !oe.value && i(C),
+          older: w,
+          empty: Me.value.title,
+          hint: Me.value.hint,
+          searching: K.value
+        }, {
+          default: m(({ row: x }) => [
+            b("div", {
+              class: de(["agent-row", { lingering: d.value.has(x.id) && x.id !== X.value }]),
+              "data-agent-row": x.id,
+              "data-agent-lingering": d.value.has(x.id) ? "" : null
+            }, [
+              p(Qn, {
+                row: x,
+                facts: v(x),
+                progress: L(x),
+                "wait-reason": I(x),
+                open: x.id === X.value,
+                onToggle: (G) => Ye(x)
+              }, null, 8, ["row", "facts", "progress", "wait-reason", "open", "onToggle"])
+            ], 10, el)
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
           ]),
           _: 1
         }, 8, ["leaves-at-once", "rows", "failure", "loaded", "more", "empty", "hint", "searching"]))
       ], 2)
     ], 2));
   }
+<<<<<<<< HEAD:src/core/modules/agents/web/dist/AgentRows-DEzwcOy1.js
 }, rl = /* @__PURE__ */ Z(ll, [["__scopeId", "data-v-6542daf5"]]);
 export {
   rl as A
+========
+}, ol = /* @__PURE__ */ Z(tl, [["__scopeId", "data-v-6542daf5"]]);
+export {
+  ol as A
+>>>>>>>> journal/development/worker-916-3:src/core/modules/agents/web/dist/AgentRows-DxFanwZT.js
 };

@@ -1,9 +1,9 @@
 from engine.driver.block_check import BlockCheck
-from engine.driver.block_condition import BlockCondition
+from core.modules.processes.support.block_conditions.process_condition import ProcessCondition
 from core.modules.processes.queries.output_query import OutputQuery
 
 
-class OutputRead(BlockCondition):
+class OutputRead(ProcessCondition):
     """This run's output has been read."""
 
     name = "output-read"

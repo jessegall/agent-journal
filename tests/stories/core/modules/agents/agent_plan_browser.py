@@ -7,7 +7,7 @@ from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
 
 
 @pytest.mark.real_git
-def test_agent_card_links_its_current_plan(new_story, tmp_path):
+def test_a_plan_workers_card_names_its_plan_in_place_of_its_tasks_and_opens_it(new_story, tmp_path):
     story = new_story(fixture=UserBuilder)
     story.expect_success("setting set journal.core.viewer.tour-completed true --project")
     story.expect_success('plan make "Release work" --environment main', actor=story.user)

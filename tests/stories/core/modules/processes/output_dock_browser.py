@@ -30,3 +30,14 @@ def test_a_large_output_opens_on_its_last_page_and_scrolling_up_reads_one_page_m
     story.expect_success('actor make user "Ada"')
     with server_story(story) as server:
         expect_browser(server, "outputPagesBrowser.browser.mjs", [])
+
+
+def test_an_outputs_menu_is_three_dots_shown_only_while_the_pointer_is_over_its_terminal(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.expect_success('actor make user "Ada"')
+    install_runner(story)
+    process = moved_run(story, "make lint", category=CommandCategory.CHECK)
+    story.container.get(OutputFolder).write(process.id, "1.out", LONG_OUTPUT)
+    story.expect_success(f"dock add processes.output process {process.id} --environment main", actor=story.agent)
+    with server_story(story) as server:
+        expect_browser(server, "outputDockMenu.browser.mjs", [])

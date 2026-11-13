@@ -80,10 +80,11 @@ test("a row has no Waiting or Blocked words and no pace", async () => {
     expect(element.querySelector("[data-agent-identity]")).not.toBeNull();
 });
 
-test("after the task the row says Plan and its number, with no title, when the task is in a plan", async () => {
+test("a task in a plan makes the row say Plan and its number in place of the task, with the plan's title in its label", async () => {
     const element = await card(worker(), {tasks: tasksOf(1, "started", 3).map((task) => ({...task, plan_id: 7, plan_title: "Plan title seven"}))});
-    expect(element.querySelector("[data-agent-plan]").textContent).toBe("Plan 7");
-    expect(element.querySelector("[data-agent-task]").nextElementSibling).toBe(element.querySelector("[data-agent-plan]"));
+    expect(element.querySelector("[data-agent-plan]").textContent).toContain("Plan 7");
+    expect(element.querySelector("[data-agent-plan]").getAttribute("aria-label")).toBe("Plan 7: Plan title seven");
+    expect(element.querySelector("[data-agent-task]")).toBeNull();
 });
 
 test("a task in no plan shows no plan after it", async () => {

@@ -127,24 +127,13 @@ def test_a_commit_of_a_worker_whose_row_a_restart_ended_while_its_program_runs_g
 
 
 
-@pytest.fixture
-def over_the_limit(two_proved) -> tuple[StoryWorker, int]:
-    """A worker that holds tasks 1 and 2 proved, a free simple task, and a running limit of 0 with the worker running."""
-    story = two_proved.story
+
+def test_while_more_workers_run_than_the_limit_a_finished_worker_gets_no_free_task_and_a_send_of_tasks_is_refused(two_proved):
+    worker, story = two_proved, two_proved.story
     free_task = story.new_row_id('task make "Free job" --brief "A small job" --complexity 1 --environment main', actor=story.agent)
     story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 0 --environment main", actor=story.user)
-    return two_proved, free_task
-
-
-def test_a_worker_that_commits_its_last_task_while_more_workers_run_than_the_limit_gets_no_free_task(over_the_limit):
-    worker, free_task = over_the_limit
-    outcome = worker.story.run(COMMIT, actor=worker.worker)
-    worker.story.expect_rows(outcome.code == 0, detail=outcome.output_text)
+    outcome = story.run(COMMIT, actor=worker.worker)
+    story.expect_rows(outcome.code == 0, detail=outcome.output_text)
     expect_open_undelegated(worker, free_task)
-
-
-def test_a_send_of_new_tasks_while_more_workers_run_than_the_limit_is_refused(over_the_limit):
-    worker, free_task = over_the_limit
-    story = worker.story
     story.expect_refusal(f"worker send {agent_number(story, worker.worker.id)} --task {free_task}", "the running limit is 0", actor=story.agent)
     expect_open_undelegated(worker, free_task)

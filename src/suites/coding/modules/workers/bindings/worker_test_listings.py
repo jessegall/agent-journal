@@ -75,9 +75,7 @@ class WorkerTestListings(RunCounts):
         return sum(counts) if counts and all(count > 0 for count in counts) else 0
 
     def requires_count(self, process: Process, agent: Agent) -> bool:
-        return (process.is_queue_run and self.own_runs.is_own(process) and agent.role == CodingHelperRole.WORKER
-                and self.settings.number(WORKER_TEST_LIMIT) > 0
-                and any(part.category is CommandCategory.TEST_RUN for part in self.visibility.parts(process.id)))
+        return self.is_counted(process, agent) and any(part.category is CommandCategory.TEST_RUN for part in self.visibility.parts(process.id))
 
     def reject_unknown(self, process: Process, agent: Agent, status: int | None, count: int, context: Context) -> None:
         if status == 0 and count > 0:

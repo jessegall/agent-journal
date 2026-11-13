@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from engine.container.container import Container
 from engine.driver.block_check import BlockCheck
 from engine.listener.rows.event_rows import EventRows
-from engine.driver.block_condition import BlockCondition
+from core.modules.processes.support.block_conditions.process_condition import ProcessCondition
 from engine.enums.tool_type import ToolType
 from engine.provider.providers import Providers
 from engine.query.conditions.contains_some import ContainsSome
@@ -20,7 +20,7 @@ from core.modules.processes.models.process import Process
 MONITORS_REASON = "every monitor call since the run began may still be watching it"
 
 
-class OutputMonitored(BlockCondition):
+class OutputMonitored(ProcessCondition):
     """The agent watches this output the way its program does, or the output has ended: it starts a Monitor
     naming the output, or, when its program has no Monitor tool, runs journal output monitor on it in its
     shell."""

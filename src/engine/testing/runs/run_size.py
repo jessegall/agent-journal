@@ -4,7 +4,6 @@ import re
 from collections.abc import Iterable, Iterator
 from pathlib import Path
 
-HEAVY_TESTS = 50
 FULL_SUITE = "tests"
 UNIT_FOLDER = "unit"
 TEST_FUNCTION = re.compile(r"^\s*(?:async\s+)?def test_", re.MULTILINE)
@@ -23,15 +22,6 @@ class RunSize:
 
     def reaches_stories(self) -> bool:
         return not self.targets or any(UNIT_FOLDER not in Path(target).parts for target in self.targets)
-
-    def is_heavy(self) -> bool:
-        if not self.targets or self.is_full_suite():
-            return True
-        is_single_test = len(self.targets) == 1 and (RunTarget(self.targets[0]).is_single_test or Path(self.targets[0]).is_file())
-        return not is_single_test and self.limited_count(HEAVY_TESTS) >= HEAVY_TESTS
-
-    def limited_count(self, limit: int) -> int:
-        return RunSize(self.targets, limit).counted()
 
     def runner_count(self, single_runner_limit: int, runners: int, highest_count_start: int, most_runners: int) -> int:
         if not self.targets:

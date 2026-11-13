@@ -44,11 +44,8 @@ const openAgent = (agent) => peekRef(`agents:${agent.id}`);
 .plan-agents {
     display: flex;
     align-items: center;
+    flex: none;
     min-width: 0;
-    height: 34px;
-    margin: 2px -14px 0;
-    padding: 0 14px;
-    border-top: 1px solid var(--border-inner);
     color: var(--text-3);
     font-size: 12px;
 }

@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from engine.testing import pytest_plugin
-from engine.testing.pytest_plugin import GATE_LOCK_VARIABLE, TEMPLATE_FOLDER_VARIABLE, chooses_template_folder, run_template_folder
+from engine.testing.pytest_plugin import TEMPLATE_FOLDER_VARIABLE, chooses_template_folder, run_template_folder
 from engine.testing.runs.run_size import RunSize
 from engine.testing.cache.template_cache import TemplateCache
 from engine.module.code_fingerprint import PINNED_CODE_VARIABLE
@@ -34,7 +34,6 @@ def test_no_run_builds_a_template_before_it_starts(first_process, target):
     def refuse_build(*_):
         pytest.fail("a template was built before the run started")
 
-    first_process.setenv(GATE_LOCK_VARIABLE, "1")
     first_process.setattr(pytest_plugin, "run_template_folder", lambda: None)
     first_process.setattr(pytest_plugin, "TemplateDatabases", refuse_build)
     pytest_plugin.pytest_cmdline_main(run_config(target))

@@ -19,6 +19,7 @@ PRAGMAS = ("auto_vacuum = INCREMENTAL", "foreign_keys = ON", "journal_mode = WAL
 BUSY_TIMEOUT_SECONDS = 5.0
 READ_LIMIT_ROWS = 50
 NESTING_LIMIT_LEVELS = 8
+AUTO_VACUUM_OFF = 0
 
 
 class Database:
@@ -74,6 +75,15 @@ class Database:
         finally:
             copy.close()
             source.close()
+
+    def turn_on_auto_vacuum(self) -> bool:
+        """Turns on incremental auto vacuum for a database made before it, which SQLite applies only with one full
+        VACUUM, and says whether it did; a database that has it already is left alone."""
+        if self.connection.execute("PRAGMA auto_vacuum").fetchone()[0] != AUTO_VACUUM_OFF:
+            return False
+        self.connection.execute("PRAGMA auto_vacuum = INCREMENTAL")
+        self.connection.execute("VACUUM")
+        return True
 
     def release_free_pages(self, pages: int) -> None:
         self.connection.execute(f"PRAGMA incremental_vacuum({int(pages)})").fetchall()

@@ -232,7 +232,7 @@ usePoll(load, isRunning, () =>
               >{{ lines.length ? lines.join("\n") : "No output yet" }}</pre>
             <template v-if="run?.reading_text"><p class="output-dock-reading" data-output-reading>{{ run.reading_text }}</p></template>
             <template v-if="canAskForReader || run?.markable">
-              <button ref="reportAnchor" type="button" class="output-dock-report" data-output-report title="Report a problem with this output" aria-label="Report a problem with this output" :aria-expanded="reportOpen" @click="reportOpen = !reportOpen"><Icon name="warn" :size="14" /></button>
+              <button ref="reportAnchor" type="button" class="output-dock-report" data-output-report title="Report a problem with this output" aria-label="Report a problem with this output" :aria-expanded="reportOpen" @click="reportOpen = !reportOpen"><Icon name="dots" :size="14" /></button>
               <template v-if="reportOpen">
                 <MenuPanel :anchor="reportAnchor" :min-width="190" data-output-report-menu @close="reportOpen = false">
                   <template v-if="canAskForReader"><MenuItem data-output-reader-ask @click="reportWith(askForReader)">Ask for a better reader</MenuItem></template>
@@ -399,6 +399,16 @@ usePoll(load, isRunning, () =>
 .output-dock-report:hover {
   background: var(--hover);
   color: var(--text);
+}
+/* the menu shows only while the pointer is over the output's terminal, or while it has the keyboard or is open */
+.output-dock-report {
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.output-dock-box:hover .output-dock-report,
+.output-dock-report:focus-visible,
+.output-dock-report[aria-expanded="true"] {
+  opacity: 1;
 }
 .output-dock-loading {
   padding: 8px 14px 8px 36px;

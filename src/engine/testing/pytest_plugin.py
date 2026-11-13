@@ -1,6 +1,5 @@
 import os
 import shutil
-import sys
 from collections.abc import Callable, Generator
 import time
 from pathlib import Path
@@ -12,7 +11,6 @@ from engine.module.code_fingerprint import PINNED_CODE_VARIABLE
 from engine.module.source_hash import SourceHash
 
 from engine.registry.lazy_loading import LazyLoading
-from engine.testing.runs.heavy_run_gate import HeavyRunGate
 from engine.module.python_source_folders import python_source_folders
 from engine.testing.runs.run_cpu import RunCpu
 from engine.testing.runs.run_size import RunSize
@@ -47,7 +45,6 @@ RUNNERS_OPTION = "runners"
 HIGHEST_COUNT_START_OPTION = "most_runners_from"
 MOST_RUNNERS_OPTION = "most_runners"
 RUNNER_NICENESS = 10
-GATE_LOCK_VARIABLE = "JOURNAL_HEAVY_GATE_HELD"
 TEMPLATE_FOLDER_VARIABLE = "JOURNAL_TEMPLATE_FOLDER"
 LISTING_OPTIONS = ("collectonly", "help", "version")
 
@@ -62,9 +59,6 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_cmdline_main(config: pytest.Config) -> None:
-    if GATE_LOCK_VARIABLE not in os.environ and RunSize(config.args, 1).is_heavy():
-        HeavyRunGate().enter(lambda line: print(line, file=sys.stderr, flush=True))
-        os.environ[GATE_LOCK_VARIABLE] = "1"
     if chooses_template_folder(config):
         pinned_code_text()
         run_template_folder()

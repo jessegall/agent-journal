@@ -25,7 +25,7 @@ from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.reader_writers import ReaderWriters
 from core.modules.processes.support.cadence.run_cadences import RunCadences
-from core.modules.processes.support.decisions.escalation_counter import EscalationCounter
+from core.modules.processes.support.decisions.command_run_counts import CommandRunCounts
 from core.modules.processes.support.decisions.escalation_resets import EscalationResets
 from core.modules.processes.support.decisions.output_facts import SAMPLE_BYTES, OutputFacts
 from core.modules.processes.models.enums.reader_layer import ReaderLayer
@@ -39,16 +39,16 @@ class ReadingFacts:
     reader and that reader's judgement, its output, the history of its command and the policy of the agent's
     role, and how the run prints. It is the one builder of a ReadingCase."""
 
-    def __init__(self, readers: ReaderRows, judge: ReaderJudge, writers: ReaderWriters, requests: ReaderRequestQuery, counter: EscalationCounter,
+    def __init__(self, readers: ReaderRows, judge: ReaderJudge, writers: ReaderWriters, requests: ReaderRequestQuery, run_counts: CommandRunCounts,
                  resets: EscalationResets, folder: OutputFolder, settings: ProcessSettings, suites: SuiteChoice, rows: EventRows, clock: Clock,
                  cadences: RunCadences, run: ReaderRun, counts: RunCounts) -> None:
-        self.readers, self.judge, self.writers, self.requests, self.counter = readers, judge, writers, requests, counter
+        self.readers, self.judge, self.writers, self.requests, self.run_counts = readers, judge, writers, requests, run_counts
         self.resets, self.folder, self.settings, self.suites, self.rows, self.clock, self.cadences = resets, folder, settings, suites, rows, clock, cadences
         self.run, self.counts = run, counts
 
     def cases_for(self, process: Process, parts: Sequence[ProcessPart], moment: ReadingMoment) -> list[ReadingCase]:
         keys = [SilentStartRuns.name(part.text, part.program, part.category) for part in parts]
-        runs = self.counter.runs_without_change(keys)
+        runs = self.run_counts.runs_without_reader(keys)
         waiting = self.waiting_commands(process, [part.command or part.text for part in parts])
         marked = self.resets.marked_keys(keys)
         return [self.case_for(process, part, moment, runs[key], (part.command or part.text) in waiting, key in marked) for part, key in zip(parts, keys)]
