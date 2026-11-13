@@ -72,6 +72,10 @@ class ConditionLine:
                 raise Refusal(f"the condition {field} {operator} needs a number, not {value!r}")
 
     @property
+    def names_plan(self) -> bool:
+        return self.field is ConditionField.PLACE and self.operator is ConditionOperator.PLANNED
+
+    @property
     def text(self) -> str:
         return " ".join(part for part in (self.field, self.operator, self.value) if part)
 
