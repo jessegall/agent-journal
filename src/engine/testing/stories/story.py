@@ -25,6 +25,7 @@ from engine.caller.process_row import ProcessRow
 from engine.time.clock import Clock
 from engine.container.container import Container
 from engine.database.database import Database
+from engine.database.schema import Schema
 from engine.driver.hook_event import HookEvent
 from engine.driver.hook_reply import HookReply
 from engine.driver.hook_route import HookRoute
@@ -410,8 +411,39 @@ class Story:
         providers = [provider for provider in Registry.read(self.container.get(Database)).providers if provider.name == name]
         self.expected([provider.module for provider in providers] == [module], f"agent program {name} is registered as {providers}")
 
+    def expect_helper_type_extends(self, key: str, base: str) -> None:
+        self.checked(f"helper type {key} extends {base}")
+        book = Registry.read(self.container.get(Database)).helper_type_book()
+        self.expected(book.extends(key, base), f"helper type {key} does not extend {base}: {book.find(key)}")
+
+    def expect_helper_type_apart_from(self, key: str, base: str) -> None:
+        self.checked(f"helper type {key} apart from {base}")
+        book = Registry.read(self.container.get(Database)).helper_type_book()
+        self.expected(not book.extends(key, base), f"helper type {key} extends {base}: {book.find(key)}")
+
+    def expect_registered_helper_type(self, key: str, **fields: object) -> None:
+        self.checked(f"registered helper type {key}")
+        stored = self.registered_helper_types()
+        registered = {name: stored[key].get(name) for name in fields} if key in stored else {}
+        self.expected(registered == fields, f"helper type {key} is registered as {stored.get(key)}")
+
+    def expect_helper_type_field_absent(self, key: str, field: str) -> None:
+        self.checked(f"helper type {key} without {field}")
+        stored = self.registered_helper_types()
+        self.expected(key in stored and field not in stored[key], f"helper type {key} is registered as {stored.get(key)}")
+
+    def registered_helper_types(self) -> dict[str, dict[str, object]]:
+        entries = json.loads(Registry.read(self.container.get(Database)).entries_text())["helper_types"]
+        return {entry["key"]: entry for entry in entries}
+
     def expect_logged_event(self, name: str) -> None:
         self.expected(self.container.get(EventLog).latest_event(name) is not None, f"no {name} event was logged")
+
+    def run_migration_again(self, module: str, number: int) -> None:
+        """Forgets that the migration ran and syncs, as a journal updated to a version that ships it runs it."""
+        self.container.get(Schema).remove_migration_record(module, number)
+        code, output_text = self.synced()
+        self.expected(code == 0, f"module sync after forgetting {module} migration {number} gave {code}: {output_text}")
 
     def synced_with(self, module: str) -> tuple[int, str]:
         modules = json.loads(FileAccess.shared().read(self.home.module_list))

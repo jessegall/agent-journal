@@ -14,7 +14,6 @@ MODULES = "tests.stories.engine.module.support.agent_type_modules"
     ("MissingDependency", "does not depend on journal.core.agents"),
     ("InvalidRoster", "roster does not implement AgentRoster"),
     ("UnknownBase", "extends missing-base, which no module registers"),
-    ("Loop", "extends loop"),
     ("WritingHelper", "writing helper needs its own folder"),
     ("WritingDescendant", "writing helper needs its own folder"),
     ("DriverRole", "missing-driver-role is no registered helper type"),

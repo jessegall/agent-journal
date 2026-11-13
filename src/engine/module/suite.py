@@ -32,4 +32,4 @@ class Suite:
     presets: ClassVar[Mapping[str, Sequence[LayoutPreset]]] = {}
     task_assigner: ClassVar[type[TaskAssigner] | None] = None
     agent_policy: ClassVar[AgentPolicy] = AgentPolicy()
-    helper_types: ClassVar[Sequence[HelperType]] = []
+    helper_types: ClassVar[Sequence[type[HelperType]]] = []

@@ -27,7 +27,7 @@ MODULES = "tests.stories.core.modules.profiles.support.profile_modules"
     ("MissingBody", "profile module-reader has no body"),
     ("InvalidName", "bad name cannot name a profile"),
     ("MissingDefault", "default profile missing-profile is not registered"),
-    ("WrongDefaultType", "default profile module-reader has type helper, not clerk"),
+    ("WrongDefaultType", "default profile module-reader has type helper, which clerk does not extend"),
     ("LegacyProfiles", "register profiles on the module, not the suite"),
     ("MissingBase", "profile module-reader names the base no-such-base, which no module registers"),
     ("LoopingBases", "the bases of profile module-reader lead back to it: module-reader -> module-writer -> module-reader"),

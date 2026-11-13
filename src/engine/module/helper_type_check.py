@@ -39,8 +39,8 @@ class HelperTypeCheck:
                 problems.append(f"{declaration.key}: default profile {declaration.default_profile} is not registered")
                 continue
             profile = profiles[declaration.default_profile]
-            if profile.agent_type != declaration.key:
-                problems.append(f"{declaration.key}: default profile {profile.name} has type {profile.agent_type}, not {declaration.key}")
+            if not book.extends(declaration.key, profile.agent_type):
+                problems.append(f"{declaration.key}: default profile {profile.name} has type {profile.agent_type}, which {declaration.key} does not extend")
         names = frozenset(book.entries)
         uses = [(driver.name, driver.role) for module in modules for driver in module.drivers]
         uses.extend((suite.name, role) for module in modules for suite in suites.module_suites(module) for role in suite.defaults)
@@ -64,7 +64,7 @@ class HelperTypeCheck:
                 elif profiles[name].agent_type != group.agent_type:
                     yield f"the agent group {group.key} names the profile {name}, which has type {profiles[name].agent_type}, not {group.agent_type}"
 
-    def declaration_problems(self, module: type[Module], declaration: HelperType, claimed: dict[str, str]) -> list[str]:
+    def declaration_problems(self, module: type[Module], declaration: type[HelperType], claimed: dict[str, str]) -> list[str]:
         name = f"{module.name}'s helper type {declaration.key}"
         problems: list[str] = []
         if declaration.key == MAIN_KEY:
@@ -83,13 +83,11 @@ class HelperTypeCheck:
             problems.append(f"{name}: its roster does not implement AgentRoster")
         return problems
 
-    def inheritance_problems(self, module: str, declaration: HelperType, book: HelperTypeBook) -> list[str]:
+    def inheritance_problems(self, module: str, declaration: type[HelperType], book: HelperTypeBook) -> list[str]:
         name = f"{module}'s helper type {declaration.key}"
-        if declaration.extends and declaration.extends not in book.entries:
-            return [f"{name}: extends {declaration.extends}, which no module registers"]
-        chain = book.type_chain(declaration.key)
-        if len(set(chain)) != len(chain):
-            return [f"{name}: extends loop through {chain[-1]}"]
+        unregistered = [base for base in declaration.bases() if base not in book.entries]
+        if unregistered:
+            return [f"{name}: extends {unregistered[0]}, which no module registers"]
         if book.is_helper(declaration.key) and declaration.access is Access.WRITING and not declaration.separate_folder:
             return [f"{name}: a writing helper needs its own folder"]
         return []

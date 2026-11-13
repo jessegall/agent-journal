@@ -228,9 +228,8 @@ from engine.module.module import Module
 from engine.viewer.button_condition import ButtonCondition
 from engine.viewer.button_declaration import ButtonDeclaration
 from engine.viewer.text_field import TextField
-from engine.enums.access import Access
-from engine.helper_type.helper_type import HelperType
-from suites.coding.modules.workers.bindings.worker_roster import WorkerRoster
+from suites.coding.modules.workers.types.merger import Merger
+from suites.coding.modules.workers.types.worker import Worker
 from core.modules.processes.support.run_counts import RunCounts
 from core.modules.processes.support.part_visibility import PartVisibility
 from suites.coding.modules.workers.support.worker_part_visibility import WorkerPartVisibility
@@ -468,7 +467,6 @@ from suites.coding.modules.workers.commands.worker_presets.worker_presets_subcom
 from suites.coding.modules.workers.commands.project_worktree_list.project_worktree_list_subcommand import ProjectWorktreeListSubcommand
 from suites.coding.modules.workers.commands.remove_project_worktree.remove_project_worktree_handler import RemoveProjectWorktreeHandler
 from suites.coding.modules.workers.commands.remove_project_worktree.remove_project_worktree_subcommand import RemoveProjectWorktreeSubcommand
-from suites.coding.modules.workers.support.worker_settings import WORKER_KEPT_LIMIT, WORKER_RUN_LIMIT
 from suites.coding.modules.workers.support.skeletons import WORKERS_POINTS_SKELETON, WORKERS_TODOS_SKELETON, WORKERS_WORKERS_SKELETON, WORKERS_WORKTREES_SKELETON
 
 
@@ -489,8 +487,7 @@ class WorkersModule(Module):
 
     name = "journal.suites.coding.workers"
     profiles = WORKER_PROFILES
-    helper_types = [HelperType("worker", "Worker", access=Access.WRITING, separate_folder=True,
-                             default_profile="journal-worker-medior", start_line="journal worker dispatch", roster=WorkerRoster, run_limit_key=WORKER_RUN_LIMIT, kept_limit_key=WORKER_KEPT_LIMIT, job_command=("worker", "send"), job_task_flag="--task", line="Writes the code of a task in a worktree of its own.")]
+    helper_types = [Worker, Merger]
     templates = WORKER_TEMPLATES
     window_extensions = [*(WindowExtension(name, reads=["proof list", "worker waits", "worker progress"], runs=["worker send"],
                                           events=["proof.*", "worker_worktree.*"],

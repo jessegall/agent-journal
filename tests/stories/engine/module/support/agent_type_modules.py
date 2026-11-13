@@ -6,6 +6,7 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.rule_answer import RuleAnswer
 from engine.agent.enums.role_group import RoleGroup
 from engine.helper_type.helper_type import HelperType
+from core.modules.helpers.types.helper import Helper
 from engine.driver.driver import Driver
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -18,24 +19,78 @@ class ClerkRoster(AgentRoster):
         return ()
 
 
+class ClerkHelper(Helper):
+    key = "clerk"
+    label = "Clerk"
+    roster = ClerkRoster
+
+
+class DuplicateMainType(HelperType):
+    key = "main"
+    label = "Duplicate main"
+
+
+class InvalidKeyType(HelperType):
+    key = "Clerk_1"
+    label = "Clerk"
+
+
+class UnlabelledClerk(HelperType):
+    key = "clerk"
+    label = " "
+
+
+class StringRosterClerk(HelperType):
+    key = "clerk"
+    label = "Clerk"
+    roster = str
+
+
+class MissingBaseType(HelperType):
+    key = "missing-base"
+    label = "Missing base"
+
+
+class MissingBaseClerk(MissingBaseType):
+    key = "clerk"
+    label = "Clerk"
+
+
+class WritingClerk(Helper):
+    key = "clerk"
+    label = "Clerk"
+    access = Access.WRITING
+
+
+class WritingAssistant(ClerkHelper):
+    key = "assistant"
+    label = "Assistant"
+    access = Access.WRITING
+
+
+class SuiteClerk(HelperType):
+    key = "suite-clerk"
+    label = "Suite clerk"
+
+
 class Clerk(Module):
     name = "sample.clerk"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.agents"]
-    helper_types = [HelperType("clerk", "Clerk", extends="helper", roster=ClerkRoster)]
+    helper_types = [ClerkHelper]
 
 
 class Duplicate(Clerk):
     name = "sample.duplicate"
-    helper_types = [HelperType("main", "Duplicate main")]
+    helper_types = [DuplicateMainType]
 
 
 class InvalidKey(Clerk):
-    helper_types = [HelperType("Clerk_1", "Clerk")]
+    helper_types = [InvalidKeyType]
 
 
 class MissingLabel(Clerk):
-    helper_types = [HelperType("clerk", " ")]
+    helper_types = [UnlabelledClerk]
 
 
 class MissingDependency(Clerk):
@@ -43,24 +98,19 @@ class MissingDependency(Clerk):
 
 
 class InvalidRoster(Clerk):
-    helper_types = [HelperType("clerk", "Clerk", roster=str)]
+    helper_types = [StringRosterClerk]
 
 
 class UnknownBase(Clerk):
-    helper_types = [HelperType("clerk", "Clerk", extends="missing-base")]
-
-
-class Loop(Clerk):
-    helper_types = [HelperType("clerk", "Clerk", extends="assistant"), HelperType("assistant", "Assistant", extends="clerk")]
+    helper_types = [MissingBaseClerk]
 
 
 class WritingHelper(Clerk):
-    helper_types = [HelperType("clerk", "Clerk", extends="helper", access=Access.WRITING)]
+    helper_types = [WritingClerk]
 
 
 class WritingDescendant(Clerk):
-    helper_types = [HelperType("clerk", "Clerk", extends="helper"),
-                   HelperType("assistant", "Assistant", extends="clerk", access=Access.WRITING)]
+    helper_types = [ClerkHelper, WritingAssistant]
 
 
 class SampleSuite(Suite):
@@ -134,7 +184,7 @@ class ReaderHelperRules(Clerk):
 
 class HelperTypeSuite(Suite):
     name = "sample-helpers"
-    helper_types = [HelperType("suite-clerk", "Suite clerk")]
+    helper_types = [SuiteClerk]
 
 
 class SuiteRegistersHelperType(Clerk):

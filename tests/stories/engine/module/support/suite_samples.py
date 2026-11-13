@@ -3,6 +3,16 @@ from engine.helper_type.helper_type import HelperType
 from engine.module.module import Module
 
 
+class Scout(HelperType):
+    key = "scout"
+    label = "Scout"
+
+
+class DepotScout(HelperType):
+    key = "scout"
+    label = "Depot scout"
+
+
 class ShopModule(Module):
     name = "folder.shop"
     requires_core = ">=5,<6"
@@ -26,7 +36,7 @@ class ShopSuite(Suite):
 
     name = "shop"
     modules = [ShopModule, CartsModule]
-    helper_types = [HelperType("scout", "Scout")]
+    helper_types = [Scout]
 
 
 class DepotSuite(Suite):
@@ -41,7 +51,7 @@ class DepotScoutSuite(Suite):
 
     name = "depot"
     modules = [DepotModule]
-    helper_types = [HelperType("scout", "Depot scout")]
+    helper_types = [DepotScout]
 
 
 class YardModule(Module):

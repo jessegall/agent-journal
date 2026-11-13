@@ -11,8 +11,8 @@ MAIN_TYPE = HelperTypeEntry(module="journal.core.agents", key=MAIN_KEY, label="M
 
 
 class HelperTypeBook:
-    """Finds the helper types modules and suites registered, the main agent's type beside them, and follows their
-    inheritance. Every registered kind is a helper; only the main agent is not."""
+    """Finds the helper types modules and suites registered, the main agent's type beside them, and answers which
+    type extends which. Every registered kind is a helper; only the main agent is not."""
 
     def __init__(self, entries: Sequence[HelperTypeEntry] = ()) -> None:
         self.entries = {MAIN_KEY: MAIN_TYPE, **{entry.key: entry for entry in entries}}
@@ -38,18 +38,7 @@ class HelperTypeBook:
         return tuple(entry.key for entry in self.startable() if entry.access is access)
 
     def extends(self, key: str, base: str) -> bool:
-        return base in self.entries and base in self.type_chain(key)
-
-    def type_chain(self, key: str) -> tuple[str, ...]:
-        chain: list[str] = []
-        visited: set[str] = set()
-        while key:
-            chain.append(key)
-            if key in visited or key not in self.entries:
-                break
-            visited.add(key)
-            key = self.entries[key].extends
-        return tuple(chain)
+        return key in self.entries and base in self.entries and self.entries[key].extends(base)
 
     def startable(self) -> tuple[HelperTypeEntry, ...]:
         return tuple(entry for entry in self.entries.values() if entry.key != "main")

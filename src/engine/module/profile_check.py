@@ -28,7 +28,7 @@ class ProfileCheck:
     def occupant_problem(profile_name: str, type_label: str, start_line: str) -> str:
         return f"profile {profile_name} declares an occupant, and a {type_label} starts through {start_line}, which decides its sessions"
 
-    def profile_problems(self, module: str, profile: AgentProfile, types: dict[str, HelperType], claimed: dict[str, str], bases: ProfileBases) -> list[str]:
+    def profile_problems(self, module: str, profile: AgentProfile, types: dict[str, type[HelperType]], claimed: dict[str, str], bases: ProfileBases) -> list[str]:
         problems: list[str] = []
         base_problem = bases.problem(profile)
         if base_problem:

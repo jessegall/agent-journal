@@ -29,7 +29,7 @@ class SuiteList:
         names = (self.parent_name(module), *(suite.name for suite in self.module_suites(module)))
         return tuple(dict.fromkeys(name for name in names if name is not None))
 
-    def helper_types(self, module: type[Module]) -> list[HelperType]:
+    def helper_types(self, module: type[Module]) -> list[type[HelperType]]:
         return [*module.helper_types, *(declaration for suite in self.module_suites(module) for declaration in suite.helper_types)]
 
     def problems(self) -> tuple[str, ...]:

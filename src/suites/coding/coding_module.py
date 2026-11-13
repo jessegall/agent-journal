@@ -14,7 +14,7 @@ from engine.module.model_declaration import ModelDeclaration
 from engine.skill.skill_declaration import SkillDeclaration
 from engine.module.module import Module
 from engine.agent.groups.agent_group import AgentGroup
-from engine.helper_type.helper_type import HelperType
+from suites.coding.types.verifier import Verifier
 from engine.viewer.window_search import WindowSearch
 from suites.coding.support.file_edit_searcher import FileEditSearcher
 from engine.viewer.window_declaration import WindowDeclaration
@@ -78,7 +78,7 @@ class CodingModule(Module):
 
     name = "journal.suites.coding"
     profiles = HELPER_PROFILES
-    helper_types = [HelperType("verifier", "Verifier")]
+    helper_types = [Verifier]
     agent_groups = [AgentGroup("workers", "Workers", "worker"), AgentGroup("merger", "Merger", "helper", tuple(["journal-merger"])),
                     AgentGroup("designer", "Designer", "helper", tuple(["journal-designer"])), AgentGroup("helpers", "Helpers", "helper")]
     templates = CODING_TEMPLATES
