@@ -78,13 +78,15 @@ class SuiteCheck:
 
     def wrong_defaults(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
         roles = {driver.name: driver.role for module in modules for driver in module.drivers}
+        bases = {declaration.key: declaration.bases() for module in modules for declaration in suites.helper_types(module)}
         return tuple(problem for module in modules for suite in suites.module_suites(module) for role, driver in suite.defaults.items()
-                     for problem in self.default_problems(suite, role, driver, roles))
+                     for problem in self.default_problems(suite, (role, *bases.get(role, ())), driver, roles))
 
-    def default_problems(self, suite: type[Suite], role: str, driver: str, roles: Mapping[str, str]) -> Iterator[str]:
+    def default_problems(self, suite: type[Suite], type_keys: tuple[str, ...], driver: str, roles: Mapping[str, str]) -> Iterator[str]:
+        role = type_keys[0]
         if driver.partition(".")[0] not in (suite.name, *suite.requires):
             yield f"suite {suite.name} gives role {role} driver {driver}, of a suite it does not require"
-        elif driver in roles and roles[driver] != role:
+        elif driver in roles and roles[driver] not in type_keys:
             yield f"suite {suite.name} gives role {role} driver {driver}, which drives role {roles[driver]}"
 
     def preset_problems(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:

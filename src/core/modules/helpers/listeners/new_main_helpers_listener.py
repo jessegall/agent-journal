@@ -1,4 +1,3 @@
-from engine.enums.helper_role import HelperRole
 from engine.event.created import Created
 from engine.command.context import Context
 from engine.listener.save_listener import SaveListener
@@ -32,7 +31,7 @@ class NewMainHelpersListener(SaveListener[Created[AgentSession]]):
         agent = self.agents.find(event.row.session_agent_id)
         if not agent.is_main:
             return
-        helpers = [helper for helper in self.agents.running(HelperRole.HELPER) if helper.parent_id is not None]
+        helpers = [helper for helper in self.agents.running_with_read_access() if helper.parent_id is not None]
         lines = tuple(self.queries.query(AgentLine).filter(source=PARENT_REPORT_SOURCE, state=AgentLineState.WAITING).every_row(ORPHANED_HELPERS_REASON))
         ended_ids = self.ended_ids({helper.parent_id for helper in helpers} | {line.session_agent_id for line in lines})
         for helper in helpers:

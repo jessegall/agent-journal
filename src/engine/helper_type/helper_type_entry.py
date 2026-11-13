@@ -49,5 +49,4 @@ class HelperTypeEntry:
         return base in self.type_keys()
 
     def type_keys(self) -> tuple[str, ...]:
-        """Its own key, then the keys of the types it extends, nearest first."""
         return (self.key, *self.bases)

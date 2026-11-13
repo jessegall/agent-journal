@@ -20,7 +20,7 @@ PROGRAM_PID = 4242
 CHILD_PID = 4243
 GRANDCHILD_PID = 4244
 PROCESS_STARTED_AT = Timestamp(datetime(2026, 11, 1, 9, 0, tzinfo=timezone.utc))
-ROLES = ("worker", "helper", "reviewer", "verifier")
+ROLES = ("worker", "helper", "merger")
 
 
 def running_launcher(story) -> FakeLauncher:

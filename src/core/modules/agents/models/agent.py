@@ -1,7 +1,7 @@
+from engine.enums.access import Access
 from dataclasses import dataclass
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.enums.helper_role import HelperRole
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import END_CHANGE, Model
 from engine.model.errors.model_error import ModelError
@@ -81,7 +81,7 @@ class Agent(EnvironmentScoped, Model):
 
     @property
     def is_kept_helper(self) -> bool:
-        return self.role == HelperRole.HELPER and bool(self.profile) and self.retired_at is None
+        return not self.is_main and self.access == Access.READ and bool(self.profile) and self.retired_at is None
 
     def change_name(self, old_row: Model | None) -> str | None:
         if not isinstance(old_row, Agent):

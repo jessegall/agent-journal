@@ -1,5 +1,4 @@
 from engine.actor.actor import Actor
-from engine.enums.helper_role import HelperRole
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -36,7 +35,7 @@ class EndHelpersPastLimitsHandler(Handler[EndHelpersPastLimits, None]):
         self.bus, self.options = bus, options
 
     def handle(self, command: EndHelpersPastLimits, context: Context) -> None:
-        for helper in self.agents.running(HelperRole.HELPER):
+        for helper in self.agents.running_with_read_access():
             job = self.jobs.open_job(helper.id)
             if job is not None and helper.parent_id is not None and helper.halted_at is None:
                 self.check(helper, helper.parent_id, job, context)

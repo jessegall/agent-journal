@@ -141,6 +141,10 @@ class Story:
     def helper(self, helper: Actor) -> None:
         self.state = replace(self.state, helper=helper)
 
+    @staticmethod
+    def agent_actor(agent_id: int) -> Actor:
+        return Actor(agent_id, ActorType.AGENT)
+
     def close(self) -> None:
         self.container.get(Database).close()
         self.journal.discard_writes()
@@ -440,7 +444,6 @@ class Story:
         self.expected(self.container.get(EventLog).latest_event(name) is not None, f"no {name} event was logged")
 
     def run_migration_again(self, module: str, number: int) -> None:
-        """Forgets that the migration ran and syncs, as a journal updated to a version that ships it runs it."""
         self.container.get(Schema).remove_migration_record(module, number)
         code, output_text = self.synced()
         self.expected(code == 0, f"module sync after forgetting {module} migration {number} gave {code}: {output_text}")

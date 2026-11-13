@@ -88,11 +88,11 @@ def test_the_agents_are_paged(new_story):
 
 def test_a_helper_and_a_reviewer_are_found_by_their_role(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
-    helper, reviewer = started_agent(story, "s-10", "helper"), started_agent(story, "s-11", "reviewer")
+    helper, reviewer = started_agent(story, "s-10", "helper"), started_agent(story, "s-11", "merger")
     worker_memory(story, "s-10", "A helper's note", helper)
     worker_memory(story, "s-11", "A reviewer's note", reviewer)
-    story.expect_rows([row["role"] for row in holders(story, "--role reviewer")["rows"]] == ["reviewer"])
-    story.expect_rows(sorted(row["role"] for row in holders(story, "--access read-only")["rows"]) == ["helper", "reviewer"])
+    story.expect_rows([row["role"] for row in holders(story, "--role merger")["rows"]] == ["merger"])
+    story.expect_rows(sorted(row["role"] for row in holders(story, "--access read-only")["rows"]) == ["helper", "merger"])
     story.expect_rows([row["role"] for row in holders(story, "--access writing")["rows"]] == ["worker"])
 
 

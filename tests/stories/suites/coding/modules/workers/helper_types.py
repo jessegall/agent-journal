@@ -32,8 +32,8 @@ def test_shipped_types_restore_their_access_inheritance_and_worker_roster(new_st
     worker = book.find("worker")
     story.expect_rows(AgentRole.HELPER.value == "helper", book.find("main").access is Access.WRITING,
                       book.find("helper").access is Access.READ, book.find("helper").label == "Read-only helper",
-                      {"helper", "worker", "reviewer", "verifier"} <= set(book.helper_keys()), book.is_helper("worker"), not book.is_helper("main"),
-                      book.find("reviewer").label == "Reviewer", book.find("verifier").module == "journal.suites.coding",
+                      {"helper", "worker", "merger"} <= set(book.helper_keys()), book.is_helper("worker"), not book.is_helper("main"),
+                      book.find("merger").label == "Merger", book.find("merger").module == "journal.suites.coding.workers",
                       worker.access is Access.WRITING, worker.separate_folder,
                       worker.default_profile == f"{WORKER_MEDIOR_PROFILE.name}", worker.start_line == "journal worker dispatch",
                       worker.roster is not None)

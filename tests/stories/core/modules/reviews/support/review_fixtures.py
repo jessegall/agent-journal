@@ -9,7 +9,7 @@ from core.modules.reviews.support.review_settings import REVIEWERS_MOST_SETTING
 from core.modules.reviews.support.review_settings import REVIEWER_SETTING
 
 REVIEW_REQUEST = "review request task 1 --points 2 --environment main"
-REVIEWER_START = "agent start s-2 claude reviewer --environment main"
+REVIEWER_START = "agent start s-2 claude helper --environment main"
 REVIEWERS_ENABLED = f"setting set {REVIEWER_SETTING} true --project"
 EMPTY_REVIEWERS = f"setting set {REVIEWERS_MOST_SETTING} 0 --project"
 REVIEW_DETAILS = "review show 1"

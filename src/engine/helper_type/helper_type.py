@@ -25,5 +25,4 @@ class HelperType:
 
     @classmethod
     def bases(cls) -> tuple[str, ...]:
-        """The keys of the helper types this class extends, nearest first."""
         return tuple(base.key for base in cls.__mro__[1:] if issubclass(base, HelperType) and "key" in vars(base))

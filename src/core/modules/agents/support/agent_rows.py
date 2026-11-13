@@ -1,3 +1,4 @@
+from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.actor.actor import Actor
 from engine.database.kept_rows import KeptRows
 from engine.listener.rows.event_rows import EventRows
@@ -17,8 +18,9 @@ class AgentRows:
     """Shares agent lookups until the matching agent changes: running agents are one row set for every environment,
     so all readers in a tick share it."""
 
-    def __init__(self, queries: Queries, agents: AgentQuery, kept: KeptRows, rows: EventRows, scopes: Scopes) -> None:
+    def __init__(self, queries: Queries, agents: AgentQuery, kept: KeptRows, rows: EventRows, scopes: Scopes, types: HelperTypeBook) -> None:
         self.queries, self.agents, self.kept, self.rows, self.scopes = queries, agents, kept, rows, scopes
+        self.types = types
 
     def session(self, session: str) -> Agent | None:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
@@ -69,6 +71,12 @@ class AgentRows:
         agents = tuple(agent for agent in agents if environment_id is None or agent.environment_id == environment_id)
         agents = tuple(agent for agent in agents if role is None or agent.role == role)
         return tuple(agent for agent in agents if parent_id is None or agent.parent_id == parent_id)
+
+    def running_with_read_access(self, parent_id: int | None = None) -> tuple[Agent, ...]:
+        return tuple(agent for agent in self.running(parent_id=parent_id) if self.has_read_access(agent))
+
+    def has_read_access(self, agent: Agent) -> bool:
+        return agent.role in self.types.read_access_keys()
 
     def running_main_agents(self) -> tuple[Agent, ...]:
         main_agents = MainAgentFinder.running(self.queries)

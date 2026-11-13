@@ -105,7 +105,6 @@ from engine.module.module import Module
 from core.modules.agents.migrations.m009_agent_access import AgentAccessMigration
 from core.modules.agents.commands.record_agent_launch_failure.launch_nudges import AGENT_START_FAILED
 from core.modules.agents.commands.record_agent_process.record_agent_process_handler import RecordAgentProcessHandler
-from core.modules.agents.types.reviewer import Reviewer
 from engine.enums.auto_scroll import AutoScroll
 from engine.viewer.window_search import WindowSearch
 from core.modules.agents.support.agent_searcher import AgentSearcher
@@ -157,7 +156,6 @@ class AgentsModule(Module):
     """Adds agents, one per session of an agent program, each an actor with the same number."""
 
     name = "journal.core.agents"
-    helper_types = [Reviewer]
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = [ModelDeclaration(Agent, query=AgentQuery, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentFold, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentFoldRow, excluded_subcommands=["make", "edit", "delete", "list"]),

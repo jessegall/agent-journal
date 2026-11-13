@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from engine.enums.helper_role import HelperRole
 from engine.journal.journal_home import JournalHome
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
@@ -30,7 +29,7 @@ class AgentFolders:
         return project.parent / f".{project.name}{START_FOLDERS_SUFFIX}" / str(agent.id)
 
     def folder(self, agent: Agent) -> Path:
-        if agent.role == HelperRole.HELPER and self.start_folder(agent).is_dir():
+        if self.agents.has_read_access(agent) and self.start_folder(agent).is_dir():
             return self.start_folder(agent)
         return self.checkout_folder(agent)
 

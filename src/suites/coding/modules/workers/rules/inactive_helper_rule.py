@@ -1,9 +1,9 @@
+from suites.coding.modules.workers.types.merger import Merger
 from collections.abc import Sequence
 from engine.helper_type.helper_type_book import HelperTypeBook
 
 from suites.coding.modules.workers.commands.send_silent_agent_lines.send_silent_agent_lines import SendSilentAgentLines
 
-from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
 from suites.coding.modules.workers.support.worker_nudges import HELPER_INACTIVE, UNSTARTED_JOB
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_GRACE_MINUTES, INACTIVE_HELPER_MINUTES
@@ -104,7 +104,7 @@ class InactiveHelperRule(DriverRule):
 
     def helpers(self, main_id: int) -> list[Agent]:
         roles = self.types.helper_keys()
-        helpers = [agent for agent in self.agents.running(parent_id=main_id) if agent.role in roles and agent.profile != MERGER_PROFILE]
+        helpers = [agent for agent in self.agents.running(parent_id=main_id) if agent.role in roles and agent.role != Merger.key]
         return sorted(helpers, key=lambda helper: roles.index(helper.role))
 
 

@@ -1,9 +1,9 @@
+from suites.coding.modules.workers.types.merger import Merger
 from suites.coding.modules.workers.support.work_units import WorkUnits
 from suites.coding.modules.workers.support.worktree_runs import WorktreeRuns
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
-from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
 from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 
@@ -87,7 +87,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
         if agent_id is None:
             return "no one"
         agent = self.queries.query(Agent).find(agent_id)
-        return "the merger" if agent.profile == MERGER_PROFILE else AgentLabel.labelled(agent).text
+        return "the merger" if agent.role == Merger.key else AgentLabel.labelled(agent).text
 
     # The worker's assigned tasks another agent has started, which it can neither prove nor commit.
     def foreign_holder_lines(self, worker_id: int) -> tuple[Task, ...]:

@@ -10,7 +10,7 @@ def test_a_reviewer_that_is_added_takes_the_next_queued_review_at_once(new_story
     reviewer_id = story.new_row_id("reviewer add --environment main", actor=story.agent)
     story.expect_success(REVIEW_DETAILS, "state: reviewing")
     story.expect_rows(review_assignees(story) == [reviewer_id], detail=str(review_assignees(story)))
-    story.expect_success(f"agent show {agent_number(story, reviewer_id)}", "role: reviewer")
+    story.expect_success(f"agent show {agent_number(story, reviewer_id)}", "role: helper", "profile: journal-reviewer")
 
 
 def test_a_reviewer_past_the_limit_is_refused(new_story):

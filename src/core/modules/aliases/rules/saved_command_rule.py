@@ -1,4 +1,4 @@
-from engine.enums.helper_role import HelperRole
+from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.time.duration import Duration
 from engine.errors.duration_error import DurationError
 from engine.driver.agent_hook import AgentHook
@@ -24,8 +24,8 @@ class SavedCommandRule(DriverRule):
     drivers = ["*"]
     single_action_refusal = "Requires tests and builds to use saved commands with valid reading and timeout options"
 
-    def __init__(self, aliases: AliasQuery, suites: SuiteChoice) -> None:
-        self.aliases, self.suites = aliases, suites
+    def __init__(self, aliases: AliasQuery, suites: SuiteChoice, types: HelperTypeBook) -> None:
+        self.aliases, self.suites, self.types = aliases, suites, types
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
@@ -70,7 +70,7 @@ class SavedCommandRule(DriverRule):
             return SAVED_COMMAND_DIRECT.nudge(name=exact.name)
         if self.aliases.with_category(category).exists():
             return SAVED_COMMAND_CHOICES.nudge(category=category.value)
-        if role == HelperRole.HELPER:
+        if role in self.types.read_access_keys():
             return SAVED_COMMAND_HELPER.nudge(category=category.value)
         return SAVED_COMMAND_UNKNOWN.nudge(command=part.text, category=category.value)
 

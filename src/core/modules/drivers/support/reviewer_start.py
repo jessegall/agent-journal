@@ -2,7 +2,7 @@ from uuid import uuid4
 
 from engine.command.bus import Bus
 from engine.command.context import Context
-from engine.enums.helper_role import HelperRole
+from engine.helper_type.helper_type_book import HELPER_KEY
 from engine.enums.model_tier import ModelTier
 from engine.profile.agent_profile import AgentProfile
 from engine.repository.repository import Repository
@@ -22,14 +22,14 @@ INSTRUCTION_CHARACTERS = 200
 
 
 class ReviewerStart:
-    """Starts a read-only reviewer: its agent on a session of its own, and, for a reviewer that has a brief to
-    work on, the job that starts its program on that brief."""
+    """Starts a read-only reviewer, a helper with the reviewer profile: its agent on a session of its own, and,
+    for a reviewer that has a brief to work on, the job that starts its program on that brief."""
 
     def __init__(self, bus: Bus, repository: Repository) -> None:
         self.bus, self.repository = bus, repository
 
     def started(self, program: str, model: str, parent: Agent | None, context: Context) -> Agent:
-        return self.bus.dispatch(StartAgent(str(uuid4()), program, HelperRole.REVIEWER, parent.id if parent is not None else None, program_model=model,
+        return self.bus.dispatch(StartAgent(str(uuid4()), program, HELPER_KEY, parent.id if parent is not None else None, program_model=model,
                                             profile=REVIEWER_PROFILE_NAME, access="read-only"), context)
 
     def launched(self, reviewer: Agent, parent: Agent, brief: str, context: Context) -> HelperJob:

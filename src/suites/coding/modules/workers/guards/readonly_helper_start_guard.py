@@ -1,9 +1,9 @@
+from suites.coding.modules.workers.types.merger import Merger
 from engine.event.created import Created
 from engine.command.context import Context
 from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
-from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
 from suites.coding.support.main_caller import MainCaller
@@ -21,7 +21,7 @@ class ReadonlyHelperStartGuard(Guard[Created[Agent]]):
         self.caller, self.options = caller, options
 
     def check(self, event: Created[Agent], context: Context) -> None:
-        if event.row.role != CodingHelperRole.HELPER or event.row.profile == MERGER_PROFILE or not self.caller.is_main(context):
+        if event.row.role != CodingHelperRole.HELPER or event.row.role == Merger.key or not self.caller.is_main(context):
             return
         options = self.options.options()
         if event.row.profile == DESIGNER_PROFILE and not options.designer:

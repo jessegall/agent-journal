@@ -6,7 +6,6 @@ import json
 from engine.profile.agent_profile import AgentProfile
 from core.modules.profiles.support.profile_files import ProfileFiles
 from engine.enums.agent_role import AgentRole
-from engine.enums.helper_role import HelperRole
 from engine.caller.caller import Caller
 from engine.provider.providers import Providers
 from engine.registry.registry import Registry
@@ -122,7 +121,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
                     page.number, page.size, page.total)
 
     def resume_reason(self, agent: Agent, has_folder: bool, folder: Path) -> str | None:
-        if agent.role == HelperRole.HELPER and not agent.profile:
+        if agent.role in self.registry.helper_type_book().read_access_keys() and not agent.profile:
             return "This helper ran as a program subagent and cannot resume."
         if not has_folder:
             return "The folder this agent worked in is gone."

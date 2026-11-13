@@ -14,7 +14,7 @@ def seed(new_story):
     for index in range(10, 14):
         agent = started_agent(story, f"s-{index}", "helper" if index % 2 else "worker")
         story.expect_success(f'memory make "Agent {index} keeps its branch clean" --environment main', actor=agent)
-    ended = started_agent(story, "s-21", "reviewer")
+    ended = started_agent(story, "s-21", "merger")
     story.expect_success('memory make "A reviewer reads the whole diff" --environment main', actor=ended)
     story.expect_success(f"agent end {ended.id}", actor=story.user)
     story.expect_success(f"agent end {read_agent(story, 's-9').id}", actor=story.user)

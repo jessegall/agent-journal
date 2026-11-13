@@ -1,4 +1,4 @@
-from engine.enums.helper_role import HelperRole
+from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.event.logged_event import LoggedEvent
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
@@ -28,12 +28,13 @@ class HelperEndedListener(CommitListener[AgentEnded]):
     name = "helpers.helper-ended"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, jobs: HelperJobRows, resume: HelperResume, bus: Bus, home: JournalHome) -> None:
+    def __init__(self, queries: Queries, jobs: HelperJobRows, resume: HelperResume, bus: Bus, home: JournalHome, types: HelperTypeBook) -> None:
         self.queries, self.jobs, self.resume, self.bus, self.home = queries, jobs, resume, bus, home
+        self.types = types
 
     def handle(self, event: AgentEnded, logged: LoggedEvent) -> None:
         helper = event.row
-        if helper.role != HelperRole.HELPER:
+        if helper.role not in self.types.read_access_keys():
             return
         job = self.jobs.open_job(helper.id)
         if job is None:

@@ -1,3 +1,4 @@
+from engine.helper_type.helper_type_book import HELPER_KEY
 import sqlite3
 
 from core.modules.agents.models.agent import MAIN_NUMBER
@@ -7,7 +8,6 @@ from engine.actor.actor import CORE_ACTOR_ID
 from engine.enums.actor_type import ActorType
 from engine.enums.access import Access
 from engine.enums.agent_role import AgentRole
-from engine.enums.helper_role import HelperRole
 from engine.database.database import Database
 from engine.database.row_insert import RowInsert
 from engine.upgrade.creator_resolver import AGENT, CreatorResolver
@@ -25,6 +25,7 @@ HELPERS = "sent_agents"
 SESSIONS_TABLE = "agent_sessions"
 
 VERSION_FOUR_CHILD_ROLE = "subagent"
+VERSION_FOUR_HELPER_ROLES = (VERSION_FOUR_CHILD_ROLE, "reviewer")
 
 
 class AgentsMove(VersionFourMove):
@@ -102,7 +103,7 @@ class AgentsMove(VersionFourMove):
     def end_timestamp(row: sqlite3.Row, role: str, created_at: str, latest_ids: set[int]) -> str | None:
         if row["id"] in latest_ids:
             return None
-        if role == AgentRole.MAIN.value or row["state"] == ENDED or role == HelperRole.HELPER:
+        if role == AgentRole.MAIN.value or row["state"] == ENDED or role == HELPER_KEY:
             return row["updated_at"] or created_at
         return None
 
@@ -119,7 +120,7 @@ class AgentsMove(VersionFourMove):
 
     @staticmethod
     def moved_role(role: str) -> str:
-        return HelperRole.HELPER.value if role == VERSION_FOUR_CHILD_ROLE else role
+        return HELPER_KEY if role in VERSION_FOUR_HELPER_ROLES else role
 
     @staticmethod
     def is_subagent_session(session: str) -> bool:
@@ -139,5 +140,5 @@ class AgentsMove(VersionFourMove):
     def insert(self, rows: RowInsert, session: str, environment_id: int, program: str, role: str, creator_id: int, created: str, updated: str, ended: str | None) -> int:
         actor_id = rows.insert("actors", {"creator_id": creator_id, "type": ActorType.AGENT.value, "name": session, "created_at": created, "updated_at": created})
         return rows.insert(TABLE, {"id": actor_id, "environment_id": environment_id, "creator_id": creator_id, "session": session, "program": program,
-                                   "role": role, "access": Access.READ.value if role == HelperRole.HELPER else Access.WRITING.value, "ended_at": ended, "created_at": created, "updated_at": updated,
+                                   "role": role, "access": Access.READ.value if role == HELPER_KEY else Access.WRITING.value, "ended_at": ended, "created_at": created, "updated_at": updated,
                                    "number": MAIN_NUMBER if role == AgentRole.MAIN.value else None})

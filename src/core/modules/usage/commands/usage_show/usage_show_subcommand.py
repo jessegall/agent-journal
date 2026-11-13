@@ -1,3 +1,4 @@
+from engine.helper_type.helper_type_book import HelperTypeBook
 from core.modules.drivers.support.current_context_window import CurrentContextWindow
 from core.modules.drivers.support.context_compactions import ContextCompactions
 from core.modules.agents.support.agent_rows import RUNNING_AGENTS_REASON
@@ -6,7 +7,6 @@ from collections.abc import Sequence
 from argparse import ArgumentParser, Namespace
 from dataclasses import replace
 
-from engine.enums.helper_role import HelperRole
 from engine.query.conditions.excluding import Excluding
 from core.modules.usage.conditions.agent_activity import AgentActivity
 from engine.caller.caller import Caller
@@ -43,7 +43,8 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
     name = "show"
     environment_refusal = "usage is shown for one environment"
 
-    def __init__(self, queries: Queries, agents: AgentQuery, files: StatusFiles, activity: AgentActivity, share: ContextShare, lockdown: ProgramLockdown, context_compactions: ContextCompactions, current_window: CurrentContextWindow) -> None:
+    def __init__(self, queries: Queries, agents: AgentQuery, files: StatusFiles, activity: AgentActivity, share: ContextShare, lockdown: ProgramLockdown, context_compactions: ContextCompactions, current_window: CurrentContextWindow, types: HelperTypeBook) -> None:
+        self.types = types
         self.lockdown, self.context_compactions, self.current_window = lockdown, context_compactions, current_window
         self.activity, self.share = activity, share
         self.queries, self.agents, self.files = queries, agents, files
@@ -69,7 +70,7 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
 
     @staticmethod
     def ended_helpers(agents: Query[Agent], opened: tuple[Agent, ...]) -> tuple[Agent, ...]:
-        helpers = agents.filter(role=HelperRole.HELPER).matching(Greater("ended_at", "")).matching(Among("parent_id", tuple(agent.id for agent in opened))).matching(Excluding(Among("id", tuple(agent.id for agent in opened))))
+        helpers = agents.matching(Among("role", self.types.read_access_keys())).matching(Greater("ended_at", "")).matching(Among("parent_id", tuple(agent.id for agent in opened))).matching(Excluding(Among("id", tuple(agent.id for agent in opened))))
         return tuple(helpers.newest().take(ENDED_HELPERS_COUNTED)[::-1])
 
     def write_output(self, value: object, output: Output) -> None:
