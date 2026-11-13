@@ -1,4 +1,4 @@
-from server.viewer.door_refusal import DoorRefusal
+from server.door.door_refusal import DoorRefusal
 from server.viewer.door_request import DoorRequest
 
 

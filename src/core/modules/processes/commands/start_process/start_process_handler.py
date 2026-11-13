@@ -67,7 +67,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
         self.folder.write_start(process.id, command.line, [part.text for part in command.parts])
         self.slots.remember(process)
         if command.is_journal_merge:
-            self.folder.write_slot(process.id)
+            self.slots.grant_journal_merge(process)
         else:
             self.slots.grant(context)
         return self.rows.required(Process, process.id)

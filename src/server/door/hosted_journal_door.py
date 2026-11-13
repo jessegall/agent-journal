@@ -1,6 +1,6 @@
 from server.door.journal_door import JournalDoor
 from server.door.socket_peer import SocketPeer
-from server.viewer.door_refusal import DoorRefusal
+from server.door.door_refusal import DoorRefusal
 
 OWNER_ROUTES = frozenset({"/viewer/key", "/stop", "/handover"})
 OWNER_REASON = "only the journal itself may do this"

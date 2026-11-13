@@ -1,5 +1,5 @@
 from server.door.socket_peer import SocketPeer
-from server.viewer.door_refusal import DoorRefusal
+from server.door.door_refusal import DoorRefusal
 
 
 class JournalDoor:

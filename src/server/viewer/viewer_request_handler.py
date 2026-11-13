@@ -37,7 +37,7 @@ from server.errors.phone_module_error import PhoneModuleError
 from server.errors.unknown_environment_error import UnknownEnvironmentError
 from server.errors.unknown_login_key_error import UnknownLoginKeyError
 from server.errors.viewer_request_error import ViewerRequestError
-from server.viewer.door_refusal import DoorRefusal
+from server.door.door_refusal import DoorRefusal
 from server.viewer.door_request import DoorRequest
 from server.viewer.viewer_server import ViewerServer
 

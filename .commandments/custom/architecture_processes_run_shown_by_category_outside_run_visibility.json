@@ -31,6 +31,9 @@
             },
             {
                 "fileMatches": "(^|/)core/modules/processes/commands/request_reader/"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/processes/support/decisions/output_facts\\.py$"
             }
         ]
     },

@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
-from engine.query.expressions.sql_name import SqlName
 
 
 @dataclass(frozen=True)
@@ -12,10 +11,6 @@ class BelowNewestPer:
     table: str
     column: str
     kept: int
-
-    def __post_init__(self) -> None:
-        SqlName(self.table)
-        SqlName(self.column)
 
     def statement(self) -> Statement:
         return Statement(f'id IN (SELECT id FROM (SELECT id, ROW_NUMBER() OVER (PARTITION BY "{self.column}" ORDER BY id DESC) AS place'

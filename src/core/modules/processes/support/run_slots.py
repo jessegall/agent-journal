@@ -58,6 +58,10 @@ class RunSlots:
             self.remember(saved)
             kinds.admitted(saved)
 
+    def grant_journal_merge(self, process: Process) -> None:
+        """A merge the journal runs itself waits in no queue: its slot is written at once."""
+        self.folder.write_slot(process.id)
+
     def admitted_runs(self) -> tuple[Process, ...]:
         return tuple(run for run in self.running() if run.queued_at is None)
 

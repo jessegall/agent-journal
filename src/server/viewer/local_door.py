@@ -2,7 +2,7 @@ from collections.abc import Callable
 from urllib.parse import urlparse
 
 from server.viewer.door import Door
-from server.viewer.door_refusal import DoorRefusal
+from server.door.door_refusal import DoorRefusal
 from server.viewer.door_request import DoorRequest
 
 WRONG_HOST_REASON = "this listener answers only its own address"
