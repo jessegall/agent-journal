@@ -11,7 +11,7 @@ from engine.errors.refusal import Refusal
 FOLDED_AT = "2026-11-12T00:00:00+00:00"
 ROWS = """
     CREATE TABLE actors (id INTEGER PRIMARY KEY, name TEXT);
-    CREATE TABLE agents (id INTEGER PRIMARY KEY REFERENCES actors (id), environment_id INTEGER, role TEXT, number INTEGER);
+    CREATE TABLE agents (id INTEGER PRIMARY KEY REFERENCES actors (id), environment_id INTEGER, role TEXT, number INTEGER, launch_agent_id INTEGER);
     CREATE TABLE agent_sessions (id INTEGER PRIMARY KEY, session_agent_id INTEGER REFERENCES agents (id) ON DELETE CASCADE, session TEXT);
     CREATE TABLE memories (id INTEGER PRIMARY KEY, actor_id INTEGER REFERENCES actors (id), weight INTEGER);
     CREATE TABLE agent_folds (id INTEGER PRIMARY KEY, environment_id INTEGER, folded_agent_id INTEGER UNIQUE, survivor_id INTEGER, folded_number INTEGER,
@@ -19,7 +19,7 @@ ROWS = """
     CREATE TABLE agent_fold_rows (id INTEGER PRIMARY KEY, environment_id INTEGER, fold_id INTEGER, table_name TEXT, row TEXT, rule TEXT,
         created_at TEXT, updated_at TEXT);
     INSERT INTO actors VALUES (1, 'a'), (2, 'b'), (3, 'c'), (4, 'd'), (5, 'e');
-    INSERT INTO agents VALUES (1, 1, 'main', 1), (2, 1, 'main', 2), (3, 1, 'main', 3), (4, 2, 'main', 4), (5, 2, 'main', 5);
+    INSERT INTO agents (id, environment_id, role, number) VALUES (1, 1, 'main', 1), (2, 1, 'main', 2), (3, 1, 'main', 3), (4, 2, 'main', 4), (5, 2, 'main', 5);
     INSERT INTO agent_sessions VALUES (1, 1, 's1'), (2, 2, 's2'), (3, 4, 's4');
     INSERT INTO memories VALUES (1, 1, 7), (2, 2, 3), (3, 3, 5), (4, 4, 2), (5, 5, 9);
 """
@@ -45,6 +45,12 @@ def test_every_reference_moves_to_the_survivor_and_the_folded_rows_go(connection
     assert [tuple(row) for row in connection.execute("SELECT id, number FROM agents ORDER BY id")] == [(3, 1), (5, 1)]
     assert [tuple(row) for row in connection.execute("SELECT session_agent_id FROM agent_sessions ORDER BY id")] == [(3,), (3,), (5,)]
     assert [tuple(row) for row in connection.execute("SELECT actor_id, weight FROM memories ORDER BY id")] == [(3, 7), (3, 3), (3, 5), (5, 2), (5, 9)]
+
+
+def test_the_terminal_a_survivor_took_over_stays_the_one_the_launcher_knows(connection):
+    connection.execute("UPDATE agents SET launch_agent_id = 1 WHERE id = 3")
+    MainFold(Database.configured(connection)).run(FOLDS, FOLDED_AT)
+    assert connection.execute("SELECT launch_agent_id FROM agents WHERE id = 3").fetchone()[0] == 1
 
 
 def test_each_folded_agent_is_recorded_whole(connection):

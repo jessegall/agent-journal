@@ -31,3 +31,7 @@ def test_the_fold_record_tables_are_left_out():
 def test_an_agent_like_column_that_cannot_be_placed_is_refused():
     with pytest.raises(Refusal, match="sessions.agent_label"):
         ReferenceColumns.agent_columns([column("sessions", "agent_label")])
+
+
+def test_the_terminal_an_agent_row_launched_from_is_the_launchers_key_and_no_agent_column():
+    assert ReferenceColumns.agent_columns([column("agents", "launch_agent_id")]).plain == ()

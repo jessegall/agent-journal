@@ -7,13 +7,13 @@ from engine.errors.refusal import Refusal
 AGENT_TABLES = ("agents", "actors")
 ROW_KEY = "id"
 AGENT_COLUMN_NAMES = ("actor_id", "holder_id", "delegated_to", "creator_id", "parent_id", "session_agent_id", "agent_id", "survivor_id",
-                      "folded_agent_id", "lifter_id", "sender_id", "assignee_id", "owner_id", "worker_id", "launch_agent_id", "test_agent_id")
+                      "folded_agent_id", "lifter_id", "sender_id", "assignee_id", "owner_id", "worker_id", "test_agent_id")
 AGENT_COLUMN_SUFFIX = "_agent_id"
 POLYMORPHIC_PAIRS = (("row_model", "row_id"), ("subject_model", "subject_id"), ("target_model", "target_id"), ("source_model", "source_id"),
                      ("row_table", "row_id"))
 AGENT_MODEL_NAMES = ("agent", "agents", "actor", "actors")
 FOLD_TABLES = ("agent_folds", "agent_fold_rows")
-NOT_AGENT_COLUMNS = (("agent_lines", "wakes_agent"), ("aliases", "agent_access"), ("context_compaction_notices", "agent_number"),
+NOT_AGENT_COLUMNS = (("agent_lines", "wakes_agent"), ("agents", "launch_agent_id"), ("aliases", "agent_access"), ("context_compaction_notices", "agent_number"),
                      ("helper_jobs", "new_agent_reason"), ("trigger_action_runs", "notify_agent"), ("worker_worktrees", "new_agent_reason"))
 
 
@@ -44,7 +44,7 @@ class ReferenceColumns:
 
     @staticmethod
     def holds_agent(column: SchemaColumn) -> bool:
-        if column.column == ROW_KEY:
+        if column.column == ROW_KEY or (column.table, column.column) in NOT_AGENT_COLUMNS:
             return False
         if column.target is not None:
             return column.target in AGENT_TABLES
