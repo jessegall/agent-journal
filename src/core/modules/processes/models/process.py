@@ -83,7 +83,7 @@ class Process(EnvironmentScoped, Model):
         return self.creator_id == self.session_agent_id or self.task_id is not None
 
     @property
-    def joins_queue(self) -> bool:
+    def is_queue_member(self) -> bool:
         return self.is_queue_run or self.slot_assigned or self.queued_at is not None
 
     # The queue gave this run its place since the earlier row was saved.

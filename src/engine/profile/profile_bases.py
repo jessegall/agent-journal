@@ -1,11 +1,11 @@
 from collections.abc import Sequence
-from dataclasses import replace
+from dataclasses import MISSING, fields, replace
 
 from engine.errors.refusal import Refusal
 from engine.profile.agent_profile import AgentProfile
 
 INHERITED_FIELDS = ("access", "program", "fallback_programs", "model", "codex_model", "tier", "mcp_tools", "writable_folders", "program_models", "skills", "required_skills")
-UNSET = AgentProfile("")
+UNSET_VALUES = {field.name: field.default_factory() if field.default is MISSING else field.default for field in fields(AgentProfile) if field.name in INHERITED_FIELDS}
 
 
 class ProfileBases:
@@ -39,7 +39,7 @@ class ProfileBases:
         if not profile.base:
             return profile
         base = self.on_base(self.profiles[profile.base])
-        inherited = {name: getattr(base, name) for name in INHERITED_FIELDS if name not in profile.default_fields and getattr(profile, name) == getattr(UNSET, name)}
+        inherited = {name: getattr(base, name) for name in INHERITED_FIELDS if name not in profile.default_fields and getattr(profile, name) == UNSET_VALUES[name]}
         body = "\n\n".join(part for part in (base.body.strip(), profile.body.strip()) if part)
         required = tuple(dict.fromkeys((*base.required_skills, *profile.required_skills)))
         return replace(profile, body=body, **{**inherited, "required_skills": required})

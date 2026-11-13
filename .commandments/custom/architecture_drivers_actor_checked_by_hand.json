@@ -8,7 +8,8 @@
             {"any": [
                 {"all": [
                     {"descendant": {"all": [{"is": "member-access"}, {"name": "type"}]}},
-                    {"descendant": {"all": [{"is": "member-access"}, {"nameIn": ["USER", "AGENT"]}]}}
+                    {"descendant": {"all": [{"is": "member-access"}, {"nameIn": ["USER", "AGENT"]}]}},
+                    {"descendant": {"all": [{"is": "identifier"}, {"name": "ActorType"}]}}
                 ]},
                 {"all": [
                     {"descendant": {"all": [{"is": "identifier"}, {"name": "AgentRole"}]}},
