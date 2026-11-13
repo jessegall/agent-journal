@@ -49,6 +49,7 @@ class StringRosterClerk(HelperType):
 class MissingBaseType(HelperType):
     key = "missing-base"
     label = "Missing base"
+    behaviours = Helper.behaviours
 
 
 class MissingBaseClerk(MissingBaseType):
@@ -71,6 +72,7 @@ class WritingAssistant(ClerkHelper):
 class SuiteClerk(HelperType):
     key = "suite-clerk"
     label = "Suite clerk"
+    behaviours = Helper.behaviours
 
 
 class Clerk(Module):

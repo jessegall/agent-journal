@@ -6,7 +6,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.reviews.support.review_fixtures import OneReviewerAllowed
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
-SOURCE = Path(__file__).resolve().parents[4] / "src"
+SOURCE = Path(__file__).resolve().parents[5] / "src"
 MERGER_START = 'helper start journal-merger --brief "Merge the finished workers" --environment main'
 RETIRED_ENUMS = ("HelperRole", "CodingHelperRole")
 

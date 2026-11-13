@@ -3,11 +3,12 @@ from collections.abc import Sequence
 from engine.enums.access import Access
 from engine.errors.refusal import Refusal
 from engine.helper_type.helper_type_entry import HelperTypeEntry
+from engine.helper_type.main_agent import MainAgent
 
 
-MAIN_KEY = "main"
+MAIN_KEY = MainAgent.key
 HELPER_KEY = "helper"
-MAIN_TYPE = HelperTypeEntry(module="journal.core.agents", key=MAIN_KEY, label="Main agent", access=Access.WRITING, separate_folder=False)
+MAIN_TYPE = HelperTypeEntry(module="journal.core.agents", key=MAIN_KEY, label=MainAgent.label, access=Access.WRITING, separate_folder=False, behaviours=MainAgent.behaviours)
 
 
 class HelperTypeBook:

@@ -76,6 +76,8 @@ class HelperTypeCheck:
             problems.append(f"{name}: the module does not depend on {AGENTS_MODULE}")
         if HELPER_TYPE_WORD.fullmatch(declaration.key) is None:
             problems.append(f"{name}: a key is lowercase letters and dashes")
+        if not declaration.declares("behaviours"):
+            problems.append(f"{name}: it declares no behaviours")
         if not declaration.label.strip():
             problems.append(f"{name}: it has no label")
         roster = declaration.roster

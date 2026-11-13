@@ -431,10 +431,21 @@ class Story:
         registered = {name: stored[key].get(name) for name in fields} if key in stored else {}
         self.expected(registered == fields, f"helper type {key} is registered as {stored.get(key)}")
 
+    def expect_helper_type_behaviours(self, key: str, **answers: bool) -> None:
+        self.checked(f"behaviours of helper type {key}")
+        behaviours = self.registered_helper_types().get(key, {}).get("behaviours", {})
+        registered = {name: behaviours.get(name) for name in answers} if isinstance(behaviours, dict) else {}
+        self.expected(registered == answers, f"helper type {key} has the behaviours {behaviours}")
+
     def expect_helper_type_field_absent(self, key: str, field: str) -> None:
         self.checked(f"helper type {key} without {field}")
         stored = self.registered_helper_types()
         self.expected(key in stored and field not in stored[key], f"helper type {key} is registered as {stored.get(key)}")
+
+    def expect_suite_field_absent(self, name: str, field: str) -> None:
+        self.checked(f"suite {name} without {field}")
+        suites = {entry["name"]: entry for entry in json.loads(Registry.read(self.container.get(Database)).entries_text())["suites"]}
+        self.expected(name in suites and field not in suites[name], f"suite {name} is registered as {suites.get(name)}")
 
     def registered_helper_types(self) -> dict[str, dict[str, object]]:
         entries = json.loads(Registry.read(self.container.get(Database)).entries_text())["helper_types"]
@@ -447,6 +458,12 @@ class Story:
         self.container.get(Schema).remove_migration_record(module, number)
         code, output_text = self.synced()
         self.expected(code == 0, f"module sync after forgetting {module} migration {number} gave {code}: {output_text}")
+
+    def expect_sync_without(self, module: str) -> None:
+        modules = json.loads(FileAccess.shared().read(self.home.module_list))
+        FileAccess.shared().write(self.home.module_list, json.dumps([listed for listed in modules if listed != module]))
+        code, output_text = self.synced()
+        self.expected(code == 0, f"module sync without {module} gave {code}: {output_text}")
 
     def synced_with(self, module: str) -> tuple[int, str]:
         modules = json.loads(FileAccess.shared().read(self.home.module_list))

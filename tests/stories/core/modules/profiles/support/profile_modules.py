@@ -23,6 +23,7 @@ class ReaderProfileClerk(HelperType):
     key = "clerk"
     label = "Clerk"
     default_profile = "module-reader"
+    behaviours = Helper.behaviours
 
 
 class SampleProfileClerk(Helper):

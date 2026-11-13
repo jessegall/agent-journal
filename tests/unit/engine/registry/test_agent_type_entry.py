@@ -1,6 +1,7 @@
 import json
-from dataclasses import asdict
+from dataclasses import asdict, fields
 
+from engine.helper_type.helper_behaviours import HelperBehaviours
 from engine.helper_type.helper_type import HelperType
 from engine.helper_type.helper_type_entry import HelperTypeEntry
 
@@ -8,6 +9,7 @@ from engine.helper_type.helper_type_entry import HelperTypeEntry
 class SampleType(HelperType):
     key = "sample"
     label = "Sample"
+    behaviours = HelperBehaviours(**{field.name: False for field in fields(HelperBehaviours)})
 
 
 class SendingSample(SampleType):

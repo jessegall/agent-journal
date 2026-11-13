@@ -2,6 +2,7 @@ from typing import ClassVar
 
 from engine.agent.agent_roster import AgentRoster
 from engine.enums.access import Access
+from engine.helper_type.helper_behaviours import HelperBehaviours
 
 
 class HelperType:
@@ -22,7 +23,12 @@ class HelperType:
     job_command: ClassVar[tuple[str, ...]] = ()
     job_task_flag: ClassVar[str] = ""
     line: ClassVar[str] = ""
+    behaviours: ClassVar[HelperBehaviours]
 
     @classmethod
     def bases(cls) -> tuple[str, ...]:
         return tuple(base.key for base in cls.__mro__[1:] if issubclass(base, HelperType) and "key" in vars(base))
+
+    @classmethod
+    def declares(cls, field: str) -> bool:
+        return any(field in vars(base) for base in cls.__mro__)

@@ -1,4 +1,7 @@
+from dataclasses import fields
+
 from engine.module.suite import Suite
+from engine.helper_type.helper_behaviours import HelperBehaviours
 from engine.helper_type.helper_type import HelperType
 from engine.module.module import Module
 
@@ -6,11 +9,13 @@ from engine.module.module import Module
 class Scout(HelperType):
     key = "scout"
     label = "Scout"
+    behaviours = HelperBehaviours(**{field.name: False for field in fields(HelperBehaviours)})
 
 
 class DepotScout(HelperType):
     key = "scout"
     label = "Depot scout"
+    behaviours = Scout.behaviours
 
 
 class ShopModule(Module):
