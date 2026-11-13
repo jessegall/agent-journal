@@ -51,7 +51,7 @@ const Ce = (l, f) => {
   props: { reader: { type: Boolean, default: !1 } },
   setup(l) {
     re((a) => ({
-      v43ca2cf9: l.reader ? "minmax(240px, 2fr) 3fr" : "1fr"
+      v59c9ff6e: l.reader ? "minmax(240px, 2fr) 3fr" : "1fr"
     }));
     const f = [
       { key: "doc", label: "Documents" },
@@ -277,7 +277,7 @@ const Ce = (l, f) => {
       ])
     ]));
   }
-}, Ge = /* @__PURE__ */ Ce(Ee, [["__scopeId", "data-v-9c3cb4d4"]]);
+}, Ge = /* @__PURE__ */ Ce(Ee, [["__scopeId", "data-v-b479acb3"]]);
 export {
   Ge as D
 };

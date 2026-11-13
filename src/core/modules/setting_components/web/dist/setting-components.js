@@ -850,7 +850,7 @@ const An = Object.freeze({
   "number list": "number-list",
   text: "text",
   any: "text"
-}), re = (e) => e.component || An[e.kind], In = Object.freeze(["three-way-cap", "per-type-override"]), ue = (e) => !In.includes(re(e)), qn = (e) => Object.hasOwn(D, e), de = (e) => e.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}), re = (e) => e.component || An[e.node_type], In = Object.freeze(["three-way-cap", "per-type-override"]), ue = (e) => !In.includes(re(e)), qn = (e) => Object.hasOwn(D, e), de = (e) => e.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 function En(e) {
   return [...new Set(e.map((t) => t.section))].map((t) => ({ key: de(t), title: t }));
 }
@@ -882,8 +882,8 @@ const jn = /* @__PURE__ */ Object.assign({ name: "SettingsNodeRow" }, {
     const a = e, t = v(() => re(a.node)), r = v(() => qn(t.value)), l = v(() => Tn.includes(t.value)), n = v(() => a.nodes.filter((u) => u.parent === a.node.key && ue(u) && a.draft.visible(u.key))), o = v(() => {
       var u;
       return {
-        ...a.node.kind === "choice" ? { choices: a.node.choices } : {},
-        ...a.node.kind === "number" ? { least: ((u = ce(a.node.rule)) == null ? void 0 : u.minimum) ?? 0 } : {},
+        ...a.node.node_type === "choice" ? { choices: a.node.choices } : {},
+        ...a.node.node_type === "number" ? { least: ((u = ce(a.node.rule)) == null ? void 0 : u.minimum) ?? 0 } : {},
         ...a.extras[t.value] ?? {}
       };
     });
@@ -976,13 +976,13 @@ function ia(e, a) {
   const t = e.startsWith("[") ? JSON.parse(e) : e.split(",").map((r) => r.trim()).filter(Boolean);
   return JSON.stringify(a ? t.map(Number) : t);
 }
-const Pn = "A number is missing.", Fn = "These settings changed since you opened them. Cancel to read them again.", fe = "number list", Q = (e) => e.kind === "list" || e.kind === fe;
+const Pn = "A number is missing.", Fn = "These settings changed since you opened them. Cancel to read them again.", fe = "number list", Q = (e) => e.node_type === "list" || e.node_type === fe;
 function R(e) {
-  return e.kind === "flag" ? !!e.value : Q(e) ? Array.isArray(e.value) ? [...e.value] : me(e.value) : e.value === null || e.value === void 0 ? "" : String(e.value);
+  return e.node_type === "flag" ? !!e.value : Q(e) ? Array.isArray(e.value) ? [...e.value] : me(e.value) : e.value === null || e.value === void 0 ? "" : String(e.value);
 }
 const Rn = (e, a) => JSON.stringify(e) === JSON.stringify(a);
 function W(e, a) {
-  return e.kind === "flag" ? a ? "on" : "off" : Q(e) ? a.join(", ") : String(a).trim();
+  return e.node_type === "flag" ? a ? "on" : "off" : Q(e) ? a.join(", ") : String(a).trim();
 }
 function ra({ run: e, reload: a }) {
   const t = Z({}), r = Z({}), l = z([]), n = z([]), o = z(""), u = z(!1), f = v(() => l.value.flatMap((m) => m.nodes)), g = (m) => f.value.find((S) => S.key === m), k = () => l.value.some((m) => {
@@ -997,7 +997,7 @@ function ra({ run: e, reload: a }) {
   }, I = v(() => f.value.filter((m) => (_(m.key) || r[m.key]) && x(m.key))), b = v(() => I.value.length > 0), p = v(() => b.value && k());
   function c(m) {
     const S = g(m);
-    if (S === void 0 || !_(m) || S.kind !== "number") return "";
+    if (S === void 0 || !_(m) || S.node_type !== "number") return "";
     const V = String(t[m]).trim();
     return V === "" ? Pn : Ln(S.rule, V);
   }
@@ -1018,7 +1018,7 @@ function ra({ run: e, reload: a }) {
   }
   const pe = () => I.value.map((m) => ({ key: m.key, title: m.title, from: W(m, R(m)), to: W(m, t[m.key]) }));
   function ve() {
-    const m = I.value, S = l.value.filter((B) => B.nodes.some((he) => m.includes(he))), [V, ...F] = S, A = m.map((B) => `${B.key}=${Q(B) ? Mn(t[B.key], B.kind === fe) : W(B, t[B.key])}`);
+    const m = I.value, S = l.value.filter((B) => B.nodes.some((he) => m.includes(he))), [V, ...F] = S, A = m.map((B) => `${B.key}=${Q(B) ? Mn(t[B.key], B.node_type === fe) : W(B, t[B.key])}`);
     return ["setting-screen", "apply", V.screen, "--revision", V.revision, ...F.flatMap((B) => ["--also", `${B.screen}=${B.revision}`]), ...A];
   }
   async function ge() {
