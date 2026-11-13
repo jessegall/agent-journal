@@ -1,22 +1,29 @@
+from engine.command.bus import Bus
+from engine.module.module_actors import ModuleActors
 from engine.query.conditions.among import Among
 from engine.query.conditions.has_value import HasValue
 from engine.query.queries import Queries
 from engine.subcommand.output import Output
 from engine.time.clock import Clock
+from core.modules.plugins.support.plugins_module_name import MODULE_NAME
+from core.modules.processes.commands.stop_process.stop_process import StopProcess
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import END_POLL_SECONDS, OutputFolder
 
 QUEUED_RUNS_REASON = "every queued run that is still waiting is followed"
 STOPPED_EXIT_CODE = 143
+INTERRUPTED_EXIT_CODE = 130
 
 
 class QueuedRunFollow:
     """Keeps the caller of a queued run until it ends: while it waits it says how many runs are ahead of it each
-    time that number changes, then prints the run's lines as they come, and answers its exit code."""
+    time that number changes, then prints the run's lines as they come, and answers its exit code. A caller that
+    hangs up, such as a terminal stopped with Ctrl+C, takes its run with it: a waiting run leaves the queue and a
+    running one is stopped with its whole tree."""
 
-    def __init__(self, folder: OutputFolder, queries: Queries, clock: Clock) -> None:
-        self.folder, self.queries, self.clock = folder, queries, clock
+    def __init__(self, folder: OutputFolder, queries: Queries, clock: Clock, bus: Bus, actors: ModuleActors) -> None:
+        self.folder, self.queries, self.clock, self.bus, self.actors = folder, queries, clock, bus, actors
 
     def exit_code(self, process_id: int, output: Output) -> int:
         stated, offset = -1, 0
@@ -32,6 +39,9 @@ class QueuedRunFollow:
             offset = page.last_byte
             if has_ended and offset >= page.total:
                 return process.exit_code if process.exit_code is not None else STOPPED_EXIT_CODE
+            if not has_ended and output.is_reader_gone():
+                self.bus.run(StopProcess(process_id), self.actors.actor(MODULE_NAME), environment_id=process.environment_id)
+                return INTERRUPTED_EXIT_CODE
             self.clock.sleep(END_POLL_SECONDS)
 
     def waiting_count(self, process: Process) -> int:

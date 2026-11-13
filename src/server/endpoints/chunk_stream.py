@@ -4,12 +4,16 @@ import io
 
 class ChunkStream(io.StringIO):
     """A text stream that hands each piece of output on as it is written, so the caller reads it before the
-    command ends."""
+    command ends; it counts as closed once the caller has hung up."""
 
-    def __init__(self, output_consumer: Callable[[bytes], None]) -> None:
-        self.output_consumer = output_consumer
+    def __init__(self, output_consumer: Callable[[bytes], None], caller_hung_up: Callable[[], bool] = lambda: False) -> None:
+        self.output_consumer, self.caller_hung_up = output_consumer, caller_hung_up
 
     def write(self, text: str) -> int:
         if text:
             self.output_consumer(text.encode())
         return len(text)
+
+    @property
+    def closed(self) -> bool:
+        return self.caller_hung_up()

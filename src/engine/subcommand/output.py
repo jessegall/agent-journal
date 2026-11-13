@@ -24,6 +24,10 @@ class Output:
         self.tables, self.json_output, self.stream = tables, json_output, stream
         self.confirmation = ""
 
+    # the reader of a streamed answer that hung up, such as a terminal stopped with Ctrl+C
+    def is_reader_gone(self) -> bool:
+        return self.stream.closed
+
     def line(self, text: str) -> None:
         self.write(text, {"line": text})
 
