@@ -1,7 +1,7 @@
 from engine.skill.skill_contents import SkillContents
 from engine.file.file_access import FileAccess
 import shutil
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from core.modules.agents.models.agent import Agent
@@ -50,6 +50,7 @@ class SkillFiles:
 
     def write_all(self, skills: Sequence[SkillEntry]) -> dict[str, bool]:
         projects = self.projects.projects()
+        permitted = {project: self.projects.permitted(project) for project in projects}
         published: dict[str, bool] = {}
         for skill in skills:
             source = Path(skill.path)
@@ -58,14 +59,14 @@ class SkillFiles:
                 published[skill.folder] = False
                 continue
             text = SkillContents.read(source).text
-            published[skill.folder] = any(tuple(self.publish(project, skill, text) for project in projects))
+            published[skill.folder] = any(tuple(self.publish(project, skill, text, permitted[project](skill.folder)) for project in projects))
         return published
 
     def write(self, project: Path, skill: SkillEntry) -> bool:
-        return self.publish(project, skill, SkillContents.read(Path(skill.path)).text)
+        return self.publish(project, skill, SkillContents.read(Path(skill.path)).text, self.projects.permitted(project)(skill.folder))
 
-    def publish(self, project: Path, skill: SkillEntry, text: str) -> bool:
-        if not self.projects.permits(project, skill.folder):
+    def publish(self, project: Path, skill: SkillEntry, text: str, is_permitted: bool) -> bool:
+        if not is_permitted:
             return False
         changed = False
         for program_folder in self.providers.skill_folders():
@@ -87,8 +88,10 @@ class SkillFiles:
     def clear(self, declared: Sequence[SkillEntry]) -> list[str]:
         names, cleared = {skill.folder for skill in declared}, list[str]()
         legacy_roots = set(self.projects.roots([".codex/skills"]))
+        permitted: dict[Path, Callable[[str], bool]] = {}
         for root in (*self.projects.roots(self.providers.skill_folders()), *legacy_roots):
-            stale = [folder for folder in root.glob(f"{FOLDER_PREFIX}*") if folder.is_dir() and (root in legacy_roots or folder.name not in names or not self.projects.permits(root.parents[1], folder.name))]
+            is_permitted = permitted.setdefault(root.parents[1], self.projects.permitted(root.parents[1]))
+            stale = [folder for folder in root.glob(f"{FOLDER_PREFIX}*") if folder.is_dir() and (root in legacy_roots or folder.name not in names or not is_permitted(folder.name))]
             for folder in stale:
                 shutil.rmtree(folder)
                 cleared.append(folder.name)

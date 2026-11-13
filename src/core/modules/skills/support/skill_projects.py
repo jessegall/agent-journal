@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
@@ -18,8 +18,9 @@ class SkillProjects:
     def agent_folder(self, agent_id: int, environment_id: int) -> Path:
         return Path(self.environments.find(environment_id).folder)
 
-    def permits(self, project: Path, folder: str) -> bool:
-        return True
+    # read once per project, so a publish over every skill asks nothing more per skill
+    def permitted(self, project: Path) -> Callable[[str], bool]:
+        return lambda folder: True
 
     def roots(self, program_folders: Sequence[str]) -> tuple[Path, ...]:
         return tuple(project / folder for project in self.projects() for folder in program_folders)
