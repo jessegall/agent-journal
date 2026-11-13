@@ -12,4 +12,4 @@ class RequestTraceImport:
 
     def __call__(self, container: Container) -> None:
         size = max(container.get(SettingValues).project.number(HOOK_REQUEST_LOG_SIZE_SETTING), 1)
-        container.get(RequestTraceFile).write_rows(container.get(Database), container.get(HookRequestsTable), size)
+        container.get(RequestTraceFile).import_rows(container.get(Database), container.get(HookRequestsTable), size)

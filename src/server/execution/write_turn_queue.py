@@ -66,7 +66,7 @@ class WriteTurnQueue(WriteTurns):
             self.holder = None
             self.changed.notify_all()
         if holder is not None and turn_seconds > SLOW_TURN_SECONDS:
-            self.slow_turn_log(f"the database write turn was held {turn_seconds:.1f} seconds by {holder.described()}")
+            self.slow_turn_log(f"the database write turn was held {turn_seconds:.1f} seconds by {holder.described()}, {self.depth.statements} statements")
 
     # a test that moves a hand-set clock asks the waiting threads to look at it again
     def wake_waiters(self) -> None:

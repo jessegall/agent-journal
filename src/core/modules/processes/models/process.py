@@ -9,7 +9,7 @@ from engine.model.model import Model
 from engine.time.timestamp import MINUTE_SECONDS, Timestamp
 from engine.time.duration import Duration
 from core.modules.processes.models.enums.process_state import ProcessState
-from core.modules.processes.models.enums.queue_priority import QueuePriority
+from engine.enums.execution_priority import ExecutionPriority
 from core.modules.processes.models.lifecycles.process_lifecycle import OPEN, ProcessLifecycle
 
 FINISHED_PROGRESS = 100
@@ -55,7 +55,7 @@ class Process(EnvironmentScoped, Model):
     timeout_seconds: int | None = None
     expired_at: Timestamp | None = None
     sandbox_level: SandboxLevel = SandboxLevel.NONE
-    priority: QueuePriority = QueuePriority.NORMAL
+    priority: ExecutionPriority = ExecutionPriority.NORMAL
 
     def ending_phrase(self) -> str:
         if self.expired_at is not None:

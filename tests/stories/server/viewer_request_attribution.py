@@ -10,7 +10,6 @@ from tests.stories.core.modules.developer.support.hook_recording_fixture import 
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from tests.stories.support.story_checks import expect_value
 from core.modules.developer.support.hook_request_log import HookRequestLog
-from core.modules.developer.ticks.request_trace_import import RequestTraceImport
 from engine.enums.hook_answer import HookAnswer
 from server.viewer.request_trace import SETTINGS_REFRESH_SECONDS
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING
@@ -48,14 +47,14 @@ def request(server, cookie, path, body=None):
     return headers, json.loads(text)
 
 
-def written(server):
+def import_trace_rows(server):
     # the first round moves the trace file aside, the next writes what it holds
-    for _ in range(2):
-        RequestTraceImport()(server.story.container)
+    server.story.run_tick("request trace import")
+    server.story.run_tick("request trace import")
 
 
 def records(server, cookie):
-    written(server)
+    import_trace_rows(server)
     return server.viewer_line_value(cookie, {"window": "developer.hook-requests", "environment": "main",
                                            "line": ["developer", "hook-requests"]})["rows"]
 
@@ -114,7 +113,7 @@ def test_contention_drops_no_row_and_a_tick_writes_it_once_the_database_is_free(
     with sqlite3.connect(server.story.home.database, autocommit=True) as writer:
         writer.execute("BEGIN IMMEDIATE")
         request(server, cookie, "/api/line", line())
-        writer.rollback()
+        writer.execute("ROLLBACK")
     _, status = request(server, cookie, "/api/request-log-status")
     expect_value(status["attempted"], 1)
     expect_value(status["recorded"], 1)
@@ -122,17 +121,16 @@ def test_contention_drops_no_row_and_a_tick_writes_it_once_the_database_is_free(
     expect_value(len(records(server, cookie)), 1)
 
 
-def test_retention_loss_is_visible_and_receipts_are_kept_in_their_order(attributed_server, monkeypatch):
+def test_retention_loss_is_visible_and_receipts_are_kept_in_their_order(attributed_server):
     server, cookie = attributed_server
-    server.story.expect_success(f"setting set {HOOK_REQUEST_LOG_SIZE_SETTING} 1 --project", actor=server.story.user)
-    monkeypatch.setattr("server.viewer.request_trace.perf_counter", lambda: perf_counter() + SETTINGS_REFRESH_SECONDS)
+    server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", HOOK_REQUEST_LOG_SIZE_SETTING, "1", "--project"]})
     for number in range(3):
         request(server, cookie, "/api/line", line(command_id=f"read-{number}"))
     request(server, cookie, "/api/read-receipts", {"receipts": [
         {"client_id": "browser-1", "command_id": "read-0", "joined_callers": 1}]})
-    written(server)
+    import_trace_rows(server)
     _, status = request(server, cookie, "/api/request-log-status")
-    expect_value(status["recorded"], 3)
+    expect_value(status["recorded"], 4)
     expect_value(status["retained"], 1)
     expect_value(status["receipt_recorded"], 1)
     expect_value(status["receipt_dropped"], 0)

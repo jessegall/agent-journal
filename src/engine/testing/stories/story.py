@@ -8,6 +8,9 @@ import re
 import shlex
 import sys
 from unittest.mock import patch
+import sqlite3
+from collections.abc import Generator
+from contextlib import contextmanager
 from dataclasses import asdict, replace
 from uuid import uuid4
 from typing import TypeVar, cast
@@ -237,6 +240,23 @@ class Story:
 
     def tick(self, session: str) -> HookReply:
         return self.hook(session, HookSamples.tick())
+
+    # Holds the database's write lock from another connection, as a busy writer would, until the block ends.
+    @contextmanager
+    def busy_database(self) -> Generator[None]:
+        self.steps.append("database held busy")
+        writer = sqlite3.connect(self.home.database, timeout=0, autocommit=True)
+        try:
+            writer.execute("BEGIN IMMEDIATE")
+            yield
+            writer.execute("ROLLBACK")
+        finally:
+            writer.close()
+
+    # Runs a module's tick handler by its name, as the server's ticker would, on the story's journal.
+    def run_tick(self, name: str) -> None:
+        handler = next(handler for module in DEFAULT_MODULES for handler in module.tick_handlers if handler.label == name)
+        handler.handler(self.container)
 
     def expect_hook_allowed(self, session: str, sample: HookSample, *expected_lines: ExpectedText) -> None:
         self.checked(f"hook {sample.action}")

@@ -8,7 +8,7 @@ from engine.enums.command_category import CommandCategory
 from engine.enums.process_type import ProcessType
 from engine.driver.shell_line import ShellLine
 from core.modules.processes.support.part_spec import PartSpec
-from core.modules.processes.models.enums.queue_priority import QueuePriority
+from engine.enums.execution_priority import ExecutionPriority
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.foreground_run import ForegroundRun
 
@@ -32,7 +32,7 @@ class StartProcess(Command[Process]):
     timeout_durations: tuple[str, ...] = ()
     plugin: str = ""
     run_name: str = ""
-    priority: QueuePriority = QueuePriority.NORMAL
+    priority: ExecutionPriority = ExecutionPriority.NORMAL
 
     # A merge the journal runs itself through its door: the door runs it at once, so it never waits in the queue.
     @property

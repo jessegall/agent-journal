@@ -1,5 +1,4 @@
 import json
-import sqlite3
 
 import pytest
 
@@ -73,8 +72,8 @@ def test_system_logs_keep_unstructured_lines_and_invalid_bytes(logs_server):
 
 
 def test_each_writer_shows_on_the_page_with_its_source_and_level(logs_server, monkeypatch):
-    def refused_connection():
-        raise sqlite3.OperationalError("database is locked")
+    def refused_append(entries):
+        raise PermissionError("journal folder is read-only")
     def refused_copy():
         raise PermissionError("read-only profile folder")
     story = logs_server.story
@@ -84,7 +83,7 @@ def test_each_writer_shows_on_the_page_with_its_source_and_level(logs_server, mo
     ServerFiles(story.home).log_line("sample server line")
     request_trace = RequestTrace(story.home, story.clock)
     request_trace.configuration = RequestTraceSettings(True, 10)
-    monkeypatch.setattr(request_trace, "connected", refused_connection)
+    monkeypatch.setattr(request_trace.trace_file, "append", refused_append)
     request_trace.record(["task", "list"], "cli", 1.0, 0.0, 0)
     request_trace.complete_reads(1, ())
     move = story.container.get(ProfileFolderMove)
@@ -96,15 +95,15 @@ def test_each_writer_shows_on_the_page_with_its_source_and_level(logs_server, mo
     lines = read_logs(logs_server, "--limit", "200")["rows"]
     shown = {text: next((line["source"], line["level"]) for line in lines if text in line["text"]) for text in (
         "RuntimeError: sample failure", "journal sample", "stop allowed: no open task", "sample server line",
-        "request recording failed: database is locked", "read receipt recording failed: database is locked",
+        "request recording failed: journal folder is read-only", "read receipt recording failed: journal folder is read-only",
         "Profiles left unchanged", "1700000000 hook claude", "process 7 ran as it is: ls", " ms on a ")}
     story.expect_rows(shown == {
         "RuntimeError: sample failure": ("journal", "error"),
         "journal sample": ("journal", "error"),
         "stop allowed: no open task": ("journal", "info"),
         "sample server line": ("server", "info"),
-        "request recording failed: database is locked": ("server", "warning"),
-        "read receipt recording failed: database is locked": ("server", "warning"),
+        "request recording failed: journal folder is read-only": ("server", "warning"),
+        "read receipt recording failed: journal folder is read-only": ("server", "warning"),
         "Profiles left unchanged": ("journal", "warning"),
         "1700000000 hook claude": ("bypass", "warning"),
         "process 7 ran as it is: ls": ("bypass", "warning"),

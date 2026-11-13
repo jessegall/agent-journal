@@ -37,8 +37,6 @@ const SNAPSHOT = {
     environment_name: "main",
     parallel_limit: 2,
     limit_setting: "journal.core.processes.run-batch-size",
-    count_main_runs: false,
-    main_spots_setting: "journal.core.processes.main-runs-take-slots",
     used_slots: 1,
     waiting_count: 2,
     halted: false,
@@ -190,14 +188,11 @@ test("a limit a suite names shows beside the commands at once and saves its sett
     expect(read).toHaveBeenCalledWith(["setting", "set", limit.key, "500"]);
 });
 
-test("the stepper and switch save their declared settings and refresh the queue", async () => {
+test("the stepper saves its declared setting and refreshes the queue", async () => {
     let queue = {...SNAPSHOT};
     const read = vi.fn(async (line) => {
         if (line[0] === "setting") {
-            queue =
-                line[2] === SNAPSHOT.limit_setting
-                    ? {...queue, parallel_limit: Number(line[3])}
-                    : {...queue, count_main_runs: line[3] === "on"};
+            queue = {...queue, parallel_limit: Number(line[3])};
         }
         return {ok: true, value: queue};
     });
@@ -209,10 +204,6 @@ test("the stepper and switch save their declared settings and refresh the queue"
     document.body.querySelector('[aria-label="One fewer command at once"]').click();
     await settle();
     expect(document.body.querySelector("[data-queue-limit]").textContent).toBe("2");
-    document.body.querySelector("[data-queue-main-spots]").click();
-    await settle();
-    expect(read).toHaveBeenCalledWith(["setting", "set", SNAPSHOT.main_spots_setting, "on"]);
-    expect(document.body.querySelector("[data-queue-main-spots]").getAttribute("aria-checked")).toBe("true");
 });
 
 test("the minimum limit disables decrease and a refused setting stays unchanged", async () => {

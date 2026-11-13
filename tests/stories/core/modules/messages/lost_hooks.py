@@ -14,7 +14,7 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from server.endpoints.hook_endpoint import HookEndpoint
 from server.hook.hook_delivery_retries import HookDeliveryRetries
-from server.enums.queue_priority import QueuePriority
+from engine.testing.stories.hook_priorities import MAIN_AGENT_HOOK_PRIORITY
 
 AGENT_TEXT = "Loading the nudge records takes 10.5 seconds, so I am reading the query code now."
 TOOL_FINISHED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")
@@ -219,7 +219,7 @@ def test_a_retry_that_finds_the_database_busy_fails_nothing_and_keeps_its_file(b
 
 def test_a_hook_returns_its_connection_with_the_default_busy_timeout(server):
     server.expect_hook_answer("/hook", hook_body("timeout-restored"), 200, "New message 1")
-    with server.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, 1) as database:
+    with server.context.hook_database.used(MAIN_AGENT_HOOK_PRIORITY, 1) as database:
         server.story.expect_rows(database.busy_timeout_seconds() == BUSY_TIMEOUT_SECONDS)
 
 

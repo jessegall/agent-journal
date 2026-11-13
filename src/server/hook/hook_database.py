@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from engine.database.database import Database
 from engine.database.write_turns import WriteTurns
 from engine.journal.journal_home import JournalHome
-from server.enums.queue_priority import QueuePriority
+from engine.enums.execution_priority import ExecutionPriority
 from server.hook.queue_request import QueueRequest
 from server.hook.server_queue import RUNNING_HOOKS_COUNT, ServerQueue
 
@@ -21,7 +21,7 @@ class HookDatabase:
         self.queue = ServerQueue(running_hooks_count)
 
     @contextmanager
-    def used(self, priority: QueuePriority, wait_seconds: float, owner: str = "", request: QueueRequest | None = None) -> Generator[Database]:
+    def used(self, priority: ExecutionPriority, wait_seconds: float, owner: str = "", request: QueueRequest | None = None) -> Generator[Database]:
         with self.queue.hook_turn(priority, wait_seconds, owner, request):
             database = self.free_databases.pop()
             busy_timeout_seconds = database.busy_timeout_seconds()

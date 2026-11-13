@@ -42,12 +42,12 @@ def test_runs_over_the_batch_size_wait_and_start_as_a_spot_frees(new_story):
     expect_absent_waits(story, third)
 
 
-def test_a_main_agents_run_neither_waits_nor_holds_a_spot(new_story):
+def test_a_main_agents_run_does_not_wait_and_holds_a_spot(new_story):
     story = install_runner(new_story(fixture=QueueAgents))
     start_process(story, "make main", category=CommandCategory.TEST_RUN)
     first, second = queued(story, "make one"), queued(story, "make two")
     expect_slot(story, first)
-    expect_slot(story, second)
+    expect_waits(story, second)
 
 
 def test_each_environment_queues_its_runs_by_its_own_batch_size(new_story):

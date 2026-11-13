@@ -218,6 +218,9 @@ class WorkloadServer:
         return tuple(row for answer in measured.answers for row in answer["value"]["rows"])
 
     def attributed_evidence(self, funnel: dict[str, object]) -> dict[str, object]:
+        # the first round moves the trace file aside, the next writes what it holds
+        self.server.story.run_tick("request trace import")
+        self.server.story.run_tick("request trace import")
         status, _, text = viewer_answer(self.server.viewer_port(), "/api/request-log-status", self.cookie, "")
         assert status == 200, text
         status = json.loads(text)

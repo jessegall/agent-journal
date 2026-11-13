@@ -1,6 +1,6 @@
 import threading
 
-from server.enums.queue_priority import QueuePriority
+from server.hook.hook_sender import MAIN_AGENT_HOOK_PRIORITY
 from server.hook.queue_round_yield import QueueRoundYield
 from server.hook.server_queue import ServerQueue
 
@@ -21,7 +21,7 @@ def test_a_round_waits_while_a_hook_runs_and_goes_on_when_it_ends():
         round_yield.pause()
         pauses.append(True)
 
-    with queue.hook_turn(QueuePriority.MAIN_AGENT_HOOK, WAIT_SECONDS):
+    with queue.hook_turn(MAIN_AGENT_HOOK_PRIORITY, WAIT_SECONDS):
         thread = threading.Thread(target=pause_round)
         thread.start()
         assert entered.wait(WAIT_SECONDS)
@@ -32,5 +32,5 @@ def test_a_round_waits_while_a_hook_runs_and_goes_on_when_it_ends():
 
 def test_a_round_gives_up_waiting_at_its_limit_so_busy_hooks_never_stop_it():
     queue = ServerQueue()
-    with queue.hook_turn(QueuePriority.MAIN_AGENT_HOOK, WAIT_SECONDS):
+    with queue.hook_turn(MAIN_AGENT_HOOK_PRIORITY, WAIT_SECONDS):
         QueueRoundYield(queue, 0.2).pause()

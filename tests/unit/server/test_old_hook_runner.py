@@ -10,7 +10,7 @@ import pytest
 from engine.driver.errors.old_hook_runner_error import OldHookRunnerError
 from engine.time.clock import Clock
 from server.endpoints.hook_endpoint import HookEndpoint
-from server.enums.queue_priority import QueuePriority
+from server.hook.hook_sender import AGENT_HOOK_PRIORITY, MAIN_AGENT_HOOK_PRIORITY
 
 
 def journal_home(folder: Path) -> JournalHome:
@@ -31,7 +31,7 @@ def test_an_old_hook_runner_gets_an_immediate_unchecked_answer(event, refused, t
     assert "update the hook runner" in (reply.refusal if refused else reply.lines[0])
 
 
-@pytest.mark.parametrize("role,priority,limit", [("worker", QueuePriority.AGENT_HOOK, 45), ("helper", QueuePriority.AGENT_HOOK, 45), ("main", QueuePriority.MAIN_AGENT_HOOK, 1), (None, QueuePriority.MAIN_AGENT_HOOK, 1)])
+@pytest.mark.parametrize("role,priority,limit", [("worker", AGENT_HOOK_PRIORITY, 45), ("helper", AGENT_HOOK_PRIORITY, 45), ("main", MAIN_AGENT_HOOK_PRIORITY, 1), (None, MAIN_AGENT_HOOK_PRIORITY, 1)])
 def test_a_hook_takes_its_place_in_the_queue_by_its_role(role, priority, limit, tmp_path):
     used = Mock(return_value=nullcontext())
     context = SimpleNamespace(home=journal_home(tmp_path), hook_database=SimpleNamespace(used=used), hook_limit_seconds=1, agent_hook_limit_seconds=45, stop_limit_seconds=1, clock=Clock(),

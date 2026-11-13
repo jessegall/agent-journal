@@ -47,10 +47,10 @@ def ended(story, run: int, exit_code: int = 0) -> None:
     story.expect_success(f"process end {shown(story, run)['process_id']} --exit-code {exit_code} --bytes 0 --lines 0", actor=story.worker)
 
 
-def test_a_kind_limited_to_one_gives_the_free_place_to_the_high_priority_run_and_tells_each_end(new_story):
+def test_a_kind_limited_to_one_gives_the_free_place_to_the_run_at_agent_priority_and_tells_each_end(new_story):
     story = queues_plugin(new_story)
     first, normal, cancelled = queued(story, "judge"), queued(story, "judge"), queued(story, "judge")
-    high = queued(story, "judge", "--priority", "high")
+    high = queued(story, "judge", "--priority", "agent")
     story.expect_rows(shown(story, first)["state"] == "running", shown(story, normal)["state"] == "waiting")
     story.expect_text(f"plugin queue-cancel {cancelled}", "cancelled", actor=story.user)
     story.expect_refusal(f"plugin queue-cancel {cancelled}", "is over already", actor=story.user)
