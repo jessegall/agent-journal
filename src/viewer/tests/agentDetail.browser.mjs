@@ -11,7 +11,7 @@ try {
     const window = page.locator('[data-window="agents.agents"]');
     const first = window.locator(`[data-agent-open="${worker}"]`);
     assert.equal(await first.getAttribute("role"), "button");
-    assert.equal(await first.locator(".agent-name + .agent-chevron").count(), 1);
+    assert.equal(await first.locator(".agent-who + .agent-chevron").count(), 1);
     for (const id of [worker, helper]) {
         const card = window.locator(`[data-agent-open="${id}"]`);
         await card.click();

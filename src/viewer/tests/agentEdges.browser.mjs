@@ -18,6 +18,7 @@ try {
             await card.locator(`[data-tab="${tab}"]`).click();
             const item = card.locator(selector).first();
             await item.waitFor();
+            await card.evaluate((element) => Promise.all(element.getAnimations({subtree: true}).filter((animation) => animation.effect.getComputedTiming().iterations !== Infinity).map((animation) => animation.finished)));
             const bounds = await item.evaluate((element) => {
                 const box = element.getBoundingClientRect();
                 const windowBox = element.closest("[data-window]").getBoundingClientRect();
