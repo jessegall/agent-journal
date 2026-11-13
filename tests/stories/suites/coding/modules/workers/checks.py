@@ -3,6 +3,8 @@ from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment
+from suites.coding.modules.workers.support.worker_nudges import WORKER_PROOF_SHORT
+from engine.testing.expectations.expect_nudge import said
 
 SHORTFALL = "the rounding has no test"
 PROOF_SHORT = f'proof short 1 "{SHORTFALL}"'
@@ -14,7 +16,7 @@ def test_a_short_proof_moves_the_task_back_to_started_and_tells_the_worker_what_
     worker = delivered_worker(story, repository)
     story.expect_success(PROOF_SHORT, "state: short", f"shortfall: {SHORTFALL}", actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
-    story.expect_text(f"agent-line list --agent {worker.id}", "proof:1 of task:1 is too short: read it, fix it, show it again and commit")
+    story.expect_text(f"agent-line list --agent {worker.id}", said(WORKER_PROOF_SHORT, proof=1, task=1))
     story.expect_absent(f"agent-line list --agent {worker.id}", SHORTFALL)
     story.expect_text("proof show 1", SHORTFALL)
 

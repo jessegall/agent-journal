@@ -16,6 +16,9 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from tests.stories.core.modules.processes.support.reading_scenarios import agent_number, end_decision, ended_after_a_while
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from core.modules.processes.support.process_nudges import BLOCK_LIFTED
+from core.modules.processes.support.process_nudges import HOLD_LIFTED
+from engine.testing.expectations.expect_nudge import said
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -100,7 +103,7 @@ def test_a_person_lifts_a_silent_run_hold_and_the_agent_is_told_and_works_on(new
     story.expect_success("process holds", f"hold on output {process.id}: read it; stop it; a user releases it", actor=story.agent)
     story.expect_refusal(f"process lift-hold {agent_number(story, story.agent.id)} --environment main", "only a user lifts a hold", actor=story.agent)
     story.expect_success(f"process lift-hold {agent_number(story, story.agent.id)} --environment main", "1 holds lifted", actor=story.user)
-    story.expect_hook_allowed("s-1", EDIT, f"A user lifted the hold on output {process.id}")
+    story.expect_hook_allowed("s-1", EDIT, said(HOLD_LIFTED))
 
 
 def test_a_person_lifts_a_workers_reader_block_and_the_worker_is_told_and_held_by_it_no_more(new_story):
@@ -111,5 +114,5 @@ def test_a_person_lifts_a_workers_reader_block_and_the_worker_is_told_and_held_b
     story.expect_text("process holds", "block of reader request 1: add or fix the reader; mark the command unreadable", actor=worker)
     person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"process lift-hold {agent_number(story, worker.id)} --environment main", "1 holds lifted", actor=person)
-    story.expect_hook_allowed("s-reader", HookSamples.prompt("go on"), "A user lifted the block on reader request 1")
+    story.expect_hook_allowed("s-reader", HookSamples.prompt("go on"), said(BLOCK_LIFTED, request=1))
     story.expect_hook_refusal("s-reader", EDIT, "Your task has not started")

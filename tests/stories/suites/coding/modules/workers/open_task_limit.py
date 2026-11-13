@@ -2,6 +2,8 @@ import pytest
 
 from tests.stories.suites.coding.modules.workers.support.held_tasks import BUILD_TASK_IDS, holding_worker
 from tests.stories.suites.coding.modules.workers.support.phase_steps import StoryWorker
+from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_COUNT
+from engine.testing.expectations.expect_nudge import said
 
 LIMIT_SETTING = "journal.suites.coding.workers.most-open-tasks"
 LIMIT_REFUSAL = "you hold {count} tasks, the most allowed"
@@ -34,7 +36,7 @@ def started_ids(worker: StoryWorker) -> list[int]:
 
 def test_12_a_worker_starts_a_second_task_and_hears_how_many_it_holds_of_the_most_it_may(one_task):
     outcome = one_task.story.run("task start 2", actor=one_task.worker)
-    one_task.story.expect_rows(outcome.code == 0, started_ids(one_task) == [1, 2], "You hold 2 of the 5 tasks you may hold at once" in one_task.worker_lines(), detail=f"{outcome.output_text} | {one_task.worker_lines()}")
+    one_task.story.expect_rows(outcome.code == 0, started_ids(one_task) == [1, 2], said(WORKER_TASK_COUNT, count=2, limit=5).is_in_any(one_task.worker_lines()), detail=f"{outcome.output_text} | {one_task.worker_lines()}")
 
 
 def test_13_a_worker_holds_five_started_tasks_and_its_status_lists_them(five_tasks):

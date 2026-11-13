@@ -10,6 +10,8 @@ from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import AgentStarted
+from core.modules.tasks.support.task_nudges import TASK_NAME
+from engine.testing.expectations.expect_nudge import said
 
 
 def posted(line):
@@ -96,7 +98,7 @@ def test_a_task_whose_brief_names_an_open_task_is_told_how_to_block_on_it(new_st
     story = new_story(fixture=TwoTasks)
     story.run('task edit 1 --brief "Build on task 2 first"')
     story.run("task start 1", actor=story.agent)
-    story.expect_hook_allowed("s-1", posted("journal task start 1"), "Task 1 names open task 2: if it waits on it, block it on that task")
+    story.expect_hook_allowed("s-1", posted("journal task start 1"), said(TASK_NAME, task=1, other=2))
 
 
 def test_the_graph_names_what_waits_on_what_by_a_dependency_or_a_block(new_story):

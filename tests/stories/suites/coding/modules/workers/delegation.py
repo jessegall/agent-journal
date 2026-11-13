@@ -24,6 +24,9 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from engine.testing.expectations.expect_reply import expect_absent_reply_refusal
 from tests.stories.support.story_checks import expect_value
+from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_AFTER_REASSIGNED
+from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_REASSIGNED
+from engine.testing.expectations.expect_nudge import said
 
 
 def delegated_story(new_story):
@@ -97,7 +100,7 @@ def test_a_started_task_taken_from_a_worker_goes_back_open_and_the_worker_goes_o
     story.expect_text("task info 1", f"assigned to: agent {story.agent.id}", actor=story.agent)
     story.expect_text("task show 2", "state: started", f"holder_id: {worker.id}", actor=story.agent)
     story.expect_text("worker-worktree show 1", "task_id: 2", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {worker.id}", "task:1 was taken from you: leave it", "Your next task is task:2")
+    story.expect_text(f"agent-line list --agent {worker.id}", said(WORKER_TASK_REASSIGNED, task=1), said(WORKER_TASK_AFTER_REASSIGNED, task=2))
 
 
 def test_a_task_is_not_assigned_to_a_helper_and_the_refusal_names_who_takes_one(new_story):

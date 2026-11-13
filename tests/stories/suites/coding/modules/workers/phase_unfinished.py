@@ -9,6 +9,8 @@ from tests.stories.suites.coding.modules.workers.support.commit_command import C
 from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, prove_task, unplanned_holding_worker
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, PHASE_DISPATCH, PLAN_DISPATCH, TEST_LINE, start_planned_worker
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
+from suites.coding.modules.workers.support.worker_nudges import WORKER_COMMITTED_UNMERGED
+from engine.testing.expectations.expect_nudge import said
 
 MAIN_SESSION = "s-1"
 PROCESS_START = "2026-10-31T09:00:00+00:00"
@@ -112,7 +114,7 @@ def test_after_its_limit_a_worker_that_ended_names_its_tasks_left_and_the_commit
     program_ended.story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=program_ended.story.user)
     program_ended.story.tick(MAIN_SESSION)
     number = agent_number(program_ended.story, program_ended.worker.id)
-    program_ended.story.expect_text(f"agent-line list --agent {program_ended.story.agent.id}", f"worker:{number} ended with task:2, task:3 left", f"task:1 of worker:{number} are committed but not merged")
+    program_ended.story.expect_text(f"agent-line list --agent {program_ended.story.agent.id}", f"worker:{number} ended with task:2, task:3 left", said(WORKER_COMMITTED_UNMERGED, tasks='task:1'))
 
 
 @pytest.mark.parametrize("fixture, reason", [("advanced_worker", "the plan changed"), ("phase_delivered", "the tests take too long")], ids=["in the middle of a phase", "after the hand-in"])

@@ -45,6 +45,9 @@ from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
 from tests.stories.core.support.agent_labels import agent_label
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.suites.coding.modules.workers.quiet_helpers import StartedMerger
+from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
+from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_PASSED
+from engine.testing.expectations.expect_nudge import said
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -151,7 +154,7 @@ def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_
         story.expect_text("merger next", agent_label(story, worker.id), actor=Actor(merger.id, ActorType.AGENT))
     else:
         story.expect_rows(merger_agent(story) is None)
-        story.expect_text(f"agent-line list --agent {story.agent.id}", f"All tests of worker:{agent_number(story, worker.id)} pass", actor=story.agent)
+        story.expect_text(f"agent-line list --agent {story.agent.id}", said(WORKER_TESTS_PASSED), actor=story.agent)
 
 
 def test_only_the_merger_runs_its_commands(new_story):
@@ -500,7 +503,7 @@ def test_a_worker_the_merger_passes_on_is_named_to_the_main_agent_with_its_merge
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.expect_success(f'merger pass {agent_number(story, worker.id)} "important differences need the main agent"', actor=merger)
     story.run_listeners()
-    story.expect_text(main_lines, f"The merger passed worker:{agent_number(story, worker.id)} to you: its merge waits on you")
+    story.expect_text(main_lines, said(MERGER_PASSED))
     story.tick("s-1")
     story.expect_text(main_lines, f"worker:{agent_number(story, worker.id)} committed")
     first = story.run(main_lines).output_text.count(f"worker:{agent_number(story, worker.id)} committed")

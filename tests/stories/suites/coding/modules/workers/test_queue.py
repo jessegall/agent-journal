@@ -23,6 +23,8 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.support.story_checks import expect_absent_value, expect_answers, expect_value, expect_value_with
+from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_PASSED
+from engine.testing.expectations.expect_nudge import said
 
 PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "python tests/cart.py"'
 PIPED_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "python tests/cart.py | tail -3"'
@@ -82,7 +84,7 @@ def test_all_tests_passing_checks_the_proofs_and_tells_the_main_agent_and_the_me
     ended(story, started[0], 0)
     story.expect_text("proof show 1", "state: checked", actor=story.agent)
     expect_marks_text(story, "passed")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"All tests of worker:{agent_number(story, worker.id)} pass", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", said(WORKER_TESTS_PASSED), actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     asked_for_merge(story, worker)

@@ -6,7 +6,7 @@ from string import Formatter
 from engine.driver.nudge import Nudge
 from engine.driver.nudge_declaration import NudgeDeclaration
 
-ANY_VALUE = ".+?"
+ANY_VALUE = "[^\n]+?"
 
 
 @dataclass(frozen=True)

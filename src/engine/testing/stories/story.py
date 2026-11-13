@@ -70,7 +70,7 @@ from engine.testing.stories.story_state import StoryState
 from engine.testing.fakes.fixed_process_table import FixedProcessTable
 from engine.testing.expectations.line_outcome import LineOutcome
 from engine.testing.expectations.expect_nudge import SaidNudge
-from engine.testing.expectations.text_match import holds_line, holds_text
+from engine.testing.expectations.text_match import ExpectedText, holds_line, holds_text
 
 STORY_ROWS_REASON = "the story kit lists every row of a table for an assertion"
 
@@ -235,7 +235,7 @@ class Story:
     def tick(self, session: str) -> HookReply:
         return self.hook(session, HookSamples.tick())
 
-    def expect_hook_allowed(self, session: str, sample: HookSample, *expected_lines: str) -> None:
+    def expect_hook_allowed(self, session: str, sample: HookSample, *expected_lines: ExpectedText) -> None:
         reply = self.hook(session, sample)
         self.expected(reply.refusal == "", f"the hook was refused: {reply.refusal}")
         missing = [line for line in expected_lines if not holds_line(reply.lines, line)]
@@ -263,11 +263,11 @@ class Story:
         reply = self.hook(session, sample)
         self.expected(reply.refusal == "" and not reply.lines, f"the hook was answered: {reply}")
 
-    def expect_absent_hook_line(self, session: str, sample: HookSample, line: str) -> None:
+    def expect_absent_hook_line(self, session: str, sample: HookSample, line: ExpectedText) -> None:
         reply = self.hook(session, sample)
         self.expected(not holds_line(reply.lines, line), f"the hook's lines {list(reply.lines)} hold {line!r}")
 
-    def expect_hook_refusal(self, session: str, sample: HookSample, reason: str) -> None:
+    def expect_hook_refusal(self, session: str, sample: HookSample, reason: ExpectedText) -> None:
         reply = self.hook(session, sample)
         self.expected(holds_text(reply.refusal, reason), f"the hook's refusal {reply.refusal!r} does not say {reason!r}")
 
@@ -298,19 +298,19 @@ class Story:
         places = [outcome.output_text.find(text) for text in texts]
         self.expected(outcome.code == 0 and -1 not in places and places == sorted(places), f"{line} did not name {texts} in order: {outcome.output_text}")
 
-    def expect_text(self, line: str, *texts: str, actor: Actor | None = None) -> None:
+    def expect_text(self, line: str, *texts: ExpectedText, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)
         self.expected(outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}")
         output_text = self.with_touched_rows(outcome)
         missing = [text for text in texts if not holds_text(output_text, text)]
         self.expected(not missing, f"{line} printed none of {missing}:\n{outcome.output_text}")
 
-    def expect_no_text(self, line: str, *texts: str, actor: Actor | None = None) -> None:
+    def expect_no_text(self, line: str, *texts: ExpectedText, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)
         matching = [text for text in texts if holds_text(outcome.output_text, text)]
         self.expected(not matching, f"{line} printed {matching}:\n{outcome.output_text}")
 
-    def expect_refusal(self, line: str, reason: str, actor: Actor | None = None) -> None:
+    def expect_refusal(self, line: str, reason: ExpectedText, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)
         self.expected(outcome.code == 1, f"{line} was not refused: {outcome.code} {outcome.output_text}")
         self.expected(holds_text(outcome.output_text, reason), f"{line} was refused, but not for {reason!r}: {outcome.output_text}")

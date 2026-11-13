@@ -13,6 +13,8 @@ from tests.stories.core.modules.processes.background import SavedBuildMoved, Sil
 from tests.stories.core.modules.processes.hang_watch import HANG_SECONDS, ActiveBuild, expect_looks, started_tree, watch_tick
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
+from core.modules.processes.support.process_nudges import SILENT_RUN
+from engine.testing.expectations.expect_nudge import said
 
 MAIN = "s-1"
 SLOW_TESTS = "pytest tests/slow -q"
@@ -114,7 +116,7 @@ def test_only_a_silent_go_test_over_several_packages_is_told_and_runs_printing_l
         printed(story, bar, bar_text)
         ticks(story, 10, lines, every=10, text="compiled one more file\n" * 10)
         heard += cadence_lines(told(story, MAIN))
-    story.expect_rows(len(heard) == 1, f"Output {silent.id} printed nothing for 30s, so it is not streaming: run one package at a time, or go test -p 1" in heard[0],
+    story.expect_rows(len(heard) == 1, said(SILENT_RUN, seconds=30, hint='run').is_in(heard[0]),
                       detail="\n".join(heard))
 
 

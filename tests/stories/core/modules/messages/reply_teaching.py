@@ -14,6 +14,9 @@ from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.engine.driver.support.samples import SAMPLES
 from engine.testing.expectations.expect_reply import expect_reply_line
 from tests.stories.support.story_checks import expect_lines_reply_line
+from core.modules.messages.support.message_nudges import UNANSWERED
+from core.modules.messages.support.message_nudges import UNANSWERED_REFUSAL
+from engine.testing.expectations.expect_nudge import said
 
 
 
@@ -80,7 +83,7 @@ def test_reading_a_message_says_how_a_reply_goes_out(read_message):
 
 def test_a_read_message_is_named_until_it_is_answered_in_text(read_message):
     story, _ = read_message
-    story.expect_hook_allowed("s-1", VIEW_LINE, "Answer message 1 before continuing")
+    story.expect_hook_allowed("s-1", VIEW_LINE, said(UNANSWERED, messages=1))
     story.hook("s-1", HookSamples.message_display("Fixing the cart now"))
     story.advance(timedelta(seconds=301))
     story.expect_absent_hook_line("s-1", VIEW_LINE, "answer message 1")
@@ -96,8 +99,8 @@ def test_filing_the_task_a_message_asks_for_is_not_told_to_answer_it(read_messag
 
 def test_tool_calls_wait_after_ten_and_a_reply_line_always_goes_through(reply_required):
     story = reply_required
-    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "Answer message 1 first")
-    story.expect_absent_hook_line("s-1", REPLY_LINE, "Answer message 1 first")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), said(UNANSWERED_REFUSAL, messages=1))
+    story.expect_absent_hook_line("s-1", REPLY_LINE, said(UNANSWERED_REFUSAL, messages=1))
     story.run('message reply 1 "On it" --environment main', actor=story.agent)
     story.expect_absent_hook_line("s-1", VIEW_LINE, "answer message 1")
 
@@ -107,7 +110,7 @@ def test_a_chained_command_is_held_only_after_ten_tool_uses_and_not_before(chain
     for _ in range(2):
         story.hook("s-1", CHAINED_LINE)
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
-    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "Answer message 1 first")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), said(UNANSWERED_REFUSAL, messages=1))
 
 
 def test_writes_wait_for_an_unread_message_after_twenty_calls_and_reading_goes_through(new_story):
@@ -191,5 +194,5 @@ def test_a_takeover_holds_the_new_agent_only_for_messages_it_read_itself(read_me
     story.run('message send "Then the totals" --environment main', actor=story.user)
     story.hook("s-2", HookSamples.stop())
     story.hook("s-2", journal_line("journal message read 2").with_fields(event="post_tool_use"))
-    story.expect_hook_allowed("s-2", VIEW_LINE, "Answer message 2 before continuing")
+    story.expect_hook_allowed("s-2", VIEW_LINE, said(UNANSWERED, messages=2))
     story.expect_absent_hook_line("s-2", VIEW_LINE, "answer message 1")

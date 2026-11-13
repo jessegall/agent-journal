@@ -2,6 +2,8 @@ from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.tasks.support.task_start_fixtures import TwoOpenTasks
+from core.modules.tasks.support.task_nudges import TASK_TESTING_QUESTION
+from engine.testing.expectations.expect_nudge import said
 
 START_TAX_TASK = HookSamples.shell("journal task start 2", ShellPart("journal", CommandCategory.JOURNAL, ["task", "start", "2"]))
 START_TOTAL_TASK = HookSamples.shell("journal task start 1", ShellPart("journal", CommandCategory.JOURNAL, ["task", "start", "1"]))
@@ -10,7 +12,7 @@ START_TOTAL_TASK = HookSamples.shell("journal task start 1", ShellPart("journal"
 def test_starting_a_task_with_another_in_hand_asks_about_testing_that_one(new_story):
     story = new_story(fixture=TwoOpenTasks)
     story.run("task start 1", actor=story.agent)
-    story.expect_hook_allowed("s-1", START_TAX_TASK, "Did you mean to move task:1 to testing first?")
+    story.expect_hook_allowed("s-1", START_TAX_TASK, said(TASK_TESTING_QUESTION, task=1))
 
 
 def test_starting_a_task_with_none_in_hand_says_nothing(new_story):

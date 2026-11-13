@@ -11,6 +11,8 @@ from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.read_limit import READ_LIMIT_ROWS, limit_reads
 from tests.stories.core.modules.messages.reply_teaching import READ_MESSAGE, VIEW_LINE, ReplySession, journal_line, listeners_run_at_hook  # noqa: F401
+from core.modules.messages.support.message_nudges import UNANSWERED
+from engine.testing.expectations.expect_nudge import said
 
 HELPER_SESSION = "s-2"
 WORKER_SESSION = "s-worker"
@@ -55,7 +57,7 @@ def test_a_worker_messaged_by_its_main_agent_is_held_after_the_countdown_and_fre
     worker = Actor(story.story_rows(Agent, role="worker")[0].id, ActorType.AGENT)
     story.expect_success(f'message send "Look at src/cart.py again" --to agent:{agent_number(story, worker.id)}', actor=story.agent)
     story.expect_success("message read 1", actor=worker)
-    story.expect_hook_allowed(WORKER_SESSION, VIEW_LINE, "Answer message 1 before continuing")
+    story.expect_hook_allowed(WORKER_SESSION, VIEW_LINE, said(UNANSWERED, messages=1))
     use_tools(story, WORKER_SESSION, 12)
     story.expect_hook_refusal(WORKER_SESSION, EDIT, HOLD)
     story.expect_success(f'message send "On it" --to agent:{agent_number(story, story.agent.id)}', actor=worker)
@@ -66,7 +68,7 @@ def test_a_main_agent_messaged_by_a_worker_is_held_after_the_countdown_and_freed
     story = beside_story(new_story)
     story.expect_success(f'message send "The total is wrong" --to agent:{agent_number(story, story.agent.id)}', actor=story.helper)
     story.expect_success("message read 1", actor=story.agent)
-    story.expect_hook_allowed("s-1", VIEW_LINE, "Answer message 1 before continuing")
+    story.expect_hook_allowed("s-1", VIEW_LINE, said(UNANSWERED, messages=1))
     use_tools(story, "s-1", 12)
     story.expect_hook_refusal("s-1", EDIT, HOLD)
     story.expect_success('message reply 1 "Fixing it"', actor=story.agent)
@@ -119,7 +121,7 @@ def test_a_report_read_before_the_main_agent_started_again_waits_on_no_reply_aft
     story = beside_story(new_story)
     story.expect_success(f'message send "The cart is done" --to agent:{agent_number(story, story.agent.id)}', actor=story.helper)
     story.expect_success("message read 1", actor=story.agent)
-    story.expect_hook_allowed("s-1", VIEW_LINE, "Answer message 1 before continuing")
+    story.expect_hook_allowed("s-1", VIEW_LINE, said(UNANSWERED, messages=1))
     story.advance(timedelta(minutes=5))
     story.hook("s-1", HookSamples.session_start())
     story.advance(timedelta(seconds=30))

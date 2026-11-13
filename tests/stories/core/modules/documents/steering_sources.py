@@ -6,6 +6,8 @@ from engine.testing.stories.story_fixture import StoryFixture
 
 from tests.stories.core.modules.documents.support.trail_fixtures import feature, scenario, viewer_answer, Scenario, TrailReady
 from tests.stories.core.support.agent_labels import agent_number
+from core.modules.messages.support.message_nudges import MESSAGE_UPDATED
+from engine.testing.expectations.expect_nudge import said
 
 
 class EditedActiveRequest(StoryFixture):
@@ -102,7 +104,7 @@ def test_update_notification_names_the_explicit_selection_command(scenario):
     scenario.person("messages.chat", "message", "edit", "1", "--text", "Use a different rounding boundary")
     scenario.story.run_listeners()
     lines = "\n".join(scenario.story.hook("s-1", HookSamples.prompt("go on")).lines)
-    scenario.story.expect_rows("message:1 was updated: read it again" in lines, detail=lines)
+    scenario.story.expect_rows(said(MESSAGE_UPDATED, message=1).is_in(lines), detail=lines)
 
 
 @pytest.mark.parametrize("invalid", ["agent-message", "other-recipient", "other-author"])

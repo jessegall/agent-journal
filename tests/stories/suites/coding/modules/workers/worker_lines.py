@@ -10,6 +10,8 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from core.modules.tasks.support.task_nudges import UNLOGGED_WRITES
+from engine.testing.expectations.expect_nudge import said
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -62,7 +64,7 @@ def test_a_workers_writes_wait_past_the_hold_count_until_it_logs_its_task(new_st
     story.expect_hook_allowed(session, edit, f"log task 1 due: {LOG_REQUEST_WRITES} writes")
     for _ in range(UNLOGGED_WRITES_CEILING - LOG_REQUEST_WRITES - 1):
         story.hook(session, edit)
-    story.expect_hook_refusal(session, edit, "Log task 1 now: 0 writes left")
+    story.expect_hook_refusal(session, edit, said(UNLOGGED_WRITES, task=1))
     story.advance(timedelta(minutes=1))
     story.expect_success("task log 1 'the cart total is worked out'", actor=worker)
     story.expect_hook_allowed(session, edit)

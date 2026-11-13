@@ -4,11 +4,13 @@ from engine.testing.examples.hook_samples import HookSamples
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import BuilderStarted, OpenTaskBuilder, CodingEnvironment
+from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
+from engine.testing.expectations.expect_nudge import said
 
 
 def test_a_main_agent_with_auto_on_that_stops_with_nothing_in_hand_is_started_on_the_open_task(new_story):
     story = new_story(fixture=OpenTaskBuilder)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "task:1 is yours now")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), said(TASK_ASSIGNMENT, task=1))
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {story.agent.id}")
     story.expect_success(lines.SECOND_HOOK_CALL, "hook: stop", "suite: coding", "driver: coding.main", "answer: refused")
 
@@ -29,7 +31,7 @@ def test_a_main_agent_with_auto_on_is_told_it_is_the_main_agent_when_its_session
 def test_a_main_agent_with_auto_on_given_a_task_is_told_its_brief(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run('task make "Fix the tax" --brief "Round it at the end" --environment main')
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "task:1 is yours now")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), said(TASK_ASSIGNMENT, task=1))
 
 
 def test_a_main_agent_with_auto_on_the_journal_started_is_told_to_introduce_itself(new_story):

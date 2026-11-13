@@ -6,6 +6,8 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process
 from tests.stories.core.modules.processes.support.reader_teaching_fixtures import SameTitleTwoRuns
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from core.modules.processes.support.process_nudges import READER_HINT
+from engine.testing.expectations.expect_nudge import said
 
 VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])).with_fields(event="post_tool_use")
 
@@ -51,7 +53,7 @@ def test_reading_all_of_an_output_a_reader_reads_names_the_shorter_read(new_stor
     story.run('reader add tally --commands "make*" --lines "passed"')
     process = moved_run(story, "make test")
     end_run(story, process, "3 passed in 1s\n" + "x\n" * 300)
-    story.expect_hook_allowed("s-1", posted(f"journal output read {process.id} --all"), f"Reader tally already reads output {process.id}")
+    story.expect_hook_allowed("s-1", posted(f"journal output read {process.id} --all"), said(READER_HINT, reader='tally'))
     story.expect_absent_hook_line("s-1", posted(f"journal output read {process.id} --tail 5"), "already reads output")
 
 

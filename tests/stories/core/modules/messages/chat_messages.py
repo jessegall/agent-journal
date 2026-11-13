@@ -12,6 +12,8 @@ from tests.stories.core.support.fixtures import UserJoined
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.tasks.task_lifecycle import started_story
+from core.modules.processes.support.process_nudges import READ_COMMAND_OUTPUT
+from engine.testing.expectations.expect_nudge import said
 
 
 def user_story(new_story):
@@ -48,10 +50,10 @@ def test_a_message_has_no_make_and_needs_an_environment(new_story):
 def test_a_redirected_or_piped_message_read_does_not_mark_the_message(new_story):
     story = install_runner(new_story(fixture=UnansweredMessage))
     read = ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")
-    story.expect_hook_refusal("s-1", HookSamples.shell("journal message read 1 > /tmp/message", read, redirects=["> /tmp/message"]), "Run the read command directly, without a pipe or redirect")
+    story.expect_hook_refusal("s-1", HookSamples.shell("journal message read 1 > /tmp/message", read, redirects=["> /tmp/message"]), said(READ_COMMAND_OUTPUT))
     piped = ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message", pipe_target=1)
     sink = ShellPart("cat", CommandCategory.READ, [])
-    story.expect_hook_refusal("s-1", HookSamples.shell("journal message read 1 && cat", piped, sink), "Run the read command directly, without a pipe or redirect")
+    story.expect_hook_refusal("s-1", HookSamples.shell("journal message read 1 && cat", piped, sink), said(READ_COMMAND_OUTPUT))
     story.expect_rows(story.container.get(Queries).query(Message).find(1).read_at is None)
     story.expect_success("message read 1", actor=story.agent)
     story.expect_rows(story.container.get(Queries).query(Message).find(1).read_at is not None)

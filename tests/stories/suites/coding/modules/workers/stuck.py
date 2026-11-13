@@ -23,6 +23,10 @@ from tests.stories.suites.coding.modules.workers.support.merger_launcher import 
 from tests.stories.core.support.agent_labels import agent_label
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
+from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
+from suites.coding.modules.workers.support.worker_nudges import WORKER_ENDED_WITH_TASKS
+from suites.coding.modules.workers.support.worker_nudges import WORKER_RESTARTED
+from engine.testing.expectations.expect_nudge import said
 
 MAIN_SESSION = "s-1"
 PROCESS_START = "2026-10-31T09:00:00+00:00"
@@ -96,7 +100,7 @@ def test_a_stuck_worker_tells_its_main_agent_at_once_and_shows_a_mark_in_the_mai
     last_reply(tmp_path, worker_session(story, worker), "The build tool is gone from the path")
     story.expect_success('wait stuck "the build tool is missing"', actor=worker)
     story.run_listeners()
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "merger-line:1", "workers.help-request")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", said(MERGER_LINE_AVAILABLE, line=1), "workers.help-request")
     help_request = story.container.get(Queries).query(MergerLine).first()
     story.expect_rows(help_request.worker_id == worker.id, "is stuck on task:1" in help_request.text, help_request.outcome is AskOutcome.FORWARDED, detail=str(help_request))
     story.expect_text("chat-mark list --environment 1", f"Worker {agent_number(story, worker.id)} is stuck: the build tool is missing")
@@ -114,7 +118,7 @@ def test_a_worker_that_stops_with_tasks_left_shows_a_mark_and_its_main_agent_hea
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.run_listeners()
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} stopped with task:1 left and was started again")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", said(WORKER_RESTARTED, tasks='task:1'))
     story.expect_text("chat-mark list --environment 1", f"Worker {agent_number(story, worker.id)} stopped with 1 tasks left")
     story.expect_text(f"chat-mark show {stop_mark(story, 'ended early')}", "Tasks left: task 1", "Last words: I ran out of ideas")
 
@@ -192,7 +196,7 @@ def test_a_worker_that_keeps_ending_is_named_to_the_main_agent(new_story):
     story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} ended with task:1 left: send it a job, or release them")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", said(WORKER_ENDED_WITH_TASKS, tasks='task:1'))
 
 
 def test_a_worker_that_ends_with_many_tasks_left_gives_the_main_agent_one_line(new_story):

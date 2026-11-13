@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from engine.testing.expectations.text_match import holds_line, holds_text
+from engine.testing.expectations.text_match import ExpectedText, holds_line, holds_text
 
 
 @dataclass(frozen=True)
@@ -13,10 +13,10 @@ class LineOutcome:
     def expect_code(self, code: int) -> None:
         assert self.code == code, f"{self.line} gave {self.code}, not {code}: {self.output_text}"
 
-    def expect_text(self, *texts: str) -> None:
+    def expect_text(self, *texts: ExpectedText) -> None:
         missing = [text for text in texts if not holds_text(self.output_text, text)]
         assert not missing, f"{self.line} printed none of {missing}:\n{self.output_text}"
 
-    def expect_no_text(self, *texts: str) -> None:
+    def expect_no_text(self, *texts: ExpectedText) -> None:
         matching = [text for text in texts if holds_text(self.output_text, text)]
         assert not matching, f"{self.line} printed {matching}:\n{self.output_text}"

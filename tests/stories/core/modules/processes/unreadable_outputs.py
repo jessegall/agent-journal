@@ -5,6 +5,9 @@ from tests.stories.core.modules.processes.support.cadence_probe import kept_line
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.modules.processes.support.reading_scenarios import LONG_RUN, STEPS, ended_after_a_while, heard
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
+from core.modules.processes.support.process_nudges import UNREADABLE_DECLARED
+from core.modules.processes.support.process_nudges import UNREADABLE_LIFTED
+from engine.testing.expectations.expect_nudge import said
 
 SPINNER = "\r[###] working" * 1000
 
@@ -45,8 +48,8 @@ def test_a_person_marks_a_runs_command_from_its_card_so_its_agent_is_asked_no_re
     after_mark = heard(story)
     story.expect_success(f"output readable {quiet.id} --environment main", actor=story.user)
     resumed = heard(story)
-    story.expect_rows("Command make serve was marked unreadable" in marked, f"Output {quiet.id} ended" in after_mark, "No reader reads" not in after_mark,
-                      "Command make serve prints readable lines again: reader requests resume" in resumed, detail=f"{marked}\n{after_mark}\n{resumed}")
+    story.expect_rows(said(UNREADABLE_DECLARED, name='make serve').is_in(marked), f"Output {quiet.id} ended" in after_mark, "No reader reads" not in after_mark,
+                      said(UNREADABLE_LIFTED, name='make serve').is_in(resumed), detail=f"{marked}\n{after_mark}\n{resumed}")
     story.expect_text("unreadable-mark show 1", f"creator_id: {story.user.id}", f"lifter_id: {story.user.id}", actor=story.user)
 
 

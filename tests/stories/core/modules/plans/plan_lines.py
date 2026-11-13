@@ -13,6 +13,8 @@ from tests.stories.engine.driver.support.samples import SAMPLES
 from engine.testing.expectations.expect_reply import expect_absent_reply_line
 from tests.stories.support.story_checks import expect_lines_3, expect_value_with, expect_value_without_line
 from tests.stories.core.support.plan_steps import ready_plan
+from core.modules.plans.support.plan_nudges import PLAN_CANCELLED
+from engine.testing.expectations.expect_nudge import said
 
 
 def task_end(task_id):
@@ -87,7 +89,7 @@ def test_a_plan_approved_or_cancelled_since_the_last_hook_is_named(new_story):
     story.expect_absent_hook_line("s-1", VIEW_LINE, "Plan 1 approved")
     story.advance(timedelta(seconds=1))
     story.run('plan cancel 1 --reason "not needed"')
-    story.expect_hook_allowed("s-1", VIEW_LINE, "plan:1 is cancelled")
+    story.expect_hook_allowed("s-1", VIEW_LINE, said(PLAN_CANCELLED, plan=1))
 
 
 def test_a_new_main_session_is_told_it_is_a_new_session_and_a_session_again_is_not(new_story):
