@@ -21,7 +21,7 @@ class RunCadence:
         if self.age < self.limits.first_output_seconds:
             return CadenceState.STREAMING
         if not self.growths:
-            return CadenceState.NO_OUTPUT
+            return CadenceState.SILENT
         if self.clock_seconds - self.growths[-1] >= self.limits.stopped_writing_seconds:
             return CadenceState.STOPPED_WRITING
         if self.age >= SPARSE_AFTER_SECONDS and self.average_pause() >= self.limits.sparse_seconds:

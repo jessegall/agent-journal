@@ -7,7 +7,7 @@ class ReasonCode(StrEnum):
     READER_MISSING = "reader missing"
     FIELDS_MISSING = "fields missing"
     LINES_MISSED = "lines missed"
-    TOO_WIDE = "too wide"
+    OVERSIZED = "too wide"
     SUMMARY_MISSING = "summary missing"
     COUNT_MISSING = "count missing"
     PROGRESS_MISSING = "progress missing"

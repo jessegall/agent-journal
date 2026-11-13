@@ -40,7 +40,7 @@ def with_reader(case: ReadingCase, judgement: ReaderJudgement) -> ReadingCase:
     return replace(case, reader_layer=ReaderLayer.PROJECT, reader_judgement=judgement)
 
 
-NOTHING_NEEDED = (ReaderState.NOT_NEEDED, ReaderAction.NOTHING, PressureLevel.SUGGEST, ())
+NOTHING_NEEDED = (ReaderState.UNNEEDED, ReaderAction.NOTHING, PressureLevel.SUGGEST, ())
 
 TABLE = {
     "read-only helper search": (HELPER_SEARCH, NOTHING_NEEDED),

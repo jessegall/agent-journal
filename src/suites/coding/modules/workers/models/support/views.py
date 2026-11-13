@@ -107,5 +107,5 @@ WORKER_PROGRESS_SELECT = worktrees().selecting(
     Aliased(FunctionCall(SqlFunction.COUNT, [CaseWhen([(Among("tasks.state", ("completed", "testing")), Literal(1))])]), "completed_count"),
 ).joined(ConditionJoin("tasks", left=True, condition=AllOf([
     SubqueryMatch("tasks.id", WORKER_TASK_IDS),
-    AnyOf([IsNull("tasks.closed_at"), Comparison(Column("tasks.closed_at"), ComparisonOperator.AT_LEAST, STARTED_AT)])]))).matching(
+    AnyOf([IsNull("tasks.closed_at"), Comparison(Column("tasks.closed_at"), ComparisonOperator.MINIMUM, STARTED_AT)])]))).matching(
     LATEST_WORKTREE).grouped("worktree.environment_id", "worktree.id").view_sql()

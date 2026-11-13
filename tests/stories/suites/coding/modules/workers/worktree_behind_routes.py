@@ -44,7 +44,7 @@ def f54_abandoning_the_worktree_closes_its_check_as_gone(story, repository: GitR
     base_commits(repository, 3)
     look(story)
     story.expect_success(f'worker release {agent_number(story, worker.id)} --abandon "the worker left"', actor=story.agent)
-    story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.GONE], detail=str(checks(story)))
+    story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.REMOVED], detail=str(checks(story)))
 
 
 def g57_five_worktrees_in_one_look_start_the_merger_once(story, repository: GitRepository, worker: Actor) -> None:

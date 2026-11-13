@@ -6,10 +6,10 @@ class CadenceState(StrEnum):
     seldom for a reader to follow."""
 
     STREAMING = "streaming"
-    NO_OUTPUT = "no output"
+    SILENT = "no output"
     STOPPED_WRITING = "stopped writing"
     SPARSE = "sparse"
 
     @property
     def has_no_growth(self) -> bool:
-        return self in (CadenceState.NO_OUTPUT, CadenceState.STOPPED_WRITING)
+        return self in (CadenceState.SILENT, CadenceState.STOPPED_WRITING)

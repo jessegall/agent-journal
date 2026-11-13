@@ -12,23 +12,23 @@ def notices(tmp_path) -> tuple[RunNotices, OutputFolder]:
 
 def test_the_same_kind_is_refused_within_ten_minutes_and_allowed_after(tmp_path):
     record, _ = notices(tmp_path)
-    record.recorded(4, NoticeKind.NO_OUTPUT, 100.0)
-    assert not record.allowed(4, NoticeKind.NO_OUTPUT, 699.0)
-    assert record.allowed(4, NoticeKind.NO_OUTPUT, 700.0)
+    record.recorded(4, NoticeKind.SILENT, 100.0)
+    assert not record.allowed(4, NoticeKind.SILENT, 699.0)
+    assert record.allowed(4, NoticeKind.SILENT, 700.0)
 
 
 def test_another_kind_is_allowed_at_once(tmp_path):
     record, _ = notices(tmp_path)
-    record.recorded(4, NoticeKind.NO_OUTPUT, 100.0)
+    record.recorded(4, NoticeKind.SILENT, 100.0)
     assert record.allowed(4, NoticeKind.SPARSE, 101.0)
 
 
 def test_the_fourth_notice_of_a_run_is_refused_even_after_a_clear(tmp_path):
     record, _ = notices(tmp_path)
-    for category in (NoticeKind.NO_OUTPUT, NoticeKind.SPARSE, NoticeKind.STOPPED_WRITING):
+    for category in (NoticeKind.SILENT, NoticeKind.SPARSE, NoticeKind.STOPPED_WRITING):
         record.recorded(4, category, 100.0)
     record.cleared(4)
-    assert not record.allowed(4, NoticeKind.NO_OUTPUT, 2000.0)
+    assert not record.allowed(4, NoticeKind.SILENT, 2000.0)
 
 
 def test_a_clear_after_streaming_lets_the_same_kind_come_again(tmp_path):
@@ -48,7 +48,7 @@ def test_the_stuck_warning_comes_once_per_silence_and_again_after_a_growth(tmp_p
 
 def test_the_stuck_warning_is_not_held_back_by_three_notices_and_does_not_count_among_them(tmp_path):
     record, _ = notices(tmp_path)
-    for category in (NoticeKind.NO_OUTPUT, NoticeKind.SPARSE, NoticeKind.STOPPED_WRITING):
+    for category in (NoticeKind.SILENT, NoticeKind.SPARSE, NoticeKind.STOPPED_WRITING):
         record.recorded(4, category, 100.0)
     assert record.allowed(4, NoticeKind.FROZEN, 101.0)
     record.recorded(4, NoticeKind.FROZEN, 101.0)
@@ -57,10 +57,10 @@ def test_the_stuck_warning_is_not_held_back_by_three_notices_and_does_not_count_
 
 def test_printing_again_lets_the_stuck_warning_come_again_and_keeps_the_other_kinds(tmp_path):
     record, _ = notices(tmp_path)
-    record.recorded(4, NoticeKind.NO_OUTPUT, 100.0)
+    record.recorded(4, NoticeKind.SILENT, 100.0)
     record.recorded(4, NoticeKind.FROZEN, 150.0)
     record.clear_frozen(4)
-    assert (record.allowed(4, NoticeKind.FROZEN, 160.0), record.allowed(4, NoticeKind.NO_OUTPUT, 160.0)) == (True, False)
+    assert (record.allowed(4, NoticeKind.FROZEN, 160.0), record.allowed(4, NoticeKind.SILENT, 160.0)) == (True, False)
 
 
 def test_damaged_text_reads_as_no_record(tmp_path):

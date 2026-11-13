@@ -16,7 +16,7 @@ class ReadingDecider:
 
     def decide(self, case: ReadingCase) -> ReadingDecision:
         if case.is_not_needed:
-            return ReadingDecision.nothing(ReaderState.NOT_NEEDED)
+            return ReadingDecision.nothing(ReaderState.UNNEEDED)
         if case.unreadable_reason is not None:
             return self.unreadable(case)
         if case.reader_is_suitable and not case.reader_failed and not case.count_missing:

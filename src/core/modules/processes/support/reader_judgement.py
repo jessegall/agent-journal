@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from core.modules.processes.models.enums.reason_code import ReasonCode
 
-MISSED_REASONS = (("--lines picked none", ReasonCode.LINES_MISSED), ("--lines picked nearly all", ReasonCode.TOO_WIDE),
+MISSED_REASONS = (("--lines picked none", ReasonCode.LINES_MISSED), ("--lines picked nearly all", ReasonCode.OVERSIZED),
                   ("--summary found nothing", ReasonCode.SUMMARY_MISSING), ("--progress found", ReasonCode.PROGRESS_MISSING),
                   ("--count found nothing", ReasonCode.COUNT_MISSING))
 

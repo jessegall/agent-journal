@@ -8,7 +8,7 @@ class RulePriority(IntEnum):
     FIRST = -100
     STOP_PLAN_CHECK = -10
     STOP_OPEN_WORK = -5
-    COMMAND_KIND_CHECK = -3
+    COMMAND_CATEGORY_CHECK = -3
     COMMAND_PHASE_CHECK = -2
     COMMAND_COUNT_CHECK = -1
     NORMAL = 0

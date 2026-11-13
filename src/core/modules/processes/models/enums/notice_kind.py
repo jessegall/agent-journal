@@ -7,20 +7,20 @@ class NoticeKind(StrEnum):
     """What a cadence notice of a run says: it printed nothing, it stopped printing, it prints too seldom, or it
     seems stuck."""
 
-    NO_OUTPUT = "no-output"
+    SILENT = "no-output"
     STOPPED_WRITING = "stopped-writing"
     SPARSE = "sparse"
     FROZEN = "frozen"
 
     @property
     def is_about_reading(self) -> bool:
-        return self in (NoticeKind.NO_OUTPUT, NoticeKind.SPARSE)
+        return self in (NoticeKind.SILENT, NoticeKind.SPARSE)
 
     @classmethod
     def of(cls, state: CadenceState) -> "NoticeKind | None":
         match state:
-            case CadenceState.NO_OUTPUT:
-                return cls.NO_OUTPUT
+            case CadenceState.SILENT:
+                return cls.SILENT
             case CadenceState.STOPPED_WRITING:
                 return cls.STOPPED_WRITING
             case CadenceState.SPARSE:

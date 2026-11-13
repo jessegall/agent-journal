@@ -99,7 +99,7 @@ def test_no_second_check_opens_while_one_is_open_ordered_or_clashing():
 
 
 def test_a_worktree_left_alone_at_three_is_checked_again_at_six_not_four():
-    remaining = [check(BehindCheckState.LEFT, behind=3)]
+    remaining = [check(BehindCheckState.IGNORED, behind=3)]
     assert (checks(WorktreeBehindCheck=remaining).opens(worktree(), 4), checks(WorktreeBehindCheck=remaining).opens(worktree(), 6)) == (False, True)
 
 

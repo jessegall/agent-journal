@@ -13,14 +13,14 @@ class SettingComponent(StrEnum):
     NUMBER_LIST = "number-list"
     TEXT = "text"
     KEYED_CAP_TABLE = "keyed-cap-table"
-    THREE_WAY_CAP = "three-way-cap"
-    PER_TYPE_OVERRIDE = "per-type-override"
+    TRIPLE_CAP = "three-way-cap"
+    TYPE_OVERRIDE = "per-type-override"
 
     def categories(self) -> tuple[SettingType, ...]:
         match self:
             case SettingComponent.TOGGLE:
                 return tuple([SettingType.FLAG])
-            case SettingComponent.NUMBER | SettingComponent.PER_TYPE_OVERRIDE:
+            case SettingComponent.NUMBER | SettingComponent.TYPE_OVERRIDE:
                 return tuple([SettingType.NUMBER])
             case SettingComponent.CHOICE:
                 return tuple([SettingType.CHOICE])
@@ -30,7 +30,7 @@ class SettingComponent(StrEnum):
                 return tuple([SettingType.NUMBER_LIST])
             case SettingComponent.TEXT:
                 return (SettingType.TEXT, SettingType.ANY)
-            case SettingComponent.KEYED_CAP_TABLE | SettingComponent.THREE_WAY_CAP:
+            case SettingComponent.KEYED_CAP_TABLE | SettingComponent.TRIPLE_CAP:
                 return tuple([SettingType.LIST])
 
     @classmethod

@@ -50,7 +50,7 @@ CONTEXT_MEMORIES_SELECT = Select("memory_deliveries").selecting(
     *(Column(f"memory_deliveries.{name}") for name in ("session_agent_id", "memory_id", "cause")),
     Aliased(DELIVERED_AT, "delivered_at"),
 ).matching(Comparison(DELIVERED_AT, ComparisonOperator.GREATER, LAST_COMPACTION)).matching(
-    Comparison(DELIVERED_AT, ComparisonOperator.AT_LEAST, SESSION_START)).view_sql()
+    Comparison(DELIVERED_AT, ComparisonOperator.MINIMUM, SESSION_START)).view_sql()
 
 KEYWORD_MEMORIES_SELECT = Select("memory_keywords").selecting(
     Aliased(Column("memory_keywords.id"), "keyword_id"), Column("memory_keywords.word"), Column("active_memories.*"),

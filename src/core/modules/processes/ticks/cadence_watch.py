@@ -93,5 +93,5 @@ class CadenceWatch:
                 return int(cadence.clock_seconds - cadence.growths[-1])
             case CadenceState.SPARSE:
                 return int(cadence.average_pause())
-            case CadenceState.NO_OUTPUT | CadenceState.STREAMING:
+            case CadenceState.SILENT | CadenceState.STREAMING:
                 return int(cadence.age)

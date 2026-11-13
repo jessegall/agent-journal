@@ -40,17 +40,17 @@ class UnblockerFacts:
         if task.state is TaskState.BLOCKED:
             return WaitingLine(task.id, WaitingReason.NON_TASK_WAIT, self.wait_text(self.waits.get(task.id, ())))
         if task.id not in self.takeable_ids:
-            return WaitingLine(task.id, WaitingReason.ANOTHER_ASSIGNEE, self.assignee_text(task))
+            return WaitingLine(task.id, WaitingReason.DIFFERENT_ASSIGNEE, self.assignee_text(task))
         place = self.places.get(task.id)
         return None if place is None else self.plan_line(task, place)
 
     def holder_line(self, task: Task) -> WaitingLine:
         holder = self.agents.get(task.holder_id) if task.holder_id is not None else None
         if holder is None:
-            return WaitingLine(task.id, WaitingReason.ANOTHER_HOLDER, "which is started")
+            return WaitingLine(task.id, WaitingReason.DIFFERENT_HOLDER, "which is started")
         if self.is_asker(holder):
             return WaitingLine(task.id, WaitingReason.ASKER_HOLDER, "which you hold")
-        return WaitingLine(task.id, WaitingReason.ANOTHER_HOLDER, f"which {AgentLabel.from_agent(holder).text} holds")
+        return WaitingLine(task.id, WaitingReason.DIFFERENT_HOLDER, f"which {AgentLabel.from_agent(holder).text} holds")
 
     def is_asker(self, agent: Agent) -> bool:
         return agent.id == self.asker.id or agent.role == MAIN_ROLE == self.asker.role

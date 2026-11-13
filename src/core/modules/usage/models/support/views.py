@@ -61,8 +61,8 @@ def while_running(expression: Expression) -> CaseWhen:
 
 
 OPEN_BLOCKS = agent_rows("agent_blocks").matching(IsNull("agent_blocks.closed_at"))
-BLOCKED_TASKS = AllOf([Comparison(Column("agents.role"), ComparisonOperator.NOT_EQUAL, Literal("main")), ColumnCompare("tasks.holder_id", "=", "agents.id"),
-                    Comparison(FunctionCall(SqlFunction.COALESCE, [TASK_ACTOR, Literal(0)]), ComparisonOperator.NOT_EQUAL, Column("agents.id"))])
+BLOCKED_TASKS = AllOf([Comparison(Column("agents.role"), ComparisonOperator.UNEQUAL, Literal("main")), ColumnCompare("tasks.holder_id", "=", "agents.id"),
+                    Comparison(FunctionCall(SqlFunction.COALESCE, [TASK_ACTOR, Literal(0)]), ComparisonOperator.UNEQUAL, Column("agents.id"))])
 STARTED_BY_MAIN = AllOf([Equal("agents.role", "main"), Comparison(Column("tasks.id"), ComparisonOperator.EQUAL, ScalarSubselect(
     Select("tasks").named_as("started").selecting(Column("started.id")).matching(ColumnCompare("started.holder_id", "=", "agents.id"))
     .matching(Equal("started.state", "started")).ordered("started.id", True).sliced(1, 0)))])

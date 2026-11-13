@@ -35,7 +35,7 @@ class QueuedRunEndListener(SaveListener[ProcessEnded]):
     @staticmethod
     def ending(process: Process) -> QueuedRunState:
         if process.expired_at is not None:
-            return QueuedRunState.TIMED_OUT
+            return QueuedRunState.LIMIT_REACHED
         return QueuedRunState.CANCELLED if process.state is ProcessState.STOPPED else QueuedRunState.ENDED
 
     @staticmethod

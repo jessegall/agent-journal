@@ -13,7 +13,7 @@ def cadence(age: float, growths: tuple[float, ...] = ()) -> RunCadence:
 
 @pytest.mark.parametrize("run, state", [
     (cadence(29), CadenceState.STREAMING),
-    (cadence(30), CadenceState.NO_OUTPUT),
+    (cadence(30), CadenceState.SILENT),
     (cadence(125, tuple([50])), CadenceState.SPARSE),
     (cadence(125, (80, 90, 100, 110, 120)), CadenceState.STREAMING),
     (cadence(200, (50, 60, 70, 80)), CadenceState.STOPPED_WRITING),

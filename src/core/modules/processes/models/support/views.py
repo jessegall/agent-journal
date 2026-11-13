@@ -36,7 +36,7 @@ PROCESS_QUEUE_ROWS_SELECT = Select("processes").selecting(
     *(Column(f"processes.{name}") for name in QUEUE_COLUMNS),
     Aliased(Comparison(Column("agents.role"), ComparisonOperator.EQUAL, Literal("main")), "is_main"),
     Aliased(FunctionCall(SqlFunction.COALESCE, [Column("processes.owner_agent_id"), CaseWhen(
-        [(Comparison(Column("agents.role"), ComparisonOperator.NOT_EQUAL, Literal("main")), Column("agents.id"))])]), "owner_agent_id"),
+        [(Comparison(Column("agents.role"), ComparisonOperator.UNEQUAL, Literal("main")), Column("agents.id"))])]), "owner_agent_id"),
     Aliased(FunctionCall(SqlFunction.COALESCE, [Column("processes.task_id"), RUN_TASK]), "task_id"),
     Aliased(CaseWhen([(Among("processes.state", RUNNING_STATES, negated=True), Literal("recent")), (HasValue("processes.queued_at"), Literal("waiting"))],
                      Literal("running")), "section"),

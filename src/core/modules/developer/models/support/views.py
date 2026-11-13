@@ -47,7 +47,7 @@ DAY = text_part(1, Literal(10))
 AGENT = payload("$.agent")
 HELPER_LABEL = ScalarSubselect(
     Select("registry").selecting(Concat([payload("$.label", "value"), CaseWhen(
-        [(Comparison(first_of(AGENT, Literal("")), ComparisonOperator.NOT_EQUAL, Literal("")), Concat([Literal(" "), AGENT]))], Literal(""))]))
+        [(Comparison(first_of(AGENT, Literal("")), ComparisonOperator.UNEQUAL, Literal("")), Concat([Literal(" "), AGENT]))], Literal(""))]))
     .joined(ConditionJoin(JsonEach(Column("registry.entries"), "$.helper_types")))
     .matching(Comparison(payload("$.key", "value"), ComparisonOperator.EQUAL, payload("$.role"))))
 
@@ -76,5 +76,5 @@ HOOK_REQUEST_ROWS_SELECT = Select("hook_requests").selecting(
     Aliased(first_of(FunctionCall(SqlFunction.JSON_ARRAY_LENGTH, [Column("payload"), Literal("$.body.tool.shell.parts")]), Literal(0)), "part_count"),
     Aliased(DAY, "day"),
     Aliased(text_part(12, Literal(12)), "time"),
-    Aliased(Comparison(Lag(DAY, Order("id", True)), ComparisonOperator.IS_NOT, DAY), "day_start"),
+    Aliased(Comparison(Lag(DAY, Order("id", True)), ComparisonOperator.DISTINCT, DAY), "day_start"),
 ).view_sql()

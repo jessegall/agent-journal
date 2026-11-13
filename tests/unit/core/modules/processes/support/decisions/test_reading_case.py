@@ -81,7 +81,7 @@ def test_a_command_of_unknown_type_can_also_be_classified():
 
 
 @pytest.mark.parametrize("cadence, reason", [
-    (CadenceState.NO_OUTPUT, UnreadableReason.INTERACTIVE),
+    (CadenceState.SILENT, UnreadableReason.INTERACTIVE),
     (CadenceState.STOPPED_WRITING, UnreadableReason.INTERACTIVE),
     (CadenceState.STREAMING, None),
     (CadenceState.SPARSE, None),

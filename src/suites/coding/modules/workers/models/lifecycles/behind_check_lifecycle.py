@@ -15,7 +15,7 @@ class BehindCheckLifecycle(Lifecycle):
     deletable = ()
 
     order = Move("order", [State.OPEN, State.PASSED], State.ORDERED)
-    leave = Move("leave", [State.OPEN, State.PASSED], State.LEFT)
+    leave = Move("leave", [State.OPEN, State.PASSED], State.IGNORED)
     pass_on = Move("pass_on", [State.OPEN, State.ORDERED, State.CONFLICTED], State.PASSED)
     bring_up_to_date = Move("bring_up_to_date", [State.OPEN, State.ORDERED, State.CONFLICTED], State.UPDATED)
     conflict = Move("conflict", [State.ORDERED], State.CONFLICTED)
@@ -24,4 +24,4 @@ class BehindCheckLifecycle(Lifecycle):
     hold = Move("hold", [State.ORDERED], State.ORDERED)
     note_open_failure = Move("note_open_failure", [State.OPEN], State.OPEN)
     note_ordered_failure = Move("note_ordered_failure", [State.ORDERED], State.ORDERED)
-    end = Move("end", [State.OPEN, State.ORDERED, State.CONFLICTED, State.PASSED, State.LEFT], State.GONE)
+    end = Move("end", [State.OPEN, State.ORDERED, State.CONFLICTED, State.PASSED, State.IGNORED], State.REMOVED)

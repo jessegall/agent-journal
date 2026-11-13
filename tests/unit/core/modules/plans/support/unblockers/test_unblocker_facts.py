@@ -37,10 +37,10 @@ def test_an_open_task_in_no_plan_that_the_asker_may_take_can_be_handed_out():
 
 
 @pytest.mark.parametrize("started_task, asker, reason, text", [
-    (task(state=TaskState.STARTED, holder_id=2), MAIN, WaitingReason.ANOTHER_HOLDER, "which worker 2 holds"),
+    (task(state=TaskState.STARTED, holder_id=2), MAIN, WaitingReason.DIFFERENT_HOLDER, "which worker 2 holds"),
     (task(state=TaskState.STARTED, holder_id=1), MAIN, WaitingReason.ASKER_HOLDER, "which you hold"),
     (task(state=TaskState.TESTING, holder_id=9), MAIN, WaitingReason.ASKER_HOLDER, "which you hold"),
-    (task(state=TaskState.STARTED, holder_id=1), WORKER, WaitingReason.ANOTHER_HOLDER, "which main agent holds"),
+    (task(state=TaskState.STARTED, holder_id=1), WORKER, WaitingReason.DIFFERENT_HOLDER, "which main agent holds"),
 ])
 def test_a_started_task_names_its_holder_and_every_main_agent_is_the_same_holder(started_task, asker, reason, text):
     line = facts(asker).waiting_line(started_task)
@@ -61,8 +61,8 @@ def test_a_blocked_task_at_the_end_of_the_waits_says_what_it_waits_on(waits, tex
 def test_a_task_the_asker_may_not_take_names_who_it_is_reserved_for():
     reserved = facts(takeable_ids=(), assignees={7: 2}).waiting_line(task())
     free = facts(WORKER, takeable_ids=()).waiting_line(task())
-    assert (reserved.reason, reserved.text) == (WaitingReason.ANOTHER_ASSIGNEE, "which is assigned to worker 2")
-    assert (free.reason, free.text) == (WaitingReason.ANOTHER_ASSIGNEE, "which is not assigned to you")
+    assert (reserved.reason, reserved.text) == (WaitingReason.DIFFERENT_ASSIGNEE, "which is assigned to worker 2")
+    assert (free.reason, free.text) == (WaitingReason.DIFFERENT_ASSIGNEE, "which is not assigned to you")
 
 
 @pytest.mark.parametrize("state, text", [

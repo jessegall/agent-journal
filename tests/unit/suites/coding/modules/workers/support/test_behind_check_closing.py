@@ -56,11 +56,11 @@ def test_an_update_with_markers_moves_an_ordered_check_to_conflicted_and_the_set
 def test_a_worktree_that_leaves_its_cut_state_closes_any_of_its_checks_as_gone():
     store = Store(State.OPEN, State.ORDERED, State.CONFLICTED, State.PASSED)
     closing(store).close_removed(WORKTREE, None)
-    assert store.states() == [State.GONE] * 4
+    assert store.states() == [State.REMOVED] * 4
 
 
 def test_a_closed_check_is_not_touched_again():
-    store = Store(State.UPDATED, State.LEFT, State.GONE)
+    store = Store(State.UPDATED, State.IGNORED, State.REMOVED)
     closing(store).close_updated(WORKTREE, None)
     closing(store).conflicted(WORKTREE, None)
-    assert store.states() == [State.UPDATED, State.LEFT, State.GONE]
+    assert store.states() == [State.UPDATED, State.IGNORED, State.REMOVED]

@@ -8,9 +8,9 @@ class QueuedRunState(StrEnum):
     WAITING = "waiting"
     RUNNING = "running"
     ENDED = "ended"
-    TIMED_OUT = "timed-out"
+    LIMIT_REACHED = "timed-out"
     CANCELLED = "cancelled"
 
     @property
     def is_over(self) -> bool:
-        return self in (QueuedRunState.ENDED, QueuedRunState.TIMED_OUT, QueuedRunState.CANCELLED)
+        return self in (QueuedRunState.ENDED, QueuedRunState.LIMIT_REACHED, QueuedRunState.CANCELLED)

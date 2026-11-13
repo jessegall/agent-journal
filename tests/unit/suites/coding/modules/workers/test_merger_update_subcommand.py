@@ -121,7 +121,7 @@ def test_the_main_agent_may_order_after_a_pass_and_another_agent_is_refused():
         ordered_by(OTHER, Checks(State.OPEN))
 
 
-@pytest.mark.parametrize("checks, worktrees, refusal", [(Checks(), None, "no open check for this worker"), (Checks(State.LEFT, State.UPDATED), None, "no open check for this worker"),
+@pytest.mark.parametrize("checks, worktrees, refusal", [(Checks(), None, "no open check for this worker"), (Checks(State.IGNORED, State.UPDATED), None, "no open check for this worker"),
                                                         (Checks(State.OPEN), Worktrees(matched=False), "no worker 999 with a worktree in this environment")])
 def test_an_order_is_refused_with_no_check_to_decide_or_no_worktree(checks, worktrees, refusal):
     with pytest.raises(Refusal, match=refusal):

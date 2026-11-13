@@ -9,7 +9,7 @@ def check(state: State) -> WorktreeBehindCheck:
 
 
 @pytest.mark.parametrize("state, text", [(State.OPEN, "waiting for a decision"), (State.ORDERED, "update ordered by the merger: different area"),
-                                         (State.PASSED, "passed to the main agent: different area"), (State.LEFT, "left alone by the merger: different area"),
-                                         (State.CONFLICTED, "the update clashed: settle the markers, then commit"), (State.UPDATED, ""), (State.GONE, "")])
+                                         (State.PASSED, "passed to the main agent: different area"), (State.IGNORED, "left alone by the merger: different area"),
+                                         (State.CONFLICTED, "the update clashed: settle the markers, then commit"), (State.UPDATED, ""), (State.REMOVED, "")])
 def test_worker_status_shows_where_the_decision_about_the_worktree_stands(state, text):
     assert check(state).decision_text("the merger") == text

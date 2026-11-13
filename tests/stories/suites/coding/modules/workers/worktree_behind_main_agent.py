@@ -73,14 +73,14 @@ def s46_the_main_agent_leaves_a_passed_worker_alone(story, repository, worker: A
     look(story)
     story.expect_success(f'merger pass {agent_number(story, worker.id)} "too large to judge"', actor=merger(story))
     story.expect_success(f'merger leave {agent_number(story, worker.id)} --why "it merges tomorrow"', actor=story.agent)
-    story.expect_rows([(check.state, check.reason) for check in checks(story)] == [(BehindCheckState.LEFT, "it merges tomorrow")], detail=str(checks(story)))
+    story.expect_rows([(check.state, check.reason) for check in checks(story)] == [(BehindCheckState.IGNORED, "it merges tomorrow")], detail=str(checks(story)))
 
 
 def s47_releasing_the_worker_closes_its_open_check_as_gone(story, repository, worker: Actor) -> None:
     both_change(repository, worker, CLASHING_FILE, CLASHING_FILE)
     look(story)
     story.expect_success(f'worker release {agent_number(story, worker.id)} "the task goes to another worker"', actor=story.agent)
-    story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.GONE], detail=str(checks(story)))
+    story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.REMOVED], detail=str(checks(story)))
 
 
 def s48_no_step_of_an_update_asks_the_person_anything(story, repository, worker: Actor) -> None:

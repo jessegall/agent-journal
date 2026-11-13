@@ -45,7 +45,7 @@ class Settings:
 
 
 def test_the_prune_removes_old_closed_checks_and_never_an_open_one():
-    rows = [check(1, State.UPDATED, 40), check(2, State.LEFT, 31), check(3, State.GONE, 10), check(4, State.OPEN, 90), check(5, State.ORDERED, 90),
+    rows = [check(1, State.UPDATED, 40), check(2, State.IGNORED, 31), check(3, State.REMOVED, 10), check(4, State.OPEN, 90), check(5, State.ORDERED, 90),
             check(6, State.CONFLICTED, 90), check(7, State.PASSED, 90)]
     queries, repository = Store(*rows), Store()
     removed = PruneBehindChecksHandler(queries, repository, Settings()).handle(PruneBehindChecks(), SimpleNamespace(timestamp=Timestamp(NOW)))

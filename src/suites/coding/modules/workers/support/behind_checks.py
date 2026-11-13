@@ -45,7 +45,7 @@ class BehindChecks:
         checks = tuple(reversed(tuple(self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).every_row(CHECKS_REASON))))
         if any(check.state in ACTIVE_STATES for check in checks):
             return False
-        remaining = next((check for check in checks if check.state is BehindCheckState.LEFT), None)
+        remaining = next((check for check in checks if check.state is BehindCheckState.IGNORED), None)
         return remaining is None or behind >= remaining.behind + self.settings.number(BEHIND_RECHECK_COMMITS)
 
     def is_passable(self, worktree: Worktree) -> bool:

@@ -24,4 +24,4 @@ def test_the_default_component_of_a_kind_can_draw_that_kind(kind):
 
 
 def test_a_component_that_is_no_kind_default_still_names_the_kinds_it_draws():
-    assert SettingComponent.THREE_WAY_CAP.categories() and SettingComponent.PER_TYPE_OVERRIDE.categories() == tuple([SettingType.NUMBER])
+    assert SettingComponent.TRIPLE_CAP.categories() and SettingComponent.TYPE_OVERRIDE.categories() == tuple([SettingType.NUMBER])

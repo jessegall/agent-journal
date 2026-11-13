@@ -43,7 +43,7 @@ class WorktreeBehindCheck(EnvironmentScoped, Model):
                 return f"update ordered by {decider}: {self.reason}"
             case BehindCheckState.PASSED:
                 return f"passed to the main agent: {self.reason}"
-            case BehindCheckState.LEFT:
+            case BehindCheckState.IGNORED:
                 return f"left alone by {decider}: {self.reason}"
             case BehindCheckState.CONFLICTED:
                 return "the update clashed: settle the markers, then commit"

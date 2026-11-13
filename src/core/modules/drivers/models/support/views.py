@@ -26,7 +26,7 @@ AGENT_ACTIVITIES_SELECT = Select("agents").selecting(
     *(Column(f"agents.{name}") for name in ("id", "parent_id", "created_at", "ended_at")),
     Aliased(ScalarSubselect(Select("hook_calls").selecting(Column("hook_calls.created_at"))
                             .matching(ColumnCompare("hook_calls.session_agent_id", "=", "agents.id"))
-                            .matching(Comparison(Column("hook_calls.hook"), ComparisonOperator.NOT_EQUAL, Literal("tick")))
+                            .matching(Comparison(Column("hook_calls.hook"), ComparisonOperator.UNEQUAL, Literal("tick")))
                             .ordered("hook_calls.id", True).sliced(1, 0)), "last_hook_at"),
 ).view_sql()
 

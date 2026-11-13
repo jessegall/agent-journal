@@ -13,7 +13,7 @@ from suites.coding.modules.workers.models.enums.behind_check_state import Behind
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.support.worker_settings import CHECK_HISTORY_DAYS
 
-CLOSED_STATES = (BehindCheckState.UPDATED, BehindCheckState.LEFT, BehindCheckState.GONE)
+CLOSED_STATES = (BehindCheckState.UPDATED, BehindCheckState.IGNORED, BehindCheckState.REMOVED)
 PRUNE_BATCH_COUNT = 200
 
 

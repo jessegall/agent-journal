@@ -16,10 +16,10 @@ class CadenceNudges:
         command = part.command or part.text
         hint = StreamingHints.hint(command)
         match category:
-            case NoticeKind.NO_OUTPUT if part.saved_command:
+            case NoticeKind.SILENT if part.saved_command:
                 declaration = SILENT_SAVED_PACKAGES if StreamingHints.is_serial_packages_run(command) else SILENT_SAVED_RUN
                 return CadenceNotice(declaration, {"name": part.saved_command, "seconds": seconds})
-            case NoticeKind.NO_OUTPUT:
+            case NoticeKind.SILENT:
                 return CadenceNotice(SILENT_RUN, {"output": process.id, "seconds": seconds, "hint": hint})
             case NoticeKind.STOPPED_WRITING:
                 return CadenceNotice(STALLED_RUN, {"output": process.id, "seconds": seconds, "hint": hint})

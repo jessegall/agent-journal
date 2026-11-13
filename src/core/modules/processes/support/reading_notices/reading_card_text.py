@@ -6,7 +6,7 @@ CARD_TEXTS = {
     ReasonCode.REQUEST_WAITING: "Reader: none, asked for",
     ReasonCode.FIELDS_MISSING: "Reader: poor, fields missing",
     ReasonCode.LINES_MISSED: "Reader: poor, picks no line",
-    ReasonCode.TOO_WIDE: "Reader: poor, keeps nearly every line",
+    ReasonCode.OVERSIZED: "Reader: poor, keeps nearly every line",
     ReasonCode.SUMMARY_MISSING: "Reader: poor, summary missing",
     ReasonCode.COUNT_MISSING: "Reader: poor, test count missing",
     ReasonCode.PROGRESS_MISSING: "Reader: poor, progress missing",

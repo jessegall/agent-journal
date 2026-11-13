@@ -12,13 +12,13 @@ def check(state: State = State.OPEN) -> WorktreeBehindCheck:
 
 
 MOVES = {
-    State.OPEN: {"ordered": State.ORDERED, "left": State.LEFT, "passed": State.PASSED, "updated": State.UPDATED, "gone": State.GONE},
-    State.ORDERED: {"updated": State.UPDATED, "conflicted": State.CONFLICTED, "passed": State.PASSED, "gone": State.GONE, "reminded": State.ORDERED},
-    State.CONFLICTED: {"updated": State.UPDATED, "passed": State.PASSED, "gone": State.GONE, "reminded": State.CONFLICTED},
-    State.PASSED: {"ordered": State.ORDERED, "left": State.LEFT, "gone": State.GONE},
-    State.LEFT: {"gone": State.GONE},
+    State.OPEN: {"ordered": State.ORDERED, "left": State.IGNORED, "passed": State.PASSED, "updated": State.UPDATED, "gone": State.REMOVED},
+    State.ORDERED: {"updated": State.UPDATED, "conflicted": State.CONFLICTED, "passed": State.PASSED, "gone": State.REMOVED, "reminded": State.ORDERED},
+    State.CONFLICTED: {"updated": State.UPDATED, "passed": State.PASSED, "gone": State.REMOVED, "reminded": State.CONFLICTED},
+    State.PASSED: {"ordered": State.ORDERED, "left": State.IGNORED, "gone": State.REMOVED},
+    State.IGNORED: {"gone": State.REMOVED},
     State.UPDATED: {},
-    State.GONE: {},
+    State.REMOVED: {},
 }
 
 

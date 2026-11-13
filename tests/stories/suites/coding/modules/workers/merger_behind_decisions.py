@@ -53,7 +53,7 @@ def s15_another_area_is_left_alone_and_the_worker_is_not_woken(story, repository
     both_change(repository, worker, "src/core/modules/plans/plan_rows.py", "src/viewer/board.ts")
     look(story)
     story.expect_success(f'merger leave {agent_number(story, worker.id)} --why "only the viewer moved"', actor=merger(story))
-    story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.LEFT], not expected_nudge(UPDATE_ORDERED).is_in(worker_lines(story, worker)), detail=str(checks(story)))
+    story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.IGNORED], not expected_nudge(UPDATE_ORDERED).is_in(worker_lines(story, worker)), detail=str(checks(story)))
 
 
 def s16_an_overlap_is_ordered_and_the_worker_is_woken_with_the_order(story, repository, worker: Actor) -> None:

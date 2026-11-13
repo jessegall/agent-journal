@@ -7,7 +7,7 @@ class ReaderState(StrEnum):
     """How well a command's output is read: no reader needed, a reader that fits, a poor one, a draft that would
     fit, none at all, or an output no reader can read."""
 
-    NOT_NEEDED = "not needed"
+    UNNEEDED = "not needed"
     SUITABLE = "suitable"
     POOR = "poor"
     DRAFTABLE = "draftable"
@@ -29,9 +29,9 @@ class ReaderState(StrEnum):
                 return ReasonCode.READER_MISSING
             case ReaderState.UNREADABLE:
                 return ReasonCode.UNREADABLE
-            case ReaderState.NOT_NEEDED | ReaderState.SUITABLE:
+            case ReaderState.UNNEEDED | ReaderState.SUITABLE:
                 return ReasonCode.NONE
 
     @property
     def is_settled(self) -> bool:
-        return self in (ReaderState.NOT_NEEDED, ReaderState.SUITABLE)
+        return self in (ReaderState.UNNEEDED, ReaderState.SUITABLE)

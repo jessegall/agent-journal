@@ -17,9 +17,9 @@ def test_a_declaration_with_no_component_resolves_to_the_default_of_its_kind():
 
 
 def test_a_declared_component_and_place_reach_the_entry():
-    matched = entries(SettingValue("cap", "Cap", "A size.", SettingType.NUMBER, default=1, screen="advanced", section="Context size", component=SettingComponent.PER_TYPE_OVERRIDE))
+    matched = entries(SettingValue("cap", "Cap", "A size.", SettingType.NUMBER, default=1, screen="advanced", section="Context size", component=SettingComponent.TYPE_OVERRIDE))
     entry = matched["journal.test.g.cap"]
-    assert (entry.screen, entry.section, entry.drawn_by()) == ("advanced", "Context size", SettingComponent.PER_TYPE_OVERRIDE)
+    assert (entry.screen, entry.section, entry.drawn_by()) == ("advanced", "Context size", SettingComponent.TYPE_OVERRIDE)
     assert matched["journal.test.g"].screen == "work"
 
 

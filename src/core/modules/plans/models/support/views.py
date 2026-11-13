@@ -49,13 +49,13 @@ PLAN_TASKS_SELECT = Select("phase_tasks").selecting(
 
 PLAN_PROGRESS_SELECT = Select("plans").selecting(
     Aliased(Column("plans.id"), "plan_id"),
-    Aliased(place_count(place_state(ComparisonOperator.NOT_EQUAL, "cancelled")), "task_count"),
+    Aliased(place_count(place_state(ComparisonOperator.UNEQUAL, "cancelled")), "task_count"),
     Aliased(place_count(place_state(ComparisonOperator.EQUAL, "completed")), "completed_count"),
     Aliased(place_count(place_state(ComparisonOperator.EQUAL, "testing")), "testing_count"),
     Aliased(or_zero(ScalarSubselect(plan_places().selecting(FunctionCall(SqlFunction.MIN, [Column("plan_tasks.phase_position")]))
                                     .matching(IsNull("plan_tasks.closed_at")))), "current_phase"),
     Aliased(ScalarSubselect(plan_places().selecting(FunctionCall(SqlFunction.ROUND, [FunctionCall(SqlFunction.AVG, [Column("tasks.complexity")]), Literal(1)]))
-                            .joined(TASK_OF_PLACE).matching(place_state(ComparisonOperator.NOT_EQUAL, "cancelled")).matching(HasValue("tasks.complexity"))),
+                            .joined(TASK_OF_PLACE).matching(place_state(ComparisonOperator.UNEQUAL, "cancelled")).matching(HasValue("tasks.complexity"))),
             "complexity"),
 ).view_sql()
 

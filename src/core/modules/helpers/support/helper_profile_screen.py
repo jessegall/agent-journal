@@ -24,11 +24,11 @@ class HelperProfileScreen:
         profile_run, profile_kept = (int(number) for number in profile_limits[:2]) if len(profile_limits) == 2 and all(number.isdigit() for number in profile_limits) else (None, None)
         profile_cap = self.entries(CONTEXT_LIMIT_PROFILES, profile)
         nodes = (
-            self.node(HELPER_RUN_LIMIT, "running", profile_run, SettingComponent.PER_TYPE_OVERRIDE),
-            self.node(HELPER_KEPT_LIMIT, "kept", profile_kept, SettingComponent.PER_TYPE_OVERRIDE),
-            self.node(CONTEXT_LIMIT_TOKENS, "cap", int(profile_cap[0]) if profile_cap and profile_cap[0].isdigit() else None, SettingComponent.THREE_WAY_CAP),
-            self.node(HELPER_MAX_MINUTES, "minutes", None, SettingComponent.PER_TYPE_OVERRIDE),
-            self.node(HELPER_MAX_COST, "cost", None, SettingComponent.PER_TYPE_OVERRIDE))
+            self.node(HELPER_RUN_LIMIT, "running", profile_run, SettingComponent.TYPE_OVERRIDE),
+            self.node(HELPER_KEPT_LIMIT, "kept", profile_kept, SettingComponent.TYPE_OVERRIDE),
+            self.node(CONTEXT_LIMIT_TOKENS, "cap", int(profile_cap[0]) if profile_cap and profile_cap[0].isdigit() else None, SettingComponent.TRIPLE_CAP),
+            self.node(HELPER_MAX_MINUTES, "minutes", None, SettingComponent.TYPE_OVERRIDE),
+            self.node(HELPER_MAX_COST, "cost", None, SettingComponent.TYPE_OVERRIDE))
         return ScreenReading(f"helper-type.{profile}", ScreenReading.revision_of(nodes), nodes)
 
     def entries(self, key: str, profile: str) -> list[str]:

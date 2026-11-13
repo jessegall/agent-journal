@@ -47,7 +47,7 @@ def or_zero(expression: Expression) -> FunctionCall:
 def task_helper_match() -> AllOf:
     task_agent = FunctionCall(SqlFunction.COALESCE, [TASK_ACTOR, Column("tasks.holder_id")])
     return AllOf([Comparison(Column("helper.id"), ComparisonOperator.EQUAL, task_agent),
-                  AnyOf([Comparison(Column("helper.role"), ComparisonOperator.NOT_EQUAL, Literal("main")),
+                  AnyOf([Comparison(Column("helper.role"), ComparisonOperator.UNEQUAL, Literal("main")),
                          AllOf([Comparison(Column("helper.id"), ComparisonOperator.EQUAL, TASK_ACTOR), IsNull("tasks.holder_id")])])])
 
 
@@ -56,8 +56,8 @@ def open_task_waits() -> Select:
 
 
 USER_TASK_WAIT = Exists(open_task_waits().matching(Equal("target", "user")))
-AUTOMATIC_TASK_WAIT = Exists(open_task_waits().matching(AnyOf([Comparison(Column("command"), ComparisonOperator.NOT_EQUAL, Literal("")),
-                                                                Comparison(Column("target"), ComparisonOperator.NOT_EQUAL, Literal("user"))])))
+AUTOMATIC_TASK_WAIT = Exists(open_task_waits().matching(AnyOf([Comparison(Column("command"), ComparisonOperator.UNEQUAL, Literal("")),
+                                                                Comparison(Column("target"), ComparisonOperator.UNEQUAL, Literal("user"))])))
 AUTOMATIC_ONLY = Aliased(Inlined(AllOf([AUTOMATIC_TASK_WAIT, Excluding(USER_TASK_WAIT)])), "automatic")
 TASK_TAGS = Aliased(ScalarSubselect(Select("words").reading(ScalarSubselect(
     Select("task_tags").selecting(Column("word")).matching(ColumnCompare("task_id", "=", "tasks.id")).ordered("word", False)))

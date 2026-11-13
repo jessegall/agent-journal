@@ -19,7 +19,7 @@ class WorkerTestLineRule(DriverRule):
     """A worker runs a test only through its named test commands; any other test line is refused."""
 
     name = "workers.named-tests-only"
-    priority = RulePriority.COMMAND_KIND_CHECK
+    priority = RulePriority.COMMAND_CATEGORY_CHECK
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [CodingHelperRole.WORKER]
