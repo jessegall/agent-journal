@@ -40,7 +40,7 @@ class ProcessSetting(Enum):
                                   rule=NumberRule(1))
     RUN_BATCH_SIZE =SettingValue("run-batch-size", "Runs at once", "How many queued runs go at once on this machine; the others wait for a spot. Reads and edits never wait.",
                                   SettingType.NUMBER, default=2)
-    TICK_WORKERS = SettingValue("tick-workers", "Timed work at once", "How many timed jobs of the journal, such as reading outputs and checking agents, run at once; the others wait their turn. Read when the journal starts.",
+    TICK_WORKERS = SettingValue("tick-workers", "Timed work at once", "How many timed jobs, such as reading outputs, run at once; the others wait. Read when the journal starts.",
                                 SettingType.NUMBER, default=3, rule=NumberRule(1))
     MAIN_RUNS_USE_SLOTS =SettingValue("main-runs-take-slots", "Main agent runs take spots", "When on, the main agent's runs count against the runs at once, so fewer queued runs start; none is ever stopped.",
                                         SettingType.FLAG, default=False)

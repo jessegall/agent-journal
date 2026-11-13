@@ -4,7 +4,7 @@ from engine.model.model import Model
 from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 
 
-RUNNING_STATES = (AffectedTestState.PICKING, AffectedTestState.TESTING)
+RUNNING_STATES = (AffectedTestState.LISTING, AffectedTestState.PICKING, AffectedTestState.TESTING)
 
 
 @dataclass(frozen=True, kw_only=True)
