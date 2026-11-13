@@ -38,6 +38,14 @@ class AgentRows:
     def find(self, agent_id: int) -> Agent:
         return self.rows.required(Agent, agent_id)
 
+    # the agent whose pause holds this one: itself when paused, else the nearest paused agent above it that
+    # started it, else the top of its line, which is not paused
+    def pause_holder(self, agent_id: int) -> Agent:
+        holder = self.find(agent_id)
+        while holder.paused_at is None and holder.parent_id is not None:
+            holder = self.find(holder.parent_id)
+        return holder
+
     def find_unscoped(self, agent_id: int) -> Agent:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
             return self.rows.required(Agent, agent_id)
