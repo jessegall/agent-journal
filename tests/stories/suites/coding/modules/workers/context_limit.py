@@ -136,7 +136,7 @@ def test_a_tick_never_compacts_an_agent(agent):
     agent.expect_rows(agent.typing.typed == [])
 
 
-def test_an_agent_finishes_its_task_first_and_is_compacted_when_it_ends(task_worker):
+def test_an_agent_finishes_its_task_first_and_nothing_is_typed_when_it_ends(task_worker):
     agent = task_worker
     enabled_time(agent, LIMIT_TOKENS)
     has_context(agent, LIMIT_TOKENS + 1)
@@ -144,28 +144,25 @@ def test_an_agent_finishes_its_task_first_and_is_compacted_when_it_ends(task_wor
     agent.expect_rows(agent.typing.typed == [])
     agent.expect_success('task close 1 --outcome "Done"', actor=agent.agent)
     idle_turn(agent)
-    agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
+    agent.expect_rows(agent.typing.typed == [], detail=str(agent.typing.typed))
 
 
-def test_past_the_second_limit_an_agent_is_compacted_even_with_a_task_in_hand(agent):
+def test_past_the_second_limit_an_agent_is_typed_nothing_even_with_a_task_in_hand(agent):
     has_context(agent, HARD)
     set_value(agent, CONTEXT_LIMIT_HARD_TOKENS, HARD)
     enabled_time(agent, LIMIT_TOKENS)
     started_task(agent)
     idle_turn(agent)
-    agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
+    agent.expect_rows(agent.typing.typed == [], detail=str(agent.typing.typed))
 
 
-def test_past_the_second_limit_a_tool_is_refused_and_the_compaction_is_typed_at_once_with_a_task_in_hand(hard_limited_worker):
+def test_past_the_second_limit_a_tool_is_refused_and_nothing_is_typed_with_a_task_in_hand(hard_limited_worker):
     agent = hard_limited_worker
     has_context(agent, HARD)
-    agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
-    agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
-    agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
-    agent.expect_rows(agent.typing.typed == [COMPACT], detail="typed once while the last one runs")
-    agent.advance(timedelta(minutes=10))
-    agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
-    agent.expect_rows(agent.typing.typed == [COMPACT], detail="a tool use shows the typed line still waits in the program")
+    for _ in range(2):
+        agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
+        agent.advance(timedelta(minutes=10))
+    agent.expect_rows(agent.typing.typed == [], detail=str(agent.typing.typed))
 
 
 def journal_line(line):
@@ -276,18 +273,7 @@ def test_an_agent_past_the_limit_that_finishes_its_task_is_told_to_stop_and_give
     agent.expect_hook_allowed(SESSION, HookSamples.sample("post_tool_use"), "stop now")
     agent.expect_success('memory skip "nothing to keep"', actor=agent.agent)
     agent.hook(SESSION, HookSamples.stop())
-    agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
-
-
-def test_a_compaction_typed_by_one_rule_is_not_typed_again_by_another_while_the_size_is_as_it_was(hard_limited_worker):
-    agent = hard_limited_worker
-    has_context(agent, HARD)
-    agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
-    agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
-    agent.hook(SESSION, COMPACTION_START)
-    agent.advance(timedelta(minutes=1))
-    stops(agent)
-    agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
+    agent.expect_rows(agent.typing.typed == [], detail=str(agent.typing.typed))
 
 
 @pytest.fixture
@@ -314,7 +300,7 @@ def test_a_cap_for_the_main_agents_kind_holds_it_in_place_of_the_size_for_all(li
     has_context(limited, 350_000)
     idle_turn(limited)
     stops(limited)
-    limited.expect_rows(len(limited.typing.typed) == 1, limited.typing.typed[-1].startswith("/compact"), detail=str(limited.typing.typed))
+    limited.expect_rows(limited.typing.typed == [], detail=str(limited.typing.typed))
 
 
 def compact_window(story):

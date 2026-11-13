@@ -1,3 +1,4 @@
+from engine.provider.providers import Providers
 from engine.time.timestamp import Timestamp
 from core.modules.drivers.support.context_compactions import ContextCompactions
 from core.modules.agents.support.agent_rows import AgentRows
@@ -16,9 +17,12 @@ class ContextLimitCheck:
     compact is not asked a second time for three minutes, whichever rule asks: the typed line can wait in the
     program until the agent pauses."""
 
-    def __init__(self, settings: SettingValues, agents: AgentRows, current_window: CurrentContextWindow, tasks: TaskQuery, compactions: ContextCompactions, share: ContextShare) -> None:
+    def __init__(self, settings: SettingValues, agents: AgentRows, current_window: CurrentContextWindow, tasks: TaskQuery, compactions: ContextCompactions, share: ContextShare, providers: Providers) -> None:
         self.settings, self.agents, self.current_window, self.tasks = settings, agents, current_window, tasks
-        self.compactions, self.share = compactions, share
+        self.compactions, self.share, self.providers = compactions, share, providers
+
+    def compacts_by_window(self, agent_id: int) -> bool:
+        return self.providers.provider(self.agents.find(agent_id).program).compacts_by_window
 
     def is_compaction_requested(self, agent_id: int, timestamp: Timestamp) -> bool:
         return self.compactions.blocks_request(agent_id, timestamp)

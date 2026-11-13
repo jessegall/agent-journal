@@ -70,6 +70,7 @@ class Provider(ABC):
     person_file_note: ClassVar[str] = ""
     controls: ClassVar[Sequence[ControlGroup]] = ()
     compacts_headless: ClassVar[bool] = False
+    compacts_by_window: ClassVar[bool] = False
     session_variable: ClassVar[str]
     markers: ClassVar[Sequence[str]]
     models: ClassVar[Sequence[ProgramModel]]
