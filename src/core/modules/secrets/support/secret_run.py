@@ -51,7 +51,7 @@ class SecretRun:
         except RunTimeLimitError as late:
             raise Refusal(f"{command[0]} ran past {LIMIT_SECONDS} seconds and was stopped", "give a secret to a program that finishes sooner") from late
         finally:
-            shutil.rmtree(home, ignore_errors=True)
+            FileAccess.rmtree(home, ignore_errors=True)
         return SecretRunOutcome(command[0], finished.exit_code, OutputMask(self.values.hidden_values()).masked((finished.stdout + finished.stderr).encode()).decode(errors="replace"))
 
     def program(self, secret: Secret, command: list[str]) -> str:

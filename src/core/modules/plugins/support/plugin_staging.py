@@ -48,4 +48,4 @@ class PluginStaging:
 
     def cleared(self, source: str) -> None:
         if not FileAccess.is_dir(Path(source)):
-            shutil.rmtree(self.folder(source), ignore_errors=True)
+            FileAccess.rmtree(self.folder(source), ignore_errors=True)

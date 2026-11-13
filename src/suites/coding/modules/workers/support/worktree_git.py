@@ -7,7 +7,6 @@ from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from functools import lru_cache
 from engine.file.versions.file_version import FileVersion
-import shutil
 from pathlib import Path, PurePosixPath
 
 from engine.file.conflict_files import ConflictFiles
@@ -89,7 +88,7 @@ class WorktreeGit:
             if registered or FileAccess.is_dir(path / ".git"):
                 raise Refusal(f"a git worktree still exists at {path}", "merge or release its worktree before reusing the folder")
             self.runs.stop(worktree)
-            shutil.rmtree(path)
+            FileAccess.rmtree(path)
         try:
             self.checked(folder, CHECKOUT_LIMIT_SECONDS, "worktree", "add", "-b", worktree.branch, worktree.folder, start)
         except Exception:
@@ -303,7 +302,7 @@ class WorktreeGit:
         for built in folders:
             path = Path(folder, built)
             if FileAccess.exists(path):
-                shutil.rmtree(path)
+                FileAccess.rmtree(path)
         viewer = Path(folder, "src/viewer")
         modules = viewer / "node_modules"
         base_modules = Path(base_folder, "src/viewer/node_modules")
@@ -571,11 +570,11 @@ class WorktreeGit:
         tests_folder = self.test_folder(worktree)
         if FileAccess.exists(Path(tests_folder)):
             self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", "--force", tests_folder)
-            shutil.rmtree(tests_folder, ignore_errors=True)
+            FileAccess.rmtree(tests_folder, ignore_errors=True)
         if FileAccess.exists(Path(worktree.folder)):
             self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", "--force", worktree.folder)
         if FileAccess.exists(Path(worktree.folder)):
-            shutil.rmtree(worktree.folder)
+            FileAccess.rmtree(worktree.folder)
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
         if not self.is_merged(folder, worktree.base_branch, worktree.branch):
             return True

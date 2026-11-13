@@ -1,5 +1,4 @@
 from engine.file.file_access import FileAccess
-import shutil
 from pathlib import Path
 
 from engine.time.clock import Clock
@@ -30,7 +29,7 @@ class PruneTempFoldersHandler(Handler[PruneTempFolders, int]):
         folders = [(session, folder) for provider in self.providers.all() for session, folder in provider.session_temp_folders(project).items()]
         removable = [folder for session, folder in folders if self.may_remove(session, folder)]
         for folder in removable:
-            shutil.rmtree(folder, ignore_errors=True)
+            FileAccess.rmtree(folder, ignore_errors=True)
         return len(removable)
 
     def may_remove(self, session: str, folder: Path) -> bool:

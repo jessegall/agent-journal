@@ -1,6 +1,5 @@
 from engine.skill.skill_contents import SkillContents
 from engine.file.file_access import FileAccess
-import shutil
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
@@ -93,6 +92,6 @@ class SkillFiles:
             is_permitted = permitted.setdefault(root.parents[1], self.projects.permitted(root.parents[1]))
             stale = [folder for folder in FileAccess.glob(root, f"{FOLDER_PREFIX}*") if FileAccess.is_dir(folder) and (root in legacy_roots or folder.name not in names or not is_permitted(folder.name))]
             for folder in stale:
-                shutil.rmtree(folder)
+                FileAccess.rmtree(folder)
                 cleared.append(folder.name)
         return list(dict.fromkeys(cleared))

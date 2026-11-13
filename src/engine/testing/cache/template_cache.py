@@ -1,6 +1,5 @@
 from engine.file.file_access import FileAccess
 import os
-import shutil
 import time
 from pathlib import Path
 
@@ -69,7 +68,7 @@ class TemplateCache:
         for folder in FileAccess.iterdir(self.root) if FileAccess.is_dir(self.root) else ():
             is_expired = FileAccess.is_dir(folder) and folder != kept and FolderStat.modified_time(folder) < limit and not self.is_leased(folder)
             if is_expired:
-                shutil.rmtree(folder, ignore_errors=True)
+                FileAccess.rmtree(folder, ignore_errors=True)
         self.drop_oldest_templates(kept)
 
     def drop_oldest_templates(self, kept: Path | None = None) -> None:
@@ -79,5 +78,5 @@ class TemplateCache:
             if total <= self.limit_bytes:
                 break
             if folder != kept and not self.is_leased(folder):
-                shutil.rmtree(folder, ignore_errors=True)
+                FileAccess.rmtree(folder, ignore_errors=True)
                 total -= sizes[folder]

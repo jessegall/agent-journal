@@ -1,7 +1,6 @@
 from engine.file.file_access import FileAccess
 import json
 import importlib
-import shutil
 import sys
 
 from engine.database.database import Database
@@ -59,7 +58,7 @@ class ModuleRemoval:
         folder = self.home.modules_folder / package
         if not FileAccess.is_dir(folder):
             return
-        shutil.rmtree(folder)
+        FileAccess.rmtree(folder)
         for name in tuple(sys.modules):
             if name == package or name.startswith(package + "."):
                 del sys.modules[name]

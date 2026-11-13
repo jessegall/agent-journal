@@ -3,7 +3,6 @@ import fcntl
 import hashlib
 import json
 import pickle
-import shutil
 import tempfile
 import weakref
 from collections.abc import Generator
@@ -50,7 +49,7 @@ class TemplateDatabases:
                 # another test run removed it between the listing and this read: nothing is left to remove
                 continue
             if current_time - modified > STALE_WORKING_FOLDER_SECONDS:
-                shutil.rmtree(folder, ignore_errors=True)
+                FileAccess.rmtree(folder, ignore_errors=True)
 
     def story(self, folder: Path, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Story:
         template = self.template(modules, fixture)
@@ -89,7 +88,7 @@ class TemplateDatabases:
         folder = self.folder / name
         with self.locked(self.folder / f"{name}.lock"):
             if not FileAccess.is_file(folder / STATE_FILE):
-                shutil.rmtree(folder, ignore_errors=True)
+                FileAccess.rmtree(folder, ignore_errors=True)
                 built = self.fixture_template(folder, modules, fixture) if fixture else self.synced_template(folder, modules)
                 state = folder / (STATE_FILE + ".new")
                 FileAccess.write_binary(state, pickle.dumps(built.state))

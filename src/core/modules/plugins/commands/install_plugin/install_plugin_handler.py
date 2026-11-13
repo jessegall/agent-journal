@@ -1,6 +1,5 @@
 from engine.file.file_access import FileAccess
 import json
-import shutil
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
@@ -51,7 +50,7 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
         try:
             self.steps.run_setup(manifest, folder)
         except Refusal:
-            shutil.rmtree(folder, ignore_errors=True)
+            FileAccess.rmtree(folder, ignore_errors=True)
             raise
 
     def handle(self, command: InstallPlugin, context: Context) -> PluginInstall:

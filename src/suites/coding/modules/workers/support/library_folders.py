@@ -3,7 +3,6 @@ from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.process_executor import ProcessExecutor
 from engine.file.file_access import FileAccess
-import shutil
 import sys
 from collections.abc import Sequence
 from pathlib import Path
@@ -40,7 +39,7 @@ class LibraryFolders:
 
     def drop(self, target: str, copies: Sequence[str]) -> None:
         for name in copies:
-            shutil.rmtree(Path(target) / name, ignore_errors=True)
+            FileAccess.rmtree(Path(target) / name, ignore_errors=True)
 
     def restore(self, folder: str, target: str, copies: Sequence[str]) -> None:
         for name in copies:
