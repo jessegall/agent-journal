@@ -1,3 +1,4 @@
+import json
 from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 
@@ -314,3 +315,19 @@ def test_a_cap_for_the_main_agents_kind_holds_it_in_place_of_the_size_for_all(li
     idle_turn(limited)
     stops(limited)
     limited.expect_rows(len(limited.typing.typed) == 1, limited.typing.typed[-1].startswith("/compact"), detail=str(limited.typing.typed))
+
+
+def compact_window(story):
+    settings = story.home.project_folder / ".claude" / "settings.json"
+    return json.loads(settings.read_text()).get("autoCompactWindow") if settings.is_file() else None
+
+
+def test_the_main_agents_folder_holds_the_hard_size_while_it_holds_a_task_and_its_own_size_after(new_story):
+    story = new_story(fixture=LimitEnabled)
+    story.expect_success(f"environment edit 1 --folder {story.home.project_folder}", actor=story.user)
+    started_task(story)
+    story.run_listeners()
+    story.expect_rows(compact_window(story) == 600_000, detail=str(compact_window(story)))
+    story.expect_success('task close 1 --outcome "Tax added once"', actor=story.agent)
+    story.run_listeners()
+    story.expect_rows(compact_window(story) == LIMIT_TOKENS, detail=str(compact_window(story)))
