@@ -1,3 +1,5 @@
+from tests.stories.core.support.large_reads import seeded_finished_jobs
+from tests.stories.core.support.read_limit import limit_reads
 from tests.stories.core.support.agent_labels import agent_number
 from engine.database.database import Database
 from engine.actor.actor import Actor
@@ -123,9 +125,12 @@ def test_fresh_starts_a_new_helper_on_files_an_ended_one_knows(new_story):
     story.expect_success(f"{START} --fresh 'A second reader'", actor=story.agent)
 
 
-def test_a_job_on_other_files_starts_a_new_helper(new_story):
+def test_among_300_finished_jobs_a_job_on_the_same_files_is_refused_for_the_helper_that_knows_them_and_one_on_other_files_starts_a_new_helper(new_story):
     story = new_story(fixture=EndedHelper)
+    seeded_finished_jobs(story, story.agent.id, helper_agent(story).id, 300)
+    limit_reads(story)
     FakeLauncher.listening(story.home.socket("launcher"))
+    story.expect_refusal(START, "knows these files", actor=story.agent)
     story.expect_success('helper start journal-researcher --brief "Read src/queue.py" --environment main', actor=story.agent)
 
 

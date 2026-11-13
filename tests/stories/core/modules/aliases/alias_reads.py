@@ -33,3 +33,5 @@ def test_alias_edit_with_336_aliases_reads_no_statement_over_51_rows_and_still_r
     limit_reads(story)
     story.expect_refusal('alias add second-build "cd seeded/package_200 && make all" --category build', "this program and target already use journal seeded-build-200",
                          actor=story.agent)
+    story.expect_refusal('alias edit seeded-build-100 --line "cd seeded/package_200 && make all"', "this program and target already use journal seeded-build-200",
+                         actor=story.agent)

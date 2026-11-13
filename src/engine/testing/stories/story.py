@@ -147,7 +147,7 @@ class Story:
         self.steps.append(f"command {caller.actor.id} {environment_id}: {line}")
         with self.repeated_work.request():
             code = self.container.get(Console).run(shlex.split(line), caller, stream)
-        self.path.append(StoryPath.command(caller.actor.id, shlex.split(line), code))
+        self.path.append(StoryPath.command(caller.actor.id, shlex.split(line), code, stream.getvalue()))
         self.results.append(LineOutcome(line, code, stream.getvalue()))
         return self.results[-1]
 
@@ -179,7 +179,7 @@ class Story:
         self.steps.append(f"request {line}: {json.dumps(asdict(request), sort_keys=True)}")
         with self.repeated_work.request():
             code = self.container.get(Console).requested_run(shlex.split(line), request, stream)
-        self.path.append(StoryPath.command(0, shlex.split(line), code))
+        self.path.append(StoryPath.command(0, shlex.split(line), code, stream.getvalue()))
         self.results.append(LineOutcome(line, code, stream.getvalue()))
         return self.results[-1]
 

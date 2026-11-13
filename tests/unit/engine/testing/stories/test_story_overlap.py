@@ -78,6 +78,14 @@ def test_a_refused_command_is_another_step_than_a_command_that_ran():
     assert StoryPath.command(3, ["task", "close", "1"], 1) != StoryPath.command(3, ["task", "close", "1"], 0)
 
 
+def test_refusals_for_different_reasons_are_different_steps_and_their_numbers_do_not_count():
+    close = ["task", "close", "1"]
+    assert StoryPath.command(3, close, 1, "task 1 is blocked\nmore") == StoryPath.command(3, close, 1, "task 7 is blocked")
+    assert StoryPath.command(3, close, 1, "task 1 is blocked") != StoryPath.command(3, close, 1, "task 1 has no proof")
+    stop = HookSamples.stop().action
+    assert StoryPath.hook(stop, HookReply(refusal="message 4 is unread")) != StoryPath.hook(stop, HookReply(refusal="task 4 is in hand"))
+
+
 def test_a_hook_is_written_as_its_event_and_tool_and_what_the_agent_was_told():
     cart = HookSamples.edit("cart.py")
     tax = HookSamples.edit("tax.py")
