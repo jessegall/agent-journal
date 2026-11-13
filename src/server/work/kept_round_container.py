@@ -18,6 +18,16 @@ PRIMARY_ERROR_CODE_MASK = 0xFF
 BUSY_ERROR_CODES = frozenset({sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED})
 
 
+def background_container(home: JournalHome, turns: WriteTurns | None = None) -> Container:
+    database = Database.opened(home, turns)
+    database.set_busy_timeout(BACKGROUND_BUSY_TIMEOUT_SECONDS)
+    try:
+        return synced_database_container(home, database)
+    except BaseException:
+        database.close()
+        raise
+
+
 class KeptRoundContainer:
     """The container one background thread keeps for its life: one connection, one registry, one set of
     services. Each round resets the RoundState services; a new registry, a replaced database file or a
@@ -40,9 +50,8 @@ class KeptRoundContainer:
 
     def rebuilt(self) -> Container:
         self.close()
-        database = Database.opened(self.home, self.turns)
-        database.set_busy_timeout(BACKGROUND_BUSY_TIMEOUT_SECONDS)
-        self.container = synced_database_container(self.home, database)
+        self.container = background_container(self.home, self.turns)
+        database = self.container.get(Database)
         self.registry_version = RegistryTable(database).version()
         self.database_file = os.stat(self.home.database)
         return self.container
