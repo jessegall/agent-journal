@@ -26,7 +26,7 @@ const newest = computed(() => rows.value[0]?.id ?? 0);
         <AutoScrollPane :row-count="newest" :feed="paginator">
             <RowList :rows="edits" :failure="failure" :loaded="loaded" empty="No edits by this agent yet" hint="Files changed by this agent appear here.">
                 <template #default="{row}">
-                    <DiffCard flush :lines="CARD_LINES" :path="row.path" :change="row.edit_type" :added="row.added" :removed="row.removed" :at="row.created_at" :rows="row.lines" />
+                    <DiffCard flush :lines="CARD_LINES" :path="row.path" :change="row.edit_type" :from="row.moved_from" :added="row.added" :removed="row.removed" :at="row.created_at" :rows="row.lines" />
                 </template>
             </RowList>
         </AutoScrollPane>

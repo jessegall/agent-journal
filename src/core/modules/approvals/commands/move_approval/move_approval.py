@@ -9,3 +9,4 @@ from core.modules.approvals.models.approval_request import ApprovalRequest
 class MoveApproval(Command[ApprovalRequest]):
     row_id: int
     move: Move
+    failure: str = ""

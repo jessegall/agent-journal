@@ -59,7 +59,6 @@ view.follow(["phase.*", "phase_task.*", "task.*", "agent.*"], (event) => {
   /></template>
   <template v-if="agents.length">
     <div class="plan-dock-agents" data-plan-dock-agents>
-      <span>Agents:</span>
       <template v-for="agent in agents" :key="agent.id">
         <AgentTip
           as="button"
@@ -118,6 +117,8 @@ view.follow(["phase.*", "phase_task.*", "task.*", "agent.*"], (event) => {
 }
 
 .plan-dock-agent {
+  display: inline-flex;
+  align-items: center;
   padding: 0 8px;
   height: 20px;
   border: 1px solid var(--border-2);
@@ -126,8 +127,13 @@ view.follow(["phase.*", "phase_task.*", "task.*", "agent.*"], (event) => {
   color: var(--text-2);
   font: inherit;
   font-size: 11.5px;
-  line-height: 20px;
+  line-height: 1;
   cursor: pointer;
+}
+
+.plan-dock-agent :deep(.agent-badge-icon) {
+  width: 1em;
+  height: 1em;
 }
 
 .plan-dock-phases {

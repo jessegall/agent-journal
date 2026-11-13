@@ -41,6 +41,8 @@ test("the sidebar switches to open and answered questions and scrolls to their q
     const show = vi.fn();
     Element.prototype.scrollIntoView = show;
     const {element, ran} = await inspector();
+    element.querySelector("[data-document-notes-toggle]").click();
+    await settle();
     expect(element.querySelector("[data-comment-rail]").textContent).toContain("A comment");
     element.querySelector('[data-document-notes="questions"]').click();
     await settle();

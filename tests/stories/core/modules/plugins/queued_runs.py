@@ -91,3 +91,4 @@ def test_a_queued_run_reads_what_it_printed_and_an_undeclared_kind_or_a_missing_
     run = queued(story, "judge")
     story.expect_text(f"plugin queue-show {run}", f"run {run} of {PLUGIN} judge is running", actor=story.user)
     story.expect_rows(story.run(f"plugin queue-read {run} --tail 5", actor=story.user).code == 0)
+

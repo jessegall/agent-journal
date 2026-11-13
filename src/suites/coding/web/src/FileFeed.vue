@@ -86,6 +86,7 @@ watch([kept, savedView], () => { options.value = startView(kept.value ?? savedVi
                         :whole="wholes[card.id] || null"
                         :path="card.path"
                         :change="card.edit_type"
+                        :from="card.moved_from"
                         :added="card.added"
                         :removed="card.removed"
                         :at="card.created_at"

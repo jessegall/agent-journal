@@ -8,8 +8,9 @@ from suites.coding.models.file_edit import FileEdit
 
 @dataclass(frozen=True)
 class RecordFileEdit(Command[FileEdit]):
-    """Records one file an agent edited or wrote, with the lines it added and removed."""
+    """Records one file an agent edited, wrote or moved, with the lines it added and removed."""
 
     agent_id: int
     diff: DiffCount
     rows: tuple[Mapping[str, object], ...] = ()
+    moved_from: str = ""

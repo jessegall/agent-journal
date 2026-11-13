@@ -12,6 +12,7 @@ from suites.coding.commands.record_file_edit.record_file_edit import RecordFileE
 
 EDITED = "edit"
 NEW_FILE = "new"
+MOVED = "moved"
 
 
 class RecordFileEditHandler(Handler[RecordFileEdit, FileEdit]):
@@ -27,7 +28,14 @@ class RecordFileEditHandler(Handler[RecordFileEdit, FileEdit]):
         folder = Path(self.queries.query(Environment).find(environment_id).folder)
         return str(Path(path).relative_to(folder)) if Path(path).is_relative_to(folder) else path
 
+    def edit_type(self, command: RecordFileEdit) -> str:
+        if command.moved_from:
+            return MOVED
+        return EDITED if command.diff.existed else NEW_FILE
+
     def handle(self, command: RecordFileEdit, context: Context) -> FileEdit:
+        environment_id = context.required_environment_id()
+        moved_from = self.relative_path(command.moved_from, environment_id) if command.moved_from else ""
         return self.repository.save(FileEdit(session_agent_id=command.agent_id, creator_id=context.actor.id,
-                                             path=self.relative_path(command.diff.path, context.required_environment_id()), added=command.diff.lines_added, removed=command.diff.lines_removed, rows=json.dumps(command.rows),
-                                             edit_type=EDITED if command.diff.existed else NEW_FILE), context)
+                                             path=self.relative_path(command.diff.path, environment_id), added=command.diff.lines_added, removed=command.diff.lines_removed, rows=json.dumps(command.rows),
+                                             edit_type=self.edit_type(command), moved_from=moved_from), context)

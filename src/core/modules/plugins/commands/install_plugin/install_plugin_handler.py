@@ -17,7 +17,6 @@ from core.modules.plugins.support.plugin_digest import PluginDigest
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_install_steps import PluginInstallSteps
 from core.modules.plugins.support.plugin_manifest import PluginManifest
-from core.modules.plugins.support.plugin_readers import PluginReaders
 from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
 from core.modules.plugins.support.plugin_staging import EXCLUDED_NAMES, PluginStaging
 
@@ -26,7 +25,7 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
     """Copies a plugin's folder, or a repository at its newest release, into the journal once the programs it
     requires are found and runs its setup
     steps there, before the install's transaction opens so a step may write to the journal itself, a
-    failing one leaving nothing behind; then makes its data folder, saves the readers it ships and saves
+    failing one leaving nothing behind; then makes its data folder and saves
     it switched on with the digest of its files taken after its installed command ran, and with the settings
     that command answers. A name installed already is refused."""
 
@@ -34,8 +33,8 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
     runs_once = True
 
     def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_files: PluginSkillFiles, steps: PluginInstallSteps, repository: Repository,
-                 readers: PluginReaders, staging: PluginStaging) -> None:
-        self.plugins, self.folders, self.skill_files, self.steps, self.repository, self.readers, self.staging = plugins, folders, skill_files, steps, repository, readers, staging
+                 staging: PluginStaging) -> None:
+        self.plugins, self.folders, self.skill_files, self.steps, self.repository, self.staging = plugins, folders, skill_files, steps, repository, staging
 
     def prepare(self, command: InstallPlugin, actor: Actor) -> None:
         if actor.is_agent():
@@ -63,7 +62,6 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
         folder = self.folders.code(manifest.name)
         self.folders.data(manifest.name).mkdir(parents=True, exist_ok=True)
         self.skill_files.publish(folder, manifest)
-        self.readers.publish(folder, manifest.name, context)
         settings = self.steps.installed_settings(manifest, folder)
         plugin = self.repository.save(Plugin(creator_id=context.actor.id, name=manifest.name, title=manifest.title, source=command.source,
                                              release=manifest.version, files_digest=PluginDigest.digest(folder, manifest)), context)
