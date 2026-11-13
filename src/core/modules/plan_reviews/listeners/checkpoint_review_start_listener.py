@@ -25,5 +25,8 @@ class CheckpointReviewStartListener(SaveListener[Moved[CheckpointReach]]):
     def handle(self, event: Moved[CheckpointReach], context: Context) -> None:
         reach = event.row
         reporter = self.main_agents.newest()
-        if reach.source.opens_phases() and self.settings.flag(QUICK_REVIEW_SETTING) and reporter is not None:
+        if reporter is not None and self.reviews_quickly(reach):
             self.bus.dispatch(StartCheckpointReview(reach.plan_id, reach.phase_id, reporter.id), context)
+
+    def reviews_quickly(self, reach: CheckpointReach) -> bool:
+        return reach.source.opens_phases() and self.settings.flag(QUICK_REVIEW_SETTING)

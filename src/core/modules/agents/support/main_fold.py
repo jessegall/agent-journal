@@ -8,6 +8,7 @@ from engine.enums.agent_role import AgentRole
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import MAIN_NUMBER
 from core.modules.agents.support.fold_clash_rules import FoldClashRules
+from core.modules.agents.support.settled_clash import SettledClash
 from core.modules.agents.support.main_fold_plan import MainFoldPlan
 from core.modules.agents.support.environment_fold import EnvironmentFold
 from core.modules.agents.support.main_row import MainRow
@@ -99,13 +100,15 @@ class MainFold:
                 continue
             for column, model_column in MainFold.agent_parts(columns, table, unique.columns):
                 for group in self.clashing_groups(fold, unique, column, model_column):
-                    resolved = FoldClashRules.settled(table, group, fold.survivor.id, column)
-                    for removed in resolved.removed:
-                        self.inserts.insert(FOLD_TABLES[1], {"environment_id": fold.environment_id, "fold_id": fold_id, "table_name": table,
-                                                             "row": json.dumps(removed, default=str), "rule": resolved.rule,
-                                                             "created_at": folded_at, "updated_at": folded_at})
-                        counts.add_removed(table, MainFold.references_held(columns, table, removed, fold), resolved.rule)
-                    self.rewrite.delete_past_state_rule(table, [int(row["id"]) for row in resolved.removed])
+                    self.remove_clashing(FoldClashRules.settled(table, group, fold.survivor.id, column), table, fold, columns, counts, fold_id, folded_at)
+
+    def remove_clashing(self, resolved: SettledClash, table: str, fold: EnvironmentFold, columns: AgentColumns, counts: FoldCounts, fold_id: int, folded_at: str) -> None:
+        for removed in resolved.removed:
+            self.inserts.insert(FOLD_TABLES[1], {"environment_id": fold.environment_id, "fold_id": fold_id, "table_name": table,
+                                                 "row": json.dumps(removed, default=str), "rule": resolved.rule,
+                                                 "created_at": folded_at, "updated_at": folded_at})
+            counts.add_removed(table, MainFold.references_held(columns, table, removed, fold), resolved.rule)
+        self.rewrite.delete_past_state_rule(table, [int(row["id"]) for row in resolved.removed])
 
     @staticmethod
     def agent_parts(columns: AgentColumns, table: str, key: tuple[str, ...]) -> list[tuple[str, str | None]]:

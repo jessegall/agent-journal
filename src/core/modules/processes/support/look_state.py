@@ -9,5 +9,5 @@ class LookState:
     unanswered: int
     request_seconds: float
 
-    def waited_enough(self, clock_seconds: float, hang_seconds: int, look_seconds: int) -> bool:
-        return clock_seconds - self.request_seconds >= (hang_seconds if self.unanswered else look_seconds)
+    def waited_enough(self, clock_seconds: float, hang_seconds: int, check_seconds: int) -> bool:
+        return clock_seconds - self.request_seconds >= (hang_seconds if self.unanswered else check_seconds)

@@ -28,6 +28,7 @@ from engine.query.conditions.session_rows import SessionRows
 from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.row.page import Page
 from engine.query.select import Select
+from engine.query.enums.comparison_operator import ComparisonOperator
 from engine.row.row_owner import RowOwner
 from engine.query.errors.unknown_column_error import UnknownColumnError
 from engine.query.errors.query_limit_error import QueryLimitError
@@ -111,12 +112,13 @@ class Query(Generic[M]):
     def compared(self, *comparison: object) -> Condition:
         if len(comparison) not in (2, 3):
             raise UnknownOperatorError(f"where takes a column and a value, or a column, an operator and a value; operators: {' '.join(OPERATORS)}")
-        column, operator, value = (comparison[0], "=", comparison[1]) if len(comparison) == 2 else comparison
-        if operator not in OPERATORS:
-            raise UnknownOperatorError(f"unknown operator {operator}; use one of {' '.join(OPERATORS)}")
-        if operator in ("=", "!="):
-            return Equal(str(column), stored(value), negated=operator == "!=")
-        return COMPARISONS[str(operator)](str(column), stored(value))
+        column, written, value = (comparison[0], "=", comparison[1]) if len(comparison) == 2 else comparison
+        if written not in OPERATORS:
+            raise UnknownOperatorError(f"unknown operator {written}; use one of {' '.join(OPERATORS)}")
+        operator = ComparisonOperator(written)
+        if operator.is_equality():
+            return Equal(str(column), stored(value), negated=operator is ComparisonOperator.UNEQUAL)
+        return COMPARISONS[operator](str(column), stored(value))
 
     def select_columns(self, *columns: str) -> Self:
         """Reads only the named columns: this table's by name, and this table's or a joined table's as table.column or
@@ -272,7 +274,7 @@ class Query(Generic[M]):
     def get(self) -> list[M]:
         limit = self.select.limit or DEFAULT_LIMIT_ROWS
         select = self.select.sliced(limit + 1, 0).named(limit + 1)
-        if not select.orders and self.table.key and self.table.has_column(self.table.key):
+        if not select.orders and self.table.has_key_column():
             select = select.ordered(self.table.key, False)
         rows = self.rows(select)
         if len(rows) > limit:

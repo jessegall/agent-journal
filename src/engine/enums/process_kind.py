@@ -37,9 +37,9 @@ class ProcessKind(StrEnum):
 
     @property
     def category(self) -> CommandCategory:
-        return KIND_CATEGORIES[self]
+        return PROCESS_CATEGORIES[self]
 
 
-KIND_CATEGORIES = {ProcessKind.HOOK: CommandCategory.JOURNAL, ProcessKind.READ: CommandCategory.READ, ProcessKind.WRITE: CommandCategory.EDIT,
+PROCESS_CATEGORIES = {ProcessKind.HOOK: CommandCategory.JOURNAL, ProcessKind.READ: CommandCategory.READ, ProcessKind.WRITE: CommandCategory.EDIT,
                    ProcessKind.SEARCH: CommandCategory.SEARCH, ProcessKind.JOURNAL: CommandCategory.JOURNAL, ProcessKind.QUICK: CommandCategory.PROCESS,
                    ProcessKind.SHELL: CommandCategory.PROCESS, ProcessKind.MERGE: CommandCategory.VERSION_CONTROL, ProcessKind.PLUGIN: CommandCategory.CHECK}

@@ -44,20 +44,20 @@ class StatusFiles:
         return self.status(newest.stem)
 
     def plan_windows(self, statuses: Mapping[str, SessionStatus]) -> tuple[PlanWindow, ...]:
-        times = self.modified_times(path for path in self.folder.glob("*.json") if path != self.plan_file) if self.folder.is_dir() else {}
-        files = sorted(times, key=times.__getitem__, reverse=True)
+        modified_at = self.modified_times(path for path in self.folder.glob("*.json") if path != self.plan_file) if self.folder.is_dir() else {}
+        files = sorted(modified_at, key=modified_at.__getitem__, reverse=True)
         return next((windows for path in files or [self.plan_file] if (windows := self.file_status(path, statuses).windows)), ())
 
     # A session that ends while the folder is read has its file moved to the ended folder: it is left out.
     @staticmethod
     def modified_times(paths: Iterable[Path]) -> dict[Path, float]:
-        times: dict[Path, float] = {}
+        modified_at: dict[Path, float] = {}
         for path in paths:
             try:
-                times[path] = path.stat().st_mtime
+                modified_at[path] = path.stat().st_mtime
             except FileNotFoundError:
                 continue
-        return times
+        return modified_at
 
     def file_status(self, path: Path, statuses: Mapping[str, SessionStatus]) -> SessionStatus:
         return statuses[path.stem] if path.stem in statuses else self.reported(path)

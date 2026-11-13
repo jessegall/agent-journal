@@ -93,7 +93,7 @@ class Select:
         for all_rows, different in self.unions:
             statement = statement.joined(different.core_statement(), " UNION ALL " if all_rows else " UNION ")
         statement = statement.joined(Statement(order + page), "")
-        return replace(statement, named_limit_rows=self.declared_limit or None)
+        return replace(statement, declared_limit_rows=self.declared_limit or None)
 
     # The SELECT without the selects it adds and without its order and page.
     def core_statement(self) -> Statement:

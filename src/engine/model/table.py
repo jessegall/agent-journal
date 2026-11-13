@@ -54,6 +54,9 @@ class Table(Generic[R]):
     def has_column(self, column: str) -> bool:
         return column in self.types
 
+    def has_key_column(self) -> bool:
+        return bool(self.key) and self.has_column(self.key)
+
     @cached_property
     def nullable_columns(self) -> frozenset[str]:
         hints = get_type_hints(self.model)

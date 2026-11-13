@@ -34,8 +34,8 @@ class ExitTexts:
 
     @staticmethod
     def template(exits: Sequence[ReadingExit]) -> str:
-        return "; ".join(f"{EXIT_TEXTS[way].sentence}: {EXIT_TEXTS[way].command}" if EXIT_TEXTS[way].command else EXIT_TEXTS[way].sentence for way in exits)
+        return "; ".join(f"{EXIT_TEXTS[exit_case].sentence}: {EXIT_TEXTS[exit_case].command}" if EXIT_TEXTS[exit_case].command else EXIT_TEXTS[exit_case].sentence for exit_case in exits)
 
     @staticmethod
     def sentences(exits: Sequence[ReadingExit]) -> str:
-        return "; ".join(EXIT_TEXTS[way].sentence for way in exits)
+        return "; ".join(EXIT_TEXTS[exit_case].sentence for exit_case in exits)

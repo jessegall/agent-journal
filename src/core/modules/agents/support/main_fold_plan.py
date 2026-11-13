@@ -18,16 +18,16 @@ class MainFoldPlan:
         return tuple(fold for fold in matched if fold.folded)
 
     @staticmethod
-    def environment_fold(environment_id: int, mains: list[MainRow]) -> EnvironmentFold:
-        survivor = MainFoldPlan.survivor(mains)
-        return EnvironmentFold(environment_id, survivor, tuple(agent for agent in mains if agent.id != survivor.id))
+    def environment_fold(environment_id: int, main_rows: list[MainRow]) -> EnvironmentFold:
+        survivor = MainFoldPlan.survivor(main_rows)
+        return EnvironmentFold(environment_id, survivor, tuple(agent for agent in main_rows if agent.id != survivor.id))
 
     @staticmethod
-    def survivor(mains: list[MainRow]) -> MainRow:
-        running = [agent for agent in mains if agent.ended_at is None]
+    def survivor(main_rows: list[MainRow]) -> MainRow:
+        running = [agent for agent in main_rows if agent.ended_at is None]
         if running:
             return max(running, key=lambda agent: agent.id)
-        numbered = [agent for agent in mains if agent.number == MAIN_NUMBER]
+        numbered = [agent for agent in main_rows if agent.number == MAIN_NUMBER]
         if numbered:
             return numbered[0]
-        return max(mains, key=lambda agent: agent.id)
+        return max(main_rows, key=lambda agent: agent.id)

@@ -1,5 +1,5 @@
 from collections import Counter
-from collections.abc import Generator, Sequence
+from collections.abc import Generator, Iterator, Sequence
 from contextlib import contextmanager
 from contextvars import ContextVar
 from functools import cache
@@ -208,8 +208,14 @@ class RepeatedWork(PointTally):
     @staticmethod
     def has_page_bounds(page: re.Match[str], statement: Statement) -> bool:
         parameters = iter(statement.parameters)
-        limit, offset = (next(parameters) if value == "?" else 0 if value is None else int(value) for value in page.groups()[1:])
+        limit, offset = (RepeatedWork.page_bound(value, parameters) for value in page.groups()[1:])
         return isinstance(limit, int) and limit > 0 and isinstance(offset, int) and offset >= 0
+
+    @staticmethod
+    def page_bound(value: str | None, parameters: Iterator[object]) -> object:
+        if value == "?":
+            return next(parameters)
+        return 0 if value is None else int(value)
 
     @staticmethod
     def is_logical_scan(table: str, plans: Sequence[str]) -> bool:

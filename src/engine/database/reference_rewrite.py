@@ -12,7 +12,7 @@ UNIQUE_INDEXES = Statement("SELECT tables.name AS table_name, indexes.name AS in
                            " (SELECT sql FROM sqlite_master WHERE type = 'index' AND name = indexes.name) AS index_sql"
                            " FROM sqlite_master AS tables, pragma_index_list(tables.name) AS indexes"
                            " WHERE tables.type = 'table' AND indexes.\"unique\" = 1 AND indexes.origin != 'pk'", scan_reason=SCHEMA_REASON)
-WHERE_WORD = " WHERE "
+PARTIAL_INDEX_SPLIT = " WHERE "
 
 
 class ReferenceRewrite:
@@ -72,16 +72,16 @@ class ReferenceRewrite:
         return removed
 
     def unique_keys(self) -> list[UniqueKey]:
-        found = []
+        keys = []
         for index in self.database.rows(UNIQUE_INDEXES):
             columns = self.database.rows(Statement(f'SELECT name FROM pragma_index_info("{index["index_name"]}")', scan_reason=SCHEMA_REASON))
-            guarded = str(index["index_sql"]).split(WHERE_WORD, 1)[1] if index["partial"] else "1 = 1"
-            found.append(UniqueKey(str(index["table_name"]), tuple(str(column["name"]) for column in columns if column["name"] is not None), guarded))
-        return found
+            guarded = str(index["index_sql"]).split(PARTIAL_INDEX_SPLIT, 1)[1] if index["partial"] else "1 = 1"
+            keys.append(UniqueKey(str(index["table_name"]), tuple(str(column["name"]) for column in columns if column["name"] is not None), guarded))
+        return keys
 
     def guarded_rows(self, unique: UniqueKey, column: str, ids: list[int]) -> list[dict[str, object]]:
-        found = self.database.rows(Statement(f'SELECT * FROM "{unique.table}" WHERE "{column}" IN ({self.marks(ids)}) AND ({unique.guarded})', list(ids), scan_reason=SCHEMA_REASON))
-        return [dict(row) for row in found]
+        rows = self.database.rows(Statement(f'SELECT * FROM "{unique.table}" WHERE "{column}" IN ({self.marks(ids)}) AND ({unique.guarded})', list(ids), scan_reason=SCHEMA_REASON))
+        return [dict(row) for row in rows]
 
     def table_counts(self, tables: list[str]) -> dict[str, int]:
         return {table: int(self.database.rows(Statement(f'SELECT count(*) AS n FROM "{table}"', scan_reason=SCHEMA_REASON))[0]["n"]) for table in tables}

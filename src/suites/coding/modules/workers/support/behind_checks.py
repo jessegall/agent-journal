@@ -39,14 +39,14 @@ class BehindChecks:
     def last_check(self) -> WorktreeBehindLook | None:
         return self.queries.query(WorktreeBehindLook).first()
 
-    def opens(self, worktree: Worktree, behind: int) -> bool:
-        if behind < self.settings.number(STALE_CHECK_COMMITS):
+    def opens(self, worktree: Worktree, commits_lagging: int) -> bool:
+        if commits_lagging < self.settings.number(STALE_CHECK_COMMITS):
             return False
         checks = tuple(reversed(tuple(self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).every_row(CHECKS_REASON))))
         if any(check.state in ACTIVE_STATES for check in checks):
             return False
         remaining = next((check for check in checks if check.state is BehindCheckState.IGNORED), None)
-        return remaining is None or behind >= remaining.behind + self.settings.number(STALE_RECHECK_COMMITS)
+        return remaining is None or commits_lagging >= remaining.behind + self.settings.number(STALE_RECHECK_COMMITS)
 
     def is_passable(self, worktree: Worktree) -> bool:
         return any(check.is_passable() for check in self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).every_row(CHECKS_REASON))

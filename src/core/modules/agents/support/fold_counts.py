@@ -16,9 +16,9 @@ class FoldCounts:
     tables_after: dict[str, int] = field(default_factory=dict)
     rules: dict[str, int] = field(default_factory=dict)
 
-    def add_reference(self, name: str, before: int, after: int) -> None:
+    def add_reference(self, name: str, initial: int, after: int) -> None:
         prior_initial, prior_after = self.references.get(name, (0, 0))
-        self.references[name] = (prior_initial + before, prior_after + after)
+        self.references[name] = (prior_initial + initial, prior_after + after)
 
     def add_removed(self, table: str, references: list[str], rule: str) -> None:
         for name in (table, *references):

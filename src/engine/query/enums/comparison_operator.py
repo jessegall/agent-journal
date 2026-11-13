@@ -13,3 +13,6 @@ class ComparisonOperator(StrEnum):
     IS = "IS"
     DISTINCT = "IS NOT"
     LIKE = "LIKE"
+
+    def is_equality(self) -> bool:
+        return self in (ComparisonOperator.EQUAL, ComparisonOperator.UNEQUAL)

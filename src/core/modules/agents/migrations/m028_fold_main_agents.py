@@ -13,7 +13,7 @@ from core.modules.agents.support.fold_copy import FoldCopy
 from core.modules.agents.support.main_fold import MainFold
 from core.modules.agents.support.environment_fold import EnvironmentFold
 
-ONE_MAIN_INDEX = Statement("CREATE UNIQUE INDEX IF NOT EXISTS agents_one_main ON agents (environment_id) WHERE role = 'main'")
+SINGLE_MAIN_INDEX = Statement("CREATE UNIQUE INDEX IF NOT EXISTS agents_one_main ON agents (environment_id) WHERE role = 'main'")
 
 
 class FoldMainAgentsMigration(RebuildMigration):
@@ -30,7 +30,7 @@ class FoldMainAgentsMigration(RebuildMigration):
         folds = fold.plan()
         if folds:
             self.fold(database, fold, folds)
-        database.update(ONE_MAIN_INDEX)
+        database.update(SINGLE_MAIN_INDEX)
 
     @staticmethod
     def fold(database: Database, fold: MainFold, folds: tuple[EnvironmentFold, ...]) -> None:
