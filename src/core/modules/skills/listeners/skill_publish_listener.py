@@ -8,8 +8,8 @@ from engine.event.upgrade_finished import UpgradeFinished
 
 
 class SkillPublishListener(CommitListener[FilePublishing | UpgradeFinished]):
-    """Writes every declared journal skill when modules change, the server starts or an upgrade finishes, and only then
-    removes the ones no module declares any more, so a project never has fewer skills than before."""
+    """Writes every declared journal skill when modules change, the server starts or an upgrade finishes, and
+    only then removes the ones no module declares any more, so a project never has fewer skills than before."""
 
     name = "skills.publish"
 
