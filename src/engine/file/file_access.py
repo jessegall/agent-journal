@@ -6,7 +6,6 @@ import tempfile
 from collections import OrderedDict
 from collections.abc import Callable, Generator, Iterable, Iterator
 from contextlib import contextmanager
-from fnmatch import fnmatch
 from pathlib import Path
 from threading import RLock
 from typing import IO, Any, ClassVar
@@ -37,10 +36,10 @@ class FileAccess:
     # The text of a file as it is now, never from the cache: for a file the system changes on its own, such as one under
     # /proc.
     @classmethod
-    def current(cls, file: Path | str) -> str:
+    def current(cls, file: Path | str, errors: str | None = None) -> str:
         path = Path(file).resolve()
         sys.audit(FILE_READ_EVENT, str(path))
-        return path.read_text()
+        return path.read_text(errors=errors)
 
     @classmethod
     def bytes_range(cls, file: Path | str, start: int, length: int) -> bytes:
@@ -219,10 +218,11 @@ class FileAccess:
     def glob(cls, folder: Path | str, pattern: str) -> Iterator[Path]:
         return Path(folder).glob(pattern, recurse_symlinks=False)
 
-    # every path under a folder matching a name pattern, walked as walk() walks
+    # every path under a folder whose path below it matches the pattern at any depth, as Path.rglob matches, walked as
+    # walk() walks
     @classmethod
     def rglob(cls, folder: Path | str, pattern: str) -> Iterator[Path]:
-        return (path for path in cls.walk(folder) if fnmatch(path.name, pattern))
+        return (path for path in cls.walk(folder) if path.relative_to(folder).full_match(f"**/{pattern}"))
 
     # every file and folder under a folder, walked as walk_folders() walks
     @classmethod
