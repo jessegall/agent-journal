@@ -1,6 +1,7 @@
 import json
 
 from engine.query.conditions.among import Among
+from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from core.modules.agents.models.agent_fold import AgentFold
 
@@ -12,11 +13,12 @@ class FoldRecord:
     """Finds the agent a folded main row became: an old agent id, an old number in its environment or an old
     session each lead to the survivor, and every other agent stays itself."""
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, queries: Queries, kept: KeptRows) -> None:
+        self.queries, self.kept = queries, kept
 
     def agent_id(self, agent_id: int) -> int:
-        fold = self.queries.query(AgentFold).filter(folded_agent_id=agent_id).first()
+        folds = self.queries.query(AgentFold).filter(folded_agent_id=agent_id)
+        fold = self.kept.read(folds, folds.first, name="agents.folded_agent")
         return agent_id if fold is None else fold.survivor_id
 
     def agent_ids(self, agent_ids: set[int]) -> dict[int, int]:

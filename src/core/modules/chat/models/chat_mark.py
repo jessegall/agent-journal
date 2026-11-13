@@ -1,5 +1,5 @@
 from engine.model.prunable import Prunable
-from engine.query.conditions.among import Among
+from engine.query.conditions.equal import Equal
 from dataclasses import dataclass
 
 from engine.actor.actor import Actor
@@ -11,7 +11,6 @@ from engine.time.timestamp import Timestamp
 from core.modules.chat.models.enums.chat_mark_state import ChatMarkState
 from core.modules.chat.models.lifecycles.chat_mark_lifecycle import ChatMarkLifecycle
 
-PRUNABLE_MARK_STATES = (ChatMarkState.SHOWN, ChatMarkState.ENDED)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -50,4 +49,4 @@ class ChatMark(Prunable, EnvironmentScoped, SessionBound, Model):
 
     @classmethod
     def prunable(cls, query, table):
-        return super().prunable(query, table).matching(Among("state", PRUNABLE_MARK_STATES))
+        return super().prunable(query, table).matching(Equal("state", ChatMarkState.ENDED.value))

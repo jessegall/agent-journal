@@ -99,7 +99,7 @@ def test_a_stuck_worker_tells_its_main_agent_at_once_and_shows_a_mark_in_the_mai
     story.expect_text(f"agent-line list --agent {story.agent.id}", "merger-line:1", "workers.help-request")
     help_request = story.container.get(Queries).query(MergerLine).first()
     story.expect_rows(help_request.worker_id == worker.id, "is stuck on task:1" in help_request.text, help_request.outcome is AskOutcome.FORWARDED, detail=str(help_request))
-    story.expect_text("chat-mark list --environment 1", f"Worker {worker.id} is stuck: the build tool is missing")
+    story.expect_text("chat-mark list --environment 1", f"Worker {agent_number(story, worker.id)} is stuck: the build tool is missing")
     story.expect_text(f"chat-mark show {stop_mark(story, 'help request')}", "Tasks left: task 1", "Task 1: ", "Last words: The build tool is gone from the path", f"target_id: {worker.id}", "outcome: warned")
     story.expect_absent(f"chat-mark show {stop_mark(story, 'help request')}", "agent_id:")
 
@@ -115,7 +115,7 @@ def test_a_worker_that_stops_with_tasks_left_shows_a_mark_and_its_main_agent_hea
     story.tick(MAIN_SESSION)
     story.run_listeners()
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} stopped with task:1 left and is started again")
-    story.expect_text("chat-mark list --environment 1", f"Worker {worker.id} stopped with 1 tasks left")
+    story.expect_text("chat-mark list --environment 1", f"Worker {agent_number(story, worker.id)} stopped with 1 tasks left")
     story.expect_text(f"chat-mark show {stop_mark(story, 'ended early')}", "Tasks left: task 1", "Last words: I ran out of ideas")
 
 

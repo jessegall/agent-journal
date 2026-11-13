@@ -1,3 +1,4 @@
+from core.modules.agents.support.fold_record import FoldRecord
 from contextlib import contextmanager
 from types import SimpleNamespace
 
@@ -6,6 +7,8 @@ import pytest
 from core.modules.agents.bindings.agent_row_numbers import AgentRowNumbers
 from core.modules.agents.models.agent_fold import AgentFold
 from engine.errors.refusal import Refusal
+
+KEPT = SimpleNamespace(read=lambda query, loader, name: loader())
 
 AGENTS = [SimpleNamespace(id=10, environment_id=1, number=1), SimpleNamespace(id=11, environment_id=1, number=2),
           SimpleNamespace(id=20, environment_id=2, number=2), SimpleNamespace(id=21, environment_id=2, number=3),
@@ -62,7 +65,7 @@ class FakeAgentQuery:
 def numbers() -> AgentRowNumbers:
     scopes = FakeScopes()
     environments = SimpleNamespace(find=lambda environment_id: SimpleNamespace(name=ENVIRONMENT_NAMES[environment_id]))
-    return AgentRowNumbers(SimpleNamespace(query=lambda model: EmptyFoldQuery() if model is AgentFold else FakeAgentQuery(scopes, AGENTS)), scopes, environments)
+    return AgentRowNumbers(SimpleNamespace(query=lambda model: EmptyFoldQuery() if model is AgentFold else FakeAgentQuery(scopes, AGENTS)), scopes, environments, FoldRecord(SimpleNamespace(query=lambda model: EmptyFoldQuery()), KEPT))
 
 
 @pytest.mark.parametrize("agent", AGENTS)

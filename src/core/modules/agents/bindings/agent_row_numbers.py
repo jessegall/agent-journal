@@ -15,30 +15,30 @@ class AgentRowNumbers(RowNumbers):
     A line that runs in no environment has no numbering to read and is refused. The id or number of a main
     agent row folded into the environment's main agent finds that main agent."""
 
-    def __init__(self, queries: Queries, scopes: Scopes, environments: EnvironmentRows) -> None:
-        self.queries, self.scopes, self.environments = queries, scopes, environments
+    def __init__(self, queries: Queries, scopes: Scopes, environments: EnvironmentRows, folds: FoldRecord) -> None:
+        self.queries, self.scopes, self.environments, self.folds = queries, scopes, environments, folds
 
     def row_id(self, model_name: str, number: int, environment_id: int | None) -> int:
-        if environment_id is not None and (survivor_id := FoldRecord(self.queries).number_holder(environment_id, number)) is not None:
+        if environment_id is not None and (survivor_id := self.folds.number_holder(environment_id, number)) is not None:
             return survivor_id
         return self.environment_agent(model_name, environment_id, f"agent {number}", number=number).id
 
     def number(self, model_name: str, row_id: int) -> int:
         self.check_model(model_name)
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
-            return self.queries.query(Agent).find(FoldRecord(self.queries).agent_id(row_id)).number
+            return self.queries.query(Agent).find(self.folds.agent_id(row_id)).number
 
     def numbers(self, model_name: str, row_ids: set[int]) -> dict[int, int]:
         self.check_model(model_name)
         if not row_ids:
             return {}
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
-            agents_by_id = FoldRecord(self.queries).agent_ids(row_ids)
+            agents_by_id = self.folds.agent_ids(row_ids)
             numbers = {agent.id: agent.number for agent in self.queries.query(Agent).find_many(list(set(agents_by_id.values())))}
         return {row_id: numbers[agent_id] for row_id, agent_id in agents_by_id.items() if agent_id in numbers}
 
     def environment_number(self, model_name: str, row_id: int, environment_id: int | None) -> int:
-        return self.environment_agent(model_name, environment_id, f"agent with row {row_id}", id=FoldRecord(self.queries).agent_id(row_id)).number
+        return self.environment_agent(model_name, environment_id, f"agent with row {row_id}", id=self.folds.agent_id(row_id)).number
 
     def environment_agent(self, model_name: str, environment_id: int | None, label: str, **column: int) -> Agent:
         self.check_model(model_name)

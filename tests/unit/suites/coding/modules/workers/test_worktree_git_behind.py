@@ -104,7 +104,7 @@ class CountingGit(WorktreeGit):
     """Keeps the git command of every call, so a look can be held to its count."""
 
     def __init__(self) -> None:
-        super().__init__(None, plain_executor())
+        super().__init__(None, plain_executor(), declared_merge_builds())
         self.commands: list[str] = []
 
     def git(self, folder, limit_seconds, *arguments):

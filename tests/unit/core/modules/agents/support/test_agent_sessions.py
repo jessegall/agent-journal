@@ -60,7 +60,7 @@ class FakeScopes:
 class UnkeptRows:
     """Reads every row anew."""
 
-    def read_newest(self, table: str, loader, condition: str, parameters: list, *, name: str):
+    def read_newest(self, source, loader, *, name: str):
         return loader()
 
 
