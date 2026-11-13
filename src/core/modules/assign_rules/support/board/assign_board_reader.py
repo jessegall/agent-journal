@@ -88,13 +88,9 @@ class AssignBoardReader:
         return BoardRule(rule.id, rule.position, rule.enabled, rule.target, self.target_key(rule), rule.target_name, rule.queue_limit, conditions, warning, activity)
 
     def route_warning(self, rule: AssignRule, lines: tuple[ConditionLine, ...], agent_rows: dict[int, Agent]) -> str:
-        match rule.target:
-            case RuleTarget.MODEL:
-                return self.warnings.warning(rule.program, lines)
-            case RuleTarget.AGENT if rule.target_agent_id in agent_rows:
-                return self.warnings.warning(agent_rows[rule.target_agent_id].program, lines)
-            case _:
-                return ""
+        programs = {RuleTarget.MODEL: rule.program, RuleTarget.AGENT: agent_rows[rule.target_agent_id].program if rule.target_agent_id in agent_rows else None}
+        program = programs.get(rule.target)
+        return "" if program is None else self.warnings.warning(program, lines)
 
     @staticmethod
     def target_key(rule: AssignRule) -> str:
