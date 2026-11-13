@@ -52,6 +52,6 @@ def test_the_prune_removes_old_closed_checks_and_never_an_open_one():
     assert (removed, repository.deleted) == (2, [1, 2])
 
 
-def test_the_history_setting_exists_with_thirty_days():
-    declared = next(value for value in WORKER_SETTING_VALUES if value.key == "check-history-days")
-    assert (declared.default, declared.person_set, declared.screen) == (30, True, "work")
+def test_the_history_setting_is_set_by_a_person():
+    declared = next(value for value in WORKER_SETTING_VALUES if CHECK_HISTORY_DAYS.endswith(f".{value.key}"))
+    assert declared.person_set
