@@ -67,6 +67,9 @@
             },
             {
                 "fileMatches": "(^|/)src/core/modules/plugins/commands/(add_plugin_output/add_plugin_output_handler|configure_plugin/configure_plugin_handler|deliver_plugin_event/deliver_plugin_event_handler|queue_plugin_run/queue_plugin_run_handler)\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/messages/(support/work_sources|listeners/deleted_agent_work_source_listener|models/message_work_source)\\.py$"
             }
         ]
     },

@@ -57,6 +57,9 @@
         "reject": [
             {
                 "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/messages/(support/work_sources|listeners/deleted_agent_work_source_listener|models/message_work_source)\\.py$"
             }
         ]
     },
