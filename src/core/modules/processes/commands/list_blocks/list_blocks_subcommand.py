@@ -31,7 +31,7 @@ class ListBlocksSubcommand(ReadSubcommand[tuple[str, ...]]):
     def read(self, arguments: Namespace, caller: Caller) -> tuple[str, ...]:
         agent_id = self.numbers.row_id(AGENT_MODEL_NAME, arguments.agent, caller.environment_id) if arguments.agent is not None else caller.actor.id
         blocked = self.held_runs.found(agent_id, self.clock.timestamp())
-        lines = [f"hold on output {blocked.process.id}: {ExitTexts.sentences(PressureLevel.HOLD.exits)}"] if blocked is not None else []
+        lines = [f"hold on output {blocked.process.id}: {ExitTexts.sentences(PressureLevel.FREEZE.exits)}"] if blocked is not None else []
         blocks = self.queries.query(AgentBlock).filter(session_agent_id=agent_id, closed_at=None).get()
         requests = [request_id for request_id in (ReaderBlockKeys.request_id(block.nudge_key) for block in blocks) if request_id is not None]
         lines += [f"block of reader request {request_id}: {ExitTexts.sentences(PressureLevel.BLOCK.exits)}" for request_id in requests]

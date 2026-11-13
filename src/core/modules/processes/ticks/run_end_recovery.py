@@ -47,7 +47,7 @@ class RunEndRecovery:
         last_sign = folder.heartbeat(process.id) or process.created_at
         has_pid = folder.pid(process.id) is not None
         with container.get(Scopes).read_scope((), None, process.environment_id):
-            limit = container.get(ProcessSettings).seconds(ProcessSetting.LOST_RUNNER_SECONDS if has_pid else ProcessSetting.ORPHAN_SECONDS)
+            limit = container.get(ProcessSettings).seconds(ProcessSetting.MISSING_RUNNER_SECONDS if has_pid else ProcessSetting.ORPHAN_SECONDS)
         if last_sign is None or not limit.has_elapsed(last_sign, container.get(Clock).timestamp()):
             return []
         return [OrphanProcess(process.id)]

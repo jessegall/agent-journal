@@ -27,7 +27,7 @@ class ReadingDecider:
 
     @staticmethod
     def unreadable(case: ReadingCase) -> ReadingDecision:
-        action = ReaderAction.NOTHING if case.has_unreadable_mark else ReaderAction.DECLARE_UNREADABLE
+        action = ReaderAction.IGNORE if case.has_unreadable_mark else ReaderAction.DECLARE_UNREADABLE
         return ReadingDecision.pressing(ReaderState.UNREADABLE, action, PressureLevel.SUGGEST, ReasonCode.UNREADABLE, case.available_exits(PressureLevel.SUGGEST))
 
     @staticmethod
@@ -53,7 +53,7 @@ class ReadingDecider:
         if case.reader_required and level in ENFORCED_LEVELS:
             return ReaderAction.REQUIRE
         if case.phase is not ReadingPhase.END:
-            return ReaderAction.NOTHING
+            return ReaderAction.IGNORE
         return ReaderAction.DRAFT_READY if case.draft_fits else ReaderAction.SUGGEST
 
     @staticmethod

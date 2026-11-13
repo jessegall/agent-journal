@@ -40,7 +40,7 @@ def with_reader(case: ReadingCase, judgement: ReaderJudgement) -> ReadingCase:
     return replace(case, reader_layer=ReaderLayer.PROJECT, reader_judgement=judgement)
 
 
-NOTHING_NEEDED = (ReaderState.UNNEEDED, ReaderAction.NOTHING, PressureLevel.SUGGEST, ())
+NOTHING_NEEDED = (ReaderState.UNNEEDED, ReaderAction.IGNORE, PressureLevel.SUGGEST, ())
 
 TABLE = {
     "read-only helper search": (HELPER_SEARCH, NOTHING_NEEDED),
@@ -49,11 +49,11 @@ TABLE = {
     "rejected command": (ended(MAIN_BUILD, b"usage: build [options]\nunknown option --fast\n", exit_code=2), NOTHING_NEEDED),
     "plugin run": (replace(MAIN_BUILD, is_plugin_run=True), NOTHING_NEEDED),
     "short successful run": (ended(MAIN_BUILD, age_seconds=3), NOTHING_NEEDED),
-    "suitable reader": (with_reader(ended(MAIN_BUILD), ReaderJudgement()), (ReaderState.SUITABLE, ReaderAction.NOTHING, PressureLevel.SUGGEST, ())),
-    "marked unreadable": (replace(MAIN_BUILD, has_unreadable_mark=True), (ReaderState.UNREADABLE, ReaderAction.NOTHING, PressureLevel.SUGGEST, SUGGEST)),
+    "suitable reader": (with_reader(ended(MAIN_BUILD), ReaderJudgement()), (ReaderState.SUITABLE, ReaderAction.IGNORE, PressureLevel.SUGGEST, ())),
+    "marked unreadable": (replace(MAIN_BUILD, has_unreadable_mark=True), (ReaderState.UNREADABLE, ReaderAction.IGNORE, PressureLevel.SUGGEST, SUGGEST)),
     "found unreadable": (ended(MAIN_BUILD, b"", exit_code=1), (ReaderState.UNREADABLE, ReaderAction.DECLARE_UNREADABLE, PressureLevel.SUGGEST, SUGGEST)),
-    "missing at start": (MAIN_BUILD, (ReaderState.MISSING, ReaderAction.NOTHING, PressureLevel.SUGGEST, SUGGEST)),
-    "missing while running": (replace(MAIN_BUILD, phase=ReadingPhase.RUNNING), (ReaderState.MISSING, ReaderAction.NOTHING, PressureLevel.SUGGEST, SUGGEST)),
+    "missing at start": (MAIN_BUILD, (ReaderState.MISSING, ReaderAction.IGNORE, PressureLevel.SUGGEST, SUGGEST)),
+    "missing while running": (replace(MAIN_BUILD, phase=ReadingPhase.RUNNING), (ReaderState.MISSING, ReaderAction.IGNORE, PressureLevel.SUGGEST, SUGGEST)),
     "missing at end": (ended(MAIN_BUILD), (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
     "poor at end": (with_reader(ended(MAIN_BUILD), ReaderJudgement(missing=tuple(["--summary"]))), (ReaderState.POOR, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
     "draftable at end": (replace(ended(MAIN_BUILD), draft_fits=True), (ReaderState.DRAFTABLE, ReaderAction.DRAFT_READY, PressureLevel.SUGGEST, SUGGEST)),
@@ -64,7 +64,7 @@ TABLE = {
     "main after 3 runs": (replace(ended(MAIN_BUILD), runs_without_change=3), (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.PREVENT, PREVENT)),
     "worker after 2 runs": (replace(WORKER_BUILD, runs_without_change=2), (ReaderState.MISSING, ReaderAction.REQUIRE, PressureLevel.PREVENT, PREVENT)),
     "skipped after 3 runs": (replace(ended(MAIN_BUILD), runs_without_change=3, skipped=True), (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
-    "redirected line": (replace(MAIN_BUILD, output_hidden=True), (ReaderState.MISSING, ReaderAction.NOTHING, PressureLevel.PREVENT, PREVENT)),
+    "redirected line": (replace(MAIN_BUILD, output_hidden=True), (ReaderState.MISSING, ReaderAction.IGNORE, PressureLevel.PREVENT, PREVENT)),
     "suitable reader without the count a worker needs": (replace(with_reader(ended(WORKER_BUILD), ReaderJudgement()), count_missing=True),
                                                          (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
     "unknown command": (replace(ended(MAIN_BUILD), category=CommandCategory.UNKNOWN, classification_recognized=False),

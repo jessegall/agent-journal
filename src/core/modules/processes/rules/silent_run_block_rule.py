@@ -30,4 +30,4 @@ class SilentRunBlockRule(DriverRule):
         if silent_run is None:
             return RuleAnswer.allowed()
         return RuleAnswer.refused(SILENT_RUN_BLOCKED.nudge(output=silent_run.process.id, seconds=silent_run.seconds, processor=silent_run.processor,
-                                                    hint=ExitTexts.sentences(PressureLevel.HOLD.exits)))
+                                                    hint=ExitTexts.sentences(PressureLevel.FREEZE.exits)))

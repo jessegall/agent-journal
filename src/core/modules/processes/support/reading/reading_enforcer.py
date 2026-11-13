@@ -10,7 +10,7 @@ from core.modules.processes.queries.reading_decision_query import ReadingDecisio
 from core.modules.processes.support.decisions.command_run_counts import CommandRunCounts
 from core.modules.processes.support.decisions.reading_decider import PREVENT_AFTER_RUNS
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.processes.support.process_nudges import REDIRECTED_RUN, READING_PREVENTED, SILENT_START_FIXED, SILENT_START_READY, SILENT_START_REFUSED, SILENT_START_TAUGHT
+from core.modules.processes.support.process_nudges import REDIRECTED_RUN, READ_REFUSAL, SILENT_START_FIXED, SILENT_START_READY, SILENT_START_REFUSED, SILENT_START_TAUGHT
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.unreadable.unreadable_mark_registry import UnreadableMarkRegistry
@@ -93,7 +93,7 @@ class ReadingEnforcer:
     def prevented(self, name: str) -> RuleAnswer:
         last = self.decisions.command_key_decisions(name).filter(phase=ReadingPhase.END).descending("decided_at", "id").first()
         output = last.process_id if last is not None else 0
-        return RuleAnswer.refused(READING_PREVENTED.nudge(output=output, name=name))
+        return RuleAnswer.refused(READ_REFUSAL.nudge(output=output, name=name))
 
     def reader_changed_after(self, run: SilentRun) -> bool:
         selected = ReaderSelection.choose(self.readers.all(), [run.part], self.readers.layers())

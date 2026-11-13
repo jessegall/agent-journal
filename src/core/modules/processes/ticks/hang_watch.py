@@ -42,7 +42,7 @@ class HangWatch:
     def limits(container: Container, environment_id: int) -> HangLimits:
         with container.get(Scopes).read_scope((), None, environment_id):
             settings = container.get(ProcessSettings)
-            return HangLimits(settings.integer(ProcessSetting.HANG_SECONDS), settings.integer(ProcessSetting.LOOK_SECONDS))
+            return HangLimits(settings.integer(ProcessSetting.HANG_SECONDS), settings.integer(ProcessSetting.CHECK_REQUEST_SECONDS))
 
     def acted(self, container: Container, process: Process, listing: str, limits: HangLimits) -> bool:
         folder, current = container.get(OutputFolder), container.get(Clock).timestamp()

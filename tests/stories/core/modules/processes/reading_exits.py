@@ -38,7 +38,7 @@ EXIT_LINES = {
     "say its type": 'journal command-type make "zork-build" build',
 }
 REFUSALS: dict[str, tuple[NudgeDeclaration, dict[str, object], str]] = {
-    "silent run hold": (SILENT_RUN_BLOCKED, {"output": 1, "seconds": 301, "processor": "0.1 seconds", "hint": ExitTexts.sentences(PressureLevel.HOLD.exits)}, "read it"),
+    "silent run hold": (SILENT_RUN_BLOCKED, {"output": 1, "seconds": 301, "processor": "0.1 seconds", "hint": ExitTexts.sentences(PressureLevel.FREEZE.exits)}, "read it"),
     "reader block": (READER_BLOCK, {"output": 1, "request": 1}, "journal reader draft 1 --save"),
     "silent start refusal": (SILENT_START_REFUSED, {"name": "zork-build bundle"}, "skip once and say why"),
     "monitor block": (REQUIRED_MONITOR, {"output": 1}, "set a Monitor on its wait"),

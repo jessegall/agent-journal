@@ -23,13 +23,13 @@ class ProcessSetting(Enum):
                                      "Seconds a queued command waits before continuing in the background.", SettingType.NUMBER, default=5)
     ORPHAN_SECONDS = SettingValue("orphan-seconds", "Run inactivity limit (seconds)", "Seconds without activity before a run is marked as lost.",
                                   SettingType.NUMBER, default=90)
-    LOST_RUNNER_SECONDS = SettingValue("lost-runner-seconds", "Seconds before a run is lost", "Seconds after the last sign of a run whose runner process is gone before the run is marked as lost.",
+    MISSING_RUNNER_SECONDS = SettingValue("lost-runner-seconds", "Seconds before a run is lost", "Seconds after the last sign of a run whose runner process is gone before the run is marked as lost.",
                                        SettingType.NUMBER, default=10)
     DOCK_AFTER_SECONDS = SettingValue("dock-after-seconds", "Seconds before a run is docked", "Seconds a command runs, time in the queue left out, before it shows in the dock.",
                                       SettingType.NUMBER, default=5)
     HANG_SECONDS = SettingValue("hang-seconds", "Seconds before an idle run is stopped", "Seconds a run prints nothing and uses no processor time before it is stopped and its agent told.",
                                 SettingType.NUMBER, default=300)
-    LOOK_SECONDS = SettingValue("look-seconds", "Seconds before an agent is asked to look", "Seconds a test run prints nothing while it uses processor time before its agent is asked to read its output.",
+    CHECK_REQUEST_SECONDS = SettingValue("look-seconds", "Seconds before an agent is asked to look", "Seconds a test run prints nothing while it uses processor time before its agent is asked to read its output.",
                                 SettingType.NUMBER, default=900)
     FIRST_OUTPUT_SECONDS = SettingValue("first-output-seconds", "Seconds before a silent run is reported", "Seconds a run may print nothing before its agent is told.",
                                         SettingType.NUMBER, default=30, rule=NumberRule(1))

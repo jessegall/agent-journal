@@ -17,7 +17,7 @@ def pressing(level: PressureLevel, exits: tuple[ReadingExit, ...]) -> ReadingDec
 
 
 def test_every_level_above_a_suggestion_is_one_of_three():
-    assert PRESSING_LEVELS == [PressureLevel.PREVENT, PressureLevel.BLOCK, PressureLevel.HOLD]
+    assert PRESSING_LEVELS == [PressureLevel.PREVENT, PressureLevel.BLOCK, PressureLevel.FREEZE]
 
 
 @pytest.mark.parametrize("level", PRESSING_LEVELS)
@@ -45,4 +45,4 @@ def test_only_a_person_the_main_agent_and_the_expiry_are_other_parties(exit_opti
 def test_nothing_builds_a_decision_that_asks_nothing():
     decision = ReadingDecision.empty(ReaderState.SUITABLE)
     assert (decision.state, decision.action, decision.level, decision.reason, decision.exits) == (
-        ReaderState.SUITABLE, ReaderAction.NOTHING, PressureLevel.SUGGEST, ReasonCode.NONE, ())
+        ReaderState.SUITABLE, ReaderAction.IGNORE, PressureLevel.SUGGEST, ReasonCode.NONE, ())

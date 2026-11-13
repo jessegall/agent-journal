@@ -36,8 +36,8 @@
                                                             "READER_REQUEST_REFUSAL",
                                                             "SILENT_START_REFUSED",
                                                             "REDIRECTED_RUN",
-                                                            "HOLD_LIFTED",
-                                                            "READING_PREVENTED"
+                                                            "FREEZE_LIFTED",
+                                                            "READ_REFUSAL"
                                                         ]
                                                     }
                                                 ]

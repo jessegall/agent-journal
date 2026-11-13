@@ -11,7 +11,7 @@ from core.modules.processes.commands.release_block.release_block import ReleaseB
 from core.modules.processes.support.cadence.run_silences import CHECKED_MARK
 from core.modules.processes.support.blocked_runs import BlockedRuns
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.processes.support.process_nudges import BLOCK_LIFTED, HOLD_LIFTED
+from core.modules.processes.support.process_nudges import BLOCK_LIFTED, FREEZE_LIFTED
 from core.modules.processes.support.reader_block_keys import ReaderBlockKeys
 
 SOURCE = "processes.hold-lifted"
@@ -33,7 +33,7 @@ class ReleaseBlockHandler(Handler[ReleaseBlock, int]):
         blocked = self.held_runs.found(command.agent_id, context.timestamp)
         if blocked is not None:
             self.folder.write_read_mark(blocked.process.id, CHECKED_MARK, context.timestamp.text)
-            self.nudger.send(command.agent_id, HOLD_LIFTED, SOURCE, context, output=blocked.process.id)
+            self.nudger.send(command.agent_id, FREEZE_LIFTED, SOURCE, context, output=blocked.process.id)
             lifted += 1
         blocks = self.queries.query(AgentBlock).filter(session_agent_id=command.agent_id, closed_at=None).get()
         for block in tuple(blocks):

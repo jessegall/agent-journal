@@ -25,7 +25,7 @@ class ReadingDecision:
 
     @classmethod
     def empty(cls, state: ReaderState) -> "ReadingDecision":
-        return cls(state, ReaderAction.NOTHING, PressureLevel.SUGGEST, ReasonCode.NONE, ())
+        return cls(state, ReaderAction.IGNORE, PressureLevel.SUGGEST, ReasonCode.NONE, ())
 
     @classmethod
     def pressing(cls, state: ReaderState, action: ReaderAction, level: PressureLevel, reason: ReasonCode, exits: tuple[ReadingExit, ...]) -> "ReadingDecision":

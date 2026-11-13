@@ -65,7 +65,7 @@ def test_the_unreadable_reason_comes_from_a_mark_first_then_from_the_output():
     (PressureLevel.PREVENT, (ReadingExit.COMPLY, ReadingExit.DECLARE_UNREADABLE, ReadingExit.SKIP_WITH_REASON)),
     (PressureLevel.BLOCK, (ReadingExit.COMPLY, ReadingExit.DECLARE_UNREADABLE, ReadingExit.SKIP_WITH_REASON, ReadingExit.EXPIRES,
                            ReadingExit.PERSON_RELEASES, ReadingExit.MAIN_AGENT_HELPS)),
-    (PressureLevel.HOLD, (ReadingExit.READ_OUTPUT, ReadingExit.STOP_RUN, ReadingExit.PERSON_RELEASES)),
+    (PressureLevel.FREEZE, (ReadingExit.READ_OUTPUT, ReadingExit.STOP_RUN, ReadingExit.PERSON_RELEASES)),
 ])
 def test_each_level_has_its_exits(level, exits):
     assert RUNNING_TESTS.available_exits(level) == exits

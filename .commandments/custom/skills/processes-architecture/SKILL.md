@@ -31,7 +31,7 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
   reader (`ReaderJudge.misses`, `fields_missing`, `ReaderDemands`, `ReaderSelection.choose`, `ReaderLayers.ordered`).
   Ask the engine: `ReadingDecider` decides from the facts `ReadingFacts` gathers; a rule only reads the stored decision.
 - **`pressure-outside-the-enforcer`** - code other than `ReadingEnforcer` blocks or refuses an agent over a reader: a
-  `BlockUntil` in the processes module, or a refusal with a reading declaration (`READER_BLOCK`, `READING_PREVENTED`,
+  `BlockUntil` in the processes module, or a refusal with a reading declaration (`READER_BLOCK`, `READ_REFUSAL`,
   `SILENT_START_REFUSED`, `REDIRECTED_RUN`...). The enforcer is the only code that presses and states the exits; the
   silent-run hold keeps its own rule and the alias rules keep their own refusals.
 - **`program-started-outside-the-door`** - a file under src starts a program itself (subprocess, os.system,
