@@ -1,5 +1,6 @@
 from engine.testing.stories.story_fixture import StoryFixture
 
+from dataclasses import replace
 from datetime import timedelta
 
 import pytest
@@ -181,3 +182,12 @@ def expect_state_scoped(line, story, expected) -> None:
 def expect_state_scoped_2(line, story, expected) -> None:
     actual = applied_setting(story, line, story.helper.id).state
     assert actual is expected, actual
+
+
+def test_an_event_whose_cause_was_pruned_opens_a_scope_with_no_agent(new_story):
+    story = new_story(fixture=BuilderHelper)
+    story.run(TASK_LINE, actor=story.helper)
+    log = story.container.get(EventLog)
+    caused_by_pruned = replace(log.event(log.newest_id()), id=log.newest_id() + 1, actor_id=None, cause_id=log.newest_id() + 1000)
+    scopes = story.container.get(Scopes)
+    assert scopes.causing_agent(caused_by_pruned) is None
