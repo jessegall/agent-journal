@@ -126,7 +126,10 @@ class DocumentsModule(Module):
     library_shares = [DocLibraryShare]
     moves = [DocumentsMove, MessageLinksMove]
     seeders = [DocumentsSeeder]
-    windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, skeleton=DOCUMENTS_DOCUMENTS_SKELETON, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.DOCUMENT,
+    windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, skeleton=DOCUMENTS_DOCUMENTS_SKELETON, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.PANE, group="project", icon=WindowIcon.DOCUMENT,
+                                 reads=["document library"], runs=["doc make", "report make"], events=["doc.*", "report.*"],
+                                 keys=[WindowKey("library", "document library", arguments=["type", "state", "before"])]),
+               WindowDeclaration("documents.page", "Document reader", "document-page.js", WindowLoading.COMPONENT, skeleton=DOCUMENTS_DOCUMENTS_SKELETON, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.DOCUMENT,
                                  reads=["document library", "doc show", "report show", "doc inspect", "report inspect", "doc comments", "report comments", "doc revisions", "doc revision", "question list", "link list"],
                                  runs=["doc make", "report make", "doc comment", "report comment", "doc close", "doc edit", "report edit"], events=["doc.*", "report.*", "question.*"], shared_reads=["doc show id", "report show id"],
                                  keys=[WindowKey("library", "document library", arguments=["type", "state", "before"])]),

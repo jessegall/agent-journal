@@ -13,7 +13,7 @@ const DOCS = [
 ];
 const BODY = {id: 1, title: "Cart rules", abstract: "How the cart counts money", body: "## Totals\n- in cents"};
 
-function mounted() {
+function mounted(reader = false) {
     const reads = [];
     const read = async (words) => {
         const line = Array.isArray(words) ? words.join(" ") : words;
@@ -24,7 +24,7 @@ function mounted() {
     };
     const context = {...documentWindowContext({}), read, run: async () => ({ok: true}), follow: () => {}, face: "person"};
     const element = document.createElement("div");
-    createApp({setup: () => () => h(DocumentLibrary), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
+    createApp({setup: () => () => h(DocumentLibrary, {reader}), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
     return {element, reads};
 }
 
@@ -43,8 +43,8 @@ test("the library is read once, a page of one type", async () => {
     expect(reads).toEqual(["document library --type doc --state open"]);
 });
 
-test("choosing a document reads it beside the list, by the mouse or by the arrow keys", async () => {
-    const {element, reads} = mounted();
+test("on the page a chosen document is read beside the list, by the mouse or by the arrow keys", async () => {
+    const {element, reads} = mounted(true);
     await settled();
     const reader = element.querySelector("[data-library-reader]");
     expect(reader.textContent).toContain("Choose a document to read it here");
@@ -53,12 +53,23 @@ test("choosing a document reads it beside the list, by the mouse or by the arrow
     await settled();
     expect(reads).toContain("doc inspect 1");
     expect(reader.textContent).not.toContain("Choose a document");
-    expect(window.location.href).not.toContain("docs:1");
     const list = element.querySelector("[data-library-list]");
     list.dispatchEvent(new KeyboardEvent("keydown", {key: "ArrowDown"}));
     await settled();
     await settled();
     expect(reads).toContain("doc inspect 2");
+});
+
+test("in the window the rows only link to the documents page on that document and nothing is read beside them", async () => {
+    const {element, reads} = mounted();
+    await settled();
+    expect(element.querySelector("[data-library-reader]")).toBeNull();
+    const row = element.querySelector('[data-row="2"]');
+    expect(row.tagName).toBe("A");
+    const link = new URLSearchParams(row.getAttribute("href"));
+    expect(link.get("page")).toBe("documents.page");
+    expect(link.get("doc")).toBe("doc:2");
+    expect(reads.some((line) => line.startsWith("doc inspect"))).toBe(false);
 });
 
 test("rows fall under the age heading of their last edit", () => {

@@ -93,7 +93,8 @@ class Assignments:
         return self.kept.read(agents, agents.first, name="assignments.assigned_agent")
 
     def actor_record(self, actor_id: int) -> ActorRecord | None:
-        return self.kept.read("actors", lambda: self.queries.query(ActorRecord).filter(id=actor_id).first(), "id = ?", [actor_id], name="assignments.actor_record")
+        actors = self.queries.query(ActorRecord).filter(id=actor_id)
+        return self.kept.read(actors, actors.first, name="assignments.actor_record")
 
     def assign(self, row: Assignable, actor_id: int, context: Context, *, cascade: bool = True, override: bool = False) -> Cascade:
         self.require_working_actor(actor_id)
