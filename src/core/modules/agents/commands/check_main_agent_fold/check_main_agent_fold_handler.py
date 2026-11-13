@@ -5,7 +5,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.database.database import Database
 from engine.journal.journal_home import JournalHome
-from core.modules.agents.commands.main_agent_fold_check.main_agent_fold_check import MainAgentFoldCheck
+from core.modules.agents.commands.check_main_agent_fold.check_main_agent_fold import CheckMainAgentFold
 from core.modules.agents.support.fold_copy import FoldCopy
 from core.modules.agents.support.main_fold import MainFold
 from core.modules.agents.support.fold_counts import FoldCounts
@@ -35,17 +35,17 @@ FOLD_REPORT = """## Survivors
 The fold took {seconds:.1f} seconds on the copy; the live database was not touched."""
 
 
-class MainAgentFoldCheckHandler(Handler[MainAgentFoldCheck, str]):
+class CheckMainAgentFoldHandler(Handler[CheckMainAgentFold, str]):
     """Copies the live database with the backup API, folds the main agent rows on the copy only, and files the
     survivors, the folded rows, the counts before and after, the clash rules used and the time it took, as
     the command's answer."""
 
-    command = MainAgentFoldCheck
+    command = CheckMainAgentFold
 
     def __init__(self, home: JournalHome, database: Database) -> None:
         self.home, self.database = home, database
 
-    def handle(self, command: MainAgentFoldCheck, context: Context) -> str:
+    def handle(self, command: CheckMainAgentFold, context: Context) -> str:
         copy = Database.configured(sqlite3.connect(FoldCopy.check_copy(self.database, self.home, context.timestamp), autocommit=True))
         try:
             started = time.monotonic()

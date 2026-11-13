@@ -9,8 +9,8 @@ from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.queries.hook_call_query import IDLE_LIMIT_SECONDS
 from suites.coding.modules.workers.support.available_work import AvailableWork
-from suites.coding.modules.workers.commands.prompt_idle_main_agent.prompt_idle_main_agent_handler import WAKE_SOURCE
-from suites.coding.modules.workers.ticks.idle_main_agent_prompt import IdleMainAgentPrompt
+from suites.coding.modules.workers.commands.remind_inactive_main_agent.remind_inactive_main_agent_handler import WAKE_SOURCE
+from suites.coding.modules.workers.ticks.inactive_main_agent_prompt import InactiveMainAgentPrompt
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from tests.stories.suites.coding.support.main_controls_fixture import scope_line
 from tests.stories.support.story_checks import expect_value
@@ -72,7 +72,7 @@ def test_s02_s10_keep_going_holds_a_stop_while_a_task_can_go_to_a_worker_and_han
 
 
 def waking_lines(story) -> list[str]:
-    IdleMainAgentPrompt()(story.container)
+    InactiveMainAgentPrompt()(story.container)
     return [line.text for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, source=WAKE_SOURCE).every_row(TEST_ROWS_REASON)]
 
 

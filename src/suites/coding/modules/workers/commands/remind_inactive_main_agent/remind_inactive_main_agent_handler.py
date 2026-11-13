@@ -7,7 +7,7 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from suites.coding.modules.workers.commands.prompt_idle_main_agent.prompt_idle_main_agent import PromptIdleMainAgent
+from suites.coding.modules.workers.commands.remind_inactive_main_agent.remind_inactive_main_agent import RemindInactiveMainAgent
 from suites.coding.modules.workers.support.available_work import AvailableWork
 from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
 from suites.coding.support.coding_nudges import FREE_WORKER_PLACE, TASK_ASSIGNMENT
@@ -15,18 +15,18 @@ from suites.coding.support.coding_nudges import FREE_WORKER_PLACE, TASK_ASSIGNME
 WAKE_SOURCE = "coding.keep-going"
 
 
-class PromptIdleMainAgentHandler(Handler[PromptIdleMainAgent, None]):
+class RemindInactiveMainAgentHandler(Handler[RemindInactiveMainAgent, None]):
     """Wakes the idle main agent while keep going is on and work is left for it: the task it is handed, or the
     open tasks a free worker place can take. It is told once for each such state, so an agent that chose to
     leave the work is not woken again until the work changes."""
 
-    command = PromptIdleMainAgent
+    command = RemindInactiveMainAgent
     disabled_scopes = [ActorScope]
 
     def __init__(self, queries: Queries, options: CodingMainOptions, work: AvailableWork, hook_calls: HookCallQuery, nudger: Nudger) -> None:
         self.queries, self.options, self.work, self.hook_calls, self.nudger = queries, options, work, hook_calls, nudger
 
-    def handle(self, command: PromptIdleMainAgent, context: Context) -> None:
+    def handle(self, command: RemindInactiveMainAgent, context: Context) -> None:
         if not self.options.options().continues_work:
             return
         for agent in MainAgentFinder.rows(self.queries):

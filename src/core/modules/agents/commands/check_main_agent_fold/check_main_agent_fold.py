@@ -4,5 +4,5 @@ from engine.command.command import Command
 
 
 @dataclass(frozen=True)
-class MainAgentFoldCheck(Command[str]):
+class CheckMainAgentFold(Command[str]):
     """Folds the older main agent rows on a copy of the database and files what the fold would do as a report."""
