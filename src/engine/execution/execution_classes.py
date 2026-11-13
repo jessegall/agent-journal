@@ -25,6 +25,11 @@ class ExecutionClasses:
             return own
         return next(row.execution_class for row in BUILTIN_CLASSES if row.holds(subject))
 
+    # the class a stored run names, the person's before the built-in one; none for a name nobody declares any more
+    def named(self, name: str) -> ExecutionClass | None:
+        every_class = (*self.person.classes(), *(row.execution_class for row in BUILTIN_CLASSES))
+        return next((execution_class for execution_class in every_class if execution_class.name == name), None)
+
     # a line of several parts waits in the longest lane of its parts and takes the highest cost of them, not their sum
     def for_line(self, parts: Sequence[ExecutionSubject]) -> ExecutionClass:
         classes = [self.match(part) for part in parts]
