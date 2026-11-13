@@ -10,8 +10,8 @@ RAISE_STEP_SECONDS = {ExecutionPriority.BACKGROUND: 10.0, ExecutionPriority.NORM
 
 @dataclass
 class WaitingAsk:
-    """One thread's ask for the write turn: who asks, its place in line, when it asked and when its current wait for a
-    raise started."""
+    """One thread's ask for the write turn: who asks, its place in line, when it asked and when its current wait
+    for a raise started."""
 
     execution: CurrentExecution
     priority: ExecutionPriority
@@ -24,16 +24,16 @@ class WaitingAsk:
     def place(self) -> tuple[int, int]:
         return -self.priority, self.number
 
-    def raise_when_due(self, now: float) -> None:
+    def raise_priority(self, current_time: float) -> None:
         if self.priority.is_unlimited or self.priority >= ExecutionPriority.RESERVED:
             return
-        if now - self.step_started_at >= RAISE_STEP_SECONDS[self.priority]:
-            self.priority, self.step_started_at = self.priority.raised(), now
+        if current_time - self.step_started_at >= RAISE_STEP_SECONDS[self.priority]:
+            self.priority, self.step_started_at = self.priority.raised(), current_time
 
-    def seconds_to_raise(self, now: float) -> float:
+    def raise_delay(self, current_time: float) -> float:
         if self.priority.is_unlimited or self.priority >= ExecutionPriority.RESERVED:
             return float("inf")
-        return max(0.0, RAISE_STEP_SECONDS[self.priority] - (now - self.step_started_at))
+        return max(0.0, RAISE_STEP_SECONDS[self.priority] - (current_time - self.step_started_at))
 
     def described(self) -> str:
         return f"{self.execution.class_name or 'a write'} at {self.priority.name.lower()} priority: {self.execution.line or 'no line'}"

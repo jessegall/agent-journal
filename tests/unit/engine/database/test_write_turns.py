@@ -15,10 +15,10 @@ class RecordingWriteTurns(WriteTurns):
         super().__init__()
         self.steps: list[str] = []
 
-    def take(self) -> None:
+    def acquire(self) -> None:
         self.steps.append("take")
 
-    def give_back(self) -> None:
+    def release(self) -> None:
         self.steps.append("give back")
 
 

@@ -1,22 +1,30 @@
 import threading
-from datetime import timedelta
-
 import pytest
 
 from engine.enums.execution_priority import ExecutionPriority
 from engine.execution.current_execution import CurrentExecution
-from engine.testing.fakes.manual_clock import ManualClock
+from engine.time.clock import Clock
 from server.errors.write_turn_busy_error import WriteTurnBusyError
 from server.execution.write_turn_queue import WriteTurnQueue
 
 LIMIT_SECONDS = 30.0
 
 
-class Harness:
-    """A write turn queue on a hand-set clock, with a log it keeps, and threads that ask for the turn in order."""
+class SetClock(Clock):
+    """A clock that stands still until a test moves it on."""
 
     def __init__(self) -> None:
-        self.clock = ManualClock()
+        self.seconds = 0.0
+
+    def epoch_seconds(self) -> float:
+        return self.seconds
+
+
+class TurnThreads:
+    """A write turn queue on a set clock, with the log it writes, and threads that ask for the turn in order."""
+
+    def __init__(self) -> None:
+        self.clock = SetClock()
         self.logged: list[str] = []
         self.queue = WriteTurnQueue(self.clock, LIMIT_SECONDS, self.logged.append)
         self.order: list[str] = []
@@ -49,81 +57,81 @@ class Harness:
 
 
 @pytest.fixture
-def harness() -> Harness:
-    return Harness()
+def turn_threads() -> TurnThreads:
+    return TurnThreads()
 
 
-def held_while(harness: Harness, asks: list[tuple[str, ExecutionPriority]]) -> list[str]:
-    with harness.queue.write_turn():
+def turn_order(turn_threads: TurnThreads, asks: list[tuple[str, ExecutionPriority]]) -> list[str]:
+    with turn_threads.queue.write_turn():
         for name, priority in asks:
-            harness.ask(name, priority)
-    return harness.finish()
+            turn_threads.ask(name, priority)
+    return turn_threads.finish()
 
 
-def test_immediate_goes_next(harness):
-    assert held_while(harness, [("normal", ExecutionPriority.NORMAL), ("immediate", ExecutionPriority.IMMEDIATE)]) == ["immediate", "normal"]
+def test_immediate_goes_next(turn_threads):
+    assert turn_order(turn_threads, [("normal", ExecutionPriority.NORMAL), ("immediate", ExecutionPriority.IMMEDIATE)]) == ["immediate", "normal"]
 
 
-def test_higher_priority_before_lower(harness):
-    assert held_while(harness, [("background", ExecutionPriority.BACKGROUND), ("agent", ExecutionPriority.AGENT)]) == ["agent", "background"]
+def test_higher_priority_before_lower(turn_threads):
+    assert turn_order(turn_threads, [("background", ExecutionPriority.BACKGROUND), ("agent", ExecutionPriority.AGENT)]) == ["agent", "background"]
 
 
-def test_equal_priority_by_ask_order(harness):
-    assert held_while(harness, [("first", ExecutionPriority.NORMAL), ("second", ExecutionPriority.NORMAL)]) == ["first", "second"]
+def test_equal_priority_by_ask_order(turn_threads):
+    assert turn_order(turn_threads, [("first", ExecutionPriority.NORMAL), ("second", ExecutionPriority.NORMAL)]) == ["first", "second"]
 
 
-def test_waiting_ask_is_raised_after_its_step(harness):
-    with harness.queue.write_turn():
-        harness.ask("background", ExecutionPriority.BACKGROUND)
-        harness.clock.advance(timedelta(seconds=10))
-        harness.queue.wake_waiters()
-        harness.ask("normal", ExecutionPriority.NORMAL)
-    assert harness.finish() == ["background", "normal"]
+def test_waiting_ask_is_raised_after_its_step(turn_threads):
+    with turn_threads.queue.write_turn():
+        turn_threads.ask("background", ExecutionPriority.BACKGROUND)
+        turn_threads.clock.seconds += 10
+        turn_threads.queue.wake_waiters()
+        turn_threads.ask("normal", ExecutionPriority.NORMAL)
+    assert turn_threads.finish() == ["background", "normal"]
 
 
-def test_raising_never_reaches_immediate(harness):
-    with harness.queue.write_turn():
-        harness.ask("reserved", ExecutionPriority.RESERVED)
-        harness.clock.advance(timedelta(seconds=20))
-        harness.queue.wake_waiters()
-        assert harness.queue.waiting[0].priority is ExecutionPriority.RESERVED
-    harness.finish()
+def test_raising_never_reaches_immediate(turn_threads):
+    with turn_threads.queue.write_turn():
+        turn_threads.ask("reserved", ExecutionPriority.RESERVED)
+        turn_threads.clock.seconds += 20
+        turn_threads.queue.wake_waiters()
+        assert turn_threads.queue.waiting[0].priority is ExecutionPriority.RESERVED
+    turn_threads.finish()
 
 
-def test_turn_given_back_on_exception(harness):
-    with pytest.raises(KeyError), harness.queue.write_turn():
+def test_turn_given_back_on_exception(turn_threads):
+    with pytest.raises(KeyError), turn_threads.queue.write_turn():
         raise KeyError("failed write")
-    assert harness.queue.holder is None
+    assert turn_threads.queue.holder is None
 
 
-def test_wait_past_limit_names_the_holder(harness):
+def test_wait_past_limit_names_the_holder(turn_threads):
     failures: list[BaseException] = []
 
     def ask() -> None:
         try:
-            with CurrentExecution(ExecutionPriority.NORMAL, "late", "late").held(), harness.queue.write_turn():
+            with CurrentExecution(ExecutionPriority.NORMAL, "late", "late").held(), turn_threads.queue.write_turn():
                 pass
         except WriteTurnBusyError as error:
             failures.append(error)
 
-    with CurrentExecution(ExecutionPriority.AGENT, "hook", "task close 4").held(), harness.queue.write_turn():
+    with CurrentExecution(ExecutionPriority.AGENT, "hook", "task close 4").held(), turn_threads.queue.write_turn():
         waiter = threading.Thread(target=ask)
         waiter.start()
-        harness.threads.append(waiter)
-        harness.wait_until_waiting(1)
-        harness.clock.advance(timedelta(seconds=LIMIT_SECONDS))
-        harness.queue.wake_waiters()
+        turn_threads.threads.append(waiter)
+        turn_threads.wait_until_waiting(1)
+        turn_threads.clock.seconds += LIMIT_SECONDS
+        turn_threads.queue.wake_waiters()
         waiter.join()
     assert "hook at agent priority: task close 4" in str(failures[0])
 
 
-def test_slow_holder_is_logged_with_class_priority_line(harness):
-    with CurrentExecution(ExecutionPriority.BACKGROUND, "tick", "prune events").held(), harness.queue.write_turn():
-        harness.clock.advance(timedelta(seconds=2))
-    assert harness.logged == ["the database write turn was held 2.0 seconds by tick at background priority: prune events"]
+def test_slow_holder_is_logged_with_class_priority_line(turn_threads):
+    with CurrentExecution(ExecutionPriority.BACKGROUND, "tick", "prune events").held(), turn_threads.queue.write_turn():
+        turn_threads.clock.seconds += 2
+    assert turn_threads.logged == ["the database write turn was held 2.0 seconds by tick at background priority: prune events"]
 
 
-def test_nested_ask_in_same_thread_passes(harness):
-    with harness.queue.write_turn(), harness.queue.write_turn():
-        assert harness.queue.holder is not None
-    assert harness.queue.holder is None
+def test_nested_ask_in_same_thread_passes(turn_threads):
+    with turn_threads.queue.write_turn(), turn_threads.queue.write_turn():
+        assert turn_threads.queue.holder is not None
+    assert turn_threads.queue.holder is None
