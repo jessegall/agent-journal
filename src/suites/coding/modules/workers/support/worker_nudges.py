@@ -18,7 +18,7 @@ WORKER_UNSTARTED = NudgeDeclaration("workers.unstarted", NudgeType.STEERING, "wo
 PROOF_RUN_STUCK = NudgeDeclaration("workers.proof_run_stuck", NudgeType.STEERING, 'worker:{worker} proof {proof}: the test run went past {minutes} minutes and was ended as stuck, output {output}', turn_limited=False, wakes_agent=True)
 PROOF_WAITS = NudgeDeclaration("workers.proof_waits", NudgeType.STEERING, 'worker:{worker} waits on your check, proofs {proofs}', turn_limited=False, wakes_agent=True)
 MERGE_WAITS = NudgeDeclaration("workers.merge_waits", NudgeType.STEERING, "The merge of worker {worker} waits for environment {environment} to check out {branch} again", turn_limited=False,
-                              plural_text='the merges of workers {worker} wait for the checkout of environment {environment} to return to {branch}', id_field="worker")
+                              plural_text='The merges of workers {worker} wait for environment {environment} to check out {branch} again', id_field="worker")
 WORKER_TASK = NudgeDeclaration("workers.worker_holds_task", NudgeType.STEERING, 'worker:{worker} has task:{task}')
 
 WORKER_UNMERGED = NudgeDeclaration("workers.worker_unmerged", NudgeType.STEERING, "worker:{worker} committed {tasks}, not merged: {action}", interval=Interval(Seconds(300)), turn_limited=False, wakes_agent=True,

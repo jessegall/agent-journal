@@ -7,7 +7,7 @@ from tests.stories.support.story_checks import expect_value
 
 CHANGED = "Work through the notes in this new way."
 SECOND_CHANGE = "Work through the notes in yet another way."
-CHANGE_PROFILE = f'profile save journal-worker --description "Works on one task" --body "{CHANGED}"'
+CHANGE_PROFILE = f'profile save journal-worker-medior --description "Works on one task" --body "{CHANGED}"'
 OLD_TIME = 1_700_000_000
 
 
