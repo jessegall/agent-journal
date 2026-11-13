@@ -16,6 +16,9 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.server.support.alias_hook import AliasHook
 from tests.stories.server.support.server_client import server_story
 from tests.stories.support.story_checks import expect_value
+from core.modules.aliases.support.alias_nudges import SAVED_COMMAND_CHOICES
+from core.modules.aliases.support.alias_nudges import SAVED_COMMAND_DIRECT
+from core.modules.aliases.support.alias_nudges import SAVED_COMMAND_HELPER
 
 REGISTER = 'alias add build-npm "npm run build" --category build'
 
@@ -73,11 +76,11 @@ def test_a_skip_at_the_head_of_a_line_lets_it_run_as_written(unsaved_hook):
 
 
 def test_a_saved_build_refuses_the_command_written_out(saved_hook):
-    saved_hook.expect_denied("npm run build", "This is a saved command: run journal build-npm --tail 20")
+    saved_hook.expect_denied("npm run build", SAVED_COMMAND_DIRECT.nudge(name='build-npm').text)
 
 
 def test_a_build_written_another_way_is_told_the_saved_builds(saved_hook):
-    saved_hook.expect_denied("make all", 'Run this through a saved build alias, with --tail, --head or --cut')
+    saved_hook.expect_denied("make all", SAVED_COMMAND_CHOICES.nudge(category='build').text)
 
 
 def test_a_test_or_build_is_refused_beside_any_other_command(saved_hook):
@@ -90,13 +93,13 @@ def test_two_saved_builds_run_on_one_line(saved_hook):
 
 
 def test_a_skip_is_refused_when_a_command_of_that_kind_is_saved(saved_hook):
-    saved_hook.expect_denied('journal alias skip --reason "one run" && npm run build', "This is a saved command: run journal build-npm --tail 20")
+    saved_hook.expect_denied('journal alias skip --reason "one run" && npm run build', SAVED_COMMAND_DIRECT.nudge(name='build-npm').text)
     saved_hook.expect_denied('journal alias skip --reason "one run" && make all', "Run this through a saved build alias")
 
 
 def test_a_helper_is_told_to_ask_its_parent(new_story):
     story = new_story(fixture=BuilderStarted)
-    expect_helper_refusal(story, "Read-only helpers only read: ask your parent to save an alias for this build")
+    expect_helper_refusal(story, SAVED_COMMAND_HELPER.nudge(category='build').text)
 
 
 def test_each_alias_with_a_category_writes_its_category_for_the_hook(new_story):

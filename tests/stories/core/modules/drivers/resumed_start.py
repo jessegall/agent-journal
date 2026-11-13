@@ -5,6 +5,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_output_2, expect_value
+from core.modules.drivers.support.driver_nudges import CONTINUED_SESSION
 
 RESUME = HookSamples.session_start().with_raw({"source": "resume"})
 COMPACTION = HookSamples.session_start().with_raw({"source": "compact"})
@@ -26,7 +27,7 @@ def test_a_resumed_session_gets_no_start_lines_but_the_one_saying_it_continues(n
 
 
 def continued_line(story) -> str:
-    return f"You are resuming earlier session {agent_number(story, story.agent.id)}: tell the user in one line, in your voice, then continue the work in hand or ask what is next"
+    return CONTINUED_SESSION.nudge(agent=agent_number(story, story.agent.id)).text
 
 
 def test_a_main_agent_that_was_working_is_idle_when_started_again_and_told_once_that_it_continues(new_story):

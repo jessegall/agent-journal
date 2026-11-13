@@ -7,9 +7,10 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from core.modules.agents.support.report_nudges import PARENT_REPORT
 from engine.testing.expectations.expect_nudge import said
+from core.modules.memories.support.memory_nudges import START_MEMORIES
 
 MEMORY_TEXT = "The till is counted every evening"
-MEMORIES_LINE = "1 memories to read: load the memory skill as directed, then list them"
+MEMORIES_LINE = START_MEMORIES.nudge(count=1).text
 TEST_ENVIRONMENT = "environment make story-engine /work/story-engine --test --test-agent-id {agent}"
 FAKE_START = "agent start s-9 claude main --environment story-engine"
 

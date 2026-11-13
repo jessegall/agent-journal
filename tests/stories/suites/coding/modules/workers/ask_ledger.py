@@ -22,6 +22,7 @@ from tests.stories.suites.coding.modules.workers.support.merger_launcher import 
 from suites.coding.modules.workers.ticks.ask_watch import AskWatch
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from tests.stories.suites.coding.modules.workers.worker_ask import asking, asking_with_merger_running, merger_disabled_worker  # noqa: F401
+from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -72,7 +73,7 @@ def test_with_the_merger_off_the_ask_reaches_the_main_agent_once_and_is_recorded
     merger_disabled_worker.post_question()
     line = questions(merger_disabled_worker.story)[0]
     lines = merger_disabled_worker.main_lines()
-    merger_disabled_worker.story.expect_rows(line.outcome is AskOutcome.FORWARDED, line.closed_at is not None, lines.count(f"merger-line:{line.id}") == 1, QUESTION in line.text, detail=lines)
+    merger_disabled_worker.story.expect_rows(line.outcome is AskOutcome.FORWARDED, line.closed_at is not None, lines.count(MERGER_LINE_AVAILABLE.nudge(line=line.id).text) == 1, QUESTION in line.text, detail=lines)
 
 
 def test_two_asks_while_the_merger_runs_are_read_in_one_visit_of_one_merger_and_both_answered_in_it(case):

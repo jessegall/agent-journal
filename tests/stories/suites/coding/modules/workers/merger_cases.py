@@ -25,6 +25,7 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import star
 from tests.stories.support.story_checks import expect_value, expect_value_with
 from core.modules.helpers.support.helper_nudges import HELPER_GRANTED
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.modules.workers.support.worker_nudges import WORKER_LIBRARIES_LINKED
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -34,7 +35,7 @@ LOG_LINE = "The cart total rounds down"
 FULL_SUITE = "pytest"
 WHY = "the rounding only shows in a real run"
 MERGER_QUESTION = 'merger tell "Which tax applies?" --tried "Read the brief" --option "Dutch tax" --option "No tax" --recommend "Dutch tax"'
-LINKED_LINE = "Your worktree's libraries are linked: rerun your tests"
+LINKED_LINE = WORKER_LIBRARIES_LINKED.nudge().text
 LIBRARY_FILE = "index.js"
 LIBRARY_TEXT = "module.exports = 1\n"
 

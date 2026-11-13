@@ -15,6 +15,9 @@ from tests.stories.support.story_checks import expect_lines_3, expect_value_with
 from tests.stories.core.support.plan_steps import ready_plan
 from core.modules.plans.support.plan_nudges import PLAN_CANCELLED
 from engine.testing.expectations.expect_nudge import said
+from core.modules.plans.support.plan_nudges import CHECKPOINT_REACHED
+from core.modules.plans.support.plan_nudges import PLAN_FINISHED
+from core.modules.plans.support.plan_nudges import PLAN_STALLED
 
 
 def task_end(task_id):
@@ -59,19 +62,19 @@ def test_ending_a_task_names_the_task_now_in_hand_once_and_the_phase_it_ended(co
 def test_a_checkpoint_phase_says_the_phases_after_it_wait_for_its_tests(new_story):
     story = new_story(fixture=CheckpointCartPlan)
     story.expect_success("task start 1", "state: started", actor=story.agent)
-    expect_closed_lines(story, 1, "plan 1: phase Build is done and is a checkpoint: later phases wait for its tests")
+    expect_closed_lines(story, 1, CHECKPOINT_REACHED.nudge(plan=1, phase='Build').text)
 
 
 def test_the_last_task_says_the_plan_is_done(completed_cart_phase):
     story, _ = completed_cart_phase
-    expect_closed_lines(story, 2, "Plan 1 done: run the full suite; merging to main and releasing wait for the user's go-ahead")
+    expect_closed_lines(story, 2, PLAN_FINISHED.nudge(plan=1).text)
 
 
 def test_a_plan_whose_tasks_cannot_start_says_so(started_cart_plan):
     story = started_cart_plan
     story.run('task block 2 --reason "waits for a key"')
     lines = closed_lines(story, 1)
-    expect_value_with(lines, "plan 1: no task can start; 1 are waiting or blocked: task 2, which is blocked with a reason")
+    expect_value_with(lines, PLAN_STALLED.nudge(plan=1, count=1, waits=': task 2, which is blocked with a reason').text)
     expect_value_with(lines, "plan 1: phase Build done")
 
 

@@ -7,6 +7,7 @@ from tests.stories.core.modules.processes.support.cadence_probe import (TICK, He
                                                                        printed, tick_named, ticks, told, tree_of, worker_agent)
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, started_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from core.modules.processes.support.process_nudges import SILENT_RUN
 
 MAIN = "s-1"
 BUILD_ALIAS = "journal build-npm --tail 5"
@@ -35,7 +36,7 @@ def test_a_dot_every_25_seconds_added_to_quiet_the_notice_and_a_program_printing
     blank = moved_run(story, "make blank", CommandCategory.BUILD)
     story.expect_success(f'output title {dotted.id} "Running the jest tests"', actor=story.agent)
     ticks(story, 30, blank, every=10, text="   \n")
-    expect_told(story, MAIN, f"Output {dotted.id} printed nothing for 30s, so it is not streaming: run jest with --verbose")
+    expect_told(story, MAIN, SILENT_RUN.nudge(output=dotted.id, seconds=30, hint='run jest with --verbose').text)
     dots = ""
     for elapsed in range(10, 280, 10):
         if elapsed % 25 < 10:

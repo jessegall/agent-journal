@@ -39,4 +39,4 @@ def test_with_the_merger_on_a_task_a_worker_blocked_reaches_the_main_agent_at_on
     story.expect_success('task block 1 --reason "the build tool is missing"', actor=worker)
     lines = story.run(f"agent-line list --agent {story.agent.id}").output_text
     merger_lines = story.run("merger-line list --environment main", actor=story.agent).output_text
-    story.expect_rows(lines.count(f"worker:{agent_number(story, worker.id)} blocked task:1: only you or a user can unblock it") == 1, "blocked task" not in merger_lines, detail=lines + merger_lines)
+    story.expect_rows(lines.count(WORKER_TASK_BLOCKED.nudge(worker=agent_number(story, worker.id), task=1).text) == 1, "blocked task" not in merger_lines, detail=lines + merger_lines)

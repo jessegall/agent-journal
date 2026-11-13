@@ -17,6 +17,7 @@ from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.modules.messages.delivery import KeptTyping, MessagingSession
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value, expect_value_with, expect_value_without
+from core.modules.overview.support.overview_nudges import OVERVIEW_LINE
 
 
 def test_the_overview_shows_each_default_command_under_its_heading(new_story):
@@ -138,7 +139,7 @@ def compacted(new_story):
 def test_a_whole_compaction_tells_the_agent_only_to_run_the_overview(compacted):
     story, _, compaction_lines, start_lines = compacted
     expect_value(list(compaction_lines), [])
-    expect_value(list(start_lines), ["Read the overview"])
+    expect_value(list(start_lines), [OVERVIEW_LINE.nudge().text])
     story.expect_hook_silent("s-1", SKILL_READ)
     story.expect_hook_refusal("s-1", EDIT, "Read the overview first")
     story.expect_hook_allowed("s-1", OVERVIEW_HOOK)

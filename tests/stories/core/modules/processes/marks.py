@@ -324,7 +324,7 @@ def untitled_docked_run(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
     story.advance(timedelta(seconds=6))
-    wanted = f"Output {process.id} is titled by its raw command: give it a title"
+    wanted = RUN_NAME.nudge(process=process.id).text
     return story, process, wanted
 
 

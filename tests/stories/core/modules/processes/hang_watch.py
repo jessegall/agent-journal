@@ -13,6 +13,8 @@ from tests.stories.core.modules.processes.support.cadence_probe import (HelperBe
                                                                        running_run, told, tree_of, worker_agent)
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from core.modules.processes.support.process_nudges import HUNG_RUN
+from core.modules.processes.support.process_nudges import RUN_FROZEN
 
 MISSING_GROUP = 999999
 HANG_SECONDS = 300
@@ -175,11 +177,11 @@ def watched(story: Story, seconds: int, tree: FakeGroupCpuTime | None = None) ->
 
 
 def stuck_line(process_id: int, seconds: int = HALF) -> str:
-    return f"Output {process_id} printed nothing for {seconds}s and uses no CPU: read it, or it is stopped at {HANG_SECONDS}s"
+    return RUN_FROZEN.nudge(output=process_id, seconds=seconds, limit=HANG_SECONDS).text
 
 
 def hung_line(process_id: int) -> str:
-    return f"Output {process_id} printed nothing for {HANG_SECONDS}s and was stopped: its output is kept"
+    return HUNG_RUN.nudge(output=process_id, seconds=HANG_SECONDS).text
 
 
 def test_a_stuck_test_run_wakes_its_agent_once_at_half_the_hang_time_and_is_stopped_at_the_hang_time(new_story):

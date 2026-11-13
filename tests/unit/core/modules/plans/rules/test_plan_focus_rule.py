@@ -6,6 +6,8 @@ from core.modules.plans.models.enums.focus_source import FocusSource
 from core.modules.plans.rules.plan_focus_rule import PlanFocusRule
 from core.modules.plans.support.unblockers.unblocker import Unblocker
 from core.modules.plans.support.unblockers.unblockers import Unblockers
+from core.modules.plans.support.plan_nudges import FOCUS_SUGGESTED
+from core.modules.plans.support.plan_nudges import UNFOCUSED_TASK
 
 AGENT_ID = 4
 PLACES = {11: 1, 12: 2, 13: 2}
@@ -45,16 +47,16 @@ def texts(answer):
 
 
 def test_a_plan_task_started_with_two_started_plans_and_no_focus_of_its_own_names_the_plans_and_the_default():
-    assert texts(rule(started=[(11, 5)]).answer(hook())) == ["Plans 1, 2 started; your default focus is plan 1"]
+    assert texts(rule(started=[(11, 5)]).answer(hook())) == [FOCUS_SUGGESTED.nudge(plans='1, 2', focus=1).text]
 
 
 def test_starting_a_plan_while_another_is_started_names_the_plans_too():
-    assert texts(rule().answer(hook(line_numbers=[2]))) == ["Plans 1, 2 started; your default focus is plan 1"]
+    assert texts(rule().answer(hook(line_numbers=[2]))) == [FOCUS_SUGGESTED.nudge(plans='1, 2', focus=1).text]
 
 
 def test_a_started_task_of_another_plan_than_the_focus_the_agent_named_is_named_with_both_plans():
     answer = rule(started=[(12, 5)], explicit_id=1, source=FocusSource.EXPLICIT).answer(hook())
-    assert texts(answer) == ["Task 12 belongs to plan 2; your focus is plan 1"]
+    assert texts(answer) == [UNFOCUSED_TASK.nudge(task=12, plan=2, focus=1).text]
 
 
 @pytest.mark.parametrize("changes", [

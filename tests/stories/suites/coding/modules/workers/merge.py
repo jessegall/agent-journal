@@ -37,6 +37,7 @@ from tests.stories.suites.coding.modules.workers.support.web_build import BUILT_
 from tests.stories.support.story_checks import expect_requests_launcher
 from core.modules.processes.support.process_nudges import READ_COMMAND_OUTPUT
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.modules.workers.support.worker_nudges import MERGE_WAITS
 
 
 pytestmark = pytest.mark.real_git
@@ -99,7 +100,7 @@ def test_a_merge_while_the_checkout_is_on_another_branch_moves_nothing_reminds_e
     story.expect_success(lines.TASK_DETAILS, "state: completed")
     story.expect_success("worker-worktree show 1", "state: delivered")
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
-    reminder = f"The merge of worker {agent_number(story, worker.id)} waits for environment main to check out version-5 again"
+    reminder = MERGE_WAITS.nudge(worker=agent_number(story, worker.id), environment='main', branch='version-5').text
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.tick(MAIN_SESSION)
     story.tick(MAIN_SESSION)

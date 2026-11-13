@@ -15,6 +15,7 @@ from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.compaction_never_twice import MissingLauncherTyping, compacted, expect_compaction_count, set_context_older_than_compaction
 from tests.stories.suites.coding.modules.workers.context_limit import LIMIT_TOKENS, PRE_COMPACT, SESSION, LimitEnabled, has_context, stops, typing_recorded
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
+from core.modules.drivers.support.driver_nudges import COMPACTION_NOTICE
 
 FAULT_WAIT = timedelta(seconds=601)
 NOTICES = "context-compaction-notice list --json"
@@ -64,7 +65,7 @@ def test_f1_a_line_that_never_starts_fails_after_ten_minutes_and_the_person_and_
     expect_compaction_count(limited, 0)
     lines = main_agent_lines(limited)
     limited.expect_rows(states(limited) == [CompactionState.FAILED], notice_count(limited, CompactionNoticeType.UNSTARTED) == 1,
-                        lines.count(f"agent:{agent_number(limited, limited.agent.id)} posted context-compaction-notice:1") == 1, detail=f"{states(limited)} {lines}")
+                        lines.count(COMPACTION_NOTICE.nudge(agent=agent_number(limited, limited.agent.id), notice=1).text) == 1, detail=f"{states(limited)} {lines}")
 
 
 def test_f9_after_a_request_that_failed_a_person_sends_the_compaction_by_hand_and_it_takes_the_place_of_the_failed_row(limited):

@@ -88,7 +88,7 @@ def test_when_the_merger_cannot_start_the_main_agent_hears_what_waits(new_story,
     ended(story, started[0], 0)
     story.expect_rows(failure == "no main agent" or reached == [failure])
     lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
-    notice = f"All tests of worker:{agent_number(story, worker.id)} pass"
+    notice = WORKER_TESTS_PASSED.nudge(worker=agent_number(story, worker.id)).text
     story.expect_rows(lines.count(notice) == 1, "agent:0" not in lines, detail=lines)
     log = story.home.system_log
     story.expect_rows(not log.exists() or "merger start failed" not in FileAccess.shared().read(log))
@@ -106,7 +106,7 @@ def test_a_merge_waits_until_a_main_agent_returns(new_story, monkeypatch):
     MergerRetry()(story.container)
     MergerRetry()(story.container)
     lines = story.run(f"agent-line list --agent {main.id}", actor=main).output_text
-    story.expect_rows(lines.count(f"All tests of worker:{agent_number(story, worker.id)} pass") == 1, detail=lines)
+    story.expect_rows(lines.count(WORKER_TESTS_PASSED.nudge(worker=agent_number(story, worker.id)).text) == 1, detail=lines)
 
 
 def test_a_retry_that_fails_again_does_not_repeat_the_line_once_the_main_agent_has_read_it(new_story, monkeypatch):
@@ -125,7 +125,7 @@ def test_a_retry_that_fails_again_does_not_repeat_the_line_once_the_main_agent_h
         story.hook("new-main", HookSamples.prompt("go on"))
         story.clock.advance(timedelta(minutes=1))
     lines = story.run(f"agent-line list --agent {main.id}", actor=main).output_text
-    story.expect_rows(lines.count(f"All tests of worker:{agent_number(story, worker.id)} pass") == 1, detail=lines)
+    story.expect_rows(lines.count(WORKER_TESTS_PASSED.nudge(worker=agent_number(story, worker.id)).text) == 1, detail=lines)
 
 
 @pytest.mark.parametrize("merger_enabled", [True, False])

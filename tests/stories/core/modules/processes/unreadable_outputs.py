@@ -8,6 +8,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuild
 from core.modules.processes.support.process_nudges import UNREADABLE_DECLARED
 from core.modules.processes.support.process_nudges import UNREADABLE_LIFTED
 from engine.testing.expectations.expect_nudge import said
+from core.modules.processes.support.process_nudges import UNREADABLE_AUDIT
 
 SPINNER = "\r[###] working" * 1000
 
@@ -65,7 +66,7 @@ def test_the_main_agent_hears_once_how_many_commands_agents_marked_unreadable(ne
         story.hook("s-1", HookSamples.session_start())
         story.run_listeners()
     lines = kept_lines(story, actor=story.user)
-    story.expect_rows(lines.count("3 commands are marked unreadable by agents: review them in the viewer") == 1, detail=lines)
+    story.expect_rows(lines.count(UNREADABLE_AUDIT.nudge(count=3).text) == 1, detail=lines)
 
 
 BINARY = "\x00\x01\x02 header\x00" * 40 + "\n"

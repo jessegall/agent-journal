@@ -30,6 +30,7 @@ from tests.stories.suites.coding.modules.workers.support.work_setting_stories im
 from suites.coding.modules.workers.support.worker_settings import STOPPED_WORKER_RUN_MINUTES, WORKER_RESUME_LIMIT
 from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.modules.workers.support.worker_nudges import WORKER_RUN_RUNS_AFTER_STOP
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -113,7 +114,7 @@ def test_with_the_merger_off_a_worker_stopped_past_the_limit_on_a_run_that_goes_
     StoppedWorkerRuns()(story.container)
     StoppedWorkerRuns()(story.container)
     texts = stopped_run_texts(story)
-    story.expect_rows(texts == [f"worker:{agent_number(story, worker.id)} stopped but output {run.id} is still running: stop that output"], detail=str(texts))
+    story.expect_rows(texts == [WORKER_RUN_RUNS_AFTER_STOP.nudge(worker=agent_number(story, worker.id), output=run.id).text], detail=str(texts))
     story.expect_text(f"agent-line list --agent {story.agent.id}", said(MERGER_LINE_AVAILABLE))
 
 

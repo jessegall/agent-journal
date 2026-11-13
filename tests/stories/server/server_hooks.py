@@ -24,6 +24,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from tests.stories.core.support.fixtures import ThreeTasks, UserJoined
 from tests.stories.server.support.server_client import STORY_HOOK_LIMIT_SECONDS, STORY_STOP_LIMIT_SECONDS, expect_timing_lines, server_story
 from engine.testing.expectations.expect_row import expect_row
+from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
 
 RAW_HEADERS = {"X-Journal-Request-At": "1793395000123", "X-Journal-Hook-Id": "7731-1793395000123", "X-Journal-Actor": "agent", "X-Journal-Env": "main"}
 SCHEMA_EXAMPLES = Path(__file__).resolve().parents[3] / "tools" / "journal-hook" / "event" / "testdata" / "schema"
@@ -102,7 +103,7 @@ def test_a_stop_that_waits_past_its_limit_on_a_busy_database_is_held(lead_server
 
 def test_a_claude_stop_posted_as_a_prepared_object_is_refused_as_the_builder_decides(builder_server):
     story = builder_server
-    story.expect_hook_answer("/hook", lead_stop("server-5"), 200, "task:1 is yours now")
+    story.expect_hook_answer("/hook", lead_stop("server-5"), 200, TASK_ASSIGNMENT.nudge(task=1).text)
     story.story.expect_success(lines.SECOND_HOOK_CALL, "driver: coding.main", "answer: refused")
 
 

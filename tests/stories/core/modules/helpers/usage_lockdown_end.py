@@ -12,8 +12,9 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, read_jobs
 from tests.stories.core.modules.helpers.usage_limits import report
 from tests.stories.core.modules.helpers.usage_lockdown import EDIT, LIFT, LIMIT, STOP_LINE, lockdown_story
+from core.modules.helpers.support.helper_nudges import LOCKDOWN_ENDED
 
-LOCKDOWN_ENDED_TEXT = "The usage limit ended: continue what you were doing"
+LOCKDOWN_ENDED_TEXT = LOCKDOWN_ENDED.nudge().text
 STOPPED_TIME = timedelta(minutes=45)
 
 

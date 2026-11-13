@@ -16,6 +16,8 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuild
 from core.modules.processes.support.process_nudges import SILENT_RUN
 from engine.testing.expectations.expect_nudge import said
 from core.modules.processes.support.process_nudges import RUN_SPARSE
+from core.modules.processes.support.process_nudges import SILENT_SAVED_RUN
+from core.modules.processes.support.process_nudges import STALLED_RUN
 
 MAIN = "s-1"
 SLOW_TESTS = "pytest tests/slow -q"
@@ -38,7 +40,7 @@ def test_a_python_run_that_prints_nothing_for_30_seconds_is_told_it_is_not_strea
     expect_without_hint(story)
     story.advance(FIRST_OUTPUT)
     cadence_tick(story)
-    expect_streaming_line(story, f"Output {process.id} printed nothing for 30s, so it is not streaming: it may hold its output back: print with flush=True, or run it with python3 -u")
+    expect_streaming_line(story, SILENT_RUN.nudge(output=process.id, seconds=30, hint='it may hold its output back: print with flush=True, or run it with python3 -u').text)
 
 
 def test_a_silent_test_gets_its_hint_once_and_again_when_it_stops_printing(new_story):
@@ -55,7 +57,7 @@ def test_a_silent_test_gets_its_hint_once_and_again_when_it_stops_printing(new_s
     for _ in range(STOPPED_WRITING // TICK):
         story.advance(TICK)
         cadence_tick(story)
-    expect_streaming_line(story, f"Output {process.id} has written nothing for 120s and is still running: run vitest with --reporter=verbose")
+    expect_streaming_line(story, STALLED_RUN.nudge(output=process.id, seconds=120, hint='run vitest with --reporter=verbose').text)
 
 
 def test_a_silent_saved_command_is_told_to_fix_its_alias(new_story):
@@ -63,7 +65,7 @@ def test_a_silent_saved_command_is_told_to_fix_its_alias(new_story):
     story.expect_text("process show 1", "state: background", actor=story.agent)
     story.advance(FIRST_OUTPUT)
     cadence_tick(story)
-    expect_streaming_line(story, "Alias build-npm printed nothing for 30s: make it print each step. This run stays silent; the next shows its steps")
+    expect_streaming_line(story, SILENT_SAVED_RUN.nudge(name='build-npm', seconds=30).text)
 
 
 def titled(story, process, title: str, actor=None) -> None:
@@ -75,7 +77,7 @@ def test_a_sparse_pytest_run_keeps_running_and_after_printing_often_is_told_only
     process = moved_run(story, SLOW_TESTS, CommandCategory.TEST_RUN)
     titled(story, process, "Running the slow tests")
     ticks(story, 120, process, every=50)
-    expect_told(story, MAIN, f"Output {process.id} prints about once every 50s, too sparse for a reader: run pytest without -q")
+    expect_told(story, MAIN, RUN_SPARSE.nudge(output=process.id, seconds=50, hint='run pytest without -q').text)
     story.expect_text(f"process show {process.id}", "state: background", actor=story.agent)
     ticks(story, 80, process, every=10)
     quiet = cadence_lines(told(story, MAIN))
@@ -100,8 +102,8 @@ def test_a_helpers_and_a_workers_runs_that_print_nothing_for_30_seconds_are_told
     build = agent_run(story, worker, "make build", CommandCategory.BUILD)
     titled(story, build, "Building the worker branch", Actor(worker.id, ActorType.AGENT))
     ticks(story, 30, build)
-    expect_told(story, helper.session, f"Output {scan.id} printed nothing for 30s, so it is not streaming: it may hold its output back")
-    expect_told(story, worker.session, f"Output {build.id} printed nothing for 30s, so it is not streaming: make it print its steps")
+    expect_told(story, helper.session, SILENT_RUN.nudge(output=scan.id, seconds=30, hint='it may hold its output back').text)
+    expect_told(story, worker.session, SILENT_RUN.nudge(output=build.id, seconds=30, hint='make it print its steps').text)
 
 
 def test_only_a_silent_go_test_over_several_packages_is_told_and_runs_printing_lines_or_a_progress_bar_never_are(new_story):
@@ -242,7 +244,7 @@ def test_a_long_script_of_no_known_type_is_told_to_print_its_steps_and_its_card_
     process = moved_run(story, "zsh tools/move.sh")
     titled(story, process, "Moving the files")
     ticks(story, 30)
-    expect_told(story, MAIN, f"Output {process.id} printed nothing for 30s, so it is not streaming: make it print its steps")
+    expect_told(story, MAIN, SILENT_RUN.nudge(output=process.id, seconds=30, hint='make it print its steps').text)
     story.expect_success('reader add move-files --commands "zsh tools/move.sh*" --lines "moved" --progress "\\[([0-9]+)/([0-9]+)\\]"', actor=story.agent)
     printed(story, process, "[3/17] moved a.txt\n")
     tick_named(story, "read running outputs")
