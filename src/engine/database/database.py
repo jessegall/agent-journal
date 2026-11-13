@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from engine.database.errors.nesting_error import NestingError
 from engine.database.point_tally import PointTally
 from engine.database.statement import Statement
+from engine.database.write_turns import NeverWaitingWriteTurns, WriteTurns
 from engine.errors.read_cut_error import ReadCutError
 from engine.errors.read_limit_error import ReadLimitError
 from engine.journal.journal_home import JournalHome
@@ -28,8 +29,9 @@ class Database:
     """The connection to the journal's database, with transactions that save everything or nothing,
     and a tally of the points the work asks of it."""
 
-    def __init__(self, connection: sqlite3.Connection, identity: str | sqlite3.Connection) -> None:
+    def __init__(self, connection: sqlite3.Connection, identity: str | sqlite3.Connection, turns: WriteTurns | None = None) -> None:
         self.connection = connection
+        self.turns = turns or NeverWaitingWriteTurns()
         self.identity = identity
         self.nested: list[str] = []
         self.repeated_work = PointTally()
@@ -47,17 +49,17 @@ class Database:
         return self.row_owner.environment_id if self.row_owner is not None else None
 
     @classmethod
-    def opened(cls, home: JournalHome) -> "Database":
+    def opened(cls, home: JournalHome, turns: WriteTurns | None = None) -> "Database":
         home.database.parent.mkdir(parents=True, exist_ok=True)
-        return cls.configured(sqlite3.connect(home.database, autocommit=True))
+        return cls.configured(sqlite3.connect(home.database, autocommit=True), turns)
 
     @classmethod
-    def shared(cls, home: JournalHome) -> "Database":
+    def shared(cls, home: JournalHome, turns: WriteTurns | None = None) -> "Database":
         home.database.parent.mkdir(parents=True, exist_ok=True)
-        return cls.configured(sqlite3.connect(home.database, autocommit=True, check_same_thread=False))
+        return cls.configured(sqlite3.connect(home.database, autocommit=True, check_same_thread=False), turns)
 
     @classmethod
-    def configured(cls, connection: sqlite3.Connection) -> "Database":
+    def configured(cls, connection: sqlite3.Connection, turns: WriteTurns | None = None) -> "Database":
         connection.row_factory = sqlite3.Row
         connection.execute(f"PRAGMA busy_timeout = {int(BUSY_TIMEOUT_SECONDS * 1000)}")
         for name, (value, stored) in FILE_PRAGMAS.items():
@@ -66,7 +68,7 @@ class Database:
         for pragma in CONNECTION_PRAGMAS:
             connection.execute(f"PRAGMA {pragma}")
         database_file = connection.execute("PRAGMA database_list").fetchone()[2]
-        return cls(connection, database_file or connection)
+        return cls(connection, database_file or connection, turns)
 
     def file(self) -> Path:
         return Path(self.connection.execute("PRAGMA database_list").fetchone()[2])
@@ -104,16 +106,17 @@ class Database:
 
     @contextmanager
     def transaction(self):
-        changes = self.connection.total_changes
-        self.connection.execute("BEGIN IMMEDIATE")
-        try:
-            yield
-            self.connection.execute("COMMIT")
-        except BaseException:
-            self.record_rollback(changes)
-            if self.connection.in_transaction:
-                self.connection.execute("ROLLBACK")
-            raise
+        with self.turns.write_turn():
+            changes = self.connection.total_changes
+            self.connection.execute("BEGIN IMMEDIATE")
+            try:
+                yield
+                self.connection.execute("COMMIT")
+            except BaseException:
+                self.record_rollback(changes)
+                if self.connection.in_transaction:
+                    self.connection.execute("ROLLBACK")
+                raise
 
     @contextmanager
     def consistent_read(self):
@@ -221,16 +224,27 @@ class Database:
         rows = self.rows(Statement(f"SELECT state FROM {table} WHERE id = ?", [row_id]))
         return rows[0]["state"] if rows else None
 
+    # a write outside a transaction takes the write turn for its one statement; inside one, the transaction holds it
+    @contextmanager
+    def statement_turn(self):
+        if self.has_transaction:
+            yield
+            return
+        with self.turns.write_turn():
+            yield
+
     def insert(self, statement: Statement) -> int:
         self.repeated_work.count_write(statement.sql)
-        row_id = statement.result(self.connection).lastrowid
+        with self.statement_turn():
+            row_id = statement.result(self.connection).lastrowid
         if row_id is None:
             raise sqlite3.InterfaceError(f"the insert gave no row id: {statement.sql}")
         return row_id
 
     def update(self, statement: Statement) -> int:
         self.repeated_work.count_write(statement.sql)
-        return statement.result(self.connection).rowcount
+        with self.statement_turn():
+            return statement.result(self.connection).rowcount
 
     def close(self) -> None:
         self.connection.close()
