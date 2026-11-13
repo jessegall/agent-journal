@@ -121,7 +121,7 @@ def routed(git: Git, settings: Settings | None = None, operations: Operations | 
 def test_a_worktree_with_nothing_of_its_own_moves_onto_the_base_at_once_and_its_worker_reads_one_line():
     git = Git(4)
     route, repository, _, nudger = routed(git)
-    states = [row.state for row in repository.saved if hasattr(row, "behind")]
+    states = [row.state for row in repository.saved if hasattr(row, "commits_lagging")]
     assert (route, git.forwarded, states[-1], nudger.sent[0][1]) == (BehindRoute.FAST_FORWARDED, [TIP], BehindCheckState.UPDATED, FAST_FORWARDED)
 
 
@@ -190,8 +190,8 @@ class CheckContainer:
         self.bus = CheckBus()
         self.instances = {CommandBus: self.bus, Scopes: OpenScopes(), SettingValues: Settings(merger=merger_on), Clock: Clock()}
 
-    def get(self, kind):
-        return self.instances[kind]
+    def get(self, interface):
+        return self.instances[interface]
 
 
 def test_one_look_starts_the_merger_once_for_all_its_worktrees_and_none_with_the_merger_off():

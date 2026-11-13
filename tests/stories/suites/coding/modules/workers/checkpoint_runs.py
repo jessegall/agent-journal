@@ -6,7 +6,7 @@ import pytest
 from engine.database.database import Database
 from engine.database.statement import Statement
 from core.modules.processes.models.enums.process_state import ProcessState
-from suites.coding.modules.workers.commands.queue_worker_tests.worker_test_starts import WorkerTestStarts
+from suites.coding.modules.workers.listeners.support.worker_test_starts import WorkerTestStarts
 from suites.coding.modules.workers.support.worker_run_windows import WorkerRunWindows
 from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
 from tests.stories.core.support.agent_labels import agent_number
@@ -75,7 +75,7 @@ def merge(worker: StoryWorker) -> None:
 def sole_branch_runs(monkeypatch) -> None:
     """These stories test the run of a checkpoint on the branch after the merge, which a window held by more than
     one actor still gets; the worker run of a window one worker holds is left out of them."""
-    monkeypatch.setattr(WorkerRunWindows, "completed_by", lambda windows, worktree: ())
+    monkeypatch.setattr(WorkerRunWindows, "completed_windows", lambda windows, worktree: ())
 
 
 def checkpoint_worker(new_story, monkeypatch, *test_lines: str) -> StoryWorker:

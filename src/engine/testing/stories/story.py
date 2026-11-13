@@ -102,7 +102,7 @@ class Story:
         self.state = state
         self.environment: str | None = None
         self.fixture_environment: str | None = None
-        self.fixture_environment_id: int | None = None
+        self.environment_ids: dict[str, int] = {}
         self.replacements: dict[type, object] = {}
 
     @classmethod
@@ -168,14 +168,14 @@ class Story:
         return tuple(self.container.get(Queries).query(model).filter(**values).matching(Minimum(ID_COLUMN, 1)).every_row(STORY_ROWS_REASON))
 
     def use_fixture_environment(self, name: str | None) -> None:
-        self.fixture_environment, self.fixture_environment_id = name, None
+        self.fixture_environment = name
 
     def caller_environment_id(self, actor: Actor | None) -> int | None:
         if self.fixture_environment is None or (actor is not None and actor.type is ActorType.AGENT):
             return None
-        if self.fixture_environment_id is None:
-            self.fixture_environment_id = self.container.get(EnvironmentNames).environment_id(self.fixture_environment)
-        return self.fixture_environment_id
+        if self.fixture_environment not in self.environment_ids:
+            self.environment_ids[self.fixture_environment] = self.container.get(EnvironmentNames).environment_id(self.fixture_environment)
+        return self.environment_ids[self.fixture_environment]
 
     def scope_line(self, line: str) -> str:
         if self.environment is None or "--environment" in shlex.split(line):

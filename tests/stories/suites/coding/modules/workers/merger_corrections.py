@@ -71,7 +71,7 @@ def repeat_merge(worker: StoryWorker) -> None:
 
 
 @pytest.fixture
-def later_stories_failed(new_story, monkeypatch) -> FailedOwnTest:
+def next_task_stories_failed(new_story, monkeypatch) -> FailedOwnTest:
     """The own test of checkpoint phase 1 failed only on the stories of the later task; task 3, completed
     last, came back to its worker, who asked about it."""
     case = failed_checkpoint(new_story, monkeypatch, LATER_FAILURE, WORKER_TEST)
@@ -80,14 +80,14 @@ def later_stories_failed(new_story, monkeypatch) -> FailedOwnTest:
 
 
 @pytest.fixture
-def deferred(later_stories_failed) -> FailedOwnTest:
-    outcome = later_stories_failed.defer()
+def deferred(next_task_stories_failed) -> FailedOwnTest:
+    outcome = next_task_stories_failed.defer()
     assert outcome.code == 0, outcome.output_text
-    return later_stories_failed
+    return next_task_stories_failed
 
 
-def test_214_a_merger_defers_the_stories_of_a_later_task_the_own_test_of_a_checkpoint_failed_on(later_stories_failed):
-    case, story = later_stories_failed, later_stories_failed.story
+def test_214_a_merger_defers_the_stories_of_a_later_task_the_own_test_of_a_checkpoint_failed_on(next_task_stories_failed):
+    case, story = next_task_stories_failed, next_task_stories_failed.story
     main_agent_line_count = len(case.worker.main_agent_lines())
     story.expect_text(f'merger defer-test {agent_number(story, case.worker.worker.id)} "{LATER_STORIES}" --why "{WHY}"', "until the checkpoint of phase 2", actor=case.merger)
     deferral = rows(case.worker, DEFERRALS)[0]
@@ -128,11 +128,11 @@ def test_95_the_deferred_paths_run_at_the_next_checkpoint_and_the_deferral_is_cl
     story.expect_rows(due_run == DUE_TEST, open_deferral is None, rows(worker, DEFERRALS)[0]["closed_at"] is not None, detail=f"{run_lines(worker)} | {rows(worker, DEFERRALS)}")
 
 
-def test_96_a_deferral_is_refused_when_no_task_of_a_later_phase_is_left_to_wait_for(later_stories_failed):
-    story = later_stories_failed.story
+def test_96_a_deferral_is_refused_when_no_task_of_a_later_phase_is_left_to_wait_for(next_task_stories_failed):
+    story = next_task_stories_failed.story
     story.expect_success('task cancel 4 --reason "nothing is released"', actor=story.user)
-    refused = later_stories_failed.defer()
-    story.expect_rows(refused.code != 0, "nothing after phase 1 is left to wait for: the failure is real, fix it" in refused.output_text, rows(later_stories_failed.worker, DEFERRALS) == [], detail=refused.output_text)
+    refused = next_task_stories_failed.defer()
+    story.expect_rows(refused.code != 0, "nothing after phase 1 is left to wait for: the failure is real, fix it" in refused.output_text, rows(next_task_stories_failed.worker, DEFERRALS) == [], detail=refused.output_text)
 
 
 def test_98_a_deferral_that_would_leave_the_own_test_no_path_is_refused(new_story, monkeypatch):
@@ -141,19 +141,19 @@ def test_98_a_deferral_that_would_leave_the_own_test_no_path_is_refused(new_stor
     case.story.expect_rows(refused.code != 0, "the test command would be left with no path" in refused.output_text, detail=refused.output_text)
 
 
-def test_100_a_deferral_past_the_most_deferrals_of_one_checkpoint_is_refused_with_the_number(later_stories_failed):
-    apply_work_setting(later_stories_failed.story, LIMIT_SETTING, 1)
-    later_stories_failed.story.expect_text(SHOWN_SETTINGS, f"{LIMIT_SETTING}: 1", actor=later_stories_failed.story.user)
-    first, second = later_stories_failed.defer(), later_stories_failed.defer("tests/build.py")
-    later_stories_failed.story.expect_rows(first.code == 0, second.code != 0, "1 of 1 deferrals are used for phase 1" in second.output_text, detail=second.output_text)
+def test_100_a_deferral_past_the_most_deferrals_of_one_checkpoint_is_refused_with_the_number(next_task_stories_failed):
+    apply_work_setting(next_task_stories_failed.story, LIMIT_SETTING, 1)
+    next_task_stories_failed.story.expect_text(SHOWN_SETTINGS, f"{LIMIT_SETTING}: 1", actor=next_task_stories_failed.story.user)
+    first, second = next_task_stories_failed.defer(), next_task_stories_failed.defer("tests/build.py")
+    next_task_stories_failed.story.expect_rows(first.code == 0, second.code != 0, "1 of 1 deferrals are used for phase 1" in second.output_text, detail=second.output_text)
 
 
-def test_103_153_a_deferral_settles_the_question_of_the_worker_as_fixed_and_the_worker_card_lists_it_with_its_time(later_stories_failed):
-    story = later_stories_failed.story
-    requested = [row for row in rows(later_stories_failed.worker, "merger-line list --json --oldest --limit 20 --environment main") if row["topic"]]
-    outcome = later_stories_failed.defer(flags=f" --ask {requested[-1]['id']}")
-    resolved = next(row for row in rows(later_stories_failed.worker, "merger-line list --json --oldest --limit 20 --environment main") if row["id"] == requested[-1]["id"])
-    status = story.run("worker status --json", actor=later_stories_failed.worker.worker).output_text
+def test_103_153_a_deferral_settles_the_question_of_the_worker_as_fixed_and_the_worker_card_lists_it_with_its_time(next_task_stories_failed):
+    story = next_task_stories_failed.story
+    requested = [row for row in rows(next_task_stories_failed.worker, "merger-line list --json --oldest --limit 20 --environment main") if row["topic"]]
+    outcome = next_task_stories_failed.defer(flags=f" --ask {requested[-1]['id']}")
+    resolved = next(row for row in rows(next_task_stories_failed.worker, "merger-line list --json --oldest --limit 20 --environment main") if row["id"] == requested[-1]["id"])
+    status = story.run("worker status --json", actor=next_task_stories_failed.worker.worker).output_text
     story.expect_rows(outcome.code == 0, resolved["outcome"] == "fixed", f"ask {resolved['id']} was " in status, " at 09:00" in status, detail=f"{outcome.output_text} | {resolved} | {status}")
 
 
@@ -170,8 +170,8 @@ def test_97_101_107_a_deferred_path_a_path_that_passed_and_a_word_that_is_no_tes
                                detail=f"{repeated.output_text} | {passed.output_text} | {folder.output_text}")
 
 
-def test_105_only_the_merger_defers_a_test(later_stories_failed):
-    story, worker = later_stories_failed.story, later_stories_failed.worker
+def test_105_only_the_merger_defers_a_test(next_task_stories_failed):
+    story, worker = next_task_stories_failed.story, next_task_stories_failed.worker
     refused = story.run(f'merger defer-test {agent_number(story, worker.worker.id)} "{LATER_STORIES}" --why "{WHY}"', actor=worker.worker)
     story.expect_rows(refused.code != 0, rows(worker, DEFERRALS) == [], detail=refused.output_text)
 

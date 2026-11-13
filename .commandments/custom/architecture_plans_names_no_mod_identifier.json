@@ -23,13 +23,16 @@
             },
             {
                 "nameMatches": "BlockReview"
+            },
+            {
+                "nameMatches": "Migration$"
             }
         ]
     },
     "sin": {
         "name": "plan-module-names-a-mod",
         "description": "The plan module names reviews or critiques, which another module adds to it from outside.",
-        "rule": "The plan module knows nothing of its mods. Declare a button or an inspector section from the module that owns the feature.",
+        "rule": "The plan module knows nothing of its mods. Declare a button or an inspector section from the module that owns the feature. A recorded migration keeps the class name it ran with, so the module still lists it.",
         "skill": "plain-code-words"
     }
 }

@@ -36,7 +36,8 @@ class StartSkillsListener(SkillListener[SessionStarted]):
             self.run(logged, ResetSkills(call.session_agent_id))
         takes_start_skills = self.agents.find(call.session_agent_id).role in self.suites.agent_policy().prompt_roles
         start = self.skills(call, previous_call) if takes_start_skills else []
-        for skill in dict.fromkeys((*start, *self.profile_skills.required(call.session_agent_id))):
+        profile_skills = self.profile_skills.required(call.session_agent_id)
+        for skill in dict.fromkeys((*start, *profile_skills)):
             self.run(logged, RequireSkill(call.session_agent_id, skill))
 
     def skills(self, call: HookCall, previous_call: HookCall | None) -> list[str]:

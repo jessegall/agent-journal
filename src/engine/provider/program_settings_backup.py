@@ -8,7 +8,6 @@ from engine.file.kept_bytes import KeptBytes
 from engine.file.private_folders import PrivateFolders
 from engine.journal.journal_home import JournalHome
 from engine.log.system_log_writer import SystemLogWriter
-from engine.provider.program_settings import ProgramSettings
 from engine.time.clock import Clock
 from engine.provider.program_settings_writer import LOCK_NAME
 
@@ -28,9 +27,8 @@ class ProgramSettingsBackup:
     def __init__(self, home: JournalHome, log: SystemLogWriter, clock: Clock) -> None:
         self.home, self.log, self.clock = home, log, clock
 
-    def backup_copies(self, settings: ProgramSettings) -> tuple[Path, ...]:
-        copies = (self._stored(settings.program, path.name, settings.person_data[path]) if path in settings.person_data
-                  else self.copied(settings.program, path) for path in settings.person_files)
+    def backup_copies(self, program: str, files: tuple[tuple[Path, bytes | None], ...]) -> tuple[Path, ...]:
+        copies = (self.copied(program, path) if data is None else self._stored(program, path.name, data) for path, data in files)
         return tuple(copy for copy in copies if copy is not None)
 
     def copied(self, program: str, path: Path) -> Path | None:

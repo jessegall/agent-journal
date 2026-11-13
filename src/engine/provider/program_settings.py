@@ -18,3 +18,6 @@ class ProgramSettings:
     person_files: tuple[Path, ...] = ()
     person_data: Mapping[Path, bytes] = field(default_factory=dict)
     unreadable_person_files: tuple[Path, ...] = ()
+
+    def person_files_read(self) -> tuple[tuple[Path, bytes | None], ...]:
+        return tuple((path, self.person_data.get(path)) for path in self.person_files)

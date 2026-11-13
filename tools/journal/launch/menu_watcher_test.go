@@ -247,23 +247,23 @@ func (terminal *unsentLineTerminal) draw(text string) {
 	_, _ = terminal.watcher.Write([]byte(text))
 }
 
-func (terminal *unsentLineTerminal) later(duration time.Duration) {
+func (terminal *unsentLineTerminal) advance(duration time.Duration) {
 	terminal.current = terminal.current.Add(duration)
 }
 
 func TestALineLeftInTheInputBoxIsSentByASecondEnter(t *testing.T) {
 	terminal := newUnsentLineTerminal()
 	terminal.draw("❯ [journal] your context was compacted\r\n")
-	terminal.later(time.Second)
+	terminal.advance(time.Second)
 	if terminal.watcher.CheckUnsentLine() || terminal.enters != 0 {
 		t.Fatal("pressed Enter before the line had time to be sent")
 	}
-	terminal.later(2 * time.Second)
+	terminal.advance(2 * time.Second)
 	terminal.onEnter = func(terminal *unsentLineTerminal) { terminal.draw("working\r\n") }
 	if !terminal.watcher.CheckUnsentLine() || terminal.enters != 1 {
 		t.Fatalf("the still screen got %d more Enters", terminal.enters)
 	}
-	terminal.later(2100 * time.Millisecond)
+	terminal.advance(2100 * time.Millisecond)
 	terminal.draw("still working\r\n")
 	if terminal.watcher.CheckUnsentLine() || terminal.enters != 1 || terminal.line != nil {
 		t.Fatalf("a program that draws its work took the line: %d Enters, watched %v", terminal.enters, terminal.line)
@@ -272,7 +272,7 @@ func TestALineLeftInTheInputBoxIsSentByASecondEnter(t *testing.T) {
 
 func TestALineTheProgramTookGetsNoSecondEnter(t *testing.T) {
 	terminal := newUnsentLineTerminal()
-	terminal.later(2500 * time.Millisecond)
+	terminal.advance(2500 * time.Millisecond)
 	terminal.draw("working\r\n")
 	if terminal.watcher.CheckUnsentLine() || terminal.enters != 0 || terminal.line != nil {
 		t.Fatalf("a screen that changed half a second ago is a program at work: %d Enters", terminal.enters)
@@ -282,10 +282,10 @@ func TestALineTheProgramTookGetsNoSecondEnter(t *testing.T) {
 func TestAMenuOrTextThePersonTypesKeepsTheSecondEnterAway(t *testing.T) {
 	onMenu := newUnsentLineTerminal()
 	onMenu.draw(switchModelScreen)
-	onMenu.later(3 * time.Second)
+	onMenu.advance(3 * time.Second)
 	typing := newUnsentLineTerminal()
 	typing.pending = "half a sen"
-	typing.later(3 * time.Second)
+	typing.advance(3 * time.Second)
 	for name, terminal := range map[string]*unsentLineTerminal{"a menu": onMenu, "typed text": typing} {
 		if terminal.watcher.CheckUnsentLine() || terminal.enters != 0 || terminal.line != nil {
 			t.Fatalf("with %s on the screen Enter was pressed %d times", name, terminal.enters)
@@ -295,19 +295,19 @@ func TestAMenuOrTextThePersonTypesKeepsTheSecondEnterAway(t *testing.T) {
 
 func TestAnEnterThatChangesNothingEndsTheWatchAndThreeThatDoNotSendAreToldOf(t *testing.T) {
 	ignored := newUnsentLineTerminal()
-	ignored.later(3 * time.Second)
+	ignored.advance(3 * time.Second)
 	ignored.watcher.CheckUnsentLine()
-	ignored.later(3 * time.Second)
+	ignored.advance(3 * time.Second)
 	if ignored.watcher.CheckUnsentLine() || ignored.enters != 1 || ignored.line != nil || len(ignored.answers) != 0 {
 		t.Fatalf("an Enter the screen did not answer was repeated: %d Enters, %v", ignored.enters, ignored.answers)
 	}
 	unsentTerminal := newUnsentLineTerminal()
 	unsentTerminal.onEnter = func(terminal *unsentLineTerminal) {
-		terminal.later(100 * time.Millisecond)
+		terminal.advance(100 * time.Millisecond)
 		terminal.draw("\r\n")
 	}
 	for range 5 {
-		unsentTerminal.later(3 * time.Second)
+		unsentTerminal.advance(3 * time.Second)
 		unsentTerminal.watcher.CheckUnsentLine()
 	}
 	if unsentTerminal.enters != 3 || len(unsentTerminal.answers) != 1 || !strings.Contains(unsentTerminal.answers[0], "stays in the input box") || unsentTerminal.line != nil {

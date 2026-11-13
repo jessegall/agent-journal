@@ -277,3 +277,7 @@ STOCK_SAMPLES = (
                 "Cloning into 'honeyscanner'...\nremote: Enumerating objects: 626, done.\nremote: Counting objects: 100% (620/620), done.\nremote: Compressing objects: 100% (347/347), done.\nremote: Total 626 (delta 331), reused 485 (delta 252), pack-reused 6 (from 1)\nReceiving objects: 100% (626/626), 2.80 MiB | 6.41 MiB/s, done.\nResolving deltas: 100% (331/331), done.\nagri  cegbot  go  go.mod  go.sum  h.go  hh.go  honeyscanner  info.go  main.go\n-bash: cd: Honeyscanner/honeyscanner: No such file or directory\n",
                 "pasted in https://github.com/honeynet/honeyscanner/issues/56"),
 )
+
+
+def expect_none_listed(names: list[str], what: str) -> None:
+    assert names == [], f"{what}: {names}"

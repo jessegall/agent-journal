@@ -4,6 +4,7 @@ from pathlib import Path
 
 from engine.agent.program_sessions import ProgramSessions
 from engine.errors.refusal import Refusal
+from engine.provider.provider import Provider
 from engine.file.file_access import FileAccess
 from engine.file.private_folders import PrivateFolders
 from engine.file.kept_bytes import KeptBytes
@@ -34,7 +35,9 @@ class ProgramSettingsSync:
         self.cleanup, self.sessions, self.clock, self.checkouts = cleanup, sessions, clock, checkouts
 
     def settings(self, program: str) -> ProgramSettings:
-        provider = self.providers.provider(program)
+        return self.provider_settings(self.providers.provider(program))
+
+    def provider_settings(self, provider: Provider) -> ProgramSettings:
         return provider.journal_settings(self.home, self.runner(), self.managed.all(), self.folders())
 
     def runner(self) -> str:
@@ -53,7 +56,7 @@ class ProgramSettingsSync:
     def prepare(self, program: str) -> tuple[Path, ...]:
         settings = self.settings(program)
         with self.failure_refusal(program):
-            self.backup.backup_copies(settings)
+            self.backup.backup_copies(settings.program, settings.person_files_read())
             self.clean_project_files(program)
             return self.writer.write(settings)
 
@@ -85,7 +88,7 @@ class ProgramSettingsSync:
         return Timestamp.parsed(KeptBytes.read(switch).decode().strip())
 
     def unreadable_person_files(self) -> tuple[Path, ...]:
-        return tuple(path for provider in self.providers.all() for path in self.settings(provider.name).unreadable_person_files)
+        return tuple(path for provider in self.providers.all() for path in self.provider_settings(provider).unreadable_person_files)
 
     def prepare_all(self) -> tuple[Path, ...]:
         return tuple(path for provider in self.providers.all() for path in self.prepare(provider.name))

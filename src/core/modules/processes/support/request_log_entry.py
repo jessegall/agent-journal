@@ -25,14 +25,10 @@ class RequestLogEntry:
     @classmethod
     def parsed(cls, text: str) -> "RequestLogEntry":
         fields = json.loads(text)
-        return cls(fields["environment_id"], fields["agent_id"], RequestLogEntry.parsed_process_type(fields), fields["line"], fields["exit_code"], fields["ended_at"], fields.get("session", ""))
-
-    # A line an earlier version wrote names its type under kind, and the type that edits a file write.
-    @staticmethod
-    def parsed_process_type(fields: dict[str, str]) -> ProcessType:
-        if "process_type" in fields:
-            return ProcessType(fields["process_type"])
-        return ProcessType(FORMER_TYPE_VALUES.get(fields["kind"], fields["kind"]))
+        # A line an earlier version wrote names its type under kind, and the type that edits a file write.
+        former = fields.pop("kind", None)
+        value = fields.pop("process_type") if former is None else FORMER_TYPE_VALUES.get(former, former)
+        return cls(process_type=ProcessType(value), **fields)
 
     def text(self) -> str:
         return json.dumps(asdict(self))

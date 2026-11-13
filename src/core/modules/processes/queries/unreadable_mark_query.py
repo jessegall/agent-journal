@@ -17,7 +17,7 @@ class UnreadableMarkQuery(Query[UnreadableMark]):
         super().__init__(database, tables, UnreadableMark)
 
     def matching_terms(self, leading_terms: Sequence[str]) -> Self:
-        return self.matching(Among("words", leading_terms))
+        return self.matching(Among("terms", leading_terms))
 
     def standing(self) -> Self:
         return self.filter(lifted_at=None)

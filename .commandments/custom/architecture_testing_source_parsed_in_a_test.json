@@ -23,13 +23,16 @@
             },
             {
                 "fileMatches": "(^|/)tests/stories/core/modules/agents/dispatcher_rules\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)tests/unit/test_raw_declared_values\\.py$"
             }
         ]
     },
     "sin": {
         "name": "source-parsed-in-a-test",
         "description": "A test parses source files itself, so each test parses them again.",
-        "rule": "Use source_tree from tests/unit/source_tree.py, which parses each file once per test process.",
+        "rule": "Use source_tree from tests/unit/source_tree.py, which parses each file once per test process. test_raw_declared_values is left out: it parses short sample texts written in the test, the input of the scan under test, not a file.",
         "skill": "plain-code-words"
     }
 }

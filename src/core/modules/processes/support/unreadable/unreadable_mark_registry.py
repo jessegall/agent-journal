@@ -27,7 +27,7 @@ class UnreadableMarkRegistry:
 
     def flagged_among(self, commands: Sequence[str]) -> frozenset[str]:
         covering, terms = UnreadableMarkRegistry.covering_mark(commands)
-        flagged = set(self.marks.standing().matching_terms(terms).pluck("words", str))
+        flagged = set(self.marks.standing().matching_terms(terms).pluck("terms", str))
         return frozenset(command for command, leading in covering.items() if flagged.intersection(leading))
 
     def excuses(self, command: str) -> bool:

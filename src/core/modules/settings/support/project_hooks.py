@@ -65,7 +65,7 @@ class ProjectHooks:
 
     def journal_files(self, provider: Provider) -> list[UnmanagedHook]:
         root = self.home.project_folder
-        return [UnmanagedHook(provider.name, str(file.path.resolve().relative_to(root)), None, JOURNAL_FILE_REASON) for file in self.sync.settings(provider.name).files]
+        return [UnmanagedHook(provider.name, str(file.path.resolve().relative_to(root)), None, JOURNAL_FILE_REASON) for file in self.sync.provider_settings(provider).files]
 
     def excluded_file(self, program: str, name: Path) -> list[UnmanagedHook]:
         kept = ProgramHooks.partitioned(ProgramHooks.read(self.home.project_folder / name).get("hooks")).kept

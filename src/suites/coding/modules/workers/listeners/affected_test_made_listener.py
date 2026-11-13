@@ -2,7 +2,7 @@ from engine.event.created import Created
 from engine.event.logged_event import LoggedEvent
 from engine.listener.commit.commit_listener import CommitListener
 from suites.coding.modules.workers.models.affected_test import AffectedTest
-from suites.coding.modules.workers.commands.queue_worker_tests.worker_test_starts import WorkerTestStarts
+from suites.coding.modules.workers.listeners.support.worker_test_starts import WorkerTestStarts
 
 
 class AffectedTestMadeListener(CommitListener[Created[AffectedTest]]):
