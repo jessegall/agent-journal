@@ -101,6 +101,11 @@ class EventLog:
     def event(self, event_id: int) -> LoggedEvent:
         return LoggedEvent.parsed(self.table.row(event_id))
 
+    # None when the cause was pruned: the log keeps the newer events of a chain longer than its first
+    def kept_cause(self, cause_id: int) -> LoggedEvent | None:
+        row = self.table.kept_row(cause_id)
+        return None if row is None else LoggedEvent.parsed(row)
+
     def events_after(self, event_id: int, limit: int = PAGE_SIZE_EVENTS) -> list[LoggedEvent]:
         return [LoggedEvent.parsed(row) for row in self.table.rows_past(event_id, limit)]
 

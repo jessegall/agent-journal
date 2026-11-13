@@ -5,7 +5,8 @@ from urllib.parse import parse_qs, urlsplit
 
 IMMUTABLE = "public, max-age=31536000, immutable"
 REVALIDATE = "no-cache"
-HASHED_NAME = re.compile(r"-[A-Za-z0-9_]{8,}\.(?:js|css|woff2?)$")
+# a build hash mixes in a capital or a digit, so a plain word such as agent-settings.js is never kept forever
+HASHED_NAME = re.compile(r"-(?=[A-Za-z0-9_]*[A-Z0-9])[A-Za-z0-9_]{8,}\.(?:js|css|woff2?)$")
 VERSION_PARAMETER = "v"
 
 

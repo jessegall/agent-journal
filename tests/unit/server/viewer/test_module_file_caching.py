@@ -12,3 +12,8 @@ def test_any_other_file_is_checked_again_and_a_repeat_with_its_tag_is_unchanged(
     assert caching.is_unchanged(caching.etag)
     assert not caching.is_unchanged('"other"') and not caching.is_unchanged(None)
     assert not ModuleFileCaching.built("/viewer/", b"<html>changed").is_unchanged(caching.etag)
+
+
+def test_a_window_entry_named_by_words_is_checked_again_after_an_update():
+    assert ModuleFileCaching.built("/modules/coding/agent-settings.js", b"a").cache_control == REVALIDATE
+    assert ModuleFileCaching.built("/modules/coding/work-mode.js", b"a").cache_control == REVALIDATE

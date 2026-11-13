@@ -20,10 +20,15 @@ class BookkeepingTable:
         self.database, self.table, self.cli_name = database, table, cli_name
 
     def row(self, row_id: int) -> sqlite3.Row:
-        rows = self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE id = ?", [row_id]))
-        if not rows:
+        row = self.kept_row(row_id)
+        if row is None:
             raise MissingRowsError(self.cli_name, [row_id])
-        return rows[0]
+        return row
+
+    # a row an older one names may have been pruned since
+    def kept_row(self, row_id: int) -> sqlite3.Row | None:
+        rows = self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE id = ?", [row_id]))
+        return rows[0] if rows else None
 
     def newest_page(self, number: int, size: int, parsed: Callable[[sqlite3.Row], T]) -> Page[T]:
         rows = self.database.rows(Statement(f"SELECT * FROM {self.table} ORDER BY id DESC LIMIT ? OFFSET ?", (size, (number - 1) * size)))

@@ -145,4 +145,5 @@ class Scopes:
             return None
         if event.cause_id in self.causing_agents:
             return self.causing_agents[event.cause_id]
-        return self.causing_agent(self.log.event(event.cause_id))
+        cause = self.log.kept_cause(event.cause_id)
+        return None if cause is None else self.causing_agent(cause)
