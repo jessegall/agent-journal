@@ -20,3 +20,8 @@ class ConditionOperator(StrEnum):
     UNPLANNED = "unplanned"
     PLANNED = "planned"
     ANY = "any"
+
+    @property
+    def needs_value(self) -> bool:
+        return self in (ConditionOperator.MINIMUM, ConditionOperator.MAXIMUM, ConditionOperator.EQUALS, ConditionOperator.HAS_WORD, ConditionOperator.LACKS_WORD,
+                        ConditionOperator.HAS, ConditionOperator.LACKS, ConditionOperator.IS_AGENT, ConditionOperator.PLANNED)
