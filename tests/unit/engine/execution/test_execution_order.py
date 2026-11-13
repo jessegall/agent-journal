@@ -2,12 +2,16 @@ from dataclasses import replace
 
 from engine.enums.execution_lane import ExecutionLane
 from engine.enums.execution_priority import ExecutionPriority
+from engine.enums.starter_type import StarterType
 from engine.execution.default_lane_limits import DEFAULT_LANE_LIMITS
+from engine.execution.execution_class import ExecutionClass
+from engine.execution.execution_starter import ExecutionStarter
+from engine.execution.execution_ticket import ExecutionTicket
 from engine.execution.execution_order import ExecutionOrder
 from tests.unit.engine.execution.tickets import seconds_after_start, ticket
 
 ORDER = ExecutionOrder(DEFAULT_LANE_LIMITS)
-CHECK_TIME = seconds_after_start(10)
+CHECK_TIME = seconds_after_start(0)
 IMMEDIATE, RESERVED, AGENT, NORMAL, BACKGROUND = (ExecutionPriority.IMMEDIATE, ExecutionPriority.RESERVED, ExecutionPriority.AGENT,
                                                   ExecutionPriority.NORMAL, ExecutionPriority.BACKGROUND)
 
@@ -83,3 +87,86 @@ def test_capacity_exceeded_is_reported():
     assert not ORDER.capacity_exceeded([])
     assert not ORDER.capacity_exceeded(short_tickets(AGENT, 8) + short_tickets(NORMAL, 4))
     assert ORDER.capacity_exceeded(short_tickets(AGENT, 8) + short_tickets(NORMAL, 4) + [ticket(IMMEDIATE)])
+
+
+def starter(number: int) -> ExecutionStarter:
+    return ExecutionStarter(StarterType.HELPER, agent_id=number, agent_role="worker")
+
+
+def raised_priority(waiting_ticket, seconds: float, is_halted: bool = False) -> ExecutionPriority:
+    return ORDER.raised([waiting_ticket], seconds_after_start(seconds), is_halted)[0].priority
+
+
+def test_wait_past_step_raises_one_step():
+    assert raised_priority(ticket(NORMAL), 10) is AGENT
+
+
+def test_raised_wait_starts_again():
+    raised = ORDER.raised([ticket(NORMAL)], seconds_after_start(12), False)[0]
+    assert raised.raised_at == seconds_after_start(10)
+
+
+def test_two_steps_pass_raises_twice():
+    assert raised_priority(ticket(NORMAL), 15) is RESERVED
+
+
+def test_raise_never_reaches_immediate():
+    assert raised_priority(ticket(BACKGROUND), 3600) is RESERVED
+
+
+def test_raise_stops_at_reserved():
+    assert raised_priority(ticket(RESERVED), 3600) is RESERVED
+
+
+def test_raised_ticket_still_counts_as_first_priority():
+    raised = ORDER.raised([ticket(NORMAL)], seconds_after_start(10), False)[0]
+    assert (raised.first_priority, raised.priority) == (NORMAL, AGENT)
+
+
+def test_reserved_past_wait_takes_next_room():
+    overdue = replace(ticket(RESERVED, starter=starter(2), entered_second=5), raised_at=seconds_after_start(0))
+    fresh = ticket(RESERVED, starter=starter(3), entered_second=1)
+    full = [ticket(AGENT, starter=starter(10 + number)) for number in range(11)]
+    assert ORDER.starting([fresh, overdue], full, seconds_after_start(4), False) == (overdue,)
+
+
+def test_starter_cap_holds_while_other_starter_starts():
+    held = [ticket(AGENT, starter=starter(1)) for _ in range(6)]
+    capped, other = ticket(AGENT, starter=starter(1)), ticket(AGENT, starter=starter(2))
+    assert started_tickets([capped, other], held) == [other]
+
+
+def test_class_at_limit_does_not_block_a_build_behind():
+    merge_class = ExecutionClass("merge", ExecutionLane.LONG, 1, AGENT, class_limit=1)
+    merge = ExecutionTicket(merge_class, AGENT, AGENT, starter(1), "merge", seconds_after_start(0), seconds_after_start(0))
+    build = ticket(AGENT, lane=ExecutionLane.LONG, slot_cost=1, starter=starter(2), entered_second=1)
+    assert started_tickets([merge, build], [replace(merge, starter=starter(3))]) == [build]
+
+
+def test_waits_for_reader_is_passed_over_and_still_raised():
+    waiting_reader = replace(ticket(NORMAL), has_open_reader_request=True)
+    assert started_tickets([waiting_reader], []) == []
+    assert raised_priority(waiting_reader, 10) is AGENT
+
+
+def test_halted_lane_starts_none_and_counts_no_wait():
+    waiting = ticket(NORMAL, lane=ExecutionLane.LONG)
+    assert ORDER.starting([waiting], [], seconds_after_start(3600), True) == ()
+    assert raised_priority(waiting, 3600, is_halted=True) is NORMAL
+
+
+def test_immediate_ceiling_is_flagged_not_refused():
+    many = [ticket(IMMEDIATE, starter=starter(number)) for number in range(65)]
+    assert ORDER.over_ceiling(many) and started_tickets([ticket(IMMEDIATE)], many) != []
+
+
+def test_nothing_waits_forever_under_a_steady_stream():
+    first = ticket(NORMAL, starter=starter(1), line="first")
+    second, running = 0, [ticket(AGENT, starter=starter(10 + number), entered_second=0) for number in range(8)]
+    while second < 60:
+        second += 1
+        stream = [ticket(AGENT, starter=starter(100 + second), entered_second=second)]
+        if any(started.line == "first" for started in ORDER.starting([first, *stream], running, seconds_after_start(second), False)):
+            break
+        running = [*running[1:], ticket(AGENT, starter=starter(200 + second), entered_second=second)]
+    assert second <= 10 + 5 + 2 + 1
