@@ -99,7 +99,7 @@ def test_a_stopped_worker_whose_run_goes_on_past_the_minutes_set_on_the_workers_
     StoppedWorkerRuns()(story.container)
     StoppedWorkerRuns()(story.container)
     lines = stopped_run_lines(story)
-    story.expect_rows(len(lines) == 1, f"{worker_label(story)} stopped and waits on output {run.id}" in lines[0].text, lines[0].outcome is None,
+    story.expect_rows(len(lines) == 1, f"{worker_label(story)} stopped but output {run.id} is still running" in lines[0].text, lines[0].outcome is None,
                       lines[0].worker_id == story.worker.id, "waits on output" not in main_agent_lines(story), detail=f"{lines} | {main_agent_lines(story)}")
     story.container.get(Bus).run(EndProcess(run.id, 0, 10, 1), story.worker, environment_id=1)
     StoppedWorkerRuns()(story.container)

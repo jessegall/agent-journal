@@ -128,4 +128,4 @@ def test_a_committed_proof_of_a_started_plan_is_left_as_it_is_by_three_sweeps_of
 def test_239_a_worker_that_stops_with_committed_tasks_that_are_not_merged_has_them_named(group_worker):
     group_worker.story.run(f"agent end {group_worker.worker.id}", actor=group_worker.worker)
     lines = " | ".join(group_worker.main_agent_lines())
-    group_worker.story.expect_rows("the code of task:1, task:2 of worker:2 is committed and is not merged" in lines, detail=lines)
+    group_worker.story.expect_rows("task:1, task:2 of worker:2 are committed but not merged" in lines, detail=lines)

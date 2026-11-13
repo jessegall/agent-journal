@@ -98,7 +98,7 @@ def test_a_shared_document_reads_to_its_visitor_and_no_other_does(plan_server):
     session = json.loads(viewer_answer(story.viewer_port(), "/api/session", cookie, "")[2])
     window = session["share"]["window"]["name"]
     expect_model_share_session(session, "doc")
-    expect_value(window, "documents.documents")
+    expect_value(window, "documents.page")
     line = {"window": window, "line": ["doc", "show", str(shared)], "environment": session["share"]["environment"]}
     status, _, body = viewer_answer(story.viewer_port(), "/api/line", cookie, "", line)
     expect_value(status, 200)

@@ -24,7 +24,7 @@ def expect_value_with(actual, expected) -> None:
 
 def expect_visited_limit(visited, expected) -> None:
     actual = len(visited)
-    assert actual <= expected, actual
+    assert actual <= expected, (actual, [str(read)[:160] for read in visited])
 
 
 def expect_count_shown(shown, item, expected) -> None:
