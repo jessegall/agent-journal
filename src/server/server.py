@@ -19,6 +19,7 @@ from engine.hosting.hosted_file import HOSTED_FILE_PATH, HostedFile
 from engine.hosting.hosted_start_check import HostedStartCheck
 from engine.module.journal_container import opened_container, synced_database_container
 from engine.file.file_access import FileAccess
+from engine.file.private_folders import PRIVATE_UMASK, PrivateFolders
 from engine.journal.journal_home import JournalHome
 from engine.enums.log_level import LogLevel
 from engine.errors.refusal import Refusal
@@ -121,6 +122,8 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--take-over", default="")
     arguments = parser.parse_args(argv)
     home = JournalHome(Path(arguments.home))
+    os.umask(PRIVATE_UMASK)
+    PrivateFolders.restricted(home.folder, home.database_files)
     CodeFingerprint.ticked = True
     code_fingerprint, finder = CodeFingerprint(), ModuleFinder(home)
     code_version = CodeVersion(code_fingerprint, CodeFolders(finder), math.inf)

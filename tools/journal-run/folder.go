@@ -37,7 +37,7 @@ func NewFolder(home string, process int) Folder {
 }
 
 func (folder Folder) Start(line string, parts []Part, script string) error {
-	if err := os.MkdirAll(folder.Path, 0o755); err != nil {
+	if err := os.MkdirAll(folder.Path, 0o700); err != nil {
 		return err
 	}
 	texts := make([]string, PartCount(parts))

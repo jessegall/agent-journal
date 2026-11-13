@@ -50,16 +50,16 @@ class ViewerLogin:
         return key
 
     def has_session(self, token: str) -> bool:
-        return self.found_session(token) is not None
+        return self.token_session(token) is not None
 
-    def cookie_session(self, tokens: list[str]) -> CookieSession:
+    def cookie_session(self, tokens: list[str]) -> CookieSession | None:
         for token in tokens:
-            session = self.found_session(token)
+            session = self.token_session(token)
             if session is not None:
                 return CookieSession(token, session)
-        return CookieSession("", None)
+        return None
 
-    def found_session(self, token: str) -> ViewerSession | None:
+    def token_session(self, token: str) -> ViewerSession | None:
         with self.lock:
             if token in self.sessions:
                 return self.sessions[token]
@@ -84,10 +84,10 @@ class ViewerLogin:
             self.kept.save(self.sessions)
 
     def session(self, token: str) -> ViewerSession:
-        found = self.found_session(token)
-        if found is None:
+        session = self.token_session(token)
+        if session is None:
             raise UnknownLoginKeyError("this session is unknown: open the address journal viewer prints to log in")
-        return found
+        return session
 
     def share_session(self, cookie: str) -> ViewerSession | None:
         token, _, key = cookie.partition(COOKIE_SEPARATOR)

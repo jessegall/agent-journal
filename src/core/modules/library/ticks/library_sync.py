@@ -33,7 +33,7 @@ SYNC_REASON = "the library sync compares every library item with its file"
 
 MODULE_NAME = "journal.core.library"
 REACHED_NOTE_SECONDS = 60
-ROW_IDS_PER_READ = 500
+READ_PAGE_ROWS = 500
 
 
 class LibrarySync:
@@ -65,17 +65,17 @@ class LibrarySync:
         return self.note_reached(connection, state, results)
 
     def copy_rows(self, copies: list[LibraryCopy]) -> dict[tuple[str, int], Model]:
-        ids_by_share: dict[str, list[int]] = {}
+        share_row_ids: dict[str, list[int]] = {}
         for copy in copies:
-            ids_by_share.setdefault(copy.share, []).append(copy.row_id)
+            share_row_ids.setdefault(copy.share, []).append(copy.row_id)
         rows: dict[tuple[str, int], Model] = {}
-        for name, row_ids in ids_by_share.items():
+        for name, row_ids in share_row_ids.items():
             if not self.shares.has(name):
                 continue
             model = self.shares.lookup(name).model
-            for start in range(0, len(row_ids), ROW_IDS_PER_READ):
-                found = self.queries.query(model).with_removed().where_in("id", row_ids[start:start + ROW_IDS_PER_READ]).every_row(SYNC_REASON)
-                rows.update({(name, row.id): row for row in found})
+            for start in range(0, len(row_ids), READ_PAGE_ROWS):
+                read_rows = self.queries.query(model).with_removed().where_in("id", row_ids[start:start + READ_PAGE_ROWS]).every_row(SYNC_REASON)
+                rows.update({(name, row.id): row for row in read_rows})
         return rows
 
     def state(self, connection: LibraryConnection, memory: RoundMemory) -> ServerState:
@@ -109,10 +109,10 @@ class LibrarySync:
         digest = share.digest(row)
         local_changed, server_changed = digest != copy.base_digest, entry.version != copy.base_version
         if not local_changed and not server_changed:
-            has_marked = self.mark(copy, CopyState.SYNCED)
-            if not has_marked:
+            has_changed = self.mark(copy, CopyState.SYNCED)
+            if not has_changed:
                 memory.remember_unchanged(copy, row, entry)
-            return has_marked
+            return has_changed
         if memory.is_skipped(copy, entry) or copy.is_recorded(digest, entry.version, state.role):
             return False
         if server_changed and not local_changed and share.is_paused(row):

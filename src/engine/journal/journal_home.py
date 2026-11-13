@@ -28,6 +28,10 @@ class JournalHome:
         return self.folder / "version-5.db"
 
     @property
+    def database_files(self) -> list[Path]:
+        return [self.database, *(self.database.with_name(f"{self.database.name}{suffix}") for suffix in ("-wal", "-shm"))]
+
+    @property
     def panic_file(self) -> Path:
         return self.folder / "panic"
 

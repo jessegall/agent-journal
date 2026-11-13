@@ -336,3 +336,23 @@ func TestReplacementRetriesAStartFailureWithoutClosingTheExistingListener(t *tes
 		t.Fatalf("replacement started %d times", attempts)
 	}
 }
+
+func TestALaunchRemovesTheSocketsOfOlderLaunchesNobodyAnswersOn(t *testing.T) {
+	folder := replacementFolder(t)
+	dead := filepath.Join(folder, "l-dead")
+	deadListener, err := net.Listen("unix", dead)
+	if err != nil {
+		t.Fatal(err)
+	}
+	deadListener.(*net.UnixListener).SetUnlinkOnClose(false)
+	_ = deadListener.Close()
+	path := filepath.Join(folder, "launcher")
+	listener, err := ListenVersioned(path, refusingStarter{}, NewTerminalInputs(), "new")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer listener.Close()
+	if _, err := os.Lstat(dead); !os.IsNotExist(err) {
+		t.Fatalf("the socket nobody answers on was kept: %v", err)
+	}
+}

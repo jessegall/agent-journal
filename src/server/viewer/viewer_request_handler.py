@@ -2,6 +2,7 @@ from collections.abc import Callable, Mapping, Sequence
 from contextlib import nullcontext
 from types import MappingProxyType
 import html
+from functools import cached_property
 import json
 from time import perf_counter
 from dataclasses import asdict, replace
@@ -103,8 +104,6 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
     and no data, to any origin, and the phone's pairing page and its POST to anyone, so a frame with no
     origin loads its own, and answers the viewer's pages and data only with that cookie."""
 
-    found_session: CookieSession | None = None
-
     def do_GET(self) -> None:
         route = urlsplit(self.path).path
         if route == EVENTS_ROUTE:
@@ -132,7 +131,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             try:
                 token = viewer.login.session_token(key)
             except UnknownLoginKeyError as error:
-                if self.session_cookie(self.cookie_name(COOKIE_NAME)).session is None:
+                if self.session_cookie(self.cookie_name(COOKIE_NAME)) is None:
                     self.answer_login_page(str(error))
                     return
                 self.answer_redirect(kept_query, {})
@@ -159,14 +158,14 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             name = route.path.removeprefix(VIEWER_ROOT)
             self.answer_module_file(viewer, VIEWER_MODULE, name, WORKER_HEADERS if name == PHONE_WORKER else {})
             return
-        found = self.cookie_session()
-        if found.session is None:
+        cookie = self.cookie_session
+        if cookie is None:
             if route.path.startswith("/api/"):
                 self.answer(401, {"error": "this browser is not logged in"})
             else:
                 self.answer_login_page(LOGIN_PAGE_REASON)
             return
-        session = found.session
+        session = cookie.session
         if session.type is SessionType.SHARE and route.path.startswith("/api/") and route.path not in (SESSION_ROUTE, EVENTS_ROUTE, SHARE_COMMENTS_ROUTE, WINDOW_ROUTE):
             self.answer(403, {"error": "a share link opens only the row it shares"})
             return
@@ -201,7 +200,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(200, {"waiting": [asdict(waiting_item) for waiting_item in viewer.routes.waiting_route.waiting()]})
             return
         if route.path == NOTICES_ROUTE:
-            self.answer_notices(viewer, found, None)
+            self.answer_notices(viewer, cookie, None)
             return
         if route.path == SESSION_ROUTE:
             self.answer(200, asdict(viewer.routes.session_route.answer(session)))
@@ -254,16 +253,16 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if urlsplit(self.path).path == PAIRING_ROUTE:
             self.answer_pairing(viewer, body)
             return
-        found = self.cookie_session()
-        if found.session is None:
+        cookie = self.cookie_session
+        if cookie is None:
             self.answer(401, {"error": "open the address journal viewer prints to log in"})
             return
-        session = found.session
+        session = cookie.session
         if urlsplit(self.path).path == LOGIN_LINK_ROUTE:
             self.answer_login_link(viewer, session)
             return
         if urlsplit(self.path).path == NOTICES_ROUTE:
-            self.answer_notices(viewer, found, body)
+            self.answer_notices(viewer, cookie, body)
             return
         if urlsplit(self.path).path == FILES_ROUTE:
             self.answer_upload(viewer, session, body)
@@ -318,16 +317,16 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.wfile.flush()
         viewer.routes.request_trace.record_viewer(ViewerRequestRecord(http, request, 0, timed.duration_ms, queued_ms, answered.code, timed.points))
 
-    def answer_notices(self, viewer: ViewerServer, found: CookieSession, body: bytes | None) -> None:
+    def answer_notices(self, viewer: ViewerServer, cookie: CookieSession, body: bytes | None) -> None:
         notices = viewer.routes.notices_route
-        if found.session is not None and found.session.type is SessionType.SHARE:
+        if cookie.session.type is SessionType.SHARE:
             self.answer(403, {"error": "a share link has no phone to send notices to"})
             return
         try:
             if body is None:
                 self.answer(200, {"public_key": notices.public_key()})
                 return
-            notices.subscribe(found.token, body)
+            notices.subscribe(cookie.token, body)
         except (PhoneModuleError, ViewerRequestError) as error:
             self.answer(404 if isinstance(error, PhoneModuleError) else 400, {"error": str(error)})
             return
@@ -541,15 +540,14 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(payload)
 
-    def cookie_session(self) -> CookieSession:
-        if self.found_session is None:
-            self.found_session = self.session_cookie(self.cookie_name(COOKIE_NAME), self.cookie_name(SHARE_COOKIE_NAME))
-        return self.found_session
+    @cached_property
+    def cookie_session(self) -> CookieSession | None:
+        return self.session_cookie(self.cookie_name(COOKIE_NAME), self.cookie_name(SHARE_COOKIE_NAME))
 
     def cookie_name(self, base: str) -> str:
         return self.viewer().answer_headers.cookie_prefix + self.viewer().login.cookie_name(base)
 
-    def session_cookie(self, *names: str) -> CookieSession:
+    def session_cookie(self, *names: str) -> CookieSession | None:
         cookie = SimpleCookie(self.headers.get("Cookie", ""))
         return self.viewer().login.cookie_session([cookie[name].value for name in names if name in cookie])
 
@@ -576,7 +574,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
 
     def door_request(self, is_change: bool) -> DoorRequest:
         return DoorRequest(self.peer_uid, self.headers.get("Host", ""), self.headers.get("Origin", ""), self.headers.get("Sec-Fetch-Site", ""), is_change,
-                           self.cookie_session().session is not None, int(self.headers.get("Content-Length", "0") or "0"))
+                           self.cookie_session is not None, int(self.headers.get("Content-Length", "0") or "0"))
 
     def door_refuses(self, is_change: bool) -> bool:
         viewer = self.viewer()
