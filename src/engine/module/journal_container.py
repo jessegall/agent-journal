@@ -9,10 +9,11 @@ from engine.model.state_book import StateBook
 from engine.module.module_sync import ModuleSync
 from engine.registry.registry import Registry
 from engine.process.plugin_script_processes import PluginScriptProcesses
+from engine.database.write_turns import WriteTurns
 
 
-def opened_container(home: JournalHome) -> Container:
-    return database_container(home, Database.opened(home))
+def opened_container(home: JournalHome, turns: WriteTurns | None = None) -> Container:
+    return database_container(home, Database.opened(home, turns))
 
 
 def sync_modules(home: JournalHome) -> None:
@@ -33,8 +34,8 @@ def database_container(home: JournalHome, database: Database) -> Container:
     return container
 
 
-def synced_container(home: JournalHome) -> Container:
-    return synced_database_container(home, Database.opened(home))
+def synced_container(home: JournalHome, turns: WriteTurns | None = None) -> Container:
+    return synced_database_container(home, Database.opened(home, turns))
 
 
 def synced_database_container(home: JournalHome, database: Database) -> Container:

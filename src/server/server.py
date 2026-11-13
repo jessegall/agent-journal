@@ -65,6 +65,12 @@ from server.tick.server_backup import ServerBackup
 from server.tick.inactive_server_shutdown import InactiveServerShutdown
 from engine.serving.server_files import ServerFiles
 from server.handover.waiting_server import WaitingServer
+from functools import partial
+from server.execution.write_turn_queue import WriteTurnQueue
+from server.work.journal_round import background_container
+
+# how long a write waits for the database's write turn before it is refused with the holder named
+WRITE_TURN_WAIT_SECONDS = 30.0
 
 MAX_OPEN_FILES = 10240
 
@@ -135,16 +141,18 @@ def main(argv: list[str]) -> int:
     else:
         files.log_line("another server holds the lock; this one exits")
         return SECOND_SERVER_CODE
-    hook_database = HookDatabase(home)
-    urgent_round = JournalRound(home, "urgent listener thread", UrgentListenerWork(), queue=hook_database.queue)
+    turns = WriteTurnQueue(clock, WRITE_TURN_WAIT_SECONDS, lambda line: files.log_line(line, LogLevel.WARNING))
+    hook_database = HookDatabase(home, turns)
+    round_container = partial(background_container, turns=turns)
+    urgent_round = JournalRound(home, "urgent listener thread", UrgentListenerWork(), queue=hook_database.queue, container=round_container)
     urgent_thread = ListenerThread(urgent_round.run, urgent_round.report, name="urgent listeners")
-    listener_round = JournalRound(home, "listener thread", OrdinaryListenerWork(), queue=hook_database.queue)
-    plugin_round = JournalRound(home, "plugin listener thread", PluginListenerWork(), queue=hook_database.queue)
+    listener_round = JournalRound(home, "listener thread", OrdinaryListenerWork(), queue=hook_database.queue, container=round_container)
+    plugin_round = JournalRound(home, "plugin listener thread", PluginListenerWork(), queue=hook_database.queue, container=round_container)
     plugin_thread = ListenerThread(plugin_round.run, plugin_round.report, name="plugin listeners")
-    stop_round = JournalRound(home, "program stop thread", ProgramStopListenerWork(), queue=hook_database.queue)
+    stop_round = JournalRound(home, "program stop thread", ProgramStopListenerWork(), queue=hook_database.queue, container=round_container)
     stop_thread = ListenerThread(stop_round.run, stop_round.report, name="program stops")
     listener_thread = ListenerThread(listener_round.run, listener_round.report, linked_threads=(urgent_thread, plugin_thread, stop_thread))
-    ticker = Ticker(home, Ticker.module_handlers(finder), listener_thread.wake, queue=hook_database.queue)
+    ticker = Ticker(home, Ticker.module_handlers(finder), listener_thread.wake, queue=hook_database.queue, container=round_container)
     phones = PhoneSessions(home, listener_thread)
     login = ViewerLogin(phones, ShareSessions(phones.journal_output, clock), SessionFile(home.viewer_sessions_file))
     reported_findings = ReportedFindings()

@@ -26,6 +26,7 @@ from engine.registry.errors.stale_registry_error import StaleRegistryError
 from engine.caller.caller import Caller
 from engine.performance.timing import Timing
 from engine.request.request_queue import RequestQueue
+from engine.database.write_turns import WriteTurns
 
 
 def ignore_completed(container: Container, argv: list[str]) -> None:
@@ -42,17 +43,18 @@ class LineRun:
 
     def __init__(self, home: JournalHome, busy_timeout_seconds: float = BUSY_TIMEOUT_SECONDS, listener_runner: CommitListenerRunner | None = None,
                  reported: ReportedFindings | None = None, request_queue: RequestQueue | None = None,
-                 completion_callback: Callable[[Container, list[str]], None] = ignore_completed) -> None:
+                 completion_callback: Callable[[Container, list[str]], None] = ignore_completed, turns: WriteTurns | None = None) -> None:
         self.home, self.busy_timeout_seconds, self.listener_runner = home, busy_timeout_seconds, listener_runner
         self.reported = reported or ReportedFindings()
         self.fingerprint = CodeFingerprint()
         self.request_queue = request_queue
         self.completion_callback = completion_callback
+        self.turns = turns
 
     def run(self, argv: list[str], request: CallerRequest, stream: TextIO, deadline: Deadline | None = None,
             timing: Timing | None = None) -> int:
         if argv[:2] in (SYNC_ARGV, MODULE_ADDITION_ARGUMENTS):
-            container = opened_container(self.home)
+            container = opened_container(self.home, self.turns)
             try:
                 line = ModuleAddLine if argv[:2] == MODULE_ADDITION_ARGUMENTS else ModuleSyncLine
                 return container.get(line).run(argv, stream)
@@ -96,7 +98,7 @@ class LineRun:
             container.get(Database).close()
 
     def synced(self, deadline: Deadline | None, timing: Timing | None) -> Container:
-        container = synced_container(self.home)
+        container = synced_container(self.home, self.turns)
         container.bind(CodeFingerprint, self.fingerprint)
         container.bind(ReportedFindings, self.reported)
         if self.request_queue is not None:

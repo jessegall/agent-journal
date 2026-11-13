@@ -218,7 +218,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             turn = queue.observing(queued) if context.viewer.routes.priorities.is_unqueued(request.argv) else queue.cli_turn(queued)
             with turn:
                 queued_ms = (perf_counter() - started_at) * 1000
-                code = CliEndpoint(context.home, ListenerWake(context.listener_thread), context.reported_findings, queue, context.request_trace.completed).answer(request, ChunkStream(self.send_chunk, self.is_caller_gone))
+                code = CliEndpoint(context.home, ListenerWake(context.listener_thread), context.reported_findings, queue, context.request_trace.completed, context.hook_database.turns).answer(request, ChunkStream(self.send_chunk, self.is_caller_gone))
         except Exception as error:
             self.journal_server().context.files.log_line("".join(traceback.format_exception(error)), LogLevel.ERROR)
             self.send_chunk(f"{type(error).__name__}: {error}\n".encode())
