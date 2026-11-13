@@ -21,6 +21,7 @@ from core.modules.assign_rules.support.board.waiting_task import WaitingTask
 from core.modules.assign_rules.support.condition_line import ConditionLine
 from core.modules.assign_rules.support.rule_conditions import RuleConditions
 from core.modules.assign_rules.support.rule_revision import RuleRevision
+from core.modules.assign_rules.support.rule_warnings import RuleWarnings
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 
@@ -33,11 +34,12 @@ ACTIVITY_WINDOW = timedelta(days=1)
 class AssignBoardReader:
     """Reads what the Assign tab shows: the main agent once, each agent that may take tasks and is not
     retired, each with the oldest unstarted task a rule gave it, each program and model those agents run on,
-    and the rules with their conditions in plain words and what each did in the last day."""
+    and the rules with their conditions in plain words, what each did in the last day, and a warning when its
+    target cannot take its tasks."""
 
-    def __init__(self, queries: Queries, conditions: RuleConditions, tasks: TaskQuery, decisions: AssignDecisionQuery, clock: Clock) -> None:
+    def __init__(self, queries: Queries, conditions: RuleConditions, tasks: TaskQuery, decisions: AssignDecisionQuery, clock: Clock, warnings: RuleWarnings) -> None:
         self.queries, self.conditions, self.tasks = queries, conditions, tasks
-        self.decisions, self.clock = decisions, clock
+        self.decisions, self.clock, self.warnings = decisions, clock, warnings
 
     def read(self) -> AssignBoard:
         agents = list(self.queries.query(Agent).every_row(AGENTS_REASON))
@@ -81,8 +83,18 @@ class AssignBoardReader:
 
     def board_rule(self, rule: AssignRule, lines: tuple[ConditionLine, ...], agent_rows: dict[int, Agent], activity: RuleActivity) -> BoardRule:
         conditions = tuple(BoardCondition(line.field, line.operator, line.value, line.label) for line in lines)
-        warning = self.agent_warning(rule.target_agent_id, agent_rows) if rule.target is RuleTarget.AGENT else ""
+        warnings = [self.agent_warning(rule.target_agent_id, agent_rows) if rule.target is RuleTarget.AGENT else "", self.route_warning(rule, lines, agent_rows)]
+        warning = "; ".join(text for text in warnings if text)
         return BoardRule(rule.id, rule.position, rule.enabled, rule.target, self.target_key(rule), rule.target_name, rule.queue_limit, conditions, warning, activity)
+
+    def route_warning(self, rule: AssignRule, lines: tuple[ConditionLine, ...], agent_rows: dict[int, Agent]) -> str:
+        match rule.target:
+            case RuleTarget.MODEL:
+                return self.warnings.warning(rule.program, lines)
+            case RuleTarget.AGENT if rule.target_agent_id in agent_rows:
+                return self.warnings.warning(agent_rows[rule.target_agent_id].program, lines)
+            case _:
+                return ""
 
     @staticmethod
     def target_key(rule: AssignRule) -> str:

@@ -221,3 +221,28 @@ def test_each_target_shows_the_oldest_unstarted_task_a_rule_gave_it(new_story):
     with assign_tab(story) as tab:
         main = tab.target("main")
     story.expect_rows(main["waiting"].startswith(f"Oldest waiting: task {task_id}, "), detail=str(main))
+
+
+def test_apply_in_the_tab_lists_the_tasks_and_gives_them_once_confirmed(new_story):
+    story = new_story(fixture=OrchestratorWithPerson)
+    rule_id = story.new_row_id("assign-rule make --target main --condition any --environment main", actor=story.user)
+    story.run(f"assign-rule disable {rule_id} --environment main", actor=story.user)
+    task_id = story.new_row_id('task make "Fix the cart" --environment main', actor=story.user)
+    story.run(f"assign-rule enable {rule_id} --environment main", actor=story.user)
+    with assign_tab(story) as tab:
+        listed = tab.change("assign-rule", "apply", str(rule_id))
+        confirmed = tab.change("assign-rule", "apply", str(rule_id), "--confirm")
+    story.expect_rows(listed.code == 0, [row["task_id"] for row in listed.value["tasks"]] == [task_id], not listed.value["confirmed"], confirmed.value["confirmed"], detail=listed.text)
+    story.expect_text(f"task info {task_id} --environment main", f"assigned to: agent {story.agent.id}", actor=story.user)
+
+
+def test_a_rule_whose_tasks_a_route_sends_to_another_program_warns_until_the_route_changes(new_story):
+    story = new_story(fixture=SonnetWorkerAndFreeTask)
+    route_id = story.new_row_id("worker-route make --program codex --tags backend --environment main", actor=story.agent)
+    with assign_tab(story) as tab:
+        saved = tab.change("assign-rule", "make", *model_flags(tab.target("model")), "--condition", "tag has backend")
+        warned = tab.board()
+        story.run(f"worker-route edit {route_id} --program claude --environment main", actor=story.user)
+        refreshed = tab.board()
+    story.expect_rows(saved.code == 0, warned["rules"][0]["warning"] == f"route {route_id} sends these tasks to codex", refreshed["rules"][0]["warning"] == "",
+                      refreshed["revision"] == warned["revision"], detail=str((warned["rules"], refreshed["rules"])))

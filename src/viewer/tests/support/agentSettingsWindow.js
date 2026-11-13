@@ -27,7 +27,7 @@ const KEYS = {
     limits: {line: "agent limits", loading: "requested", events: ["agent.*", "setting.*"]},
     "type-screen": {line: "setting-screen show helper-type", loading: "requested", arguments: ["type"], events: ["setting.*"]},
     "count-agents": {line: "agent cards --show all --reusable", arguments: ["role", "profile", "page"], loading: "requested", events: ["agent.*"]},
-    assign: {line: "assign-rule board", loading: "requested", events: ["assign_rule.*", "assign_rule_condition.*", "agent.*"]},
+    assign: {line: "assign-rule board", loading: "requested", events: ["assign_rule.*", "assign_rule_condition.*", "agent.*", "worker_route.*"]},
 };
 const RULE = JSON.stringify({rule: "number", minimum: 0, integer: true, maximum: null, exclusive: false});
 
