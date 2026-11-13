@@ -11,6 +11,8 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import SECO
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 from suites.coding.modules.workers.support.worker_nudges import WORKER_COMMITTED_UNMERGED
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.modules.workers.commands.send_unfinished_tasks_line.send_unfinished_tasks_line import WORKER_UNFINISHED_TASKS
+from suites.coding.modules.workers.support.worker_nudges import WORKER_RESTARTED
 
 MAIN_SESSION = "s-1"
 PROCESS_START = "2026-10-31T09:00:00+00:00"
@@ -77,7 +79,7 @@ def ended_during_tests(new_story, monkeypatch):
 def test_a_worker_waiting_on_the_tests_of_its_commit_is_not_told_to_go_on(ended_during_tests):
     ended_during_tests.story.tick(MAIN_SESSION)
     ended_during_tests.story.expect_text("proof show 1", "state: running", actor=ended_during_tests.story.agent)
-    ended_during_tests.story.expect_rows(not any("stopped with" in line for line in ended_during_tests.main_agent_lines()))
+    ended_during_tests.story.expect_rows(not any(said(WORKER_RESTARTED).is_in(line) for line in ended_during_tests.main_agent_lines()))
     ended_during_tests.story.expect_rows(not any("tasks left" in line for line in ended_during_tests.worker_lines()))
 
 
@@ -99,14 +101,14 @@ def test_a_worker_that_ended_while_its_tests_run_and_holds_a_started_task_is_tol
     worker.story.tick(MAIN_SESSION)
     WorkerResumeRetry()(worker.story.container)
     worker.story.expect_text(f"worker status {agent_number(worker.story, worker.worker.id)}", "Point: build", actor=worker.story.agent)
-    worker.story.expect_rows(any("You ended with tasks left, task:3" in line for line in worker.worker_lines()), detail=str(worker.worker_lines()))
+    worker.story.expect_rows(any(said(WORKER_UNFINISHED_TASKS).is_in(line) for line in worker.worker_lines()), detail=str(worker.worker_lines()))
 
 
 def test_a_worker_that_ended_while_its_commit_runs_leaves_no_stopped_line(handoff_worker):
     worker = handoff_worker
     worker.story.expect_text(f"worker status {agent_number(worker.story, worker.worker.id)}", "Point: commit", actor=worker.story.agent)
     worker.story.tick(MAIN_SESSION)
-    worker.story.expect_rows(not any("stopped with" in line or "ended with" in line for line in worker.main_agent_lines()), detail=str(worker.main_agent_lines()))
+    worker.story.expect_rows(not any(said(WORKER_RESTARTED).is_in(line) or "ended with" in line for line in worker.main_agent_lines()), detail=str(worker.main_agent_lines()))
 
 
 def test_after_its_limit_a_worker_that_ended_names_its_tasks_left_and_the_committed_one_that_is_not_merged(program_ended):

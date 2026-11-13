@@ -8,6 +8,8 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.engine.driver.support.fixtures import LeadStarted
 from tests.stories.engine.driver.support.samples import REMOVAL, SAMPLES
 from engine.testing.expectations.expect_reply import expect_absent_reply_line, expect_reply_line, expect_reply_refusal
+from core.modules.drivers.support.driver_nudges import MANAGED_HOOK_REFUSAL
+from engine.testing.expectations.expect_nudge import said
 LISTING = HookSamples.shell("ls build", ShellPart("ls", CommandCategory.SEARCH, ["build"], effects=[CommandEffect.READS_FILES]))
 
 
@@ -25,7 +27,7 @@ def test_a_project_hook_refuses_a_tool_and_the_call_names_it(new_story):
 
 def test_a_project_hook_refuses_a_stop(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
-    story.expect_hook_refusal("s-1", managed(HookSamples.stop(), {"refusal": "unfinished"}), "Project hooks refused for agent:")
+    story.expect_hook_refusal("s-1", managed(HookSamples.stop(), {"refusal": "unfinished"}), said(MANAGED_HOOK_REFUSAL))
     story.expect_text(f"agent-line list --agent {story.agent.id}", "project-check: unfinished", actor=story.agent)
 
 

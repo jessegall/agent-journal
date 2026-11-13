@@ -5,6 +5,8 @@ from engine.query.queries import Queries
 from core.modules.chat.models.journal_exception import JournalException
 from core.modules.processes.ticks.output_reading import OutputReading
 from tests.stories.core.modules.developer.support.performance_fixture import DevelopmentToolsEnabled
+from core.modules.developer.support.developer_nudges import EXCEPTION_LINE
+from engine.testing.expectations.expect_nudge import said
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -24,4 +26,4 @@ def test_tick_warnings_repeat_after_five_rise_at_once_and_reset_below_the_limit(
     story.expect_rows(counts == [1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3, 4, 5, 5, 6])
     marks = story.run("chat-mark main --environment main --json", actor=story.user).output_text
     lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text
-    story.expect_rows(marks.count("cost 51 points") == 4, all(f"journal-exception:{warning.id}" in lines for warning in warnings))
+    story.expect_rows(marks.count("cost 51 points") == 4, all(said(EXCEPTION_LINE).is_in(lines) for warning in warnings))

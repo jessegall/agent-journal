@@ -3,6 +3,8 @@ from datetime import timedelta
 from engine.log.exception_sink import ExceptionSink
 from core.modules.developer.support.developer_settings import TOOLS_SETTING
 from tests.stories.core.support.fixtures import UserJoined
+from core.modules.developer.support.developer_nudges import EXCEPTION_LINE
+from engine.testing.expectations.expect_nudge import said
 
 LINES = "agent-line list --agent {agent}"
 
@@ -28,4 +30,4 @@ def test_with_the_tools_off_no_line_is_sent(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success(f"setting switch {TOOLS_SETTING} off --project", actor=story.user)
     failed_read(story, "TypeError: a second error")
-    story.expect_no_text(LINES.format(agent=story.agent.id), "journal-exception:")
+    story.expect_no_text(LINES.format(agent=story.agent.id), said(EXCEPTION_LINE))

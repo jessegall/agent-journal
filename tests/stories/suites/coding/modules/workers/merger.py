@@ -48,6 +48,8 @@ from tests.stories.suites.coding.modules.workers.quiet_helpers import StartedMer
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_PASSED
 from engine.testing.expectations.expect_nudge import said
+from core.modules.agents.support.report_nudges import PARENT_REPORT
+from core.modules.helpers.support.helper_nudges import HELPER_PROGRAM_FAULT
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -208,9 +210,9 @@ def test_the_merger_and_a_worker_message_each_other_but_two_workers_do_not(new_s
     merger = Actor(merger_agent(story).id, ActorType.AGENT)
     second_agent = Actor(story.new_row_id(f"agent start s-other claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
     story.expect_success(f'merger advise {agent_number(story, worker.id)} "Rebase on main first"', actor=merger)
-    story.expect_text(f"agent-line list --agent {worker.id}", f"agent:{agent_number(story, merger.id)} reported in message:", actor=worker)
+    story.expect_text(f"agent-line list --agent {worker.id}", said(PARENT_REPORT), actor=worker)
     story.expect_success(f'message send "Rebased" --to agent:{agent_number(story, merger.id)}', actor=worker)
-    story.expect_text(f"agent-line list --agent {merger.id}", f"agent:{agent_number(story, worker.id)} reported in message:", actor=merger)
+    story.expect_text(f"agent-line list --agent {merger.id}", said(PARENT_REPORT), actor=merger)
     story.expect_refusal(f'message send "Hello" --to agent:{agent_number(story, second_agent.id)}', "not yours to message", actor=worker)
 
 
@@ -344,7 +346,7 @@ def test_the_merger_ending_without_a_report_does_not_notify_the_main_agent(new_s
     story.run_listeners()
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "It ended without a report")
     lines = story.run(f"agent-line list --agent {story.agent.id}").output_text
-    story.expect_rows((f"agent:{agent_number(story, merger.id)} program exited with code 137" in lines) == fault)
+    story.expect_rows((said(HELPER_PROGRAM_FAULT).is_in(lines)) == fault)
     story.expect_rows(story.container.get(HelperJobRows).open_job(merger.id) is None)
 
 

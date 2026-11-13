@@ -8,6 +8,7 @@ from tests.stories.core.modules.processes.support.reader_teaching_fixtures impor
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.modules.processes.support.process_nudges import READER_HINT
 from engine.testing.expectations.expect_nudge import said
+from core.modules.processes.support.process_nudges import READER_HINT
 
 VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])).with_fields(event="post_tool_use")
 
@@ -54,7 +55,7 @@ def test_reading_all_of_an_output_a_reader_reads_names_the_shorter_read(new_stor
     process = moved_run(story, "make test")
     end_run(story, process, "3 passed in 1s\n" + "x\n" * 300)
     story.expect_hook_allowed("s-1", posted(f"journal output read {process.id} --all"), said(READER_HINT, reader='tally'))
-    story.expect_absent_hook_line("s-1", posted(f"journal output read {process.id} --tail 5"), "already reads output")
+    story.expect_absent_hook_line("s-1", posted(f"journal output read {process.id} --tail 5"), said(READER_HINT))
 
 
 def test_a_title_that_holds_a_flag_or_a_path_is_refused_and_a_readers_title_is_not_judged(new_story):

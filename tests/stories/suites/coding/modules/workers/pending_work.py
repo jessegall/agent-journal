@@ -25,6 +25,8 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.test_queue import PROOF, ended, recording_launch
 from tests.stories.core.support.agent_labels import agent_label
+from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
+from engine.testing.expectations.expect_nudge import said
 
 
 class PersonOrchestrator(StoryFixture):
@@ -142,7 +144,7 @@ def test_work_returned_to_the_main_agent_keeps_the_place_until_release(waiting_p
     merger = merger_agent(story)
     story.expect_success(f'merger pass {agent_number(story, first.id)} "Needs a decision"', actor=Actor(merger.id, ActorType.AGENT))
     story.expect_text("merger-line list", "Needs a decision", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "merger-line:", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", said(MERGER_LINE_AVAILABLE), actor=story.agent)
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "Needs a decision", actor=story.agent)
     expect_working(server, cookie, first.id, "with the main agent")
     story.expect_rows(launches.count(second.id) == 1)

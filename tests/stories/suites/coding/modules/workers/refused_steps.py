@@ -8,6 +8,8 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.support.story_checks import expect_count_output_2
+from suites.coding.modules.workers.support.worker_nudges import WORKER_REFUSED
+from engine.testing.expectations.expect_nudge import said
 
 REASON = "[plugin sample] the checks need a fix"
 
@@ -28,7 +30,7 @@ def test_a_worker_refused_by_a_plugin_five_times_is_named_to_the_main_agent(work
         story.expect_refusal(step, REASON, actor=worker)
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "refused")
     story.expect_refusal(step, REASON, actor=worker)
-    story.expect_text(f"agent-line list --agent {story.agent.id} --json", f"worker:{agent_number(story, worker.id)} hit 5 refusals on task:1")
+    story.expect_text(f"agent-line list --agent {story.agent.id} --json", said(WORKER_REFUSED))
     story.expect_refusal(step, REASON, actor=worker)
     expect_count_output_2(story, f"agent-line list --agent {story.agent.id}", "hit 5 refusals", 1)
     story.advance(timedelta(minutes=10))

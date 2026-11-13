@@ -5,6 +5,8 @@ from core.modules.drivers.support.access_nudges import REPLACED_SESSION, UNKNOWN
 from engine.driver.hook_event import HOOK_EVENT_VERSION, HookEvent
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
+from core.modules.drivers.support.access_nudges import REPLACED_SESSION
+from engine.testing.expectations.expect_nudge import said
 
 MAIN_ROW_ID = 7
 REPLACED_SESSIONS = {"s-1": MAIN_ROW_ID}
@@ -43,7 +45,7 @@ def hook(session: str, event: HookEventName, role: str = "", source: str = "star
 def test_a_tool_of_a_session_in_the_history_that_is_not_current_is_answered_replaced():
     reply = route().agentless_reply(hook("s-1", HookEventName.PRE_TOOL_USE))
     assert reply.refusal == REPLACED_SESSION.nudge(agent=1).text
-    assert "A newer session of agent 1 replaced this one" in reply.refusal
+    assert said(REPLACED_SESSION).is_in(reply.refusal)
 
 
 def test_another_event_of_a_replaced_session_passes_with_no_refusal():

@@ -5,6 +5,8 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from core.modules.drivers.support.access_nudges import LIMITED_TOOL
+from engine.testing.expectations.expect_nudge import said
 
 CLAUDE_DESIGN_TOOL = "mcp__claude_design__write_files"
 
@@ -49,4 +51,4 @@ def test_a_designer_helper_calls_the_claude_design_tools(new_story):
 
 def test_another_read_only_helper_is_still_refused_the_claude_design_tools(new_story):
     story = new_story(fixture=StartedResearcher)
-    story.expect_hook_refusal(helper_agent(story).session, claude_design_call(), f"Read-only agents have no {CLAUDE_DESIGN_TOOL}")
+    story.expect_hook_refusal(helper_agent(story).session, claude_design_call(), said(LIMITED_TOOL))

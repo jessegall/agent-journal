@@ -23,6 +23,8 @@ from tests.stories.suites.coding.modules.workers.support.judge_plugin import SIN
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, merger_can_start, running_launcher
 from tests.stories.suites.coding.modules.workers.support.phase_steps import start_planned_worker
 from tests.stories.support.story_checks import expect_value, expect_value_with
+from core.modules.helpers.support.helper_nudges import HELPER_GRANTED
+from engine.testing.expectations.expect_nudge import said
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -269,7 +271,7 @@ def test_the_main_agent_still_needs_a_delivery_to_review(case):
 
 def test_the_merger_grants_a_run_that_names_its_test_file(spent_case):
     spent_case.story.expect_success(f"helper grant {agent_number(spent_case.story, spent_case.worker.id)} pytest tests/cart.py", actor=spent_case.merger)
-    spent_case.story.expect_rows("helper-grant:1" in spent_case.worker_lines(), detail=spent_case.worker_lines())
+    spent_case.story.expect_rows(said(HELPER_GRANTED).is_in(spent_case.worker_lines()), detail=spent_case.worker_lines())
 
 
 def test_the_merger_may_not_grant_a_run_with_no_test_file(spent_case):

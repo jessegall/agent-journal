@@ -14,6 +14,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment, worker_session
 from core.modules.messages.support.message_nudges import UNANSWERED
 from engine.testing.expectations.expect_nudge import said
+from core.modules.agents.support.report_nudges import PARENT_REPORT
 
 REPORT = "The cart total now adds the tax once; the tests pass."
 
@@ -41,7 +42,7 @@ def test_what_a_worker_says_as_it_stops_with_every_task_handed_in_is_its_report_
     worker = delivered_worker(story, repository)
     story.expect_hook_allowed(worker_session(story, worker), stop_with_text(REPORT))
     story.expect_absent("message feed --json", REPORT)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, worker.id)} reported in message:1")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", said(PARENT_REPORT))
     story.expect_text("message read 1", REPORT, actor=story.agent)
 
 
@@ -50,7 +51,7 @@ def test_a_workers_message_reaches_the_agent_that_sent_it_as_a_line(new_story):
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success('worker report "The cart needs a tax rate"', actor=worker)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, worker.id)} reported in message:1")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", said(PARENT_REPORT))
     story.expect_text("message read 1", "The cart needs a tax rate", actor=story.agent)
     story.expect_text("task show 1", "state: started", f"holder_id: {worker.id}")
 

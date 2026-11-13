@@ -14,6 +14,8 @@ from suites.coding.modules.workers.ticks.idle_main_agent_wake import IdleMainAge
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from tests.stories.suites.coding.support.main_controls_fixture import scope_line
 from tests.stories.support.story_checks import expect_value
+from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
+from engine.testing.expectations.expect_nudge import said
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 AUTO = "journal.suites.coding.auto-mode"
@@ -53,7 +55,7 @@ def main_story(new_story):
 
 def test_s01_the_main_driver_hands_the_open_task_to_a_stopping_main_agent_when_auto_is_on(new_story):
     story = main_story(new_story)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "is yours now")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), said(TASK_ASSIGNMENT))
 
 
 def test_s02_s10_keep_going_holds_a_stop_while_a_task_can_go_to_a_worker_and_hands_it_over_once_no_worker_can_start(new_story):
@@ -62,7 +64,7 @@ def test_s02_s10_keep_going_holds_a_stop_while_a_task_can_go_to_a_worker_and_han
     story.expect_success(f"setting set {CONTINUE_SETTING} on --environment main")
     story.expect_hook_refusal("s-1", HookSamples.stop(), "Open tasks wait")
     story.expect_success(f"setting set {WORKER_LIMIT} 0 --environment main")
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "is yours now")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), said(TASK_ASSIGNMENT))
 
 
 def waking_lines(story) -> list[str]:
@@ -85,7 +87,7 @@ def test_turning_keep_going_on_wakes_the_idle_main_agent_once_for_a_free_place_a
     first, again = waking_lines(story), waking_lines(story)
     story.expect_success(f"setting set {WORKER_LIMIT} 0 --environment main")
     last = waking_lines(story)
-    story.expect_rows(len(first) == 1, "can go to a worker" in first[0], again == first, len(last) == 2, "is yours now" in last[-1], detail=str(last))
+    story.expect_rows(len(first) == 1, "can go to a worker" in first[0], again == first, len(last) == 2, said(TASK_ASSIGNMENT).is_in(last[-1]), detail=str(last))
 
 
 def test_the_free_place_notice_comes_back_when_another_task_can_go_to_a_worker(new_story):

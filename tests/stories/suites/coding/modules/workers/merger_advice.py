@@ -23,6 +23,8 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, merger_can_start
 from tests.stories.suites.coding.modules.workers.support.phase_steps import StoryWorker, start_planned_worker
 from tests.stories.support.story_checks import expect_value, expect_value_without
+from core.modules.agents.support.report_nudges import PARENT_REPORT
+from engine.testing.expectations.expect_nudge import said
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -186,7 +188,7 @@ def merged_after_five_asks(five_questions):
 def test_advise_still_reaches_the_worker_as_a_message_from_the_merger(advising):
     advising.advised()
     advising.story.expect_rows([row.text for row in advising.messages()] == [ADVICES[0]], len(advising.merger_message_rows()) == 1, detail=str(advising.messages()))
-    advising.story.expect_text(f"agent-line list --agent {advising.worker.id}", f"agent:{agent_number(advising.story, advising.merger.id)} reported in message:", actor=advising.worker)
+    advising.story.expect_text(f"agent-line list --agent {advising.worker.id}", said(PARENT_REPORT), actor=advising.worker)
 
 
 def test_a_burst_of_lines_about_one_worker_becomes_one_advice(advising):

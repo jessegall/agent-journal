@@ -14,6 +14,9 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import D
 from tests.stories.suites.coding.modules.workers.worktree_behind_check import checks, look, setting
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState
 from suites.coding.modules.workers.models.merger_line import MergerLine
+from suites.coding.modules.workers.support.behind_nudges import UPDATE_NOT_RUN
+from suites.coding.modules.workers.support.behind_nudges import UPDATE_ORDERED
+from engine.testing.expectations.expect_nudge import said
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 WAIT = timedelta(minutes=30)
@@ -60,7 +63,7 @@ def s43_advice_that_did_not_help_is_passed_to_the_main_agent_with_the_reason(sto
 def s45_the_main_agent_orders_the_update_as_the_merger_would(story, repository, worker: Actor) -> None:
     both_change(repository, worker, CLASHING_FILE, CLASHING_FILE)
     story.expect_success(f"worker update {agent_number(story, worker.id)}", actor=story.agent)
-    story.expect_rows("Your base branch moved" in worker_lines(story, worker), [check.state for check in checks(story)] == [BehindCheckState.ORDERED],
+    story.expect_rows(said(UPDATE_ORDERED).is_in(worker_lines(story, worker)), [check.state for check in checks(story)] == [BehindCheckState.ORDERED],
                       detail=worker_lines(story, worker))
 
 
@@ -94,7 +97,7 @@ def f52_an_ordered_update_not_run_is_reminded_twice_then_the_merger_hears(story,
     for _ in range(3):
         waited(story)
     reminders = worker_lines(story, worker).count("reminder: run journal worker update")
-    story.expect_rows(reminders == 2, sum("has not run the ordered update" in text for text in merger_texts(story)) == 1, detail=f"{reminders} {merger_texts(story)}")
+    story.expect_rows(reminders == 2, sum(said(UPDATE_NOT_RUN).is_in(text) for text in merger_texts(story)) == 1, detail=f"{reminders} {merger_texts(story)}")
 
 
 def g60_a_worker_naming_another_worker_is_refused(story, repository, worker: Actor) -> None:

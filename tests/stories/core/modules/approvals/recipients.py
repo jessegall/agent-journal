@@ -13,6 +13,8 @@ from core.modules.docking.models.enums.dock_item_state import DockItemState
 from engine.testing.stories.story import Story
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
+from core.modules.approvals.support.approval_nudges import APPROVAL_REVIEW
+from engine.testing.expectations.expect_nudge import said
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -36,7 +38,7 @@ def test_a_helpers_request_is_addressed_to_its_main_agent_and_has_no_person_card
     story, helper, approval = helper_request
     items = tuple(story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=approval.id, state=DockItemState.DOCKED).every_row(TEST_ROWS_REASON))
     story.expect_rows(approval.recipient_agent_id == story.agent.id, not items)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "needs your review", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", said(APPROVAL_REVIEW), actor=story.agent)
     with viewer_client(story) as viewer:
         viewer.refusal("messages.chat", ["approval", "accept", str(approval.id)], "addressed to main agent")
 

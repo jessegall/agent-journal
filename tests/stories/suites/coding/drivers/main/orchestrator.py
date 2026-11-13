@@ -11,6 +11,7 @@ from tests.stories.core.support.plan_steps import ready_plan
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from suites.coding.support.coding_nudges import OPEN_TASKS_WAIT
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
 
 READ_MESSAGE_HOOK = HookSamples.shell("journal message read 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")).with_fields(event="post_tool_use")
 
@@ -37,7 +38,7 @@ def test_a_main_agent_with_auto_off_with_nothing_open_stops(new_story):
 def test_a_main_agent_that_keeps_going_at_the_worker_limit_takes_the_open_task_itself(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.run("setting make journal.suites.coding.workers.worker-run-limit 0")
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "is yours now")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), said(TASK_ASSIGNMENT))
 
 
 def test_tasks_a_running_worker_has_queued_let_the_main_agent_stop(new_story):

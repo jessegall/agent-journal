@@ -5,6 +5,8 @@ from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper
 from tests.stories.core.modules.helpers.helper_reports import LINES, helper_report, stop_with_report
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.engine.driver.support.hook_agents import hook_agent
+from core.modules.agents.support.report_nudges import PARENT_REPORT
+from engine.testing.expectations.expect_nudge import said
 
 MEMORY_TEXT = "The till is counted every evening"
 MEMORIES_LINE = "1 memories to read: load the memory skill as directed, then list them"
@@ -43,7 +45,7 @@ def test_a_helper_of_agent_one_keeps_its_parent_and_its_report_reaches_the_new_s
     session_agent = new_main_session(story, "s-2")
     story.expect_rows(session_agent.id == story.agent.id, helper_agent(story).parent_id == story.agent.id)
     story.hook(helper_agent(story).session, stop_with_report("The cart adds tax twice."))
-    story.expect_text(LINES.format(agent=story.agent.id), f"reported in message:{helper_report(story).id}")
+    story.expect_text(LINES.format(agent=story.agent.id), said(PARENT_REPORT))
     story.expect_text(f"message read {helper_report(story).id}", "The cart adds tax twice.", actor=session_agent)
 
 

@@ -8,6 +8,8 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.models.message import Message
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
+from core.modules.agents.support.report_nudges import PARENT_REPORT
+from engine.testing.expectations.expect_nudge import said
 
 LINES = "agent-line list --agent {agent}"
 
@@ -25,7 +27,7 @@ def test_a_main_agent_messages_its_own_helper_and_the_helper_is_told_the_message
     helper = helper_actor(story)
     story.expect_success(f'message send "Look at src/cart.py again" --to agent:{agent_number(story, helper.id)} --environment main', actor=story.agent)
     message = sender_name(story, story.agent.id)
-    story.expect_text(LINES.format(agent=helper.id), f"agent:{agent_number(story, story.agent.id)} reported in message:{message.id}")
+    story.expect_text(LINES.format(agent=helper.id), said(PARENT_REPORT))
     story.expect_text(f"message read {message.id}", "Look at src/cart.py again", actor=helper)
     story.expect_rows(message.is_chat_visible is False)
 
@@ -38,7 +40,7 @@ def test_a_helper_messages_its_main_agent_by_the_number_agent_main_gives(new_sto
     story.expect_text("agent main --environment main", f"agent:{main['number']}, session", f"row id {story.agent.id}", actor=helper)
     story.expect_success(f'message send "The total is wrong" --to agent:{main["number"]} --environment main', actor=helper)
     message = sender_name(story, helper.id)
-    story.expect_text(LINES.format(agent=story.agent.id), f"agent:{agent_number(story, helper.id)} reported in message:{message.id}")
+    story.expect_text(LINES.format(agent=story.agent.id), said(PARENT_REPORT))
     story.expect_text(f"message read {message.id}", "The total is wrong", actor=story.agent)
 
 

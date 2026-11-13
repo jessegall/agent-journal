@@ -6,6 +6,8 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.fixtures import LeadWaiting
 from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.support import story_lines as lines
+from core.modules.waits.support.wait_nudges import WAIT_CHECK
+from engine.testing.expectations.expect_nudge import said
 
 
 def test_a_wait_of_ten_minutes_tells_the_agent_to_check_on_it(new_story):
@@ -14,7 +16,7 @@ def test_a_wait_of_ten_minutes_tells_the_agent_to_check_on_it(new_story):
     story.expect_absent(f"agent-line list --agent {story.agent.id}", "you have waited", actor=story.agent)
     story.advance(timedelta(minutes=11))
     story.tick("s-1")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "You have waited 11 min", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", said(WAIT_CHECK), actor=story.agent)
 
 
 def test_a_wait_that_ends_on_its_task_tells_the_agent_at_its_next_hook(new_story):

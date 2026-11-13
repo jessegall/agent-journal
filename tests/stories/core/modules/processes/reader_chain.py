@@ -15,6 +15,7 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from suites.coding.modules.workers.support.worker_nudges import READER_SAMPLE_READY
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.modules.workers.support.worker_nudges import READER_SAMPLE_READY
 
 
 def test_a_test_reader_is_not_judged_on_a_python_setup_command(new_story):
@@ -49,7 +50,7 @@ def test_only_the_owner_is_told_to_read_a_shared_sample(new_story):
     story.expect_success('reader add custom --commands "custom-build*" --title "Custom tests" --lines done --summary done --step PASSED --count "collected ([0-9]+)" --count-command "{part} --list"', actor=story.agent)
     story.run_listeners()
     story.expect_text(f"agent-line list --agent {sample.session_agent_id}", said(READER_SAMPLE_READY, reader='custom'))
-    story.expect_no_text(f"agent-line list --agent {second.id}", f"Read the sample of output {sample.id}")
+    story.expect_no_text(f"agent-line list --agent {second.id}", said(READER_SAMPLE_READY))
 
 
 def test_a_shell_limit_before_pytest_needs_no_reader_of_its_own(new_story):
