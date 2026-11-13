@@ -34,7 +34,7 @@ class SecretValues:
 
     def hidden_values(self) -> dict[str, str]:
         shown = self.shown()
-        return {value: name.removeprefix(RETIRED_PREFIX).rsplit(RETIRED_TIME_MARK, 1)[0] for name, value in self.values().items() if value and name not in shown}
+        return {value: self.field_variable(name) for name, value in self.values().items() if value and name not in shown}
 
     def put(self, variable: str, value: str, hidden: bool, epoch_seconds: int) -> None:
         current = self.values()
@@ -51,6 +51,18 @@ class SecretValues:
         retired = {f"{RETIRED_PREFIX}{variable}{RETIRED_TIME_MARK}{epoch_seconds}": value} if value and variable not in self.shown() else {}
         self.write({**current, **retired})
         self.write_shown(self.shown() - {variable})
+
+    # Drops each variable's value and every replaced copy of it, so no trace of the value stays in the file.
+    def erase(self, variables: tuple[str, ...]) -> None:
+        erased = {name for name in self.values() if self.field_variable(name) in variables}
+        if not erased:
+            return
+        self.write({name: value for name, value in self.values().items() if name not in erased})
+        self.write_shown(self.shown() - erased)
+
+    @staticmethod
+    def field_variable(name: str) -> str:
+        return name.removeprefix(RETIRED_PREFIX).rsplit(RETIRED_TIME_MARK, 1)[0] if name.startswith(RETIRED_PREFIX) else name
 
     def shown(self) -> set[str]:
         path = self.folder.file(SHOWN_SUFFIX)

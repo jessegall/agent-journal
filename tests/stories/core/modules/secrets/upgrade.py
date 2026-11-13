@@ -19,8 +19,9 @@ def test_a_moved_secret_runs_with_the_value_version_4_kept_masked_in_the_output(
     story.expect_rows(outcome.code == 0, "[secret GITHUB_KEY]" in outcome.output_text, GITHUB_VALUE not in outcome.output_text)
 
 
-def test_a_secret_deleted_in_version_4_moves_deleted_and_a_browser_login_waits_for_after_the_switch(new_story, private_folder):
+def test_a_secret_deleted_in_version_4_is_not_moved_and_a_browser_login_waits_for_after_the_switch(new_story, private_folder):
     story = upgraded_story(new_story, partial(with_private_values, secrets_folder=private_folder))
-    story.expect_text("secret show 3", "secret 3: Old token (custom), deleted")
+    story.expect_refusal("secret show 3", "no secret 3")
+    expect_upgrade_text(story, "skipped secrets 3: a deleted secret is erased, not moved")
     story.expect_refusal("secret show 4", "no secret 4")
     expect_upgrade_text(story, "skipped secrets 4: a browser login moves after the switch")

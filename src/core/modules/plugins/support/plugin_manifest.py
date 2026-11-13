@@ -33,7 +33,7 @@ REQUIRED_FIELDS = ("name", "title", "version")
 PLUGIN_RUN_CATEGORY = CommandCategory.CHECK
 
 
-LINE_VERSION = 2
+LINE_VERSION = 3
 
 
 @dataclass(frozen=True)

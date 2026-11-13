@@ -5,7 +5,6 @@ from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
-from engine.errors.refusal import Refusal
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
@@ -34,9 +33,6 @@ class SecretRunSubcommand(ReadSubcommand[SecretRunOutcome]):
         parser.add_argument("command", nargs="*")
 
     def read(self, arguments: Namespace, caller: Caller) -> SecretRunOutcome:
-        deleted = [row for row in self.secrets.deleted().get() if str(row.id) == arguments.secret]
-        if deleted:
-            raise Refusal(f"secret {deleted[0].id} is deleted", f"journal secret restore {deleted[0].id} brings it back")
         secret = self.secrets.find_title(arguments.secret)
         if not secret.helpers and caller.actor.type is ActorType.AGENT and self.queries.query(Agent).find(caller.actor.id).role != AgentRole.MAIN:
             raise UserApprovalRefusal(f"Allow helpers to use the secret {secret.title} and run the requested command?",

@@ -37,7 +37,6 @@ def database(tmp_path):
     (Statement("SELECT * FROM dumps WHERE closed_at IS NULL ORDER BY id LIMIT 1"), "dumps_closed_at"),
     (Statement("SELECT * FROM messages WHERE parent_id = ? AND type = ? LIMIT 1", (1, "agent")), "messages_parent_type"),
     (Statement("SELECT * FROM checks WHERE removed_at IS NULL AND task_wait_id > ? AND last_passed = ? ORDER BY id LIMIT 25", (0, 0)), "checks_open_result"),
-    (Statement("SELECT * FROM secrets WHERE deleted_at IS NULL ORDER BY id"), "secrets_active"),
     (Statement("SELECT 1 FROM agent_lines WHERE source = ? AND text = ? LIMIT 1", ("workers.launch-failed", "Could not start")), "agent_lines_source_text"),
     (Statement("SELECT * FROM agent_blocks WHERE session_agent_id = ?", [1]), "agent_blocks_open"),
     (Statement("SELECT * FROM reader_requests WHERE sample_process_id = ?", [1]), "reader_requests_sample_process"),

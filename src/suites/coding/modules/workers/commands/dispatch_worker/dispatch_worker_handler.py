@@ -14,6 +14,7 @@ from engine.listener.rows.event_rows import EventRows
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.profile.agent_profile import AgentProfile
 from engine.errors.refusal import Refusal
+from suites.coding.modules.workers.support.worker_test_command_entry import TEST_COMMAND_EXAMPLE
 from core.modules.profiles.support.profile_files import ProfileFiles
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
@@ -87,6 +88,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         profile = self.worker_profile(command.profile)
         self.admission.checked_new("worker", profile.name)
         self.check_unstarted(command, context, environment)
+        self.check_test_commands(command, context, environment)
         choice = self.routing.choice(command, tasks, caller, profile, context)
         program, model = choice.program, choice.model
         if command.plan_id is None and command.phase_id is None:
@@ -142,6 +144,11 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         if command.starts_program or context.actor.is_person() or environment.grants(context.actor.id):
             return
         raise Refusal("only a user dispatches a worker with no program", "an agent dispatches a worker without --no-program")
+
+    def check_test_commands(self, command: DispatchWorker, context: Context, environment: Environment) -> None:
+        if command.test_commands or not context.actor.is_agent() or self.presets.presets(environment.folder):
+            return
+        raise Refusal("a worker gets the test commands it may run", TEST_COMMAND_EXAMPLE)
 
     def check_idle(self, folder: str, request: WorkerRequest, tasks: list[Task], command: DispatchWorker) -> None:
         idle = self.available_workers.first(folder, request)

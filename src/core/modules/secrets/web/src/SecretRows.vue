@@ -7,8 +7,7 @@ import SecretNewDialog from "./SecretNewDialog.vue";
 
 // the Secrets page holds no field: what waits on the user is one button each, a saved secret is one card each, and all change happens in a centred dialog
 const view = useWindow();
-const {rows, data, failure, loaded, act} = view.props.secrets;
-const deleted = computed(() => data.value?.deleted ?? []);
+const {rows, failure, loaded, act} = view.props.secrets;
 const openId = ref(0);
 const isMaking = ref(false);
 const removing = ref(null);
@@ -23,9 +22,6 @@ async function remove() {
     await act(["secret", "delete", String(row.id)], removed(row.id));
 }
 
-async function restore(row) {
-    await act(["secret", "restore", String(row.id)]);
-}
 </script>
 
 <template>
@@ -65,19 +61,6 @@ async function restore(row) {
             <template v-else-if="!asked.length && !failure">
                 <EmptyState :loading="!loaded" title="No secrets yet">Add a key or login to get started. Only its name will appear here.</EmptyState>
             </template>
-            <template v-if="deleted.length">
-                <section class="group">
-                    <h3>Deleted secrets</h3>
-                    <div class="deleted">
-                        <template v-for="row in deleted" :key="row.id">
-                            <p class="deleted-row" data-secret-removed>
-                                <span><b>{{ row.title }}</b> was deleted.</span>
-                                <Btn small bordered data-secret-restore @click="restore(row)">Restore</Btn>
-                            </p>
-                        </template>
-                    </div>
-                </section>
-            </template>
         </div>
         <template v-if="opened">
             <SecretDialog :key="opened.id" :row="opened" :run="act" @close="openId = 0" />
@@ -87,7 +70,7 @@ async function restore(row) {
         </template>
         <template v-if="removing">
             <Dialog padded :title="`Delete ${removing.title}`" fits @close="removing = null">
-                <p class="lead">Deleting this secret stops the agent from using it. You can restore it from Deleted secrets.</p>
+                <p class="lead">The secret is erased permanently and cannot be restored. No agent or program can use it again.</p>
                 <template #foot>
                     <Btn @click="removing = null">Cancel</Btn>
                     <Btn variant="danger" data-secret-confirm @click="remove">Delete secret</Btn>
@@ -214,32 +197,6 @@ h3 {
     margin: 0;
     color: var(--text-2);
     font-size: 14px;
-    font-weight: 500;
-}
-
-.deleted {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-}
-
-.deleted-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 0;
-    padding: 7px 8px 7px 14px;
-    color: var(--text-3);
-    font-size: 12.5px;
-}
-
-.deleted-row span {
-    flex: 1;
-}
-
-.deleted-row b {
-    color: var(--text-2);
     font-weight: 500;
 }
 

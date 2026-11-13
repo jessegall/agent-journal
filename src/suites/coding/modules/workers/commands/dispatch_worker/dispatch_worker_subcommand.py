@@ -8,7 +8,6 @@ import shlex
 import stat
 
 from engine.journal.journal_home import LAUNCHER_SOCKET, JournalHome
-from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
 from engine.subcommand.output import Output
 from engine.cli.agent_number import AgentNumber
@@ -17,10 +16,8 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
-from suites.coding.modules.workers.support.worker_test_command_entry import TEST_COMMAND_EXAMPLE, WorkerTestCommandEntry
+from suites.coding.modules.workers.support.worker_test_command_entry import WorkerTestCommandEntry
 from suites.coding.modules.workers.support.plan_worker_tasks import PlanWorkerTasks
-from suites.coding.modules.workers.support.worker_test_presets import WorkerTestPresets
-from core.modules.environments.support.environment_rows import EnvironmentRows
 from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 from core.modules.helpers.support.model_choice import ModelChoice
 
@@ -36,9 +33,8 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
     outward = True
     background = True
 
-    def __init__(self, home: JournalHome, plan_tasks: PlanWorkerTasks, agents: AgentRows, worktrees: WorktreeQuery, scopes: Scopes, presets: WorkerTestPresets, environments: EnvironmentRows) -> None:
+    def __init__(self, home: JournalHome, plan_tasks: PlanWorkerTasks, agents: AgentRows, worktrees: WorktreeQuery, scopes: Scopes) -> None:
         self.home, self.plan_tasks, self.agents, self.worktrees, self.scopes = home, plan_tasks, agents, worktrees, scopes
-        self.presets, self.environments = presets, environments
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("task_ids", type=int, nargs="*")
@@ -64,14 +60,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         source_worker = self.stopped_worker(arguments, caller)
         task_ids = tuple([self.worktrees.required_worker_worktree(source_worker.id).task_id]) if source_worker is not None else self.picked(arguments)
         commands = WorkerTestCommandEntry.parsed(arguments.test_command)
-        if not commands and caller.actor.type is ActorType.AGENT and not self.has_presets(caller):
-            raise Refusal("a worker gets the test commands it may run", TEST_COMMAND_EXAMPLE)
         return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], ModelChoice.chosen(arguments.model), arguments.profile, arguments.name, arguments.fresh, arguments.tier, arguments.plan, arguments.phase, session=arguments.session, starts_program=not arguments.no_program, sandboxed=not arguments.no_sandbox, test_commands=commands, source_worker_id=source_worker.id if source_worker is not None else None)
-
-    def has_presets(self, caller: Caller) -> bool:
-        if caller.environment_id is None:
-            return False
-        return bool(self.presets.presets(self.environments.find(caller.environment_id).folder))
 
     def stopped_worker(self, arguments: Namespace, caller: Caller) -> Agent | None:
         if arguments.take_over is None:

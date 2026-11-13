@@ -1,4 +1,4 @@
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 from collections.abc import Sequence
 
 from engine.caller.caller import Caller
@@ -10,7 +10,7 @@ from core.modules.secrets.queries.secret_query import SecretQuery
 
 
 class SecretListSubcommand(ReadSubcommand[Sequence[Secret]]):
-    """`journal secret list`: every secret not deleted, oldest first, with what it waits for and the programs
+    """`journal secret list`: every secret, oldest first, with what it waits for and the programs
     it goes to."""
 
     cli_name = "secret"
@@ -19,11 +19,8 @@ class SecretListSubcommand(ReadSubcommand[Sequence[Secret]]):
     def __init__(self, secrets: SecretQuery) -> None:
         self.secrets = secrets
 
-    def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--deleted", action="store_true")
-
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[Secret]:
-        return tuple((self.secrets.deleted() if arguments.deleted else self.secrets.active()).oldest().get())
+        return tuple(self.secrets.oldest().get())
 
     def write_output(self, value: object, output: Output) -> None:
         listed = [row for row in value if isinstance(row, Secret)] if is_tuple(value) else []

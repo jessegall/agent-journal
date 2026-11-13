@@ -3,7 +3,6 @@ from dataclasses import dataclass
 
 from engine.model.model import Model
 from engine.errors.refusal import Refusal
-from engine.time.timestamp import Timestamp
 from core.modules.secrets.models.enums.secret_type import SecretType
 from core.modules.secrets.models.support.secret_field import SecretField
 
@@ -25,7 +24,6 @@ class Secret(Model):
     programs: tuple[str, ...] = ()
     proposed: tuple[str, ...] = ()
     helpers: bool = False
-    deleted_at: Timestamp | None = None
 
     def secret_fields(self) -> tuple[SecretField, ...]:
         return tuple(SecretField.parsed(raw) for raw in self.fields)

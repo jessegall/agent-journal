@@ -114,11 +114,16 @@ def test_only_the_user_allows_a_program(new_story):
     story.expect_refusal("secret allow 1 curl --reason needed", "A user was asked in the dock", actor=story.agent)
 
 
-def test_a_deleted_secret_leaves_the_list_and_comes_back_with_its_value_on_a_restore(new_story, private_folder):
+def test_a_deleted_secret_is_erased_with_its_values_and_nothing_restores_it(new_story, private_folder):
     story = filled_story(new_story)
-    story.expect_success("secret delete 1", "secret 1 deleted; journal secret restore 1 brings it back with its values", actor=story.agent)
-    story.expect_absent("secret list", "1  api key  Github  given to head, printenv, tr", actor=story.agent)
-    story.expect_text("secret show 1", "secret 1: Github (api key), deleted", actor=story.agent)
-    story.expect_success("secret restore 1", "secret 1 restored", actor=story.agent)
-    story.expect_text("secret list", "1  api key  Github  given to head, printenv, tr", actor=story.agent)
-    story.expect_rows(VALUE in values_text(private_folder))
+    story.expect_success("secret delete 1", "secret 1 erased with its values; it cannot be restored", actor=story.user)
+    story.expect_absent("secret list", "Github", actor=story.agent)
+    story.expect_refusal("secret show 1", "no secret", actor=story.agent)
+    story.expect_usage_error("secret restore 1", actor=story.user)
+    story.expect_rows(VALUE not in values_text(private_folder), "GITHUB_KEY" not in values_text(private_folder))
+
+
+def test_an_agent_that_deletes_a_secret_asks_the_user(new_story):
+    story = filled_story(new_story)
+    story.expect_refusal("secret delete 1 --reason 'the key leaked'", "A user was asked in the dock", actor=story.agent)
+    story.expect_text("secret list", "Github", actor=story.agent)

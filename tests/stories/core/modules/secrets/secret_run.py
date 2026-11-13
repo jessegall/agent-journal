@@ -49,9 +49,9 @@ def test_a_secret_without_its_value_is_refused_with_who_fills_it(new_story):
     story.expect_refusal("secret run 2 -- head -c 8", "secret 2 has no value for key: the user fills it on the Secrets window", actor=story.agent)
 
 
-def test_a_deleted_secret_is_refused_with_how_to_restore_it(new_story):
+def test_a_deleted_secret_is_refused_as_one_that_does_not_exist(new_story):
     story = filled_story(new_story, "secret delete 1")
-    story.expect_refusal("secret run 1 -- head -c 8", "secret 1 is deleted: journal secret restore 1 brings it back", actor=story.agent)
+    story.expect_refusal("secret run 1 -- head -c 8", "no secret is numbered or titled '1'", actor=story.agent)
 
 
 def test_a_helper_is_refused_until_the_user_lets_helpers_have_the_secret(new_story):
@@ -85,7 +85,7 @@ def test_a_shown_value_goes_with_its_field(new_story):
     story.expect_rows("ada" not in values.values().values(), "GITHUB_NAME" not in values.shown())
 
 
-def test_a_secret_gains_and_loses_a_field_and_a_deleted_one_is_listed(new_story):
+def test_a_secret_gains_and_loses_a_field_and_a_deleted_one_is_gone(new_story):
     story = new_story(fixture=UserJoined)
     story.run('secret make "Own" --type custom --field base', actor=story.user)
     story.run("secret update 1 --add-field region --add-field token", actor=story.user)
@@ -95,5 +95,4 @@ def test_a_secret_gains_and_loses_a_field_and_a_deleted_one_is_listed(new_story)
     text.expect_no_text('"region"')
     text.expect_text('"token"')
     story.run("secret delete 1", actor=story.user)
-    story.expect_text("secret list --deleted", "Own", actor=story.user)
     story.expect_absent("secret list", "Own", actor=story.user)

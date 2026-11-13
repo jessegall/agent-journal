@@ -1,8 +1,8 @@
 import {afterEach, expect, test, vi} from "vitest";
 import {context as baseContext, mounted, settle, typeInto as type} from "./support/windowContext.js";
 
-const KEYS = {secrets: {line: "secret board", events: ["secret.*"]}};
-const context = (answers) => baseContext({"secret board": {ok: true, value: {rows: answers["secret list"].value.rows, deleted: answers["secret list --deleted"].value.rows}}}, null, KEYS);
+const KEYS = {secrets: {line: "secret list", events: ["secret.*"]}};
+const context = (answers) => baseContext(answers, null, KEYS);
 const page = (rows) => ({ok: true, value: {rows}});
 import SecretRows from "../../core/modules/secrets/web/src/SecretRows.vue";
 
@@ -12,9 +12,9 @@ const SECRET = {id: 3, title: "Shop key", brief: "For the shop", secret_type: "a
 const CUSTOM = {...SECRET, id: 4, title: "Own", secret_type: "custom", fields: [{name: "token", hidden: true}], filled: ["token"]};
 const ASKED = {...SECRET, id: 5, title: "GitHub login", secret_type: "login", fields: [{name: "username", hidden: false}, {name: "password", hidden: true}], filled: [], proposed: ["gh"], waiting: true};
 
-async function drawn(rows = [SECRET], deleted = []) {
+async function drawn(rows = [SECRET]) {
     const ran = [];
-    const window = context({"secret list --deleted": page(deleted), "secret list": page(rows)});
+    const window = context({"secret list": page(rows)});
     window.run = async (line) => (ran.push(line), {ok: true, value: {}});
     return {element: await mounted(SecretRows, window), ran};
 }
@@ -79,7 +79,7 @@ test("Cancel drops what was typed and Save applies all of it at once", async () 
 
 test("a refused change keeps the dialog open and says why", async () => {
     const {element} = await drawn();
-    const window = context({"secret list --deleted": page([]), "secret list": page([SECRET])});
+    const window = context({"secret list": page([SECRET])});
     window.run = async () => ({ok: false, error: "the value is too long"});
     document.body.innerHTML = "";
     const refused = await mounted(SecretRows, window);
@@ -125,7 +125,7 @@ test("a program is allowed by name, or from what the agent proposed", async () =
     expect(ran).toEqual([["secret", "allow", "3", "gh"], ["secret", "allow", "3", "curl"]]);
 });
 
-test("deleting asks first", async () => {
+test("deleting asks first and says nothing restores the secret", async () => {
     vi.stubGlobal("ResizeObserver", class {
         observe() {}
         disconnect() {}
@@ -137,17 +137,11 @@ test("deleting asks first", async () => {
     document.body.querySelector("[data-secret-delete]").click();
     await settle();
     expect(ran).toEqual([]);
+    expect(document.body.textContent).toContain("erased permanently and cannot be restored");
+    expect(document.body.querySelector("[data-secret-restore]")).toBeNull();
     document.body.querySelector("[data-secret-confirm]").click();
     await settle();
     expect(ran).toContainEqual(["secret", "delete", "3"]);
-});
-
-test("every deleted secret is listed and can be restored", async () => {
-    const {element, ran} = await drawn([SECRET], [{...SECRET, id: 9, title: "Old key"}]);
-    expect(element.querySelector("[data-secret-removed]").textContent).toContain("Old key");
-    element.querySelector("[data-secret-restore]").click();
-    await settle();
-    expect(ran).toContainEqual(["secret", "restore", "9"]);
 });
 
 test("a new secret is made with its type, title and note, and a custom one asks for its first field", async () => {

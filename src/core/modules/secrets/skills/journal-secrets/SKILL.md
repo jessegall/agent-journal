@@ -20,5 +20,5 @@ folder, outside the project, and never in the journal.
 - A secret goes only to the programs the user allowed. Propose one with `journal secret propose <n> <program>`.
 - A value you made yourself, such as a generated password, goes in with `journal secret store <n> <field> <file>`,
   which deletes the file.
-- `journal secret delete <n>` removes one and `journal secret restore <n>` brings it back.
+- `journal secret delete <n>` erases one and its values for good; only a user deletes a secret, and nothing restores it.
 - The secrets folder is out of your reach: a tool that names it is refused.

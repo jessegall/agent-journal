@@ -5,8 +5,7 @@ from core.modules.secrets.models.secret import Secret
 
 
 @dataclass(frozen=True)
-class ChangeSecretDeletion(Command[Secret]):
-    """Puts a secret away, or brings a deleted one back; its values stay in the values file either way."""
+class DeleteSecret(Command[Secret]):
+    """Erases a secret for good: its row and every value of its fields, with nothing kept to restore."""
 
     secret_id: int
-    deleted: bool

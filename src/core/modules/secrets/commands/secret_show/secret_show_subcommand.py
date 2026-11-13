@@ -26,7 +26,7 @@ class SecretShowSubcommand(ReadSubcommand[Secret]):
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, Secret):
             return
-        heading = f"secret {value.id}: {value.title} ({value.secret_type})" + (", deleted" if value.deleted_at else "")
+        heading = f"secret {value.id}: {value.title} ({value.secret_type})"
         lines = [line for line in (heading, value.brief) if line]
         for field in value.secret_fields():
             lines.append(f"  {field.name}  {field.variable}  {'filled' if field.name in value.filled else 'waiting for the user'}{', hidden' if field.hidden else ''}")

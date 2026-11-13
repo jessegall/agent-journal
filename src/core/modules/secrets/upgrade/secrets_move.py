@@ -2,7 +2,6 @@ import sqlite3
 
 from engine.database.database import Database
 from engine.database.row_insert import RowInsert
-from engine.time.timestamp import Timestamp
 from engine.upgrade.creator_resolver import CreatorResolver
 from engine.upgrade.move_context import MoveContext
 from engine.upgrade.move_map import MoveMap
@@ -30,13 +29,15 @@ class SecretsMove(VersionFourMove):
             if row["secret_type"] not in tuple(SecretType):
                 report.skip(TABLE, row["id"], "a browser login moves after the switch" if row["secret_type"] == BROWSER_LOGIN else f"type {row['secret_type']}")
                 continue
+            if row["deleted_at"]:
+                report.skip(TABLE, row["id"], "a deleted secret is erased, not moved")
+                continue
             report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.insert(rows, row, creators.actor_id(row["creator"]), context)))
         return report
 
     def insert(self, rows: RowInsert, row: sqlite3.Row, creator_id: int, context: MoveContext) -> int:
         created = row["created_at"] or context.timestamp
-        deleted = Timestamp.parsed(row["deleted_at"]).text if row["deleted_at"] else None
         return rows.insert(TABLE, {"id": row["id"], "creator_id": creator_id, "title": row["title"], "brief": row["brief"] or "", "secret_type": row["secret_type"],
                                    "fields": row["fields"] or "[]", "filled": row["filled"] or "[]", "programs": row["programs"] or "[]",
-                                   "proposed": row["proposed"] or "[]", "helpers": int(bool(row["helpers"])), "deleted_at": deleted, "created_at": created,
+                                   "proposed": row["proposed"] or "[]", "helpers": int(bool(row["helpers"])), "created_at": created,
                                    "updated_at": row["updated_at"] or created})
