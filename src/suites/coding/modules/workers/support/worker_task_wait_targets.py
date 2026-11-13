@@ -14,13 +14,14 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
+from engine.registry.registry import Registry
 
 
 class WorkerTaskWaitTargets(TaskWaitTargets):
     """Validates worker wait targets and resolves them after the worker finishes."""
 
-    def __init__(self, database: Database, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, waits: TaskWaits, numbers: RowNumbers, tasks: TaskQuery) -> None:
-        super().__init__(database, queries, numbers)
+    def __init__(self, database: Database, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, waits: TaskWaits, numbers: RowNumbers, tasks: TaskQuery, registry: Registry) -> None:
+        super().__init__(database, queries, numbers, registry)
         self.queries, self.worktrees, self.proofs, self.waits, self.tasks = queries, worktrees, proofs, waits, tasks
 
     @property

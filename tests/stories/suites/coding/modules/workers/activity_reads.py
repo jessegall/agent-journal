@@ -15,7 +15,7 @@ from core.modules.processes.commands.start_process.start_process import StartPro
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
 from core.modules.processes.commands.title_output.title_output import TitleOutput
 from core.modules.processes.queries.output_query import OutputQuery
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.ticks.output_reading import OutputReading
 from engine.testing.examples.hook_samples import HookSamples
@@ -59,9 +59,9 @@ def test_a_later_tick_reads_fresh_activity_after_a_worker_acts(four_workers):
     expect_value(len(activity_reads), 2)
     story.expect_rows(any("parent_id" in call.args[1].sql for call in activity_reads),
                       any("id IN" in call.args[1].sql for call in activity_reads))
-    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, workers[0].id)} has used no tool")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, workers[0].id)} used no tool")
     for worker in workers[1:]:
-        story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has used no tool")
+        story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} used no tool")
 
 
 @pytest.mark.real_git

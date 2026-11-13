@@ -26,8 +26,8 @@ TOTALS_COMMAND = "pytest tests/totals.py"
 OUTLINE = "plan outline 1 --environment main"
 WAITING_PHASE_WORDS = "waits for the tests of phase 1"
 PASSED_LOG = "tests passed at checkpoint phase 1"
-PASSED_LINE = "the tests of checkpoint phase Build passed"
-PLAN_FINISHED_LINE = "plan 1 done"
+PASSED_LINE = "checkpoint phase Build tests passed"
+PLAN_FINISHED_LINE = "Plan 1 done"
 UNTESTED_LINE = "waits on your check, proofs 2"
 WINDOW_TASKS = (1, 2, 3)
 

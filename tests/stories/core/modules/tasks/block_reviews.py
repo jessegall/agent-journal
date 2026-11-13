@@ -34,7 +34,7 @@ def review(story):
     return story.hook("s-1", posted("journal task list"))
 
 
-def expects_notice(story, text="review blocked task 1"):
+def expects_notice(story, text="Review blocked task 1"):
     answer = review(story)
     assert any(text in line for line in answer.lines), answer
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
@@ -42,13 +42,13 @@ def expects_notice(story, text="review blocked task 1"):
 
 def expectation_kept(story):
     answer = review(story)
-    assert any("review blocked task 1" in line for line in answer.lines), answer
+    assert any("Review blocked task 1" in line for line in answer.lines), answer
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "skip block")
 
 
 def expect_review_absent(story):
     answer = review(story)
-    assert not any("review blocked task" in line for line in answer.lines), answer
+    assert not any("Review blocked task" in line for line in answer.lines), answer
 
 
 def pass_twice(story):
@@ -147,16 +147,16 @@ def test_a_focused_agent_is_not_held_for_a_blocked_task_outside_its_plan_but_is_
     story.run('task block 2 --reason "Needs the shop keys"', actor=story.agent)
     for _ in range(2):
         story.clock.advance(timedelta(minutes=15))
-        expects_notice(story, "review blocked task 2")
-        expect_absent_line(review(story), "review blocked task 1")
+        expects_notice(story, "Review blocked task 2")
+        expect_absent_line(review(story), "Review blocked task 1")
     story.clock.advance(timedelta(minutes=15))
     answer = review(story)
-    expect_absent_line(answer, "review blocked task 1")
-    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "review blocked task 2: act on each")
+    expect_absent_line(answer, "Review blocked task 1")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "Review blocked tasks 2")
     story.run("plan focus --clear", actor=story.agent)
     story.run("task unblock 2", actor=story.agent)
     story.clock.advance(timedelta(minutes=15))
-    expect_line(review(story), "review blocked task 1")
+    expect_line(review(story), "Review blocked task 1")
 
 
 def test_a_task_that_moved_between_reminders_starts_the_count_over(new_story):
@@ -182,7 +182,7 @@ def test_a_review_holds_until_each_task_has_been_answered(new_story):
     story.clock.advance(timedelta(minutes=15))
     expect_line(review(story), "review blocked tasks 1, 2")
     story.run('task block 1 --reason "Still needs the list"', actor=story.agent)
-    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "review blocked task")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "Review blocked task")
     story.run("task unblock 2", actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
 
@@ -193,14 +193,14 @@ def test_each_task_has_its_own_interval_and_firing_resets_it(new_story):
     story.run('task make "Later keys" --environment main', actor=story.agent)
     story.run('task block 2 --reason "Needs the key"', actor=story.agent)
     story.clock.advance(timedelta(minutes=5))
-    expects_notice(story, "review blocked task 1")
+    expects_notice(story, "Review blocked task 1")
     story.run('task block 1 --reason "Still needs the list"', actor=story.agent)
     answer = review(story)
-    expect_absent_line(answer, "review blocked task 2")
+    expect_absent_line(answer, "Review blocked task 2")
     story.clock.advance(timedelta(minutes=10))
     answer = review(story)
-    expect_line(answer, "review blocked task 2")
-    expect_absent_line(answer, "review blocked task 1")
+    expect_line(answer, "Review blocked task 2")
+    expect_absent_line(answer, "Review blocked task 1")
 
 
 def test_an_automatic_wait_is_excluded_even_after_all_the_triggers(new_story):
@@ -220,14 +220,14 @@ def test_a_user_wait_is_reminded_twice_and_held_the_third_time_until_answered(ne
     story = new_story(fixture=OpenTaskBuilder)
     story.run('task block 1 --until-user --reason "Publish the release"', actor=story.agent)
     story.clock.advance(timedelta(minutes=15))
-    expect_line(review(story), "task 1 waits on the user")
+    expect_line(review(story), "Task 1 waits on the user")
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
     expect_review_absent(story)
     story.clock.advance(timedelta(minutes=15))
-    expect_line(review(story), "task 1 waits on the user")
+    expect_line(review(story), "Task 1 waits on the user")
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
     story.clock.advance(timedelta(minutes=15))
-    expect_line(review(story), "task 1 waits on the user")
+    expect_line(review(story), "Task 1 waits on the user")
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "skip block")
     story.expect_success('agent-block skip 1 --reason "The user was told and has not answered"', actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))

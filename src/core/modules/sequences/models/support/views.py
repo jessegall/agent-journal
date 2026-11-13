@@ -1,4 +1,4 @@
-from engine.query.condition_join import ConditionJoin
+from engine.query.conditions.condition_join import ConditionJoin
 from engine.query.conditions.column_compare import ColumnCompare
 from engine.query.conditions.is_null import IsNull
 from engine.query.expressions.column import Column

@@ -7,7 +7,7 @@ from tests.stories.support.story_checks import expect_answers, expect_lines_with
 
 MAIN_SESSION = "s-1"
 DEFAULT_SIZE = 3
-QUEUE_EXTRA = "queue more tasks on a worker"
+QUEUE_EXTRA = "queue more tasks per worker"
 
 
 def dispatched(*task_ids: int):
@@ -24,7 +24,7 @@ def test_a_dispatch_of_fewer_tasks_than_the_batch_size_tells_the_main_agent_to_q
     story = new_story(fixture=OpenTaskOrchestrator)
     lines = queue_lines(story, 1)
     expect_answers(lines, 1)
-    expect_lines_with(lines, "batch of 1")
+    expect_lines_with(lines, "Batch of 1")
 
 
 def test_the_setting_moves_the_batch_size_down(new_story):

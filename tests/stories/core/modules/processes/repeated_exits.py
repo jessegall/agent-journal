@@ -45,6 +45,6 @@ def test_a_person_lifts_a_workers_reader_block_each_time_one_comes(new_story):
     number = agent_number(story, worker.id)
     for request, line in ((1, "custom-build run"), (2, "other-build run")):
         worker_run(story, line)
-        story.expect_hook_refusal("s-reader", EDIT, f"reader request {request}")
+        story.expect_hook_refusal("s-reader", EDIT, f"has no reader, request {request}")
         story.expect_success(f"process lift-hold {number} --environment main", "1 holds lifted", actor=person)
-        story.expect_hook_allowed("s-reader", PROMPT, f"the block of reader request {request} was lifted by a user")
+        story.expect_hook_allowed("s-reader", PROMPT, f"A user lifted the block on reader request {request}")

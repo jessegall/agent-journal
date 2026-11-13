@@ -53,5 +53,5 @@ def test_542_the_coding_suite_listing_is_a_module_list_its_module_is_in_the_suit
     project = LayerProject(story, tmp_path)
     project.add_file("src/core/suites/shop/shop_module.py")
     failures = project.check()
-    story.expect_rows(project.layer_of("src/suites/coding/coding_suite.py") == "module list", project.layer_of("src/suites/coding/coding_module.py") == "suite coding", project.layer_of("src/core/suites/shop/shop_module.py") == "no layer",
+    story.expect_rows(project.layer_of("src/suites/coding/coding_suite.py") == "module list suites/coding", project.layer_of("src/suites/coding/coding_module.py") == "suite coding", project.layer_of("src/core/suites/shop/shop_module.py") == "no layer",
                       any("src/core/suites" in failure for failure in failures), detail=str(failures))

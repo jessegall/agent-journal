@@ -9,4 +9,3 @@ class ReportMergeHook(Command[None]):
 
     worker_id: int
     command: str
-    reason: str

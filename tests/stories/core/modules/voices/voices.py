@@ -90,7 +90,7 @@ def test_a_session_started_by_hand_gives_the_instruction_and_no_introduction(new
     line = voice_lines(story, second.id)[-1]
     expect_value_with(line, BUTLER_TEXT)
     expect_value_with(line, 'Address me as "Captain Ada".')
-    expect_value_without(line, "introduce yourself in the chat")
+    expect_value_without(line, "Introduce yourself in the chat")
 
 
 def test_a_resume_is_told_nothing_more_since_its_conversation_holds_the_voice(new_story):

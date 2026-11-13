@@ -89,7 +89,7 @@ def run_pytest_with_plugin(root: Path, test_source: str, *options: str) -> subpr
     (tests / "test_sample.py").write_text(test_source)
     (root / "pytest.ini").write_text("[pytest]\n")
     environment = {**os.environ, "PYTEST_DEBUG_TEMPROOT": str(root / "temp"), "PYTHONPATH": os.pathsep.join(sys.path)}
-    return subprocess.run([sys.executable, "-m", "pytest", "-p", "engine.testing.pytest_plugin", "-p", "no:cacheprovider", "-c", str(root / "pytest.ini"), str(tests), *options],
+    return subprocess.run([sys.executable, "-m", "pytest", "-p", "engine.testing.pytest_wiring.pytest_plugin", "-p", "no:cacheprovider", "-c", str(root / "pytest.ini"), str(tests), *options],
                           cwd=root, env=environment, capture_output=True, text=True, timeout=60)
 
 

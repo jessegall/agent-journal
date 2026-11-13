@@ -41,7 +41,7 @@ def test_a_refused_stop_keeps_later_checks_without_applying_their_commands(stop_
     checks = {check["rule"]: check for check in record["stop_checks"]}
     story.expect_rows(record["answer"] == "refused", "task:1 is in hand" in checks["tasks.carry-on-at-stop"]["reason"],
                       not checks["coding.main-stop"]["applied"],
-                      "tasks 1 are yours and unfinished" in checks["coding.main-stop"]["reason"])
+                      "Tasks 1 are yours and unfinished" in checks["coding.main-stop"]["reason"])
     lines = [line for line in story.system_log_text().splitlines() if "stop " in line and "refused" in line]
     story.expect_rows(len(lines) == 1, len(lines[0]) < 300, "tasks.carry-on-at-stop" in lines[0], "coding.main-stop" in lines[0], detail=str(lines))
 
@@ -57,7 +57,7 @@ def test_an_approved_plan_waiting_to_start_checks_worker_capacity(new_story, pla
         check = next(check for check in record["stop_checks"] if check["rule"] == "workers.approved-plan-at-stop")
         story.expect_rows(record["answer"] == answer, check["outcome"] == answer, detail=f"{record['answer']}: {check}")
         if places:
-            story.expect_rows("plan:1 is approved" in record["refusal"], "start it, then assign its work" in check["reason"])
+            story.expect_rows("plan:1 is approved" in record["refusal"], "start a worker, then assign its work" in check["reason"])
         else:
             story.expect_rows(check["reason"] == "no new worker can start")
 

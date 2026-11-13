@@ -5,7 +5,7 @@ from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.enums.command_category import CommandCategory
 from core.modules.processes.commands.start_process.start_process import StartProcess
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story

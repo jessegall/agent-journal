@@ -33,7 +33,7 @@ def minutes(count: int) -> timedelta:
 
 
 def inactive_line(role: str, agent_id: int, count: int = GRACE_MINUTES) -> str:
-    return f"{role}:{agent_id} has used no tool for {count} minutes"
+    return f"{role}:{agent_id} used no tool for {count} min"
 
 
 def line_count(story, line: str) -> int:
@@ -71,7 +71,7 @@ def test_the_inactive_line_wakes_the_main_agent(new_story):
     story, worker = idle_worker(new_story)
     story.advance(minutes(GRACE_MINUTES))
     story.tick(MAIN_SESSION)
-    line = next(row for row in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON) if f"worker:{agent_number(story, worker.id)} has used no tool" in row.text)
+    line = next(row for row in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON) if f"worker:{agent_number(story, worker.id)} used no tool" in row.text)
     story.expect_rows(line.wakes_agent)
 
 
@@ -122,7 +122,7 @@ def test_a_helper_that_ended_is_not_named(new_story):
     story.expect_success(f"agent end {story.helper.id}")
     story.advance(minutes(GRACE_MINUTES))
     story.tick(MAIN_SESSION)
-    story.expect_rows(line_count(story, f"helper:{agent_number(story, story.helper.id)} has used no tool") == 0)
+    story.expect_rows(line_count(story, f"helper:{agent_number(story, story.helper.id)} used no tool") == 0)
 
 
 def test_a_worker_that_ended_is_not_named(new_story):
@@ -132,7 +132,7 @@ def test_a_worker_that_ended_is_not_named(new_story):
     story.expect_success(f"agent end {worker.id}")
     story.advance(minutes(GRACE_MINUTES))
     story.tick(MAIN_SESSION)
-    story.expect_rows(line_count(story, f"worker:{agent_number(story, worker.id)} has used no tool") == 0)
+    story.expect_rows(line_count(story, f"worker:{agent_number(story, worker.id)} used no tool") == 0)
 
 
 def test_the_setting_sets_how_long_a_helper_is_quiet_before_it_is_named(new_story):
@@ -142,7 +142,7 @@ def test_the_setting_sets_how_long_a_helper_is_quiet_before_it_is_named(new_stor
     story.hook("sub-1", HookSamples.session_start())
     story.advance(minutes(GRACE_MINUTES))
     story.tick(MAIN_SESSION)
-    story.expect_rows(line_count(story, f"helper:{agent_number(story, story.helper.id)} has used no tool") == 0)
+    story.expect_rows(line_count(story, f"helper:{agent_number(story, story.helper.id)} used no tool") == 0)
     story.advance(minutes(later - GRACE_MINUTES))
     story.tick(MAIN_SESSION)
     story.expect_rows(line_count(story, inactive_line("helper", agent_number(story, story.helper.id), later)) == 1)

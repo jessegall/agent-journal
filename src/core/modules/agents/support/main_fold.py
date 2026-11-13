@@ -12,11 +12,11 @@ from core.modules.agents.models.agent import MAIN_NUMBER
 from core.modules.agents.support.fold_clash_rules import FoldClashRules
 from core.modules.agents.support.main_fold_plan import EnvironmentFold, MainFoldPlan, MainRow
 from core.modules.agents.support.reference_columns import AGENT_MODEL_NAMES, AgentColumns, ReferenceColumns
+from core.modules.agents.models.agent import AGENTS_TABLE
+from core.modules.agents.support.reference_columns import FOLD_TABLES
 
 SESSIONS = ("agent_sessions", "session_agent_id")
-AGENTS_TABLE = "agents"
 ACTORS_TABLE = "actors"
-FOLD_TABLES = ("agent_folds", "agent_fold_rows")
 MAIN_ROWS = Statement("SELECT * FROM agents WHERE role = ?", [AgentRole.MAIN.value], scan_reason=SCHEMA_REASON)
 
 

@@ -32,7 +32,7 @@ LOG_LINE = "The cart total rounds down"
 FULL_SUITE = "pytest"
 WHY = "the rounding only shows in a real run"
 MERGER_QUESTION = 'merger tell "Which tax applies?" --tried "Read the brief" --option "Dutch tax" --option "No tax" --recommend "Dutch tax"'
-LINKED_LINE = "the libraries of your worktree are linked"
+LINKED_LINE = "Your worktree's libraries are linked: rerun your tests"
 LIBRARY_FILE = "index.js"
 LIBRARY_TEXT = "module.exports = 1\n"
 

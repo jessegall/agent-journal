@@ -60,7 +60,7 @@ def test_s02_s10_keep_going_holds_a_stop_while_a_task_can_go_to_a_worker_and_han
     story = main_story(new_story)
     story.expect_success(f"setting set {AUTO} off --environment main")
     story.expect_success(f"setting set {CONTINUE_SETTING} on --environment main")
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "open tasks wait")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "Open tasks wait")
     story.expect_success(f"setting set {WORKER_LIMIT} 0 --environment main")
     story.expect_hook_refusal("s-1", HookSamples.stop(), "is yours now")
 
@@ -72,27 +72,27 @@ def waking_lines(story) -> list[str]:
 
 def test_s08_the_main_driver_holds_a_stop_once_for_a_free_worker_place_when_keep_going_is_off_and_never_wakes_it(new_story):
     story = new_story(fixture=KeepGoingOffMain)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker and a place is free")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker")
     story.expect_hook_allowed("s-1", HookSamples.stop())
     expect_value(waking_lines(story), [])
 
 
 def test_turning_keep_going_on_wakes_the_idle_main_agent_once_for_a_free_place_and_again_to_take_the_task_itself(new_story):
     story = new_story(fixture=KeepGoingOffMain)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker and a place is free")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker")
     story.expect_success(f"setting set {CONTINUE_SETTING} on --environment main")
     story.advance(timedelta(seconds=IDLE_LIMIT_SECONDS + 1))
     first, again = waking_lines(story), waking_lines(story)
     story.expect_success(f"setting set {WORKER_LIMIT} 0 --environment main")
     last = waking_lines(story)
-    story.expect_rows(len(first) == 1, "can go to a worker and a place is free" in first[0], again == first, len(last) == 2, "is yours now" in last[-1], detail=str(last))
+    story.expect_rows(len(first) == 1, "can go to a worker" in first[0], again == first, len(last) == 2, "is yours now" in last[-1], detail=str(last))
 
 
 def test_the_free_place_notice_comes_back_when_another_task_can_go_to_a_worker(new_story):
     story = new_story(fixture=KeepGoingOffMain)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker and a place is free")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker")
     story.expect_success('task make "Another task" --brief "A second task that a worker can take"', actor=story.agent)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker and a place is free")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker")
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
@@ -111,7 +111,7 @@ class UnfinishedTaskMain(StoryFixture):
 
 def test_a_stop_with_an_unfinished_task_of_its_own_in_a_plan_not_started_is_held_naming_it(new_story):
     story = new_story(fixture=UnfinishedTaskMain)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "tasks 2 are yours and unfinished")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "Tasks 2 are yours and unfinished")
 
 
 def test_a_main_agent_that_waits_on_something_may_stop_with_an_unfinished_task(new_story):

@@ -54,7 +54,7 @@ def test_a_block_names_the_next_due_skill_once_the_first_is_read(exhausted_notes
 
 def test_a_stop_is_refused_naming_the_unread_skills(due_notes):
     story = due_notes
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "unread skills: journal-notes")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "Unread skills: journal-notes")
 
 
 def test_a_journal_command_of_a_noun_whose_skill_is_unread_is_refused_until_it_is_read(due_notes):

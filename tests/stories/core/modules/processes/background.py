@@ -10,7 +10,7 @@ from core.modules.processes.commands.end_process_part.end_process_part import En
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.output_query import OutputQuery
@@ -30,7 +30,7 @@ from tests.stories.support.story_checks import expect_value_line, expect_value_w
 READ_NOTES = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))
 AFTER = READ_NOTES.with_fields(event="post_tool_use")
 TESTS_REPORT = "collected 3 items\nFAILED tests/test_cart.py::test_total - assert 1 == 2\n2 failed, 1 passed in 0.4s\n"
-ENDED = "output 1 ended"
+ENDED = "Output 1 ended"
 
 
 def settled(story) -> None:
@@ -155,7 +155,7 @@ def test_a_test_run_whose_reader_finds_progress_only_on_its_last_line_is_told_to
     end_run(story, process, "".join("........\n" for _ in range(60)) + "Tests 60 of 60\n")
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     settled(story)
-    expect_lines(story, READ_NOTES, "ran with no progress")
+    expect_lines(story, READ_NOTES, "showed no progress")
 
 
 def test_a_run_printing_a_count_with_no_progress_pattern_is_told_to_add_one(new_story):
@@ -165,7 +165,7 @@ def test_a_run_printing_a_count_with_no_progress_pattern_is_told_to_add_one(new_
     end_run(story, process, "step 3/9\nstep 9/9\n")
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     settled(story)
-    expect_lines(story, READ_NOTES, "ran with no progress")
+    expect_lines(story, READ_NOTES, "showed no progress")
 
 
 class SilentVitestRun(StoryFixture):
@@ -200,14 +200,14 @@ def expect_without_hint(story) -> None:
 
 def expect_without_failure_line(story) -> None:
     lines = read_lines(story, READ_NOTES)
-    assert not any("failed and printed nothing" in line for line in lines), lines
+    assert not any("failed without printing anything" in line for line in lines), lines
 
 
 def test_a_saved_command_that_fails_and_prints_nothing_is_told_to_fix_the_saved_command(new_story):
     story = new_story(fixture=SavedBuildMoved)
     story.expect_success("process part-end 1 --position 1 --exit-code 2", actor=story.agent)
     story.expect_success("process end 1 --exit-code 2 --bytes 0 --lines 0", actor=story.agent)
-    expect_streaming_line(story, "saved command build-npm failed and printed nothing")
+    expect_streaming_line(story, "Saved command build-npm failed without printing anything")
 
 
 def test_a_saved_command_that_fails_with_output_is_only_told_how_it_ended(new_story):
@@ -223,7 +223,7 @@ def test_a_program_that_has_a_reader_is_not_asked_for_one(program_reader_output)
 
 def test_a_reader_is_judged_on_a_chain_of_commands_by_the_part_it_reads(chain_reader_output):
     story, process = chain_reader_output
-    expect_lines(story, READ_NOTES, "reader deploys picked none")
+    expect_lines(story, READ_NOTES, "Reader deploys matched none")
     story.expect_text(f"process show {process.id}", "state:", actor=story.agent)
 
 

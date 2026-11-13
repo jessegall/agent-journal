@@ -54,7 +54,7 @@ def test_the_shipped_pytest_reader_reads_a_pytest_output(new_story):
     story = new_story(fixture=BuilderStarted)
     report = "collected 3 items\n.F. [100%]\nFAILED tests/test_cart.py::test_total - assert 1 == 2\n2 failed, 1 passed in 0.4s\n"
     process = ended_run(story, "pytest -q tests", report, exit_code=1)
-    story.expect_text(f"output read {process.id} --summary", f"output {process.id} failed with exit code 1", "3: FAILED tests/test_cart.py::test_total - assert 1 == 2", "summary: 2 failed, 1 passed", actor=story.agent)
+    story.expect_text(f"output read {process.id} --summary", f"Output {process.id} failed with exit code 1", "3: FAILED tests/test_cart.py::test_total - assert 1 == 2", "summary: 2 failed, 1 passed", actor=story.agent)
     story.expect_refusal("reader remove pytest", "was made by", actor=story.agent)
 
 

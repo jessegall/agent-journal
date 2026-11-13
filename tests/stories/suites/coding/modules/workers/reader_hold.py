@@ -23,7 +23,7 @@ from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.start_process.start_process import StartProcess
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.support.reading_notices.reading_notices import ReadingNotices
 from core.modules.processes.support.run_visibility import RunVisibility
 from core.modules.processes.support.output_folder import OutputFolder

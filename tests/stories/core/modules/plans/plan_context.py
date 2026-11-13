@@ -40,21 +40,21 @@ def delivered(scenario, session="s-1"):
 
 
 def test_a_plan_without_tasks_still_delivers_context(scenario):
-    feature("plan 1 started" in "\n".join(delivered(scenario).lines), "zero-task plan had no context pointer")
+    feature("Plan 1 started" in "\n".join(delivered(scenario).lines), "zero-task plan had no context pointer")
 
 
 def test_plan_edits_do_not_redeliver_start_context(acknowledged_scenario):
     scenario = acknowledged_scenario
     scenario.story.advance(timedelta(seconds=1))
     scenario.command('plan edit 1 --title "Renamed cart plan"')
-    feature("plan 1 started" not in "\n".join(delivered(scenario).lines), "ordinary edit redelivered a start")
+    feature("Plan 1 started" not in "\n".join(delivered(scenario).lines), "ordinary edit redelivered a start")
 
 
 def test_replacement_main_reads_already_started_plan_context(scenario):
     scenario.story.advance(timedelta(seconds=1))
     scenario.story.hook("replacement", HookSamples.session_start())
     reply = delivered(scenario, "replacement")
-    feature("plan 1 started" in "\n".join(reply.lines), "replacement main missed an earlier plan start")
+    feature("Plan 1 started" in "\n".join(reply.lines), "replacement main missed an earlier plan start")
 
 
 def test_new_start_episode_delivers_new_context(acknowledged_scenario):
@@ -62,7 +62,7 @@ def test_new_start_episode_delivers_new_context(acknowledged_scenario):
     scenario.story.advance(timedelta(seconds=1))
     scenario.person("viewer.shell", "plan", "block", "1", "--reason", "Wait for approval")
     scenario.person("viewer.shell", "plan", "unblock", "1")
-    feature("plan 1 started" in "\n".join(delivered(scenario).lines), "new executable episode did not deliver context")
+    feature("Plan 1 started" in "\n".join(delivered(scenario).lines), "new executable episode did not deliver context")
 
 
 def test_plan_context_excludes_other_environments(scenario, tmp_path):
@@ -78,12 +78,12 @@ def test_plan_context_excludes_other_environments(scenario, tmp_path):
 
 def test_plan_start_pointer_is_read_before_work(scenario):
     scenario.tick()
-    scenario.story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "plan 1 started")
+    scenario.story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "Plan 1 started")
     initial_sources = scenario.source_rows(scenario.story.agent.id)
     scenario.context("plan")
     feature(initial_sources == scenario.source_rows(scenario.story.agent.id), "plan context changed the source")
     scenario.story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
-    feature("plan 1 started" not in "\n".join(delivered(scenario).lines), "acknowledged start was delivered again")
+    feature("Plan 1 started" not in "\n".join(delivered(scenario).lines), "acknowledged start was delivered again")
 
 
 def test_first_task_overview_inherits_plan_context(approved_scenario):
@@ -100,10 +100,10 @@ def test_redirecting_or_piping_plan_context_does_not_release_the_context_block(s
     story = scenario.story
     scenario.tick()
     part = ShellPart("journal", CommandCategory.JOURNAL, ["plan", "context", "1"], subcommand="plan")
-    story.expect_hook_refusal("s-1", HookSamples.shell("journal plan context 1 > /tmp/plan", part, redirects=["> /tmp/plan"]), "plan 1 started")
+    story.expect_hook_refusal("s-1", HookSamples.shell("journal plan context 1 > /tmp/plan", part, redirects=["> /tmp/plan"]), "Plan 1 started")
     piped = ShellPart("journal", CommandCategory.JOURNAL, ["plan", "context", "1"], subcommand="plan", pipe_target=1)
     reader = ShellPart("cat", CommandCategory.READ, [])
-    story.expect_hook_refusal("s-1", HookSamples.shell("journal plan context 1 && cat", piped, reader), "run the read command directly, without a pipe or redirect")
-    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "plan 1 started")
+    story.expect_hook_refusal("s-1", HookSamples.shell("journal plan context 1 && cat", piped, reader), "Run the read command directly, without a pipe or redirect")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "Plan 1 started")
     scenario.context("plan")
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))

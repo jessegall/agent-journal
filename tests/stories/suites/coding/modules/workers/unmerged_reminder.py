@@ -36,7 +36,7 @@ def delivered_work(new_story):
 
 def test_a_worker_whose_delivered_work_is_not_merged_is_named_to_its_main_agent_again_every_interval(delivered_work):
     story, repository, worker = delivered_work
-    reminder = f"worker:{agent_number(story, worker.id)} committed task:1, unmerged"
+    reminder = f"worker:{agent_number(story, worker.id)} committed task:1, not merged"
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.tick(MAIN_SESSION)
     story.tick(MAIN_SESSION)
@@ -50,7 +50,7 @@ def test_a_worker_whose_delivered_work_is_merged_is_not_named_again(delivered_wo
     story, repository, worker = delivered_work
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
-    reminder = f"worker:{agent_number(story, worker.id)} committed task:1, unmerged"
+    reminder = f"worker:{agent_number(story, worker.id)} committed task:1, not merged"
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.tick(MAIN_SESSION)
     story.expect_rows(story.run(main_lines).output_text.count(reminder) == 1)
@@ -67,7 +67,7 @@ def test_a_worker_whose_work_is_released_is_not_named_again(new_story):
     story = new_story(fixture=MainAgentMerges)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
-    reminder = f"worker:{agent_number(story, worker.id)} committed task:1, unmerged"
+    reminder = f"worker:{agent_number(story, worker.id)} committed task:1, not merged"
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.tick(MAIN_SESSION)
     story.expect_success(f'worker release {agent_number(story, worker.id)} "not wanted"', actor=story.agent)

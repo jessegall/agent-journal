@@ -5,7 +5,6 @@
 7: src/core/modules/plugins/commands/support/plugin_health_check.py: is imported from src/server/tick
 7: src/core/modules/plugins/commands/support/plugin_service_round.py: is imported from src/core/modules/plugins/listeners
 7: src/core/modules/processes/commands/read_output/support/output_texts.py: is imported from src/core/modules/processes/commands/peek_output
-7: src/core/modules/processes/commands/support/part_spec.py: is imported from src/core/modules/processes/seeders
 7: src/core/modules/settings/commands/support/current_setting_output.py: is imported from src/core/modules/usage/commands/set_profile_limits
 7: src/core/modules/sharing/commands/support/share_targets.py: is imported from src/core/modules/sharing/listeners
 7: src/core/modules/skills/commands/load_skill/support/kept_skills.py: is imported from src/core/modules/skills/listeners

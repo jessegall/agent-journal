@@ -86,7 +86,7 @@ def test_a_line_of_four_parts_reaches_the_service_as_four_events_and_starts_no_p
         starts = start_counter(monkeypatch, "run.sh")
         expect_service_refusal(story, four_parts(REMOVAL_PART))
         served_lines = (story.home.folder / "plugin-data" / "served" / "asked").read_text().splitlines()
-        story.expect_rows(len(served_lines) == 4, starts == [])
+        story.expect_rows(len(served_lines) == 1, len(json.loads(served_lines[0])["events"]) == 4, starts == [], detail=str(served_lines))
     finally:
         story.processes.close()
 
@@ -100,7 +100,7 @@ def test_a_line_of_four_parts_reads_the_agent_and_its_skills_as_a_line_of_one_pa
         call_counts.update(settings=0, agent=0, skills=0)
         expect_service_refusal(story, four_parts(REMOVAL_PART))
         served_events = [json.loads(line) for line in (story.home.folder / "plugin-data" / "served" / "asked").read_text().splitlines()]
-        story.expect_rows([line["data"]["position"] for line in served_events[-4:]] == [0, 1, 2, 3], single_part_counts["skills"] == 1, call_counts["agent"] == single_part_counts["agent"], call_counts["skills"] == 1, single_part_counts["settings"] + call_counts["settings"] <= 1)
+        story.expect_rows([event["data"]["position"] for event in served_events[-1]["events"]] == [0, 1, 2, 3], single_part_counts["skills"] == 1, call_counts["agent"] == single_part_counts["agent"], call_counts["skills"] == 1, single_part_counts["settings"] + call_counts["settings"] <= 1)
     finally:
         story.processes.close()
 

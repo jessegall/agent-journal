@@ -9,7 +9,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 
-REPLACED_REPLY = "replaced by a newer session of agent 1"
+REPLACED_REPLY = "A newer session of agent 1 replaced this one"
 REPLACED_REASON = "replaced_by_person"
 MEMORY_TEXT = "The till is counted every evening"
 CLEAR_START = HookSamples.session_start().with_raw({"source": "clear"})

@@ -34,8 +34,8 @@ from suites.coding.modules.workers.support.worker_open_tasks import WorkerOpenTa
 from core.modules.agents.support.agent_label import AgentLabel
 from engine.cli.row_numbers import RowNumbers
 from suites.coding.modules.workers.support.worker_questions import WorkerQuestions
+from suites.coding.modules.workers.support.work_units import UNIT_TASKS_REASON
 
-UNIT_TASKS_REASON = "a worker's unit is every task assigned to it, which can hold more than fifty"
 
 
 class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Refusal]):

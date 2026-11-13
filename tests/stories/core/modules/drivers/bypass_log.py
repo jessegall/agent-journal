@@ -26,7 +26,7 @@ def test_the_next_answered_hook_names_what_went_around_once_in_the_chat_and_to_t
     story = two_bypassed_hooks
     expect_marks_text(story, "2 hooks went through unchecked while the journal did not answer")
     story.expect_rows(not log_file(story).exists())
-    story.expect_hook_allowed("s-1", FINISHED, "2 of your hooks went through unchecked")
+    story.expect_hook_allowed("s-1", FINISHED, "2 of your hooks ran unchecked")
     story.run_listeners()
     story.expect_absent_hook_line("s-1", FINISHED, "went through unchecked")
     expect_count_marks(story, "went through unchecked", 1)

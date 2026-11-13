@@ -26,7 +26,7 @@ PROGRAM_RUNS = b"running\n"
 STARTED = b"started 701\n"
 STOPPED = b"stopped\n"
 NO_PROGRAM = b"\n"
-START_FAILED = "could not start"
+START_FAILED = "failed to start"
 PRIVATE_PARTS = ("launcher", "support.agent_program", "agent_dispatcher", "program_transport")
 RECORDED_PROCESS = "--pid 700 --process-started-at 2026-10-31T09:00:00+00:00"
 

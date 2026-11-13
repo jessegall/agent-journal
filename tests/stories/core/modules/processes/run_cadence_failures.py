@@ -56,7 +56,7 @@ def test_a_run_whose_session_ended_has_no_line_written(new_story):
     process = moved_run(story, "make archive", CommandCategory.BUILD)
     story.hook(MAIN, HookSamples.sample("session_end"))
     ticks(story, 40)
-    story.expect_rows(f"output {process.id} " not in kept_lines(story, actor=story.user), detail=kept_lines(story, actor=story.user))
+    story.expect_rows(f"Output {process.id} " not in kept_lines(story, actor=story.user), detail=kept_lines(story, actor=story.user))
 
 
 def test_a_run_that_cannot_be_read_is_logged_by_the_tick_and_the_others_are_still_told(new_story):
@@ -66,7 +66,7 @@ def test_a_run_that_cannot_be_read_is_logged_by_the_tick_and_the_others_are_stil
     titled(story, sound, "Building the sound files")
     folder_made_a_file(story, broken)
     ticks(story, 30)
-    story.expect_rows(f"Output {sound.id} printed nothing for 30s" in kept_lines(story), f"output {broken.id} " not in kept_lines(story), detail=kept_lines(story))
+    story.expect_rows(f"Output {sound.id} printed nothing for 30s" in kept_lines(story), f"Output {broken.id} " not in kept_lines(story), detail=kept_lines(story))
     story.expect_text("developer system-logs --level warning", f"cadence watch: output {broken.id} could not be read", actor=story.user)
 
 
@@ -92,5 +92,5 @@ def test_two_environments_judge_their_runs_by_their_own_thresholds(new_story):
     ticks(story, 30)
     early = kept_lines(story, other.id, story.user)
     ticks(story, 30)
-    story.expect_rows(f"Output {here.id} printed nothing for 30s" in kept_lines(story), f"output {there.id} " not in early,
+    story.expect_rows(f"Output {here.id} printed nothing for 30s" in kept_lines(story), f"Output {there.id} " not in early,
                       f"Output {there.id} printed nothing for 60s" in kept_lines(story, other.id, story.user), detail=kept_lines(story, other.id, story.user))

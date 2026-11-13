@@ -27,7 +27,7 @@ def test_an_agent_stopped_on_a_wait_on_a_task_is_woken_when_the_task_ends(new_st
     story.expect_rows(entered == [])
     story.expect_success(f'task cancel {task} --reason "no longer needed"', actor=story.agent)
     story.run_listeners()
-    story.expect_rows(entered == [(story.agent.id, "[journal] wait:1 is over")], detail=str(entered))
+    story.expect_rows(entered == [(story.agent.id, "[journal] wait:1 is over: continue")], detail=str(entered))
 
 
 def test_an_agent_stopped_on_a_wait_on_an_output_is_woken_when_the_output_ends(new_story):
@@ -37,7 +37,7 @@ def test_an_agent_stopped_on_a_wait_on_an_output_is_woken_when_the_output_ends(n
     story.expect_rows(entered == [])
     story.container.get(Bus).run(EndProcess(process.id, 0, 40, 3), story.agent, environment_id=1)
     story.run_listeners()
-    story.expect_rows(entered == [(story.agent.id, "[journal] wait:1 is over")], detail=str(entered))
+    story.expect_rows(entered == [(story.agent.id, "[journal] wait:1 is over: continue")], detail=str(entered))
 
 
 def test_an_agent_stopped_while_a_person_decides_its_approval_is_woken_by_the_decision(new_story):
@@ -49,7 +49,7 @@ def test_an_agent_stopped_while_a_person_decides_its_approval_is_woken_by_the_de
     story.expect_rows(entered == [])
     story.expect_success("approval refuse 1", actor=story.user)
     story.run_listeners()
-    story.expect_rows(entered == [(story.agent.id, "[journal] approval 1 was decided")], detail=str(entered))
+    story.expect_rows(entered == [(story.agent.id, "[journal] Approval 1 is decided")], detail=str(entered))
 
 
 def test_an_agent_stopped_with_a_task_blocked_on_a_question_is_woken_when_the_question_is_answered(new_story):
@@ -64,5 +64,5 @@ def test_an_agent_stopped_with_a_task_blocked_on_a_question_is_woken_when_the_qu
     story.expect_rows(entered == [])
     story.expect_success(f"question answer {question} --answer sqlite", actor=story.user)
     story.run_listeners()
-    story.expect_rows(entered == [(story.agent.id, "[journal] task:1 is open again: what it waited on has ended"), (story.agent.id, "[journal] wait:1 is over")], detail=str(entered))
+    story.expect_rows(entered == [(story.agent.id, "[journal] task:1 is open again: what it waited on has ended"), (story.agent.id, "[journal] wait:1 is over: continue")], detail=str(entered))
     story.expect_text(f"task show {task}", "state: open", actor=story.agent)

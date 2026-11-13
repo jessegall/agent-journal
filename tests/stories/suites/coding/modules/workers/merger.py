@@ -83,7 +83,7 @@ def test_when_the_merger_cannot_start_the_main_agent_hears_what_waits(new_story,
     ended(story, started[0], 0)
     story.expect_rows(failure == "no main agent" or reached == [failure])
     lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
-    notice = f"the tests of worker:{agent_number(story, worker.id)} all pass"
+    notice = f"All tests of worker:{agent_number(story, worker.id)} pass"
     story.expect_rows(lines.count(notice) == 1, "agent:0" not in lines, detail=lines)
     log = story.home.system_log
     story.expect_rows(not log.exists() or "merger start failed" not in FileAccess.shared().read(log))
@@ -101,7 +101,7 @@ def test_a_merge_waits_until_a_main_agent_returns(new_story, monkeypatch):
     MergerRetry()(story.container)
     MergerRetry()(story.container)
     lines = story.run(f"agent-line list --agent {main.id}", actor=main).output_text
-    story.expect_rows(lines.count(f"the tests of worker:{agent_number(story, worker.id)} all pass") == 1, detail=lines)
+    story.expect_rows(lines.count(f"All tests of worker:{agent_number(story, worker.id)} pass") == 1, detail=lines)
 
 
 def test_a_retry_that_fails_again_does_not_repeat_the_line_once_the_main_agent_has_read_it(new_story, monkeypatch):
@@ -120,7 +120,7 @@ def test_a_retry_that_fails_again_does_not_repeat_the_line_once_the_main_agent_h
         story.hook("new-main", HookSamples.prompt("go on"))
         story.clock.advance(timedelta(minutes=1))
     lines = story.run(f"agent-line list --agent {main.id}", actor=main).output_text
-    story.expect_rows(lines.count(f"the tests of worker:{agent_number(story, worker.id)} all pass") == 1, detail=lines)
+    story.expect_rows(lines.count(f"All tests of worker:{agent_number(story, worker.id)} pass") == 1, detail=lines)
 
 
 @pytest.mark.parametrize("merger_enabled", [True, False])
@@ -151,7 +151,7 @@ def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_
         story.expect_text("merger next", agent_label(story, worker.id), actor=Actor(merger.id, ActorType.AGENT))
     else:
         story.expect_rows(merger_agent(story) is None)
-        story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{agent_number(story, worker.id)} all pass", actor=story.agent)
+        story.expect_text(f"agent-line list --agent {story.agent.id}", f"All tests of worker:{agent_number(story, worker.id)} pass", actor=story.agent)
 
 
 def test_only_the_merger_runs_its_commands(new_story):
@@ -500,7 +500,7 @@ def test_a_worker_the_merger_passes_on_is_named_to_the_main_agent_with_its_merge
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.expect_success(f'merger pass {agent_number(story, worker.id)} "important differences need the main agent"', actor=merger)
     story.run_listeners()
-    story.expect_text(main_lines, f"the merger leaves worker:{agent_number(story, worker.id)} to you: its merge waits on you")
+    story.expect_text(main_lines, f"The merger passed worker:{agent_number(story, worker.id)} to you: its merge waits on you")
     story.tick("s-1")
     story.expect_text(main_lines, f"worker:{agent_number(story, worker.id)} committed")
     first = story.run(main_lines).output_text.count(f"worker:{agent_number(story, worker.id)} committed")

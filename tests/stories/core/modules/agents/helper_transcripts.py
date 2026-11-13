@@ -43,12 +43,12 @@ def test_a_workers_own_rows_say_worker_and_not_assistant(new_story, tmp_path, mo
 
 
 def test_a_row_the_journal_sent_a_worker_is_tagged_journal_and_one_the_main_agent_sent_is_tagged_main_agent(new_story, tmp_path, monkeypatch):
-    read_transcript(tmp_path, monkeypatch, "s-2", row("user", "your tests failed: two"), row("user", "Fix the footer too"))
+    read_transcript(tmp_path, monkeypatch, "s-2", row("user", "Your tests failed: two"), row("user", "Fix the footer too"))
     story = new_story(fixture=TranscriptWorker)
     worker = story.helper.id
-    deliver_line(story, worker, 1, "your tests failed: two")
+    deliver_line(story, worker, 1, "Your tests failed: two")
     deliver_line(story, worker, story.agent.id, "Fix the footer too")
-    story.expect_text(f"agent transcript {agent_number(story, worker)}", "1  journal  user  your tests failed: two", "2  main agent  user  Fix the footer too")
+    story.expect_text(f"agent transcript {agent_number(story, worker)}", "1  journal  user  Your tests failed: two", "2  main agent  user  Fix the footer too")
 
 
 def test_the_transcript_of_a_worker_with_more_lines_than_one_read_may_load_still_names_who_sent_a_row(new_story, tmp_path, monkeypatch):
@@ -56,7 +56,7 @@ def test_the_transcript_of_a_worker_with_more_lines_than_one_read_may_load_still
     story = new_story(fixture=TranscriptWorker)
     worker = story.helper.id
     for number in range(READ_LIMIT_ROWS):
-        deliver_line(story, worker, 1, f"your tests failed: {number}")
+        deliver_line(story, worker, 1, f"Your tests failed: {number}")
     deliver_line(story, worker, story.agent.id, "Fix the footer too")
     database = story.container.get(Database)
     database.read_limit_rows, database.collected_large_reads = READ_LIMIT_ROWS, None

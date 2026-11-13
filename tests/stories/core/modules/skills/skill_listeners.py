@@ -7,7 +7,7 @@ def test_a_read_of_a_skill_file_marks_it_loaded_with_the_digest_of_the_catalogue
     story = started(new_story)
     story.run(f"skill require {story.agent.id} journal-notes")
     read_row(story, NOTES_FILE)
-    story.expect_success("agent-skill show 3", "state: loaded", f"digest: {SkillDigest.digest((story.home.project_folder / NOTES_FILE).read_text())}")
+    story.expect_success("agent-skill show 2", "state: loaded", f"digest: {SkillDigest.digest((story.home.project_folder / NOTES_FILE).read_text())}")
 
 
 def test_a_read_of_any_other_file_loads_nothing(new_story):

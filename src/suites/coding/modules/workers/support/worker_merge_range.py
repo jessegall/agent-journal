@@ -3,8 +3,8 @@ from core.modules.tasks.queries.task_query import TaskQuery
 from engine.query.queries import Queries
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from suites.coding.modules.workers.support.work_units import UNIT_TASKS_REASON
 
-UNIT_TASKS_REASON = "a worker's unit is every task assigned to it, which can hold more than fifty"
 
 TASK_NUMBER_MOST_DIGITS = 6
 

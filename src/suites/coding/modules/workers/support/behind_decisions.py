@@ -7,8 +7,8 @@ from core.modules.agents.support.agent_label import AgentLabel
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.behind_checks import CHECKS_REASON
 
-CHECKS_REASON = "every behind check of the worktree is weighed"
 NO_OPEN_CHECK = "no open check for this worker"
 
 

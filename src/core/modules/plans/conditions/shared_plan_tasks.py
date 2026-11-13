@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
-from engine.query.condition import Condition
+from engine.query.conditions.condition import Condition
 from engine.query.conditions.among import Among
 from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.query.join import Join

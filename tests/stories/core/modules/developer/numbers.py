@@ -39,8 +39,8 @@ def test_an_http_route_is_counted_in_points_while_call_costs_are_on(new_story):
     tools.run(RouteCostTool, "/cli", Points(rows=4))
     tools.run(RouteCostTool, "/cli", Points(rows=10))
     tools.run(RouteCostTool, "/hook", Points(rows=20))
-    expect_numbers(story, [{"id": "route /cli", "hook": "route /cli", "count": 2, "most_points": 10, "average_points": 7},
-                               {"id": "route /hook", "hook": "route /hook", "count": 1, "most_points": 20, "average_points": 20}])
+    expect_numbers(story, [{"id": "Route /cli", "hook": "Route /cli", "count": 2, "most_points": 10, "average_points": 7},
+                               {"id": "Route /hook", "hook": "Route /hook", "count": 1, "most_points": 20, "average_points": 20}])
 
 
 def test_a_reset_starts_the_counts_again_and_the_window_may_read_and_reset(new_story):

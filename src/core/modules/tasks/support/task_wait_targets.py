@@ -7,11 +7,10 @@ from engine.enums.agent_role import AgentRole
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.agents.support.agent_label import AgentLabel
-from core.modules.plans.models.plan import Plan
-from core.modules.questions.models.question import Question
-from core.modules.tasks.models.task import Task
+from engine.model.model import Model
+from engine.registry.registry import Registry
 
-TARGET_MODELS: dict[str, type[Task | Question | Plan]] = {"task": Task, "question": Question, "plan": Plan}
+TARGET_MODELS = ("task", "question", "plan")
 FINISHED_STATES = ("completed", "cancelled", "answered", "closed")
 
 
@@ -19,8 +18,8 @@ class TaskWaitTargets:
     """Validates the rows a task can wait on and returns their stored references. A helper is named by its
     number in the environment of the line."""
 
-    def __init__(self, database: Database, queries: Queries, numbers: RowNumbers) -> None:
-        self.database, self.queries, self.numbers = database, queries, numbers
+    def __init__(self, database: Database, queries: Queries, numbers: RowNumbers, registry: Registry) -> None:
+        self.database, self.queries, self.numbers, self.registry = database, queries, numbers, registry
 
     def agent_row_id(self, number: int) -> int:
         return self.numbers.row_id(AGENT_MODEL_NAME, number, self.database.scope_environment_id)
@@ -37,10 +36,9 @@ class TaskWaitTargets:
     def target(self, target_type: str, row_id: int) -> str:
         if target_type == "helper":
             return self.helper_target(self.agent_row_id(row_id))
-        model = TARGET_MODELS.get(target_type)
-        if model is None:
+        if target_type not in TARGET_MODELS:
             raise Refusal(f"{target_type}:{row_id} gives nothing to wait on", self.target_help)
-        query = self.queries.query(model)
+        query = self.queries.query(self.registry.models[target_type].model.checked_class(Model))
         row = query.filter(id=row_id).first()
         if row is None:
             raise Refusal(f"{target_type} {row_id} does not exist", "name a row that does")

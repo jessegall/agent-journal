@@ -1,7 +1,7 @@
 import sqlite3
 
 from engine.database.database import Database
-from engine.database.errors.migration_deferred_error import MigrationDeferred
+from engine.database.errors.migration_deferred_error import MigrationDeferredError
 from engine.database.rebuild_migration import RebuildMigration
 from engine.database.statement import Statement
 from engine.enums.log_level import LogLevel
@@ -42,6 +42,6 @@ class FoldMainAgentsMigration(RebuildMigration):
             counts = fold.run(folds, clock.timestamp().text)
         except (Refusal, sqlite3.Error, OSError) as error:
             log.write(LogLevel.ERROR, f"The fold of main agents rolled back and runs again at the next start: {error}")
-            raise MigrationDeferred.because(f"the fold of main agents failed: {error}") from error
+            raise MigrationDeferredError.because(f"the fold of main agents failed: {error}") from error
         log.write(LogLevel.INFORMATION, f"Folded {sum(len(fold.folded) for fold in folds)} main agent rows into {len(folds)} "
                                         f"survivors; {sum(counts.removed.get(table, 0) for table in counts.tables_before)} rows settled. Copy: {copy}")

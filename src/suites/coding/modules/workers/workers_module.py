@@ -65,14 +65,14 @@ from suites.coding.modules.workers.models.worker_test_run import WorkerTestRun
 from suites.coding.modules.workers.migrations.m032_worker_phase_test_runs import WorkerPhaseTestRunsMigration
 from suites.coding.modules.workers.commands.record_worker_test_run.record_worker_test_run_handler import RecordWorkerTestRunHandler
 from suites.coding.modules.workers.rules.approved_plan_stop_rule import ApprovedPlanStopRule
-from engine.agent.agent_work import AgentWork
+from engine.agent.work.agent_work import AgentWork
 from suites.coding.modules.workers.listeners.merge_ready_listener import MergeReadyListener
 from suites.coding.modules.workers.bindings.worker_agent_work import WorkerAgentWork
 from suites.coding.modules.workers.bindings.worker_compaction_limit import WorkerCompactionLimit
 from suites.coding.modules.workers.rules.context_full_stop_rule import ContextFullStopRule
 from core.modules.drivers.support.compaction_limit import CompactionLimit
 from suites.coding.modules.workers.support.worker_brief_points import WorkerBriefPoints
-from engine.agent.agent_brief_points import AgentBriefPoints
+from engine.agent.work.agent_brief_points import AgentBriefPoints
 from suites.coding.modules.workers.models.worker_work_review import WorkerWorkReview
 from suites.coding.modules.workers.migrations.m037_worktree_delivery import WorktreeDeliveryMigration
 from suites.coding.modules.workers.migrations.m048_worktree_libraries import WorktreeLibrariesMigration

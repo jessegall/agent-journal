@@ -15,7 +15,7 @@ from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.ticks.stopped_worker_runs import StoppedWorkerRuns
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.agents.testing.fake_launcher import FakeLauncher
@@ -54,7 +54,7 @@ def test_a_worker_that_has_open_help_request_stays_stopped_when_its_run_ends(new
     story.expect_success('wait stuck "the build tool is missing"', actor=worker)
     story.run(f"agent end {worker.id}", actor=worker)
     bus.run(EndProcess(run.id, 0, 10, 1), worker, environment_id=1)
-    story.expect_absent(f"agent-line list --agent {worker.id}", f"your run {run.id} ended")
+    story.expect_absent(f"agent-line list --agent {worker.id}", f"Your run {run.id} ended")
 
 
 @pytest.fixture
@@ -81,7 +81,7 @@ def test_a_worker_past_its_restarts_on_old_tasks_is_restarted_for_a_queued_task(
     story.expect_success('task close 1 --outcome "done"', actor=worker)
     story.advance(timedelta(minutes=1))
     story.run(f"agent end {worker.id}", actor=worker)
-    expect_count_output_2(story, f"agent-line list --agent {worker.id}", "you ended with tasks left", 2)
+    expect_count_output_2(story, f"agent-line list --agent {worker.id}", "You ended with tasks left", 2)
 
 
 def test_a_tick_reads_no_ended_worker_that_has_no_running_process(new_story):
@@ -106,7 +106,7 @@ def test_with_the_merger_off_a_worker_stopped_past_the_limit_on_a_run_that_goes_
     StoppedWorkerRuns()(story.container)
     StoppedWorkerRuns()(story.container)
     texts = stopped_run_texts(story)
-    story.expect_rows(texts == [f"worker:{agent_number(story, worker.id)} stopped and waits on output {run.id}, still running: stop that output"], detail=str(texts))
+    story.expect_rows(texts == [f"worker:{agent_number(story, worker.id)} stopped but output {run.id} is still running: stop that output"], detail=str(texts))
     story.expect_text(f"agent-line list --agent {story.agent.id}", "merger-line:")
 
 
@@ -161,7 +161,7 @@ def test_a_worker_that_used_a_tool_since_its_last_restart_is_started_again_past_
     set_resume_limit(story.container, 1)
     worker = dispatched_worker(story)
     stopped_twice(story, worker, worker_session(story, worker), uses_tool_after_first_stop=True)
-    expect_count_output_2(story, f"agent-line list --agent {worker.id}", "you ended with tasks left", 2)
+    expect_count_output_2(story, f"agent-line list --agent {worker.id}", "You ended with tasks left", 2)
 
 
 def test_a_worker_that_did_nothing_since_its_last_restart_is_not_started_past_the_restart_limit(new_story):
@@ -170,7 +170,7 @@ def test_a_worker_that_did_nothing_since_its_last_restart_is_not_started_past_th
     set_resume_limit(story.container, 1)
     worker = dispatched_worker(story)
     stopped_twice(story, worker, worker_session(story, worker), uses_tool_after_first_stop=False)
-    expect_count_output_2(story, f"agent-line list --agent {worker.id}", "you ended with tasks left", 1)
+    expect_count_output_2(story, f"agent-line list --agent {worker.id}", "You ended with tasks left", 1)
 
 
 def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(new_story):
@@ -191,7 +191,7 @@ def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(new_story):
     story.expect_success("task start 1", actor=worker)
     story.advance(timedelta(minutes=1))
     story.run(f"agent end {worker.id}", actor=worker)
-    expect_count_output_2(story, f"agent-line list --agent {worker.id}", "you ended with tasks left", 2)
+    expect_count_output_2(story, f"agent-line list --agent {worker.id}", "You ended with tasks left", 2)
 
 
 def test_a_worker_whose_program_the_launcher_runs_is_stopped_through_the_launcher(new_story):
@@ -226,7 +226,7 @@ def test_a_worker_that_stopped_is_told_when_its_run_ends_by_a_job_that_starts_it
     story.run_listeners()
     story.expect_text(f"process show {run.id}", "state: background", actor=story.agent)
     bus.run(EndProcess(run.id, 0, 10, 1), worker, environment_id=1)
-    story.expect_text(f"agent-line list --agent {worker.id}", f"your run {run.id} ended", "workers.worker-job")
+    story.expect_text(f"agent-line list --agent {worker.id}", f"Your run {run.id} ended", "workers.worker-job")
     story.expect_text("task show 1", "state: started", actor=story.agent)
     story.expect_success("worker-worktree list --json", actor=story.agent)
 
@@ -235,7 +235,7 @@ def test_a_worker_that_stopped_with_a_run_going_is_not_told_to_carry_on_and_show
     story, worker, _, _ = worker_with_background_run(new_story)
     story.run(f"agent end {worker.id}", actor=worker)
     story.run_listeners()
-    story.expect_absent(f"agent-line list --agent {worker.id}", "you ended with tasks left")
+    story.expect_absent(f"agent-line list --agent {worker.id}", "You ended with tasks left")
     story.expect_absent("chat-mark list --environment 1", "stopped with")
     story.expect_success(f"agent show {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_success("message list --limit 5", actor=story.agent)

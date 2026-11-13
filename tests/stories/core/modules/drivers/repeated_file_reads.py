@@ -9,7 +9,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.fixtures import UserJoined
 
-CONTEXT_TEXT = "is still in your context and has not changed since it was read"
+CONTEXT_TEXT = "is unchanged since you read it: use what is in your context"
 
 
 def read(path: str, **part: int):

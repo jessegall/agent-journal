@@ -2,7 +2,7 @@ from engine.event.logged_event import LoggedEvent
 from engine.container.container import Container
 from engine.model.model import Model
 from engine.model.tables import Tables
-from engine.query.shared_rows import SharedRows
+from engine.query.rows.shared_rows import SharedRows
 from engine.registry.registry import Registry
 from server.viewer.shared_row import SharedRow
 

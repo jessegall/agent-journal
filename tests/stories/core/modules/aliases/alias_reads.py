@@ -18,7 +18,7 @@ def test_a_build_written_out_is_told_its_saved_command_among_sixty_saved_builds_
     for number in range(SAVED_BUILDS):
         story.expect_success(f'alias add build-{number:02d} "builder{number:02d} all" --category build', actor=story.agent)
     limit_reads(story)
-    story.expect_hook_refusal("s-1", LAST_BUILD, "this runs through a saved command: journal build-59")
+    story.expect_hook_refusal("s-1", LAST_BUILD, "This is a saved command: run journal build-59")
 
 
 SEEDED_BUILDS = 336

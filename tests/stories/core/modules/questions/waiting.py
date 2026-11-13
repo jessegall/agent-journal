@@ -70,13 +70,13 @@ def test_a_late_answer_is_told_to_the_agent_once(new_story):
 def test_a_closed_question_is_told_to_the_agent_once(new_story):
     story = new_story(fixture=BuilderQuestion)
     story.run("question close 1")
-    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), "the user closed question:1 unanswered")
+    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), "The user closed question:1 without answering")
     story.expect_absent_hook_line("s-1", HookSamples.prompt("and on"), "the user closed question 1")
 
 
 def test_the_agent_programs_own_question_tool_is_refused_with_the_journal_way(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.expect_hook_refusal("s-1", QUESTION_TOOL, "ask through the question command")
+    story.expect_hook_refusal("s-1", QUESTION_TOOL, "Ask through the question command")
 
 
 def test_a_refused_ask_leaves_no_wait(new_story):
@@ -87,7 +87,7 @@ def test_a_refused_ask_leaves_no_wait(new_story):
 
 def test_the_codex_programs_own_question_tool_is_refused_with_the_journal_way(new_story):
     story = new_story(fixture=CodexBuilderStarted)
-    story.expect_hook_refusal("s-1", CODEX_QUESTION_TOOL, "ask through the question command")
+    story.expect_hook_refusal("s-1", CODEX_QUESTION_TOOL, "Ask through the question command")
 
 
 def test_the_waiting_read_brings_the_wait_on_the_user_with_its_targets_and_nothing_else(new_story):

@@ -27,7 +27,7 @@ def test_76_a_window_of_one_worker_is_tested_on_its_commit(new_story, monkeypatc
     first = dispatched_story_worker(planned_story(new_story, build_test=BUILD_TEST), PHASE_DISPATCH, monkeypatch)
     commit_each(first, (1, 2, 3))
     sources = [row["source"] for row in rows(first, REACHES)]
-    first.story.expect_rows(sources == ["worker"], detail=str(sources))
+    first.story.expect_rows(sources == ["agent_commit"], detail=str(sources))
 
 
 def test_77_the_holder_of_an_awaited_task_is_told_once(new_story, monkeypatch):

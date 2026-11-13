@@ -11,7 +11,7 @@ src/core/modules/aliases/listeners/alias_file_listener.py:the alias file lists e
 src/core/modules/aliases/listeners/alias_file_listener.py:the command type file lists every command type
 src/core/modules/aliases/queries/alias_query.py:a command is matched against the saved aliases of its category, oldest first, until one begins it
 src/core/modules/aliases/ticks/silent_alias_marking.py:the tick watches every running background run for a silent saved command
-src/core/modules/approvals/commands/pending_approvals/pending_approvals_subcommand.py:the person sees every approval that waits on them, newest first
+src/core/modules/approvals/commands/pending_approvals/pending_approvals_subcommand.py:the user sees every approval that waits on them, newest first
 src/core/modules/approvals/commands/recover_approvals/recover_approvals_handler.py:a restart recovers every approval that was running
 src/core/modules/approvals/listeners/pending_approval_dock_listener.py:at a start every pending approval is docked and every docked one checked
 src/core/modules/approvals/listeners/pending_approval_dock_listener.py:at a start every pending approval is docked and every docked one checked
@@ -45,7 +45,7 @@ src/core/modules/documents/support/work_context_reader.py:the work context names
 src/core/modules/documents/support/work_context_reader.py:the work context names every actor, link and title its messages refer to
 src/core/modules/documents/support/work_context_reader.py:the work context names every actor, link and title its messages refer to
 src/core/modules/documents/support/work_context_reader.py:the work context names every actor, link and title its messages refer to
-src/core/modules/drivers/commands/environment_menu/environment_menu_subcommand.py:The menu names every environment of the project, a catalogue a person makes by hand.
+src/core/modules/drivers/commands/environment_menu/environment_menu_subcommand.py:The menu names every environment of the project, a catalogue a user makes by hand.
 src/core/modules/drivers/commands/nudge_list/nudge_list_subcommand.py:One total for each nudge the code declares, never for stored journal rows.
 src/core/modules/drivers/commands/prune_runtime_folders/prune_runtime_folders_handler.py:the agents whose old terminal logs may go
 src/core/modules/drivers/commands/record_hook_call/record_hook_call_handler.py:every line waiting for the agent may be handed to it at this hook
@@ -59,11 +59,11 @@ src/core/modules/drivers/support/agent_activities.py:The open agents of one fami
 src/core/modules/drivers/support/hook_rule_histories.py:An agent has one history row for each driver rule and layer, so the read is bounded by the number of rules, and a hook checks every rule.
 src/core/modules/drivers/support/nudge_records.py:every record of the nudges asked about decides whether each is due again
 src/core/modules/drivers/support/waiting_line_typing.py:a release types every line that waited for the agent, oldest first
-src/core/modules/drivers/ticks/held_session_wake.py:every kept agent of a released session is woken
+src/core/modules/drivers/ticks/released_session_wake.py:every kept agent of a released session is woken
 src/core/modules/dumps/commands/dump_board/dump_board_subcommand.py:the board shows every item of the dumps on its page
 src/core/modules/dumps/commands/dump_items/dump_items_subcommand.py:the item list shows every item of the dump
 src/core/modules/dumps/commands/move_dump_item/move_dump_item_handler.py:a moved item renumbers every item of its dump
-src/core/modules/environments/support/environment_rows.py:The environments of a project are a catalogue a person makes by hand, and every request reads them from this one kept load.
+src/core/modules/environments/support/environment_rows.py:The environments of a project are a catalogue a user makes by hand, and every request reads them from this one kept load.
 src/core/modules/helpers/commands/end_provider_outages/end_provider_outages_handler.py:every outage of the program whose end has passed is ended
 src/core/modules/helpers/commands/start_unstarted_jobs/start_unstarted_jobs_handler.py:every open job that never started is started again
 src/core/modules/helpers/listeners/helper_resume_listener.py:the resume reaches every ended child helper of the agent with an open job
@@ -97,9 +97,9 @@ src/core/modules/messages/listeners/tagged_image_hold_listener.py:every open blo
 src/core/modules/messages/queries/message_query.py:a turn is judged on every reply the agent wrote in it
 src/core/modules/messages/queries/message_query.py:every recent message of the agent is compared, newest first
 src/core/modules/messages/rules/message_read_rule.py:reading the unread list marks every delivered unread message as read
-src/core/modules/messages/rules/unanswered_message_rule.py:every message of a person read since the agent last wrote waits for an answer
+src/core/modules/messages/rules/unanswered_message_rule.py:every message of a user read since the agent last wrote waits for an answer
 src/core/modules/messages/support/message_replies.py:a message counts as answered by any reply the agent wrote to it
-src/core/modules/messages/support/unread_messages.py:every unread message of a person is shared out to the agents it addresses
+src/core/modules/messages/support/unread_messages.py:every unread message of a user is shared out to the agents it addresses
 src/core/modules/plan_reviews/support/plan_rounds.py:the review rounds of a plan count every report filed on it
 src/core/modules/plan_reviews/support/plan_rounds.py:the review rounds of a plan look at every helper job begun since its first review
 src/core/modules/plans/bindings/focused_block_review_scope.py:the focus keeps every listed task that is a task of the plan
@@ -167,8 +167,7 @@ src/core/modules/processes/support/block_conditions/output_monitored.py:every mo
 src/core/modules/processes/support/cadence/judged_runs.py:the cadence tick judges every running run with its agent and parts
 src/core/modules/processes/support/cadence/judged_runs.py:the cadence tick judges every running run with its agent and parts
 src/core/modules/processes/support/cadence/judged_runs.py:the cadence tick judges every running run with its agent and parts
-src/core/modules/processes/support/decisions/command_run_counts.py:Every command still counting runs without a reader is checked against the new reader.
-src/core/modules/processes/support/decisions/command_run_counts.py:The counts of the commands one run names, one row per command.
+src/core/modules/processes/support/decisions/command_run_counts.py:one count row for each command a run names
 src/core/modules/processes/support/held_runs.py:every old running run of the agent is checked for the silence that holds it
 src/core/modules/processes/support/reader_rows.py:A command is matched against every reader's patterns, and the readers are a catalogue of shipped and saved readers.
 src/core/modules/processes/support/reading/catalogue_audit.py:every creator of a recent mark is checked for an agent
@@ -186,7 +185,7 @@ src/core/modules/processes/ticks/output_checks.py:the tick checks every open wat
 src/core/modules/processes/ticks/output_reading.py:the tick reads the new output of every running run
 src/core/modules/processes/ticks/run_end_recovery.py:the tick recovers the end of every run still marked running
 src/core/modules/processes/ticks/run_timeouts.py:the tick stops every running run whose time limit passed
-src/core/modules/questions/listeners/open_questions_dock_listener.py:The questions of the main agent that a person has not answered yet; the dock shows every one of them.
+src/core/modules/questions/listeners/open_questions_dock_listener.py:The questions of the main agent that a user has not answered yet; the dock shows every one of them.
 src/core/modules/questions/rules/support/question_changes.py:every question of the agent that changed since the last answer is told, with what waits on it
 src/core/modules/questions/rules/support/question_changes.py:every question of the agent that changed since the last answer is told, with what waits on it
 src/core/modules/reviews/commands/review_board/review_board_subcommand.py:the reviewer board shows every review with its steps
@@ -225,7 +224,7 @@ src/core/modules/triggers/listeners/trigger_process_removal_listener.py:a remove
 src/core/modules/usage/commands/agent_cards/agent_cards_subcommand.py:every agent card on the page is marked running or idle
 src/core/modules/usage/commands/agent_cards/agent_cards_subcommand.py:every agent card on the page is marked running or idle
 src/core/modules/usage/commands/agent_limits/agent_limits_subcommand.py:every agent with pending work counts against its limit
-src/core/modules/usage/commands/profile_list/profile_list_subcommand.py:Two counters for each profile, and the profiles are files a person keeps by hand.
+src/core/modules/usage/commands/profile_list/profile_list_subcommand.py:Two counters for each profile, and the profiles are files a user keeps by hand.
 src/core/modules/usage/commands/statistic_list/statistic_list_subcommand.py:One number for each counter the code and the profiles name, never for stored journal rows.
 src/core/modules/usage/commands/usage_agents/usage_agents_subcommand.py:The agents that have not ended, which the running programs bound; every reader of a request shares this one kept load.
 src/core/modules/usage/commands/usage_show/usage_show_subcommand.py:The agents that have not ended, which the running programs bound; every reader of a request shares this one kept load.
@@ -237,7 +236,7 @@ src/engine/testing/stories/story.py:the story kit lists every row of a table for
 src/suites/coding/listeners/full_test_run_listener.py:a full test run speaks for every task in testing and its holder
 src/suites/coding/listeners/full_test_run_listener.py:a full test run speaks for every task in testing and its holder
 src/suites/coding/modules/checks/listeners/ended_check_runs_listener.py:at a start every check left running is ended
-src/suites/coding/modules/checks/queries/check_query.py:The checks of a project are a catalogue a person or an agent makes one at a time, and a round runs every one of them.
+src/suites/coding/modules/checks/queries/check_query.py:The checks of a project are a catalogue a user or an agent makes one at a time, and a round runs every one of them.
 src/suites/coding/modules/checks/queries/check_query.py:the check tick acts on every check that is due, broken or failing unreported
 src/suites/coding/modules/checks/queries/check_query.py:the check tick acts on every check that is due, broken or failing unreported
 src/suites/coding/modules/checks/queries/check_query.py:the check tick acts on every check that is due, broken or failing unreported
@@ -355,3 +354,4 @@ src/suites/coding/modules/workers/ticks/unlaunched_worker_test_runs.py:every run
 src/suites/coding/modules/workers/ticks/worker_resume_retry.py:every worker with a waiting resume line is tried again
 src/suites/coding/support/next_task.py:the own tasks of an agent are every task it holds or is assigned
 src/suites/coding/support/next_task.py:the own tasks of an agent are every task it holds or is assigned
+src/core/modules/processes/listeners/booted_runs_listener.py:at a start every run marked running is checked for a process that is gone

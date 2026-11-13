@@ -16,7 +16,7 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.modules.processes.support.queue_fixtures import QueueAgents
 
 VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
-UPDATE_REMINDER = "an update waits"
+UPDATE_REMINDER = "An update waits"
 REMINDER_SECONDS = 5 * 60
 
 

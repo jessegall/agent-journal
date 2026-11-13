@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from engine.query.condition import Condition
+from engine.query.conditions.condition import Condition
 from engine.query.expressions.expression import Expression
 from engine.query.expressions.inlined import Inlined
 from engine.query.expressions.sql_name import SqlName

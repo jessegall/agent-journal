@@ -68,7 +68,7 @@ def test_55_a_proof_sent_back_short_starts_its_own_task_again_tells_the_worker_a
     story.expect_success(f'proof short 1 "{SHORTFALL}"', "state: short", actor=story.agent)
     expect_task_states(two_untested_committed, "started", 1)
     expect_task_states(two_untested_committed, "testing", 2)
-    story.expect_rows(any("proof:1 of task:1 is short" in line for line in two_untested_committed.worker_lines()), detail=str(two_untested_committed.worker_lines()))
+    story.expect_rows(any("proof:1 of task:1 is too short" in line for line in two_untested_committed.worker_lines()), detail=str(two_untested_committed.worker_lines()))
 
 
 def test_56_no_line_of_the_status_of_a_worker_closes_a_task_and_its_tasks_are_completed_by_their_checked_proofs(two_started):

@@ -17,7 +17,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.cadence.cadence_line import TICK_SECONDS
 from core.modules.processes.support.cadence.cadence_log import CADENCE_FILE, CadenceLog
@@ -31,7 +31,7 @@ TEST_ROWS_REASON = "the test reads every row it checks"
 CADENCE_TICK = "cadence watch"
 TICK = timedelta(seconds=TICK_SECONDS)
 WORKER_SESSION = "s-worker"
-CADENCE_WORDS = ("printed nothing", "no reader can follow", "has written nothing", "uses no processor time")
+CADENCE_WORDS = ("printed nothing", "no reader can follow", "has written nothing", "uses no CPU time")
 TOOL_USE = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))
 
 
@@ -107,7 +107,7 @@ def elsewhere_run(story: Story, actor: Actor) -> Process:
 
 
 def tree_of(story: Story, tree: GroupCpuTime, group: int, *processes: Process) -> None:
-    """The given processor time stands for the process trees of the runs, each under the given group."""
+    """The given CPU time stands for the process trees of the runs, each under the given group."""
     story.container.bind(GroupCpuTime, tree)
     for process in processes:
         story.container.get(OutputFolder).write_pid(process.id, group)

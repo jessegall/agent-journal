@@ -7,7 +7,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 
-OUTWARD = "reaches past the journal"
+OUTWARD = "reaches outside the journal"
 
 
 def journal_line(*arguments: str):

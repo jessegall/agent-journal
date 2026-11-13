@@ -3,7 +3,7 @@ from tests.stories.core.modules.drivers.support.confirmed_skips import confirmed
 
 AGENT_REFUSAL = "an agent may not use journal plugin run"
 RUN_LINE = "plugin run -- journal plan approve 1"
-OUTWARD = "reaches past the journal"
+OUTWARD = "reaches outside the journal"
 SKIP_REASON = '--skip-reason "the plugin is wrong here"'
 SECOND_REFUSAL = "[plugin second] not today"
 

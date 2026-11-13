@@ -5,7 +5,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-REFUSAL = "every helper start names its model, or default for the profile's own"
+REFUSAL = "Name a model when starting a helper or worker, or default for the profile's own"
 
 
 def journal_line(command: str):

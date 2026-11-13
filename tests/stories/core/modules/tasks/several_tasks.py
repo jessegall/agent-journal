@@ -35,7 +35,7 @@ def test_after_a_close_the_newest_started_still_held_is_named_and_nothing_new_st
     story.expect_success("task close 2 --outcome done", actor=story.agent)
     story.run_listeners()
     lines = story.hook("s-1", posted("journal task close 2 --outcome done"))
-    expect_reply_line(lines, "back to task:3")
+    expect_reply_line(lines, "Back to task:3")
     story.expect_success("task show 4", "state: open", actor=story.agent)
 
 
@@ -57,7 +57,7 @@ def test_closing_the_focused_task_goes_back_to_the_task_started_last(started_tas
     story.run("task focus 1", actor=story.agent)
     story.expect_success("task close 1 --outcome done", actor=story.agent)
     story.run_listeners()
-    expect_reply_line(story.hook("s-1", posted("journal task close 1 --outcome done")), "back to task:2")
+    expect_reply_line(story.hook("s-1", posted("journal task close 1 --outcome done")), "Back to task:2")
 
 
 def test_a_task_that_is_open_or_is_no_task_cannot_be_focused(started_tasks):

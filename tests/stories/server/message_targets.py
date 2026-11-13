@@ -93,7 +93,7 @@ def test_a_message_wakes_its_idle_target(targeted_chat, role):
     story.advance(timedelta(seconds=31))
     message = post_target(server, cookie, target, f"Continue the {role} job")
     story.run_listeners()
-    expect_row(typing, typed=[(target.id, f"[journal] new message {message['id']}")])
+    expect_row(typing, typed=[(target.id, f"[journal] New message {message['id']}: read it")])
 
 
 def test_main_ignores_a_workers_unread_message_and_its_limit(targeted_chat):
@@ -131,8 +131,8 @@ def test_a_worker_reads_only_its_messages(targeted_chat):
 def test_a_workers_message_moves_only_its_foreground_run(targeted_chat):
     server, cookie, typing = targeted_chat
     story = server.story
-    story.hook("s-1", READ)
-    story.hook(story.worker_session, READ)
+    story.hook("s-1", LINT)
+    story.hook(story.worker_session, LINT)
     post_target(server, cookie, story.worker, "Interrupt the worker command")
     story.run_listeners()
     folder = story.container.get(OutputFolder)

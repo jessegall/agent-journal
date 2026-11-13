@@ -16,7 +16,7 @@ from engine.driver.hook_reply import HookReply
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.move_process.move_process import MoveProcess
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery
@@ -51,7 +51,7 @@ def sample_category(text: str, category: CommandCategory | None) -> CommandCateg
     return CommandCategory.JOURNAL if text.startswith("journal ") else CommandCategory.UNKNOWN
 
 
-def runner_line(story: Story, process_id: int, line: str, limit: int = 15, background: bool = False, session: str = "s-1", read_command: bool = False, has_long_part: bool = False, queue_run: bool = True, sandbox: bool = False, progress_count: str = "", progress_position: int = 0, progress_pattern: str = "") -> str:
+def runner_line(story: Story, process_id: int, line: str, limit: int = 15, background: bool = False, session: str = "s-1", read_command: bool = False, has_long_part: bool = False, queue_run: bool = True, sandbox: bool = False, progress_count: str = "", progress_position: int = 0, progress_pattern: str = "", checkout_folder: Path | None = None) -> str:
     flag = (" --background" if background else "") + (" --only-reads" if read_command else "")
     if sandbox or session == "sub-1":
         flag += " --read-only-shell"
@@ -62,12 +62,15 @@ def runner_line(story: Story, process_id: int, line: str, limit: int = 15, backg
     if progress_count:
         variables += f" JOURNAL_RUN_PROGRESS_LISTING={shlex.quote(progress_count)} JOURNAL_RUN_PROGRESS_POSITION={progress_position} JOURNAL_RUN_PROGRESS_PATTERN={shlex.quote(progress_pattern)}"
     environment = story.container.get(Queries).query(Environment).find(1)
-    variables += "".join(f" {name}={shlex.quote(value)}" for name, value in Checkout.project_checkout(Path(environment.folder), environment.branch).root_variables().items())
+    root_variables = Checkout.project_checkout(Path(environment.folder), environment.branch).root_variables()
+    if checkout_folder is not None:
+        root_variables = {**root_variables, "JOURNAL_CHECKOUT_ROOT": str(checkout_folder)}
+    variables += "".join(f" {name}={shlex.quote(value)}" for name, value in root_variables.items())
     return f"JOURNAL_AGENT_SESSION={shlex.quote(session)} JOURNAL_RUNNER_PROCESS={process_id}{variables} {shlex.quote(str(story.home.folder.resolve() / 'bin' / 'journal-run'))} --process {process_id} --limit {limit}{flag} -- {shlex.quote(line)}"
 
 
 def expect_rewritten(reply: HookReply, line: str) -> None:
-    assert dict(reply.updated_input) == {"command": line}
+    assert dict(reply.updated_input) == {"command": line}, f"got  {reply.updated_input.get('command')}\nwant {line}"
 
 
 def monitor(command: str) -> HookSample:

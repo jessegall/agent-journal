@@ -16,7 +16,7 @@ INTERVAL = timedelta(seconds=WORKER_ASKING_STOPPED.interval.seconds)
 
 def stopped_lines(story) -> list[str]:
     listed = story.run(f"agent-line list --agent {story.agent.id}").output_text
-    return [line for line in listed.splitlines() if "nothing will start it" in line]
+    return [line for line in listed.splitlines() if "is stopped and will not restart" in line]
 
 
 @pytest.fixture

@@ -10,7 +10,7 @@ from engine.database.rebuild_migration import RebuildMigration
 from engine.database.schema import Schema
 from engine.database.module_migrations import ModuleMigrations
 from engine.database.statement import Statement
-from engine.database.errors.migration_deferred_error import MigrationDeferred
+from engine.database.errors.migration_deferred_error import MigrationDeferredError
 from engine.database.errors.schema_mismatch_error import SchemaMismatchError
 from engine.model.view_model import ViewModel
 from engine.journal.journal_home import JournalHome
@@ -96,7 +96,7 @@ class DeferredOnce(Migration):
     def run(self, database: Database) -> None:
         self.runs += 1
         if self.runs == 1:
-            raise MigrationDeferred.because("not yet")
+            raise MigrationDeferredError.because("not yet")
 
 
 def test_a_deferred_migration_is_not_recorded_and_runs_again(database):

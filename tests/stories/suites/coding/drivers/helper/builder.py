@@ -16,7 +16,7 @@ def test_a_main_agent_with_auto_on_that_stops_with_nothing_in_hand_is_started_on
 def test_a_main_agent_with_auto_off_that_stops_is_not_given_the_open_task(new_story):
     story = new_story(fixture=OpenTaskBuilder)
     story.run("setting make journal.suites.coding.auto-mode false")
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker and a place is free")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker")
     story.expect_hook_allowed("s-1", HookSamples.stop())
     story.expect_success(lines.TASK_DETAILS, "state: open")
 
@@ -39,4 +39,4 @@ def test_a_main_agent_with_auto_on_the_journal_started_is_told_to_introduce_itse
     story.expect_text("agent launch claude --environment main", "started main agent", actor=user)
     launcher.drain_requests()
     name = launcher.requests[0]["session"]
-    story.expect_hook_allowed(name, HookSamples.session_start().with_fields(launch=name), "introduce yourself in the chat")
+    story.expect_hook_allowed(name, HookSamples.session_start().with_fields(launch=name), "Introduce yourself in the chat")

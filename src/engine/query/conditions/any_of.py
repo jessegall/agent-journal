@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
-from engine.query.condition import Condition
+from engine.query.conditions.condition import Condition
 
 
 @dataclass(frozen=True)

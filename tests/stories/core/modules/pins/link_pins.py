@@ -1,3 +1,4 @@
+from engine.testing.expectations.text_match import holds_text
 import json
 from unittest.mock import patch
 
@@ -20,7 +21,7 @@ def shell_call(line: str, output: str = ""):
 
 def test_a_link_in_a_commands_output_is_offered_as_a_pin(new_story):
     story = new_story(fixture=UserJoined)
-    expect_lines_hook_2("pin this link if the user will return to it", "https://docs.example.com/pages/4", story, "s-1", "gh pr create", "https://docs.example.com/pages/4\n")
+    expect_lines_hook_2("pin this link if the user will come back to it", "https://docs.example.com/pages/4", story, "s-1", "gh pr create", "https://docs.example.com/pages/4\n")
 
 
 def test_a_local_address_and_a_pinned_link_are_not_offered(new_story):
@@ -32,7 +33,7 @@ def test_a_local_address_and_a_pinned_link_are_not_offered(new_story):
 
 
 def pin_lines(hook_answer) -> list[str]:
-    return [line for line in hook_answer.lines if "pin this link" in line]
+    return [line for line in hook_answer.lines if holds_text(line, "pin this link")]
 
 
 def with_shop_remote(story):
@@ -127,7 +128,7 @@ def test_a_link_in_the_agents_text_is_offered(new_story):
 
 def test_words_that_a_link_is_pinned_with_no_pin_made_are_pointed_out(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_hook_allowed("s-1", shell_call('journal message send "I pinned it above"'), "you mentioned a pinned link but made none")
+    story.expect_hook_allowed("s-1", shell_call('journal message send "I pinned it above"'), "You mentioned a pinned link but made none")
 
 
 def expect_pin_lines(hook_answer) -> None:
@@ -139,7 +140,7 @@ def expect_absent_pin_lines(hook_answer) -> None:
 
 
 def expect_lines_hook_2(text, text_2, story, text_3, text_4, text_5) -> None:
-    actual = any((text in line and text_2 in line for line in story.hook(text_3, shell_call(text_4, text_5)).lines))
+    actual = any((holds_text(line, text) and text_2 in line for line in story.hook(text_3, shell_call(text_4, text_5)).lines))
     assert actual, actual
 
 

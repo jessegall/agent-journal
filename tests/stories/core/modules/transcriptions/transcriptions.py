@@ -96,7 +96,7 @@ def test_only_an_installed_server_with_transcripts_can_be_fetched_from(new_story
     story.expect_text("transcription sources", "wispr-flow", actor=story.user)
     story.expect_success("transcription fetch wispr-flow --environment main", actor=story.user)
     story.expect_text("task list --environment main", "Fetch transcriptions from Wispr Flow", actor=story.user)
-    story.expect_text("agent-line list", "fetch the transcriptions task:1 asks for", actor=story.user)
+    story.expect_text("agent-line list", "Fetch the transcriptions task:1 asks for", actor=story.user)
 
 
 def test_a_server_without_transcripts_is_refused(new_story):

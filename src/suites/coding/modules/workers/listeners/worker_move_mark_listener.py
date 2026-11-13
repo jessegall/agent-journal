@@ -16,8 +16,8 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from engine.event.moved import Moved
 from engine.model.move import Move
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
+from suites.coding.modules.workers.support.work_units import UNIT_TASKS_REASON
 
-UNIT_TASKS_REASON = "a worker's unit is every task assigned to it, which can hold more than fifty"
 
 MOVE_TEXTS = {
     "cut": (WorkerMarkVariant.STARTED, "started {tasks}"),

@@ -10,8 +10,8 @@ from engine.query.conditions.among import Among
 from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.less import Less
 from engine.query.query import Query
-from engine.query.kept_row_changes import KeptRowChanges
-from engine.query.condition import Condition
+from engine.query.rows.kept_row_changes import KeptRowChanges
+from engine.query.conditions.condition import Condition
 from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.query.select import Select
 from core.modules.tasks.models.task import Task

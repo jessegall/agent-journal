@@ -62,5 +62,5 @@ def test_closing_words_much_like_an_earlier_turns_message_are_held_and_the_agent
     story.run('message send "And the cart?"', actor=story.user)
     story.hook("s-1", HookSamples.prompt("go on"))
     shown = story.hook("s-1", HookSamples.message_display(REWORDED))
-    expect_value("your closing words say much the same as message 3, so they were not shown" in shown.lines, True)
+    expect_value("Your closing words repeat message 3, so they were not shown" in shown.lines, True)
     expect_value(REWORDED not in story.run("message list", actor=story.user).output_text, True)

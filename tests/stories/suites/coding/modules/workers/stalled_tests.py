@@ -47,7 +47,7 @@ def test_a_proof_run_past_the_limit_is_ended_marked_stuck_and_the_worker_and_the
     story.advance(timedelta(minutes=31))
     StalledWorkerTestRuns()(story.container)
     story.expect_text("proof show 1", "state: short", "stuck: the run went past 30 minutes", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {worker.id}", "your tests failed")
+    story.expect_text(f"agent-line list --agent {worker.id}", "Your tests failed")
     story.expect_rows(any("went past 30 minutes and was ended as stuck" in line.text for line in story.story_rows(MergerLine)), detail=str([line.text for line in story.story_rows(MergerLine)]))
 
 

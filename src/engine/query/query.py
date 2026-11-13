@@ -12,7 +12,7 @@ from engine.model.model import Model
 from engine.model.view_model import ViewModel
 from engine.model.table import stored
 from engine.model.tables import Tables
-from engine.query.condition import Condition
+from engine.query.conditions.condition import Condition
 from engine.query.conditions.among import Among
 from engine.query.conditions.column_equal import ColumnEqual
 from engine.query.conditions.equal import Equal

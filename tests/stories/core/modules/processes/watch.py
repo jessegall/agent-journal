@@ -30,13 +30,13 @@ def test_a_watch_tells_the_progress_only_as_it_passes_each_10_percent(new_story)
     folder = story.container.get(OutputFolder)
     folder.write_output(process_id, 1, "[ 42%]\nFAILED a\n")
     tick(story)
-    story.expect_hook_allowed("s-1", AFTER, f"output {process_id}: 42%")
+    story.expect_hook_allowed("s-1", AFTER, f"Output {process_id}: 42%")
     folder.write_output(process_id, 1, "[ 42%]\nFAILED a\n[ 47%]\n")
     tick(story)
     story.expect_absent_hook_line("s-1", AFTER, "output")
     folder.write_output(process_id, 1, "[ 42%]\nFAILED a\n[ 47%]\n[ 53%]\n")
     tick(story)
-    story.expect_hook_allowed("s-1", AFTER, f"output {process_id}: 53%")
+    story.expect_hook_allowed("s-1", AFTER, f"Output {process_id}: 53%")
 
 
 def test_a_watch_of_an_ended_process_is_refused_and_a_watch_ends_with_its_process(watched_process):
@@ -58,18 +58,18 @@ def test_a_background_run_is_named_running_once_and_then_each_10_percent(new_sto
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run('reader add steps --commands "make*" --lines "FAILED" --progress "\\[ *([0-9]+)%\\]"', actor=story.agent)
     process = moved_run(story, "make test")
-    story.expect_hook_allowed("s-1", AFTER, f"output {process.id}: running")
-    story.expect_absent_hook_line("s-1", AFTER, f"output {process.id}: running")
+    story.expect_hook_allowed("s-1", AFTER, f"Output {process.id}: running")
+    story.expect_absent_hook_line("s-1", AFTER, f"Output {process.id}: running")
     story.container.get(OutputFolder).write_output(process.id, 1, "[ 42%]\nFAILED a\n")
     tick(story)
-    story.expect_hook_allowed("s-1", AFTER, f"output {process.id}: 42%")
+    story.expect_hook_allowed("s-1", AFTER, f"Output {process.id}: 42%")
 
 
 def test_an_explicit_watch_on_a_background_run_makes_no_second_watch(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "make test")
     story.run(f"output watch {process.id}", actor=story.agent)
-    expect_count_lines_hook(story, "s-1", AFTER, f"output {process.id}: running", 1)
+    expect_count_lines_hook(story, "s-1", AFTER, f"Output {process.id}: running", 1)
 
 
 def test_a_tick_of_the_clock_keeps_a_runs_progress_current(new_story):

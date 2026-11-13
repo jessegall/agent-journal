@@ -8,7 +8,7 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-HELD = "Output 1 printed nothing for 301 seconds"
+HELD = "Output 1 printed nothing for 301s"
 HUNG = "and was stopped: its output is kept"
 PEEK_OUTPUT = HookSamples.shell("journal output peek 1", ShellPart("journal", CommandCategory.JOURNAL, ["output", "peek", "1"], subcommand="output"))
 PAGE_OUTPUT = HookSamples.shell("journal output page 1", ShellPart("journal", CommandCategory.JOURNAL, ["output", "page", "1"], subcommand="output"))

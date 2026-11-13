@@ -124,7 +124,7 @@ def test_a_worker_commits_three_tasks_one_after_the_other_each_tested_and_is_mer
     # its test fails: the first task goes back to the worker with a mark in the chat, beside the second
     ended(story, started[0], 1)
     expect_marks_text(story, "1 failed, back with the worker")
-    story.expect_text(f"agent-line list --agent {worker.id}", f"your tests failed, output {started[0]}")
+    story.expect_text(f"agent-line list --agent {worker.id}", f"Your tests failed, output {started[0]}")
     expect_states(story, task1="started", task2="started", task3="open")
 
     # the worker fixes it and shows the proof a second time: this commit's test passes and completes the first task
@@ -133,7 +133,7 @@ def test_a_worker_commits_three_tasks_one_after_the_other_each_tested_and_is_mer
     story.run_listeners()
     ended(story, started[1], 0)
     expect_states(story, task1="completed", task2="started", task3="open")
-    story.expect_text(f"agent-line list --agent {worker.id}", "the tests of your commit passed")
+    story.expect_text(f"agent-line list --agent {worker.id}", "Your commit's tests passed")
 
     # the second task, with the third started beside it
     proved(story, repository, worker, "tax.py", "TAX = 1\n", 2)
@@ -155,7 +155,7 @@ def test_a_worker_commits_three_tasks_one_after_the_other_each_tested_and_is_mer
     expect_states(story, task1="completed", task2="completed", task3="completed")
 
     # all pass: the main agent is told to merge, and the merge keeps all three completed
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{agent_number(story, worker.id)} all pass", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"All tests of worker:{agent_number(story, worker.id)} pass", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     asked_for_merge(story, worker)

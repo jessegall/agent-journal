@@ -6,6 +6,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.upgrade.support.fixture_upgrade import repeated_upgrade
 from tests.stories.core.modules.chat.support.mark_samples import marks_text
 import json
+from engine.testing.expectations.text_match import holds_line, holds_text
 
 
 def expect_value(actual, expected) -> None:
@@ -90,7 +91,7 @@ def expect_value_without(actual, expected) -> None:
 
 
 def expect_value_line(actual, expected) -> None:
-    assert any(expected in line for line in actual), actual
+    assert holds_line(actual, expected), actual
 
 
 def expect_lines(lines, number, expected) -> None:
@@ -221,13 +222,13 @@ def expect_lines_2(lines, expected) -> None:
 
 
 def expect_lines_3(lines, text, expected) -> None:
-    actual = [line for line in lines if text in line]
+    actual = [line for line in lines if holds_text(line, text)]
     assert actual == expected, actual
 
 
 def expect_lines_reply_line(reply, expected) -> None:
     actual = reply.lines
-    assert any(expected in line for line in actual), actual
+    assert holds_line(actual, expected), actual
 
 
 def expect_endswith_authorization(authorization, text) -> None:
@@ -246,7 +247,7 @@ def expect_index(text, text_2, text_3, text_4) -> None:
 
 
 def expect_value_without_line(actual, expected) -> None:
-    assert not any(expected in line for line in actual), actual
+    assert not holds_line(actual, expected), actual
 
 
 def expect_poll_second(second, expected) -> None:

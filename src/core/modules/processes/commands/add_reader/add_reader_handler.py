@@ -14,8 +14,8 @@ from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.reader_judgement import ReaderJudgement
 from core.modules.processes.support.reader_writers import ReaderWriters
 from core.modules.processes.errors.reader_save_refusal import ReaderSaveRefusal
+from engine.driver.shell_line import JOURNAL_PROGRAM
 
-JOURNAL_PROGRAM = "journal"
 
 
 class AddReaderHandler(Handler[AddReader, Reader]):

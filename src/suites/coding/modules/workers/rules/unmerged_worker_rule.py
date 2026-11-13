@@ -24,8 +24,8 @@ from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerW
 from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED, MERGER_WAIT_MINUTES
 from suites.coding.modules.workers.support.worker_nudges import WORKER_UNMERGED, WORKER_UNMERGED_DUE
+from suites.coding.modules.workers.support.work_units import UNIT_TASKS_REASON
 
-UNIT_TASKS_REASON = "a worker's unit is every task assigned to it, which can hold more than fifty"
 
 BLOCKING_REMINDER_COUNT = 3
 

@@ -12,6 +12,7 @@ PROJECT_FOLDER = Path(__file__).resolve().parents[4]
 ALLOWED = {
     "src/suites/coding/web/src/AgentSettings.vue": "reads the two switches that start the work for the line under the Work tab",
     "src/suites/coding/web/src/WorkMode.vue": "the auto switch of the top bar sets the setting by its key",
+    "src/suites/coding/web/src/helperRows.js": "the agent type screen splits the merge hooks list into one list per profile, which no generated field does",
     "src/suites/coding/modules/workers/web/src/WorkerModels.vue": "a window of its own that edits the allowed models list, not a generated screen",
     "src/suites/coding/modules/workers/web/src/WorkerSplit.vue": "a window of its own that edits the program split, not a generated screen",
     "src/tunnels/tunler/web/src/TunlerAccount.vue": "the account panel of the tunnel reads and sets its own settings",

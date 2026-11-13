@@ -22,5 +22,5 @@ def test_a_reader_that_picks_no_line_is_reported_each_run_and_after_three_runs_i
     after_empty = heard(story)
     story.hook("s-1", HookSamples.session_start())
     story.run_listeners()
-    story.expect_rows(f"reader deploys picked none of 10 lines of output {first.id}" in after_one, REPAIR_LINE not in early,
+    story.expect_rows(f"Reader deploys matched none of 10 lines of output {first.id}" in after_one, REPAIR_LINE not in early,
                       f"of output {empty.id}" not in after_empty, REPAIR_LINE in kept_lines(story), detail=f"{after_one}\n{after_empty}\n{kept_lines(story)}")

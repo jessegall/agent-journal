@@ -1,6 +1,6 @@
 ---
 name: journal
-description: Find your way in the journal: what it is, its basic ideas and which skill to load for what; read it before your first command of every session, with the etiquette skill
+description: Find your way in the journal: what it is, its basic ideas and which skill to load for what; read it before your first command of every session
 ---
 
 # The journal
@@ -40,3 +40,4 @@ or ask the user again: `journal search find "<words>"`.
 | journal-helpers, journal-merger, journal-work-modes | read-only helpers; merging a worker's work; auto mode, presets and the worker limit | a helper command; a merge; a work control | main agent |
 | journal-dumps, journal-flowcharts, journal-plugins, journal-transcriptions | dropped material; flowcharts; plugins; transcripts | their commands and words | main agent |
 | journal-functional-design, journal-user-stories | writing a functional design; writing user stories | a design or a story book to write | worker |
+| journal-graphify | finding code through the knowledge graph | a code search while Graphify is on | all |

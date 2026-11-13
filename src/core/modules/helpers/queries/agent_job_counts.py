@@ -9,8 +9,8 @@ from engine.query.queries import Queries
 from core.modules.agents.models.agent import MAIN_ROLE, Agent
 from core.modules.assignments.models.assignment import Assignment
 from core.modules.drivers.models.helper_job import HelperJob
+from core.modules.tasks.conditions.takeable_tasks import TASK_MODEL
 
-TASK_MODEL = "task"
 WORKING_AGENTS_REASON = "The agents that ran a helper job or were assigned a task in the counted days, each read once to name its type and model."
 
 

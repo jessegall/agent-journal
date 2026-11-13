@@ -1,4 +1,4 @@
-from engine.query.condition_join import ConditionJoin
+from engine.query.conditions.condition_join import ConditionJoin
 from engine.query.conditions.column_compare import ColumnCompare
 from engine.query.expressions.aliased import Aliased
 from engine.query.expressions.column import Column

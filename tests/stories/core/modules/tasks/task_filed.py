@@ -9,11 +9,11 @@ TASK_LISTED = HookSamples.shell("journal task list", ShellPart("journal", Comman
 
 def test_making_a_task_with_none_in_hand_says_the_assigner_hands_it_out(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.expect_hook_allowed("s-1", TASK_MADE, "filed: leave it open, do not start it")
+    story.expect_hook_allowed("s-1", TASK_MADE, "Filed: leave it open, do not start it")
 
 
 def test_making_a_task_with_one_in_hand_says_to_carry_on_with_that_one(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run('task make "Fix the total" --environment main', actor=story.agent)
     story.run("task start 1", actor=story.agent)
-    story.expect_hook_allowed("s-1", TASK_MADE, "filed: carry on with task:1, and leave the new one open")
+    story.expect_hook_allowed("s-1", TASK_MADE, "Filed: continue task:1 and leave the new one open")

@@ -15,4 +15,4 @@ class ReportMergeHookHandler(Handler[ReportMergeHook, None]):
 
     def handle(self, command: ReportMergeHook, context: Context) -> None:
         worker = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)
-        self.main_line.send_nudge(MERGE_HOOK_FAILED.nudge(command=command.command, worker=worker, reason=command.reason), MERGE_HOOK_FAILED.key, context)
+        self.main_line.send_nudge(MERGE_HOOK_FAILED.nudge(command=command.command, worker=worker), MERGE_HOOK_FAILED.key, context)

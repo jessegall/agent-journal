@@ -1,4 +1,4 @@
-from engine.agent.agent_work import AgentWork
+from engine.agent.work.agent_work import AgentWork
 from datetime import timedelta
 
 from engine.time.clock import Clock

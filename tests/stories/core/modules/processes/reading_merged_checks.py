@@ -26,5 +26,5 @@ def test_a_helper_hears_the_alias_suggestion_and_the_shared_title_line_and_a_wor
     story.advance(DOCK_WAIT)
     helper_lines = "\n".join(story.hook(helper.session, REPEATED_LINE).lines)
     read = "\n".join(story.hook(worker.session, posted_read(f"journal output read {logs.id} --all")).lines)
-    story.expect_rows("you ran make build fast 8 times" in helper_lines, "share one title" in helper_lines, f"output {logs.id} has 150 lines" in read,
+    story.expect_rows("You ran make build fast 8 times" in helper_lines, "share one title" in helper_lines, f"Output {logs.id} has 150 lines" in read,
                       detail=f"{helper_lines}\n{read}")

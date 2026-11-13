@@ -4,7 +4,7 @@ import pytest
 
 from engine.command.bus import Bus
 from core.modules.processes.commands.start_process.start_process import StartProcess
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.support.reader_demands import ReaderDemands
 from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.models.reader import Reader
@@ -104,7 +104,7 @@ def test_a_summary_cannot_claim_more_tests_than_the_count(new_story):
     process = start_process(story, "overcount-tests run", category=CommandCategory.TEST_RUN)
     end_run(story, process, "collected 3\n4 passed\n")
     story.expect_refusal('reader add overcount --commands "overcount-tests*" --lines "passed" --summary "([0-9]+ passed)" --count "collected ([0-9]+)"',
-                         f"output {process.id}: --summary names 4 tests but --count found 3", actor=story.agent)
+                         f"Output {process.id}: --summary names 4 tests but --count found 3", actor=story.agent)
 
 
 def test_a_reader_that_misses_its_first_run_stays_unproved(new_story):
@@ -120,7 +120,7 @@ def test_a_failed_reader_update_keeps_the_reader_that_passed(new_story):
     process = start_process(story, "update-tests run", category=CommandCategory.TEST_RUN)
     end_run(story, process, "3 passed\n")
     reader = story.new_row_id('reader add updated --commands "update-tests*" --lines "passed" --summary "([0-9]+ passed)"', actor=story.agent)
-    story.expect_refusal('reader add updated --summary "never printed"', f"output {process.id}: --summary found nothing", actor=story.agent)
+    story.expect_refusal('reader add updated --summary "never printed"', f"Output {process.id}: --summary found nothing", actor=story.agent)
     story.expect_text(f"reader show {reader}", "summary_pattern: ([0-9]+ passed)", f"proved_on: {process.id}", actor=story.agent)
 
 

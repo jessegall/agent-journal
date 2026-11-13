@@ -21,11 +21,12 @@ def database(tmp_path):
 
 
 def test_leaving_items_use_the_due_index_without_a_table_scan(database):
+    """The walk by id sorts its page in a temporary tree; the table itself is only searched through the due index."""
     query = DockItemQuery(database, Tables())
     with patch.object(database, "rows", wraps=database.rows) as reads:
         query.leaving(Timestamp.parsed("2026-11-05T13:00:00+00:00"))
     plans = [row[3] for call in reads.call_args_list for row in database.connection.execute(
-        f"EXPLAIN QUERY PLAN {call.args[0].sql}", call.args[0].parameters)]
+        f"EXPLAIN QUERY PLAN {call.args[0].sql}", call.args[0].parameters) if "dock_items" in row[3]]
     assert plans and all("SEARCH dock_items USING INDEX dock_items_due" in plan for plan in plans), plans
     assert all("SCAN" not in plan for plan in plans), plans
 

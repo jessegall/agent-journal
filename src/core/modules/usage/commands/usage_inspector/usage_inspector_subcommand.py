@@ -3,7 +3,7 @@ from engine.cli.agent_number import AgentNumber
 from argparse import ArgumentParser, Namespace
 from dataclasses import asdict
 
-from engine.agent.agent_brief_points import AgentBriefPoints
+from engine.agent.work.agent_brief_points import AgentBriefPoints
 from engine.caller.caller import Caller
 from engine.query.queries import Queries
 from engine.subcommand.output import Output

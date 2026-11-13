@@ -138,7 +138,7 @@ def test_a_long_worker_run_is_asked_for_a_title_like_a_main_agents_and_asked_for
     process = worker_run(readers_disabled, "custom-build run", CommandCategory.BUILD)
     readers_disabled.advance(timedelta(seconds=10))
     lines = hook_lines(readers_disabled, WORKER, HookSamples.prompt("go on"))
-    readers_disabled.expect_rows(any(f"output {process.id} has its raw command as its title" in line for line in lines),
+    readers_disabled.expect_rows(any(f"Output {process.id} is titled by its raw command" in line for line in lines),
                                  not readers_disabled.container.get(ReaderRequestQuery).open().filter(creator_id=reader_worker(readers_disabled).id).exists(), detail="\n".join(lines))
 
 

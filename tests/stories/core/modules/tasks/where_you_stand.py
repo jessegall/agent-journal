@@ -15,4 +15,4 @@ def test_a_builder_whose_wait_ends_is_told_it_is_back_at_its_task(new_story):
     story.run("wait on 'the review of the cart' --target tasks:2", actor=story.agent)
     story.hook("s-1", HookSamples.stop())
     story.run("wait end 1", actor=story.agent)
-    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), "back to task:1")
+    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), "Back to task:1")

@@ -214,7 +214,7 @@ def test_a_workers_queued_run_is_told_nothing_while_its_running_one_is(new_story
     queued = waiting_run(story, worker, "pytest tests/web -q")
     ticks(story, 30)
     lines = told(story, worker.session)
-    story.expect_rows(any(f"Output {running.id} printed nothing" in line for line in lines), not any(f"output {queued.id} " in line for line in lines), detail="\n".join(lines))
+    story.expect_rows(any(f"Output {running.id} printed nothing" in line for line in lines), not any(f"Output {queued.id} " in line for line in lines), detail="\n".join(lines))
 
 
 def test_a_person_entering_zero_or_a_negative_sparse_seconds_is_refused_and_nothing_changes(new_story):

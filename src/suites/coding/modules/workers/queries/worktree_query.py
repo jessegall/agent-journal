@@ -4,7 +4,7 @@ from engine.database.database import Database
 from engine.database.kept_rows import KeptRows
 from engine.model.tables import Tables
 from engine.query.query import Query
-from engine.query.kept_row_changes import KeptRowChanges
+from engine.query.rows.kept_row_changes import KeptRowChanges
 from engine.query.conditions.among import Among
 from engine.query.conditions.less import Less
 from engine.query.conditions.minimum import Minimum

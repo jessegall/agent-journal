@@ -17,6 +17,6 @@ def test_a_workers_shell_uses_its_registered_worktree(new_story):
     session = worker_session(story, worker)
     story.run("task overview 1", actor=worker)
     reply = story.hook(session, HookSamples.shell("cat cart.py", ShellPart("cat", CommandCategory.READ, ["cart.py"])))
-    expected = runner_line(story, 1, "cat cart.py", limit=0, session=session, read_command=True, sandbox=True)
+    expected = runner_line(story, 1, "cat cart.py", limit=0, session=session, read_command=True, sandbox=True, checkout_folder=repository.worktree_folder(worker.id))
     expected = expected.replace(" --read-only-shell", f" --read-only-shell --write-folder {shlex.quote(str(repository.worktree_folder(worker.id)))}")
     expect_rewritten(reply, expected)

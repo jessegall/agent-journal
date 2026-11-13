@@ -11,8 +11,8 @@ from engine.repository.repository import Repository
 from suites.coding.modules.workers.commands.record_worktree_takeover.record_worktree_takeover import RecordWorktreeTakeover
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.work_units import WorkUnits
+from suites.coding.modules.workers.support.work_units import UNIT_TASKS_REASON
 
-UNIT_TASKS_REASON = "a worker's unit is every task assigned to it, which can hold more than fifty"
 
 
 class RecordWorktreeTakeoverHandler(Handler[RecordWorktreeTakeover, Worktree]):

@@ -10,12 +10,12 @@ from engine.agent.agent_name import AgentName
 from engine.agent.agent_policy import AgentPolicy
 from core.modules.agents.models.enums.agent_activity import AgentActivity
 from core.modules.agents.models.enums.standing_state import StandingState
+from engine.agent.agent_name import MAIN_ROLE
 
 AGENTS_TABLE = "agents"
 ENDED_FIELD = "ended_at"
 UPGRADE_RETIREMENT_REASON = "Over the kept limit at the upgrade to kept agents"
 PID_FIELD = "pid"
-MAIN_ROLE = "main"
 LAUNCH_CHANGE = "launch"
 MAIN_TITLE = "Main agent"
 MAIN_NUMBER = 1

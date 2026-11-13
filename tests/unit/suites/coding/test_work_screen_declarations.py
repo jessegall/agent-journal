@@ -50,7 +50,7 @@ def test_the_nested_work_settings_still_depend_on_their_parent_switch():
 ADVANCED = {
     "Context size": ["context-limit-on", "context-limit-action", "context-limit-tokens", "context-limit-kinds", "context-limit-finish-task", "context-limit-hard-tokens", "context-limit-growth-percent"],
     "Prompt cache": ["cold-session-minutes", "cold-session-context-percent"],
-    "Silent agents": ["resume-silent-agents", "silent-agent-minutes", "silent-recovery-attempts", "unstarted-worker-seconds", "stopped-worker-run-minutes", "worker-resume-limit"],
+    "Silent agents": ["resume-silent-agents", "silent-agent-minutes", "silent-recovery-attempts", "unstarted-worker-seconds", "stopped-worker-run-minutes", "stuck-proof-run-minutes", "worker-resume-limit"],
     "Quiet helpers": ["quiet-helper-grace-minutes", "quiet-helper-minutes", "idle-worker-repeat-minutes"],
 }
 
@@ -73,7 +73,7 @@ def test_the_settings_of_a_helper_type_screen_are_not_on_advanced():
 def test_the_workers_screen_holds_its_settings_and_no_merger_setting():
     screens = {value.key: value.screen for value in DECLARED}
     workers = sorted(key for key, screen in screens.items() if screen == "helper-type.workers")
-    assert workers == sorted(["worker-run-limit", "worker-kept-limit", "worker-batch-size", "most-open-tasks", "workers-start-read-only-helpers", "idle-worker-minutes", "worker-idle-hours", "strongest-model-least-complexity"])
+    assert workers == sorted(["worker-run-limit", "worker-kept-limit", "worker-batch-size", "most-open-tasks", "workers-start-read-only-helpers", "idle-worker-minutes", "worker-idle-hours", "strongest-model-least-complexity", "merge-built-paths", "merge-build-command"])
     assert "merger-wait-minutes" not in workers
 
 

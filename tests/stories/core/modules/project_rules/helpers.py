@@ -5,7 +5,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderHelper
 from tests.stories.support.story_checks import expect_value_with, expect_value_without
 
-RULE_LINE = "1 project rules hold"
+RULE_LINE = "1 project rules apply"
 SHARED_MEMORY = "The cart total is in cents"
 WORKTREE_MEMORY = "My worktree is clean"
 

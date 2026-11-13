@@ -6,7 +6,7 @@ from engine.enums.command_category import CommandCategory
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.start_process.start_process import StartProcess
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.reader_demands import ReaderDemands

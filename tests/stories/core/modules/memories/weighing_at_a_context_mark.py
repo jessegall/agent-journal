@@ -20,7 +20,7 @@ MARK_TOOL_USES = [(55, 50, 10), (85, 80, 5), (95, 90, 2)]
 def fact_mark(story) -> int:
     fact_id = 1
     story.report_context_percent("s-1", 55)
-    story.expect_hook_allowed("s-1", EDITED, f"context at 50%: 10 tool uses to weigh your 1 memories, heaviest first: {fact_id}")
+    story.expect_hook_allowed("s-1", EDITED, f"Context at 50%: weigh your 1 memories within 10 tool uses, heaviest first: {fact_id}")
     return fact_id
 
 
@@ -33,12 +33,12 @@ def test_each_mark_gives_its_tool_uses_with_a_countdown_then_holds_writes_and_le
     for percent, mark, uses in MARK_TOOL_USES:
         story.report_context_percent("s-1", percent)
         story.advance(SECOND)
-        story.expect_hook_allowed("s-1", EDITED, f"context at {mark}%: {uses} tool uses to weigh your 1 memories, heaviest first: 1")
+        story.expect_hook_allowed("s-1", EDITED, f"Context at {mark}%: weigh your 1 memories within {uses} tool uses, heaviest first: 1")
         for remaining in reversed(range(uses)):
             story.advance(SECOND)
             story.expect_hook_allowed("s-1", EDIT, *([f"weigh memories due: {remaining} tool uses"] if remaining < COUNTDOWN_TOOL_USES else []))
         story.advance(SECOND)
-        story.expect_hook_refusal("s-1", EDIT, "weigh your memories first")
+        story.expect_hook_refusal("s-1", EDIT, "Weigh your memories first")
         story.expect_hook_allowed("s-1", READ)
         story.expect_success('memory skip "nothing here changed"', actor=story.agent)
         story.expect_hook_allowed("s-1", READ)
@@ -46,7 +46,7 @@ def test_each_mark_gives_its_tool_uses_with_a_countdown_then_holds_writes_and_le
 
 def test_a_stop_waits_for_the_weighing_from_the_moment_a_mark_opens(open_context_mark):
     story = open_context_mark
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "weigh your memories first")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "Weigh your memories first")
 
 
 @pytest.mark.parametrize("weight", [6, 5], ids=["a-new-weight", "the-weight-it-has"])
@@ -112,7 +112,7 @@ def expect_mark_absent(story, tokens: int, window_percent: int) -> None:
     story.expect_hook_silent("s-1", EDITED)
 
 
-@pytest.mark.parametrize(("tokens", "window_percent", "mark"), [(200_000, 20, "context at 50%"), (328_000, 32, "context at 50%"), (365_000, 36, "context at 90%")],
+@pytest.mark.parametrize(("tokens", "window_percent", "mark"), [(200_000, 20, "Context at 50%"), (328_000, 32, "Context at 50%"), (365_000, 36, "Context at 90%")],
                          ids=["at-half-the-limit", "two-marks-too-few-tokens-apart-count-as-the-higher-one", "the-higher-of-two-close-marks-still-opens"])
 def test_a_mark_counts_against_the_context_limit_when_one_is_on(new_story, tokens, window_percent, mark):
     story = new_story(fixture=Limited)
@@ -129,4 +129,4 @@ def test_a_mark_counts_against_the_window_when_the_limit_is_off(new_story):
 def test_a_mark_counts_against_the_window_when_it_is_smaller_than_the_limit(new_story):
     story = new_story(fixture=LimitedAboveWindow)
     expect_context(story, 240_000, 60)
-    story.expect_hook_allowed("s-1", EDITED, "context at 50%")
+    story.expect_hook_allowed("s-1", EDITED, "Context at 50%")

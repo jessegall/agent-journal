@@ -91,7 +91,7 @@ def test_30_a_commit_a_rule_of_a_plugin_refuses_says_how_to_go_on_and_the_fifth_
     monkeypatch.setattr(PluginStepCheck, "refusal", lambda *_args, **_kwargs: REASON)
     for _ in range(5):
         expect_refused_with(story, COMMIT, REASON, "then run journal worker commit again", actor=worker)
-    story.expect_text(f"agent-line list --agent {story.agent.id} --json", f"worker:{agent_number(story, worker.id)} refused 5 times on task:1")
+    story.expect_text(f"agent-line list --agent {story.agent.id} --json", f"worker:{agent_number(story, worker.id)} hit 5 refusals on task:1")
 
 
 @pytest.mark.parametrize("event", ("worker_clocking_out", "worker_delivering"))

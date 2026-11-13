@@ -1,11 +1,11 @@
 from suites.coding.modules.workers.support.work_units import WorkUnits
 from collections.abc import Mapping, Sequence
 
-from engine.agent.agent_work import AgentWork
+from engine.agent.work.agent_work import AgentWork
 from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from engine.query.conditions.among import Among
-from engine.agent.merged_work import MergedWork
+from engine.agent.work.merged_work import MergedWork
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.models.worker_work_review import WorkerWorkReview
 

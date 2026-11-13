@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
-from engine.query.condition import Condition
+from engine.query.conditions.condition import Condition
 from engine.query.conditions.all_of import AllOf
 from engine.query.conditions.among import Among
 from engine.query.conditions.any_of import AnyOf

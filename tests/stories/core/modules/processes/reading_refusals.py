@@ -6,7 +6,7 @@ from tests.stories.core.modules.processes.support.reader_block_fixtures import F
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 REDIRECTED_BUILD = HookSamples.shell("custom-build run > build.txt", ShellPart("custom-build", CommandCategory.BUILD, ["run"]), redirects=["> build.txt"])
-REDIRECT_EXIT = "custom-build goes to a file, so no reader sees it: run it without the redirect, and read it by its output number"
+REDIRECT_EXIT = "custom-build is redirected to a file, so no reader sees it: run it without the redirect and read it by output number"
 
 
 def raw_test_line() -> object:
@@ -19,7 +19,7 @@ def raw_test_line() -> object:
 def test_a_saved_command_refusal_names_its_skip_with_a_reason(new_story):
     story = new_story(fixture=UserBuilder)
     story.expect_success('alias add run-tests "pytest"', actor=story.agent)
-    story.expect_hook_refusal("s-1", raw_test_line(), "save this command as an alias")
+    story.expect_hook_refusal("s-1", raw_test_line(), "Save this command as an alias")
     story.expect_hook_refusal("s-1", raw_test_line(), "journal refusal skip aliases.saved-command --reason")
 
 

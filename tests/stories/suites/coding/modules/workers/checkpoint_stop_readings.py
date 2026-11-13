@@ -7,7 +7,7 @@ from engine.query.conditions.prefix import Prefix
 from engine.query.queries import Queries
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.models.process import Process
 from engine.enums.command_category import CommandCategory
 from suites.coding.modules.workers.commands.report_stopped_worker_runs.report_stopped_worker_runs import SOURCE_KEY_PREFIX

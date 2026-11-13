@@ -7,9 +7,9 @@ from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.query.select import Select
 from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.conditions.takeable_tasks import TASK_MODEL
 
 UNFINISHED_WORK_STATES = (TaskState.OPEN, TaskState.STARTED, TaskState.TESTING)
-TASK_MODEL = "task"
 
 
 @dataclass(frozen=True)

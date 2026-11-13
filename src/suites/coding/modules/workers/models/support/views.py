@@ -1,5 +1,5 @@
-from engine.query.condition import Condition
-from engine.query.condition_join import ConditionJoin
+from engine.query.conditions.condition import Condition
+from engine.query.conditions.condition_join import ConditionJoin
 from engine.query.conditions.all_of import AllOf
 from engine.query.conditions.among import Among
 from engine.query.conditions.any_of import AnyOf
@@ -22,8 +22,8 @@ from engine.query.expressions.scalar_subselect import ScalarSubselect
 from engine.query.select import Select
 from core.modules.assignments.models.support.views import assigned_row_ids
 from core.modules.tasks.models.support.views import TASK_ACTOR
+from core.modules.processes.models.support.views import RUNNING_STATES
 
-RUNNING_STATES = ("running", "background")
 WAITING_PROOF_STATES = ("queued", "running")
 UNFINISHED_STATES = ("open", "started", "testing", "blocked")
 WORKER = "worktree.session_agent_id"

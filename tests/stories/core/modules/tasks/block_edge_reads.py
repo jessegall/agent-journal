@@ -1,8 +1,8 @@
 from tests.stories.core.modules.tasks.task_dependencies import three_tasks
 from tests.stories.support.statement_counts import reads_in_last_request
 
-EDGE_READ = "FROM task_edges"
-FILTERED_EDGE_READ = "FROM task_edges WHERE task_id IN"
+EDGE_READ = "FROM task_dependencies"
+FILTERED_EDGE_READ = "FROM task_dependencies WHERE task_id IN"
 
 
 def test_blocking_a_task_reads_only_the_waits_reachable_from_its_target(new_story):

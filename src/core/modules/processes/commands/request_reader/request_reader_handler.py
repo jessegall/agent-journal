@@ -8,7 +8,7 @@ from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.processes.commands.request_reader.request_reader import RequestReader
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.queries.process_query import ProcessQuery

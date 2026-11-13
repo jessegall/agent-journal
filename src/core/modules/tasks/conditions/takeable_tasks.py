@@ -6,9 +6,9 @@ from engine.query.conditions.any_of import AnyOf
 from engine.query.conditions.equal import Equal
 from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.query.select import Select
+from engine.agent.agent_name import MAIN_ROLE
 
 OPEN_STATE = "open"
-MAIN_ROLE = "main"
 TASK_MODEL = "task"
 
 

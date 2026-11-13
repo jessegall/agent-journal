@@ -49,4 +49,4 @@ def test_a_designer_helper_calls_the_claude_design_tools(new_story):
 
 def test_another_read_only_helper_is_still_refused_the_claude_design_tools(new_story):
     story = new_story(fixture=StartedResearcher)
-    story.expect_hook_refusal(helper_agent(story).session, claude_design_call(), f"a read-only agent has no {CLAUDE_DESIGN_TOOL}")
+    story.expect_hook_refusal(helper_agent(story).session, claude_design_call(), f"Read-only agents have no {CLAUDE_DESIGN_TOOL}")

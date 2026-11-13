@@ -100,7 +100,7 @@ def test_38_a_run_that_cannot_start_does_not_block_the_worker(new_story, monkeyp
     worker = plan_worker(new_story, monkeypatch)
     monkeypatch.setattr(type(worker.story.container.get(WorktreeGit)), "commit_checkout", unstartable_checkout)
     commit_tasks(worker, TEST_LINE, SECOND_TEST_LINE, TEST_LINE)
-    worker.story.expect_rows(worker_reaches(worker)[0]["state"] == "failed", any("could not start" in line for line in worker.worker_lines()),
+    worker.story.expect_rows(worker_reaches(worker)[0]["state"] == "failed", any("failed to start" in line for line in worker.worker_lines()),
                              "state: testing" in worker.story.run("task show 1", actor=worker.story.agent).output_text, detail=str(worker.worker_lines()))
     worker.story.expect_success("task start 4", actor=worker.worker)
 

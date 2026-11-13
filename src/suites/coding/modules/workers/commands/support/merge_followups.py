@@ -6,7 +6,7 @@ from engine.setting.setting_values import SettingValues
 from core.modules.settings.support.setting_revision import SettingRevision
 from suites.coding.modules.workers.commands.record_followup_step.record_followup_step import RecordFollowupStep
 from suites.coding.modules.workers.commands.record_merge_followup.record_merge_followup import RecordMergeFollowup
-from suites.coding.modules.workers.commands.support.worktree_commands import WorktreeCommands
+from suites.coding.modules.workers.support.worktree_commands import WorktreeCommands
 from suites.coding.modules.workers.models.merge_followup import STEP_FINISHED, UNCERTAIN_STEP, MergeFollowup
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_settings import MERGE_COMMANDS, MERGE_COMMANDS_NAME

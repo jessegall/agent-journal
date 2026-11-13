@@ -19,7 +19,7 @@ def test_the_main_agent_edits_no_file_in_a_workers_worktree(new_story):
     repository_environment(story)
     worker = dispatched_worker(story)
     folder = story.container.get(WorktreeQuery).worker_worktree(worker.id).folder
-    story.expect_hook_refusal("s-1", HookSamples.edit(f"{folder}/cart.py"), f"that file is in worker {agent_number(story, worker.id)}'s worktree")
+    story.expect_hook_refusal("s-1", HookSamples.edit(f"{folder}/cart.py"), f"That file is in worker {agent_number(story, worker.id)}'s worktree")
     story.expect_hook_allowed("s-1", HookSamples.edit("/elsewhere/cart.py"))
 
 
@@ -31,11 +31,11 @@ def test_a_line_on_a_clock_waits_out_its_time_though_the_number_in_it_changes(ne
     finished = HookSamples.edit("cart.py").with_fields(event="post_tool_use")
     story.expect_absent_hook_line(session, finished, "you logged nothing")
     story.advance(timedelta(minutes=31))
-    story.expect_hook_allowed(session, finished, "you logged nothing for 31 min")
+    story.expect_hook_allowed(session, finished, "Nothing logged for 31 min")
     story.advance(timedelta(minutes=1))
     story.expect_absent_hook_line(session, finished, "you logged nothing")
     story.advance(timedelta(minutes=30))
-    story.expect_hook_allowed(session, finished, "you logged nothing for 62 min")
+    story.expect_hook_allowed(session, finished, "Nothing logged for 62 min")
     records = list(story.container.get(Queries).query(NudgeRecord).filter(session_agent_id=worker.id, key=WORKER_LOG_DUE.key).every_row(TEST_ROWS_REASON))
     story.expect_rows(len(records) == 1, records[0].delivery_count == 2)
 
@@ -48,7 +48,7 @@ def test_a_worker_silent_for_thirty_minutes_is_told_to_log(new_story):
     finished = HookSamples.edit("cart.py").with_fields(event="post_tool_use")
     story.expect_absent_hook_line(session, finished, "you logged nothing")
     story.advance(timedelta(minutes=31))
-    story.expect_hook_allowed(session, finished, "you logged nothing for 31 min")
+    story.expect_hook_allowed(session, finished, "Nothing logged for 31 min")
 
 
 def test_a_workers_writes_wait_past_the_hold_count_until_it_logs_its_task(new_story):
@@ -62,7 +62,7 @@ def test_a_workers_writes_wait_past_the_hold_count_until_it_logs_its_task(new_st
     story.expect_hook_allowed(session, edit, f"log task 1 due: {LOG_REQUEST_WRITES} writes")
     for _ in range(UNLOGGED_WRITES_CEILING - LOG_REQUEST_WRITES - 1):
         story.hook(session, edit)
-    story.expect_hook_refusal(session, edit, "log task 1 due: 0 writes")
+    story.expect_hook_refusal(session, edit, "Log task 1 now: 0 writes left")
     story.advance(timedelta(minutes=1))
     story.expect_success("task log 1 'the cart total is worked out'", actor=worker)
     story.expect_hook_allowed(session, edit)

@@ -5,7 +5,7 @@ from engine.command.handler import Handler
 from engine.enums.command_category import CommandCategory
 from engine.repository.repository import Repository
 from core.modules.processes.commands.request_count_reader.request_count_reader import RequestCountReader
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.reader_requests import COUNT_MISSING_REASON, ReaderRequests

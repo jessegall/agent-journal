@@ -48,7 +48,7 @@ def test_a_codex_agent_that_asks_for_a_runs_status_is_told_to_run_the_monitor_co
     story = codex_story(new_story)
     process = moved_run(story, "make test")
     lines = story.hook("s-1", shell_line(f"journal output status {process.id}")).lines
-    expect_lines_6("wait for it, which ends when the run does", "Monitor", lines)
+    expect_lines_6("wait for it; the wait ends when the run does", "Monitor", lines)
 
 
 def expect_lines_6(text, text_2, lines) -> None:

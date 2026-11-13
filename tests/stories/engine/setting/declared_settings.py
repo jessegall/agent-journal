@@ -45,7 +45,7 @@ def test_a_title_over_40_characters_is_refused(new_story):
 
 
 def test_a_description_over_120_characters_is_refused(new_story):
-    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:LongDescriptionModule", "the description of wordy.limit is 125 characters; a description is at most 120")
+    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:LongDescriptionModule", "the description of wordy.limit is 123 characters; a description is at most 120")
 
 
 def test_a_secret_with_a_default_is_refused(new_story):

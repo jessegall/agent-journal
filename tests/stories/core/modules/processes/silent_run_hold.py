@@ -8,7 +8,7 @@ from engine.enums.command_category import CommandCategory
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from engine.testing.expectations.expect_reply import expect_reply_allowed
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from core.modules.processes.queries.process_query import ProcessQuery
@@ -27,7 +27,7 @@ EDIT = HookSamples.edit("src/shop.py")
 SKIP_HOLD = HookSamples.shell("journal refusal skip processes.silent-run-hold --reason 'it writes to a file'",
                               ShellPart("journal", CommandCategory.JOURNAL, ["refusal", "skip", "processes.silent-run-hold", "--reason", "it writes to a file"]))
 STOP_OUTPUT = HookSamples.shell("journal output stop 1", ShellPart("journal", CommandCategory.JOURNAL, ["output", "stop", "1"]))
-HELD = "Output 1 printed nothing for 301 seconds"
+HELD = "Output 1 printed nothing for 301s"
 
 
 def print_line(story: Story, text: str) -> None:
@@ -47,7 +47,7 @@ def silent_story(new_story, seconds: int = HANG_SECONDS + 1) -> Story:
 def test_a_run_silent_for_the_hang_time_holds_the_next_tool_use_and_names_what_to_read(new_story):
     story = silent_story(new_story)
     story.expect_hook_refusal("s-1", EDIT, HELD)
-    story.expect_hook_refusal("s-1", EDIT, "Output 1 printed nothing for 301 seconds, processor time not known: read it; stop it; a user releases it")
+    story.expect_hook_refusal("s-1", EDIT, "Output 1 printed nothing for 301s, CPU time not known: read it; stop it; a user releases it")
 
 
 def test_the_hold_says_the_processor_time_is_rising_when_it_moved_since_the_run_went_silent(new_story):
@@ -57,7 +57,7 @@ def test_the_hold_says_the_processor_time_is_rising_when_it_moved_since_the_run_
     story.container.get(GroupCpuTime).used = 13.0
     watch_tick(story)
     story.advance(timedelta(seconds=HANG_SECONDS - 199))
-    story.expect_hook_refusal("s-1", EDIT, "processor time rising")
+    story.expect_hook_refusal("s-1", EDIT, "CPU time rising")
 
 
 def test_a_held_agent_still_runs_journal_commands_and_the_skip_line_the_hold_names(new_story):
@@ -82,7 +82,7 @@ def test_reading_the_output_lets_the_next_tool_use_through_and_starts_the_silent
     story.expect_success("output read 1 --tail 5", actor=story.agent)
     story.expect_hook_allowed("s-1", EDIT)
     story.advance(timedelta(seconds=HANG_SECONDS + 1))
-    story.expect_hook_refusal("s-1", EDIT, "printed nothing for 301 seconds")
+    story.expect_hook_refusal("s-1", EDIT, "printed nothing for 301s")
 
 
 def test_stopping_the_run_lets_the_next_tool_use_through(new_story):

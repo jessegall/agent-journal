@@ -7,7 +7,7 @@ from engine.driver.agent_hook import AgentHook
 from engine.enums.command_category import CommandCategory
 from engine.enums.process_kind import ProcessKind
 from engine.driver.shell_line import ShellLine
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.models.enums.queue_priority import QueuePriority
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.foreground_run import ForegroundRun

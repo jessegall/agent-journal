@@ -34,7 +34,7 @@ def started_ids(worker: StoryWorker) -> list[int]:
 
 def test_12_a_worker_starts_a_second_task_and_hears_how_many_it_holds_of_the_most_it_may(one_task):
     outcome = one_task.story.run("task start 2", actor=one_task.worker)
-    one_task.story.expect_rows(outcome.code == 0, started_ids(one_task) == [1, 2], "you hold 2 tasks of the 5 you may hold at once" in one_task.worker_lines(), detail=f"{outcome.output_text} | {one_task.worker_lines()}")
+    one_task.story.expect_rows(outcome.code == 0, started_ids(one_task) == [1, 2], "You hold 2 of the 5 tasks you may hold at once" in one_task.worker_lines(), detail=f"{outcome.output_text} | {one_task.worker_lines()}")
 
 
 def test_13_a_worker_holds_five_started_tasks_and_its_status_lists_them(five_tasks):

@@ -41,10 +41,10 @@ REFUSALS: dict[str, tuple[NudgeDeclaration, dict[str, object], str]] = {
     "silent start refusal": (SILENT_START_REFUSED, {"name": "zork-build bundle"}, "skip once and say why"),
     "monitor block": (REQUIRED_MONITOR, {"output": 1}, "set a Monitor on its wait"),
     "unknown command": (COMMAND_TYPE_UNKNOWN, {"program": "zork-build", "hint": UNCLASSIFIED_HINT}, "say what type the command is"),
-    "saved command refusal": (SAVED_COMMAND_UNKNOWN, {"category": "build"}, "save this command as an alias"),
-    "alias claimed silent": (SAVED_COMMAND_SILENT, {"name": "bundle"}, "edit it to print each step"),
+    "saved command refusal": (SAVED_COMMAND_UNKNOWN, {"category": "build"}, "Save this command as an alias"),
+    "alias claimed silent": (SAVED_COMMAND_SILENT, {"name": "bundle"}, "make it print each step"),
     "worker count stop": (TEST_COUNT_UNKNOWN, {"output": 1, "name": 1}, "journal reader draft 1 --save"),
-    "failed full run": (FAILED_FULL_RUN, {}, "re-run the failed tests by name"),
+    "failed full run": (FAILED_FULL_RUN, {}, "rerun the failed tests by name"),
     "redirected run": (REDIRECTED_RUN, {"programs": "zork-build"}, "run it without the redirect"),
 }
 
@@ -76,7 +76,7 @@ def test_an_exit_passes_under_a_silent_run_hold(new_story, line):
 def test_an_exit_passes_under_a_reader_block(new_story, line):
     story = new_story(fixture=ForcedReaders)
     process = worker_run(story)
-    story.expect_hook_refusal("s-reader", EDIT, "reader request 1")
+    story.expect_hook_refusal("s-reader", EDIT, "has no reader, request 1")
     story.expect_hook_allowed("s-reader", journal_line(line.format(output=process.id)))
 
 

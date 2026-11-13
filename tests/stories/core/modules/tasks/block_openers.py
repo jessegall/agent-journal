@@ -6,7 +6,7 @@ from tests.stories.core.modules.tasks.task_waits import TwoTasks, posted
 def test_a_plain_reason_tells_the_agent_how_to_make_the_block_open_itself(new_story):
     story = new_story(fixture=TwoTasks)
     story.expect_success('task block 1 --reason "Need the result"', actor=story.agent)
-    story.expect_hook_allowed('s-1', posted('journal task block 1 --reason "Need the result"'), '--on', 'plain reason waits for a user')
+    story.expect_hook_allowed('s-1', posted('journal task block 1 --reason "Need the result"'), '--on', 'plain reason waits on a user')
     story.expect_absent_hook_line('s-1', posted('journal task block 1 --until-user --reason "Need the result"'), 'plain reason')
     story.expect_success('task show 1', 'state: blocked')
 

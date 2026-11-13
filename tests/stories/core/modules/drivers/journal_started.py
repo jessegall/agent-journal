@@ -1,7 +1,7 @@
 from core.modules.drivers.support.driver_nudges import JOURNAL_STARTED
 from engine.serving.server_files import ServerFiles
 from server.work.booting_work import BootingWork
-from core.modules.drivers.ticks.held_session_wake import ReleasedSessionWake
+from core.modules.drivers.ticks.released_session_wake import ReleasedSessionWake
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.support.fixtures import MainEnvironment
 

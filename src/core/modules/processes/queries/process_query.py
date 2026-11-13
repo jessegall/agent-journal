@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from engine.database.database import Database
 from engine.model.tables import Tables
-from engine.query.condition import Condition
+from engine.query.conditions.condition import Condition
 from engine.query.conditions.among import Among
 from engine.query.conditions.equal import Equal
 from engine.query.conditions.greater import Greater

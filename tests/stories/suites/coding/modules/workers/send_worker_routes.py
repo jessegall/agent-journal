@@ -43,7 +43,7 @@ def test_sending_a_routed_task_to_another_program_is_refused_before_git(routed_w
 
 def test_a_route_skip_on_send_is_recorded_on_the_assignment_event(routed_worker_task):
     story, worker, task_id, route_id = routed_worker_task
-    story.expect_refusal(f"worker send {agent_number(story, worker.id)} --wait --task {task_id}", f"route {route_id}", actor=story.agent)
+    story.expect_refusal(f"worker send {agent_number(story, worker.id)} --wait --task {task_id}", f"Route {route_id}", actor=story.agent)
     confirmed_skip(story, "workers.route-holds", story.agent, "The user requested a comparison")
     story.expect_success(f'worker send {agent_number(story, worker.id)} --wait --task {task_id} --skip-guard workers.route-holds '
                          '--skip-reason "The user requested a comparison"', actor=story.agent)

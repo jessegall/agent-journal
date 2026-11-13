@@ -6,8 +6,8 @@ from suites.coding.modules.workers.models.worktree_behind_check import WorktreeB
 from suites.coding.modules.workers.models.behind_facts import BehindFacts
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from suites.coding.modules.workers.support.behind_checks import CHECKS_REASON
 
-CHECKS_REASON = "every behind check of the worktree is weighed"
 
 
 class BehindFactsReader:

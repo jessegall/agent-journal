@@ -6,8 +6,8 @@ from engine.query.conditions.equal import Equal
 from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.query.select import Select
+from engine.agent.agent_name import MAIN_ROLE
 
-MAIN_ROLE = "main"
 
 
 @dataclass(frozen=True)

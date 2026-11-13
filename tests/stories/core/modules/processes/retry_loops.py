@@ -3,7 +3,7 @@ import pytest
 from tests.stories.core.modules.aliases.saved_commands import read_hook
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-REFUSAL = "no retry loops"
+REFUSAL = "No retry loops"
 
 
 @pytest.fixture

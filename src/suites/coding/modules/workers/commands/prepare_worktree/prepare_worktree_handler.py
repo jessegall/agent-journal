@@ -16,7 +16,7 @@ from core.modules.skills.support.skill_files import SkillFiles
 from core.modules.tools.support.tools import Tools
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
 from suites.coding.modules.workers.support.library_folders import LibraryFolders
-from suites.coding.modules.workers.commands.support.worktree_commands import WorktreeCommands
+from suites.coding.modules.workers.support.worktree_commands import WorktreeCommands
 from suites.coding.modules.workers.support.worker_settings import LIBRARY_COPIES, LIBRARY_LINKS, WORKTREE_COMMANDS, WORKTREE_COMMANDS_NAME
 from suites.coding.modules.workers.support.worker_instruction_files import WorkerInstructionFiles
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit

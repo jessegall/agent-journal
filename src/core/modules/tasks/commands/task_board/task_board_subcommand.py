@@ -1,5 +1,5 @@
 from engine.query.conditions.less import Less
-from engine.query.condition import Condition
+from engine.query.conditions.condition import Condition
 from core.modules.tasks.conditions.closed_task_cursor import ClosedTaskCursor
 from core.modules.tasks.conditions.planless_task import PlanlessTask
 from argparse import ArgumentParser, Namespace

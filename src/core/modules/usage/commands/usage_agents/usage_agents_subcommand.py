@@ -17,7 +17,7 @@ from engine.sandbox.agent_sandbox_choice import AgentSandboxChoice
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.caller.caller import Caller
 from engine.time.clock import Clock
-from engine.agent.merged_work import MergedWork
+from engine.agent.work.merged_work import MergedWork
 from core.modules.tasks.models.enums.task_state import TaskState
 from engine.query.conditions.excluding import Excluding
 from core.modules.usage.conditions.agent_activity import AgentActivity

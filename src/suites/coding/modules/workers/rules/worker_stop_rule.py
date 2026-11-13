@@ -17,8 +17,8 @@ from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
 from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
+from suites.coding.modules.workers.support.work_units import UNIT_TASKS_REASON
 
-UNIT_TASKS_REASON = "a worker's unit is every task assigned to it, which can hold more than fifty"
 
 HELP_COMMAND_TEXT = AskTopic.GENERAL.question_line()
 

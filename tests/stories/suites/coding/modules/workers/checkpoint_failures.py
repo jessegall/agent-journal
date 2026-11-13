@@ -89,7 +89,7 @@ def test_180_a_worker_with_two_failed_proof_tests_gets_both_tasks_and_one_line_w
     expect_returned(worker, 1)
     worker.story.expect_text("task show 3", "state: open", actor=worker.story.agent)
     worker.story.expect_text("task info 3", f"assigned to: agent {worker.worker.id}", actor=worker.story.agent)
-    worker.story.expect_text(f"agent-line list --agent {worker.worker.id}", f"output {output_id(worker, CART_COMMAND)}, {output_id(worker, TOTALS_COMMAND)}")
+    worker.story.expect_text(f"agent-line list --agent {worker.worker.id}", f"Output {output_id(worker, CART_COMMAND)}, {output_id(worker, TOTALS_COMMAND)}")
     worker.story.expect_rows(len(lines) == 1, detail=str(worker.worker_lines()))
 
 
@@ -100,7 +100,7 @@ def test_182_a_failed_own_test_goes_to_the_task_whose_proof_names_the_failing_pa
     reach = rows(worker, REACHES)[0]
     expect_returned(worker, 1)
     story.expect_text("proof show 1", "state: checked", actor=story.agent)
-    story.expect_rows(reach["failed_task_ids"] == "1", f"output {output_id(worker, BUILD_TEST)}" in " | ".join(failure_lines(worker)), detail=f"{reach} | {worker.worker_lines()}")
+    story.expect_rows(reach["failed_task_ids"] == "1", f"Output {output_id(worker, BUILD_TEST)}" in " | ".join(failure_lines(worker)), detail=f"{reach} | {worker.worker_lines()}")
 
 
 def test_183_a_failure_that_names_no_task_goes_to_the_task_completed_last_and_the_merger_gets_a_line(running_checkpoint, monkeypatch):

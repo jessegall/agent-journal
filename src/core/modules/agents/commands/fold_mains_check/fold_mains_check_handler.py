@@ -1,7 +1,6 @@
 import sqlite3
 import time
 
-from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.database.database import Database
@@ -10,21 +9,19 @@ from core.modules.agents.commands.fold_mains_check.fold_mains_check import FoldM
 from core.modules.agents.support.fold_copy import FoldCopy
 from core.modules.agents.support.main_fold import FoldCounts, MainFold
 from core.modules.agents.support.main_fold_plan import EnvironmentFold
-from core.modules.documents.commands.make_text.make_text import MakeText
-from core.modules.documents.models.report import Report
 
 NOTHING_TO_FOLD = "Every environment has one main agent row: nothing to fold."
-REPORT_TITLE = "Fold of main agents, checked on a copy"
 
 
 class FoldMainsCheckHandler(Handler[FoldMainsCheck, str]):
     """Copies the live database with the backup API, folds the main agent rows on the copy only, and files the
-    survivors, the folded rows, the counts before and after, the clash rules used and the time it took."""
+    survivors, the folded rows, the counts before and after, the clash rules used and the time it took, as
+    the command's answer."""
 
     command = FoldMainsCheck
 
-    def __init__(self, home: JournalHome, database: Database, bus: Bus) -> None:
-        self.home, self.database, self.bus = home, database, bus
+    def __init__(self, home: JournalHome, database: Database) -> None:
+        self.home, self.database = home, database
 
     def handle(self, command: FoldMainsCheck, context: Context) -> str:
         copy = Database.configured(sqlite3.connect(FoldCopy.for_check(self.database, self.home, context.timestamp), autocommit=True))
@@ -38,9 +35,7 @@ class FoldMainsCheckHandler(Handler[FoldMainsCheck, str]):
             copy.connection.close()
         if not folds:
             return NOTHING_TO_FOLD
-        text = self.report_text(folds, counts, seconds)
-        self.bus.dispatch(MakeText(Report, REPORT_TITLE, f"{sum(len(fold.folded) for fold in folds)} main agent rows fold into {len(folds)} survivors", text), context)
-        return text
+        return self.report_text(folds, counts, seconds)
 
     @staticmethod
     def report_text(folds: tuple[EnvironmentFold, ...], counts: FoldCounts, seconds: float) -> str:

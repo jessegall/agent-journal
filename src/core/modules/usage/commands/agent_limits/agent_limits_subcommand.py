@@ -2,7 +2,7 @@ from argparse import Namespace
 from dataclasses import asdict
 
 from engine.caller.caller import Caller
-from engine.agent.agent_work import AgentWork
+from engine.agent.work.agent_work import AgentWork
 from engine.profile.agent_profile import AgentProfile
 from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.among import Among

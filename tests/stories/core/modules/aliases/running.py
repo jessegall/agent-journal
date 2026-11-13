@@ -86,7 +86,7 @@ def test_a_background_alias_run_that_is_no_test_or_build_ends_with_an_ended_line
     story.advance(timedelta(seconds=1))
     story.run_listeners()
     story.expect_absent("chat-mark list --json", "process:1")
-    story.expect_hook_allowed("s-1", HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"])), "output 1 ended")
+    story.expect_hook_allowed("s-1", HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"])), "Output 1 ended")
 
 
 def test_a_check_alias_goes_through_the_run_queue(new_story):

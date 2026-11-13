@@ -153,7 +153,7 @@ def test_a_worker_that_handed_in_may_still_ask(changed_worker):
 def test_a_worker_with_an_open_ask_may_stop_and_is_not_resumed(open_question):
     open_question.story.expect_hook_allowed(open_question.session(), HookSamples.stop())
     open_question.program_ended()
-    open_question.story.expect_no_text(f"agent-line list --agent {open_question.worker.id}", "you ended with tasks left")
+    open_question.story.expect_no_text(f"agent-line list --agent {open_question.worker.id}", "You ended with tasks left")
 
 
 def test_going_on_working_closes_the_question_and_the_stop_is_refused_again(open_question):

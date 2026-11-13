@@ -48,7 +48,7 @@ def test_an_inactive_helper_of_any_registered_descendant_type_wakes_its_parent(n
     helper = json.loads(story.run(f"agent list --role {role} --json").output_text)["rows"][0]
     story.advance(timedelta(minutes=15))
     story.tick("s-1")
-    wanted = f"{role}:{agent_number(story, helper['id'])} has used no tool for 15 minutes"
+    wanted = f"{role}:{agent_number(story, helper['id'])} used no tool for 15 min"
     story.expect_text(f"agent-line list --agent {story.agent.id}", wanted)
     lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON)
     story.expect_rows(any(wanted in line.text and line.wakes_agent for line in lines))
@@ -61,7 +61,7 @@ def test_an_ended_helper_is_left_out_of_the_inactive_notice(new_story):
     story.advance(timedelta(minutes=15))
     story.tick("s-1")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}",
-                         f"helper:{agent_number(story, helper['id'])} has used no tool")
+                         f"helper:{agent_number(story, helper['id'])} used no tool")
 
 
 def test_a_helper_has_saved_commands_from_its_first_start(new_story):

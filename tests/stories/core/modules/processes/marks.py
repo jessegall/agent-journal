@@ -322,7 +322,7 @@ def untitled_docked_run(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
     story.advance(timedelta(seconds=6))
-    wanted = f"output {process.id} has its raw command as its title: give it a title"
+    wanted = f"Output {process.id} is titled by its raw command: give it a title"
     return story, process, wanted
 
 
@@ -364,7 +364,7 @@ def test_a_script_moved_to_the_background_shows_its_mark_asks_for_its_title_and_
     story.run_listeners()
     story.expect_text(MARKS, "Running python3 /tmp/move_files.py")
     story.advance(timedelta(seconds=6))
-    story.expect_hook_allowed("s-1", monitor(f"journal output monitor {process.id}"), f"output {process.id} has its raw command as its title: give it a title")
+    story.expect_hook_allowed("s-1", monitor(f"journal output monitor {process.id}"), f"Output {process.id} is titled by its raw command: give it a title")
     story.expect_text("process list --state background", "python3 /tmp/move_files.py", actor=story.agent)
     end_run(story, process, "moved\n")
     story.run_listeners()

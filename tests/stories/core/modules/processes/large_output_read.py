@@ -21,4 +21,4 @@ def test_the_limit_is_a_setting(new_story):
     story.run("setting make journal.core.processes.large-output-lines 2")
     process = moved_run(story, "make test")
     end_run(story, process, "x\n" * 5)
-    story.expect_hook_allowed("s-1", posted(f"journal output read {process.id} --all"), f"output {process.id} has 5 lines")
+    story.expect_hook_allowed("s-1", posted(f"journal output read {process.id} --all"), f"Output {process.id} has 5 lines")

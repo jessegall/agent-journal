@@ -8,7 +8,7 @@ from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.process_executor import ProcessExecutor
 from suites.coding.modules.workers.models.merge_followup import STEP_FINISHED, FAILED_STEP, UNCERTAIN_STEP
-from suites.coding.modules.workers.commands.support.command_result import CommandResult
+from suites.coding.modules.workers.support.command_result import CommandResult
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_settings import MERGE_HOOKS_NAME
 

@@ -85,7 +85,7 @@ def test_a_stuck_worker_may_stop_and_its_main_agent_hears_of_it(new_story):
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.expect_text(f"agent-line list --agent {story.agent.id}", "ended with task:1 left")
-    story.expect_no_text(f"agent-line list --agent {worker.id}", "you ended with tasks left")
+    story.expect_no_text(f"agent-line list --agent {worker.id}", "You ended with tasks left")
 
 
 def test_a_stuck_worker_tells_its_main_agent_at_once_and_shows_a_mark_in_the_main_chat(new_story, tmp_path, monkeypatch):
@@ -114,7 +114,7 @@ def test_a_worker_that_stops_with_tasks_left_shows_a_mark_and_its_main_agent_hea
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.run_listeners()
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} stopped with task:1 left and is started again")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} stopped with task:1 left and was started again")
     story.expect_text("chat-mark list --environment 1", f"Worker {agent_number(story, worker.id)} stopped with 1 tasks left")
     story.expect_text(f"chat-mark show {stop_mark(story, 'ended early')}", "Tasks left: task 1", "Last words: I ran out of ideas")
 
@@ -139,7 +139,7 @@ def test_a_worker_a_person_stops_loses_its_tasks_and_is_not_started_again(new_st
     story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.expect_success(f"agent stop {agent_number(story, worker.id)}", f"stopped {agent_label(story, worker.id)}", actor=user)
     story.expect_no_text("task info 1", f"assigned to: agent {worker.id}")
-    story.expect_no_text(f"agent-line list --agent {worker.id}", "you ended with tasks left")
+    story.expect_no_text(f"agent-line list --agent {worker.id}", "You ended with tasks left")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "ended with task:1 left")
 
 
@@ -192,7 +192,7 @@ def test_a_worker_that_keeps_ending_is_named_to_the_main_agent(new_story):
     story.expect_success(f"agent edit {agent_number(story, worker.id)} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} ended with task:1 left: send it a job, or release it")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} ended with task:1 left: send it a job, or release them")
 
 
 def test_a_worker_that_ends_with_many_tasks_left_gives_the_main_agent_one_line(new_story):
@@ -217,7 +217,7 @@ def test_a_worker_whose_process_is_gone_is_ended_at_the_next_tick_and_told_to_ca
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.expect_text(f"agent show {agent_number(story, worker.id)}", "ended_at: 2026")
-    story.expect_text(f"agent-line list --agent {worker.id}", "you ended with tasks left")
+    story.expect_text(f"agent-line list --agent {worker.id}", "You ended with tasks left")
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
 
 

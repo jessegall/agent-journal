@@ -24,7 +24,7 @@ def worker_with_waiting_tasks(new_story):
     story.worker = dispatched_worker(story)
     for number in range(2, TASK_COUNT + 1):
         story.expect_success(f'task make "Step {number}"', actor=story.agent)
-        story.expect_text(f"task assign {number} --to {agent_number(story, story.worker.id)}", f"task:{number}", actor=story.agent)
+        story.expect_text(f"task assign {number} --to {agent_number(story, story.worker.id)}", "created: assignment:", actor=story.agent)
         story.expect_success(f"task depend {number} --on 1", actor=story.agent)
     story.expect_success(f"task depend {TASK_COUNT} --on {TASK_COUNT - 1}", actor=story.agent)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)

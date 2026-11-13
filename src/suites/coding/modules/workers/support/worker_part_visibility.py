@@ -1,4 +1,4 @@
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.support.part_visibility import PartVisibility
 
 

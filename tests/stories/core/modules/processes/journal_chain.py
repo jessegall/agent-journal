@@ -16,7 +16,7 @@ REFUSAL = "a journal command may not follow a long command"
 def test_asking_for_a_runs_status_is_answered_with_how_to_set_a_monitor(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     status = HookSamples.shell("journal output status 7", ShellPart("journal", CommandCategory.JOURNAL, ["output", "status", "7"], subcommand="output"))
-    story.expect_hook_allowed("s-1", status, "do not ask again for output 7: set a Monitor on its wait")
+    story.expect_hook_allowed("s-1", status, "Do not poll output 7 again: set a Monitor on its wait")
 
 
 

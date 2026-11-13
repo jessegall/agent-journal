@@ -61,7 +61,7 @@ def test_a_merged_worker_whose_program_never_ended_ends_at_the_merge_and_is_not_
     story.advance(timedelta(minutes=10))
     story.tick("s-1")
     story.run_listeners()
-    story.expect_absent(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has used no tool")
+    story.expect_absent(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} used no tool")
 
 
 @pytest.fixture
@@ -335,10 +335,10 @@ def test_redirected_worker_logs_do_not_mark_the_logs_read(new_story):
     story = install_runner(new_story(fixture=OpenTaskOrchestrator))
     worker = delivered_worker(story, repository_environment(story))
     part = ShellPart("journal", CommandCategory.JOURNAL, ["worker", "logs", str(worker.id)], subcommand="worker")
-    story.expect_hook_refusal("s-1", HookSamples.shell(f"journal worker logs {agent_number(story, worker.id)} > /tmp/log", part, redirects=["> /tmp/log"]), "run the read command directly, without a pipe or redirect")
+    story.expect_hook_refusal("s-1", HookSamples.shell(f"journal worker logs {agent_number(story, worker.id)} > /tmp/log", part, redirects=["> /tmp/log"]), "Run the read command directly, without a pipe or redirect")
     piped = ShellPart("journal", CommandCategory.JOURNAL, ["worker", "logs", str(worker.id)], subcommand="worker", pipe_target=1)
     sink = ShellPart("cat", CommandCategory.READ, [])
-    story.expect_hook_refusal("s-1", HookSamples.shell(f"journal worker logs {agent_number(story, worker.id)} && cat", piped, sink), "run the read command directly, without a pipe or redirect")
+    story.expect_hook_refusal("s-1", HookSamples.shell(f"journal worker logs {agent_number(story, worker.id)} && cat", piped, sink), "Run the read command directly, without a pipe or redirect")
     worktree = story.container.get(Queries).query(Worktree).filter(session_agent_id=worker.id).first()
     story.expect_rows(worktree.logs_read_at is None)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)

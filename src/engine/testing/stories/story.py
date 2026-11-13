@@ -65,6 +65,7 @@ from engine.testing.stories.story_path import StoryPath
 from engine.testing.stories.story_state import StoryState
 from engine.testing.fakes.fixed_process_table import FixedProcessTable
 from engine.testing.expectations.line_outcome import LineOutcome
+from engine.testing.expectations.text_match import holds_line, holds_text
 
 STORY_ROWS_REASON = "the story kit lists every row of a table for an assertion"
 
@@ -222,7 +223,7 @@ class Story:
     def expect_hook_allowed(self, session: str, sample: HookSample, *expected_lines: str) -> None:
         reply = self.hook(session, sample)
         self.expected(reply.refusal == "", f"the hook was refused: {reply.refusal}")
-        missing = [line for line in expected_lines if not any(line in reply_line for reply_line in reply.lines)]
+        missing = [line for line in expected_lines if not holds_line(reply.lines, line)]
         self.expected(not missing, f"the hook's lines {list(reply.lines)} hold none of {missing}")
 
     def expect_ordered_hook_lines(self, session: str, sample: HookSample, *texts: str) -> None:
@@ -236,11 +237,11 @@ class Story:
 
     def expect_absent_hook_line(self, session: str, sample: HookSample, line: str) -> None:
         reply = self.hook(session, sample)
-        self.expected(not any(line in reply_line for reply_line in reply.lines), f"the hook's lines {list(reply.lines)} hold {line!r}")
+        self.expected(not holds_line(reply.lines, line), f"the hook's lines {list(reply.lines)} hold {line!r}")
 
     def expect_hook_refusal(self, session: str, sample: HookSample, reason: str) -> None:
         reply = self.hook(session, sample)
-        self.expected(reason in reply.refusal, f"the hook's refusal {reply.refusal!r} does not say {reason!r}")
+        self.expected(holds_text(reply.refusal, reason), f"the hook's refusal {reply.refusal!r} does not say {reason!r}")
 
     def expected(self, passed: bool, message: str) -> None:
         if not passed:
@@ -273,18 +274,18 @@ class Story:
         outcome = self.run(line, actor)
         self.expected(outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}")
         output_text = self.with_touched_rows(outcome)
-        missing = [text for text in texts if text not in output_text]
+        missing = [text for text in texts if not holds_text(output_text, text)]
         self.expected(not missing, f"{line} printed none of {missing}:\n{outcome.output_text}")
 
     def expect_no_text(self, line: str, *texts: str, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)
-        matching = [text for text in texts if text in outcome.output_text]
+        matching = [text for text in texts if holds_text(outcome.output_text, text)]
         self.expected(not matching, f"{line} printed {matching}:\n{outcome.output_text}")
 
     def expect_refusal(self, line: str, reason: str, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)
         self.expected(outcome.code == 1, f"{line} was not refused: {outcome.code} {outcome.output_text}")
-        self.expected(reason in outcome.output_text, f"{line} was refused, but not for {reason!r}: {outcome.output_text}")
+        self.expected(holds_text(outcome.output_text, reason), f"{line} was refused, but not for {reason!r}: {outcome.output_text}")
 
     def expect_usage_error(self, line: str, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)
@@ -305,7 +306,7 @@ class Story:
 
     def expect_requested_exit(self, line: str, request: CallerRequest, code: int, text: str) -> None:
         outcome = self.run_requested(line, request)
-        self.expected(outcome.code == code and text in outcome.output_text, f"{line} did not exit {code} naming {text!r}: {outcome.code} {outcome.output_text}")
+        self.expected(outcome.code == code and holds_text(outcome.output_text, text), f"{line} did not exit {code} naming {text!r}: {outcome.code} {outcome.output_text}")
 
     def new_row_id(self, line: str, actor: Actor | None = None) -> int:
         outcome = self.run(f"{line} --json", actor)

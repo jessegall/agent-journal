@@ -10,7 +10,7 @@ from engine.database.statement import Statement
 from engine.journal.journal_home import JournalHome
 from engine.module.journal_container import opened_container
 from engine.module.module_sync import ModuleSync
-from tests.unit.views.old_views import OLD_VIEWS
+from tests.unit.engine.database.old_views import OLD_VIEWS
 
 """Phase 6 of plan 1121: every view gives the rows it gave before it was built with the builder. One database holds
 thirty-two rows in every table, with values chosen so each branch of the views' cases is met, and each view's rows are

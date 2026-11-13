@@ -65,7 +65,7 @@ def expect_helper_refusal(story: Story, text: str) -> None:
 
 
 def test_an_unknown_build_is_stopped_and_told_how_to_register_it(unsaved_hook):
-    unsaved_hook.expect_denied("npm run build 2>&1 | tail -5", 'save this command as an alias of category build')
+    unsaved_hook.expect_denied("npm run build 2>&1 | tail -5", 'Save this command as an alias of category build')
 
 
 def test_a_skip_at_the_head_of_a_line_lets_it_run_as_written(unsaved_hook):
@@ -73,16 +73,16 @@ def test_a_skip_at_the_head_of_a_line_lets_it_run_as_written(unsaved_hook):
 
 
 def test_a_saved_build_refuses_the_command_written_out(saved_hook):
-    saved_hook.expect_denied("npm run build", "this runs through a saved command: journal build-npm --tail 20")
+    saved_hook.expect_denied("npm run build", "This is a saved command: run journal build-npm --tail 20")
 
 
 def test_a_build_written_another_way_is_told_the_saved_builds(saved_hook):
-    saved_hook.expect_denied("make all", 'use a saved build with --tail, --head or --cut')
+    saved_hook.expect_denied("make all", 'Run this through a saved build alias, with --tail, --head or --cut')
 
 
 def test_a_test_or_build_is_refused_beside_any_other_command(saved_hook):
-    saved_hook.expect_denied("journal build-npm --tail 5 && git commit -m done", "a test or build runs on a line of its own")
-    saved_hook.expect_denied("git status && journal build-npm --tail 5", "a test or build runs on a line of its own")
+    saved_hook.expect_denied("journal build-npm --tail 5 && git commit -m done", "Run a test or build on its own line")
+    saved_hook.expect_denied("git status && journal build-npm --tail 5", "Run a test or build on its own line")
 
 
 def test_two_saved_builds_run_on_one_line(saved_hook):
@@ -90,13 +90,13 @@ def test_two_saved_builds_run_on_one_line(saved_hook):
 
 
 def test_a_skip_is_refused_when_a_command_of_that_kind_is_saved(saved_hook):
-    saved_hook.expect_denied('journal alias skip --reason "one run" && npm run build', "this runs through a saved command: journal build-npm --tail 20")
-    saved_hook.expect_denied('journal alias skip --reason "one run" && make all', "use a saved build")
+    saved_hook.expect_denied('journal alias skip --reason "one run" && npm run build', "This is a saved command: run journal build-npm --tail 20")
+    saved_hook.expect_denied('journal alias skip --reason "one run" && make all', "Run this through a saved build alias")
 
 
 def test_a_helper_is_told_to_ask_its_parent(new_story):
     story = new_story(fixture=BuilderStarted)
-    expect_helper_refusal(story, "a read-only helper only reads: ask your parent to save an alias for this build")
+    expect_helper_refusal(story, "Read-only helpers only read: ask your parent to save an alias for this build")
 
 
 def test_each_alias_with_a_category_writes_its_category_for_the_hook(new_story):

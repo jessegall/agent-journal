@@ -21,7 +21,7 @@ LOOK_LINE = "processes.look"
 
 
 class FakeGroupCpuTime(GroupCpuTime):
-    """The processor time of a fake process tree, which the story sets."""
+    """The CPU time of a fake process tree, which the story sets."""
 
     def __init__(self, seconds: float | None) -> None:
         self.used = seconds
@@ -165,7 +165,7 @@ def titled(story: Story, title: str, process_id: int = 1) -> None:
 
 
 def watched(story: Story, seconds: int, tree: FakeGroupCpuTime | None = None) -> None:
-    """Ten seconds at a time, the hang watch and then the cadence watch; a busy tree uses more processor time each step."""
+    """Ten seconds at a time, the hang watch and then the cadence watch; a busy tree uses more CPU time each step."""
     for _ in range(seconds // TICK.seconds):
         story.advance(TICK)
         if tree is not None:

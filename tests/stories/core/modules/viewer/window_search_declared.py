@@ -10,6 +10,7 @@ PLACEHOLDERS = {
     "templates.templates": "Search the templates",
     "transcriptions.transcriptions": "Search the transcriptions",
     "documents.documents": "Search titles and abstracts",
+    "documents.page": "Search titles and abstracts",
     "checks.checks": "Search the checks",
     "agents.agents": "Search the agents",
     "suggestions.suggestions": "Search the suggestions",

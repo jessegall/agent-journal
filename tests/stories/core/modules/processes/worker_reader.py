@@ -43,7 +43,7 @@ def test_a_worker_saves_a_reader_with_the_same_output_proof(worker_reader_sample
 
 def test_a_worker_gets_its_reader_request_before_the_main_agent(worker_reader_sample):
     story = worker_reader_sample
-    story.expect_hook_allowed("s-reader", HookSamples.prompt("continue"), "reader request 1: agent")
+    story.expect_hook_allowed("s-reader", HookSamples.prompt("continue"), "Reader request 1: agent")
     story.expect_absent_hook_line("s-1", HookSamples.prompt("continue"), "reader request")
     story.tick("s-1")
     story.expect_rows(not story.container.get(Queries).query(AgentLine).filter(source="processes.reader-request.1").exists())
@@ -71,14 +71,14 @@ def test_the_worker_stops_saving_after_three_failures(exhausted_worker_reader):
                          "has no skip", actor=reader_worker(story))
     story.expect_refusal("reader draft 1 --save", "main agent", actor=reader_worker(story))
     story.expect_rows(not story.container.get(Queries).query(Reader).filter(name="fourth").exists())
-    story.expect_hook_allowed("s-1", HookSamples.prompt("help"), "reader request 1")
+    story.expect_hook_allowed("s-1", HookSamples.prompt("help"), "Reader request 1")
 
 
 def test_an_idle_main_agent_is_asked_to_help_after_failed_saves(exhausted_worker_reader):
     story = exhausted_worker_reader
     story.tick("s-1")
     lines = tuple(story.container.get(Queries).query(AgentLine).filter(source="processes.reader-request.1").every_row(TEST_ROWS_REASON))
-    story.expect_rows(len(lines) == 1, lines[0].wakes_agent, "reader request 1" in lines[0].text)
+    story.expect_rows(len(lines) == 1, lines[0].wakes_agent, "Reader request 1" in lines[0].text)
 
 
 def test_the_failed_save_limit_can_be_configured(worker_reader_sample):
@@ -86,7 +86,7 @@ def test_the_failed_save_limit_can_be_configured(worker_reader_sample):
     story.expect_success("setting set journal.core.processes.reader-save-tries 1 --environment main")
     story.expect_refusal('reader add broken --commands "custom-build*" --lines "["', "does not compile", actor=reader_worker(story))
     story.expect_refusal("reader draft 1 --save", "main agent", actor=reader_worker(story))
-    story.expect_hook_allowed("s-1", HookSamples.prompt("help"), "reader request 1")
+    story.expect_hook_allowed("s-1", HookSamples.prompt("help"), "Reader request 1")
 
 
 def test_incomplete_draft_saves_count_toward_the_same_limit(worker_reader_sample):

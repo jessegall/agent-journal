@@ -40,7 +40,7 @@ def test_s57_restart_retains_successful_steps(new_story):
 
 
 def test_s57_uncertain_command_needs_reconciliation(new_story, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.commands.support.worktree_commands.COMMAND_LIMIT_SECONDS", 1)
+    monkeypatch.setattr("suites.coding.modules.workers.support.worktree_commands.COMMAND_LIMIT_SECONDS", 1)
     story, worker, _ = merge_story(new_story, ["sleep 3"])
     story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", "may have done part of its work", actor=story.agent)
     story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", "ended uncertain", actor=story.agent)

@@ -82,7 +82,7 @@ def test_all_tests_passing_checks_the_proofs_and_tells_the_main_agent_and_the_me
     ended(story, started[0], 0)
     story.expect_text("proof show 1", "state: checked", actor=story.agent)
     expect_marks_text(story, "passed")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{agent_number(story, worker.id)} all pass", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"All tests of worker:{agent_number(story, worker.id)} pass", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     asked_for_merge(story, worker)
@@ -94,7 +94,7 @@ def test_a_failed_test_goes_back_to_the_worker_and_its_next_delivery_runs_it_aga
     story, repository, worker, started = queued_story(new_story, monkeypatch)
     ended(story, started[0], 1)
     story.expect_text("proof show 1", "state: short", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {worker.id}", f"your tests failed, output {started[0]}")
+    story.expect_text(f"agent-line list --agent {worker.id}", f"Your tests failed, output {started[0]}")
     story.expect_text("worker-worktree show 1", "state: cut", actor=story.agent)
     repository.changed(worker.id, "cart.py", "TOTAL = 4\n")
     story.expect_success(PROOF, actor=worker)
@@ -112,7 +112,7 @@ def test_an_orphaned_proof_returns_to_the_worker_and_runs_again_at_delivery(new_
     story.run_listeners()
     story.expect_text("proof show 1", "state: short", actor=story.agent)
     story.expect_text("task show 1", "state: started", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {worker.id}", f"your tests failed, output {orphaned_process_id}")
+    story.expect_text(f"agent-line list --agent {worker.id}", f"Your tests failed, output {orphaned_process_id}")
     story.expect_success(PROOF, actor=worker)
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.run_listeners()
@@ -225,7 +225,7 @@ def test_a_failed_picker_returns_the_work_with_its_output(new_story, monkeypatch
     ended(story, started[1], 1)
     story.expect_text("worker-worktree show 1", "state: cut", actor=story.agent)
     story.expect_text("task show 1", "state: started", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {worker.id}", f"your tests failed, output {started[1]}")
+    story.expect_text(f"agent-line list --agent {worker.id}", f"Your tests failed, output {started[1]}")
 
 
 def test_a_failed_picked_test_returns_the_work_with_its_output(new_story, monkeypatch):
@@ -235,7 +235,7 @@ def test_a_failed_picked_test_returns_the_work_with_its_output(new_story, monkey
     ended(story, started[2], 1)
     story.expect_text("worker-worktree show 1", "state: cut", actor=story.agent)
     story.expect_text("task show 1", "state: started", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {worker.id}", f"your tests failed, output {started[2]}")
+    story.expect_text(f"agent-line list --agent {worker.id}", f"Your tests failed, output {started[2]}")
 
 
 def test_a_failed_picker_runs_again_at_the_next_hand_in(new_story, monkeypatch):

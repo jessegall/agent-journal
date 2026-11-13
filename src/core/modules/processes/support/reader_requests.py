@@ -10,7 +10,7 @@ from engine.query.queries import Queries
 from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.process_part import ProcessPart

@@ -20,7 +20,7 @@ COLD_MINUTES = 300
 COLD_PERCENT = 100
 NEW_SESSION_TEXT = "new session of"
 UNAVAILABLE_TEXT = "The earlier conversation is unavailable"
-REPLACED_REPLY = "replaced by a newer session"
+REPLACED_REPLY = "replaced this one"
 STORY_MODULE = "story"
 
 
@@ -131,7 +131,7 @@ def test_a_replacement_the_launcher_cannot_start_keeps_its_new_session_and_the_r
     story.run_listeners()
     unstarted_session = helper_agent(story).session
     story.expect_rows(unstarted_session != helper.session)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "could not start")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "failed to start")
     command = " ".join(job_launch(story)["command"])
     story.expect_rows(helper_agent(story).session == unstarted_session, unstarted_session in command, detail=command)
     story.expect_rows(sessions_of(story, helper.id).count(unstarted_session) == 1)

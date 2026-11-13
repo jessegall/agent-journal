@@ -29,7 +29,7 @@ def worker_with_started_task(story: Story) -> Actor:
 def test_a_worker_whose_task_has_not_started_runs_journal_commands_only(new_story):
     story = new_story(fixture=OpenTaskBuilder)
     started_worker(story)
-    story.expect_hook_refusal(WORKER_SESSION, CART_REMOVAL, "your task has not started yet: only reading and journal commands run until it does")
+    story.expect_hook_refusal(WORKER_SESSION, CART_REMOVAL, "Your task has not started: only reads and journal commands run until it does")
     story.expect_hook_allowed(WORKER_SESSION, CART_SEARCH)
     story.expect_hook_allowed(WORKER_SESSION, TASK_READ)
 

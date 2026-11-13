@@ -50,7 +50,7 @@ class TwoUnreadBuilds(StoryFixture):
 
 def test_two_runs_with_no_change_of_reader_prevent_the_next_start_of_that_command_alone(new_story):
     story = new_story(fixture=TwoUnreadBuilds)
-    story.expect_hook_refusal("s-1", BUNDLE_START, f"output 2 {PREVENTED}: add or fix the reader")
+    story.expect_hook_refusal("s-1", BUNDLE_START, f"Output 2 {PREVENTED}: add or fix the reader")
     story.expect_hook_refusal("s-1", BUNDLE_START, "skip this one start and say why")
     story.expect_rows(end_decision(story, story.row(Process, 1))[:2] == ("missing", "suggest"), detail=str(end_decision(story, story.row(Process, 1))))
     story.expect_hook_allowed("s-1", EDIT)
@@ -83,7 +83,7 @@ def test_a_worker_is_blocked_while_its_reader_request_waits_and_freed_when_it_ex
     story.expect_success("setting set journal.core.processes.reader-block-minutes 2 --environment main", actor=story.user)
     worker = reader_worker(story)
     worker_run(story)
-    story.expect_hook_refusal("s-reader", EDIT, "reader request 1")
+    story.expect_hook_refusal("s-reader", EDIT, "has no reader, request 1")
     story.expect_text("process holds", "block of reader request 1", actor=worker)
     story.advance(timedelta(minutes=3))
     story.expect_hook_allowed("s-reader", READ)
@@ -100,7 +100,7 @@ def test_a_person_lifts_a_silent_run_hold_and_the_agent_is_told_and_works_on(new
     story.expect_success("process holds", f"hold on output {process.id}: read it; stop it; a user releases it", actor=story.agent)
     story.expect_refusal(f"process lift-hold {agent_number(story, story.agent.id)} --environment main", "only a user lifts a hold", actor=story.agent)
     story.expect_success(f"process lift-hold {agent_number(story, story.agent.id)} --environment main", "1 holds lifted", actor=story.user)
-    story.expect_hook_allowed("s-1", EDIT, f"the hold on output {process.id} was lifted by a user")
+    story.expect_hook_allowed("s-1", EDIT, f"A user lifted the hold on output {process.id}")
 
 
 def test_a_person_lifts_a_workers_reader_block_and_the_worker_is_told_and_held_by_it_no_more(new_story):
@@ -111,5 +111,5 @@ def test_a_person_lifts_a_workers_reader_block_and_the_worker_is_told_and_held_b
     story.expect_text("process holds", "block of reader request 1: add or fix the reader; mark the command unreadable", actor=worker)
     person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"process lift-hold {agent_number(story, worker.id)} --environment main", "1 holds lifted", actor=person)
-    story.expect_hook_allowed("s-reader", HookSamples.prompt("go on"), "the block of reader request 1 was lifted by a user")
-    story.expect_hook_refusal("s-reader", EDIT, "your task has not started yet")
+    story.expect_hook_allowed("s-reader", HookSamples.prompt("go on"), "A user lifted the block on reader request 1")
+    story.expect_hook_refusal("s-reader", EDIT, "Your task has not started")

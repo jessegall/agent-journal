@@ -55,7 +55,7 @@ def test_20_71_a_worker_blocks_one_started_task_goes_on_with_another_and_the_mai
     story.expect_text("task show 2", "state: blocked", actor=story.agent)
     story.expect_text("task show 1", "state: started", actor=story.agent)
     blocked_lines = [line for line in two_tasks.main_agent_lines() if "task:2" in line and "blocked" in line]
-    story.expect_rows(started.code == 0, len(blocked_lines) == 1, "only you or the user can unblock it" in blocked_lines[0], detail=str(two_tasks.main_agent_lines()))
+    story.expect_rows(started.code == 0, len(blocked_lines) == 1, "only you or a user can unblock it" in blocked_lines[0], detail=str(two_tasks.main_agent_lines()))
 
 
 def test_21_205_worker_next_with_a_proved_task_starts_the_next_task_commits_and_tests_nothing_and_says_so(one_task):

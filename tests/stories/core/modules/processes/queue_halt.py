@@ -16,7 +16,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 
 VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
 HALT = 'queue halt "a deploy is going"'
-REMINDER = "the process queue is halted"
+REMINDER = "The process queue is halted"
 REMINDER_SECONDS = 5 * 60
 
 

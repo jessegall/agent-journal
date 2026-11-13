@@ -4,7 +4,7 @@ import pytest
 
 from core.modules.agents.migrations.m028_fold_main_agents import FoldMainAgentsMigration
 from engine.database.database import Database
-from engine.database.errors.migration_deferred_error import MigrationDeferred
+from engine.database.errors.migration_deferred_error import MigrationDeferredError
 
 ROWS = """
     CREATE TABLE actors (id INTEGER PRIMARY KEY, name TEXT);
@@ -43,7 +43,7 @@ def plant_mismatch(database):
 
 def test_a_mismatch_rolls_back_logs_and_is_deferred_while_the_journal_starts_unfolded(database, tmp_path):
     plant_mismatch(database)
-    with pytest.raises(MigrationDeferred):
+    with pytest.raises(MigrationDeferredError):
         FoldMainAgentsMigration().run(database)
     assert database.connection.execute("SELECT count(*) FROM agents").fetchone()[0] == 2
     assert "rolled back" in next(tmp_path.rglob("*.log")).read_text()
@@ -51,7 +51,7 @@ def test_a_mismatch_rolls_back_logs_and_is_deferred_while_the_journal_starts_unf
 
 def test_a_refused_fold_runs_again_and_folds_once_the_cause_is_gone(database):
     plant_mismatch(database)
-    with pytest.raises(MigrationDeferred):
+    with pytest.raises(MigrationDeferredError):
         FoldMainAgentsMigration().run(database)
     database.connection.execute("DROP TRIGGER planted")
     FoldMainAgentsMigration().run(database)
@@ -61,7 +61,7 @@ def test_a_refused_fold_runs_again_and_folds_once_the_cause_is_gone(database):
 def test_failed_attempts_leave_one_copy(database, tmp_path):
     plant_mismatch(database)
     for _ in range(2):
-        with pytest.raises(MigrationDeferred):
+        with pytest.raises(MigrationDeferredError):
             FoldMainAgentsMigration().run(database)
     assert [path.name for path in (tmp_path / "backups-watch").iterdir()] == ["fold-before.db"]
 

@@ -8,7 +8,7 @@ def test_a_wait_on_an_output_that_already_ended_is_refused_with_its_exit_code(ne
     story = new_story(fixture=BuilderStarted)
     process = start_process(story, "make test")
     story.container.get(Bus).run(EndProcess(process.id, 2, 40, 3), story.agent, environment_id=1)
-    story.expect_refusal(f"wait on 'the tests' --target output:{process.id}", f"output {process.id} failed with exit code 2", actor=story.agent)
+    story.expect_refusal(f"wait on 'the tests' --target output:{process.id}", f"Output {process.id} failed with exit code 2", actor=story.agent)
     story.expect_no_text("wait list", "the tests", actor=story.agent)
 
 

@@ -43,7 +43,7 @@ def hook(session: str, event: HookEventName, role: str = "", source: str = "star
 def test_a_tool_of_a_session_in_the_history_that_is_not_current_is_answered_replaced():
     reply = route().agentless_reply(hook("s-1", HookEventName.PRE_TOOL_USE))
     assert reply.refusal == REPLACED_SESSION.nudge(agent=1).text
-    assert "replaced by a newer session of agent 1" in reply.refusal
+    assert "A newer session of agent 1 replaced this one" in reply.refusal
 
 
 def test_another_event_of_a_replaced_session_passes_with_no_refusal():

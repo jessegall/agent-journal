@@ -1,3 +1,4 @@
+from engine.testing.expectations.text_match import holds_line
 from datetime import timedelta
 
 from engine.enums.command_category import CommandCategory
@@ -35,7 +36,7 @@ def read_lines(story: Story, sample) -> list[str]:
 
 def expect_line(story: Story, sample, text: str) -> None:
     lines = read_lines(story, sample)
-    assert any(text in line for line in lines), lines
+    assert holds_line(lines, text), lines
 
 
 def expect_line_absent(story: Story, sample, text: str) -> None:
@@ -89,7 +90,7 @@ def test_the_first_silent_run_is_taught_at_the_next_start_with_the_shape_found(n
     story = new_story(fixture=BuildStarted)
     finish_build(story, 1, GOLANG_OUTPUT)
     lines = read_lines(story, ALIAS_START)
-    for text in ("./build.sh ran 70 seconds and showed no percent in the chat", "line shape --- PASS:/--- FAIL:", "states no total, so the command must print one first", "never wait for the run to end"):
+    for text in ("./build.sh ran 70s with no percent in the chat", "line shape --- PASS:/--- FAIL:", "states no total, so the command must print one first", "do not wait for it to end"):
         expect_value(bool(any(text in line for line in lines)), True)
 
 
@@ -124,14 +125,14 @@ def test_a_redirected_run_with_no_output_counts_silent(new_story):
     story = new_story(fixture=RunnerInstalled)
     silent_run(story, GOLANG_TESTS, "", category=CommandCategory.TEST_RUN)
     lines = read_lines(story, GOLANG_START)
-    for text in ("go test ./... ran 70 seconds and showed no percent in the chat", "line shape none of the known ones"):
+    for text in ("go test ./... ran 70s with no percent in the chat", "line shape none of the known ones"):
         expect_value(bool(any(text in line for line in lines)), True)
 
 
 def test_a_run_that_printed_lines_with_no_percent_counts_silent(new_story):
     story = new_story(fixture=BuildStarted)
     finish_build(story, 1, "compiling\ncompiling\n", seconds=76)
-    expect_line(story, ALIAS_START, "./build.sh ran 76 seconds and showed no percent")
+    expect_line(story, ALIAS_START, "./build.sh ran 76s with no percent")
 
 
 def test_a_short_run_is_never_silent(new_story):

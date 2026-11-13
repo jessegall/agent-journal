@@ -73,11 +73,11 @@ def test_after_a_session_start_nothing_passes_before_the_overview_but_reading_a_
     story = overview_story(new_story)
     story.hook("s-1", HookSamples.session_start())
     story.run_listeners()
-    story.expect_hook_refusal("s-1", EDIT, "read the overview first")
-    story.expect_hook_refusal("s-1", LISTING, "read the overview first")
-    story.expect_hook_refusal("s-1", JOURNAL_LINE, "read the overview first")
+    story.expect_hook_refusal("s-1", EDIT, "Read the overview first")
+    story.expect_hook_refusal("s-1", LISTING, "Read the overview first")
+    story.expect_hook_refusal("s-1", JOURNAL_LINE, "Read the overview first")
     again = story.hook("s-1", EDIT).refusal
-    story.expect_rows("read the overview first" in again, "refusal skip" not in again, detail=again)
+    story.expect_rows("Read the overview first" in again, "refusal skip" not in again, detail=again)
     story.expect_hook_allowed("s-1", SKILL_READ)
     story.expect_hook_allowed("s-1", OVERVIEW_HOOK)
     story.expect_hook_allowed("s-1", EDIT)
@@ -102,7 +102,7 @@ def test_a_compaction_blocks_again_and_a_resume_does_not(new_story):
     story.hook("s-1", RESUME)
     story.expect_hook_allowed("s-1", EDIT)
     story.hook("s-1", COMPACTION)
-    story.expect_hook_refusal("s-1", EDIT, "read the overview first")
+    story.expect_hook_refusal("s-1", EDIT, "Read the overview first")
 
 
 class CartWork(StoryFixture):
@@ -138,9 +138,9 @@ def compacted(new_story):
 def test_a_whole_compaction_tells_the_agent_only_to_run_the_overview(compacted):
     story, _, compaction_lines, start_lines = compacted
     expect_value(list(compaction_lines), [])
-    expect_value(list(start_lines), ["read the overview"])
+    expect_value(list(start_lines), ["Read the overview"])
     story.expect_hook_silent("s-1", SKILL_READ)
-    story.expect_hook_refusal("s-1", EDIT, "read the overview first")
+    story.expect_hook_refusal("s-1", EDIT, "Read the overview first")
     story.expect_hook_allowed("s-1", OVERVIEW_HOOK)
     story.expect_hook_allowed("s-1", EDIT, "New message 1")
 

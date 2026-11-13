@@ -69,7 +69,7 @@ def test_46_a_failed_test_of_an_interim_commit_makes_its_proof_short_returns_its
     expect_proof_states(interim_tested, "short", 1)
     expect_task_states(interim_tested, "started", 1, 3)
     expect_task_states(interim_tested, "completed", 2)
-    interim_tested.story.expect_rows(any(f"your tests failed, output {interim_tested.started[0]}" in line for line in interim_tested.worker_lines()), detail=str(interim_tested.worker_lines()))
+    interim_tested.story.expect_rows(any(f"Your tests failed, output {interim_tested.started[0]}" in line for line in interim_tested.worker_lines()), detail=str(interim_tested.worker_lines()))
 
 
 def test_47_48_only_the_failed_proof_is_tested_at_the_commit_after_it_is_shown_a_second_time(first_failed):
@@ -93,7 +93,7 @@ def test_50_a_failed_run_of_the_selected_tests_returns_the_tasks_of_the_commit_a
     worker.end_test(worker.started[2])
     worker.end_test(worker.started[3], 1)
     expect_task_states(worker, "started", 1, 2)
-    story.expect_rows(any(f"your tests failed, output {worker.started[3]}" in line for line in worker.worker_lines()), detail=str(worker.worker_lines()))
+    story.expect_rows(any(f"Your tests failed, output {worker.started[3]}" in line for line in worker.worker_lines()), detail=str(worker.worker_lines()))
 
 
 def test_51_a_failed_test_of_a_final_commit_returns_the_worktree_and_the_failed_task_and_leaves_the_other_task(two_committed):

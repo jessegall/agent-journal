@@ -3,9 +3,9 @@ from dataclasses import dataclass
 
 from engine.database.schema_columns import SchemaColumn
 from engine.errors.refusal import Refusal
+from engine.query.query import ROW_KEY
 
 AGENT_TABLES = ("agents", "actors")
-ROW_KEY = "id"
 AGENT_COLUMN_NAMES = ("actor_id", "holder_id", "delegated_to", "creator_id", "parent_id", "session_agent_id", "agent_id", "survivor_id",
                       "folded_agent_id", "lifter_id", "sender_id", "assignee_id", "owner_id", "worker_id", "test_agent_id")
 AGENT_COLUMN_SUFFIX = "_agent_id"

@@ -1,8 +1,5 @@
 import pytest
 
-from engine.database.database import Database
-from engine.database.statement import Statement
-from core.modules.tasks.migrations.m017_block_waiting_tasks import BlockWaitingTasksMigration
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from engine.testing.stories.story_fixture import StoryFixture
 
@@ -62,18 +59,6 @@ def test_a_started_task_keeps_running_when_a_dependency_is_added(new_story):
     story.expect_success("task start 1", actor=story.agent)
     story.expect_success("task depend 1 --on 2", actor=story.agent)
     story.expect_rows(read_state(story, 1) == "started")
-
-
-def test_the_migration_blocks_each_open_task_that_waits_on_an_open_task(new_story):
-    story = new_story(fixture=WaitingTask)
-    database = story.container.get(Database)
-    database.update(Statement("DELETE FROM task_waits"))
-    database.update(Statement("UPDATE tasks SET state = 'open', reason = '' WHERE id = 1"))
-    for statement in BlockWaitingTasksMigration.statements:
-        database.update(Statement(statement))
-    story.expect_rows(read_state(story, 1) == "blocked")
-    story.expect_success('task cancel 2 --reason "Not needed"', actor=story.agent)
-    story.expect_rows(read_state(story, 1) == "open")
 
 
 class ThreeWaiting(StoryFixture):

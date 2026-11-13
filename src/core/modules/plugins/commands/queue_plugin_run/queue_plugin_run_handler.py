@@ -15,7 +15,7 @@ from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.queued_run_places import QueuedRunPlaces
 from core.modules.plugins.support.queued_run_start import QueuedRunStart
 from core.modules.processes.commands.start_process.start_process import StartProcess
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.models.process import Process
 
 WAITING_RUNS_REASON = "every waiting run of the kind is weighed against the new one"

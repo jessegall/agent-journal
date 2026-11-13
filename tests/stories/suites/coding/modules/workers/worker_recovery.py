@@ -83,4 +83,4 @@ def test_a_worker_with_started_work_and_no_job_or_delegated_task_is_resumed(runn
     GoneWorkerRecovery()(story.container)
     launcher.drain_requests()
     story.expect_rows(len(launcher.starts) == 1, launcher.starts[0]["agent_id"] == story.worker.id)
-    story.expect_text(f"agent-line list --agent {story.worker.id}", "you ended with tasks left")
+    story.expect_text(f"agent-line list --agent {story.worker.id}", "You ended with tasks left")

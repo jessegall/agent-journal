@@ -5,8 +5,8 @@ from engine.repository.repository import Repository
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
+from suites.coding.modules.workers.support.behind_checks import CHECKS_REASON
 
-CHECKS_REASON = "every behind check of the worktree is weighed"
 UPDATED_FROM = (BehindCheckState.OPEN, BehindCheckState.ORDERED, BehindCheckState.CONFLICTED)
 CONFLICTED_FROM = (BehindCheckState.OPEN, BehindCheckState.ORDERED)
 GONE_FROM = (BehindCheckState.OPEN, BehindCheckState.ORDERED, BehindCheckState.CONFLICTED, BehindCheckState.PASSED)

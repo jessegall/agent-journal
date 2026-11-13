@@ -29,8 +29,8 @@ def test_two_runs_that_redraw_one_line_mark_their_command_once_and_two_readable_
     for _ in range(2):
         ended_after_a_while(story, moved_run(story, "make spin", CommandCategory.BUILD), STEPS)
     lifted = heard(story)
-    story.expect_rows(f"output {first.id} is one redrawn line" not in marked, marked.count(f"output {second.id} is one redrawn line") == 1,
-                      "command make spin prints readable lines again" in lifted, detail=f"{marked}\n{lifted}")
+    story.expect_rows(f"Output {first.id} is one redrawn line" not in marked, marked.count(f"Output {second.id} is one redrawn line") == 1,
+                      "Command make spin prints readable lines again" in lifted, detail=f"{marked}\n{lifted}")
     story.expect_text("unreadable-mark show 1", "lifted_at: ", actor=story.agent)
 
 
@@ -45,8 +45,8 @@ def test_a_person_marks_a_runs_command_from_its_card_so_its_agent_is_asked_no_re
     after_mark = heard(story)
     story.expect_success(f"output readable {quiet.id} --environment main", actor=story.user)
     resumed = heard(story)
-    story.expect_rows("command make serve was marked unreadable" in marked, f"output {quiet.id} ended" in after_mark, "no reader reads" not in after_mark,
-                      "command make serve prints readable lines again: asks resume" in resumed, detail=f"{marked}\n{after_mark}\n{resumed}")
+    story.expect_rows("Command make serve was marked unreadable" in marked, f"Output {quiet.id} ended" in after_mark, "No reader reads" not in after_mark,
+                      "Command make serve prints readable lines again: reader requests resume" in resumed, detail=f"{marked}\n{after_mark}\n{resumed}")
     story.expect_text("unreadable-mark show 1", f"creator_id: {story.user.id}", f"lifter_id: {story.user.id}", actor=story.user)
 
 
@@ -62,7 +62,7 @@ def test_the_main_agent_hears_once_how_many_commands_agents_marked_unreadable(ne
         story.hook("s-1", HookSamples.session_start())
         story.run_listeners()
     lines = kept_lines(story, actor=story.user)
-    story.expect_rows(lines.count("3 commands are marked unreadable by agents: look at them in the viewer") == 1, detail=lines)
+    story.expect_rows(lines.count("3 commands are marked unreadable by agents: review them in the viewer") == 1, detail=lines)
 
 
 BINARY = "\x00\x01\x02 header\x00" * 40 + "\n"
@@ -80,10 +80,10 @@ def test_empty_binary_and_waiting_outputs_mark_their_commands_after_two_runs_whi
     lines = heard(story)
     marks = story.run("unreadable-mark list", actor=story.agent).output_text
     story.expect_rows(all(words in marks for words in ("custom-suite run", "custom-blob run", "custom-install run")), "custom-odd run" not in marks, "custom-words run" not in marks,
-                      lines.count("printed nothing: the result of this command is its exit code") == 1, lines.count("is binary: a tool made for it") == 1,
-                      lines.count("waits for input: stop it") == 1,
-                      not any(f"no reader reads {words}" in lines for words in ("custom-suite", "custom-blob", "custom-install")),
-                      "no reader reads custom-words yet" in lines, detail=f"{marks}\n{lines}")
+                      lines.count("printed nothing: its exit code is the result") == 1, lines.count("is binary: use a tool made for it") == 1,
+                      lines.count("is waiting for input: stop it") == 1,
+                      not any(f"No reader reads {words}" in lines for words in ("custom-suite", "custom-blob", "custom-install")),
+                      "No reader reads custom-words yet" in lines, detail=f"{marks}\n{lines}")
 
 
 def test_a_marked_command_is_asked_nothing_by_its_leading_words_while_another_program_is_and_its_silent_run_is_still_held(new_story):
@@ -94,7 +94,7 @@ def test_a_marked_command_is_asked_nothing_by_its_leading_words_while_another_pr
     told = heard(story)
     moved_run(story, "make watch --forever", CommandCategory.BUILD)
     ticks(story, 320)
-    story.expect_rows("no reader reads make" not in told, "no reader reads custom-dev yet" in told, "printed nothing for 30s" not in kept_lines(story),
+    story.expect_rows("No reader reads make" not in told, "No reader reads custom-dev yet" in told, "printed nothing for 30s" not in kept_lines(story),
                       detail=f"{told}\n{kept_lines(story)}")
-    story.expect_hook_refusal("s-1", HookSamples.edit("cart.py"), "printed nothing for 320 seconds")
+    story.expect_hook_refusal("s-1", HookSamples.edit("cart.py"), "printed nothing for 320s")
     story.expect_success("reader-request list", "nothing found", actor=story.agent)

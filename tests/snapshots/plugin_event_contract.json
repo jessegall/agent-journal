@@ -492,6 +492,99 @@
       "usage_limit_ends_at"
     ]
   },
+  "core.agents.agent_fold.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "actor_row",
+      "agent_row",
+      "environment_id",
+      "folded_agent_id",
+      "folded_at",
+      "folded_number",
+      "sessions",
+      "survivor_id"
+    ]
+  },
+  "core.agents.agent_fold.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "actor_row",
+      "agent_row",
+      "environment_id",
+      "folded_agent_id",
+      "folded_at",
+      "folded_number",
+      "sessions",
+      "survivor_id"
+    ]
+  },
+  "core.agents.agent_fold.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "actor_row",
+      "agent_row",
+      "environment_id",
+      "folded_agent_id",
+      "folded_at",
+      "folded_number",
+      "sessions",
+      "survivor_id"
+    ]
+  },
+  "core.agents.agent_fold_row.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "environment_id",
+      "fold_id",
+      "row",
+      "rule",
+      "table_name"
+    ]
+  },
+  "core.agents.agent_fold_row.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "environment_id",
+      "fold_id",
+      "row",
+      "rule",
+      "table_name"
+    ]
+  },
+  "core.agents.agent_fold_row.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "environment_id",
+      "fold_id",
+      "row",
+      "rule",
+      "table_name"
+    ]
+  },
   "core.agents.agent_session.created": {
     "forms": [
       "commit",
@@ -4537,6 +4630,74 @@
     ],
     "fields": []
   },
+  "core.plugins.queued_run.created": {
+    "forms": [
+      "commit"
+    ],
+    "fields": [
+      "creator_id",
+      "duration_ms",
+      "environment_id",
+      "exit_code",
+      "kind",
+      "plugin",
+      "process_id",
+      "session_agent_id",
+      "state",
+      "timed_out"
+    ]
+  },
+  "core.plugins.queued_run.deleted": {
+    "forms": [
+      "commit"
+    ],
+    "fields": [
+      "creator_id",
+      "duration_ms",
+      "environment_id",
+      "exit_code",
+      "kind",
+      "plugin",
+      "process_id",
+      "session_agent_id",
+      "state",
+      "timed_out"
+    ]
+  },
+  "core.plugins.queued_run.ended": {
+    "forms": [
+      "commit"
+    ],
+    "fields": [
+      "creator_id",
+      "duration_ms",
+      "environment_id",
+      "exit_code",
+      "kind",
+      "plugin",
+      "process_id",
+      "session_agent_id",
+      "state",
+      "timed_out"
+    ]
+  },
+  "core.plugins.queued_run.updated": {
+    "forms": [
+      "commit"
+    ],
+    "fields": [
+      "creator_id",
+      "duration_ms",
+      "environment_id",
+      "exit_code",
+      "kind",
+      "plugin",
+      "process_id",
+      "session_agent_id",
+      "state",
+      "timed_out"
+    ]
+  },
   "core.plugins.session_ended": {
     "forms": [
       "commit",
@@ -4564,6 +4725,39 @@
       "guard"
     ],
     "fields": []
+  },
+  "core.processes.command_run_count.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command_key",
+      "runs_without_reader"
+    ]
+  },
+  "core.processes.command_run_count.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command_key",
+      "runs_without_reader"
+    ]
+  },
+  "core.processes.command_run_count.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command_key",
+      "runs_without_reader"
+    ]
   },
   "core.processes.output.created": {
     "forms": [
@@ -4749,6 +4943,7 @@
       "owner_agent_id",
       "pid",
       "plugin",
+      "priority",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -4785,6 +4980,7 @@
       "owner_agent_id",
       "pid",
       "plugin",
+      "priority",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -4821,6 +5017,7 @@
       "owner_agent_id",
       "pid",
       "plugin",
+      "priority",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -4857,6 +5054,7 @@
       "owner_agent_id",
       "pid",
       "plugin",
+      "priority",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -4893,6 +5091,81 @@
       "owner_agent_id",
       "pid",
       "plugin",
+      "priority",
+      "progress",
+      "queued_at",
+      "sandbox_level",
+      "session_agent_id",
+      "shell",
+      "slot_assigned",
+      "started_at",
+      "state",
+      "task_id",
+      "timeout_seconds"
+    ]
+  },
+  "core.processes.process.journal_merge_fail": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "category",
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "exit_code",
+      "expired_at",
+      "folder",
+      "hook_call_id",
+      "is_full_test_run",
+      "is_queue_run",
+      "kind",
+      "limit_seconds",
+      "line",
+      "moved_at",
+      "owner_agent_id",
+      "pid",
+      "plugin",
+      "priority",
+      "progress",
+      "queued_at",
+      "sandbox_level",
+      "session_agent_id",
+      "shell",
+      "slot_assigned",
+      "started_at",
+      "state",
+      "task_id",
+      "timeout_seconds"
+    ]
+  },
+  "core.processes.process.journal_merge_finish": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "category",
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "exit_code",
+      "expired_at",
+      "folder",
+      "hook_call_id",
+      "is_full_test_run",
+      "is_queue_run",
+      "kind",
+      "limit_seconds",
+      "line",
+      "moved_at",
+      "owner_agent_id",
+      "pid",
+      "plugin",
+      "priority",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -4929,6 +5202,7 @@
       "owner_agent_id",
       "pid",
       "plugin",
+      "priority",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -4965,6 +5239,7 @@
       "owner_agent_id",
       "pid",
       "plugin",
+      "priority",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -5001,6 +5276,7 @@
       "owner_agent_id",
       "pid",
       "plugin",
+      "priority",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -5718,7 +5994,6 @@
       "report",
       "reported_at",
       "requester_id",
-      "reviewer_id",
       "state",
       "subject_id",
       "subject_model"
@@ -5737,7 +6012,6 @@
       "report",
       "reported_at",
       "requester_id",
-      "reviewer_id",
       "state",
       "subject_id",
       "subject_model"
@@ -5756,7 +6030,6 @@
       "report",
       "reported_at",
       "requester_id",
-      "reviewer_id",
       "state",
       "subject_id",
       "subject_model"
@@ -5775,7 +6048,6 @@
       "report",
       "reported_at",
       "requester_id",
-      "reviewer_id",
       "state",
       "subject_id",
       "subject_model"
@@ -5794,7 +6066,6 @@
       "report",
       "reported_at",
       "requester_id",
-      "reviewer_id",
       "state",
       "subject_id",
       "subject_model"
@@ -5813,7 +6084,6 @@
       "report",
       "reported_at",
       "requester_id",
-      "reviewer_id",
       "state",
       "subject_id",
       "subject_model"
@@ -5832,7 +6102,6 @@
       "report",
       "reported_at",
       "requester_id",
-      "reviewer_id",
       "state",
       "subject_id",
       "subject_model"
@@ -5851,7 +6120,6 @@
       "report",
       "reported_at",
       "requester_id",
-      "reviewer_id",
       "state",
       "subject_id",
       "subject_model"

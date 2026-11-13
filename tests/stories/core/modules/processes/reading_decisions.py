@@ -49,7 +49,7 @@ def test_a_background_build_with_no_reader_keeps_a_missing_reader_at_its_end_and
     end_run(story, process, "compiling\n" * 3 + "done\n")
     story.run_listeners()
     story.expect_text("reading-decision show 2", "moment: end", "state: missing", "reason: reader missing", actor=story.agent)
-    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), f"output {process.id} ended", "no reader reads custom-build yet")
+    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), f"Output {process.id} ended", "No reader reads custom-build yet")
     story.expect_text(f"process card {process.id} --json", '"reading_text": "Reader: none"', actor=story.agent)
 
 
@@ -75,8 +75,8 @@ def test_one_test_output_under_three_commands_is_read_drafted_or_suggested_once_
     twice = ended_after_a_while(story, moved_run(story, "./deploy.sh staging && ./deploy.sh staging", CommandCategory.BUILD), STEPS)
     lines = heard(story)
     story.expect_rows(end_decision(story, read) == ("suitable", "nothing", 1), "reads pytest" not in lines and "reader pytest" not in lines,
-                      end_decision(story, drafted) == ("draftable", "draft ready", 1), f"no reader reads run-tests.sh yet; a draft fits output {drafted.id}" in lines,
-                      end_positions(story, twice) == [1, 2], lines.count("no reader reads deploy.sh yet") == 1, detail=lines)
+                      end_decision(story, drafted) == ("draftable", "draft ready", 1), f"No reader reads run-tests.sh yet; a draft fits output {drafted.id}" in lines,
+                      end_positions(story, twice) == [1, 2], lines.count("No reader reads deploy.sh yet") == 1, detail=lines)
 
 
 def test_the_first_run_of_a_command_with_no_reader_starts_freely_with_a_suggestion_kept(new_story):
@@ -97,8 +97,8 @@ def test_readers_that_pick_no_line_keep_every_line_find_no_summary_or_no_progres
             (("./deploy.sh staging", STEPS), ("./wide.sh", "".join(f"step {number}\n" for number in range(60))), ("./quiet.sh", STEPS), ("./counted.sh", "step 3/9\nstep 9/9\n"))]
     lines = heard(story)
     reasons = [end_reason(story, process) for process in runs]
-    story.expect_rows(reasons == ["lines missed", "too wide", "summary missing", "progress missing"], f"reader deploys picked none of 10 lines of output {runs[0].id}" in lines,
-                      "reader wide kept 60 of 60 lines" in lines, "reader quiet found no summary" in lines, f"output {runs[3].id} ran with no progress" in lines,
+    story.expect_rows(reasons == ["lines missed", "too wide", "summary missing", "progress missing"], f"Reader deploys matched none of the 10 lines of output {runs[0].id}" in lines,
+                      "Reader wide kept 60 of 60 lines" in lines, "Reader quiet found no summary" in lines, f"Output {runs[3].id} showed no progress" in lines,
                       detail=f"{reasons}\n{lines}")
 
 
@@ -107,5 +107,5 @@ def test_a_reader_whose_script_fails_is_poor_once_and_the_output_stays_readable(
     story.run('reader add broken --commands "./broken*" --script /missing/reader.sh', actor=story.agent)
     process = ended_after_a_while(story, moved_run(story, "./broken.sh", CommandCategory.BUILD), STEPS)
     lines = heard(story)
-    story.expect_rows(end_reason(story, process) == "reader failed", lines.count(f"reader broken failed on output {process.id}") == 1, detail=lines)
+    story.expect_rows(end_reason(story, process) == "reader failed", lines.count(f"Reader broken failed on output {process.id}; the full output stays readable") == 1, detail=lines)
     story.expect_text(f"output read {process.id} --all", "step 10", actor=story.agent)

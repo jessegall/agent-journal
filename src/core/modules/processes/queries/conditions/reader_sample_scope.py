@@ -2,11 +2,11 @@ from dataclasses import dataclass
 
 from engine.database.statement import Statement
 
-PART_COMMAND = "coalesce(nullif(command, ''), text)"
 from engine.query.conditions.equal import Equal
 from engine.query.select import Select
 from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.query.conditions.all_of import AllOf
+from core.modules.processes.queries.conditions.command_matches import PART_COMMAND
 
 
 @dataclass(frozen=True)

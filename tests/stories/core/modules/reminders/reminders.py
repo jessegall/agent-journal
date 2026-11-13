@@ -62,7 +62,7 @@ def test_a_reminder_with_a_block_holds_the_agent_until_its_condition_comes_true(
     story.expect_success('reminder make "Close the task" --every-minutes 5 --once --block task-closed --block-subject 1 --environment main', actor=story.agent)
     story.advance(timedelta(minutes=6))
     read_lines(story)
-    story.expect_hook_refusal("s-1", EDIT, "reminder:1 holds you")
+    story.expect_hook_refusal("s-1", EDIT, "reminder:1 is holding you")
     story.run("task start 1", actor=story.agent)
     story.run('task close 1 --outcome "done"', actor=story.agent)
     story.expect_hook_allowed("s-1", EDIT)

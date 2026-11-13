@@ -47,7 +47,7 @@ def test_a_new_main_session_hears_a_comment_sent_to_its_worker(replacement):
     story, worker, main = replacement
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
-    story.expect_text(f"agent-line list --agent {main.id}", f"worker:{agent_number(story, worker.id)} was also told message:1")
+    story.expect_text(f"agent-line list --agent {main.id}", f"worker:{agent_number(story, worker.id)} also got message:1")
 
 
 def test_a_main_session_in_another_environment_does_not_take_over_a_worker(delivered_story):

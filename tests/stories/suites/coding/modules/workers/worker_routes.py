@@ -80,7 +80,7 @@ def test_route_beats_the_split(split_story, split_viewer):
     story.expect_success('worker-route make --program codex --tags networking,linux --environment main', actor=story.agent)
     expect_program(story, dispatch(story), 'codex', 'gpt-6.1-terra')
     story.run_listeners()
-    story.expect_text('chat-mark list --json', 'route 1', 'networking', 'linux')
+    story.expect_text('chat-mark list --json', 'Route 1', 'networking', 'linux')
 
 
 def test_first_route_wins_by_position(split_story):
@@ -88,7 +88,7 @@ def test_first_route_wins_by_position(split_story):
     first = story.new_row_id('worker-route make --program codex --tags linux --environment main', actor=story.agent)
     second = story.new_row_id('worker-route make --program claude --tags linux --environment main', actor=story.agent)
     story.expect_success('task tag 1 linux --confirm', actor=story.agent)
-    story.expect_text('worker split --task 1', f'route {first}', 'codex')
+    story.expect_text('worker split --task 1', f'Route {first}', 'codex')
     story.expect_success(f'worker-route move {second} --to 1', actor=story.agent)
     expect_program(story, dispatch(story), 'claude')
     story.expect_text('worker-route list', 'claude', 'codex')
@@ -157,7 +157,7 @@ def test_strict_route_refuses_when_its_program_is_out_non_strict_uses_split(spli
     outage_id, ends_at = outage(story)
     set_split(story, viewer=split_viewer)
     expect_program(story, dispatch(story), 'claude')
-    story.expect_text(f'agent-line list --agent {story.agent.id}', 'route 1', 'task 1', 'claude')
+    story.expect_text(f'agent-line list --agent {story.agent.id}', 'Route 1', 'task 1', 'claude')
     story.expect_text('worker-route show 1', 'codex', actor=story.agent)
     story.expect_text(f'provider-outage show {outage_id}', 'codex', ends_at, actor=story.agent)
 
@@ -190,7 +190,7 @@ def test_worker_split_previews_a_task(split_story):
     story = split_story
     story.expect_success('task tag 1 preview --confirm', actor=story.agent)
     route = story.new_row_id('worker-route make --program codex --tags preview --environment main', actor=story.agent)
-    story.expect_text('worker split --task 1', 'codex', 'gpt-6.1-terra', f'route {route}')
+    story.expect_text('worker split --task 1', 'codex', 'gpt-6.1-terra', f'Route {route}')
     story.expect_text('worker-worktree list', 'nothing found')
     story.expect_rows(story.story_rows(Agent, role="worker") == ())
     story.expect_text('task show 1', 'state: open')
@@ -201,7 +201,7 @@ def test_task_assign_holds_the_route(split_story):
     worker = dispatch(story, flags='--program claude')
     route = story.new_row_id('worker-route make --program codex --tags assigned --environment main', actor=story.agent)
     task = new_task(story, 'Assigned task', '--tag assigned --confirm')
-    story.expect_refusal(f'task assign {task} --to {agent_number(story, worker.id)}', f'route {route}', actor=story.agent)
+    story.expect_refusal(f'task assign {task} --to {agent_number(story, worker.id)}', f'Route {route}', actor=story.agent)
     story.expect_absent(f"task info {task}", f"assigned to: agent {worker.id}")
 
 
@@ -214,7 +214,7 @@ def test_task_assign_holds_the_route_started_task_is_released_too(split_story):
     claude = dispatch(story, str(task_id), '--program claude')
     queued = new_task(story, 'Codex follow-up')
     story.expect_success(f'task assign {queued} --to {agent_number(story, worker.id)}', actor=story.agent)
-    story.expect_refusal(f'task assign 1 --to {agent_number(story, claude.id)}', f'route {route}', actor=story.agent)
+    story.expect_refusal(f'task assign 1 --to {agent_number(story, claude.id)}', f'Route {route}', actor=story.agent)
     story.expect_text('task show 1', f'holder_id: {worker.id}', 'state: started')
 
 
@@ -247,7 +247,7 @@ def protected_route_story(split_story):
 def test_agent_naming_another_program_is_refused_before_git(protected_route_story):
     story, route = protected_route_story
     with patch.object(WorktreeGit, 'git', side_effect=AssertionError('route must be checked before git')):
-        story.expect_refusal('worker dispatch --test-command python=pytest 1 --program claude', f'route {route}', actor=story.agent)
+        story.expect_refusal('worker dispatch --test-command python=pytest 1 --program claude', f'Route {route}', actor=story.agent)
     story.expect_text('worker-worktree list', 'nothing found')
     story.expect_rows(not list((story.home.folder.parent / 'project' / '.journal' / 'worktrees').glob('*/*')))
 
@@ -263,7 +263,7 @@ def test_agent_naming_another_program_goes_through_once_the_user_switches_the_ro
 
 def test_agent_naming_another_program_is_refused_before_git_explicit_skip_is_logged(protected_route_story):
     story, route = protected_route_story
-    story.expect_refusal('worker dispatch --test-command python=pytest 1 --program claude', 'route 1', actor=story.agent)
+    story.expect_refusal('worker dispatch --test-command python=pytest 1 --program claude', 'Route 1', actor=story.agent)
     confirmed_skip(story, "workers.route-holds", story.agent, "The user asked for a comparison")
     worker = dispatch(story, flags='--program claude --skip-guard workers.route-holds --skip-reason "The user asked for a comparison"')
     expect_program(story, worker, 'claude')
@@ -324,7 +324,7 @@ def test_job_to_a_known_worker_stays_on_its_program(unmerged_worker_story):
     arguments = ['worker', 'dispatch', str(task_id), '--model', 'sonnet']
     story.expect_hook_refusal('s-1', HookSamples.shell(f'journal worker dispatch {task_id} --model sonnet', ShellPart('journal', CommandCategory.JOURNAL, arguments, subcommand='worker')),
                               f'worker:{agent_number(story, worker.id)} changed these files')
-    story.expect_refusal(f'worker send {agent_number(story, worker.id)} --wait --task {task_id}', 'route 1', actor=story.agent)
+    story.expect_refusal(f'worker send {agent_number(story, worker.id)} --wait --task {task_id}', 'Route 1', actor=story.agent)
     confirmed_skip(story, "workers.route-holds", story.agent, "Keep the existing worker for this comparison")
     story.expect_success(f'worker send {agent_number(story, worker.id)} --wait --task {task_id} --skip-guard workers.route-holds '
                          '--skip-reason "Keep the existing worker for this comparison"', actor=story.agent)

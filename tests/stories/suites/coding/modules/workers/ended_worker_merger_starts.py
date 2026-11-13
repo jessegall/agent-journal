@@ -16,7 +16,7 @@ QUESTION = 'worker ask "the build tool is missing" --about tool'
 
 def merger_has_work(story) -> bool:
     with story.container.get(Scopes).read_scope((), None, 1):
-        return story.container.get(MergerWork).waits()
+        return story.container.get(MergerWork).has_waiting_work()
 
 
 def is_with_main_agent(story, worker_id: int) -> bool:

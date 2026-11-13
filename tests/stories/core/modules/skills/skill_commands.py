@@ -20,7 +20,7 @@ def current_digest(story, skill: str) -> str:
 def test_require_makes_a_skill_due_for_an_agent(new_story):
     story = started(new_story)
     story.expect_success(f"skill require {story.agent.id} journal-notes", "load this first with the Skill tool: journal-notes")
-    story.expect_success(f"agent-skill list --agent {story.agent.id}", f"3  {story.agent.id}  journal-notes  due")
+    story.expect_success(f"agent-skill list --agent {story.agent.id}", f"2  {story.agent.id}  journal-notes  due")
 
 
 def test_require_does_nothing_for_a_skill_the_agent_holds_loaded_in_its_current_text(required_notes_skill):

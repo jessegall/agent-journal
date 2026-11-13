@@ -1,6 +1,6 @@
 from collections.abc import Mapping, Sequence
 
-from engine.agent.merged_work import MergedWork
+from engine.agent.work.merged_work import MergedWork
 
 
 class AgentWork:

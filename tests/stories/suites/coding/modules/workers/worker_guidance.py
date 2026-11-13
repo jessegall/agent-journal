@@ -121,7 +121,7 @@ def test_the_passed_tests_line_of_an_interim_commit_says_what_status_says(new_st
     worker.story.run(COMMIT, actor=worker.worker)
     worker.story.run_listeners()
     worker.end_tests(0)
-    expect_voice(worker, next(line for line in worker.worker_lines() if "the tests of your commit passed" in line))
+    expect_voice(worker, next(line for line in worker.worker_lines() if "Your commit's tests passed" in line))
 
 
 def test_a_clash_names_the_clashed_files_at_status_and_in_its_line(clashed):

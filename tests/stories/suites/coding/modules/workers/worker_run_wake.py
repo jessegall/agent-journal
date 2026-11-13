@@ -7,7 +7,7 @@ from engine.command.bus import Bus
 from engine.enums.command_category import CommandCategory
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 
@@ -31,11 +31,11 @@ def start_background_run(story, worker):
 
 
 def expect_run_ended_line(story, worker, run) -> None:
-    story.expect_text(f"agent-line list --agent {worker.id}", f"your run {run.id} ended", "workers.worker-job")
+    story.expect_text(f"agent-line list --agent {worker.id}", f"Your run {run.id} ended", "workers.worker-job")
 
 
 def expect_run_ended_line_absent(story, worker, run) -> None:
-    story.expect_absent(f"agent-line list --agent {worker.id}", f"your run {run.id} ended")
+    story.expect_absent(f"agent-line list --agent {worker.id}", f"Your run {run.id} ended")
 
 
 def test_a_worker_that_asked_then_started_a_run_and_stopped_is_woken_when_the_run_ends(new_story):

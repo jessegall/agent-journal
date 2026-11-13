@@ -52,7 +52,7 @@ def test_next_before_the_step_is_taken_up_is_refused_with_the_follow_command(run
 
 def test_a_step_not_taken_up_holds_the_agents_edits(running_release):
     story = running_release
-    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "sequence:1 step 1 waits")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "sequence:1 step 1 is waiting")
 
 
 def test_abandoning_names_the_steps_left_undone_and_goes_through_with_sure(running_release):
@@ -138,7 +138,7 @@ def test_a_step_that_holds_edits_refuses_them_until_the_next_step(new_story):
     story = triggered_story(new_story, guards=[{"file_edits_allowed": False, "allowed_commands": []}])
     story.run("sequence run 1", actor=story.agent)
     story.run("sequence follow", actor=story.agent)
-    story.expect_hook_refusal("s-1", HookSamples.edit("a.py"), "holds file edits")
+    story.expect_hook_refusal("s-1", HookSamples.edit("a.py"), "blocks file edits")
     story.run("sequence next", actor=story.agent)
     story.run("sequence follow", actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("a.py"))
@@ -171,7 +171,7 @@ def test_a_step_guard_changed_between_two_hooks_is_seen_on_the_next_hook(new_sto
     story.run("sequence follow", actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("a.py"))
     story.run(f"sequence edit 1 --step-guards {shlex.quote(json.dumps([{'file_edits_allowed': False, 'allowed_commands': []}]))}", actor=story.user)
-    story.expect_hook_refusal("s-1", HookSamples.edit("a.py"), "holds file edits")
+    story.expect_hook_refusal("s-1", HookSamples.edit("a.py"), "blocks file edits")
 
 
 def test_step_guards_that_do_not_read_are_refused_when_written(new_story):

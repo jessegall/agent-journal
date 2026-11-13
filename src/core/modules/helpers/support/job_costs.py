@@ -1,11 +1,11 @@
 from core.modules.drivers.models.helper_job import HelperJob
+from core.modules.drivers.support.helper_reuse import NEWEST_JOBS
 from core.modules.helpers.support.job_cost import JobCost
 from core.modules.helpers.support.profile_job_costs import ProfileJobCosts
 from core.modules.usage.support.status_files import StatusFiles
 from engine.query.queries import Queries
 from engine.query.query import Query
 
-NEWEST_JOBS = 50
 
 
 class JobCosts:

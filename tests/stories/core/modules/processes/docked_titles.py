@@ -29,7 +29,7 @@ def docked_chain(new_story):
 def test_a_chain_already_docked_requests_a_title_at_once_and_holds_after_five_tools(docked_chain):
     story, process = docked_chain
     reply = story.hook("s-1", READ)
-    expect_reply_line(reply, f"output {process.id} has its raw command as its title")
+    expect_reply_line(reply, f"Output {process.id} is titled by its raw command")
     for _ in range(5):
         story.advance(timedelta(seconds=1))
         story.hook("s-1", EDIT)
@@ -52,6 +52,6 @@ def test_a_reader_title_that_is_the_whole_chain_still_needs_a_name(new_story):
     process = start_process(story, CHAIN, category=CommandCategory.BUILD)
     story.expect_success(f"dock add processes.output process {process.id} --environment main", actor=story.agent)
     reply = story.hook("s-1", READ)
-    expect_reply_line(reply, f"output {process.id} has its raw command as its title")
+    expect_reply_line(reply, f"Output {process.id} is titled by its raw command")
     card = json.loads(story.run(f"process card {process.id} --json", actor=story.agent).output_text)
     expect_row(card, title="Removing files")

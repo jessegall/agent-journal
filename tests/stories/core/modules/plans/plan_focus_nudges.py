@@ -7,7 +7,7 @@ from tests.stories.core.modules.plans.support.started_plans import ThreeStartedP
 from tests.stories.core.support.plan_steps import started_plan
 from tests.stories.support.story_checks import expect_value_with, expect_value_without_line
 
-SUGGESTION = "plans 1, 2, 3 are started; your focus is plan 1, the default"
+SUGGESTION = "Plans 1, 2, 3 started; your default focus is plan 1"
 VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])).with_fields(event="post_tool_use")
 
 
@@ -34,8 +34,8 @@ def test_d2_d3_an_agent_with_a_focus_reads_a_line_for_a_task_of_another_plan_and
     story = new_story(fixture=ThreeStartedPlans)
     story.run("plan focus 3", actor=story.agent)
     story.run("task depend 5 --on 4", actor=story.user)
-    expect_value_with(lines_after(story, "task start 1"), "task 1 is of plan 1; your focus is plan 3")
-    expect_value_without_line(lines_after(story, "task start 4"), "task 4 is of plan 2; your focus is plan 3")
+    expect_value_with(lines_after(story, "task start 1"), "Task 1 belongs to plan 1; your focus is plan 3")
+    expect_value_without_line(lines_after(story, "task start 4"), "Task 4 belongs to plan 2; your focus is plan 3")
 
 
 def test_d5_a_task_outside_any_plan_gives_no_line(new_story):
@@ -43,14 +43,14 @@ def test_d5_a_task_outside_any_plan_gives_no_line(new_story):
     task_id = story.new_row_id('task make "Loose job" --environment main', actor=story.user)
     lines = lines_after(story, f"task start {task_id}")
     expect_value_without_line(lines, SUGGESTION)
-    expect_value_without_line(lines, f"task {task_id} is of plan")
+    expect_value_without_line(lines, f"Task {task_id} belongs to plan")
 
 
 def test_d8_starting_a_plan_while_others_are_started_names_the_started_plans(new_story):
     story = new_story(fixture=ThreeStartedPlans)
     started_plan(story, 4, "Yard")
     lines = story.hook("s-1", journal_line("plan start 4")).lines
-    expect_value_with(lines, "plans 1, 2, 3, 4 are started; your focus is plan 1, the default")
+    expect_value_with(lines, "Plans 1, 2, 3, 4 started; your default focus is plan 1")
 
 
 def test_c10_a_plan_with_nothing_that_can_start_names_each_task_it_waits_on(new_story):
@@ -59,4 +59,4 @@ def test_c10_a_plan_with_nothing_that_can_start_names_each_task_it_waits_on(new_
     story.expect_success("task start 1", actor=story.agent)
     story.run('task block 1 --reason "waits for a key"', actor=story.agent)
     lines = story.hook("s-1", journal_line("task block 1")).lines
-    expect_value_with(lines, "plan 1: no task can start; 2 wait or are blocked: task 1, which is blocked with a reason; task 2, which waits on a user")
+    expect_value_with(lines, "plan 1: no task can start; 2 are waiting or blocked: task 1, which is blocked with a reason; task 2, which waits on a user")

@@ -7,7 +7,7 @@ from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.environments.models.environment import Environment
 from suites.coding.modules.workers.commands.report_merge_hook.report_merge_hook import ReportMergeHook
-from suites.coding.modules.workers.commands.support.worktree_commands import WorktreeCommands
+from suites.coding.modules.workers.support.worktree_commands import WorktreeCommands
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.merge_followup import STEP_FINISHED
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -34,5 +34,5 @@ class MergeHooksListener(CommitListener[Moved[Worktree]]):
         for line in lines:
             outcome = self.commands.merge_hook(folder, worktree, line)
             if outcome.state != STEP_FINISHED:
-                self.bus.run(ReportMergeHook(worktree.session_agent_id, line, outcome.suggestion or outcome.reason), Actor.core(), cause_id=logged.id,
+                self.bus.run(ReportMergeHook(worktree.session_agent_id, line), Actor.core(), cause_id=logged.id,
                              environment_id=worktree.environment_id)

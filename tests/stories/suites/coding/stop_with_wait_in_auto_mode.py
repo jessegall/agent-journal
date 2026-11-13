@@ -20,14 +20,14 @@ def test_in_auto_mode_a_stop_with_a_started_task_is_refused_while_a_wait_is_open
     story = new_story(fixture=StartedTaskBuilder)
     story.run("setting set journal.suites.coding.auto-mode on --environment main")
     declare_wait(story, wait)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "task:1 is in hand: carry on")
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "task:1 is in hand: carry on")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "task:1 is in hand: continue")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "task:1 is in hand: continue")
 
 
 def test_in_auto_mode_a_stop_with_a_started_task_is_refused_without_a_wait(new_story):
     story = new_story(fixture=StartedTaskBuilder)
     story.run("setting set journal.suites.coding.auto-mode on --environment main")
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "task:1 is in hand: carry on")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "task:1 is in hand: continue")
 
 
 @pytest.mark.parametrize("move", ['task block 1 --reason "waits for the price list"', 'task close 1 --outcome "done"', 'task cancel 1 --reason "not needed"'])
@@ -35,6 +35,6 @@ def test_in_auto_mode_the_stop_is_allowed_once_the_task_is_blocked_completed_or_
     story = new_story(fixture=StartedTaskBuilder)
     story.run("setting set journal.suites.coding.auto-mode on --environment main")
     story.run(WAITS["stuck report"], actor=story.agent)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "task:1 is in hand: carry on")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "task:1 is in hand: continue")
     story.run(move, actor=story.agent)
     story.expect_hook_silent("s-1", HookSamples.stop())

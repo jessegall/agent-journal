@@ -3,7 +3,7 @@ from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.enums.command_category import CommandCategory
 from core.modules.processes.commands.start_process.start_process import StartProcess
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from tests.stories.core.modules.processes.support.process_samples import ended_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 

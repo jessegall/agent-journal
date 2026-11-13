@@ -12,7 +12,7 @@ EXPLANATION_TERMS = {
     "features.triggers": ("modules", "suite"),
     "plans.test_commands": ("proof", "--test"),
     "workers.builder_may_queue": ("queue", "permission"),
-    "workers.mode": ("person", "environment", "driver choose"),
+    "workers.mode": ("user", "environment", "driver choose"),
     "workers.test_command": ("proof", "--test"),
     "workers.test_command_proof": ("argument", "command", "--test"),
 }

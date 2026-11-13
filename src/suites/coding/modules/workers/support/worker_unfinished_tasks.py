@@ -9,8 +9,8 @@ from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from suites.coding.modules.workers.support.worker_round import WorkerRound
 from suites.coding.modules.workers.support.worker_steps import WorkerSteps
+from suites.coding.modules.workers.support.work_units import UNIT_TASKS_REASON
 
-UNIT_TASKS_REASON = "a worker's unit is every task assigned to it, which can hold more than fifty"
 
 
 NAMED_TASKS = 3

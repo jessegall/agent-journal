@@ -50,7 +50,7 @@ def test_a_worker_cannot_choose_for_another_agent(worker_with_task):
 
 def test_a_task_that_belongs_to_another_agent_is_refused(worker_with_task):
     story, worker, second = worker_with_task
-    story.expect_refusal(f"task next {second}", f"reserved for agent {worker.id}", actor=story.agent)
+    story.expect_refusal(f"task next {second}", f"task {second} is assigned to worker {agent_number(story, worker.id)}", actor=story.agent)
 
 
 @pytest.mark.parametrize(("line", "state"), [('task cancel {task} --reason "No longer needed"', "cancelled"), ('task block {task} --reason "Waits on a key"', "blocked")])

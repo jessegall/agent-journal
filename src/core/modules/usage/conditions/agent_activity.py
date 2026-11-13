@@ -1,5 +1,5 @@
 from engine.database.statement import Statement
-from engine.agent.agent_work import AgentWork
+from engine.agent.work.agent_work import AgentWork
 from core.modules.usage.conditions.agent_activity_condition import AgentActivityCondition
 
 

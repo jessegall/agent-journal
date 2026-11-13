@@ -7,7 +7,7 @@ import pytest
 from engine.enums.command_category import CommandCategory
 from engine.database.database import Database
 from engine.database.statement import Statement
-from core.modules.processes.commands.support.part_spec import PartSpec
+from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.migrations.m030_stock_reader_catalog import StockReaderCatalogMigration
 from core.modules.processes.migrations.m037_more_tool_stock_readers import FIRST_BATCH_READERS, NEW_READERS
 from core.modules.processes.migrations.m049_pytest_listing_counts import PytestListingCountsMigration

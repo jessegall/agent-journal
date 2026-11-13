@@ -13,8 +13,8 @@ from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_nudges import PROOF_RUN_STUCK
+from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test_handler import LINE_SOURCE
 
-LINE_SOURCE = "workers"
 
 
 class EndStuckProofRunHandler(Handler[EndStuckProofRun, None]):

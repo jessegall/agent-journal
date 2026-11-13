@@ -4,7 +4,7 @@ from engine.query.conditions.among import Among
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from engine.query.query import Query
-from engine.query.kept_row_changes import KeptRowChanges
+from engine.query.rows.kept_row_changes import KeptRowChanges
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message

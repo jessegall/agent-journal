@@ -28,12 +28,12 @@ def test_a_worker_refused_by_a_plugin_five_times_is_named_to_the_main_agent(work
         story.expect_refusal(step, REASON, actor=worker)
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "refused")
     story.expect_refusal(step, REASON, actor=worker)
-    story.expect_text(f"agent-line list --agent {story.agent.id} --json", f"worker:{agent_number(story, worker.id)} refused 5 times on task:1")
+    story.expect_text(f"agent-line list --agent {story.agent.id} --json", f"worker:{agent_number(story, worker.id)} hit 5 refusals on task:1")
     story.expect_refusal(step, REASON, actor=worker)
-    expect_count_output_2(story, f"agent-line list --agent {story.agent.id}", "refused 5 times", 1)
+    expect_count_output_2(story, f"agent-line list --agent {story.agent.id}", "hit 5 refusals", 1)
     story.advance(timedelta(minutes=10))
     story.expect_refusal(step, REASON, actor=worker)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "refused 7 times")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "hit 7 refusals")
 
 
 def test_an_allowed_stop_clears_the_refusal_count(working_story):
@@ -48,4 +48,4 @@ def test_an_allowed_stop_clears_the_refusal_count(working_story):
         story.expect_hook_refusal(session, HookSamples.stop(), "Task 1 is not finished")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "refused")
     story.expect_hook_refusal(session, HookSamples.stop(), "Task 1 is not finished")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "refused 5 times")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "hit 5 refusals")
