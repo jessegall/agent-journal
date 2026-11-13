@@ -140,7 +140,7 @@ def end_run(story: Story, process: Process, text: str, exit_code: int = 0) -> No
     bus.run(EndProcess(process.id, exit_code, max(len(text), BYTES_LONG), text.count("\n")), actor, environment_id=1)
 
 
-def printed_and_read(story: Story, process: Process, text: str) -> None:
+def emitted_read(story: Story, process: Process, text: str) -> None:
     story.container.get(OutputFolder).write_output(process.id, 1, text)
     OutputReading()(story.container)
 

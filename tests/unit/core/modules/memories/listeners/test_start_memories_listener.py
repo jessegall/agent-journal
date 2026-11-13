@@ -17,7 +17,7 @@ class ActiveMemories:
     def absent_memories(self, agent_id: int) -> "ActiveMemories":
         return self
 
-    def every_by_weight(self, reason: str) -> list[SimpleNamespace]:
+    def all_weighted(self, reason: str) -> list[SimpleNamespace]:
         return [SimpleNamespace(memory_id=memory_id) for memory_id in MEMORY_IDS]
 
 

@@ -4,7 +4,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.hang_watch import MISSING_GROUP, FakeGroupCpuTime, watch_tick
 from tests.stories.core.modules.processes.support.cadence_probe import (TICK, HelperBesideWorker, agent_run, cadence_lines, cadence_tick, expect_informed,
-                                                                       printed, tick_named, ticks, told, tree_of, worker_agent)
+                                                                       emitted, tick_named, ticks, informed, tree_of, worker_agent)
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, started_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.modules.processes.support.process_nudges import SILENT_RUN
@@ -19,11 +19,11 @@ def test_a_silent_command_started_again_and_again_is_told_once_per_run_and_refus
     heard: list[str] = []
     runs = []
     for _ in range(2):
-        heard += told(story, MAIN)
+        heard += informed(story, MAIN)
         runs.append(started_run(story, BUILD_ALIAS, CommandCategory.BUILD))
         ticks(story, 70)
         end_run(story, runs[-1], "")
-    heard += told(story, MAIN)
+    heard += informed(story, MAIN)
     refused = story.hook(MAIN, BUILD_START)
     heard += list(refused.lines)
     story.expect_rows(sum("Alias build-npm printed nothing for 30s" in line for line in heard) == len(runs), "ran silent twice" in refused.refusal,
@@ -41,9 +41,9 @@ def test_a_dot_every_25_seconds_added_to_quiet_the_notice_and_a_program_printing
     for elapsed in range(10, 280, 10):
         if elapsed % 25 < 10:
             dots += "."
-            printed(story, dotted, dots)
+            emitted(story, dotted, dots)
         ticks(story, 10, blank, every=10, text="   \n")
-    lines = cadence_lines(told(story, MAIN))
+    lines = cadence_lines(informed(story, MAIN))
     story.expect_rows(lines == [], detail="\n".join(lines))
 
 
@@ -60,7 +60,7 @@ def test_a_workers_long_silent_build_is_told_and_warned_but_never_asked_the_five
         watch_tick(story)
         cadence_tick(story)
         tick_named(story, "output checks")
-    lines = told(story, worker.session)
+    lines = informed(story, worker.session)
     story.expect_rows(any(f"Output {build.id} printed nothing for 30s" in line for line in lines),
                       any(f"Output {build.id} printed nothing for 150s and uses no CPU" in line for line in lines),
                       not any("still runs after" in line for line in lines), detail="\n".join(lines))

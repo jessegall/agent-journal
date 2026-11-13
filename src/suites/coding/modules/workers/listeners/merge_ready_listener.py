@@ -25,7 +25,7 @@ class MergeReadyListener(CommitListener[Moved[Worktree]]):
         self.bus, self.settings, self.lines, self.runs = bus, settings, lines, runs
 
     def handle(self, event: Moved[Worktree], logged: LoggedEvent) -> None:
-        if not self.settings.flag(MERGER_ENABLED) or not event.row.is_merge_ready or self.runs.holds_merge(event.row.id):
+        if not self.settings.flag(MERGER_ENABLED) or not event.row.is_merge_ready or self.runs.has_merge(event.row.id):
             return
         if self.bus.run(CloseTakenInWorktree(event.row.id), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id):
             return

@@ -46,7 +46,7 @@ def count_of(select: Select) -> ScalarSubselect:
     return ScalarSubselect(select.selecting(CountAll()))
 
 
-def held_started_tasks() -> Select:
+def holder_started_tasks() -> Select:
     return Select("tasks").matching(ColumnCompare("tasks.holder_id", "=", "agents.id")).matching(Equal("tasks.state", "started")).ordered("tasks.id", True).sliced(1, 0)
 
 
@@ -93,8 +93,8 @@ def job_text(table: str, column: str, name: str) -> Aliased:
 
 AGENT_CARDS_SELECT = Select("agents").selecting(
     *(Column(f"agents.{name}") for name in AGENT_COLUMNS),
-    Aliased(ScalarSubselect(held_started_tasks().selecting(Column("tasks.id"))), "started_task_id"),
-    Aliased(or_empty(ScalarSubselect(held_started_tasks().selecting(Column("tasks.title")))), "started_task_title"),
+    Aliased(ScalarSubselect(holder_started_tasks().selecting(Column("tasks.id"))), "started_task_id"),
+    Aliased(or_empty(ScalarSubselect(holder_started_tasks().selecting(Column("tasks.title")))), "started_task_title"),
     Aliased(CARD_TASKS, "tasks"),
     Aliased(while_running(ScalarSubselect(OPEN_BLOCKS.selecting(FunctionCall(SqlFunction.MIN, [Column("agent_blocks.created_at")])))), "block_started_at"),
     Aliased(while_running(ScalarSubselect(OPEN_BLOCKS.selecting(Column("agent_blocks.nudge_text")).ordered("agent_blocks.id", False).sliced(1, 0))), "block_reason"),

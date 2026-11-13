@@ -36,7 +36,7 @@ def rows(worker: StoryWorker, line: str) -> list[dict[str, object]]:
     return json.loads(worker.story.run(line, actor=worker.story.agent).output_text)["rows"]
 
 
-def proofs_by_task(worker: StoryWorker) -> dict[int, dict[str, object]]:
+def task_proofs(worker: StoryWorker) -> dict[int, dict[str, object]]:
     return {row["task_id"]: row for row in rows(worker, "proof list --json --oldest --limit 20")}
 
 
@@ -129,7 +129,7 @@ def test_172_the_journal_starts_the_run_itself_on_the_head_of_the_base_branch_an
 def test_173_the_run_runs_each_committed_proof_of_the_window_by_its_own_command_once_for_each_proof(new_story, monkeypatch):
     worker = checkpoint_worker(new_story, monkeypatch, TEST_LINE, TEST_LINE, SECOND_TEST_LINE)
     merge(worker)
-    commands, lines = {task_id: proof["test_command"] for task_id, proof in proofs_by_task(worker).items()}, run_lines(worker)
+    commands, lines = {task_id: proof["test_command"] for task_id, proof in task_proofs(worker).items()}, run_lines(worker)
     worker.story.expect_rows(lines.count(commands[1]) == 2, lines.count(commands[3]) == 1, detail=f"{commands}, {lines}")
 
 
@@ -155,7 +155,7 @@ def test_176_a_proof_with_no_test_is_not_run_and_the_main_agent_has_its_one_line
 def test_177_a_pass_checks_the_proofs_logs_on_each_task_of_the_window_and_tells_the_main_agent_once(running_checkpoint):
     worker = running_checkpoint
     worker.end_all_tests()
-    states = {task_id: proof["state"] for task_id, proof in proofs_by_task(worker).items()}
+    states = {task_id: proof["state"] for task_id, proof in task_proofs(worker).items()}
     for task_id in WINDOW_TASKS:
         worker.story.expect_text(f"task-log list --task {task_id}", PASSED_LOG, actor=worker.story.agent)
     passed_lines = [line for line in worker.main_agent_lines() if PASSED_LINE in line]

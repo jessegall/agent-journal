@@ -25,13 +25,13 @@ class RequestLog:
     def append(self, entry: RequestLogEntry) -> None:
         self.lines.append(entry.text())
 
-    def taken(self) -> tuple[RequestLogEntry, ...]:
+    def claimed(self) -> tuple[RequestLogEntry, ...]:
         return tuple(entry for entry in (self.entry(line) for line in self.lines.taken_lines()) if entry is not None)
 
-    def replace_taken(self, entries: tuple[RequestLogEntry, ...]) -> None:
+    def replace_claimed(self, entries: tuple[RequestLogEntry, ...]) -> None:
         self.lines.replace_taken(tuple(entry.text() for entry in entries))
 
-    def written(self, unwritten: tuple[RequestLogEntry, ...] = ()) -> None:
+    def saved(self, unwritten: tuple[RequestLogEntry, ...] = ()) -> None:
         self.lines.move_aside(tuple(entry.text() for entry in unwritten))
 
     @staticmethod

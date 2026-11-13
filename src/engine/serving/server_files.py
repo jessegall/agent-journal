@@ -116,13 +116,13 @@ class ServerFiles:
         self.tunnel_pid_file.unlink(missing_ok=True)
 
     def phase(self) -> ServerPhase:
-        if self.is_fresh(self.maintenance) or self.is_fresh(self.restart_mark):
+        if self.is_recent(self.maintenance) or self.is_recent(self.restart_mark):
             return ServerPhase.UPDATING
-        if self.is_fresh(self.start_mark):
+        if self.is_recent(self.start_mark):
             return ServerPhase.STARTING
         return ServerPhase.READY
 
-    def is_fresh(self, mark: Path) -> bool:
+    def is_recent(self, mark: Path) -> bool:
         try:
             return self.clock.epoch_seconds() - mark.stat().st_mtime < MARK_FRESH_SECONDS
         except FileNotFoundError:

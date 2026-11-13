@@ -32,11 +32,11 @@ class UnpassedCheckpoints:
         if phase is None:
             return None
         checkpoint = self.first_unpassed(phase.plan_id)
-        if checkpoint is None or phase.position <= checkpoint.phase_position or self.holds(actor_id, checkpoint):
+        if checkpoint is None or phase.position <= checkpoint.phase_position or self.contains(actor_id, checkpoint):
             return None
         return checkpoint
 
-    def holds(self, actor_id: int, checkpoint: PlanTask) -> bool:
+    def contains(self, actor_id: int, checkpoint: PlanTask) -> bool:
         windows = self.checkpoints.windows(checkpoint.plan_id)
         open_ids = windows.unfinished_ids(next(phase for phase in windows.phases if phase.id == checkpoint.phase_id))
         return bool(open_ids) and set(open_ids).issubset(self.units.unit(actor_id).task_ids)

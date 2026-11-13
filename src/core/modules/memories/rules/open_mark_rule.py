@@ -51,6 +51,6 @@ class OpenMarkRule(DriverRule):
             return RuleAnswer.allowed()
         tool_uses = self.settings.numbers(MARK_TOOL_USES_SETTING)
         uses = dict(zip(marks, tool_uses)).get(reached, tool_uses[-1])
-        memories = self.memories.every_by_weight(WEIGHED_REASON)
+        memories = self.memories.all_weighted(WEIGHED_REASON)
         return RuleAnswer.with_nudges(WEIGH_MEMORIES.nudge(percent=reached, uses=uses, count=len(memories), memories=",".join(str(memory.memory_id) for memory in memories))).running(
             OpenMemoryMark(hook.agent_id, reached), BlockUntil(hook.agent_id, WEIGH_FIRST.nudge(), MemoriesWeighed(), Interval(ToolUseSpan(uses)), WEIGH_COUNTDOWN.nudge("{left}")))

@@ -129,7 +129,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         return WorkerLaunch(worker, claimed, self.worker_command.command(worker, claimed, environment, self.queries.query(Task).find(claimed.task_id)))
 
     def configure(self, command: DispatchWorker, worker: Agent, environment: Environment, fallback: WorkerRouteFallback | None, context: Context) -> None:
-        test_commands = self.presets.with_named(environment.folder, command.test_commands)
+        test_commands = self.presets.with_matching(environment.folder, command.test_commands)
         if test_commands:
             self.bus.run_with_context(NameWorkerTests(worker.id, test_commands), context)
         if not command.sandboxed:

@@ -37,7 +37,7 @@ class PluginProcessKindLimits(ProcessKindLimits):
                   for plugin, _, environment in categories if plugin in plugins}
         rules: dict[tuple[str, str, int], KindRule] = {}
         for plugin, category, environment in categories:
-            declared = manifests[plugin].process_kind(category) if plugin in manifests else None
+            declared = manifests[plugin].process_category(category) if plugin in manifests else None
             if declared is None:
                 continue
             limit = values[(plugin, environment)].get(declared.at_once_setting)

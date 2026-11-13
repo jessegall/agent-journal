@@ -19,7 +19,7 @@ class RunSilences:
             return self.folder.run_silent_seconds(process.id, timestamp)
         return int(process.creation_timestamp().elapsed_seconds(timestamp))
 
-    def printed_nothing(self, part: ProcessPart) -> bool:
+    def is_silent(self, part: ProcessPart) -> bool:
         return not self.folder.part_bytes(part.process_id, part.position)
 
     def unread_seconds(self, process: Process, timestamp: Timestamp) -> int:

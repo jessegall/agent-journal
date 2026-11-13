@@ -37,5 +37,5 @@ class RunWorkerOperationSubcommand(Subcommand[RunWorkerOperation, str]):
         return RunWorkerOperation(operation)
 
     def waited_turn(self, operation: WorkerOperation) -> None:
-        if not TURN_WAIT.until(lambda: not self.operations.runs_before(operation.worker_id, operation.process_id)):
+        if not TURN_WAIT.until(lambda: not self.operations.runs_prior(operation.worker_id, operation.process_id)):
             raise Refusal(f"the update waited {int(TURN_WAIT.limit_seconds)} seconds for the worker's earlier command to end", "run journal worker update again once it ended")

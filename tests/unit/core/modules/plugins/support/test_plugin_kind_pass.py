@@ -18,12 +18,12 @@ def kind_pass(free: int | None) -> PluginKindPass:
 
 def test_an_admitted_run_takes_its_memory_from_the_free_total_for_the_rest_of_the_pass():
     memory = kind_pass(1000)
-    assert [memory.is_held(waiting(1), ()), memory.is_held(waiting(2), ())] == [False, False]
+    assert [memory.is_blocked(waiting(1), ()), memory.is_blocked(waiting(2), ())] == [False, False]
     memory.admitted(waiting(1))
-    assert memory.is_held(waiting(2), ()) is True
+    assert memory.is_blocked(waiting(2), ()) is True
 
 
 def test_memory_that_is_not_known_holds_no_run_back():
     memory = kind_pass(None)
     memory.admitted(waiting(1))
-    assert memory.is_held(waiting(2), ()) is False
+    assert memory.is_blocked(waiting(2), ()) is False

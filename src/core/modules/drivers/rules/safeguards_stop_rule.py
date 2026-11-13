@@ -30,11 +30,11 @@ class SafeguardsStopRule(DriverRule):
         stop = SafeguardsStop.read(hook.event)
         if stop is None:
             return RuleAnswer.allowed()
-        if self.is_woken_before_turn_ends(hook.agent_id):
+        if self.is_awakened_mid_turn(hook.agent_id):
             return RuleAnswer.allowed().running(ReportSafeguardsStop(hook.agent_id, stop.details, stop.request_id))
         return RuleAnswer.allowed().running(WakeSafeguardsStoppedAgent(hook.agent_id))
 
-    def is_woken_before_turn_ends(self, agent_id: int) -> bool:
+    def is_awakened_mid_turn(self, agent_id: int) -> bool:
         wake = self.queries.query(AgentLine).filter(session_agent_id=agent_id, source=WAKE_SOURCE).newest().first()
         if wake is None:
             return False

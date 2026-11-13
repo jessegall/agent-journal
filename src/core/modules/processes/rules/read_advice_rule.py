@@ -23,4 +23,4 @@ class ReadAdviceRule(DriverRule):
         kept = self.outputs.process_output(numbers[0]) if numbers else None
         if kept is None:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(*self.advice.advice(kept))
+        return RuleAnswer.with_nudges(*self.advice.hint(kept))

@@ -17,5 +17,5 @@ class OverviewBlocks:
     def oldest_open(self, agent_id: int) -> AgentBlock | None:
         return self.open_blocks(agent_id).oldest().first()
 
-    def is_held(self, agent_id: int) -> bool:
+    def is_blocked(self, agent_id: int) -> bool:
         return self.open_blocks(agent_id).exists()

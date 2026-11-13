@@ -36,11 +36,11 @@ class ImageTagHeld(StoryFixture):
             story.expect_hook_allowed("s-1", HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"])))
 
 
-def held_message(story) -> Message:
+def blocked_message(story) -> Message:
     return story.container.get(Queries).query(Message).newest().first()
 
 
-def has_open_tag_hold(story, message: Message) -> bool:
+def has_open_tag_block(story, message: Message) -> bool:
     return story.container.get(Queries).query(AgentBlock).filter(session_agent_id=story.agent.id, condition_text=f"journal message tag {message.id}").matching(IsNull("closed_at")).exists()
 
 
@@ -50,12 +50,12 @@ def expect_tag_clears(story, message, line, *parts):
     story.expect_rows(MessageCaptions.decoded(story.row(Message, message.id))["cart.png"] == "The cart total is wrong")
     story.expect_success('memory skip "Nothing to keep"', actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
-    story.expect_rows(not has_open_tag_hold(story, message))
+    story.expect_rows(not has_open_tag_block(story, message))
 
 
 def test_a_tag_in_a_shell_chain_during_memory_weighing_clears_its_due_mark(new_story):
     story = new_story(fixture=ImageTagHeld)
-    message = held_message(story)
+    message = blocked_message(story)
     line = f'cat notes && journal message tag {message.id} "cart.png" "The cart total is wrong"'
     expect_tag_clears(story, message, line, ShellPart("cat", CommandCategory.READ, ["notes"]), ShellPart("journal", CommandCategory.JOURNAL, ["message", "tag", str(message.id), "cart.png", "The cart total is wrong"]))
 
@@ -63,9 +63,9 @@ def test_a_tag_in_a_shell_chain_during_memory_weighing_clears_its_due_mark(new_s
 def test_a_tag_the_hold_did_not_see_as_its_command_still_ends_the_hold(new_story):
     # task 9355: message 118703 had its picture tagged twice and its tag hold still held every write
     story = new_story(fixture=ImageTagHeld)
-    message = held_message(story)
-    story.expect_rows(has_open_tag_hold(story, message))
+    message = blocked_message(story)
+    story.expect_rows(has_open_tag_block(story, message))
     story.expect_success(f'message tag {message.id} "cart.png" "The cart total is wrong"', actor=story.agent)
     story.run_listeners()
-    story.expect_rows(not has_open_tag_hold(story, message))
+    story.expect_rows(not has_open_tag_block(story, message))
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))

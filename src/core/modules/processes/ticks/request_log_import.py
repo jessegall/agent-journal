@@ -23,13 +23,13 @@ class RequestLogImport:
 
     def __call__(self, container: Container) -> None:
         log = container.get(RequestLog)
-        entries = self.placed(log.taken(), container.get(AgentRows))
+        entries = self.placed(log.claimed(), container.get(AgentRows))
         groups = [tuple(logged) for _, logged in groupby(sorted(entries, key=self.environment_id), key=self.environment_id)]
         kept: list[RequestLogEntry] = []
         for index, group in enumerate(groups):
             kept.extend(self.written_group(container, group))
-            log.replace_taken(tuple(entry for later in groups[index + 1:] for entry in later))
-        log.written(tuple(kept))
+            log.replace_claimed(tuple(entry for later in groups[index + 1:] for entry in later))
+        log.saved(tuple(kept))
 
     @staticmethod
     def placed(entries: tuple[RequestLogEntry, ...], agents: AgentRows) -> tuple[RequestLogEntry, ...]:

@@ -64,7 +64,7 @@ def failed_checkpoint(new_story, monkeypatch, output: str, *failing_lines: str) 
     return FailedOwnTest(worker, Actor(merger.id, ActorType.AGENT))
 
 
-def merge_again(worker: StoryWorker) -> None:
+def repeat_merge(worker: StoryWorker) -> None:
     """The worker asks for the merge of the task it handed in again, and that ask takes it in."""
     request_merge(worker.story, worker.worker)
     worker.story.run_listeners()
@@ -104,7 +104,7 @@ def repeated_hand_in(deferred) -> FailedOwnTest:
     of phase 1 is reached a second time and its second run goes."""
     deferred.story.expect_success(REPEATED_HAND_IN, actor=deferred.worker.worker)
     deferred.story.run_listeners()
-    merge_again(deferred.worker)
+    repeat_merge(deferred.worker)
     return deferred
 
 

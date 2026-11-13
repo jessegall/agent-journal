@@ -65,7 +65,7 @@ class Operations:
     def __init__(self, looks_until_ended: int) -> None:
         self.looks = looks_until_ended
 
-    def runs_before(self, worker_id: int, process_id: int) -> bool:
+    def runs_prior(self, worker_id: int, process_id: int) -> bool:
         self.looks -= 1
         return self.looks > 0
 

@@ -11,11 +11,11 @@ class EscalationResets:
     def __init__(self, marks: UnreadableMarks) -> None:
         self.marks = marks
 
-    def marked_keys(self, command_keys: Sequence[str]) -> frozenset[str]:
-        return self.marks.marked_among(command_keys)
+    def flagged_keys(self, command_keys: Sequence[str]) -> frozenset[str]:
+        return self.marks.flagged_among(command_keys)
 
-    def last_marked_among(self, command_keys: Sequence[str]) -> dict[str, Timestamp | None]:
-        return self.marks.last_marked_among(command_keys)
+    def last_flagged_among(self, command_keys: Sequence[str]) -> dict[str, Timestamp | None]:
+        return self.marks.last_flagged_among(command_keys)
 
-    def skipped_since(self, command_key: str, timestamp: Timestamp) -> bool:
+    def skipped_after(self, command_key: str, timestamp: Timestamp) -> bool:
         return False

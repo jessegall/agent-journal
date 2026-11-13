@@ -64,8 +64,8 @@ class SettingValue:
 
     def problems(self, key: str) -> Iterator[str]:
         yield from length_problems(self.title, self.description, key)
-        if self.component is not None and self.type not in self.component.kinds():
-            allowed = ", ".join(component.value for component in SettingComponent if self.type in component.kinds())
+        if self.component is not None and self.type not in self.component.categories():
+            allowed = ", ".join(component.value for component in SettingComponent if self.type in component.categories())
             yield f"the setting {key} is a {self.type.value}, which the component {self.component.value} cannot draw; use one of: {allowed}"
         if self.secret and self.default is not None:
             yield f"the secret {key} has a default; a secret is set by the user, never written in code"

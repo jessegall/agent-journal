@@ -9,7 +9,7 @@ from suites.coding.modules.workers.commands.make_proof.make_proof import MakePro
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
-from tests.stories.suites.coding.modules.workers.checkpoint_runs import CART_COMMAND, commit_tasks, merge, proofs_by_task, rows, run_lines
+from tests.stories.suites.coding.modules.workers.checkpoint_runs import CART_COMMAND, commit_tasks, merge, task_proofs, rows, run_lines
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting
@@ -104,7 +104,7 @@ def test_213_a_proof_test_that_runs_when_the_rule_changes_ends_as_it_was_and_the
     story.run_listeners()
     started_by_the_commit = [process_id for process_id in worker.started if process_id not in running_previous]
     worker.end_all_tests()
-    states = {task_id: proof["state"] for task_id, proof in proofs_by_task(worker).items()}
+    states = {task_id: proof["state"] for task_id, proof in task_proofs(worker).items()}
     story.expect_rows(len(running_previous) == 1, started_by_the_commit == [], states == {1: "checked", 2: "committed", 3: "committed"}, detail=f"{run_lines(worker)}, {states}")
 
 

@@ -12,7 +12,7 @@ OWNER_LIFE_SECONDS = 600
 SERVER_END_SECONDS = 60
 
 
-def is_alive(pid: int) -> bool:
+def is_running(pid: int) -> bool:
     """A process that ended but is not yet collected by its parent (state Z) is ended."""
     state = subprocess.run(["ps", "-o", "stat=", "-p", str(pid)], capture_output=True, text=True, check=False).stdout.strip()
     return bool(state) and not state.startswith("Z")
@@ -25,10 +25,10 @@ def test_the_server_of_a_demo_ends_with_the_process_it_was_started_for(new_story
     outcome = story.run(f"demo start --stop-with {owner.pid} --json", actor=story.user)
     pid = int(re.search(r"server pid (\d+)", json.loads(outcome.output_text)["lines"][0])[1])
     try:
-        story.expect_rows(outcome.code == 0, is_alive(pid))
+        story.expect_rows(outcome.code == 0, is_running(pid))
         owner.kill()
         owner.wait(timeout=10)
-        story.expect_rows(PolledWait(SERVER_END_SECONDS, 0.5).until(lambda: not is_alive(pid)))
+        story.expect_rows(PolledWait(SERVER_END_SECONDS, 0.5).until(lambda: not is_running(pid)))
     finally:
-        if is_alive(pid):
+        if is_running(pid):
             os.kill(pid, signal.SIGTERM)

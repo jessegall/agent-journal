@@ -19,7 +19,7 @@ class AskDeadline:
     def from_line(cls, line: MergerLine, visits_limit: int) -> "AskDeadline":
         return cls(not line.is_open_question(), line.due_at, line.forward_at, line.visit_count, visits_limit)
 
-    def is_answer_overdue(self, timestamp: Timestamp) -> bool:
+    def is_answer_late(self, timestamp: Timestamp) -> bool:
         return not self.is_closed and self.due_at is not None and timestamp >= self.due_at
 
     def is_forward_due(self, timestamp: Timestamp) -> bool:

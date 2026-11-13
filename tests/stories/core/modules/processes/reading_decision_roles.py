@@ -4,7 +4,7 @@ from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.core.modules.processes.support.cadence_probe import HelperBesideWorker, agent_run, kept_lines
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, worker_run
-from tests.stories.core.modules.processes.support.reading_scenarios import (CRASHED_START, LONG_RUN, STEPS, end_decision, ended_after_a_while, heard,
+from tests.stories.core.modules.processes.support.reading_scenarios import (CRASHED_START, LONG_RUN, STEPS, end_decision, ended_after_a_while, received,
                                                                              rejected_worker_command)
 from core.modules.processes.support.process_nudges import READ_ONLY_MISSING_NOTICE
 from engine.testing.expectations.expected_nudge import expected_nudge
@@ -18,7 +18,7 @@ def test_a_read_only_helpers_run_with_no_reader_is_not_told_but_counted_for_the_
     story = install_runner(new_story(fixture=HelperBesideWorker))
     helper = helper_agent(story)
     process = ended_after_a_while(story, agent_run(story, helper, "custom-scan run", CommandCategory.BUILD), STEPS)
-    helper_lines = heard(story, helper.session)
+    helper_lines = received(story, helper.session)
     story.hook("s-1", HookSamples.session_start())
     story.run_listeners()
     story.expect_rows(end_decision(story, process)[0] == "missing", "no reader reads" not in helper_lines, detail=helper_lines)

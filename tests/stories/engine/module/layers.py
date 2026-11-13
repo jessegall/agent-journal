@@ -27,7 +27,7 @@ def test_a_module_that_lists_a_dependency_that_is_not_installed_is_refused_at_bo
 
 def test_the_maintainer_prints_every_layer_with_what_it_may_use_one_line_each(new_story, tmp_path):
     story = new_story(fixture=MainEnvironment)
-    lines = LayerProject(story, tmp_path).printed_layers()
+    lines = LayerProject(story, tmp_path).emitted_layers()
     labels = [line.partition(" may use:")[0] for line in lines]
     story.expect_rows(labels[0] == "engine", len(labels) == len(set(labels)), "core module actors may use: engine" in lines,
                       labels.index("core module tasks") < labels.index("suite coding"),

@@ -96,7 +96,7 @@ def test_a_main_agent_whose_overview_hook_was_lost_reads_it_again_and_its_next_c
     story.expect_success("overview", actor=agent)
     story.expect_hook_allowed("s-1", EDIT)
     story.run_listeners()
-    story.expect_rows(not story.container.get(OverviewBlocks).is_held(agent.id))
+    story.expect_rows(not story.container.get(OverviewBlocks).is_blocked(agent.id))
 
 
 def test_a_compaction_blocks_again_and_a_resume_does_not(new_story):

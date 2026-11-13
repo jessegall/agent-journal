@@ -40,7 +40,7 @@ def context_of(story, actor: Actor, skipped_guards: frozenset[str] = frozenset()
     return Context(actor, story.clock.timestamp(), ReadMessage(1), skipped_guards)
 
 
-def saved_by_core(story) -> list:
+def core_saved(story) -> list:
     repository = story.container.get(Repository)
     with story.container.get(Database).transaction():
         return [repository.save(row, context_of(story, Actor.core())) for row in account_rows(story)]
@@ -54,7 +54,7 @@ def refusal_of(story, action, actor: Actor, skipped_guards: frozenset[str] = fro
 
 def test_the_journal_itself_writes_and_deletes_every_account_row(new_story):
     story = new_story(fixture=UserJoined)
-    rows = saved_by_core(story)
+    rows = core_saved(story)
     repository = story.container.get(Repository)
     with story.container.get(Database).transaction():
         for row in rows:
@@ -74,7 +74,7 @@ def test_neither_an_agent_nor_a_person_creates_an_account_row(new_story, who):
 def test_neither_an_agent_nor_a_person_changes_or_deletes_an_account_row(new_story, who):
     story = new_story(fixture=UserJoined)
     actor = getattr(story, who)
-    for row in saved_by_core(story):
+    for row in core_saved(story):
         expect_value(refusal_of(story, lambda repository, context, row=row: repository.delete(row, context), actor), REFUSAL)
         expect_value(refusal_of(story, lambda repository, context, row=row: repository.update(row, context, creator_id=row.creator_id + 1), actor), REFUSAL)
 

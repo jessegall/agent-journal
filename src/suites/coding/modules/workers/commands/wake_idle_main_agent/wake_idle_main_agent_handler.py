@@ -33,7 +33,7 @@ class WakeIdleMainAgentHandler(Handler[WakeIdleMainAgent, None]):
             if not self.hook_calls.is_idle(agent.id, context.timestamp):
                 continue
             nudge = self.waking_nudge(agent.id)
-            if nudge is None or self.was_told(agent.id, nudge):
+            if nudge is None or self.was_informed(agent.id, nudge):
                 continue
             self.nudger.send_nudge(agent.id, nudge, WAKE_SOURCE, context, wakes_agent=True)
 
@@ -45,6 +45,6 @@ class WakeIdleMainAgentHandler(Handler[WakeIdleMainAgent, None]):
             return FREE_WORKER_PLACE.nudge(count=available.free_places, tasks=", ".join(str(task_id) for task_id in available.delegatable))
         return None
 
-    def was_told(self, agent_id: int, nudge: Nudge) -> bool:
+    def was_informed(self, agent_id: int, nudge: Nudge) -> bool:
         last = self.queries.query(AgentLine).filter(session_agent_id=agent_id, source=WAKE_SOURCE).newest().first()
         return last is not None and last.text == nudge.text

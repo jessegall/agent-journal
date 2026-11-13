@@ -59,7 +59,7 @@ class CatalogueAudit:
         return last_audit.creation_timestamp() if last_audit is not None else main_agent.creation_timestamp()
 
     def missing_reader_decisions(self, last_audit_at: Timestamp, main_agent_ids: Sequence[int]) -> int:
-        return self.decisions.lacking_a_reader_at_end().of_runs_outside(main_agent_ids).since(last_audit_at).count()
+        return self.decisions.lacking_a_reader_at_end().of_runs_outside(main_agent_ids).after(last_audit_at).count()
 
     # How many commands agents marked unreadable since the main agent last heard the audit; marks of the engine and of a
     # user are not counted.

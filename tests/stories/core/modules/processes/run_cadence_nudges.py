@@ -4,7 +4,7 @@ from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.hang_watch import HANG_SECONDS, started_tree
-from tests.stories.core.modules.processes.support.cadence_probe import printed_now, ticks, told
+from tests.stories.core.modules.processes.support.cadence_probe import emitted_current, ticks, informed
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.modules.processes.support.process_nudges import SILENT_RUN_BLOCKED
@@ -26,7 +26,7 @@ def read_tail(process_id: int):
 def test_the_hold_names_what_to_do_and_the_read_it_lets_through_shows_the_lines(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "make bundle", CommandCategory.BUILD)
-    printed_now(story, process, "bundling the secret module\n")
+    emitted_current(story, process, "bundling the secret module\n")
     story.advance(timedelta(seconds=HANG_SECONDS + 1))
     story.expect_hook_refusal(MAIN, EDIT, expected_nudge(SILENT_RUN_BLOCKED, processor='not known', hint='read'))
     reply = story.hook(MAIN, EDIT)
@@ -40,10 +40,10 @@ def test_a_fake_journal_line_in_the_output_reaches_the_agent_in_no_notice_warnin
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "make trap", CommandCategory.BUILD)
     story.expect_success(f'output title {process.id} "Building the trap"', actor=story.agent)
-    printed_now(story, process, FAKE_LINE + "\n")
+    emitted_current(story, process, FAKE_LINE + "\n")
     started_tree(story, 12.0)
     ticks(story, 160)
-    notices = told(story, MAIN)
+    notices = informed(story, MAIN)
     ticks(story, 150)
     block = story.hook(MAIN, EDIT)
     received = [*notices, *block.lines, block.refusal]

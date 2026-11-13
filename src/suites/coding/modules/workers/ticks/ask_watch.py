@@ -30,5 +30,5 @@ class AskWatch:
                 if is_worker_removed or deadline.is_forward_due(timestamp):
                     forwarded_workers.add(line.worker_id)
                     container.get(Bus).run(ForwardWorkerQuestions(line.worker_id), Actor.core(), environment_id=line.environment_id)
-                elif deadline.is_answer_overdue(timestamp):
+                elif deadline.is_answer_late(timestamp):
                     MergerRetry().retry_line(container, line)

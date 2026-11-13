@@ -30,6 +30,6 @@ class CompactionWakeRule(DriverRule):
         latest = self.hook_calls.latest_turn_call(hook.agent_id)
         if latest is None or not latest.is_compaction_start or not self.hook_calls.is_idle(hook.agent_id, hook.timestamp):
             return RuleAnswer.allowed()
-        if self.compactions.is_woken(hook.agent_id):
+        if self.compactions.is_awakened(hook.agent_id):
             return RuleAnswer.allowed()
         return RuleAnswer.with_nudges(AGENT_COMPACTED.nudge()).running(WakeCompactedAgent(hook.agent_id))

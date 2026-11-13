@@ -34,8 +34,8 @@ class PlanRowAuthors(PlanAuthors):
         return {plan.id: plan for plan in rows}
 
     def plan_ids(self, edits: Sequence[PlanEdit]) -> dict[PlanEdit, int | None]:
-        phases = self.plan_ids_by_phase([edit.row_id for edit in edits if edit.line.startswith("phase")])
-        tasks = self.plan_ids_by_task([edit.row_id for edit in edits if edit.line.startswith("task")])
+        phases = self.phase_plan_ids([edit.row_id for edit in edits if edit.line.startswith("phase")])
+        tasks = self.task_plan_ids([edit.row_id for edit in edits if edit.line.startswith("task")])
         return {edit: self.plan_id_of(edit, phases, tasks) for edit in edits}
 
     @staticmethod
@@ -46,8 +46,8 @@ class PlanRowAuthors(PlanAuthors):
             return phases.get(edit.row_id)
         return tasks.get(edit.row_id)
 
-    def plan_ids_by_phase(self, phase_ids: Sequence[int]) -> dict[int, int]:
+    def phase_plan_ids(self, phase_ids: Sequence[int]) -> dict[int, int]:
         return {phase.id: phase.plan_id for phase in self.queries.query(Phase).matching(Among("id", phase_ids)).every_row(EDITED_ROWS_REASON)} if phase_ids else {}
 
-    def plan_ids_by_task(self, task_ids: Sequence[int]) -> dict[int, int]:
+    def task_plan_ids(self, task_ids: Sequence[int]) -> dict[int, int]:
         return {place.task_id: place.plan_id for place in self.queries.query(PlanTask).matching(Among("task_id", list(task_ids))).every_row(EDITED_ROWS_REASON)} if task_ids else {}

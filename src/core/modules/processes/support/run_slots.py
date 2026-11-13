@@ -45,7 +45,7 @@ class RunSlots:
         for waiting in queued:
             agent = agents[waiting.session_agent_id]
             needs_slot = self.admission.needs_slot(waiting, agent)
-            if not self.admission.may_start(waiting, agent, parts[waiting.id], self.clock.timestamp()) or categories.is_held(waiting, self.admitted_runs()):
+            if not self.admission.may_start(waiting, agent, parts[waiting.id], self.clock.timestamp()) or categories.is_blocked(waiting, self.admitted_runs()):
                 continue
             process = processes[waiting.id]
             used_slots = sum(self.admission.uses_slot(run) for run in self.running() if run.queued_at is None)

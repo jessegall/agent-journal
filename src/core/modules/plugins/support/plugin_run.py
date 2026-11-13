@@ -42,7 +42,7 @@ class PluginRun:
         self.record(request, outcome)
         if request.form is not EventForm.GUARD or outcome.answer is None:
             return outcome
-        return replace(outcome, answer=self.judge.settled(outcome.answer, request.runnable.plugin.name, request.agent_id))
+        return replace(outcome, answer=self.judge.resolved(outcome.answer, request.runnable.plugin.name, request.agent_id))
 
     def record(self, request: PluginRunRequest, outcome: PluginRunOutcome, cause_id: int | None = None) -> None:
         if outcome.is_server_stop:

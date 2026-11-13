@@ -62,10 +62,10 @@ class ResetsSample(EscalationResets):
     marked_at: dict[str, Timestamp] = field(default_factory=dict)
     skipped_at: dict[str, Timestamp] = field(default_factory=dict)
 
-    def last_marked_among(self, command_keys: Sequence[str]) -> dict[str, Timestamp | None]:
+    def last_flagged_among(self, command_keys: Sequence[str]) -> dict[str, Timestamp | None]:
         return {key: self.marked_at.get(key) for key in command_keys}
 
-    def skipped_since(self, command_key: str, timestamp: Timestamp) -> bool:
+    def skipped_after(self, command_key: str, timestamp: Timestamp) -> bool:
         return command_key in self.skipped_at and self.skipped_at[command_key] > timestamp
 
 

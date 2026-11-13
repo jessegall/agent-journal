@@ -71,7 +71,7 @@ class ContextCompactions:
         if newest is not None:
             self.repository.save(replace(newest, woken_at=context.timestamp), context)
 
-    def is_woken(self, agent_id: int) -> bool:
+    def is_awakened(self, agent_id: int) -> bool:
         newest = self.newest(agent_id)
         return newest is not None and newest.woken_at is not None
 

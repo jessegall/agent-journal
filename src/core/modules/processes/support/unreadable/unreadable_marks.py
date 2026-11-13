@@ -22,18 +22,18 @@ class UnreadableMarks:
     def __init__(self, marks: UnreadableMarkQuery, repository: Repository) -> None:
         self.marks, self.repository = marks, repository
 
-    def marked(self, command: str) -> UnreadableMark | None:
+    def flagged(self, command: str) -> UnreadableMark | None:
         return self.marks.standing().of_words(UnreadableMarks.covering_words(command)).newest().first()
 
-    def marked_among(self, commands: Sequence[str]) -> frozenset[str]:
+    def flagged_among(self, commands: Sequence[str]) -> frozenset[str]:
         covering, terms = UnreadableMarks.covered_by(commands)
         flagged = set(self.marks.standing().of_words(terms).pluck("words", str))
         return frozenset(command for command, leading in covering.items() if flagged.intersection(leading))
 
     def excuses(self, command: str) -> bool:
-        return self.marked(command) is not None
+        return self.flagged(command) is not None
 
-    def last_marked_among(self, commands: Sequence[str]) -> dict[str, Timestamp | None]:
+    def last_flagged_among(self, commands: Sequence[str]) -> dict[str, Timestamp | None]:
         covering, terms = UnreadableMarks.covered_by(commands)
         newest: dict[str, Timestamp] = {}
         for mark in self.marks.of_words(terms).every_row(TERM_MARKS_REASON):

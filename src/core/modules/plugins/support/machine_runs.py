@@ -47,13 +47,13 @@ class MachineRuns:
             return 0
         counted = 0
         for path in folder.iterdir():
-            if self.is_held(path):
+            if self.is_blocked(path):
                 counted += 1
             else:
                 path.unlink(missing_ok=True)
         return counted
 
-    def is_held(self, run_file: Path) -> bool:
+    def is_blocked(self, run_file: Path) -> bool:
         pid_file = Path(FileAccess.shared().read(run_file).strip())
         if pid_file.is_file():
             return ProcessIds.text_exists(FileAccess.shared().read(pid_file).strip())

@@ -45,7 +45,7 @@ class WorkerTaskWaitTargets(TaskWaitTargets):
         return self.worker_target(agent) if agent.role == CodingHelperRole.WORKER else super().helper_target(row_id)
 
     def is_finished(self, worker: Agent) -> bool:
-        if self.holds_work(worker):
+        if self.has_work(worker):
             return False
         worktree = self.worktrees.worker_worktree(worker.id)
         if worktree is None or worktree.state in (WorktreeState.MERGED, WorktreeState.ABANDONED, WorktreeState.REMOVED):
@@ -57,7 +57,7 @@ class WorkerTaskWaitTargets(TaskWaitTargets):
         task = self.queries.query(Task).find(worktree.task_id)
         return task.started_at is None or task.started_at.value <= worker.ended_at.value
 
-    def holds_work(self, worker: Agent) -> bool:
+    def has_work(self, worker: Agent) -> bool:
         return any(task.state is TaskState.OPEN or worker.ended_at is None for task in self.tasks.unfinished_assigned(worker.id))
 
     def resolve_waits(self, worker_id: int, context: Context) -> None:

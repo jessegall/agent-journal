@@ -16,7 +16,7 @@ class PluginQueuedJudge:
     def __init__(self, runner: PluginCommandRunner, clock: Clock) -> None:
         self.runner, self.clock = runner, clock
 
-    def settled(self, answer: PluginAnswer, plugin: str, agent_id: int | None) -> PluginAnswer:
+    def resolved(self, answer: PluginAnswer, plugin: str, agent_id: int | None) -> PluginAnswer:
         if not answer.is_queue() or answer.run is None:
             return answer
         if agent_id is None:

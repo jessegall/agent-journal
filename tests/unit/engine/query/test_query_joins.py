@@ -30,28 +30,28 @@ class Desk(EnvironmentScoped, Model):
     shelf_id: int
 
 
-def written(query: Query) -> Statement:
+def saved(query: Query) -> Statement:
     return query.scoped(query.select).statement()
 
 
 def test_join_writes_join_on(entries: Query[LogEntry]):
     joined = entries.join(Keeper, "agents.id", "=", "log_entries.shelf_id").select_columns("log_entries.*", "agents.given_name")
-    assert written(joined) == Statement("SELECT log_entries.*, agents.given_name FROM log_entries JOIN agents ON agents.id = log_entries.shelf_id")
+    assert saved(joined) == Statement("SELECT log_entries.*, agents.given_name FROM log_entries JOIN agents ON agents.id = log_entries.shelf_id")
 
 
 def test_left_join_writes_left_join(entries: Query[LogEntry]):
-    assert written(entries.left_join(Keeper, "agents.id", "=", "log_entries.shelf_id")) == Statement(
+    assert saved(entries.left_join(Keeper, "agents.id", "=", "log_entries.shelf_id")) == Statement(
         "SELECT * FROM log_entries LEFT JOIN agents ON agents.id = log_entries.shelf_id")
 
 
 def test_a_join_to_an_environment_scoped_model_adds_its_environment_condition(entries: Query[LogEntry]):
     entries.database.row_owner = RowOwner(agent=None, environment_id=5)
-    assert written(entries.join(Desk, "desks.shelf_id", "=", "log_entries.shelf_id")) == Statement(
+    assert saved(entries.join(Desk, "desks.shelf_id", "=", "log_entries.shelf_id")) == Statement(
         "SELECT * FROM log_entries JOIN desks ON desks.shelf_id = log_entries.shelf_id WHERE desks.environment_id = ?", [5])
 
 
 def test_order_by_desc_then_oldest_orders_by_priority_desc_then_id_asc(entries: Query[LogEntry]):
-    assert written(entries.order_by("shelf_id", "desc").oldest()) == Statement("SELECT * FROM log_entries ORDER BY shelf_id DESC, id ASC")
+    assert saved(entries.order_by("shelf_id", "desc").oldest()) == Statement("SELECT * FROM log_entries ORDER BY shelf_id DESC, id ASC")
 
 
 def test_newest_oldest_ordered_descending_still_work(entries: Query[LogEntry]):

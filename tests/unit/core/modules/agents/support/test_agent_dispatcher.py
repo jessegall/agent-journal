@@ -112,7 +112,7 @@ class Parts:
     def launcher(self, *answers: bytes) -> FakeLauncher:
         return FakeLauncher.listening(self.folder / "launcher", request_count=len(answers), answers=answers)
 
-    def ran(self, command_type: type) -> list[object]:
+    def executed(self, command_type: type) -> list[object]:
         return [command for command in self.bus.commands if isinstance(command, command_type)]
 
 
@@ -125,20 +125,20 @@ def test_a_start_records_the_process_the_launcher_started():
     parts = Parts()
     parts.launcher(STARTED)
     assert parts.dispatcher.start(ENDED_HELPER, COMMAND) is Dispatch.STARTED
-    assert parts.ran(RecordAgentProcess) == [RecordAgentProcess(41, 701)]
+    assert parts.executed(RecordAgentProcess) == [RecordAgentProcess(41, 701)]
 
 
 def test_of_two_starts_of_one_agent_one_is_started_and_the_other_is_told_a_program_runs():
     parts = Parts()
     parts.launcher(STARTED, RUNNING)
     assert [parts.dispatcher.start(ENDED_HELPER, COMMAND), parts.dispatcher.start(ENDED_HELPER, COMMAND)] == [Dispatch.STARTED, Dispatch.RUNNING]
-    assert len(parts.ran(RecordAgentProcess)) == 1
+    assert len(parts.executed(RecordAgentProcess)) == 1
 
 
 def test_a_start_with_no_launcher_fails_and_records_one_failure():
     parts = Parts()
     assert parts.dispatcher.start(ENDED_HELPER, COMMAND) is Dispatch.FAILED
-    assert parts.ran(RecordAgentLaunchFailure) == [RecordAgentLaunchFailure(41)]
+    assert parts.executed(RecordAgentLaunchFailure) == [RecordAgentLaunchFailure(41)]
 
 
 def test_a_stop_ends_the_row_only_once_the_launcher_has_no_program_of_the_agent():

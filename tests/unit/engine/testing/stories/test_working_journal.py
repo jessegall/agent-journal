@@ -16,7 +16,7 @@ def template_file(folder: Path) -> Path:
     return path
 
 
-def written_story(journal: WorkingJournal, text: str) -> None:
+def saved_story(journal: WorkingJournal, text: str) -> None:
     journal.reserve()
     database = Database.configured(sqlite3.connect(journal.file, autocommit=True))
     journal.defer_writes(database)
@@ -31,6 +31,6 @@ def test_stories_on_one_working_journal_roll_back_their_writes_without_copying_t
     original_copy = FileClone.copy
     monkeypatch.setattr(FileClone, "copy", lambda source, target: copies.append(target) or original_copy(source, target))
     for number in range(3):
-        written_story(journal, f"story {number}")
+        saved_story(journal, f"story {number}")
     rows = sqlite3.connect(journal.file).execute("SELECT count(*) FROM notes").fetchone()[0]
     assert (rows, copies, journal.is_taken) == (0, [], False)

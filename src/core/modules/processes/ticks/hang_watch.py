@@ -57,14 +57,14 @@ class HangWatch:
             folder.write(process.id, CPU_FILE, f"{cpu} {now}")
         silent = container.get(RunSilences).seconds(process, current)
         if moved:
-            return self.looked(container, process, silent, now, limits)
+            return self.checked(container, process, silent, now, limits)
         seconds = min(int(now - float(recorded[1])), container.get(RunSilences).unread_seconds(process, current))
         if seconds < limits.hang:
             return False
         self.stop(container, process, seconds)
         return True
 
-    def looked(self, container: Container, process: Process, silent: int, now: float, limits: HangLimits) -> bool:
+    def checked(self, container: Container, process: Process, silent: int, now: float, limits: HangLimits) -> bool:
         asks = container.get(LookAsks)
         if process.category is not CommandCategory.TEST_RUN or silent < limits.look:
             asks.clear(process.id)

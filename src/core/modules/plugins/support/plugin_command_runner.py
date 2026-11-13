@@ -63,7 +63,7 @@ class PluginCommandRunner:
     def category(self, plugin: str, category: str) -> CommandCategory:
         if not category:
             return CommandCategory.UNKNOWN
-        declared = PluginManifest.read(self.folders.code(plugin)).process_kind(category)
+        declared = PluginManifest.read(self.folders.code(plugin)).process_category(category)
         if declared is None:
             raise Refusal(f"plugin {plugin} declares no kind of run named {category}", "name a kind its manifest lists under processes")
         return declared.category

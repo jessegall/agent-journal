@@ -28,7 +28,7 @@ class EscalationCounter:
         keys = tuple(dict.fromkeys(command_keys))
         ended = [row for start in range(0, len(keys), KEYS_PER_READ) for row in self.ended_runs(keys[start:start + KEYS_PER_READ])]
         rows = {key: [row for row in ended if row.command_key == key][:RUNS_READ] for key in keys}
-        flagged = self.resets.last_marked_among(keys)
+        flagged = self.resets.last_flagged_among(keys)
         return {key: self.counted_runs(key, rows[key], flagged[key]) for key in keys}
 
     def ended_runs(self, keys: Sequence[str]) -> list[ReadingDecisionRow]:
@@ -45,7 +45,7 @@ class EscalationCounter:
     def is_reset_after(self, command_key: str, decided_at: Timestamp, changed_at: Timestamp | None, flagged_at: Timestamp | None) -> bool:
         reader_changed = changed_at is not None and changed_at > decided_at
         flagged = flagged_at is not None and flagged_at > decided_at
-        return reader_changed or flagged or self.resets.skipped_since(command_key, decided_at)
+        return reader_changed or flagged or self.resets.skipped_after(command_key, decided_at)
 
     @staticmethod
     def counted(runs_newest_first: Sequence[KeyRun]) -> int:

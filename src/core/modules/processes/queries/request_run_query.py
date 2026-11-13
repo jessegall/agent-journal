@@ -15,6 +15,6 @@ class RequestRunQuery(Query[RequestRun]):
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, RequestRun)
 
-    def ended_before(self, present: Timestamp, days: int) -> Self:
+    def ended_prior(self, present: Timestamp, days: int) -> Self:
         cutoff = Timestamp(present.value - timedelta(days=days))
         return self.matching(Maximum("ended_at", cutoff.text))

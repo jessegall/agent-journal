@@ -7,8 +7,8 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.chat.support.mark_samples import expect_marks_text
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.core.modules.processes.support.cadence_probe import (TICK, HelperBesideWorker, agent_run, cadence_lines, cadence_tick,
-                                                                       expect_informed, has_cadence_record, kept_lines, owned_run, printed, running_run, side_run,
-                                                                       tick_named, ticks, told, waiting_run, worker_agent)
+                                                                       expect_informed, has_cadence_record, kept_lines, session_run, emitted, running_run, side_run,
+                                                                       tick_named, ticks, informed, waiting_run, worker_agent)
 from tests.stories.core.modules.processes.background import SavedBuildMoved, SilentVitestRun, expect_streaming_line, expect_without_hint
 from tests.stories.core.modules.processes.hang_watch import HANG_SECONDS, ActiveBuild, expect_looks, started_tree, watch_tick
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process
@@ -54,7 +54,7 @@ def test_a_silent_test_gets_its_hint_once_and_again_when_it_stops_printing(new_s
     story.advance(TICK)
     cadence_tick(story)
     expect_without_hint(story)
-    printed(story, process, "first line\n")
+    emitted(story, process, "first line\n")
     cadence_tick(story)
     for _ in range(STOPPED_WRITING // TICK):
         story.advance(TICK)
@@ -82,7 +82,7 @@ def test_a_sparse_pytest_run_keeps_running_and_after_printing_often_is_told_only
     expect_informed(story, MAIN, RUN_SPARSE.nudge(output=process.id, seconds=50, hint='run pytest without -q').text)
     story.expect_text(f"process show {process.id}", "state: background", actor=story.agent)
     ticks(story, 80, process, every=10)
-    silent = cadence_lines(told(story, MAIN))
+    silent = cadence_lines(informed(story, MAIN))
     ticks(story, 120, process)
     expect_informed(story, MAIN, f"Output {process.id} has written nothing for 120s and is still running")
     story.expect_rows(silent == [], detail="\n".join(silent))
@@ -118,9 +118,9 @@ def test_only_a_silent_go_test_over_several_packages_is_told_and_runs_printing_l
     heard: list[str] = []
     for step in range(20):
         bar_text += "\r[" + "#" * (step % 20) + "] working"
-        printed(story, bar, bar_text)
+        emitted(story, bar, bar_text)
         ticks(story, 10, lines, every=10, text="compiled one more file\n" * 10)
-        heard += cadence_lines(told(story, MAIN))
+        heard += cadence_lines(informed(story, MAIN))
     story.expect_rows(len(heard) == 1, expected_nudge(SILENT_RUN, seconds=30, hint='run').is_in(heard[0]),
                       detail="\n".join(heard))
 
@@ -153,9 +153,9 @@ def test_a_busy_agent_is_told_the_sparse_line_once_with_its_next_tool_use(new_st
     process = moved_run(story, "pytest tests/e2e -q", CommandCategory.TEST_RUN)
     lines: list[str] = []
     for step in range(1, 15):
-        lines += told(story, MAIN)
+        lines += informed(story, MAIN)
         ticks(story, 10, process, every=10 if step % 4 == 0 else 0)
-    lines += told(story, MAIN)
+    lines += informed(story, MAIN)
     sparse = [line for line in lines if "too sparse for a reader" in line]
     story.expect_rows(len(sparse) == 1, detail="\n".join(lines))
 
@@ -208,7 +208,7 @@ def test_plugin_person_and_lookup_runs_are_never_judged_while_a_started_test_is(
     judged = side_run(story, story.agent, "pytest tests/first.py", CommandCategory.TEST_RUN)
     titled(story, judged, "Running the first tests")
     ticks(story, 60)
-    lines = "\n".join(told(story, MAIN))
+    lines = "\n".join(informed(story, MAIN))
     story.expect_rows(f"Output {judged.id} printed nothing" in lines, *(f"Output {process.id} printed nothing" not in lines for process in skipped), detail=lines)
 
 
@@ -220,7 +220,7 @@ def test_a_workers_queued_run_is_told_nothing_while_its_running_one_is(new_story
     running = agent_run(story, worker, "pytest tests/api -q", CommandCategory.TEST_RUN)
     queued = waiting_run(story, worker, "pytest tests/web -q")
     ticks(story, 30)
-    lines = told(story, worker.session)
+    lines = informed(story, worker.session)
     story.expect_rows(any(f"Output {running.id} printed nothing" in line for line in lines), not any(f"Output {queued.id} " in line for line in lines), detail="\n".join(lines))
 
 
@@ -234,11 +234,11 @@ def test_a_person_entering_zero_or_a_negative_sparse_seconds_is_refused_and_noth
 def test_a_run_another_agent_owns_tells_the_agent_of_its_session(new_story):
     story = new_story(fixture=HelperBesideWorker)
     worker = worker_agent(story)
-    process = owned_run(story, worker, "make bundle")
+    process = session_run(story, worker, "make bundle")
     titled(story, process, "Building the bundle")
     ticks(story, 30)
     expect_informed(story, MAIN, f"Output {process.id} printed nothing for 30s")
-    story.expect_rows(cadence_lines(told(story, worker.session)) == [])
+    story.expect_rows(cadence_lines(informed(story, worker.session)) == [])
 
 
 def test_a_long_script_of_no_known_type_is_told_to_print_its_steps_and_its_card_shows_the_progress_of_its_new_reader(new_story):
@@ -248,7 +248,7 @@ def test_a_long_script_of_no_known_type_is_told_to_print_its_steps_and_its_card_
     ticks(story, 30)
     expect_informed(story, MAIN, SILENT_RUN.nudge(output=process.id, seconds=30, hint='make it print its steps').text)
     story.expect_success('reader add move-files --commands "zsh tools/move.sh*" --lines "moved" --progress "\\[([0-9]+)/([0-9]+)\\]"', actor=story.agent)
-    printed(story, process, "[3/17] moved a.txt\n")
+    emitted(story, process, "[3/17] moved a.txt\n")
     tick_named(story, "read running outputs")
     story.expect_text(f"output show {process.id}", "progress: 17", actor=story.agent)
     expect_marks_text(story, "Moving the files")

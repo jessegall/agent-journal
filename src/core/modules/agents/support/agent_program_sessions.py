@@ -9,5 +9,5 @@ class AgentProgramSessions(ProgramSessions):
     def __init__(self, agents: AgentQuery) -> None:
         self.agents = agents
 
-    def has_session_started_before(self, program: str, cutoff: Timestamp) -> bool:
+    def has_prior_session(self, program: str, cutoff: Timestamp) -> bool:
         return self.agents.running().created_earlier(cutoff).filter(program=program).exists()

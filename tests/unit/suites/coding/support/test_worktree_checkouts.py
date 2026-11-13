@@ -13,7 +13,7 @@ def test_the_worktree_folders_of_every_environment_are_the_projects_separate_che
     (root / "development" / "notes.txt").write_text("not a worktree")
     checkouts = WorktreeCheckouts(home)
     assert checkouts.folders() == tuple(sorted(worktree.resolve() for worktree in worktrees))
-    assert checkouts.holds(worktrees[0]) and not checkouts.holds(home.project_folder)
+    assert checkouts.contains(worktrees[0]) and not checkouts.contains(home.project_folder)
 
 
 def test_a_project_without_worktrees_has_no_separate_checkouts(tmp_path: Path):

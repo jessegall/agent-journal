@@ -31,8 +31,8 @@ class RepeatReads:
         if context.actor.type is not ActorType.AGENT:
             return
         if not self.has_ended(command.process_id):
-            if self.folder.read_mark(command.process_id, self.running_mark(context.actor)) and not self.is_held(command.process_id, context):
-                raise Refusal(f"output {command.process_id} is still running and you read it already: stop polling it", self.poll_advice(context.actor).format(process=command.process_id))
+            if self.folder.read_mark(command.process_id, self.running_mark(context.actor)) and not self.is_blocked(command.process_id, context):
+                raise Refusal(f"output {command.process_id} is still running and you read it already: stop polling it", self.poll_hint(context.actor).format(process=command.process_id))
             return
         if command.is_repeat_allowed:
             return
@@ -48,12 +48,12 @@ class RepeatReads:
             self.folder.write_read_mark(command.process_id, self.running_mark(actor), read_at)
             self.folder.write_read_mark(command.process_id, CHECKED_MARK, read_at)
 
-    def poll_advice(self, actor: Actor) -> str:
+    def poll_hint(self, actor: Actor) -> str:
         if self.queries.query(Agent).find(actor.id).role == AgentRole.MAIN:
             return MAIN_POLL_HINT
         return HELPER_POLL_HINT
 
-    def is_held(self, process_id: int, context: Context) -> bool:
+    def is_blocked(self, process_id: int, context: Context) -> bool:
         blocked_run = self.held_runs.found(context.actor.id, context.timestamp)
         return blocked_run is not None and blocked_run.process.id == process_id
 

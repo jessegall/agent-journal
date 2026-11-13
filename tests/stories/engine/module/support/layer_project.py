@@ -44,7 +44,7 @@ class LayerProject:
         layer = LayerTable().file_layer(relative_path)
         return "no layer" if layer is None else layer.label
 
-    def printed_layers(self) -> list[str]:
+    def emitted_layers(self) -> list[str]:
         self.story.steps.append("print the layers")
         self.story.path.append("print the layers")
         return LayerTablePrinter.lines()

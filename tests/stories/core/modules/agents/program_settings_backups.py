@@ -18,7 +18,7 @@ def person_files() -> dict[str, list[Path]]:
     return {"claude": [Path(os.environ["CLAUDE_CONFIG_DIR"]) / "settings.json"], "codex": [codex / "config.toml", codex / "hooks.json"]}
 
 
-def written_person_files() -> list[Path]:
+def saved_person_files() -> list[Path]:
     files = [path for paths in person_files().values() for path in paths]
     for number, path in enumerate(files):
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -47,7 +47,7 @@ def log_text(story) -> str:
 
 def test_the_first_start_backs_up_each_person_file_privately_and_leaves_it_as_it_was(new_story):
     story = new_story(fixture=MainEnvironment)
-    files = written_person_files()
+    files = saved_person_files()
     previous = [(path.read_bytes(), path.stat().st_mtime_ns) for path in files]
     ProgramSettingsWatch()(story.container)
     made = [(program, path) for program, paths in person_files().items() for path in paths]
@@ -59,7 +59,7 @@ def test_the_first_start_backs_up_each_person_file_privately_and_leaves_it_as_it
 
 def test_an_unchanged_file_is_not_copied_again(new_story):
     story = new_story(fixture=MainEnvironment)
-    written_person_files()
+    saved_person_files()
     ProgramSettingsWatch()(story.container)
     story.advance(timedelta(minutes=1))
     launch_claude(story)
@@ -68,7 +68,7 @@ def test_an_unchanged_file_is_not_copied_again(new_story):
 
 def test_a_changed_file_gets_a_new_copy_and_the_older_stays(new_story):
     story = new_story(fixture=MainEnvironment)
-    settings = written_person_files()[0]
+    settings = saved_person_files()[0]
     manage_claude(story)
     settings.write_text('{"person": "changed"}\n')
     story.advance(timedelta(minutes=1))
@@ -79,7 +79,7 @@ def test_a_changed_file_gets_a_new_copy_and_the_older_stays(new_story):
 @pytest.mark.parametrize("rewrites", [21, REWRITES])
 def test_the_first_copy_stays_beside_the_newest_twenty(new_story, rewrites):
     story = new_story(fixture=MainEnvironment)
-    settings = written_person_files()[0]
+    settings = saved_person_files()[0]
     for number in range(rewrites):
         settings.write_text(f'{{"person": "rewrite {number}"}}\n')
         launch_claude(story)
@@ -91,7 +91,7 @@ def test_the_first_copy_stays_beside_the_newest_twenty(new_story, rewrites):
 
 def test_a_missing_codex_hooks_file_gives_no_copy_and_no_failure_line(new_story):
     story = new_story(fixture=MainEnvironment)
-    written_person_files()
+    saved_person_files()
     person_files()["codex"][1].unlink()
     ProgramSettingsWatch()(story.container)
     story.expect_rows(copies(story, "codex", "hooks.json") == [], len(copies(story, "codex", "config.toml")) == 1, "failed" not in log_text(story))
@@ -100,7 +100,7 @@ def test_a_missing_codex_hooks_file_gives_no_copy_and_no_failure_line(new_story)
 @pytest.mark.skipif(os.geteuid() == 0, reason="root reads a file with mode 000")
 def test_an_unreadable_person_file_is_logged_and_the_journal_still_writes_its_own(new_story):
     story = new_story(fixture=MainEnvironment)
-    settings = written_person_files()[0]
+    settings = saved_person_files()[0]
     os.chmod(settings, 0)
     try:
         ProgramSettingsWatch()(story.container)

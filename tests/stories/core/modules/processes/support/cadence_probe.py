@@ -84,7 +84,7 @@ def started_by(story: Story, actor: Actor, command: StartProcess, environment_id
     return process
 
 
-def owned_run(story: Story, owner: Agent, line: str) -> Process:
+def session_run(story: Story, owner: Agent, line: str) -> Process:
     """A build on the main agent's session that another agent owns."""
     command = StartProcess(story.agent.id, None, line, "/work/main", "zsh", CommandCategory.BUILD, 30, tuple([PartSpec(line, line.split()[0], False, CommandCategory.BUILD)]),
                            owner_agent_id=owner.id)
@@ -101,7 +101,7 @@ def kept_lines(story: Story, agent_id: int = 0, actor: Actor | None = None) -> s
     return story.run(f"agent-line list --agent {agent_id or story.agent.id} --json", actor=actor or story.agent).output_text
 
 
-def elsewhere_run(story: Story, actor: Actor) -> Process:
+def foreign_run(story: Story, actor: Actor) -> Process:
     """A silent build of the agent of the second environment, started and moved to the background there."""
     return started_by(story, actor, StartProcess.single_part(actor.id, "make there", "/work/elsewhere", CommandCategory.BUILD, 30), environment_id=2)
 
@@ -113,7 +113,7 @@ def tree_of(story: Story, tree: GroupCpuTime, group: int, *processes: Process) -
         story.container.get(OutputFolder).write_pid(process.id, group)
 
 
-def printed_now(story: Story, process: Process, text: str) -> None:
+def emitted_current(story: Story, process: Process, text: str) -> None:
     """The run prints the text now, by the story's clock."""
     folder = story.container.get(OutputFolder)
     folder.write_output(process.id, 1, folder.output(process.id, 1) + text)
@@ -164,12 +164,12 @@ def worker_agent(story: Story) -> Agent:
     return story.story_rows(Agent, session=WORKER_SESSION)[0]
 
 
-def told(story: Story, session: str) -> list[str]:
+def informed(story: Story, session: str) -> list[str]:
     return list(story.hook(session, TOOL_USE).lines)
 
 
 def expect_informed(story: Story, session: str, *texts: str) -> None:
-    lines = told(story, session)
+    lines = informed(story, session)
     story.expect_rows(*(any(text in line for line in lines) for text in texts), detail="\n".join(lines))
 
 
@@ -181,7 +181,7 @@ def has_cadence_record(story: Story, process: Process) -> bool:
     return bool(story.container.get(OutputFolder).text(process.id, CADENCE_FILE))
 
 
-def printed(story: Story, process: Process, text: str) -> None:
+def emitted(story: Story, process: Process, text: str) -> None:
     story.container.get(OutputFolder).write_output(process.id, 1, text)
 
 

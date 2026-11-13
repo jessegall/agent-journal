@@ -190,7 +190,7 @@ class PluginManifest:
                                          memory if isinstance(memory := entry.get("memory_mb", 0), int) and memory > 0 else 0, entry.get("coalesce") is True)
                      for entry in entries)
 
-    def process_kind(self, category: str) -> ManifestProcessKind | None:
+    def process_category(self, category: str) -> ManifestProcessKind | None:
         return next((declared for declared in self.process_kinds if declared.kind == category), None)
 
     @staticmethod

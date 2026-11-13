@@ -18,6 +18,6 @@ class TaskWriteCount:
         current = self.current_tasks.current(hook.agent_id) if tool is not None and tool.is_writing_files() else None
         if current is None:
             return None
-        writes = self.calls.writes_since(hook.agent_id, current.count_start)
+        writes = self.calls.writes_after(hook.agent_id, current.count_start)
         count = self.kept.read(writes, writes.count, name="tasks.write_count")
         return current, count + 1

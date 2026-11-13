@@ -21,5 +21,5 @@ class WorktreeCheckouts(ProjectCheckouts):
         root = self.root
         return tuple(sorted(folder.resolve() for folder in root.glob(WORKTREE_PATTERN) if folder.is_dir())) if root.is_dir() else ()
 
-    def holds(self, folder: Path) -> bool:
+    def contains(self, folder: Path) -> bool:
         return self.root.resolve() in folder.resolve().parents

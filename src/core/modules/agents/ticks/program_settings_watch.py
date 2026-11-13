@@ -69,7 +69,7 @@ class ProgramSettingsWatch:
             self.show(container, ShowMark(ProgramSettingsMarkType.PROGRAM_SETTINGS, ProgramSettingsMarkVariant.RESTORED, change.key, change.text,
                                           outcome=MarkOutcome.FAILED))
 
-    def link_was_put_back(self, path: Path) -> bool:
+    def is_link_restored(self, path: Path) -> bool:
         return path.is_symlink() or (self.has_prepared and not path.exists())
 
     def external_changes(self, container: Container, settings: ProgramSettings, title: str) -> list[OutsideChange]:
@@ -80,7 +80,7 @@ class ProgramSettingsWatch:
         restored_notice = f"The journal's {title} settings were changed outside the journal and were put back"
         for path in writer.differences(settings):
             if path in settings.links:
-                if self.link_was_put_back(path):
+                if self.is_link_restored(path):
                     changes.append(OutsideChange(f"put-back:{path}:link", f"{restored_notice}: the link {path} was made again."))
                 continue
             if not path.is_file():
@@ -116,7 +116,7 @@ class ProgramSettingsWatch:
                                               f"unreadable-person-file:{path}:{path.stat().st_mtime_ns}",
                                               f"Your settings file {path} could not be read, so the journal carries none of its settings into its own",
                                               outcome=MarkOutcome.FAILED))
-        waiting_cleanups = sync.held_cleanups()
+        waiting_cleanups = sync.blocked_cleanups()
         if waiting_cleanups != self.shown_waiting:
             self.show_waiting_cleanups(container, waiting_cleanups or self.shown_waiting, ended=not waiting_cleanups)
             self.shown_waiting = waiting_cleanups

@@ -39,7 +39,7 @@ def door_run(story, request: ExecutionRequest):
     return story.container.get(ProcessExecutor).execute(request)
 
 
-def logged_rows_written(story) -> None:
+def logged_rows_saved(story) -> None:
     RequestLogImport()(story.container)
     RequestLogImport()(story.container)
 
@@ -52,7 +52,7 @@ def test_each_hook_leaves_one_ended_request_row_of_the_hook_kind_and_no_process_
     story = new_story(fixture=BuilderStarted)
     processes_previous = story.container.get(Queries).query(Process).count()
     story.hook("s-1", HookSamples.sample("stop"))
-    logged_rows_written(story)
+    logged_rows_saved(story)
     rows = [row for row in category_runs(story, ProcessKind.HOOK) if row.line == "claude stop"]
     story.expect_rows(len(rows) == 1, rows[0].exit_code == 0, rows[0].session_agent_id == story.agent.id,
                       story.container.get(Queries).query(Process).count() == processes_previous, detail=str(rows))
@@ -63,7 +63,7 @@ def test_a_quick_run_through_the_door_is_logged_and_the_tick_writes_one_ended_re
     processes_previous = story.container.get(Queries).query(Process).count()
     execution = door_run(story, ExecutionRequest(["echo", "done"], story.home.project_folder, ProcessKind.QUICK, 10))
     logged_only = category_runs(story, ProcessKind.QUICK)
-    logged_rows_written(story)
+    logged_rows_saved(story)
     rows = category_runs(story, ProcessKind.QUICK)
     story.expect_rows(execution.stdout == "done\n", logged_only == [], len(rows) == 1, rows[0].exit_code == 0, story.container.get(Queries).query(Process).count() == processes_previous, detail=str(rows))
 
@@ -71,7 +71,7 @@ def test_a_quick_run_through_the_door_is_logged_and_the_tick_writes_one_ended_re
 def test_a_failing_run_through_the_door_keeps_its_code(new_story):
     story = new_story(fixture=BuilderStarted)
     execution = door_run(story, ExecutionRequest(["sh", "-c", "exit 3"], story.home.project_folder, ProcessKind.SHELL, 10))
-    logged_rows_written(story)
+    logged_rows_saved(story)
     row = category_runs(story, ProcessKind.SHELL)[0]
     story.expect_rows(execution.exit_code == 3, row.exit_code == 3, detail=str(row))
 
@@ -83,10 +83,10 @@ def test_a_journal_command_is_logged_without_a_write_and_the_tick_writes_each_lo
     log.append(RequestLogEntry(1, None, ProcessKind.JOURNAL, "journal task list", 0, ended_at))
     log.append(RequestLogEntry(1, None, ProcessKind.JOURNAL, "journal task show", 1, ended_at))
     requests_previous = len(category_runs(story, ProcessKind.JOURNAL))
-    logged_rows_written(story)
+    logged_rows_saved(story)
     rows = category_runs(story, ProcessKind.JOURNAL)[requests_previous:]
     story.expect_rows(requests_previous == 0, [(row.line, row.exit_code, row.session_agent_id) for row in rows] == [("journal task list", 0, story.agent.id), ("journal task show", 1, story.agent.id)],
-                      log.taken() == (), detail=str(rows))
+                      log.claimed() == (), detail=str(rows))
 
 
 def test_a_broken_line_in_the_request_log_is_left_out_and_the_rows_around_it_are_written(new_story):
@@ -95,7 +95,7 @@ def test_a_broken_line_in_the_request_log_is_left_out_and_the_rows_around_it_are
     log.append(RequestLogEntry(1, None, ProcessKind.JOURNAL, "journal task list", 0, story.clock.timestamp().text))
     FileAccess.shared().write(log.lines.path, FileAccess.shared().read(log.lines.path) + "{half a line\n" + "{\"line\": \"journal task done\"}\n")
     log.append(RequestLogEntry(1, None, ProcessKind.JOURNAL, "journal task show", 0, story.clock.timestamp().text))
-    logged_rows_written(story)
+    logged_rows_saved(story)
     story.expect_rows([row.line for row in category_runs(story, ProcessKind.JOURNAL)] == ["journal task list", "journal task show"], not log.lines.taken_path.exists())
 
 
@@ -116,7 +116,7 @@ def test_a_failed_environment_in_the_request_log_is_let_go_and_repeats_no_row_of
     for _ in range(2):
         with contextlib.suppress(Exception):
             RequestLogImport()(story.container)
-    story.expect_rows([row.line for row in category_runs(story, ProcessKind.JOURNAL)] == ["journal task list"], log.taken() == ())
+    story.expect_rows([row.line for row in category_runs(story, ProcessKind.JOURNAL)] == ["journal task list"], log.claimed() == ())
 
 
 def test_a_busy_database_keeps_the_rows_of_an_environment_for_the_next_tick_and_a_bad_entry_alone_is_let_go(new_story, monkeypatch):
@@ -138,11 +138,11 @@ def test_a_busy_database_keeps_the_rows_of_an_environment_for_the_next_tick_and_
     for line in ("journal task list", "journal task bad", "journal task show"):
         log.append(RequestLogEntry(1, None, ProcessKind.JOURNAL, line, 0, story.clock.timestamp().text))
     RequestLogImport()(story.container)
-    story.expect_rows(len(log.taken()) == 3, category_runs(story, ProcessKind.JOURNAL) == [])
+    story.expect_rows(len(log.claimed()) == 3, category_runs(story, ProcessKind.JOURNAL) == [])
     outcomes["busy"] = False
     RequestLogImport()(story.container)
     RequestLogImport()(story.container)
-    story.expect_rows(sorted(row.line for row in category_runs(story, ProcessKind.JOURNAL)) == ["journal task list", "journal task show"], log.taken() == ())
+    story.expect_rows(sorted(row.line for row in category_runs(story, ProcessKind.JOURNAL)) == ["journal task list", "journal task show"], log.claimed() == ())
 
 
 def test_a_request_row_older_than_its_days_is_pruned(new_story):
@@ -150,19 +150,19 @@ def test_a_request_row_older_than_its_days_is_pruned(new_story):
     log = story.container.get(RequestLog)
     log.append(RequestLogEntry(1, None, ProcessKind.JOURNAL, "journal task list", 0, (story.clock.timestamp().value - timedelta(days=30)).isoformat()))
     log.append(RequestLogEntry(1, None, ProcessKind.JOURNAL, "journal task show", 0, story.clock.timestamp().text))
-    logged_rows_written(story)
+    logged_rows_saved(story)
     story.expect_rows([row.line for row in category_runs(story, ProcessKind.JOURNAL)] == ["journal task show"])
 
 
 def test_a_journal_command_an_agent_runs_through_the_cli_leaves_one_row_as_that_agent(new_story):
     story = new_story(fixture=BuilderStarted)
     LineRun(story.home).run_as(["task", "list", "--environment", "main"], lambda container: Caller(Actor(story.agent.id, ActorType.AGENT)), io.StringIO())
-    logged_rows_written(story)
+    logged_rows_saved(story)
     rows = [row for row in category_runs(story, ProcessKind.JOURNAL) if row.line == "journal task list"]
     story.expect_rows(len(rows) == 1, rows[0].session_agent_id == story.agent.id, detail=str(rows))
 
 
-def owned_run(story, owner: RowOwner, request: ExecutionRequest):
+def agent_run(story, owner: RowOwner, request: ExecutionRequest):
     story.container.get(Database).row_owner = owner
     return story.container.get(ProcessExecutor).execute(request)
 
@@ -174,12 +174,12 @@ def test_a_paused_agent_or_main_agent_starts_no_run_that_takes_a_place_until_it_
     shell = ExecutionRequest(["sh", "-c", "exit 0"], story.home.project_folder, ProcessKind.SHELL, 10)
     quick = ExecutionRequest(["sh", "-c", "exit 0"], story.home.project_folder, ProcessKind.QUICK, 10)
     with pytest.raises(Refusal, match="your agent is paused"):
-        owned_run(story, worker, shell)
-    quick_while_paused = owned_run(story, worker, quick)
-    main_while_worker_paused = owned_run(story, RowOwner(MAIN_AGENT, 1), shell)
+        agent_run(story, worker, shell)
+    quick_while_paused = agent_run(story, worker, quick)
+    main_while_worker_paused = agent_run(story, RowOwner(MAIN_AGENT, 1), shell)
     story.run(f"agent resume {agent_number(story, worker.agent)}", actor=story.user)
-    resumed = owned_run(story, worker, shell)
+    resumed = agent_run(story, worker, shell)
     story.run(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
     with pytest.raises(Refusal, match="your agent is paused"):
-        owned_run(story, RowOwner(MAIN_AGENT, 1), shell)
+        agent_run(story, RowOwner(MAIN_AGENT, 1), shell)
     story.expect_rows(quick_while_paused.exit_code == 0, main_while_worker_paused.exit_code == 0, resumed.exit_code == 0)

@@ -65,16 +65,16 @@ class ProgramSettingsSync:
 
     def clean_project_files(self, program: str) -> None:
         provider = self.providers.provider(program)
-        if self.is_cleanup_held(program):
+        if self.is_cleanup_blocked(program):
             return
         for folder in self.folders():
             self.cleanup.cleaned(provider, folder)
 
-    def is_cleanup_held(self, program: str) -> bool:
-        return self.sessions.has_session_started_before(program, self.switched_at())
+    def is_cleanup_blocked(self, program: str) -> bool:
+        return self.sessions.has_prior_session(program, self.switched_at())
 
-    def held_cleanups(self) -> tuple[str, ...]:
-        return tuple(provider.name for provider in self.providers.all() if self.is_cleanup_held(provider.name)
+    def blocked_cleanups(self) -> tuple[str, ...]:
+        return tuple(provider.name for provider in self.providers.all() if self.is_cleanup_blocked(provider.name)
                      and any(self.cleanup.has_journal_entries(provider, folder) for folder in self.folders()))
 
     def switched_at(self) -> Timestamp:

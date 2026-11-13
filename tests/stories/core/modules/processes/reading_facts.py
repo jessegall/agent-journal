@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from engine.enums.command_category import CommandCategory
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper
-from tests.stories.core.modules.processes.support.cadence_probe import cadence_tick, has_cadence_record, printed, ring
+from tests.stories.core.modules.processes.support.cadence_probe import cadence_tick, has_cadence_record, emitted, ring
 from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, moved_run, start_process
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, worker_run
 from tests.stories.core.modules.processes.support.reading_case_samples import ENDED, RUNNING, STARTED, case_of, helper_search, plugin_check
@@ -54,11 +54,11 @@ def test_the_case_of_a_run_has_its_cadence_and_a_prompt_is_interactive_only_once
     silent = moved_run(story, "make package", CommandCategory.BUILD)
     talking = moved_run(story, "make build", CommandCategory.BUILD)
     asking = moved_run(story, "make install", CommandCategory.BUILD)
-    printed(story, asking, "Installing\nProceed (y/n)?")
+    emitted(story, asking, "Installing\nProceed (y/n)?")
     text = ""
     for step in range(4):
         text += f"step {step}\n"
-        printed(story, talking, text)
+        emitted(story, talking, text)
         cadence_tick(story)
         story.advance(TICK)
     silent_case, talking_case, printing = case_of(story, silent, RUNNING), case_of(story, talking, RUNNING), case_of(story, asking, RUNNING)

@@ -31,6 +31,6 @@ class StartMemoriesListener(CommitListener[SessionStarted]):
         if agent.retired_at is not None or agent.role not in self.suites.agent_policy().prompt_roles:
             return
         with self.scopes.opened(call.session_agent_id):
-            memory_ids = tuple(row.memory_id for row in self.memories.absent_memories(call.session_agent_id).every_by_weight(START_MEMORIES_REASON))
+            memory_ids = tuple(row.memory_id for row in self.memories.absent_memories(call.session_agent_id).all_weighted(START_MEMORIES_REASON))
         if memory_ids:
             self.bus.run(GiveMemories(call.session_agent_id, memory_ids, DeliveryCause.START), self.actors.actor(MODULE_NAME), cause_id=logged.id)

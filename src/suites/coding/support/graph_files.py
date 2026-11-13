@@ -37,10 +37,10 @@ class GraphFiles:
             return None
         return GraphStamp.read(FileAccess.shared().read(self.stamp_path))
 
-    def seconds_since_refresh(self, clock: Clock) -> float | None:
+    def refresh_age_seconds(self, clock: Clock) -> float | None:
         return clock.epoch_seconds() - self.stamp_path.stat().st_mtime if self.stamp_path.is_file() else None
 
-    def seconds_since_clustering(self, clock: Clock) -> float | None:
+    def clustering_age_seconds(self, clock: Clock) -> float | None:
         path = self.output / CLUSTERED_FILE
         return clock.epoch_seconds() - path.stat().st_mtime if path.is_file() else None
 

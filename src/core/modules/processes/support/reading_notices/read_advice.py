@@ -15,7 +15,7 @@ class ReadAdvice:
     def __init__(self, rows: EventRows, settings: ProcessSettings) -> None:
         self.rows, self.settings = rows, settings
 
-    def advice(self, output: Output) -> tuple[Nudge, ...]:
+    def hint(self, output: Output) -> tuple[Nudge, ...]:
         if output.reader_id is not None and output.reader_lines:
             return tuple([READER_HINT.nudge(reader=self.rows.required(Reader, output.reader_id).name, output=output.process_id)])
         if output.line_count > self.settings.integer(ProcessSetting.LARGE_OUTPUT_LINES):

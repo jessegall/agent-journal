@@ -253,7 +253,7 @@ class WorktreeGit:
         folders = built.folders(conflicts)
         if folders:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rm", "-r", "-f", "--ignore-unmatch", "--", *folders)
-        source_conflicts = built.others(self.without_instruction_conflicts(worktree, tuple(conflicts)))
+        source_conflicts = built.remainder(self.without_instruction_conflicts(worktree, tuple(conflicts)))
         if not source_conflicts:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "--no-edit")
         return source_conflicts
@@ -278,7 +278,7 @@ class WorktreeGit:
 
     def refuse_deleted_built_files(self, worktree: Worktree, changes: WorktreeChanges) -> None:
         built = self.builds.paths()
-        deleted = [change.relative for change in changes.changes if change.status is FileStatus.DELETED and built.holds(change.relative)]
+        deleted = [change.relative for change in changes.changes if change.status is FileStatus.DELETED and built.contains(change.relative)]
         if not deleted:
             return
         tracked = self.tracked_files(worktree, {str(Path(built.folder(path)).parent) for path in deleted})
@@ -500,7 +500,7 @@ class WorktreeGit:
         self.keep_instruction_files(folder)
         conflicts = self.git(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.splitlines()
         built = self.builds.paths()
-        if built.others(conflicts):
+        if built.remainder(conflicts):
             self.git(folder, GIT_LIMIT_SECONDS, "merge", "--abort")
             raise Refusal(f"git merge of {revision} failed in {folder}", (finished.stderr or finished.stdout).strip())
         clashed = built.of(conflicts)

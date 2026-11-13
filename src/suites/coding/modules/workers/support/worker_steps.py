@@ -55,7 +55,7 @@ class WorkerSteps:
         if self.has_open_failure(worktree):
             return WorkerStep.FIX
         if self.is_unit_committed(worker_round, worktree):
-            return WorkerStep.WAIT if self.runs.holds_merge(worktree.id) or self.proofs.tests_waiting(worktree.id) else WorkerStep.MERGE_DUE
+            return WorkerStep.WAIT if self.runs.has_merge(worktree.id) or self.proofs.tests_waiting(worktree.id) else WorkerStep.MERGE_DUE
         if self.is_delivered(worker_round):
             return WorkerStep.WAIT
         return self.working_step(worker_round)

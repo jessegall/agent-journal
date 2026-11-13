@@ -47,4 +47,4 @@ class WorkerRunEndListener(CommitListener[Moved[CheckpointReach]]):
             self.bus.run(StartMerger(self.lines.nudge(worktree), worktree.merge_ready_at), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)
 
     def starts_merger(self, worktree: Worktree) -> bool:
-        return worktree.is_merge_ready and self.settings.flag(MERGER_ENABLED) and not self.runs.holds_merge(worktree.id)
+        return worktree.is_merge_ready and self.settings.flag(MERGER_ENABLED) and not self.runs.has_merge(worktree.id)

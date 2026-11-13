@@ -23,7 +23,7 @@ class SilentRuns:
         return part if part is not None and self.is_watched(part) else None
 
     def is_empty_output(self, part: ProcessPart) -> bool:
-        return self.silences.printed_nothing(part)
+        return self.silences.is_silent(part)
 
     @staticmethod
     def is_watched(part: ProcessPart) -> bool:

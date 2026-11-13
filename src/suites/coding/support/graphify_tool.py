@@ -120,18 +120,18 @@ class GraphifyTool(ToolRunner):
     def tick(self, folder: Path) -> ToolStatus:
         self.checked_folder(folder)
         status = self.status(folder)
-        is_worktree = WorktreeCheckouts(self.home).holds(folder)
+        is_worktree = WorktreeCheckouts(self.home).contains(folder)
         skips_refresh = is_worktree or not self.is_installed() or not status.commit or status.is_current or status.is_running or self.is_failed(folder)
-        if skips_refresh or self.refreshed_lately(folder):
+        if skips_refresh or self.is_recently_refreshed(folder):
             return status
         return self.after_start(folder, status)
 
-    def refreshed_lately(self, folder: Path) -> bool:
-        elapsed = GraphFiles(folder).seconds_since_refresh(self.clock)
+    def is_recently_refreshed(self, folder: Path) -> bool:
+        elapsed = GraphFiles(folder).refresh_age_seconds(self.clock)
         return elapsed is not None and elapsed < self.settings.project.number(GRAPHIFY_REFRESH_MINUTES) * MINUTE_SECONDS
 
     def grouping(self, folder: Path) -> str:
-        elapsed = GraphFiles(folder).seconds_since_clustering(self.clock)
+        elapsed = GraphFiles(folder).clustering_age_seconds(self.clock)
         is_due = elapsed is None or elapsed >= self.settings.project.number(GRAPHIFY_CLUSTER_MINUTES) * MINUTE_SECONDS
         return CLUSTER if is_due else UNCLUSTERED
 

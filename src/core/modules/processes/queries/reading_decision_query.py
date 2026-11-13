@@ -35,7 +35,7 @@ class ReadingDecisionQuery(Query[ReadingDecisionRow]):
     def for_command_key(self, command_key: str) -> Self:
         return self.filter(command_key=command_key)
 
-    def since(self, timestamp: Timestamp) -> Self:
+    def after(self, timestamp: Timestamp) -> Self:
         return self.matching(Greater("decided_at", timestamp.text))
 
     def lacking_a_reader_at_end(self) -> Self:

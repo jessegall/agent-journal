@@ -129,9 +129,9 @@ class HookCallQuery(Query[HookCall]):
         return call is not None and call.is_compaction and call.creation_timestamp().elapsed_seconds(checked_at) < COMPACTION_LIMIT_SECONDS
 
     def write_count(self, agent_id: int, timestamp: Timestamp) -> int:
-        return self.writes_since(agent_id, timestamp).count()
+        return self.writes_after(agent_id, timestamp).count()
 
-    def writes_since(self, agent_id: int, timestamp: Timestamp) -> Self:
+    def writes_after(self, agent_id: int, timestamp: Timestamp) -> Self:
         return self.agent(agent_id).filter(writes_files=True, answer=HookAnswer.ALLOWED).matching(Minimum("created_at", timestamp.text))
 
     def tool_call_count(self, agent_id: int, timestamp: Timestamp) -> int:

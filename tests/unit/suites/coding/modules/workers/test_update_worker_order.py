@@ -18,23 +18,23 @@ class Requests:
         return OWN_RUN
 
 
-def asked(caller_id: int, matching: int | None):
+def requested(caller_id: int, matching: int | None):
     subcommand = UpdateWorkerSubcommand(Requests(), None, Agents())
     return subcommand.command(SimpleNamespace(worker_id=matching), SimpleNamespace(actor=Actor(caller_id, ActorType.AGENT), process_id=None))
 
 
 def test_the_main_agent_naming_a_worker_orders_its_update():
-    command = asked(MAIN, WORKER)
+    command = requested(MAIN, WORKER)
     assert isinstance(command, OrderWorkerUpdate) and command.worker_id == WORKER
 
 
 def test_a_worker_naming_itself_or_no_one_updates_its_own_worktree():
-    assert (asked(WORKER, WORKER), asked(WORKER, None)) == (OWN_RUN, OWN_RUN)
+    assert (requested(WORKER, WORKER), requested(WORKER, None)) == (OWN_RUN, OWN_RUN)
 
 
 def test_a_worker_naming_another_worker_is_refused():
     with pytest.raises(Refusal, match="a worker updates only its own worktree"):
-        asked(WORKER, 8)
+        requested(WORKER, 8)
 
 
 def test_the_main_agent_orders_a_worker_with_no_check_open_and_one_is_opened_and_ordered():

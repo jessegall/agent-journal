@@ -8,7 +8,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.enums.reading_moment import ReadingMoment
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.reading_decision_row import ReadingDecisionRow
-from tests.stories.core.modules.processes.support.cadence_probe import told
+from tests.stories.core.modules.processes.support.cadence_probe import informed
 from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, moved_run, start_process
 from tests.stories.core.modules.processes.support.reader_block_fixtures import worker_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
@@ -87,9 +87,9 @@ def end_positions(story: Story, process: Process) -> list[int]:
     return sorted(row.part_position for row in story.container.get(Queries).query(ReadingDecisionRow).filter(process_id=process.id, moment=ReadingMoment.END).every_row(TEST_ROWS_REASON))
 
 
-def heard(story: Story, session: str = "s-1") -> str:
+def received(story: Story, session: str = "s-1") -> str:
     """The lines an agent hears on its next two hooks, as a hook gives only a few lines at a time."""
-    return "\n".join([*told(story, session), *told(story, session)])
+    return "\n".join([*informed(story, session), *informed(story, session)])
 
 
 def agent_number(story: Story, agent_id: int) -> int:

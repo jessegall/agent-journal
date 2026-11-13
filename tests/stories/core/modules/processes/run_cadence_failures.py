@@ -4,8 +4,8 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.core.modules.processes.support.cadence_probe import (cadence_lines, cut_to, damaged_record, elsewhere_run, folder_made_a_file,
-                                                                       kept_lines, printed, record_text, removed_output, ring, tick_cost, ticks)
+from tests.stories.core.modules.processes.support.cadence_probe import (cadence_lines, cut_to, damaged_record, foreign_run, folder_made_a_file,
+                                                                       kept_lines, emitted, record_text, removed_output, ring, tick_cost, ticks)
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 from core.modules.processes.models.enums.process_setting import ProcessSetting
@@ -75,7 +75,7 @@ def test_fifty_runs_at_once_are_judged_in_one_tick_within_its_limits(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     processes = [moved_run(story, f"make part-{number}", CommandCategory.BUILD) for number in range(FIFTY_RUNS)]
     for process in processes:
-        printed(story, process, "started\n")
+        emitted(story, process, "started\n")
     story.advance(timedelta(seconds=10))
     statements, seconds = tick_cost(story)
     story.expect_rows(all(len(ring(story, process)) == 1 for process in processes), statements < MOST_STATEMENTS, seconds < MOST_SECONDS,
@@ -89,7 +89,7 @@ def test_two_environments_judge_their_runs_by_their_own_thresholds(new_story):
     different = Actor(story.new_row_id("agent start s-elsewhere claude main --environment elsewhere"), ActorType.AGENT)
     story.expect_success(f"setting set {ProcessSetting.FIRST_OUTPUT_SECONDS.key} 60 --environment elsewhere", actor=story.user)
     here = moved_run(story, "make here", CommandCategory.BUILD)
-    there = elsewhere_run(story, different)
+    there = foreign_run(story, different)
     ticks(story, 30)
     early = kept_lines(story, different.id, story.user)
     ticks(story, 30)

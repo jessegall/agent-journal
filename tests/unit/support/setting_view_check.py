@@ -32,7 +32,7 @@ class SettingViewCheck:
             if path.suffix in VIEW_SUFFIXES and ("/web/src/" in relative or relative.startswith(VIEWER_FOLDER)) and not SKIPPED_PARTS.intersection(path.parts) and not relative.startswith(SETTING_COMPONENTS_FOLDER):
                 yield path
 
-    def named_keys(self, text: str, keys: frozenset[str]) -> list[str]:
+    def matching_keys(self, text: str, keys: frozenset[str]) -> list[str]:
         return sorted({matched for matched in SETTING_KEY.findall(text) if matched in keys})
 
     def failures(self) -> list[str]:
@@ -40,7 +40,7 @@ class SettingViewCheck:
         problems = []
         for path in self.view_files():
             relative = path.relative_to(self.project_folder).as_posix()
-            matching = self.named_keys(FileAccess.shared().read(path), keys)
+            matching = self.matching_keys(FileAccess.shared().read(path), keys)
             if matching and relative not in self.allowed:
                 problems.append(f"{relative} names the declared settings {', '.join(matching)}: draw them from their declaration")
         return problems
@@ -50,4 +50,4 @@ class SettingViewCheck:
 
     def component_failures(self) -> list[str]:
         entries: list[SettingEntry] = [entry for module in self.modules for entry in SettingTree().entries(module.name, module.settings) if entry.type in {category.value for category in SettingType}]
-        return [f"{entry.key} is a {entry.type}, which the component {entry.drawn_by().value} cannot draw" for entry in entries if entry.type not in {category.value for category in entry.drawn_by().kinds()}]
+        return [f"{entry.key} is a {entry.type}, which the component {entry.drawn_by().value} cannot draw" for entry in entries if entry.type not in {category.value for category in entry.drawn_by().categories()}]

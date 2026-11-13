@@ -165,7 +165,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
             self.bus.run(CancelWorkerOpening(opened.id, retain_agent=True), actor, environment_id=worker.environment_id)
             raise
 
-    def tell_joined(self, worker_id: int, context: Context) -> None:
+    def inform_joined(self, worker_id: int, context: Context) -> None:
         for task_id in self.task_ids:
             self.nudger.send(worker_id, WORKER_TASK_JOINS, WORKER_TASK_JOINS.key, context, task=task_id)
 
@@ -193,7 +193,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
                                          recipient=WorkerRecipient.text(command.worker_id)), context)
         if self.task_ids:
             if worktree.state is WorktreeState.CUT:
-                self.tell_joined(command.worker_id, context)
+                self.inform_joined(command.worker_id, context)
             return self.kept_tasks.handed(worker, worktree, self.task_ids, self.job_text(command, worktree), context)
         if worktree.state is WorktreeState.DELIVERED:
             self.advance.restart_task(worktree, self.rows.required(Task, worktree.task_id), context)

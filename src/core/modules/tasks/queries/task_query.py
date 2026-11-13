@@ -39,10 +39,10 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
         self.kept = kept
 
     def started_tasks(self, agent_id: int) -> tuple[Task, ...]:
-        tasks = self.held_started(agent_id)
+        tasks = self.holder_started(agent_id)
         return self.kept.read(tasks, lambda: self.newest_current(tuple(tasks.every_row(BLOCKED_TASKS_REASON))), name="tasks.current_tasks")
 
-    def held_started(self, agent_id: int) -> Self:
+    def holder_started(self, agent_id: int) -> Self:
         return self.holder(agent_id).started().oldest()
 
     @staticmethod
@@ -73,7 +73,7 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
             return self.newest_current([row for row in tasks if row.id != task.id] + started)
 
         if task.holder_id is not None:
-            self.kept.update(self.held_started(task.holder_id), with_started, name="tasks.current_tasks")
+            self.kept.update(self.holder_started(task.holder_id), with_started, name="tasks.current_tasks")
 
     @staticmethod
     def newest_current(tasks: Sequence[Task]) -> tuple[Task, ...]:

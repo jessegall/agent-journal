@@ -9,8 +9,8 @@ from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
-from tests.stories.core.modules.processes.support.cadence_probe import (HelperBesideWorker, agent_run, cadence_tick, expect_informed, kept_lines, printed_now,
-                                                                       running_run, told, tree_of, worker_agent)
+from tests.stories.core.modules.processes.support.cadence_probe import (HelperBesideWorker, agent_run, cadence_tick, expect_informed, kept_lines, emitted_current,
+                                                                       running_run, informed, tree_of, worker_agent)
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.modules.processes.support.process_nudges import HUNG_RUN
@@ -176,7 +176,7 @@ def watched(story: Story, seconds: int, tree: FakeGroupCpuTime | None = None) ->
         cadence_tick(story)
 
 
-def stuck_line(process_id: int, seconds: int = HALF) -> str:
+def hang_line(process_id: int, seconds: int = HALF) -> str:
     return RUN_FROZEN.nudge(output=process_id, seconds=seconds, limit=HANG_SECONDS).text
 
 
@@ -190,7 +190,7 @@ def test_a_stuck_test_run_wakes_its_agent_once_at_half_the_hang_time_and_is_stop
     started_tree(story, 12.0)
     watched(story, HALF)
     warnings = [row for row in json.loads(kept_lines(story))["rows"] if HUNG in row["text"]]
-    story.expect_rows([row["text"] for row in warnings] == [stuck_line(1)], all(row["wakes_agent"] for row in warnings), detail=kept_lines(story))
+    story.expect_rows([row["text"] for row in warnings] == [hang_line(1)], all(row["wakes_agent"] for row in warnings), detail=kept_lines(story))
     story.expect_text("process show 1", "state: background", actor=story.agent)
     watched(story, HALF)
     story.expect_text("process show 1", "state: stopped", actor=story.agent)
@@ -205,8 +205,8 @@ def test_a_helpers_and_a_workers_stuck_runs_wake_them_with_the_same_warning(new_
     tree_of(story, FakeGroupCpuTime(12.0), MISSING_GROUP, *runs)
     watch_tick(story)
     watched(story, HALF)
-    expect_informed(story, helper.session, stuck_line(runs[0].id))
-    expect_informed(story, worker.session, stuck_line(runs[1].id))
+    expect_informed(story, helper.session, hang_line(runs[0].id))
+    expect_informed(story, worker.session, hang_line(runs[1].id))
 
 
 def test_a_busy_silent_test_run_gets_no_stuck_warning_and_is_still_asked_to_be_looked_at(new_story):
@@ -228,7 +228,7 @@ def test_a_stuck_build_test_run_check_and_python_run_are_warned_alike(new_story)
     watch_tick(story)
     watched(story, HALF)
     outputs = ", ".join(str(process.id) for process in runs)
-    received = told(story, "s-1") + told(story, "s-1")
+    received = informed(story, "s-1") + informed(story, "s-1")
     story.expect_rows(any(f"Output {outputs} printed nothing for {HALF}s and uses no CPU" in line for line in received), detail="\n".join(received))
 
 
@@ -250,11 +250,11 @@ def test_a_stuck_build_that_prints_again_is_warned_again_after_a_new_silence(new
     titled(story, "Building the stuck project")
     started_tree(story, 12.0)
     watched(story, HALF)
-    first = told(story, "s-1")
-    printed_now(story, running_run(story), "linking\n")
+    first = informed(story, "s-1")
+    emitted_current(story, running_run(story), "linking\n")
     watched(story, HALF + TICK.seconds)
-    second = told(story, "s-1")
-    story.expect_rows(any(stuck_line(1) in line for line in first), any(HUNG in line for line in second), detail="\n".join(first + second))
+    second = informed(story, "s-1")
+    story.expect_rows(any(hang_line(1) in line for line in first), any(HUNG in line for line in second), detail="\n".join(first + second))
 
 
 def test_a_run_with_no_known_process_tree_is_never_warned_or_stopped_but_still_told_it_does_not_stream(new_story):
@@ -274,4 +274,4 @@ def test_a_chain_whose_test_part_is_stuck_is_warned_once_for_its_output(new_stor
     started_tree(story, 12.0)
     watched(story, HALF + 2 * TICK.seconds)
     lines = kept_lines(story)
-    story.expect_rows(lines.count(HUNG) == 1, stuck_line(process.id) in lines, detail=lines)
+    story.expect_rows(lines.count(HUNG) == 1, hang_line(process.id) in lines, detail=lines)

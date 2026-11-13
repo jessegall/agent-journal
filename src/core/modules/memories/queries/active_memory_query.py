@@ -25,7 +25,7 @@ class ActiveMemoryQuery(Query[ActiveMemory]):
         return self.descending("weight").ordered("memory_id")
 
     # Every matching memory, the heaviest first, read by key and put in the weight order afterwards.
-    def every_by_weight(self, reason: str) -> list[ActiveMemory]:
+    def all_weighted(self, reason: str) -> list[ActiveMemory]:
         return sorted(self.every_row(reason), key=lambda memory: (-memory.weight, memory.memory_id))
 
     def absent_memories(self, agent_id: int) -> Self:

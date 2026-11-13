@@ -13,7 +13,7 @@ from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 MERGE_REQUEST = "merge-ask show 1 --environment main"
 
 
-def asked_list(new_story, monkeypatch) -> StoryWorker:
+def requested_list(new_story, monkeypatch) -> StoryWorker:
     """A worker of three tasks sent together committed all three, its runs passed, and it asked for the merge."""
     worker = unplanned_group_worker(new_story, monkeypatch)
     commit_tasks_singly(worker, (1, 2, 3))
@@ -23,7 +23,7 @@ def asked_list(new_story, monkeypatch) -> StoryWorker:
     return worker
 
 
-def asked_plan(new_story, monkeypatch) -> StoryWorker:
+def requested_plan(new_story, monkeypatch) -> StoryWorker:
     """The worker of plan 1 committed its four tasks, every run passed, and it asked for the merge."""
     worker = start_planned_worker(new_story, monkeypatch)
     commit_tasks_singly(worker, (1, 2, 3, 4))
@@ -34,25 +34,25 @@ def asked_plan(new_story, monkeypatch) -> StoryWorker:
 
 
 def test_65_the_merger_reads_the_ask(new_story, monkeypatch):
-    worker = asked_list(new_story, monkeypatch)
+    worker = requested_list(new_story, monkeypatch)
     worker.story.expect_text(MERGE_REQUEST, "the cart, all three tasks", "state: waiting", "unit_name: tasks 1, 2, 3", actor=worker.story.agent)
 
 
 def test_66_one_merge_closes_every_asked_task_with_its_log_line(new_story, monkeypatch):
-    worker = asked_list(new_story, monkeypatch)
+    worker = requested_list(new_story, monkeypatch)
     merge(worker)
     for task_id in (1, 2, 3):
         worker.story.expect_text(f"task show {task_id}", "state: completed", actor=worker.story.agent)
 
 
 def test_67_the_plan_ends_with_its_merge(new_story, monkeypatch):
-    worker = asked_plan(new_story, monkeypatch)
+    worker = requested_plan(new_story, monkeypatch)
     merge(worker)
     worker.story.expect_text("plan show 1", "state: completed", actor=worker.story.agent)
 
 
 def test_68_main_hears_one_line_naming_the_ask(new_story, monkeypatch):
-    worker = asked_list(new_story, monkeypatch)
+    worker = requested_list(new_story, monkeypatch)
     merge(worker)
     number = agent_number(worker.story, worker.worker.id)
     lines = [line for line in worker.main_agent_lines() if "merge-ask:1" in line]
@@ -88,7 +88,7 @@ def test_an_ask_is_heard_by_the_main_agent_with_the_merger_off(new_story, monkey
 
 
 def test_a_send_onto_a_waiting_ask_keeps_the_ask_and_queues_the_task(new_story, monkeypatch):
-    worker = asked_list(new_story, monkeypatch)
+    worker = requested_list(new_story, monkeypatch)
     task_id = worker.story.new_row_id('task make "Receipts" --brief "Print them" --environment main', actor=worker.story.agent)
     worker.story.run(f"worker send {agent_number(worker.story, worker.worker.id)} --task {task_id}", actor=worker.story.agent)
     worker.story.expect_text(MERGE_REQUEST, "state: waiting", actor=worker.story.agent)
@@ -107,7 +107,7 @@ def test_a_part_asked_before_a_rebase_is_merged_by_its_tasks(new_story, monkeypa
 
 
 def test_the_merge_commit_of_a_unit_names_every_task_it_brings_in(new_story, monkeypatch):
-    worker = asked_list(new_story, monkeypatch)
+    worker = requested_list(new_story, monkeypatch)
     worker.story.expect_success("worker-worktree list --json", actor=worker.story.agent)
     merge(worker)
     title = worker.repository.history.tip(ENVIRONMENT_BRANCH).message.splitlines()[0]

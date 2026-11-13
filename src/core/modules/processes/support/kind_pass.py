@@ -8,7 +8,7 @@ class KindPass:
     its kind, given the runs that hold a place now, and that a run was just given its place. A kind nobody
     declares never holds a run."""
 
-    def is_held(self, waiting: Process, running: Sequence[Process]) -> bool:
+    def is_blocked(self, waiting: Process, running: Sequence[Process]) -> bool:
         return False
 
     def admitted(self, process: Process) -> None:

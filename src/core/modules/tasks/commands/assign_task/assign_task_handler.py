@@ -40,13 +40,13 @@ class AssignTaskHandler(Handler[AssignTask, Task]):
         self.assignees.check_reassignment(task)
         label = self.labels.text(command.actor_id)
         self.assign(task, command.actor_id, context)
-        return self.let_go(task, label, context)
+        return self.release(task, label, context)
 
     def assign(self, task: Task, actor_id: int, context: Context) -> None:
         self.assignments.assign(task, actor_id, context, cascade=False)
         self.waits.update_tasks([task.id], context)
 
-    def let_go(self, task: Task, label: str, context: Context) -> Task:
+    def release(self, task: Task, label: str, context: Context) -> Task:
         if task.state is TaskState.BLOCKED:
             return self.repository.save(task.drop_hold(context.timestamp, context.actor, f"assigned to {label}"), context)
         return self.repository.save(task.release(context.timestamp, context.actor, f"assigned to {label}"), context)

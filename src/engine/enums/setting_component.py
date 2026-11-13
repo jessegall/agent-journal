@@ -16,7 +16,7 @@ class SettingComponent(StrEnum):
     THREE_WAY_CAP = "three-way-cap"
     PER_TYPE_OVERRIDE = "per-type-override"
 
-    def kinds(self) -> tuple[SettingType, ...]:
+    def categories(self) -> tuple[SettingType, ...]:
         match self:
             case SettingComponent.TOGGLE:
                 return tuple([SettingType.FLAG])

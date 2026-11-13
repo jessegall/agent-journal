@@ -16,7 +16,7 @@ class ProjectGraphClaim:
     def __init__(self, home: JournalHome) -> None:
         self.path = home.folder / "runtime" / CLAIM_FILE
 
-    def is_held(self, clock: Clock) -> bool:
+    def is_claimed(self, clock: Clock) -> bool:
         if not self.path.is_file():
             return False
         text = FileAccess.shared().read(self.path).strip()
@@ -26,7 +26,7 @@ class ProjectGraphClaim:
         return is_blocked
 
     def claim(self, clock: Clock) -> bool:
-        if self.is_held(clock):
+        if self.is_claimed(clock):
             return False
         self.path.parent.mkdir(parents=True, exist_ok=True)
         try:

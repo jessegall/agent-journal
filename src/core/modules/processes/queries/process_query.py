@@ -63,7 +63,7 @@ class ProcessQuery(Query[Process]):
     def docked_runs(self) -> Self:
         return self.matching(SubqueryMatch("id", self.output_items().matching(Equal("state", DockItemState.DOCKED.value))))
 
-    def fresh_long_runs(self, present: Timestamp, seconds: int) -> Self:
+    def new_long_runs(self, present: Timestamp, seconds: int) -> Self:
         return self.long_run_candidates(present, seconds).matching(SubqueryMatch("id", self.output_items(), negated=True))
 
     @staticmethod

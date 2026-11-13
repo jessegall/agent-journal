@@ -47,7 +47,7 @@ class LongRunDockRule(DriverRule):
         dock = Interval(self.settings.seconds(ProcessSetting.DOCK_AFTER_SECONDS))
         runs = self.processes.agent(hook.agent_id)
         docked = tuple(runs.running().docked_runs().get())
-        new = tuple(runs.running().fresh_long_runs(hook.timestamp, dock.seconds).oldest().take(RUNS_CONSIDERED))
+        new = tuple(runs.running().new_long_runs(hook.timestamp, dock.seconds).oldest().take(RUNS_CONSIDERED))
         if not docked and not new:
             return RuleAnswer.allowed()
         parts: dict[int, list[ProcessPart]] = defaultdict(list)

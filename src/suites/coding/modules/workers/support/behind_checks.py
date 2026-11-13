@@ -28,15 +28,15 @@ class BehindChecks:
         return self.settings.flag(WORKTREE_UPDATES) and self.settings.number(STALE_CHECK_COMMITS) > 0
 
     def due_worktrees(self, now: Timestamp) -> tuple[Worktree, ...]:
-        if not self.is_on() or not self.is_look_due(now):
+        if not self.is_on() or not self.is_check_due(now):
             return ()
         return tuple(self.queries.query(Worktree).filter(state=WorktreeState.CUT).every_row(CUT_WORKTREES_REASON))
 
-    def is_look_due(self, now: Timestamp) -> bool:
-        check = self.last_look()
+    def is_check_due(self, now: Timestamp) -> bool:
+        check = self.last_check()
         return check is None or now.value - check.looked_at.value >= timedelta(minutes=self.settings.number(BEHIND_CHECK_MINUTES))
 
-    def last_look(self) -> WorktreeBehindLook | None:
+    def last_check(self) -> WorktreeBehindLook | None:
         return self.queries.query(WorktreeBehindLook).first()
 
     def opens(self, worktree: Worktree, behind: int) -> bool:

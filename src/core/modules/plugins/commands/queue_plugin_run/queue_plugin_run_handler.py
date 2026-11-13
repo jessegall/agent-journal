@@ -34,7 +34,7 @@ class QueuePluginRunHandler(Handler[QueuePluginRun, QueuedRunStart]):
     def handle(self, command: QueuePluginRun, context: Context) -> QueuedRunStart:
         if self.queries.query(Plugin).filter(name=command.plugin).first() is None:
             raise Refusal(f"no plugin is named {command.plugin}", "journal plugin list shows them")
-        declared = PluginManifest.read(self.folders.code(command.plugin)).process_kind(command.kind)
+        declared = PluginManifest.read(self.folders.code(command.plugin)).process_category(command.kind)
         if declared is None:
             raise Refusal(f"plugin {command.plugin} declares no kind of run named {command.kind}", "name a kind its manifest lists under processes")
         folder = command.folder or str(self.checkouts.checkout(command.agent_id).root)

@@ -14,7 +14,7 @@ class PluginKindPass(KindPass):
     def __init__(self, rules: Mapping[tuple[str, str, int], KindRule], free_megabytes: int | None, machine_counts: dict[tuple[str, str], int]) -> None:
         self.rules, self.free_megabytes, self.machine_counts = rules, free_megabytes, machine_counts
 
-    def is_held(self, waiting: Process, running: Sequence[Process]) -> bool:
+    def is_blocked(self, waiting: Process, running: Sequence[Process]) -> bool:
         rule = self.rules.get((waiting.plugin, waiting.kind, waiting.environment_id))
         if rule is None:
             return False
