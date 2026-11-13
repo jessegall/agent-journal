@@ -45,6 +45,7 @@ from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
 from tests.stories.core.support.agent_labels import agent_label
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.suites.coding.modules.workers.quiet_helpers import StartedMerger
+from tests.stories.suites.coding.modules.workers.support.merger_launcher import running_launcher
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_PASSED
 from engine.testing.expectations.expected_nudge import expected_nudge
@@ -557,7 +558,8 @@ def test_a_profile_set_to_oversee_reads_worker_logs_and_the_merges_waiting_witho
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
-    overseer = Actor(story.new_row_id(f'helper start {OVERSEEING_PROFILE} --brief "Oversee the workers" --environment main', actor=story.agent), ActorType.AGENT)
+    with running_launcher(story):
+        overseer = Actor(story.new_row_id(f'helper start {OVERSEEING_PROFILE} --brief "Oversee the workers" --environment main', actor=story.agent), ActorType.AGENT)
     worker_logs = f"worker logs {agent_number(story, worker.id)}"
     story.expect_refusal(worker_logs, "your role reviews no worker's logs", actor=overseer)
     story.expect_refusal("merger next", "only the merger runs this", actor=overseer)
