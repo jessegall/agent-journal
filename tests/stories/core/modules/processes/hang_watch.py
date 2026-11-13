@@ -57,7 +57,7 @@ class ActiveTestRun(StoryFixture):
 
 def watch_tick(story: Story) -> None:
     handlers = [handler for module in ModuleFinder(story.home).modules() for handler in module.tick_handlers if handler.label == "hang watch"]
-    story.expect_rows(len(handlers) == 1)
+    assert len(handlers) == 1, handlers
     handlers[0].handler(story.container)
 
 

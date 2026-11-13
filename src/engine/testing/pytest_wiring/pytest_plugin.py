@@ -38,6 +38,7 @@ CPU_SECONDS_KEY = "journal_cpu_seconds"
 STORY_STEPS_KEY = "journal_story_steps"
 STORY_PATHS_KEY = "journal_story_paths"
 STORY_FIXTURES_KEY = "journal_story_fixtures"
+STORY_CHECKS_KEY = "journal_story_checks"
 FIXTURE_RULES_OPTION = "story_fixture_rules"
 FIXTURE_RULES_FAIL = "fail"
 SINGLE_RUNNER_LIMIT_OPTION = "one_runner_below"
@@ -182,6 +183,7 @@ def pytest_testnodedown(node: pytest.Session, error: object) -> None:
     node.config.stash[STORY_OVERLAP].stories.update(output.get(STORY_STEPS_KEY, {}))
     node.config.stash[STORY_OVERLAP].story_paths.update(output.get(STORY_PATHS_KEY, {}))
     node.config.stash[STORY_OVERLAP].story_fixtures.update(getattr(node, "workeroutput", {}).get(STORY_FIXTURES_KEY, {}))
+    node.config.stash[STORY_OVERLAP].add_checks(output.get(STORY_CHECKS_KEY, {}))
     node.config.stash[RUN_CPU].add(float(getattr(node, "workeroutput", {}).get(CPU_SECONDS_KEY, 0.0)))
 
 
@@ -192,6 +194,7 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
         process_output[STORY_STEPS_KEY] = overlap.stories
         process_output[STORY_PATHS_KEY] = overlap.story_paths
         process_output[STORY_FIXTURES_KEY] = overlap.story_fixtures
+        process_output[STORY_CHECKS_KEY] = {name: sorted(checks) for name, checks in overlap.story_checks.items()}
         process_output[CPU_SECONDS_KEY] = session.config.stash[RUN_CPU].seconds
         return
     if RunSize(session.config.args, 1).is_full_suite() and not session.config.option.collectonly:

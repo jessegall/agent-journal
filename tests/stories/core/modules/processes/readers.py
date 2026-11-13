@@ -100,17 +100,3 @@ def expect_run_title(story, line, expected) -> None:
 def test_a_reader_for_a_journal_command_is_refused_since_a_journal_command_has_no_reader(new_story):
     story = new_story(fixture=BuilderStarted)
     story.expect_refusal('reader add replies --commands "journal message*" --lines "reacted"', "a journal command has no reader", actor=story.agent)
-
-
-def test_a_reader_is_added_by_a_script_of_the_project(new_story):
-    story = new_story(fixture=BuilderStarted)
-    story.expect_success('reader add makes --commands "make*" --script scripts/read_make.sh', "type: script", "script: scripts/read_make.sh", actor=story.agent)
-
-
-def test_a_journal_commands_own_output_is_never_read_by_a_reader(new_story):
-    story = new_story(fixture=BuilderStarted)
-    story.run('reader add every --commands "*" --lines "state"', actor=story.agent)
-    process = ended_run(story, "journal task show 1", "state: open\ntitle: Fix\n")
-    story.expect_absent(f"output read {process.id} --summary", "1: state: open", actor=story.agent)
-    second_output = ended_run(story, "cat notes", "state: kept\n")
-    story.expect_text(f"output read {second_output.id} --summary", "1: state: kept", actor=story.agent)

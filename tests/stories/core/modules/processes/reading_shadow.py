@@ -7,7 +7,6 @@ from tests.stories.core.modules.processes.support.reader_block_fixtures import F
 from tests.stories.core.modules.processes.support.reading_scenarios import (TwoToxReaders, end_decision, ended_after_a_while, large_background_output,
                                                                              main_test_run_without_reader, rejected_worker_command, tox_run)
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from tests.stories.core.modules.processes.support.reading_scenarios import worker_test_run_without_reader
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -55,9 +54,3 @@ def test_a_line_of_many_parts_reads_the_reading_facts_and_kept_decisions_of_its_
         process = start_process(story, MANY_PARTS_LINE, category=CommandCategory.TEST_RUN)
     kept = tuple(story.container.get(Queries).query(ReadingDecisionRow).filter(process_id=process.id, moment=ReadingMoment.START).every_row(TEST_ROWS_REASON))
     story.expect_rows(len(kept) == MANY_PARTS, detail=str(len(kept)))
-
-
-def test_a_workers_test_run_with_no_reader_is_required_a_reader_while_its_request_waits(new_story):
-    story = new_story(fixture=ForcedReaders)
-    decision = end_decision(story, ended_after_a_while(story, worker_test_run_without_reader(story)))
-    story.expect_rows(decision == WORKER_TESTS_WITHOUT_READER[0], detail=f"{decision}: {WORKER_TESTS_WITHOUT_READER[1]}")

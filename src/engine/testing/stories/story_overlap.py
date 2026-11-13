@@ -31,6 +31,10 @@ class StoryOverlap:
         self.story_paths[test_id] = [start, *path]
         self.story_checks[test_id.partition("[")[0]] |= set(checks)
 
+    def add_checks(self, checks: dict[str, list[str]]) -> None:
+        for name, subjects in checks.items():
+            self.story_checks[name] |= set(subjects)
+
     def report_lines(self) -> list[str]:
         paths = self.paths()
         reached = {name: step_keys | {f"checks {subject}" for subject in self.story_checks[name]} for name, step_keys in paths.items()}

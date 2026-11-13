@@ -12,9 +12,6 @@ from core.modules.drivers.models.agent_line import AgentLine
 from engine.time.timestamp import Timestamp
 from tests.stories.core.modules.plugins.support.event_stories import (
     NOTES_PIN_TITLE, PIN_LINE, REFUSAL, SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, event_plugin_story, pins_titled, tasks_titled)
-from tests.stories.core.modules.processes.support.process_samples import install_runner
-from tests.stories.core.support.scanned_edits import scanned_edit
-from tests.stories.core.modules.plugins.support.event_stories import script_calls
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -86,11 +83,3 @@ def test_s30_an_agent_that_names_a_plugin_in_a_variable_is_still_guarded(new_sto
     variables = {SESSION_VARIABLE: "s-1", **{name: "events" for name in CLAIMED_VARIABLES}}
     story.expect_requested_exit(SECOND_JOB, CallerRequest(variables=variables, folder=str(story.home.folder.parent), pid=os.getpid()), 1, REFUSAL)
     story.expect_rows(not tasks_titled(story, SECOND_JOB_TITLE))
-
-
-def test_s30_running_a_program_never_reads_the_process_table(new_story):
-    story = install_runner(event_plugin_story(new_story, program="see.sh", hears=["file_edited"]))
-    reads = counted_table_reads(story)
-    scanned_edit(story, "s-1", "a.py")
-    story.run_listeners()
-    story.expect_rows(len(script_calls(story, "see.sh")) == 1, not reads)

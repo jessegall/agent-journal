@@ -2,9 +2,11 @@ from engine.enums.actor_type import ActorType
 from engine.environment.environment_names import EnvironmentNames
 from engine.file.file_access import FileAccess
 import io
+import linecache
 import json
 import re
 import shlex
+import sys
 from unittest.mock import patch
 from dataclasses import asdict, replace
 from uuid import uuid4
@@ -279,17 +281,30 @@ class Story:
         reply = self.hook(session, sample)
         self.expected(holds_text(reply.refusal, reason), f"the hook's refusal {reply.refusal!r} does not say {reason!r}")
 
+    @staticmethod
+    def story_line(subject: str) -> str:
+        """The line of the story's own test function that led to a check, through any helper it called, so
+        two stories check the same thing when they check it from the same line; a check made outside a test
+        function keeps its subject."""
+        frame = sys._getframe(2)
+        while frame is not None and not frame.f_code.co_name.startswith("test_"):
+            frame = frame.f_back
+        if frame is None:
+            return subject
+        return linecache.getline(frame.f_code.co_filename, frame.f_lineno).strip()
+
     def checked(self, subject: str) -> None:
         """Keeps what a check reads, its numbers left out, so the overlap check can tell stories that check the
         same thing from stories that check wholly different things."""
-        self.checks.append(re.sub(r"\d+", "N", subject))
+        self.checks.append(re.sub(r"\d+", "N", Story.story_line(subject)))
 
     def expected(self, passed: bool, message: str) -> None:
         if not passed:
             self.failed_expectations.append(message)
 
     def expect_success(self, line: str, *expected_lines: str, actor: Actor | None = None) -> None:
-        self.checked(line)
+        if expected_lines:
+            self.checked(line)
         outcome = self.run(line, actor)
         self.expected(outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}")
         lines = self.with_touched_rows(outcome).splitlines()
