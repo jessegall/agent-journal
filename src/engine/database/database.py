@@ -224,10 +224,11 @@ class Database:
         rows = self.rows(Statement(f"SELECT state FROM {table} WHERE id = ?", [row_id]))
         return rows[0]["state"] if rows else None
 
-    # a write outside a transaction takes the write turn for its one statement; inside one, the transaction holds it
+    # a write outside a transaction takes the write turn for its one statement; inside one, the transaction holds it.
+    # A PRAGMA takes no turn: it writes no row, and a rebuild sends one around its transaction.
     @contextmanager
-    def statement_turn(self):
-        if self.has_transaction:
+    def statement_turn(self, statement: Statement):
+        if self.has_transaction or statement.is_pragma:
             yield
             return
         with self.turns.write_turn():
@@ -235,7 +236,7 @@ class Database:
 
     def insert(self, statement: Statement) -> int:
         self.repeated_work.count_write(statement.sql)
-        with self.statement_turn():
+        with self.statement_turn(statement):
             row_id = statement.result(self.connection).lastrowid
         if row_id is None:
             raise sqlite3.InterfaceError(f"the insert gave no row id: {statement.sql}")
@@ -243,7 +244,7 @@ class Database:
 
     def update(self, statement: Statement) -> int:
         self.repeated_work.count_write(statement.sql)
-        with self.statement_turn():
+        with self.statement_turn(statement):
             return statement.result(self.connection).rowcount
 
     def close(self) -> None:

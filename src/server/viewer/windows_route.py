@@ -1,3 +1,4 @@
+from engine.database.write_turns import WriteTurns
 from collections.abc import Generator
 from contextlib import contextmanager
 
@@ -26,12 +27,12 @@ class WindowsRoute:
     so a page reloads a window's files after an install or an upgrade; and the inspectors of the models of its
     active modules."""
 
-    def __init__(self, home: JournalHome) -> None:
-        self.home = home
+    def __init__(self, home: JournalHome, turns: WriteTurns | None = None) -> None:
+        self.home, self.turns = home, turns
 
     @contextmanager
     def read(self, environment: str) -> Generator[tuple[Container, Registry]]:
-        container = synced_container(self.home)
+        container = synced_container(self.home, self.turns)
         try:
             registry = container.get(Registry)
             try:

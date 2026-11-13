@@ -1,3 +1,4 @@
+from engine.database.write_turns import WriteTurns
 import io
 import json
 import secrets
@@ -23,8 +24,8 @@ class PhoneSessions:
     token's digest in the journal, and finds the user a token's paired phone acts for, so a phone stays
     logged in across restarts of the server and is logged out once it is unpaired."""
 
-    def __init__(self, home: JournalHome, listener_thread: ListenerThread) -> None:
-        self.line_run = LineRun(home, CLI_LIMIT_SECONDS, ListenerWake(listener_thread))
+    def __init__(self, home: JournalHome, listener_thread: ListenerThread, turns: WriteTurns | None = None) -> None:
+        self.line_run = LineRun(home, CLI_LIMIT_SECONDS, ListenerWake(listener_thread), turns=turns)
         self.wrong_codes = WrongCodeLimit()
 
     def paired_token(self, code: str) -> str:

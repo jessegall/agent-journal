@@ -1,3 +1,4 @@
+from engine.database.write_turns import WriteTurns
 import json
 import time
 from collections.abc import Callable
@@ -23,11 +24,11 @@ class EventStream:
     share. The tabs of one browser share a stream, so each event names its environment and a name that is
     gone leaves the others their events."""
 
-    def __init__(self, home: JournalHome) -> None:
-        self.home = home
+    def __init__(self, home: JournalHome, turns: WriteTurns | None = None) -> None:
+        self.home, self.turns = home, turns
 
     def follow(self, request: EventsRequest, output: Callable[[str], bool], shared: SharedRow | None = None) -> None:
-        container = synced_container(self.home)
+        container = synced_container(self.home, self.turns)
         try:
             names = self.known_environments(container.get(EnvironmentNames), request.environments)
             log, idle_seconds = container.get(EventLog), 0.0

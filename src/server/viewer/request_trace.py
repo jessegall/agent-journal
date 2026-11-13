@@ -19,6 +19,10 @@ from core.modules.developer.support.hook_request_log import HookRequestLog
 from engine.enums.hook_answer import HookAnswer
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING, HOOK_REQUEST_LOG_SIZE_SETTING
 from engine.setting.setting_values import SettingValues
+from core.modules.developer.support.request_trace_file import RequestTraceFile
+from core.modules.developer.support.trace_receipt import TraceReceipt
+from core.modules.developer.support.trace_row import TraceRow
+from engine.file.file_access import FileAccess
 from server.viewer.request_trace_entry import RequestTraceEntry
 from server.viewer.read_attribution import ReadAttribution
 from server.viewer.viewer_request_record import ViewerRequestRecord
@@ -34,13 +38,14 @@ def is_database_busy(error: sqlite3.Error) -> bool:
 
 class RequestTrace:
     """The developer's trace of the requests the server answers: the body, timing and attribution of each hook,
-    command and viewer request, kept in the hook requests table while the developer request log setting is on.
-    The one request log of every run is RequestLog of the processes module; this trace adds the detail a
+    command and viewer request, appended to the request trace file while the developer request log setting is on and
+    written to the hook requests table by a tick, so a busy database drops no row. The one request log of every run is RequestLog of the processes module; this trace adds the detail a
     developer reads. Records requests without waiting for a database writer; a request counts as attempted and
     as recorded or dropped under one hold of the lock, so the status never shows a request half counted."""
 
     def __init__(self, home: JournalHome, clock: Clock) -> None:
-        self.home = home
+        self.home, self.clock = home, clock
+        self.trace_file = RequestTraceFile(home, FileAccess.shared())
         self.system_log = SystemLogWriter(home, clock)
         self.priorities = WindowPriorities(home)
         self.epoch = str(uuid4())
@@ -132,16 +137,11 @@ class RequestTrace:
                 self.counts["receipt_disabled"] += len(receipts)
                 return
             try:
-                with self.connected() as container:
-                    with container.get(Database).transaction():
-                        recorded = sum(container.get(HookRequestsTable).complete_viewer_read(
-                            person_id, receipt.client_id, receipt.command_id, receipt.joined_callers) > 0 for receipt in receipts)
-                self.counts["receipt_recorded"] += recorded
-                self.counts["receipt_dropped"] += len(receipts) - recorded
-            except sqlite3.Error as error:
+                self.trace_file.append([TraceReceipt(person_id, receipt.client_id, receipt.command_id, receipt.joined_callers) for receipt in receipts])
+                self.counts["receipt_recorded"] += len(receipts)
+            except OSError as error:
                 self.counts["receipt_dropped"] += len(receipts)
-                if not is_database_busy(error):
-                    self.system_log.write(LogLevel.WARNING, f"read receipt recording failed: {error}", LogSource.SERVER)
+                self.system_log.write(LogLevel.WARNING, f"read receipt recording failed: {error}", LogSource.SERVER)
             finally:
                 self.recording_ms += (perf_counter() - started_at) * 1000
 
@@ -179,15 +179,11 @@ class RequestTrace:
                 self.counts["disabled"] += len(entries)
                 return
             try:
-                with self.connected() as container:
-                    log = container.get(HookRequestLog)
-                    payloads = [log.payload("", {}, entry.body, entry.duration_ms, HookAnswer.ALLOWED if entry.code == 0 else HookAnswer.REFUSED, entry.queued_ms, entry.role, "") for entry in entries]
-                    container.get(HookRequestsTable).record_many(payloads, configuration.limit)
-                    self.stored_rows = container.get(HookRequestsTable).kept_row_count()
+                self.trace_file.append([TraceRow(HookRequestLog.payload(self.clock, "", {}, entry.body, entry.duration_ms, HookAnswer.ALLOWED if entry.code == 0 else HookAnswer.REFUSED,
+                                                                         entry.queued_ms, entry.role, "")) for entry in entries])
                 self.counts["recorded"] += len(entries)
-            except sqlite3.Error as error:
+            except OSError as error:
                 self.counts["dropped"] += len(entries)
-                if not is_database_busy(error):
-                    self.system_log.write(LogLevel.WARNING, f"request recording failed: {error}", LogSource.SERVER)
+                self.system_log.write(LogLevel.WARNING, f"request recording failed: {error}", LogSource.SERVER)
             finally:
                 self.recording_ms += (perf_counter() - started_at) * 1000
