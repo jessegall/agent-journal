@@ -1,5 +1,7 @@
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
+from engine.ticker.tick_handler import TickHandler
+from engine.ticker.tick_interval import TickInterval
 from core.modules.assign_rules.commands.assign_rule_board.assign_rule_board_subcommand import AssignRuleBoardSubcommand
 from core.modules.assign_rules.commands.count_assign_rule.count_assign_rule_subcommand import CountAssignRuleSubcommand
 from core.modules.assign_rules.commands.delete_assign_rule.delete_assign_rule_handler import DeleteAssignRuleHandler
@@ -16,6 +18,10 @@ from core.modules.assign_rules.commands.switch_assign_rule.switch_assign_rule_ha
 from core.modules.assign_rules.commands.try_assign_rule.try_assign_rule_subcommand import TryAssignRuleSubcommand
 from core.modules.assign_rules.commands.try_assign_rule.why_assign_rule_subcommand import WhyAssignRuleSubcommand
 from core.modules.assign_rules.commands.judge_task.judge_task_handler import JudgeTaskHandler
+from core.modules.assign_rules.commands.judge_task.record_failed_decision_handler import RecordFailedDecisionHandler
+from core.modules.assign_rules.commands.record_assign_decision.retry_assign_decisions_handler import RetryAssignDecisionsHandler
+from core.modules.assign_rules.listeners.agent_start_retry_listener import AgentStartRetryListener
+from core.modules.assign_rules.ticks.retry_assign_decisions_tick import RetryAssignDecisionsTick
 from core.modules.assign_rules.guards.assign_rule_person_guard import AssignRulePersonGuard
 from core.modules.assign_rules.listeners.auto_assign_tag_listener import AutoAssignTagListener
 from core.modules.assign_rules.listeners.auto_assign_task_listener import AutoAssignTaskListener
@@ -45,10 +51,11 @@ class AssignRulesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.assignments"]
     models = [ModelDeclaration(AssignRule, excluded_subcommands=EXCLUDED_WRITES), ModelDeclaration(AssignRuleCondition, excluded_subcommands=EXCLUDED_WRITES), ModelDeclaration(AssignDecision, excluded_subcommands=EXCLUDED_WRITES)]
     migrations = [AssignRulesMigration, DecisionIndexesMigration]
-    listeners = [AutoAssignTaskListener, AutoAssignTagListener]
-    handlers = [RecordAssignDecisionHandler, JudgeTaskHandler, MakeAssignRuleHandler, EditAssignRuleHandler, MoveAssignRuleHandler, SwitchAssignRuleHandler, DeleteAssignRuleHandler]
+    listeners = [AutoAssignTaskListener, AutoAssignTagListener, AgentStartRetryListener]
+    handlers = [RecordAssignDecisionHandler, JudgeTaskHandler, RecordFailedDecisionHandler, RetryAssignDecisionsHandler, MakeAssignRuleHandler, EditAssignRuleHandler, MoveAssignRuleHandler, SwitchAssignRuleHandler, DeleteAssignRuleHandler]
     subcommands = [MakeAssignRuleSubcommand, EditAssignRuleSubcommand, MoveAssignRuleSubcommand, EnableAssignRuleSubcommand, DisableAssignRuleSubcommand, DeleteAssignRuleSubcommand,
                    TryAssignRuleSubcommand, WhyAssignRuleSubcommand, RecordAssignDecisionSubcommand, AssignRuleBoardSubcommand, CountAssignRuleSubcommand]
     guards = [AssignRulePersonGuard, AssignRuleTargetGuard]
     bindings = {AssignmentReasons: RuleAssignmentReasons}
     nudges = ASSIGN_RULES_NUDGES
+    tick_handlers = [TickHandler(TickInterval(seconds=60), RetryAssignDecisionsTick(), "assign rules retry")]

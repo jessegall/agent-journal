@@ -20,7 +20,7 @@ class RuleConditions:
     def lines(self, rule: AssignRule) -> tuple[ConditionLine, ...]:
         return tuple(ConditionLine.stored(condition) for condition in self.stored(rule))
 
-    def lines_by_rule(self, rules: Sequence[AssignRule]) -> dict[int, tuple[ConditionLine, ...]]:
+    def rule_lines(self, rules: Sequence[AssignRule]) -> dict[int, tuple[ConditionLine, ...]]:
         lines: dict[int, list[ConditionLine]] = {rule.id: [] for rule in rules}
         for condition in self.queries.query(AssignRuleCondition).where_in("rule_id", list(lines)).ordered("id").every_row(CONDITIONS_REASON):
             lines[condition.rule_id].append(ConditionLine.stored(condition))

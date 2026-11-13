@@ -12,6 +12,7 @@ from core.modules.assign_rules.models.enums.decision_outcome import DecisionOutc
 RULE_COLUMN = "rule_id"
 DECIDED_COLUMN = "updated_at"
 NEWEST_SKIPS = 200
+WAITING_REASON = "the Assign tab names each target's oldest unstarted task a rule gave it"
 
 
 class AssignDecisionQuery(Query[AssignDecision]):
@@ -28,6 +29,16 @@ class AssignDecisionQuery(Query[AssignDecision]):
 
     def matched_rule_ids(self, rule_ids: Sequence[int]) -> set[int]:
         return {int(rule_id) for rule_id in self.matching(Among(RULE_COLUMN, rule_ids)).group_by(RULE_COLUMN).count_by() if isinstance(rule_id, int)}
+
+    def retried_task_ids(self, most: int) -> list[int]:
+        return [decision.task_id for decision in self.filter(outcome=DecisionOutcome.SKIPPED).where_not_null(RULE_COLUMN).oldest().take(most)]
+
+    def oldest_given(self, open_task_ids: Query) -> dict[int, int]:
+        oldest: dict[int, int] = {}
+        for decision in self.filter(outcome=DecisionOutcome.ASSIGNED).where_in("task_id", open_task_ids).every_row(WAITING_REASON):
+            if decision.actor_id is not None:
+                oldest[decision.actor_id] = min(oldest.get(decision.actor_id, decision.task_id), decision.task_id)
+        return oldest
 
     def last_skips(self) -> dict[int, str]:
         skips: dict[int, str] = {}

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from core.modules.assign_rules.models.assign_decision import AssignDecision
 
-NO_DECISION = "no decision yet"
+UNDECIDED = "no decision yet"
 
 
 @dataclass(frozen=True)
@@ -13,14 +13,14 @@ class TaskExplanation:
 
     task_id: int
     decision: AssignDecision | None
-    now: str
+    current: str
 
     @property
     def decided(self) -> str:
-        return NO_DECISION if self.decision is None else f"{self.decision.outcome}: {self.decision.reason}"
+        return UNDECIDED if self.decision is None else f"{self.decision.outcome}: {self.decision.reason}"
 
     def lines(self) -> Sequence[str]:
-        return [f"task {self.task_id}", f"decided: {self.decided}", f"now: {self.now}"]
+        return [f"task {self.task_id}", f"decided: {self.decided}", f"now: {self.current}"]
 
     def json(self) -> Mapping[str, object]:
-        return {"task_id": self.task_id, "decided": self.decided, "now": self.now}
+        return {"task_id": self.task_id, "decided": self.decided, "now": self.current}

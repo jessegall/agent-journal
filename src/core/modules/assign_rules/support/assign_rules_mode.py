@@ -6,5 +6,5 @@ class AssignRulesMode:
     """Whether a matching rule assigns its task or only records a dry run: it assigns once tasks are given only
     through the assignments, which is so while a task is an assignable row."""
 
-    def assigns(self) -> bool:
+    def is_assigning(self) -> bool:
         return issubclass(Task, Assignable)

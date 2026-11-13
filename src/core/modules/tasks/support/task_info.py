@@ -7,7 +7,8 @@ from core.modules.assignments.support.assignment_reason import AssignmentReason
 @dataclass(frozen=True)
 class TaskInfo:
     """A task in a few facts for the agent that delegates it: its title, state, priority, complexity and tags, how
-    many comments it has, who it is assigned to and why, and what it waits on. It carries no brief and no conversation."""
+    many comments it has, who it is assigned to and why, and what it waits on. It carries no brief and no
+    conversation."""
 
     id: int
     title: str

@@ -23,28 +23,28 @@ class ConditionLine:
 
     @staticmethod
     def parsed(line: str) -> "ConditionLine":
-        words = line.strip().split(maxsplit=2)
-        if not words:
+        parts = line.strip().split(maxsplit=2)
+        if not parts:
             raise Refusal("a condition is empty", "write it as <field> <operator> <value>, such as: complexity minimum 4")
-        field = ConditionLine.field_named(words[0])
+        field = ConditionLine.parsed_field(parts[0])
         operators = field.operators()
-        if len(words) == 1 and len(operators) == 1:
+        if len(parts) == 1 and len(operators) == 1:
             return ConditionLine(field, operators[0])
-        if len(words) == 1:
+        if len(parts) == 1:
             raise Refusal(f"the condition {field} needs an operator", f"use one of {', '.join(operators)}")
-        operator = ConditionLine.operator_named(field, words[1])
-        value = words[2].strip() if len(words) == 3 else ""
+        operator = ConditionLine.parsed_operator(field, parts[1])
+        value = parts[2].strip() if len(parts) == 3 else ""
         ConditionLine.check_value(field, operator, value)
         return ConditionLine(field, operator, value)
 
     @staticmethod
-    def field_named(word: str) -> ConditionField:
+    def parsed_field(word: str) -> ConditionField:
         if word not in tuple(ConditionField):
             raise Refusal(f"no condition looks at {word!r}", f"use one of {', '.join(ConditionField)}")
         return ConditionField(word)
 
     @staticmethod
-    def operator_named(field: ConditionField, word: str) -> ConditionOperator:
+    def parsed_operator(field: ConditionField, word: str) -> ConditionOperator:
         operators = field.operators()
         if word not in operators:
             raise Refusal(f"the condition {field} has no operator {word!r}", f"use one of {', '.join(operators)}")
@@ -72,7 +72,7 @@ class ConditionLine:
                 raise Refusal(f"the condition {field} {operator} needs a number, not {value!r}")
 
     @property
-    def names_plan(self) -> bool:
+    def is_plan_condition(self) -> bool:
         return self.field is ConditionField.PLACE and self.operator is ConditionOperator.PLANNED
 
     @property

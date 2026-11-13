@@ -28,4 +28,4 @@ class MoveApprovalHandler(Handler[MoveApproval, ApprovalRequest]):
             raise Refusal("this approval belongs to another user")
         if command.move is ApprovalLifecycle.begin and self.restarts.interrupted(request):
             request = self.repository.save_change(request, request.moved(ApprovalLifecycle.retry), context)
-        return self.repository.save_change(request, request.moved(command.move, **({"failure": command.failure} if command.failure else {})), context)
+        return self.repository.save_change(request, request.move_result(command.move, command.failure), context)

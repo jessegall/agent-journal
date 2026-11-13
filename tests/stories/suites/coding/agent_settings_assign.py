@@ -1,5 +1,5 @@
 import json
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass
 
@@ -16,9 +16,24 @@ WINDOW = "coding.agent-settings"
 
 
 @dataclass(frozen=True)
+class LineAnswer:
+    """The viewer's answer to one line of the tab: its exit code, the value it read and the whole answer."""
+
+    code: int
+    value: Mapping[str, object]
+    text: str
+
+    @classmethod
+    def parsed(cls, text: str) -> "LineAnswer":
+        answer = json.loads(text)
+        value = answer.get("value")
+        return cls(int(answer["code"]), value if isinstance(value, Mapping) else {}, text)
+
+
+@dataclass(frozen=True)
 class AssignTab:
-    """Ada's viewer on the Assign tab of the agent settings: it reads the board as the tab does and sends each change
-    through the viewer's line route with the revision it read."""
+    """Ada's viewer on the Assign tab of the agent settings: it reads the board as the tab does and sends each
+    change through the viewer's line route with the revision it read."""
 
     server: object
     cookie: str
@@ -28,17 +43,17 @@ class AssignTab:
         assert status == 200 and answer["keys"]["assign"]["code"] == 0, answer
         return answer["keys"]["assign"]["value"]
 
-    def change(self, *words: str, revision: str | None = None) -> dict:
+    def change(self, *line_parts: str, revision: str | None = None) -> LineAnswer:
         read = self.board()["revision"] if revision is None else revision
-        _, _, text = viewer_answer(self.server.viewer_port(), "/api/line", self.cookie, "", {"window": WINDOW, "environment": "main", "line": [*words, "--revision", read]})
-        return json.loads(text)
+        _, _, text = viewer_answer(self.server.viewer_port(), "/api/line", self.cookie, "", {"window": WINDOW, "environment": "main", "line": [*line_parts, "--revision", read]})
+        return LineAnswer.parsed(text)
 
-    def read(self, *words: str) -> dict:
-        _, _, text = viewer_answer(self.server.viewer_port(), "/api/line", self.cookie, "", {"window": WINDOW, "environment": "main", "line": list(words)})
-        return json.loads(text)
+    def read(self, *line_parts: str) -> LineAnswer:
+        _, _, text = viewer_answer(self.server.viewer_port(), "/api/line", self.cookie, "", {"window": WINDOW, "environment": "main", "line": list(line_parts)})
+        return LineAnswer.parsed(text)
 
-    def target(self, kind_of_target: str) -> dict:
-        return next(entry for entry in self.board()["targets"] if entry["target"] == kind_of_target)
+    def target(self, target_type: str) -> dict:
+        return next(entry for entry in self.board()["targets"] if entry["target"] == target_type)
 
     def rules(self) -> list[dict]:
         return self.board()["rules"]
@@ -55,7 +70,8 @@ def model_flags(target: dict) -> list[str]:
 
 
 class SecondWorkerSession(StoryFixture):
-    """Beside the sonnet worker and its task, a second worker session, w-7, with no task, and a second main session."""
+    """Beside the sonnet worker and its task, a second worker session, w-7, with no task, and a second main
+    session."""
 
     parent = SonnetWorkerAndFreeTask
 
@@ -87,9 +103,9 @@ def test_the_tab_lists_the_main_agent_once_each_worker_with_its_facts_and_each_p
     story.expect_text("agent list --environment main", "w-7", actor=story.user)
     with assign_tab(story) as tab:
         targets = tab.board()["targets"]
-    kinds = [entry["target"] for entry in targets]
+    target_types = [entry["target"] for entry in targets]
     worker = next((entry for entry in targets if entry.get("agent_id") == story.helper.id), {})
-    story.expect_rows(kinds.count("main") == 1, kinds.count("model") >= 1, worker.get("program") == "claude", "sonnet" in worker.get("program_model", ""),
+    story.expect_rows(target_types.count("main") == 1, target_types.count("model") >= 1, worker.get("program") == "claude", "sonnet" in worker.get("program_model", ""),
                       worker.get("running"), worker.get("open_tasks", 0) >= 1, detail=str(targets))
 
 
@@ -110,7 +126,7 @@ def test_a_person_adds_orders_turns_off_and_deletes_rules_in_the_tab(new_story):
         tab.change("assign-rule", "delete", str(first))
         kept = [rule["id"] for rule in tab.rules()]
     summaries = [rule["summary"] for rule in made]
-    story.expect_rows(main_answer["code"] == 0, range_answer["code"] == 0, made[0]["enabled"], made[1]["target_key"] == model["key"],
+    story.expect_rows(main_answer.code == 0, range_answer.code == 0, made[0]["enabled"], made[1]["target_key"] == model["key"],
                       summaries == ["complexity is at least 4", "text has the word migration", "all of: complexity is at least 2; complexity is at most 4; tag has backend"],
                       moved == [third, first, second], not turned_off["enabled"], kept == [third, second], detail=str((summaries, moved, kept)))
 
@@ -122,7 +138,7 @@ def test_a_save_from_an_older_reading_is_refused_and_changes_nothing(new_story):
     with assign_tab(story) as tab:
         answer = tab.change("assign-rule", "make", "--target", "main", "--condition", "tag has backend", revision=old)
         rules = tab.rules()
-    story.expect_rows(answer["code"] != 0, "the rules changed since this draft was read" in json.dumps(answer), len(rules) == 1, detail=str(answer))
+    story.expect_rows(answer.code != 0, "the rules changed since this draft was read" in answer.text, len(rules) == 1, detail=str(answer))
 
 
 def test_a_rule_whose_agent_is_retired_shows_a_warning(new_story):
@@ -153,14 +169,14 @@ def test_before_saving_the_tab_says_how_many_of_the_last_20_tasks_a_rule_would_t
         scored = tab.read("assign-rule", "recent", "--condition", "complexity minimum 1")
         common_word = tab.read("assign-rule", "recent", "--condition", "text has_word the")
     rules = json.loads(story.run("assign-rule list --json --environment main", actor=story.user).output_text)["rows"]
-    story.expect_rows(scored.get("value", {}).get("text") == "The rule would have taken all 20 of the last 20 tasks", common_word.get("code") == 0,
-                      common_word.get("value", {}).get("matched") == 20, rules == [], detail=str((scored, common_word)))
+    story.expect_rows(scored.value.get("text") == "The rule would have taken all 20 of the last 20 tasks", common_word.code == 0,
+                      common_word.value.get("matched") == 20, rules == [], detail=str((scored, common_word)))
 
 
-class RulesWithDecisions(StoryFixture):
-    """Ada's two rules for the main agent over the twenty scored tasks: rule 1 gave tasks 2 to 4 in the last day and
-    was last skipped for task 5; rule 2 never matched a task. The viewer runs its lines on the wall clock, so the
-    decisions are stamped with the wall time."""
+class RulesAndDecisions(StoryFixture):
+    """Ada's two rules for the main agent over the twenty scored tasks: rule 1 gave tasks 2 to 4 in the last day
+    and was last skipped for task 5; rule 2 never matched a task. The viewer runs its lines on the wall clock,
+    so the decisions are stamped with the wall time."""
 
     parent = TwentyScoredTasks
 
@@ -177,7 +193,7 @@ class RulesWithDecisions(StoryFixture):
 
 
 def test_each_rule_shows_the_tasks_it_gave_in_the_last_day_and_its_last_skip(new_story):
-    story = new_story(fixture=RulesWithDecisions)
+    story = new_story(fixture=RulesAndDecisions)
     story.expect_text("assign-decision list --rule 1 --environment main", "assigned", "skipped", actor=story.user)
     story.expect_text("assign-rule board --environment main", "Tasks given in the last day: 3", "Never matched a task", actor=story.user)
     with assign_tab(story) as tab:
@@ -191,8 +207,17 @@ def test_trying_a_rule_on_a_task_shows_each_condition_and_assigns_nothing(new_st
     story.expect_text("task show 1 --environment main", "Fix the cart", actor=story.user)
     with assign_tab(story) as tab:
         answer = tab.read("assign-rule", "try", "1", "--condition", "title has_word cart", "--condition", "complexity minimum 4")
-    trial = answer.get("value", {})
+    trial = answer.value
     decisions = json.loads(story.run("assign-decision list --json --environment main", actor=story.user).output_text)["rows"]
     labels = [(entry["label"], entry["matched"]) for entry in trial.get("conditions", [])]
-    story.expect_rows(answer.get("code") == 0, trial.get("matches") is False, labels == [("title has the word cart", True), ("complexity is at least 4", False)],
+    story.expect_rows(answer.code == 0, trial.get("matches") is False, labels == [("title has the word cart", True), ("complexity is at least 4", False)],
                       decisions == [], detail=str((answer, decisions)))
+
+
+def test_each_target_shows_the_oldest_unstarted_task_a_rule_gave_it(new_story):
+    story = new_story(fixture=OrchestratorWithPerson)
+    story.run('assign-rule make --target main --condition "title has_word shelf" --environment main', actor=story.user)
+    task_id = story.new_row_id('task make "Fix the shelf" --environment main', actor=story.user)
+    with assign_tab(story) as tab:
+        main = tab.target("main")
+    story.expect_rows(main["waiting"].startswith(f"Oldest waiting: task {task_id}, "), detail=str(main))

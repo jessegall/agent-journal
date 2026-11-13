@@ -83,6 +83,9 @@ async function countRecent() {
                         <template v-if="entry.target === 'agent'">
                             <span class="facts">State: {{ entry.running ? "running" : "kept" }} · Open tasks: {{ entry.open_tasks }}</span>
                         </template>
+                        <template v-if="entry.waiting">
+                            <span class="facts" data-assign-waiting>{{ entry.waiting }}</span>
+                        </template>
                     </button>
                 </template>
             </div>

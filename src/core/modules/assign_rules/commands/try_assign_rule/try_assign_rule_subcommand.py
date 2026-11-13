@@ -14,8 +14,8 @@ UNSAVED_RULE_NAME = "the rule"
 
 
 class TryAssignRuleSubcommand(ReadSubcommand[RuleTrial]):
-    """`journal assign-rule try <task> --rule <rule>` or `--condition ...`: a dry run that prints whether a
-    saved or unsaved rule would match the task and what each condition found; it assigns nothing and records
+    """`journal assign-rule try <task> --rule <rule>` or `--condition ...`: a dry run that prints whether a saved
+    or unsaved rule would match the task and what each condition rule_reasons; it assigns nothing and records
     nothing."""
 
     cli_name = "assign-rule"

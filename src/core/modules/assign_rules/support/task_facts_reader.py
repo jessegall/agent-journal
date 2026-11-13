@@ -16,8 +16,8 @@ TAGS_REASON = "the tags of each task judged are read in one query"
 
 
 class TaskFactsReader:
-    """Reads what a rule's conditions need to know about tasks: their text, score, tags, creator and plan, with one
-    query for each of those over all the tasks asked about."""
+    """Reads what a rule's conditions need to know about tasks: their text, score, tags, creator and plan, with
+    one query for each of those over all the tasks asked about."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

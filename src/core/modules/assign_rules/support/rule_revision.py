@@ -20,7 +20,7 @@ class RuleRevision:
 
     def current(self) -> str:
         rules = list(self.queries.query(AssignRule).every_row(RULES_REASON))
-        return self.rules_revision(rules, self.conditions.lines_by_rule(rules))
+        return self.rules_revision(rules, self.conditions.rule_lines(rules))
 
     @staticmethod
     def rules_revision(rules: Sequence[AssignRule], lines: Mapping[int, tuple[ConditionLine, ...]]) -> str:

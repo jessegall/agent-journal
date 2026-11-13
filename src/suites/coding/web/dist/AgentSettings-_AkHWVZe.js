@@ -1,4 +1,4 @@
-import { openBlock as l, createElementBlock as v, createElementVNode as d, Fragment as W, renderList as D, createBlock as N, unref as r, createVNode as S, withModifiers as be, withCtx as E, createTextVNode as Y, ref as x, computed as g, onMounted as Q, toDisplayString as h, createCommentVNode as w, normalizeClass as X, watch as de, withDirectives as ae, vModelSelect as Ae, vModelText as ce, nextTick as xe, renderSlot as Re, onBeforeUnmount as Ee } from "vue";
+import { openBlock as l, createElementBlock as c, createElementVNode as d, Fragment as W, renderList as D, createBlock as N, unref as r, createVNode as S, withModifiers as be, withCtx as E, createTextVNode as Y, ref as x, computed as g, onMounted as Q, toDisplayString as h, createCommentVNode as b, normalizeClass as X, watch as de, withDirectives as ae, vModelSelect as Ae, vModelText as ce, nextTick as xe, renderSlot as Re, onBeforeUnmount as Ee } from "vue";
 import { TextInput as Ne, Btn as J, useWindow as ee, useNow as Ie, agentTitle as Be, age as Pe, agentNumber as je, TabBody as Le, SwitchCase as we, WindowRoom as Fe, InnerTabs as qe } from "@journal/window-kit";
 import { SettingPresetCard as ve, SettingPresetCompareTable as Ve, SettingEmptyState as Me, isFull as pe, SettingBackPath as Ue, SettingPerTypeOverrideRow as fe, SettingsScreen as _e, SettingRow as me, SettingEntryList as We, SettingThreeWayCap as De, SettingBanner as He, SettingHelperTypeTable as Ke, sectionsOf as ze, SettingSectionList as Ge, useSettingsDraft as Ye, currentPreset as Xe, SettingPresetBand as Je, FindBox as Ze, ChangeFoot as Qe } from "@journal/setting-components";
 import { _ as H } from "./_plugin-vue_export-helper-CHgC5LLL.js";
@@ -11,25 +11,25 @@ const et = {
   emits: ["back", "fill"],
   setup(t, { emit: i }) {
     const e = i;
-    return (s, c) => (l(), v("section", et, [
+    return (s, v) => (l(), c("section", et, [
       d("div", tt, [
         d("button", {
           type: "button",
           class: "back",
           "data-presets-back": "",
-          onClick: c[0] || (c[0] = (y) => e("back"))
+          onClick: v[0] || (v[0] = (y) => e("back"))
         }, "‹ Back"),
-        c[1] || (c[1] = d("b", null, "What is a preset?", -1))
+        v[1] || (v[1] = d("b", null, "What is a preset?", -1))
       ]),
       d("div", nt, [
-        c[2] || (c[2] = d("p", { class: "lead" }, "A preset is a set of eight switches and nothing more. It is not a type of agent: the main agent is the same program under every preset, and a preset only fills in the switches below. Nothing is saved until you press Save.", -1)),
+        v[2] || (v[2] = d("p", { class: "lead" }, "A preset is a set of eight switches and nothing more. It is not a type of agent: the main agent is the same program under every preset, and a preset only fills in the switches below. Nothing is saved until you press Save.", -1)),
         d("div", at, [
-          (l(!0), v(W, null, D(t.presets, (y) => (l(), N(r(ve), {
+          (l(!0), c(W, null, D(t.presets, (y) => (l(), N(r(ve), {
             key: y.key,
             name: y.name,
             line: y.line,
             "can-fill": !t.readOnly,
-            onFill: (b) => e("fill", y.key)
+            onFill: (w) => e("fill", y.key)
           }, null, 8, ["name", "line", "can-fill", "onFill"]))), 128)),
           S(r(ve), {
             name: "Custom",
@@ -49,7 +49,7 @@ const et = {
   props: { reason: String, pending: Boolean },
   emits: ["submit", "cancel", "update:reason"],
   setup(t) {
-    return (i, e) => (l(), v("form", {
+    return (i, e) => (l(), c("form", {
       "data-agent-retire-confirm": "",
       onSubmit: e[2] || (e[2] = be((s) => i.$emit("submit"), ["prevent"]))
     }, [
@@ -101,7 +101,7 @@ const et = {
   props: { role: { type: String, required: !0 }, profile: { type: String, default: "" } },
   emits: ["open-agent", "retired"],
   setup(t, { emit: i }) {
-    const e = t, s = i, c = ee(), y = Ie(), b = x([]), A = x(0), a = x(!1), C = x(!1), L = x(""), P = x(""), j = x(null), F = x(""), q = g(() => b.value.filter((_) => {
+    const e = t, s = i, v = ee(), y = Ie(), w = x([]), A = x(0), a = x(!1), C = x(!1), L = x(""), P = x(""), j = x(null), F = x(""), q = g(() => w.value.filter((_) => {
       var u;
       return _.state !== "retired" && _.role === e.role && (!e.profile || (((u = _.facts) == null ? void 0 : u.profile) || _.profile) === e.profile);
     }).sort((_, u) => (_.state !== "running") - (u.state !== "running") || String(_.ended_at || _.created_at).localeCompare(String(u.ended_at || u.created_at)))), M = g(() => {
@@ -114,26 +114,26 @@ const et = {
       return [..._].map(([p, B]) => `${B} ${p}`).join(", ");
     });
     async function I(_ = 1) {
-      c.state["count-agents.role"] = e.role, e.profile ? c.state["count-agents.profile"] = e.profile : delete c.state["count-agents.profile"], c.state["count-agents.page"] = String(_), await c.reload("count-agents");
-      const u = c.props["count-agents"];
-      b.value = _ === 1 ? [...u.rows.value] : [...b.value, ...u.rows.value], A.value = _, a.value = u.more.value;
+      v.state["count-agents.role"] = e.role, e.profile ? v.state["count-agents.profile"] = e.profile : delete v.state["count-agents.profile"], v.state["count-agents.page"] = String(_), await v.reload("count-agents");
+      const u = v.props["count-agents"];
+      w.value = _ === 1 ? [...u.rows.value] : [...w.value, ...u.rows.value], A.value = _, a.value = u.more.value;
     }
     async function K(_) {
       if (!F.value.trim() || C.value) return;
       C.value = !0;
-      const u = await c.run(["agent", "retire", String(_.number), "--reason", F.value.trim()]);
+      const u = await v.run(["agent", "retire", String(_.number), "--reason", F.value.trim()]);
       L.value = u.ok ? "" : "The agent could not be retired. Try again.", u.ok && (j.value = null, F.value = "", P.value = "Agent retired permanently.", s("retired"), await I()), C.value = !1;
     }
-    return Q(() => I()), (_, u) => (l(), v("section", ut, [
+    return Q(() => I()), (_, u) => (l(), c("section", ut, [
       d("p", ct, h(M.value), 1),
-      q.value.length ? w("", !0) : (l(), N(r(Me), {
+      q.value.length ? b("", !0) : (l(), N(r(Me), {
         key: 0,
         title: "No agents here yet",
         line: "An agent shows here as soon as one of this type starts."
       })),
-      (l(!0), v(W, null, D(q.value, (p) => {
+      (l(!0), c(W, null, D(q.value, (p) => {
         var B, V, f, $;
-        return l(), v("div", {
+        return l(), c("div", {
           key: p.id,
           class: "person",
           "data-count-agent": p.id
@@ -156,7 +156,7 @@ const et = {
             ])]),
             _: 1
           }, 8, ["onClick"]),
-          p.state === "idle" && !r(c).readOnly ? (l(), N(r(J), {
+          p.state === "idle" && !r(v).readOnly ? (l(), N(r(J), {
             key: 0,
             small: "",
             onClick: (T) => {
@@ -167,7 +167,7 @@ const et = {
               Y("Retire", -1)
             ])]),
             _: 1
-          }, 8, ["onClick"])) : w("", !0),
+          }, 8, ["onClick"])) : b("", !0),
           j.value === p.id ? (l(), N(dt, {
             key: 1,
             reason: F.value,
@@ -175,7 +175,7 @@ const et = {
             pending: C.value,
             onSubmit: (T) => K(p),
             onCancel: u[1] || (u[1] = (T) => j.value = null)
-          }, null, 8, ["reason", "pending", "onSubmit"])) : w("", !0)
+          }, null, 8, ["reason", "pending", "onSubmit"])) : b("", !0)
         ], 8, vt);
       }), 128)),
       a.value ? (l(), N(r(J), {
@@ -187,8 +187,8 @@ const et = {
           Y("Show more", -1)
         ])]),
         _: 1
-      })) : w("", !0),
-      L.value ? (l(), v("p", ft, h(L.value), 1)) : P.value ? (l(), v("p", mt, h(P.value), 1)) : w("", !0)
+      })) : b("", !0),
+      L.value ? (l(), c("p", ft, h(L.value), 1)) : P.value ? (l(), c("p", mt, h(P.value), 1)) : b("", !0)
     ]));
   }
 }, yt = /* @__PURE__ */ H(gt, [["__scopeId", "data-v-67f17bfa"]]), G = "journal.core.helpers", kt = `${G}.context-limit-on`, ue = `${G}.context-limit-tokens`, $e = `${G}.context-limit-kinds`, Z = `${G}.context-limit-profiles`, se = `${G}.read-only-helper-profile-limits`, ht = `${G}.read-only-helper-run-limit`, bt = `${G}.read-only-helper-kept-limit`, oe = "journal.suites.coding.workers.merge-hooks", wt = "none", Oe = (t) => `${t / 1e3}k`, Se = (t) => {
@@ -208,23 +208,23 @@ function ye(t, i, e) {
   if (t(kt) !== !0) return { text: "Off", where: "Context limit is off", own: !1 };
   const s = e ? ne(t(Z), e) : void 0;
   if (s !== void 0) return { text: ge(s), where: "Own value", own: !0 };
-  const c = ne(t($e), i);
-  return c !== void 0 ? { text: ge(c), where: "Set for its type", own: !1 } : { text: Oe(Number(t(ue))), where: "Set for every agent", own: !1 };
+  const v = ne(t($e), i);
+  return v !== void 0 ? { text: ge(v), where: "Set for its type", own: !1 } : { text: Oe(Number(t(ue))), where: "Set for every agent", own: !1 };
 }
 const Ot = (t) => t > 0 ? t : null, St = { worker: "workers" }, te = "merger", ke = "designer";
-function he(t, i, e, s, c, y = {}) {
-  return { key: t, name: i, line: e, running: s.running, runLimit: s.run_limit, kept: s.kept, keptLimit: Ot(s.kept_limit), cap: c, ...y };
+function he(t, i, e, s, v, y = {}) {
+  return { key: t, name: i, line: e, running: s.running, runLimit: s.run_limit, kept: s.kept, keptLimit: Ot(s.kept_limit), cap: v, ...y };
 }
 function Ct(t, i) {
   const e = t.filter((a) => !a.per_profile).map((a) => he(a.key, a.label, a.line, a, ye(i, a.key, ""), { screen: St[a.key] ?? "read-only", role: a.key, profile: "", defaultProfile: a.default_profile })), s = t.find((a) => a.per_profile);
   if (!s) return e;
-  const c = (a) => he(`${s.key}:${a.profile}`, a.title, a.line, a, ye(i, s.key, a.profile), { screen: a.group === te ? te : "read-only", role: s.key, profile: a.profile }), y = s.profiles.filter((a) => a.group === te || a.group === ke).map(c), b = s.profiles.filter((a) => a.group !== te && a.group !== ke).map((a) => ({ ...c(a), indent: !0 })), A = { key: s.key, name: "Read-only helpers", group: !0, screen: "read-only", role: s.key, profile: "", line: `${s.running} running, ${s.kept} kept. Every profile runs up to ${s.run_limit} and keeps ${s.kept_limit ? `up to ${s.kept_limit}` : "any number"} unless it has limits of its own.` };
-  return [...e, ...y, A, ...b];
+  const v = (a) => he(`${s.key}:${a.profile}`, a.title, a.line, a, ye(i, s.key, a.profile), { screen: a.group === te ? te : "read-only", role: s.key, profile: a.profile }), y = s.profiles.filter((a) => a.group === te || a.group === ke).map(v), w = s.profiles.filter((a) => a.group !== te && a.group !== ke).map((a) => ({ ...v(a), indent: !0 })), A = { key: s.key, name: "Read-only helpers", group: !0, screen: "read-only", role: s.key, profile: "", line: `${s.running} running, ${s.kept} kept. Every profile runs up to ${s.run_limit} and keeps ${s.kept_limit ? `up to ${s.kept_limit}` : "any number"} unless it has limits of its own.` };
+  return [...e, ...y, A, ...w];
 }
 const ie = Array.from({ length: 10 }, (t, i) => (i + 1) * 1e5), Tt = (t) => t.filter((i) => !i.group && (pe(i.running, i.runLimit) || pe(i.kept, i.keptLimit ?? 0))).length;
 function Te(t, i) {
-  const e = g(() => t.props.limits.rows.value ?? []), s = g(() => Ct(e.value, i.value)), c = g(() => !!t.props.limits.failure.value);
-  return { rows: s, unreadable: c, reread: () => t.reload("limits") };
+  const e = g(() => t.props.limits.rows.value ?? []), s = g(() => Ct(e.value, i.value)), v = g(() => !!t.props.limits.failure.value);
+  return { rows: s, unreadable: v, reread: () => t.reload("limits") };
 }
 const At = {
   class: "type",
@@ -237,12 +237,12 @@ const At = {
   props: { row: { type: Object, required: !0 }, draft: { type: Object, required: !0 }, readOnly: { type: Boolean, default: !1 } },
   emits: ["back"],
   setup(t, { emit: i }) {
-    const e = t, s = i, c = ee(), y = g(() => c.props["type-screen"].data.value), b = g(() => {
+    const e = t, s = i, v = ee(), y = g(() => v.props["type-screen"].data.value), w = g(() => {
       var f;
       return ((f = y.value) == null ? void 0 : f.nodes) ?? [];
     }), A = g(() => e.row.profile !== "");
     async function a() {
-      c.state["type-screen.type"] = e.row.screen, await c.reload("type-screen");
+      v.state["type-screen.type"] = e.row.screen, await v.reload("type-screen");
     }
     de(y, (f) => {
       f && e.draft.load([f]);
@@ -263,8 +263,8 @@ const At = {
       const T = (e.draft.value(Z) ?? []).filter((U) => U.slice(0, U.lastIndexOf(":")).trim() !== q.value);
       e.draft.set(Z, f === "kind" ? T : [...T, `${q.value}:${f === "none" ? le : $}`]);
     }
-    const u = g(() => e.row.role === Nt ? q.value : ""), p = g(() => _t(e.draft.value(oe), u.value)), B = (f) => e.draft.set(oe, $t(e.draft.value(oe), u.value, f)), V = (f) => c.open("agents.agents", f.id);
-    return (f, $) => (l(), v("div", At, [
+    const u = g(() => e.row.role === Nt ? q.value : ""), p = g(() => _t(e.draft.value(oe), u.value)), B = (f) => e.draft.set(oe, $t(e.draft.value(oe), u.value, f)), V = (f) => v.open("agents.agents", f.id);
+    return (f, $) => (l(), c("div", At, [
       S(r(Ue), {
         parent: "Helpers",
         current: t.row.name,
@@ -272,7 +272,7 @@ const At = {
       }, null, 8, ["current"]),
       d("div", xt, [
         d("div", Rt, [
-          A.value && t.row.screen === "read-only" ? (l(), v(W, { key: 0 }, [
+          A.value && t.row.screen === "read-only" ? (l(), c(W, { key: 0 }, [
             S(r(fe), {
               label: "Running",
               help: "Agents of this profile that run at once.",
@@ -293,7 +293,7 @@ const At = {
             }, null, 8, ["every-value", "own-value", "disabled"])
           ], 64)) : (l(), N(r(_e), {
             key: 1,
-            nodes: b.value,
+            nodes: w.value,
             draft: t.draft,
             "read-only": t.readOnly
           }, null, 8, ["nodes", "draft", "read-only"])),
@@ -313,7 +313,7 @@ const At = {
               }, null, 8, ["model-value", "disabled"])
             ]),
             _: 1
-          }, 8, ["source"])) : w("", !0),
+          }, 8, ["source"])) : b("", !0),
           q.value ? (l(), N(r(me), {
             key: 3,
             label: "Context cap",
@@ -332,7 +332,7 @@ const At = {
               }, null, 8, ["mode", "kind-value", "own-value", "sizes", "disabled"])
             ]),
             _: 1
-          }, 8, ["source"])) : w("", !0)
+          }, 8, ["source"])) : b("", !0)
         ]),
         d("aside", Et, [
           $[3] || ($[3] = d("h3", null, "Agents", -1)),
@@ -352,19 +352,19 @@ const At = {
   __name: "AgentSettingsAgents",
   props: { draft: { type: Object, required: !0 } },
   setup(t) {
-    const i = t, e = ee(), { rows: s, unreadable: c, reread: y } = Te(e, i.draft), b = x(null);
+    const i = t, e = ee(), { rows: s, unreadable: v, reread: y } = Te(e, i.draft), w = x(null);
     Q(y);
     const A = (a) => {
-      b.value = s.value.find((C) => C.key === a);
+      w.value = s.value.find((C) => C.key === a);
     };
-    return (a, C) => (l(), v("section", Pt, [
-      b.value ? (l(), N(Bt, {
+    return (a, C) => (l(), c("section", Pt, [
+      w.value ? (l(), N(Bt, {
         key: 0,
-        row: b.value,
+        row: w.value,
         draft: t.draft,
         "read-only": r(e).readOnly,
-        onBack: C[0] || (C[0] = (L) => b.value = null)
-      }, null, 8, ["row", "draft", "read-only"])) : r(c) ? (l(), N(r(He), {
+        onBack: C[0] || (C[0] = (L) => w.value = null)
+      }, null, 8, ["row", "draft", "read-only"])) : r(v) ? (l(), N(r(He), {
         key: 1,
         kind: "unreadable",
         text: "The counts could not be read.",
@@ -386,51 +386,55 @@ const At = {
 }, Vt = ["aria-selected", "data-assign-target", "onClick"], Mt = { class: "name" }, Ut = { class: "facts" }, Wt = {
   key: 0,
   class: "facts"
-}, Dt = { class: "rules" }, Ht = ["data-assign-rule"], Kt = { class: "place" }, zt = { class: "summary" }, Gt = {
+}, Dt = {
+  key: 1,
+  class: "facts",
+  "data-assign-waiting": ""
+}, Ht = { class: "rules" }, Kt = ["data-assign-rule"], zt = { class: "place" }, Gt = { class: "summary" }, Yt = {
   key: 0,
   class: "warning",
   "data-assign-warning": ""
-}, Yt = {
+}, Xt = {
   class: "activity",
   "data-assign-activity": ""
-}, Xt = {
+}, Jt = {
   key: 1,
   class: "activity",
   "data-assign-last-skip": ""
-}, Jt = {
+}, Zt = {
   key: 2,
   class: "actions"
-}, Zt = ["disabled", "onClick"], Qt = ["disabled", "onClick"], en = ["title", "onClick"], tn = ["onClick"], nn = {
+}, Qt = ["disabled", "onClick"], en = ["disabled", "onClick"], tn = ["title", "onClick"], nn = ["onClick"], an = {
   key: 0,
   class: "empty"
-}, an = ["value", "onChange"], sn = ["value"], on = ["onUpdate:modelValue"], ln = ["value"], rn = ["onUpdate:modelValue"], dn = ["disabled", "onClick"], un = {
+}, sn = ["value", "onChange"], on = ["value"], ln = ["onUpdate:modelValue"], rn = ["value"], dn = ["onUpdate:modelValue"], un = ["disabled", "onClick"], cn = {
   key: 0,
   class: "warning",
   "data-assign-main-warning": ""
-}, cn = { class: "trial" }, vn = ["disabled"], pn = {
+}, vn = { class: "trial" }, pn = ["disabled"], fn = {
   key: 1,
   class: "verdict",
   "data-assign-recent": ""
-}, fn = {
+}, mn = {
   key: 2,
   class: "trial-result",
   "data-assign-trial": ""
-}, mn = { class: "verdict" }, gn = {
+}, gn = { class: "verdict" }, yn = {
   key: 2,
   class: "failure",
   role: "alert",
   "data-assign-failure": ""
-}, yn = "journal.suites.coding.main-writes-code", kn = {
+}, kn = "journal.suites.coding.main-writes-code", hn = {
   __name: "AgentSettingsAssign",
   props: { draft: { type: Object, required: !0 }, readOnly: Boolean },
   setup(t) {
-    const i = t, e = ee(), s = g(() => e.props.assign.data.value), c = x("main"), y = x("");
-    let b = 0;
-    const A = () => ({ id: ++b, field: "complexity", operator: "minimum", value: "" }), a = x([A()]);
+    const i = t, e = ee(), s = g(() => e.props.assign.data.value), v = x("main"), y = x("");
+    let w = 0;
+    const A = () => ({ id: ++w, field: "complexity", operator: "minimum", value: "" }), a = x([A()]);
     Q(() => e.reload("assign"));
     const C = g(() => {
       var o, m;
-      return ((o = s.value) == null ? void 0 : o.targets.find((R) => R.key === c.value)) ?? ((m = s.value) == null ? void 0 : m.targets[0]);
+      return ((o = s.value) == null ? void 0 : o.targets.find((R) => R.key === v.value)) ?? ((m = s.value) == null ? void 0 : m.targets[0]);
     }), L = g(() => {
       var o;
       return (((o = s.value) == null ? void 0 : o.rules) ?? []).filter((m) => {
@@ -445,7 +449,7 @@ const At = {
       return ((m = P(o.field).find((R) => R.operator === o.operator)) == null ? void 0 : m.needs_value) ?? !1;
     }, F = g(() => {
       var o;
-      return ((o = C.value) == null ? void 0 : o.target) === "main" && i.draft.value(yn) === !1;
+      return ((o = C.value) == null ? void 0 : o.target) === "main" && i.draft.value(kn) === !1;
     });
     function q(o) {
       return { main: ["--target", "main"], agent: ["--target", "agent", "--agent", `row:${o.agent_id}`], model: ["--target", "model", "--program", o.program, "--model", o.program_model] }[o.target];
@@ -474,71 +478,72 @@ const At = {
     }
     return (o, m) => {
       var R;
-      return l(), v("section", Ft, [
-        s.value ? (l(), v(W, { key: 0 }, [
+      return l(), c("section", Ft, [
+        s.value ? (l(), c(W, { key: 0 }, [
           d("div", qt, [
-            (l(!0), v(W, null, D(s.value.targets, (n) => {
+            (l(!0), c(W, null, D(s.value.targets, (n) => {
               var k, O;
-              return l(), v("button", {
+              return l(), c("button", {
                 key: n.key,
                 type: "button",
                 class: X(["target", { chosen: n.key === ((k = C.value) == null ? void 0 : k.key) }]),
                 "aria-selected": n.key === ((O = C.value) == null ? void 0 : O.key),
                 "data-assign-target": n.key,
-                onClick: (Bn) => c.value = n.key
+                onClick: (Pn) => v.value = n.key
               }, [
                 d("span", Mt, h(n.label), 1),
                 d("span", Ut, h(n.description), 1),
-                n.target === "agent" ? (l(), v("span", Wt, "State: " + h(n.running ? "running" : "kept") + " · Open tasks: " + h(n.open_tasks), 1)) : w("", !0)
+                n.target === "agent" ? (l(), c("span", Wt, "State: " + h(n.running ? "running" : "kept") + " · Open tasks: " + h(n.open_tasks), 1)) : b("", !0),
+                n.waiting ? (l(), c("span", Dt, h(n.waiting), 1)) : b("", !0)
               ], 10, Vt);
             }), 128))
           ]),
-          d("div", Dt, [
+          d("div", Ht, [
             m[4] || (m[4] = d("p", { class: "note" }, "The rules are tried in order and the first match wins.", -1)),
-            (l(!0), v(W, null, D(L.value, (n) => (l(), v("div", {
+            (l(!0), c(W, null, D(L.value, (n) => (l(), c("div", {
               key: n.id,
               class: X(["rule", { off: !n.enabled, warned: n.warning }]),
               "data-assign-rule": n.id
             }, [
-              d("span", Kt, h(n.position), 1),
-              d("span", zt, h(n.summary), 1),
-              n.warning ? (l(), v("span", Gt, h(n.warning), 1)) : w("", !0),
-              d("span", Yt, h(n.activity.text), 1),
-              n.activity.last_skip ? (l(), v("span", Xt, "Last skipped: " + h(n.activity.last_skip), 1)) : w("", !0),
-              t.readOnly ? w("", !0) : (l(), v("span", Jt, [
+              d("span", zt, h(n.position), 1),
+              d("span", Gt, h(n.summary), 1),
+              n.warning ? (l(), c("span", Yt, h(n.warning), 1)) : b("", !0),
+              d("span", Xt, h(n.activity.text), 1),
+              n.activity.last_skip ? (l(), c("span", Jt, "Last skipped: " + h(n.activity.last_skip), 1)) : b("", !0),
+              t.readOnly ? b("", !0) : (l(), c("span", Zt, [
                 d("button", {
                   type: "button",
                   title: "Move the rule up",
                   disabled: n.position === 1,
                   onClick: (k) => u(n, -1)
-                }, "↑", 8, Zt),
+                }, "↑", 8, Qt),
                 d("button", {
                   type: "button",
                   title: "Move the rule down",
                   disabled: n.position === s.value.rules.length,
                   onClick: (k) => u(n, 1)
-                }, "↓", 8, Qt),
+                }, "↓", 8, en),
                 d("button", {
                   type: "button",
                   title: n.enabled ? "Turn the rule off" : "Turn the rule on",
                   onClick: (k) => p(n)
-                }, h(n.enabled ? "Turn off" : "Turn on"), 9, en),
+                }, h(n.enabled ? "Turn off" : "Turn on"), 9, tn),
                 d("button", {
                   type: "button",
                   title: "Delete the rule",
                   onClick: (k) => B(n)
-                }, "Delete", 8, tn)
+                }, "Delete", 8, nn)
               ]))
-            ], 10, Ht))), 128)),
-            L.value.length ? w("", !0) : (l(), v("p", nn, "No rules give tasks to " + h((R = C.value) == null ? void 0 : R.label) + " yet.", 1)),
-            t.readOnly ? w("", !0) : (l(), v("form", {
+            ], 10, Kt))), 128)),
+            L.value.length ? b("", !0) : (l(), c("p", an, "No rules give tasks to " + h((R = C.value) == null ? void 0 : R.label) + " yet.", 1)),
+            t.readOnly ? b("", !0) : (l(), c("form", {
               key: 1,
               class: "editor",
               "data-assign-editor": "",
               onSubmit: be(_, ["prevent"])
             }, [
               m[2] || (m[2] = d("p", { class: "all" }, "A task must meet all of these conditions:", -1)),
-              (l(!0), v(W, null, D(a.value, (n, k) => (l(), v("div", {
+              (l(!0), c(W, null, D(a.value, (n, k) => (l(), c("div", {
                 key: n.id,
                 class: "condition"
               }, [
@@ -547,43 +552,43 @@ const At = {
                   "aria-label": "Condition",
                   onChange: (O) => K(n, O.target.value)
                 }, [
-                  (l(!0), v(W, null, D(s.value.fields, (O) => (l(), v("option", {
+                  (l(!0), c(W, null, D(s.value.fields, (O) => (l(), c("option", {
                     key: O.field,
                     value: O.field
-                  }, h(O.field === "any" ? "Any task" : O.field), 9, sn))), 128))
-                ], 40, an),
+                  }, h(O.field === "any" ? "Any task" : O.field), 9, on))), 128))
+                ], 40, sn),
                 ae(d("select", {
                   "onUpdate:modelValue": (O) => n.operator = O,
                   "aria-label": "Comparison"
                 }, [
-                  (l(!0), v(W, null, D(P(n.field), (O) => (l(), v("option", {
+                  (l(!0), c(W, null, D(P(n.field), (O) => (l(), c("option", {
                     key: O.operator,
                     value: O.operator
-                  }, h(O.label), 9, ln))), 128))
-                ], 8, on), [
+                  }, h(O.label), 9, rn))), 128))
+                ], 8, ln), [
                   [Ae, n.operator]
                 ]),
-                j(n) ? ae((l(), v("input", {
+                j(n) ? ae((l(), c("input", {
                   key: 0,
                   "onUpdate:modelValue": (O) => n.value = O,
                   "aria-label": "Value",
                   placeholder: "For example: 4 or migration"
-                }, null, 8, rn)), [
+                }, null, 8, dn)), [
                   [ce, n.value]
-                ]) : w("", !0),
+                ]) : b("", !0),
                 d("button", {
                   type: "button",
                   title: "Remove the condition",
                   disabled: a.value.length === 1,
                   onClick: (O) => a.value.splice(k, 1)
-                }, "Remove", 8, dn)
+                }, "Remove", 8, un)
               ]))), 128)),
               d("button", {
                 type: "button",
                 onClick: m[0] || (m[0] = (n) => a.value.push(A()))
               }, "Add a condition"),
-              F.value ? (l(), v("p", un, "The main agent writes no code here, so a rule that gives it a task is skipped.")) : w("", !0),
-              d("div", cn, [
+              F.value ? (l(), c("p", cn, "The main agent writes no code here, so a rule that gives it a task is skipped.")) : b("", !0),
+              d("div", vn, [
                 ae(d("input", {
                   "onUpdate:modelValue": m[1] || (m[1] = (n) => V.value = n),
                   type: "number",
@@ -599,51 +604,51 @@ const At = {
                   disabled: !V.value,
                   "data-assign-try": "",
                   onClick: U
-                }, "Try on this task", 8, vn),
+                }, "Try on this task", 8, pn),
                 d("button", {
                   type: "button",
                   "data-assign-count": "",
                   onClick: z
                 }, "Count the last 20 tasks")
               ]),
-              $.value ? (l(), v("p", pn, h($.value), 1)) : w("", !0),
-              f.value ? (l(), v("div", fn, [
-                d("p", mn, h(f.value.matches ? "The rule would match" : "The rule would not match") + " task " + h(f.value.task_id) + ". Nothing is assigned.", 1),
-                (l(!0), v(W, null, D(f.value.conditions, (n) => (l(), v("p", {
+              $.value ? (l(), c("p", fn, h($.value), 1)) : b("", !0),
+              f.value ? (l(), c("div", mn, [
+                d("p", gn, h(f.value.matches ? "The rule would match" : "The rule would not match") + " task " + h(f.value.task_id) + ". Nothing is assigned.", 1),
+                (l(!0), c(W, null, D(f.value.conditions, (n) => (l(), c("p", {
                   key: n.label,
                   class: X(["said", { missed: !n.matched }])
                 }, h(n.label) + ": " + h(n.matched ? "met" : "not met"), 3))), 128))
-              ])) : w("", !0),
+              ])) : b("", !0),
               m[3] || (m[3] = d("button", {
                 type: "submit",
                 class: "save"
               }, "Add the rule", -1))
             ], 32)),
-            y.value ? (l(), v("p", gn, h(y.value), 1)) : w("", !0)
+            y.value ? (l(), c("p", yn, h(y.value), 1)) : b("", !0)
           ])
-        ], 64)) : w("", !0)
+        ], 64)) : b("", !0)
       ]);
     };
   }
-}, hn = /* @__PURE__ */ H(kn, [["__scopeId", "data-v-f080b579"]]), bn = { class: "screen" }, wn = { class: "rail" }, _n = {
+}, bn = /* @__PURE__ */ H(hn, [["__scopeId", "data-v-b9ca3259"]]), wn = { class: "screen" }, _n = { class: "rail" }, $n = {
   __name: "AgentSettingsScreen",
   props: { nodes: { type: Array, required: !0 }, draft: { type: Object, required: !0 }, readOnly: { type: Boolean, default: !1 }, extras: { type: Object, default: () => ({}) }, found: { type: String, default: "" } },
   setup(t) {
     const i = t, e = x(null), s = g(() => ze(i.nodes));
     de(() => i.found, (y) => y && xe(() => {
-      var b, A;
-      return (A = (b = e.value) == null ? void 0 : b.querySelector(`[data-setting="${y}"]`)) == null ? void 0 : A.scrollIntoView({ block: "center" });
+      var w, A;
+      return (A = (w = e.value) == null ? void 0 : w.querySelector(`[data-setting="${y}"]`)) == null ? void 0 : A.scrollIntoView({ block: "center" });
     }), { immediate: !0, flush: "post" });
-    const c = (y) => {
-      var b, A;
-      return (A = (b = e.value) == null ? void 0 : b.querySelector(`[data-section="${y}"]`)) == null ? void 0 : A.scrollIntoView({ block: "start", behavior: "smooth" });
+    const v = (y) => {
+      var w, A;
+      return (A = (w = e.value) == null ? void 0 : w.querySelector(`[data-section="${y}"]`)) == null ? void 0 : A.scrollIntoView({ block: "start", behavior: "smooth" });
     };
-    return (y, b) => (l(), v("div", bn, [
-      d("nav", wn, [
+    return (y, w) => (l(), c("div", wn, [
+      d("nav", _n, [
         S(r(Ge), {
           sections: s.value,
           scope: e.value,
-          onChoose: c
+          onChoose: v
         }, null, 8, ["sections", "scope"])
       ]),
       d("div", {
@@ -662,15 +667,15 @@ const At = {
       ], 512)
     ]));
   }
-}, re = /* @__PURE__ */ H(_n, [["__scopeId", "data-v-1cab27ca"]]), $n = {
+}, re = /* @__PURE__ */ H($n, [["__scopeId", "data-v-1cab27ca"]]), On = {
   key: 0,
   class: "hint",
   "data-work-hint": ""
-}, On = {
+}, Sn = {
   __name: "AgentSettingsTab",
   props: { tab: { type: String, required: !0 }, active: { type: Object, required: !0 }, draft: { type: Object, required: !0 }, isLoaded: Boolean, nodes: { type: Function, required: !0 }, readOnly: Boolean, found: { type: String, default: "" }, nothingStarts: Boolean, advancedExtras: { type: Object, required: !0 } },
   setup(t) {
-    return (i, e) => (l(), v("div", {
+    return (i, e) => (l(), c("div", {
       class: X(["settings-body", { flush: t.tab === "agents" }])
     }, [
       S(r(Le), { tab: t.active }, {
@@ -686,16 +691,16 @@ const At = {
                 "data-agent-settings-work": ""
               }, {
                 before: E(() => [
-                  t.nothingStarts ? (l(), v("p", $n, "With Auto off and no workers, nothing starts the work: a user starts tasks or turns one of them on.")) : w("", !0)
+                  t.nothingStarts ? (l(), c("p", On, "With Auto off and no workers, nothing starts the work: a user starts tasks or turns one of them on.")) : b("", !0)
                 ]),
                 _: 1
-              }, 8, ["nodes", "draft", "read-only", "found"])) : w("", !0)
+              }, 8, ["nodes", "draft", "read-only", "found"])) : b("", !0)
             ]),
             agents: E(() => [
               S(Lt, { draft: t.draft }, null, 8, ["draft"])
             ]),
             assign: E(() => [
-              S(hn, {
+              S(bn, {
                 draft: t.draft,
                 "read-only": t.readOnly
               }, null, 8, ["draft", "read-only"])
@@ -708,7 +713,7 @@ const At = {
                 "read-only": t.readOnly,
                 found: t.found,
                 "data-agent-settings-tests": ""
-              }, null, 8, ["nodes", "draft", "read-only", "found"])) : w("", !0)
+              }, null, 8, ["nodes", "draft", "read-only", "found"])) : b("", !0)
             ]),
             advanced: E(() => [
               t.isLoaded ? (l(), N(re, {
@@ -719,7 +724,7 @@ const At = {
                 found: t.found,
                 extras: t.advancedExtras,
                 "data-agent-settings-advanced": ""
-              }, null, 8, ["nodes", "draft", "read-only", "found", "extras"])) : w("", !0)
+              }, null, 8, ["nodes", "draft", "read-only", "found", "extras"])) : b("", !0)
             ]),
             _: 1
           }, 8, ["value"])
@@ -728,28 +733,28 @@ const At = {
       }, 8, ["tab"])
     ], 2));
   }
-}, Sn = {
+}, Cn = {
   class: "settings",
   "data-agent-settings": ""
-}, Cn = { class: "head" }, Tn = {
+}, Tn = { class: "head" }, An = {
   class: "env",
   "data-settings-environment": ""
-}, An = { class: "settings-bar" }, xn = {
+}, xn = { class: "settings-bar" }, Rn = {
   key: 1,
   class: "note lock",
   role: "note",
   "data-settings-lock": ""
-}, Rn = "journal.suites.coding.auto-mode", En = "journal.suites.coding.workers.main-dispatches-workers", Nn = 1200, In = {
+}, En = "journal.suites.coding.auto-mode", Nn = "journal.suites.coding.workers.main-dispatches-workers", In = 1200, Bn = {
   __name: "AgentSettings",
   setup(t) {
-    const i = { work: "work-screen", tests: "tests-screen", advanced: "advanced-screen", "helper-types": "helper-types-screen" }, e = ee(), s = x("work"), c = [{ key: "work", label: "Work" }, { key: "agents", label: "Helpers", count_field: "full" }, { key: "assign", label: "Assign" }, { key: "tests", label: "Tests" }, { key: "advanced", label: "Advanced" }], y = g(() => c.find((n) => n.key === s.value)), b = () => Object.values(i).map((n) => e.props[n].data.value), A = g(() => b().every(Boolean)), a = Ye({
+    const i = { work: "work-screen", tests: "tests-screen", advanced: "advanced-screen", "helper-types": "helper-types-screen" }, e = ee(), s = x("work"), v = [{ key: "work", label: "Work" }, { key: "agents", label: "Helpers", count_field: "full" }, { key: "assign", label: "Assign" }, { key: "tests", label: "Tests" }, { key: "advanced", label: "Advanced" }], y = g(() => v.find((n) => n.key === s.value)), w = () => Object.values(i).map((n) => e.props[n].data.value), A = g(() => w().every(Boolean)), a = Ye({
       run: (n) => e.run(n),
       reload: async () => {
         const n = "type-screen.type" in e.state;
-        await Promise.all([...Object.values(i).map((k) => e.reload(k)), e.reload("limits"), ...n ? [e.reload("type-screen")] : []]), a.load([...b(), ...n ? [e.props["type-screen"].data.value] : []]);
+        await Promise.all([...Object.values(i).map((k) => e.reload(k)), e.reload("limits"), ...n ? [e.reload("type-screen")] : []]), a.load([...w(), ...n ? [e.props["type-screen"].data.value] : []]);
       }
     });
-    de(b, (n) => {
+    de(w, (n) => {
       n.every(Boolean) && a.load(n);
     }, { immediate: !0 });
     const { rows: C } = Te(e, a), L = g(() => Tt(C.value)), P = g(() => L.value ? { full: `${L.value} full` } : {});
@@ -760,7 +765,7 @@ const At = {
     }, q = g(() => (a.value(Z) ?? []).map(Se).map(({ name: n, value: k }) => ({ name: F(n), value: k === "none" ? "no cap" : `${Number(k) / 1e3}k` }))), M = g(() => ({ "keyed-cap-table": { rows: j, sizes: ie, defaultCap: Number(a.value(ue)) || ie[0], ownCaps: q.value } })), I = (n) => {
       var k;
       return ((k = e.props[i[n]].data.value) == null ? void 0 : k.nodes) ?? [];
-    }, K = g(() => a.value(Rn) === !1 && a.value(En) === !1), _ = g(() => !e.readOnly), u = x("main"), p = g(() => {
+    }, K = g(() => a.value(En) === !1 && a.value(Nn) === !1), _ = g(() => !e.readOnly), u = x("main"), p = g(() => {
       var n;
       return ((n = e.props.work.data.value) == null ? void 0 : n.presets) ?? [];
     }), B = g(() => {
@@ -775,7 +780,7 @@ const At = {
     function m(n) {
       u.value = "main", R({ key: o(n.screen) }), U.value = n.key, clearTimeout(z), z = setTimeout(() => {
         U.value = "";
-      }, Nn);
+      }, In);
     }
     Ee(() => clearTimeout(z));
     function R(n) {
@@ -783,11 +788,11 @@ const At = {
     }
     return (n, k) => (l(), N(r(Fe), { padding: "0" }, {
       default: E(() => [
-        d("div", Sn, [
+        d("div", Cn, [
           S(r(we), { value: u.value }, {
             main: E(() => [
-              d("div", Cn, [
-                d("span", Tn, h(r(e).environment), 1)
+              d("div", Tn, [
+                d("span", An, h(r(e).environment), 1)
               ]),
               p.value.length ? (l(), N(r(Je), {
                 key: 0,
@@ -804,17 +809,17 @@ const At = {
                   }, null, 8, ["index"])
                 ]),
                 _: 1
-              }, 8, ["presets", "current", "disabled"])) : w("", !0),
-              d("div", An, [
+              }, 8, ["presets", "current", "disabled"])) : b("", !0),
+              d("div", xn, [
                 S(r(qe), {
-                  tabs: c,
+                  tabs: v,
                   active: y.value,
                   answer: P.value,
                   onChoose: R
                 }, null, 8, ["active", "answer"])
               ]),
-              r(e).readOnly ? (l(), v("p", xn, "Only a user can change these settings. You can read every value, and ask a user for a change.")) : w("", !0),
-              S(On, {
+              r(e).readOnly ? (l(), c("p", Rn, "Only a user can change these settings. You can read every value, and ask a user for a change.")) : b("", !0),
+              S(Sn, {
                 tab: s.value,
                 active: y.value,
                 draft: r(a),
@@ -847,13 +852,13 @@ const At = {
             environment: r(e).environment,
             onSave: k[2] || (k[2] = (O) => r(a).apply()),
             onCancel: k[3] || (k[3] = (O) => r(a).reset())
-          }, null, 8, ["changes", "can-save", "pending", "reason", "environment"])) : w("", !0)
+          }, null, 8, ["changes", "can-save", "pending", "reason", "environment"])) : b("", !0)
         ])
       ]),
       _: 1
     }));
   }
-}, qn = /* @__PURE__ */ H(In, [["__scopeId", "data-v-f88ce405"]]);
+}, Vn = /* @__PURE__ */ H(Bn, [["__scopeId", "data-v-f88ce405"]]);
 export {
-  qn as A
+  Vn as A
 };

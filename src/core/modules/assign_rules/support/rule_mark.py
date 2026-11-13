@@ -15,7 +15,7 @@ class RuleMark:
     def values(self) -> dict[str, int]:
         return {RULE_KEY: self.rule_id}
 
-    def marked(self, metadata: Metadata) -> Metadata:
+    def stored_metadata(self, metadata: Metadata) -> Metadata:
         return Metadata({**metadata.values, RULES_MODULE: self.values()})
 
     @staticmethod

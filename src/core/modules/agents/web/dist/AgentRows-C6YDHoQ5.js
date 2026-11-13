@@ -895,7 +895,7 @@ const Oa = {
       })
     ], 64)) : k("", !0);
   }
-}, Fa = /* @__PURE__ */ Z(qa, [["__scopeId", "data-v-c4044bd4"]]), Pa = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>', Ua = ["data-icon", "stroke-width", "innerHTML"], ae = {
+}, Fa = /* @__PURE__ */ Z(qa, [["__scopeId", "data-v-5fa60f08"]]), Pa = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>', Ua = ["data-icon", "stroke-width", "innerHTML"], ae = {
   __name: "Icon",
   props: {
     name: { type: String, default: "dot" },

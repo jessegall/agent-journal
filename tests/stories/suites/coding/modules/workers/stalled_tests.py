@@ -58,7 +58,7 @@ def test_a_running_proof_of_a_removed_worktree_is_left_alone_by_the_tick(two_tas
     story.run_listeners()
     story.expect_success(f'worker release {agent_number(story, worker.id)} "not needed" --abandon "the story drops the work"', actor=story.agent)
     story.advance(timedelta(minutes=31))
-    StalledWorkerTestRuns()(story.container)
+    story.run_tick_handler("stalled worker tests")
     story.expect_absent("proof show 1", "stuck", actor=story.agent)
 
 

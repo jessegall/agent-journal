@@ -25,6 +25,6 @@ class RuleAssignmentReasons(AssignmentReasons):
         if not rule_ids:
             return {}
         rules = list(self.queries.query(AssignRule).where_in("id", rule_ids).every_row(RULES_REASON))
-        lines = self.conditions.lines_by_rule(rules)
-        found = {rule.id: AssignmentReason(f"by rule {rule.id}: {', '.join(line.label for line in lines[rule.id])}", f"{RULES_TABLE}:{rule.id}") for rule in rules}
-        return {assignment_id: found.get(mark.rule_id, AssignmentReason(f"by rule {mark.rule_id} (deleted)", None)) for assignment_id, mark in marks.items() if mark is not None}
+        lines = self.conditions.rule_lines(rules)
+        rule_reasons = {rule.id: AssignmentReason(f"by rule {rule.id}: {', '.join(line.label for line in lines[rule.id])}", f"{RULES_TABLE}:{rule.id}") for rule in rules}
+        return {assignment_id: rule_reasons.get(mark.rule_id, AssignmentReason(f"by rule {mark.rule_id} (deleted)", None)) for assignment_id, mark in marks.items() if mark is not None}

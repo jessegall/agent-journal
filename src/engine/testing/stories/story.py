@@ -1,4 +1,5 @@
 from engine.enums.actor_type import ActorType
+from engine.module.module_finder import ModuleFinder
 from engine.environment.environment_names import EnvironmentNames
 from engine.file.file_access import FileAccess
 import io
@@ -234,6 +235,12 @@ class Story:
         self.steps.append("listeners")
         with self.repeated_work.request():
             self.container.get(CommitListenerRunner).run()
+
+    def run_tick_handler(self, label: str) -> None:
+        handler = next(handler for module in ModuleFinder(self.home).modules() for handler in module.tick_handlers if handler.label == label)
+        self.steps.append(f"tick handler {label}")
+        with self.repeated_work.request():
+            handler.handler(self.container)
 
     def tick(self, session: str) -> HookReply:
         return self.hook(session, HookSamples.tick())

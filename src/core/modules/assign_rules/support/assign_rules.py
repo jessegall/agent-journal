@@ -1,3 +1,5 @@
+from typing import TypeGuard
+
 from engine.command.context import Context
 from engine.driver.nudger import Nudger
 from engine.enums.agent_role import AgentRole
@@ -9,7 +11,7 @@ from core.modules.assign_rules.models.assign_rule import AssignRule
 from core.modules.assign_rules.models.enums.decision_outcome import DecisionOutcome
 from core.modules.assign_rules.models.support.task_facts import TaskFacts
 from core.modules.assign_rules.support.assign_rules_mode import AssignRulesMode
-from core.modules.assign_rules.support.assign_rules_nudges import RULE_GIVEN_SOURCE, TASK_GIVEN_BY_RULE
+from core.modules.assign_rules.support.assign_rules_nudges import RULE_NUDGE_SOURCE, RULE_TASK_NUDGE
 from core.modules.assign_rules.support.decision_note import DecisionNote
 from core.modules.assign_rules.support.rule_conditions import RuleConditions
 from core.modules.assign_rules.support.rule_mark import RuleMark
@@ -25,10 +27,10 @@ RULES_REASON = "a task is judged against every enabled rule of its environment"
 
 
 class AssignRules:
-    """Judges a task against the enabled rules of its environment in position order and records the one
-    decision about it. The first matching rule whose target can take the task gives it to that target, by the
-    journal, with the rule named on the assignment; a rule whose target cannot, or whose assignment is refused,
-    is skipped with the reason. A task is given by a rule once in its life, only while it is open or blocked and
+    """Judges a task against the enabled rules of its environment in position order and records the one decision
+    about it. The first matching rule whose target can take the task gives it to that target, by the journal,
+    with the rule named on the assignment; a rule whose target cannot, or whose assignment is refused, is
+    skipped with the reason. A task is given by a rule once in its life, only while it is open or blocked and
     has no assignee. A task in a plan goes with its plan, unless a rule names the plan. A main agent given a
     task hears so. While the mode does not assign, the winner is recorded as a dry run."""
 
@@ -45,7 +47,7 @@ class AssignRules:
 
     def decide(self, task: Task, batch: DecisionBatch, context: Context) -> AssignDecision:
         stored = self.stored_decision(task)
-        if stored is not None and stored.outcome is DecisionOutcome.ASSIGNED:
+        if self.is_given(stored):
             return stored
         unfree = self.unfree(task)
         if unfree is not None:
@@ -70,7 +72,7 @@ class AssignRules:
         return self.record(task, stored, DecisionOutcome.UNMATCHED, None, None, "no rule matches", context)
 
     def preview(self, task: Task, stored: AssignDecision | None) -> str:
-        if stored is not None and stored.outcome is DecisionOutcome.ASSIGNED:
+        if self.is_given(stored):
             return "a rule gave the task already, and a rule gives a task once"
         unfree = self.unfree(task)
         if unfree is not None:
@@ -95,38 +97,45 @@ class AssignRules:
         return None
 
     @staticmethod
+    def is_given(stored: AssignDecision | None) -> TypeGuard[AssignDecision]:
+        return stored is not None and stored.outcome is DecisionOutcome.ASSIGNED
+
+    @staticmethod
     def planned_reason(facts: TaskFacts) -> str:
         return f"in plan {facts.plan_id}: assign the plan"
 
     def assignment_refusal(self, task: Task, rule: AssignRule, actor_id: int, context: Context) -> str | None:
-        if not self.mode.assigns():
+        if not self.mode.is_assigning():
             return None
         try:
             self.assignments.assign(task, actor_id, context, cascade=False)
         except Refusal as refusal:
             return refusal.reason
         given = next(assignment for assignment in self.assignments.assignments(task) if assignment.actor_id == actor_id)
-        self.repository.save_metadata(given, RuleMark(rule.id).marked(given.metadata), context)
+        self.repository.save_metadata(given, RuleMark(rule.id).stored_metadata(given.metadata), context)
         self.nudge_main_agent(task, rule, actor_id, context)
         return None
 
     def nudge_main_agent(self, task: Task, rule: AssignRule, actor_id: int, context: Context) -> None:
         agent = self.assignments.agent_row(actor_id)
         if agent is not None and agent.role == AgentRole.MAIN:
-            self.nudger.send(agent.id, TASK_GIVEN_BY_RULE, RULE_GIVEN_SOURCE, context, task=task.id, rule=rule.id)
+            self.nudger.send(agent.id, RULE_TASK_NUDGE, RULE_NUDGE_SOURCE, context, task=task.id, rule=rule.id)
 
-    def matched(self, task: Task, stored: AssignDecision | None, rule: AssignRule, usable: Usable, skipped: list[str], later: list[AssignRule],
+    def matched(self, task: Task, stored: AssignDecision | None, rule: AssignRule, usable: Usable, skipped: list[str], later_rules: list[AssignRule],
                 context: Context) -> AssignDecision:
-        note = f" ({usable.reason})" if usable.reason else ""
-        also = [f"also matched: {', '.join(f'rule {other.id}' for other in later)}"] if later else []
-        if not self.mode.assigns():
-            return self.record(task, stored, DecisionOutcome.DRY_RUN, rule, usable.actor_id, "; ".join([*skipped, f"rule {rule.id} matches, target {rule.target_name}{note}", *also]), context)
-        return self.record(task, stored, DecisionOutcome.ASSIGNED, rule, usable.actor_id, "; ".join([*skipped, f"rule {rule.id} applied: given to {rule.target_name}{note}", *also]), context)
+        target_note = f" ({usable.reason})" if usable.reason else ""
+        later_matches = [f"also matched: {', '.join(f'rule {matched_rule.id}' for matched_rule in later_rules)}"] if later_rules else []
+        if not self.mode.is_assigning():
+            return self.record(task, stored, DecisionOutcome.DRY_RUN, rule, usable.actor_id, "; ".join([*skipped, f"rule {rule.id} matches, target {rule.target_name}{target_note}", *later_matches]), context)
+        return self.record(task, stored, DecisionOutcome.ASSIGNED, rule, usable.actor_id, "; ".join([*skipped, f"rule {rule.id} applied: given to {rule.target_name}{target_note}", *later_matches]), context)
 
     def matching_rules(self, facts: TaskFacts) -> list[AssignRule]:
         rules = sorted(self.queries.query(AssignRule).filter(enabled=True).every_row(RULES_REASON), key=lambda rule: rule.position)
-        lines = self.conditions.lines_by_rule(rules)
-        return [rule for rule in rules if all(line.matches(facts) for line in lines[rule.id]) and (facts.plan_id is None or any(line.names_plan for line in lines[rule.id]))]
+        lines = self.conditions.rule_lines(rules)
+        return [rule for rule in rules if all(line.matches(facts) for line in lines[rule.id]) and (facts.plan_id is None or any(line.is_plan_condition for line in lines[rule.id]))]
+
+    def record_failure(self, task: Task, reason: str, context: Context) -> AssignDecision:
+        return self.record(task, self.stored_decision(task), DecisionOutcome.FAILED, None, None, reason, context)
 
     def record(self, task: Task, stored: AssignDecision | None, outcome: DecisionOutcome, rule: AssignRule | None, actor_id: int | None, reason: str,
                context: Context) -> AssignDecision:

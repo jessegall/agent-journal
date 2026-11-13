@@ -8,7 +8,7 @@ from tests.stories.core.modules.assign_rules.support.rule_steps import ENVIRONME
 from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
-KIND_RULE = f"assign-rule make --target model --program claude --model sonnet --condition any {ENVIRONMENT}"
+MODEL_RULE = f"assign-rule make --target model --program claude --model sonnet --condition any {ENVIRONMENT}"
 
 
 def new_task(story: Story, title: str) -> int:
@@ -39,15 +39,15 @@ class TwoSonnetWorkers(StoryFixture):
         second_task = new_task(story, "Second")
         story.helper = first_sonnet_worker(story, 1)
         sonnet_worker(story, second_task)
-        story.run(KIND_RULE, actor=story.user)
+        story.run(MODEL_RULE, actor=story.user)
 
     def expect(self, story: Story) -> None:
         story.expect_text("assign-rule list --environment main", "model", actor=story.user)
 
 
 class BusyFirstSonnetWorker(StoryFixture):
-    """Two workers on claude sonnet and Ada's rule for the kind: story.helper, dispatched first, holds tasks 1 and 2,
-    the second worker task 3."""
+    """Two workers on claude sonnet and Ada's rule for the kind: story.helper, dispatched first, holds tasks 1 and
+    2, the second worker task 3."""
 
     parent = OrchestratorWithPerson
 
@@ -56,7 +56,7 @@ class BusyFirstSonnetWorker(StoryFixture):
         tasks = [new_task(story, title) for title in ("Second", "Third")]
         story.helper = first_sonnet_worker(story, 1, tasks[0])
         sonnet_worker(story, tasks[1])
-        story.run(KIND_RULE, actor=story.user)
+        story.run(MODEL_RULE, actor=story.user)
 
     def expect(self, story: Story) -> None:
         story.expect_text("assign-rule list --environment main", "model", actor=story.user)

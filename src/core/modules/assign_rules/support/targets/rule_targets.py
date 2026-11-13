@@ -14,7 +14,7 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.support.task_assignees import TaskAssignees
 
-MODEL_AGENTS_REASON = "a model target is chosen among every agent of the environment on its program and model"
+MODEL_AGENTS_REASON = "a model target is least_busy among every agent of the environment on its program and model"
 
 
 class RuleTargets:
@@ -55,15 +55,15 @@ class RuleTargets:
         return usable
 
     def model_agent(self, rule: AssignRule, batch: DecisionBatch) -> Usable:
-        none_can = f"no agent of {rule.program} {rule.program_model} can take it now"
+        unavailable_text = f"no agent of {rule.program} {rule.program_model} can take it now"
         agents = [agent for agent in self.queries.query(Agent).every_row(MODEL_AGENTS_REASON) if agent.role != AgentRole.MAIN and self.runs_rule_model(agent, rule)]
         if not agents:
-            return Usable(None, f"{none_can}: no agent runs that program and model")
-        ready = [agent for agent in agents if not agent.is_paused and agent.usage_limit_ends_at is None and self.checked(agent, rule, batch).actor_id is not None]
-        if not ready:
-            return Usable(None, none_can)
-        chosen = min(ready, key=lambda agent: (self.open_task_count(agent, batch), batch.last_place(agent.id), self.newest_assignment(agent, batch), agent.id))
-        return Usable(chosen.id, f"{AgentLabel.labelled(chosen).text} holds the fewest open tasks of its program and model")
+            return Usable(None, f"{unavailable_text}: no agent runs that program and model")
+        free_agents = [agent for agent in agents if not agent.is_paused and agent.usage_limit_ends_at is None and self.checked(agent, rule, batch).actor_id is not None]
+        if not free_agents:
+            return Usable(None, unavailable_text)
+        least_busy = min(free_agents, key=lambda agent: (self.open_task_count(agent, batch), batch.last_place(agent.id), self.newest_assignment(agent, batch), agent.id))
+        return Usable(least_busy.id, f"{AgentLabel.labelled(least_busy).text} holds the fewest open tasks of its program and model")
 
     def open_task_count(self, agent: Agent, batch: DecisionBatch) -> int:
         return batch.open_task_count(agent.id, lambda: len(self.tasks.unfinished_assigned(agent.id)))

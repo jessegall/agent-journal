@@ -33,7 +33,7 @@ test("a file edit shows its path, its counts and its changed lines", async () =>
 });
 
 test("a moved file shows once, as moved, with the path it came from", async () => {
-    const moved = {id: 1, path: "cart/total.py", added: 0, removed: 0, rows: "[]", edit_type: "moved", moved_from: "cart.py", created_at: "2026-11-01T10:00:00Z"};
+    const moved = {id: 1, path: "cart/total.py", added: 0, removed: 0, rows: "[]", edit_type: "moved", old_path: "cart.py", created_at: "2026-11-01T10:00:00Z"};
     const element = await mounted(FileFeed, context({"file-edit list": page([moved])}, 2));
     await settle();
     expect(element.querySelectorAll(".diff-card")).toHaveLength(1);
