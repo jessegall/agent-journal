@@ -17,6 +17,8 @@ from tests.stories.core.modules.documents.support.trail_fixtures import ImageSce
 from tests.stories.server.viewer.attachments import uploaded
 
 from tests.stories.core.modules.documents.support.trail_fixtures import IMAGE_BYTES, feature, linked_scenario, image_scenario
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
+from suites.coding.support.shipped_profiles import WORKER_PROFILE
 
 
 class VisitorReviewReady(StoryFixture):
@@ -51,7 +53,7 @@ def attachment_scenario(linked_scenario):
 
 def test_hidden_peer_and_unrelated_journal_messages_are_excluded(linked_scenario, tmp_path):
     linked_scenario.command('message send "Unrelated main-agent note"')
-    started(linked_scenario.story, 'helper start journal-researcher --brief "Inspect the cart" --model sonnet --environment main')
+    started(linked_scenario.story, f'helper start {RESEARCHER_PROFILE.name} --brief "Inspect the cart" --model sonnet --environment main')
     helper = helper_agent(linked_scenario.story)
     linked_scenario.story.hook(helper.session, stop_with_report("Hidden helper report contents"))
     linked_scenario.story.run_listeners()
@@ -165,7 +167,7 @@ def test_attachment_metadata_pages_recover_all_names(attachment_scenario):
 
 def test_visible_helper_report_uses_its_session_author(linked_scenario):
     scenario = linked_scenario
-    started(scenario.story, 'helper start journal-researcher --brief "Inspect visible cart evidence" --model sonnet --environment main')
+    started(scenario.story, f'helper start {RESEARCHER_PROFILE.name} --brief "Inspect visible cart evidence" --model sonnet --environment main')
     helper = helper_agent(scenario.story)
     scenario.story.hook(helper.session, stop_with_report("Visible helper evidence"))
     scenario.story.run_listeners()
@@ -200,8 +202,8 @@ def test_shipped_instructions_teach_source_lifetime_and_context(linked_scenario)
 
 
 def test_upgraded_user_profile_is_not_overwritten(linked_scenario):
-    linked_scenario.person("profiles.profiles", "profile", "save", "journal-worker", "--description", "My worker", "--body", "Keep my local reporting instructions")
+    linked_scenario.person("profiles.profiles", "profile", "save", f"{WORKER_PROFILE.name}", "--description", "My worker", "--body", "Keep my local reporting instructions")
     code, output = linked_scenario.story.synced()
     linked_scenario.story.expect_rows(code == 0, detail=output)
-    profile = linked_scenario.story.container.get(ProfileFiles).effective("journal-worker")
+    profile = linked_scenario.story.container.get(ProfileFiles).effective(f"{WORKER_PROFILE.name}")
     linked_scenario.story.expect_rows(profile.body == "Keep my local reporting instructions")

@@ -1,4 +1,6 @@
 from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_KINDS, CONTEXT_LIMIT_PROFILES, CONTEXT_LIMIT_TOKENS, ContextShare
+from suites.coding.support.shipped_profiles import PLANNER_PROFILE
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 
 class Settings:
@@ -19,7 +21,7 @@ class Settings:
 
 def caps(**values: object) -> ContextShare:
     return ContextShare(Settings({CONTEXT_LIMIT_ENABLED: True, CONTEXT_LIMIT_TOKENS: 400000,
-                                 CONTEXT_LIMIT_KINDS: ("worker:200000", "main:none"), CONTEXT_LIMIT_PROFILES: ("journal-planner:150000",), **values}), None, None)
+                                 CONTEXT_LIMIT_KINDS: ("worker:200000", "main:none"), CONTEXT_LIMIT_PROFILES: (f"{PLANNER_PROFILE.name}:150000",), **values}), None, None)
 
 
 def test_a_worker_is_capped_while_the_main_agent_is_not():
@@ -27,7 +29,7 @@ def test_a_worker_is_capped_while_the_main_agent_is_not():
 
 
 def test_a_helper_type_entry_wins_over_its_kind_and_an_unlisted_kind_uses_the_size_for_every_agent():
-    assert (caps().cap("helper", "journal-planner"), caps().cap("helper", "journal-researcher")) == (150000, 400000)
+    assert (caps().cap("helper", f"{PLANNER_PROFILE.name}"), caps().cap("helper", f"{RESEARCHER_PROFILE.name}")) == (150000, 400000)
 
 
 def test_no_agent_is_capped_while_the_context_limit_is_off():

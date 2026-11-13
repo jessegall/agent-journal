@@ -19,10 +19,12 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from core.modules.helpers.support.helper_settings import HELPER_RUN_LIMIT
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
+from suites.coding.support.shipped_profiles import WORKER_SENIOR_PROFILE
 
-START = 'helper start journal-researcher --brief "How does the queue hold a run?" --environment main'
+START = f'helper start {RESEARCHER_PROFILE.name} --brief "How does the queue hold a run?" --environment main'
 CODEX_START = f"{START} --program codex --model gpt-6.1-sol"
-PLAIN_START = 'helper start journal-researcher --brief "Read the queue" --environment main'
+PLAIN_START = f'helper start {RESEARCHER_PROFILE.name} --brief "Read the queue" --environment main'
 
 
 class LauncherRuns(StoryFixture):
@@ -67,7 +69,7 @@ def start_source(new_story, fixture, line=START):
 
 
 class StartedHelper(StoryFixture):
-    """A main agent with one helper of journal-researcher running."""
+    f"""A main agent with one helper of {RESEARCHER_PROFILE.name} running."""
 
     parent = LauncherRuns
 
@@ -82,14 +84,14 @@ def running_helper(story):
 def test_a_start_makes_a_read_only_helper_under_the_main_agent(new_story):
     story = new_story(fixture=StartedHelper)
     helper_id = running_helper(story)
-    story.expect_success(f"agent show {agent_number(story, helper_id)}", "role: helper", "access: read-only", f"parent_id: {story.agent.id}", "profile: journal-researcher")
+    story.expect_success(f"agent show {agent_number(story, helper_id)}", "role: helper", "access: read-only", f"parent_id: {story.agent.id}", f"profile: {RESEARCHER_PROFILE.name}")
 
 
 def test_a_start_keeps_a_job_with_the_whole_brief(new_story):
     story = new_story(fixture=StartedHelper)
     helper_id = running_helper(story)
     job = story.container.get(Queries).query(HelperJob).filter(helper_id=helper_id).first()
-    story.expect_rows(job.brief == "How does the queue hold a run?", job.profile == "journal-researcher", job.session_agent_id == story.agent.id)
+    story.expect_rows(job.brief == "How does the queue hold a run?", job.profile == f"{RESEARCHER_PROFILE.name}", job.session_agent_id == story.agent.id)
 
 
 def test_a_helper_runs_on_the_program_named(new_story):
@@ -113,7 +115,7 @@ def test_a_start_with_no_model_anywhere_is_refused_naming_the_flag(new_story):
 @pytest.mark.parametrize("line, reason", [
     (f"{START} --program codex --model not-a-model", "may run"),
     ('helper start nobody --brief "Read" --environment main', "journal profile list"),
-    ('helper start journal-worker-senior --brief "Read" --environment main', "journal-worker-senior is a Worker: use journal worker dispatch"),
+    (f'helper start {WORKER_SENIOR_PROFILE.name} --brief "Read" --environment main', f"{WORKER_SENIOR_PROFILE.name} is a Worker: use journal worker dispatch"),
     (f'helper start journal-researcher --brief "{"x" * 100001}" --environment main', "journal doc make"),
 ], ids=["model", "profile", "worker profile", "long brief"])
 def test_a_refused_start_leaves_no_row(new_story, line, reason):

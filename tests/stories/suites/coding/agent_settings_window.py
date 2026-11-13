@@ -13,6 +13,8 @@ from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_T
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_FAILURE_LIMIT
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
+from suites.coding.support.shipped_profiles import DESIGNER_PROFILE
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
 AUTO_MODE = f"{AUTO_MODE_SETTING}"
 
@@ -61,7 +63,7 @@ def test_s49_counts_groups_and_retirement(new_story):
     with person_viewer(story) as viewer:
         helper = next(row for row in limit_rows(viewer) if row["key"] == "helper")
         names = [row["profile"] for row in helper["profiles"]]
-        expect_value((names.count("journal-merger"), names.count("journal-designer"), sum(row["kept"] for row in helper["profiles"]) <= helper["kept"]), (1, 1, True))
+        expect_value((names.count(f"{MERGER_PROFILE.name}"), names.count(f"{DESIGNER_PROFILE.name}"), sum(row["kept"] for row in helper["profiles"]) <= helper["kept"]), (1, 1, True))
         worker = agent_actors(story)["worker"]
         story.expect_refusal(f'agent retire {agent_number(story, worker.id)} --reason "not needed"', "", actor=story.user)
 

@@ -17,17 +17,19 @@ from tests.stories.core.support.agent_labels import agent_label
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.support.coding_settings import DESIGNER_ENABLED_SETTING
 from suites.coding.support.coding_settings import STARTS_HELPERS_SETTING
+from suites.coding.support.shipped_profiles import DESIGNER_PROFILE
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
 DESIGNER = f"{DESIGNER_ENABLED_SETTING}"
 HELPERS = f"{STARTS_HELPERS_SETTING}"
 MERGER = f"{MERGER_ENABLED}"
-START_DESIGNER = 'helper start journal-designer --brief "Design the cart page" --environment main'
+START_DESIGNER = f'helper start {DESIGNER_PROFILE.name} --brief "Design the cart page" --environment main'
 
 
 def read_merger(story):
-    return next(iter(story.container.get(Queries).query(Agent).filter(profile="journal-merger").every_row(TEST_ROWS_REASON)), None)
+    return next(iter(story.container.get(Queries).query(Agent).filter(profile=f"{MERGER_PROFILE.name}").every_row(TEST_ROWS_REASON)), None)
 
 
 def merger_delivery(story, monkeypatch):
@@ -68,7 +70,7 @@ def test_s07_the_designer_starts_only_once_a_person_turns_it_on_and_reads_withou
     story.home.socket("launcher").unlink()
     story.expect_success(f"setting set {DESIGNER} on --environment main", actor=story.user)
     helper_id, launcher = started(story, START_DESIGNER)
-    story.expect_text(f"agent show {agent_number(story, helper_id)}", "profile: journal-designer", "access: read", actor=story.user)
+    story.expect_text(f"agent show {agent_number(story, helper_id)}", f"profile: {DESIGNER_PROFILE.name}", "access: read", actor=story.user)
 
 
 def test_s48_the_merger_keeps_its_claim_after_the_merger_setting_is_turned_off(new_story, monkeypatch):

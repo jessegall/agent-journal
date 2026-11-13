@@ -6,13 +6,14 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import JOB, START, EndedHelper, helper_agent, read_jobs, resumable_session
 from tests.stories.core.modules.helpers.usage_limits import report
 from tests.stories.core.modules.helpers.usage_lockdown import LIMIT, STOP_LINE, lockdown_story
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 REFUSAL = "no program can take this helper: Claude is at your usage limit until"
 LIFT_SUGGESTION = "usage-limit delete 1"
 
 
 class LimitedEndedHelper(StoryFixture):
-    """A helper of journal-researcher that ended after its job, and a limit of 50 percent on Claude."""
+    f"""A helper of {RESEARCHER_PROFILE.name} that ended after its job, and a limit of 50 percent on Claude."""
 
     parent = EndedHelper
 

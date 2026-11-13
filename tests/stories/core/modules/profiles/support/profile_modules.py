@@ -9,6 +9,7 @@ from engine.module.suite import Suite
 from engine.module.module import Module
 from engine.profile.agent_profile import AgentProfile
 from suites.coding.coding_suite import CodingSuite
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 
 class ProfileModule(Module):
@@ -19,7 +20,7 @@ class ProfileModule(Module):
 
 
 class DuplicateProfile(ProfileModule):
-    profiles = [AgentProfile("journal-researcher", "Another researcher", "Read.")]
+    profiles = [AgentProfile(f"{RESEARCHER_PROFILE.name}", "Another researcher", "Read.")]
 
 
 class UnknownType(ProfileModule):

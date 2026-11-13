@@ -13,6 +13,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DISPATCH, FIRST_PROOF, checked_worker, dispatched_worker, repository_environment
 from tests.stories.support.story_checks import expect_value
 from suites.coding.modules.workers.support.worker_settings import WORKER_INSTRUCTION_FILES_SETTING
+from suites.coding.support.shipped_profiles import WORKER_PROFILE
 
 PROJECT_TEXT = "The project's own briefing.\n"
 NEWER_PROJECT_TEXT = "The project's newer briefing.\n"
@@ -68,7 +69,7 @@ def test_a_plugin_s_block_is_shown_as_a_profile_switch_and_put_in_the_files_unle
     folder = event_plugin_folder(story.home.folder.parent, [], {}, name="commandments", instruction_blocks=BLOCK)
     (folder / "briefing.md").write_text(PLUGIN_TEXT)
     story.expect_success(f"plugin install {folder} --yes", actor=story.user)
-    story.expect_text("worker injections journal-worker", "commandments.briefing: Inject our briefing into the agent file: on", "journal: Inject the journal briefing: on", actor=story.user)
+    story.expect_text(f"worker injections {WORKER_PROFILE.name}", "commandments.briefing: Inject our briefing into the agent file: on", "journal: Inject the journal briefing: on", actor=story.user)
     expect_value(PLUGIN_TEXT in worktree_file_text(repository, dispatched_worker(story), "AGENTS.md"), True)
     story.expect_success('profile save notes-worker --type worker --description "Works through notes" --body "Work through the notes." --injections \'{"commandments.briefing": false}\'', actor=story.user)
     story.expect_text("worker injections notes-worker", "commandments.briefing: Inject our briefing into the agent file: off", actor=story.user)

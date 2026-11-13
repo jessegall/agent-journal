@@ -12,13 +12,14 @@ from suites.coding.modules.workers.models.worktree_behind_check import WorktreeB
 from suites.coding.modules.workers.support.behind_decisions import BehindDecisions
 from suites.coding.modules.workers.support.behind_nudges import UPDATE_ORDERED
 from tests.unit.suites.coding.modules.workers.support.test_behind_check_closing import WORKTREE
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
 MERGER, MAIN, OTHER, WORKER = 12, 1, 30, 7
 
 
 class Agents:
     def find(self, agent_id: int):
-        return SimpleNamespace(id=agent_id, profile="journal-merger" if agent_id == MERGER else "")
+        return SimpleNamespace(id=agent_id, profile=f"{MERGER_PROFILE.name}" if agent_id == MERGER else "")
 
     def is_main(self, agent_id: int) -> bool:
         return agent_id == MAIN

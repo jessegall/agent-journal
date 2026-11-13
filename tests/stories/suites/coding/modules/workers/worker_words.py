@@ -14,6 +14,7 @@ from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_RULES
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, worker_session
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, unplanned_worker
 from tests.stories.suites.coding.modules.workers.worker_profiles import dispatched_brief
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
 WORKER_COMMANDS = ("journal worker commit", "journal proof make", "journal task start")
 MERGER_COMMANDS = ("journal merger answer", "journal merger defer-test", "journal merger tell")
@@ -58,9 +59,9 @@ def test_76d_the_lines_a_worker_hears_at_a_failed_test_and_after_its_last_commit
 
 
 def test_76e_the_workers_skill_keeps_what_happens_after_an_ask_and_the_merger_keeps_its_three_commands(new_story):
-    merger_profile = next(profile for profile in HELPER_PROFILES if profile.name == "journal-merger")
+    merger_profile = next(profile for profile in HELPER_PROFILES if profile.name == f"{MERGER_PROFILE.name}")
     assert ASK_SENTENCE in skill_text("journal-workers").lower()
-    assert all(command in skill_text("journal-merger") for command in MERGER_COMMANDS)
+    assert all(command in skill_text(f"{MERGER_PROFILE.name}") for command in MERGER_COMMANDS)
     assert all(command in merger_profile.body for command in MERGER_COMMANDS)
 
 

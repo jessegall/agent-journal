@@ -13,6 +13,7 @@ from core.modules.drivers.support.access_nudges import OUTWARD_JOURNAL_LINE
 from tests.stories.core.modules.helpers.start_helper import started
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
+from suites.coding.support.shipped_profiles import PLANNER_PROFILE
 
 
 @pytest.fixture
@@ -119,7 +120,7 @@ def test_complexity_out_of_range_is_refused_valid_scores_round_trip_on_cards(tag
 
 def test_read_only_planner_tags_and_scores(tag_story):
     story = tag_story
-    helper_id, _ = started(story, 'helper start journal-planner --brief "Plan the network queue" --environment main')
+    helper_id, _ = started(story, f'helper start {PLANNER_PROFILE.name} --brief "Plan the network queue" --environment main')
     details = story.run(f'agent show {agent_number(story, helper_id)}').output_text
     session = next(line.removeprefix('session: ') for line in details.splitlines() if line.startswith('session: '))
     arguments = ['task', 'make', 'Queue', '--complexity', '3', '--tag', 'networking', '--confirm', '--environment', 'main']

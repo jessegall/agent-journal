@@ -14,13 +14,14 @@ from tests.stories.core.modules.helpers.program_split import helper_split_story,
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.program_split import set_split
+from suites.coding.support.shipped_profiles import PLAN_REVIEWER_PROFILE
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
 __all__ = ["helper_split_story", "helper_viewer"]
 
-REVIEWER = "journal-plan-reviewer"
-START_REVIEW = "helper start journal-plan-reviewer --plan {plan} --brief 'Review plan {plan}' --environment main"
+REVIEWER = f"{PLAN_REVIEWER_PROFILE.name}"
+START_REVIEW = f"helper start {PLAN_REVIEWER_PROFILE.name} --plan {{plan}} --brief 'Review plan {{plan}}' --environment main"
 NEW_AGENT_REASON = "A second view of the plan"
 LIMITS = "setting set journal.core.helpers.read-only-helper-profile-limits '[\"journal-plan-reviewer:8:3\"]' --project"
 REVIEW_MEMORY = "Plan 5 lacked a phase for the migration"

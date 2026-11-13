@@ -26,6 +26,7 @@ from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAI
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.support.worker_settings import QUESTION_ANSWER_MINUTES
 from suites.coding.modules.workers.support.worker_settings import QUESTION_VISITS_LIMIT
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -84,7 +85,7 @@ def test_two_asks_while_the_merger_runs_are_read_in_one_visit_of_one_merger_and_
     ask(case, SECOND_QUESTION, AskTopic.TESTS)
     case.story.run_listeners()
     case.story.expect_text("merger next", QUESTION, SECOND_QUESTION, actor=case.merger)
-    mergers = case.story.run("agent list --json --environment main", actor=case.story.agent).output_text.count('"profile": "journal-merger"')
+    mergers = case.story.run("agent list --json --environment main", actor=case.story.agent).output_text.count(f'"profile": "{MERGER_PROFILE.name}"')
     case.story.expect_rows(mergers == 1, detail=f"{mergers} mergers")
     first, second = questions(case.story)
     case.story.expect_rows([first.visit_count, second.visit_count] == [1, 1], first.visit_id == second.visit_id, detail=str(questions(case.story)))

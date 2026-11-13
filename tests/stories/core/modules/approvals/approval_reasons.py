@@ -1,8 +1,9 @@
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.core.support.fixtures import UserJoined
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
 REASON = "the merger should run on Codex, as asked in message 110327"
-SAVE_MERGER = 'profile save journal-merger --description "Merges workers" --program codex'
+SAVE_MERGER = f'profile save {MERGER_PROFILE.name} --description "Merges workers" --program codex'
 
 
 def cards(story) -> list[ApprovalRequest]:

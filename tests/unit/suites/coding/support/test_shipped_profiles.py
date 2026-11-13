@@ -4,9 +4,11 @@ from engine.enums.occupant import Occupant
 from suites.coding.drivers.worker.worker_driver import WorkerDriver
 from suites.coding.support.profile_commands import WORKER_COMMANDS
 from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_PROFILES, WORKER_RULES
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
+from suites.coding.support.shipped_profiles import PLAN_REVIEWER_PROFILE
 
-MERGER = next(profile for profile in HELPER_PROFILES if profile.name == "journal-merger")
-PLAN_REVIEWER = next(profile for profile in HELPER_PROFILES if profile.name == "journal-plan-reviewer")
+MERGER = next(profile for profile in HELPER_PROFILES if profile.name == f"{MERGER_PROFILE.name}")
+PLAN_REVIEWER = next(profile for profile in HELPER_PROFILES if profile.name == f"{PLAN_REVIEWER_PROFILE.name}")
 
 
 def test_the_merger_gets_a_new_session_at_each_launch():

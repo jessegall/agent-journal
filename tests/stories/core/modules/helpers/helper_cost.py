@@ -1,5 +1,6 @@
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, StartedHelper, helper_agent
 from tests.stories.core.modules.usage.support.status_files import save_status_file
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 CARDS = "usage agents --environment main --json"
 WINDOW = "usage show --environment main --json"
@@ -20,7 +21,7 @@ def test_a_helper_with_no_report_shows_no_figure_rather_than_zero(new_story):
 def test_the_cost_window_sums_a_helper_with_its_profile(new_story):
     story = new_story(fixture=StartedHelper)
     save_helper_status(story, 1.5)
-    story.expect_text(WINDOW, '"role": "helper"', '"profile": "journal-researcher"', '"cost_dollars": 1.5', actor=story.user)
+    story.expect_text(WINDOW, '"role": "helper"', f'"profile": "{RESEARCHER_PROFILE.name}"', '"cost_dollars": 1.5', actor=story.user)
     story.expect_text("usage show --environment main", "cost of the open sessions: $1.50", actor=story.user)
 
 

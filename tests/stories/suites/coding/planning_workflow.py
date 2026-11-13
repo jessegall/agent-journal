@@ -14,11 +14,13 @@ from suites.coding.support.coding_settings import STARTS_HELPERS_SETTING
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.support.skill_expectations import expect_skill_text
+from suites.coding.support.shipped_profiles import FUNCTIONAL_DESIGNER_PROFILE
+from suites.coding.support.shipped_profiles import PLANNER_PROFILE
 
 FUNCTIONAL_DESIGN = "Writing a functional design"
 PLAN_BUILDING = "Building a plan"
-FUNCTIONAL_DESIGNER = "journal-functional-designer"
-PLANNER = "journal-planner"
+FUNCTIONAL_DESIGNER = f"{FUNCTIONAL_DESIGNER_PROFILE.name}"
+PLANNER = f"{PLANNER_PROFILE.name}"
 
 
 class BundledSequences(StoryFixture):

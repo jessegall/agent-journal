@@ -25,6 +25,7 @@ from engine.process.leftover_process import LeftoverProcess
 from engine.provider.launch_command import LaunchCommand
 from engine.time.clock import Clock
 from engine.time.timestamp import Timestamp
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 NOW = Timestamp.parsed("2026-10-31T09:00:00+00:00")
 CONTEXT = SimpleNamespace(timestamp=NOW)
@@ -34,7 +35,7 @@ RUNNING = b"running\n"
 STOPPED = b"stopped\n"
 NOTHING = b"\n"
 COMMAND = LaunchCommand(arguments=("claude", "-p", "Read src/cart.py"), folder=Path("/work/journal"), variables={})
-HELPER = Agent(id=41, environment_id=1, number=2, creator_id=1, session="s-1", program="claude", role="helper", profile="journal-researcher")
+HELPER = Agent(id=41, environment_id=1, number=2, creator_id=1, session="s-1", program="claude", role="helper", profile=f"{RESEARCHER_PROFILE.name}")
 ENDED_HELPER = replace(HELPER, ended_at=NOW, launched_at=NOW)
 
 

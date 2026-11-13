@@ -17,6 +17,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 MAIN_SESSION = "s-1"
 WORKER_PID = 700
@@ -184,7 +185,7 @@ def test_a_helper_whose_end_hook_was_lost_is_ended_at_a_tick(new_story):
     story = new_story(fixture=UserBuilder)
     story.use_processes(RUNNING_PROGRAM)
     launcher = start_launcher(story, f"started {WORKER_PID}\n".encode())
-    helper = story.new_row_id('helper start journal-researcher --brief "Read src/cart.py" --environment main', actor=story.agent)
+    helper = story.new_row_id(f'helper start {RESEARCHER_PROFILE.name} --brief "Read src/cart.py" --environment main', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
     story.expect_text(f"agent show {agent_number(story, helper)}", f"pid: {WORKER_PID}")

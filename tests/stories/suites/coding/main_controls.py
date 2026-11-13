@@ -16,6 +16,10 @@ from tests.stories.support.story_checks import expect_absent_value, expect_value
 from suites.coding.modules.workers.support.worker_settings import DISPATCHES_WORKERS_SETTING
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 from suites.coding.support.coding_settings import STARTS_HELPERS_SETTING
+from suites.coding.support.shipped_profiles import DESIGNER_PROFILE
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
+from suites.coding.support.shipped_profiles import WORKER_PROFILE
 
 NEW_KEYS = ["continue-while-delegatable", "designer-enabled", "main-agent-may-merge", "resume-silent-agents", "workers-start-read-only-helpers", "agent-options"]
 REMOVED_CONTROLS = ["C04", "C08", "C15", "C19", "C32", "C33"]
@@ -63,16 +67,16 @@ def test_s01_s43_defaults_reject_one_test_command_without_the_other():
 def test_s01_s43_defaults_tell_an_inherited_list_from_an_explicit_empty_one():
     inherited = AgentOptionsValue.parse(["worker allow_new=off"], AGENT_TYPES)
     denied = AgentOptionsValue.parse(["worker allowed_providers="], AGENT_TYPES)
-    expect_value(inherited.effective_options("worker", "journal-worker").allowed_providers, None)
-    expect_value(denied.effective_options("worker", "journal-worker").allowed_providers, ())
+    expect_value(inherited.effective_options("worker", f"{WORKER_PROFILE.name}").allowed_providers, None)
+    expect_value(denied.effective_options("worker", f"{WORKER_PROFILE.name}").allowed_providers, ())
 
 
 def test_s44_s50_defaults_let_a_profile_line_win_over_its_agent_type_for_the_fields_it_names():
-    value = AgentOptionsValue.parse(["helper allow_new=off", "helper allow_resume=off", "helper:journal-merger allow_new=on"], AGENT_TYPES)
-    merger = value.effective_options("helper", "journal-merger")
+    value = AgentOptionsValue.parse(["helper allow_new=off", "helper allow_resume=off", f"helper:{MERGER_PROFILE.name} allow_new=on"], AGENT_TYPES)
+    merger = value.effective_options("helper", f"{MERGER_PROFILE.name}")
     expect_value((merger.allow_new, merger.allow_resume), (True, False))
-    expect_value(value.effective_options("helper", "journal-researcher").allow_new, False)
-    expect_value(AgentOptionsValue.parse([], AGENT_TYPES).effective_options("worker", "journal-worker"), AgentFieldOptions())
+    expect_value(value.effective_options("helper", f"{RESEARCHER_PROFILE.name}").allow_new, False)
+    expect_value(AgentOptionsValue.parse([], AGENT_TYPES).effective_options("worker", f"{WORKER_PROFILE.name}"), AgentFieldOptions())
 
 
 def test_s01_s43_defaults_show_in_the_settings_tree_for_every_control(new_story):
@@ -100,8 +104,8 @@ def test_s45_fixture_actors_are_distinct_agents_that_are_all_refused_a_person_on
     story = new_story(fixture=MainControlsActors)
     actors = agent_actors(story)
     expect_value((len({actor.id for actor in actors.values()}), list(actors)), (5, ["main", "worker", "helper", "merger", "designer"]))
-    story.expect_text(f"agent show {agent_number(story, actors['merger'].id)}", "journal-merger", actor=story.user)
-    story.expect_text(f"agent show {agent_number(story, actors['designer'].id)}", "journal-designer", actor=story.user)
+    story.expect_text(f"agent show {agent_number(story, actors['merger'].id)}", f"{MERGER_PROFILE.name}", actor=story.user)
+    story.expect_text(f"agent show {agent_number(story, actors['designer'].id)}", f"{DESIGNER_PROFILE.name}", actor=story.user)
     for actor in actors.values():
         story.expect_refusal(f"setting set {AUTO_MODE_SETTING} off --environment main --reason 'a story asks'", "A user was asked", actor=actor)
     story.expect_success(f"setting show {AUTO_MODE_SETTING} --environment main", "value: True", actor=story.user)

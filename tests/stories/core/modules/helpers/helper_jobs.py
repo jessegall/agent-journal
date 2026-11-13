@@ -13,15 +13,16 @@ from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
 JOB = "Now read the listener side."
-START = 'helper start journal-researcher --brief "Read src/cart.py" --environment main'
+START = f'helper start {RESEARCHER_PROFILE.name} --brief "Read src/cart.py" --environment main'
 
 
 class StartedHelper(StoryFixture):
-    """A main agent with a user beside it and one helper of journal-researcher on src/cart.py."""
+    f"""A main agent with a user beside it and one helper of {RESEARCHER_PROFILE.name} on src/cart.py."""
 
     parent = UserBuilder
 
@@ -52,7 +53,7 @@ def read_jobs(story, helper):
 
 
 class EndedHelper(StoryFixture):
-    """A helper of journal-researcher that ended after its job on src/cart.py."""
+    f"""A helper of {RESEARCHER_PROFILE.name} that ended after its job on src/cart.py."""
 
     parent = StartedHelper
 
@@ -131,7 +132,7 @@ def test_among_300_finished_jobs_a_job_on_the_same_files_is_refused_for_the_help
     limit_reads(story)
     FakeLauncher.listening(story.home.socket("launcher"))
     story.expect_refusal(START, "knows these files", actor=story.agent)
-    story.expect_success('helper start journal-researcher --brief "Read src/queue.py" --environment main', actor=story.agent)
+    story.expect_success(f'helper start {RESEARCHER_PROFILE.name} --brief "Read src/queue.py" --environment main', actor=story.agent)
 
 
 def test_a_helper_that_ran_as_a_program_subagent_is_refused_a_new_job(new_story):

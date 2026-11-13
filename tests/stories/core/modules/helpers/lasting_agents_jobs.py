@@ -7,12 +7,13 @@ from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries
 from tests.stories.core.modules.helpers.helper_jobs import JOB, START, EndedHelper, helper_agent, read_jobs, resumable_session
 from tests.stories.core.modules.helpers.lifetime_reviewers import launches, refusal_text
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
 MEMORY_TEXT = "The cart rounds each line before it adds them"
 NEW_AGENT_REASON = "A second reader for the tax file"
-TAX_START = 'helper start journal-researcher --brief "Read src/tax.py" --environment main'
+TAX_START = f'helper start {RESEARCHER_PROFILE.name} --brief "Read src/tax.py" --environment main'
 KEPT_LIMIT = "setting set journal.core.helpers.read-only-helper-profile-limits '[\"journal-researcher:8:2\"]' --project"
 
 
@@ -24,7 +25,7 @@ def idle_helper(new_story, monkeypatch):
 
 
 def researchers(story) -> list[Agent]:
-    return sorted(story.container.get(Queries).query(Agent).filter(profile="journal-researcher").every_row(TEST_ROWS_REASON), key=lambda helper: helper.id)
+    return sorted(story.container.get(Queries).query(Agent).filter(profile=f"{RESEARCHER_PROFILE.name}").every_row(TEST_ROWS_REASON), key=lambda helper: helper.id)
 
 
 def test_a_job_sent_to_an_idle_helper_runs_on_that_helper_which_still_reads_its_memory(idle_helper):
@@ -50,7 +51,7 @@ def test_a_start_with_the_fresh_flag_makes_a_second_helper_keeps_the_reason_and_
     kept = researchers(story)
     job = story.container.get(Queries).query(HelperJob).filter(helper_id=kept[1].id).first()
     refusal = refusal_text(story, f"{START} --fresh 'A third reader'")
-    story.expect_rows(len(kept) == 2, job.new_agent_reason == NEW_AGENT_REASON, "2 of journal-researcher exist" in refusal, len(researchers(story)) == 2, detail=refusal)
+    story.expect_rows(len(kept) == 2, job.new_agent_reason == NEW_AGENT_REASON, f"2 of {RESEARCHER_PROFILE.name} exist" in refusal, len(researchers(story)) == 2, detail=refusal)
 
 
 def test_an_idle_helper_of_one_environment_is_not_offered_to_a_start_in_another(idle_helper):

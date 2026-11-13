@@ -9,6 +9,7 @@ from tests.stories.core.support.large_reads import seeded_children, seeded_finis
 from tests.stories.core.support.read_limit import limit_reads
 from tests.stories.core.support.seeds.large_read_seeds import AgentSkillSeed, RefusedHookCallSeed, SavedBuildSeed
 from tests.stories.server.support.go_build import GoBuild
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 """Story 27 of doc 1255: on a journal as large as the one that tripped the read limit, the commands whose reads were
 fixed run with the limit on and cut no read; a cut or a statement over the limit fails the command under the story
@@ -79,7 +80,7 @@ def test_agent_skill_unread_with_128_skill_rows_makes_no_read_cut_report(new_sto
 def test_each_fixed_read_reads_at_most_51_rows_where_it_read_207_to_1000_before(new_story):
     story = new_story(fixture=LargeJournal)
     limit_reads(story)
-    story.expect_text("helper lifetimes journal-researcher --environment main", "50 jobs on a new session", actor=story.user)
+    story.expect_text(f"helper lifetimes {RESEARCHER_PROFILE.name} --environment main", "50 jobs on a new session", actor=story.user)
     FakeLauncher.listening(story.home.socket("launcher"))
     story.expect_refusal(START, "knows these files", actor=story.agent)
     guard_skips(story, story.agent, 1)

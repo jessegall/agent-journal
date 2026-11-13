@@ -7,10 +7,11 @@ from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, StartedHelper, helper_agent
 from tests.stories.core.modules.helpers.lifetime_reviewers import launches
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 RETIRE = 'agent retire {number} --reason "Its reading is done" --environment main'
 MEMORY_TEXT = "The cart rounds each line before it adds them"
-TAX_START = 'helper start journal-researcher --brief "Read src/tax.py" --environment main'
+TAX_START = f'helper start {RESEARCHER_PROFILE.name} --brief "Read src/tax.py" --environment main'
 
 
 @pytest.fixture

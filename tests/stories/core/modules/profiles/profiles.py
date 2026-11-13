@@ -17,6 +17,9 @@ from engine.registry.registry import Registry
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 from core.modules.profiles.support.profile_settings import CLAUDE_MODEL_SETTING
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
+from suites.coding.support.shipped_profiles import WORKER_SENIOR_PROFILE
 
 SHIPPED_PROFILES = (*HELPER_PROFILES, *WORKER_PROFILES, REVIEWER_PROFILE)
 
@@ -65,22 +68,22 @@ def test_a_module_sync_writes_the_journals_own_profiles(profiles_missing):
     with story.container.get(Database).transaction():
         story.container.get(EventLog).write_registry_sync(CORE_ACTOR_ID, "a new fingerprint", story.clock.timestamp().text)
     story.run_listeners()
-    expect_file_agents_folder(story, "journal-worker-senior.md")
+    expect_file_agents_folder(story, f"{WORKER_SENIOR_PROFILE.name}.md")
 
 
 def test_the_journals_start_writes_its_own_profiles(profiles_missing):
     story = profiles_missing
     BootingWork().run(story.container)
     story.run_listeners()
-    expect_file_agents_folder(story, "journal-worker-senior.md")
+    expect_file_agents_folder(story, f"{WORKER_SENIOR_PROFILE.name}.md")
 
 
 def test_a_shipped_profile_names_its_own_model_for_each_program_whatever_the_setting_says(new_story):
     story = new_story(fixture=UserBuilder)
     story.expect_success(f"setting set {CLAUDE_MODEL_SETTING} haiku --project", actor=story.user)
     story.container.get(ProfileFiles).publish()
-    expect_agents_folder_journal_with(story, "journal-researcher.md", "model: sonnet")
-    expect_agents_folder_journal_with(story, "journal-worker-senior.md", "model: opus")
+    expect_agents_folder_journal_with(story, f"{RESEARCHER_PROFILE.name}.md", "model: sonnet")
+    expect_agents_folder_journal_with(story, f"{WORKER_SENIOR_PROFILE.name}.md", "model: opus")
     expect_profile_model(SHIPPED_PROFILES)
 
 
@@ -102,18 +105,18 @@ def test_a_bad_name_a_bad_type_or_no_description_is_refused(new_story):
 
 def test_saving_a_shipped_profile_with_only_a_program_keeps_its_description_and_body(new_story):
     story = new_story(fixture=UserBuilder)
-    previous = story.container.get(ProfileFiles).effective("journal-merger")
-    story.expect_success("profile save journal-merger --program codex", actor=story.user)
-    after = story.container.get(ProfileFiles).effective("journal-merger")
+    previous = story.container.get(ProfileFiles).effective(f"{MERGER_PROFILE.name}")
+    story.expect_success(f"profile save {MERGER_PROFILE.name} --program codex", actor=story.user)
+    after = story.container.get(ProfileFiles).effective(f"{MERGER_PROFILE.name}")
     story.expect_rows(after.program == "codex", after.description == previous.description, after.body == previous.body, detail=str(after))
 
 
 def test_native_module_profiles_are_published_for_codex_only_where_it_has_a_folder(new_story):
     story = saved_profile_story(new_story)
-    expect_absent_exists_project_folder_2(story, ".codex", "agents", "journal-researcher.toml")
+    expect_absent_exists_project_folder_2(story, ".codex", "agents", f"{RESEARCHER_PROFILE.name}.toml")
     (story.home.project_folder / ".codex").mkdir()
     story.container.get(ProfileFiles).publish()
-    expect_project_folder_home_with(story, ".codex", "agents", "journal-researcher.toml", 'sandbox_mode = "read-only"')
+    expect_project_folder_home_with(story, ".codex", "agents", f"{RESEARCHER_PROFILE.name}.toml", 'sandbox_mode = "read-only"')
     expect_absent_exists_project_folder_2(story, ".codex", "agents", "critic.toml")
 
 

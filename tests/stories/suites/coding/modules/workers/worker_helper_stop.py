@@ -9,8 +9,9 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from core.modules.agents.support.report_nudges import PARENT_REPORT
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
-START = 'helper start journal-researcher --brief "Read src/cart.py" --environment main'
+START = f'helper start {RESEARCHER_PROFILE.name} --brief "Read src/cart.py" --environment main'
 
 
 def worker_with_helper(new_story):

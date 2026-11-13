@@ -24,6 +24,7 @@ from tests.stories.suites.coding.modules.workers.support.judge_plugin import SIN
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, merger_can_start, running_launcher
 from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 QUESTION = "The sandbox has no compiler"
 FIXTURE_QUESTION = "The fixture file is empty"
@@ -209,7 +210,7 @@ def test_a_person_cannot_ask(asking):
 
 
 def test_a_helper_cannot_ask(asking):
-    helper = asking.story.container.get(Bus).run(StartAgent("s-helper", "claude", CodingHelperRole.HELPER, asking.story.agent.id, profile="journal-researcher"), Actor.core(), environment_id=1)
+    helper = asking.story.container.get(Bus).run(StartAgent("s-helper", "claude", CodingHelperRole.HELPER, asking.story.agent.id, profile=f"{RESEARCHER_PROFILE.name}"), Actor.core(), environment_id=1)
     asking.story.expect_refusal(f'worker ask "{QUESTION}"', "journal worker ask is for workers", actor=Actor(helper.id, ActorType.AGENT))
 
 

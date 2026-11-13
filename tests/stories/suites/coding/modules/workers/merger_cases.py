@@ -27,6 +27,7 @@ from core.modules.helpers.support.helper_nudges import HELPER_GRANTED
 from engine.testing.expectations.expect_nudge import said
 from suites.coding.modules.workers.support.worker_nudges import WORKER_LIBRARIES_LINKED
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -226,12 +227,12 @@ def test_a_tell_of_the_main_agents_own_message_shows_no_ask_mark(case):
 
 
 def merger_skill_text() -> str:
-    return (Path(workers_package.__file__).parent / "skills" / "journal-merger" / "SKILL.md").read_text()
+    return (Path(workers_package.__file__).parent / "skills" / f"{MERGER_PROFILE.name}" / "SKILL.md").read_text()
 
 
 def test_the_merger_text_names_the_ladder_and_the_case_book(case):
-    profile = next(row for row in HELPER_PROFILES if row.name == "journal-merger")
-    case.story.expect_rows("Ladder" in profile.body, "journal merger scope" in profile.body, "journal merger repair" in profile.body, "journal helper grant" in profile.body, "journal-merger" in profile.body, detail=profile.body)
+    profile = next(row for row in HELPER_PROFILES if row.name == f"{MERGER_PROFILE.name}")
+    case.story.expect_rows("Ladder" in profile.body, "journal merger scope" in profile.body, "journal merger repair" in profile.body, "journal helper grant" in profile.body, f"{MERGER_PROFILE.name}" in profile.body, detail=profile.body)
 
 
 @pytest.mark.parametrize("case_text", ["journal merger scope", "journal merger repair", "journal helper grant", "already built", "add the case to this file"])

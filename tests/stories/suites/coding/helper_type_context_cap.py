@@ -7,6 +7,8 @@ from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.support.main_controls_fixture import person_viewer
 from tests.stories.support.story_checks import expect_value
+from suites.coding.support.shipped_profiles import PLANNER_PROFILE
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 USED_TOKENS = 50000
 WINDOW_PERCENT = 20
@@ -21,7 +23,7 @@ class PlannerAndResearcher(StoryFixture):
     def steps(self, story):
         story.expect_success(f"setting set {CONTEXT_LIMIT_ENABLED} true --project", actor=story.user)
         story.expect_success(f"setting set {CONTEXT_LIMIT_TOKENS} 400000 --project", actor=story.user)
-        for session, profile in (("planner-session", "journal-planner"), ("researcher-session", "journal-researcher")):
+        for session, profile in (("planner-session", f"{PLANNER_PROFILE.name}"), ("researcher-session", f"{RESEARCHER_PROFILE.name}")):
             row_id = story.new_row_id(f"agent start {session} claude helper --parent {story.agent.id} --environment main")
             story.expect_success(f"agent edit {agent_number(story, row_id)} --profile {profile}")
 
@@ -39,7 +41,7 @@ def bar_rows(story) -> dict:
 def test_a_cap_set_on_the_planner_screen_is_the_cap_its_bar_shows_its_percent_of(new_story):
     story = new_story(fixture=PlannerAndResearcher)
     with person_viewer(story) as viewer:
-        set_cap_on_the_screen(viewer, "journal-planner", str(PLANNER_CAP))
+        set_cap_on_the_screen(viewer, f"{PLANNER_PROFILE.name}", str(PLANNER_CAP))
     shown_cap = story.run(f"setting show {CONTEXT_LIMIT_PROFILES}", actor=story.user).output_text
     for session in ("planner-session", "researcher-session"):
         save_status_file(story, session, {"context_window": {"used_percentage": WINDOW_PERCENT, "total_input_tokens": USED_TOKENS}})

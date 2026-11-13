@@ -10,6 +10,8 @@ from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, re
 from tests.stories.core.modules.helpers.occupant_rotation import job_launch
 from tests.stories.core.modules.helpers.support.rotating_helper import START_ROTATING, EndedEachLaunchHelper, story_with_profile_file
 from tests.stories.core.support.agent_labels import agent_number
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
+from suites.coding.support.shipped_profiles import WORKER_PROFILE
 
 CODEX_MODELS = "codex gpt-6-luna,codex gpt-6.1-terra,codex gpt-6.1-sol,codex gpt-6-astra"
 UNUSED_MODEL = "claude fable"
@@ -71,8 +73,8 @@ def test_a_start_of_the_profile_is_refused_with_the_send_line_of_the_idle_agent_
     story.expect_rows(len(helpers) == 2, detail=str(helpers))
 
 
-MERGER_CONTINUE = "profile save journal-merger --occupant continue --reason needed"
-WORKER_ROTATION = "profile save journal-worker --occupant each-launch --reason needed"
+MERGER_CONTINUE = f"profile save {MERGER_PROFILE.name} --occupant continue --reason needed"
+WORKER_ROTATION = f"profile save {WORKER_PROFILE.name} --occupant each-launch --reason needed"
 ROTATING_CONTINUE = "profile save rotating --occupant continue --reason needed"
 
 
@@ -98,22 +100,22 @@ def helper_actor(story) -> Actor:
 def test_a_worker_that_sets_the_merger_to_continue_is_refused_and_no_profile_file_changes(rotating):
     files = profile_files(rotating)
     rotating.expect_refusal(MERGER_CONTINUE, "cannot save a profile", actor=worker_actor(rotating))
-    rotating.expect_text("profile show journal-merger --json", '"occupant": "each-launch"', actor=rotating.user)
+    rotating.expect_text(f"profile show {MERGER_PROFILE.name} --json", '"occupant": "each-launch"', actor=rotating.user)
     rotating.expect_rows(profile_files(rotating) == files)
 
 
 def test_a_helper_that_gives_the_worker_profile_an_occupant_is_refused_and_no_profile_file_changes(rotating):
     files = profile_files(rotating)
     rotating.expect_refusal(WORKER_ROTATION, "cannot save a profile", actor=helper_actor(rotating))
-    rotating.expect_absent("profile show journal-worker --json", '"occupant"', actor=rotating.user)
+    rotating.expect_absent(f"profile show {WORKER_PROFILE.name} --json", '"occupant"', actor=rotating.user)
     rotating.expect_rows(profile_files(rotating) == files)
 
 
 def test_the_main_agent_asks_a_person_to_save_the_merger_profile_and_a_person_saves_it_directly(rotating):
     rotating.expect_refusal(MERGER_CONTINUE, "A user was asked in the dock", actor=rotating.agent)
-    rotating.expect_text("profile show journal-merger --json", '"occupant": "each-launch"', actor=rotating.user)
+    rotating.expect_text(f"profile show {MERGER_PROFILE.name} --json", '"occupant": "each-launch"', actor=rotating.user)
     rotating.expect_success(MERGER_CONTINUE, actor=rotating.user)
-    rotating.expect_text("profile show journal-merger --json", '"occupant": "continue"', actor=rotating.user)
+    rotating.expect_text(f"profile show {MERGER_PROFILE.name} --json", '"occupant": "continue"', actor=rotating.user)
 
 
 def agent_with_resume_disabled(story) -> Actor:

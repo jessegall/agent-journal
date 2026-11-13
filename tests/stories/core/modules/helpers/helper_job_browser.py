@@ -6,6 +6,7 @@ from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, StartedH
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 
 def test_running_helper_job_is_in_the_agents_window(new_story, tmp_path):
@@ -40,7 +41,7 @@ def test_resumed_helper_shows_its_new_job(new_story, monkeypatch):
 def test_a_title_given_when_a_helper_is_started_is_saved_and_shown(new_story):
     story = new_story(fixture=StartedHelper)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    story.expect_success('helper start journal-researcher --brief "Read src/cart.py and its tests" --title "Cart review" --fresh "another file" --environment main', actor=story.agent)
+    story.expect_success(f'helper start {RESEARCHER_PROFILE.name} --brief "Read src/cart.py and its tests" --title "Cart review" --fresh "another file" --environment main', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
     launcher.server.close()

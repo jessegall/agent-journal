@@ -6,6 +6,7 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.modules.helpers.support.helper_nudges import START_WITHOUT_MODEL
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 REFUSAL = said(START_WITHOUT_MODEL)
 
@@ -16,7 +17,7 @@ def journal_line(command: str):
 
 def test_a_helper_start_or_worker_dispatch_without_a_model_is_refused_and_one_naming_a_model_or_default_goes_on(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.expect_hook_refusal("s-1", journal_line('helper start journal-researcher --brief "Read the cart"'), REFUSAL)
+    story.expect_hook_refusal("s-1", journal_line(f'helper start {RESEARCHER_PROFILE.name} --brief "Read the cart"'), REFUSAL)
     story.expect_hook_refusal("s-1", journal_line("worker dispatch 1"), REFUSAL)
-    story.expect_hook_allowed("s-1", journal_line('helper start journal-researcher --brief "Read the cart" --model default'))
+    story.expect_hook_allowed("s-1", journal_line(f'helper start {RESEARCHER_PROFILE.name} --brief "Read the cart" --model default'))
     story.expect_hook_allowed("s-1", journal_line("worker dispatch 1 --model sonnet"))

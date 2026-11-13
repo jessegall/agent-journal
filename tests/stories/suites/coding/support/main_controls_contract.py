@@ -10,6 +10,7 @@ from core.modules.helpers.support.agent_options_value import AgentOptionsValue
 from core.modules.helpers.support import helper_settings as helpers
 from suites.coding.modules.workers.support import worker_settings as workers
 from suites.coding.support import coding_settings as coding
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
 AGENT_TYPES = ("worker", "helper")
 ALL_COMMAND_TYPES = tuple(category.value for category in CommandCategory)
@@ -78,7 +79,7 @@ CONTROLS = [
     Control("C09", [flag("workers", workers.MAIN_MERGES_WORKERS, True)]),
     Control("C10", [positive_integer("workers", workers.WORKER_BATCH_SIZE, 3)]),
     Control("C11", [option(options.ALLOW_NEW, True, "worker allow_new=maybe", "worker allow_new=1")]),
-    Control("C12", [option(options.ALLOW_RESUME, True, "worker allow_resume=maybe", "helper:journal-merger allow_resume=0")]),
+    Control("C12", [option(options.ALLOW_RESUME, True, "worker allow_resume=maybe", f"helper:{MERGER_PROFILE.name} allow_resume=0")]),
     Control("C13", [option(options.ALLOWED_PROFILES, None, "worker allowed_profiles=two words", "worker allowed_profiles=a,a", "pilot allowed_profiles=a")]),
     Control("C14", [option(options.ALLOWED_PROVIDERS, None, "worker allowed_providers=cl aude", "worker allowed_providers=claude,claude")]),
     Control("C16", [SettingPart("helpers", helpers.PROGRAM_SPLIT, (), (["claude 60", "codex 30"], ["claude"], ["claude 50", "claude 50"], ["claude 120"]))]),
@@ -86,7 +87,7 @@ CONTROLS = [
                     SettingPart("helpers", helpers.ALLOWED_MODELS, (), (["claude"], ["claude opus", "claude opus"], "claude opus"))]),
     Control("C18", [option(options.MODEL_DEFAULTS, None, "worker model_defaults=claude:a,claude:b", "worker model_defaults=claude")]),
     Control("C20", [nonnegative_integer("workers", workers.WORKER_RUN_LIMIT, 2), nonnegative_integer("helpers", helpers.HELPER_RUN_LIMIT, 4),
-                    SettingPart("helpers", helpers.HELPER_PROFILE_LIMITS, (), (["journal-merger:4"], ["journal-merger:x:8"], ["a:1:2", "a:1:2"]))]),
+                    SettingPart("helpers", helpers.HELPER_PROFILE_LIMITS, (), ([f"{MERGER_PROFILE.name}:4"], [f"{MERGER_PROFILE.name}:x:8"], ["a:1:2", "a:1:2"]))]),
     Control("C21", [nonnegative_integer("workers", workers.WORKER_KEPT_LIMIT, 8), nonnegative_integer("helpers", helpers.HELPER_KEPT_LIMIT, 8)]),
     Control("C22", [nonnegative_integer("helpers", helpers.HELPER_MAX_MINUTES, 60),
                     option(options.MAX_MINUTES, None, "helper max_minutes=1.5", "helper max_minutes=-1", "helper max_minutes=soon")]),

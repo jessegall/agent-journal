@@ -12,12 +12,13 @@ from core.modules.helpers.support.helper_settings import COLD_SESSION_MINUTES
 from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_KINDS
 from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_PROFILES
 from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_TOKENS
+from suites.coding.support.shipped_profiles import WORKER_PROFILE
 
 
 BADGES = {f"{CONTEXT_LIMIT_TOKENS}": "Capped amount"}
 FIRST_VALUES = {f"{COLD_SESSION_MINUTES}": 55, f"{COLD_SESSION_CONTEXT_PERCENT}": 20}
-ADDED_ENTRIES = {f"{CONTEXT_LIMIT_KINDS}": "worker:200000", f"{CONTEXT_LIMIT_PROFILES}": "journal-worker:200000",
-                 "journal.suites.coding.workers.merge-hooks": "journal-worker: echo merged"}
+ADDED_ENTRIES = {f"{CONTEXT_LIMIT_KINDS}": "worker:200000", f"{CONTEXT_LIMIT_PROFILES}": f"{WORKER_PROFILE.name}:200000",
+                 "journal.suites.coding.workers.merge-hooks": f"{WORKER_PROFILE.name}: echo merged"}
 
 
 def changed_value(field: dict[str, object]) -> object:

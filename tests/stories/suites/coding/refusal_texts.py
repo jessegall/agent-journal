@@ -5,11 +5,12 @@ from suites.coding.modules.workers.support.worker_settings import DISPATCHES_WOR
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 from suites.coding.support.coding_settings import STARTS_HELPERS_SETTING
 from suites.coding.support.coding_settings import WRITES_CODE_SETTING
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 AUTO = f"{AUTO_MODE_SETTING}"
 HELPERS = f"{STARTS_HELPERS_SETTING}"
 DISPATCHES = f"{DISPATCHES_WORKERS_SETTING}"
-HELPER_START = HookSamples.shell("journal helper start journal-researcher", ShellPart("journal", "journal", ["helper", "start", "journal-researcher"]))
+HELPER_START = HookSamples.shell(f"journal helper start {RESEARCHER_PROFILE.name}", ShellPart("journal", "journal", ["helper", "start", f"{RESEARCHER_PROFILE.name}"]))
 WORKER_DISPATCH = HookSamples.shell("journal worker dispatch 1 --model sonnet", ShellPart("journal", "journal", ["worker", "dispatch", "1", "--model", "sonnet"]))
 
 

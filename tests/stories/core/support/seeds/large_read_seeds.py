@@ -3,12 +3,13 @@ import json
 from engine.actor.actor import CORE_ACTOR_ID
 from engine.testing.seeds.seed import Seed
 from engine.testing.seeds.seed_facts import SeedFacts
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 """The seeds of the reads that grew past the read limit: many finished helper jobs, saved builds, refused hook calls,
 ended child helpers and skill rows of one agent. A story names the agent or the helper they belong to as a fixed
 column."""
 
-SEEDED_PROFILE = "journal-researcher"
+SEEDED_PROFILE = f"{RESEARCHER_PROFILE.name}"
 DRIVERS_MODULE = "journal.core.drivers"
 
 

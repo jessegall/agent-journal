@@ -9,6 +9,7 @@ from tests.stories.core.modules.helpers.lifetime_reviewers import START_REVIEW, 
 from tests.stories.core.modules.helpers.support.rotating_helper import installed_program_checks, real_program_states
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.profile_storage import boot, profile_path, save_profile_file
+from suites.coding.support.shipped_profiles import PLAN_REVIEWER_PROFILE
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -17,7 +18,7 @@ __all__ = ["idle_reviewer"]
 DIFF_READER_FILE = "---\nname: diff-reader\ndescription: Reads changes\nkind: helper\nmodel: sonnet\nindependent: true\n---\nRead the diff.\n"
 DIFF_READER_START = 'helper start diff-reader --brief "Read the first diff" --environment main'
 NEW_AGENT_REASON = "A second view of the plan"
-TWO_PROGRAM_SAVE = "profile save journal-plan-reviewer --program claude --fallback-programs claude,codex --program-if-possible --reason needed"
+TWO_PROGRAM_SAVE = f"profile save {PLAN_REVIEWER_PROFILE.name} --program claude --fallback-programs claude,codex --program-if-possible --reason needed"
 
 
 def session_history(story, reviewer: Agent) -> list[dict]:

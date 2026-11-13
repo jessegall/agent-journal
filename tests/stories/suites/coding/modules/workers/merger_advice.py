@@ -25,6 +25,7 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import Stor
 from tests.stories.support.story_checks import expect_value, expect_value_without
 from core.modules.agents.support.report_nudges import PARENT_REPORT
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -291,8 +292,8 @@ def test_the_asks_count_starts_again_after_the_merge(merged_after_five_asks):
 
 
 def test_the_merger_profile_and_skill_name_advise_and_its_limits():
-    profile = next(row.body for row in HELPER_PROFILES if row.name == "journal-merger")
-    skill = (Path(workers_package.__file__).parent / "skills" / "journal-merger" / "SKILL.md").read_text()
+    profile = next(row.body for row in HELPER_PROFILES if row.name == f"{MERGER_PROFILE.name}")
+    skill = (Path(workers_package.__file__).parent / "skills" / f"{MERGER_PROFILE.name}" / "SKILL.md").read_text()
     for text in (profile, skill):
         expect_value(ADVISE_COMMAND in text and "five between two commits of the worker" in text and "one per visit" in text and "the point changed" in text, True)
         expect_value_without(text, "journal message send")

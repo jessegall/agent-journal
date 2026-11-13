@@ -10,6 +10,11 @@ from engine.testing.stories.story_fixture import StoryFixture
 from engine.enums.actor_type import ActorType
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.agent_labels import agent_number
+from suites.coding.support.shipped_profiles import CODE_REVIEWER_PROFILE
+from suites.coding.support.shipped_profiles import DEBUGGER_PROFILE
+from suites.coding.support.shipped_profiles import PLANNER_PROFILE
+from suites.coding.support.shipped_profiles import PLAN_REVIEWER_PROFILE
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 ROWS_WANTED = 130
 COPY_ROUNDS = 8
@@ -53,7 +58,7 @@ class LargeJournal(StoryFixture):
         TableCopies(story.container.get(Database)).grow()
 
 
-HELPER_PROFILES = ("journal-researcher", "journal-planner", "journal-plan-reviewer", "journal-debugger", "journal-code-reviewer")
+HELPER_PROFILES = (f"{RESEARCHER_PROFILE.name}", f"{PLANNER_PROFILE.name}", f"{PLAN_REVIEWER_PROFILE.name}", f"{DEBUGGER_PROFILE.name}", f"{CODE_REVIEWER_PROFILE.name}")
 
 SEED_LINES = (
     'task make "Fix the cart total" --brief "The total is wrong; done when it is right"',

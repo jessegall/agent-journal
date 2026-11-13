@@ -44,6 +44,8 @@ from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResume
 from tests.stories.suites.coding.modules.workers.support.route_expectations import expect_model_route_refusal, expect_unmatched_route
 from core.modules.helpers.support.helper_settings import ALLOWED_MODELS
 from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
+from suites.coding.support.shipped_profiles import PLANNER_PROFILE
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -102,7 +104,7 @@ def test_both_plans_reuse_stays_on_the_chosen_program_for_a_helper(started_split
     helper = story.container.get(Queries).query(Agent).find(helper_id)
     resumable_session(story, helper, monkeypatch)
     set_split(story, 'claude 0,codex 100', viewer=split_viewer)
-    next_helper, _ = started(story, 'helper start journal-researcher --brief "Read the new queue" --environment main')
+    next_helper, _ = started(story, f'helper start {RESEARCHER_PROFILE.name} --brief "Read the new queue" --environment main')
     story.expect_text(f'agent show {agent_number(story, next_helper)}', 'program: codex')
     story.expect_rows(next_helper != helper_id)
 
@@ -263,7 +265,7 @@ def test_profile_with_tools_stays_on_its_program_for_a_worker(split_story, split
 
 def test_read_only_helper_tags_only_when_making_a_task(split_story):
     story = split_story
-    helper_id, _ = started(story, 'helper start journal-planner --brief "Plan networking" --environment main')
+    helper_id, _ = started(story, f'helper start {PLANNER_PROFILE.name} --brief "Plan networking" --environment main')
     helper = Actor(helper_id, ActorType.AGENT)
     task_id = story.new_row_id('task make "Network plan" --tag networking --complexity 3 --confirm --environment main', actor=helper)
     story.expect_refusal(f'task tag {task_id} linux --confirm', 'read', actor=helper)

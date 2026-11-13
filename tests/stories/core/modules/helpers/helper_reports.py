@@ -21,6 +21,7 @@ from tests.stories.core.modules.documents.support.trail_fixtures import viewer
 from tests.stories.core.support.agent_labels import agent_number
 from core.modules.agents.support.report_nudges import PARENT_REPORT
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 PROGRAMS = [StartedHelper, StartedCodexHelper]
 LINES = "agent-line list --agent {agent}"
@@ -263,7 +264,7 @@ def test_a_retired_helpers_terminal_log_goes_with_it(new_story):
 def test_a_helper_a_trigger_starts_reports_to_the_main_agent(new_story):
     story = new_story(fixture=UserBuilder)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    story.run('helper start journal-researcher --brief "Review HEAD~5..HEAD" --environment main', actor=Actor.core())
+    story.run(f'helper start {RESEARCHER_PROFILE.name} --brief "Review HEAD~5..HEAD" --environment main', actor=Actor.core())
     story.run_listeners()
     launcher.drain_requests()
     launcher.server.close()

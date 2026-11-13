@@ -10,13 +10,14 @@ from engine.enums.tool_type import ToolType
 from tests.stories.core.modules.documents.support.trail_fixtures import SelectedTrail, Scenario, feature
 from tests.stories.core.modules.helpers.start_helper import started
 from tests.stories.core.modules.helpers.helper_jobs import resumable_session, helper_agent
+from suites.coding.support.shipped_profiles import PLANNER_PROFILE
 
 
 class PlannerStarted(StoryFixture):
     parent = SelectedTrail
 
     def steps(self, story) -> None:
-        started(story, 'helper start journal-planner --brief "Plan the cart request" --model sonnet --environment main')
+        started(story, f'helper start {PLANNER_PROFILE.name} --brief "Plan the cart request" --model sonnet --environment main')
 
 
 @pytest.fixture
@@ -80,7 +81,7 @@ def test_deleted_helper_source_is_not_a_new_message_reusing_its_number(new_story
     scenario = Scenario(new_story(fixture=SelectedTrail))
     original = scenario.person("messages.chat", "message", "send", "Temporary helper request")
     scenario.switch(original["id"])
-    started(scenario.story, 'helper start journal-planner --brief "Plan the temporary request" --model sonnet --environment main')
+    started(scenario.story, f'helper start {PLANNER_PROFILE.name} --brief "Plan the temporary request" --model sonnet --environment main')
     helper_id = helper_agent(scenario.story).id
     scenario.person("messages.chat", "message", "delete", str(original["id"]))
     replacement = scenario.person("messages.chat", "message", "send", "A different helper request")

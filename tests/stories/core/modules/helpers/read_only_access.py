@@ -18,6 +18,7 @@ from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 WRITES = [CommandEffect.WRITES_FILES]
 EDIT_TOOLS = [("Edit", ToolType.EDIT), ("Write", ToolType.NEW_FILE), ("NotebookEdit", ToolType.EDIT), ("apply_patch", ToolType.EDIT), ("Monitor", ToolType.MONITOR)]
@@ -31,7 +32,7 @@ class StartedCodexHelper(StoryFixture):
 
     def steps(self, story):
         launcher = FakeLauncher.listening(story.home.socket("launcher"))
-        story.run('helper start journal-researcher --program codex --model gpt-6-luna --brief "Read src/cart.py" --environment main', actor=story.agent)
+        story.run(f'helper start {RESEARCHER_PROFILE.name} --program codex --model gpt-6-luna --brief "Read src/cart.py" --environment main', actor=story.agent)
         story.run_listeners()
         launcher.drain_requests()
         launcher.server.close()

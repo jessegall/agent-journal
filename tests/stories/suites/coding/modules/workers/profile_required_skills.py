@@ -13,6 +13,7 @@ from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.support.story_checks import expect_value
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 PROFILE = "note-taker"
 LISTED = "journal,journal-tasks,journal-memory"
@@ -92,12 +93,12 @@ def test_the_mark_is_kept_in_the_profile_file_over_a_restart(saved):
 
 def test_a_shipped_profile_keeps_a_required_mark_a_person_set_and_shows_it_changed(person):
     person.expect_success(f"profile save journal-researcher --description 'Researches a question' --skills {LISTED} --required-skills {REQUIRED}", actor=person.user)
-    profile = person.container.get(ProfileFiles).effective("journal-researcher")
+    profile = person.container.get(ProfileFiles).effective(f"{RESEARCHER_PROFILE.name}")
     person.expect_rows(profile.required_skills == tuple([REQUIRED]), "required_skills" in profile.changed)
 
 
 def test_a_required_skill_reaches_only_the_agents_of_that_profile(saved, note_taker):
-    researcher = started_helper(saved, "s-researcher", "journal-researcher")
+    researcher = started_helper(saved, "s-researcher", f"{RESEARCHER_PROFILE.name}")
     saved.expect_text("skill required", REQUIRED, actor=note_taker)
     saved.expect_no_text("skill required", REQUIRED, actor=researcher)
 

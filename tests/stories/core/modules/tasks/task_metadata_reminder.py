@@ -4,6 +4,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.helpers.start_helper import started
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from suites.coding.support.shipped_profiles import PLANNER_PROFILE
 
 
 @pytest.fixture
@@ -31,7 +32,7 @@ def test_a_complete_task_has_no_reminder(story):
 
 
 def test_a_read_only_helper_is_told_to_ask_the_main_agent(story):
-    helper_id, _ = started(story, 'helper start journal-planner --brief "Review tasks" --environment main')
+    helper_id, _ = started(story, f'helper start {PLANNER_PROFILE.name} --brief "Review tasks" --environment main')
     helper = Actor(helper_id, ActorType.AGENT)
     outcome = story.run('task make "Review networking" --environment main', actor=helper)
     story.expect_rows(outcome.code == 0, "is missing tags and complexity" in outcome.output_text,

@@ -12,9 +12,11 @@ from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
+from suites.coding.support.shipped_profiles import DESIGNER_PROFILE
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
 AGENT_ROLES = {"worker": "worker", "helper": "helper", "merger": "helper", "designer": "helper"}
-PROFILES = {"merger": "journal-merger", "designer": "journal-designer"}
+PROFILES = {"merger": f"{MERGER_PROFILE.name}", "designer": f"{DESIGNER_PROFILE.name}"}
 
 
 class MainControlsActors(StoryFixture):

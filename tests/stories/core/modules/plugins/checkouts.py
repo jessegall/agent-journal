@@ -14,6 +14,7 @@ from tests.stories.core.modules.plugins.support.checkout_stories import (
 from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, FIRST_PROOF
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 NEW_FILE = "src/new.py"
 SALE = "src/sale.py"
@@ -21,7 +22,7 @@ ODD_NAMES = ("with a space.py", 'with"quote.py', "with\ttab.py", "naïve.py")
 RENAMED_ODD_NAME = "src/sale order.py"
 LIBRARY_FILE = "node_modules/x.js"
 RELEASE_REASON = "the story released it"
-HELPER_START = 'helper start journal-researcher --brief "Read src/order.py" --environment main'
+HELPER_START = f'helper start {RESEARCHER_PROFILE.name} --brief "Read src/order.py" --environment main'
 UNKNOWN_COMMIT = "0123456789012345678901234567890123456789"
 RELATIVE_JOIN = f"""'{sys.executable}' -c '
 import json, sys

@@ -4,6 +4,7 @@ from engine.database.database import Database
 from engine.database.statement import Statement
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.support.story_checks import expect_value_with
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 HOT_QUERIES = ("SELECT * FROM processes WHERE state IN ('running', 'background') ORDER BY id",
                "SELECT * FROM processes WHERE environment_id = 1 ORDER BY id DESC",
@@ -43,7 +44,7 @@ def test_the_open_tasks_assigned_to_an_actor_are_read_through_the_index_on_the_a
 FIXED_READS = ("SELECT * FROM helper_jobs WHERE profile = 'journal-researcher' AND session_agent_id IN (SELECT id FROM agents WHERE role = 'main') AND ended_at IS NOT NULL"
                " AND helper_id IS NOT NULL ORDER BY id DESC LIMIT 50",
                "SELECT * FROM helper_jobs WHERE ended_at IS NULL AND helper_id = 1 LIMIT 1",
-               "SELECT * FROM helper_jobs WHERE profile = 'journal-researcher' AND ended_at IS NOT NULL ORDER BY id DESC LIMIT 50",
+               f"SELECT * FROM helper_jobs WHERE profile = '{RESEARCHER_PROFILE.name}' AND ended_at IS NOT NULL ORDER BY id DESC LIMIT 50",
                "SELECT * FROM aliases WHERE category = 'build' AND id > 0 ORDER BY id LIMIT 50",
                "SELECT * FROM hook_calls WHERE session_agent_id = 1 AND answer = 'refused' AND created_at > '2026-11-12' LIMIT 1",
                "SELECT * FROM agents WHERE parent_id = 1 AND role = 'helper' AND ended_at > '' ORDER BY id LIMIT 50",

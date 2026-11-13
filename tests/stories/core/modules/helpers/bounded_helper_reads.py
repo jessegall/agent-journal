@@ -4,11 +4,12 @@ from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, helper_a
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.large_reads import seeded_children, seeded_finished_jobs
 from tests.stories.core.support.read_limit import limit_reads
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 """Book 3 of doc 1255: the helper reads that grew past the read limit give the same answer on a few rows and read
 at most 51 rows in a statement on many."""
 
-COSTS = "helper lifetimes journal-researcher --environment main"
+COSTS = f"helper lifetimes {RESEARCHER_PROFILE.name} --environment main"
 
 
 def test_job_costs_use_the_newest_fifty_finished_jobs_and_give_the_same_estimate_on_few_jobs(new_story):

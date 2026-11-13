@@ -7,10 +7,11 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.enums.agent_session_state import AgentSessionState
 from core.modules.agents.support.dispatch_policy import DispatchPolicy
 from engine.time.timestamp import Timestamp
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 ENDED_AT = Timestamp.parsed("2026-10-31T09:00:00+00:00")
 MAIN = Agent(id=40, creator_id=1, session="s-1", program="claude", role="main", number=1)
-HELPER = Agent(id=41, creator_id=1, session="s-2", program="claude", role="helper", number=2, profile="journal-researcher")
+HELPER = Agent(id=41, creator_id=1, session="s-2", program="claude", role="helper", number=2, profile=f"{RESEARCHER_PROFILE.name}")
 SUBAGENT = Agent(id=42, creator_id=1, session="s-3", program="claude", role="helper", number=3)
 AGENTS = [MAIN, replace(MAIN, ended_at=ENDED_AT), HELPER, replace(HELPER, ended_at=ENDED_AT), replace(HELPER, ended_at=ENDED_AT, retired_at=ENDED_AT),
           SUBAGENT, replace(SUBAGENT, ended_at=ENDED_AT)]

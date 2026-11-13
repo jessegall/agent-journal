@@ -16,13 +16,24 @@ from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.support.shipped_profiles import DESIGN_SKILLS, HELPER_PROFILES, HELPER_SKILLS, PLANNER_SKILLS, PLAN_REVIEW_SKILLS, WORKER_PROFILES, WORKER_SKILLS
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.support.story_checks import expect_absent_value
+from suites.coding.support.shipped_profiles import CODE_REVIEWER_PROFILE
+from suites.coding.support.shipped_profiles import DEBUGGER_PROFILE
+from suites.coding.support.shipped_profiles import DESIGNER_PROFILE
+from suites.coding.support.shipped_profiles import FUNCTIONAL_DESIGNER_PROFILE
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
+from suites.coding.support.shipped_profiles import PLANNER_PROFILE
+from suites.coding.support.shipped_profiles import PLAN_REVIEWER_PROFILE
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
+from suites.coding.support.shipped_profiles import WORKER_MEDIOR_PROFILE
+from suites.coding.support.shipped_profiles import WORKER_PROFILE
+from suites.coding.support.shipped_profiles import WORKER_SENIOR_PROFILE
 
 SHIPPED_PROFILES = (*HELPER_PROFILES, *WORKER_PROFILES)
 PLANNING = "journal-planning"
 WORKERS = "journal-workers"
 DESIGN = "journal-functional-design"
 RESEARCHER_SESSION = "s-researcher"
-WORKER_SKILL = "journal-worker"
+WORKER_SKILL = f"{WORKER_PROFILE.name}"
 HELPER_SKILL = "journal-helper"
 SKILL_GROUPS = {"WORKER_SKILLS": WORKER_SKILLS, "HELPER_SKILLS": HELPER_SKILLS, "PLANNER_SKILLS": PLANNER_SKILLS, "DESIGN_SKILLS": DESIGN_SKILLS, "PLAN_REVIEW_SKILLS": PLAN_REVIEW_SKILLS}
 PLAN_LIST = HookSamples.shell("journal plan list", ShellPart("journal", CommandCategory.JOURNAL, ["plan", "list"], subcommand="plan"))
@@ -34,11 +45,11 @@ def given(story, name):
 
 
 @pytest.mark.parametrize("name, has, lacks", [
-    ("journal-worker", WORKERS, PLANNING), ("journal-worker-medior", WORKERS, PLANNING), ("journal-worker-senior", WORKERS, PLANNING),
-    ("journal-planner", PLANNING, WORKERS), ("journal-plan-reviewer", PLANNING, WORKERS),
-    ("journal-functional-designer", DESIGN, PLANNING), ("journal-merger", WORKERS, PLANNING),
-    ("journal-researcher", "journal-helpers", PLANNING), ("journal-debugger", "journal-helpers", WORKERS),
-    ("journal-designer", "journal-helpers", WORKERS), ("journal-code-reviewer", "journal-helpers", PLANNING),
+    (f"{WORKER_PROFILE.name}", WORKERS, PLANNING), (f"{WORKER_MEDIOR_PROFILE.name}", WORKERS, PLANNING), (f"{WORKER_SENIOR_PROFILE.name}", WORKERS, PLANNING),
+    (f"{PLANNER_PROFILE.name}", PLANNING, WORKERS), (f"{PLAN_REVIEWER_PROFILE.name}", PLANNING, WORKERS),
+    (f"{FUNCTIONAL_DESIGNER_PROFILE.name}", DESIGN, PLANNING), (f"{MERGER_PROFILE.name}", WORKERS, PLANNING),
+    (f"{RESEARCHER_PROFILE.name}", "journal-helpers", PLANNING), (f"{DEBUGGER_PROFILE.name}", "journal-helpers", WORKERS),
+    (f"{DESIGNER_PROFILE.name}", "journal-helpers", WORKERS), (f"{CODE_REVIEWER_PROFILE.name}", "journal-helpers", PLANNING),
 ])
 def test_each_shipped_profile_gets_the_skills_of_its_job_and_not_those_of_another(new_story, name, has, lacks):
     story = new_story(fixture=OpenTaskOrchestrator)
@@ -69,7 +80,7 @@ def test_a_group_no_longer_holds_the_skill_of_the_agent_that_sends_it(owner, sen
 
 def test_a_command_of_a_skill_the_profile_leaves_out_does_not_wait_for_that_skill(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    story.container.get(Bus).run(StartAgent(RESEARCHER_SESSION, "claude", CodingHelperRole.HELPER, story.agent.id, profile="journal-researcher"), Actor.core(), environment_id=1)
+    story.container.get(Bus).run(StartAgent(RESEARCHER_SESSION, "claude", CodingHelperRole.HELPER, story.agent.id, profile=f"{RESEARCHER_PROFILE.name}"), Actor.core(), environment_id=1)
     story.expect_hook_allowed(RESEARCHER_SESSION, PLAN_LIST)
 
 

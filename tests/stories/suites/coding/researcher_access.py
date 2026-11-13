@@ -7,6 +7,7 @@ from engine.registry.registry import Registry
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 READ_FILE = HookSamples.shell("cat src/cart.py", ShellPart("cat", CommandCategory.READ, ["src/cart.py"]))
 WEB_READER = HookSamples.tool_use("Agent", ToolType.AGENT, [], None).with_raw({"tool_input": {"subagent_type": "web-fetch"}})
@@ -31,5 +32,5 @@ def test_a_researcher_still_cannot_start_other_agents_or_change_a_file(researche
 
 
 def test_the_researcher_is_told_it_may_run_commands_that_only_read(researcher):
-    body = Registry.read(researcher.container.get(Database)).profile("journal-researcher").profile.body
+    body = Registry.read(researcher.container.get(Database)).profile(f"{RESEARCHER_PROFILE.name}").profile.body
     researcher.expect_rows("commands that only read" in body, "use Bash only for journal commands" not in body, detail=body)

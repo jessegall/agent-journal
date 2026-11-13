@@ -7,6 +7,7 @@ from core.modules.viewer.migrations.m003_helpers_window_key import HelpersWindow
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, StartedHelper, helper_agent
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 MARKS = "chat-mark list --environment 1"
 OLD_LAYOUT = "viewer-layout save --suite coding --page home --layout '{\"windows\": [\"agents.subagents\"]}' --environment main"
@@ -23,13 +24,13 @@ def test_a_person_stops_a_runaway_helper_from_its_card(new_story):
 
 def test_a_job_shows_one_mark_that_says_it_started(new_story):
     story = new_story(fixture=StartedHelper)
-    story.expect_text(MARKS, "Started journal-researcher")
+    story.expect_text(MARKS, f"Started {RESEARCHER_PROFILE.name}")
 
 
 def test_a_finished_job_ends_its_mark_in_place(new_story):
     story = new_story(fixture=EndedHelper)
     story.expect_text(MARKS, "reported back")
-    story.expect_no_text(MARKS, "Started journal-researcher")
+    story.expect_no_text(MARKS, f"Started {RESEARCHER_PROFILE.name}")
 
 
 def test_a_saved_layout_moves_to_the_helpers_window(new_story):
@@ -42,7 +43,7 @@ def test_a_saved_layout_moves_to_the_helpers_window(new_story):
 
 def test_the_profiles_window_may_start_a_helper_and_read_whether_it_can(new_story):
     window = WindowStory(new_story(fixture=StartedHelper))
-    window.expect_window_allowed("profiles.profiles", 'helper start journal-researcher --brief "x"')
+    window.expect_window_allowed("profiles.profiles", f'helper start {RESEARCHER_PROFILE.name} --brief "x"')
     window.expect_window_allowed("profiles.profiles", "helper availability")
 
 
@@ -63,7 +64,7 @@ def test_a_start_at_the_limit_says_so(new_story):
     story = new_story(fixture=StartedHelper)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
     story.run(f"setting set {HELPER_RUN_LIMIT} 1 --project", actor=story.user)
-    story.expect_text("helper availability --profile journal-researcher --environment main", "1 of journal-researcher run", actor=story.user)
+    story.expect_text(f"helper availability --profile {RESEARCHER_PROFILE.name} --environment main", f"1 of {RESEARCHER_PROFILE.name} run", actor=story.user)
     launcher.server.close()
 
 

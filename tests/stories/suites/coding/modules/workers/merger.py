@@ -51,6 +51,8 @@ from engine.testing.expectations.expect_nudge import said
 from core.modules.agents.support.report_nudges import PARENT_REPORT
 from core.modules.helpers.support.helper_nudges import HELPER_PROGRAM_FAULT
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
+from suites.coding.support.shipped_profiles import PLANNER_PROFILE
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -62,7 +64,7 @@ class MergerStartError(RuntimeError):
 
 
 def merger_agent(story):
-    agents = story.container.get(Queries).query(Agent).filter(profile="journal-merger").every_row(TEST_ROWS_REASON)
+    agents = story.container.get(Queries).query(Agent).filter(profile=f"{MERGER_PROFILE.name}").every_row(TEST_ROWS_REASON)
     return next(iter(agents), None)
 
 
@@ -402,7 +404,7 @@ def test_long_merger_lines_wait_until_the_output_is_read_whole(new_story, monkey
 
 def test_the_merger_is_told_to_read_a_merge_that_moved_to_the_background_before_calling_it_unconfirmed(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    profile = story.container.get(ProfileFiles).effective("journal-merger")
+    profile = story.container.get(ProfileFiles).effective(f"{MERGER_PROFILE.name}")
     story.expect_rows("journal output read <n> --summary" in profile.body, "never tell the main agent a merge is unconfirmed while its output still runs" in profile.body)
 
 
@@ -453,12 +455,12 @@ def test_a_planner_helper_ending_starts_no_merger(new_story):
     story = new_story(fixture=UserBuilder)
     story.expect_success(f"setting set {MERGER_ENABLED} true --project", actor=story.user)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    story.run('helper start journal-planner --brief "Plan the change" --environment main', actor=story.agent)
+    story.run(f'helper start {PLANNER_PROFILE.name} --brief "Plan the change" --environment main', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
     launcher.server.close()
     story.home.socket("launcher").unlink()
-    planner = next(story.container.get(Queries).query(Agent).filter(profile="journal-planner").every_row(TEST_ROWS_REASON))
+    planner = next(story.container.get(Queries).query(Agent).filter(profile=f"{PLANNER_PROFILE.name}").every_row(TEST_ROWS_REASON))
     story.expect_success(f"agent end {planner.id}", actor=story.user)
     story.run_listeners()
     MergerRetry()(story.container)

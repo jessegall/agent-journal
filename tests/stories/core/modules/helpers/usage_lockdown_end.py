@@ -13,13 +13,14 @@ from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper
 from tests.stories.core.modules.helpers.usage_limits import report
 from tests.stories.core.modules.helpers.usage_lockdown import EDIT, LIFT, LIMIT, STOP_LINE, lockdown_story
 from core.modules.helpers.support.helper_nudges import LOCKDOWN_ENDED
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 LOCKDOWN_ENDED_TEXT = LOCKDOWN_ENDED.nudge().text
 STOPPED_TIME = timedelta(minutes=45)
 
 
 class LimitedStartedHelper(StoryFixture):
-    """A running helper of journal-researcher, and a limit of 50 percent on Claude."""
+    f"""A running helper of {RESEARCHER_PROFILE.name}, and a limit of 50 percent on Claude."""
 
     parent = StartedHelper
 

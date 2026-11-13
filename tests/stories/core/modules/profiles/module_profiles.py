@@ -7,12 +7,20 @@ from engine.database.database import Database
 from engine.registry.registry import Registry
 from core.modules.profiles.support.profile_files import ProfileFiles
 from tests.stories.core.support.fixtures import UserJoined
+from suites.coding.support.shipped_profiles import CODE_REVIEWER_PROFILE
+from suites.coding.support.shipped_profiles import DEBUGGER_PROFILE
+from suites.coding.support.shipped_profiles import PLANNER_PROFILE
+from suites.coding.support.shipped_profiles import PLAN_REVIEWER_PROFILE
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
+from suites.coding.support.shipped_profiles import WORKER_MEDIOR_PROFILE
+from suites.coding.support.shipped_profiles import WORKER_PROFILE
+from suites.coding.support.shipped_profiles import WORKER_SENIOR_PROFILE
 
 MODULES = "tests.stories.core.modules.profiles.support.profile_modules"
 
 
 @pytest.mark.parametrize(("module", "message"), [
-    ("DuplicateProfile", "both register the profile journal-researcher"),
+    ("DuplicateProfile", f"both register the profile {RESEARCHER_PROFILE.name}"),
     ("UnknownType", "missing-type is no agent type: no installed module registers it"),
     ("WritingProfile", "profile module-reader asks for writing, and a Read-only helper only reads"),
     ("MissingDescription", "profile module-reader has no description"),
@@ -43,24 +51,24 @@ def test_a_module_that_is_no_suite_registers_a_profile_and_keeps_its_origin(new_
 def test_shipped_profiles_have_registered_types_and_the_plan_reviewer_is_each_launch(new_story):
     story = new_story()
     registry = Registry.read(story.container.get(Database))
-    for name in ("journal-researcher", "journal-planner", "journal-debugger", "journal-plan-reviewer", "journal-code-reviewer"):
+    for name in (f"{RESEARCHER_PROFILE.name}", f"{PLANNER_PROFILE.name}", f"{DEBUGGER_PROFILE.name}", f"{PLAN_REVIEWER_PROFILE.name}", f"{CODE_REVIEWER_PROFILE.name}"):
         story.expect_rows(registry.profile(name).profile.agent_type == "helper")
-    for name in ("journal-worker-senior", "journal-worker-medior", "journal-worker"):
+    for name in (f"{WORKER_SENIOR_PROFILE.name}", f"{WORKER_MEDIOR_PROFILE.name}", f"{WORKER_PROFILE.name}"):
         story.expect_rows(registry.profile(name).profile.agent_type == "worker")
-    story.expect_rows(registry.profile("journal-plan-reviewer").profile.occupant is Occupant.LAUNCH_ROTATION,
-                      registry.helper_type_book().find("worker").default_profile == "journal-worker-medior",
-                      registry.profile("journal-worker").profile.is_base)
+    story.expect_rows(registry.profile(f"{PLAN_REVIEWER_PROFILE.name}").profile.occupant is Occupant.LAUNCH_ROTATION,
+                      registry.helper_type_book().find("worker").default_profile == f"{WORKER_MEDIOR_PROFILE.name}",
+                      registry.profile(f"{WORKER_PROFILE.name}").profile.is_base)
 
 
 def test_the_shipped_code_reviewer_reads_the_diff_itself_and_files_critical_tasks(new_story):
     story = new_story()
-    reviewer = Registry.read(story.container.get(Database)).profile("journal-code-reviewer").profile
+    reviewer = Registry.read(story.container.get(Database)).profile(f"{CODE_REVIEWER_PROFILE.name}").profile
     story.expect_rows(reviewer.agent_type == "helper", "git diff <range>" in reviewer.body, "--priority critical" in reviewer.body, "journal task overview <n>" in reviewer.body)
 
 
 def test_the_planner_profile_says_a_plan_is_written_thoroughly(new_story):
     story = new_story()
-    planner = Registry.read(story.container.get(Database)).profile("journal-planner").profile.body
+    planner = Registry.read(story.container.get(Database)).profile(f"{PLANNER_PROFILE.name}").profile.body
     story.expect_rows("one task per step a user could check" in planner, "plans.one-task-phase" in planner, "you may run journal plan edit" in planner,
                       "skill journal-planning" in planner, "skill journal-plan-review-applying" in planner)
 

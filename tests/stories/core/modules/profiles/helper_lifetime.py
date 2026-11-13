@@ -5,6 +5,10 @@ import pytest
 from engine.registry.registry import Registry
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.profile_storage import boot, change_version, profile_line, profile_path, profile_row, profile_story, save_profile_file, save_registered
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
+from suites.coding.support.shipped_profiles import PLAN_REVIEWER_PROFILE
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
+from suites.coding.support.shipped_profiles import WORKER_MEDIOR_PROFILE
 
 __all__ = ["profile_story"]
 
@@ -27,15 +31,15 @@ def personal_file(story, name: str, text: str):
 
 
 def test_a_personal_file_with_occupant_each_launch_shows_in_profile_show(person):
-    personal_file(person, "journal-merger", MERGER_PROFILE_TEXT.format(field="occupant: each-launch"))
-    person.expect_text("profile show journal-merger", "occupant: each-launch", actor=person.user)
-    person.expect_text("profile show journal-merger --json", '"occupant": "each-launch"', actor=person.user)
+    personal_file(person, f"{MERGER_PROFILE.name}", MERGER_PROFILE_TEXT.format(field="occupant: each-launch"))
+    person.expect_text(f"profile show {MERGER_PROFILE.name}", "occupant: each-launch", actor=person.user)
+    person.expect_text(f"profile show {MERGER_PROFILE.name} --json", '"occupant": "each-launch"', actor=person.user)
 
 
 def test_profile_save_with_an_occupant_writes_the_file_and_the_list_shows_it(person):
-    person.expect_success("profile save journal-merger --occupant continue --reason needed", actor=person.user)
-    person.expect_rows('occupant: "continue"' in profile_path(person, "journal-merger").read_text())
-    merger_line = next(line for line in person.run("profile list", actor=person.user).output_text.splitlines() if line.startswith("journal-merger"))
+    person.expect_success(f"profile save {MERGER_PROFILE.name} --occupant continue --reason needed", actor=person.user)
+    person.expect_rows('occupant: "continue"' in profile_path(person, f"{MERGER_PROFILE.name}").read_text())
+    merger_line = next(line for line in person.run("profile list", actor=person.user).output_text.splitlines() if line.startswith(f"{MERGER_PROFILE.name}"))
     person.expect_rows("continue" in merger_line, detail=merger_line)
 
 
@@ -76,15 +80,15 @@ def test_a_module_upgrade_keeps_a_persons_occupant(profile_story):
 
 
 def test_a_worker_profile_that_declares_an_occupant_is_refused_naming_its_type_and_start_line(person):
-    person.expect_refusal("profile save journal-worker-medior --occupant each-launch --reason needed", "worker", actor=person.user)
-    person.expect_refusal("profile save journal-worker-medior --occupant each-launch --reason needed", "journal worker dispatch", actor=person.user)
+    person.expect_refusal(f"profile save {WORKER_MEDIOR_PROFILE.name} --occupant each-launch --reason needed", "worker", actor=person.user)
+    person.expect_refusal(f"profile save {WORKER_MEDIOR_PROFILE.name} --occupant each-launch --reason needed", "journal worker dispatch", actor=person.user)
 
 
 def test_the_reviewer_the_merger_and_the_researcher_each_show_their_own_occupant(profile_story):
     story = profile_story
-    profile_line(story, ["profile", "save", "journal-merger", "--occupant", "each-launch"])
-    occupants = {name: profile_row(story, name)["occupant"] for name in ("journal-plan-reviewer", "journal-merger", "journal-researcher")}
-    story.expect_rows(occupants == {"journal-plan-reviewer": "each-launch", "journal-merger": "each-launch", "journal-researcher": "when-cold"}, detail=str(occupants))
+    profile_line(story, ["profile", "save", f"{MERGER_PROFILE.name}", "--occupant", "each-launch"])
+    occupants = {name: profile_row(story, name)["occupant"] for name in (f"{PLAN_REVIEWER_PROFILE.name}", f"{MERGER_PROFILE.name}", f"{RESEARCHER_PROFILE.name}")}
+    story.expect_rows(occupants == {f"{PLAN_REVIEWER_PROFILE.name}": "each-launch", f"{MERGER_PROFILE.name}": "each-launch", f"{RESEARCHER_PROFILE.name}": "when-cold"}, detail=str(occupants))
 
 
 def stored_profiles(story, name: str, **fields: object) -> str:
@@ -98,10 +102,10 @@ def stored_profiles(story, name: str, **fields: object) -> str:
 
 @pytest.mark.parametrize("independent,occupant", [(True, "each-launch"), (False, "when-cold")])
 def test_a_stored_row_with_only_independent_restores_as_its_occupant(person, independent, occupant):
-    restored = Registry.parsed("profiles", stored_profiles(person, "journal-researcher", independent=independent))
-    person.expect_rows(str(restored.profile("journal-researcher").profile.occupant) == occupant)
+    restored = Registry.parsed("profiles", stored_profiles(person, f"{RESEARCHER_PROFILE.name}", independent=independent))
+    person.expect_rows(str(restored.profile(f"{RESEARCHER_PROFILE.name}").profile.occupant) == occupant)
 
 
 def test_a_stored_row_that_holds_a_reuse_word_is_refused(person):
     with pytest.raises(Exception, match=KEPT_REFUSAL):
-        Registry.parsed("profiles", stored_profiles(person, "journal-researcher", reuse="never"))
+        Registry.parsed("profiles", stored_profiles(person, f"{RESEARCHER_PROFILE.name}", reuse="never"))

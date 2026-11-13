@@ -1,4 +1,6 @@
 from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_PROFILES
+from suites.coding.support.shipped_profiles import WORKER_MEDIOR_PROFILE
+from suites.coding.support.shipped_profiles import WORKER_SENIOR_PROFILE
 
 
 SHIPPED_PROFILES = (*HELPER_PROFILES, *WORKER_PROFILES)
@@ -15,10 +17,10 @@ def test_a_senior_runs_on_sol_on_codex_as_on_opus_on_claude():
 
 
 def expect_journal_senior_models(item, expected) -> None:
-    actual = item['journal-worker-senior']
+    actual = item[f'{WORKER_SENIOR_PROFILE.name}']
     assert actual == expected, actual
 
 
 def expect_journal_medior_models(item, expected) -> None:
-    actual = item['journal-worker-medior']
+    actual = item[f'{WORKER_MEDIOR_PROFILE.name}']
     assert actual == expected, actual

@@ -13,6 +13,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.merger_cases import MERGER_QUESTION, merger_case
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
 TIMEOUT_TEXT = "Raise the timeout of the cart test"
 TIMEOUT_MEMORY = "Worker 2, task 1: advised a longer timeout for the cart test, because the fixture builds slowly"
@@ -94,7 +95,7 @@ def test_a_memory_of_the_merger_is_kept_when_its_next_session_runs_on_codex(advi
 
 
 def test_the_merger_profile_says_to_read_its_memories_and_to_write_one_after_each_advice(visiting):
-    visiting.story.expect_text("profile show journal-merger --json", "journal memory list", "journal memory make", "one memory", actor=visiting.story.agent)
+    visiting.story.expect_text(f"profile show {MERGER_PROFILE.name} --json", "journal memory list", "journal memory make", "one memory", actor=visiting.story.agent)
 
 
 def test_the_first_session_of_the_merger_has_no_memory_and_its_start_is_told_of_none(visiting):

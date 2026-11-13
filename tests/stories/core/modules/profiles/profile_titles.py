@@ -2,6 +2,7 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, UserBuilder
 from tests.stories.server.support.server_client import server_story
 from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 
 def test_a_person_saves_and_reads_a_profile_title_through_the_viewer(new_story):
@@ -23,16 +24,16 @@ def test_agent_facts_and_filter_options_show_profile_titles_through_the_viewer(n
     story = new_story(fixture=StartedTaskBuilder)
     story.run('actor make user "Ada"')
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    story.run('helper start journal-researcher --model sonnet --name "Madame Curie" --brief "Read the cart" --environment main', actor=story.agent)
+    story.run(f'helper start {RESEARCHER_PROFILE.name} --model sonnet --name "Madame Curie" --brief "Read the cart" --environment main', actor=story.agent)
     launcher.server.close()
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         def line(*parts):
             return server.viewer_line_value(cookie, {"window": "agents.agents", "environment": "main", "line": list(parts)})
         facts = line("usage", "agents", "--closed")["rows"]
-        story.expect_rows(next(row for row in facts if row["profile"] == "journal-researcher")["profile_title"] == "Researcher")
+        story.expect_rows(next(row for row in facts if row["profile"] == f"{RESEARCHER_PROFILE.name}")["profile_title"] == "Researcher")
         options = line("agent", "cards", "--options")
-        story.expect_rows({"name": "journal-researcher", "title": "Researcher"} in options["profiles"])
+        story.expect_rows({"name": f"{RESEARCHER_PROFILE.name}", "title": "Researcher"} in options["profiles"])
 
 
 def test_agents_window_picture(new_story):

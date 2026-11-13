@@ -18,6 +18,9 @@ from core.modules.helpers.support.helper_settings import AGENT_OPTIONS
 from core.modules.helpers.support.helper_settings import ALLOWED_MODELS
 from core.modules.helpers.support.helper_settings import HELPER_PROFILE_LIMITS
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
+from suites.coding.support.shipped_profiles import WORKER_PROFILE
 
 OPTIONS = f"{AGENT_OPTIONS}"
 ALLOWED_MODELS = f"{ALLOWED_MODELS}"
@@ -35,18 +38,18 @@ def new_reasons(story, agent_type: str, profile: str = "") -> list[str]:
 def test_s11_inheritance_without_options_allows_every_type_and_profile(new_story):
     story = new_story(fixture=UserBuilder)
     with scope_line(story):
-        resolved = story.container.get(AgentOptions).resolved("worker", "journal-worker")
+        resolved = story.container.get(AgentOptions).resolved("worker", f"{WORKER_PROFILE.name}")
     expect_value((resolved.source, resolved.problems, resolved.options.allow_new, resolved.options.allowed_profiles), ("default", (), True, None))
-    expect_absent_value(new_reasons(story, "worker", "journal-worker") + new_reasons(story, "helper", "journal-merger"))
+    expect_absent_value(new_reasons(story, "worker", f"{WORKER_PROFILE.name}") + new_reasons(story, "helper", f"{MERGER_PROFILE.name}"))
 
 
 def test_s12_inheritance_the_environment_list_replaces_the_project_list_and_names_its_source(new_story):
     story = new_story(fixture=UserBuilder)
     set_options(story, "helper allow_new=off", scope="--project")
-    expect_value(new_reasons(story, "helper", "journal-researcher"), ["new helper sessions are switched off"])
+    expect_value(new_reasons(story, "helper", f"{RESEARCHER_PROFILE.name}"), ["new helper sessions are switched off"])
     set_options(story, "worker allow_resume=off")
     with scope_line(story):
-        resolved = story.container.get(AgentOptions).resolved("helper", "journal-researcher")
+        resolved = story.container.get(AgentOptions).resolved("helper", f"{RESEARCHER_PROFILE.name}")
     expect_value((resolved.source, resolved.options.allow_new), ("environment", True))
 
 
@@ -56,7 +59,7 @@ def test_s52_inheritance_provider_and_model_restrictions_intersect_and_never_wid
     set_options(story, "worker allowed_providers=claude", "worker allowed_models=claude:opus")
     with scope_line(story):
         admission = story.container.get(AgentAdmission)
-        reasons = [admission.model_reasons("worker", "journal-worker", provider, model) for provider, model in [("claude", "opus"), ("claude", "haiku"), ("codex", "gpt")]]
+        reasons = [admission.model_reasons("worker", f"{WORKER_PROFILE.name}", provider, model) for provider, model in [("claude", "opus"), ("claude", "haiku"), ("codex", "gpt")]]
     expect_value(reasons[0], [])
     expect_value(len(reasons[1]), 2)
     expect_value(len(reasons[2]), 2)
@@ -66,12 +69,12 @@ def test_s61_invalid_legacy_policy_is_readable_and_repairable_inheritance(new_st
     story = new_story(fixture=UserBuilder)
     set_options(story, "worker allow_new=maybe")
     with scope_line(story):
-        resolved = story.container.get(AgentOptions).resolved("worker", "journal-worker")
-        resume = story.container.get(AgentAdmission).resume_reasons("helper", "journal-researcher")
+        resolved = story.container.get(AgentOptions).resolved("worker", f"{WORKER_PROFILE.name}")
+        resume = story.container.get(AgentAdmission).resume_reasons("helper", f"{RESEARCHER_PROFILE.name}")
     expect_value((len(resolved.problems), resolved.options.allow_new, len(resume)), (1, False, 2))
     story.expect_success(f"setting set {WORKER_RUN_LIMIT} 3 --environment main", actor=story.user)
     set_options(story, "worker allow_new=on")
-    expect_absent_value(new_reasons(story, "worker", "journal-worker"))
+    expect_absent_value(new_reasons(story, "worker", f"{WORKER_PROFILE.name}"))
 
 
 def viewer_options(viewer, *lines: str) -> None:
@@ -140,9 +143,9 @@ def helper_profiles(story) -> dict[str, dict]:
 
 def test_s21_inheritance_an_explicit_profile_limit_changes_only_that_profile(new_story):
     story = new_story(fixture=UserBuilder)
-    story.expect_success(f"setting set {PROFILE_LIMITS} {shlex.quote(json.dumps(['journal-merger:1:2']))} --environment main", actor=story.user)
+    story.expect_success(f"setting set {PROFILE_LIMITS} {shlex.quote(json.dumps([f'{MERGER_PROFILE.name}:1:2']))} --environment main", actor=story.user)
     profiles = helper_profiles(story)
-    merger, researcher = profiles["journal-merger"], profiles["journal-researcher"]
+    merger, researcher = profiles[f"{MERGER_PROFILE.name}"], profiles[f"{RESEARCHER_PROFILE.name}"]
     expect_value(((merger["run_limit"], merger["kept_limit"]), (researcher["run_limit"], researcher["kept_limit"])), ((1, 2), (4, 8)))
 
 

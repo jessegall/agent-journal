@@ -15,6 +15,7 @@ from tests.stories.server.support.server_client import server_story
 from tests.stories.support.story_checks import expect_value
 from core.modules.profiles.support.profile_settings import CLAUDE_MODEL_SETTING
 from core.modules.profiles.support.profile_settings import CODEX_MODEL_SETTING
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 MODULE = "tests.stories.core.modules.profiles.support.profile_updates:"
 SAVE = ["profile", "save", "critic", "--description", "Reads a change", "--body", "Read the diff.", "--reason", "needed"]
@@ -282,9 +283,9 @@ def test_default_models_are_effective_and_native_profiles_still_publish(profile_
     expect_value(native.is_file(), True)
     expect_value("tools:" in FileAccess.shared().read(native), False)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    story.run('helper start journal-researcher --model haiku --brief "Read the cart" --environment main', actor=story.agent)
+    story.run(f'helper start {RESEARCHER_PROFILE.name} --model haiku --brief "Read the cart" --environment main', actor=story.agent)
     launcher.server.close()
-    expect_value(profile_row(story, "journal-researcher")["uses"], 1)
+    expect_value(profile_row(story, f"{RESEARCHER_PROFILE.name}")["uses"], 1)
 
 
 @pytest.mark.parametrize("line", [SAVE, ["profile", "reset", "module-reader", "--reason", "needed"], ["profile", "remove", "critic", "--reason", "needed"]])

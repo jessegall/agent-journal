@@ -28,6 +28,10 @@ import json
 from tests.stories.core.support.agent_labels import agent_label
 from core.modules.helpers.support.helper_settings import HELPER_PROFILE_LIMITS
 from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
+from suites.coding.support.shipped_profiles import DEBUGGER_PROFILE
+from suites.coding.support.shipped_profiles import PLANNER_PROFILE
+from suites.coding.support.shipped_profiles import PLAN_REVIEWER_PROFILE
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -72,7 +76,7 @@ def profile_line(server, cookie, line):
 def test_helper_form_offers_send_for_an_idle_helper_through_the_viewer(helper_form_server):
     server, helper = helper_form_server
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-    availability = profile_line(server, cookie, ["helper", "availability", "--profile", "journal-researcher"])
+    availability = profile_line(server, cookie, ["helper", "availability", "--profile", f"{RESEARCHER_PROFILE.name}"])
     server.story.expect_rows(not availability["can_start"] and availability["can_start_fresh"])
     server.story.expect_rows([row["id"] for row in availability["idle_helpers"]] == [helper.id])
     profile_line(server, cookie, ["helper", "send", str(agent_number(server.story, helper.id)), "Read src/tax.py"])
@@ -84,7 +88,7 @@ def test_helper_form_offers_send_for_an_idle_helper_through_the_viewer(helper_fo
 def test_helper_form_offers_send_and_records_the_reason_for_another_helper(helper_form_server):
     server, helper = helper_form_server
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-    profile_line(server, cookie, ["helper", "start", "journal-researcher", "--brief", "Read src/tax.py", "--fresh", "An independent comparison"])
+    profile_line(server, cookie, ["helper", "start", f"{RESEARCHER_PROFILE.name}", "--brief", "Read src/tax.py", "--fresh", "An independent comparison"])
     job = server.story.container.get(Queries).query(HelperJob).newest().first()
     server.story.expect_rows(job.helper_id != helper.id)
     server.story.expect_rows(job.new_agent_reason == "An independent comparison")
@@ -93,11 +97,11 @@ def test_helper_form_offers_send_and_records_the_reason_for_another_helper(helpe
 def test_helper_form_offers_send_at_the_kept_limit_and_preserves_the_command_refusal(helper_form_server):
     server, helper = helper_form_server
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-    server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", f"{HELPER_PROFILE_LIMITS}", '["journal-researcher:4:1"]', "--project"]})
-    availability = profile_line(server, cookie, ["helper", "availability", "--profile", "journal-researcher"])
+    server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", f"{HELPER_PROFILE_LIMITS}", f'["{RESEARCHER_PROFILE.name}:4:1"]', "--project"]})
+    availability = profile_line(server, cookie, ["helper", "availability", "--profile", f"{RESEARCHER_PROFILE.name}"])
     server.story.expect_rows([row["id"] for row in availability["idle_helpers"]] == [helper.id])
     server.story.expect_rows(not availability["can_start_fresh"])
-    status, _, text = viewer_answer(server.viewer_port(), "/api/line", cookie, "", {"window": "profiles.profiles", "environment": "main", "line": ["helper", "start", "journal-researcher", "--brief", "Read the tax", "--fresh", "Another reader"]})
+    status, _, text = viewer_answer(server.viewer_port(), "/api/line", cookie, "", {"window": "profiles.profiles", "environment": "main", "line": ["helper", "start", f"{RESEARCHER_PROFILE.name}", "--brief", "Read the tax", "--fresh", "Another reader"]})
     answer = json.loads(text)
     server.story.expect_rows(status == 200 and answer["code"] != 0)
     server.story.expect_rows(json.loads(answer["error"])["refused"] in availability["fresh_reason"])
@@ -111,7 +115,7 @@ def test_helper_form_offers_send_in_light_and_dark(helper_form_server):
 
 def expect_start_refused(story, reason: str) -> None:
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    story.expect_refusal('helper start journal-researcher --fresh "A second reader" --brief "Read src/till.py" --environment main', reason, actor=story.agent)
+    story.expect_refusal(f'helper start {RESEARCHER_PROFILE.name} --fresh "A second reader" --brief "Read src/till.py" --environment main', reason, actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()
 
@@ -184,17 +188,17 @@ def test_old_callback_leaves_the_new_run(new_story):
 def test_a_person_sets_the_limits_of_a_profile_and_a_number_in_a_profile_file_is_not_read(new_story):
     story = new_story(fixture=StartedHelper)
     limits = story.container.get(AgentTypeLimits)
-    story.expect_rows(limits.lookup("helper", "journal-researcher") == TypeLimits(4, 8), limits.lookup("main") is None)
+    story.expect_rows(limits.lookup("helper", f"{RESEARCHER_PROFILE.name}") == TypeLimits(4, 8), limits.lookup("main") is None)
     story.expect_success('setting set journal.core.helpers.read-only-helper-profile-limits \'["journal-researcher:1:2"]\' --project', actor=story.user)
-    story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", "journal-researcher") == TypeLimits(1, 2))
-    story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", "journal-planner") == TypeLimits(4, 8))
+    story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", f"{RESEARCHER_PROFILE.name}") == TypeLimits(1, 2))
+    story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", f"{PLANNER_PROFILE.name}") == TypeLimits(4, 8))
 
 
 def test_at_the_run_limit_a_start_of_that_profile_is_refused_and_another_profile_starts(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_success('setting set journal.core.helpers.read-only-helper-profile-limits \'["journal-researcher:1:8"]\' --project', actor=story.user)
-    expect_start_refused(story, "1 of journal-researcher run")
-    story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", "journal-debugger") == TypeLimits(4, 8))
+    expect_start_refused(story, f"1 of {RESEARCHER_PROFILE.name} run")
+    story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", f"{DEBUGGER_PROFILE.name}") == TypeLimits(4, 8))
 
 
 def test_at_the_kept_maximum_a_new_start_is_refused_naming_the_idle_helper_and_the_person_who_retires(new_story):
@@ -211,7 +215,7 @@ def test_launches_in_flight_count(new_story, monkeypatch):
     story.expect_success('setting set journal.core.helpers.read-only-helper-profile-limits \'["journal-researcher:1:8"]\' --project', actor=story.user)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
     story.expect_success(f'helper send {agent_number(story, helper.id)} "One more job"', actor=story.agent)
-    story.expect_refusal("helper start journal-researcher --fresh 'A second reader' --brief 'Read src/other.py' --environment main", "1 of journal-researcher run", actor=story.agent)
+    story.expect_refusal(f"helper start {RESEARCHER_PROFILE.name} --fresh 'A second reader' --brief 'Read src/other.py' --environment main", f"1 of {RESEARCHER_PROFILE.name} run", actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()
 
@@ -221,7 +225,7 @@ def test_a_start_with_an_idle_helper_is_refused_with_its_send_line(new_story, mo
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    story.expect_refusal('helper start journal-researcher --brief "Read src/till.py" --environment main', f'helper {agent_number(story, helper.id)} is idle: journal helper send {agent_number(story, helper.id)} "<job>"', actor=story.agent)
+    story.expect_refusal(f'helper start {RESEARCHER_PROFILE.name} --brief "Read src/till.py" --environment main', f'helper {agent_number(story, helper.id)} is idle: journal helper send {agent_number(story, helper.id)} "<job>"', actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()
 
@@ -230,7 +234,7 @@ def test_fresh_with_a_reason_starts_a_new_helper_and_keeps_the_reason(new_story,
     story = new_story(fixture=EndedHelper)
     resumable_session(story, helper_agent(story), monkeypatch)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    story.expect_success("helper start journal-researcher --fresh 'A second reader' --brief 'Read src/other.py' --environment main", actor=story.agent)
+    story.expect_success(f"helper start {RESEARCHER_PROFILE.name} --fresh 'A second reader' --brief 'Read src/other.py' --environment main", actor=story.agent)
     job = story.container.get(Queries).query(HelperJob).newest().first()
     story.expect_rows(job.new_agent_reason == "A second reader")
     launcher.server.close()
@@ -241,9 +245,9 @@ def test_an_idle_helper_on_another_model_or_with_its_session_gone_is_not_offered
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     kept = story.container.get(KeptHelpers)
-    story.expect_rows(kept.idle(ProfileModel("", "", "journal-researcher"), Occupant.COLD_ROTATION) == ())
+    story.expect_rows(kept.idle(ProfileModel("", "", f"{RESEARCHER_PROFILE.name}"), Occupant.COLD_ROTATION) == ())
     resumable_session(story, helper, monkeypatch)
-    story.expect_rows(kept.idle(ProfileModel("", "", "journal-researcher"), Occupant.COLD_ROTATION)[0].id == helper.id, kept.idle(ProfileModel("", "another-model", "journal-researcher"), Occupant.COLD_ROTATION) == ())
+    story.expect_rows(kept.idle(ProfileModel("", "", f"{RESEARCHER_PROFILE.name}"), Occupant.COLD_ROTATION)[0].id == helper.id, kept.idle(ProfileModel("", "another-model", f"{RESEARCHER_PROFILE.name}"), Occupant.COLD_ROTATION) == ())
 
 
 def test_a_nearly_full_session_is_not_offered(new_story, monkeypatch):
@@ -251,9 +255,9 @@ def test_a_nearly_full_session_is_not_offered(new_story, monkeypatch):
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
     kept = story.container.get(KeptHelpers)
-    story.expect_rows(kept.idle(ProfileModel("", "", "journal-researcher"), Occupant.COLD_ROTATION)[0].id == helper.id)
+    story.expect_rows(kept.idle(ProfileModel("", "", f"{RESEARCHER_PROFILE.name}"), Occupant.COLD_ROTATION)[0].id == helper.id)
     monkeypatch.setattr(ClaudeCodeProvider, "context_window", lambda provider, home, session: ContextWindow(80, 1000))
-    story.expect_rows(kept.idle(ProfileModel("", "", "journal-researcher"), Occupant.COLD_ROTATION) == ())
+    story.expect_rows(kept.idle(ProfileModel("", "", f"{RESEARCHER_PROFILE.name}"), Occupant.COLD_ROTATION) == ())
 
 
 def test_two_sends_to_one_idle_helper_run_one_session(new_story, monkeypatch):
@@ -295,7 +299,7 @@ def test_steering_or_new_job(new_story):
 def test_same_reviewer_same_plan_is_refused(new_story, monkeypatch):
     story = new_story(fixture=UserBuilder)
     launcher = FakeLauncher.listening(story.home.socket("launcher"), request_count=2)
-    story.expect_success("helper start journal-plan-reviewer --plan 7 --brief 'Review plan 7' --environment main", actor=story.agent)
+    story.expect_success(f"helper start {PLAN_REVIEWER_PROFILE.name} --plan 7 --brief 'Review plan 7' --environment main", actor=story.agent)
     reviewer = helper_agent(story)
     job = story.container.get(Queries).query(HelperJob).filter(helper_id=reviewer.id).first()
     story.expect_rows(job.review_plan_id == 7)
@@ -312,7 +316,7 @@ def test_refusals_fit_and_a_kept_limit_with_all_running_says_to_ask_the_person(n
     story = new_story(fixture=StartedHelper)
     story.expect_success('setting set journal.core.helpers.read-only-helper-profile-limits \'["journal-researcher:4:1"]\' --project', actor=story.user)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
-    outcome = story.run("helper start journal-researcher --brief 'Read src/other.py' --environment main", actor=story.agent)
+    outcome = story.run(f"helper start {RESEARCHER_PROFILE.name} --brief 'Read src/other.py' --environment main", actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()
     story.expect_rows("ask the user to retire one" in outcome.output_text, "send the job" not in outcome.output_text, max(len(line) for line in outcome.output_text.splitlines()) <= 120)

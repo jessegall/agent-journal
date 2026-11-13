@@ -6,8 +6,9 @@ from engine.enums.occupant import Occupant
 from core.modules.agents.models.enums.end_reason import EndReason
 from core.modules.helpers.support.cold_sessions import ColdSessions
 from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PERCENT, COLD_SESSION_MINUTES, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
+from suites.coding.support.shipped_profiles import WORKER_PROFILE
 
-AGENT = SimpleNamespace(id=7, program="claude", session="s-1", environment_id=1, role="worker", profile="journal-worker")
+AGENT = SimpleNamespace(id=7, program="claude", session="s-1", environment_id=1, role="worker", profile=f"{WORKER_PROFILE.name}")
 LIMIT_TOKENS = 400000
 
 
