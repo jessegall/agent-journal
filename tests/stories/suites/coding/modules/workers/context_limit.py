@@ -5,7 +5,6 @@ from datetime import timedelta
 import pytest
 
 from core.modules.agents.support.terminal_typing import TerminalTyping
-from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE as COMPACT
 from core.modules.overview.support.overview_first import OverviewFirst
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS, CONTEXT_LIMIT_KINDS
 from tests.stories.server.support.server_client import server_story
@@ -207,7 +206,7 @@ def test_past_the_second_limit_the_watch_of_a_run_still_going_passes_so_the_stop
     agent.expect_hook_refusal(SESSION, monitor.with_raw({"tool_input": {"command": "tail -f build.log"}}), "no more tools, stop now")
     agent.expect_hook_allowed(SESSION, monitor.with_raw({"tool_input": {"command": f"journal output monitor {process.id}"}}))
     stop_watched = agent.hook(SESSION, HookSamples.stop())
-    agent.expect_rows(f"output {process.id}" in stop_unwatched.refusal, f"output {process.id}" not in stop_watched.refusal, detail=f"{stop_unwatched.refusal} | {stop_watched.refusal}")
+    agent.expect_rows(f"Output {process.id}" in stop_unwatched.refusal, f"Output {process.id}" not in stop_watched.refusal, detail=f"{stop_unwatched.refusal} | {stop_watched.refusal}")
 
 
 def test_between_the_limits_a_tool_with_a_task_in_hand_is_not_refused(hard_limited_worker):
@@ -317,3 +316,13 @@ def test_the_main_agents_folder_holds_the_hard_size_while_it_holds_a_task_and_it
     story.expect_success('task close 1 --outcome "Tax added once"', actor=story.agent)
     story.run_listeners()
     story.expect_rows(compact_window(story) == LIMIT_TOKENS, detail=str(compact_window(story)))
+
+
+def test_an_agent_past_its_window_stops_with_nothing_typed_and_its_folder_holds_the_window_that_compacts_it(limited):
+    limited.expect_success(f"environment edit 1 --folder {limited.home.project_folder}", actor=limited.user)
+    started_task(limited)
+    limited.expect_success('task close 1 --outcome "Tax added once"', actor=limited.agent)
+    limited.run_listeners()
+    has_context(limited, LIMIT_TOKENS + 1)
+    idle_turn(limited)
+    limited.expect_rows(limited.typing.typed == [], compact_window(limited) == LIMIT_TOKENS, detail=f"{limited.typing.typed} {compact_window(limited)}")

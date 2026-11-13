@@ -33,7 +33,7 @@ def test_a_workers_report_is_typed_to_an_idle_main_agent(new_story):
     story, worker = story_with_worker(new_story, typing)
     story.advance(timedelta(minutes=5))
     report(story, worker)
-    expect_terminal_line("reports in message", typing)
+    expect_terminal_line("reported in message", typing)
 
 
 def test_a_workers_report_says_it_wakes_the_main_agent_and_stays_visible(new_story):
@@ -41,7 +41,7 @@ def test_a_workers_report_says_it_wakes_the_main_agent_and_stays_visible(new_sto
     report(story, worker)
     line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).newest().first()
     expect_wakes_agent_proof(line)
-    expect_outcome_with(line, "reports in message")
+    expect_outcome_with(line, "reported in message")
 
 
 def test_the_line_of_a_proof_with_no_test_names_the_check_and_wakes_the_main_agent():
