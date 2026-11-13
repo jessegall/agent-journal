@@ -27,6 +27,8 @@ class PluginSkillFiles:
             text = self.with_plugin_key(SkillContents.read(folder / manifest.skills_folder / name / SKILL_FILE).text, manifest.name)
             for root in roots:
                 target = root / name / SKILL_FILE
+                if FileAccess.is_file(target) and FileAccess.read(target) == text:
+                    continue
                 FileAccess.mkdir(target.parent, parents=True, exist_ok=True)
                 FileAccess.write(target, text)
 
