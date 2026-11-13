@@ -5,6 +5,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from engine.testing.expectations.expect_reply import expect_absent_reply_line
 from tests.stories.support.story_checks import expect_startswith_listed, expect_value_with, expect_value_without
+from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
 
 MASTER = "journal.core.developer.tools"
 HOOKS = "journal.core.developer.tools.hooks"
@@ -55,7 +56,7 @@ def test_each_line_sent_to_the_agent_shows_in_the_terminal_while_the_nudges_sett
     expect_terminal_hook_without(story, "s-1", "to the agent:")
     story.run(f"setting switch {MASTER} on --project", actor=story.user)
     story.run('task make "Fix the cart" --environment main', actor=story.user)
-    expect_terminal_hook_with(story, "s-1", "journal: task:1 is yours now")
+    expect_terminal_hook_with(story, "s-1", TASK_ASSIGNMENT.nudge(task=1).text)
 
 
 class HookLogging(StoryFixture):

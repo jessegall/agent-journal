@@ -22,6 +22,8 @@ from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.support.story_checks import expect_value
 from tests.stories.core.support.agent_labels import agent_number
+from core.modules.drivers.support.line_typing import TERMINAL_PREFIX
+from core.modules.messages.support.message_nudges import MESSAGE_UPDATED
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -166,4 +168,4 @@ def test_a_read_message_edit_wakes_the_same_worker(targeted_chat):
     story.advance(timedelta(seconds=31))
     server.viewer_line_value(cookie, {"window": "messages.chat", "environment": "main", "line": ["message", "edit", "1", "--text", "Worker text after editing"]})
     story.run_listeners()
-    expect_row(typing, typed=[(story.worker.id, "[journal] message:1 was updated: read it again")])
+    expect_row(typing, typed=[(story.worker.id, TERMINAL_PREFIX + MESSAGE_UPDATED.nudge(message=1).text)])
