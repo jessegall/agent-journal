@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
+from tests.unit.scripts.samples.sample_repository import SampleRepository
 
 SCRIPT = Path(__file__).resolve().parents[3] / "scripts" / "move_class_file.py"
 SPECIFICATION = importlib.util.spec_from_file_location("move_class_file_prefix", SCRIPT)
@@ -144,10 +144,7 @@ def test_the_dry_run_prints_the_test_folders_and_changes_nothing(tmp_path):
 
 
 def open_branch_repository(root):
-    repository = GitRepository.sample(root / "repository")
-    repository.git("config", "user.name", "Story")
-    repository.git("config", "user.email", "story@example.com")
-    repository.git("config", "commit.gpgsign", "false")
+    repository = SampleRepository.made(root / "repository")
     write(repository.folder, "src/core/former/sample_area/__init__.py")
     write(repository.folder, "src/core/former/sample_area/reach.py", "class Reach:\n    pass\n")
     write(repository.folder, "src/core/user.py", "from core.former.sample_area.reach import Reach\n\nVALUE = 1\n")

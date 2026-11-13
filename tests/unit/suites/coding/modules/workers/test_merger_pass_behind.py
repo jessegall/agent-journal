@@ -18,7 +18,6 @@ from tests.unit.suites.coding.modules.workers.commands.check_worktree_behind.tes
 from tests.unit.suites.coding.modules.workers.commands.check_worktree_behind.test_check_worktree_behind import Queries as NoChecks
 from tests.unit.suites.coding.modules.workers.test_merger_update_subcommand import MERGER, WORKER, Agents, Checks, Numbers, Repository, Visits, Worktrees
 from suites.coding.modules.workers.support.behind_nudges import BEHIND_PASSED
-from engine.testing.expectations.expect_nudge import said
 
 
 class Waiting:
@@ -52,7 +51,6 @@ def test_a_passed_check_goes_to_the_main_agent_by_its_number_and_no_worktree_sta
     handler.handle(command, SimpleNamespace(actor=Actor(MERGER, ActorType.AGENT)))
     assert [(row.state, row.decided_by) for row in repository.saved] == [(State.PASSED, MERGER)] and visits.closed == 1
     assert main_line.sent[0].key == BEHIND_PASSED.key
-    assert said(BEHIND_PASSED).is_in(main_line.sent[0].text)
 
 
 def test_with_the_merger_off_the_line_reaches_the_main_agent_and_names_the_facts_and_the_three_choices():

@@ -85,6 +85,32 @@
                         ]
                     }
                 ]
+            },
+            {
+                "all": [
+                    {
+                        "fileMatches": "(^|/)tests/unit/suites/"
+                    },
+                    {
+                        "any": [
+                            {
+                                "nameMatches": "^core\\.modules(\\.|$)"
+                            },
+                            {
+                                "descendant": {
+                                    "all": [
+                                        {
+                                            "kind": "alias"
+                                        },
+                                        {
+                                            "nameMatches": "^core\\.modules(\\.|$)"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
             }
         ]
     }

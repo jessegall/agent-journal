@@ -2,7 +2,7 @@ import os
 from types import SimpleNamespace
 
 from engine.journal.journal_home import JournalHome
-from engine.testing.fakes.manual_clock import ManualClock
+from engine.time.clock import Clock
 from core.modules.drivers.commands.prune_runtime_folders.prune_runtime_folders import PruneRuntimeFolders
 from core.modules.drivers.commands.prune_runtime_folders.prune_runtime_folders_handler import KEPT_SECONDS, PruneRuntimeFoldersHandler
 
@@ -24,13 +24,13 @@ class AgentRows:
         return [SimpleNamespace(id=agent_id, ended_at=None) for agent_id in self.running_ids]
 
 
-def aged(path, clock: ManualClock, seconds: float) -> None:
+def aged(path, clock: Clock, seconds: float) -> None:
     moment = clock.epoch_seconds() - seconds
     os.utime(path, (moment, moment))
 
 
 def test_old_scan_states_and_ended_agents_old_terminal_logs_go_while_the_rest_stay(tmp_path):
-    home, clock = JournalHome(tmp_path / ".journal"), ManualClock()
+    home, clock = JournalHome(tmp_path / ".journal"), Clock()
     scans, terminals = home.folder / "runtime" / "file-scan", home.folder / "runtime" / "terminals"
     (scans / "old").mkdir(parents=True)
     (scans / "fresh").mkdir()
