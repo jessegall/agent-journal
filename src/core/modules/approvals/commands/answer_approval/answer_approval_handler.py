@@ -29,7 +29,7 @@ class AnswerApprovalHandler(Handler[AnswerApproval, ApprovalResult]):
         self.removal, self.lookup = removal, lookup
 
     def handle(self, command: AnswerApproval, context: Context) -> ApprovalResult:
-        if context.actor.type is not ActorType.USER:
+        if not context.actor.is_person():
             raise Refusal("an agent cannot decide an approval request")
         request = self.bus.run(MoveApproval(command.row_id, ApprovalLifecycle.begin), context.actor, environment_id=context.environment_id)
         try:

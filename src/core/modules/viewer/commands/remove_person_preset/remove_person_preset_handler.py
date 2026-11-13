@@ -19,7 +19,7 @@ class RemovePersonPresetHandler(Handler[RemovePersonPreset, PersonPreset]):
 
     def handle(self, command: RemovePersonPreset, context: Context) -> PersonPreset:
         layout = self.queries.query(PersonPreset).find(command.row_id)
-        if context.actor.type is ActorType.AGENT:
+        if context.actor.is_agent():
             raise UserApprovalRefusal(f"Remove the layout preset {layout.name}?", required_person_id=layout.person_id, command=command)
         if layout.person_id != context.actor.id:
             raise Refusal(f"preset {layout.id} is another user's", "journal person-preset list lists yours")

@@ -18,6 +18,6 @@ class MakeRuleHandler(Handler[MakeRule, ProjectRule]):
         self.repository, self.settings = repository, settings
 
     def handle(self, command: MakeRule, context: Context) -> ProjectRule:
-        needs_approval = context.actor.type is ActorType.AGENT and not self.settings.flag(RULE_APPROVAL_SETTING)
+        needs_approval = context.actor.is_agent() and not self.settings.flag(RULE_APPROVAL_SETTING)
         state = RuleState.PROPOSED if needs_approval else RuleState.ACTIVE
         return self.repository.save(ProjectRule(creator_id=context.actor.id, text=command.text, state=state), context)

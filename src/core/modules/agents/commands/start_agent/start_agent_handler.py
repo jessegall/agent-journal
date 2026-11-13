@@ -79,7 +79,7 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
 
     @staticmethod
     def is_older_main_row(started: Agent, main: Agent | None) -> bool:
-        return main is not None and started.role == AgentRole.MAIN and started.id != main.id
+        return main is not None and started.is_main and started.id != main.id
 
     def on_main_row(self, main: Agent, command: StartAgent, context: Context) -> Agent:
         stopped = main if main.ended_at is not None else self.single_main.ended_session(main, context)

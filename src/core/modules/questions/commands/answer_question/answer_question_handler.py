@@ -25,7 +25,7 @@ class AnswerQuestionHandler(Handler[AnswerQuestion, Question]):
 
     def handle(self, command: AnswerQuestion, context: Context) -> Question:
         question = self.rows.required(Question, command.row_id)
-        is_person_answer = question.state is QuestionState.OPEN and context.actor.type is ActorType.USER and command.message_id is not None
+        is_person_answer = question.state is QuestionState.OPEN and context.actor.is_person() and command.message_id is not None
         if is_person_answer:
             self.check_source(command, question, context)
         return self.repository.save_change(question, question.moved(command.move, **command.move_fields()), context)

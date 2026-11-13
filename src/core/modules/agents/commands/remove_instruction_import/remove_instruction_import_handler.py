@@ -22,7 +22,7 @@ class RemoveInstructionImportHandler(Handler[RemoveInstructionImport, str]):
         self.home = home
 
     def handle(self, command: RemoveInstructionImport, context: Context) -> str:
-        if context.actor.type is not ActorType.USER:
+        if not context.actor.is_person():
             raise UserApprovalRefusal(InstructionImportQuestion.text(command.file, command.imported), command=command)
         project = self.home.project_folder.resolve()
         file = (project / command.file).resolve()

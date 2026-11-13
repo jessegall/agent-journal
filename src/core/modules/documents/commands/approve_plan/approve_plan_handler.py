@@ -21,7 +21,7 @@ class ApprovePlanHandler(Handler[ApprovePlan, Plan]):
         self.queries, self.repository, self.bus = queries, repository, bus
 
     def handle(self, command: ApprovePlan, context: Context) -> Plan:
-        if context.actor.type is not ActorType.USER:
+        if not context.actor.is_person():
             raise Refusal(f"a plan is approved by a user on its docked plan card: plan {command.row_id} waits there", "ask the user in a message, and go on with other work")
         plan = self.queries.query(Plan).find(command.row_id)
         if plan.environment_id != context.environment_id:

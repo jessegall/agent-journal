@@ -49,7 +49,7 @@ class MakeShareLinkHandler(Handler[MakeShareLink, ShareInvitation]):
 
     def made(self, command: MakeShareLink, shared: Doc | Report | Plan, context: Context) -> ShareInvitation:
         token = secrets.token_urlsafe(TOKEN_BYTES)
-        is_person = context.actor.type is ActorType.USER
+        is_person = context.actor.is_person()
         link = self.repository.save(ShareLink(creator_id=context.actor.id, token_digest=TextDigest().hex_digest(token),
                                               row_model=shared.model_name, row_id=shared.id, expires_at=self.end_time(command.ends), comments=command.comments,
                                               password_digest=SharePassword.digest(command.password) if command.password else None, locked=bool(command.password),

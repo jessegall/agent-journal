@@ -55,5 +55,5 @@ class RemoveLinkHandler(Handler[RemoveLink, None]):
         return message is not None and message.type in PERSON_MESSAGE_TYPES and message.environment_id == context.environment_id
 
     def authorize(self, creator_id: int, context: Context) -> None:
-        if context.actor.type is ActorType.AGENT and context.actor.id != creator_id:
+        if context.actor.is_agent() and context.actor.id != creator_id:
             raise UserApprovalRefusal("Correct another agent's request attribution?", command=context.command)

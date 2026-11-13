@@ -35,7 +35,7 @@ class ChooseNextTaskHandler(Handler[ChooseNextTask, Task]):
         return task
 
     def check_chooser(self, agent_id: int, context: Context) -> None:
-        if agent_id == context.actor.id or context.actor.type is not ActorType.AGENT:
+        if agent_id == context.actor.id or not context.actor.is_agent():
             return
-        if self.queries.query(Agent).find(context.actor.id).role != AgentRole.MAIN:
+        if not self.queries.query(Agent).find(context.actor.id).is_main:
             raise Refusal("only a main agent chooses the next task of another agent", "choose your own next task")

@@ -29,7 +29,7 @@ class RequestReaderHandler(Handler[RequestReader, ReaderRequest]):
         self.processes, self.parts, self.requests, self.opened, self.repository, self.bus = processes, parts, requests, opened, repository, bus
 
     def handle(self, command: RequestReader, context: Context) -> ReaderRequest:
-        if context.actor.type is not ActorType.USER:
+        if not context.actor.is_person():
             raise Refusal("only a user asks for a reader this way", "an agent draws a reader with journal reader draft")
         process = self.processes.find(command.process_id)
         parts = self.parts.parts_of(process.id)

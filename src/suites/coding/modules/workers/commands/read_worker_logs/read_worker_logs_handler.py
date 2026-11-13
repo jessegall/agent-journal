@@ -41,9 +41,9 @@ class ReadWorkerLogsHandler(Handler[ReadWorkerLogs, str]):
         return text
 
     def is_merger(self, context: Context) -> bool:
-        return context.actor.type is ActorType.AGENT and self.agents.has_profile(context.actor.id, MERGER_PROFILE)
+        return context.actor.is_agent() and self.agents.has_profile(context.actor.id, MERGER_PROFILE)
 
     def reviews_logs(self, context: Context) -> bool:
-        if context.actor.type is not ActorType.AGENT:
+        if not context.actor.is_agent():
             return False
         return self.environments.grants(context.required_environment_id(), context.actor.id) or self.agents.is_main(context.actor.id)

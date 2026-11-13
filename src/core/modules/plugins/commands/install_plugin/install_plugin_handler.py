@@ -38,7 +38,7 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
         self.plugins, self.folders, self.skill_files, self.steps, self.repository, self.readers, self.staging = plugins, folders, skill_files, steps, repository, readers, staging
 
     def prepare(self, command: InstallPlugin, actor: Actor) -> None:
-        if actor.type is ActorType.AGENT:
+        if actor.is_agent():
             raise UserApprovalRefusal(f"Install the plugin from {command.source}?", command=InstallPlugin(command.source, True))
         self.staging.fetched(command.source)
         manifest = self.uninstalled(command)

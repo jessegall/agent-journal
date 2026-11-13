@@ -17,6 +17,6 @@ class RecordAgentInterruptHandler(Handler[RecordAgentInterrupt, Agent]):
 
     def handle(self, command: RecordAgentInterrupt, context: Context) -> Agent:
         agent = self.agents.find(command.agent_id)
-        if agent.role != AgentRole.MAIN or agent.ended_at is not None:
+        if not agent.is_main or agent.ended_at is not None:
             return agent
         return self.repository.update(agent, context, interrupted_at=context.timestamp if command.interrupted else None)

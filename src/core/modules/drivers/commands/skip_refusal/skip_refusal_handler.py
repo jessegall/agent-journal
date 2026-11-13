@@ -46,7 +46,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
 
     def handle(self, command: SkipRefusal, context: Context) -> RefusalSkip:
         actor = context.actor
-        if actor.type is not ActorType.AGENT:
+        if not actor.is_agent():
             raise Refusal("only an agent skips a refusal this way", "a user passes a guard with --skip-guard")
         guard = next((entry for entry in self.registry.guards if entry.name == command.name), None)
         if guard is not None and guard.path.checked_class(Guard).is_safety:
@@ -58,7 +58,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
         last = self.queries.query(RefusalSkip).filter(session_agent_id=actor.id).newest().first()
         if last is not None and last.streak >= MOST_SKIP_COUNT and last.restored_at is None:
             agent = self.queries.query(Agent).find(actor.id)
-            if agent.role == AgentRole.MAIN or agent.parent_id is None:
+            if agent.is_main or agent.parent_id is None:
                 raise self.restoration_approval(agent)
             raise Refusal(f"you skipped {MOST_SKIP_COUNT} refusals in a row and lost the skip", "obey the refusal until the skip is restored")
         skipped_at = last.created_at.text if last is not None and last.created_at is not None else ""
@@ -101,7 +101,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
 
     def raised(self, agent_id: int, context: Context) -> None:
         agent = self.queries.query(Agent).find(agent_id)
-        if agent.role == AgentRole.MAIN or agent.parent_id is None:
+        if agent.is_main or agent.parent_id is None:
             approval = self.restoration_approval(agent)
             self.bus.dispatch(RequestUserApproval(approval, approval.arguments, agent_id), context)
             return

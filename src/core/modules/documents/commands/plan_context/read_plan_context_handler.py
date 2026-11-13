@@ -24,6 +24,6 @@ class ReadPlanContextHandler(Handler[ReadPlanContext, WorkContextPage | WorkCont
     def handle(self, command: ReadPlanContext, context: Context) -> WorkContextPage | WorkContextText | WorkContextAttachmentPage | WorkContextFile:
         plan = self.queries.query(Plan).find(command.plan_id)
         page = self.reader.read(plan, Caller(context.actor, context.environment_id), command.request)
-        if context.actor.type is ActorType.AGENT:
+        if context.actor.is_agent():
             self.delivery.acknowledge(plan, context)
         return page

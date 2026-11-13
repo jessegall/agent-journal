@@ -34,7 +34,7 @@ class ReactMessageHandler(Handler[ReactMessage, Message]):
         previous = len(MessageReactions.decoded(message))
         saved = self.repository.update(message, context, reactions=MessageReactions.toggled(message, context.actor, command.emoji))
         self.sources.clear_provisional(message, context)
-        if context.actor.type is ActorType.USER and len(MessageReactions.decoded(saved)) > previous:
+        if context.actor.is_person() and len(MessageReactions.decoded(saved)) > previous:
             self.notify_agents(saved, context)
         return saved
 

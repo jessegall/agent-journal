@@ -36,15 +36,15 @@ class SendMessageHandler(Handler[SendMessage, Message]):
         self.sources = sources
 
     def handle(self, command: SendMessage, context: Context) -> Message:
-        if command.parent_id is not None and context.actor.type is ActorType.AGENT and MessageReactions.is_emoji(command.text):
+        if command.parent_id is not None and context.actor.is_agent() and MessageReactions.is_emoji(command.text):
             raise Refusal(f"a reply of only {command.text} is not posted", f'react instead: journal message react {command.parent_id} "{command.text}"')
         actor = context.actor
-        if actor.type is ActorType.AGENT and self.rows.required(Agent, actor.id).role != AgentRole.MAIN:
+        if actor.is_agent() and not self.rows.required(Agent, actor.id).is_main:
             raise Refusal("only a main agent writes in the chat", "message the agent that sent you with --to agent:N")
         if command.parent_id is None:
             return self.sent(command, None, context)
         parent = self.rows.required(Message, command.parent_id)
-        if actor.type is ActorType.AGENT and parent.type in PERSON_MESSAGE_TYPES:
+        if actor.is_agent() and parent.type in PERSON_MESSAGE_TYPES:
             self.sources.select(parent, WorkSourceOrigin.REPLY, context)
             self.mark_answered_read(parent, context)
         with self.scopes.row_scope(parent):
@@ -55,7 +55,7 @@ class SendMessageHandler(Handler[SendMessage, Message]):
             self.repository.update(parent, context, read_at=context.timestamp)
 
     def answered_agent_name(self, parent: Message | None, actor: Actor) -> str:
-        if parent is None or actor.type is not ActorType.AGENT or parent.type is not MessageType.AGENT or parent.session_agent_id in (None, actor.id):
+        if parent is None or not actor.is_agent() or parent.type is not MessageType.AGENT or parent.session_agent_id in (None, actor.id):
             return ""
         return self.rows.required(Agent, parent.session_agent_id).display_name
 
@@ -64,11 +64,11 @@ class SendMessageHandler(Handler[SendMessage, Message]):
         target_id = command.target_agent_id
         if target_id is None and parent is not None:
             target_id = parent.target_agent_id
-        target = self.targets.selected(target_id) if actor.type is ActorType.USER else None
+        target = self.targets.selected(target_id) if actor.is_person() else None
         names = self.files.check(command.files)
         message_type = ACTOR_MESSAGE_TYPES.get(actor.type, MessageType.JOURNAL)
         metadata = Metadata({MESSAGES_MODULE: {"commented_row": {"model": command.commented_row[0], "id": command.commented_row[1]}}}) if command.commented_row else Metadata()
-        message = Message(session_agent_id=actor.id if actor.type is ActorType.AGENT else None,
+        message = Message(session_agent_id=actor.id if actor.is_agent() else None,
                           target_agent_id=self.targets.stored_id(target, target_id),
                           parent_id=command.parent_id, creator_id=actor.id, type=MessageType.COMMENT if command.commented_row and message_type is MessageType.USER else message_type,
                           text=command.text, files=names, metadata=metadata, is_chat_visible=command.is_chat_visible, is_agent_text=command.is_agent_text,

@@ -18,7 +18,7 @@ class AnswerAgentApprovalHandler(Handler[AnswerAgentApproval, ApprovalRequest]):
 
     def handle(self, command: AnswerAgentApproval, context: Context) -> ApprovalRequest:
         request = self.queries.query(ApprovalRequest).find(command.request_id)
-        if context.actor.type is not ActorType.AGENT or request.recipient_agent_id != context.actor.id:
+        if not context.actor.is_agent() or request.recipient_agent_id != context.actor.id:
             raise Refusal("only the main agent addressed by this request can answer it")
         if request.state is not ApprovalState.OPEN or not command.text.strip():
             raise Refusal("answer an open request with the guidance the asking agent needs")

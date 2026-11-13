@@ -39,7 +39,7 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
         self.plugins, self.folders, self.staging, self.steps, self.repository, self.skill_files, self.readers, self.code_diff, self.scripts = plugins, folders, staging, steps, repository, skill_files, readers, code_diff, scripts
 
     def prepare(self, command: UpgradePlugin, actor: Actor) -> None:
-        if actor.type is ActorType.AGENT:
+        if actor.is_agent():
             raise UserApprovalRefusal(f"Upgrade the plugin {command.name}{f' from {command.folder}' if command.folder else ''}?", command=UpgradePlugin(command.name, True, command.folder))
         plugin = self.plugins.find_name(command.name)
         origin = self.origin(plugin.source, command)

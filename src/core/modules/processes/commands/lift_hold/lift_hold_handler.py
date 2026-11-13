@@ -27,7 +27,7 @@ class LiftHoldHandler(Handler[LiftHold, int]):
         self.queries, self.held_runs, self.folder, self.bus, self.nudger = queries, held_runs, folder, bus, nudger
 
     def handle(self, command: LiftHold, context: Context) -> int:
-        if context.actor.type is not ActorType.USER:
+        if not context.actor.is_person():
             raise Refusal("only a user lifts a hold, on the agent's card", "take the exit the hold names")
         lifted = 0
         held = self.held_runs.found(command.agent_id, context.timestamp)

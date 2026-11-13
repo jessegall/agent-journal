@@ -19,7 +19,7 @@ class MoveApprovalHandler(Handler[MoveApproval, ApprovalRequest]):
         self.queries, self.repository, self.restarts = queries, repository, restarts
 
     def handle(self, command: MoveApproval, context: Context) -> ApprovalRequest:
-        if context.actor.type is not ActorType.USER:
+        if not context.actor.is_person():
             raise Refusal("an agent cannot decide an approval request")
         request = self.queries.query(ApprovalRequest).find(command.row_id)
         if request.recipient_agent_id is not None:

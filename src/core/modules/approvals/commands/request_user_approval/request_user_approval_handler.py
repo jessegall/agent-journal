@@ -38,7 +38,7 @@ class RequestUserApprovalHandler(Handler[RequestUserApproval, object]):
                 requester_id = main.id
         requester = self.rows.find(Agent, requester_id)
         recipient = None
-        if requester is not None and requester.role != AgentRole.MAIN:
+        if requester is not None and not requester.is_main:
             main = MainAgentFinder.newest(self.queries)
             recipient = main.id if main is not None else requester.parent_id or requester.id
         original_suggestion = command.approval.suggestion

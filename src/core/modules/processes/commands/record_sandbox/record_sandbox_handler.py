@@ -17,7 +17,7 @@ class RecordSandboxHandler(Handler[RecordSandbox, Process]):
 
     def handle(self, command: RecordSandbox, context: Context) -> Process:
         process = self.queries.query(Process).find(command.process_id)
-        if context.actor.type is ActorType.AGENT and context.actor.id != process.session_agent_id:
+        if context.actor.is_agent() and context.actor.id != process.session_agent_id:
             raise Refusal("only the agent that ran a line records its sandbox", "report on your own process")
         if command.level is SandboxLevel.NONE:
             raise Refusal("a sandbox report must specify the protection used", "run the sandbox self-test")

@@ -31,7 +31,7 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
         block = roster.retire_block(agent) if roster is not None else ""
         if block:
             raise Refusal(block)
-        if actor.is_agent() and self.queries.query(Agent).find(actor.id).role != AgentRole.MAIN:
+        if actor.is_agent() and not self.queries.query(Agent).find(actor.id).is_main:
             raise Refusal(f"only a user or the main agent retires {AgentLabel.from_agent(agent).text}", "ask the main agent to retire it")
         if roster is not None:
             roster.release(agent, actor)
@@ -47,7 +47,7 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
     def check_state(self, agent: Agent, reason: str) -> None:
         if not reason.strip():
             raise Refusal("a retirement needs its reason", f'journal agent retire {agent.number} --reason "<why>"')
-        if agent.role == AgentRole.MAIN:
+        if agent.is_main:
             raise Refusal("a main agent is not retired", f"journal agent stop {agent.number} ends its session")
         if agent.retired_at is not None:
             raise Refusal(f"{AgentLabel.from_agent(agent).text} is retired already")

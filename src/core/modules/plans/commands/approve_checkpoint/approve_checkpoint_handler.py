@@ -22,7 +22,7 @@ class ApproveCheckpointHandler(Handler[ApproveCheckpoint, int]):
         self.queries, self.checkpoints, self.main_agents = queries, checkpoints, main_agents
 
     def handle(self, command: ApproveCheckpoint, context: Context) -> int:
-        if context.actor.type is not ActorType.USER:
+        if not context.actor.is_person():
             raise Refusal("only a user approves a checkpoint, on the plan card", "ask the user to approve it")
         if not self.checkpoints.approve(command.plan_id, command.phase_id, context):
             raise Refusal(f"checkpoint phase {command.phase_id} of plan {command.plan_id} waits for no approval", f"journal plan progress {command.plan_id} shows its checkpoints")

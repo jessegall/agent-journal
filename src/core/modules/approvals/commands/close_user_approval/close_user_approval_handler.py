@@ -19,7 +19,7 @@ class CloseUserApprovalHandler(Handler[CloseUserApproval, object]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: CloseUserApproval, context: Context) -> None:
-        if context.actor.type is ActorType.AGENT:
+        if context.actor.is_agent():
             raise Refusal("an agent cannot close an approval request")
         requests = tuple(self.queries.query(ApprovalRequest).filter(state=ApprovalState.OPEN, arguments=command.arguments).get())
         for request in requests:

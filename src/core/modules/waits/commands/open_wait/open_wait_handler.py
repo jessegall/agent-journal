@@ -20,7 +20,7 @@ class OpenWaitHandler(Handler[OpenWait, Wait]):
         self.repository, self.targets = repository, targets
 
     def handle(self, command: OpenWait, context: Context) -> Wait:
-        if context.actor.type is not ActorType.AGENT:
+        if not context.actor.is_agent():
             raise Refusal("only an agent waits", "an agent runs journal wait on or journal wait stuck")
         if command.type is WaitType.ROWS and not command.targets:
             raise Refusal("a wait for rows needs the rows that end it", "add --target tasks:<id>")

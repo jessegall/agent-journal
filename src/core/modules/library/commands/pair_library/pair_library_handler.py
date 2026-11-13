@@ -32,7 +32,7 @@ class PairLibraryHandler(Handler[PairLibrary, LibraryConnection]):
         self.client, self.certificate, self.values, self.settings, self.bus = client, certificate, values, settings, bus
 
     def handle(self, command: PairLibrary, context: Context) -> LibraryConnection:
-        if context.actor.type is not ActorType.USER:
+        if not context.actor.is_person():
             raise Refusal("connection credentials are entered by a user in the Teams window")
         address_text = command.address or str(self.settings.project_value(ADDRESS_SETTING))
         address = LibraryAddress(address_text).base

@@ -34,7 +34,7 @@ class ShortProofHandler(Handler[ShortProof, Proof]):
     def handle(self, command: ShortProof, context: Context) -> Proof:
         proof = self.queries.query(Proof).find(command.row_id)
         if proof.state is ProofState.CHECKED:
-            if context.actor.type is not ActorType.AGENT or self.queries.query(Agent).find(context.actor.id).role != AgentRole.MAIN:
+            if not context.actor.is_agent() or not self.queries.query(Agent).find(context.actor.id).is_main:
                 raise Refusal("only the main agent can return a checked proof", "ask the main agent to send it back with a reason")
             if not command.shortfall.strip():
                 raise Refusal("returning a checked proof needs a reason", "say what is wrong with the proof")
