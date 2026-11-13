@@ -29,13 +29,17 @@ class ExecutionTickets:
         self.classes, self.kind_limits, self.admission, self.rows, self.clock = classes, kind_limits, admission, rows, clock
 
     def of_rows(self, processes: Sequence[Process], lane: ExecutionLane) -> LaneTickets:
+        return self.lanes(processes)[lane]
+
+    # every row is read once for all lanes: its agent, its kind's class and its parts
+    def lanes(self, processes: Sequence[Process]) -> dict[ExecutionLane, LaneTickets]:
         agents = self.rows.required_index(Agent, [process.session_agent_id for process in processes])
         kind_classes = self.kind_limits.kind_classes([process for process in processes if process.queued_at is not None])
         parts = self.admission.waiting_parts([process for process in processes if process.queued_at is not None])
         tickets = [(process, self.ticket(process, agents[process.session_agent_id], kind_classes, parts)) for process in processes]
-        in_lane = [(process, ticket) for process, ticket in tickets if ticket.execution_class.lane is lane]
-        return LaneTickets(tuple(ticket for process, ticket in in_lane if process.queued_at is not None),
-                           tuple(ticket for process, ticket in in_lane if process.queued_at is None))
+        return {lane: LaneTickets(tuple(ticket for process, ticket in tickets if ticket.execution_class.lane is lane and process.queued_at is not None),
+                                  tuple(ticket for process, ticket in tickets if ticket.execution_class.lane is lane and process.queued_at is None))
+                for lane in ExecutionLane}
 
     def ticket(self, process: Process, agent: Agent, kind_classes: dict[tuple[str, str], ExecutionClass], parts: dict) -> ExecutionTicket:
         starter = self.starter(process, agent)

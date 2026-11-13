@@ -18,8 +18,9 @@ class ExecutionStatus:
     def lines(self) -> list[str]:
         limits, running = self.classes.lane_limits(), self.slots.running()
         lines: list[str] = []
+        lanes = self.tickets.lanes(running)
         for lane in (ExecutionLane.SHORT, ExecutionLane.LONG):
-            lane_tickets = self.tickets.of_rows(running, lane)
+            lane_tickets = lanes[lane]
             used = sum(ticket.execution_class.slot_cost for ticket in lane_tickets.running)
             over = " (over capacity)" if ExecutionOrder(limits).capacity_exceeded(lane_tickets.running) else ""
             halted = " (halted)" if self.halt.is_halted and lane is ExecutionLane.LONG else ""

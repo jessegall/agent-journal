@@ -43,6 +43,7 @@ SMALL_TABLES = {
     "sequences": "Reusable instructions form a small catalogue indexed in memory after one read.",
     "templates": "Task and document templates form a small catalogue read together.",
     "readers": "Output readers are a small configuration catalogue read together.",
+    "execution_classes": "The classes a person added or changed are a small catalogue, kept until the table changes.",
     "aliases": "Saved commands are a small configuration catalogue read together.",
     "command_types": "The types agents gave unknown commands are a small configuration catalogue read together.",
     "environments": "A project has a small set of environments listed together.",
@@ -75,6 +76,7 @@ ALLOWED_FILE_READS = {
     "core/modules/plugins/support/journal_instruction_file.py": "The check for doubled imports reads the same instruction files in the journal's start round.",
     "core/modules/plugins/support/plugin_code_diff.py": "An upgrade preview compares every file of a plugin, its manifest among them.",
     "core/modules/claude_code/providers/support/claude_trust.py": "A helper's start marks its parent's folder trusted and its launch marks its own start folder, each against the file as it is then.",
+    "core/modules/processes/support/output_folder.py": "A run's output files are written by the running program; a request that ends a run reads them for its mark, its decisions and its proof, each against the file as it is then.",
 }
 ALLOWED_FILE_READERS = tuple(ALLOWED_FILE_READS)
 

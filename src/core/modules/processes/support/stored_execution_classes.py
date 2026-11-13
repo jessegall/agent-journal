@@ -6,6 +6,7 @@ from engine.execution.execution_class import ExecutionClass
 from engine.execution.execution_classes import ExecutionClasses
 from engine.execution.lane_limits import LaneLimits
 from engine.execution.person_classes import PersonClasses
+from engine.database.kept_rows import KeptRows
 from engine.query.queries import Queries
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.execution_class_row import ExecutionClassRow
@@ -22,11 +23,13 @@ class StoredExecutionClasses(PersonClasses):
     default table of limits stays in the engine, the settings change only each lane's capacity and the share of
     it one starter may hold."""
 
-    def __init__(self, queries: Queries, settings: ProcessSettings) -> None:
-        self.queries, self.settings = queries, settings
+    def __init__(self, queries: Queries, settings: ProcessSettings, kept: KeptRows) -> None:
+        self.queries, self.settings, self.kept = queries, settings, kept
 
+    # kept until the table changes, so every ticket of a grant asks the same rows
     def classes(self) -> tuple[ExecutionClass, ...]:
-        return tuple(row.execution_class for row in self.queries.query(ExecutionClassRow).every_row(STORED_CLASSES_REASON))
+        rows = self.queries.query(ExecutionClassRow)
+        return self.kept.read(rows, lambda: tuple(row.execution_class for row in rows.every_row(STORED_CLASSES_REASON)), name="processes.execution_classes")
 
     def lane_limits(self) -> LaneLimits:
         capacities = {lane: self.settings.integer(setting) for lane, setting in CAPACITY_SETTINGS.items()}

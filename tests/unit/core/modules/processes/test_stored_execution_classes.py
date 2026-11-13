@@ -41,8 +41,15 @@ class SampleRows:
         return self.rows
 
 
+class NoKeeping:
+    """Reads the rows each time, as a test with no database needs."""
+
+    def read(self, query, loader, name: str):
+        return loader()
+
+
 def stored(*rows: ExecutionClassRow, **settings: int) -> StoredExecutionClasses:
-    return StoredExecutionClasses(SampleRows(*rows), SampleSettings(**settings))  # type: ignore[arg-type]
+    return StoredExecutionClasses(SampleRows(*rows), SampleSettings(**settings), NoKeeping())  # type: ignore[arg-type]
 
 
 def line(text: str, category: CommandCategory) -> ExecutionSubject:

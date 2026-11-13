@@ -52,8 +52,9 @@ class RunSlots:
         waiting = [process for process in running if process.queued_at is not None]
         processes = self.rows.required_index(Process, [process.id for process in waiting])
         categories = self.kind_limits.admissions(waiting)
+        lanes = self.tickets.lanes(running)
         for lane in (ExecutionLane.SHORT, ExecutionLane.LONG):
-            lane_tickets = self.tickets.of_rows(running, lane)
+            lane_tickets = lanes[lane]
             is_halted = self.halt.is_halted and lane is ExecutionLane.LONG
             for ticket in order.raised(lane_tickets.waiting, current_time, is_halted):
                 self.keep_raise(processes[ticket.run_id], ticket, context)
