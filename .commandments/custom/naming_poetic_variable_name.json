@@ -76,6 +76,16 @@
                         "fileMatches": "(^|/)src/(engine/(cli/console|command/request_user_approval)|engine/errors/user_approval_refusal|core/modules/(approvals/(commands/request_user_approval/request_user_approval_handler|models/(approval_request|standing_approval))|aliases/models/command_type))\\.py$"
                     }
                 ]
+            },
+            {
+                "all": [
+                    {
+                        "nameMatches": "^[a-z][0-9]+_"
+                    },
+                    {
+                        "file": "tests/stories/**"
+                    }
+                ]
             }
         ]
     },

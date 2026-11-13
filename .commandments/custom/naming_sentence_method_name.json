@@ -6,7 +6,9 @@
     ],
     "find": {
         "reject": [
-            {"name": "named_line"},
+            {
+                "name": "named_line"
+            },
             {
                 "nameMatches": "^on_"
             },
@@ -27,6 +29,16 @@
                     },
                     {
                         "file": "tests/**"
+                    }
+                ]
+            },
+            {
+                "all": [
+                    {
+                        "nameMatches": "^[a-z][0-9]+_"
+                    },
+                    {
+                        "file": "tests/stories/**"
                     }
                 ]
             }
