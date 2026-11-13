@@ -11,7 +11,7 @@ class ReviewerCommands(CommandAllowList):
     """What the reviewer profile of a read-only helper may run: every journal line that only reads, and the
     review it records with its points."""
 
-    categories: Sequence[CommandCategory] = (CommandCategory.READ, CommandCategory.SEARCH)
+    categories: Sequence[CommandCategory] = tuple(CommandCategory)
     groups: Sequence[str] = tuple(["review-point"])
     lines: Sequence[str] = ("review record", "task overview", "output read")
     classes: Sequence[JournalLineClass] = tuple([JournalLineClass.READS])

@@ -10,7 +10,7 @@ from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from suites.coding.upgrade.coding_settings_move import LISTED_KEY
 
-RULE = "workers.allowed-command-types"
+RULE = "drivers.helper-type-commands"
 REASON = "it is wrong here"
 WORKER_SESSION = "worker-session"
 REFUSED_LINE = "a worker here runs no edit command"

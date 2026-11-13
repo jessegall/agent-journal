@@ -41,6 +41,9 @@ from engine.driver.refusal_skips import RefusalSkips
 from engine.errors.read_limit_error import ReadLimitError
 from engine.registry.errors.stale_registry_error import StaleRegistryError
 from engine.errors.refusal import Refusal
+from engine.cli.caller_line_check import CallerLineCheck
+from engine.helper_type.enums.journal_line_class import JournalLineClass
+from engine.helper_type.journal_line import JournalLine
 from engine.log.refusal_log import RefusalLog
 from engine.scope.scopes import Scopes
 from engine.command.errors.user_approval_refusal import UserApprovalRefusal
@@ -60,7 +63,9 @@ class Console:
 
     def __init__(self, registry: Registry, finder: ModuleFinder, fingerprint: CodeFingerprint, line_parser: LineParser, bus: Bus,
                  flags: WriteFlags, refusals: RefusalLog, errors: ErrorLog, tables: Tables, commit_listeners: CommitListenerRunner,
-                 environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff, events: EventLog, scopes: Scopes, refusal_skips: RefusalSkips, overview_reads: OverviewReads, read_limit_bypass: ReadLimitBypass, agent_numbers: AgentNumberArguments, request_records: RequestRecords) -> None:
+                 environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff, events: EventLog, scopes: Scopes, refusal_skips: RefusalSkips, overview_reads: OverviewReads, read_limit_bypass: ReadLimitBypass, agent_numbers: AgentNumberArguments, request_records: RequestRecords,
+                 line_check: CallerLineCheck) -> None:
+        self.line_check = line_check
         self.read_limit_bypass, self.agent_numbers, self.request_records = read_limit_bypass, agent_numbers, request_records
         self.registry, self.finder, self.fingerprint, self.line_parser, self.bus = registry, finder, fingerprint, line_parser, bus
         self.flags, self.refusals, self.errors, self.tables, self.commit_listeners = flags, refusals, errors, tables, commit_listeners
@@ -80,7 +85,7 @@ class Console:
             if self.omits_subcommand(argv):
                 return self.run_parsed([argv[0], *argv], caller, output)
             if len(argv) == 1 or argv[1] in HELP_FLAGS:
-                return self.subcommand_help(argv[0], stream)
+                return self.subcommand_help(argv[0], caller, stream)
             return self.run_parsed(argv, caller, output)
         except (UsageError, StaleRegistryError) as error:
             output.error(str(error))
@@ -126,8 +131,9 @@ class Console:
         finally:
             self.run_commit_listeners(argv)
 
-    def subcommand_help(self, cli_name: str, stream: TextIO) -> int:
-        names = self.line_parser.lookup.names(cli_name)
+    def subcommand_help(self, cli_name: str, caller: Caller, stream: TextIO) -> int:
+        lookup = self.line_parser.lookup
+        names = [name for name in lookup.names(cli_name) if self.line_check.allows(caller, self.journal_line(lookup.subcommand(cli_name, name)))]
         if not names:
             raise UsageError(f"journal has no {cli_name} commands: journal --help lists them")
         return self.help_line_count(f"journal {cli_name}; journal {cli_name} <subcommand> --help shows its flags", names, stream)
@@ -159,6 +165,7 @@ class Console:
         self.agent_numbers.replace_numbers(arguments, environment_id)
         caller = replace(caller, environment_id=environment_id)
         self.request_records.note_caller(caller.actor, environment_id)
+        self.line_check.check(caller, self.journal_line(subcommand))
         try:
             return self.parsed_run(argv, subcommand, arguments, caller, output)
         except Refusal as refusal:
@@ -227,7 +234,12 @@ class Console:
         self.agent_numbers.replace_numbers(arguments, environment_id)
         if not isinstance(subcommand, Subcommand):
             raise Refusal(f"journal {' '.join(argv[:2])} only reads, so it has no place in a transaction")
+        self.line_check.check(caller, self.journal_line(subcommand))
         return subcommand.command(arguments, replace(caller, environment_id=environment_id)), environment_id
+
+    @staticmethod
+    def journal_line(subcommand: AnySubcommand) -> JournalLine:
+        return JournalLine(f"{subcommand.cli_name} {subcommand.name}", JournalLineClass.subcommand_classes(type(subcommand)))
 
     def scoped_caller(self, subcommand: ReadSubcommand[object], caller: Caller) -> Caller:
         environment_id = self.scopes.environment_id or caller.environment_id
