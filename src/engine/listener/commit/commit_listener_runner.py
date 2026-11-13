@@ -14,6 +14,7 @@ from engine.log.system_log_writer import SystemLogWriter
 from engine.log.exception_sink import ExceptionSink
 from engine.listener.round_yield import RoundYield
 from engine.listener.commit.commit_listener import is_commit_listener_class
+from engine.listener.commit.listener_set import ListenerSet
 from engine.database.listener_cursor_table import ListenerCursorTable
 from engine.registry.listener_entry import ListenerEntry
 from engine.enums.listener_timing import ListenerTiming
@@ -80,11 +81,16 @@ class CommitListenerRunner(RoundState):
             self.system_log.write(LogLevel.ERROR, f"waiting exceptions could not be recorded: {type(failure).__name__}: {failure}")
 
     def commit_entries(self) -> list[ListenerEntry]:
-        return self.sorted_entries
+        return list(self.listener_set.entries)
 
+    # built once for the runner's container: no round builds a listener
     @cached_property
-    def sorted_entries(self) -> list[ListenerEntry]:
-        return sorted((entry for entry in self.registry.listeners if entry.timing is ListenerTiming.COMMIT), key=self.run_order)
+    def listener_set(self) -> ListenerSet:
+        return ListenerSet(ListenerSet.thread_name(self.container), self.registry, self.container, sorted((entry for entry in self.registry.listeners if entry.timing is ListenerTiming.COMMIT), key=self.run_order))
+
+    def close(self) -> None:
+        if "listener_set" in self.__dict__:
+            self.listener_set.close()
 
     def is_urgent(self, entry: ListenerEntry) -> bool:
         return self.run_order(entry) < 0
@@ -199,7 +205,7 @@ class CommitListenerRunner(RoundState):
         for (event_type, _, _), grouped in groups.items():
             with self.scopes.event_scope(listener_class.disabled_scopes, grouped[0]):
                 self.container.get(EventBuilder).prepare(event_type, grouped)
-                self.container.get(listener_class).prepare(grouped)
+                self.listener_set.instance(entry).prepare(grouped)
 
     def handle_event(self, entry: ListenerEntry, event: LoggedEvent) -> bool:
         listener_class = entry.path.loaded()
@@ -213,7 +219,7 @@ class CommitListenerRunner(RoundState):
             with self.container.get(RequestValues).opened(), self.scopes.event_scope(listener_class.disabled_scopes, event):
                 built_event = self.container.get(EventBuilder).built(listener_class.event_type(event.event), event)
                 if built_event is not None:
-                    self.container.get(listener_class).handle(built_event, event)
+                    self.listener_set.instance(entry).handle(built_event, event)
             elapsed = perf_counter() - started_at
             self.hold_when_over_time_limit(entry, event, elapsed)
             if elapsed >= SLOW_LISTENER_SECONDS:

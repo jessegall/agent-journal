@@ -8,6 +8,7 @@ from engine.database.database import Database
 from engine.database.registry_table import RegistryTable
 from engine.database.registry_version import RegistryVersion
 from engine.database.write_turns import WriteTurns
+from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from engine.enums.log_level import LogLevel
 from engine.journal.journal_home import JournalHome
 from engine.log.system_log_writer import SystemLogWriter
@@ -89,6 +90,9 @@ class KeptRoundContainer(RoundContainer):
     def close(self) -> None:
         if self.container is None:
             return
+        runner = self.container.instances.get(CommitListenerRunner)
+        if isinstance(runner, CommitListenerRunner):
+            runner.close()
         self.container.get(Database).close()
         self.container = None
 

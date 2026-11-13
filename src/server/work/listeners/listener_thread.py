@@ -1,6 +1,8 @@
 import threading
 from collections.abc import Callable, Sequence
 
+from engine.listener.commit.listener_set import ListenerSet
+
 LISTENER_PERIOD_SECONDS = 60.0
 STOP_LIMIT_SECONDS = 1.5
 
@@ -26,6 +28,7 @@ class ListenerThread:
             thread.wake()
 
     def loop(self) -> None:
+        ListenerSet.guard_current_thread()
         try:
             self.run_rounds()
         finally:
