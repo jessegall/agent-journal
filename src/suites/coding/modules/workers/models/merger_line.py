@@ -1,4 +1,4 @@
-from engine.query.rows.prunable import ClosedPrunable
+from engine.query.rows.closed_prunable import ClosedPrunable
 from dataclasses import dataclass
 
 from engine.model.environment_scoped import EnvironmentScoped

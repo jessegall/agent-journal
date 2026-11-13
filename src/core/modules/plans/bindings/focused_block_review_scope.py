@@ -11,7 +11,7 @@ FOCUSED_TASKS_REASON = "the focus keeps every listed task that is a task of the 
 
 
 class FocusedBlockReviewScope(BlockReviewScope):
-    """Narrows the review of blocked tasks to the plan the agent named as its focus, while that plan is started
+    """Narrows the blocked tasks an agent goes over to the plan it named as its focus, while that plan is started
     or approved."""
 
     def __init__(self, queries: Queries) -> None:

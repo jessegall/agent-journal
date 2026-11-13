@@ -1,6 +1,6 @@
 from engine.cli.agent_number import AgentNumber
 from engine.command.command import Command
-from suites.coding.modules.workers.commands.worker_command_request import WorkerCommandRequest
+from suites.coding.modules.workers.support.worker_command_request import WorkerCommandRequest
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
