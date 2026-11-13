@@ -7,7 +7,7 @@ from engine.database.statement import Statement
 from engine.database.unique_key import UniqueKey
 
 SCHEMA_REASON = "The fold of main agents walks the rows that hold a folded agent, once, in one transaction."
-STATE_DELETE_RULE_SUFFIX = "_rule_state_delete"
+STATE_REMOVAL_RULE_SUFFIX = "_rule_state_delete"
 UNIQUE_INDEXES = Statement("SELECT tables.name AS table_name, indexes.name AS index_name, indexes.partial AS partial,"
                            " (SELECT sql FROM sqlite_master WHERE type = 'index' AND name = indexes.name) AS index_sql"
                            " FROM sqlite_master AS tables, pragma_index_list(tables.name) AS indexes"
@@ -48,8 +48,8 @@ class ReferenceRewrite:
         return int(self.database.rows(statement)[0]["n"])
 
     def rows(self, table: str, column: str, ids: list[int]) -> list[dict[str, object]]:
-        found = self.database.rows(Statement(f'SELECT * FROM "{table}" WHERE "{column}" IN ({self.marks(ids)})', list(ids), scan_reason=SCHEMA_REASON))
-        return [dict(row) for row in found]
+        matched = self.database.rows(Statement(f'SELECT * FROM "{table}" WHERE "{column}" IN ({self.marks(ids)})', list(ids), scan_reason=SCHEMA_REASON))
+        return [dict(row) for row in matched]
 
     def rewrite(self, table: str, column: str, ids: list[int], target_id: int) -> int:
         return self.database.update(Statement(f'UPDATE "{table}" SET "{column}" = ? WHERE "{column}" IN ({self.marks(ids)})', [target_id, *ids]))
@@ -62,7 +62,7 @@ class ReferenceRewrite:
         return self.database.update(Statement(f'DELETE FROM "{table}" WHERE id IN ({self.marks(ids)})', list(ids))) if ids else 0
 
     def delete_past_state_rule(self, table: str, ids: list[int]) -> int:
-        rule = f"{table}{STATE_DELETE_RULE_SUFFIX}"
+        rule = f"{table}{STATE_REMOVAL_RULE_SUFFIX}"
         saved = self.database.rows(Statement("SELECT sql FROM sqlite_master WHERE type = 'trigger' AND name = ?", [rule], scan_reason=SCHEMA_REASON))
         if saved:
             self.database.update(Statement(f'DROP TRIGGER "{rule}"'))

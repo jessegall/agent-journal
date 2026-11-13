@@ -24,9 +24,9 @@ def test_one_change_on_work_and_one_on_tests_save_with_one_request_and_both_are_
 def test_nothing_is_written_until_the_one_save_is_sent(modal):
     _, screens = modal
     number = screens.first_of_kind("tests", "number")
-    before = (screens.value("work", AUTO), screens.value("tests", number["key"]), screens.revisions(*LONG_TABS))
+    initial = (screens.value("work", AUTO), screens.value("tests", number["key"]), screens.revisions(*LONG_TABS))
     after = (screens.value("work", AUTO), screens.value("tests", number["key"]), screens.revisions(*LONG_TABS))
-    expect_value(before, after)
+    expect_value(initial, after)
 
 
 def test_a_number_left_blank_is_refused_and_names_the_setting(modal):

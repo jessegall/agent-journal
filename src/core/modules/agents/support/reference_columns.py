@@ -25,10 +25,10 @@ class ReferenceColumns:
     @staticmethod
     def agent_columns(schema: Sequence[SchemaColumn]) -> AgentColumns:
         tables = {column.table for column in schema if column.table not in FOLD_TABLES}
-        by_table = {table: {column.column: column for column in schema if column.table == table} for table in tables}
+        table_columns = {table: {column.column: column for column in schema if column.table == table} for table in tables}
         plain = tuple(sorted((column.table, column.column) for column in schema
                              if column.table in tables and ReferenceColumns.has_agent_reference(column)))
-        pairs = tuple(sorted((table, model, row_id) for table, columns in by_table.items() for model, row_id in POLYMORPHIC_PAIRS
+        pairs = tuple(sorted((table, model, row_id) for table, columns in table_columns.items() for model, row_id in POLYMORPHIC_PAIRS
                              if model in columns and row_id in columns))
         ReferenceColumns.check_placed(schema, tables, plain)
         return AgentColumns(plain, pairs)

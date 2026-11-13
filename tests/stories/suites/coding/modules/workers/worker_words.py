@@ -19,7 +19,7 @@ from tests.stories.support.story_checks import expect_value, expect_value_4, exp
 
 WORKER_COMMANDS = ("journal worker commit", "journal proof make", "journal task start")
 MERGER_COMMANDS = ("journal merger answer", "journal merger defer-test", "journal merger tell")
-ASK_SENTENCE = "after you ask, the merger or the journal settles it and you are woken"
+REQUEST_SENTENCE = "after you ask, the merger or the journal settles it and you are woken"
 
 
 def skill_text(name: str) -> str:
@@ -61,7 +61,7 @@ def test_76d_the_lines_a_worker_hears_at_a_failed_test_and_after_its_last_commit
 
 def test_76e_the_workers_skill_keeps_what_happens_after_an_ask_and_the_merger_keeps_its_three_commands(new_story):
     merger_profile = next(profile for profile in HELPER_PROFILES if profile.name == f"{MERGER_PROFILE.name}")
-    expect_value_with(skill_text("journal-workers").lower(), ASK_SENTENCE)
+    expect_value_with(skill_text("journal-workers").lower(), REQUEST_SENTENCE)
     expect_value_4(all(command in skill_text(f"{MERGER_PROFILE.name}") for command in MERGER_COMMANDS))
     expect_value_4(all(command in merger_profile.body for command in MERGER_COMMANDS))
 

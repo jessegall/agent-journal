@@ -35,6 +35,6 @@ def test_a_journal_started_on_the_new_code_serves_the_tasks_window_with_the_old_
 
 
 def test_a_search_for_delegated_to_in_src_finds_only_the_history_migrations():
-    found = [f"{path.relative_to(SOURCE_FOLDER)}:{number}" for path in SOURCE_FOLDER.rglob("*.py") if path.parent != TASK_MIGRATIONS or path.name not in HISTORY_MIGRATIONS
+    matched = [f"{path.relative_to(SOURCE_FOLDER)}:{number}" for path in SOURCE_FOLDER.rglob("*.py") if path.parent != TASK_MIGRATIONS or path.name not in HISTORY_MIGRATIONS
              for number, line in enumerate(path.read_text().splitlines(), 1) if COLUMN in line and HISTORY_MODULE_NAME not in line]
-    expect_value_4(not found)
+    expect_value_4(not matched)

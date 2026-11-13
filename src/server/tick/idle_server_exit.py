@@ -19,9 +19,9 @@ class IdleServerExit:
         self.alive_at: Timestamp = clock.timestamp()
 
     def follow(self, container: Container) -> None:
-        now = self.clock.timestamp()
+        current_time = self.clock.timestamp()
         if container.get(AgentRows).running():
-            self.alive_at = now
+            self.alive_at = current_time
             return
-        if self.alive_at.elapsed_seconds(now) >= GRACE_SECONDS:
+        if self.alive_at.elapsed_seconds(current_time) >= GRACE_SECONDS:
             self.stop(f"no agent session has been alive for {GRACE_SECONDS} seconds, so the server ends")

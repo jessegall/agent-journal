@@ -23,7 +23,7 @@ def spelled_paths(story) -> list[str]:
             ".journal/hooks/hook.sh", ".journal/runtime/program-settings.json", ".journal/backups/program-settings/claude/x-settings.json"]
 
 
-def shell_write(program: str, arguments: list[str], path: str):
+def shell_edit(program: str, arguments: list[str], path: str):
     line = " ".join([program, *arguments, path])
     return HookSamples.shell(line, ShellPart(program, CommandCategory.EDIT, [*arguments, path], effects=SETTINGS_EDIT, output_paths=[path]))
 
@@ -39,7 +39,7 @@ def test_every_agent_write_of_the_journal_s_settings_is_refused_in_every_spellin
         story.expect_hook_refusal("s-1", HookSamples.edit(path), ban())
         story.expect_hook_refusal("s-2", HookSamples.shell(f"echo x > {path}", ShellPart("echo", CommandCategory.EDIT, ["x"]), redirects=[f"> {path}"]), ban())
     for program, arguments in SHELL_WRITES:
-        story.expect_hook_refusal("s-1", shell_write(program, arguments, ".journal/programs/codex/config.toml"), ban())
+        story.expect_hook_refusal("s-1", shell_edit(program, arguments, ".journal/programs/codex/config.toml"), ban())
     story.expect_rows(worker > 0, helper > 0)
 
 

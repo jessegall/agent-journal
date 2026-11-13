@@ -12,18 +12,18 @@ def waiting(number: int) -> Process:
     return Process(id=number, plugin="judge", kind="heavy", environment_id=1, session_agent_id=1, creator_id=1, line="check", folder="/", shell="sh", category=CommandCategory.BUILD, limit_seconds=30)
 
 
-def kind_pass(free: int | None) -> PluginKindPass:
+def category_pass(free: int | None) -> PluginKindPass:
     return PluginKindPass({("judge", "heavy", 1): KindRule(HEAVY, None)}, free, {})
 
 
 def test_an_admitted_run_takes_its_memory_from_the_free_total_for_the_rest_of_the_pass():
-    memory = kind_pass(1000)
+    memory = category_pass(1000)
     assert [memory.is_blocked(waiting(1), ()), memory.is_blocked(waiting(2), ())] == [False, False]
     memory.admitted(waiting(1))
     assert memory.is_blocked(waiting(2), ()) is True
 
 
 def test_memory_that_is_not_known_holds_no_run_back():
-    memory = kind_pass(None)
+    memory = category_pass(None)
     memory.admitted(waiting(1))
     assert memory.is_blocked(waiting(2), ()) is False

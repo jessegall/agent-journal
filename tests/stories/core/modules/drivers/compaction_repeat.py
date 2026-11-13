@@ -67,7 +67,7 @@ def exceeding_hard_limit(new_story):
     return typing_recorded(new_story(fixture=PromptedWithHardLimit))
 
 
-def expect_single_typed_request(story):
+def expect_single_entered_request(story):
     rows = compactions(story)
     story.expect_rows(len(rows) == 1, rows[0].state is CompactionState.REQUESTED, story.typing.typed == [COMPACT_LINE], detail=f"{rows} {story.typing.typed}")
 
@@ -76,7 +76,7 @@ def test_g1_two_stops_of_one_agent_in_the_same_second_make_one_request_and_type_
     has_context(exceeding_limit, LIMIT_TOKENS)
     exceeding_limit.hook(SESSION, HookSamples.stop())
     exceeding_limit.hook(SESSION, HookSamples.stop())
-    expect_single_typed_request(exceeding_limit)
+    expect_single_entered_request(exceeding_limit)
 
 
 def test_g1_a_second_request_made_in_the_same_second_as_the_first_is_refused_naming_it(exceeding_limit):
@@ -84,14 +84,14 @@ def test_g1_a_second_request_made_in_the_same_second_as_the_first_is_refused_nam
     exceeding_limit.hook(SESSION, HookSamples.stop())
     with pytest.raises(Refusal, match=OPEN_REFUSAL):
         exceeding_limit.container.get(Bus).run(CompactAgentContext(exceeding_limit.agent.id), exceeding_limit.agent)
-    expect_single_typed_request(exceeding_limit)
+    expect_single_entered_request(exceeding_limit)
 
 
 def test_g2_the_stop_rule_after_the_hard_stop_rule_in_the_same_second_makes_no_second_request(exceeding_hard_limit):
     has_context(exceeding_hard_limit, HARD)
     exceeding_hard_limit.expect_hook_refusal(SESSION, EDIT, HARD_STOP_REFUSAL)
     exceeding_hard_limit.hook(SESSION, HookSamples.stop())
-    expect_single_typed_request(exceeding_hard_limit)
+    expect_single_entered_request(exceeding_hard_limit)
     exceeding_hard_limit.expect_rows(compactions(exceeding_hard_limit)[0].reason is CompactionReason.HARD_STOP)
 
 
@@ -99,7 +99,7 @@ def test_g2_the_hard_stop_rule_after_the_stop_rule_in_the_same_second_makes_no_s
     has_context(exceeding_hard_limit, HARD)
     exceeding_hard_limit.hook(SESSION, HookSamples.stop())
     exceeding_hard_limit.expect_hook_refusal(SESSION, EDIT, HARD_STOP_REFUSAL)
-    expect_single_typed_request(exceeding_hard_limit)
+    expect_single_entered_request(exceeding_hard_limit)
     exceeding_hard_limit.expect_rows(compactions(exceeding_hard_limit)[0].reason is CompactionReason.STOP_LIMIT)
 
 

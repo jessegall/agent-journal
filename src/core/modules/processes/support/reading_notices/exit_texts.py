@@ -25,7 +25,7 @@ class ExitTexts:
 
     @staticmethod
     def listed(exits: Sequence[ReadingExit], name: str, output: int) -> str:
-        return "; ".join(ExitTexts.said(EXIT_TEXTS[way], name, output) for way in exits)
+        return "; ".join(ExitTexts.said(EXIT_TEXTS[route], name, output) for route in exits)
 
     @staticmethod
     def said(text: ExitText, name: str, output: int) -> str:

@@ -37,9 +37,9 @@ class StatusFiles:
         return self.reported(path if path.is_file() else self.ended_folder / f"{session}.json")
 
     def newest_status(self, sessions: Sequence[str], checked_at: Timestamp) -> SessionStatus:
-        times = self.modified_times(self.folder / f"{session}.json" for session in sessions)
-        newest = max(times, key=times.__getitem__, default=None)
-        if newest is None or checked_at.value.timestamp() - times[newest] >= READINESS_MAX_AGE_SECONDS:
+        modified = self.modified_times(self.folder / f"{session}.json" for session in sessions)
+        newest = max(modified, key=modified.__getitem__, default=None)
+        if newest is None or checked_at.value.timestamp() - modified[newest] >= READINESS_MAX_AGE_SECONDS:
             return SessionStatus()
         return self.status(newest.stem)
 

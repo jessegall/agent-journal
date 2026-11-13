@@ -233,11 +233,11 @@ def test_a_listing_that_printed_nothing_is_a_killed_run_and_asks_for_no_reader_w
     folder.write_count(process.id, "", 143)
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
     story.expect_rows(story.container.get(ReaderRequestQuery).open().count() == 0, story.container.get(Queries).query(Process).find(process.id).state is not ProcessState.STOPPED)
-    other = worker_run(story, "pytest tests/totals.py", CommandCategory.TEST_RUN)
+    second_run = worker_run(story, "pytest tests/totals.py", CommandCategory.TEST_RUN)
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
-    folder.write_count(other.id, "no number\n", 0)
+    folder.write_count(second_run.id, "no number\n", 0)
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
-    story.expect_rows(story.container.get(ReaderRequestQuery).open().count() == 1, story.container.get(Queries).query(Process).find(other.id).state is ProcessState.STOPPED)
+    story.expect_rows(story.container.get(ReaderRequestQuery).open().count() == 1, story.container.get(Queries).query(Process).find(second_run.id).state is ProcessState.STOPPED)
 
 
 def test_a_worker_stopped_for_an_unknown_count_adds_a_counting_reader_and_its_next_run_starts(new_story):

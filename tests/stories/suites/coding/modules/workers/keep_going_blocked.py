@@ -17,7 +17,7 @@ __all__ = ["missing_program", "running_worker", "worker_story"]
 
 MAIN_SESSION = "s-1"
 BLOCK = 'task block 1 --reason "the build tool is missing"'
-ASK_LINE = "journal worker ask"
+REQUEST_LINE = "journal worker ask"
 
 
 def worker_lines(story) -> str:

@@ -11,7 +11,7 @@ from core.modules.documents.references.row_ref import RowRef
 
 
 # Matches a link whose either end is the row of the given model the id column names.
-def touches(model: str, id_column: str) -> AnyOf:
+def references_plan(model: str, id_column: str) -> AnyOf:
     return AnyOf([AllOf([Equal("source_model", model), ColumnCompare("source_id", "=", id_column)]), AllOf([Equal("target_model", model), ColumnCompare("target_id", "=", id_column)])])
 
 
@@ -22,6 +22,6 @@ class ExcludesPlan:
     reference: RowRef
 
     def statement(self) -> Statement:
-        tasks = Select("plan_tasks").matching(Equal("plan_id", self.reference.row_id)).matching(touches("task", "task_id"))
-        phases = Select("phases").matching(Equal("plan_id", self.reference.row_id)).matching(touches("phase", "phases.id"))
+        tasks = Select("plan_tasks").matching(Equal("plan_id", self.reference.row_id)).matching(references_plan("task", "task_id"))
+        phases = Select("phases").matching(Equal("plan_id", self.reference.row_id)).matching(references_plan("phase", "phases.id"))
         return AllOf([Exists(tasks, negated=True), Exists(phases, negated=True)]).statement()

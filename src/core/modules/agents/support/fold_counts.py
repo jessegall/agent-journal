@@ -17,8 +17,8 @@ class FoldCounts:
     rules: dict[str, int] = field(default_factory=dict)
 
     def add_reference(self, name: str, before: int, after: int) -> None:
-        earlier_before, earlier_after = self.references.get(name, (0, 0))
-        self.references[name] = (earlier_before + before, earlier_after + after)
+        prior_initial, prior_after = self.references.get(name, (0, 0))
+        self.references[name] = (prior_initial + before, prior_after + after)
 
     def add_removed(self, table: str, references: list[str], rule: str) -> None:
         for name in (table, *references):
@@ -26,9 +26,9 @@ class FoldCounts:
         self.rules[f"{table}: {rule}"] = self.rules.get(f"{table}: {rule}", 0) + 1
 
     def mismatches(self, folded_count: int) -> list[str]:
-        moved = [f"{name}: {before} before, {after} after" for name, (before, after) in self.references.items()
-                 if after != before - self.removed.get(name, 0)]
-        gone = {AGENTS_TABLE: folded_count, ACTORS_TABLE: folded_count}
+        moved = [f"{name}: {initial} before, {after} after" for name, (initial, after) in self.references.items()
+                 if after != initial - self.removed.get(name, 0)]
+        removed = {AGENTS_TABLE: folded_count, ACTORS_TABLE: folded_count}
         changed = [f"{table}: {count} rows before, {self.tables_after.get(table)} after" for table, count in self.tables_prior.items()
-                   if table not in FOLD_TABLES and self.tables_after.get(table) != count - gone.get(table, 0) - self.removed.get(table, 0)]
+                   if table not in FOLD_TABLES and self.tables_after.get(table) != count - removed.get(table, 0) - self.removed.get(table, 0)]
         return moved + changed

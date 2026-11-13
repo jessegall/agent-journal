@@ -15,7 +15,7 @@ THREE_TASKS = 3
 TWO_POINT_BRIEF = 'task edit 1 --brief "- the total adds the tax\n- the total rounds to cents"'
 RUNS_SETTING = f"{WORKER_PHASE_TEST_RUNS}"
 OUT_OF_RUNS = "No test runs left"
-PICKED_TESTS = "tests/other.py\n"
+SELECTED_TESTS = "tests/other.py\n"
 
 
 def commit(worker: StoryWorker) -> StoryWorker:
@@ -88,7 +88,7 @@ def test_50_a_failed_run_of_the_selected_tests_returns_the_tasks_of_the_commit_a
     prove_task(worker, 2, 1, SECOND_TEST_LINE)
     commit(worker)
     worker.end_tests(0, 0)
-    story.container.get(OutputFolder).write_output(worker.started[2], 1, PICKED_TESTS)
+    story.container.get(OutputFolder).write_output(worker.started[2], 1, SELECTED_TESTS)
     worker.end_test(worker.started[2])
     worker.end_test(worker.started[3], 1)
     expect_task_states(worker, "started", 1, 2)

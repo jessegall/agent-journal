@@ -20,7 +20,7 @@ from engine.time.polled_wait import PolledWait
 SOCKET_FILE_MODE = 0o600
 HOSTED_VIEWER_SOCKET = Path("/run/journal/viewer.sock")
 LOCK_POLL_SECONDS = 0.05
-MARK_FRESH_SECONDS = 120
+MARK_RECENT_SECONDS = 120
 
 def socket_path(home: JournalHome, name: str = SERVER_SOCKET) -> Path:
     return home.socket(name)
@@ -124,7 +124,7 @@ class ServerFiles:
 
     def is_recent(self, mark: Path) -> bool:
         try:
-            return self.clock.epoch_seconds() - mark.stat().st_mtime < MARK_FRESH_SECONDS
+            return self.clock.epoch_seconds() - mark.stat().st_mtime < MARK_RECENT_SECONDS
         except FileNotFoundError:
             return False
 

@@ -29,7 +29,7 @@ PASSES = "checkpoint-pass list --json --oldest --environment main"
 OUTLINE = "plan outline 1 --environment main"
 PHASE_TEST = "pytest tests/build.py"
 CHECKPOINT_TERMS = "only a checkpoint phase has a test of its own: add --checkpoint"
-UNRUN_WORDS = "not run: this phase is not a checkpoint"
+UNRUN_TERMS = "not run: this phase is not a checkpoint"
 
 
 def pass_reach(story: Story, reach_id: int) -> None:
@@ -275,9 +275,9 @@ def test_192_a_checkpoint_whose_run_failed_is_reached_again_when_its_returned_ta
     story.expect_success("checkpoint-reach failed 1 --failed-task-ids 3", actor=Actor.core())
     story.expect_success("task reopen 3", actor=story.user)
     story.run_listeners()
-    still_failed = [row["state"] for row in rows(story, REACHES)]
+    refailed = [row["state"] for row in rows(story, REACHES)]
     close(story, 3)
-    story.expect_rows(still_failed == ["failed"], [row["state"] for row in rows(story, REACHES)] == ["failed", "running"], detail=str(rows(story, REACHES)))
+    story.expect_rows(refailed == ["failed"], [row["state"] for row in rows(story, REACHES)] == ["failed", "running"], detail=str(rows(story, REACHES)))
 
 
 def test_197_a_test_command_on_a_phase_that_is_no_checkpoint_is_refused_and_a_checkpoint_phase_takes_one(new_story):
@@ -294,7 +294,7 @@ def test_198_a_test_command_an_older_journal_stored_on_a_phase_that_is_no_checkp
     story = new_story(fixture=UnflaggedPlan)
     story.container.get(Database).update(Statement("UPDATE phases SET test_command = ? WHERE id = 1", [PHASE_TEST]))
     story.expect_text("phase show 1 --environment main", PHASE_TEST, actor=story.user)
-    story.expect_text(OUTLINE, UNRUN_WORDS, actor=story.user)
+    story.expect_text(OUTLINE, UNRUN_TERMS, actor=story.user)
 
 
 def test_190_the_plan_view_gets_a_line_on_how_each_checkpoint_stands_and_on_a_test_that_is_not_run(new_story):

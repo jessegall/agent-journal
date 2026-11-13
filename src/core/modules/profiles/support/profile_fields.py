@@ -60,8 +60,8 @@ class ProfileFields:
         return replace(profile, mcp_tools=mcp_tools, access=Access.READ if self.writable else profile.access)
 
     def text(self) -> str:
-        own = {"name": self.name, "agent_type": self.agent_type, "module_text": self.module_text, "module": self.module,
+        profile_lines = {"name": self.name, "agent_type": self.agent_type, "module_text": self.module_text, "module": self.module,
                "source_digest": self.source_digest, "legacy_writing": "true" if self.writable else ""}
         body = self.settings.get("body", "")
-        lines = {**{name: value for name, value in self.settings.items() if name != "body" or value == ""}, **{name: value for name, value in own.items() if value}}
+        lines = {**{name: value for name, value in self.settings.items() if name != "body" or value == ""}, **{name: value for name, value in profile_lines.items() if value}}
         return ProfileFormat.text(lines, str(body))

@@ -15,9 +15,9 @@ class TaskTags:
         self.queries, self.repository = queries, repository
 
     def add(self, task: Task, tags: Sequence[str], context: Context) -> None:
-        held = set(self.queries.query(TaskTag).filter(task_id=task.id).matching(Among("word", list(tags))).pluck("word", str)) if tags else set()
+        existing = set(self.queries.query(TaskTag).filter(task_id=task.id).matching(Among("word", list(tags))).pluck("word", str)) if tags else set()
         for word in dict.fromkeys(tags):
-            if word in held:
+            if word in existing:
                 continue
             self.repository.save(TaskTag(task_id=task.id, word=word, creator_id=context.actor.id), context)
 

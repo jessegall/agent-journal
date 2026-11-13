@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-READ_ONLY_MODE = 0o444
+READONLY_MODE = 0o444
 
 
 @dataclass(frozen=True)
@@ -10,7 +10,7 @@ class SettingsFile:
 
     path: Path
     text: str
-    mode: int = READ_ONLY_MODE
+    mode: int = READONLY_MODE
 
     @property
     def data(self) -> bytes:

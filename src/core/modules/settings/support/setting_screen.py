@@ -37,7 +37,7 @@ class SettingScreen:
 
     @staticmethod
     def path(entry: SettingEntry) -> str:
-        tab, _, kind = entry.screen.partition(".")
+        tab, _, category = entry.screen.partition(".")
         if tab == HELPER_TYPE_SCREEN:
-            return f"{HELPERS_TAB} > {kind.replace('-', ' ').capitalize()}" if kind else f"{HELPERS_TAB} > {entry.section}"
+            return f"{HELPERS_TAB} > {category.replace('-', ' ').capitalize()}" if category else f"{HELPERS_TAB} > {entry.section}"
         return f"{tab.capitalize()} > {entry.section}"

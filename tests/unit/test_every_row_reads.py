@@ -7,9 +7,9 @@ one and a new walk shows in the change that adds it."""
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "src"
-SNAPSHOT = ROOT / "tests" / "snapshots" / "every_row_reads.txt"
+WALKS_FILE = ROOT / "tests" / "snapshots" / "every_row_reads.txt"
 QUERY_FILE = SOURCE / "engine" / "query" / "query.py"
-FEWEST_REASON_WORDS = 4
+FEWEST_REASON_TERMS = 4
 WALK_METHODS = ("every_row", "all_weighted")
 
 
@@ -71,7 +71,7 @@ def walks() -> list[str]:
 
 
 def listed() -> list[str]:
-    return [line for line in SNAPSHOT.read_text().split("\n") if line]
+    return [line for line in WALKS_FILE.read_text().split("\n") if line]
 
 
 def test_every_walk_in_src_is_listed_in_the_snapshot():
@@ -85,7 +85,7 @@ def test_a_walk_that_is_gone_is_taken_off_the_snapshot():
 
 
 def has_enough_terms(reason: str) -> bool:
-    return len(reason.split()) >= FEWEST_REASON_WORDS
+    return len(reason.split()) >= FEWEST_REASON_TERMS
 
 
 def test_every_walk_gives_a_reason_longer_than_three_words():

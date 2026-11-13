@@ -71,8 +71,8 @@ class AgentRows:
         return tuple(agent for agent in agents if parent_id is None or agent.parent_id == parent_id)
 
     def running_main_agents(self) -> tuple[Agent, ...]:
-        mains = MainAgentFinder.running(self.queries)
-        return self.kept.read(mains, lambda: tuple(mains.get()), name="agents.running_main_agents")
+        main_agents = MainAgentFinder.running(self.queries)
+        return self.kept.read(main_agents, lambda: tuple(main_agents.get()), name="agents.running_main_agents")
 
     def numbered_main(self, environment_id: int) -> Agent | None:
         with self.scopes.opened(None, environment_id):

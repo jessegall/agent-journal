@@ -29,10 +29,10 @@ class StartCheckpointReviewHandler(Handler[StartCheckpointReview, CheckpointRevi
 
     def handle(self, command: StartCheckpointReview, context: Context) -> CheckpointReview:
         main = self.queries.query(Agent).find(command.main_id)
-        chosen = self.models.chosen(main.program)
+        selected = self.models.chosen(main.program)
         phase = self.queries.query(Phase).find(command.phase_id)
         brief = BRIEF.format(phase=phase.title, plan=command.plan_id)
-        reviewer = self.start.started(chosen.program, chosen.model, main, context)
+        reviewer = self.start.started(selected.program, selected.model, main, context)
         self.start.launched(reviewer, main, brief, context)
         return self.repository.save(CheckpointReview(creator_id=context.actor.id, plan_id=command.plan_id, phase_id=command.phase_id, reviewer_id=reviewer.id,
-                                                     program=chosen.program, program_model=chosen.model, brief=brief), context)
+                                                     program=selected.program, program_model=selected.model, brief=brief), context)

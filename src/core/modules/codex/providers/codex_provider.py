@@ -56,7 +56,7 @@ PERSON_LINKS = ("auth.json", "sessions", "history.jsonl")
 PERSON_STATE = ("state_5.sqlite", "thread_history_1.sqlite", "session_index.jsonl", "rules", "skills", "plugins")
 PERSON_FOLDER = ".codex"
 PROGRAMS_FOLDER = "programs"
-APPROVAL_ON_REQUEST_ARGUMENTS = ["-c", 'approval_policy="on-request"', "-c", 'sandbox_mode="workspace-write"']
+REQUEST_APPROVAL_ARGUMENTS = ["-c", 'approval_policy="on-request"', "-c", 'sandbox_mode="workspace-write"']
 
 
 class CodexProvider(Provider):
@@ -115,7 +115,7 @@ class CodexProvider(Provider):
         return replace(super().with_profile_model(profile, model), codex_model=model)
 
     def session_command(self, launch: Launch) -> LaunchCommand:
-        permission = ["--dangerously-bypass-approvals-and-sandbox"] if launch.skip_prompts else APPROVAL_ON_REQUEST_ARGUMENTS
+        permission = ["--dangerously-bypass-approvals-and-sandbox"] if launch.skip_prompts else REQUEST_APPROVAL_ARGUMENTS
         model = [] if launch.names_flag("-m") or launch.names_flag("--model") else ["-m", launch.model]
         effort = [] if launch.effort else self.effort_arguments(launch.model)
         arguments = [self.executable, "--no-daemon", *model, *effort, *permission, *self.journal_instructions(launch.folder), *launch.program_arguments, *launch.session.arguments(self), *launch.prompt_arguments]

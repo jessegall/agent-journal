@@ -60,8 +60,8 @@ def test_every_advanced_setting_of_the_design_is_on_the_advanced_screen_in_its_s
 
 
 def test_the_context_size_per_kind_is_a_keyed_cap_table_on_advanced_and_per_helper_type_is_on_the_helper_types_screen():
-    by_key = {value.key: value for value in DECLARED}
-    categories, profiles = by_key["context-limit-kinds"], by_key["context-limit-profiles"]
+    keyed = {value.key: value for value in DECLARED}
+    categories, profiles = keyed["context-limit-kinds"], keyed["context-limit-profiles"]
     assert (categories.component.value, categories.screen, profiles.component.value, profiles.screen) == ("keyed-cap-table", "advanced", "three-way-cap", "helper-type")
 
 

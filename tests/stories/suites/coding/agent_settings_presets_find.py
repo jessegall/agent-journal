@@ -4,7 +4,7 @@ from tests.stories.suites.coding.support.main_controls_fixture import MainContro
 from tests.stories.suites.coding.support.settings_modal import AUTO, SENDS, Modal
 from tests.stories.support.story_checks import expect_value, expect_value_4, expect_value_with
 
-NO_MATCH = "zebra"
+UNMATCHED = "zebra"
 
 
 class Presets:
@@ -81,7 +81,7 @@ def test_find_lists_a_merger_setting_with_its_path_and_the_screen_that_opens_it(
 
 
 def test_find_with_a_word_that_matches_nothing_answers_an_empty_list(presets):
-    expect_value(presets.found(NO_MATCH), [])
+    expect_value(presets.found(UNMATCHED), [])
     expect_value_4(presets.found("merger"))
 
 

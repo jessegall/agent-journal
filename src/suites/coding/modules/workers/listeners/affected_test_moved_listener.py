@@ -20,8 +20,8 @@ class AffectedTestMovedListener(CommitListener[Updated[AffectedTest]]):
         self.launch, self.rows = launch, rows
 
     def handle(self, event: Updated[AffectedTest], logged: LoggedEvent) -> None:
-        pick = event.row
-        if pick.state not in LAUNCHED_STATES or pick.process_id is None:
+        selection = event.row
+        if selection.state not in LAUNCHED_STATES or selection.process_id is None:
             return
-        process = self.rows.required(Process, pick.process_id)
+        process = self.rows.required(Process, selection.process_id)
         self.launch.start(process, process.line, self.rows.required(Agent, process.session_agent_id).session)

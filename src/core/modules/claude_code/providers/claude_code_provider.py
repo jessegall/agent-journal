@@ -67,7 +67,7 @@ SETTINGS_FLAGS = ("--settings", "--setting-sources")
 SETTING_SOURCES = "project"
 SERVER_FILE = "mcp.json"
 SERVERS_KEY = "mcpServers"
-CARRIED_SETTINGS = ("env", "apiKeyHelper", "awsAuthRefresh", "awsCredentialExport", "forceLoginMethod", "forceLoginOrgUUID", "otelHeadersHelper",
+COPIED_SETTINGS = ("env", "apiKeyHelper", "awsAuthRefresh", "awsCredentialExport", "forceLoginMethod", "forceLoginOrgUUID", "otelHeadersHelper",
                     "includeCoAuthoredBy", "skipDangerousModePermissionPrompt")
 BYPASS_PERMISSIONS = {"defaultMode": "bypassPermissions"}
 
@@ -253,7 +253,7 @@ class ClaudeCodeProvider(Provider):
         person_file = self.user_hook_files()[0]
         person_settings = self.person_settings(person_data.get(person_file, b""))
         unreadable = tuple(path for path in [person_file] if path.is_file() and (path not in person_data or person_settings is None))
-        person_values = {key: value for key, value in (person_settings or {}).items() if key in CARRIED_SETTINGS}
+        person_values = {key: value for key, value in (person_settings or {}).items() if key in COPIED_SETTINGS}
         settings = {**person_values, "permissions": BYPASS_PERMISSIONS, **self.hook_settings(runner, root),
                     "hooks": ProgramHooks.journal(type(self), path).journal_blocks(runner, root, managed)}
         state = self.state_file()

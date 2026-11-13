@@ -12,10 +12,10 @@ class MainFoldPlan:
 
     @staticmethod
     def folds(agents: Sequence[MainRow]) -> tuple[EnvironmentFold, ...]:
-        mains = [agent for agent in agents if agent.role == AgentRole.MAIN]
-        environments = sorted({agent.environment_id for agent in mains})
-        found = (MainFoldPlan.environment_fold(environment_id, [agent for agent in mains if agent.environment_id == environment_id]) for environment_id in environments)
-        return tuple(fold for fold in found if fold.folded)
+        main_agents = [agent for agent in agents if agent.role == AgentRole.MAIN]
+        environments = sorted({agent.environment_id for agent in main_agents})
+        matched = (MainFoldPlan.environment_fold(environment_id, [agent for agent in main_agents if agent.environment_id == environment_id]) for environment_id in environments)
+        return tuple(fold for fold in matched if fold.folded)
 
     @staticmethod
     def environment_fold(environment_id: int, mains: list[MainRow]) -> EnvironmentFold:

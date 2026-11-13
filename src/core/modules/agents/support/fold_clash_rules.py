@@ -19,8 +19,8 @@ def latest_read(rows: Sequence[Row], survivor_id: int, agent_column: str) -> Row
 
 
 def survivors_else_newest(rows: Sequence[Row], survivor_id: int, agent_column: str) -> Row:
-    own = [row for row in rows if row.get(agent_column) == survivor_id]
-    return newest(own or rows, survivor_id, agent_column)
+    survivor_rows = [row for row in rows if row.get(agent_column) == survivor_id]
+    return newest(survivor_rows or rows, survivor_id, agent_column)
 
 
 RULES: dict[str, tuple[str, Callable[[Sequence[Row], int, str], Row]]] = {

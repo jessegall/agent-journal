@@ -16,14 +16,14 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import SECO
 from suites.coding.modules.workers.support.worker_settings import PROTECTED_FOLDERS
 from tests.stories.suites.coding.modules.workers.support.phase_steps import expect_task_states
 
-LEFT_OUT = "the rounding is left out"
+OMITTED = "the rounding is left out"
 FOUR_POINT_BRIEF = "- the tax is read\n- the tax is added\n- the tax is shown\n- the tax is rounded"
 THREE_POINT_BRIEF = "- the totals are added\n- the totals are shown\n- the totals are stored"
-WAIT_BEFORE_COMMIT = timedelta(minutes=40)
+PRE_COMMIT_WAIT = timedelta(minutes=40)
 MERGED_REASON = "merged; its tests run at the checkpoint of phase 2"
 
 
-def prove_both(worker: StoryWorker) -> StoryWorker:
+def prove_pair(worker: StoryWorker) -> StoryWorker:
     prove_task(worker, 1, 1, TEST_LINE)
     prove_task(worker, 2, 1, SECOND_TEST_LINE)
     return worker
@@ -36,13 +36,13 @@ def states(worker: StoryWorker) -> list[ProofState]:
 @pytest.fixture
 def two_proved_unplanned(new_story, monkeypatch) -> StoryWorker:
     """A worker that holds tasks 1 and 2 started, in no plan, and proved the one point of each with a test."""
-    return prove_both(unplanned_worker_with_tasks(new_story, monkeypatch))
+    return prove_pair(unplanned_worker_with_tasks(new_story, monkeypatch))
 
 
 @pytest.fixture
 def two_proved(new_story, monkeypatch) -> StoryWorker:
     """A worker of phase Build that holds tasks 1 and 2 started and proved the one point of each with a test."""
-    return prove_both(worker_with_tasks(new_story, monkeypatch, 2))
+    return prove_pair(worker_with_tasks(new_story, monkeypatch, 2))
 
 
 @pytest.fixture
@@ -62,15 +62,15 @@ def three_started(new_story, monkeypatch) -> StoryWorker:
 
 def test_24_26_proofs_shown_forty_minutes_before_a_commit_of_two_tasks_start_no_test_until_it_and_both_tasks_go_to_testing(two_proved_unplanned):
     story = two_proved_unplanned.story
-    story.advance(WAIT_BEFORE_COMMIT)
+    story.advance(PRE_COMMIT_WAIT)
     story.run_listeners()
-    states_before_commit, started_before_commit = states(two_proved_unplanned), list(two_proved_unplanned.started)
+    precommit_states, started_precommit = states(two_proved_unplanned), list(two_proved_unplanned.started)
     story.expect_text("proof list", "shown", actor=story.agent)
     outcome = story.run(COMMIT, actor=two_proved_unplanned.worker)
     story.run_listeners()
     expect_task_states(two_proved_unplanned, "testing", 1, 2)
-    story.expect_rows(states_before_commit == [ProofState.SHOWN] * 2, started_before_commit == [], outcome.code == 0, "committed tasks 1, 2 as " in outcome.output_text,
-                      len(two_proved_unplanned.started) == 2, detail=f"{outcome.output_text} | {states_before_commit} | {two_proved_unplanned.started}")
+    story.expect_rows(precommit_states == [ProofState.SHOWN] * 2, started_precommit == [], outcome.code == 0, "committed tasks 1, 2 as " in outcome.output_text,
+                      len(two_proved_unplanned.started) == 2, detail=f"{outcome.output_text} | {precommit_states} | {two_proved_unplanned.started}")
 
 
 def test_25_158_163_165_a_commit_of_two_tasks_in_a_started_plan_is_one_git_commit_starts_no_test_and_its_merge_completes_both(two_proved):
@@ -89,9 +89,9 @@ def test_25_158_163_165_a_commit_of_two_tasks_in_a_started_plan_is_one_git_commi
 
 def test_29_what_differs_at_a_commit_of_two_tasks_becomes_an_important_log_line_of_each_task(two_proved):
     requested = two_proved.story.run(f"{COMMIT_COMMAND} --wait", actor=two_proved.worker)
-    two_proved.story.expect_success(f'{COMMIT_COMMAND} --wait --differences "{LEFT_OUT}"', actor=two_proved.worker)
-    two_proved.story.expect_text("task-log list --task 1", LEFT_OUT, actor=two_proved.story.agent)
-    two_proved.story.expect_text("task-log list --task 2", LEFT_OUT, actor=two_proved.story.agent)
+    two_proved.story.expect_success(f'{COMMIT_COMMAND} --wait --differences "{OMITTED}"', actor=two_proved.worker)
+    two_proved.story.expect_text("task-log list --task 1", OMITTED, actor=two_proved.story.agent)
+    two_proved.story.expect_text("task-log list --task 2", OMITTED, actor=two_proved.story.agent)
     two_proved.story.expect_rows(requested.code != 0, "did you do anything other than the task brief asked" in requested.output_text, detail=requested.output_text)
 
 
