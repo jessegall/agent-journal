@@ -23,7 +23,7 @@ class MakeAssignRuleHandler(Handler[MakeAssignRule, AssignRule]):
             raise Refusal("a rule belongs to an environment", "add --environment <name>")
         RuleLimits.check_condition_count(len(command.conditions))
         RuleLimits.check_rule_count(self.queries.query(AssignRule).filter(environment_id=context.environment_id).count())
-        rule = self.repository.save(AssignRule(creator_id=context.actor.id, position=self.positions.next_position(AssignRule, ENVIRONMENT_COLUMN, context.environment_id),
-                                               target=command.target, agent_id=command.agent_id, program=command.program, program_model=command.program_model), context)
+        rule = self.repository.save(AssignRule(creator_id=context.actor.id, environment_id=context.environment_id, position=self.positions.next_position(AssignRule, ENVIRONMENT_COLUMN, context.environment_id),
+                                               target=command.target, agent_id=command.agent_id, program=command.program, program_model=command.program_model, queue_limit=command.queue_limit), context)
         self.conditions.save(rule, command.conditions, context)
         return rule

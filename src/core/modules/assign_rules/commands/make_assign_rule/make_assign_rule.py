@@ -15,3 +15,4 @@ class MakeAssignRule(Command[AssignRule]):
     agent_id: int | None = None
     program: str = ""
     program_model: str = ""
+    queue_limit: int = 0

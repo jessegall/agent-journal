@@ -17,9 +17,11 @@ class EditAssignRule(EditCommand[AssignRule]):
     agent_id: int | None = None
     program: str | None = None
     program_model: str | None = None
+    queue_limit: int | None = None
     conditions: tuple[ConditionLine, ...] | None = None
 
     def rule_changes(self) -> dict[str, object]:
         if self.target is None:
             return {name: value for name, value in self.changed_fields().items() if name != CONDITIONS_FIELD}
-        return {"target": self.target, "agent_id": self.agent_id, "program": self.program or "", "program_model": self.program_model or ""}
+        target_fields = {"target": self.target, "agent_id": self.agent_id, "program": self.program or "", "program_model": self.program_model or ""}
+        return target_fields if self.queue_limit is None else {**target_fields, "queue_limit": self.queue_limit}

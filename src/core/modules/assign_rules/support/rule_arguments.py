@@ -16,6 +16,7 @@ class RuleArguments:
         parser.add_argument("--agent", dest="agent_id", type=AgentNumber)
         parser.add_argument("--program")
         parser.add_argument("--model", dest="program_model")
+        parser.add_argument("--queue-limit", type=int, help="the most open tasks the target may hold for the rule to give it one; 0 holds no limit")
         parser.add_argument("--condition", dest="conditions", action="append", help=CONDITION_HELP)
 
     @staticmethod

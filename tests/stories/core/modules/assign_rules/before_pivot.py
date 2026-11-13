@@ -30,7 +30,7 @@ def test_a_dry_run_never_partly_assigns_the_task(new_story):
     assignments_before = task_assignments(story)
     story.run(make_line("any"), actor=story.user)
     decision = decision_of(story, TASK_ID)
-    story.expect_rows(decision["outcome"] == "dry_run", decision["actor_id"] is None, task_assignments(story) == assignments_before, detail=str(task_assignments(story)))
+    story.expect_rows(decision["outcome"] == "dry_run", decision["actor_id"] == story.agent.id, task_assignments(story) == assignments_before, detail=str(task_assignments(story)))
 
 
 def test_rules_and_try_work_before_rules_assign(new_story):

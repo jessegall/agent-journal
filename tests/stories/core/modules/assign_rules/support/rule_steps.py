@@ -5,10 +5,12 @@ from engine.enums.actor_type import ActorType
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
 ENVIRONMENT = "--environment main"
 COMPLEXITY_RULE = 1
 MIGRATION_RULE = 2
+FREE_TASK_ID = 2
 
 
 def make_line(*conditions: str, target: str = "main") -> str:
@@ -49,3 +51,17 @@ class PersonRulesAndWorker(StoryFixture):
 
     def expect(self, story: Story) -> None:
         story.expect_text(f"agent show {story.helper.id}", "w-1")
+
+
+class SonnetWorkerAndFreeTask(StoryFixture):
+    """A worker on claude sonnet with a cut worktree holds task 1, story.helper; task 2, Fix the migration, is free."""
+
+    parent = OrchestratorWithPerson
+
+    def steps(self, story: Story) -> None:
+        repository_environment(story)
+        story.helper = dispatched_worker(story)
+        story.run(f'task make "Fix the migration" {ENVIRONMENT}', actor=story.agent)
+
+    def expect(self, story: Story) -> None:
+        story.expect_text(f"task show {FREE_TASK_ID}", "Fix the migration")

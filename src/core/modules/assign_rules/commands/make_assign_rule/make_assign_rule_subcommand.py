@@ -17,4 +17,4 @@ class MakeAssignRuleSubcommand(Subcommand[MakeAssignRule, AssignRule]):
         RuleArguments.add(parser, target_required=True)
 
     def command(self, arguments: Namespace, caller: Caller) -> MakeAssignRule:
-        return MakeAssignRule(arguments.target, RuleArguments.conditions(arguments), arguments.agent_id, arguments.program or "", arguments.program_model or "")
+        return MakeAssignRule(arguments.target, RuleArguments.conditions(arguments), arguments.agent_id, arguments.program or "", arguments.program_model or "", arguments.queue_limit or 0)
