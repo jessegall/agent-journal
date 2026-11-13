@@ -96,7 +96,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             self.check_idle(environment.folder, WorkerRequest(profile.name, program, model), tasks, command)
         start = StartAgent(command.session or str(uuid4()), program, CodingHelperRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
         if command.source_worker_id is not None:
-            return self.taken_over(command, start, choice, environment, context)
+            return self.takeover_launch(command, start, choice, environment, context)
         source = self.sources.source_copy(replace(context, environment_id=task.environment_id))
         task_sources = self.copies.copies(tasks, source)
         opened = self.bus.run_with_context(OpenWorkerWorktree(start, task.id, command.new_agent_reason.strip(), choice.reason, command.starts_program and AssignableTasks.has_open(tasks)), context)
@@ -117,7 +117,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         self.configure(command, opened.worker, environment, choice.fallback, context)
         return WorkerLaunch(opened.worker, worktree, self.worker_command.command(opened.worker, worktree, environment, task))
 
-    def taken_over(self, command: DispatchWorker, start: StartAgent, choice: WorkerChoice, environment: Environment, context: Context) -> WorkerLaunch:
+    def takeover_launch(self, command: DispatchWorker, start: StartAgent, choice: WorkerChoice, environment: Environment, context: Context) -> WorkerLaunch:
         stopped = self.queries.query(Agent).find(command.source_worker_id)
         worktree = self.worktrees.required_worker_worktree(stopped.id)
         if stopped.ended_at is None:

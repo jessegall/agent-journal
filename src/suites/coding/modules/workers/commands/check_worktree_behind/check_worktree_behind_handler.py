@@ -60,7 +60,7 @@ class CheckWorktreeBehindHandler(Handler[CheckWorktreeBehind, BehindRoute]):
             return BehindRoute.FAST_FORWARDED
         target_main = self.settings.number(MAIN_UPDATE_COMMITS)
         if target_main > 0 and self.behind >= target_main:
-            self.repository.save_change(check, check.passed_to_main_agent(f"{self.behind} commits behind, at least {target_main}"), context)
+            self.repository.save_change(check, check.escalated(f"{self.behind} commits behind, at least {target_main}"), context)
             self.main_line.send_nudge(MAIN_AGENT_STALE_WORKTREE.nudge(worker=worker, count=self.behind), STALE_SOURCE, context)
             return BehindRoute.MAIN_AGENT
         return BehindRoute.MERGER

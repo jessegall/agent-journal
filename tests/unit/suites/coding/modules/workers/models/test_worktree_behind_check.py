@@ -49,4 +49,4 @@ def test_an_order_holds_who_and_why_and_reminders_count():
 
 
 def test_only_an_open_or_passed_check_waits_for_a_decision():
-    assert [state for state in State if check(state).open_for_decision()] == [State.OPEN, State.PASSED]
+    assert [state for state in State if check(state).is_undecided()] == [State.OPEN, State.PASSED]

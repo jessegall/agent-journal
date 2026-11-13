@@ -23,5 +23,5 @@ class LeaveWorkerBehindHandler(Handler[LeaveWorkerBehind, None]):
     def handle(self, command: LeaveWorkerBehind, context: Context) -> None:
         deciding = require_merging_agent(self.agents, context)
         _, check = self.decisions.decidable(command.worker_id)
-        self.repository.save_change(check, check.left(deciding.id, command.reason), context)
+        self.repository.save_change(check, check.ignored(deciding.id, command.reason), context)
         self.visits.close_newest(context)

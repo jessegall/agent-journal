@@ -6,4 +6,4 @@ from engine.enums.agent_role import AgentRole
 class ChatAnswerRule(DriverRule):
     name = "samples.chat-answer"
     roles = [AgentRole.MAIN]
-    main_only_because = "the main agent chat"
+    main_role_reason = "the main agent chat"

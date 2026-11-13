@@ -2,7 +2,6 @@ import sqlite3
 
 from core.modules.agents.models.agent import MAIN_NUMBER
 from collections import Counter
-from collections.abc import Mapping
 
 from engine.actor.actor import CORE_ACTOR_ID
 from engine.enums.actor_type import ActorType
@@ -55,7 +54,8 @@ class AgentsMove(VersionFourMove):
             elif role not in roles:
                 report.skip(TABLE, row["id"], f"role {row['role']} is none of {', '.join(roles)}")
             elif role == AgentRole.MAIN.value and row["environment_id"] in main_rows:
-                report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.agent_session(rows, main_rows[row["environment_id"]], row, context)))
+                report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.agent_session(rows, main_rows[row["environment_id"]], row["environment_id"], row["session"], row["provider"],
+                                                                                                   row["created_at"] or context.timestamp, row["updated_at"] or row["created_at"] or context.timestamp)))
             else:
                 created = row["created_at"] or context.timestamp
                 ended = self.end_timestamp(row, role, created, latest_ids)
@@ -87,8 +87,8 @@ class AgentsMove(VersionFourMove):
                 report.note(f"session {session} made rows but had no agent row, no known role and program: its rows name the core")
                 continue
             if role == AgentRole.MAIN.value and span["environment_id"] in main_rows:
-                self.agent_session(rows, main_rows[span["environment_id"]], {"environment_id": span["environment_id"], "session": session, "provider": program,
-                                                                           "created_at": span["first_at"], "updated_at": span["last_at"]}, context)
+                self.agent_session(rows, main_rows[span["environment_id"]], span["environment_id"], session, program, span["first_at"] or context.timestamp,
+                                   span["last_at"] or span["first_at"] or context.timestamp)
             else:
                 moved_id = self.insert(rows, session, span["environment_id"], program, role, CORE_ACTOR_ID, span["first_at"], span["last_at"], span["last_at"])
                 if role == AgentRole.MAIN.value:
@@ -130,15 +130,14 @@ class AgentsMove(VersionFourMove):
         return str(span["creator"]).partition(SEPARATOR)[2]
 
     @staticmethod
-    def agent_session(rows: RowInsert, main_id: int, row: Mapping[str, object], context: MoveContext) -> int:
-        started = row["created_at"] or context.timestamp
-        rows.insert(SESSIONS_TABLE, {"environment_id": row["environment_id"], "session_agent_id": main_id, "session": row["session"], "program": row["provider"],
-                                     "started_at": started, "ended_at": row["updated_at"] or started, "end_reason": EndReason.PERSON_REPLACEMENT.value,
-                                     "created_at": started, "updated_at": row["updated_at"] or started})
+    def agent_session(rows: RowInsert, main_id: int, environment_id: int, session: str, program: str, started: str, updated: str) -> int:
+        rows.insert(SESSIONS_TABLE, {"environment_id": environment_id, "session_agent_id": main_id, "session": session, "program": program,
+                                     "started_at": started, "ended_at": updated, "end_reason": EndReason.PERSON_REPLACEMENT.value,
+                                     "created_at": started, "updated_at": updated})
         return main_id
 
     def insert(self, rows: RowInsert, session: str, environment_id: int, program: str, role: str, creator_id: int, created: str, updated: str, ended: str | None) -> int:
         actor_id = rows.insert("actors", {"creator_id": creator_id, "type": ActorType.AGENT.value, "name": session, "created_at": created, "updated_at": created})
         return rows.insert(TABLE, {"id": actor_id, "environment_id": environment_id, "creator_id": creator_id, "session": session, "program": program,
                                    "role": role, "access": Access.READ.value if role == HelperRole.HELPER else Access.WRITING.value, "ended_at": ended, "created_at": created, "updated_at": updated,
-                                   **({"number": MAIN_NUMBER} if role == AgentRole.MAIN.value else {})})
+                                   "number": MAIN_NUMBER if role == AgentRole.MAIN.value else None})

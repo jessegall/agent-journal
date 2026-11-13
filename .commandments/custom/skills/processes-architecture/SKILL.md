@@ -40,7 +40,7 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
 - **`reading-nudge-outside-the-notices`** - a rule, a listener or a tick says a reading or cadence notice itself (a
   declaration of the `reading_declarations` list). `ReadingNotices` and `WarnCadenceHandler` are the only senders.
 - **`main-only-rule-without-reason`** - a rule of the processes or aliases module is limited to the main agent with
-  `roles = [AgentRole.MAIN]` and says no reason. Add `main_only_because` with one line, or let the rule answer every role.
+  `roles = [AgentRole.MAIN]` and says no reason. Add `main_role_reason` with one line, or let the rule answer every role.
 - **`reader-chosen-outside-reader-layers`** - readers are put in order by id or by default flag outside `ReaderLayers`.
   Order them with `ReaderLayers.ordered`: project, plugin, stock; default first, then the newest.
 - **`unreadable-mark-outside-unreadable-marks`** - an unreadable mark is made or removed outside `UnreadableMarkRegistry` and the

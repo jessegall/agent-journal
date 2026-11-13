@@ -33,7 +33,7 @@ class BehindCheckClosing:
 
     def close_removed(self, worktree: Worktree, context: Context) -> None:
         for check in self.checks(worktree, REMOVABLE_STATES):
-            self.repository.save_change(check, check.gone(), context)
+            self.repository.save_change(check, check.ended(), context)
 
     def checks(self, worktree: Worktree, states: tuple[BehindCheckState, ...]) -> tuple[WorktreeBehindCheck, ...]:
         return tuple(self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).matching(Among("state", states)).every_row(CHECKS_REASON))

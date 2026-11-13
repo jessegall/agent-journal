@@ -54,7 +54,7 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
             worktree = worktrees[check.worktree_id]
             worker = workers[worktree.session_agent_id]
             if worker.paused_at is not None or worker.ended_at is not None:
-                self.repository.save_change(check, check.held(), context)
+                self.repository.save_change(check, check.paused(), context)
             elif context.timestamp.value - check.updated_at.value >= wait:
                 self.remind(check, worktree, limit, context)
         for check in self.queries.query(WorktreeBehindCheck).filter(state=BehindCheckState.CONFLICTED).every_row(CHECKS_REASON):

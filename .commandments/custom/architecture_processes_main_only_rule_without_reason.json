@@ -43,7 +43,7 @@
                                 "is": "identifier"
                             },
                             {
-                                "name": "main_only_because"
+                                "name": "main_role_reason"
                             },
                             {
                                 "is": "assignment",
@@ -63,7 +63,7 @@
     "sin": {
         "name": "main-only-rule-without-reason",
         "description": "A rule is limited to the main agent and says no reason, which is how helpers and workers lost the streaming notices.",
-        "rule": "Add the class attribute main_only_because with one line, or let the rule answer every role.",
+        "rule": "Add the class attribute main_role_reason with one line, or let the rule answer every role.",
         "skill": "processes-architecture"
     }
 }

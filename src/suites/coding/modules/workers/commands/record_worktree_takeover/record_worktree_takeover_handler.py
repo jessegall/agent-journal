@@ -28,7 +28,7 @@ class RecordWorktreeTakeoverHandler(Handler[RecordWorktreeTakeover, Worktree]):
         worktree = self.rows.required(Worktree, command.worktree_id)
         plan = self.units.unit(worktree.session_agent_id).plan
         blocked = tuple(self.queries.query(Task).matching(TaskQuery.assignee(worktree.session_agent_id)).filter(closed_at=None).every_row(UNIT_TASKS_REASON))
-        claimed = self.repository.save_change(worktree, worktree.taken_over(command.worker_id), context)
+        claimed = self.repository.save_change(worktree, worktree.transferred(command.worker_id), context)
         for task in blocked:
             if task.holder_id == worktree.session_agent_id:
                 self.repository.update(task, context, holder_id=command.worker_id)

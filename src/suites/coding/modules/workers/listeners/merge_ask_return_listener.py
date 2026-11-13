@@ -25,4 +25,4 @@ class MergeAskReturnListener(SaveListener[Moved[Worktree]]):
         waiting = self.queries.query(MergeAsk).filter(worktree_id=event.row.id, state=MergeAskState.WAITING).first()
         if waiting is None:
             return
-        self.repository.save_change(waiting, waiting.moved(MergeAskLifecycle.send_back), context)
+        self.repository.save_change(waiting, waiting.moved(MergeAskLifecycle.reject), context)

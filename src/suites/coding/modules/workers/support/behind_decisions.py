@@ -20,7 +20,7 @@ class BehindDecisions:
         self.worktrees, self.queries, self.numbers = worktrees, queries, numbers
 
     def decidable(self, worker_id: int) -> tuple[Worktree, WorktreeBehindCheck]:
-        return self.found(worker_id, WorktreeBehindCheck.open_for_decision)
+        return self.found(worker_id, WorktreeBehindCheck.is_undecided)
 
     def passable(self, worker_id: int) -> tuple[Worktree, WorktreeBehindCheck]:
         return self.found(worker_id, WorktreeBehindCheck.is_passable)

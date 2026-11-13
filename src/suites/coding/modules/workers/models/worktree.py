@@ -62,8 +62,8 @@ class Worktree(Removable, EnvironmentScoped, Model):
         move = WorktreeLifecycle.change_delivered_libraries if self.state is WorktreeState.DELIVERED else WorktreeLifecycle.change_cut_libraries
         return self.moved(move, libraries_dropped_at=dropped_at)
 
-    def taken_over(self, worker_id: int) -> "Worktree":
-        move = WorktreeLifecycle.take_over_delivered if self.state is WorktreeState.DELIVERED else WorktreeLifecycle.take_over_cut
+    def transferred(self, worker_id: int) -> "Worktree":
+        move = WorktreeLifecycle.transfer_delivered if self.state is WorktreeState.DELIVERED else WorktreeLifecycle.transfer_cut
         return self.moved(move, session_agent_id=worker_id)
 
     def is_newly_released(self, previous: "Worktree") -> bool:
