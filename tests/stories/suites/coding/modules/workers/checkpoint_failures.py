@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import pytest
 
 from engine.testing.expectations.expect_reply import expect_reply_allowed
@@ -12,6 +14,7 @@ from suites.coding.modules.workers.ticks.stalled_worker_test_runs import Stalled
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import sole_branch_runs, BUILD_TEST, CART_COMMAND, OUTLINE, PASSES, PICKER, REACHES, TOTALS_COMMAND, WAITING_PHASE_TERMS, merge, task_proofs, rows, run_lines
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import committed_window, running_checkpoint  # noqa: F401
 from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON
+from tests.stories.suites.coding.modules.workers.test_queue import stalled_tick
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
@@ -191,3 +194,19 @@ def test_a_worker_whose_checkpoint_tests_failed_runs_a_test_without_spending_its
     story.expect_success(f"setting set {WORKER_PHASE_TEST_RUNS} 0 --environment main", actor=story.user)
     story.expect_rows("Point: fix" in worker.status(), detail=worker.status())
     expect_reply_allowed(worker.run_test())
+
+
+RUN_END_WAIT = timedelta(minutes=2)
+
+
+def test_a_checkpoint_test_whose_run_ended_with_nothing_recorded_fails_the_checkpoint_and_wakes_the_worker_at_the_next_tick(running_checkpoint):
+    worker, story = running_checkpoint, running_checkpoint.story
+    build_process_id = output_id(worker, BUILD_TEST)
+    for process in worker.started_processes():
+        if process.id != build_process_id:
+            worker.end_test(process.id, 0)
+    story.run(f"process end {build_process_id} --exit-code 1 --bytes 0 --lines 0", actor=worker.worker)
+    story.advance(RUN_END_WAIT)
+    story.expect_rows(rows(worker, REACHES)[0]["state"] != "failed", detail=str(rows(worker, REACHES)))
+    stalled_tick(story)
+    story.expect_rows(rows(worker, REACHES)[0]["state"] == "failed", len(failure_lines(worker)) == 1, detail=f"{rows(worker, REACHES)} | {worker.worker_lines()}")

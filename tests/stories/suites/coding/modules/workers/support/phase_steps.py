@@ -24,6 +24,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 from tests.stories.suites.coding.modules.workers.test_queue import ended, recording_launch
 
+
 TEST_ROWS_REASON = "the test reads every row it checks"
 
 PLAN_DISPATCH = "worker dispatch --test-command python=pytest --model sonnet --plan 1"
