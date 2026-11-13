@@ -23,12 +23,12 @@ def titled(story, process, title: str) -> None:
 
 def test_a_missing_output_file_a_damaged_record_and_a_cut_output_give_no_notice_and_the_cut_output_still_reads(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    gone = moved_run(story, "make site", CommandCategory.BUILD)
+    removed = moved_run(story, "make site", CommandCategory.BUILD)
     damaged = moved_run(story, "make docs", CommandCategory.BUILD)
     cut = moved_run(story, "make logs", CommandCategory.BUILD)
     titled(story, cut, "Building the logs")
-    ticks(story, 20, gone, damaged, every=10, text="page\n")
-    removed_output(story, gone)
+    ticks(story, 20, removed, damaged, every=10, text="page\n")
+    removed_output(story, removed)
     damaged_record(story, damaged)
     for step in range(10):
         cut_to(story, cut, f"line {step}\n", 4096)
@@ -86,12 +86,12 @@ def test_fifty_runs_at_once_are_judged_in_one_tick_within_its_limits(new_story):
 def test_two_environments_judge_their_runs_by_their_own_thresholds(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
     story.expect_success("environment make elsewhere /work/elsewhere", actor=story.user)
-    other = Actor(story.new_row_id("agent start s-elsewhere claude main --environment elsewhere"), ActorType.AGENT)
+    different = Actor(story.new_row_id("agent start s-elsewhere claude main --environment elsewhere"), ActorType.AGENT)
     story.expect_success(f"setting set {ProcessSetting.FIRST_OUTPUT_SECONDS.key} 60 --environment elsewhere", actor=story.user)
     here = moved_run(story, "make here", CommandCategory.BUILD)
-    there = elsewhere_run(story, other)
+    there = elsewhere_run(story, different)
     ticks(story, 30)
-    early = kept_lines(story, other.id, story.user)
+    early = kept_lines(story, different.id, story.user)
     ticks(story, 30)
     story.expect_rows(f"Output {here.id} printed nothing for 30s" in kept_lines(story), f"Output {there.id} " not in early,
-                      f"Output {there.id} printed nothing for 60s" in kept_lines(story, other.id, story.user), detail=kept_lines(story, other.id, story.user))
+                      f"Output {there.id} printed nothing for 60s" in kept_lines(story, different.id, story.user), detail=kept_lines(story, different.id, story.user))

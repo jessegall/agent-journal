@@ -19,12 +19,12 @@ class QueuedRunFollow:
         self.folder, self.queries, self.clock = folder, queries, clock
 
     def exit_code(self, process_id: int, output: Output) -> int:
-        said, offset = -1, 0
+        stated, offset = -1, 0
         while True:
             process = self.queries.query(Process).find(process_id)
-            if process.queued_at is not None and (ahead := self.ahead(process)) != said:
+            if process.queued_at is not None and (ahead := self.ahead(process)) != stated:
                 output.line(f"waiting: {ahead} ahead of you")
-                said = ahead
+                stated = ahead
             has_ended = process.ended_at is not None
             page = self.folder.page_after(process_id, offset, has_ended)
             for line in page.lines:
@@ -36,4 +36,4 @@ class QueuedRunFollow:
 
     def ahead(self, process: Process) -> int:
         waiting = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(HasValue("queued_at")).every_row(QUEUED_RUNS_REASON)
-        return sum((other.priority.rank, other.id) < (process.priority.rank, process.id) for other in waiting)
+        return sum((different.priority.rank, different.id) < (process.priority.rank, process.id) for different in waiting)

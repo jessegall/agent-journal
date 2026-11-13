@@ -15,16 +15,16 @@ from core.modules.processes.support.decisions.reading_decision import ReadingDec
 from core.modules.processes.support.decisions.reading_decisions import ReadingDecisions
 
 
-def stored_decision(story: Story, process: Process, moment: ReadingMoment, decision: ReadingDecision) -> None:
+def stored_decision(story: Story, process: Process, point: ReadingMoment, decision: ReadingDecision) -> None:
     part = story.container.get(Queries).query(ProcessPart).filter(process_id=process.id, position=1).first()
     context = Context(Actor.core(), story.clock.timestamp(), MoveProcess(process.id), environment_id=process.environment_id)
     decisions = story.container.get(ReadingDecisions)
-    decisions.store(process, part, moment, decision, decisions.kept(process, moment).get(part.position), context)
+    decisions.store(process, part, point, decision, decisions.kept(process, point).get(part.position), context)
 
 
-def stored_missing_reader(story: Story, process: Process, moment: ReadingMoment) -> None:
-    stored_decision(story, process, moment, ReadingDecision.pressing(ReaderState.MISSING, ReaderAction.REQUIRE, PressureLevel.PREVENT, ReasonCode.READER_MISSING, tuple([ReadingExit.COMPLY])))
+def stored_missing_reader(story: Story, process: Process, point: ReadingMoment) -> None:
+    stored_decision(story, process, point, ReadingDecision.pressing(ReaderState.MISSING, ReaderAction.REQUIRE, PressureLevel.PREVENT, ReasonCode.READER_MISSING, tuple([ReadingExit.COMPLY])))
 
 
-def stored_suitable_reader(story: Story, process: Process, moment: ReadingMoment) -> None:
-    stored_decision(story, process, moment, ReadingDecision.nothing(ReaderState.SUITABLE))
+def stored_suitable_reader(story: Story, process: Process, point: ReadingMoment) -> None:
+    stored_decision(story, process, point, ReadingDecision.nothing(ReaderState.SUITABLE))

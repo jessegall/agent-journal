@@ -26,8 +26,8 @@ class Agents:
 
 
 class Worktrees:
-    def __init__(self, found: bool = True) -> None:
-        self.found = found
+    def __init__(self, matched: bool = True) -> None:
+        self.found = matched
 
     def worker_worktree(self, worker_id: int):
         return WORKTREE if self.found else None
@@ -122,7 +122,7 @@ def test_the_main_agent_may_order_after_a_pass_and_another_agent_is_refused():
 
 
 @pytest.mark.parametrize("checks, worktrees, refusal", [(Checks(), None, "no open check for this worker"), (Checks(State.LEFT, State.UPDATED), None, "no open check for this worker"),
-                                                        (Checks(State.OPEN), Worktrees(found=False), "no worker 999 with a worktree in this environment")])
+                                                        (Checks(State.OPEN), Worktrees(matched=False), "no worker 999 with a worktree in this environment")])
 def test_an_order_is_refused_with_no_check_to_decide_or_no_worktree(checks, worktrees, refusal):
     with pytest.raises(Refusal, match=refusal):
         ordered_by(MERGER, checks, worktrees)

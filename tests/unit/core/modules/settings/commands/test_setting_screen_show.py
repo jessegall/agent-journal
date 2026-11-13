@@ -15,8 +15,8 @@ class RecordingScreens:
 
 def test_a_screen_is_read_by_its_name():
     screens = RecordingScreens()
-    reading = SettingScreenShowSubcommand(screens).read(Namespace(screen="work", type=""), None)
-    assert (screens.asked, reading.screen) == (["work"], "work")
+    read = SettingScreenShowSubcommand(screens).read(Namespace(screen="work", type=""), None)
+    assert (screens.asked, read.screen) == (["work"], "work")
 
 
 def test_a_helper_type_names_the_screen_after_a_dot():

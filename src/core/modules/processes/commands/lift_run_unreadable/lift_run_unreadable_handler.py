@@ -18,8 +18,8 @@ class LiftRunUnreadableHandler(Handler[LiftRunUnreadable, UnreadableMark]):
 
     command = LiftRunUnreadable
 
-    def __init__(self, rows: EventRows, words: RunCommandWords, marks: UnreadableMarks, nudger: Nudger) -> None:
-        self.rows, self.words, self.marks, self.nudger = rows, words, marks, nudger
+    def __init__(self, rows: EventRows, terms: RunCommandWords, marks: UnreadableMarks, nudger: Nudger) -> None:
+        self.rows, self.words, self.marks, self.nudger = rows, terms, marks, nudger
 
     def handle(self, command: LiftRunUnreadable, context: Context) -> UnreadableMark:
         process = self.rows.required(Process, command.process_id)

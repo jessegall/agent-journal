@@ -84,9 +84,9 @@ def test_a_short_proof_of_a_task_with_a_shown_proof_refuses_the_commit_beside_a_
 def test_a_short_proof_of_a_task_with_no_shown_proof_leaves_that_task_out_and_refuses_only_when_nothing_is_ready():
     short = proof(CART, 1, ProofState.SHORT)
     beside_a_ready_task = Staging.grouped((CART, TOTALS), (short, proof(CART, 2, ProofState.CHECKED), proof(TOTALS, 1)))
-    alone = Staging.grouped(tuple([CART]), (short, proof(CART, 2, ProofState.CHECKED)))
+    single = Staging.grouped(tuple([CART]), (short, proof(CART, 2, ProofState.CHECKED)))
     assert (beside_a_ready_task.ready, beside_a_ready_task.unproved, beside_a_ready_task.refused_short()) == (tuple([TOTALS]), tuple([CART]), ())
-    assert (alone.ready, alone.refused_short()) == ((), tuple([short]))
+    assert (single.ready, single.refused_short()) == ((), tuple([short]))
 
 
 def test_a_cancelled_task_is_named_in_the_notes_as_left_out():

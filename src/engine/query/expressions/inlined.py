@@ -18,8 +18,8 @@ class Inlined(Expression):
 
     def text(self) -> str:
         statement = self.condition.statement()
-        pieces = statement.sql.split(PLACEHOLDER)
+        parts = statement.sql.split(PLACEHOLDER)
         values = [Literal(value).sql() for value in statement.parameters]
-        if len(values) != len(pieces) - 1:
-            raise ValueError(f"{len(values)} values for {len(pieces) - 1} placeholders in {statement.sql}")
-        return "".join(piece + value for piece, value in zip(pieces, [*values, ""]))
+        if len(values) != len(parts) - 1:
+            raise ValueError(f"{len(values)} values for {len(parts) - 1} placeholders in {statement.sql}")
+        return "".join(part + value for part, value in zip(parts, [*values, ""]))

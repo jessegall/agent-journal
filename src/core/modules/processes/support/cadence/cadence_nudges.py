@@ -12,10 +12,10 @@ class CadenceNudges:
     text of the output or of the command goes into a notice."""
 
     @staticmethod
-    def notice(kind: NoticeKind, process: Process, part: ProcessPart, seconds: int, limit: int) -> CadenceNotice:
+    def notice(category: NoticeKind, process: Process, part: ProcessPart, seconds: int, limit: int) -> CadenceNotice:
         command = part.command or part.text
         hint = StreamingHints.hint(command)
-        match kind:
+        match category:
             case NoticeKind.NO_OUTPUT if part.saved_command:
                 declaration = SILENT_SAVED_PACKAGES if StreamingHints.is_serial_packages_run(command) else SILENT_SAVED_RUN
                 return CadenceNotice(declaration, {"name": part.saved_command, "seconds": seconds})

@@ -33,5 +33,5 @@ class MakeProofSubcommand(Subcommand[MakeProof, Proof]):
 
     def write_output(self, value: Proof, output: Output) -> None:
         super().write_output(value, output)
-        held = {task.id for task in self.tasks.started_tasks(value.creator_id)}
-        output.line(WaitingProofs(tuple(proof for proof in self.proofs.waiting_proofs(value.worktree_id).every_row(WAITING_PROOFS_REASON) if proof.task_id in held)).text())
+        blocked = {task.id for task in self.tasks.started_tasks(value.creator_id)}
+        output.line(WaitingProofs(tuple(proof for proof in self.proofs.waiting_proofs(value.worktree_id).every_row(WAITING_PROOFS_REASON) if proof.task_id in blocked)).text())

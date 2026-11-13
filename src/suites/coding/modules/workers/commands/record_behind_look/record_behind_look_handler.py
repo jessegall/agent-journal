@@ -17,8 +17,8 @@ class RecordBehindLookHandler(Handler[RecordBehindLook, None]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: RecordBehindLook, context: Context) -> None:
-        look = self.queries.query(WorktreeBehindLook).first()
-        if look is None:
+        check = self.queries.query(WorktreeBehindLook).first()
+        if check is None:
             self.repository.save(WorktreeBehindLook(looked_at=context.timestamp), context)
             return
-        self.repository.update(look, context, looked_at=context.timestamp)
+        self.repository.update(check, context, looked_at=context.timestamp)

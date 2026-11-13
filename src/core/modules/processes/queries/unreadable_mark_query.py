@@ -16,8 +16,8 @@ class UnreadableMarkQuery(Query[UnreadableMark]):
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, UnreadableMark)
 
-    def of_words(self, leading_words: Sequence[str]) -> Self:
-        return self.matching(Among("words", leading_words))
+    def of_words(self, leading_terms: Sequence[str]) -> Self:
+        return self.matching(Among("words", leading_terms))
 
     def standing(self) -> Self:
         return self.filter(lifted_at=None)

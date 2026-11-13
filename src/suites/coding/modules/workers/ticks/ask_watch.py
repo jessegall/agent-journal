@@ -26,8 +26,8 @@ class AskWatch:
                 continue
             with container.get(Scopes).row_scope(line):
                 deadline = AskDeadline.from_line(line, container.get(SettingValues).number(QUESTION_VISITS_LIMIT))
-                is_worker_gone = container.get(WorktreeQuery).worker_worktree(line.worker_id) is None
-                if is_worker_gone or deadline.is_forward_due(timestamp):
+                is_worker_removed = container.get(WorktreeQuery).worker_worktree(line.worker_id) is None
+                if is_worker_removed or deadline.is_forward_due(timestamp):
                     forwarded_workers.add(line.worker_id)
                     container.get(Bus).run(ForwardWorkerQuestions(line.worker_id), Actor.core(), environment_id=line.environment_id)
                 elif deadline.is_answer_overdue(timestamp):

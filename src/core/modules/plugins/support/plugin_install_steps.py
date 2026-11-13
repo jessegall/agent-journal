@@ -46,7 +46,7 @@ class PluginInstallSteps:
 
     def shell(self, line: str, plugin_name: str, folder: Path) -> "subprocess.CompletedProcess[str]":
         try:
-            done = self.executor.execute(ExecutionRequest(["sh", "-c", line], folder, ProcessKind.PLUGIN, STEP_LIMIT_SECONDS, variables=self.program.environment(plugin_name, "")))
+            finished = self.executor.execute(ExecutionRequest(["sh", "-c", line], folder, ProcessKind.PLUGIN, STEP_LIMIT_SECONDS, variables=self.program.environment(plugin_name, "")))
         except RunTimeLimitError as error:
             raise subprocess.TimeoutExpired(line, STEP_LIMIT_SECONDS) from error
-        return subprocess.CompletedProcess(["sh", "-c", line], done.exit_code, done.stdout, done.stderr)
+        return subprocess.CompletedProcess(["sh", "-c", line], finished.exit_code, finished.stdout, finished.stderr)

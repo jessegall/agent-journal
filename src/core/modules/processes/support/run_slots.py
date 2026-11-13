@@ -30,22 +30,22 @@ class RunSlots:
     """Admits every run, granting immediate runs and giving waiting runs capacity in order; a run of a kind with
     its own limit also waits while that many of its kind run."""
 
-    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt, admission: RunAdmission, clock: Clock, listings: RunCounts, rows: EventRows, kept: KeptRows, scopes: Scopes, outputs: OutputQuery, kind_limits: ProcessKindLimits) -> None:
+    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder, settings: ProcessSettings, halt: RunQueueHalt, admission: RunAdmission, clock: Clock, listings: RunCounts, rows: EventRows, kept: KeptRows, scopes: Scopes, outputs: OutputQuery, category_limits: ProcessKindLimits) -> None:
         self.queries, self.repository, self.folder, self.settings, self.halt = queries, repository, folder, settings, halt
         self.admission, self.clock, self.listings = admission, clock, listings
         self.rows, self.kept, self.scopes, self.outputs = rows, kept, scopes, outputs
-        self.kind_limits = kind_limits
+        self.kind_limits = category_limits
 
     def grant(self, context: Context) -> None:
         queued = sorted((process for process in self.running() if process.queued_at is not None), key=lambda process: (process.priority.rank, process.id))
         parts = self.admission.waiting_parts(queued)
         processes = self.rows.required_index(Process, [waiting.id for waiting in queued])
         agents = self.rows.required_index(Agent, [waiting.session_agent_id for waiting in queued])
-        kinds = self.kind_limits.pass_over(queued)
+        categories = self.kind_limits.pass_over(queued)
         for waiting in queued:
             agent = agents[waiting.session_agent_id]
             needs_slot = self.admission.needs_slot(waiting, agent)
-            if not self.admission.may_start(waiting, agent, parts[waiting.id], self.clock.timestamp()) or kinds.is_held(waiting, self.admitted_runs()):
+            if not self.admission.may_start(waiting, agent, parts[waiting.id], self.clock.timestamp()) or categories.is_held(waiting, self.admitted_runs()):
                 continue
             process = processes[waiting.id]
             used_slots = sum(self.admission.uses_slot(run) for run in self.running() if run.queued_at is None)
@@ -56,7 +56,7 @@ class RunSlots:
             admitted = replace(process, queued_at=None, slot_assigned=needs_slot, started_at=context.timestamp)
             saved = self.repository.save_change(process, admitted, context)
             self.remember(saved)
-            kinds.admitted(saved)
+            categories.admitted(saved)
 
     def grant_journal_merge(self, process: Process) -> None:
         """A merge the journal runs itself waits in no queue: its slot is written at once."""

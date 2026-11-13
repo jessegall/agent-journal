@@ -69,7 +69,7 @@ def test_the_inspector_explains_a_server_restart(new_story):
 def test_an_agents_processes_tab_lists_only_that_agents_running_waiting_and_finished_runs(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
     worker = story.new_row_id("agent start processes-worker claude worker --environment main")
-    other = story.new_row_id("agent start other-worker claude worker --environment main")
+    different = story.new_row_id("agent start other-worker claude worker --environment main")
     story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=story.user)
     story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --environment main", actor=story.user)
     story.agent = Actor(worker, ActorType.AGENT)
@@ -77,7 +77,7 @@ def test_an_agents_processes_tab_lists_only_that_agents_running_waiting_and_fini
     end_run(story, finished, "done\n")
     running = start_process(story, "make package", category=CommandCategory.BUILD)
     waiting = start_process(story, "make checks", category=CommandCategory.TEST_RUN)
-    story.agent = Actor(other, ActorType.AGENT)
+    story.agent = Actor(different, ActorType.AGENT)
     start_process(story, "make site", category=CommandCategory.BUILD)
     queue = json.loads(story.run(f"queue list --environment 1 --agent {agent_number(story, worker)} --json", actor=story.user).output_text)
     story.expect_rows([row["id"] for row in queue["running"]] == [running.id], [row["id"] for row in queue["waiting"]] == [waiting.id],

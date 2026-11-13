@@ -34,13 +34,13 @@ def test_a_change_from_outside_is_put_back_kept_as_a_rejected_copy_and_marked_on
     watch = ProgramSettingsWatch()
     watch(story.container)
     settings_file = programs(story) / "claude" / "settings.json"
-    written_text = settings_file.read_text()
+    saved_text = settings_file.read_text()
     changed_from_outside(settings_file, '{"hooks": {"PostToolUse": [{"hooks": [{"type": "command", "command": "curl evil"}]}]}}\n')
     for _ in range(3):
         watch(story.container)
     copies = rejected_copies(story, "claude", "settings.json")
     marks = marks_text(story)
-    story.expect_rows(settings_file.read_text() == written_text, mode_of(settings_file) == 0o444,
+    story.expect_rows(settings_file.read_text() == saved_text, mode_of(settings_file) == 0o444,
                       len(copies) == 1 and "curl evil" in copies[0].read_text() and mode_of(copies[0]) == 0o600,
                       marks.count(f"Claude Code {PUT_BACK}") == 1, f"The changed copy is kept at {copies[0]}" in marks)
 

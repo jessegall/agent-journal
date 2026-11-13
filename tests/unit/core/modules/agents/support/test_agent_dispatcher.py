@@ -142,13 +142,13 @@ def test_a_start_with_no_launcher_fails_and_records_one_failure():
 
 
 def test_a_stop_ends_the_row_only_once_the_launcher_has_no_program_of_the_agent():
-    gone, running = Parts(), Parts()
-    gone.launcher(STOPPED, NOTHING)
+    removed, running = Parts(), Parts()
+    removed.launcher(STOPPED, NOTHING)
     running.launcher(STOPPED, RUNNING)
-    assert gone.dispatcher.stop(HELPER, StopReason.PERSON, CONTEXT) is Stopped.PROGRAM_ENDED
+    assert removed.dispatcher.stop(HELPER, StopReason.PERSON, CONTEXT) is Stopped.PROGRAM_ENDED
     assert running.dispatcher.stop(HELPER, StopReason.PERSON, CONTEXT) is Stopped.PROGRAM_RUNNING
-    assert (gone.repository.ended_ids, running.repository.ended_ids) == ([41], [])
-    assert (gone.session_reasons, running.session_reasons) == ([StopReason.PERSON], [])
+    assert (removed.repository.ended_ids, running.repository.ended_ids) == ([41], [])
+    assert (removed.session_reasons, running.session_reasons) == ([StopReason.PERSON], [])
 
 
 def test_the_exit_of_the_current_process_ends_the_row_and_the_exit_of_an_earlier_process_changes_nothing():
@@ -168,9 +168,9 @@ def test_the_exit_of_the_current_process_ends_the_row_and_the_exit_of_an_earlier
 ])
 def test_the_standing_is_one_answer_from_the_launcher_and_the_row(agent, answer, stage, reason):
     parts = Parts(end_reason="stopped by a user")
-    held = parts.launcher(answer)
+    blocked = parts.launcher(answer)
     standing = parts.dispatcher.standing(agent)
-    assert (standing.stage, standing.reason, len(held.requests)) == (stage, reason, 1)
+    assert (standing.stage, standing.reason, len(blocked.requests)) == (stage, reason, 1)
 
 
 def test_reconcile_opens_a_row_that_ended_while_its_program_runs_and_records_it():
@@ -205,10 +205,10 @@ def test_the_dispatcher_writes_the_opening_of_a_row_and_the_process_of_a_session
 
 
 def test_an_agent_whose_recorded_process_is_gone_ends_unless_the_launcher_has_its_program():
-    gone, launched = Parts(), Parts()
-    gone.launcher(NOTHING)
+    removed, launched = Parts(), Parts()
+    removed.launcher(NOTHING)
     launched.launcher(RUNNING)
-    gone.dispatcher.end_lost_process(replace(HELPER, pid=700), CONTEXT)
+    removed.dispatcher.end_lost_process(replace(HELPER, pid=700), CONTEXT)
     launched.dispatcher.end_lost_process(replace(HELPER, pid=700), CONTEXT)
-    assert (gone.repository.ended_ids, gone.repository.updates) == ([41], [{"pid": None, "process_started_at": None}])
+    assert (removed.repository.ended_ids, removed.repository.updates) == ([41], [{"pid": None, "process_started_at": None}])
     assert (launched.repository.ended_ids, launched.repository.updates) == ([], [])

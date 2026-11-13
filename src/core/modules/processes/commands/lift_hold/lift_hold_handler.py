@@ -23,17 +23,17 @@ class LiftHoldHandler(Handler[LiftHold, int]):
 
     command = LiftHold
 
-    def __init__(self, queries: Queries, held_runs: HeldRuns, folder: OutputFolder, bus: Bus, nudger: Nudger) -> None:
-        self.queries, self.held_runs, self.folder, self.bus, self.nudger = queries, held_runs, folder, bus, nudger
+    def __init__(self, queries: Queries, blocked_runs: HeldRuns, folder: OutputFolder, bus: Bus, nudger: Nudger) -> None:
+        self.queries, self.held_runs, self.folder, self.bus, self.nudger = queries, blocked_runs, folder, bus, nudger
 
     def handle(self, command: LiftHold, context: Context) -> int:
         if not context.actor.is_person():
             raise Refusal("only a user lifts a hold, on the agent's card", "take one of the exits the hold lists")
         lifted = 0
-        held = self.held_runs.found(command.agent_id, context.timestamp)
-        if held is not None:
-            self.folder.write_read_mark(held.process.id, LOOKED_MARK, context.timestamp.text)
-            self.nudger.send(command.agent_id, HOLD_LIFTED, SOURCE, context, output=held.process.id)
+        blocked = self.held_runs.found(command.agent_id, context.timestamp)
+        if blocked is not None:
+            self.folder.write_read_mark(blocked.process.id, LOOKED_MARK, context.timestamp.text)
+            self.nudger.send(command.agent_id, HOLD_LIFTED, SOURCE, context, output=blocked.process.id)
             lifted += 1
         blocks = self.queries.query(AgentBlock).filter(session_agent_id=command.agent_id, closed_at=None).get()
         for block in tuple(blocks):

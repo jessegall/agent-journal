@@ -26,14 +26,14 @@ class ProjectManifests:
     walks the folder again, so a changed or new manifest counts at once."""
 
     def found(self, folder: Path) -> tuple[ProjectManifest, ...]:
-        read = [found for place, file_names in self.manifest_folders(folder) for found in self.read_folder(folder, place, file_names)]
-        tool_counts = Counter(found.tool for found in read if found.command is not None)
+        read = [matched for place, file_names in self.manifest_folders(folder) for matched in self.read_folder(folder, place, file_names)]
+        tool_counts = Counter(matched.tool for matched in read if matched.command is not None)
         manifests: list[ProjectManifest] = []
         names: set[str] = set()
         commands: set[str] = set()
-        for found in read:
-            entry = self.named(found.tool, found.place, found.command, tool_counts[found.tool] == 1 or found.place == ROOT, names, commands)
-            manifests.append(ProjectManifest(str(PurePosixPath(found.place) / found.file_name) if found.place != ROOT else found.file_name, found.language, entry))
+        for matched in read:
+            entry = self.named(matched.tool, matched.place, matched.command, tool_counts[matched.tool] == 1 or matched.place == ROOT, names, commands)
+            manifests.append(ProjectManifest(str(PurePosixPath(matched.place) / matched.file_name) if matched.place != ROOT else matched.file_name, matched.language, entry))
         return tuple(manifests)
 
     @staticmethod

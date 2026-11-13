@@ -82,10 +82,10 @@ def test_a_sparse_pytest_run_keeps_running_and_after_printing_often_is_told_only
     expect_told(story, MAIN, RUN_SPARSE.nudge(output=process.id, seconds=50, hint='run pytest without -q').text)
     story.expect_text(f"process show {process.id}", "state: background", actor=story.agent)
     ticks(story, 80, process, every=10)
-    quiet = cadence_lines(told(story, MAIN))
+    silent = cadence_lines(told(story, MAIN))
     ticks(story, 120, process)
     expect_told(story, MAIN, f"Output {process.id} has written nothing for 120s and is still running")
-    story.expect_rows(quiet == [], detail="\n".join(quiet))
+    story.expect_rows(silent == [], detail="\n".join(silent))
 
 
 def test_a_read_only_helper_is_told_its_own_run_is_sparse(new_story):

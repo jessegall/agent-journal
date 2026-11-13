@@ -23,11 +23,11 @@ class WorkerTestArguments:
     only when it holds a letter, digit or underscore: ., .* or ^ match every test and are the whole suite."""
 
     @classmethod
-    def check(cls, test_arguments: Sequence[str], line_words: Sequence[str]) -> None:
+    def check(cls, test_arguments: Sequence[str], line_terms: Sequence[str]) -> None:
         for argument in test_arguments:
             if cls.is_forbidden(argument):
                 raise Refusal(f"{argument} cannot change the program or leave the worktree", "give only test files and plain options")
-        if cls.is_full_suite(line_words):
+        if cls.is_full_suite(line_terms):
             raise Refusal(FULL_SUITE_REFUSAL, "journal worker test <name> <test files>")
 
     @classmethod

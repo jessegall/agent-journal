@@ -80,9 +80,9 @@ def test_24_the_merger_is_not_woken_by_a_commit_of_a_unit_of_more(new_story, mon
 
 def test_25_main_hears_nothing_per_commit(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    before = worker.main_agent_lines()
+    previous = worker.main_agent_lines()
     commit_each(worker, (1, 2))
-    worker.story.expect_rows(worker.main_agent_lines() == before, detail=str(worker.main_agent_lines()))
+    worker.story.expect_rows(worker.main_agent_lines() == previous, detail=str(worker.main_agent_lines()))
 
 
 def test_26_a_list_of_three_tasks_is_merged_once(new_story, monkeypatch):
@@ -117,6 +117,6 @@ def test_a_worker_waiting_with_its_unit_committed_is_woken_by_the_pass(new_story
 def test_a_stop_of_a_worker_whose_unit_is_committed_is_no_report(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
     commit_each(worker, (1, 2, 3))
-    before = worker.main_agent_lines()
+    previous = worker.main_agent_lines()
     worker.stop()
-    worker.story.expect_rows(worker.main_agent_lines() == before, detail=str(worker.main_agent_lines()))
+    worker.story.expect_rows(worker.main_agent_lines() == previous, detail=str(worker.main_agent_lines()))

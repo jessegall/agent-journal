@@ -28,7 +28,7 @@ class LongRunCandidate:
 
     def statement(self) -> Statement:
         parts = Select("process_parts").matching(ColumnCompare("process_id", "=", "processes.id"))
-        moved_with_other_work = AllOf([Greater("moved_at", ""), Exists(parts.matching(Among("category", FILE_CATEGORIES, negated=True)))])
-        old_enough = AllOf([Less("started_at", self.start_cutoff), AnyOf([ColumnCompare("creator_id", "!=", "session_agent_id"), Exists(parts.matching(Equal("is_visible", 1))), moved_with_other_work])])
+        moved_with_different_work = AllOf([Greater("moved_at", ""), Exists(parts.matching(Among("category", FILE_CATEGORIES, negated=True)))])
+        old_enough = AllOf([Less("started_at", self.start_cutoff), AnyOf([ColumnCompare("creator_id", "!=", "session_agent_id"), Exists(parts.matching(Equal("is_visible", 1))), moved_with_different_work])])
         docked = Select("dock_items").matching(Equal("type", ProcessDockType.OUTPUT.value)).matching(Equal("target_model", "process")).matching(Equal("state", DockItemState.DOCKED.value))
         return AnyOf([old_enough, SubqueryMatch("id", docked.column("target_id"))]).statement()

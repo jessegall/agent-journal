@@ -33,7 +33,7 @@ class SettingViewCheck:
                 yield path
 
     def named_keys(self, text: str, keys: frozenset[str]) -> list[str]:
-        return sorted({found for found in SETTING_KEY.findall(text) if found in keys})
+        return sorted({matched for matched in SETTING_KEY.findall(text) if matched in keys})
 
     def failures(self) -> list[str]:
         keys = self.declared_keys()
@@ -49,5 +49,5 @@ class SettingViewCheck:
         return [path for path in self.allowed if not (self.project_folder / path).is_file()]
 
     def component_failures(self) -> list[str]:
-        entries: list[SettingEntry] = [entry for module in self.modules for entry in SettingTree().entries(module.name, module.settings) if entry.type in {kind.value for kind in SettingType}]
-        return [f"{entry.key} is a {entry.type}, which the component {entry.drawn_by().value} cannot draw" for entry in entries if entry.type not in {kind.value for kind in entry.drawn_by().kinds()}]
+        entries: list[SettingEntry] = [entry for module in self.modules for entry in SettingTree().entries(module.name, module.settings) if entry.type in {category.value for category in SettingType}]
+        return [f"{entry.key} is a {entry.type}, which the component {entry.drawn_by().value} cannot draw" for entry in entries if entry.type not in {category.value for category in entry.drawn_by().kinds()}]

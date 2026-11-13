@@ -15,13 +15,13 @@ class ProcessRowWrapper(RequestRecords):
     def __init__(self, log: RequestLog, clock: Clock, errors: ErrorLog) -> None:
         self.log, self.clock, self.errors = log, clock, errors
 
-    def ended_now(self, kind: ProcessKind, line: str, exit_code: int) -> None:
+    def ended_now(self, category: ProcessKind, line: str, exit_code: int) -> None:
         if self.caller is None:
             return
         actor, environment_id = self.caller
         if environment_id is None:
             return
-        self.log.append(RequestLogEntry(environment_id, actor.id if actor.is_agent() else None, kind, line, exit_code, self.clock.timestamp().text))
+        self.log.append(RequestLogEntry(environment_id, actor.id if actor.is_agent() else None, category, line, exit_code, self.clock.timestamp().text))
 
     def recorded_hook(self, agent_id: int, environment_id: int, line: str, exit_code: int) -> None:
         self.log.append(RequestLogEntry(environment_id, agent_id, ProcessKind.HOOK, line, exit_code, self.clock.timestamp().text))

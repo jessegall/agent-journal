@@ -19,8 +19,8 @@ class SilentRunHoldRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
 
-    def __init__(self, held_runs: HeldRuns) -> None:
-        self.held_runs = held_runs
+    def __init__(self, blocked_runs: HeldRuns) -> None:
+        self.held_runs = blocked_runs
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool

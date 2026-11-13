@@ -79,8 +79,8 @@ def test_33_35_a_second_run_follows_the_failed_one_and_runs_only_what_failed(run
     fixed_task(worker, 3)
     worker.story.run(COMMIT, actor=worker.worker)
     worker.story.run_listeners()
-    again = [process.line for process in worker.started_processes()[started_count:]]
-    worker.story.expect_rows(SECOND_TEST_LINE not in again, TEST_LINE in again, detail=str(again))
+    repeated = [process.line for process in worker.started_processes()[started_count:]]
+    worker.story.expect_rows(SECOND_TEST_LINE not in repeated, TEST_LINE in repeated, detail=str(repeated))
     worker.story.expect_rows([row["state"] for row in worker_reaches(worker)] == ["failed", "running"], detail=str(worker_reaches(worker)))
 
 

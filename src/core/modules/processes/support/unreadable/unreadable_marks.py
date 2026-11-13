@@ -26,37 +26,37 @@ class UnreadableMarks:
         return self.marks.standing().of_words(UnreadableMarks.covering_words(command)).newest().first()
 
     def marked_among(self, commands: Sequence[str]) -> frozenset[str]:
-        covering, words = UnreadableMarks.covered_by(commands)
-        marked = set(self.marks.standing().of_words(words).pluck("words", str))
-        return frozenset(command for command, leading in covering.items() if marked.intersection(leading))
+        covering, terms = UnreadableMarks.covered_by(commands)
+        flagged = set(self.marks.standing().of_words(terms).pluck("words", str))
+        return frozenset(command for command, leading in covering.items() if flagged.intersection(leading))
 
     def excuses(self, command: str) -> bool:
         return self.marked(command) is not None
 
     def last_marked_among(self, commands: Sequence[str]) -> dict[str, Timestamp | None]:
-        covering, words = UnreadableMarks.covered_by(commands)
+        covering, terms = UnreadableMarks.covered_by(commands)
         newest: dict[str, Timestamp] = {}
-        for mark in self.marks.of_words(words).every_row(MARKS_OF_WORDS_REASON):
+        for mark in self.marks.of_words(terms).every_row(MARKS_OF_WORDS_REASON):
             made_at = mark.creation_timestamp()
             if mark.words not in newest or made_at > newest[mark.words]:
                 newest[mark.words] = made_at
         return {command: max((newest[word] for word in leading if word in newest), default=None) for command, leading in covering.items()}
 
-    def declare(self, creator_id: int, words: str, note: str, context: Context) -> UnreadableMark:
-        return self.mark(creator_id, words, UnreadableReason.DECLARED, UnreadableMarks.checked_note(note), context)
+    def declare(self, creator_id: int, terms: str, note: str, context: Context) -> UnreadableMark:
+        return self.mark(creator_id, terms, UnreadableReason.DECLARED, UnreadableMarks.checked_note(note), context)
 
-    def mark(self, creator_id: int, words: str, reason: UnreadableReason, note: str, context: Context) -> UnreadableMark:
-        return self.repository.save(UnreadableMark(creator_id=creator_id, words=UnreadableMarks.leading_words(words), reason=reason, note=note), context)
+    def mark(self, creator_id: int, terms: str, reason: UnreadableReason, note: str, context: Context) -> UnreadableMark:
+        return self.repository.save(UnreadableMark(creator_id=creator_id, words=UnreadableMarks.leading_words(terms), reason=reason, note=note), context)
 
-    def lift(self, words: str, lifter_id: int, context: Context) -> UnreadableMark:
-        mark = self.marks.standing().of_words([UnreadableMarks.leading_words(words)]).newest().first()
+    def lift(self, terms: str, lifter_id: int, context: Context) -> UnreadableMark:
+        mark = self.marks.standing().of_words([UnreadableMarks.leading_words(terms)]).newest().first()
         if mark is None:
-            raise Refusal(f"no command {words} is marked unreadable", "journal unreadable-mark list shows the marked commands")
+            raise Refusal(f"no command {terms} is marked unreadable", "journal unreadable-mark list shows the marked commands")
         return self.repository.update(mark, context, lifter_id=lifter_id, lifted_at=context.timestamp)
 
     @staticmethod
-    def leading_words(words: str) -> str:
-        return " ".join(words.split())
+    def leading_words(terms: str) -> str:
+        return " ".join(terms.split())
 
     @staticmethod
     def checked_note(note: str) -> str:
@@ -76,5 +76,5 @@ class UnreadableMarks:
         return covering, sorted({word for leading in covering.values() for word in leading})
 
     @staticmethod
-    def covers(words: str, command: str) -> bool:
-        return UnreadableMarks.leading_words(words) in UnreadableMarks.covering_words(command)
+    def covers(terms: str, command: str) -> bool:
+        return UnreadableMarks.leading_words(terms) in UnreadableMarks.covering_words(command)

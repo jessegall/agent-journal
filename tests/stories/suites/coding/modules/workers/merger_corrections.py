@@ -150,11 +150,11 @@ def test_100_a_deferral_past_the_most_deferrals_of_one_checkpoint_is_refused_wit
 
 def test_103_153_a_deferral_settles_the_question_of_the_worker_as_fixed_and_the_worker_card_lists_it_with_its_time(later_stories_failed):
     story = later_stories_failed.story
-    asked = [row for row in rows(later_stories_failed.worker, "merger-line list --json --oldest --limit 20 --environment main") if row["topic"]]
-    outcome = later_stories_failed.defer(flags=f" --ask {asked[-1]['id']}")
-    settled = next(row for row in rows(later_stories_failed.worker, "merger-line list --json --oldest --limit 20 --environment main") if row["id"] == asked[-1]["id"])
+    requested = [row for row in rows(later_stories_failed.worker, "merger-line list --json --oldest --limit 20 --environment main") if row["topic"]]
+    outcome = later_stories_failed.defer(flags=f" --ask {requested[-1]['id']}")
+    resolved = next(row for row in rows(later_stories_failed.worker, "merger-line list --json --oldest --limit 20 --environment main") if row["id"] == requested[-1]["id"])
     status = story.run("worker status --json", actor=later_stories_failed.worker.worker).output_text
-    story.expect_rows(outcome.code == 0, settled["outcome"] == "fixed", f"ask {settled['id']} was " in status, " at 09:00" in status, detail=f"{outcome.output_text} | {settled} | {status}")
+    story.expect_rows(outcome.code == 0, resolved["outcome"] == "fixed", f"ask {resolved['id']} was " in status, " at 09:00" in status, detail=f"{outcome.output_text} | {resolved} | {status}")
 
 
 def test_106_a_deferral_is_refused_when_the_own_test_of_the_checkpoint_did_not_fail(new_story, monkeypatch):

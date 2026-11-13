@@ -41,8 +41,8 @@ class StalledWorkerTestRuns:
         if not running:
             return
         current = container.get(Clock).timestamp()
-        stuck_minutes = int(container.get(SettingValues).number(STUCK_PROOF_RUN_MINUTES))
-        stuck_seconds = stuck_minutes * 60
+        hung_minutes = int(container.get(SettingValues).number(STUCK_PROOF_RUN_MINUTES))
+        hung_seconds = hung_minutes * 60
         processes = {process.id: process for process in container.get(Queries).query(Process).matching(Among("id", [proof.process_id for proof in running])).every_row(STALLED_RUNS_REASON)}
         for proof in running:
             process = processes.get(proof.process_id)
@@ -50,8 +50,8 @@ class StalledWorkerTestRuns:
                 record = RecordWorkerTest(proof.id, False, GONE_RUN_NOTE.format(process=proof.process_id))
             elif process.ended_at is not None and process.ended_at.elapsed_seconds(current) > ENDED_GRACE_SECONDS:
                 record = RecordWorkerTest(proof.id, process.succeeded, ENDED_RUN_NOTE.format(process=process.id))
-            elif proof.update_timestamp().elapsed_seconds(current) >= stuck_seconds:
-                record = EndStuckProofRun(proof.id, stuck_minutes)
+            elif proof.update_timestamp().elapsed_seconds(current) >= hung_seconds:
+                record = EndStuckProofRun(proof.id, hung_minutes)
             else:
                 continue
             container.get(Bus).run(record, Actor.core(), environment_id=environments[proof.worktree_id])

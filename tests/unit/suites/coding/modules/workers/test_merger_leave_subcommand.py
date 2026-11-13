@@ -31,7 +31,7 @@ def test_the_main_agent_may_leave_a_passed_check_and_another_agent_is_refused():
 
 
 @pytest.mark.parametrize("checks, worktrees, refusal", [(Checks(State.ORDERED), None, "no open check for this worker"), (Checks(State.LEFT), None, "no open check for this worker"),
-                                                        (Checks(State.OPEN), Worktrees(found=False), "no worker 999 with a worktree in this environment")])
+                                                        (Checks(State.OPEN), Worktrees(matched=False), "no worker 999 with a worktree in this environment")])
 def test_leaving_is_refused_with_no_check_to_decide_or_no_worktree(checks, worktrees, refusal):
     with pytest.raises(Refusal, match=refusal):
         left_by(MERGER, checks, worktrees)

@@ -25,8 +25,8 @@ class AgentRows:
 
 
 def aged(path, clock: Clock, seconds: float) -> None:
-    moment = clock.epoch_seconds() - seconds
-    os.utime(path, (moment, moment))
+    point = clock.epoch_seconds() - seconds
+    os.utime(path, (point, point))
 
 
 def test_old_scan_states_and_ended_agents_old_terminal_logs_go_while_the_rest_stay(tmp_path):

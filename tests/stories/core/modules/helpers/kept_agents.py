@@ -332,11 +332,11 @@ def test_an_idle_helper_on_another_model_is_not_reused_and_a_start_on_its_own_mo
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
-    other_model = "opus" if helper.program_model != "opus" else "sonnet"
+    different_model = "opus" if helper.program_model != "opus" else "sonnet"
     launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"started 703\n", request_count=2)
     story.expect_refusal(f'helper start {RESEARCHER_PROFILE.name} --model {helper.program_model} --brief "Read src/queue.py" --environment main', f"helper {agent_number(story, helper.id)} is idle", actor=story.agent)
-    started = story.new_row_id(f'helper start {RESEARCHER_PROFILE.name} --model {other_model} --brief "Read src/tax.py" --environment main', actor=story.agent)
+    started = story.new_row_id(f'helper start {RESEARCHER_PROFILE.name} --model {different_model} --brief "Read src/tax.py" --environment main', actor=story.agent)
     launcher.drain_requests()
     launcher.server.close()
     story.home.socket("launcher").unlink()
-    story.expect_rows(started != helper.id, story.row(Agent, started).program_model == other_model, detail=f"{started} {helper.id}")
+    story.expect_rows(started != helper.id, story.row(Agent, started).program_model == different_model, detail=f"{started} {helper.id}")

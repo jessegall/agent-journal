@@ -39,13 +39,13 @@ class PluginCommandRunner:
         self.checkouts, self.reads, self.runner, self.scripts, self.bus, self.queries = checkouts, reads, runner, scripts, bus, queries
         self.folders = folders
 
-    def run(self, agent_id: int, line: str, is_readonly: bool, plugin: str, actor: Actor, started_at: Timestamp, kind: str = "") -> PluginCommandRun:
+    def run(self, agent_id: int, line: str, is_readonly: bool, plugin: str, actor: Actor, started_at: Timestamp, category: str = "") -> PluginCommandRun:
         checkout = self.checkouts.checkout(agent_id)
         if not checkout.exists:
             raise Refusal(f"the checkout of {AgentLabel.from_agent(self.queries.query(Agent).find(agent_id)).text} was removed, so nothing can run in it", "read its files with journal plugin file --from base")
         if not self.runner.is_installed():
             raise Refusal(f"the journal has no runner at {self.runner.path}", "install it again")
-        start = StartProcess.single_part(agent_id, line, str(checkout.root), self.category(plugin, kind), RUN_LIMIT_SECONDS, plugin, kind)
+        start = StartProcess.single_part(agent_id, line, str(checkout.root), self.category(plugin, category), RUN_LIMIT_SECONDS, plugin, category)
         process = self.bus.run(start, actor, environment_id=self.queries.query(Agent).find(agent_id).environment_id)
         runner_line = RunnerLine.build(self.runner.path, process.id, self.foreground_run(checkout, is_readonly), line, "", checkout)
         running = subprocess.Popen(["sh", "-c", runner_line], cwd=checkout.root, env={name: value for name, value in os.environ.items() if name != SESSION_VARIABLE}, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -60,12 +60,12 @@ class PluginCommandRunner:
             self.bus.run(StopProcess(process.id), actor)
         return PluginCommandRun(process.id, running.returncode, output)
 
-    def category(self, plugin: str, kind: str) -> CommandCategory:
-        if not kind:
+    def category(self, plugin: str, category: str) -> CommandCategory:
+        if not category:
             return CommandCategory.UNKNOWN
-        declared = PluginManifest.read(self.folders.code(plugin)).process_kind(kind)
+        declared = PluginManifest.read(self.folders.code(plugin)).process_kind(category)
         if declared is None:
-            raise Refusal(f"plugin {plugin} declares no kind of run named {kind}", "name a kind its manifest lists under processes")
+            raise Refusal(f"plugin {plugin} declares no kind of run named {category}", "name a kind its manifest lists under processes")
         return declared.category
 
     def foreground_run(self, checkout: Checkout, is_readonly: bool) -> ForegroundRun:

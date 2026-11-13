@@ -33,8 +33,8 @@ class MessageReplies:
                 or (message.type is MessageType.AGENT and newest_reply_ids[message.creator_id] > message.id)}
 
     def replied_ids(self, agent_id: int, message_ids: tuple[int, ...]) -> set[int | None]:
-        written = self.authored_messages(agent_id).matching(Among("parent_id", message_ids)).oldest()
-        replies = self.kept.read(written, lambda: tuple(written.every_row(REPLIES_REASON)), name="messages.written_replies")
+        saved = self.authored_messages(agent_id).matching(Among("parent_id", message_ids)).oldest()
+        replies = self.kept.read(saved, lambda: tuple(saved.every_row(REPLIES_REASON)), name="messages.written_replies")
         return {reply.parent_id for reply in replies}
 
     def newest_reply_ids(self, agent_id: int, messages: Sequence[Message]) -> dict[int, int]:

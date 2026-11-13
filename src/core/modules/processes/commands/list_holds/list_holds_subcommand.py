@@ -22,16 +22,16 @@ class ListHoldsSubcommand(ReadSubcommand[tuple[str, ...]]):
     name = "holds"
     outward = True
 
-    def __init__(self, held_runs: HeldRuns, queries: Queries, numbers: RowNumbers, clock: Clock) -> None:
-        self.held_runs, self.queries, self.numbers, self.clock = held_runs, queries, numbers, clock
+    def __init__(self, blocked_runs: HeldRuns, queries: Queries, numbers: RowNumbers, clock: Clock) -> None:
+        self.held_runs, self.queries, self.numbers, self.clock = blocked_runs, queries, numbers, clock
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--agent", type=int, help="the number of the agent; yours when left out")
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[str, ...]:
         agent_id = self.numbers.row_id(AGENT_MODEL_NAME, arguments.agent, caller.environment_id) if arguments.agent is not None else caller.actor.id
-        held = self.held_runs.found(agent_id, self.clock.timestamp())
-        lines = [f"hold on output {held.process.id}: {ExitTexts.sentences(PressureLevel.HOLD.exits)}"] if held is not None else []
+        blocked = self.held_runs.found(agent_id, self.clock.timestamp())
+        lines = [f"hold on output {blocked.process.id}: {ExitTexts.sentences(PressureLevel.HOLD.exits)}"] if blocked is not None else []
         blocks = self.queries.query(AgentBlock).filter(session_agent_id=agent_id, closed_at=None).get()
         requests = [request_id for request_id in (ReaderBlockKeys.request_id(block.nudge_key) for block in blocks) if request_id is not None]
         lines += [f"block of reader request {request_id}: {ExitTexts.sentences(PressureLevel.BLOCK.exits)}" for request_id in requests]

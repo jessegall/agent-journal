@@ -78,7 +78,7 @@ def expect_value_2(story, text, expected) -> None:
 
 def expect_bytes_database_home(story, expected) -> None:
     actual = story.home.database.read_bytes()
-    pages = sorted({place // 4096 for place, (one, two) in enumerate(zip(actual, expected)) if one != two})
+    pages = sorted({place // 4096 for place, (single, two) in enumerate(zip(actual, expected)) if single != two})
     assert actual == expected, f"the database changed on pages {pages}, {len(expected)} bytes before and {len(actual)} after"
 
 

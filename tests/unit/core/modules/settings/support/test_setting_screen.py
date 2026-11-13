@@ -58,8 +58,8 @@ def test_the_revision_changes_when_a_value_changes_and_not_when_another_screen_c
 
 
 def test_an_unknown_screen_has_no_nodes():
-    reading = screen().read("nowhere")
-    assert reading.nodes == () and reading.screen == "nowhere"
+    read = screen().read("nowhere")
+    assert read.nodes == () and read.screen == "nowhere"
 
 
 def test_a_node_says_which_component_draws_it_and_that_a_person_alone_may_change_it():

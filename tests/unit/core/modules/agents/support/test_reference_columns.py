@@ -13,9 +13,9 @@ def test_foreign_keys_to_agents_and_actors_unkeyed_agent_ids_and_model_pairs_are
     schema = [column("tasks", "holder_id", "agents"), column("tasks", "creator_id", "actors"), column("tasks", "environment_id", "environments"),
               column("events", "actor_id"), column("events", "row_table"), column("events", "row_id"), column("events", "name"),
               column("links", "subject_model"), column("links", "subject_id"), column("plans", "worker_agent_id")]
-    found = ReferenceColumns.agent_columns(schema)
-    assert found.plain == (("events", "actor_id"), ("plans", "worker_agent_id"), ("tasks", "creator_id"), ("tasks", "holder_id"))
-    assert found.pairs == (("events", "row_table", "row_id"), ("links", "subject_model", "subject_id"))
+    matched = ReferenceColumns.agent_columns(schema)
+    assert matched.plain == (("events", "actor_id"), ("plans", "worker_agent_id"), ("tasks", "creator_id"), ("tasks", "holder_id"))
+    assert matched.pairs == (("events", "row_table", "row_id"), ("links", "subject_model", "subject_id"))
 
 
 def test_a_key_to_another_table_is_not_an_agent_column_even_with_an_agent_name():

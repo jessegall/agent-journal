@@ -77,7 +77,7 @@ def test_events_caused_by_one_event_exclude_other_changes_and_keep_their_order(l
 
 def test_the_events_of_several_rows_are_read_in_order_a_page_at_a_time_under_the_read_limit(log):
     stored = [Item(id=row_id, version=1, title="Dune") for row_id in (4, 5)]
-    written = [log.write(Change(item, item.moved(ItemLifecycle.pause), CONTEXT), frozenset()) for _ in range(READ_LIMIT_ROWS) for item in stored]
+    saved = [log.write(Change(item, item.moved(ItemLifecycle.pause), CONTEXT), frozenset()) for _ in range(READ_LIMIT_ROWS) for item in stored]
     log.table.database.read_limit_rows = READ_LIMIT_ROWS
     events = log.row_events_many("items", [4, 5])
-    assert [event.id for event in events] == written and {event.row_id for event in events} == {4, 5}
+    assert [event.id for event in events] == saved and {event.row_id for event in events} == {4, 5}

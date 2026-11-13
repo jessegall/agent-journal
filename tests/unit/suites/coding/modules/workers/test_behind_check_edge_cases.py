@@ -43,13 +43,13 @@ class Sent:
 def reminded_at(minutes: list[int], rows: Away) -> list[tuple[int, int]]:
     store, nudger = Store(), Sent()
     handler = RemindBehindUpdatesHandler(store, rows, store, Settings(2), nudger, Sent(), Numbers(), NoMarkers())
-    sent = []
+    delivered = []
     for minute in minutes:
         rows.now = minute
-        before = len(nudger.to)
+        previous = len(nudger.to)
         handler.handle(RemindBehindUpdates(), SimpleNamespace(timestamp=Timestamp(ORDERED_AT + timedelta(minutes=minute))))
-        sent += [(minute, agent_id) for agent_id in nudger.to[before:]]
-    return sent
+        delivered += [(minute, agent_id) for agent_id in nudger.to[previous:]]
+    return delivered
 
 
 def test_a_paused_worker_gets_no_reminder_and_its_wait_starts_again_when_it_is_back():

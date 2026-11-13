@@ -53,13 +53,13 @@ def bare_get_lines(path: Path) -> list[int]:
 
 
 def test_no_all_rows_call_is_left():
-    found = [place for path in python_files() for place in calls_named(path, tuple(["all_rows"]))]
-    assert found == [], "read with get, take, a page or every_row(reason):\n" + "\n".join(found)
+    matched = [place for path in python_files() for place in calls_named(path, tuple(["all_rows"]))]
+    assert matched == [], "read with get, take, a page or every_row(reason):\n" + "\n".join(matched)
 
 
 def test_no_limited_or_full_table_call_is_left():
-    found = [place for path in python_files() for place in calls_named(path, ("limited", "rows_without", "full_table"))]
-    assert found == [], "limited(n) is take(n) or limit(n).get(); full_table goes; rows_without is where_null:\n" + "\n".join(found)
+    matched = [place for path in python_files() for place in calls_named(path, ("limited", "rows_without", "full_table"))]
+    assert matched == [], "limited(n) is take(n) or limit(n).get(); full_table goes; rows_without is where_null:\n" + "\n".join(matched)
 
 
 def test_query_has_no_all_rows_limited_or_full_table_method():
@@ -69,8 +69,8 @@ def test_query_has_no_all_rows_limited_or_full_table_method():
 def test_a_bare_get_on_a_growing_table_is_listed():
     allowed = {line for line in ALLOWED_BARE_GETS.read_text().split("\n") if line}
     places = [f"{path.relative_to(ROOT).as_posix()}:{line}" for path in python_files() if path.is_relative_to(ROOT / "src") for line in bare_get_lines(path)]
-    found = [place for place in places if place not in allowed]
-    assert found == [], "filter a read of a growing table before get(), or list it with its reason:\n" + "\n".join(found)
+    matched = [place for place in places if place not in allowed]
+    assert matched == [], "filter a read of a growing table before get(), or list it with its reason:\n" + "\n".join(matched)
 
 
 def test_the_bare_get_scan_finds_a_get_with_no_filter_on_a_growing_table(tmp_path):

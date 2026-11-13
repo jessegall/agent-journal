@@ -17,8 +17,8 @@ def statement_reads(path: Path, root: Path) -> list[str]:
 
 
 def test_no_module_calls_database_rows_with_a_statement():
-    found = [line for folder in MODULE_FOLDERS for path in sorted(folder.rglob("*.py")) if "__pycache__" not in path.parts for line in statement_reads(path, ROOT)]
-    assert found == []
+    matched = [line for folder in MODULE_FOLDERS for path in sorted(folder.rglob("*.py")) if "__pycache__" not in path.parts for line in statement_reads(path, ROOT)]
+    assert matched == []
 
 
 def test_a_statement_read_is_found_where_it_is_written(tmp_path: Path):

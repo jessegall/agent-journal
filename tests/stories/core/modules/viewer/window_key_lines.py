@@ -27,8 +27,8 @@ def key_fails(parser: LineParser, key: WindowKey) -> bool:
         _, command_parser = parser.parser(argv)
     except UsageError:
         return True
-    known = set(command_parser._option_string_actions)
-    return any(word.startswith("--") and word not in known for word in argv[2:])
+    recognized = set(command_parser._option_string_actions)
+    return any(word.startswith("--") and word not in recognized for word in argv[2:])
 
 
 def read_fails(parser: LineParser, line: str) -> bool:

@@ -9,8 +9,8 @@ class AppendLog:
     the move has landed by then; a round removes the moved file and writes back only the lines it did not
     finish."""
 
-    def __init__(self, path: Path, taken_path: Path, files: FileAccess) -> None:
-        self.path, self.taken_path, self.files = path, taken_path, files
+    def __init__(self, path: Path, claimed_path: Path, files: FileAccess) -> None:
+        self.path, self.taken_path, self.files = path, claimed_path, files
 
     def append(self, line: str) -> None:
         with self.files.writer(self.path, "a") as log:
@@ -29,5 +29,5 @@ class AppendLog:
         if self.path.exists():
             self.files.replace(self.path, self.taken_path)
         if unfinished:
-            with self.files.writer(self.taken_path, "a") as taken:
-                taken.write("".join(line + "\n" for line in unfinished))
+            with self.files.writer(self.taken_path, "a") as claimed:
+                claimed.write("".join(line + "\n" for line in unfinished))

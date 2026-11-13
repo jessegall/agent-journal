@@ -118,19 +118,19 @@ def test_one_request_reads_the_pending_work_once_inside_and_outside_a_worker_sco
 def test_one_request_reads_the_pending_work_once_when_another_connection_writes_during_the_read(pending_workers, monkeypatch):
     story, workers = pending_workers
     work = story.container.get(WorkerAgentWork)
-    other = sqlite3.connect(story.home.database, autocommit=True)
+    different = sqlite3.connect(story.home.database, autocommit=True)
     original_read = WorkerAgentWork.read
     writes = []
 
-    def read_after_other_write(reading):
+    def read_after_other_write(read):
         if not writes:
-            other.execute("CREATE TABLE other_connection_marks (id INTEGER)")
-        writes.append(reading)
-        return original_read(reading)
+            different.execute("CREATE TABLE other_connection_marks (id INTEGER)")
+        writes.append(read)
+        return original_read(read)
 
     monkeypatch.setattr(WorkerAgentWork, "read", read_after_other_write)
     with story.repeated_work.request():
         first = dict(work.pending())
         second = dict(work.pending())
-    other.close()
+    different.close()
     story.expect_rows(first == second, len(first) == len(workers), len(writes) == 2, detail=str(writes))

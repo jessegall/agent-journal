@@ -102,8 +102,8 @@ def test_62_a_start_and_a_proof_of_a_task_one_worker_started_are_refused_to_anot
     second = one_task.added_worker(f"{DISPATCH.removesuffix(' 1')} {receipts}")
     refused = one_task.story.run("task start 1", actor=second.worker)
     refused_proof = prove_task(second, 1, 1)
-    holder_words = f"task 1 is held by worker {agent_number(one_task.story, one_task.worker.id)}"
-    one_task.story.expect_rows(refused.code != 0, holder_words in refused.output_text, refused_proof.code != 0, holder_words in refused_proof.output_text, proofs(one_task) == (),
+    holder_terms = f"task 1 is held by worker {agent_number(one_task.story, one_task.worker.id)}"
+    one_task.story.expect_rows(refused.code != 0, holder_terms in refused.output_text, refused_proof.code != 0, holder_terms in refused_proof.output_text, proofs(one_task) == (),
                                detail=f"{refused.output_text} | {refused_proof.output_text}")
 
 

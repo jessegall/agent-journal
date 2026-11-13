@@ -39,8 +39,8 @@ def test_once_the_server_is_ready_a_worker_whose_hook_the_journal_held_is_woken(
     ReleasedSessionWake()(story.container)
     ReleasedSessionWake()(story.container)
     story.run_listeners()
-    held = ServerFiles(story.home).held_sessions()
-    story.expect_rows(LINE in story.run(f"agent-line list --agent {worker_id}").output_text, not held.path.exists(), not held.taken_path.exists())
+    blocked = ServerFiles(story.home).held_sessions()
+    story.expect_rows(LINE in story.run(f"agent-line list --agent {worker_id}").output_text, not blocked.path.exists(), not blocked.taken_path.exists())
 
 
 def test_a_session_held_while_the_held_sessions_are_moved_aside_is_woken_on_the_next_round(new_story):

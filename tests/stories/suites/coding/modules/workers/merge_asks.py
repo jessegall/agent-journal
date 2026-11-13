@@ -40,9 +40,9 @@ def test_46_a_stop_at_merge_due_is_refused_with_its_line(new_story, monkeypatch)
 def test_47_a_stop_while_the_last_run_is_open_is_allowed_and_no_report(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
     commit_each(worker, (1, 2, 3))
-    before = worker.main_agent_lines()
+    previous = worker.main_agent_lines()
     reply = worker.stop()
-    worker.story.expect_rows(STOP_REFUSED not in str(reply), worker.main_agent_lines() == before, detail=str(reply))
+    worker.story.expect_rows(STOP_REFUSED not in str(reply), worker.main_agent_lines() == previous, detail=str(reply))
 
 
 def test_48_the_whole_ask(new_story, monkeypatch):

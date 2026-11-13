@@ -105,9 +105,9 @@ def started_merge(worktree: Worktree) -> None:
 def test_a_missing_base_branch_changes_nothing(tmp_path):
     _, worktree = cut_worktree(tmp_path)
     head = own(worktree).tip("HEAD")
-    gone = Worktree(session_agent_id=1, task_id=1, creator_id=1, folder=worktree.folder, branch=worktree.branch, base_branch="gone", base_commit=worktree.base_commit)
+    removed = Worktree(session_agent_id=1, task_id=1, creator_id=1, folder=worktree.folder, branch=worktree.branch, base_branch="gone", base_commit=worktree.base_commit)
     with pytest.raises(Refusal, match="branch gone does not exist"):
-        git().update(gone)
+        git().update(removed)
     assert own(worktree).tip("HEAD") == head
 
 

@@ -63,9 +63,9 @@ def test_the_first_start_copies_each_file_with_mode_0600(backup, home, person_fi
 
 def test_the_original_bytes_and_times_are_unchanged(backup, person_files):
     os.chmod(person_files[0], 0o640)
-    before = [(path.read_bytes(), path.stat().st_mtime_ns, mode_of(path)) for path in person_files]
+    previous = [(path.read_bytes(), path.stat().st_mtime_ns, mode_of(path)) for path in person_files]
     backup.backed_up(ProgramSettings("codex", (), person_files=person_files))
-    assert [(path.read_bytes(), path.stat().st_mtime_ns, mode_of(path)) for path in person_files] == before
+    assert [(path.read_bytes(), path.stat().st_mtime_ns, mode_of(path)) for path in person_files] == previous
 
 
 def test_an_unchanged_file_is_not_copied_again(backup, clock, person_files):

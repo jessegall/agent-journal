@@ -15,8 +15,8 @@ def windows(*states: TaskState) -> CheckpointWindows:
 
 
 def test_a_commit_that_completes_a_window_gives_it():
-    found = WorkerRunWindows.window(windows(TaskState.COMPLETED, TaskState.TESTING, TaskState.TESTING), CHECKPOINT, frozenset({12, 13}))
-    assert found == WorkerRunWindow(7, 1, (12, 13))
+    matched = WorkerRunWindows.window(windows(TaskState.COMPLETED, TaskState.TESTING, TaskState.TESTING), CHECKPOINT, frozenset({12, 13}))
+    assert matched == WorkerRunWindow(7, 1, (12, 13))
 
 
 def test_a_window_held_by_two_actors_gives_none():

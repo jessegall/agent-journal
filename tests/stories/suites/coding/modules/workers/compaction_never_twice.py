@@ -101,9 +101,9 @@ def hard_agent(new_story):
     return typing_recorded(new_story(fixture=HardLimitEnabled))
 
 
-def modified_at_story_time(story, moment=None):
+def modified_at_story_time(story, point=None):
     """The status file is modified at a moment of the story's clock, which stands apart from the machine's."""
-    seconds = (moment or story.clock.timestamp().value).timestamp()
+    seconds = (point or story.clock.timestamp().value).timestamp()
     os.utime(story.home.status_folder / f"{SESSION}.json", (seconds, seconds))
 
 

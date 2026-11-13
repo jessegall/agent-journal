@@ -47,13 +47,13 @@ class LongRunDockRule(DriverRule):
         dock = Interval(self.settings.seconds(ProcessSetting.DOCK_AFTER_SECONDS))
         runs = self.processes.agent(hook.agent_id)
         docked = tuple(runs.running().docked_runs().get())
-        fresh = tuple(runs.running().fresh_long_runs(hook.timestamp, dock.seconds).oldest().take(RUNS_CONSIDERED))
-        if not docked and not fresh:
+        new = tuple(runs.running().fresh_long_runs(hook.timestamp, dock.seconds).oldest().take(RUNS_CONSIDERED))
+        if not docked and not new:
             return RuleAnswer.allowed()
         parts: dict[int, list[ProcessPart]] = defaultdict(list)
-        for part in self.queries.query(ProcessPart).matching(Among("process_id", [process.id for process in fresh])).every_row(DOCK_RUNS_REASON):
+        for part in self.queries.query(ProcessPart).matching(Among("process_id", [process.id for process in new])).every_row(DOCK_RUNS_REASON):
             parts[part.process_id].append(part)
-        due = [process for process in fresh if self.needs_dock(process, hook, dock, tuple(parts[process.id]))]
+        due = [process for process in new if self.needs_dock(process, hook, dock, tuple(parts[process.id]))]
         placed = due[:self.room.places(ProcessDockType.OUTPUT.value)]
         shown = [*docked, *placed]
         outputs = {output.process_id: output for output in self.outputs.matching(Among("process_id", [process.id for process in shown])).every_row(DOCK_RUNS_REASON)} if shown else {}

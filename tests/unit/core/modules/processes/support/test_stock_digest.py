@@ -15,5 +15,5 @@ def test_a_changed_pattern_changes_the_digest():
 
 
 def test_the_digest_does_not_depend_on_the_order_the_fields_are_given_in():
-    given_the_other_way = StockReader(summary="([0-9]+) passed", lines="passed", title="Tool tests", commands="tool test*", name="tool-test")
-    assert StockDigest.of(SHIPPED) == StockDigest.of(given_the_other_way)
+    reversed_fields = StockReader(summary="([0-9]+) passed", lines="passed", title="Tool tests", commands="tool test*", name="tool-test")
+    assert StockDigest.of(SHIPPED) == StockDigest.of(reversed_fields)

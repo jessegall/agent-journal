@@ -17,8 +17,8 @@ class Modal:
     def __init__(self, viewer: PersonViewer) -> None:
         self.server, self.cookie, self.environment = viewer.server, viewer.cookie, viewer.environment
 
-    def line(self, words: list[str]) -> dict[str, object]:
-        return self.server.viewer_line_value(self.cookie, {"window": WINDOW, "environment": self.environment, "line": words})
+    def line(self, terms: list[str]) -> dict[str, object]:
+        return self.server.viewer_line_value(self.cookie, {"window": WINDOW, "environment": self.environment, "line": terms})
 
     def screen(self, name: str) -> dict[str, object]:
         if name in LONG_TABS:
@@ -36,8 +36,8 @@ class Modal:
         return {name: self.screen(name)["revision"] for name in names}
 
     def save_line(self, changes: dict[str, str], screens: dict[str, str]) -> list[str]:
-        (first, revision), *others = screens.items()
-        return ["setting-screen", "apply", first, "--revision", revision, *[part for name, rev in others for part in ("--also", f"{name}={rev}")], *[f"{key}={value}" for key, value in changes.items()]]
+        (first, revision), *remaining_items = screens.items()
+        return ["setting-screen", "apply", first, "--revision", revision, *[part for name, rev in remaining_items for part in ("--also", f"{name}={rev}")], *[f"{key}={value}" for key, value in changes.items()]]
 
     def save(self, changes: dict[str, str], *names: str) -> dict[str, object]:
         return self.line(self.save_line(changes, self.revisions(*names)))
@@ -46,8 +46,8 @@ class Modal:
         body = {"window": WINDOW, "environment": self.environment, "line": self.save_line(changes, screens)}
         self.server.expect_viewer_line(self.cookie, body, 200, text)
 
-    def first_of_kind(self, name: str, kind: str) -> dict[str, object]:
-        return next(node for node in self.screen(name)["nodes"] if node["kind"] == kind and not node["requires"])
+    def first_of_kind(self, name: str, category: str) -> dict[str, object]:
+        return next(node for node in self.screen(name)["nodes"] if node["kind"] == category and not node["requires"])
 
     def window_keys(self, keys: str, window: str = WINDOW, query: str = "environment=main") -> dict[str, object]:
         status, answer = window_data(self.server, self.cookie, keys=keys, window=window, query=query)

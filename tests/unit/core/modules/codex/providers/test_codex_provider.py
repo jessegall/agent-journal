@@ -130,8 +130,8 @@ def test_a_model_with_an_effort_entry_starts_at_it_and_a_launch_that_names_one_k
     session = provider.session_command(Launch(ROOT, FOLDER, "gpt-6.1-sol", "launch-1", ResumedSession("t-1"), VARIABLES))
     named = provider.session_command(Launch(ROOT, FOLDER, "gpt-6.1-sol", "launch-2", ResumedSession("t-1"), VARIABLES, effort="low"))
     helper = provider.helper_command(HelperLaunch(ROOT, FOLDER, "gpt-6.1-sol", "worker-7", ResumedSession("t-2"), VARIABLES, brief="Write the tests"))
-    other = provider.helper_command(HelperLaunch(ROOT, FOLDER, "gpt-6.1-mini", "worker-8", ResumedSession("t-3"), VARIABLES, brief="Write the tests"))
-    efforts = [[argument for argument in command.arguments if "model_reasoning_effort" in argument] for command in (session, named, helper, other)]
+    different = provider.helper_command(HelperLaunch(ROOT, FOLDER, "gpt-6.1-mini", "worker-8", ResumedSession("t-3"), VARIABLES, brief="Write the tests"))
+    efforts = [[argument for argument in command.arguments if "model_reasoning_effort" in argument] for command in (session, named, helper, different)]
     assert efforts == [["model_reasoning_effort=high"], [], ["model_reasoning_effort=high"], []]
 
 

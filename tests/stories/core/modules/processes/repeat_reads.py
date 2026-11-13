@@ -47,12 +47,12 @@ def test_a_helper_and_a_worker_are_told_to_go_idle_and_not_what_a_main_agent_doe
 
 def test_other_commands_between_reads_do_not_lift_the_refusal_of_a_running_output(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    process, other = moved_run(story, "make test", category=CommandCategory.TEST_RUN), moved_run(story, "make build", category=CommandCategory.TEST_RUN)
+    process, different = moved_run(story, "make test", category=CommandCategory.TEST_RUN), moved_run(story, "make build", category=CommandCategory.TEST_RUN)
     story.expect_success(f"output read {process.id} --summary", actor=story.agent)
-    story.expect_success(f"output read {other.id} --summary", actor=story.agent)
+    story.expect_success(f"output read {different.id} --summary", actor=story.agent)
     story.expect_success("task list", actor=story.agent)
     story.expect_refusal(f"output read {process.id} --summary", POLL_REFUSAL, actor=story.agent)
-    story.expect_refusal(f"output read {other.id} --summary", POLL_REFUSAL, actor=story.agent)
+    story.expect_refusal(f"output read {different.id} --summary", POLL_REFUSAL, actor=story.agent)
 
 
 def test_a_second_read_of_an_ended_run_the_same_way_is_refused_and_again_reads_it(ended_run):

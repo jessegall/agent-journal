@@ -27,21 +27,21 @@ class PluginProcessKindLimits(ProcessKindLimits):
         self.queries, self.folders, self.settings, self.machine, self.memory = queries, folders, settings, machine, memory
 
     def pass_over(self, waiting: Sequence[Process]) -> PluginKindPass:
-        kinds = {(process.plugin, process.kind, process.environment_id) for process in waiting if process.plugin and process.kind}
-        if not kinds:
+        categories = {(process.plugin, process.kind, process.environment_id) for process in waiting if process.plugin and process.kind}
+        if not categories:
             return PluginKindPass({}, 0, {})
-        plugins = {plugin.name: plugin for plugin in self.queries.query(Plugin).matching(Among("name", sorted({plugin for plugin, _, _ in kinds}))).every_row(PLUGINS_REASON)}
-        environments = {environment.id: environment.name for environment in self.queries.query(Environment).find_many(sorted({environment for _, _, environment in kinds}))}
+        plugins = {plugin.name: plugin for plugin in self.queries.query(Plugin).matching(Among("name", sorted({plugin for plugin, _, _ in categories}))).every_row(PLUGINS_REASON)}
+        environments = {environment.id: environment.name for environment in self.queries.query(Environment).find_many(sorted({environment for _, _, environment in categories}))}
         manifests = {name: PluginManifest.read(self.folders.code(name)) for name in plugins}
         values = {(plugin, environment): self.settings.values(plugins[plugin], manifests[plugin], environments[environment])
-                  for plugin, _, environment in kinds if plugin in plugins}
+                  for plugin, _, environment in categories if plugin in plugins}
         rules: dict[tuple[str, str, int], KindRule] = {}
-        for plugin, kind, environment in kinds:
-            declared = manifests[plugin].process_kind(kind) if plugin in manifests else None
+        for plugin, category, environment in categories:
+            declared = manifests[plugin].process_kind(category) if plugin in manifests else None
             if declared is None:
                 continue
             limit = values[(plugin, environment)].get(declared.at_once_setting)
-            rules[(plugin, kind, environment)] = KindRule(declared, limit if isinstance(limit, int) and limit > 0 else None)
+            rules[(plugin, category, environment)] = KindRule(declared, limit if isinstance(limit, int) and limit > 0 else None)
         needs_memory = any(rule.declared.memory_mb for rule in rules.values())
-        machine = {(plugin, kind): self.machine.count(plugin, kind) for (plugin, kind, _), rule in rules.items() if rule.declared.scope is RunScope.MACHINE}
+        machine = {(plugin, category): self.machine.count(plugin, category) for (plugin, category, _), rule in rules.items() if rule.declared.scope is RunScope.MACHINE}
         return PluginKindPass(rules, self.memory.megabytes() if needs_memory else 0, machine)

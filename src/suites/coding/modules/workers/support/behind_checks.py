@@ -33,8 +33,8 @@ class BehindChecks:
         return tuple(self.queries.query(Worktree).filter(state=WorktreeState.CUT).every_row(CUT_WORKTREES_REASON))
 
     def is_look_due(self, now: Timestamp) -> bool:
-        look = self.last_look()
-        return look is None or now.value - look.looked_at.value >= timedelta(minutes=self.settings.number(BEHIND_CHECK_MINUTES))
+        check = self.last_look()
+        return check is None or now.value - check.looked_at.value >= timedelta(minutes=self.settings.number(BEHIND_CHECK_MINUTES))
 
     def last_look(self) -> WorktreeBehindLook | None:
         return self.queries.query(WorktreeBehindLook).first()
@@ -45,8 +45,8 @@ class BehindChecks:
         checks = tuple(reversed(tuple(self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).every_row(CHECKS_REASON))))
         if any(check.state in ACTIVE_STATES for check in checks):
             return False
-        left = next((check for check in checks if check.state is BehindCheckState.LEFT), None)
-        return left is None or behind >= left.behind + self.settings.number(BEHIND_RECHECK_COMMITS)
+        remaining = next((check for check in checks if check.state is BehindCheckState.LEFT), None)
+        return remaining is None or behind >= remaining.behind + self.settings.number(BEHIND_RECHECK_COMMITS)
 
     def may_be_passed(self, worktree: Worktree) -> bool:
         return any(check.may_be_passed() for check in self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).every_row(CHECKS_REASON))

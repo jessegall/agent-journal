@@ -83,10 +83,10 @@ def test_zero_commits_to_check_or_the_switch_off_looks_at_no_worktree():
 
 
 def test_a_look_comes_once_per_ten_minutes_and_the_last_look_survives_a_restart():
-    look = WorktreeBehindLook(id=1, environment_id=1, looked_at=Timestamp(NOW.value - timedelta(minutes=5)))
-    assert checks(Worktree=[worktree()], WorktreeBehindLook=[look]).due_worktrees(NOW) == ()
+    check = WorktreeBehindLook(id=1, environment_id=1, looked_at=Timestamp(NOW.value - timedelta(minutes=5)))
+    assert checks(Worktree=[worktree()], WorktreeBehindLook=[check]).due_worktrees(NOW) == ()
     later = Timestamp(NOW.value + timedelta(minutes=5))
-    assert checks(Worktree=[worktree()], WorktreeBehindLook=[look]).due_worktrees(later) == tuple([worktree()])
+    assert checks(Worktree=[worktree()], WorktreeBehindLook=[check]).due_worktrees(later) == tuple([worktree()])
 
 
 def test_a_delivered_worktree_is_not_looked_at():
@@ -99,8 +99,8 @@ def test_no_second_check_opens_while_one_is_open_ordered_or_clashing():
 
 
 def test_a_worktree_left_alone_at_three_is_checked_again_at_six_not_four():
-    left = [check(BehindCheckState.LEFT, behind=3)]
-    assert (checks(WorktreeBehindCheck=left).opens(worktree(), 4), checks(WorktreeBehindCheck=left).opens(worktree(), 6)) == (False, True)
+    remaining = [check(BehindCheckState.LEFT, behind=3)]
+    assert (checks(WorktreeBehindCheck=remaining).opens(worktree(), 4), checks(WorktreeBehindCheck=remaining).opens(worktree(), 6)) == (False, True)
 
 
 class FailingBus:
@@ -127,8 +127,8 @@ class Container:
     def __init__(self, bus: FailingBus, log: Log) -> None:
         self.instances = {Bus: bus, SystemLogWriter: log}
 
-    def get(self, kind: type) -> object:
-        return self.instances[kind]
+    def get(self, category: type) -> object:
+        return self.instances[category]
 
 
 def test_one_worktree_with_a_deleted_base_branch_does_not_stop_the_others():

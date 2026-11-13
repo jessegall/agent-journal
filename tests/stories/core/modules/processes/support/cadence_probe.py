@@ -117,8 +117,8 @@ def printed_now(story: Story, process: Process, text: str) -> None:
     """The run prints the text now, by the story's clock."""
     folder = story.container.get(OutputFolder)
     folder.write_output(process.id, 1, folder.output(process.id, 1) + text)
-    printed_at = story.clock.timestamp().value.timestamp()
-    os.utime(story.home.folder / "processes" / str(process.id) / "1.out", (printed_at, printed_at))
+    emitted_at = story.clock.timestamp().value.timestamp()
+    os.utime(story.home.folder / "processes" / str(process.id) / "1.out", (emitted_at, emitted_at))
 
 
 def removed_output(story: Story, process: Process) -> None:
@@ -190,4 +190,4 @@ def running_run(story: Story) -> Process:
 
 
 def cadence_lines(lines: list[str]) -> list[str]:
-    return [line for line in lines if any(words in line for words in CADENCE_WORDS)]
+    return [line for line in lines if any(terms in line for terms in CADENCE_WORDS)]

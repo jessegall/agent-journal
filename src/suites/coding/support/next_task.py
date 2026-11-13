@@ -70,11 +70,11 @@ class NextTask(TaskAssigner[Task]):
 
     def own_tasks(self, agent_ids: Sequence[int]) -> dict[int, tuple[int, ...]]:
         tasks = self.queries.query(Task).matching(Among("state", [TaskState.OPEN, TaskState.STARTED])).ordered("id")
-        held = tuple(tasks.matching(Among("holder_id", agent_ids)).every_row(OWN_TASKS_REASON))
+        blocked = tuple(tasks.matching(Among("holder_id", agent_ids)).every_row(OWN_TASKS_REASON))
         assigned = tuple(tasks.matching(AssigneeAmong(Task, tuple(agent_ids))).every_row(OWN_TASKS_REASON))
-        actor_ids = self.assignments.row_actor_ids(Task, sorted({task.id for task in (*held, *assigned)}))
+        actor_ids = self.assignments.row_actor_ids(Task, sorted({task.id for task in (*blocked, *assigned)}))
         own: dict[int, set[int]] = defaultdict(set)
-        for task in held:
+        for task in blocked:
             assignees = actor_ids.get(task.id, ())
             if not assignees or task.holder_id in assignees:
                 own[task.holder_id].add(task.id)

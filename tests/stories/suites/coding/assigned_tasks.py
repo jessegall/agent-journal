@@ -26,10 +26,10 @@ def task_row(story, task_id):
 def test_a_task_assigned_to_the_main_agent_stays_open_while_another_task_is_next(new_story):
     story = new_story(fixture=AssignedLaterTask)
     first = story.new_row_id('task make "First job" --brief "Do it"', actor=story.agent)
-    other = story.new_row_id('task make "Other job" --brief "Do it"', actor=story.agent)
+    different = story.new_row_id('task make "Other job" --brief "Do it"', actor=story.agent)
     story.expect_success(f"task start {first}", actor=story.agent)
     story.expect_success(f'task close {first} --outcome "done"', actor=story.agent)
-    story.expect_rows(task_row(story, other).state is TaskState.STARTED, task_row(story, LATER).state is TaskState.OPEN)
+    story.expect_rows(task_row(story, different).state is TaskState.STARTED, task_row(story, LATER).state is TaskState.OPEN)
 
 
 def test_a_released_task_that_was_assigned_to_the_main_agent_stays_open(new_story):

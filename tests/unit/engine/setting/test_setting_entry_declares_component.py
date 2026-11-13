@@ -12,15 +12,15 @@ def entries(*values: SettingValue) -> dict[str, SettingEntry]:
 
 
 def test_a_declaration_with_no_component_resolves_to_the_default_of_its_kind():
-    found = entries(SettingValue("auto", "Auto", "Whether it goes on.", SettingType.FLAG, default=True))
-    assert found["journal.test.g.auto"].drawn_by() is SettingComponent.TOGGLE
+    matched = entries(SettingValue("auto", "Auto", "Whether it goes on.", SettingType.FLAG, default=True))
+    assert matched["journal.test.g.auto"].drawn_by() is SettingComponent.TOGGLE
 
 
 def test_a_declared_component_and_place_reach_the_entry():
-    found = entries(SettingValue("cap", "Cap", "A size.", SettingType.NUMBER, default=1, screen="advanced", section="Context size", component=SettingComponent.PER_TYPE_OVERRIDE))
-    entry = found["journal.test.g.cap"]
+    matched = entries(SettingValue("cap", "Cap", "A size.", SettingType.NUMBER, default=1, screen="advanced", section="Context size", component=SettingComponent.PER_TYPE_OVERRIDE))
+    entry = matched["journal.test.g.cap"]
     assert (entry.screen, entry.section, entry.drawn_by()) == ("advanced", "Context size", SettingComponent.PER_TYPE_OVERRIDE)
-    assert found["journal.test.g"].screen == "work"
+    assert matched["journal.test.g"].screen == "work"
 
 
 def test_a_component_that_cannot_draw_its_kind_is_a_problem_naming_the_key_and_the_allowed_components():

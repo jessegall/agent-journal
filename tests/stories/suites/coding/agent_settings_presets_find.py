@@ -33,8 +33,8 @@ class Presets:
     def index(self) -> list[dict[str, object]]:
         return self.modal.window_keys("find")["find"]["value"]["rows"]
 
-    def found(self, words: str) -> list[dict[str, object]]:
-        wanted = words.lower().split()
+    def found(self, terms: str) -> list[dict[str, object]]:
+        wanted = terms.lower().split()
         return [entry for entry in self.index() if all(word in f"{entry['title']} {entry['description']}".lower() for word in wanted)]
 
 
@@ -59,8 +59,8 @@ def test_a_preset_is_the_eight_switches_and_nothing_else_and_saves_only_when_sen
     values = presets.presets()
     expect_value_4(set(values) == {"builder", "orchestrator"} and all(len(entry) == 8 for entry in values.values()))
     expect_value({switch["key"] for switch in presets.work()["switches"]}, set(values["builder"]))
-    before = presets.form()
-    expect_value(presets.form(), before)
+    previous = presets.form()
+    expect_value(presets.form(), previous)
     presets.fill("orchestrator")
     expect_value(presets.form(), values["orchestrator"])
     expect_value(presets.work()["workflow"], "orchestrator")

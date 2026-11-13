@@ -20,10 +20,10 @@ class ProjectGraphClaim:
         if not self.path.is_file():
             return False
         text = FileAccess.shared().read(self.path).strip()
-        is_held = clock.epoch_seconds() - self.path.stat().st_mtime < CLAIM_GRACE_SECONDS if not text else ProcessIds.text_exists(text)
-        if not is_held:
+        is_blocked = clock.epoch_seconds() - self.path.stat().st_mtime < CLAIM_GRACE_SECONDS if not text else ProcessIds.text_exists(text)
+        if not is_blocked:
             self.path.unlink(missing_ok=True)
-        return is_held
+        return is_blocked
 
     def claim(self, clock: Clock) -> bool:
         if self.is_held(clock):

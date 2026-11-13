@@ -50,7 +50,7 @@ JSON_COLUMNS = {
 def seed_value(table_sql: str, column: dict, row: int) -> object:
     """The value of one column in the row-th seed row: a word its table allows or a word of the views' cases, a
     small id, a time, or JSON where the table checks for JSON."""
-    name, kind, nullable = column["name"], (column["type"] or "TEXT").upper(), not column["notnull"]
+    name, category, nullable = column["name"], (column["type"] or "TEXT").upper(), not column["notnull"]
     phase = sum(map(ord, name))
     if column["pk"]:
         return row
@@ -60,16 +60,16 @@ def seed_value(table_sql: str, column: dict, row: int) -> object:
         return JSON_COLUMNS[name][(row - 1) % len(JSON_COLUMNS[name])]
     allowed = re.search(rf"\b{name} IN \(([^)]*)\)", table_sql)
     if allowed:
-        words = [word.strip().strip("'") for word in allowed[1].split(",")]
-        return words[(row - 1) % len(words)]
+        terms = [word.strip().strip("'") for word in allowed[1].split(",")]
+        return terms[(row - 1) % len(terms)]
     if re.search(rf"json_valid\({name}\)", table_sql):
         return '["a", "b"]' if row % 2 else "{}"
     if name in WORDS:
-        words = WORDS[name]
-        return words[row % len(words)]
+        terms = WORDS[name]
+        return terms[row % len(terms)]
     if name.endswith("_at"):
         return f"2026-11-0{row % 9 + 1}T{row % 10 + 10}:00:00+00:00"
-    if "INT" in kind or "REAL" in kind:
+    if "INT" in category or "REAL" in category:
         if name.endswith("_id") or name in ("id", "number", "version", "position"):
             return (row * 5 + phase) % SEED_ROWS + 1
         return (row + phase) % 3

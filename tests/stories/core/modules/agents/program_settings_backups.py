@@ -48,13 +48,13 @@ def log_text(story) -> str:
 def test_the_first_start_backs_up_each_person_file_privately_and_leaves_it_as_it_was(new_story):
     story = new_story(fixture=MainEnvironment)
     files = written_person_files()
-    before = [(path.read_bytes(), path.stat().st_mtime_ns) for path in files]
+    previous = [(path.read_bytes(), path.stat().st_mtime_ns) for path in files]
     ProgramSettingsWatch()(story.container)
     made = [(program, path) for program, paths in person_files().items() for path in paths]
     story.expect_rows(all(len(copies(story, program, path.name)) == 1 for program, path in made),
                       all(copies(story, program, path.name)[0].read_bytes() == path.read_bytes() for program, path in made),
                       all(stat.S_IMODE(copies(story, program, path.name)[0].stat().st_mode) == 0o600 for program, path in made),
-                      [(path.read_bytes(), path.stat().st_mtime_ns) for path in files] == before)
+                      [(path.read_bytes(), path.stat().st_mtime_ns) for path in files] == previous)
 
 
 def test_an_unchanged_file_is_not_copied_again(new_story):

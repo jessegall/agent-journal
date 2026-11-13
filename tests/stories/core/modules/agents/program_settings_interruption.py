@@ -59,10 +59,10 @@ def test_a_crash_between_the_temporary_file_and_the_rename_keeps_the_old_file(ne
 def test_a_machine_restart_writes_the_same_files_again(new_story):
     story = new_story(fixture=MainEnvironment)
     ProgramSettingsWatch()(story.container)
-    before = [path.read_bytes() for path in program_files(story)]
+    previous = [path.read_bytes() for path in program_files(story)]
     shutil.rmtree(story.home.folder / "runtime")
     ProgramSettingsWatch()(story.container)
-    story.expect_rows([path.read_bytes() for path in program_files(story)] == before)
+    story.expect_rows([path.read_bytes() for path in program_files(story)] == previous)
 
 
 def test_a_longer_managed_hook_rewrites_the_claude_file_whole(new_story):
@@ -80,9 +80,9 @@ def test_a_new_worktree_is_trusted_by_codex_and_the_hook_hashes_stay(new_story):
     story = new_story(fixture=MainEnvironment)
     manage(story, "codex")
     config_file = story.home.folder / "programs" / "codex" / "config.toml"
-    states_before = tomllib.loads(config_file.read_text())["hooks"]["state"]
+    states_previous = tomllib.loads(config_file.read_text())["hooks"]["state"]
     worktree = story.home.folder / "worktrees" / "development" / "worker-1"
     worktree.mkdir(parents=True)
     ProgramSettingsWatch()(story.container)
     config = tomllib.loads(config_file.read_text())
-    story.expect_rows(config["projects"][str(worktree.resolve())] == {"trust_level": "trusted"}, config["hooks"]["state"] == states_before)
+    story.expect_rows(config["projects"][str(worktree.resolve())] == {"trust_level": "trusted"}, config["hooks"]["state"] == states_previous)

@@ -23,6 +23,6 @@ class RunSilences:
         return not self.folder.part_bytes(part.process_id, part.position)
 
     def unread_seconds(self, process: Process, timestamp: Timestamp) -> int:
-        printed = self.seconds(process, timestamp)
+        emitted = self.seconds(process, timestamp)
         looked = self.folder.read_mark(process.id, LOOKED_MARK)
-        return min(printed, int(Timestamp.parsed(looked).elapsed_seconds(timestamp))) if looked else printed
+        return min(emitted, int(Timestamp.parsed(looked).elapsed_seconds(timestamp))) if looked else emitted

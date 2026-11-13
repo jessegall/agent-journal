@@ -703,9 +703,9 @@ class WorktreeGit:
 
     def git(self, folder: str, limit_seconds: int, *arguments: str) -> subprocess.CompletedProcess[str]:
         line = ["git", "-C", folder, *arguments]
-        kind = ProcessKind.MERGE if self.changes_branches(arguments) else ProcessKind.QUICK
+        category = ProcessKind.MERGE if self.changes_branches(arguments) else ProcessKind.QUICK
         try:
-            done = self.executor.execute(ExecutionRequest(line, Path.cwd(), kind, limit_seconds))
-            return subprocess.CompletedProcess(line, done.exit_code, done.stdout, done.stderr)
+            finished = self.executor.execute(ExecutionRequest(line, Path.cwd(), category, limit_seconds))
+            return subprocess.CompletedProcess(line, finished.exit_code, finished.stdout, finished.stderr)
         except RunTimeLimitError as timeout:
             raise Refusal(f"git {' '.join(arguments[:2])} took longer than {limit_seconds} seconds in {folder}", "run it again once the folder is free") from timeout

@@ -18,8 +18,8 @@ def test_a_session_started_before_the_switch_keeps_its_hooks_until_it_ends(new_s
     tick = ProgramSettingsWatch()
     tick(story.container)
     kept_while_running = json.loads(local.read_text())["hooks"]["PreToolUse"] == [OLD_JOURNAL_BLOCK, FOREIGN_BLOCK]
-    held_mark = "until the sessions started before the switch end" in marks_text(story)
+    blocked_mark = "until the sessions started before the switch end" in marks_text(story)
     story.expect_success(f"agent end {story.agent.id}", actor=story.agent)
     tick(story.container)
-    story.expect_rows(kept_while_running, held_mark, json.loads(local.read_text()) == {"hooks": {"PreToolUse": [FOREIGN_BLOCK]}},
+    story.expect_rows(kept_while_running, blocked_mark, json.loads(local.read_text()) == {"hooks": {"PreToolUse": [FOREIGN_BLOCK]}},
                       "The journal took its old hooks out of the project files of claude" in marks_text(story))

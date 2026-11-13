@@ -14,8 +14,8 @@ def sleep_lines(path: Path) -> list[int]:
 
 
 def test_no_test_sleeps_and_no_test_script_it_writes_sleeps():
-    found = [f"{path.relative_to(TESTS_FOLDER.parent)}:{line}" for path in sorted(TESTS_FOLDER.rglob("*.py")) if path != Path(__file__).resolve() for line in sleep_lines(path)]
-    assert found == [], "wait for the event, a process, a pipe or a thread, or move the clock with Story.advance:\n" + "\n".join(found)
+    matched = [f"{path.relative_to(TESTS_FOLDER.parent)}:{line}" for path in sorted(TESTS_FOLDER.rglob("*.py")) if path != Path(__file__).resolve() for line in sleep_lines(path)]
+    assert matched == [], "wait for the event, a process, a pipe or a thread, or move the clock with Story.advance:\n" + "\n".join(matched)
 
 
 def test_the_scan_finds_a_sleep_call_and_a_test_script_that_sleeps(tmp_path):

@@ -33,7 +33,7 @@ class InactiveTaskReminderRule(DriverRule):
         newest_at = self.activities.read(hook)[hook.agent_id].last_hook_at
         if newest_at is None or self.hook_history.has_answer_after(self.name, hook, newest_at):
             return RuleAnswer.allowed()
-        quiet = Interval(self.settings.minutes(QUIET_TASK_MINUTES))
-        if not quiet.has_passed(self.spans, hook.agent_id, newest_at, hook.timestamp):
+        silent = Interval(self.settings.minutes(QUIET_TASK_MINUTES))
+        if not silent.has_passed(self.spans, hook.agent_id, newest_at, hook.timestamp):
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(INACTIVE_TASK.nudge(minutes=quiet.seconds // MINUTE_SECONDS, task=current.task.id))
+        return RuleAnswer.with_nudges(INACTIVE_TASK.nudge(minutes=silent.seconds // MINUTE_SECONDS, task=current.task.id))

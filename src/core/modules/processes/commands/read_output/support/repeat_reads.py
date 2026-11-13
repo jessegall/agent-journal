@@ -24,8 +24,8 @@ class RepeatReads:
     since the journal tells the agent when it ends, or until the run is held for printing nothing, which asks
     for a read."""
 
-    def __init__(self, queries: Queries, folder: OutputFolder, resets: ContextResets, held_runs: HeldRuns) -> None:
-        self.queries, self.folder, self.resets, self.held_runs = queries, folder, resets, held_runs
+    def __init__(self, queries: Queries, folder: OutputFolder, resets: ContextResets, blocked_runs: HeldRuns) -> None:
+        self.queries, self.folder, self.resets, self.held_runs = queries, folder, resets, blocked_runs
 
     def check(self, command: ReadOutput, context: Context) -> None:
         if context.actor.type is not ActorType.AGENT:
@@ -54,8 +54,8 @@ class RepeatReads:
         return HELPER_POLL_ADVICE
 
     def is_held(self, process_id: int, context: Context) -> bool:
-        held_run = self.held_runs.found(context.actor.id, context.timestamp)
-        return held_run is not None and held_run.process.id == process_id
+        blocked_run = self.held_runs.found(context.actor.id, context.timestamp)
+        return blocked_run is not None and blocked_run.process.id == process_id
 
     @staticmethod
     def running_mark(actor: Actor) -> str:

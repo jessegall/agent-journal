@@ -248,16 +248,16 @@ class Story:
     def expect_hook_nudges(self, session: str, sample: HookSample, *nudges: ExpectedNudge) -> HookReply:
         self.checked(f"hook {sample.action}")
         reply = self.hook(session, sample)
-        told = [*reply.lines, reply.refusal]
-        missing = [nudge.declaration.key for nudge in nudges if not nudge.is_in_any(told)]
-        self.expected(not missing, f"the hook told {told}, without {missing}")
+        informed = [*reply.lines, reply.refusal]
+        missing = [nudge.declaration.key for nudge in nudges if not nudge.is_in_any(informed)]
+        self.expected(not missing, f"the hook told {informed}, without {missing}")
         return reply
 
     def expect_no_hook_nudge(self, session: str, sample: HookSample, nudge: ExpectedNudge) -> HookReply:
         self.checked(f"hook {sample.action}")
         reply = self.hook(session, sample)
-        told = [*reply.lines, reply.refusal]
-        self.expected(not nudge.is_in_any(told), f"the hook told {nudge.declaration.key}: {told}")
+        informed = [*reply.lines, reply.refusal]
+        self.expected(not nudge.is_in_any(informed), f"the hook told {nudge.declaration.key}: {informed}")
         return reply
 
     def expect_ordered_hook_lines(self, session: str, sample: HookSample, *texts: str) -> None:

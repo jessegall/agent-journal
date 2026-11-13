@@ -90,9 +90,9 @@ def test_a_run_with_no_process_tree_is_left_alone(new_story):
     story.expect_text("process card 1 --json", '"state": "background"', actor=story.agent)
 
 
-def expect_looks(story: Story, asked: int) -> None:
+def expect_looks(story: Story, requested: int) -> None:
     lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
-    story.expect_rows(lines.count(LOOK_LINE) == asked, detail=f"{asked} asks expected in:\n{lines}")
+    story.expect_rows(lines.count(LOOK_LINE) == requested, detail=f"{requested} asks expected in:\n{lines}")
 
 
 def busy_for(story: Story, tree: FakeGroupCpuTime, seconds: int) -> None:
@@ -128,8 +128,8 @@ def test_a_test_run_that_prints_again_after_the_ask_is_asked_again_only_after_it
     folder = story.container.get(OutputFolder)
     folder.write_start(1, "go test ./...", ["go test ./..."])
     folder.write_output(1, 1, "ok\n")
-    printed_at = story.clock.timestamp().value.timestamp()
-    os.utime(folder.home.folder / "processes" / "1" / "1.out", (printed_at, printed_at))
+    emitted_at = story.clock.timestamp().value.timestamp()
+    os.utime(folder.home.folder / "processes" / "1" / "1.out", (emitted_at, emitted_at))
     busy_for(story, tree, HANG_SECONDS + 1)
     expect_looks(story, 1)
 
@@ -228,8 +228,8 @@ def test_a_stuck_build_test_run_check_and_python_run_are_warned_alike(new_story)
     watch_tick(story)
     watched(story, HALF)
     outputs = ", ".join(str(process.id) for process in runs)
-    heard = told(story, "s-1") + told(story, "s-1")
-    story.expect_rows(any(f"Output {outputs} printed nothing for {HALF}s and uses no CPU" in line for line in heard), detail="\n".join(heard))
+    received = told(story, "s-1") + told(story, "s-1")
+    story.expect_rows(any(f"Output {outputs} printed nothing for {HALF}s and uses no CPU" in line for line in received), detail="\n".join(received))
 
 
 def test_reading_a_stuck_run_after_the_warning_starts_the_hold_anew_and_the_stop_still_follows(new_story):

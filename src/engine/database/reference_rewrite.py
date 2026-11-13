@@ -23,8 +23,8 @@ class ReferenceRewrite:
         self.database = database
 
     def rows_where(self, table: str, column: str, value: object) -> list[dict[str, object]]:
-        found = self.database.rows(Statement(f'SELECT * FROM "{table}" WHERE "{column}" = ?', [value], scan_reason=SCHEMA_REASON))
-        return [dict(row) for row in found]
+        matched = self.database.rows(Statement(f'SELECT * FROM "{table}" WHERE "{column}" = ?', [value], scan_reason=SCHEMA_REASON))
+        return [dict(row) for row in matched]
 
     # Turns the foreign key checks off while a fold moves rows between ids, and on again after.
     @contextmanager

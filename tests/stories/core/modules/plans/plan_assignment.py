@@ -55,8 +55,8 @@ def test_assigning_the_plan_to_x_moves_inherited_rows_and_keeps_the_task_given_t
 def test_override_takes_the_hand_given_task_too(plan):
     assigned(plan, f"task {HAND_GIVEN_TASK}", worker_id(plan, 2))
     summary = assigned(plan, "plan 1", worker_id(plan, 3), "--override")
-    taken = assignment_of(plan, "task", HAND_GIVEN_TASK)
-    plan.expect_rows(taken["actor_id"] == worker_id(plan, 3), taken["source_id"] == assignment_of(plan, "phase", 1)["id"], "kept" not in summary, detail=summary)
+    claimed = assignment_of(plan, "task", HAND_GIVEN_TASK)
+    plan.expect_rows(claimed["actor_id"] == worker_id(plan, 3), claimed["source_id"] == assignment_of(plan, "phase", 1)["id"], "kept" not in summary, detail=summary)
     plan.expect_success(f"task show {HAND_GIVEN_TASK} --environment main", actor=plan.agent)
 
 

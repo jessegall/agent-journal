@@ -44,7 +44,7 @@ from dataclasses import dataclass, field
 
 from mypy import build
 from mypy.modulefinder import BuildSource
-from mypy.nodes import AssignmentStmt, CallExpr, ClassDef, Decorator, Expression, FuncDef, MemberExpr, MypyFile, NameExpr, OverloadedFuncDef, Statement, SuperExpr, TypeInfo, Var
+from mypy.nodes import FUNC_NO_INFO, AssignmentStmt, CallExpr, ClassDef, Decorator, Expression, FuncDef, MemberExpr, MypyFile, NameExpr, OverloadedFuncDef, Statement, SuperExpr, TypeInfo, Var
 from mypy.options import Options
 from mypy.server.subexpr import get_subexpressions
 from mypy.types import CallableType, Instance, Type, TypeType, UnionType, get_proper_type
@@ -500,7 +500,7 @@ class Renamer:
         callee = call.callee
         if isinstance(callee, MemberExpr) and callee.expr in self.project.types:
             info = single_class(self.project.types[callee.expr])
-            return info is not None and function.info is not None and info.has_base(function.info.fullname) and callee.name == function.name
+            return info is not None and function.info is not FUNC_NO_INFO and info.has_base(function.info.fullname) and callee.name == function.name
         return isinstance(callee, NameExpr) and callee.node is function
 
     @staticmethod

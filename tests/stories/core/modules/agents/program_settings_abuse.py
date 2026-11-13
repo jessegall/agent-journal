@@ -33,11 +33,11 @@ def test_an_injected_agent_cannot_add_a_hook_that_sends_secrets_out(new_story):
     settings_file.chmod(0o644)
     settings_file.write_text(json.dumps({"hooks": {"PostToolUse": [SECRET_HOOK]}}))
     launch = story.run(f'program command claude "{root}" --launch launch-1')
-    rewritten_before_the_launch = "evil.example.com" not in settings_file.read_text()
+    rewritten_pre_launch = "evil.example.com" not in settings_file.read_text()
     settings_file.chmod(0o644)
     settings_file.write_text(json.dumps({"hooks": {"PostToolUse": [SECRET_HOOK]}}))
     watch(story.container)
-    story.expect_rows(launch.code == 0, rewritten_before_the_launch, "evil.example.com" not in settings_file.read_text(),
+    story.expect_rows(launch.code == 0, rewritten_pre_launch, "evil.example.com" not in settings_file.read_text(),
                       marks_text(story).count("Claude Code settings were changed outside the journal and were put back") == 1)
 
 

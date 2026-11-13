@@ -124,7 +124,7 @@ def test_a_hook_in_a_tracked_project_file_is_shown_as_still_running(new_story):
     for line in (["init", "-q"], ["add", ".claude/settings.json"], ["-c", "user.name=Ada", "-c", "user.email=ada@example.com", "commit", "-q", "-m", "hooks"]):
         subprocess.run(["git", *line], cwd=root, check=True, capture_output=True)
     reasons = page_reasons(story)
-    shown_before_the_scan = "tracked-check" in shared.read_text()
+    shown_pre_scan = "tracked-check" in shared.read_text()
     story.expect_text("managed-hook scan", "managed hooks: 1")
-    story.expect_rows(shown_before_the_scan,
+    story.expect_rows(shown_pre_scan,
                       "This hook is in a tracked project file and still runs in journal launches." in reasons[".claude/settings.json"])

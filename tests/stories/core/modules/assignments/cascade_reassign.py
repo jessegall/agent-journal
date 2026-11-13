@@ -28,8 +28,8 @@ def test_assigning_the_yard_to_x_moves_inherited_rows_and_keeps_the_parcel_given
     shared_yard.expect_rows(row_actors(shared_yard, "yard") == {1: third_id}, row_actors(shared_yard, "bay") == {1: third_id, 2: third_id},
                             row_actors(shared_yard, "parcel") == expected, "kept 1 parcel (given by hand)" in summary, detail=summary)
     summary = assigned(shared_yard, "yard 1", first_id, "--override")
-    taken = assignment_of(shared_yard, "parcel", HAND_GIVEN_PARCEL)
-    shared_yard.expect_rows(taken["actor_id"] == first_id, taken["source_id"] == assignment_of(shared_yard, "bay", 1)["id"], "kept" not in summary, detail=summary)
+    claimed = assignment_of(shared_yard, "parcel", HAND_GIVEN_PARCEL)
+    shared_yard.expect_rows(claimed["actor_id"] == first_id, claimed["source_id"] == assignment_of(shared_yard, "bay", 1)["id"], "kept" not in summary, detail=summary)
 
 
 def test_from_parent_is_refused_while_no_parent_is_assigned_and_gives_a_parcel_back_to_its_bays_actor_once_one_is(yard):

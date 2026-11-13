@@ -15,7 +15,7 @@ class KeptRecords(RequestRecords):
         self.rows: list[tuple[str, int]] = []
         self.failures: list[tuple[str, str]] = []
 
-    def ended_now(self, kind: ProcessKind, line: str, exit_code: int) -> None:
+    def ended_now(self, category: ProcessKind, line: str, exit_code: int) -> None:
         if self.broken:
             raise OSError("the row cannot be written")
         self.rows.append((line, exit_code))

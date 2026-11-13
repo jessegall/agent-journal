@@ -52,20 +52,20 @@ def ended_helper(new_story, monkeypatch):
 
 def test_546_a_job_for_an_agent_whose_program_the_launcher_still_holds_starts_nothing_and_the_agent_reads_as_running(ended_helper):
     story = ended_helper
-    held = launcher(story, answer=PROGRAM_RUNS)
+    blocked = launcher(story, answer=PROGRAM_RUNS)
     story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"', actor=story.agent)
     story.run_listeners()
-    held.drain_requests()
+    blocked.drain_requests()
     shown, lines = standing(story), main_lines(story)
     story.expect_rows(helper_agent(story).pid is None, START_FAILED not in lines, "standing: running" in shown, detail=shown + lines)
 
 
 def test_547_two_starts_of_one_agent_at_once_start_one_program_and_the_other_is_told_it_runs(ended_helper):
     story = ended_helper
-    held = launcher(story, request_count=2, answers=(STARTED, PROGRAM_RUNS))
+    blocked = launcher(story, request_count=2, answers=(STARTED, PROGRAM_RUNS))
     resume = story.container.get(HelperResume)
     answers = [resume.resume(helper_agent(story), JOB), resume.resume(helper_agent(story), JOB)]
-    held.drain_requests()
+    blocked.drain_requests()
     shown = standing(story)
     story.expect_rows(sorted(answer.value for answer in answers) == ["running", "started"], helper_agent(story).pid == 701, "standing: running" in shown, detail=f"{answers} {shown}")
 
@@ -73,13 +73,13 @@ def test_547_two_starts_of_one_agent_at_once_start_one_program_and_the_other_is_
 def test_549_after_a_restart_an_agent_whose_recorded_process_is_not_listed_is_found_again_from_the_launcher_and_not_started_twice(new_story, monkeypatch):
     story = new_story(fixture=StartedHelper)
     story.expect_success(f"agent edit {agent_number(story, helper_agent(story).id)} {RECORDED_PROCESS}", actor=story.user)
-    held = launcher(story, answer=PROGRAM_RUNS, request_count=0)
+    blocked = launcher(story, answer=PROGRAM_RUNS, request_count=0)
     monkeypatch.setattr(ProcessTable, "rows", lambda table: [])
     story.tick(story.row(Agent, story.agent.id).session)
     story.run_listeners()
     shown = standing(story)
-    story.expect_rows(helper_agent(story).ended_at is None, [request for request in held.starts if "command" in request] == [], "standing: running" in shown,
-                      detail=f"{held.requests} {shown}")
+    story.expect_rows(helper_agent(story).ended_at is None, [request for request in blocked.starts if "command" in request] == [], "standing: running" in shown,
+                      detail=f"{blocked.requests} {shown}")
 
 
 def test_550_a_start_that_cannot_reach_the_launcher_reads_as_failed_and_leaves_one_line_however_many_ticks_follow(ended_helper):
@@ -123,8 +123,8 @@ def test_551_a_suite_starts_an_agent_by_the_public_command_reads_its_standing_by
 
 def test_554_a_suite_binds_its_own_policy_which_decides_that_an_ended_agent_is_not_gone_for_good_and_starts_no_program(new_story):
     story = new_story(STRICT_POLICY, fixture=EndedHelper)
-    asked = launcher(story, request_count=0)
+    requested = launcher(story, request_count=0)
     policy, helper = story.container.get(DispatchPolicy), helper_agent(story)
     with policy.lock(helper.session) as available:
         story.expect_rows(isinstance(policy, StrictPolicy), not available, policy.is_wanted(helper), detail=f"the bound policy is {type(policy).__name__}")
-    story.expect_rows(story.container.get(Receivers).receiver(helper.id).id == helper.id, asked.requests == [], detail=str(asked.requests))
+    story.expect_rows(story.container.get(Receivers).receiver(helper.id).id == helper.id, requested.requests == [], detail=str(requested.requests))

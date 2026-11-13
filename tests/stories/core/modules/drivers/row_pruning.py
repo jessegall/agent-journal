@@ -37,7 +37,7 @@ def test_rows_past_the_newest_kept_go_without_an_event_and_the_newest_stay(new_s
 def test_a_hook_call_a_waiting_line_still_points_at_stays(new_story, monkeypatch):
     story = new_story(fixture=OldPromptLogged)
     story.container.get(Database).update(Statement("UPDATE agent_lines SET state = 'waiting' WHERE hook_call_id IS NOT NULL"))
-    held = story.container.get(Database).rows(Statement("SELECT count(DISTINCT hook_call_id) FROM agent_lines WHERE hook_call_id IS NOT NULL"))[0][0]
+    blocked = story.container.get(Database).rows(Statement("SELECT count(DISTINCT hook_call_id) FROM agent_lines WHERE hook_call_id IS NOT NULL"))[0][0]
     monkeypatch.setattr(HookCall, "kept_rows", 0)
     RowPruning()(story.container)
-    expect_value(count(story, "hook_calls") >= held, True)
+    expect_value(count(story, "hook_calls") >= blocked, True)

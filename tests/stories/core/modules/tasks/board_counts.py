@@ -11,7 +11,7 @@ LEGAL_MODULE = "tests.stories.fixtures.acme_legal.module:AcmeLegalModuleJoining"
 
 def test_the_board_counts_each_group_once_including_added_states_and_cursor_pages(new_story):
     story = new_story(LEGAL_MODULE, fixture=UserJoined)
-    cancelled_before = board_totals(story)["cancelled"]
+    cancelled_previous = board_totals(story)["cancelled"]
     for number in range(1, 7):
         story.expect_success(f'task make "Counted task {number}" --environment main', actor=story.user)
     story.expect_success("task hold 3", actor=story.user)
@@ -27,7 +27,7 @@ def test_the_board_counts_each_group_once_including_added_states_and_cursor_page
     expect_value([row["id"] for row in state_groups["open"]["rows"]], [6])
     expect_value(state_groups["legal-hold"]["total"], 1)
     expect_value([row["id"] for row in state_groups["legal-hold"]["rows"]], [3])
-    expect_value(state_groups["cancelled"]["total"], cancelled_before + 2)
+    expect_value(state_groups["cancelled"]["total"], cancelled_previous + 2)
     expect_value([row["id"] for row in state_groups["cancelled"]["rows"]], [5])
 
     older, counts = counted_board(story, "--state open --before-id 6 --limit 1")
@@ -37,7 +37,7 @@ def test_the_board_counts_each_group_once_including_added_states_and_cursor_page
 
     finished, counts = counted_board(story, f'--state cancelled --before-closed-at {state_groups["cancelled"]["rows"][0]["closed_at"]} --limit 1')
     expect_value(len(counts), 1)
-    expect_value(finished[0]["total"], cancelled_before + 2)
+    expect_value(finished[0]["total"], cancelled_previous + 2)
     expect_value([row["id"] for row in finished[0]["rows"]], [4])
 
 

@@ -13,7 +13,7 @@ def test_a_reader_that_picks_no_line_is_reported_each_run_and_after_three_runs_i
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run('reader add deploys --commands "./deploy*" --lines "NOTHING MATCHES THIS"', actor=story.agent)
     first = ended_after_a_while(story, moved_run(story, "./deploy.sh staging", CommandCategory.BUILD), STEPS)
-    after_one = heard(story)
+    after_single = heard(story)
     story.hook("s-1", HookSamples.session_start())
     story.run_listeners()
     early = kept_lines(story)
@@ -23,5 +23,5 @@ def test_a_reader_that_picks_no_line_is_reported_each_run_and_after_three_runs_i
     after_empty = heard(story)
     story.hook("s-1", HookSamples.session_start())
     story.run_listeners()
-    story.expect_rows(f"Reader deploys matched none of the 10 lines of output {first.id}" in after_one, REPAIR_LINE not in early,
-                      f"of output {empty.id}" not in after_empty, REPAIR_LINE in kept_lines(story), detail=f"{after_one}\n{after_empty}\n{kept_lines(story)}")
+    story.expect_rows(f"Reader deploys matched none of the 10 lines of output {first.id}" in after_single, REPAIR_LINE not in early,
+                      f"of output {empty.id}" not in after_empty, REPAIR_LINE in kept_lines(story), detail=f"{after_single}\n{after_empty}\n{kept_lines(story)}")

@@ -55,9 +55,9 @@ class ProjectHooks:
     def person_file_reason(self, provider: Provider, path: Path) -> str:
         newest = self.backup.newest(provider.name, path.name)
         stamp = newest.name.split("-", 1)[0] if newest is not None else ""
-        backed_up = f"backed up at {newest} ({stamp})." if newest is not None else "it is backed up at the next start."
+        backed_raised = f"backed up at {newest} ({stamp})." if newest is not None else "it is backed up at the next start."
         program_note = f" {provider.person_file_note}" if provider.person_file_note and path == provider.user_hook_files()[0] else ""
-        return f"Not read by journal launches; {backed_up}{program_note}"
+        return f"Not read by journal launches; {backed_raised}{program_note}"
 
     def tracked(self, provider: Provider, manager: HookManager) -> list[UnmanagedHook]:
         root = self.home.project_folder

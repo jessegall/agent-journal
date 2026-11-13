@@ -36,9 +36,9 @@ def merged_workers(repository: GitRepository, count: int, commits: int = 1) -> N
     for worker in range(count):
         branch = f"journal/main/worker-other-{worker}"
         repository.git("branch", branch, ENVIRONMENT_BRANCH)
-        other = checkout_of(repository, branch)
+        different = checkout_of(repository, branch)
         for number in range(commits):
-            committed_on(repository, other, f"other_{worker}_{number}.py", f"N = {number}\n", f"Other worker {worker} commit {number}")
+            committed_on(repository, different, f"other_{worker}_{number}.py", f"N = {number}\n", f"Other worker {worker} commit {number}")
         repository.git("merge", "--no-ff", "-m", f"Merge worker {worker}", branch, folder=checkout_of(repository, ENVIRONMENT_BRANCH))
 
 

@@ -90,8 +90,8 @@ class Select:
         order = f" ORDER BY {', '.join(order.sql for order in self.orders)}" if self.orders else ""
         page = self.page_clause()
         statement = self.core_statement()
-        for every, other in self.unions:
-            statement = statement.joined(other.core_statement(), " UNION ALL " if every else " UNION ")
+        for every, different in self.unions:
+            statement = statement.joined(different.core_statement(), " UNION ALL " if every else " UNION ")
         statement = statement.joined(Statement(order + page), "")
         return replace(statement, named_limit_rows=self.named_limit or None)
 

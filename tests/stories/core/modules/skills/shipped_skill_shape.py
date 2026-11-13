@@ -53,8 +53,8 @@ def hub_row_fault(folder: str, rows: list[list[str]]) -> str | None:
 
 def word_runs(path: Path) -> set[tuple[str, ...]]:
     text = CODE.sub(" ", FRONT_MATTER.sub("", path.read_text()))
-    words = WORD.findall(text.lower())
-    return {tuple(words[start:start + SHARED_WORDS]) for start in range(len(words) - SHARED_WORDS + 1)}
+    terms = WORD.findall(text.lower())
+    return {tuple(terms[start:start + SHARED_WORDS]) for start in range(len(terms) - SHARED_WORDS + 1)}
 
 
 def reference_faults(path: Path) -> list[str]:
@@ -82,8 +82,8 @@ def test_every_shipped_description_is_one_imperative_sentence_with_a_read_it_hal
 def test_the_declared_description_is_the_front_matter_description(new_story):
     story = new_story(fixture=BuilderStarted)
     declared = {skill.folder: skill.description for skill in Registry.read(story.container.get(Database)).skills}
-    written = {path.parent.name: front_matter_description(path) for path in shipped_skill_files()}
-    expect_absent_value(sorted(f"{folder}: declared as {declared[folder]!r}" for folder in declared.keys() & written.keys() if declared[folder] != written[folder]))
+    saved = {path.parent.name: front_matter_description(path) for path in shipped_skill_files()}
+    expect_absent_value(sorted(f"{folder}: declared as {declared[folder]!r}" for folder in declared.keys() & saved.keys() if declared[folder] != saved[folder]))
 
 
 def test_the_hub_names_every_shipped_skill():

@@ -25,8 +25,8 @@ def test_another_kind_is_allowed_at_once(tmp_path):
 
 def test_the_fourth_notice_of_a_run_is_refused_even_after_a_clear(tmp_path):
     record, _ = notices(tmp_path)
-    for kind in (NoticeKind.NO_OUTPUT, NoticeKind.SPARSE, NoticeKind.STOPPED_WRITING):
-        record.recorded(4, kind, 100.0)
+    for category in (NoticeKind.NO_OUTPUT, NoticeKind.SPARSE, NoticeKind.STOPPED_WRITING):
+        record.recorded(4, category, 100.0)
     record.cleared(4)
     assert not record.allowed(4, NoticeKind.NO_OUTPUT, 2000.0)
 
@@ -48,8 +48,8 @@ def test_the_stuck_warning_comes_once_per_silence_and_again_after_a_growth(tmp_p
 
 def test_the_stuck_warning_is_not_held_back_by_three_notices_and_does_not_count_among_them(tmp_path):
     record, _ = notices(tmp_path)
-    for kind in (NoticeKind.NO_OUTPUT, NoticeKind.SPARSE, NoticeKind.STOPPED_WRITING):
-        record.recorded(4, kind, 100.0)
+    for category in (NoticeKind.NO_OUTPUT, NoticeKind.SPARSE, NoticeKind.STOPPED_WRITING):
+        record.recorded(4, category, 100.0)
     assert record.allowed(4, NoticeKind.FROZEN, 101.0)
     record.recorded(4, NoticeKind.FROZEN, 101.0)
     assert record.kept(4)[0] == 3

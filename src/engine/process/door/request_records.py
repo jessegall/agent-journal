@@ -23,7 +23,7 @@ class RequestRecords:
     def recorded_hook(self, agent_id: int, environment_id: int, line: str, exit_code: int) -> None:
         return None
 
-    def recorded(self, kind: ProcessKind, line: str, answer: Callable[[], int]) -> int:
+    def recorded(self, category: ProcessKind, line: str, answer: Callable[[], int]) -> int:
         exit_code = ExitCodedError.exit_code
         try:
             exit_code = answer()
@@ -31,16 +31,16 @@ class RequestRecords:
             exit_code = error.exit_code
             raise
         finally:
-            self.recorded_safely(kind, line, exit_code)
+            self.recorded_safely(category, line, exit_code)
         return exit_code
 
-    def recorded_safely(self, kind: ProcessKind, line: str, exit_code: int) -> None:
+    def recorded_safely(self, category: ProcessKind, line: str, exit_code: int) -> None:
         try:
-            self.ended_now(kind, line, exit_code)
+            self.ended_now(category, line, exit_code)
         except Exception as failure:
             self.write_failed(line, failure)
 
-    def ended_now(self, kind: ProcessKind, line: str, exit_code: int) -> None:
+    def ended_now(self, category: ProcessKind, line: str, exit_code: int) -> None:
         return None
 
     def write_failed(self, line: str, failure: Exception) -> None:

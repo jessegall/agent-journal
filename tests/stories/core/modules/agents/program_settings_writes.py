@@ -81,12 +81,12 @@ def test_a_rewrite_never_shows_a_half_file(new_story):
 def test_a_launch_is_refused_when_the_settings_cannot_be_written(new_story):
     story = new_story(fixture=MainEnvironment)
     ProgramHooks.store(claude_person_file(), {"env": {"A": "1"}})
-    person_before = (claude_person_file().read_bytes(), claude_person_file().stat().st_mtime_ns)
+    person_previous = (claude_person_file().read_bytes(), claude_person_file().stat().st_mtime_ns)
     (story.home.folder / "programs").write_text("a file where the folder belongs")
     outcome = story.run(f'program manage claude "{story.home.project_folder}"')
     story.expect_rows(outcome.code == 1, "the journal could not write its Claude Code settings: " in outcome.output_text,
                       "; nothing was started" in outcome.output_text, "--settings" not in outcome.output_text,
-                      (claude_person_file().read_bytes(), claude_person_file().stat().st_mtime_ns) == person_before)
+                      (claude_person_file().read_bytes(), claude_person_file().stat().st_mtime_ns) == person_previous)
     (story.home.folder / "programs").unlink()
     story.expect_text(f'program command claude "{story.home.project_folder}" --launch launch-2', "--settings")
 
@@ -96,6 +96,6 @@ def test_an_upgrade_from_an_older_journal_writes_the_files_at_once(new_story):
     local = story.home.project_folder / ".claude" / "settings.local.json"
     local.parent.mkdir(parents=True, exist_ok=True)
     local.write_text(json.dumps({"hooks": {"PreToolUse": [OLD_JOURNAL_BLOCK]}}))
-    absent_before = not (story.home.folder / "programs").exists()
+    absent_previous = not (story.home.folder / "programs").exists()
     ProgramSettingsWatch()(story.container)
-    story.expect_rows(absent_before, all(path.is_file() for path in program_files(story)))
+    story.expect_rows(absent_previous, all(path.is_file() for path in program_files(story)))

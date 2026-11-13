@@ -70,12 +70,12 @@ def test_6_7_the_proofs_of_one_task_are_registered_in_any_order_with_or_without_
 
 def test_8_a_shown_proof_is_corrected_by_a_second_proof_of_its_point_and_by_an_edit(one_task):
     prove_task(one_task, 1, 1, TEST_LINE)
-    again = prove_task(one_task, 1, 1, SECOND_TEST_LINE)
+    repeated = prove_task(one_task, 1, 1, SECOND_TEST_LINE)
     after_second = proofs(one_task)[0]
     edited = one_task.story.run('proof edit 1 "cart.py:2, the rounded total" --task 1', actor=one_task.worker)
     after_edit = proofs(one_task)[0]
-    one_task.story.expect_rows(again.code == 0, edited.code == 0, "totals.py" in after_second.test_command, after_edit.text == "cart.py:2, the rounded total",
-                               after_edit.state is ProofState.SHOWN, len(proofs(one_task)) == 1, detail=f"{again.output_text} | {edited.output_text}")
+    one_task.story.expect_rows(repeated.code == 0, edited.code == 0, "totals.py" in after_second.test_command, after_edit.text == "cart.py:2, the rounded total",
+                               after_edit.state is ProofState.SHOWN, len(proofs(one_task)) == 1, detail=f"{repeated.output_text} | {edited.output_text}")
 
 
 def test_9_a_proof_of_a_point_that_is_checked_is_refused(four_points):

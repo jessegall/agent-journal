@@ -70,15 +70,15 @@ def test_a_main_agents_reply_to_a_helper_names_that_helper_as_its_recipient(new_
     story = new_story(fixture=StartedHelper)
     helper = helper_actor(story)
     story.expect_success(f'message send "The total is wrong" --to agent:{agent_number(story, story.agent.id)} --environment main', actor=helper)
-    asked = sender_name(story, helper.id)
-    story.expect_success(f'message reply {asked.id} "Fixing it"', actor=story.agent)
+    requested = sender_name(story, helper.id)
+    story.expect_success(f'message reply {requested.id} "Fixing it"', actor=story.agent)
     reply = sender_name(story, story.agent.id)
-    story.expect_rows(reply.parent_id == asked.id, reply.recipient == story.container.get(Queries).query(Agent).find(helper.id).display_name, detail=reply.recipient)
+    story.expect_rows(reply.parent_id == requested.id, reply.recipient == story.container.get(Queries).query(Agent).find(helper.id).display_name, detail=reply.recipient)
 
 
 def test_a_main_agents_reply_to_a_person_names_no_recipient(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_success('message send "Fix the cart" --environment main', actor=story.user)
-    asked = story.container.get(Queries).query(Message).filter(creator_id=story.user.id).newest().first()
-    story.expect_success(f'message reply {asked.id} "On it"', actor=story.agent)
+    requested = story.container.get(Queries).query(Message).filter(creator_id=story.user.id).newest().first()
+    story.expect_success(f'message reply {requested.id} "On it"', actor=story.agent)
     story.expect_rows(sender_name(story, story.agent.id).recipient == "")

@@ -19,8 +19,8 @@ def test_another_value_does_not_match():
 
 
 def test_a_line_of_another_declaration_does_not_match():
-    other = NudgeDeclaration("sample.other", NudgeType.STEERING, "plan:{plan} was cancelled")
-    assert not expected_nudge(PLAN_WAITS).is_in_any([other.nudge(plan=4).text])
+    different = NudgeDeclaration("sample.other", NudgeType.STEERING, "plan:{plan} was cancelled")
+    assert not expected_nudge(PLAN_WAITS).is_in_any([different.nudge(plan=4).text])
 
 
 def test_a_kept_nudge_matches_by_its_key_and_fields():

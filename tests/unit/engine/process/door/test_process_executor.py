@@ -76,7 +76,7 @@ def test_a_run_past_its_limit_fails_naming_its_command_and_its_end_is_still_reco
 
 
 def test_reading_writing_searching_and_hooks_never_move_to_the_background():
-    assert [kind for kind in ProcessKind if not kind.can_go_to_background] == [ProcessKind.HOOK, ProcessKind.READ, ProcessKind.WRITE, ProcessKind.SEARCH]
+    assert [category for category in ProcessKind if not category.can_go_to_background] == [ProcessKind.HOOK, ProcessKind.READ, ProcessKind.WRITE, ProcessKind.SEARCH]
 
 
 def test_a_quick_run_past_its_limit_is_stopped_and_fails_naming_its_command(tmp_path: Path):

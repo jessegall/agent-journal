@@ -36,8 +36,8 @@ def print_line(story: Story, text: str) -> None:
     folder = story.container.get(OutputFolder)
     folder.write_start(1, "make build", ["make build"])
     folder.write_output(1, 1, text)
-    printed_at = story.clock.timestamp().value.timestamp()
-    os.utime(folder.home.folder / "processes" / "1" / "1.out", (printed_at, printed_at))
+    emitted_at = story.clock.timestamp().value.timestamp()
+    os.utime(folder.home.folder / "processes" / "1" / "1.out", (emitted_at, emitted_at))
 
 
 def silent_story(new_story, seconds: int = HANG_SECONDS + 1) -> Story:

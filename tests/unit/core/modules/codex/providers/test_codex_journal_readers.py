@@ -67,9 +67,9 @@ def test_a_journal_write_leaves_the_person_config_untouched(provider, home):
     person_folder().mkdir(parents=True, exist_ok=True)
     config = person_folder() / "config.toml"
     config.write_text('model = "gpt-6.1-sol"\n')
-    before = (config.read_bytes(), config.stat().st_mtime_ns)
+    previous = (config.read_bytes(), config.stat().st_mtime_ns)
     write_journal_folder(provider, home)
-    assert (config.read_bytes(), config.stat().st_mtime_ns) == before
+    assert (config.read_bytes(), config.stat().st_mtime_ns) == previous
 
 
 def test_old_codex_journal_entries_are_removed_and_foreign_ones_stay(provider, home, tmp_path):

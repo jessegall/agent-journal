@@ -13,5 +13,5 @@ class NonHelperRows:
     """Matches rows created by a main agent or a user."""
 
     def statement(self) -> Statement:
-        other_agents = Select("agents").matching(Equal("role", MAIN_ROLE, negated=True)).column("id")
-        return SubqueryMatch("creator_id", other_agents, negated=True).statement()
+        different_agents = Select("agents").matching(Equal("role", MAIN_ROLE, negated=True)).column("id")
+        return SubqueryMatch("creator_id", different_agents, negated=True).statement()

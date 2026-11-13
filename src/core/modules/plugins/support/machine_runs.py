@@ -25,9 +25,9 @@ class MachineRuns:
         self.home, self.outputs, self.clock = home, outputs, clock
 
     @staticmethod
-    def kind_folder(plugin: str, kind: str) -> Path:
+    def kind_folder(plugin: str, category: str) -> Path:
         machine = Path(os.environ[MACHINE_FOLDER_VARIABLE]) if MACHINE_FOLDER_VARIABLE in os.environ else Path.home() / JOURNAL_FOLDER
-        return machine / MACHINE_RUNS_FOLDER / plugin / kind
+        return machine / MACHINE_RUNS_FOLDER / plugin / category
 
     def run_file(self, process: Process) -> Path:
         project = hashlib.sha256(str(self.home.folder.resolve()).encode()).hexdigest()[:PROJECT_MARK_CHARACTERS]
@@ -41,8 +41,8 @@ class MachineRuns:
     def release(self, process: Process) -> None:
         self.run_file(process).unlink(missing_ok=True)
 
-    def count(self, plugin: str, kind: str) -> int:
-        folder = self.kind_folder(plugin, kind)
+    def count(self, plugin: str, category: str) -> int:
+        folder = self.kind_folder(plugin, category)
         if not folder.is_dir():
             return 0
         counted = 0

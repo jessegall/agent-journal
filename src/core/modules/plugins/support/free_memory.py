@@ -27,11 +27,11 @@ class FreeMemory:
         self.is_unknown_noted = False
 
     def megabytes(self) -> int | None:
-        known = self.read_megabytes()
-        if known is None and not self.is_unknown_noted:
+        recognized = self.read_megabytes()
+        if recognized is None and not self.is_unknown_noted:
             self.is_unknown_noted = True
             self.system_log.write(LogLevel.INFORMATION, "the free memory of this machine cannot be read, so a plugin run that asks for memory goes on without waiting for it")
-        return known
+        return recognized
 
     def read_megabytes(self) -> int | None:
         try:
@@ -41,11 +41,11 @@ class FreeMemory:
 
     @staticmethod
     def linux_megabytes() -> int | None:
-        found = re.search(r"^MemAvailable:\s+(\d+) kB", FileAccess.shared().current(MEMINFO), re.M)
-        return int(found.group(1)) // KILOBYTES_PER_MEGABYTE if found else None
+        matched = re.search(r"^MemAvailable:\s+(\d+) kB", FileAccess.shared().current(MEMINFO), re.M)
+        return int(matched.group(1)) // KILOBYTES_PER_MEGABYTE if matched else None
 
     def mac_megabytes(self) -> int | None:
         text = self.executor.execute(ExecutionRequest(["vm_stat"], self.home.project_folder, ProcessKind.QUICK, VM_STAT_LIMIT_SECONDS)).stdout
         page = re.search(r"page size of (\d+) bytes", text)
-        pages = sum(int(found.group(1)) for line in FREE_PAGE_LINES if (found := re.search(rf"^{line}:\s+(\d+)\.", text, re.M)))
+        pages = sum(int(matched.group(1)) for line in FREE_PAGE_LINES if (matched := re.search(rf"^{line}:\s+(\d+)\.", text, re.M)))
         return pages * int(page.group(1)) // BYTES_PER_MEGABYTE if page else None

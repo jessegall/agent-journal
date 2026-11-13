@@ -32,7 +32,7 @@ def test_a_codex_launch_reads_only_the_journal_s_codex_folder(new_story):
     story = new_story(fixture=MainEnvironment)
     root = story.home.project_folder
     files = person_files()
-    before = [path.read_bytes() for path in files]
+    previous = [path.read_bytes() for path in files]
     worktrees = [story.home.folder / "worktrees" / "development" / name for name in ("worker-1", "worker-2")]
     for worktree in worktrees:
         worktree.mkdir(parents=True)
@@ -41,7 +41,7 @@ def test_a_codex_launch_reads_only_the_journal_s_codex_folder(new_story):
     story.expect_success(f'program trust codex "{root}"', "ready")
     story.expect_text(f'program manage codex "{root}"', "managed hooks:")
     config = tomllib.loads((journal_folder(story) / "config.toml").read_text())
-    unchanged_person_files = [path.read_bytes() for path in files] == before
+    unchanged_person_files = [path.read_bytes() for path in files] == previous
     (journal_folder(story) / "auth.json").write_text('{"token": "refreshed"}\n')
     story.expect_rows(terminal["variables"] == {"CODEX_HOME": str(journal_folder(story))}, unchanged_person_files,
                       "person-codex-check" not in (journal_folder(story) / "hooks.json").read_text(),

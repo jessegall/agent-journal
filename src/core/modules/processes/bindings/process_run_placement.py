@@ -56,7 +56,7 @@ class ProcessRunPlacement(RunPlacement):
         if run.process_id is None:
             self.log.append(RequestLogEntry(run.environment_id, run.agent_id, run.request.kind, run.request.text, execution.exit_code, self.clock.timestamp().text))
             return None
-        printed = execution.stdout + execution.stderr
-        self.outputs.write_output(run.process_id, FIRST_PART, printed)
-        self.bus.run(EndProcess(run.process_id, execution.exit_code, len(printed.encode()), printed.count("\n")), Actor.core(), environment_id=run.environment_id)
+        emitted = execution.stdout + execution.stderr
+        self.outputs.write_output(run.process_id, FIRST_PART, emitted)
+        self.bus.run(EndProcess(run.process_id, execution.exit_code, len(emitted.encode()), emitted.count("\n")), Actor.core(), environment_id=run.environment_id)
         return run.process_id

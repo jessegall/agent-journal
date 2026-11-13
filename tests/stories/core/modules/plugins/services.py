@@ -469,24 +469,24 @@ def other_server_start(story, is_locked: Event, is_following: Event, started: li
 
 def test_one_service_has_one_process_across_a_restart_by_command_two_servers_and_a_server_restart(new_story):
     story = server_kept_story(new_story)
-    before_restart = story.processes.running[SERVED]
+    previous_restart = story.processes.running[SERVED]
     story.expect_success("plugin service restart served answers", actor=story.user)
     first = story.processes.running[SERVED]
     story.expect_success("plugin service-log served answers --lines 1", actor=story.user)
-    story.expect_rows(first.pid != before_restart.pid, service_process_ids(story) == [first.pid], detail=str(service_process_ids(story)))
+    story.expect_rows(first.pid != previous_restart.pid, service_process_ids(story) == [first.pid], detail=str(service_process_ids(story)))
     second_server, after_restart = ServiceProcesses(), ServiceProcesses()
     story.services.follow(second_server)
     story.services.follow(story.processes)
     story.expect_rows(second_server.running[SERVED].pid == first.pid, service_process_ids(story) == [first.pid], detail=str(service_process_ids(story)))
     story.processes.close()
     is_locked, is_following, started = Event(), Event(), []
-    other_server = Thread(target=other_server_start, args=[story, is_locked, is_following, started])
-    other_server.start()
+    different_server = Thread(target=other_server_start, args=[story, is_locked, is_following, started])
+    different_server.start()
     try:
         is_locked.wait(END_LIMIT_SECONDS)
         is_following.set()
         story.services.follow(after_restart)
-        other_server.join(END_LIMIT_SECONDS)
+        different_server.join(END_LIMIT_SECONDS)
         story.expect_rows(after_restart.running[SERVED].pid == started[0].pid, service_process_ids(story) == [started[0].pid], detail=str(service_process_ids(story)))
         os.killpg(started[0].pid, signal.SIGKILL)
         started[0].wait(END_LIMIT_SECONDS)

@@ -82,9 +82,9 @@ def test_a_merge_of_this_worktrees_own_earlier_commits_is_not_counted_but_anothe
 
 def test_a_deleted_base_branch_is_refused_and_never_counted_as_nothing_behind(tmp_path):
     _, worktree = cut_worktree(tmp_path)
-    gone = Worktree(session_agent_id=1, task_id=1, creator_id=1, folder=worktree.folder, branch=worktree.branch, base_branch="gone", base_commit=worktree.base_commit)
+    removed = Worktree(session_agent_id=1, task_id=1, creator_id=1, folder=worktree.folder, branch=worktree.branch, base_branch="gone", base_commit=worktree.base_commit)
     with pytest.raises(Refusal, match="branch gone does not exist"):
-        git().behind(gone)
+        git().behind(removed)
 
 
 def test_base_changes_lists_the_files_of_each_base_commit_merges_included(tmp_path):

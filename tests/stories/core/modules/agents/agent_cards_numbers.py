@@ -25,11 +25,11 @@ def cards(person, *flags: str, environment: str = "main") -> dict:
 
 
 def own_cards(person, *flags: str, environment: str = "main") -> list[dict]:
-    found, page = [], 1
+    matched, page = [], 1
     while rows := cards(person, *flags, "--page", str(page), environment=environment)["rows"]:
-        found += [row for row in rows if row["number"] >= FIRST_STORY_NUMBER]
+        matched += [row for row in rows if row["number"] >= FIRST_STORY_NUMBER]
         page += 1
-    return found
+    return matched
 
 
 def card(person, number: int) -> dict:

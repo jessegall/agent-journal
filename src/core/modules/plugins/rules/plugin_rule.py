@@ -103,9 +103,9 @@ class PluginRule(DriverRule):
         plugin, manifest = runnable.plugin, runnable.manifest
         event = group[0]
         guard = manifest.declared_event(event.name, EventForm.GUARD)
-        sent = tuple(PluginEvent(declared.key, member.data) if (declared := manifest.declared_event(member.name, EventForm.GUARD)) else member for member in group)
-        request = PluginRunRequest(runnable, sent[0], EventForm.GUARD, manifest.window_ms(event.name, self.setting_values.number(CEILING_SETTING)),
-                                   f"at {event.name}", hook.event.environment, hook.timestamp, hook.agent_id, guard.script if guard else "", hook_waits=True, facts=facts.value, events=sent)
+        delivered = tuple(PluginEvent(declared.key, member.data) if (declared := manifest.declared_event(member.name, EventForm.GUARD)) else member for member in group)
+        request = PluginRunRequest(runnable, delivered[0], EventForm.GUARD, manifest.window_ms(event.name, self.setting_values.number(CEILING_SETTING)),
+                                   f"at {event.name}", hook.event.environment, hook.timestamp, hook.agent_id, guard.script if guard else "", hook_waits=True, facts=facts.value, events=delivered)
         outcome = self.runs.run(request)
         if outcome.is_late:
             return ""

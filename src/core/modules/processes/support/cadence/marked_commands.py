@@ -9,5 +9,5 @@ class MarkedCommands:
     def __init__(self, marks: UnreadableMarks) -> None:
         self.marks = marks
 
-    def skips(self, kind: NoticeKind, command_key: str) -> bool:
-        return kind.is_about_reading and self.marks.excuses(command_key)
+    def skips(self, category: NoticeKind, command_key: str) -> bool:
+        return category.is_about_reading and self.marks.excuses(command_key)

@@ -27,12 +27,12 @@ class RecordWorktreeTakeoverHandler(Handler[RecordWorktreeTakeover, Worktree]):
     def handle(self, command: RecordWorktreeTakeover, context: Context) -> Worktree:
         worktree = self.rows.required(Worktree, command.worktree_id)
         plan = self.units.unit(worktree.session_agent_id).plan
-        held = tuple(self.queries.query(Task).matching(TaskQuery.assignee(worktree.session_agent_id)).filter(closed_at=None).every_row(UNIT_TASKS_REASON))
-        taken = self.repository.save_change(worktree, worktree.taken_over(command.worker_id), context)
-        for task in held:
+        blocked = tuple(self.queries.query(Task).matching(TaskQuery.assignee(worktree.session_agent_id)).filter(closed_at=None).every_row(UNIT_TASKS_REASON))
+        claimed = self.repository.save_change(worktree, worktree.taken_over(command.worker_id), context)
+        for task in blocked:
             if task.holder_id == worktree.session_agent_id:
                 self.repository.update(task, context, holder_id=command.worker_id)
             self.assignments.assign_kept(task, command.worker_id, context, cascade=False)
         if plan is not None:
             self.bus.run_with_context(AssignPlan(plan.id, command.worker_id), context)
-        return taken
+        return claimed

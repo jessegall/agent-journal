@@ -189,7 +189,7 @@ class Database:
         if self.cuts_raise:
             raise report
         for reports in (self.read_cuts, self.collected_large_reads):
-            if reports is not None and all(str(known) != str(report) for known in reports):
+            if reports is not None and all(str(recognized) != str(report) for recognized in reports):
                 reports.append(report)
 
     def query_plan(self, statement: Statement) -> tuple[str, ...]:

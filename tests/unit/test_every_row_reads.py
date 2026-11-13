@@ -80,8 +80,8 @@ def test_every_walk_in_src_is_listed_in_the_snapshot():
 
 
 def test_a_walk_that_is_gone_is_taken_off_the_snapshot():
-    gone = sorted(set(listed()) - set(walks()))
-    assert not gone, f"take these lines off tests/snapshots/every_row_reads.txt: {gone}"
+    removed = sorted(set(listed()) - set(walks()))
+    assert not removed, f"take these lines off tests/snapshots/every_row_reads.txt: {removed}"
 
 
 def has_enough_words(reason: str) -> bool:

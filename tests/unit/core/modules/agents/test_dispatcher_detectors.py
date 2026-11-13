@@ -43,10 +43,10 @@ def allowed_files(rule: str) -> list[str]:
 
 
 def executable() -> str:
-    found = next((str(folder / PLUGIN) for folder in (ROOT, *ROOT.parents) if (folder / PLUGIN).is_file()), None)
-    if found is None:
+    matched = next((str(folder / PLUGIN) for folder in (ROOT, *ROOT.parents) if (folder / PLUGIN).is_file()), None)
+    if matched is None:
         pytest.skip("the code-commandments plugin is not installed")
-    return found
+    return matched
 
 
 def project(folder: Path) -> Path:
@@ -113,13 +113,13 @@ def test_552_a_developer_who_imports_the_launcher_link_outside_the_dispatchers_f
     folder = project(tmp_path)
     outside = written(folder, "src/suites/coding/modules/workers/support/terminal_count.py", LAUNCHER_IMPORT)
     written(folder, "src/core/modules/agents/support/launcher_presence.py", LAUNCHER_IMPORT)
-    found = matches(folder, IMPORT_RULE)
-    assert "terminal_count.py:1" in found and "launcher_presence.py" not in found and "1 match" in found, f"{outside}: {found}"
+    matched = matches(folder, IMPORT_RULE)
+    assert "terminal_count.py:1" in matched and "launcher_presence.py" not in matched and "1 match" in matched, f"{outside}: {matched}"
 
 
 def test_553_a_developer_who_writes_an_agents_ended_at_outside_the_dispatcher_is_refused_by_the_name_of_the_file(tmp_path):
     folder = project(tmp_path)
     outside = written(folder, "src/suites/coding/modules/workers/support/unused_worker_rows.py", ROW_WRITE.format(owner="UnusedWorkerRows"))
     written(folder, "src/core/modules/agents/support/agent_dispatcher.py", ROW_WRITE.format(owner="AgentDispatcher"))
-    found = matches(folder, ROW_RULE)
-    assert "unused_worker_rows.py:7" in found and "agent_dispatcher.py" not in found and "1 match" in found, f"{outside}: {found}"
+    matched = matches(folder, ROW_RULE)
+    assert "unused_worker_rows.py:7" in matched and "agent_dispatcher.py" not in matched and "1 match" in matched, f"{outside}: {matched}"

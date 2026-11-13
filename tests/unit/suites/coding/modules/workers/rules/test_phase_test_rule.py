@@ -18,8 +18,8 @@ class Rows:
 
 
 class Window:
-    def __init__(self, runs_left: int) -> None:
-        self.runs_left = runs_left
+    def __init__(self, runs_remaining: int) -> None:
+        self.runs_left = runs_remaining
 
     def test_runs_available(self, worktree) -> int:
         return self.runs_left
@@ -37,8 +37,8 @@ class Steps:
         return self.has_failure
 
 
-def rule(runs_left: int, has_failure: bool) -> PhaseTestRule:
-    answering = PhaseTestRule(Rows(TaskState.STARTED), None, SimpleNamespace(worker_worktree=lambda worker_id: WORKTREE), Window(runs_left), Steps(has_failure))
+def rule(runs_remaining: int, has_failure: bool) -> PhaseTestRule:
+    answering = PhaseTestRule(Rows(TaskState.STARTED), None, SimpleNamespace(worker_worktree=lambda worker_id: WORKTREE), Window(runs_remaining), Steps(has_failure))
     answering.is_test_part = lambda part, shell: True
     return answering
 

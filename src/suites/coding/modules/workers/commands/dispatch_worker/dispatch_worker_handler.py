@@ -124,9 +124,9 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             raise Refusal(f"{AgentLabel.from_agent(stopped).text} is still running", f"journal agent stop {stopped.number}, then take its worktree over")
         self.places.check_new_place()
         worker = self.bus.dispatch(start, context)
-        taken = self.bus.run_with_context(RecordWorktreeTakeover(worktree.id, worker.id), context)
+        claimed = self.bus.run_with_context(RecordWorktreeTakeover(worktree.id, worker.id), context)
         self.configure(command, worker, environment, choice.fallback, context)
-        return WorkerLaunch(worker, taken, self.worker_command.command(worker, taken, environment, self.queries.query(Task).find(taken.task_id)))
+        return WorkerLaunch(worker, claimed, self.worker_command.command(worker, claimed, environment, self.queries.query(Task).find(claimed.task_id)))
 
     def configure(self, command: DispatchWorker, worker: Agent, environment: Environment, fallback: WorkerRouteFallback | None, context: Context) -> None:
         test_commands = self.presets.with_named(environment.folder, command.test_commands)

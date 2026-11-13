@@ -32,11 +32,11 @@ def queues_plugin(new_story):
     return story
 
 
-def queued(story, kind: str, *flags: str, line: str = "true") -> int:
-    outcome = story.run(f"plugin queue {PLUGIN} --kind {kind} --agent {story.worker.id} --detach {' '.join(flags)} -- {line}", actor=story.user)
-    words = outcome.output_text.split()
-    assert outcome.code == 0 and words[:1] == ["run"] and words[1].isdigit(), outcome.output_text
-    return int(words[1])
+def queued(story, category: str, *flags: str, line: str = "true") -> int:
+    outcome = story.run(f"plugin queue {PLUGIN} --kind {category} --agent {story.worker.id} --detach {' '.join(flags)} -- {line}", actor=story.user)
+    terms = outcome.output_text.split()
+    assert outcome.code == 0 and terms[:1] == ["run"] and terms[1].isdigit(), outcome.output_text
+    return int(terms[1])
 
 
 def shown(story, run: int) -> dict[str, object]:
@@ -66,19 +66,19 @@ def test_a_kind_limited_to_one_gives_the_free_place_to_the_high_priority_run_and
 def test_runs_wait_for_a_machine_wide_count_and_free_memory_join_a_waiting_twin_and_stop_at_their_timeout(new_story):
     story = queues_plugin(new_story)
     machine = Path(os.environ[MACHINE_FOLDER_VARIABLE])
-    other = machine / "machine-runs" / PLUGIN / "shared" / "other-project-7"
-    other.parent.mkdir(parents=True)
-    other_pid = machine / "other-project-7.pid"
-    other_pid.write_text(str(os.getpid()))
-    other.write_text(str(other_pid))
+    different = machine / "machine-runs" / PLUGIN / "shared" / "other-project-7"
+    different.parent.mkdir(parents=True)
+    different_pid = machine / "other-project-7.pid"
+    different_pid.write_text(str(os.getpid()))
+    different.write_text(str(different_pid))
     shared, big = queued(story, "shared"), queued(story, "big")
     story.expect_rows(shown(story, shared)["state"] == "waiting", shown(story, big)["state"] == "waiting")
-    other.unlink()
+    different.unlink()
     timed = queued(story, "judge", "--timeout", "60")
     story.expect_rows(shown(story, shared)["state"] == "running")
     story.expect_success("queue halt 'a deploy is going'", actor=story.user)
-    index, again, other_line = queued(story, "index", line="make index"), queued(story, "index", line="make index"), queued(story, "index", line="make other")
-    story.expect_rows(index == again, other_line != index)
+    index, repeated, different_line = queued(story, "index", line="make index"), queued(story, "index", line="make index"), queued(story, "index", line="make other")
+    story.expect_rows(index == repeated, different_line != index)
     story.advance(timedelta(minutes=2))
     timeout_tick(story)
     story.expect_rows(shown(story, timed)["state"] == "timed-out", shown(story, timed)["timed_out"] in (True, 1), detail=json.dumps(shown(story, timed)))

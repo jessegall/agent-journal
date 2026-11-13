@@ -17,9 +17,9 @@ STARTED = ReadingMoment.START
 RUNNING = ReadingMoment.RUNNING
 
 
-def case_of(story: Story, process: Process, moment: ReadingMoment) -> ReadingCase:
+def case_of(story: Story, process: Process, point: ReadingMoment) -> ReadingCase:
     part = story.container.get(Queries).query(ProcessPart).filter(process_id=process.id, position=1).first()
-    return story.container.get(ReadingFacts).cases_for(process, [part], moment)[0]
+    return story.container.get(ReadingFacts).cases_for(process, [part], point)[0]
 
 
 def helper_search(story: Story) -> Process:

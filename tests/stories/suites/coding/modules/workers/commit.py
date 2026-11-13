@@ -62,10 +62,10 @@ def test_24_25_a_commit_of_a_proved_task_queues_its_tests_puts_the_task_in_testi
 
 
 def test_29_a_commit_asks_for_the_differences_and_what_differs_becomes_an_important_log_line(proved):
-    asked = proved.story.run(f"{COMMIT_COMMAND} --wait", actor=proved.worker)
+    requested = proved.story.run(f"{COMMIT_COMMAND} --wait", actor=proved.worker)
     proved.story.expect_success(f'{COMMIT_COMMAND} --wait --differences "{LEFT_OUT}"', actor=proved.worker)
     proved.story.expect_text("task-log list --task 1", LEFT_OUT, actor=proved.story.agent)
-    proved.story.expect_rows(asked.code != 0, "did you do anything other than the task brief asked" in asked.output_text, detail=asked.output_text)
+    proved.story.expect_rows(requested.code != 0, "did you do anything other than the task brief asked" in requested.output_text, detail=requested.output_text)
 
 
 def test_37_a_commit_of_a_task_in_no_plan_queues_one_selected_run_when_its_two_commands_are_set(proved):

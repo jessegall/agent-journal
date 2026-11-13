@@ -50,26 +50,26 @@ def test_a_message_to_an_idle_agent_is_a_line_that_wakes_it_and_starts_no_second
 
 def test_a_message_to_a_stopped_agent_starts_its_program_again_in_the_same_journal_session(helper_story, monkeypatch):
     story = helper_story
-    before_stop = helper_row(story)
-    resumable_session(story, before_stop, monkeypatch)
+    previous_stop = helper_row(story)
+    resumable_session(story, previous_stop, monkeypatch)
     story.expect_success(f"agent end {story.helper.id}", actor=story.helper)
     story.advance(timedelta(minutes=5))
     story.expect_success(MESSAGE.format(number=agent_number(story, story.helper.id)), actor=story.agent)
     starts = program_starts(story)
-    story.expect_rows(len(starts) == 1, starts[0]["session"] == before_stop.session, "--resume" in starts[0]["command"], helper_row(story).id == before_stop.id, detail=str(story.launcher.requests))
+    story.expect_rows(len(starts) == 1, starts[0]["session"] == previous_stop.session, "--resume" in starts[0]["command"], helper_row(story).id == previous_stop.id, detail=str(story.launcher.requests))
 
 
 def test_a_message_to_a_stopped_agent_whose_session_has_gone_cold_starts_a_new_program_under_the_same_agent(helper_story, monkeypatch):
     story = helper_story
-    before_stop = helper_row(story)
-    resumable_session(story, before_stop, monkeypatch)
+    previous_stop = helper_row(story)
+    resumable_session(story, previous_stop, monkeypatch)
     story.expect_success('memory make "The cart rounds half up" --weight 5', actor=story.helper)
     story.expect_success(f"agent end {story.helper.id}", actor=story.helper)
-    full_status(story, before_stop.session, 40, 0.0)
+    full_status(story, previous_stop.session, 40, 0.0)
     story.advance(timedelta(minutes=61))
     story.expect_success(MESSAGE.format(number=agent_number(story, story.helper.id)), actor=story.agent)
     starts = program_starts(story)
-    story.expect_rows(len(starts) == 1, "--resume" not in starts[0]["command"], helper_row(story).session != before_stop.session, helper_row(story).id == before_stop.id, detail=str(story.launcher.requests))
+    story.expect_rows(len(starts) == 1, "--resume" not in starts[0]["command"], helper_row(story).session != previous_stop.session, helper_row(story).id == previous_stop.id, detail=str(story.launcher.requests))
     story.expect_text("memory list", "The cart rounds half up", actor=story.helper)
 
 

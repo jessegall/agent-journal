@@ -26,6 +26,6 @@ class SetProfileLimitsHandler(Handler[SetProfileLimits, CurrentSetting]):
         if entry is None or not entry.profile_limits_key:
             raise Refusal(f"{command.agent_type} agents have no limits per profile", "name a type whose profiles have limits of their own")
         stored = self.settings.current(entry.profile_limits_key).value
-        others = [str(item) for item in stored if str(item).partition(":")[0] != command.profile] if is_list(stored) or is_tuple(stored) else []
-        text = json.dumps([*others, f"{command.profile}:{command.run}:{command.kept}"])
+        remaining_profiles = [str(item) for item in stored if str(item).partition(":")[0] != command.profile] if is_list(stored) or is_tuple(stored) else []
+        text = json.dumps([*remaining_profiles, f"{command.profile}:{command.run}:{command.kept}"])
         return self.bus.dispatch(SetSetting(entry.profile_limits_key, text, False), context)

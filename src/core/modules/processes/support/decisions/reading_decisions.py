@@ -26,11 +26,11 @@ class ReadingDecisions:
         rows = self.kept_rows.read(decisions, lambda: tuple(decisions.get()), name="processes.kept_decisions")
         return {row.part_position: row for row in rows}
 
-    def store(self, process: Process, part: ProcessPart, moment: ReadingMoment, decision: ReadingDecision, stored: ReadingDecisionRow | None, context: Context) -> ReadingDecisionRow:
+    def store(self, process: Process, part: ProcessPart, point: ReadingMoment, decision: ReadingDecision, stored: ReadingDecisionRow | None, context: Context) -> ReadingDecisionRow:
         values = {"state": decision.state, "action": decision.action, "level": decision.level, "reason": decision.reason, "decided_at": context.timestamp}
         if stored is not None:
             return self.repository.update(stored, context, **values)
         command_key = SilentStartRuns.name(part.text, part.program, part.category)
-        if moment is ReadingMoment.END and decision.state.lacks_a_reader:
+        if point is ReadingMoment.END and decision.state.lacks_a_reader:
             self.run_counts.add_run(command_key, context)
-        return self.repository.save(ReadingDecisionRow(process_id=process.id, part_position=part.position, command_key=command_key, moment=moment, **values), context)
+        return self.repository.save(ReadingDecisionRow(process_id=process.id, part_position=part.position, command_key=command_key, moment=point, **values), context)

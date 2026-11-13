@@ -24,6 +24,6 @@ class MetadataListDiffers:
         if not MODULE_NAME.match(self.module) or not all(PLAIN_KEY.match(key) for key in (self.key, self.kind_field, self.field)):
             raise MetadataKeyError(f"metadata is read by plain names, not {self.module}.{self.key}")
         elements = f"json_each(metadata, '$.\"{self.module}\".{self.key}')"
-        of_kind = f"json_extract(value, '$.{self.kind_field}') = ?"
-        return Statement(f"(NOT EXISTS (SELECT 1 FROM {elements} WHERE {of_kind}) OR EXISTS (SELECT 1 FROM {elements} WHERE {of_kind} "
+        category_list = f"json_extract(value, '$.{self.kind_field}') = ?"
+        return Statement(f"(NOT EXISTS (SELECT 1 FROM {elements} WHERE {category_list}) OR EXISTS (SELECT 1 FROM {elements} WHERE {category_list} "
                          f"AND coalesce(json_extract(value, '$.{self.field}'), '') != ?))", [self.kind, self.kind, self.value])

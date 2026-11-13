@@ -41,11 +41,11 @@ def s59_a_second_update_right_after_the_first_says_already_up_to_date(story, rep
 def s61_the_merger_only_orders_and_changes_no_file(story, repository, worker: Actor) -> None:
     both_change(repository, worker, "plan_checkpoints.py", "plan_checkpoints.py")
     look(story)
-    before = repository.git("status", "--porcelain", folder=repository.folder).stdout
+    previous = repository.git("status", "--porcelain", folder=repository.folder).stdout
     worker_head = repository.git("rev-parse", "HEAD", folder=repository.worktree_folder(worker.id)).stdout
     story.expect_success(f'merger update {agent_number(story, worker.id)} --why "plan_checkpoints.py moved on both sides"', actor=merger(story))
     after = repository.git("status", "--porcelain", folder=repository.folder).stdout
-    story.expect_rows(after == before, repository.git("rev-parse", "HEAD", folder=repository.worktree_folder(worker.id)).stdout == worker_head, detail=f"{before!r} {after!r}")
+    story.expect_rows(after == previous, repository.git("rev-parse", "HEAD", folder=repository.worktree_folder(worker.id)).stdout == worker_head, detail=f"{previous!r} {after!r}")
 
 
 def s63_an_update_changes_only_the_worker_worktree(story, repository, worker: Actor) -> None:

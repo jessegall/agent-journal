@@ -58,5 +58,5 @@ def test_15_a_person_lowers_the_limit_the_next_start_is_refused_at_it_and_a_limi
     story.expect_text(f"setting show {LIMIT_SETTING} --environment main", "value: 5", actor=story.user)
     story.expect_success(f"setting set {LIMIT_SETTING} 3 --environment main", actor=story.user)
     refused = story.run("task start 5", actor=three_tasks.worker)
-    below_one = story.run(f"setting set {LIMIT_SETTING} 0 --environment main", actor=story.user)
-    story.expect_rows(refused.code != 0, LIMIT_REFUSAL.format(count=3) in refused.output_text, below_one.code != 0, started_ids(three_tasks) == [1, 2, 3], detail=f"{refused.output_text} | {below_one.output_text}")
+    zero_limit = story.run(f"setting set {LIMIT_SETTING} 0 --environment main", actor=story.user)
+    story.expect_rows(refused.code != 0, LIMIT_REFUSAL.format(count=3) in refused.output_text, zero_limit.code != 0, started_ids(three_tasks) == [1, 2, 3], detail=f"{refused.output_text} | {zero_limit.output_text}")

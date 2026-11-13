@@ -46,14 +46,14 @@ class ReadingFacts:
         self.resets, self.folder, self.settings, self.suites, self.rows, self.clock, self.cadences = resets, folder, settings, suites, rows, clock, cadences
         self.run, self.counts = run, counts
 
-    def cases_for(self, process: Process, parts: Sequence[ProcessPart], moment: ReadingMoment) -> list[ReadingCase]:
+    def cases_for(self, process: Process, parts: Sequence[ProcessPart], point: ReadingMoment) -> list[ReadingCase]:
         keys = [SilentStartRuns.name(part.text, part.program, part.category) for part in parts]
         runs = self.run_counts.runs_without_reader(keys)
         waiting = self.waiting_commands(process, [part.command or part.text for part in parts])
-        marked = self.resets.marked_keys(keys)
-        return [self.case_for(process, part, moment, runs[key], (part.command or part.text) in waiting, key in marked) for part, key in zip(parts, keys)]
+        flagged = self.resets.marked_keys(keys)
+        return [self.case_for(process, part, point, runs[key], (part.command or part.text) in waiting, key in flagged) for part, key in zip(parts, keys)]
 
-    def case_for(self, process: Process, part: ProcessPart, moment: ReadingMoment, runs_without_change: int, request_is_waiting: bool, is_marked: bool) -> ReadingCase:
+    def case_for(self, process: Process, part: ProcessPart, point: ReadingMoment, runs_without_change: int, request_is_waiting: bool, is_flagged: bool) -> ReadingCase:
         agent = self.rows.required(Agent, process.session_agent_id)
         command = part.command or part.text
         command_key = SilentStartRuns.name(part.text, part.program, part.category)
@@ -61,15 +61,15 @@ class ReadingFacts:
         policy = self.suites.agent_policy()
         return ReadingCase(command_key=command_key, category=part.category, classification_known=part.category is not CommandCategory.UNKNOWN,
                            has_asking_flag=ReaderDemands.is_help_request(command), output_hidden=part.piped, is_saved_command=bool(part.saved_command),
-                           is_plugin_run=bool(process.plugin), moment=moment, age_seconds=self.age_seconds(process), run_state=process.state,
+                           is_plugin_run=bool(process.plugin), moment=point, age_seconds=self.age_seconds(process), run_state=process.state,
                            cadence_state=self.cadences.for_process(process, self.clock.timestamp()).state(),
                            exit_code=part.exit_code, reader_layer=self.layer(reader), reader_judgement=self.judgement(process, part, reader),
-                           reader_is_default=reader is not None and reader.is_default, reader_failed=self.reader_failed(process, reader, moment),
+                           reader_is_default=reader is not None and reader.is_default, reader_failed=self.reader_failed(process, reader, point),
                            count_missing=self.counts.count_missing(process, part),
-                           draft_fits=self.draft_fits(process, part, reader, moment), output=self.output(process, part, moment),
+                           draft_fits=self.draft_fits(process, part, reader, point), output=self.output(process, part, point),
                            runs_without_change=runs_without_change,
                            request_is_waiting=request_is_waiting, was_skipped=self.resets.skipped_since(command_key, process.creation_timestamp()),
-                           has_unreadable_mark=is_marked, role_must_have_reader=agent.role in policy.reader_request_roles,
+                           has_unreadable_mark=is_flagged, role_must_have_reader=agent.role in policy.reader_request_roles,
                            role_may_write_readers=self.writers.allows(Actor(agent.id, ActorType.AGENT)), role_uses_saved_commands=agent.role in policy.saved_command_roles,
                            readers_forced=self.settings.flag(ProcessSetting.READERS_FORCED))
 
@@ -80,11 +80,11 @@ class ReadingFacts:
     def measured_reason(self, process: Process, part: ProcessPart) -> UnreadableReason | None:
         return OutputFacts.reason_at_end(self.output(process, part, ReadingMoment.END))
 
-    def reader_failed(self, process: Process, reader: Reader | None, moment: ReadingMoment) -> bool:
-        return reader is not None and moment is ReadingMoment.END and ReaderRun.has_failed(reader, self.folder.reader_lines(process.id))
+    def reader_failed(self, process: Process, reader: Reader | None, point: ReadingMoment) -> bool:
+        return reader is not None and point is ReadingMoment.END and ReaderRun.has_failed(reader, self.folder.reader_lines(process.id))
 
-    def draft_fits(self, process: Process, part: ProcessPart, reader: Reader | None, moment: ReadingMoment) -> bool:
-        if reader is not None or moment is not ReadingMoment.END:
+    def draft_fits(self, process: Process, part: ProcessPart, reader: Reader | None, point: ReadingMoment) -> bool:
+        if reader is not None or point is not ReadingMoment.END:
             return False
         text = self.folder.part_head(process.id, part.position, SAMPLE_BYTES).decode(errors="replace")
         layers = self.readers.layers()
@@ -101,8 +101,8 @@ class ReadingFacts:
         scope = ReaderSampleScope(process.session_agent_id, part.command or part.text)
         return None if reader is None else self.judge.judged_command(reader, part.category, scope)
 
-    def output(self, process: Process, part: ProcessPart, moment: ReadingMoment) -> OutputFacts | None:
-        if moment is ReadingMoment.START:
+    def output(self, process: Process, part: ProcessPart, point: ReadingMoment) -> OutputFacts | None:
+        if point is ReadingMoment.START:
             return None
         sample = self.folder.part_head(process.id, part.position, SAMPLE_BYTES)
         return OutputFacts.measured(sample, self.folder.part_bytes(process.id, part.position), part.exit_code, part.category)

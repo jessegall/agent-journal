@@ -38,10 +38,10 @@ def events_of(story, work) -> list:
     return [event for event in log.events_after(first) if event.row_table in (REQUEST_RUNS_TABLE, PROCESSES_TABLE)]
 
 
-def expect_one_request_row_written_once(story, events: list, kind: ProcessKind) -> None:
+def expect_one_request_row_written_once(story, events: list, category: ProcessKind) -> None:
     requests = [event for event in events if event.row_table == REQUEST_RUNS_TABLE]
     processes = [event for event in events if event.row_table == PROCESSES_TABLE]
-    rows = [row for row in story.container.get(Queries).query(RequestRun).filter(kind=kind.value).every_row(TEST_ROWS_REASON) if row.id in {event.row_id for event in requests}]
+    rows = [row for row in story.container.get(Queries).query(RequestRun).filter(kind=category.value).every_row(TEST_ROWS_REASON) if row.id in {event.row_id for event in requests}]
     story.expect_rows(len(requests) == 1, not processes, len(rows) == 1, detail=f"events {events}, rows {rows}")
     story.expect_rows(requests[0].is_creation, detail=f"events {events}")
 
