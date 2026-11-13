@@ -72,7 +72,7 @@ from core.modules.processes.listeners.reader_request_complete_listener import Re
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from core.modules.processes.ticks.output_reading import OutputReading
-from core.modules.processes.ticks.run_slot_grant import RunSlotGrant
+from core.modules.processes.ticks.run_slot_grant import RUN_SLOT_GRANT_SECONDS, RunSlotGrant
 from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
 from core.modules.processes.listeners.booted_runs_listener import BootedRunsListener
 from core.modules.processes.ticks.process_pruning import ProcessPruning
@@ -295,7 +295,7 @@ class ProcessesModule(Module):
 
     name = "journal.core.processes"
     nudges = PROCESS_NUDGES
-    tick_handlers = [TickHandler(TickInterval(seconds=1), OutputReading(), "read running outputs"), TickHandler(TickInterval(seconds=1), RunSlotGrant(), "run slots"),
+    tick_handlers = [TickHandler(TickInterval(seconds=1), OutputReading(), "read running outputs"), TickHandler(TickInterval(seconds=RUN_SLOT_GRANT_SECONDS), RunSlotGrant(), "run slots"),
                      TickHandler(TickInterval(seconds=1), RunTimeouts(), "run timeouts"), TickHandler(TickInterval(seconds=15), HangWatch(), "hang watch"), TickHandler(TickInterval(seconds=10), CadenceWatch(), "cadence watch"), TickHandler(TickInterval(seconds=15), OutputChecks(), "output checks"),
                      TickHandler(TickInterval(seconds=15), RunEndRecovery(), "run end recovery", starts_immediately=True),
                      TickHandler(TickInterval(seconds=15 * 60), ProcessPruning(), "process pruning"), TickHandler(TickInterval(seconds=5), RequestLogImport(), "request log import")]

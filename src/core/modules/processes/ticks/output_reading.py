@@ -12,6 +12,7 @@ from core.modules.processes.models.output import Output
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.grown_outputs import GrownOutputs
+from core.modules.processes.support.run_slots import RunSlots
 from core.modules.processes.support.prepared_read import PreparedRead
 from core.modules.processes.support.reader_step import ReaderStep
 
@@ -27,6 +28,9 @@ class OutputReading:
         self.ticks_since_warning = 0
 
     def __call__(self, container: Container) -> bool:
+        # the kept read of running runs costs no query while nothing changes, so an idle journal reads nothing here
+        if not container.get(RunSlots).running():
+            return False
         tools = container.get(PerformanceTools)
         started = tools.begin()
         has_read = self.read(container)
