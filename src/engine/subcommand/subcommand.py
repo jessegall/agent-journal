@@ -36,8 +36,8 @@ class Subcommand(Generic[C, R]):
     def write_output(self, value: object, output: Output) -> None:
         render_value(value, output)
 
+    # Prints what waits on the commit listeners and answers the exit code of the line.
     def after_listeners(self, value: object, output: Output) -> int:
-        """Prints what waits on the commit listeners and answers the exit code of the line."""
         return SUCCESS_CODE
 def is_subcommand_class(class_type: type) -> TypeIs[type[Subcommand[Command[object], object]] | type[ReadSubcommand[object]]]:
     return issubclass(class_type, (Subcommand, ReadSubcommand))

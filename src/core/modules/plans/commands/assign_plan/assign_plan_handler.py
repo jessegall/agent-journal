@@ -19,9 +19,9 @@ ENDED_STATES = (PlanState.COMPLETED, PlanState.CANCELLED)
 
 class AssignPlanHandler(Handler[AssignPlan, Plan]):
     """Gives a plan, or one of its phases, to the agent named, and through the cascade its phases and the tasks
-    that have no assignee yet; with override also the tasks given to someone else. A phase is given on its own,
-    never the plan. With no agent named the plan goes to the first running main agent and its tasks stay as
-    they are. A user or a main agent may assign a plan, a helper may not."""
+    that have no assignee yet; with override also the tasks given to someone else. A phase is given on its
+    own, never the plan. With no agent named the plan goes to the first running main agent and its tasks stay
+    as they are. A user or a main agent may assign a plan, a helper may not."""
 
     command = AssignPlan
 

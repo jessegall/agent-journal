@@ -76,18 +76,18 @@ class Process(EnvironmentScoped, Model):
     def succeeded(self) -> bool:
         return self.state is ProcessState.FINISHED and self.exit_code == 0
 
+    # The agent of the session ran it, or the journal ran it for one of that agent's tasks, such as a proof's test; a
+    # run for no task that the journal started, such as a checkpoint's, is not.
     @property
     def is_agents_own_work(self) -> bool:
-        """The agent of the session ran it, or the journal ran it for one of that agent's tasks, such as a proof's
-        test; a run for no task that the journal started, such as a checkpoint's, is not."""
         return self.creator_id == self.session_agent_id or self.task_id is not None
 
     @property
     def takes_part_in_queue(self) -> bool:
         return self.is_queue_run or self.slot_assigned or self.queued_at is not None
 
+    # The queue gave this run its place since the earlier row was saved.
     def is_admitted_since(self, earlier: "Process") -> bool:
-        """The queue gave this run its place since the earlier row was saved."""
         return earlier.queued_at is not None and self.queued_at is None and self.state in OPEN
 
     def has_expired_timeout(self, timestamp: Timestamp) -> bool:
@@ -108,9 +108,9 @@ class Process(EnvironmentScoped, Model):
     def fail(self, timestamp: Timestamp, actor: Actor, exit_code: int) -> "Process":
         return self.moved(ProcessLifecycle.fail, exit_code=exit_code, ended_at=timestamp, queued_at=None, slot_assigned=False)
 
+    # Ends a merge the journal ran itself with moves of its own, which the listeners of an agent's ended run never hear:
+    # it has no reader, no watch and no agent waiting on it.
     def end_journal_merge(self, timestamp: Timestamp, exit_code: int) -> "Process":
-        """Ends a merge the journal ran itself with moves of its own, which the listeners of an agent's ended run never
-        hear: it has no reader, no watch and no agent waiting on it."""
         move = ProcessLifecycle.journal_merge_finish if exit_code == 0 else ProcessLifecycle.journal_merge_fail
         return self.moved(move, exit_code=exit_code, ended_at=timestamp, queued_at=None, slot_assigned=False, progress=FINISHED_PROGRESS if exit_code == 0 else self.progress)
 

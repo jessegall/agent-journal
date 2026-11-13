@@ -55,7 +55,7 @@ TABLE = {
     "missing at start": (MAIN_BUILD, (ReaderState.MISSING, ReaderAction.NOTHING, PressureLevel.SUGGEST, SUGGEST)),
     "missing while running": (replace(MAIN_BUILD, moment=ReadingMoment.RUNNING), (ReaderState.MISSING, ReaderAction.NOTHING, PressureLevel.SUGGEST, SUGGEST)),
     "missing at end": (ended(MAIN_BUILD), (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
-    "poor at end": (with_reader(ended(MAIN_BUILD), ReaderJudgement(missing=("--summary",))), (ReaderState.POOR, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
+    "poor at end": (with_reader(ended(MAIN_BUILD), ReaderJudgement(missing=tuple(["--summary"]))), (ReaderState.POOR, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
     "draftable at end": (replace(ended(MAIN_BUILD), draft_fits=True), (ReaderState.DRAFTABLE, ReaderAction.DRAFT_READY, PressureLevel.SUGGEST, SUGGEST)),
     "worker with a waiting request": (replace(WORKER_BUILD, request_is_waiting=True), (ReaderState.MISSING, ReaderAction.REQUIRE, PressureLevel.BLOCK, BLOCK)),
     "main after 0 runs": (ended(MAIN_BUILD), (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),

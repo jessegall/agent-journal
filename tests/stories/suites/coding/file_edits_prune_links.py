@@ -18,7 +18,7 @@ def test_pruning_many_file_edits_that_have_links_removes_their_links_in_one_requ
     for number in range(EDITS_MADE):
         scanned_edit(story, "s-1", f"src/part{number}.py")
     database = story.container.get(Database)
-    database.update(Statement(LINK_STATEMENT, (EDITS_PRUNED,)))
+    database.update(Statement(LINK_STATEMENT, tuple([EDITS_PRUNED])))
     monkeypatch.setattr(f"{PRUNE_HANDLER}.ROWS_KEPT", EDITS_PRUNED)
     scanned_edit(story, "s-1", "src/last.py")
     expect_value(database.rows(Statement("SELECT count(*) AS total FROM file_edits"))[0]["total"], EDITS_MADE + 1 - EDITS_PRUNED)

@@ -4,9 +4,9 @@ from dataclasses import asdict, dataclass
 
 @dataclass(frozen=True)
 class ToolStatus:
-    """Where a tool's output in a folder stands against the folder's commit: the commit the folder is at, the commit
-    and moment of the last refresh, whether one runs and whether this call started it, the line the tool words it
-    in, and the file a started refresh writes, which the journal records as changed."""
+    """Where a tool's output in a folder stands against the folder's commit: the commit the folder is at, the
+    commit and moment of the last refresh, whether one runs and whether this call started it, the line the
+    tool words it in, and the file a started refresh writes, which the journal records as changed."""
 
     commit: str
     graph_commit: str

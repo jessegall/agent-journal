@@ -83,11 +83,11 @@ def test_available_work_lists_only_unassigned_tasks(new_story):
     repository_environment(story)
     story.expect_success(RECEIPT, actor=story.agent)
     story.expect_success(f"task assign 2 --to {agent_number(story, story.agent.id)}", actor=story.agent)
-    story.expect_rows(delegatable(story) == (1,), detail=str(delegatable(story)))
+    story.expect_rows(delegatable(story) == tuple([1]), detail=str(delegatable(story)))
 
 
 def test_a_task_anyone_has_is_not_in_available_work(new_story, monkeypatch):
     worker = unplanned_worker(new_story, monkeypatch)
     story = worker.story
     story.expect_success('task make "Free job" --brief "Do it" --environment main', actor=story.agent)
-    story.expect_rows(delegatable(story) == (3,), detail=str(delegatable(story)))
+    story.expect_rows(delegatable(story) == tuple([3]), detail=str(delegatable(story)))

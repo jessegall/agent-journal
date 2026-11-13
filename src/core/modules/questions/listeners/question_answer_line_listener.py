@@ -40,8 +40,8 @@ class QuestionAnswerLineListener(SaveListener[Moved[Question]]):
             self.nudger.send(question.session_agent_id, QUESTION_ANSWER_SOURCE, ANSWER_SOURCE, context, question=question.id, message=question.message_id,
                              reference=f"question:{question.id} message:{question.message_id}")
 
+    # Whether a wait on the question is still open, or this answer ended it without the agent working again.
     def has_waking_wait(self, question: Question, context: Context) -> bool:
-        """Whether a wait on the question is still open, or this answer ended it without the agent working again."""
         targets = self.queries.query(WaitTarget).filter(row_table="questions", row_id=question.id).select_columns("wait_id")
         waits = self.queries.query(Wait).where_in("id", targets)
         return waits.where("state", "!=", WaitState.ENDED).exists() or waits.filter(ended_at=context.timestamp).where("outcome", "!=", WORK_CONTINUED).exists()

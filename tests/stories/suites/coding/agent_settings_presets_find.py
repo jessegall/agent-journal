@@ -2,6 +2,7 @@ import pytest
 
 from tests.stories.suites.coding.support.main_controls_fixture import MainControlsActors, person_viewer
 from tests.stories.suites.coding.support.settings_modal import AUTO, SENDS, Modal
+from tests.stories.support.story_checks import expect_value, expect_value_4, expect_value_with
 
 NO_MATCH = "zebra"
 
@@ -45,47 +46,47 @@ def presets(new_story):
 
 
 def test_the_band_says_the_preset_the_eight_switches_match_and_custom_for_any_other_mix(presets):
-    assert presets.band() == "builder"
+    expect_value(presets.band(), "builder")
     presets.fill("orchestrator")
-    assert presets.band() == "orchestrator"
+    expect_value(presets.band(), "orchestrator")
     presets.modal.save({AUTO: "on"}, "work")
-    assert presets.band() == "custom"
+    expect_value(presets.band(), "custom")
     presets.fill("builder")
-    assert presets.band() == "builder"
+    expect_value(presets.band(), "builder")
 
 
 def test_a_preset_is_the_eight_switches_and_nothing_else_and_saves_only_when_sent(presets):
     values = presets.presets()
-    assert set(values) == {"builder", "orchestrator"} and all(len(entry) == 8 for entry in values.values())
-    assert {switch["key"] for switch in presets.work()["switches"]} == set(values["builder"])
+    expect_value_4(set(values) == {"builder", "orchestrator"} and all(len(entry) == 8 for entry in values.values()))
+    expect_value({switch["key"] for switch in presets.work()["switches"]}, set(values["builder"]))
     before = presets.form()
-    assert presets.form() == before
+    expect_value(presets.form(), before)
     presets.fill("orchestrator")
-    assert presets.form() == values["orchestrator"]
-    assert presets.work()["workflow"] == "orchestrator"
+    expect_value(presets.form(), values["orchestrator"])
+    expect_value(presets.work()["workflow"], "orchestrator")
 
 
 def test_the_page_has_a_line_and_the_values_of_each_preset_for_the_table_of_differences(presets):
     work = presets.work()
-    assert [preset["name"] for preset in work["presets"]] == ["Builder", "Orchestrator"]
-    assert all(preset["line"] for preset in work["presets"])
+    expect_value([preset["name"] for preset in work["presets"]], ["Builder", "Orchestrator"])
+    expect_value_4(all(preset["line"] for preset in work["presets"]))
     differing = [key for key, value in presets.presets()["builder"].items() if value != presets.presets()["orchestrator"][key]]
-    assert AUTO in differing and 0 < len(differing) < 8
+    expect_value_4(AUTO in differing and 0 < len(differing) < 8)
 
 
 def test_find_lists_a_merger_setting_with_its_path_and_the_screen_that_opens_it(presets):
     merger = [entry for entry in presets.index() if entry["path"] == "Helpers > Merger"]
-    assert merger and all(entry["screen"] == "helper-type.merger" for entry in merger)
-    assert merger[0]["key"] in presets.modal.nodes("helper-type.merger")
+    expect_value_4(merger and all(entry["screen"] == "helper-type.merger" for entry in merger))
+    expect_value_with(presets.modal.nodes("helper-type.merger"), merger[0]["key"])
 
 
 def test_find_with_a_word_that_matches_nothing_answers_an_empty_list(presets):
-    assert presets.found(NO_MATCH) == []
-    assert presets.found("merger")
+    expect_value(presets.found(NO_MATCH), [])
+    expect_value_4(presets.found("merger"))
 
 
 def test_a_setting_hidden_by_an_off_switch_is_still_found_and_names_the_switch_that_shows_it(presets):
     presets.modal.save({SENDS: "off"}, "work")
     hidden = {key: node for name in ("work", "tests", "advanced") for key, node in presets.modal.nodes(name).items() if SENDS in node["requires"]}
-    assert hidden and set(hidden) <= {entry["key"] for entry in presets.index()}
-    assert all(node["requires"] == [SENDS] or SENDS in node["requires"] for node in hidden.values())
+    expect_value_4(hidden and set(hidden) <= {entry["key"] for entry in presets.index()})
+    expect_value_4(all(node["requires"] == [SENDS] or SENDS in node["requires"] for node in hidden.values()))

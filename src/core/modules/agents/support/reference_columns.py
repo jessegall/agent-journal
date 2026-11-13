@@ -27,14 +27,14 @@ class ReferenceColumns:
         tables = {column.table for column in schema if column.table not in FOLD_TABLES}
         by_table = {table: {column.column: column for column in schema if column.table == table} for table in tables}
         plain = tuple(sorted((column.table, column.column) for column in schema
-                             if column.table in tables and ReferenceColumns.holds_agent(column)))
+                             if column.table in tables and ReferenceColumns.has_agent_reference(column)))
         pairs = tuple(sorted((table, model, row_id) for table, columns in by_table.items() for model, row_id in POLYMORPHIC_PAIRS
                              if model in columns and row_id in columns))
         ReferenceColumns.check_placed(schema, tables, plain)
         return AgentColumns(plain, pairs)
 
     @staticmethod
-    def holds_agent(column: SchemaColumn) -> bool:
+    def has_agent_reference(column: SchemaColumn) -> bool:
         if column.column == ROW_KEY or (column.table, column.column) in NOT_AGENT_COLUMNS:
             return False
         if column.target is not None:

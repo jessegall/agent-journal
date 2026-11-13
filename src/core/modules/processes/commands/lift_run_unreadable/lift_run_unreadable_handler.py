@@ -24,6 +24,6 @@ class LiftRunUnreadableHandler(Handler[LiftRunUnreadable, UnreadableMark]):
     def handle(self, command: LiftRunUnreadable, context: Context) -> UnreadableMark:
         process = self.rows.required(Process, command.process_id)
         mark = self.marks.lift(self.words.words(process), context.actor.id, context)
-        for nudge in ReadingNotices.mark_nudges(process, (mark,)):
+        for nudge in ReadingNotices.mark_nudges(process, tuple([mark])):
             self.nudger.send_nudge(process.session_agent_id, nudge, SOURCE, context)
         return mark

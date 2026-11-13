@@ -11,8 +11,9 @@ from core.modules.processes.support.run_visibility import RunVisibility
 
 
 class EndProcessHandler(Handler[EndProcess, Process]):
-    """Ends a process and keeps its complete output until the process is removed. A merge the journal ran itself ends
-    with moves of its own and its output is never read for a reader, so no listener of an agent's ended run hears it."""
+    """Ends a process and keeps its complete output until the process is removed. A merge the journal ran itself
+    ends with moves of its own and its output is never read for a reader, so no listener of an agent's ended
+    run hears it."""
 
     command = EndProcess
 
@@ -36,8 +37,8 @@ class EndProcessHandler(Handler[EndProcess, Process]):
             return process.end_journal_merge(context.timestamp, exit_code)
         return process.finish(context.timestamp, context.actor, exit_code) if exit_code == 0 else process.fail(context.timestamp, context.actor, exit_code)
 
+    # The exit code of a test part that failed while its line still ended well.
     def failed_test_code(self, process: Process) -> int:
-        """The exit code of a test part that failed while its line still ended well."""
         parts = self.visibility.shown_parts(process)
         return next((part.exit_code for part in parts if part.category.is_long_running and part.exit_code), 0)
 

@@ -115,11 +115,11 @@ def refusal_of(checked_scope: MergeAskScope, note: str = "the cart", up_to: str 
 
 
 def test_a_unit_of_one_asks_by_its_commit():
-    assert "your task asks for its merge by its commit" in refusal_of(scope(unit=WorkUnit(None, None, (7,), 0, 1, 0)))
+    assert "your task asks for its merge by its commit" in refusal_of(scope(unit=WorkUnit(None, None, tuple([7]), 0, 1, 0)))
 
 
 def test_a_started_task_is_refused():
-    assert "task 8 is started" in refusal_of(scope(started=(SampleTask(8),)))
+    assert "task 8 is started" in refusal_of(scope(started=tuple([SampleTask(8)])))
 
 
 def test_a_run_that_goes_is_refused():
@@ -143,7 +143,7 @@ def test_an_ask_that_waits_is_refused():
 
 
 def test_an_empty_note_is_refused():
-    assert "say what the merge holds" in refusal_of(scope(), note=" ")
+    assert "write what the merge contains" in refusal_of(scope(), note=" ")
 
 
 def test_a_whole_ask_is_accepted_after_phase_1_of_9():
@@ -155,8 +155,8 @@ def test_any_note_length_is_accepted():
 
 
 def test_an_ask_up_to_a_task_carries_every_earlier_commit():
-    part = scope(started=(SampleTask(9),)).checked(1, "the first part", "7")
-    assert (part.commit_id, part.task_ids, part.is_whole) == ("a1", (7,), False)
+    part = scope(started=tuple([SampleTask(9)])).checked(1, "the first part", "7")
+    assert (part.commit_id, part.task_ids, part.is_whole) == ("a1", tuple([7]), False)
 
 
 def test_an_ask_up_to_an_uncommitted_task_is_refused():

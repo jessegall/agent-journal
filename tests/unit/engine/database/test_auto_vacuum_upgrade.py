@@ -11,7 +11,7 @@ def older_database(tmp_path) -> Database:
     connection = sqlite3.connect(tmp_path / "version-5.db", autocommit=True)
     connection.execute("PRAGMA auto_vacuum = NONE")
     connection.execute("CREATE TABLE notes (id INTEGER PRIMARY KEY, text TEXT)")
-    connection.executemany("INSERT INTO notes (text) VALUES (?)", [("note",)] * 50)
+    connection.executemany("INSERT INTO notes (text) VALUES (?)", [tuple(["note"])] * 50)
     connection.close()
     return Database.configured(sqlite3.connect(tmp_path / "version-5.db", autocommit=True))
 

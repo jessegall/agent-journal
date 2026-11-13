@@ -33,7 +33,7 @@ class CodexJournalConfig:
     def person_sections(self) -> list[str]:
         person_values = {key: value for key, value in self.person_settings().items() if key in PERSON_CONFIG_KEYS}
         lines = "".join(f"{json.dumps(key)} = {json.dumps(value)}\n" for key, value in person_values.items() if not is_mapping(value))
-        tables = [self.tables((key,), value) for key, value in person_values.items() if is_mapping(value)]
+        tables = [self.tables(tuple([key]), value) for key, value in person_values.items() if is_mapping(value)]
         return [lines, *tables] if lines else tables
 
     def project_sections(self) -> list[str]:

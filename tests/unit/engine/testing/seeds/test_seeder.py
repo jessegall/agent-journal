@@ -58,7 +58,7 @@ def test_seeded_rows_are_numbered_downwards_from_zero_and_carry_the_time_of_the_
 def test_a_row_made_after_a_seed_is_numbered_as_if_no_seed_were_there(database):
     Seeder(database, SEEDED_AT, 1).seed(ShelfSeed(), 3)
     database.update(Statement("INSERT INTO shelves (title, created_at, updated_at) VALUES ('Mine', ?, ?)", [SEEDED_AT, SEEDED_AT]))
-    assert values(database, "SELECT id FROM shelves WHERE title = 'Mine'") == [(1,)]
+    assert values(database, "SELECT id FROM shelves WHERE title = 'Mine'") == [tuple([1])]
 
 
 def test_a_second_seed_of_a_table_goes_on_below_the_first_and_leaves_the_rows_of_a_story_alone(database):
@@ -66,7 +66,7 @@ def test_a_second_seed_of_a_table_goes_on_below_the_first_and_leaves_the_rows_of
     seeder.seed(ShelfSeed(), 2)
     database.update(Statement("INSERT INTO shelves (title, created_at, updated_at) VALUES ('Mine', ?, ?)", [SEEDED_AT, SEEDED_AT]))
     assert seeder.seed(ShelfSeed(), 2) == (-2, -3)
-    assert values(database, "SELECT id FROM shelves WHERE title = 'Mine'") == [(1,)]
+    assert values(database, "SELECT id FROM shelves WHERE title = 'Mine'") == [tuple([1])]
 
 
 def test_a_seed_points_its_rows_at_the_rows_seeded_before_it_in_turn(database):

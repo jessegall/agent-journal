@@ -86,7 +86,7 @@ def started_by(story: Story, actor: Actor, command: StartProcess, environment_id
 
 def owned_run(story: Story, owner: Agent, line: str) -> Process:
     """A build on the main agent's session that another agent owns."""
-    command = StartProcess(story.agent.id, None, line, "/work/main", "zsh", CommandCategory.BUILD, 30, (PartSpec(line, line.split()[0], False, CommandCategory.BUILD),),
+    command = StartProcess(story.agent.id, None, line, "/work/main", "zsh", CommandCategory.BUILD, 30, tuple([PartSpec(line, line.split()[0], False, CommandCategory.BUILD)]),
                            owner_agent_id=owner.id)
     return started_by(story, story.agent, command)
 

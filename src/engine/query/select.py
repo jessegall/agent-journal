@@ -46,25 +46,25 @@ class Select:
     def grouped(self, *columns: str) -> "Select":
         return replace(self, group_columns=(*self.group_columns, *columns))
 
+    # Reads these expressions as its columns, in place of the column text.
     def selecting(self, *expressions: Expression) -> "Select":
-        """Reads these expressions as its columns, in place of the column text."""
         return replace(self, expressions=expressions)
 
+    # Reads its table, or the subselect it reads from, under another name.
     def named_as(self, alias: str) -> "Select":
-        """Reads its table, or the subselect it reads from, under another name."""
         return replace(self, alias=alias)
 
+    # Reads the rows of a subselect, named by the alias of the select, in place of a table.
     def reading(self, derived: Expression) -> "Select":
-        """Reads the rows of a subselect, named by the alias of the select, in place of a table."""
         return replace(self, derived=derived)
 
+    # Adds the rows of another select; every keeps rows both give twice (UNION ALL), else each once (UNION).
     def union(self, other: "Select", every: bool = True) -> "Select":
-        """Adds the rows of another select; every keeps rows both give twice (UNION ALL), else each once (UNION)."""
         return replace(self, unions=(*self.unions, (every, other)))
 
+    # The table of the read with the tables it joins.
     @property
     def source(self) -> str:
-        """The table of the read with the tables it joins."""
         table = self.derived.sql() if self.derived is not None else self.table
         named = table if self.alias is None else f"{table} AS {self.alias}"
         return " ".join((named, *(join.sql for join in self.joins)))
@@ -95,23 +95,23 @@ class Select:
         statement = statement.joined(Statement(order + page), "")
         return replace(statement, named_limit_rows=self.named_limit or None)
 
+    # The SELECT without the selects it adds and without its order and page.
     def core_statement(self) -> Statement:
-        """The SELECT without the selects it adds and without its order and page."""
         columns = ", ".join(expression.sql() for expression in self.expressions) if self.expressions else self.columns
         statement = self.filtered(Statement(f"SELECT {columns} FROM {self.source}"))
         if self.group_columns:
             statement = statement.joined(Statement(f" GROUP BY {', '.join(self.group_columns)}"), "")
         return statement
 
+    # The SELECT with its values written into the text, as CREATE VIEW needs it.
     def view_sql(self) -> str:
-        """The SELECT with its values written into the text, as CREATE VIEW needs it."""
         return Inlined(self).text()
 
     def count_statement(self) -> Statement:
         return self.filtered(Statement(f"SELECT count(*) FROM {self.source}"))
 
+    # For each start, how many rows have the column past it: one count per start, in one statement.
     def counts_after_statement(self, column: str, starts: tuple[object, ...]) -> Statement:
-        """For each start, how many rows have the column past it: one count per start, in one statement."""
         sums = ", ".join(f"coalesce(sum({column} > ?), 0)" for _ in starts)
         return self.filtered(Statement(f"SELECT {sums} FROM {self.source}", starts))
 
@@ -119,9 +119,9 @@ class Select:
         columns = ", ".join(self.group_columns)
         return self.filtered(Statement(f"SELECT {columns}, count(*) FROM {self.source}")).joined(Statement(f" GROUP BY {columns}"), "")
 
+    # How many rows match, and for the table and each table it joins the sums of their ids and versions and their newest
+    # change: what a kept read compares to know its rows changed.
     def signature_statement(self) -> Statement:
-        """How many rows match, and for the table and each table it joins the sums of their ids and versions and
-        their newest change: what a kept read compares to know its rows changed."""
         sums = ", ".join(f"coalesce(sum({table}.id), 0), coalesce(sum({table}.version), 0), max({table}.updated_at)" for table in self.read_tables)
         return self.filtered(Statement(f"SELECT count(*), {sums} FROM {self.source}"))
 
@@ -129,13 +129,13 @@ class Select:
     def read_tables(self) -> tuple[str, ...]:
         return (self.table, *(join.table for join in self.joins))
 
+    # The key, version and change time of the newest matching row: what a kept read of the newest row compares.
     def newest_signature_statement(self) -> Statement:
-        """The key, version and change time of the newest matching row: what a kept read of the newest row compares."""
         table = self.table
         return self.filtered(Statement(f"SELECT {table}.id, {table}.version, {table}.updated_at FROM {self.source}")).joined(Statement(f" ORDER BY {table}.id DESC LIMIT 1"), "")
 
+    # The tables and conditions of the read, which name a kept read apart from every other.
     def conditions_statement(self) -> Statement:
-        """The tables and conditions of the read, which name a kept read apart from every other."""
         return self.filtered(Statement(self.source))
 
     def exists_statement(self) -> Statement:

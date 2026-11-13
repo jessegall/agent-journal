@@ -8,7 +8,7 @@ from engine.query.conditions.excluding import Excluding
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import MAIN_ROLE, Agent
-from core.modules.helpers.queries.agent_job_counts import AgentJobCounts
+from core.modules.helpers.support.agent_job_counts import AgentJobCounts
 from core.modules.helpers.support.helper_settings import AGENT_USE_DAYS
 from core.modules.helpers.support.model_use import ModelUse
 from engine.setting.setting_values import SettingValues

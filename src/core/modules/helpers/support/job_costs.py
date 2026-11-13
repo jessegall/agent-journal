@@ -10,8 +10,8 @@ from engine.query.query import Query
 
 class JobCosts:
     """Reads what each job of a profile cost: the cost its session reported when the next job on that session
-    began, or the session's last reported cost for its last job, less the cost reported when the job began. The
-    estimate uses the newest 50 finished jobs of the profile and its newest 50 open ones."""
+    began, or the session's last reported cost for its last job, less the cost reported when the job began.
+    The estimate uses the newest 50 finished jobs of the profile and its newest 50 open ones."""
 
     def __init__(self, queries: Queries, files: StatusFiles) -> None:
         self.queries, self.files = queries, files

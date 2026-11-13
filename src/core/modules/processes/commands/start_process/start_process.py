@@ -35,9 +35,9 @@ class StartProcess(Command[Process]):
     kind: str = ""
     priority: QueuePriority = QueuePriority.NORMAL
 
+    # A merge the journal runs itself through its door: the door runs it at once, so it never waits in the queue.
     @property
     def is_journal_merge(self) -> bool:
-        """A merge the journal runs itself through its door: the door runs it at once, so it never waits in the queue."""
         return self.kind == ProcessKind.MERGE.value
 
     @classmethod

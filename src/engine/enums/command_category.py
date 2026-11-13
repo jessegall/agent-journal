@@ -22,10 +22,10 @@ class CommandCategory(StrEnum):
     def is_priority_zero(self) -> bool:
         return self in (CommandCategory.READ, CommandCategory.SEARCH, CommandCategory.EDIT)
 
+    # Reading, writing, searching and journal commands stay in the foreground to their end; a journal command is the
+    # journal answering the agent, never a run of its own.
     @property
     def can_go_to_background(self) -> bool:
-        """Reading, writing, searching and journal commands stay in the foreground to their end; a journal command is
-        the journal answering the agent, never a run of its own."""
         return not (self.is_priority_zero or self is CommandCategory.JOURNAL)
 
     @property

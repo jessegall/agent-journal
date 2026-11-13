@@ -17,8 +17,8 @@ SETTING_KEY = re.compile(r"journal(?:\.[a-z0-9_-]+)+")
 
 class SettingViewCheck:
     """Lists the view files that name a declared setting key as text, which is how a screen comes to draw one
-    setting by hand: a screen is drawn from what the settings declare, so no key is written in its code. A file
-    that reads a key for something other than drawing a row is named in allowed, each with its reason."""
+    setting by hand: a screen is drawn from what the settings declare, so no key is written in its code. A
+    file that reads a key for something other than drawing a row is named in allowed, each with its reason."""
 
     def __init__(self, project_folder: Path, modules: Sequence[type[Module]], allowed: dict[str, str]) -> None:
         self.project_folder, self.modules, self.allowed = project_folder, modules, allowed

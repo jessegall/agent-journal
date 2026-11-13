@@ -25,11 +25,11 @@ from suites.coding.modules.workers.support.worker_settings import TEST_LIMIT_SEC
 
 
 class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
-    """Moves queued proofs to running and makes their processes, owned by the worker that wrote them, so it
-    reads their output; a later listener starts them once this is committed. They all go on the run queue at
-    once and run on the commit handed in, in a checkout of its own, so the worker can go on working in its
-    worktree. A checkout busy with tests of an older commit is never reused: the new proofs wait queued until it
-    is free. A proof of a merged worktree is run by a checkpoint of its plan, on that run's checkout of the
+    """Moves queued proofs to running and makes their processes, owned by the worker that wrote them, so it reads
+    their output; a later listener starts them once this is committed. They all go on the run queue at once
+    and run on the commit handed in, in a checkout of its own, so the worker can go on working in its
+    worktree. A checkout busy with tests of an older commit is never reused: the new proofs wait queued until
+    it is free. A proof of a merged worktree is run by a checkpoint of its plan, on that run's checkout of the
     head of the environment's branch."""
 
     runs_once = True
@@ -61,9 +61,9 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
                 continue
             self.start_picker(first_answer, worktree, context)
 
+    # Whether the queued proofs of a worktree can start: a test checkout that still runs tests at an older commit is
+    # never reused for a newer one, so they wait queued until it is free and is brought to their commit.
     def is_ready(self, worktree: Worktree, running: set[int]) -> bool:
-        """Whether the queued proofs of a worktree can start: a test checkout that still runs tests at an older commit
-        is never reused for a newer one, so they wait queued until it is free and is brought to their commit."""
         return worktree.merged_at is not None or worktree.id not in running or self.git.is_test_checkout_current(worktree)
 
     def test_folder(self, worktree: Worktree, running: set[int]) -> str:

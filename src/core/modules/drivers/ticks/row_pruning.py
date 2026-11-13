@@ -15,8 +15,8 @@ BATCH_REASON = "one batch of rows a model names prunable, deleted together"
 
 class RowPruning:
     """Deletes, for every model that is Prunable, the rows its prunable() query names, in batches of their own
-    short writes, then gives the freed pages back. A parent's query leaves out rows a child still points at, so
-    children go first and the parent follows on a later batch."""
+    short writes, then gives the freed pages back. A parent's query leaves out rows a child still points at,
+    so children go first and the parent follows on a later batch."""
 
     def __call__(self, container: Container) -> None:
         database, queries, tables = container.get(Database), container.get(Queries), container.get(Tables)

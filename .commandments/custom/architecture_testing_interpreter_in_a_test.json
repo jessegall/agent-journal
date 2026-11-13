@@ -21,6 +21,12 @@
             },
             {
                 "fileMatches": "(^|/)tests/stories/suites/coding/modules/workers/support/judge_plugin\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)tests/install/"
+            },
+            {
+                "fileMatches": "(^|/)tests/(unit/core/modules/agents/support/test_launcher_link|unit/engine/serving/test_server_files|unit/engine/testing/cache/test_template_cache|stories/core/modules/plugins/support/judge_scope_plugin)\\.py$"
             }
         ]
     },

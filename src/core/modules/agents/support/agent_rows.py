@@ -1,10 +1,8 @@
 from engine.actor.actor import Actor
-from engine.enums.actor_type import ActorType
 from engine.database.kept_rows import KeptRows
 from engine.listener.rows.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from engine.enums.agent_role import AgentRole
 from engine.scope.environment_scope import EnvironmentScope
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
@@ -48,16 +46,16 @@ class AgentRows:
         return self.queries.query(Agent).find_many(agent_ids)
 
     def is_main(self, agent_id: int) -> bool:
-        return self.find(agent_id).role == AgentRole.MAIN
+        return self.find(agent_id).is_main
 
     def has_profile(self, agent_id: int, profile: str) -> bool:
         return self.find(agent_id).profile == profile
 
     def require_main(self, actor: Actor, action: str) -> None:
-        if actor.type is not ActorType.AGENT:
+        if not actor.is_agent():
             return
         caller = self.find(actor.id)
-        if caller.role != AgentRole.MAIN:
+        if not caller.is_main:
             raise Refusal(f"a {caller.role} cannot {action}", "ask the main agent or a user")
 
     def is_visible(self, agent_id: int) -> bool:
@@ -73,7 +71,7 @@ class AgentRows:
         return tuple(agent for agent in agents if parent_id is None or agent.parent_id == parent_id)
 
     def running_main_agents(self) -> tuple[Agent, ...]:
-        mains = self.agents.running().filter(role=AgentRole.MAIN)
+        mains = MainAgentFinder.running(self.queries)
         return self.kept.read(mains, lambda: tuple(mains.get()), name="agents.running_main_agents")
 
     def numbered_main(self, environment_id: int) -> Agent | None:

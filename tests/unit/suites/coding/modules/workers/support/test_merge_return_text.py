@@ -9,5 +9,5 @@ def test_the_return_line_of_a_unit_of_more():
 
 
 def test_the_return_line_of_a_unit_of_one():
-    line = merge_return_line("the judge found two sins", WorkUnit(None, None, (7,), 0, 1, 0))
+    line = merge_return_line("the judge found two sins", WorkUnit(None, None, tuple([7]), 0, 1, 0))
     assert line == "Your merge was sent back: the judge found two sins. Fix it in your worktree and commit again."

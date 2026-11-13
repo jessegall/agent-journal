@@ -18,9 +18,9 @@ FULL_SUITE_REFUSAL = "name each test file the run covers, never the whole suite"
 
 class WorkerTestArguments:
     """Checks the arguments after a worker's test command name: they change neither the program nor the folder it
-    runs in, and the whole line they make with the command names test files, Go packages or a pattern of Go test
-    names, so a command that already names its packages needs no file beside them. A pattern names tests only when it
-    holds a letter, digit or underscore: ., .* or ^ match every test and are the whole suite."""
+    runs in, and the whole line they make with the command names test files, Go packages or a pattern of Go
+    test names, so a command that already names its packages needs no file beside them. A pattern names tests
+    only when it holds a letter, digit or underscore: ., .* or ^ match every test and are the whole suite."""
 
     @classmethod
     def check(cls, test_arguments: Sequence[str], line_words: Sequence[str]) -> None:
@@ -36,7 +36,7 @@ class WorkerTestArguments:
 
     @classmethod
     def has_run_pattern(cls, test_arguments: Sequence[str]) -> bool:
-        return any(cls.names_tests(pattern) for pattern in cls.run_patterns(test_arguments))
+        return any(cls.has_test_names(pattern) for pattern in cls.run_patterns(test_arguments))
 
     @staticmethod
     def run_patterns(test_arguments: Sequence[str]) -> list[str]:
@@ -45,7 +45,7 @@ class WorkerTestArguments:
         return [*joined, *following]
 
     @staticmethod
-    def names_tests(pattern: str) -> bool:
+    def has_test_names(pattern: str) -> bool:
         return NAMING_PATTERN.search(pattern) is not None
 
     @classmethod

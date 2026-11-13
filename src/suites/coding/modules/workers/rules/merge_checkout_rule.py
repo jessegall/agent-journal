@@ -35,9 +35,9 @@ class MergeCheckoutRule(DriverRule):
             return RuleAnswer.allowed()
         nudges: list[Nudge] = []
         delivered = list(self.delivered.delivered())
-        self.rows.prepare(Environment, [worktree.environment_id for worktree in delivered])
+        environments = self.rows.required_index(Environment, [worktree.environment_id for worktree in delivered])
         for worktree in delivered:
-            environment = self.rows.required(Environment, worktree.environment_id)
+            environment = environments[worktree.environment_id]
             if not self.proofs.waiting_proofs(worktree.id).exists() and self.git.head(environment.folder) != worktree.base_branch:
                 nudges.append(MERGE_WAITS.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), environment=environment.name, branch=worktree.base_branch))
         return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

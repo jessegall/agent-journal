@@ -68,11 +68,11 @@ def test_assignment_and_chat_conditions_write_the_statements_they_wrote_by_hand(
 
 
 def test_plan_docking_and_template_conditions_write_the_statements_they_wrote_by_hand():
-    assert said(PlanTasksCondition((3,))) == (f"id IN ({PLACED} phases.plan_id IN (?))", [3])
-    assert said(SharedPlanTasks((1,))) == (f"id IN ({PLACED} phases.plan_id IN (SELECT phases.plan_id FROM phase_tasks JOIN phases ON phases.id = phase_tasks.phase_id WHERE phase_tasks.task_id IN (?)))", [1])
+    assert said(PlanTasksCondition(tuple([3]))) == (f"id IN ({PLACED} phases.plan_id IN (?))", [3])
+    assert said(SharedPlanTasks(tuple([1]))) == (f"id IN ({PLACED} phases.plan_id IN (SELECT phases.plan_id FROM phase_tasks JOIN phases ON phases.id = phase_tasks.phase_id WHERE phase_tasks.task_id IN (?)))", [1])
     assert said(SameChat(5)) == ("(session_agent_id = ? OR (NOT EXISTS (SELECT 1 FROM agents WHERE id = ? AND role IS NOT ?) AND (session_agent_id IS NULL OR session_agent_id IN (SELECT id FROM agents WHERE role = ?))))", [5, 5, "main", "main"])
     assert said(TemplateTarget("x")) == ("(json_array_length(targets) = 0 OR EXISTS (SELECT 1 FROM json_each(targets) WHERE value = ?))", ["x"])
-    assert said(ExcludedTemplateModules(("a",))) == ("NOT (module IN (?))", ["a"])
+    assert said(ExcludedTemplateModules(tuple(["a"]))) == ("NOT (module IN (?))", ["a"])
 
 
 def test_agent_and_usage_conditions_write_the_statements_they_wrote_by_hand():
@@ -98,7 +98,7 @@ def test_process_driver_and_suite_conditions_write_the_statements_they_wrote_by_
 
 def test_document_conditions_write_the_statements_they_wrote_by_hand():
     task, doc = RowRef("task", 3), RowRef("doc", 4)
-    assert said(LinkCounterparts(task, (doc,))) == ("(((source_model = ? AND source_id = ? AND target_model = ? AND target_id = ?) OR (target_model = ? AND target_id = ? AND source_model = ? AND source_id = ?)))", ["task", 3, "doc", 4, "task", 3, "doc", 4])
+    assert said(LinkCounterparts(task, tuple([doc]))) == ("(((source_model = ? AND source_id = ? AND target_model = ? AND target_id = ?) OR (target_model = ? AND target_id = ? AND source_model = ? AND source_id = ?)))", ["task", 3, "doc", 4, "task", 3, "doc", 4])
     assert said(LinkCounterparts(task, ())) == ("0", [])
     assert said(LinkScope(task, LinkSide.ROW)) == ("((source_model = ? AND source_id = ?) OR (target_model = ? AND target_id = ?))", ["task", 3, "task", 3])
     assert said(ExcludesPlan(RowRef("plan", 2)))[1] == [2, "task", "task", 2, "phase", "phase"]

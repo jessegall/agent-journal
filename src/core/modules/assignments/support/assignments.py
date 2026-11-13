@@ -98,9 +98,9 @@ class Assignments:
         self.require_working_actor(actor_id)
         return self.assign_kept(row, actor_id, context, cascade=cascade, override=override)
 
+    # Gives the row as assign does, without asking whether the actor takes work now: an agent that has ended but is kept
+    # takes the row when it starts again.
     def assign_kept(self, row: Assignable, actor_id: int, context: Context, *, cascade: bool = True, override: bool = False) -> Cascade:
-        """Gives the row as assign does, without asking whether the actor takes work now: an agent that has ended
-        but is kept takes the row when it starts again."""
         current = self.assignments(row)
         if any(assignment.actor_id == actor_id for assignment in current):
             if row.takes_actors is ActorCount.SEVERAL:

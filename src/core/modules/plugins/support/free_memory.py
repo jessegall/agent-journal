@@ -19,8 +19,8 @@ FREE_PAGE_LINES = ("Pages free", "Pages inactive", "Pages speculative")
 
 class FreeMemory:
     """How many megabytes of memory this machine can give a new run now, read each time: the available memory on
-    Linux, and the free, inactive and speculative pages on macOS. Where it cannot be read, as on Windows, it is not
-    known, and the system log says so once."""
+    Linux, and the free, inactive and speculative pages on macOS. Where it cannot be read, as on Windows, it
+    is not known, and the system log says so once."""
 
     def __init__(self, executor: ProcessExecutor, home: JournalHome, system_log: SystemLogWriter) -> None:
         self.executor, self.home, self.system_log = executor, home, system_log

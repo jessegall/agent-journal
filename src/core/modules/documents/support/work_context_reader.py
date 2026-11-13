@@ -82,7 +82,7 @@ class WorkContextReader:
         request = replace(request, page_size=min(request.page_size, 50))
         rows = self.related_rows(row)
         source = self.sources.work_source(caller)
-        excluded = (source.message_id,) if source is not None and source.unavailable and source.message_id is not None else ()
+        excluded = tuple([source.message_id]) if source is not None and source.unavailable and source.message_id is not None else ()
         visible = self.visible(excluded)
         assigned = self.assignments.task_source(row.id, caller) if isinstance(row, Task) and caller.actor.type is ActorType.AGENT else None
         assignment_queries: list[MessageQuery] = []
@@ -141,9 +141,9 @@ class WorkContextReader:
 
     def related_rows(self, row: Task | Plan) -> tuple[Task | Plan, ...]:
         if not isinstance(row, Task):
-            return (row,)
+            return tuple([row])
         plan = self.plans.find(row.id)
-        return (row,) if plan is None else (row, plan)
+        return tuple([row]) if plan is None else (row, plan)
 
     @staticmethod
     def usable_message_id(assigned: WorkSourceCopy | None, row: Task | Plan) -> int | None:
@@ -192,7 +192,7 @@ class WorkContextReader:
         offset = (request.page - 1) * request.page_size
         size = request.page_size
         if primary is not None:
-            anchors: tuple[Message, ...] = (primary,)
+            anchors: tuple[Message, ...] = tuple([primary])
             if request.order is WorkContextOrder.NEWEST:
                 original = conversation.with_text_segment(0, CONTEXT_CHARACTERS).ordered("created_at", "id").first()
                 if self.keeps_original(original, primary, size):
@@ -331,12 +331,9 @@ class WorkContextReader:
             if isinstance(root, Plan) and root.document_id is not None:
                 references.setdefault(("doc", root.document_id), set()).add("design")
         titles: dict[tuple[str, int], str] = {}
-        for root in roots:
-            if not isinstance(root, Plan):
-                continue
-            approval = PlanApproval.message_id(root)
-            if approval is not None and self.visible(()).filter(id=approval).exists():
-                titles[("message", approval)] = "Plan approval"
+        approvals = [approval for root in roots if isinstance(root, Plan) for approval in [PlanApproval.message_id(root)] if approval is not None]
+        for approval in self.visible(()).matching(Among("id", approvals)).pluck("id", int) if approvals else ():
+            titles[("message", approval)] = "Plan approval"
         for model in (Doc, Report):
             ids = tuple(number for name, number in references if name == model.model_name)
             query = self.queries.query(model).matching(Among("id", ids))

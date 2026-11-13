@@ -7,9 +7,9 @@ from core.modules.processes.models.enums.unreadable_reason import UnreadableReas
 from core.modules.processes.support.reader_judge import ReaderJudge
 
 SAMPLE_BYTES = 64 * 1024
-BINARY_SHARE_LIMIT = 0.10
+BINARY_SHARE_LIMIT_FRACTION = 0.10
 UNBROKEN_LINE_BYTES = 8 * 1024
-CARRIAGE_RETURN_LIMIT = 0.5
+CARRIAGE_RETURN_LIMIT_FRACTION = 0.5
 PROMPT_TAIL = re.compile(rb"[:?>] ?$")
 PROMPT_TAIL_BYTES = 200
 
@@ -51,24 +51,23 @@ class OutputFacts:
     def unreadable_reason(self) -> UnreadableReason | None:
         if self.byte_count == 0:
             return UnreadableReason.EMPTY if self.watched_and_ended else None
-        if self.has_null_byte or self.binary_share > BINARY_SHARE_LIMIT:
+        if self.has_null_byte or self.binary_share > BINARY_SHARE_LIMIT_FRACTION:
             return UnreadableReason.BINARY
-        if self.trailing_line_bytes > UNBROKEN_LINE_BYTES or self.carriage_return_share > CARRIAGE_RETURN_LIMIT:
+        if self.trailing_line_bytes > UNBROKEN_LINE_BYTES or self.carriage_return_share > CARRIAGE_RETURN_LIMIT_FRACTION:
             return UnreadableReason.SINGLE_LINE
         return None
 
+    # Why no reader can read the output of a running run, from its measures and how it prints: a prompt counts only once
+    # the run stopped growing on it.
     @staticmethod
     def measured_reason(output: "OutputFacts | None", cadence_state: CadenceState) -> UnreadableReason | None:
-        """Why no reader can read the output of a running run, from its measures and how it prints: a prompt counts
-        only once the run stopped growing on it."""
         if output is None or output.unreadable_reason is not None:
             return None if output is None else output.unreadable_reason
         return UnreadableReason.INTERACTIVE if output.ends_on_prompt and cadence_state.has_no_growth else None
 
+    # Why no reader can read the output of an ended run, from its measures: a run that ended on a prompt waited at it.
     @staticmethod
     def reason_at_end(output: "OutputFacts | None") -> UnreadableReason | None:
-        """Why no reader can read the output of an ended run, from its measures: a run that ended on a prompt
-        waited at it."""
         if output is None or output.unreadable_reason is not None:
             return None if output is None else output.unreadable_reason
         return UnreadableReason.INTERACTIVE if output.ends_on_prompt else None

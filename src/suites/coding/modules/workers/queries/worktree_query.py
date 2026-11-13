@@ -55,8 +55,8 @@ class WorktreeQuery(Query[Worktree], KeptRowChanges[Worktree]):
     def has_merge(self, agent_id: int, earliest_at: Timestamp) -> bool:
         return self.with_removed().filter(session_agent_id=agent_id).matching(Minimum("merged_at", earliest_at.text)).exists()
 
+    # The worktrees of these agents that a merge took work from, a whole one or a part.
     def merged_among(self, agent_ids: Sequence[int]) -> tuple[Worktree, ...]:
-        """The worktrees of these agents that a merge took work from, a whole one or a part."""
         return tuple(worktree for worktree in self.of_agents(agent_ids) if worktree.merged_at is not None or worktree.merged_task_ids)
 
     def of_agents(self, agent_ids: Sequence[int]) -> tuple[Worktree, ...]:

@@ -54,7 +54,7 @@ def test_20_commits_are_not_counted(new_story, monkeypatch):
 
 def test_21_a_commit_of_a_unit_of_more_never_delivers(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch)
-    commit_each(worker, (1,))
+    commit_each(worker, tuple([1]))
     worker.story.expect_rows(worktree_state(worker) == "cut", detail=worker.status())
 
 

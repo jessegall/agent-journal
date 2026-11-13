@@ -7,8 +7,8 @@ from engine.query.select import Select
 SHARED_COLUMNS = ("id", "title", "abstract", "close_reason", "updated_at")
 
 
+# The rows of one kind of document, keyed by its type and id.
 def document_rows(table: str, row_type: str) -> Select:
-    """The rows of one kind of document, keyed by its type and id."""
     return Select(table).selecting(Aliased(Concat([Literal(f"{row_type}:"), Column("id")]), "row_key"), Aliased(Literal(row_type), "row_type"),
                                    *(Column(name) for name in SHARED_COLUMNS))
 

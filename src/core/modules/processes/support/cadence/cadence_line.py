@@ -25,8 +25,8 @@ class CadenceLine:
         size, looked_at, resumed, *growths = line.split()
         return cls(int(size), float(looked_at), float(resumed), tuple(float(growth) for growth in growths))
 
+    # This cadence after a look at size bytes now: after a break in the watching the times start again from now.
     def looked(self, size: int, now: float) -> "CadenceLine":
-        """This cadence after a look at size bytes now: after a break in the watching the times start again from now."""
         growths, resumed = self.growths, self.resumed
         if self.looked_at and now - self.looked_at > BREAK_SECONDS:
             growths, resumed = (), now

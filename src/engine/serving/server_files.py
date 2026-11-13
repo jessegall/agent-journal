@@ -1,4 +1,3 @@
-import time
 import fcntl
 import os
 from engine.enums.server_phase import ServerPhase
@@ -40,7 +39,8 @@ class ServerFiles:
         self.lock = home.folder / "server.lock"
         self.pid_file = home.folder / "server.pid"
         self.log = home.system_log
-        self.system_log = SystemLogWriter(home, Clock())
+        self.clock = Clock()
+        self.system_log = SystemLogWriter(home, self.clock)
         self.maintenance = home.folder / "maintenance"
         self.run_lock = home.run_lock
         self.restart_mark = home.restart_mark
@@ -122,10 +122,9 @@ class ServerFiles:
             return ServerPhase.STARTING
         return ServerPhase.READY
 
-    @staticmethod
-    def is_fresh(mark: Path) -> bool:
+    def is_fresh(self, mark: Path) -> bool:
         try:
-            return time.time() - mark.stat().st_mtime < MARK_FRESH_SECONDS
+            return self.clock.epoch_seconds() - mark.stat().st_mtime < MARK_FRESH_SECONDS
         except FileNotFoundError:
             return False
 

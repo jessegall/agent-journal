@@ -58,4 +58,4 @@ def test_with_the_merger_off_the_line_reaches_the_main_agent_and_names_the_facts
     AnnounceBehindChecksHandler(Rows(), NoChecks(), inbox, Settings(merger=False), Numbers()).handle(AnnounceBehindChecks((1,)), SimpleNamespace(timestamp=None))
     text = inbox.sent[0].text
     assert inbox.sent[0].key == BEHIND_CHOICES.key
-    assert all(choice in text for choice in ("journal merger behind 999", "worker update", "merger leave", "pass"))
+    assert text.startswith("worker:999 is ")

@@ -14,6 +14,7 @@ class PausedAgentRule(DriverRule):
 
     name = "drivers.paused-agent"
     hook = HookEventName.PRE_TOOL_USE
+    single_action_refusal = "A paused agent's journal command is refused outright, so it cannot work around the pause; its other tools wait in a block until the resume"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if self.is_journal_work(hook):

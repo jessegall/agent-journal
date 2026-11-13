@@ -9,9 +9,9 @@ UNSET = AgentProfile("")
 
 
 class ProfileBases:
-    """Builds each profile on the base profile it names: the body is the body of the base followed by its own lines,
-    and each setting it leaves unset is the setting of its base, unless the profile names it in default_fields. A base that is not registered, or bases that
-    lead back to the profile, are refused."""
+    """Builds each profile on the base profile it names: the body is the body of the base followed by its own
+    lines, and each setting it leaves unset is the setting of its base, unless the profile names it in
+    default_fields. A base that is not registered, or bases that lead back to the profile, are refused."""
 
     def __init__(self, profiles: Sequence[AgentProfile]) -> None:
         self.profiles = {profile.name: profile for profile in profiles}

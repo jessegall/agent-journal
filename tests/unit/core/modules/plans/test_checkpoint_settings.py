@@ -10,7 +10,7 @@ def test_the_four_checkpoint_settings_are_on_the_work_screen_in_the_checkpoints_
 
 
 def test_the_review_model_needs_the_review_so_it_shows_only_while_the_review_is_on():
-    assert ENTRIES[REVIEW_MODEL_SETTING].required_settings == (QUICK_REVIEW_SETTING,)
+    assert ENTRIES[REVIEW_MODEL_SETTING].required_settings == tuple([QUICK_REVIEW_SETTING])
     assert ENTRIES[REVIEW_MODEL_SETTING].choices == REVIEW_MODELS and ENTRIES[REVIEW_MODEL_SETTING].type == "choice"
 
 

@@ -60,10 +60,10 @@ class ReadingNotices:
             return failures
         return (*failures, *self.draft_nudges(process, output, parts, decisions), *self.reader_nudges(process, output, parts, decisions.get(read_position)))
 
+    # The one line about each mark made or lifted at the end of a run: a lifted mark names its command, a mark the
+    # engine made names the output, and a declared mark names its command.
     @staticmethod
     def mark_nudges(process: Process, changes: tuple[UnreadableMark, ...]) -> tuple[Nudge, ...]:
-        """The one line about each mark made or lifted at the end of a run: a lifted mark names its command, a mark
-        the engine made names the output, and a declared mark names its command."""
         return tuple(ReadingNotices.mark_nudge(process, mark) for mark in changes)
 
     @staticmethod

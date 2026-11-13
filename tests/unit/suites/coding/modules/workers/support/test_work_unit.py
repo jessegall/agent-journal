@@ -2,7 +2,7 @@ from suites.coding.modules.workers.support.work_unit import WorkUnit
 
 
 def test_a_single_task_with_no_plan_is_a_unit_of_one():
-    assert WorkUnit(None, None, (7,), 1, 1, 1).is_single
+    assert WorkUnit(None, None, tuple([7]), 1, 1, 1).is_single
 
 
 def test_three_tasks_are_no_unit_of_one():
@@ -22,7 +22,7 @@ def test_the_unit_line_of_tasks_sent_together_counts_the_committed_ones():
 
 
 def test_a_unit_of_one_has_no_unit_line():
-    assert WorkUnit(None, None, (8901,), 1, 1, 1).status_line == ""
+    assert WorkUnit(None, None, tuple([8901]), 1, 1, 1).status_line == ""
 
 
 def test_the_brief_of_a_list_names_the_tasks_sent_together():
@@ -30,4 +30,4 @@ def test_the_brief_of_a_list_names_the_tasks_sent_together():
 
 
 def test_the_brief_of_one_task_names_no_unit():
-    assert WorkUnit(None, None, (8901,), 1, 1, 1).name_line == ""
+    assert WorkUnit(None, None, tuple([8901]), 1, 1, 1).name_line == ""

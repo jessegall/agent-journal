@@ -17,6 +17,7 @@ from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.behind_nudges import UPDATE_NOT_RUN
 from suites.coding.modules.workers.support.behind_nudges import UPDATE_ORDERED
 from engine.testing.expectations.said_nudge import said
+from suites.coding.modules.workers.support.behind_nudges import BEHIND_PASSED, UPDATE_REMINDER
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 WAIT = timedelta(minutes=30)
@@ -55,7 +56,7 @@ def s43_advice_that_did_not_help_is_passed_to_the_main_agent_with_the_reason(sto
     story.expect_rows(any("still has conflict markers after your advice" in text for text in merger_texts(story)), detail=str(merger_texts(story)))
     story.expect_success(f'merger pass {agent_number(story, worker.id)} "markers still open in {CLASHING_FILE} after one piece of advice"', actor=merger(story))
     check = checks(story)[0]
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"the merger passed worker:{agent_number(story, worker.id)} to you: journal behind-check show {check.id}")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", BEHIND_PASSED.nudge(worker=agent_number(story, worker.id), check=check.id).text)
     story.expect_text(f"behind-check show {check.id}", f"markers still open in {CLASHING_FILE} after one piece of advice")
     story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.PASSED], detail=str(checks(story)))
 
@@ -96,7 +97,7 @@ def f52_an_ordered_update_not_run_is_reminded_twice_then_the_merger_hears(story,
     story.expect_success(f'merger update {agent_number(story, worker.id)} --why "{CLASHING_FILE} moved on both sides"', actor=merger(story))
     for _ in range(3):
         waited(story)
-    reminders = worker_lines(story, worker).count("reminder: run journal worker update")
+    reminders = len(said(UPDATE_REMINDER).pattern().findall(worker_lines(story, worker)))
     story.expect_rows(reminders == 2, sum(said(UPDATE_NOT_RUN).is_in(text) for text in merger_texts(story)) == 1, detail=f"{reminders} {merger_texts(story)}")
 
 

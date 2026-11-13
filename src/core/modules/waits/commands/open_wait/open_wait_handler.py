@@ -12,7 +12,8 @@ from core.modules.waits.support.wait_targets import WaitTargets
 
 class OpenWaitHandler(Handler[OpenWait, Wait]):
     """Opens the calling agent's wait, with a target row for each table:id it names; a wait on rows names at
-    least one, each of them exists, and none of them is already done, which the refusal answers with the result."""
+    least one, each of them exists, and none of them is already done, which the refusal answers with the
+    result."""
 
     command = OpenWait
 

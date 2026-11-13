@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from suites.coding.modules.workers.models.base_commit import BaseCommit
+from suites.coding.modules.workers.support.base_commit import BaseCommit
 
 
 @dataclass(frozen=True)

@@ -13,6 +13,7 @@ from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.plans.models.enums.plan_dock_type import PlanDockType
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
+from engine.query.conditions.among import Among
 
 
 class ReadyPlanSyncListener(CommitListener[RegistrySynced]):
@@ -27,7 +28,10 @@ class ReadyPlanSyncListener(CommitListener[RegistrySynced]):
 
     def handle(self, event: RegistrySynced, logged: LoggedEvent) -> None:
         actor = self.actors.actor("journal.core.plans")
-        for plan in self.queries.query(Plan).filter(state=PlanState.READY).get():
+        plans = self.queries.query(Plan).filter(state=PlanState.READY).get()
+        waiting = self.items.type_items(PlanDockType.WAITING.value).filter(target_model=Plan.model_name, state=DockItemState.DOCKED)
+        docked = set(waiting.matching(Among("target_id", [plan.id for plan in plans])).pluck("target_id", int)) if plans else set()
+        for plan in plans:
             self.bus.run(CloseUserApproval(("plan", "approve", str(plan.id))), actor, cause_id=logged.id, environment_id=plan.environment_id)
-            if not self.items.type_items(PlanDockType.WAITING.value).row_items(Plan.model_name, plan.id).filter(state=DockItemState.DOCKED).exists():
+            if plan.id not in docked:
                 self.bus.run(AddDockItem(PlanDockType.WAITING.value, Plan.model_name, plan.id), actor, cause_id=logged.id, environment_id=plan.environment_id)

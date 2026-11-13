@@ -42,8 +42,8 @@ class UpdateStockReadersHandler(Handler[UpdateStockReaders, None]):
             if StockRetirement.retires(reader, shipped_names, reader.id in rows.edited_ids):
                 self.retired(reader, context)
 
+    # A stock row whose shipped entry is gone leaves, and the outputs and ended requests it read lose it.
     def retired(self, reader: Reader, context: Context) -> None:
-        """A stock row whose shipped entry is gone leaves, and the outputs and ended requests it read lose it."""
         for output in tuple(self.outputs.filter(reader_id=reader.id).every_row(RETIRED_READER_REASON)):
             self.repository.update(output, context, reader_id=None)
         for request in tuple(self.requests.filter(reader_id=reader.id).every_row(RETIRED_READER_REASON)):

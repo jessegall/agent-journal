@@ -10,8 +10,8 @@ from engine.query.select import Select
 from core.modules.documents.references.row_ref import RowRef
 
 
+# Matches a link whose either end is the row of the given model the id column names.
 def touches(model: str, id_column: str) -> AnyOf:
-    """Matches a link whose either end is the row of the given model the id column names."""
     return AnyOf([AllOf([Equal("source_model", model), ColumnCompare("source_id", "=", id_column)]), AllOf([Equal("target_model", model), ColumnCompare("target_id", "=", id_column)])])
 
 

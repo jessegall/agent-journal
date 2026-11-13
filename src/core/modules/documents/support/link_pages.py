@@ -36,7 +36,7 @@ class LinkPages:
         self.queries, self.row_refs, self.endpoints = queries, row_refs, endpoints
 
     def read(self, arguments: Namespace) -> LinkPage:
-        return self.read_many((arguments,))[0]
+        return self.read_many(tuple([arguments]))[0]
 
     def read_many(self, argument_list: Sequence[Namespace]) -> tuple[LinkPage, ...]:
         sections = tuple(self.section(arguments) for arguments in argument_list)
@@ -102,7 +102,7 @@ class LinkPages:
         if not arguments.first_counterpart:
             return query.oldest().page(arguments.page, size)
         first = self.row_refs.parsed(arguments.first_counterpart)
-        priority = query.matching(LinkCounterparts(reference, (first,))).oldest().first()
+        priority = query.matching(LinkCounterparts(reference, tuple([first]))).oldest().first()
         if priority is None:
             return query.oldest().page(arguments.page, size)
         total = query.count()

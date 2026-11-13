@@ -116,7 +116,7 @@ def test_the_project_hooks_file_keeps_its_own_copies(backup, home, person_files,
 
 
 def test_a_missing_file_is_skipped_without_a_log_line(backup, home, tmp_path):
-    assert backup.backed_up(ProgramSettings("claude", (), person_files=(tmp_path / "missing" / "settings.json",))) == ()
+    assert backup.backed_up(ProgramSettings("claude", (), person_files=tuple([tmp_path / "missing" / "settings.json"]))) == ()
     assert not home.system_log.exists()
 
 

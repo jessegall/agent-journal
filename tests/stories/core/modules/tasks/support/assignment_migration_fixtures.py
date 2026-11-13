@@ -54,7 +54,8 @@ def run_task_assignments_migration(story: Story) -> None:
 
 class TasksBeforeColumnRemoval(StoryFixture):
     """The tasks of TasksWithOldAssignments as a journal kept them before the assignments table: tasks 1 and 2
-    delegated to the worker in the column delegated_to, and the migrations that copy and drop the column not run."""
+    delegated to the worker in the column delegated_to, and the migrations that copy and drop the column not
+    run."""
 
     parent = TasksWithOldAssignments
 

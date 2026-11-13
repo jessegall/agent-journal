@@ -58,4 +58,4 @@ def test_the_column_and_its_index_are_gone_and_every_review_is_kept(tmp_path):
     assert "reviewer_id" not in columns
     assert connection.execute("SELECT id, state FROM reviews ORDER BY id").fetchall() == [(7, "reviewing"), (8, "queued"), (9, "reviewing")]
     assert connection.execute("SELECT name FROM sqlite_master WHERE name = 'reviews_reviewer'").fetchall() == []
-    assert connection.execute("SELECT review_id FROM review_points").fetchall() == [(7,)]
+    assert connection.execute("SELECT review_id FROM review_points").fetchall() == [tuple([7])]

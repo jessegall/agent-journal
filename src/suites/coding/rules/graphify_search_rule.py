@@ -43,8 +43,8 @@ class GraphifySearchRule(DriverRule):
             return RuleAnswer.with_nudges(USE_GRAPHIFY.nudge(count=searches + 1))
         return RuleAnswer.allowed()
 
+    # The searches of the code among the agent's newest tool uses since its last use of Graphify.
     def code_searches_after_graphify(self, agent_id: int, tool_uses: int) -> int:
-        """The searches of the code among the agent's newest tool uses since its last use of Graphify."""
         count = 0
         for call in self.hook_calls.newest_calls(agent_id, HookEventName.PRE_TOOL_USE, tool_uses):
             if call.search_category == GRAPHIFY_SEARCH:

@@ -9,13 +9,13 @@ from engine.query.join import Join
 from engine.query.select import Select
 
 
+# The places of tasks in phases, with the phase of each joined, matching the condition.
 def placed_tasks(condition: Condition) -> Select:
-    """The places of tasks in phases, with the phase of each joined, matching the condition."""
     return Select("phase_tasks").joined(Join("phases", False, "phases.id", "=", "phase_tasks.phase_id")).matching(condition)
 
 
+# Matches the tasks placed in the given plans, named by their ids or by a select of their ids.
 def plan_task_ids(plan_ids: Sequence[int] | Select) -> SubqueryMatch:
-    """Matches the tasks placed in the given plans, named by their ids or by a select of their ids."""
     plans = SubqueryMatch("phases.plan_id", plan_ids) if isinstance(plan_ids, Select) else Among("phases.plan_id", list(plan_ids))
     return SubqueryMatch("id", placed_tasks(plans).column("phase_tasks.task_id"))
 

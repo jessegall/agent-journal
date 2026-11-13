@@ -11,7 +11,7 @@ def windows(started: tuple, finish_first: bool = True, hard: int = 600_000) -> C
 
 
 def test_an_agent_with_a_started_task_compacts_at_the_hard_size():
-    assert windows(started=("task",)).window(1, 400_000) == 600_000
+    assert windows(started=tuple(["task"])).window(1, 400_000) == 600_000
 
 
 def test_an_agent_with_no_started_task_compacts_at_its_own_size():
@@ -19,8 +19,8 @@ def test_an_agent_with_no_started_task_compacts_at_its_own_size():
 
 
 def test_without_finishing_first_the_agent_always_compacts_at_its_own_size():
-    assert windows(started=("task",), finish_first=False).window(1, 400_000) == 400_000
+    assert windows(started=tuple(["task"]), finish_first=False).window(1, 400_000) == 400_000
 
 
 def test_a_hard_size_below_the_agents_own_size_is_never_used():
-    assert windows(started=("task",), hard=300_000).window(1, 400_000) == 400_000
+    assert windows(started=tuple(["task"]), hard=300_000).window(1, 400_000) == 400_000

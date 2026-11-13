@@ -16,8 +16,8 @@ MODEL_FITS_COMPLEXITY_GUARD = "workers.model-fits-complexity"
 
 class ModelComplexityPolicy:
     """Refuses an agent that sends easy tasks, alone and not as a plan or a phase, to a worker on the strongest
-    model, so a cheaper model does the work it fits (message 118737). The agent may skip it with a reason, and the
-    user may switch it off with the guard setting."""
+    model, so a cheaper model does the work it fits (message 118737). The agent may skip it with a reason, and
+    the user may switch it off with the guard setting."""
 
     def __init__(self, providers: Providers, settings: SettingValues, switches: GuardSwitches) -> None:
         self.providers, self.settings, self.switches = providers, settings, switches

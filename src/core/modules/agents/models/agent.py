@@ -135,9 +135,9 @@ class Agent(EnvironmentScoped, Model):
             return StandingState.RUNNING
         return StandingState.UNSTARTED
 
+    # The type and model of the agent, which the counts of agent use are kept by.
     @property
     def use_key(self) -> tuple[str, str]:
-        """The type and model of the agent, which the counts of agent use are kept by."""
         return (self.profile or self.role, self.program_model or "default")
 
     @property

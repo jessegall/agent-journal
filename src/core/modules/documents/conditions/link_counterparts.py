@@ -7,8 +7,8 @@ from engine.query.conditions.equal import Equal
 from core.modules.documents.references.row_ref import RowRef
 
 
+# The two columns that name one end of a link.
 def end(side: str, row: RowRef) -> list[Equal]:
-    """The two columns that name one end of a link."""
     return [Equal(f"{side}_model", row.model), Equal(f"{side}_id", row.row_id)]
 
 

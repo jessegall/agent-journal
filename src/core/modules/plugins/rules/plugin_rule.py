@@ -74,8 +74,9 @@ class PluginRule(DriverRule):
                     return RuleAnswer(refusal=notice.text, nudges=tuple([notice]), commands=tuple(commands))
         return RuleAnswer.allowed().running(*commands, *(RecordAgentNotice(hook.agent_id, line, self.name) for line in lines))
 
+    # The held events of one hook that one script judges within one limit: the plugin's program runs once for each
+    # group.
     def window_groups(self, manifest: PluginManifest, events: list[PluginEvent]) -> list[list[PluginEvent]]:
-        """The held events of one hook that one script judges within one limit: the plugin's program runs once for each group."""
         groups: dict[tuple[str, int], list[PluginEvent]] = {}
         ceiling = self.setting_values.number(CEILING_SETTING)
         for event in events:

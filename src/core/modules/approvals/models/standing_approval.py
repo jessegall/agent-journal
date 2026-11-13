@@ -7,9 +7,9 @@ from core.modules.approvals.models.enums.standing_scope import StandingScope
 
 @dataclass(frozen=True, kw_only=True)
 class StandingApproval(EnvironmentScoped, Model):
-    """A user's standing yes in an environment: a later request it covers is accepted at once, as that
-    user, with no card. StandingScope.SAME covers the same kind of approval with the same command line or command; StandingScope.LIKE
-    covers the same kind and the same target, whatever else follows."""
+    """A user's standing yes in an environment: a later request it covers is accepted at once, as that user, with
+    no card. StandingScope.SAME covers the same kind of approval with the same command line or command;
+    StandingScope.LIKE covers the same kind and the same target, whatever else follows."""
 
     model_name = "standing_approval"
     cli_name = "standing-approval"

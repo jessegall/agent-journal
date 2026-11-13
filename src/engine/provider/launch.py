@@ -34,5 +34,5 @@ class Launch:
 
     def refuse_flags(self, title: str, *flags: str) -> None:
         if any(self.names_flag(flag) for flag in flags):
-            raise Refusal(f"the journal launches {title} on its own settings; {' and '.join(flags)} cannot be given",
+            raise Refusal(f"the journal launches {title} on its own settings; {' and '.join(flags)} cannot be passed",
                           "launch without them: the journal writes the settings itself")

@@ -19,9 +19,9 @@ from core.modules.plugins.support.plugins_module_name import MODULE_NAME
 
 class PluginRun:
     """The one way to run a plugin's program for an event: it runs it, and says or records its fault or its clean
-    run. A recorded guard run whose plugin queued a judge run answers with that judge run's answer, so every guard
-    outside a hook settles a queue answer in this one place. A driver rule only answers, so it takes the records
-    from the outcome of a plain run instead and runs no judge."""
+    run. A recorded guard run whose plugin queued a judge run answers with that judge run's answer, so every
+    guard outside a hook settles a queue answer in this one place. A driver rule only answers, so it takes the
+    records from the outcome of a plain run instead and runs no judge."""
 
     def __init__(self, program: PluginProgram, settings: PluginSettings, bus: Bus, actors: ModuleActors, judge: PluginQueuedJudge) -> None:
         self.program, self.settings, self.bus, self.actors, self.judge = program, settings, bus, actors, judge

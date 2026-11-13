@@ -29,7 +29,7 @@ ENTRIES = (
     entry("a", "work", "Taking on work"),
     entry("b", "work", "Workers"),
     entry("c", "work", "Taking on work"),
-    entry("d", "work", "Workers", required_settings=("b",)),
+    entry("d", "work", "Workers", required_settings=tuple(["b"])),
     entry("other", "tests", "Test commands"),
 )
 
@@ -44,7 +44,7 @@ def test_nodes_are_grouped_by_section_in_the_order_the_sections_first_appear():
 
 def test_a_nested_setting_carries_the_keys_it_requires():
     nodes = {node.key: node for node in screen().read("work").nodes}
-    assert nodes["d"].requires == ("b",) and nodes["a"].requires == ()
+    assert nodes["d"].requires == tuple(["b"]) and nodes["a"].requires == ()
 
 
 def test_a_setting_on_another_screen_is_absent():
@@ -63,6 +63,6 @@ def test_an_unknown_screen_has_no_nodes():
 
 
 def test_a_node_says_which_component_draws_it_and_that_a_person_alone_may_change_it():
-    changed = (replace(ENTRIES[0], person_set=True),)
+    changed = tuple([replace(ENTRIES[0], person_set=True)])
     node = screen(entries=changed).read("work").nodes[0]
     assert (node.component, node.read_only) == ("toggle", True)

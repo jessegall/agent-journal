@@ -31,6 +31,7 @@ class ToolRunner(ABC):
     @abstractmethod
     def tick(self, folder: Path) -> ToolStatus: ...
 
+    # Copies what a new checkout needs of the tool's output and names the folders it wrote.
     @abstractmethod
     def copy_output(self, source: Path, target: Path) -> list[str]:
-        """Copies what a new checkout needs of the tool's output and names the folders it wrote."""
+        ...

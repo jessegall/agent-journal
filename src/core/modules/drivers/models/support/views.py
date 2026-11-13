@@ -37,8 +37,8 @@ NUDGE_TOTALS_SELECT = Select("nudge_records").selecting(
 ).grouped("key").view_sql()
 
 
+# The suite a setting names, in the scope the condition picks.
 def suite_setting(scope: Equal | ColumnCompare | IsNull) -> ScalarSubselect:
-    """The suite a setting names, in the scope the condition picks."""
     return ScalarSubselect(Select("settings").selecting(FunctionCall(SqlFunction.JSON_EXTRACT, [Column("settings.value"), Literal("$")]))
                            .matching(scope).matching(Equal("settings.key", SUITE_SETTING)))
 

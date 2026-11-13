@@ -28,7 +28,7 @@ class LiftHoldHandler(Handler[LiftHold, int]):
 
     def handle(self, command: LiftHold, context: Context) -> int:
         if not context.actor.is_person():
-            raise Refusal("only a user lifts a hold, on the agent's card", "take the exit the hold names")
+            raise Refusal("only a user lifts a hold, on the agent's card", "take one of the exits the hold lists")
         lifted = 0
         held = self.held_runs.found(command.agent_id, context.timestamp)
         if held is not None:

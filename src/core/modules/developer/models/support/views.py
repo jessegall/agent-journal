@@ -22,8 +22,8 @@ from engine.query.select import Select
 BOOKKEEPING_EVENTS = ("process part-start %", "process part-end %", "process end %", "process start %", "process sandbox %")
 
 
+# The value at a path of the request's JSON payload.
 def payload(path: str, column: str = "payload") -> FunctionCall:
-    """The value at a path of the request's JSON payload."""
     return FunctionCall(SqlFunction.JSON_EXTRACT, [Column(column), Literal(path)])
 
 

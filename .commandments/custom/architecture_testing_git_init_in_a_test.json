@@ -17,6 +17,9 @@
             },
             {
                 "fileMatches": "(^|/)tests/(stories/core/modules/developer/private_data_scan|stories/suites/coding/support/graphify_repo|unit/suites/coding/modules/workers/test_worktree_git_own_files|unit/scripts/test_rename|unit/scripts/test_move_tool_stories)\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)tests/(stories/core/modules/agents/project_hook_files|stories/core/modules/settings/project_hooks|stories/suites/coding/modules/workers/send_left_out|unit/suites/coding/modules/workers/test_worktree_git_behind|unit/suites/coding/modules/workers/test_worktree_git_earlier_branch)\\.py$"
             }
         ]
     },

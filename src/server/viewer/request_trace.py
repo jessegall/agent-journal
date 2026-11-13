@@ -34,10 +34,10 @@ def is_database_busy(error: sqlite3.Error) -> bool:
 
 class RequestTrace:
     """The developer's trace of the requests the server answers: the body, timing and attribution of each hook,
-    command and viewer request, kept in the hook requests table while the developer request log setting is on. The
-    one request log of every run is RequestLog of the processes module; this trace adds the detail a developer reads.
-    Records requests without waiting for a database writer; a request counts as attempted and as recorded or dropped
-    under one hold of the lock, so the status never shows a request half counted."""
+    command and viewer request, kept in the hook requests table while the developer request log setting is on.
+    The one request log of every run is RequestLog of the processes module; this trace adds the detail a
+    developer reads. Records requests without waiting for a database writer; a request counts as attempted and
+    as recorded or dropped under one hold of the lock, so the status never shows a request half counted."""
 
     def __init__(self, home: JournalHome, clock: Clock) -> None:
         self.home = home

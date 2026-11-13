@@ -29,7 +29,8 @@ class AnnounceBehindChecksHandler(Handler[AnnounceBehindChecks, tuple[Nudge, ...
 
     def handle(self, command: AnnounceBehindChecks, context: Context) -> tuple[Nudge, ...]:
         merger_on = self.settings.flag(MERGER_ENABLED)
-        nudges = tuple(self.nudge(self.rows.required(Worktree, worktree_id), BEHIND_FOR_MERGER if merger_on else BEHIND_CHOICES) for worktree_id in command.worktree_ids)
+        worktrees = self.rows.required_index(Worktree, command.worktree_ids)
+        nudges = tuple(self.nudge(worktrees[worktree_id], BEHIND_FOR_MERGER if merger_on else BEHIND_CHOICES) for worktree_id in command.worktree_ids)
         for nudge in nudges:
             self.inbox.send_nudge(nudge, BEHIND_SOURCE, context)
         return nudges

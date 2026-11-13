@@ -15,17 +15,17 @@ class Migration:
         for sql in self.statements:
             database.update(Statement(sql))
 
+    # The columns the table has now, which a migration reads to know whether its change was made already.
     @staticmethod
     def column_names(database: Database, table: str) -> set[str]:
-        """The columns the table has now, which a migration reads to know whether its change was made already."""
         return {row["name"] for row in database.rows(Statement(f"PRAGMA table_info({table})"))}
 
+    # The path of the main database file, empty for a database in memory.
     @staticmethod
     def database_file(database: Database) -> str:
-        """The path of the main database file, empty for a database in memory."""
         return database.rows(Statement("PRAGMA database_list"))[0][2]
 
+    # The rows of a read a migration makes in its own SQL, against the tables as they stand at its number.
     @staticmethod
     def selected(database: Database, sql: str, parameters: Sequence[object]) -> list[tuple[object, ...]]:
-        """The rows of a read a migration makes in its own SQL, against the tables as they stand at its number."""
         return [tuple(row) for row in database.rows(Statement(sql, parameters))]

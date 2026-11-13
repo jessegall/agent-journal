@@ -31,9 +31,9 @@ class WorktreeCommands:
     def step(self, folder: str, branch: str, line: str, libraries: Sequence[str], setting: str) -> CommandResult:
         return self.executed(folder, line, {**os.environ, "JOURNAL_WORKTREE": folder, "JOURNAL_BRANCH": branch, "JOURNAL_LIBRARIES": " ".join(libraries)}, setting)
 
+    # Runs one merge hook in the checkout the worker was merged into, told the merged branch and the commits before and
+    # after the merge.
     def merge_hook(self, folder: str, worktree: Worktree, line: str) -> CommandResult:
-        """Runs one merge hook in the checkout the worker was merged into, told the merged branch and the commits
-        before and after the merge."""
         return self.executed(folder, line, {**os.environ, "JOURNAL_WORKTREE": folder, "JOURNAL_BRANCH": worktree.base_branch,
                                             "JOURNAL_COMMIT_BEFORE": worktree.commit_before_merge, "JOURNAL_COMMIT_AFTER": worktree.commit_after_merge}, MERGE_HOOKS_NAME)
 

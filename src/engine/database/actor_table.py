@@ -48,7 +48,7 @@ class ActorTable:
         return {row["name"]: row["id"] for row in self.database.rows(MODULE_ACTOR_IDS)}
 
     def agent_actor_id(self, session: str) -> int | None:
-        rows = self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.AGENT.value, session))) or self.database.rows(Statement(SESSION_HOLDER_ID.sql, (session,)))
+        rows = self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.AGENT.value, session))) or self.database.rows(Statement(SESSION_HOLDER_ID.sql, tuple([session])))
         return int(rows[0]["id"]) if rows else None
 
     def is_agent(self, actor_id: int) -> bool:

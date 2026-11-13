@@ -12,8 +12,9 @@ WRITING_TOOLS = ("Edit", "Write", "MultiEdit")
 
 @dataclass(frozen=True)
 class ProfileFields:
-    """The front matter of one profile file: the profile settings it sets, by their AgentProfile names in the order
-    of the overlaid fields, and the lines about the file itself. A file without a type changes a module's profile."""
+    """The front matter of one profile file: the profile settings it sets, by their AgentProfile names in the
+    order of the overlaid fields, and the lines about the file itself. A file without a type changes a
+    module's profile."""
 
     settings: Mapping[str, object] = field(default_factory=dict[str, object])
     name: str = ""
@@ -46,15 +47,15 @@ class ProfileFields:
     def changes_instructions(self) -> bool:
         return "body" in self.settings
 
+    # These fields read from a program's own agent file: a helper unless it names a type, and only reading when its
+    # tools could write.
     @property
     def native(self) -> "ProfileFields":
-        """These fields read from a program's own agent file: a helper unless it names a type, and only reading when its
-        tools could write."""
         return replace(self, agent_type=self.agent_type or "helper", could_write=self.could_write or any(tool in WRITING_TOOLS for tool in self.tools))
 
+    # The profile a program's own agent file describes: the mcp tools of its tools line join its mcp tools, and a file
+    # that could write only reads.
     def copied(self, profile: AgentProfile) -> AgentProfile:
-        """The profile a program's own agent file describes: the mcp tools of its tools line join its mcp tools, and a
-        file that could write only reads."""
         mcp_tools = tuple(dict.fromkeys((*profile.mcp_tools, *(tool for tool in self.tools if tool.startswith("mcp__")))))
         return replace(profile, mcp_tools=mcp_tools, access=Access.READ if self.could_write else profile.access)
 

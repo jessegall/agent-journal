@@ -22,13 +22,13 @@ class BuiltPaths:
     def others(self, paths: Iterable[str]) -> tuple[str, ...]:
         return tuple(path for path in paths if not self.holds(path))
 
+    # The folders the build writes the built files among these paths into, each once.
     def folders(self, paths: Iterable[str]) -> tuple[str, ...]:
-        """The folders the build writes the built files among these paths into, each once."""
         return tuple(sorted({self.folder(path) for path in self.of(paths)}))
 
+    # The folder of a built file that its pattern names, such as app/web/dist for **/web/dist/**; the file's own folder
+    # when the pattern names no folder without wildcards.
     def folder(self, path: str) -> str:
-        """The folder of a built file that its pattern names, such as app/web/dist for **/web/dist/**; the file's own
-        folder when the pattern names no folder without wildcards."""
         pattern = next(pattern for pattern in self.patterns if PurePosixPath(path).full_match(pattern))
         named = [part for part in PurePosixPath(pattern).parts if part != ANY_FOLDERS]
         if not named or any(wildcard in part for part in named for wildcard in WILDCARDS):

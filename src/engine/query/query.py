@@ -267,9 +267,9 @@ class Query(Generic[M]):
             raise QueryLimitError("say why the read needs that many rows")
         return self.with_select(self.select.sliced(Query.checked_limit(rows), 0))
 
+    # The rows of the query up to its limit, 50 unless it names one, by key unless it names an order; a read that finds
+    # more is cut there and reported, never silent.
     def get(self) -> list[M]:
-        """The rows of the query up to its limit, 50 unless it names one, by key unless it names an order; a read
-        that finds more is cut there and reported, never silent."""
         limit = self.select.limit or DEFAULT_LIMIT_ROWS
         select = self.select.sliced(limit + 1, 0).named(limit + 1)
         if not select.orders and self.table.key and self.table.has_column(self.table.key):
@@ -315,8 +315,8 @@ class Query(Generic[M]):
                 return
             last = getattr(rows[-1], key)
 
+    # The select with the scope of the read applied, as a kept read compares it.
     def kept_select(self) -> Select:
-        """The select with the scope of the read applied, as a kept read compares it."""
         return self.scoped(self.select)
 
     def count(self) -> int:

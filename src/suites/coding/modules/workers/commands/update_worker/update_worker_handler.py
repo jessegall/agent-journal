@@ -11,7 +11,7 @@ from suites.coding.modules.workers.commands.record_failed_update.record_failed_u
 from suites.coding.modules.workers.commands.update_worker.update_worker import UpdateWorker
 from suites.coding.modules.workers.models.enums.update_result import UpdateResult
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
-from suites.coding.modules.workers.models.worktree_update import WorktreeUpdate
+from suites.coding.modules.workers.support.worktree_update import WorktreeUpdate
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.behind_check_closing import BehindCheckClosing
 from suites.coding.modules.workers.support.update_outcome import UpdateOutcome

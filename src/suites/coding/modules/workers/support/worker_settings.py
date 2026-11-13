@@ -127,7 +127,7 @@ WORKER_SETTING_VALUES = [
                  SettingType.LIST, default=("**/web/dist/**", "src/core/modules/viewer/web/dist/**"), person_set=True, screen="helper-type.workers", section="Merging"),
     SettingValue("merge-build-command", "Build command after a merge", "The command that builds the built files again after a merge, run in the checkout that was merged into.",
                  SettingType.TEXT, default="npm --prefix src/viewer run build", person_set=True, screen="helper-type.workers", section="Merging"),
-    SettingValue(MERGE_HOOKS_NAME, "Merge hooks of a profile", "Entries of profile: command, run in the main checkout after a worker of that profile is merged.",
+    SettingValue(MERGE_HOOKS_NAME, "Commands after a merge, per profile", "Entries of profile: command, run in the main checkout after a worker of that profile is merged.",
                  SettingType.LIST, default=(), person_set=True, screen=HELPER_TYPES_SCREEN, section="When merged"),
 ]
 WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),

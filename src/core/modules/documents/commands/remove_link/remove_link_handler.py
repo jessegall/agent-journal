@@ -1,4 +1,3 @@
-from engine.enums.actor_type import ActorType
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.listener.rows.event_rows import EventRows
@@ -24,7 +23,7 @@ class RemoveLinkHandler(Handler[RemoveLink, None]):
         self.queries, self.rows, self.repository, self.refs = queries, rows, repository, refs
 
     def handle(self, command: RemoveLink, context: Context) -> None:
-        if context.actor.type not in (ActorType.AGENT, ActorType.USER) or context.environment_id is None:
+        if not (context.actor.is_agent() or context.actor.is_person()) or context.environment_id is None:
             raise Refusal("correct attribution as a user or its creating agent in one environment")
         removed = self.queries.query(LinkCorrection).filter(link_id=command.link_id).first()
         link = self.rows.find(Link, command.link_id)

@@ -51,7 +51,7 @@ class UnreadableMarks:
     def lift(self, words: str, lifter_id: int, context: Context) -> UnreadableMark:
         mark = self.marks.standing().of_words([UnreadableMarks.leading_words(words)]).newest().first()
         if mark is None:
-            raise Refusal(f"no command {words} is marked unreadable", "journal unreadable-mark list names the marked commands")
+            raise Refusal(f"no command {words} is marked unreadable", "journal unreadable-mark list shows the marked commands")
         return self.repository.update(mark, context, lifter_id=lifter_id, lifted_at=context.timestamp)
 
     @staticmethod

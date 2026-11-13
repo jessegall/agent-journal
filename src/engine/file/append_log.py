@@ -4,9 +4,10 @@ from engine.file.file_access import FileAccess
 
 
 class AppendLog:
-    """A file that many writers append lines to and one reader takes them from. The reader moves the file aside and
-    reads the moved file only on its next round, so a line appended through a handle opened just before the move has
-    landed by then; a round removes the moved file and writes back only the lines it did not finish."""
+    """A file that many writers append lines to and one reader takes them from. The reader moves the file aside
+    and reads the moved file only on its next round, so a line appended through a handle opened just before
+    the move has landed by then; a round removes the moved file and writes back only the lines it did not
+    finish."""
 
     def __init__(self, path: Path, taken_path: Path, files: FileAccess) -> None:
         self.path, self.taken_path, self.files = path, taken_path, files

@@ -3,6 +3,7 @@ import pytest
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task, unplanned_holding_worker
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import expect_task_states
 
 THREE_TASKS = 3
 TWO_POINT_BRIEF = 'task edit 1 --brief "- the total adds the tax\n- the total rounds to cents"'
@@ -14,11 +15,6 @@ def commit(worker: StoryWorker) -> StoryWorker:
     worker.story.run(COMMIT, actor=worker.worker)
     worker.story.run_listeners()
     return worker
-
-
-def expect_task_states(worker: StoryWorker, state: str, *task_ids: int) -> None:
-    for task_id in task_ids:
-        worker.story.expect_text(f"task show {task_id}", f"state: {state}", actor=worker.story.agent)
 
 
 @pytest.fixture

@@ -9,7 +9,7 @@ from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_label import AgentLabel
-from suites.coding.modules.workers.models.behind_facts import BehindFacts
+from suites.coding.modules.workers.support.behind_facts import BehindFacts
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.behind_facts_reader import BehindFactsReader
 

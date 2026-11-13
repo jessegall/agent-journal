@@ -5,6 +5,7 @@ import pytest
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.phase_steps import EXTERNAL_DISPATCH, PHASE_DISPATCH, start_planned_worker, unplanned_group_worker, unplanned_worker
 from tests.stories.suites.coding.modules.workers.work_units import plan_card, unit_of
+from tests.stories.support.story_checks import expect_value, expect_value_4, expect_value_with
 
 """Book A of doc 1252: the unit a worker is given is assigned and seen so."""
 
@@ -33,23 +34,23 @@ def test_03_a_dispatch_on_a_phase_assigns_that_phases_tasks_only(new_story, monk
 def test_04_a_dispatch_of_several_tasks_is_one_unit(new_story, monkeypatch):
     unit = unit_of(unplanned_group_worker(new_story, monkeypatch))
     unit_text = unit.status_line
-    assert unit.has_several_tasks and unit_text.startswith("Unit: tasks 1, 2, 3"), unit_text
+    expect_value_4(unit.has_several_tasks and unit_text.startswith("Unit: tasks 1, 2, 3"))
 
 
 def test_05_a_dispatch_of_one_task_is_a_unit_of_one(new_story, monkeypatch):
     worker = unplanned_worker(new_story, monkeypatch)
     worker.story.expect_success(f"worker send {number_of(worker)} --task 2", actor=worker.story.agent)
-    assert not unit_of(worker).is_single or unit_of(worker).status_line == ""
+    expect_value_4(not unit_of(worker).is_single or unit_of(worker).status_line == "")
 
 
 def test_06_the_brief_names_the_unit(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch)
-    assert unit_of(worker).name_line == "Your unit is plan 1, Rebuild the cart: 4 tasks. Work all of it before you report."
+    expect_value(unit_of(worker).name_line, "Your unit is plan 1, Rebuild the cart: 4 tasks. Work all of it before you report.")
 
 
 def test_07_the_status_names_the_unit_under_the_point(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch)
-    assert worker.status().splitlines()[1].startswith("Unit: plan 1, Rebuild the cart.")
+    expect_value_4(worker.status().splitlines()[1].startswith("Unit: plan 1, Rebuild the cart."))
 
 
 @pytest.mark.xfail(strict=True, reason="task 9016: the generic agent list takes no line from a module yet")
@@ -66,13 +67,13 @@ def test_09_the_plan_list_shows_who_works_each_plan(new_story, monkeypatch):
 
 def test_10_the_person_sees_the_worker_on_the_plan_card(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch)
-    assert plan_card(worker)["assignee"]["id"] == worker.worker.id
+    expect_value(plan_card(worker)["assignee"]["id"], worker.worker.id)
 
 
 def test_11_the_person_sees_the_unit_on_the_agent_card(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch)
     listed = json.loads(worker.story.run("usage agents --environment main --json", actor=worker.story.user).output_text)
-    assert next(row for row in listed["rows"] if row["id"] == worker.worker.id)["unit_name"] == "Plan 1 · Rebuild the cart"
+    expect_value(next(row for row in listed["rows"] if row["id"] == worker.worker.id)["unit_name"], "Plan 1 · Rebuild the cart")
 
 
 def test_12_a_second_worker_on_a_worked_plan_is_refused(new_story, monkeypatch):
@@ -92,16 +93,16 @@ def test_14_a_send_onto_an_open_unit_joins_it(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
     task_id = worker.story.new_row_id('task make "Receipts" --brief "Print them"', actor=worker.story.agent)
     worker.story.expect_success(f"worker send {number_of(worker)} --task {task_id}", actor=worker.story.agent)
-    assert task_id in unit_of(worker).task_ids
+    expect_value_with(unit_of(worker).task_ids, task_id)
 
 
 def test_15_a_released_worker_leaves_the_plan_to_the_main_agent(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch)
     worker.story.expect_success(f'worker release {number_of(worker)} "not needed"', actor=worker.story.agent)
-    assert plan_card(worker)["assignee"] is None or plan_card(worker)["assignee"]["id"] != worker.worker.id
+    expect_value_4(plan_card(worker)["assignee"] is None or plan_card(worker)["assignee"]["id"] != worker.worker.id)
 
 
 def test_16_a_finished_unit_keeps_its_plan_named_until_the_merge(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch)
     worker.prove_commit()
-    assert plan_card(worker)["assignee"]["id"] == worker.worker.id
+    expect_value(plan_card(worker)["assignee"]["id"], worker.worker.id)

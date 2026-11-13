@@ -44,7 +44,7 @@ class ProcessSetting(Enum):
                                         SettingType.FLAG, default=False)
     PROCESSES_KEPT = SettingValue("processes-kept", "Ended commands kept",
                                  "How many ended commands each environment keeps, with at least one. Running commands stay.", SettingType.NUMBER, default=1000)
-    REQUEST_RUN_DAYS = SettingValue("request-run-days", "Days requests are kept", "How many days each environment keeps the records of its hooks, journal commands and viewer requests, with at least one.",
+    REQUEST_RUN_DAYS = SettingValue("request-run-days", "Days requests are kept", "Days each environment stores records of agent program events, journal commands and viewer requests; at least one.",
                                     SettingType.NUMBER, default=14, rule=NumberRule(1))
 
     MOST_OUTPUT_MEGABYTES = SettingValue("most-output-megabytes", "Output storage limit (MB)", "How many megabytes of one command's output stay on disk; past this the oldest lines go.",

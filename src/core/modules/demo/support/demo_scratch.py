@@ -3,7 +3,6 @@ import os
 import subprocess
 import sys
 import tempfile
-import time
 from pathlib import Path
 
 from engine.file.code_copy import CodeCopy
@@ -14,9 +13,11 @@ from engine.seed.demo_link import DemoLink
 from engine.connection.unix_connection import UnixConnection
 from core.modules.demo.support.demo_owner import DemoOwner
 from core.modules.demo.support.demo_session import DemoSession
+from engine.time.polled_wait import PolledWait
 
 STEP_SECONDS = 120
 SERVER_START_SECONDS = 30
+HEALTH_POLL_SECONDS = 0.2
 REQUEST_SECONDS = 10
 PERSON = "Demo"
 SOURCE = Path(__file__).resolve().parents[4]  # the src folder
@@ -56,16 +57,20 @@ class DemoScratch:
             raise Refusal(f"journal {' '.join(arguments)} gave {outcome.returncode} in the demo's folder: {(outcome.stdout + outcome.stderr).strip()[:300]}", "start it again")
 
     def viewer_port(self, server: subprocess.Popen[bytes]) -> int:
-        deadline = time.monotonic() + SERVER_START_SECONDS
-        while time.monotonic() < deadline:
-            if server.poll() is not None:
-                raise Refusal("the demo's server stopped as it started", "start it again")
-            try:
-                return int(str(self.ask("GET", "/health")["viewer_port"]))
-            except (OSError, KeyError, ValueError):
-                time.sleep(0.2)
+        ports: list[int] = []
+        if PolledWait(SERVER_START_SECONDS, HEALTH_POLL_SECONDS).until(lambda: self.has_answered(server, ports)):
+            return ports[0]
         server.terminate()
         raise Refusal(f"the demo's server did not answer within {SERVER_START_SECONDS} seconds", "start it again")
+
+    def has_answered(self, server: subprocess.Popen[bytes], ports: list[int]) -> bool:
+        if server.poll() is not None:
+            raise Refusal("the demo's server stopped as it started", "start it again")
+        try:
+            ports.append(int(str(self.ask("GET", "/health")["viewer_port"])))
+        except (OSError, KeyError, ValueError):
+            return False
+        return True
 
     def login_key(self) -> str:
         return str(self.ask("POST", "/viewer/key", {"variables": {"USER": PERSON}, "folder": str(self.folder)})["key"])

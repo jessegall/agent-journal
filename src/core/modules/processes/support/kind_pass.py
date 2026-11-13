@@ -5,8 +5,8 @@ from core.modules.processes.models.process import Process
 
 class KindPass:
     """What the kinds of run say during one pass of the queue over its waiting runs: whether a run must wait for
-    its kind, given the runs that hold a place now, and that a run was just given its place. A kind nobody declares
-    never holds a run."""
+    its kind, given the runs that hold a place now, and that a run was just given its place. A kind nobody
+    declares never holds a run."""
 
     def is_held(self, waiting: Process, running: Sequence[Process]) -> bool:
         return False

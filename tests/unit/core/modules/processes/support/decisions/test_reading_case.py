@@ -50,7 +50,7 @@ def test_a_short_run_that_failed_still_needs_a_reader():
 def test_a_reader_is_suitable_only_when_its_judgement_finds_nothing_missing():
     assert not RUNNING_TESTS.reader_is_suitable
     assert replace(RUNNING_TESTS, reader_layer=ReaderLayer.PROJECT, reader_judgement=ReaderJudgement()).reader_is_suitable
-    assert not replace(RUNNING_TESTS, reader_layer=ReaderLayer.STOCK, reader_judgement=ReaderJudgement(missing=("--count",))).reader_is_suitable
+    assert not replace(RUNNING_TESTS, reader_layer=ReaderLayer.STOCK, reader_judgement=ReaderJudgement(missing=tuple(["--count"]))).reader_is_suitable
 
 
 def test_the_unreadable_reason_comes_from_a_mark_first_then_from_the_output():

@@ -1,6 +1,7 @@
 from datetime import timedelta
 from types import SimpleNamespace
 
+from engine.actor.actor import Actor
 from engine.time.timestamp import Timestamp
 from suites.coding.modules.workers.commands.remind_behind_updates.remind_behind_updates import RemindBehindUpdates
 from suites.coding.modules.workers.commands.remind_behind_updates.remind_behind_updates_handler import RemindBehindUpdatesHandler
@@ -21,6 +22,7 @@ def merger_lines(minutes: list[int], files: tuple[str, ...]) -> tuple[list[objec
     store, nudger, inbox = Store(State.CONFLICTED), Lines(), Lines()
     handler = RemindBehindUpdatesHandler(store, Rows(False), store, Settings(2), nudger, inbox, Numbers(), Markers(files))
     for minute in minutes:
+        handler.prepare(RemindBehindUpdates(), Actor.core())
         handler.handle(RemindBehindUpdates(), SimpleNamespace(timestamp=Timestamp(ORDERED_AT + timedelta(minutes=minute))))
     return inbox.sent, nudger
 
@@ -30,9 +32,8 @@ def test_markers_still_open_after_the_wait_reach_the_merger_once_to_advise_then_
     assert (sent, nudger.sent) == ([CLASH_OPEN.key, CLASH_STILL_OPEN.key], [])
 
 
-def test_the_lines_name_the_files_and_the_command_to_run():
-    assert "journal merger advise 4" in CLASH_OPEN.nudge(worker=4).text
-    assert "journal merger pass 4" in CLASH_STILL_OPEN.nudge(worker=4).text
+def test_the_lines_name_the_worker():
+    assert "worker:4" in CLASH_OPEN.nudge(worker=4).text and "worker:4" in CLASH_STILL_OPEN.nudge(worker=4).text
 
 
 def test_settled_markers_tell_the_merger_nothing():

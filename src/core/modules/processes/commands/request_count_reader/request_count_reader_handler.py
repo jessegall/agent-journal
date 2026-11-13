@@ -1,3 +1,4 @@
+from engine.errors.refusal import Refusal
 from dataclasses import replace
 
 from engine.command.context import Context
@@ -22,7 +23,9 @@ class RequestCountReaderHandler(Handler[RequestCountReader, int]):
 
     def handle(self, command: RequestCountReader, context: Context) -> int:
         process = self.processes.find(command.process_id)
-        part = self.parts.process(process.id).filter(category=CommandCategory.TEST_RUN).oldest().take(1)[0]
+        part = self.parts.process(process.id).filter(category=CommandCategory.TEST_RUN).oldest().first()
+        if part is None:
+            raise Refusal(f"run {process.id} has no test part whose tests could be counted")
         spec = PartSpec(part.text, part.program, category=part.category, command=part.command)
         request_id = self.requests.open_request(process, spec, COUNT_MISSING_REASON.format(command=part.command or part.text), process.id, context)
         if part.reader_request_id is None:

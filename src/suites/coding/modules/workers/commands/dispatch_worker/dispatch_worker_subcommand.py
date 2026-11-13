@@ -82,7 +82,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
             return self.agents.find(arguments.take_over)
 
     def taken_over_tasks(self, stopped: Agent) -> tuple[int, ...]:
-        return (self.worktrees.required_worker_worktree(stopped.id).task_id,)
+        return tuple([self.worktrees.required_worker_worktree(stopped.id).task_id])
 
     def picked(self, arguments: Namespace) -> tuple[int, ...]:
         if arguments.plan is None:

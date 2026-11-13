@@ -13,12 +13,16 @@ class MainAgentFinder:
 
     @staticmethod
     def rows(queries: Queries) -> tuple[Agent, ...]:
-        row = AgentQuery(queries.database, queries.tables).running().filter(role=AgentRole.MAIN).newest().first()
+        row = MainAgentFinder.running(queries).newest().first()
         return () if row is None else tuple([row])
 
     @staticmethod
+    def running(queries: Queries) -> AgentQuery:
+        return AgentQuery(queries.database, queries.tables).running().filter(role=AgentRole.MAIN)
+
+    @staticmethod
     def all_running(queries: Queries) -> tuple[Agent, ...]:
-        return tuple(AgentQuery(queries.database, queries.tables).running().filter(role=AgentRole.MAIN).get())
+        return tuple(MainAgentFinder.running(queries).get())
 
     @staticmethod
     def latest(queries: Queries) -> Agent | None:

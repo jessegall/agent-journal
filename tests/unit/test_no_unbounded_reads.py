@@ -2,6 +2,7 @@ import ast
 from pathlib import Path
 
 from engine.query.query import Query
+from tests.unit.source_tree import source_tree
 
 """Book 4 of doc 1255, stories 28 to 35: every read that walked a whole table moved to a bounded read or a named
 walk, and the old methods are gone."""
@@ -19,7 +20,7 @@ def python_files() -> list[Path]:
 
 
 def calls_named(path: Path, names: tuple[str, ...]) -> list[str]:
-    tree = ast.parse(path.read_text())
+    tree = source_tree(path)
     relative = path.relative_to(ROOT).as_posix()
     return [f"{relative}:{node.lineno}" for node in ast.walk(tree) if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr in names]
 
@@ -43,7 +44,7 @@ def chain_names(call: ast.Call) -> tuple[list[str], str | None]:
 def bare_get_lines(path: Path) -> list[int]:
     """The lines of a file that call get() on a query of a growing model with nothing that bounds it."""
     lines: list[int] = []
-    for node in ast.walk(ast.parse(path.read_text())):
+    for node in ast.walk(source_tree(path)):
         if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "get" and not node.args and not node.keywords:
             names, model = chain_names(node)
             if model in GROWING_MODELS and not set(names) & set(BOUNDING_CALLS):
@@ -52,7 +53,7 @@ def bare_get_lines(path: Path) -> list[int]:
 
 
 def test_no_all_rows_call_is_left():
-    found = [place for path in python_files() for place in calls_named(path, ("all_rows",))]
+    found = [place for path in python_files() for place in calls_named(path, tuple(["all_rows"]))]
     assert found == [], "read with get, take, a page or every_row(reason):\n" + "\n".join(found)
 
 

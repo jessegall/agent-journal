@@ -10,7 +10,7 @@ from suites.coding.modules.workers.listeners.worker_run_ended_listener import Wo
 from suites.coding.modules.workers.models.enums.update_result import UpdateResult
 from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
-from suites.coding.modules.workers.models.worktree_update import WorktreeUpdate
+from suites.coding.modules.workers.support.worktree_update import WorktreeUpdate
 from suites.coding.modules.workers.support.worker_run_answer import WorkerRunAnswer
 from engine.time.polled_wait import PolledWait
 
@@ -52,7 +52,7 @@ def test_the_finished_line_of_an_update_follows_its_result_and_a_clash_ending_wi
 def test_an_update_already_on_its_base_is_current_a_moved_one_updated_and_markers_a_clash():
     assert UpdateWorkerHandler.result_of(WorktreeUpdate.current("abc")) is UpdateResult.CURRENT
     assert UpdateWorkerHandler.result_of(WorktreeUpdate("abc")) is UpdateResult.UPDATED
-    assert UpdateWorkerHandler.result_of(WorktreeUpdate("abc", ("cart.py",), "s1")) is UpdateResult.CONFLICTS
+    assert UpdateWorkerHandler.result_of(WorktreeUpdate("abc", tuple(["cart.py"]), "s1")) is UpdateResult.CONFLICTS
 
 
 def test_the_accepted_line_of_an_update_tells_the_worker_not_to_edit_files_meanwhile():

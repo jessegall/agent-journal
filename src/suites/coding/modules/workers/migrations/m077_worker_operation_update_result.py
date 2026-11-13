@@ -6,4 +6,4 @@ class WorkerOperationUpdateResultMigration(Migration):
     and not by the exit code: a conflicting update ends with exit code 0."""
 
     number = 77
-    statements = ("ALTER TABLE worker_operations ADD COLUMN update_result TEXT",)
+    statements = tuple(["ALTER TABLE worker_operations ADD COLUMN update_result TEXT"])

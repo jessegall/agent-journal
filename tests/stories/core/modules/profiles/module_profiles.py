@@ -83,7 +83,7 @@ def test_a_change_to_the_base_reaches_a_profile_built_on_it_with_its_own_lines_a
     story = new_story(fixture=UserJoined)
     story.expect_sync_success(f"{MODULES}:BasedProfiles")
     based = Registry.read(story.container.get(Database)).profile("sample-based").profile
-    story.expect_rows(based.body == "Read the files.\n\nAnswer in one line.", based.model == "opus", based.skills == ("journal",), based.base == "sample-base")
+    story.expect_rows(based.body == "Read the files.\n\nAnswer in one line.", based.model == "opus", based.skills == tuple(["journal"]), based.base == "sample-base")
     story.expect_sync_success(f"{MODULES}:ChangedBase")
     based = Registry.read(story.container.get(Database)).profile("sample-based").profile
     story.expect_rows(based.body == "Read the files twice.\n\nAnswer in one line.")

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from suites.coding.modules.workers.models.enums.update_result import UpdateResult
-from suites.coding.modules.workers.models.worktree_update import WorktreeUpdate
+from suites.coding.modules.workers.support.worktree_update import WorktreeUpdate
 
 
 @dataclass(frozen=True)

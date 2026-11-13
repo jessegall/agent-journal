@@ -61,9 +61,9 @@ class CatalogueAudit:
     def missing_reader_decisions(self, last_audit_at: Timestamp, main_agent_ids: Sequence[int]) -> int:
         return self.decisions.lacking_a_reader_at_end().of_runs_outside(main_agent_ids).since(last_audit_at).count()
 
+    # How many commands agents marked unreadable since the main agent last heard the audit; marks of the engine and of a
+    # user are not counted.
     def agent_marks_count(self, last_audit_at: Timestamp) -> int:
-        """How many commands agents marked unreadable since the main agent last heard the audit; marks of the
-        engine and of a user are not counted."""
         creators = [mark.creator_id for mark in self.marks.made_after(last_audit_at).standing().descending("created_at", "id").take(RECENT_OUTPUTS)]
         if not creators:
             return 0

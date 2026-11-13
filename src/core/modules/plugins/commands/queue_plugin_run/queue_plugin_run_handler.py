@@ -23,7 +23,8 @@ WAITING_RUNS_REASON = "every waiting run of the kind is weighed against the new 
 
 class QueuePluginRunHandler(Handler[QueuePluginRun, QueuedRunStart]):
     """Makes the process of a plugin's queued run, under the category its kind declares, and the row that follows
-    it, running at once when the queue gives it its place in the same save; a kind that coalesces gives back the run of the same line in the same folder that still waits."""
+    it, running at once when the queue gives it its place in the same save; a kind that coalesces gives back
+    the run of the same line in the same folder that still waits."""
 
     command = QueuePluginRun
 
@@ -32,14 +33,16 @@ class QueuePluginRunHandler(Handler[QueuePluginRun, QueuedRunStart]):
 
     def handle(self, command: QueuePluginRun, context: Context) -> QueuedRunStart:
         if self.queries.query(Plugin).filter(name=command.plugin).first() is None:
-            raise Refusal(f"no plugin is named {command.plugin}", "journal plugin list names them")
+            raise Refusal(f"no plugin is named {command.plugin}", "journal plugin list shows them")
         declared = PluginManifest.read(self.folders.code(command.plugin)).process_kind(command.kind)
         if declared is None:
             raise Refusal(f"plugin {command.plugin} declares no kind of run named {command.kind}", "name a kind its manifest lists under processes")
         folder = command.folder or str(self.checkouts.checkout(command.agent_id).root)
         if declared.coalesce:
-            for waiting in self.queries.query(QueuedRun).filter(plugin=command.plugin, kind=command.kind, state=QueuedRunState.WAITING).every_row(WAITING_RUNS_REASON):
-                process = self.queries.query(Process).find(waiting.process_id)
+            waiting_runs = tuple(self.queries.query(QueuedRun).filter(plugin=command.plugin, kind=command.kind, state=QueuedRunState.WAITING).every_row(WAITING_RUNS_REASON))
+            processes = {process.id: process for process in self.queries.query(Process).find_many([waiting.process_id for waiting in waiting_runs])}
+            for waiting in waiting_runs:
+                process = processes[waiting.process_id]
                 if process.queued_at is not None and (process.folder, process.line) == (folder, command.line):
                     return QueuedRunStart(waiting, process, True, command.is_detached)
         start = StartProcess(command.agent_id, None, command.line, folder, "", declared.category, RUN_LIMIT_SECONDS, [PartSpec(command.line, command.line.split()[0], False, declared.category)],

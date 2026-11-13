@@ -14,8 +14,8 @@ SOURCE = "processes.reading-notices"
 
 class SendReadingNoticesHandler(Handler[SendReadingNotices, None]):
     """The one sender of the lines that tell an agent how to read its runs better, after the marks of unreadable
-    commands are made or lifted at the run's end; the lines wait for the agent's next hook and never wake it. A
-    merge the journal ran itself has no reader, so it gets none."""
+    commands are made or lifted at the run's end; the lines wait for the agent's next hook and never wake it.
+    A merge the journal ran itself has no reader, so it gets none."""
 
     command = SendReadingNotices
 

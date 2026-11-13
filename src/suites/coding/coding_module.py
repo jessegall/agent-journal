@@ -100,7 +100,7 @@ class CodingModule(Module):
               SkillDeclaration("journal-functional-design", "Write a functional design of user stories, code examples and the phases in order; read it before you write one"),
               SkillDeclaration("journal-user-stories", "Write user stories for any system design from every angle, and group them into story books; read it before you write stories or a functional design", keywords=("user story", "user stories", "story book")),
               SkillDeclaration("journal-work-modes", "Work as the main agent of the coding suite from its work controls; read it when auto mode, the presets, read-only helpers or the worker limit come up", keywords=("builder", "orchestrator", "auto mode", "work mode"), types=["main"]),
-              SkillDeclaration("journal-test-draining", "Drain the failed tests of a full run from one file, biggest cause first, with no full rerun until it is empty; read it when a full run has failures", keywords=("failed tests", "full run"))]
+              SkillDeclaration("journal-test-draining", "Work off the failed tests of a full run from one file, biggest cause first, with no full rerun until it is empty; read it when a full run has failures", keywords=("failed tests", "full run"))]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
     migrations = [WorkerProfileNamesMigration, HelperRequestKeysMigration, HelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration, PruneFileEditsMigration, GraphifySettingKeysMigration]
     handlers = [RecordFileEditHandler, RecordFileChangesHandler, PruneFileEditsHandler]

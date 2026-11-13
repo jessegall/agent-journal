@@ -16,9 +16,8 @@ from core.modules.processes.support.reading.reading_facts import ReadingFacts
 
 class ShadowDecisions:
     """Decides the reader of each part of a run beside the old code and keeps the decision, which nothing acts on
-    yet. The facts and the kept decisions of all parts are read together, once; a run with no parts reads and keeps
-    nothing. A decision the engine cannot build is written to the system
-    log, and the run goes on."""
+    yet. The facts and the kept decisions of all parts are read together, once; a run with no parts reads and
+    keeps nothing. A decision the engine cannot build is written to the system log, and the run goes on."""
 
     def __init__(self, facts: ReadingFacts, decider: ReadingDecider, decisions: ReadingDecisions, log: SystemLogWriter) -> None:
         self.facts, self.decider, self.decisions, self.log = facts, decider, decisions, log
@@ -28,9 +27,9 @@ class ShadowDecisions:
             return
         self.store_parts(process, parts, moment, self.decisions.kept(process, moment), context)
 
+    # Keeps the decisions of a run that has just started, which has none kept yet, so nothing is read; a merge the
+    # journal runs itself has no reader to judge, so it keeps none, as at its end.
     def store_at_start(self, process: Process, parts: Sequence[ProcessPart], context: Context) -> None:
-        """Keeps the decisions of a run that has just started, which has none kept yet, so nothing is read; a merge the
-        journal runs itself has no reader to judge, so it keeps none, as at its end."""
         if not parts or process.is_journal_merge:
             return
         self.store_parts(process, parts, ReadingMoment.START, {}, context)

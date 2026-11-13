@@ -51,6 +51,12 @@
                                     "any": [
                                         {
                                             "extendsAny": "StrEnum"
+                                        },
+                                        {
+                                            "extendsAny": "IntEnum"
+                                        },
+                                        {
+                                            "extendsAny": "Enum"
                                         }
                                     ]
                                 }

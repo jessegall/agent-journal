@@ -42,8 +42,8 @@ def worktree_proofs(condition: Condition) -> Exists:
     return Exists(Select("proofs").matching(ColumnCompare("proofs.worktree_id", "=", "worktree.id")).matching(condition))
 
 
+# The rows of a table that belong to the worker of the outer worktree by the given column.
 def worker_rows(table: str, column: str) -> Select:
-    """The rows of a table that belong to the worker of the outer worktree by the given column."""
     return Select(table).matching(ColumnCompare(f"{table}.{column}", "=", WORKER))
 
 

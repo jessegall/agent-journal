@@ -11,6 +11,7 @@ from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResume
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
 from engine.testing.expectations.said_nudge import said
 from suites.coding.modules.workers.support.worker_nudges import BLOCKED_WORKER_TASK
+from tests.stories.support.story_checks import expect_value_4
 
 __all__ = ["missing_program", "running_worker", "worker_story"]
 
@@ -54,7 +55,7 @@ def test_a_blocked_task_is_not_left_to_the_merger(worker_blocked_its_task):
 
 
 def test_the_line_about_a_blocked_task_wakes_the_main_agent():
-    assert WORKER_TASK_BLOCKED.wakes_agent
+    expect_value_4(WORKER_TASK_BLOCKED.wakes_agent)
 
 
 def test_worker_deliver_on_a_blocked_task_is_refused_and_hands_in_nothing(worker_blocked_its_task):

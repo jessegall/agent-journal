@@ -7,3 +7,5 @@ class SettingComponentsModule(Module):
 
     name = "journal.core.setting_components"
     requires_core = ">=5,<6"
+    move_reason = "it owns no table: its components are viewer files"
+    seed_reason = "it owns no table: its components are viewer files"

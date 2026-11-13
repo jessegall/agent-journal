@@ -86,8 +86,8 @@ class MessageQuery(Query[Message]):
     def undelivered(self, agent_id: int) -> Self:
         return self.unread(agent_id).matching(IsNull("delivered_at"))
 
+    # The oldest of each user message type is found by its own index walk, so none walks the other types' rows.
     def oldest_undelivered(self, agent_id: int, size: int) -> list[Message]:
-        """The oldest of each user message type is found by its own index walk, so none walks the other types' rows."""
         oldest = [message for kind in PERSON_MESSAGE_TYPES
                   for message in self.addressed(agent_id).filter(type=kind).matching(IsNull("read_at")).matching(IsNull("delivered_at")).oldest().take(size)]
         return sorted(oldest, key=lambda message: message.id)[:size]

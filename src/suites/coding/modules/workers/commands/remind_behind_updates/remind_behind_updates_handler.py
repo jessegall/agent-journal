@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from engine.actor.actor import Actor
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
@@ -36,6 +37,12 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
 
     def __init__(self, queries: Queries, rows: EventRows, repository: Repository, settings: SettingValues, nudger: Nudger, inbox: MergerInbox, numbers: RowNumbers, git: WorktreeGit) -> None:
         self.queries, self.rows, self.repository, self.settings, self.nudger, self.inbox, self.numbers, self.git = queries, rows, repository, settings, nudger, inbox, numbers, git
+        self.clashing: set[int] = set()
+
+    def prepare(self, command: RemindBehindUpdates, actor: Actor) -> None:
+        checks = tuple(self.queries.query(WorktreeBehindCheck).filter(state=BehindCheckState.CONFLICTED).every_row(CHECKS_REASON))
+        worktrees = self.rows.required_index(Worktree, [check.worktree_id for check in checks])
+        self.clashing = {worktree.id for worktree in worktrees.values() if self.git.conflict_files(worktree)}
 
     def handle(self, command: RemindBehindUpdates, context: Context) -> None:
         wait = timedelta(minutes=self.settings.number(UPDATE_WAIT_MINUTES))
@@ -54,9 +61,9 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
                 self.clash_still_open(check, context)
 
     def clash_still_open(self, check: WorktreeBehindCheck, context: Context) -> None:
-        worktree = self.rows.required(Worktree, check.worktree_id)
-        if not self.git.conflict_files(worktree):
+        if check.worktree_id not in self.clashing:
             return
+        worktree = self.rows.required(Worktree, check.worktree_id)
         worker = self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)
         self.inbox.send_nudge(CLASH_LINES[check.reminders].nudge(worker=worker), BEHIND_SOURCE, context)
         self.repository.save_change(check, check.reminded(), context)

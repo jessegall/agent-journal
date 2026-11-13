@@ -1,6 +1,6 @@
 ---
 name: journal-test-draining
-description: Drain the failed tests of a full run from one file, biggest cause first, with no full rerun until it is empty; read it when a full run has failures
+description: Work off the failed tests of a full run from one file, biggest cause first, with no full rerun until it is empty; read it when a full run has failures
 ---
 
 # Draining failed tests

@@ -23,6 +23,6 @@ class HelperJobRows:
         jobs = self.queries.query(HelperJob).filter(helper_id=helper_id)
         return self.kept.read(jobs, lambda: jobs.matching(IsNull("ended_at")).matching(HasValue("started_at")).oldest().first(), name="drivers.open_helper_job")
 
+    # The helpers with an open job that has started, as a column to match an agent's id against.
     def open_job_helpers(self) -> Query[HelperJob]:
-        """The helpers with an open job that has started, as a column to match an agent's id against."""
         return self.queries.query(HelperJob).where_null("ended_at").where_not_null("started_at").select_columns("helper_id")

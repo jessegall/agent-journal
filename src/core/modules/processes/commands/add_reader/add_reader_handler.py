@@ -60,12 +60,12 @@ class AddReaderHandler(Handler[AddReader, Reader]):
             raise Refusal(f"reader {reader.name} missed {'; '.join(judgement.missed)}", "try the patterns on the named output")
         return self.repository.save(replace(reader, proved_on=judgement.output_id), context)
 
+    # A journal command has no reader: it stays in the foreground and the agent reads its answer whole.
     @staticmethod
     def refuse_journal_commands(reader: Reader) -> None:
-        """A journal command has no reader: it stays in the foreground and the agent reads its answer whole."""
         named = [pattern.strip() for pattern in reader.commands.split(",") if pattern.strip().split(" ", 1)[0] == JOURNAL_PROGRAM]
         if named:
-            raise Refusal(f"reader {reader.name} names the journal command {named[0]}, and a journal command has no reader", "name commands of other programs only")
+            raise Refusal(f"reader {reader.name} matches the journal command {named[0]}, and a journal command has no reader", "match commands of other programs only")
 
     @staticmethod
     def check_patterns(command: AddReader) -> None:

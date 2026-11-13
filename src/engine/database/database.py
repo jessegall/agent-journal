@@ -80,9 +80,9 @@ class Database:
             copy.close()
             source.close()
 
+    # Turns on incremental auto vacuum for a database made before it, which SQLite applies only with one full VACUUM,
+    # and says whether it did; a database that has it already is left alone.
     def turn_on_auto_vacuum(self) -> bool:
-        """Turns on incremental auto vacuum for a database made before it, which SQLite applies only with one full
-        VACUUM, and says whether it did; a database that has it already is left alone."""
         if self.connection.execute("PRAGMA auto_vacuum").fetchone()[0] != AUTO_VACUUM_OFF:
             return False
         self.connection.execute("PRAGMA auto_vacuum = INCREMENTAL")
@@ -182,9 +182,9 @@ class Database:
             raise error
         self.collected_large_reads.append(error)
 
+    # Keeps a report of a read the query builder cut at its limit, once per statement and calling line, with the
+    # developer read limit on or off; a cut fails only where cuts raise, as under the story kit.
     def report_cut(self, sql: str, limit: int) -> None:
-        """Keeps a report of a read the query builder cut at its limit, once per statement and calling line, with
-        the developer read limit on or off; a cut fails only where cuts raise, as under the story kit."""
         report = ReadCutError.cut(limit, sql)
         if self.cuts_raise:
             raise report
@@ -199,15 +199,15 @@ class Database:
         row = self.connection.execute("SELECT partial FROM pragma_index_list((SELECT tbl_name FROM sqlite_master WHERE type = 'index' AND name = ?)) WHERE name = ?", (name, name)).fetchone()
         return row is not None and bool(row[0])
 
+    # Keeps the writes of this connection in its write-ahead log, also when it closes, so the file stays as it was until
+    # the log is taken in or thrown away.
     def defer_checkpoints(self) -> None:
-        """Keeps the writes of this connection in its write-ahead log, also when it closes, so the file stays as it was
-        until the log is taken in or thrown away."""
         self.connection.execute("PRAGMA wal_autocheckpoint = 0")
         self.connection.setconfig(sqlite3.SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE, True)
 
+    # What sqlite's integrity check says of a database file opened only to read it: 'ok', or what is wrong.
     @staticmethod
     def file_integrity(path: Path) -> str:
-        """What sqlite's integrity check says of a database file opened only to read it: 'ok', or what is wrong."""
         connection = sqlite3.connect(f"{path.resolve().as_uri()}?mode=ro", uri=True)
         try:
             return str(connection.execute("PRAGMA integrity_check").fetchone()[0])
@@ -216,8 +216,8 @@ class Database:
         finally:
             connection.close()
 
+    # The state of one row by its key, or None when the table has no such row.
     def row_state(self, table: str, row_id: int) -> str | None:
-        """The state of one row by its key, or None when the table has no such row."""
         rows = self.rows(Statement(f"SELECT state FROM {table} WHERE id = ?", [row_id]))
         return rows[0]["state"] if rows else None
 

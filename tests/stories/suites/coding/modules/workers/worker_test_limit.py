@@ -98,7 +98,8 @@ def test_a_run_under_the_limit_and_a_limit_of_zero_go_on(limited_run, limit, cou
 
 
 class ProofLimitSetup(StoryFixture):
-    """The orchestrator's task 1 is open, its workers may run at most five tests a command, and readers are not forced."""
+    """The orchestrator's task 1 is open, its workers may run at most five tests a command, and readers are not
+    forced."""
 
     parent = OpenTaskOrchestrator
 

@@ -101,14 +101,14 @@ class ClerkModuleJoining(Suite):
 class BasedProfiles(ProfileModule):
     """A base profile and one built on it, which adds its own lines and its own model."""
 
-    profiles = [AgentProfile("sample-base", "The shared body", "Read the files.", agent_type="helper", model="sonnet", skills=("journal",)),
+    profiles = [AgentProfile("sample-base", "The shared body", "Read the files.", agent_type="helper", model="sonnet", skills=tuple(["journal"])),
                 AgentProfile("sample-based", "Reads and answers", "Answer in one line.", base="sample-base", agent_type="helper", model="opus")]
 
 
 class ChangedBase(BasedProfiles):
     """The same two profiles after the text of the base changed."""
 
-    profiles = [AgentProfile("sample-base", "The shared body", "Read the files twice.", agent_type="helper", model="sonnet", skills=("journal",)),
+    profiles = [AgentProfile("sample-base", "The shared body", "Read the files twice.", agent_type="helper", model="sonnet", skills=tuple(["journal"])),
                 AgentProfile("sample-based", "Reads and answers", "Answer in one line.", base="sample-base", agent_type="helper", model="opus")]
 
 

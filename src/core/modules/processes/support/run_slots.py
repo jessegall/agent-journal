@@ -86,11 +86,11 @@ class RunSlots:
 
     def take_counts(self, context: Context) -> None:
         started = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(IsNull("queued_at")).filter(is_queue_run=True).every_row(SLOT_RUNS_REASON)
-        for process in tuple(started):
-            if self.folder.is_count_taken(process.id) or self.folder.count_status(process.id) is None:
-                continue
+        counted = [process for process in started if not self.folder.is_count_taken(process.id) and self.folder.count_status(process.id) is not None]
+        agents = self.rows.required_index(Agent, [process.session_agent_id for process in counted])
+        for process in counted:
             with self.scopes.opened(None, process.environment_id):
-                self.record_count(process, self.rows.required(Agent, process.session_agent_id), context)
+                self.record_count(process, agents[process.session_agent_id], context)
             self.folder.mark_count_taken(process.id)
 
     def record_count(self, process: Process, agent: Agent, context: Context) -> None:

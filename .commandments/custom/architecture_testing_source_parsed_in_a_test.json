@@ -20,6 +20,9 @@
         "reject": [
             {
                 "fileMatches": "(^|/)tests/unit/source_tree\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)tests/stories/core/modules/agents/dispatcher_rules\\.py$"
             }
         ]
     },

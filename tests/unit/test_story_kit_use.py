@@ -1,5 +1,6 @@
 import ast
 from pathlib import Path
+from tests.unit.source_tree import source_tree
 
 TESTS_FOLDER = Path(__file__).resolve().parents[1]
 FIXTURE_STEPS = "steps"
@@ -13,7 +14,7 @@ def fixture_class_names(tree: ast.Module) -> set[str]:
 
 
 def fixture_builds_outside_fixtures(path: Path) -> list[int]:
-    tree = ast.parse(path.read_text())
+    tree = source_tree(path)
     fixture_lines = {line for node in ast.walk(tree) if isinstance(node, ast.ClassDef) and node.name in fixture_class_names(tree)
                      for line in range(node.lineno, (node.end_lineno or node.lineno) + 1)}
     builds = [node for node in ast.walk(tree) if isinstance(node, ast.Call) and getattr(node.func, "attr", "") == FIXTURE_STEPS
@@ -22,7 +23,7 @@ def fixture_builds_outside_fixtures(path: Path) -> list[int]:
 
 
 def database_copies(path: Path) -> list[int]:
-    tree = ast.parse(path.read_text())
+    tree = source_tree(path)
     copies = [node for node in ast.walk(tree) if isinstance(node, ast.Call) and getattr(node.func, "attr", "") in COPY_CALLS
               and any(word in ast.unparse(argument) for argument in node.args for word in DATABASE_WORDS)]
     return sorted(node.lineno for node in copies)

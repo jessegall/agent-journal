@@ -11,8 +11,8 @@ UNFINISHED_SUFFIX = ".partial"
 
 class FoldCopy:
     """Writes a whole copy of the open database with the backup API before a fold of main agents, so a fold can
-    be checked on it or undone from it. The copy before a fold at start is one file, replaced by each attempt, so
-    a fold that fails at every start leaves one copy, not one per start."""
+    be checked on it or undone from it. The copy before a fold at start is one file, replaced by each attempt,
+    so a fold that fails at every start leaves one copy, not one per start."""
 
     @staticmethod
     def folder(home: JournalHome) -> Path:

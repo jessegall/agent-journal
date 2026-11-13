@@ -11,13 +11,13 @@ ENDED = "ended"
 @dataclass(frozen=True, kw_only=True)
 class QueuedRun(EnvironmentScoped, Model):
     """A run a plugin queued with journal plugin queue: its plugin and kind, the agent it runs for, the process
-    that runs it and how it stands. Its end is the event queued_run.ended, with its exit code, how long it ran and
-    whether its timeout stopped it."""
+    that runs it and how it stands. Its end is the event queued_run.ended, with its exit code, how long it ran
+    and whether its timeout stopped it."""
 
     model_name = "queued_run"
     cli_name = "queued-run"
     event_forms = tuple([EventForm.COMMIT])
-    change_names = (ENDED,)
+    change_names = tuple([ENDED])
 
     environment_id: int = 0
     creator_id: int

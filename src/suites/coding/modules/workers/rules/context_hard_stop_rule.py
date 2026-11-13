@@ -17,13 +17,12 @@ STOP_REQUIREMENT_COMMANDS = ("memory", "message", "wait", "refusal", "agent-bloc
 
 
 class ContextHardStopRule(DriverRule):
-    """An agent whose context has passed the second limit may run no more tools, so it stops, whatever
-    task it holds, and its context is compacted at once: the compaction is typed once, except for a program that
-    compacts by its own window. A shell line made
-    only of the journal commands a stop can be refused for still runs, such as reading a message or
-    weighing the memories, and so does the watch of an output: without them the agent could neither run a
-    tool nor stop. While a typed compaction has not started, this rule types no second one: a tool use
-    shows the agent is in a turn, so the typed line still waits in the program."""
+    """An agent whose context has passed the second limit may run no more tools, so it stops, whatever task it
+    holds, and its context is compacted at once: the compaction is typed once, except for a program that
+    compacts by its own window. A shell line made only of the journal commands a stop can be refused for still
+    runs, such as reading a message or weighing the memories, and so does the watch of an output: without them
+    the agent could neither run a tool nor stop. While a typed compaction has not started, this rule types no
+    second one: a tool use shows the agent is in a turn, so the typed line still waits in the program."""
 
     name = "workers.context-limit-hard-stop"
     hook = HookEventName.PRE_TOOL_USE

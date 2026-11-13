@@ -7,6 +7,7 @@ from tests.stories.suites.coding.modules.workers.support.held_tasks import holdi
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story, start_planned_worker
 from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND
 from suites.coding.modules.workers.support.worker_settings import PROJECT_TEST_COMMAND
+from tests.stories.suites.coding.modules.workers.support.phase_steps import expect_task_states
 
 PHASE_TEST = "pytest tests/phase.py"
 BUILD_TASKS = 3
@@ -17,11 +18,6 @@ def proved_phase(worker: StoryWorker, first_test: str = "", last_test: str = "")
     for task_id, test_line in ((1, first_test), (2, ""), (3, last_test)):
         prove_task(worker, task_id, 1, test_line)
     return worker
-
-
-def expect_task_states(worker, state: str, *task_ids: int) -> None:
-    for task_id in task_ids:
-        worker.story.expect_text(f"task show {task_id}", f"state: {state}", actor=worker.story.agent)
 
 
 @pytest.fixture

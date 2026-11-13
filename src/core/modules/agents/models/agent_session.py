@@ -19,7 +19,7 @@ class AgentSession(EnvironmentScoped, Model):
     model_name = "agent_session"
     cli_name = "agent-session"
     shared_rows = True
-    change_names = (STOP_CHANGE,)
+    change_names = tuple([STOP_CHANGE])
 
     environment_id: int = 0
     session_agent_id: int

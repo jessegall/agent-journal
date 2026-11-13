@@ -15,9 +15,9 @@ MAIN_NAME = "Main agent"
 
 @dataclass(frozen=True)
 class AgentName:
-    """The one name of an agent: its role and its number, such as Helper 848, and Main agent for the main agent; a
-    given name and a row id are never part of it. A sentence writes it in lower case (label) and a card in capitals
-    (title); a view of the database builds the same name with agent_name."""
+    """The one name of an agent: its role and its number, such as Helper 848, and Main agent for the main agent;
+    a given name and a row id are never part of it. A sentence writes it in lower case (label) and a card in
+    capitals (title); a view of the database builds the same name with agent_name."""
 
     role: str
     number: int
@@ -31,9 +31,9 @@ class AgentName:
         return self.title.lower()
 
 
+# The name of the agent row an alias stands for, as the code names it: Main agent, or its role and its number, such as
+# Helper 848.
 def agent_name(alias: str) -> CaseWhen:
-    """The name of the agent row an alias stands for, as the code names it: Main agent, or its role and its number,
-    such as Helper 848."""
     role = Column(f"{alias}.role")
     capital = FunctionCall(SqlFunction.UPPER, [FunctionCall(SqlFunction.SUBSTR, [role, Literal(1), Literal(1)])])
     return CaseWhen([(Equal(f"{alias}.role", MAIN_ROLE), Literal(MAIN_NAME))],

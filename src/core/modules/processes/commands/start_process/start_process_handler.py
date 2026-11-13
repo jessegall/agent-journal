@@ -47,13 +47,14 @@ class StartProcessHandler(Handler[StartProcess, Process]):
         readers = self.readers.all() if command.category.has_reader else ()
         layers = self.readers.layers()
         parts: list[ProcessPart] = []
+        named_readers = self.rows.required_index(Reader, [reader_id for spec in command.parts for reader_id in [spec.named_reader_id if spec.named_reader_id is not None else command.reader_id] if reader_id is not None])
         for position, spec in enumerate(command.parts, 1):
             part = ProcessPart(process_id=process.id, position=position, text=spec.text, program=spec.program, command=spec.command, piped=spec.piped, category=spec.category, is_visible=self.visibility.is_visible(spec))
             selected = ReaderSelection.choose(readers, [part], layers)
             explicit_reader_id = spec.named_reader_id if spec.named_reader_id is not None else command.reader_id
             reader = selected.reader if selected else None
             if explicit_reader_id is not None:
-                reader = self.rows.required(Reader, explicit_reader_id)
+                reader = named_readers[explicit_reader_id]
             request_id = self.requests.request(process, spec, reader, context) if command.category.has_reader and self.requests.needed(process, agent) else None
             parts.append(self.repository.save(part.changed(reader_request_id=request_id), context))
         if command.reader_id is not None and not any(part.reader_request_id is not None for part in parts):

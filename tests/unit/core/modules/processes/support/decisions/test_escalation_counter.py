@@ -89,7 +89,7 @@ def test_two_commands_do_not_count_against_each_other():
 
 def test_a_reader_saved_after_a_run_resets_the_count():
     reader = Reader(id=1, creator_id=7, name="builds", type=ReaderType.PATTERN, commands="make build*", updated_at=Timestamp(START + timedelta(minutes=2, seconds=30)))
-    assert counter(missing_runs("make build", 3), (reader,)).runs_without_change(["make build"])["make build"] == 1
+    assert counter(missing_runs("make build", 3), tuple([reader])).runs_without_change(["make build"])["make build"] == 1
 
 
 def test_a_mark_that_the_output_cannot_be_read_resets_the_count():

@@ -43,14 +43,14 @@ def migrated(tmp_path) -> sqlite3.Connection:
 def test_every_task_is_kept_with_its_holder_and_its_logs(tmp_path):
     connection = migrated(tmp_path)
     assert connection.execute("SELECT id, holder_id, state, priority, started_at, complexity FROM tasks").fetchall() == [(7, AGENT_ID, "started", 300, "then", 3)]
-    assert connection.execute("SELECT task_id FROM task_logs").fetchall() == [(7,)]
-    assert ("tasks_holder",) in connection.execute("SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'tasks'").fetchall()
+    assert connection.execute("SELECT task_id FROM task_logs").fetchall() == [tuple([7])]
+    assert tuple(["tasks_holder"]) in connection.execute("SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'tasks'").fetchall()
 
 
 def test_a_person_may_hold_a_task(tmp_path):
     connection = migrated(tmp_path)
     connection.execute(f"UPDATE tasks SET holder_id = {PERSON_ID} WHERE id = 7")
-    assert connection.execute("SELECT holder_id FROM tasks").fetchall() == [(PERSON_ID,)]
+    assert connection.execute("SELECT holder_id FROM tasks").fetchall() == [tuple([PERSON_ID])]
 
 
 def test_a_holder_must_still_be_an_actor(tmp_path):

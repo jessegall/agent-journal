@@ -12,8 +12,8 @@ SEQUENCE_FIELDS = ("fallback_programs", "mcp_tools", "writable_folders", "change
 @dataclass(frozen=True)
 class AgentProfile:
     """Instructions and program settings for one type of agent, with its usage counts. A profile built on a base
-    takes each setting it leaves at its default from that base, except the settings named in default_fields, which
-    it sets to their default over the base's."""
+    takes each setting it leaves at its default from that base, except the settings named in default_fields,
+    which it sets to their default over the base's."""
 
     name: str
     description: str = ""

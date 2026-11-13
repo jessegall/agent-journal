@@ -18,9 +18,9 @@ class ReadCutError(AssertionError):
         error.count, error.sql = limit, sql
         return error
 
+    # The file and line outside the query builder that asked for the read.
     @staticmethod
     def calling_line() -> str:
-        """The file and line outside the query builder that asked for the read."""
         frames = [frame for frame in traceback.extract_stack() if not frame.filename.startswith(ENGINE_FOLDERS)]
         frame = frames[-1] if frames else traceback.extract_stack()[0]
         return f"{frame.filename}:{frame.lineno}"

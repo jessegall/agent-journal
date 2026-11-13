@@ -7,8 +7,9 @@ FIRST_NON_MAIN_NUMBER = 2
 
 
 class AgentNumbers:
-    """Chooses the number of a new agent inside its environment. A main agent takes 1 while no agent has it.
-    Any other agent takes the highest number of the environment plus one, retired and folded agents counted, and never 1."""
+    """Chooses the number of a new agent inside its environment. A main agent takes 1 while no agent has it. Any
+    other agent takes the highest number of the environment plus one, retired and folded agents counted, and
+    never 1."""
 
     def __init__(self, queries: Queries, scopes: Scopes, folds: FoldRecord) -> None:
         self.queries, self.scopes, self.folds = queries, scopes, folds

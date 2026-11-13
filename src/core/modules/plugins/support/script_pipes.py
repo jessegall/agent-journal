@@ -1,12 +1,14 @@
 import os
 import subprocess
 import threading
+import math
 import time
 from collections.abc import Callable
 from typing import IO
 
 from core.modules.plugins.errors.plugin_fault_error import PluginFaultError
 from core.modules.plugins.errors.plugin_late_error import PluginLateError
+from engine.time.polled_wait import PolledWait
 
 MOST_ANSWER_BYTES = 1_000_000
 ERROR_TAIL_BYTES = 2048
@@ -23,6 +25,7 @@ class ScriptPipes:
         self.process, self.stop_group = process, stop_group
         self.answer_bytes, self.error_bytes = bytearray(), bytearray()
         self.lock = threading.Lock()
+        self.next_line_at = 0.0
 
     def answer(self, line: str, limit_ms: int | None, wait_callback: Callable[[], None] | None) -> str:
         readers = [threading.Thread(target=self.read_answer, daemon=True), threading.Thread(target=self.read_errors, daemon=True)]
@@ -41,21 +44,24 @@ class ScriptPipes:
             return " ".join(bytes(self.error_bytes).decode(errors="replace").split())
 
     def wait_end(self, limit_ms: int | None, wait_callback: Callable[[], None] | None) -> None:
-        deadline = None if limit_ms is None else time.monotonic() + limit_ms / 1000
-        next_line_at = time.monotonic() + WAIT_LINE_SECONDS
-        while self.process.poll() is None:
-            if self.exceeds_answer_limit():
-                self.stop_group(self.process)
-                raise self.answer_limit_error()
-            if deadline is not None and time.monotonic() > deadline:
-                self.stop_group(self.process)
-                raise PluginLateError(f"it ran past {limit_ms} ms")
-            if wait_callback is not None and time.monotonic() >= next_line_at:
-                next_line_at += WAIT_LINE_SECONDS
-                self.notify_wait(wait_callback)
-            time.sleep(PIPE_POLL_SECONDS)
+        self.next_line_at = time.monotonic() + WAIT_LINE_SECONDS
+        limit_seconds = math.inf if limit_ms is None else limit_ms / 1000
+        if not PolledWait(limit_seconds, PIPE_POLL_SECONDS).until(lambda: self.has_ended(wait_callback)):
+            self.stop_group(self.process)
+            raise PluginLateError(f"it ran past {limit_ms} ms")
         if self.exceeds_answer_limit():
             raise self.answer_limit_error()
+
+    def has_ended(self, wait_callback: Callable[[], None] | None) -> bool:
+        if self.process.poll() is not None:
+            return True
+        if self.exceeds_answer_limit():
+            self.stop_group(self.process)
+            raise self.answer_limit_error()
+        if wait_callback is not None and time.monotonic() >= self.next_line_at:
+            self.next_line_at += WAIT_LINE_SECONDS
+            self.notify_wait(wait_callback)
+        return False
 
     def notify_wait(self, wait_callback: Callable[[], None]) -> None:
         try:

@@ -3,7 +3,7 @@ import pytest
 from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.modules.workers.commands.commit_worker_work.commit_worker_work_handler import CommitWorkerWorkHandler
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
-from suites.coding.modules.workers.commands.commit_worker_work.worker_task_commit import WorkerTaskCommit
+from suites.coding.modules.workers.commands.support.worker_task_commit import WorkerTaskCommit
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.hand_in_rebase import StoppedDelivery
 from tests.stories.suites.coding.modules.workers.phase_unfinished import expect_open_undelegated
@@ -12,6 +12,7 @@ from tests.stories.suites.coding.modules.workers.support.commit_command import C
 from tests.stories.suites.coding.modules.workers.support.held_tasks import proofs, prove_task, unplanned_holding_worker
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
+from tests.stories.suites.coding.modules.workers.support.phase_steps import expect_task_states
 
 THREE_TASKS = 3
 LATE_PROOF = 'proof make 1 --task 3 "cart.py:1, the cart total"'
@@ -25,11 +26,6 @@ def prove_first_two(worker: StoryWorker) -> StoryWorker:
 
 def branch_tip(worker: StoryWorker) -> str:
     return worker.repository.tip(worker.repository.worker_branch(worker.worker.id))
-
-
-def expect_task_states(worker: StoryWorker, state: str, *task_ids: int) -> None:
-    for task_id in task_ids:
-        worker.story.expect_text(f"task show {task_id}", f"state: {state}", actor=worker.story.agent)
 
 
 @pytest.fixture
@@ -124,9 +120,6 @@ def test_a_commit_of_a_worker_whose_row_a_restart_ended_while_its_program_runs_g
     expect_task_states(worker, "testing", 1, 2)
     expect_task_states(worker, "started", 3)
     expect_open_undelegated(worker, free_task)
-
-
-
 
 
 def test_while_more_workers_run_than_the_limit_a_finished_worker_gets_no_free_task_and_a_send_of_tasks_is_refused(two_proved):

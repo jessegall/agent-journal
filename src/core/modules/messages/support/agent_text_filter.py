@@ -83,8 +83,9 @@ class AgentTextFilter:
         text = prompt_text.casefold()
         return text.startswith(REACTION_PREFIX) or (text.startswith(OLDER_REACTION_PREFIX) and " on message:" in text)
 
+    # Whether a journal line typed for the user started the turn; the line's capitals are wording, so they are not
+    # compared.
     def is_user_action(self, prompt_text: str) -> bool:
-        """Whether a journal line typed for the user started the turn; the line's capitals are wording, so they are not compared."""
         text = prompt_text.casefold()
         return text.startswith(USER_ACTION_PREFIXES) or MESSAGE_COUNT_TEXT in text
 

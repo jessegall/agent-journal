@@ -37,6 +37,6 @@ REQUIRED_COMMAND_COUNTDOWN = CountDown("drivers.required_command_countdown", "{s
 REQUIRED_COMMAND_REFUSAL = NudgeDeclaration("drivers.required_command_refusal", NudgeType.REFUSAL, "{subject} is due: do it now, or skip block {block} with a reason")
 COMPACTION_NOTICE = NudgeDeclaration("drivers.compaction_notice", NudgeType.STEERING, "agent:{agent} posted context-compaction-notice:{notice}", turn_limited=False, wakes_agent=True)
 JOURNAL_STARTED = NudgeDeclaration("drivers.journal_started", NudgeType.STEERING, "The journal started: continue your work", turn_limited=False, wakes_agent=True)
-AGENT_NOTICE = NudgeDeclaration("drivers.agent_notice", NudgeType.STEERING, "{text}", turn_limited=False, path_fields=("text",), full_text=True)
+AGENT_NOTICE = NudgeDeclaration("drivers.agent_notice", NudgeType.STEERING, "{text}", turn_limited=False, path_fields=tuple(["text"]), full_text=True)
 FILE_LOADED = NudgeDeclaration("drivers.file-in-context", NudgeType.NOTICE, "{path} is unchanged since you read it: use what is in your context", path_fields=tuple(["path"]))
 DRIVER_NUDGES = [HOOK_TIMEOUTS, PERMISSION_REQUESTED, AGENT_INTERRUPTED, SAFEGUARDS_STOPPED, AGENT_COMPACTED, COMPACTION_NOTICE, CACHE_KEEPALIVE, CONTINUED_SESSION, AGENT_LINE_AVAILABLE, JOURNAL_STARTED, *ACCESS_NUDGES, MANAGED_HOOK_LINE, MANAGED_HOOK_REFUSAL, AGENT_RESUMED, HOOKS_UNCHECKED, REQUIRED_COMMAND_COUNTDOWN.declaration, REQUIRED_COMMAND_REFUSAL, REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL, MISSING_MODEL, UNBOUND_DISPATCH, LONG_OUTPUT, FILE_LOADED, AGENT_NOTICE]

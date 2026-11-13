@@ -6,6 +6,7 @@ from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 from suites.coding.support.coding_settings import KEEP_RUNNING_SETTING
 from core.modules.helpers.support.helper_settings import HELPER_RUN_LIMIT
+from tests.stories.support.story_checks import expect_value, expect_value_4
 
 AUTO = f"{AUTO_MODE_SETTING}"
 CONTINUE_SETTING = f"{KEEP_RUNNING_SETTING}"
@@ -66,11 +67,11 @@ def test_the_work_settings_read_carries_the_presets_with_the_value_each_gives_ea
     story = new_story(fixture=UserBuilder)
     shown = json.loads(story.run("work-settings show --environment main --json", story.user).output_text)
     presets = {preset["key"]: preset for preset in shown["presets"]}
-    assert list(presets) == ["builder", "orchestrator"]
-    assert [preset["name"] for preset in presets.values()] == ["Builder", "Orchestrator"]
-    assert all(preset["line"] for preset in presets.values())
-    assert sorted(presets["builder"]["values"].values()) == sorted(BUILDER)
-    assert sorted(presets["orchestrator"]["values"].values()) == sorted(ORCHESTRATOR)
-    assert set(presets["builder"]["values"]) == {switch["key"] for switch in shown["switches"]}
-    assert all(switch["title"] for switch in shown["switches"])
-    assert shown_fields(story)
+    expect_value(list(presets), ["builder", "orchestrator"])
+    expect_value([preset["name"] for preset in presets.values()], ["Builder", "Orchestrator"])
+    expect_value_4(all(preset["line"] for preset in presets.values()))
+    expect_value(sorted(presets["builder"]["values"].values()), sorted(BUILDER))
+    expect_value(sorted(presets["orchestrator"]["values"].values()), sorted(ORCHESTRATOR))
+    expect_value(set(presets["builder"]["values"]), {switch["key"] for switch in shown["switches"]})
+    expect_value_4(all(switch["title"] for switch in shown["switches"]))
+    expect_value_4(shown_fields(story))

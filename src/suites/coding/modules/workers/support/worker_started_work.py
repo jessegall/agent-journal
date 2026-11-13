@@ -13,6 +13,7 @@ from suites.coding.modules.workers.commands.send_unfinished_tasks_line.send_unfi
 from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES, UNFINISHED_TASKS_SOURCE
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
+from suites.coding.modules.workers.support.worker_nudges import WORKER_UNFINISHED_TASKS
 from suites.coding.modules.workers.support.worker_settings import WORKER_RESUME_LIMIT
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
@@ -64,4 +65,5 @@ class WorkerStartedWork:
         return sum(line.creation_timestamp().text >= progress for line in lines)
 
     def job(self, worker: Agent, tasks: tuple[Task, ...]) -> AgentLine:
-        return self.bus.run(SendUnfinishedTasksLine(worker.id, self.unfinished.names(tasks), self.guidance.line(worker.id)), Actor.core(), environment_id=worker.environment_id)
+        line = WORKER_UNFINISHED_TASKS.nudge(tasks=self.unfinished.names(tasks), line=self.guidance.line(worker.id))
+        return self.bus.run(SendUnfinishedTasksLine(worker.id, line, UNFINISHED_TASKS_SOURCE), Actor.core(), environment_id=worker.environment_id)

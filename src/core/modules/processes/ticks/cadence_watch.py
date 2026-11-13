@@ -28,8 +28,8 @@ from core.modules.processes.ticks.hang_watch import HangWatch
 class CadenceWatch:
     """Keeps, for each judged run, the times the output of its running part last grew, judges how the run prints,
     and tells its agent once in a while when it prints nothing, stopped printing, prints too seldom, or seems
-    stuck earlier_growths the hang watch stops it. A run whose folder cannot be read is written to the system log and
-    the others go on."""
+    stuck earlier_growths the hang watch stops it. A run whose folder cannot be read is written to the system
+    log and the others go on."""
 
     def __call__(self, container: Container) -> bool:
         current = container.get(Clock).timestamp()

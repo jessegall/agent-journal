@@ -13,12 +13,12 @@ class RunVisibility:
         self.queries = queries
         self.kept = kept
 
+    # The part a run shows its mark and card by.
     def visible_part(self, process: Process) -> ProcessPart | None:
-        """The part a run shows its mark and card by."""
         return self.select_visible_part(process, self.shown_parts(process))
 
+    # The parts of a run that its readers look at: a merge the journal ran itself has none, read from its row.
     def shown_parts(self, process: Process) -> tuple[ProcessPart, ...]:
-        """The parts of a run that its readers look at: a merge the journal ran itself has none, read from its row."""
         return () if process.is_journal_merge else self.parts(process.id)
 
     @staticmethod

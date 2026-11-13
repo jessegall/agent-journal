@@ -13,15 +13,15 @@ from core.modules.processes.support.decisions.reading_decision import ReadingDec
 
 class ReadingDecisions:
     """Keeps the engine's decision about one part of a run at one moment, in place of the earlier decision of the
-    same part and moment; nothing else writes the decisions. The first end decision of a part that lacked a good
-    reader adds one to its command's run count."""
+    same part and moment; nothing else writes the decisions. The first end decision of a part that lacked a
+    good reader adds one to its command's run count."""
 
     def __init__(self, decisions: ReadingDecisionQuery, repository: Repository, kept: KeptRows, run_counts: CommandRunCounts) -> None:
         self.decisions, self.repository, self.kept_rows, self.run_counts = decisions, repository, kept, run_counts
 
+    # The kept decision of each part of a run at one moment, by the part's position, read again only after the decisions
+    # of that run changed, so storing and telling them read once.
     def kept(self, process: Process, moment: ReadingMoment) -> dict[int, ReadingDecisionRow]:
-        """The kept decision of each part of a run at one moment, by the part's position, read again only after the
-        decisions of that run changed, so storing and telling them read once."""
         decisions = self.decisions.for_process(process.id).filter(moment=moment)
         rows = self.kept_rows.read(decisions, lambda: tuple(decisions.get()), name="processes.kept_decisions")
         return {row.part_position: row for row in rows}

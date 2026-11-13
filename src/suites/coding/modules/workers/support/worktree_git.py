@@ -19,9 +19,9 @@ from engine.instruction.instruction_imports import INSTRUCTION_FILES
 from engine.errors.refusal import Refusal
 from core.modules.environments.models.environment import Environment
 from suites.coding.models.enums.ask_topic import AskTopic
-from suites.coding.modules.workers.models.base_commit import NAME_SEPARATOR, BaseCommit
+from suites.coding.modules.workers.support.base_commit import NAME_SEPARATOR, BaseCommit
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.models.worktree_update import WorktreeUpdate
+from suites.coding.modules.workers.support.worktree_update import WorktreeUpdate
 from engine.enums.file_status import FileStatus
 from suites.coding.modules.workers.support.commit_subject import subject_search
 from suites.coding.modules.workers.support.task_branch_commit import TaskBranchCommit
@@ -124,8 +124,8 @@ class WorktreeGit:
     def head_commit(self, folder: str) -> str:
         return self.checked(folder, GIT_LIMIT_SECONDS, "rev-parse", "HEAD").stdout.strip()
 
+    # Whether the worktree's test checkout stands at the worktree's own last commit.
     def is_test_checkout_current(self, worktree: Worktree) -> bool:
-        """Whether the worktree's test checkout stands at the worktree's own last commit."""
         folder = self.test_folder(worktree)
         return Path(folder, ".git").exists() and self.head_commit(folder) == self.head_commit(worktree.folder)
 
@@ -287,8 +287,8 @@ class WorktreeGit:
             raise Refusal(f"it deletes {len(kept)} built files under {built.folder(kept[0])} while their sources stay, such as {kept[0]}",
                           AskTopic.TOOL.hint(f"build them again with {' '.join(self.builds.command())}, then commit again"))
 
+    # Builds the built files the branch changed again from its sources and commits them; says whether it built any.
     def rebuild(self, worktree: Worktree, base_folder: str) -> bool:
-        """Builds the built files the branch changed again from its sources and commits them; says whether it built any."""
         changed = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", worktree.base_branch, worktree.branch).stdout.splitlines()
         folders = self.builds.paths().folders(changed)
         if not folders:
@@ -297,9 +297,9 @@ class WorktreeGit:
         self.commit(worktree, REBUILD_MESSAGE, f"Journal: worker worker-{worktree.session_agent_id}")
         return True
 
+    # Builds the built files of these folders again from the sources in the folder, with the build command of the
+    # workers settings; the dependencies of the main checkout serve a worktree that has none of its own.
     def build(self, folder: str, base_folder: str, folders: Sequence[str]) -> None:
-        """Builds the built files of these folders again from the sources in the folder, with the build command of
-        the workers settings; the dependencies of the main checkout serve a worktree that has none of its own."""
         for built in folders:
             path = Path(folder, built)
             if path.exists():
@@ -511,8 +511,8 @@ class WorktreeGit:
         if clashed:
             self.rebuilt_after_merge(folder, built.folders(clashed))
 
+    # Builds the built files whose copies clashed again from the merged sources, once, and commits them.
     def rebuilt_after_merge(self, folder: str, folders: Sequence[str]) -> None:
-        """Builds the built files whose copies clashed again from the merged sources, once, and commits them."""
         self.build(folder, folder, folders)
         self.checked(folder, GIT_LIMIT_SECONDS, "add", "-A", "--", *folders)
         if self.git(folder, GIT_LIMIT_SECONDS, "diff", "--cached", "--quiet").returncode != 0:
@@ -683,16 +683,16 @@ class WorktreeGit:
             raise Refusal(f"git {' '.join(arguments[:2])} failed in {folder}", (finished.stderr or finished.stdout).strip())
         return finished
 
+    # Whether the git call may move a branch or a checkout; listing worktrees or stashes moves nothing.
     @staticmethod
     def changes_branches(arguments: Sequence[str]) -> bool:
-        """Whether the git call may move a branch or a checkout; listing worktrees or stashes moves nothing."""
         command = WorktreeGit.subcommand(arguments)
         word_after = next(iter(arguments[arguments.index(command) + 1:][:1]), "") if command else ""
         return command in BRANCH_CHANGES and word_after != LISTING_WORD
 
+    # The git command in the arguments, after any options placed before it such as -c name=value.
     @staticmethod
     def subcommand(arguments: Sequence[str]) -> str:
-        """The git command in the arguments, after any options placed before it such as -c name=value."""
         remaining = iter(arguments)
         for argument in remaining:
             if argument in GIT_OPTIONS_WITH_VALUE:

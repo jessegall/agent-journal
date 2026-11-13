@@ -16,7 +16,7 @@ UNREADABLE_DECLARED = NudgeDeclaration("processes.unreadable_declared", NudgeTyp
 UNREADABLE_LIFTED = NudgeDeclaration("processes.unreadable_lifted", NudgeType.STEERING, "Command {name} prints readable lines again: reader requests resume")
 HOLD_LIFTED = NudgeDeclaration("processes.hold_lifted", NudgeType.STEERING, "A user lifted the hold on output {output}")
 BLOCK_LIFTED = NudgeDeclaration("processes.block_lifted", NudgeType.STEERING, "A user lifted the block on reader request {request}")
-STOCK_READER_BEHIND = NudgeDeclaration("processes.stock_reader_behind", NudgeType.NOTICE, "Stock reader {reader} is behind the shipped one: see its fields with journal reader show {reader}")
+STOCK_READER_BEHIND = NudgeDeclaration("processes.stock_reader_behind", NudgeType.NOTICE, "Stock reader {reader} is behind the shipped one")
 READING_PREVENTED = NudgeDeclaration("processes.reading_prevented", NudgeType.REFUSAL, "output {output} has no proper reader: " + ExitTexts.template(PressureLevel.PREVENT.exits), full_text=True)
 UNREADABLE_AUDIT = NudgeDeclaration("processes.unreadable_audit", NudgeType.STEERING, "{count} commands are marked unreadable by agents: review them in the viewer")
 READERS_NEED_REPAIR = NudgeDeclaration("processes.readers_need_repair", NudgeType.STEERING, "Reader {reader} matched nothing in its last {count} outputs: repair it",

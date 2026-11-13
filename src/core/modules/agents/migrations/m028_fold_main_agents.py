@@ -18,9 +18,9 @@ ONE_MAIN_INDEX = Statement("CREATE UNIQUE INDEX IF NOT EXISTS agents_one_main ON
 
 class FoldMainAgentsMigration(RebuildMigration):
     """Folds every older main agent row into its environment's one main agent after a fresh copy of the open
-    database. A fold that does not add up, or fails on the copy or a rewrite, rolls back, goes to the system log
-    and is deferred: the journal starts unfolded and the fold runs again at the next start. Once one main row
-    per environment is left, a unique index keeps it that way."""
+    database. A fold that does not add up, or fails on the copy or a rewrite, rolls back, goes to the system
+    log and is deferred: the journal starts unfolded and the fold runs again at the next start. Once one main
+    row per environment is left, a unique index keeps it that way."""
 
     number = 28
     statements = ()

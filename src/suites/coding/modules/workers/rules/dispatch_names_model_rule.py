@@ -5,4 +5,4 @@ class DispatchNamesModelRule(StartNamesModelRule):
     """A worker dispatch names its model, an exact one or default for the profile's own (message 117983)."""
 
     name = "workers.dispatch-names-model"
-    starts = ("worker dispatch",)
+    starts = tuple(["worker dispatch"])

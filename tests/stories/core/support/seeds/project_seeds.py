@@ -11,7 +11,7 @@ PLAN_SIZES = (90, 50, 5, 40, 20, 12, 90, 50, 5, 30, 8, 3)
 PHASES_IN_A_PLAN = 6
 PLAN_STARTS = (0, *accumulate(PLAN_SIZES))
 PLACED_TASKS = PLAN_STARTS[-1]
-TASK_STATES = ("completed",) * 18 + ("cancelled", "cancelled")
+TASK_STATES = tuple(["completed"]) * 18 + ("cancelled", "cancelled")
 MESSAGE_TYPES = ("user", "agent", "agent", "journal")
 HOOKS = ("pre_tool_use", "post_tool_use", "stop", "prompt")
 EVENT_NAMES = (("task.update", "tasks"), ("message.create", "messages"), ("agent.update", "agents"), ("task.create", "tasks"))
@@ -69,8 +69,9 @@ class PhaseSeed(Seed):
 
 
 class TaskSeed(Seed):
-    """A finished task, which TaskAssignmentSeed assigns to a seeded agent: most are completed, some cancelled. The work still open in an
-    environment is the story's own, so a story that looks at the open work of its environment sees only its own."""
+    """A finished task, which TaskAssignmentSeed assigns to a seeded agent: most are completed, some cancelled.
+    The work still open in an environment is the story's own, so a story that looks at the open work of its
+    environment sees only its own."""
 
     table = "tasks"
 

@@ -22,8 +22,8 @@ HOLDER_STATES = (TaskState.STARTED, TaskState.TESTING)
 @dataclass(frozen=True)
 class UnblockerFacts:
     """Everything read about the tasks at the end of a plan's waits, for one asking agent. It says for each of
-    them why it cannot be handed out to that agent, or that it can. The assignees are the actor each assigned task is
-    assigned to, by task."""
+    them why it cannot be handed out to that agent, or that it can. The assignees are the actor each assigned
+    task is assigned to, by task."""
 
     asker: Agent
     takeable_ids: frozenset[int]

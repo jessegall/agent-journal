@@ -12,5 +12,5 @@ def test_an_early_reach_keeps_is_early():
 
 
 def test_a_worker_reach_is_no_early_reach():
-    reach = CheckpointReach.started_on_agent_commit(1, 2, 3, (4,))
+    reach = CheckpointReach.started_on_agent_commit(1, 2, 3, tuple([4]))
     assert (reach.source, reach.is_early) == (CheckpointReachSource.AGENT_COMMIT, False)

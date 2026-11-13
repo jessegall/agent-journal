@@ -33,7 +33,7 @@ def test_76_a_window_of_one_worker_is_tested_on_its_commit(new_story, monkeypatc
 def test_77_the_holder_of_an_awaited_task_is_told_once(new_story, monkeypatch):
     first, second = two_workers(new_story, monkeypatch)
     first.story.run("task depend 4 --on 1", actor=first.story.agent)
-    commit_each(first, (1,))
+    commit_each(first, tuple([1]))
     lines = [line for line in first.worker_lines() if "waits on your committed task" in line]
     first.story.expect_rows(len(lines) == 1, "--up-to 1" in lines[0] if lines else False, detail=str(first.worker_lines()))
 

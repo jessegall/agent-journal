@@ -75,9 +75,9 @@ class StoryOverlap:
                 lines.append(f"stories share {round(share * 100)}% of their steps and check the same thing, merge their checks into one story: {first} and {second}")
         return lines
 
+    # Two stories check the same thing unless each records what it checks and nothing of the one is in the other:
+    # stories that check wholly different things are different tests.
     def check_the_same_thing(self, first: str, second: str) -> bool:
-        """Two stories check the same thing unless each records what it checks and nothing of the one is in
-        the other: stories that check wholly different things are different tests."""
         first_checks, second_checks = self.story_checks[first], self.story_checks[second]
         return not first_checks or not second_checks or bool(first_checks & second_checks)
 

@@ -14,7 +14,7 @@ def cadence(age: float, growths: tuple[float, ...] = ()) -> RunCadence:
 @pytest.mark.parametrize("run, state", [
     (cadence(29), CadenceState.STREAMING),
     (cadence(30), CadenceState.NO_OUTPUT),
-    (cadence(125, (50,)), CadenceState.SPARSE),
+    (cadence(125, tuple([50])), CadenceState.SPARSE),
     (cadence(125, (80, 90, 100, 110, 120)), CadenceState.STREAMING),
     (cadence(200, (50, 60, 70, 80)), CadenceState.STOPPED_WRITING),
     (cadence(125, (0, 30, 60, 90, 120)), CadenceState.SPARSE),
@@ -27,7 +27,7 @@ def test_the_state_of_each_run(run, state):
 
 
 def test_a_run_that_printed_once_has_its_age_split_by_the_gaps_around_the_print():
-    assert cadence(125, (50,)).average_pause() == 62.5
+    assert cadence(125, tuple([50])).average_pause() == 62.5
 
 
 def test_growths_with_a_later_time_first_give_no_negative_pause():

@@ -95,7 +95,7 @@ def test_base_changes_lists_the_files_of_each_base_commit_merges_included(tmp_pa
     changes = git().base_changes(worktree, repository.tip("base"))
     assert [(change.subject, change.files) for change in changes] == [
         (f"Merge {OTHER_BRANCH}", ("workers_other_0.py", "workers_other_1.py")),
-        ("Tax on the base", ("tax.py",)),
+        ("Tax on the base", tuple(["tax.py"])),
     ]
     assert all(len(change.short_id) >= 7 for change in changes)
 

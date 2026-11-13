@@ -1,9 +1,9 @@
 import os
-import time
 
 from engine.journal.journal_home import JournalHome
 from core.modules.processes.support.output_folder import OutputFolder
 from engine.serving.server_files import ServerFiles
+from engine.time.polled_wait import PolledWait
 
 RUN_DRAIN_LIMIT_SECONDS = 60
 POLL_SECONDS = 1.0
@@ -19,9 +19,7 @@ class RunDrain:
 
     def wait(self) -> None:
         self.files.mark_run_lock()
-        deadline = time.monotonic() + self.limit_seconds
-        while self.running_folders() and time.monotonic() < deadline:
-            time.sleep(self.poll_seconds)
+        PolledWait(self.limit_seconds, self.poll_seconds).until(lambda: not self.running_folders())
 
     def running_folders(self) -> tuple[int, ...]:
         return tuple(process_id for process_id in self.outputs.running_ids() if str(process_id) != os.environ.get(PROCESS_VARIABLE))

@@ -21,7 +21,7 @@ class Settings:
 
 def caps(**values: object) -> ContextShare:
     return ContextShare(Settings({CONTEXT_LIMIT_ENABLED: True, CONTEXT_LIMIT_TOKENS: 400000,
-                                 CONTEXT_LIMIT_KINDS: ("worker:200000", "main:none"), CONTEXT_LIMIT_PROFILES: (f"{PLANNER_PROFILE.name}:150000",), **values}), None, None)
+                                 CONTEXT_LIMIT_KINDS: ("worker:200000", "main:none"), CONTEXT_LIMIT_PROFILES: tuple([f"{PLANNER_PROFILE.name}:150000"]), **values}), None, None)
 
 
 def test_a_worker_is_capped_while_the_main_agent_is_not():

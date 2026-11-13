@@ -14,9 +14,9 @@ TIME_LIMIT_EXIT_CODE = 124
 
 
 class ProcessExecutor:
-    """The one door every program the journal runs goes through: the queue admits it as its row, the gate holds it
-    while the server starts or updates and refuses it for a paused agent, the runner runs it, and its end is recorded, also when it fails or passes
-    its time limit."""
+    """The one door every program the journal runs goes through: the queue admits it as its row, the gate holds
+    it while the server starts or updates and refuses it for a paused agent, the runner runs it, and its end
+    is recorded, also when it fails or passes its time limit."""
 
     def __init__(self, placement: RunPlacement, runner: RunnerProgram, gate: ExecutionGate, errors: ErrorLog) -> None:
         self.placement, self.runner, self.gate, self.errors = placement, runner, gate, errors

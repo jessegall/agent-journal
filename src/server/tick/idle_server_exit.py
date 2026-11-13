@@ -10,8 +10,9 @@ GRACE_SECONDS = 300
 
 class IdleServerExit:
     """Ends the server once no agent session of its project has been alive for the grace time: a session is alive
-    while its agent row is open, and the agents module ends a row whose program has gone. The time starts at the
-    server's start, so a server a new session's first hook started has the whole grace before its row is seen."""
+    while its agent row is open, and the agents module ends a row whose program has gone. The time starts at
+    the server's start, so a server a new session's first hook started has the whole grace before its row is
+    seen."""
 
     def __init__(self, clock: Clock, stop: Callable[[str], None]) -> None:
         self.clock, self.stop = clock, stop

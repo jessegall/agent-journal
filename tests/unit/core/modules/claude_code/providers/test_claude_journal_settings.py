@@ -90,7 +90,7 @@ def test_the_same_inputs_give_the_same_bytes(provider, home):
 
 
 def test_a_managed_hook_lengthens_the_entry_timeout(provider, home):
-    managed = (ManagedHook.found("claude", "PreToolUse", "Bash", {"command": "slow", "timeout": 60}, "settings.json", False),)
+    managed = tuple([ManagedHook.found("claude", "PreToolUse", "Bash", {"command": "slow", "timeout": 60}, "settings.json", False)])
     hooks = journal_file(provider, home, managed)["hooks"]
     assert hooks["PreToolUse"][0]["hooks"][0]["timeout"] == 150
     assert hooks["Stop"][0]["hooks"][0]["timeout"] == 90

@@ -14,8 +14,8 @@ RELEASED_SESSIONS_REASON = "every kept agent of a released session is woken"
 
 class ReleasedSessionWake:
     """Once the server is ready again, wakes every agent whose hook the journal held while it started or updated,
-    also a hook held after the booting round: a round moves the held sessions aside and the next round wakes them,
-    so a session held during the move is woken too."""
+    also a hook held after the booting round: a round moves the held sessions aside and the next round wakes
+    them, so a session held during the move is woken too."""
 
     def __call__(self, container: Container) -> None:
         files = ServerFiles(container.get(JournalHome))

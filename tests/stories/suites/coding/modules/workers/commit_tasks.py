@@ -14,6 +14,7 @@ from tests.stories.suites.coding.modules.workers.support.held_tasks import holdi
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker
 from suites.coding.modules.workers.support.worker_settings import PROTECTED_FOLDERS
+from tests.stories.suites.coding.modules.workers.support.phase_steps import expect_task_states
 
 LEFT_OUT = "the rounding is left out"
 FOUR_POINT_BRIEF = "- the tax is read\n- the tax is added\n- the tax is shown\n- the tax is rounded"
@@ -30,11 +31,6 @@ def prove_both(worker: StoryWorker) -> StoryWorker:
 
 def states(worker: StoryWorker) -> list[ProofState]:
     return [proof.state for proof in proofs(worker)]
-
-
-def expect_task_states(worker: StoryWorker, state: str, *task_ids: int) -> None:
-    for task_id in task_ids:
-        worker.story.expect_text(f"task show {task_id}", f"state: {state}", actor=worker.story.agent)
 
 
 @pytest.fixture

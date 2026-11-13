@@ -11,8 +11,8 @@ from core.modules.plugins.support.runnable_plugin import RunnablePlugin
 
 @dataclass(frozen=True)
 class PluginRunRequest:
-    """One event to run in a plugin that may run, the time limit for it, and the place a fault is recorded as. The events
-of one hook that a single run judges together are listed in `events`."""
+    """One event to run in a plugin that may run, the time limit for it, and the place a fault is recorded as.
+    The events of one hook that a single run judges together are listed in `events`."""
 
     runnable: RunnablePlugin
     event: PluginEvent

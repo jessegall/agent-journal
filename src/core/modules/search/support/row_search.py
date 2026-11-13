@@ -37,10 +37,10 @@ class RowSearch:
             return SearchResult(terms, self.ranked_hits(model_queries, terms), total)
         return self.closest(terms, search_models)
 
+    # The best hits, the models of the highest rank first and the newest rows first within a rank: a lower rank loads
+    # rows only for the places a higher one left, so no row is loaded that could not be shown.
     @staticmethod
     def ranked_hits(model_queries: dict[type[Model], Query[Model]], terms: Sequence[str]) -> list[SearchHit]:
-        """The best hits, the models of the highest rank first and the newest rows first within a rank: a lower rank
-        loads rows only for the places a higher one left, so no row is loaded that could not be shown."""
         hits: list[SearchHit] = []
         for rank in sorted({model.search_rank for model in model_queries}, reverse=True):
             places = HIT_LIMIT_ROWS - len(hits)

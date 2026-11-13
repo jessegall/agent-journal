@@ -213,3 +213,8 @@ def unplanned_group_worker(new_story, monkeypatch) -> StoryWorker:
     for title in ("Tax", "Totals"):
         story.run(f'task make "{title}" --brief "The {title.lower()}"', actor=story.agent)
     return dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 2 3", monkeypatch)
+
+
+def expect_task_states(worker: StoryWorker, state: str, *task_ids: int) -> None:
+    for task_id in task_ids:
+        worker.story.expect_text(f"task show {task_id}", f"state: {state}", actor=worker.story.agent)

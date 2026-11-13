@@ -11,7 +11,7 @@ CHECKPOINT = Phase(id=1, plan_id=7, creator_id=1, position=1, title="Cart", chec
 def windows(*states: TaskState) -> CheckpointWindows:
     places = tuple(PlanTask(task_id=10 + place, plan_id=7, phase_id=1, phase_position=1, checkpoint=True, position=place, state=state, priority=0)
                    for place, state in enumerate(states, start=1))
-    return CheckpointWindows((CHECKPOINT,), places)
+    return CheckpointWindows(tuple([CHECKPOINT]), places)
 
 
 def test_a_commit_that_completes_a_window_gives_it():

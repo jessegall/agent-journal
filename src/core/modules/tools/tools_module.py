@@ -18,8 +18,8 @@ from core.modules.tools.support.skeletons import TOOLS_TOOLS_SKELETON
 
 class ToolsModule(Module):
     """Adds the tools the loaded suites ship: a card for each on the Tools page to install, turn on or off and
-    refresh, and a managed hook, held for every agent program while a tool is on, that refreshes the tool's output
-    in the background after each new commit. Each tool comes from the suite that binds ToolRunners."""
+    refresh, and a managed hook, held for every agent program while a tool is on, that refreshes the tool's
+    output in the background after each new commit. Each tool comes from the suite that binds ToolRunners."""
 
     name = "journal.core.tools"
     seed_reason = "a demo installs no tool"

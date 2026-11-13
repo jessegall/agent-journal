@@ -7,6 +7,8 @@ from engine.repository.repository import Repository
 from core.modules.documents.models.link import Link
 from core.modules.documents.models.link_correction import LinkCorrection
 
+CORRECTIONS_REASON = "every correction of the sources of the links being saved is compared with them"
+
 STORED_LINKS_REASON = "the links to write are compared with every stored link of the row"
 
 STORED_LINK_TARGETS = 25
@@ -22,9 +24,9 @@ class RowLinkWriter:
         return self.save_many([link], context)[0]
 
     def save_automatic(self, links: Sequence[Link], context: Context) -> tuple[Link, ...]:
-        allowed = tuple(link for link in links if not self.queries.query(LinkCorrection).filter(
-                        source_model=link.source_model, source_id=link.source_id, target_model=link.target_model,
-                        target_id=link.target_id, link_type=link.link_type).exists())
+        corrections = self.queries.query(LinkCorrection).matching(Among("source_id", [link.source_id for link in links])).every_row(CORRECTIONS_REASON)
+        corrected = {(row.source_model, row.source_id, row.target_model, row.target_id, row.link_type) for row in corrections}
+        allowed = tuple(link for link in links if (link.source_model, link.source_id, link.target_model, link.target_id, link.link_type) not in corrected)
         return self.save_many(allowed, context)
 
     def save_many(self, links: Sequence[Link], context: Context) -> tuple[Link, ...]:

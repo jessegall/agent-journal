@@ -1,5 +1,6 @@
 import ast
 from pathlib import Path
+from tests.unit.source_tree import source_tree
 
 """Story 14 of doc 1255: every walk over all the rows of a read is listed with its reason, so a reviewer reads each
 one and a new walk shows in the change that adds it."""
@@ -31,7 +32,7 @@ def imported_strings(tree: ast.Module) -> dict[str, str]:
     for node in tree.body:
         source = SOURCE / f"{node.module.replace('.', '/')}.py" if isinstance(node, ast.ImportFrom) and node.module else None
         if source is not None and source.is_file():
-            constants = module_strings(ast.parse(source.read_text()))
+            constants = module_strings(source_tree(source))
             strings.update({alias.asname or alias.name: constants[alias.name] for alias in node.names if alias.name in constants})
     return strings
 
@@ -60,7 +61,7 @@ def walks() -> list[str]:
     for path in sorted(SOURCE.rglob("*.py")):
         if "__pycache__" in path.parts or path == QUERY_FILE:
             continue
-        tree = ast.parse(path.read_text())
+        tree = source_tree(path)
         strings, handed_on = {**imported_strings(tree), **module_strings(tree)}, passed_on(tree)
         relative = path.relative_to(ROOT).as_posix()
         for node in ast.walk(tree):

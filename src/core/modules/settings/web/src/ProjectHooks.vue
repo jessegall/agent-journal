@@ -136,7 +136,7 @@ context.follow(["hook_call.*"], coalesced(load, READ_RATES.projectHooks));
         <HookGroup
           title="Journal"
           :count="value.journal.length"
-          empty="The journal has set no hooks here"
+          empty="No hooks are set here"
         >
           <template
             v-for="entry in value.journal"

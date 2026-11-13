@@ -5,6 +5,7 @@ from functools import cache
 from pathlib import Path
 from string import Formatter
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
+from tests.unit.source_tree import source_tree
 
 PROJECT = Path(__file__).resolve().parents[2]
 TESTS_FOLDER = PROJECT / "tests"
@@ -35,7 +36,7 @@ def literal_texts(tree: ast.Module) -> Iterator[tuple[int, str]]:
 
 def declared_calls(name: str, path: Path | None = None) -> Iterator[ast.Call]:
     for source in [path] if path else SOURCE_FOLDER.rglob("*.py"):
-        for node in ast.walk(ast.parse(source.read_text())):
+        for node in ast.walk(source_tree(source)):
             if isinstance(node, ast.Call) and getattr(node.func, "id", "") == name:
                 yield node
 
@@ -91,7 +92,7 @@ def key_constant_defaults() -> dict[str, int]:
     """Every constant of the source that holds a setting key, with the whole number its setting defaults to."""
     found = {}
     for source in SOURCE_FOLDER.rglob("*.py"):
-        for node in ast.parse(source.read_text()).body:
+        for node in source_tree(source).body:
             if isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
                 text = fixed_text(node.value)
                 if text is not None and text.rsplit(".", 1)[-1] in number_defaults():
@@ -120,7 +121,7 @@ def given_settings(function: ast.FunctionDef) -> set[str]:
 
 
 def raw_default_lines(path: Path) -> list[str]:
-    return raw_defaults(ast.parse(path.read_text()), str(path.relative_to(PROJECT)))
+    return raw_defaults(source_tree(path), str(path.relative_to(PROJECT)))
 
 
 def raw_defaults(tree: ast.Module, relative: str) -> list[str]:
@@ -146,7 +147,7 @@ def raw_values(text: str, relative: str) -> list[str]:
 
 def raw_value_lines(path: Path) -> list[str]:
     relative = str(path.relative_to(PROJECT))
-    return [f"{relative}:{line} {value}" for line, text in literal_texts(ast.parse(path.read_text())) for value in raw_values(text, relative)]
+    return [f"{relative}:{line} {value}" for line, text in literal_texts(source_tree(path)) for value in raw_values(text, relative)]
 
 
 def test_no_test_writes_a_value_the_code_declares():
@@ -165,7 +166,7 @@ def test_the_scan_finds_a_raw_nudge_a_raw_setting_key_and_a_raw_profile_name(tmp
 
 
 def raw_values_of(path: Path) -> list[str]:
-    return [f"{line} {value}" for line, text in literal_texts(ast.parse(path.read_text())) for value in raw_values(text, "tests/stories/sample.py")]
+    return [f"{line} {value}" for line, text in literal_texts(source_tree(path)) for value in raw_values(text, "tests/stories/sample.py")]
 
 
 def test_the_scan_finds_a_raw_setting_default_and_leaves_a_value_the_test_gives():

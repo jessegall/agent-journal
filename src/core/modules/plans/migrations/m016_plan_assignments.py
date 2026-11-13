@@ -10,9 +10,9 @@ PHASE_ASSIGNMENT = ("SELECT phase_rows.id FROM assignments AS phase_rows JOIN ph
 
 class PlanAssignmentsMigration(Migration):
     """Moves the agent a plan was assigned to from the plan's metadata into the assignments table, given by hand,
-    gives each phase of an assigned plan the plan's actor inherited from the plan, and marks a task of such a phase
-    that has the same actor as inherited from its phase. A task given to another actor stays given by hand, and a
-    plan assigned to an actor that no longer exists is left unassigned."""
+    gives each phase of an assigned plan the plan's actor inherited from the plan, and marks a task of such a
+    phase that has the same actor as inherited from its phase. A task given to another actor stays given by
+    hand, and a plan assigned to an actor that no longer exists is left unassigned."""
 
     number = 16
     statements = [

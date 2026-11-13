@@ -15,6 +15,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import D
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, unplanned_worker
 from tests.stories.suites.coding.modules.workers.worker_profiles import dispatched_brief
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
+from tests.stories.support.story_checks import expect_value, expect_value_4, expect_value_with, expect_value_without
 
 WORKER_COMMANDS = ("journal worker commit", "journal proof make", "journal task start")
 MERGER_COMMANDS = ("journal merger answer", "journal merger defer-test", "journal merger tell")
@@ -37,14 +38,14 @@ def test_76a_the_opening_text_of_a_worker_names_proof_start_and_commit_and_no_de
 
 def test_76b_the_workers_skill_names_proof_start_and_commit_and_no_deliver_group_or_batch_setting(new_story):
     text = skill_text("journal-workers")
-    assert all(command in text for command in WORKER_COMMANDS), text
-    assert not [word for word in ("deliver", "test-batch-size", "test-at-phase-end", "group") if word in text.lower()]
+    expect_value_4(all(command in text for command in WORKER_COMMANDS))
+    expect_value_4(not [word for word in ("deliver", "test-batch-size", "test-at-phase-end", "group") if word in text.lower()])
 
 
 def test_76c_every_step_text_is_in_plain_words_and_the_commit_step_has_one(new_story):
     texts = " ".join(part for text in STEP_TEXTS.values() for part in (text.outcome_text, text.action_text, text.next_text))
-    assert WorkerStep.COMMIT in STEP_TEXTS
-    assert not [word for word in ("group", "batch", "journal worker deliver", "hand in", "handed in") if word in texts.lower()], texts
+    expect_value_with(STEP_TEXTS, WorkerStep.COMMIT)
+    expect_value_4(not [word for word in ("group", "batch", "journal worker deliver", "hand in", "handed in") if word in texts.lower()])
 
 
 def test_76d_the_lines_a_worker_hears_at_a_failed_test_and_after_its_last_commit_say_commit_and_not_hand_in(new_story, monkeypatch):
@@ -60,9 +61,9 @@ def test_76d_the_lines_a_worker_hears_at_a_failed_test_and_after_its_last_commit
 
 def test_76e_the_workers_skill_keeps_what_happens_after_an_ask_and_the_merger_keeps_its_three_commands(new_story):
     merger_profile = next(profile for profile in HELPER_PROFILES if profile.name == f"{MERGER_PROFILE.name}")
-    assert ASK_SENTENCE in skill_text("journal-workers").lower()
-    assert all(command in skill_text(f"{MERGER_PROFILE.name}") for command in MERGER_COMMANDS)
-    assert all(command in merger_profile.body for command in MERGER_COMMANDS)
+    expect_value_with(skill_text("journal-workers").lower(), ASK_SENTENCE)
+    expect_value_4(all(command in skill_text(f"{MERGER_PROFILE.name}") for command in MERGER_COMMANDS))
+    expect_value_4(all(command in merger_profile.body for command in MERGER_COMMANDS))
 
 
 def test_204_the_old_name_worker_deliver_answers_with_the_command_that_took_its_place(new_story, monkeypatch):
@@ -74,13 +75,13 @@ def test_204_the_old_name_worker_deliver_answers_with_the_command_that_took_its_
 def test_207_no_setting_of_the_workers_says_batch_and_the_two_task_counts_say_what_they_count(new_story):
     titles = {setting.key: setting.title for setting in WORKER_SETTING_VALUES}
     worded = " ".join(f"{setting.title} {setting.description}" for setting in WORKER_SETTING_VALUES).lower()
-    assert "batch" not in worded
-    assert (titles["most-open-tasks"], titles["worker-batch-size"]) == ("Tasks a worker may hold started at once", "Tasks handed to a worker at once")
+    expect_value_without(worded, "batch")
+    expect_value((titles["most-open-tasks"], titles["worker-batch-size"]), ("Tasks a worker may hold started at once", "Tasks handed to a worker at once"))
 
 
 def test_209_the_profile_of_a_worker_says_proof_start_and_commit_and_the_planner_is_told_that_tests_run_at_a_checkpoint(new_story):
     profile_words = f"{PROFILE_WORKER_COMMANDS} {WORKER_RULES}"
     checkpoint_step = next(step for step in PLAN_BUILDING.steps if "--checkpoint" in step)
-    assert all(command in profile_words for command in WORKER_COMMANDS), profile_words
-    assert not [word for word in ("journal worker deliver", "end of its phase", "hand all in") if word in profile_words]
-    assert "tests run" in checkpoint_step, checkpoint_step
+    expect_value_4(all(command in profile_words for command in WORKER_COMMANDS))
+    expect_value_4(not [word for word in ("journal worker deliver", "end of its phase", "hand all in") if word in profile_words])
+    expect_value_with(checkpoint_step, "tests run")

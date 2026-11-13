@@ -24,6 +24,7 @@ from tests.stories.core.modules.plugins.support.plugin_samples import event_plug
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder, OpenTaskOrchestrator
 from tests.stories.server.support.story_line_route import StoryLineRoute
 from server.work.listeners.listener_thread import ListenerThread
+from tests.stories.core.support.fixtures import expect_person
 
 TASK_CREATED = "core.tasks.task.created"
 PIN_CREATED = "core.pins.pin.created"
@@ -59,7 +60,7 @@ class EventPluginStarted(StoryFixture):
         story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
 
     def expect(self, story: Story) -> None:
-        story.expect_success(f"actor show {story.user.id}", "type: user", "name: Ada")
+        expect_person(story)
 
 
 class EventWorkerStarted(StoryFixture):
@@ -71,7 +72,7 @@ class EventWorkerStarted(StoryFixture):
         story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
 
     def expect(self, story: Story) -> None:
-        story.expect_success(f"actor show {story.user.id}", "type: user", "name: Ada")
+        expect_person(story)
 
 
 def event_folder(story: Story, *entries: object, scripts: Mapping[str, str] | None = None, name: str = "events", version: str = "1.0.0", listen: object | None = None, **manifest: object) -> Path:

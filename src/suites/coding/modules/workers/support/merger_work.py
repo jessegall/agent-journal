@@ -12,9 +12,9 @@ UNREAD_LINES_REASON = "the merger reads every line it has not read and settled"
 
 class MergerWork:
     """What waits for the merger in the environment in scope: its unread lines, and the next worker it can merge,
-    one merge-ready or one whose merge ask waits. A worker that has ended while the main agent holds its question
-    waits for the main agent, not the merger: the merger could neither tell nor wake it. Starting the merger and
-    journal merger next ask the same."""
+    one merge-ready or one whose merge ask waits. A worker that has ended while the main agent holds its
+    question waits for the main agent, not the merger: the merger could neither tell nor wake it. Starting the
+    merger and journal merger next ask the same."""
 
     def __init__(self, queries: Queries, worktrees: WorktreeQuery, merge_ask: MergeAskSection, escalations: Escalations, agents: AgentRows) -> None:
         self.queries, self.worktrees, self.merge_ask = queries, worktrees, merge_ask

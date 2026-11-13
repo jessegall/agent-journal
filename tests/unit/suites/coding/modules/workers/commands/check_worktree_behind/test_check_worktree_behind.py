@@ -30,6 +30,9 @@ class Rows:
     def required(self, model: type, row_id: int) -> object:
         return worktree(row_id)
 
+    def required_index(self, model: type, row_ids) -> dict:
+        return {row_id: worktree(row_id) for row_id in row_ids}
+
 
 class Git:
     def __init__(self, behind: int, own_work: bool = False, forwards: bool = True) -> None:
@@ -174,7 +177,7 @@ class LookBus:
 
     def run(self, command, actor, environment_id=None):
         self.ran.append(command)
-        return ("the first line",) if isinstance(command, AnnounceBehindChecks) else None
+        return tuple(["the first line"]) if isinstance(command, AnnounceBehindChecks) else None
 
 
 class OpenScopes:

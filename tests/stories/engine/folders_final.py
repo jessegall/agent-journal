@@ -6,7 +6,7 @@ SOURCE = ROOT / "src"
 ERROR_FILE_ENDINGS = ("_error.py", "_refusal.py")
 NAMED_AS_ERRORS_BUT_NOT_ERRORS = {
     "src/core/modules/drivers/commands/skip_refusal/skip_refusal.py", "src/suites/coding/modules/workers/commands/record_worker_refusal/record_worker_refusal.py",
-    "src/server/viewer/door_refusal.py", "src/engine/log/recorded_refusal.py",
+    "src/server/door/door_refusal.py", "src/engine/log/recorded_refusal.py",
 }
 ENTRY_FILES_STARTED_BY_PATH = {"src/server/server.py", "src/install/working_tree_install.py"}
 TOPS_OF_FOLDERS = ("src/server", "src/install", "src/engine/testing", "src/core")

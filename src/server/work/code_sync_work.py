@@ -13,11 +13,10 @@ from server.work.round_work import RoundWork
 
 
 class CodeSyncWork(RoundWork):
-    """The first round as the server starts: when code changed, turns on auto vacuum for a database made before it,
-    runs the migrations and writes the registry, before any request is taken, so no hook, tick or listener reads a
-    table its code has outgrown. It runs
-    on a container with no bindings of the old registry, since a class that registry names may have moved. A
-    journal that was never synced stays for its install to sync."""
+    """The first round as the server starts: when code changed, turns on auto vacuum for a database made before
+    it, runs the migrations and writes the registry, before any request is taken, so no hook, tick or listener
+    reads a table its code has outgrown. It runs on a container with no bindings of the old registry, since a
+    class that registry names may have moved. A journal that was never synced stays for its install to sync."""
 
     def run(self, container: Container) -> None:
         row = RegistryTable(container.get(Database)).row()

@@ -26,8 +26,8 @@ TASK_OF_PLACE = ConditionJoin("tasks", condition=ColumnCompare("tasks.id", "=", 
 PLAN_ACTOR = assigned_actor("plan", "plans.id")
 
 
+# The places of the plan the outer row names.
 def plan_places() -> Select:
-    """The places of the plan the outer row names."""
     return Select("plan_tasks").matching(ColumnCompare("plan_tasks.plan_id", "=", "plans.id"))
 
 

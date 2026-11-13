@@ -41,6 +41,12 @@
                             "at": 0,
                             "text": "drivers.rule_failed"
                         }
+                    },
+                    {
+                        "argument": {
+                            "at": 0,
+                            "text": "drivers.agent_notice"
+                        }
                     }
                 ]
             }

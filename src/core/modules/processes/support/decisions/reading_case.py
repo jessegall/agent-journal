@@ -57,9 +57,9 @@ class ReadingCase:
         return (not self.category.has_reader or self.has_asking_flag or self.is_plugin_run or self.was_rejected
                 or self.is_short_success or self.is_no_sample)
 
+    # A run killed part way, or one that failed as it started, shows nothing a reader should read.
     @property
     def is_no_sample(self) -> bool:
-        """A run killed part way, or one that failed as it started, shows nothing a reader should read."""
         return self.output is not None and (self.output.was_cut_short or (self.output.start_crashed and self.exit_code not in (None, 0)))
 
     @property
@@ -80,10 +80,10 @@ class ReadingCase:
             return UnreadableReason.DECLARED
         return self.measured_unreadable_reason
 
+    # Why no reader can read this output, from its measures alone: sizes, newlines, NUL bytes, carriage returns and a
+    # prompt the run stopped growing on, never the words it printed.
     @property
     def measured_unreadable_reason(self) -> UnreadableReason | None:
-        """Why no reader can read this output, from its measures alone: sizes, newlines, NUL bytes, carriage returns
-        and a prompt the run stopped growing on, never the words it printed."""
         if self.moment is ReadingMoment.END:
             return OutputFacts.reason_at_end(self.output)
         return OutputFacts.measured_reason(self.output, self.cadence_state)

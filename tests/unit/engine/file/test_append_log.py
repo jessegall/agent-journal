@@ -12,9 +12,9 @@ def test_appended_lines_are_taken_only_on_the_round_after_they_were_moved_aside(
     assert log.taken_lines() == ()
     log.move_aside()
     log.append("two")
-    assert log.taken_lines() == ("one",)
+    assert log.taken_lines() == tuple(["one"])
     log.move_aside()
-    assert log.taken_lines() == ("two",)
+    assert log.taken_lines() == tuple(["two"])
 
 
 def test_a_round_writes_back_the_lines_it_did_not_finish_and_removes_the_rest(tmp_path):
@@ -22,10 +22,10 @@ def test_a_round_writes_back_the_lines_it_did_not_finish_and_removes_the_rest(tm
     log.append("one")
     log.append("two")
     log.move_aside()
-    log.replace_taken(("two",))
-    assert log.taken_lines() == ("two",)
+    log.replace_taken(tuple(["two"]))
+    assert log.taken_lines() == tuple(["two"])
     log.append("three")
-    log.move_aside(("two",))
+    log.move_aside(tuple(["two"]))
     assert log.taken_lines() == ("three", "two")
     log.move_aside()
     assert log.taken_lines() == () and not log.path.exists()

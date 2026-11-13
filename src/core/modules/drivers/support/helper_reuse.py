@@ -24,7 +24,7 @@ class HelperReuse:
         jobs = jobs.where_not_null("ended_at").where_not_null("helper_id").newest().take(NEWEST_JOBS)
         return next((job for job in jobs if PathMentions.overlap(paths, PathMentions.found(job.instruction))), None)
 
+    # Every main agent shares the jobs of the others; any other parent has only its own.
     def parents(self, parent_id: int) -> Query[Agent]:
-        """Every main agent shares the jobs of the others; any other parent has only its own."""
         agents = self.queries.query(Agent).select_columns("id")
         return agents.where(role=AgentRole.MAIN) if MainAgentFinder.is_main(self.queries, parent_id) else agents.where(id=parent_id)

@@ -6,6 +6,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.suites.coding.graphify_searches import graphify_enabled
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_value_with
 
 __all__ = ["graphify_enabled"]
 
@@ -38,7 +39,7 @@ def test_with_graphify_off_no_agent_must_load_the_graphify_skill(new_story):
 def test_the_skill_teaches_names_instead_of_questions_and_the_order_of_the_commands():
     text = SKILL.read_text()
     for needed in ("graphify query", "graphify explain", "graphify path", "2 to 4 names", "Not this"):
-        assert needed in text, needed
+        expect_value_with(text, needed)
 
 
 def test_a_session_start_also_removes_graphifys_check_hook_that_adds_a_line_to_every_tool_use(graphify_enabled):

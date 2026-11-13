@@ -1,6 +1,5 @@
 from collections.abc import Callable
 import socket
-import time
 from http.server import HTTPServer
 
 from server.handover.handover_descriptors import QUEUED_CONNECTIONS
@@ -11,6 +10,7 @@ from server.viewer.viewer_endpoint import ViewerEndpoint
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_request_handler import ViewerRequestHandler
 from server.viewer.viewer_routes import ViewerRoutes
+from engine.time.polled_wait import PolledWait
 
 VIEWER_ADDRESS = "127.0.0.1"
 PORT_WAIT_SECONDS = 10.0
@@ -29,17 +29,16 @@ class ViewerListener(ViewerEndpoint, HTTPServer):
 
     def __init__(self, login: ViewerLogin, routes: ViewerRoutes, tunnel_address: Callable[[], str | None], last_port: int = 0, port_wait_seconds: float = PORT_WAIT_SECONDS,
                  inherited_socket: socket.socket | None = None) -> None:
-        deadline = time.monotonic() + port_wait_seconds
-        while True:
-            try:
-                super().__init__((VIEWER_ADDRESS, last_port), ViewerRequestHandler, inherited_socket=inherited_socket)
-                break
-            except OSError:
-                if time.monotonic() >= deadline:
-                    super().__init__((VIEWER_ADDRESS, 0), ViewerRequestHandler)
-                    break
-                time.sleep(PORT_POLL_SECONDS)
+        if not PolledWait(port_wait_seconds, PORT_POLL_SECONDS).until(lambda: self.binds(last_port, inherited_socket)):
+            super().__init__((VIEWER_ADDRESS, 0), ViewerRequestHandler)
         self.attach(login, routes, LocalDoor(self.host, tunnel_address), LocalHeaders(), OpenDoors())
+
+    def binds(self, last_port: int, inherited_socket: socket.socket | None) -> bool:
+        try:
+            super().__init__((VIEWER_ADDRESS, last_port), ViewerRequestHandler, inherited_socket=inherited_socket)
+        except OSError:
+            return False
+        return True
 
     @property
     def port(self) -> int:

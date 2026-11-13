@@ -3,7 +3,7 @@ from pathlib import PurePosixPath
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
-from suites.coding.modules.workers.models.behind_facts import BehindFacts
+from suites.coding.modules.workers.support.behind_facts import BehindFacts
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.behind_checks import CHECKS_REASON

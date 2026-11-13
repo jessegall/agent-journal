@@ -1,4 +1,3 @@
-import time
 
 from engine.journal.journal_home import JournalHome
 from install.errors.server_wont_stop_error import ServerWontStopError
@@ -6,6 +5,7 @@ from engine.connection.unix_connection import UnixConnection
 from engine.serving.server_limits import DRAIN_LIMIT_SECONDS
 from engine.serving.server_files import ServerFiles
 from engine.process.leftover_process import POLL_SECONDS
+from engine.time.polled_wait import PolledWait
 
 SERVER_ABSENT = "no server running"
 STOPPED = "the server stopped"
@@ -22,11 +22,8 @@ class ServerStop:
     def stop(self, limit_seconds: float = DRAIN_LIMIT_SECONDS + STOP_MARGIN_SECONDS) -> str:
         if not self.posts_stop():
             return SERVER_ABSENT
-        deadline = time.monotonic() + limit_seconds
-        while not self.is_stopped():
-            if time.monotonic() >= deadline:
-                raise ServerWontStopError(f"the server did not stop in {limit_seconds:g} seconds")
-            time.sleep(POLL_SECONDS)
+        if not PolledWait(limit_seconds, POLL_SECONDS).until(self.is_stopped):
+            raise ServerWontStopError(f"the server did not stop in {limit_seconds:g} seconds")
         return STOPPED
 
     def posts_stop(self) -> bool:

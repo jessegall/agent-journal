@@ -257,7 +257,7 @@ def test_a_read_across_tables_is_read_again_after_a_write_to_any_of_them_in_the_
     with database.transaction():
         database.update(Statement("UPDATE places SET note_id = 2, version = 2 WHERE id = 1"))
         moved = kept.read_across(tables, loaded, name="note-places")
-    assert (first, moved) == ((1,), (2,))
+    assert (first, moved) == (tuple([1]), tuple([2]))
 
 
 def test_a_kept_read_is_keyed_by_the_query_itself(database):
@@ -269,7 +269,7 @@ def test_a_kept_read_is_keyed_by_the_query_itself(database):
         return kept.read(query, lambda: loads.append(text) or tuple(row[0] for row in database.rows(Statement("SELECT text FROM notes WHERE text = ?", [text]))),
                          name="notes.by_text")
 
-    assert (read_text("Saved"), read_text("Draft"), read_text("Saved")) == (("Saved",), ("Draft",), ("Saved",))
+    assert (read_text("Saved"), read_text("Draft"), read_text("Saved")) == (tuple(["Saved"]), tuple(["Draft"]), tuple(["Saved"]))
     assert loads == ["Saved", "Draft"]
 
 
@@ -299,7 +299,7 @@ def test_the_cache_text_cannot_differ_from_the_loader(database):
     def read_drafts() -> tuple[int, ...]:
         return kept.read(drafts, lambda: tuple(row[0] for row in database.rows(Statement("SELECT id FROM notes WHERE text = 'Draft' ORDER BY id"))), name="notes.drafts")
 
-    assert read_drafts() == (2,)
+    assert read_drafts() == tuple([2])
     database.update(Statement("UPDATE notes SET text = 'Draft', version = 2 WHERE id = 1"))
     assert read_drafts() == (1, 2)
 

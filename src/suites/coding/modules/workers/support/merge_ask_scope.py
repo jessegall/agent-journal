@@ -42,9 +42,9 @@ class MergeAskScope:
             raise Refusal(f"your worktree clashed with {worktree.base_branch}", "settle the conflict markers and commit first")
         waiting = self.queries.query(MergeAsk).filter(worktree_id=worktree.id, state=MergeAskState.WAITING).first()
         if waiting is not None:
-            raise Refusal(f"your ask {waiting.id} waits for the merge", "wait; you are told when it is merged")
+            raise Refusal(f"your ask {waiting.id} waits for the merge", "wait; you are informed when it is merged")
         if not note.strip():
-            raise Refusal("say what the merge holds", NOTE_HINT)
+            raise Refusal("write what the merge contains", NOTE_HINT)
         return part
 
     def part(self, worktree: Worktree, unit: WorkUnit, up_to: str) -> MergeAskPart:

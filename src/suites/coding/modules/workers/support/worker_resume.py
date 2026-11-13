@@ -46,6 +46,7 @@ from core.modules.helpers.support.agent_admission import AgentAdmission
 from pathlib import Path
 from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import ReportWorkerProgramRecovery
 from suites.coding.modules.workers.support.worker_instruction_files import WorkerInstructionFiles
+from suites.coding.modules.workers.support.worker_nudges import WORKER_PROGRAM_RESUMED
 
 ENTERED_LINES_REASON = "every line typed to the worker since its last hook may be the job it lost"
 
@@ -135,7 +136,7 @@ class WorkerResume:
         if answer is not Dispatch.STARTED:
             return answer
         stopped_at = worker.ended_at if worker.ended_at is not None else worker.creation_timestamp()
-        self.bus.run(ReportWorkerProgramRecovery(worker.id, stopped_at), Actor.core(), environment_id=worktree.environment_id)
+        self.bus.run(ReportWorkerProgramRecovery(worker.id, stopped_at, WORKER_PROGRAM_RESUMED.nudge(worker=worker.id)), Actor.core(), environment_id=worktree.environment_id)
         if self.requirement.is_required:
             worker_actor = Actor(worker.id, ActorType.AGENT)
             self.bus.run(ResetTaskReads(worker.id), worker_actor, environment_id=worktree.environment_id)

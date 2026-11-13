@@ -12,9 +12,10 @@ class StartNamesModelRule(DriverRule):
     always chosen (message 117983). A suite with starts of its own declares them on a rule of this class."""
 
     name = "helpers.start-names-model"
-    starts: tuple[str, ...] = ("helper start",)
+    single_action_refusal = "A helper or worker start that names no model is refused, naming the flag"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
+    starts: tuple[str, ...] = ("helper start",)
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None

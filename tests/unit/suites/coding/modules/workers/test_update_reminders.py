@@ -42,6 +42,9 @@ class Rows:
     def required(self, model: type, row_id: int):
         return WORKTREE if model.__name__ == "Worktree" else SimpleNamespace(paused_at=ORDERED_AT if self.paused else None, ended_at=None)
 
+    def required_index(self, model: type, row_ids) -> dict:
+        return {row_id: self.required(model, row_id) for row_id in row_ids}
+
 
 class Settings:
     def __init__(self, reminders: int) -> None:

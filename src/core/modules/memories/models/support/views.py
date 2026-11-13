@@ -25,8 +25,8 @@ def or_empty(select: Select) -> FunctionCall:
     return FunctionCall(SqlFunction.COALESCE, [ScalarSubselect(select), Literal("")])
 
 
+# The rows of a table of the agent a memory was delivered to.
 def delivered_agent_rows(table: str) -> Select:
-    """The rows of a table of the agent a memory was delivered to."""
     return Select(table).matching(ColumnCompare(f"{table}.session_agent_id", "=", "memory_deliveries.session_agent_id"))
 
 

@@ -21,8 +21,8 @@ class MessageCaptions:
     def adding(message: Message, file: str, text: str) -> str:
         return json.dumps({**json.loads(message.captions), file: text}, sort_keys=True)
 
+    # The attached pictures of the message that have no caption yet.
     @staticmethod
     def untagged_images(message: Message) -> tuple[str, ...]:
-        """The attached pictures of the message that have no caption yet."""
         captions = MessageCaptions.decoded(message)
         return tuple(name for name in message.files if PurePath(name).suffix.lower() in IMAGE_SUFFIXES and name not in captions)

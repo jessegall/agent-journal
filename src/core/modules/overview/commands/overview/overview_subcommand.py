@@ -24,9 +24,9 @@ class OverviewSubcommand(OverviewCommand, ReadSubcommand[OverviewPage]):
     def __init__(self, console: Console, values: SettingValues, blocks: OverviewBlocks) -> None:
         self.console, self.values, self.blocks = console, values, blocks
 
+    # While the journal holds the agent until it runs journal overview, a second read goes through, so it is never told
+    # it read the overview already while the journal still waits for it.
     def is_read_required(self, arguments: Namespace, caller: Caller) -> bool:
-        """While the journal holds the agent until it runs journal overview, a second read goes through, so it is
-        never told it read the overview already while the journal still waits for it."""
         return self.blocks.is_held(caller.actor.id)
 
     def arguments(self, parser: ArgumentParser) -> None:

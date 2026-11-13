@@ -1,12 +1,13 @@
 import ast
 from pathlib import Path
+from tests.unit.source_tree import source_tree
 
 TESTS_FOLDER = Path(__file__).resolve().parents[1]
 SLEEP_NAME = "sleep"
 
 
 def sleep_lines(path: Path) -> list[int]:
-    tree = ast.parse(path.read_text())
+    tree = source_tree(path)
     calls = [node for node in ast.walk(tree) if isinstance(node, ast.Call) and SLEEP_NAME in (getattr(node.func, "attr", ""), getattr(node.func, "id", ""))]
     scripts = [node for node in ast.walk(tree) if isinstance(node, ast.Constant) and isinstance(node.value, str) and "def test_" in node.value and f"{SLEEP_NAME}(" in node.value]
     return sorted(node.lineno for node in (*calls, *scripts))

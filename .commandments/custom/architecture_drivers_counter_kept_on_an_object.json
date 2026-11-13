@@ -29,13 +29,16 @@
             },
             {
                 "file": "**/src/server/**"
+            },
+            {
+                "file": "**/plugins/support/service_retries.py"
             }
         ]
     },
     "sin": {
         "name": "counter-kept-on-an-object",
         "description": "An object counts how often something happened in a field of its own. Each command line builds new objects, so the count is lost and the limit never comes.",
-        "rule": "Count with Countdowns.tick and a CountDown declaration: the count is kept in a row for the actor, and it can be silent, reset, or ended on a condition. Ticks, the database and the server's queue live in one long process and count no actor, so they are left out.",
+        "rule": "Count with Countdowns.tick and a CountDown declaration: the count is kept in a row for the actor, and it can be silent, reset, or ended on a condition. Ticks, the database, the server's queue and the retries of plugin services live in one long process and count no actor, so they are left out.",
         "skill": "plain-code-words"
     }
 }

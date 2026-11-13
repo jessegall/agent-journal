@@ -39,5 +39,5 @@ class ListHoldsSubcommand(ReadSubcommand[tuple[str, ...]]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, tuple):
-            for line in value or ("no hold",):
+            for line in value or tuple(["no hold"]):
                 output.line(line)

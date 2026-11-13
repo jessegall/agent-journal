@@ -5,7 +5,6 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from engine.driver.nudger import Nudger
 from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import ReportWorkerProgramRecovery
-from suites.coding.modules.workers.support.worker_nudges import WORKER_PROGRAM_RESUMED
 
 
 class ReportWorkerProgramRecoveryHandler(Handler[ReportWorkerProgramRecovery, None]):
@@ -23,5 +22,4 @@ class ReportWorkerProgramRecoveryHandler(Handler[ReportWorkerProgramRecovery, No
         notices = self.queries.query(AgentLine).filter(session_agent_id=worker.parent_id)
         if not notices.filter(source=command.waiting_source).exists() or notices.filter(source=f"{command.waiting_source}:back").exists():
             return
-        self.nudger.send(worker.parent_id, WORKER_PROGRAM_RESUMED, f"{command.waiting_source}:back", context,
-                         worker=worker.id)
+        self.nudger.send_nudge(worker.parent_id, command.notice, f"{command.waiting_source}:back", context)

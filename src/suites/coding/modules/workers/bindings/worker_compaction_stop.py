@@ -12,8 +12,8 @@ COMPACTED_ROLES = (AgentRole.MAIN, CodingHelperRole.WORKER)
 
 class WorkerCompactionStop(CompactionStop):
     """A main agent's or a worker's compaction is due once its context reaches the limit with no task to finish
-    first, and always past the second limit, where its tools are refused. Its stop then goes through and types the
-    compaction, unless its program compacts by its own window or a compaction is already asked for."""
+    first, and always past the second limit, where its tools are refused. Its stop then goes through and types
+    the compaction, unless its program compacts by its own window or a compaction is already asked for."""
 
     def __init__(self, limit_check: ContextLimitCheck) -> None:
         self.limit_check = limit_check

@@ -11,7 +11,7 @@ WINDOW_PERCENT = 8
 class Settings:
     def __init__(self, enabled: bool) -> None:
         self.values = {CONTEXT_LIMIT_ENABLED: enabled, CONTEXT_LIMIT_TOKENS: 400000,
-                       CONTEXT_LIMIT_KINDS: ("worker:300000", "main:none"), CONTEXT_LIMIT_PROFILES: ("journal-planner:150000",)}
+                       CONTEXT_LIMIT_KINDS: ("worker:300000", "main:none"), CONTEXT_LIMIT_PROFILES: tuple(["journal-planner:150000"])}
 
     def flag(self, key: str) -> bool:
         return bool(self.values[key])

@@ -37,8 +37,8 @@ def or_empty(expression: Expression) -> FunctionCall:
     return FunctionCall(SqlFunction.COALESCE, [expression, Literal("")])
 
 
+# The rows of a table that belong to the agent of the outer row by their session_agent_id.
 def agent_rows(table: str) -> Select:
-    """The rows of a table that belong to the agent of the outer row by their session_agent_id."""
     return Select(table).matching(ColumnCompare(f"{table}.session_agent_id", "=", "agents.id"))
 
 
@@ -50,8 +50,8 @@ def held_started_tasks() -> Select:
     return Select("tasks").matching(ColumnCompare("tasks.holder_id", "=", "agents.id")).matching(Equal("tasks.state", "started")).ordered("tasks.id", True).sliced(1, 0)
 
 
+# One part of the tasks an agent card lists, with its closed time as text and the part it belongs to.
 def listed_tasks(part: int, condition: Condition) -> Select:
-    """One part of the tasks an agent card lists, with its closed time as text and the part it belongs to."""
     return Select("tasks").selecting(*(Column(f"tasks.{name}") for name in LISTED_COLUMNS), Aliased(or_empty(Column("tasks.closed_at")), "closed_at"),
                                      Aliased(Literal(part), "part")).matching(condition)
 

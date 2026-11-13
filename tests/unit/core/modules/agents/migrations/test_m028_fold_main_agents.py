@@ -33,7 +33,7 @@ def database(tmp_path):
 def test_the_migration_folds_the_older_main_row_into_the_running_one_after_a_copy(database, tmp_path):
     FoldMainAgentsMigration().run(database)
     assert [tuple(row) for row in database.connection.execute("SELECT id, number FROM agents")] == [(2, 1)]
-    assert [tuple(row) for row in database.connection.execute("SELECT actor_id FROM memories ORDER BY id")] == [(2,), (2,)]
+    assert [tuple(row) for row in database.connection.execute("SELECT actor_id FROM memories ORDER BY id")] == [tuple([2]), tuple([2])]
     assert list((tmp_path / "backups-watch").glob("fold-*.db"))
 
 

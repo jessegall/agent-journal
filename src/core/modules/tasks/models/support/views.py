@@ -42,9 +42,9 @@ def or_zero(expression: Expression) -> FunctionCall:
     return FunctionCall(SqlFunction.COALESCE, [expression, Literal(0)])
 
 
+# Matches the agent named helper that works a task: its assigned actor, else its holder, and a main agent only when it
+# is assigned the task and nobody holds it.
 def task_helper_match() -> AllOf:
-    """Matches the agent named helper that works a task: its assigned actor, else its holder, and a main agent only
-    when it is assigned the task and nobody holds it."""
     task_agent = FunctionCall(SqlFunction.COALESCE, [TASK_ACTOR, Column("tasks.holder_id")])
     return AllOf([Comparison(Column("helper.id"), ComparisonOperator.EQUAL, task_agent),
                   AnyOf([Comparison(Column("helper.role"), ComparisonOperator.NOT_EQUAL, Literal("main")),
@@ -64,8 +64,8 @@ TASK_TAGS = Aliased(ScalarSubselect(Select("words").reading(ScalarSubselect(
     .selecting(JsonList(Column("word")))), "tags")
 
 
+# The rows of a select as one JSON list of objects.
 def json_rows(select: Select, fields: dict[str, Expression]) -> ScalarSubselect:
-    """The rows of a select as one JSON list of objects."""
     return ScalarSubselect(select.selecting(FunctionCall(SqlFunction.JSON_GROUP_ARRAY, [JsonObject(fields)])))
 
 

@@ -51,7 +51,7 @@ def test_a_failed_rebase_falls_back_to_a_merge_with_plain_markers(tmp_path):
     own(worktree).committed("cart.py", "TOTAL = 1\n", "Worker cart")
     repository.committed("cart.py", "TOTAL = 2\n", "Base cart")
     update = git().update(worktree)
-    assert (update.conflicts, update.stash_id) == (("cart.py",), "")
+    assert (update.conflicts, update.stash_id) == (tuple(["cart.py"]), "")
     assert "<<<<<<<" in text(worktree, "cart.py") and git().is_merging(worktree.folder)
 
 
@@ -72,7 +72,7 @@ def test_a_fallback_merge_that_conflicts_leaves_its_markers_and_keeps_the_change
     repository.committed("cart.py", "TOTAL = 2\n", "Base cart")
     (Path(worktree.folder) / "shop.py").write_text("SHOP = 2\n")
     update = git().update(worktree)
-    assert update.conflicts == ("cart.py",) and update.stash_id
+    assert update.conflicts == tuple(["cart.py"]) and update.stash_id
     assert not (Path(worktree.folder) / "shop.py").exists()
     assert update.stash_id in own(worktree).git("stash", "list", "--format=%H").stdout
 

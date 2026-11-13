@@ -105,6 +105,18 @@
                 }
             },
             {
+                "body": {
+                    "all": [
+                        {
+                            "is": "function"
+                        },
+                        {
+                            "name": "prepare"
+                        }
+                    ]
+                }
+            },
+            {
                 "testCode": true
             }
         ]
@@ -112,7 +124,7 @@
     "sin": {
         "name": "handler-repeats-outside-work",
         "description": "A handler, save listener, deletion listener or guard does work outside the database inside a transaction that can roll back and run again.",
-        "rule": "A command can run again after a rollback, so do this work in prepare or a commit listener, or set runs_once.",
+        "rule": "A command can run again after a rollback, so do this work in prepare or a commit listener, or set runs_once. A handler that declares prepare is taken to do that work there.",
         "skill": "plain-code-words"
     }
 }

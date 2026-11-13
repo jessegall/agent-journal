@@ -112,7 +112,7 @@ def test_the_merger_orders_the_update_with_who_and_why_and_the_worker_is_woken_w
     assert (check.state, check.decided_by, check.reason, visits.closed) == (State.ORDERED, MERGER, "cart.py is changed on both sides", 1)
     worker, declaration, fields = nudger.sent[0]
     assert (worker, declaration, fields) == (WORKER, UPDATE_ORDERED, {"count": 4})
-    assert "Run journal worker update when you are at a stopping point." in UPDATE_ORDERED.nudge(**fields).text
+    assert UPDATE_ORDERED.nudge(**fields).text.startswith(f"Your base branch moved {fields['count']} commits")
 
 
 def test_the_main_agent_may_order_after_a_pass_and_another_agent_is_refused():

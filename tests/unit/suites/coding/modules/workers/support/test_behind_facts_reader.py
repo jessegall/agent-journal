@@ -43,12 +43,12 @@ def facts(tmp_path, worker_files: dict[str, str], base_files: dict[str, str], un
 
 def test_a_file_both_changed_is_the_overlap_with_the_lines_the_base_changed_in_it(tmp_path):
     read = facts(tmp_path, {"cart.py": "TOTAL = 1\n"}, {"cart.py": "TOTAL = 2\nTAX = 3\n"})
-    assert (read.behind, read.overlap, read.overlap_lines, read.program, read.model) == (1, ("cart.py",), 3, "claude", "sonnet")
+    assert (read.behind, read.overlap, read.overlap_lines, read.program, read.model) == (1, tuple(["cart.py"]), 3, "claude", "sonnet")
 
 
 def test_a_base_file_in_a_worker_folder_is_listed_apart_and_never_counted_as_overlap(tmp_path):
     read = facts(tmp_path, {"shop/cart.py": "A = 1\n"}, {"shop/tax.py": "B = 1\n", "docs/readme.md": "C\n"})
-    assert (read.overlap, read.same_folder, read.overlap_lines) == ((), ("shop/tax.py",), 0)
+    assert (read.overlap, read.same_folder, read.overlap_lines) == ((), tuple(["shop/tax.py"]), 0)
 
 
 def test_uncommitted_work_is_flagged(tmp_path):

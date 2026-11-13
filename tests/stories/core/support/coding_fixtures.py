@@ -104,7 +104,7 @@ class UserBuilder(StoryFixture):
         story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
 
     def expect(self, story) -> None:
-        story.expect_success(f"actor show {story.user.id}", "type: user", "name: Ada")
+        expect_person(story)
 
 
 class BriefedTaskBuilder(StoryFixture):

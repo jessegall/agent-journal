@@ -18,15 +18,15 @@ RUNS_COMPARED = 2
 
 class UnreadableMarker:
     """Marks a command unreadable at the end of a run when this run and the run of the same command before it
-    gave the same measured reason, and lifts the mark when a marked command printed readable lines on two ended
-    runs in a row since it was marked. It goes by measures only, never by the words a run printed."""
+    gave the same measured reason, and lifts the mark when a marked command printed readable lines on two
+    ended runs in a row since it was marked. It goes by measures only, never by the words a run printed."""
 
     def __init__(self, facts: ReadingFacts, decisions: ReadingDecisionQuery, marks: UnreadableMarks, rows: EventRows, outputs: OutputQuery,
                  parts: ProcessPartQuery) -> None:
         self.facts, self.decisions, self.marks, self.rows, self.outputs, self.parts = facts, decisions, marks, rows, outputs, parts
 
+    # The marks made or lifted for the commands of a run, each command once, by its first part.
     def changes(self, process: Process, parts: tuple[ProcessPart, ...], context: Context) -> tuple[UnreadableMark, ...]:
-        """The marks made or lifted for the commands of a run, each command once, by its first part."""
         commands = {SilentStartRuns.name(part.text, part.program, part.category): part for part in reversed(parts) if part.category.has_reader}
         return tuple(change for command_key, part in commands.items() for change in self.part_changes(process, command_key, part, context))
 
@@ -42,8 +42,8 @@ class UnreadableMarker:
             return tuple([self.marks.lift(mark.words, CORE_ACTOR_ID, context)])
         return ()
 
+    # The part of the run of the same command that ended before this one, while its output is kept.
     def previous_run(self, process: Process, command_key: str) -> tuple[Process, ProcessPart] | None:
-        """The part of the run of the same command that ended before this one, while its output is kept."""
         rows = self.decisions.for_command_key(command_key).filter(moment=ReadingMoment.END).descending("decided_at", "id").take(RUNS_COMPARED)
         row = next((row for row in rows if row.process_id != process.id), None)
         if row is None:

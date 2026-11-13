@@ -44,7 +44,7 @@ class PlanBoardSubcommand(ReadSubcommand[PlanBoard]):
     def read(self, arguments: Namespace, caller: Caller) -> PlanBoard:
         plans = self.queries.query(PlanCard)
         opened, closed = plans.matching(Among("state", self.open_states())), plans.matching(Among("state", CLOSED_STATES))
-        started = plans.matching(Among("state", (PlanState.STARTED,)))
+        started = plans.matching(Among("state", tuple([PlanState.STARTED])))
         if arguments.started:
             return PlanBoard(opened.count(), started.count(), closed.count(), tuple(started.descending("changed_at", "id").take(arguments.limit)))
         shown = closed if arguments.closed else opened

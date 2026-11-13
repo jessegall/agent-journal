@@ -82,7 +82,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
         running, limit = len(self.places.running()), self.places.run_limit()
         if command.task_ids and running > limit:
             raise Refusal(f"{running} workers run and the running limit is {limit}: no worker takes new tasks until fewer run",
-                          "send instructions about the work it holds without --task, or wait for a merge or a stop")
+                          "send instructions about its current work without --task, or wait for a merge or a stop")
 
     def check_session(self, worker: Agent) -> None:
         if worker.ended_at is not None:

@@ -16,6 +16,6 @@ class AgentRunPauses(RunPauses):
 
     def owners(self, run: PlacedRun) -> tuple[Agent, ...]:
         if run.agent_id is not None:
-            return (self.agents.find_unscoped(run.agent_id),)
+            return tuple([self.agents.find_unscoped(run.agent_id)])
         main = self.agents.environment_main_agent(run.environment_id) if run.is_main_agent and run.environment_id is not None else None
-        return () if main is None else (main,)
+        return () if main is None else tuple([main])

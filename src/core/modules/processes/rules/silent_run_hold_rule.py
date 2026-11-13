@@ -15,6 +15,7 @@ class SilentRunHoldRule(DriverRule):
     journal commands through."""
 
     name = "processes.silent-run-hold"
+    single_action_refusal = "A tool is refused while a silent run is held, naming the run and its exits; the hold keeps its own rule"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
 

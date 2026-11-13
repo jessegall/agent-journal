@@ -58,7 +58,7 @@ class RequestLogImport:
     @classmethod
     def written_alone(cls, container: Container, group: tuple[RequestLogEntry, ...], failure: Exception) -> tuple[RequestLogEntry, ...]:
         if len(group) > 1:
-            return tuple(kept for entry in group for kept in cls.written_group(container, (entry,)))
+            return tuple(kept for entry in group for kept in cls.written_group(container, tuple([entry])))
         container.get(ErrorLog).recorded(["request-log", f"environment {group[0].environment_id}"], failure, None)
         return ()
 

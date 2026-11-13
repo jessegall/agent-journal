@@ -9,6 +9,7 @@ from tests.stories.suites.coding.modules.workers.support.work_setting_stories im
 from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND
 from suites.coding.modules.workers.support.worker_settings import PROJECT_TEST_COMMAND
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
+from tests.stories.suites.coding.modules.workers.support.phase_steps import expect_task_states
 
 THREE_TASKS = 3
 TWO_POINT_BRIEF = 'task edit 1 --brief "- the total adds the tax\n- the total rounds to cents"'
@@ -21,11 +22,6 @@ def commit(worker: StoryWorker) -> StoryWorker:
     worker.story.run(COMMIT, actor=worker.worker)
     worker.story.run_listeners()
     return worker
-
-
-def expect_task_states(worker: StoryWorker, state: str, *task_ids: int) -> None:
-    for task_id in task_ids:
-        worker.story.expect_text(f"task show {task_id}", f"state: {state}", actor=worker.story.agent)
 
 
 def expect_proof_states(worker: StoryWorker, state: str, *proof_ids: int) -> None:

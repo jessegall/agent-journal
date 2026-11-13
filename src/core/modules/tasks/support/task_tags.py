@@ -5,6 +5,7 @@ from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_tag import TaskTag
+from engine.query.conditions.among import Among
 
 
 class TaskTags:
@@ -14,8 +15,9 @@ class TaskTags:
         self.queries, self.repository = queries, repository
 
     def add(self, task: Task, tags: Sequence[str], context: Context) -> None:
+        held = set(self.queries.query(TaskTag).filter(task_id=task.id).matching(Among("word", list(tags))).pluck("word", str)) if tags else set()
         for word in dict.fromkeys(tags):
-            if self.queries.query(TaskTag).filter(task_id=task.id, word=word).exists():
+            if word in held:
                 continue
             self.repository.save(TaskTag(task_id=task.id, word=word, creator_id=context.actor.id), context)
 

@@ -15,9 +15,9 @@ from suites.coding.modules.workers.support.merge_hooks import MergeHooks
 
 
 class MergeHooksListener(CommitListener[Moved[Worktree]]):
-    """After a worker is merged, runs the merge hooks of its profile in the checkout it was merged into, each as a
-    process of its own after the merge committed, so whatever a hook writes is its own change. A hook that fails
-    is told to the main agent; the merge stands."""
+    """After a worker is merged, runs the merge hooks of its profile in the checkout it was merged into, each as
+    a process of its own after the merge committed, so whatever a hook writes is its own change. A hook that
+    fails is told to the main agent; the merge stands."""
 
     name = "workers.merge-hooks"
     moves = [WorktreeLifecycle.merge]

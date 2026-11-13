@@ -198,8 +198,8 @@ class Story:
     def row(self, model: type[M], row_id: int) -> M:
         return self.container.get(Queries).query(model).find(row_id)
 
+    # The default a module declares for a setting, so a story counts from it and a new default breaks no story.
     def setting_default(self, key: str) -> SettingDefault:
-        """The default a module declares for a setting, so a story counts from it and a new default breaks no story."""
         return SettingReader.default(self.container.get(SettingCatalogue).value(key))
 
     def number_default(self, key: str) -> int:
@@ -281,11 +281,10 @@ class Story:
         reply = self.hook(session, sample)
         self.expected(holds_text(reply.refusal, reason), f"the hook's refusal {reply.refusal!r} does not say {reason!r}")
 
+    # The line of the story's own test function that led to a check, through any helper it called, so two stories check
+    # the same thing when they check it from the same line; a check made outside a test function keeps its subject.
     @staticmethod
     def story_line(subject: str) -> str:
-        """The line of the story's own test function that led to a check, through any helper it called, so
-        two stories check the same thing when they check it from the same line; a check made outside a test
-        function keeps its subject."""
         frame = sys._getframe(2)
         while frame is not None and not frame.f_code.co_name.startswith("test_"):
             frame = frame.f_back
@@ -293,9 +292,9 @@ class Story:
             return subject
         return linecache.getline(frame.f_code.co_filename, frame.f_lineno).strip()
 
+    # Keeps what a check reads, its numbers left out, so the overlap check can tell stories that check the same thing
+    # from stories that check wholly different things.
     def checked(self, subject: str) -> None:
-        """Keeps what a check reads, its numbers left out, so the overlap check can tell stories that check the
-        same thing from stories that check wholly different things."""
         self.checks.append(re.sub(r"\d+", "N", Story.story_line(subject)))
 
     def expected(self, passed: bool, message: str) -> None:

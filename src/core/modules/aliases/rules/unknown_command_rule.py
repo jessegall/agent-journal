@@ -8,7 +8,7 @@ from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.processes.models.enums.reading_exit import ReadingExit
 from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
 
-UNCLASSIFIED_HINT = f"{ExitTexts.sentences((ReadingExit.CLASSIFY,))}, process when no type fits"
+UNCLASSIFIED_HINT = f"{ExitTexts.sentences(tuple([ReadingExit.CLASSIFY]))}, process when no type fits"
 
 
 class UnknownCommandRule(DriverRule):

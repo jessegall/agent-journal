@@ -26,9 +26,9 @@ class ReferenceRewrite:
         found = self.database.rows(Statement(f'SELECT * FROM "{table}" WHERE "{column}" = ?', [value], scan_reason=SCHEMA_REASON))
         return [dict(row) for row in found]
 
+    # Turns the foreign key checks off while a fold moves rows between ids, and on again after.
     @contextmanager
     def without_foreign_keys(self) -> Iterator[None]:
-        """Turns the foreign key checks off while a fold moves rows between ids, and on again after."""
         self.database.update(Statement("PRAGMA foreign_keys = OFF"))
         try:
             yield

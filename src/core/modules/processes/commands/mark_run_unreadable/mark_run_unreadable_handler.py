@@ -25,6 +25,6 @@ class MarkRunUnreadableHandler(Handler[MarkRunUnreadable, UnreadableMark]):
     def handle(self, command: MarkRunUnreadable, context: Context) -> UnreadableMark:
         process = self.rows.required(Process, command.process_id)
         mark = self.marks.mark(context.actor.id, self.words.words(process), UnreadableReason.DECLARED, "", context)
-        for nudge in ReadingNotices.mark_nudges(process, (mark,)):
+        for nudge in ReadingNotices.mark_nudges(process, tuple([mark])):
             self.nudger.send_nudge(process.session_agent_id, nudge, SOURCE, context)
         return mark

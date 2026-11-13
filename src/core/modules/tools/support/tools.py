@@ -10,7 +10,8 @@ from core.modules.tools.support.tool_status import ToolStatus
 
 class Tools:
     """What the commands and the Tools page do with the supported tools: a card of each, turning one on or off
-    through its managed hooks, installing it and refreshing its output, each through the runner its suite binds."""
+    through its managed hooks, installing it and refreshing its output, each through the runner its suite
+    binds."""
 
     def __init__(self, catalogue: ToolCatalogue, hooks: ToolHooks, home: JournalHome) -> None:
         self.catalogue, self.hooks, self.home = catalogue, hooks, home
@@ -41,8 +42,8 @@ class Tools:
     def tick(self, name: str, folder: str) -> ToolStatus:
         return self.catalogue.runner(name).tick(Path(folder) if folder else self.home.project_folder)
 
+    # Copies into a new checkout what each tool that is on needs of its output, and names the folders written.
     def worktree_outputs(self, source: str, folder: str) -> list[str]:
-        """Copies into a new checkout what each tool that is on needs of its output, and names the folders written."""
         if not Path(folder).is_dir():
             return []
         return [name for tool in self.catalogue.all() if self.hooks.enabled(tool) for name in self.catalogue.runner(tool.name).copy_output(Path(source), Path(folder))]

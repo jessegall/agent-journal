@@ -15,8 +15,8 @@ SETTLED_OUTCOMES = (AskOutcome.ANSWERED, AskOutcome.FIXED, AskOutcome.MOOT)
 
 class Escalations:
     """Whether the main agent already has a worker's question. It has one from the moment a question of the
-    worker was forwarded until the main agent writes to the worker, a later question of the worker is answered,
-    fixed or moot, or the worker's worktree is closed."""
+    worker was forwarded until the main agent writes to the worker, a later question of the worker is
+    answered, fixed or moot, or the worker's worktree is closed."""
 
     def __init__(self, queries: Queries, worktrees: WorktreeQuery) -> None:
         self.queries, self.worktrees = queries, worktrees

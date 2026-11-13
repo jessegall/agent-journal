@@ -29,7 +29,7 @@ def agent(agent_id: int, environment_id: int, number: int) -> SimpleNamespace:
     return SimpleNamespace(id=agent_id, environment_id=environment_id, number=number)
 
 
-FOLDS = (EnvironmentFold(1, agent(3, 1, 3), (agent(1, 1, 1), agent(2, 1, 2))), EnvironmentFold(2, agent(5, 2, 5), (agent(4, 2, 4),)))
+FOLDS = (EnvironmentFold(1, agent(3, 1, 3), (agent(1, 1, 1), agent(2, 1, 2))), EnvironmentFold(2, agent(5, 2, 5), tuple([agent(4, 2, 4)])))
 
 
 @pytest.fixture
@@ -43,7 +43,7 @@ def connection():
 def test_every_reference_moves_to_the_survivor_and_the_folded_rows_go(connection):
     MainFold(Database.configured(connection)).run(FOLDS, FOLDED_AT)
     assert [tuple(row) for row in connection.execute("SELECT id, number FROM agents ORDER BY id")] == [(3, 1), (5, 1)]
-    assert [tuple(row) for row in connection.execute("SELECT session_agent_id FROM agent_sessions ORDER BY id")] == [(3,), (3,), (5,)]
+    assert [tuple(row) for row in connection.execute("SELECT session_agent_id FROM agent_sessions ORDER BY id")] == [tuple([3]), tuple([3]), tuple([5])]
     assert [tuple(row) for row in connection.execute("SELECT actor_id, weight FROM memories ORDER BY id")] == [(3, 7), (3, 3), (3, 5), (5, 2), (5, 9)]
 
 

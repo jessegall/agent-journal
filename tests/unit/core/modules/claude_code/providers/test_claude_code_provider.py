@@ -135,15 +135,15 @@ def test_a_helper_command_carries_the_journal_settings_and_the_project_source(pr
     assert arguments[1:7] == SETTINGS
 
 
-@pytest.mark.parametrize("given", [("--settings", "/tmp/mine.json"), ("--settings=/tmp/mine.json",)])
+@pytest.mark.parametrize("given", [("--settings", "/tmp/mine.json"), tuple(["--settings=/tmp/mine.json"])])
 def test_a_person_settings_flag_is_refused(provider, given):
-    with pytest.raises(Refusal, match="the journal launches Claude Code on its own settings; --settings and --setting-sources cannot be given"):
+    with pytest.raises(Refusal, match="the journal launches Claude Code on its own settings; --settings and --setting-sources cannot be passed"):
         provider.session_command(Launch(ROOT, FOLDER, "opus", "launch-1", SessionStart("s-1"), VARIABLES, program_arguments=given))
 
 
-@pytest.mark.parametrize("given", [("--setting-sources", "user,project"), ("--setting-sources=user",)])
+@pytest.mark.parametrize("given", [("--setting-sources", "user,project"), tuple(["--setting-sources=user"])])
 def test_a_person_setting_sources_flag_is_refused(provider, given):
-    with pytest.raises(Refusal, match="--settings and --setting-sources cannot be given") as refusal:
+    with pytest.raises(Refusal, match="--settings and --setting-sources cannot be passed") as refusal:
         provider.session_command(Launch(ROOT, FOLDER, "opus", "launch-1", SessionStart("s-1"), VARIABLES, program_arguments=given))
     assert refusal.value.suggestion == "launch without them: the journal writes the settings itself"
 

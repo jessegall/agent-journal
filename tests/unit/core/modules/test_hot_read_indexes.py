@@ -20,7 +20,7 @@ def database(tmp_path):
 
 
 @pytest.mark.parametrize("statement,index", [
-    (Select("tasks").matching(Greater("closed_at", "2026-11-01")).matching(Equal("environment_id", 1)).counts_after_statement("closed_at", ("2026-11-01",)), "tasks_environment_closed"),
+    (Select("tasks").matching(Greater("closed_at", "2026-11-01")).matching(Equal("environment_id", 1)).counts_after_statement("closed_at", tuple(["2026-11-01"])), "tasks_environment_closed"),
     (Statement("SELECT * FROM plugin_queue_files WHERE plugin_id = ? AND name = ?", (1, "card.json")), "plugin_queue_files_plugin_name"),
     (Statement("SELECT * FROM checks WHERE removed_at IS NULL AND task_wait_id > ?", [0]), "checks_open_task_wait"),
     (Statement("SELECT id FROM agents WHERE role <> ?", ["main"]), "agents_role"),

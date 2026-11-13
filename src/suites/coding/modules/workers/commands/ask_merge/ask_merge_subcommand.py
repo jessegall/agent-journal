@@ -23,7 +23,7 @@ class AskMergeSubcommand(Subcommand[AskMerge, MergeAskOutcome]):
         self.queries = queries
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("note", help="what the merge holds, what you changed from the briefs and what you could not check")
+        parser.add_argument("note", help="what the merge contains, what you changed from the briefs and what you could not check")
         parser.add_argument("--up-to", default="", help="a committed task or commit: ask for the merge of your work up to it and go on")
 
     def command(self, arguments: Namespace, caller: Caller) -> AskMerge:

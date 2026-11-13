@@ -2,7 +2,6 @@ import json
 from pathlib import Path
 
 from engine.agent.agent_checkouts import AgentCheckouts
-from engine.enums.agent_role import AgentRole
 from engine.checkout.checkout_file import CheckoutFile
 from engine.enums.event_form import EventForm
 from engine.command.bus import Bus
@@ -27,8 +26,8 @@ class DeliverFileEditHandler(Handler[DeliverFileEdit, None]):
         self.runnable, self.queries, self.bus, self.checkouts = runnable, queries, bus, checkouts
 
     def handle(self, command: DeliverFileEdit, context: Context) -> None:
-        role = self.queries.query(Agent).find(command.agent_id).role
-        receivers = [runnable for runnable in self.runnable.running() if FILE_EDITED in runnable.manifest.event_names and (role == AgentRole.MAIN or runnable.manifest.reaches_role(FILE_EDITED, role))]
+        agent = self.queries.query(Agent).find(command.agent_id)
+        receivers = [runnable for runnable in self.runnable.running() if FILE_EDITED in runnable.manifest.event_names and (agent.is_main or runnable.manifest.reaches_role(FILE_EDITED, agent.role))]
         if not receivers:
             return
         file_path = Path(command.folder) / command.path

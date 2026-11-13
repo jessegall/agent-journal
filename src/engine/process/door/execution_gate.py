@@ -13,10 +13,11 @@ PAUSED_AGENT_HELP = "answer in the chat, and run it again once you are resumed"
 
 
 class ExecutionGate:
-    """Holds the door while the server starts or updates, and shuts it to an agent that is paused. A run waits until
-    the server is ready, at most a short safety limit; a run asked for inside a write is refused at once instead,
-    since its wait would hold the write lock the update waits for. A run that takes a place in the queue for a paused
-    agent is refused; a quick run or a read still passes, so the agent can look things up and answer in the chat."""
+    """Holds the door while the server starts or updates, and shuts it to an agent that is paused. A run waits
+    until the server is ready, at most a short safety limit; a run asked for inside a write is refused at once
+    instead, since its wait would hold the write lock the update waits for. A run that takes a place in the
+    queue for a paused agent is refused; a quick run or a read still passes, so the agent can look things up
+    and answer in the chat."""
 
     def __init__(self, home: JournalHome, database: Database, pauses: RunPauses) -> None:
         self.home, self.database, self.pauses = home, database, pauses
@@ -28,5 +29,5 @@ class ExecutionGate:
         if files.phase().runs_programs:
             return True
         if self.database.has_transaction:
-            raise Refusal("the journal is updating, so this run inside a write cannot wait for it", "run it again once the journal says it started")
+            raise Refusal("the journal is updating, so this run inside a write cannot wait for it", "run it again once the journal reports it started")
         return PolledWait(PAUSE_LIMIT_SECONDS, PAUSE_LOOK_SECONDS).until(lambda: files.phase().runs_programs)

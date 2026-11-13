@@ -12,9 +12,9 @@ ALLOWED_PATHS = {
     "architecture_workers_worktree_delivered_outside_commit_and_merge_request": ("src/suites/coding/modules/workers/commands/commit_worker_work/commit_worker_work_handler.py",
                                                                                  "src/suites/coding/modules/workers/commands/ask_merge/ask_merge_handler.py"),
     "architecture_workers_merge_request_row_built_outside_its_scope": ("src/suites/coding/modules/workers/support/merge_ask_scope.py", "src/suites/coding/modules/workers/commands/ask_merge"),
-    "architecture_workers_worker_run_started_outside_start_worker_runs": ("src/suites/coding/modules/workers/commands/start_worker_runs",),
-    "architecture_plans_checkpoint_reach_flag_read": ("src/core/modules/plans/models/checkpoint_reach.py",),
-    "architecture_workers_delivery_command_in_a_text": ("src/suites/coding/modules/workers/commands/commit_worker_work/deliver_worker_work_subcommand.py",),
+    "architecture_workers_worker_run_started_outside_start_worker_runs": tuple(["src/suites/coding/modules/workers/commands/start_worker_runs"]),
+    "architecture_plans_checkpoint_reach_flag_read": tuple(["src/core/modules/plans/models/checkpoint_reach.py"]),
+    "architecture_workers_delivery_command_in_a_text": tuple(["src/suites/coding/modules/workers/commands/commit_worker_work/deliver_worker_work_subcommand.py"]),
 }
 SKILLS = ("workers-architecture", "views-architecture", "plain-code-words")
 SAMPLE = (CUSTOM / "samples" / "workers" / "worker_unit.py").read_text()
