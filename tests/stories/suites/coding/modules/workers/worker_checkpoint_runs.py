@@ -23,7 +23,7 @@ def plan_worker(new_story, monkeypatch) -> StoryWorker:
 
 
 def worker_reaches(worker: StoryWorker) -> list[dict[str, object]]:
-    return [row for row in rows(worker, REACHES) if row["source"] == "worker"]
+    return [row for row in rows(worker, REACHES) if row["source"] == "agent_commit"]
 
 
 @pytest.fixture

@@ -12,8 +12,8 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_value
 
-ALIAS = "journal build-npm --tail 5"
-ALIAS_START = HookSamples.shell(ALIAS, ShellPart("journal", CommandCategory.BUILD, ["build-npm", "--tail", "5"]))
+ALIAS = "./build.sh"
+ALIAS_START = HookSamples.shell(ALIAS, ShellPart("./build.sh", CommandCategory.BUILD, []))
 GOLANG_TESTS = "go test ./..."
 GOLANG_START = HookSamples.shell(GOLANG_TESTS, ShellPart("go", CommandCategory.TEST_RUN, ["test", "./..."]))
 GOLANG_OUTPUT = "=== RUN   TestCart\n--- PASS: TestCart (30.00s)\n=== RUN   TestTotal\n--- PASS: TestTotal (40.00s)\nok  \tcart\t70.0s\n"
@@ -89,7 +89,7 @@ def test_the_first_silent_run_is_taught_at_the_next_start_with_the_shape_found(n
     story = new_story(fixture=BuildStarted)
     finish_build(story, 1, GOLANG_OUTPUT)
     lines = read_lines(story, ALIAS_START)
-    for text in ("journal build-npm ran 70 seconds and showed no percent in the chat", "line shape --- PASS:/--- FAIL:", "states no total, so the command must print one first", "never wait for the run to end"):
+    for text in ("./build.sh ran 70 seconds and showed no percent in the chat", "line shape --- PASS:/--- FAIL:", "states no total, so the command must print one first", "never wait for the run to end"):
         expect_value(bool(any(text in line for line in lines)), True)
 
 
@@ -116,7 +116,7 @@ def test_a_reader_made_since_the_second_silent_run_lifts_the_refusal(new_story):
     story = new_story(fixture=SecondBuildStarted)
     finish_build(story, 2, GOLANG_OUTPUT, seconds=73)
     story.expect_hook_refusal("s-1", ALIAS_START, "ran silent twice")
-    story.expect_success('reader add build-npm --commands "journal build-npm*" --lines "PASS" --progress "\\[([0-9]+)/([0-9]+)\\]"', actor=story.agent)
+    story.expect_success('reader add build-npm --commands "./build.sh*" --lines "PASS" --progress "\\[([0-9]+)/([0-9]+)\\]"', actor=story.agent)
     story.expect_hook_allowed("s-1", ALIAS_START)
 
 
@@ -131,7 +131,7 @@ def test_a_redirected_run_with_no_output_counts_silent(new_story):
 def test_a_run_that_printed_lines_with_no_percent_counts_silent(new_story):
     story = new_story(fixture=BuildStarted)
     finish_build(story, 1, "compiling\ncompiling\n", seconds=76)
-    expect_line(story, ALIAS_START, "journal build-npm ran 76 seconds and showed no percent")
+    expect_line(story, ALIAS_START, "./build.sh ran 76 seconds and showed no percent")
 
 
 def test_a_short_run_is_never_silent(new_story):
@@ -142,11 +142,11 @@ def test_a_short_run_is_never_silent(new_story):
 
 def test_a_run_that_shows_a_percent_is_told_once_that_progress_shows(new_story):
     story = new_story(fixture=FirstSilentBuild)
-    story.expect_success('reader add build-npm --commands "journal build-npm*" --lines "compiling" --title "Building" --summary "compiling" --count "\\[[0-9]+/([0-9]+)\\]" --progress "\\[([0-9]+)/([0-9]+)\\]"', actor=story.agent)
+    story.expect_success('reader add build-npm --commands "./build.sh*" --lines "compiling" --title "Building" --summary "compiling" --count "\\[[0-9]+/([0-9]+)\\]" --progress "\\[([0-9]+)/([0-9]+)\\]"', actor=story.agent)
     process = started_run(story, ALIAS, CommandCategory.BUILD)
     story.advance(timedelta(seconds=70))
     end_run(story, story.container.get(ProcessQuery).find(process.id), PERCENT_OUTPUT)
-    expect_line(story, ALIAS_START, "journal build-npm now shows its progress in the chat")
+    expect_line(story, ALIAS_START, "./build.sh now shows its progress in the chat")
     repeated = started_run(story, ALIAS, CommandCategory.BUILD)
     story.advance(timedelta(seconds=70))
     end_run(story, story.container.get(ProcessQuery).find(repeated.id), PERCENT_OUTPUT)

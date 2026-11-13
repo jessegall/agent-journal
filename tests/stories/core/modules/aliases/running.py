@@ -48,7 +48,7 @@ def test_a_background_alias_moves_to_the_background_at_once(new_story):
 
 def test_the_alias_reader_reads_the_output_of_its_line(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    story.run('reader add judge --commands "journal sins" --lines "sin"', actor=story.agent)
+    story.run('reader add judge --commands "echo judged" --lines "sin"', actor=story.agent)
     story.run('alias add sins "echo judged" --reader judge', actor=story.agent)
     story.hook("s-1", ALIAS_LINE)
     reader_id = next(row["id"] for row in json.loads(story.run("reader list --json", actor=story.agent).output_text)["rows"] if row["name"] == "judge")
@@ -77,7 +77,7 @@ def test_a_worker_runs_an_alias_marked_for_workers(new_story):
 
 def test_a_background_alias_run_that_is_no_test_or_build_ends_with_an_ended_line_and_no_card(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    story.run('reader add judge --commands "journal sins" --lines "sin"', actor=story.agent)
+    story.run('reader add judge --commands "echo judged" --lines "sin"', actor=story.agent)
     story.run('alias add sins "echo judged" --reader judge --background', actor=story.agent)
     story.hook("s-1", ALIAS_LINE)
     process = story.container.get(ProcessQuery).find(1)
