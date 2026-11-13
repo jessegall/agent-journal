@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from engine.database.database import Database
+from engine.container.round_state import RoundState
 from engine.database.kept_rows import KeptRows
 from engine.database.statement import Statement
 from engine.row.row_owner import MAIN_AGENT, RowOwner
@@ -20,7 +21,7 @@ ENVIRONMENT_SIGNATURE = Statement("SELECT id, version, updated_at FROM environme
 NEWEST_MAIN_AGENT_ID = Statement("SELECT id FROM agents WHERE environment_id = ? AND role = 'main' ORDER BY id DESC LIMIT 1")
 
 
-class ActorTable:
+class ActorTable(RoundState):
     """The actors the core itself makes: its own, on the first sync, and one for each module."""
 
     def __init__(self, database: Database) -> None:
@@ -28,6 +29,10 @@ class ActorTable:
         self.kept = KeptRows(database)
         self.agent_answers: dict[int, bool] = {}
         self.row_owners: dict[int, RowOwner | None] = {}
+
+    def reset(self) -> None:
+        self.agent_answers = {}
+        self.row_owners = {}
 
     def core_actor(self, timestamp: str) -> None:
         self.database.update(Statement(CORE_ACTOR.sql, (CORE_ACTOR_ID, ActorType.CORE.value, timestamp, timestamp)))

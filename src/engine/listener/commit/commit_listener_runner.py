@@ -7,6 +7,7 @@ from engine.event.changed import Changed
 from engine.event.event_type import EventType
 from engine.event.logged_event import LoggedEvent
 from engine.container.container import Container
+from engine.container.round_state import RoundState
 from engine.log.error_log import ErrorLog
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
@@ -38,7 +39,7 @@ LISTENER_TIME_LIMIT_SETTING = "journal.core.developer.tools.listener-time-limit"
 LISTENER_TIME_LIMIT_ON_SETTING = f"{LISTENER_TIME_LIMIT_SETTING}-on"
 
 
-class CommitListenerRunner:
+class CommitListenerRunner(RoundState):
     """Runs commit listeners with at most once delivery across a server stop; reported failures are retried."""
 
     def __init__(self, registry: Registry, log: EventLog, container: Container, errors: ErrorLog, cursors: ListenerCursorTable,
@@ -48,6 +49,10 @@ class CommitListenerRunner:
         self.positions: dict[str, int] = {}
         self.positions_stale = False
         self.held_listeners: set[str] = set()
+
+    def reset(self) -> None:
+        self.positions = {}
+        self.positions_stale = False
 
     def run(self) -> None:
         self.flush_exceptions()

@@ -1,5 +1,6 @@
 from enum import Enum
 
+from engine.enums.setting_scope import SettingScope
 from engine.enums.setting_type import SettingType
 from engine.setting.number_rule import NumberRule
 from engine.setting.setting_value import SettingValue
@@ -48,6 +49,8 @@ class ProcessSetting(Enum):
                                       SettingType.NUMBER, default=8, rule=NumberRule(1))
     STARTER_CAP_PERCENT = SettingValue("starter-cap-percent", "Share of a lane one starter may hold", "Percent of a lane's slot units the runs of one agent may hold at once.",
                                        SettingType.NUMBER, default=50, rule=NumberRule(1))
+    TICK_WORKERS = SettingValue("tick-workers", "Timed work at once", "How many timed jobs, such as reading outputs, run at once; the others wait. Read when the journal starts.",
+                                SettingType.NUMBER, default=3, rule=NumberRule(1), scope=SettingScope.PROJECT)
     PROCESSES_KEPT = SettingValue("processes-kept", "Ended commands kept",
                                  "How many ended commands each environment keeps, with at least one. Running commands stay.", SettingType.NUMBER, default=1000)
     REQUEST_RUN_DAYS = SettingValue("request-run-days", "Days requests are kept", "Days each environment stores records of agent program events, journal commands and viewer requests; at least one.",

@@ -1,9 +1,12 @@
 import sys
+import traceback
 from inspect import Parameter, signature
 from typing import TypeVar, get_type_hints
 
 from functools import cache
 
+from engine.container.single_instance import SingleInstance
+from engine.errors.built_twice_error import BuiltTwiceError
 from engine.errors.missing_hint_error import MissingHintError
 from engine.errors.unbound_value_error import UnboundValueError
 from engine.errors.wrong_instance_error import WrongInstanceError
@@ -12,6 +15,7 @@ T = TypeVar("T")
 
 
 UNBUILT_MODULES = sys.stdlib_module_names | {"builtins"}
+BUILD_PLACE_FRAMES = 8
 
 
 @cache
@@ -32,6 +36,7 @@ class Container:
     def __init__(self) -> None:
         self.instances: dict[type, object] = {Container: self}
         self.substitutes: dict[type, type[object]] = {}
+        self.build_places: dict[type, str] = {}
 
     def bind(self, class_type: type[T], instance: T) -> None:
         self.instances[class_type] = instance
@@ -54,4 +59,12 @@ class Container:
     def constructed(self, class_type: type[T]) -> T:
         if class_type.__module__.partition(".")[0] in UNBUILT_MODULES:
             raise UnboundValueError(class_type)
+        if issubclass(class_type, SingleInstance):
+            self.record_build(class_type)
         return class_type(**{name: self.get(hint) for name, hint in needed_values(class_type)})
+
+    def record_build(self, class_type: type) -> None:
+        place = "".join(traceback.format_stack(limit=BUILD_PLACE_FRAMES)[:-2])
+        if class_type in self.build_places:
+            raise BuiltTwiceError(class_type, self.build_places[class_type], place)
+        self.build_places[class_type] = place

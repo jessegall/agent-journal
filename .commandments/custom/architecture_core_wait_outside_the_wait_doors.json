@@ -95,13 +95,16 @@
             },
             {
                 "fileMatches": "(^|/)src/viewer/"
+            },
+            {
+                "fileMatches": "(^|/)src/server/tick/ticker\\.py$"
             }
         ]
     },
     "sin": {
         "name": "wait-outside-the-wait-doors",
         "description": "Code waits by itself, with time.sleep, a condition or event wait, a process wait or a thread join, so nothing checks that it does not hold the database's write turn while every other write waits on it.",
-        "rule": "Wait only through the doors that refuse a wait inside a held write turn: Clock.sleep and Clock.poll for a pause or a poll, PolledWait for a condition, ChildProcess for a program's end. The server's own queues wait on their conditions in server_queue.py, write_turn_queue.py and listener_thread.py, before a turn is held.",
+        "rule": "Wait only through the doors that refuse a wait inside a held write turn: Clock.sleep and Clock.poll for a pause or a poll, PolledWait for a condition, ChildProcess for a program's end. The server's own queues wait on their conditions in server_queue.py, write_turn_queue.py, listener_thread.py and ticker.py, before a turn is held.",
         "skill": "plain-code-words"
     }
 }

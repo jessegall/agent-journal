@@ -272,6 +272,15 @@ def test_running_again_with_nothing_new_handles_nothing(tmp_path, runs: int):
     assert HANDLED == []
 
 
+def test_commit_listener_runner_reset_clears_round_state(tmp_path):
+    container = container_with(tmp_path, PausedItemCounter)
+    runner = container.get(CommitListenerRunner)
+    runner.positions, runner.positions_stale = {PausedItemCounter.name: 99}, True
+    runner.reset()
+    assert (runner.positions, runner.positions_stale) == ({}, False)
+    assert runner.known_positions(runner.commit_entries())[PausedItemCounter.name] == cursor(container, PausedItemCounter.name)
+
+
 class FailingPrepareListener(CommitListener[Created[Item]]):
     """Fails while it prepares the rows of its events."""
 

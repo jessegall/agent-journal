@@ -74,3 +74,12 @@ def test_a_stop_while_a_round_runs_returns_within_the_stop_limit_and_starts_no_f
     release.set()
     thread.wake()
     assert rounds == ["round"]
+
+
+def test_listener_thread_calls_stop_callback_when_it_stops():
+    ended = threading.Event()
+    thread = ListenerThread(lambda: None, lambda error: None, period_seconds=TIMEOUT_SECONDS, stop_callback=ended.set)
+    thread.start()
+    thread.wake()
+    thread.stop()
+    assert ended.wait(TIMEOUT_SECONDS)

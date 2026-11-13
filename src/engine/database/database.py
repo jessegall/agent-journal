@@ -105,6 +105,9 @@ class Database:
     def has_transaction(self) -> bool:
         return self.connection.in_transaction
 
+    def rollback(self) -> None:
+        self.connection.execute("ROLLBACK")
+
     @contextmanager
     def transaction(self):
         with self.turns.write_turn():

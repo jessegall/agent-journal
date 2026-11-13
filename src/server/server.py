@@ -67,7 +67,9 @@ from engine.serving.server_files import ServerFiles
 from server.handover.waiting_server import WaitingServer
 from functools import partial
 from server.execution.write_turn_queue import WriteTurnQueue
-from server.work.journal_round import background_container
+from server.work.per_round_container import PerRoundContainer
+from server.work.kept_round_container import background_container
+from server.work.kept_round_container import KeptRoundContainer
 
 # how long a write waits for the database's write turn before it is refused with the holder named
 WRITE_TURN_LIMIT_SECONDS = 30.0
@@ -143,16 +145,15 @@ def main(argv: list[str]) -> int:
         return SECOND_SERVER_CODE
     turns = WriteTurnQueue(clock, WRITE_TURN_LIMIT_SECONDS, lambda slow_turn_text: files.log_line(slow_turn_text, LogLevel.WARNING))
     hook_database = HookDatabase(home, turns)
-    round_container = partial(background_container, turns=turns)
-    urgent_round = JournalRound(home, "urgent listener thread", UrgentListenerWork(), queue=hook_database.queue, container=round_container)
-    urgent_thread = ListenerThread(urgent_round.run, urgent_round.report, name="urgent listeners")
-    listener_round = JournalRound(home, "listener thread", OrdinaryListenerWork(), queue=hook_database.queue, container=round_container)
-    plugin_round = JournalRound(home, "plugin listener thread", PluginListenerWork(), queue=hook_database.queue, container=round_container)
-    plugin_thread = ListenerThread(plugin_round.run, plugin_round.report, name="plugin listeners")
-    stop_round = JournalRound(home, "program stop thread", ProgramStopListenerWork(), queue=hook_database.queue, container=round_container)
-    stop_thread = ListenerThread(stop_round.run, stop_round.report, name="program stops")
-    listener_thread = ListenerThread(listener_round.run, listener_round.report, linked_threads=(urgent_thread, plugin_thread, stop_thread))
-    ticker = Ticker(home, Ticker.module_handlers(finder), listener_thread.wake, queue=hook_database.queue, container=round_container)
+    urgent_round = JournalRound(home, "urgent listener thread", UrgentListenerWork(), KeptRoundContainer(home, turns), hook_database.queue)
+    urgent_thread = ListenerThread(urgent_round.run, urgent_round.report, name="urgent listeners", stop_callback=urgent_round.close)
+    listener_round = JournalRound(home, "listener thread", OrdinaryListenerWork(), KeptRoundContainer(home, turns), hook_database.queue)
+    plugin_round = JournalRound(home, "plugin listener thread", PluginListenerWork(), KeptRoundContainer(home, turns), hook_database.queue)
+    plugin_thread = ListenerThread(plugin_round.run, plugin_round.report, name="plugin listeners", stop_callback=plugin_round.close)
+    stop_round = JournalRound(home, "program stop thread", ProgramStopListenerWork(), KeptRoundContainer(home, turns), hook_database.queue)
+    stop_thread = ListenerThread(stop_round.run, stop_round.report, name="program stops", stop_callback=stop_round.close)
+    listener_thread = ListenerThread(listener_round.run, listener_round.report, linked_threads=(urgent_thread, plugin_thread, stop_thread), stop_callback=listener_round.close)
+    ticker = Ticker(home, Ticker.module_handlers(finder), listener_thread.wake, queue=hook_database.queue, containers=partial(KeptRoundContainer, turns=turns))
     phones = PhoneSessions(home, listener_thread, turns)
     login = ViewerLogin(phones, ShareSessions(phones.journal_output, clock), SessionFile(home.viewer_sessions_file))
     reported_findings = ReportedFindings()
@@ -201,7 +202,8 @@ def main(argv: list[str]) -> int:
     if threading.current_thread() is threading.main_thread():
         signal.signal(signal.SIGTERM, lambda signal_number, frame: server.request_stop())
         faulthandler.register(signal.SIGUSR1, file=FileAccess.lifetime_writer(home.stacks_file), all_threads=True)
-    for starting_round in (JournalRound(home, "code sync", CodeSyncWork(), partial(opened_container, turns=turns)), JournalRound(home, "booting", BootingWork(), round_container)):
+    for starting_round in (JournalRound(home, "code sync", CodeSyncWork(), PerRoundContainer(home, partial(opened_container, turns=turns))),
+                           JournalRound(home, "booting", BootingWork(), PerRoundContainer(home, partial(background_container, turns=turns)))):
         try:
             starting_round.run()
         except Exception as error:
@@ -211,13 +213,15 @@ def main(argv: list[str]) -> int:
             plugin_services.follow()
         except Exception as error:
             files.log_line(f"the plugin services could not be started: {error}", LogLevel.ERROR)
-    server.context.request_trace.refresh(synced_database_container(home, hook_database.databases[0]))
+    settings_container = synced_database_container(home, hook_database.databases[0])
+    server.context.request_trace.refresh(settings_container)
     listener_thread.wake()
     listener_thread.start()
     urgent_thread.start()
     if not viewer.closed_doors.closes_service(ClosedService.PLUGIN_SCRIPTS):
         plugin_thread.start()
     stop_thread.start()
+    ticker.start(Ticker.worker_count(settings_container))
     ticker_thread.start()
     viewer.start()
     files.clear_restart()
@@ -238,7 +242,7 @@ def main(argv: list[str]) -> int:
         deadline = time.monotonic() + STOP_LIMIT_SECONDS
         for thread in threads:
             Clock().join(thread, deadline - time.monotonic())
-        ticker.join(deadline - time.monotonic())
+        ticker.stop(deadline - time.monotonic())
         server.context.request_trace.close()
         hook_database.close()
         if not server.is_handing_over:

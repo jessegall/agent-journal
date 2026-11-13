@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from functools import cache
 from typing import ClassVar, Generic, TypeVar
 
+from engine.container.single_instance import SingleInstance
 from engine.event.event_pattern import EventPattern
 from engine.event.event_type import EventType
 from engine.model.move import Move
@@ -9,7 +10,7 @@ from engine.model.move import Move
 E = TypeVar("E", contravariant=True, default=object)
 
 
-class EventSubscriber(Generic[E]):
+class EventSubscriber(SingleInstance, Generic[E]):
     """What listeners and guards share: the events a class hears, read once from its type parameter when the class
     is made, and the pattern the registry keeps for them."""
 

@@ -3,6 +3,7 @@ from typing import Self
 from engine.database.database import Database
 from engine.model.tables import Tables
 from engine.query.query import Query
+from engine.query.conditions.greater import Greater
 from core.modules.processes.models.reader import Reader
 
 
@@ -17,3 +18,6 @@ class ReaderQuery(Query[Reader]):
 
     def defaults(self) -> Self:
         return self.filter(is_default=True)
+
+    def with_listing(self) -> Self:
+        return self.matching(Greater("count_command", ""))

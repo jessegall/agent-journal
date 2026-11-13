@@ -17,8 +17,10 @@ def test_the_agent_ticks_of_the_ticker_reach_each_open_agents_rules_and_a_silenc
     story = new_story(SAMPLES, fixture=LeadLocked)
     agent_ticks = next(handler for handler in Ticker.module_handlers(ModuleFinder(story.home)) if handler.label == "agent ticks")
     ticker = Ticker(story.home, [agent_ticks], lambda: None, lambda: 0.0)
+    ticker.start()
     ticker.tick()
     ticker.join(5.0)
+    ticker.stop(5.0)
     story.expect_text(f"rule-history list --agent {story.agent.id}", "samples.return-line", "silenced")
     story.expect_absent(f"hook-call list --agent {story.agent.id}", "tick")
 
