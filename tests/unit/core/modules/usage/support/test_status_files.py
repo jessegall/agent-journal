@@ -34,3 +34,11 @@ def test_stale_status_is_ready_even_with_future_reset(tmp_path):
 
 def test_missing_status_has_no_windows(tmp_path):
     assert StatusFiles(JournalHome(tmp_path), Clock()).newest_status(['missing'], CHECKED_AT).windows == ()
+
+
+def test_a_session_that_ends_while_the_folder_is_read_is_left_out_and_the_others_give_the_windows(tmp_path, monkeypatch):
+    files = StatusFiles(JournalHome(tmp_path), Clock())
+    save_status(files.folder, 'open', 30, CHECKED_AT.value.timestamp())
+    listed = [files.folder / 'ended.json', files.folder / 'open.json']
+    monkeypatch.setattr(type(files.folder), 'glob', lambda folder, pattern: iter(listed))
+    assert files.plan_windows({})[0].used_percent == 30

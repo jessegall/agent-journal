@@ -2,7 +2,7 @@ from engine.file.file_access import FileAccess
 from engine.file.versions.file_version import FileVersion
 import json
 import shutil
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from collections.abc import Mapping
 from pathlib import Path
 
@@ -37,15 +37,27 @@ class StatusFiles:
         return self.reported(path if path.is_file() else self.ended_folder / f"{session}.json")
 
     def newest_status(self, sessions: Sequence[str], checked_at: Timestamp) -> SessionStatus:
-        files = [self.folder / f"{session}.json" for session in sessions]
-        newest = max((path for path in files if path.is_file()), key=lambda path: path.stat().st_mtime, default=None)
-        if newest is None or checked_at.value.timestamp() - newest.stat().st_mtime >= READINESS_MAX_AGE_SECONDS:
+        times = self.modified_times(self.folder / f"{session}.json" for session in sessions)
+        newest = max(times, key=times.__getitem__, default=None)
+        if newest is None or checked_at.value.timestamp() - times[newest] >= READINESS_MAX_AGE_SECONDS:
             return SessionStatus()
         return self.status(newest.stem)
 
     def plan_windows(self, statuses: Mapping[str, SessionStatus]) -> tuple[PlanWindow, ...]:
-        files = sorted((path for path in self.folder.glob("*.json") if path != self.plan_file), key=lambda path: path.stat().st_mtime, reverse=True) if self.folder.is_dir() else []
+        times = self.modified_times(path for path in self.folder.glob("*.json") if path != self.plan_file) if self.folder.is_dir() else {}
+        files = sorted(times, key=times.__getitem__, reverse=True)
         return next((windows for path in files or [self.plan_file] if (windows := self.file_status(path, statuses).windows)), ())
+
+    # A session that ends while the folder is read has its file moved to the ended folder: it is left out.
+    @staticmethod
+    def modified_times(paths: Iterable[Path]) -> dict[Path, float]:
+        times: dict[Path, float] = {}
+        for path in paths:
+            try:
+                times[path] = path.stat().st_mtime
+            except FileNotFoundError:
+                continue
+        return times
 
     def file_status(self, path: Path, statuses: Mapping[str, SessionStatus]) -> SessionStatus:
         return statuses[path.stem] if path.stem in statuses else self.reported(path)
