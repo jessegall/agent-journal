@@ -2,7 +2,8 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.model.model import Model
 from engine.driver.nudger import Nudger
-from suites.coding.modules.workers.commands.send_unfinished_tasks_line.send_unfinished_tasks_line import SendUnfinishedTasksLine, UNFINISHED_TASKS_SOURCE, WORKER_UNFINISHED_TASKS
+from suites.coding.modules.workers.commands.send_unfinished_tasks_line.send_unfinished_tasks_line import SendUnfinishedTasksLine
+from suites.coding.modules.workers.support.worker_nudges import UNFINISHED_TASKS_SOURCE, WORKER_UNFINISHED_TASKS
 
 
 class SendUnfinishedTasksLineHandler(Handler[SendUnfinishedTasksLine, Model]):

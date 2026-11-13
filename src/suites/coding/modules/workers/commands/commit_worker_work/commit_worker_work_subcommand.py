@@ -10,7 +10,7 @@ from suites.coding.modules.workers.models.enums.submission import Submission
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.commit_outcome import CommitOutcome
 from suites.coding.modules.workers.support.commit_differences import differences_flag, required_differences
-from suites.coding.modules.workers.support.worker_command_request import WorkerCommandRequest
+from suites.coding.modules.workers.commands.worker_command_request import WorkerCommandRequest
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_run_answer import WorkerRunAnswer
 

@@ -13,7 +13,7 @@ from suites.coding.modules.workers.commands.record_worktree_removal.record_workt
 from suites.coding.modules.workers.commands.release_worker.release_worker import ReleaseWorker
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.bindings.worker_roster import WorkerRoster
+from suites.coding.modules.workers.support.worktree_own_changes import WorktreeOwnChanges
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.release_outcome import ReleaseOutcome
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
@@ -29,8 +29,8 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
     runs_once = True
     command = ReleaseWorker
 
-    def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, numbers: RowNumbers, units: WorkUnits, agents: AgentRows, roster: WorkerRoster) -> None:
-        self.numbers, self.units, self.agents, self.roster = numbers, units, agents, roster
+    def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, numbers: RowNumbers, units: WorkUnits, agents: AgentRows, own_changes: WorktreeOwnChanges) -> None:
+        self.numbers, self.units, self.agents, self.own_changes = numbers, units, agents, own_changes
         self.worktrees, self.git, self.environments, self.bus = worktrees, git, environments, bus
 
     def handle(self, command: ReleaseWorker, context: Context) -> ReleaseOutcome:
@@ -40,7 +40,7 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
         if worktree.commit_count and worktree.state is WorktreeState.CUT and not command.abandons_commits:
             number = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)
             raise Refusal(f"worker {number} has committed work", f'merge it with journal worker merge {number} --up-to <task>, or release with --abandon "<why>"')
-        if worktree.state is WorktreeState.CUT and not command.abandons_commits and self.roster.has_own_changes(self.agents.find(command.worker_id), worktree):
+        if worktree.state is WorktreeState.CUT and not command.abandons_commits and self.own_changes.has_own_changes(self.agents.find(command.worker_id), worktree):
             number = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)
             raise Refusal(f"worker {number} has uncommitted files in {worktree.folder}", 'commit or remove them, or release with --abandon "<why>"')
         folder = self.environments.find(worktree.environment_id).folder

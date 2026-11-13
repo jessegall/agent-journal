@@ -10,7 +10,7 @@ from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.commands.update_worker.update_worker import UpdateWorker
 from suites.coding.modules.workers.support.update_outcome import UpdateOutcome
-from suites.coding.modules.workers.support.worker_command_request import WorkerCommandRequest
+from suites.coding.modules.workers.commands.worker_command_request import WorkerCommandRequest
 from suites.coding.modules.workers.support.worker_run_answer import WorkerRunAnswer
 
 OWN_WORKTREE_ONLY = "a worker updates only its own worktree"

@@ -11,7 +11,7 @@ from tests.stories.suites.coding.modules.workers.support.commit_command import C
 from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, prove_task, unplanned_holding_worker
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, start_planned_worker, unplanned_worker
-from suites.coding.modules.workers.commands.send_unfinished_tasks_line.send_unfinished_tasks_line import UNFINISHED_TASKS_SOURCE
+from suites.coding.modules.workers.support.worker_nudges import UNFINISHED_TASKS_SOURCE
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RESTARTED

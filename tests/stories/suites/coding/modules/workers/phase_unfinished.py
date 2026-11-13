@@ -11,7 +11,7 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import SECO
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 from suites.coding.modules.workers.support.worker_nudges import WORKER_COMMITTED_UNMERGED
 from engine.testing.expectations.expect_nudge import said
-from suites.coding.modules.workers.commands.send_unfinished_tasks_line.send_unfinished_tasks_line import WORKER_UNFINISHED_TASKS
+from suites.coding.modules.workers.support.worker_nudges import WORKER_UNFINISHED_TASKS
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RESTARTED
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 

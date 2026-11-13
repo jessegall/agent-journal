@@ -21,7 +21,7 @@ from suites.coding.modules.workers.models.enums.stop_line_target import StopLine
 from suites.coding.modules.workers.models.enums.stop_reading import StopReading
 from suites.coding.modules.workers.support.stop_facts import StopFacts
 from suites.coding.modules.workers.support.stop_facts_reader import StopFactsReader
-from suites.coding.modules.workers.support.worker_program_wait import WorkerProgramWait
+from suites.coding.modules.workers.listeners.worker_program_wait import WorkerProgramWait
 
 SOURCE = ENDED_WORKER_SOURCE
 

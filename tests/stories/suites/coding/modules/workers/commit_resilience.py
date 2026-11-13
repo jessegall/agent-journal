@@ -3,7 +3,7 @@ import pytest
 from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.modules.workers.commands.commit_worker_work.commit_worker_work_handler import CommitWorkerWorkHandler
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
-from suites.coding.modules.workers.support.worker_task_commit import WorkerTaskCommit
+from suites.coding.modules.workers.commands.commit_worker_work.worker_task_commit import WorkerTaskCommit
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.hand_in_rebase import StoppedDelivery
 from tests.stories.suites.coding.modules.workers.phase_unfinished import expect_open_undelegated

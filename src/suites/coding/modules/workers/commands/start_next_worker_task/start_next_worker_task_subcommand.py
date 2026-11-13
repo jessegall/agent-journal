@@ -6,7 +6,7 @@ from engine.command.command import Command
 from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.commands.start_next_worker_task.start_next_worker_task import StartNextWorkerTask
-from suites.coding.modules.workers.support.worker_command_request import WorkerCommandRequest
+from suites.coding.modules.workers.commands.worker_command_request import WorkerCommandRequest
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_run_answer import WorkerRunAnswer
 

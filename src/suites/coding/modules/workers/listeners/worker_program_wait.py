@@ -3,7 +3,8 @@ from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from engine.driver.nudger import Nudger
-from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import ReportWorkerProgramRecovery, WORKER_PROGRAM_UNAVAILABLE
+from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import ReportWorkerProgramRecovery
+from suites.coding.modules.workers.support.worker_nudges import WORKER_PROGRAM_UNAVAILABLE
 
 
 class WorkerProgramWait:

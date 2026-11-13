@@ -1,12 +1,15 @@
 from suites.coding.modules.workers.models.enums.worker_operation_name import (WORKER_OPERATION_NEXT, WORKER_OPERATION_TESTS, WORKER_OPERATION_CONFLICT, WORKER_OPERATION_MERGED, WORKER_OPERATION_JOB, WORKER_OPERATION_PAUSED, WORKER_OPERATION_COMMITTED, WORKER_OPERATION_STARTED, WORKER_OPERATION_UPDATED, WORKER_OPERATION_UPDATE_CONFLICT, WORKER_OPERATION_UPDATE_FAILED)
 from dataclasses import replace
 from suites.coding.models.enums.ask_topic import AskTopic
-from suites.coding.modules.workers.commands.send_unfinished_tasks_line.send_unfinished_tasks_line import WORKER_UNFINISHED_TASKS
-from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import WORKER_PROGRAM_UNAVAILABLE, WORKER_PROGRAM_RESUMED
 from engine.driver.interval import Interval
 from engine.driver.seconds import Seconds
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.enums.nudge_type import NudgeType
+
+UNFINISHED_TASKS_SOURCE = "workers.unfinished-tasks"
+WORKER_UNFINISHED_TASKS = NudgeDeclaration("workers.unfinished_tasks", NudgeType.STEERING, "You ended with tasks left, {tasks}: {line}", path_fields=["line"])
+WORKER_PROGRAM_UNAVAILABLE = NudgeDeclaration("workers.program_out", NudgeType.STEERING, "worker:{worker} stopped", turn_limited=False, wakes_agent=True)
+WORKER_PROGRAM_RESUMED = NudgeDeclaration("workers.program_back", NudgeType.STEERING, "worker:{worker} resumed", turn_limited=False)
 
 APPROVED_PLAN_WAIT = NudgeDeclaration("workers.approved_plan_wait", NudgeType.REFUSAL, "plan:{plan} is approved and a worker slot is free: start a worker, then assign its work")
 

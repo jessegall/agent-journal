@@ -1,12 +1,7 @@
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from engine.driver.nudge_declaration import NudgeDeclaration
-from engine.enums.nudge_type import NudgeType
 from engine.time.timestamp import Timestamp
-
-WORKER_PROGRAM_UNAVAILABLE = NudgeDeclaration("workers.program_out", NudgeType.STEERING, "worker:{worker} stopped", turn_limited=False, wakes_agent=True)
-WORKER_PROGRAM_RESUMED = NudgeDeclaration("workers.program_back", NudgeType.STEERING, "worker:{worker} resumed", turn_limited=False)
 
 
 @dataclass(frozen=True)
