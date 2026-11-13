@@ -35,11 +35,11 @@ class WorkerTestPresets:
 
     @staticmethod
     def distinct(entries: Iterable[WorkerTestCommandEntry]) -> tuple[WorkerTestCommandEntry, ...]:
-        seen: set[str] = set()
+        viewed: set[str] = set()
         kept: list[WorkerTestCommandEntry] = []
         for entry in entries:
-            if entry.command in seen:
+            if entry.command in viewed:
                 continue
-            seen.add(entry.command)
+            viewed.add(entry.command)
             kept.append(entry)
         return tuple(kept)

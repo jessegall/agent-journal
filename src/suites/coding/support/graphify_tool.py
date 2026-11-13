@@ -132,8 +132,8 @@ class GraphifyTool(ToolRunner):
 
     def grouping(self, folder: Path) -> str:
         elapsed = GraphFiles(folder).clustering_age_seconds(self.clock)
-        is_due = elapsed is None or elapsed >= self.settings.project.number(GRAPHIFY_CLUSTER_MINUTES) * MINUTE_SECONDS
-        return CLUSTER if is_due else UNCLUSTERED
+        due = elapsed is None or elapsed >= self.settings.project.number(GRAPHIFY_CLUSTER_MINUTES) * MINUTE_SECONDS
+        return CLUSTER if due else UNCLUSTERED
 
     def after_start(self, folder: Path, status: ToolStatus) -> ToolStatus:
         if not self.started(folder, status.commit):

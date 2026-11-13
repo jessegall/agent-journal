@@ -112,13 +112,13 @@ def test_only_a_silent_go_test_over_several_packages_is_told_and_runs_printing_l
     story = install_runner(new_story(fixture=BuilderStarted))
     silent = moved_run(story, "go test ./cart/... ./orders/...", CommandCategory.TEST_RUN)
     lines = moved_run(story, "make release", CommandCategory.BUILD)
-    bar = moved_run(story, "make images", CommandCategory.BUILD)
+    progress_line = moved_run(story, "make images", CommandCategory.BUILD)
     titled(story, silent, "Running the package tests")
-    bar_text = ""
+    progress_text = ""
     received: list[str] = []
     for step in range(20):
-        bar_text += "\r[" + "#" * (step % 20) + "] working"
-        emitted(story, bar, bar_text)
+        progress_text += "\r[" + "#" * (step % 20) + "] working"
+        emitted(story, progress_line, progress_text)
         ticks(story, 10, lines, every=10, text="compiled one more file\n" * 10)
         received += cadence_lines(informed(story, MAIN))
     story.expect_rows(len(received) == 1, expected_nudge(SILENT_RUN, seconds=30, hint='run').is_in(received[0]),

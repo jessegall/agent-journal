@@ -62,10 +62,10 @@ def test_a_quick_run_through_the_door_is_logged_and_the_tick_writes_one_ended_re
     story = new_story(fixture=BuilderStarted)
     processes_previous = story.container.get(Queries).query(Process).count()
     execution = door_run(story, ExecutionRequest(["echo", "done"], story.home.project_folder, ProcessKind.QUICK, 10))
-    logged_only = category_runs(story, ProcessKind.QUICK)
+    unrecorded = category_runs(story, ProcessKind.QUICK)
     logged_rows_saved(story)
     rows = category_runs(story, ProcessKind.QUICK)
-    story.expect_rows(execution.stdout == "done\n", logged_only == [], len(rows) == 1, rows[0].exit_code == 0, story.container.get(Queries).query(Process).count() == processes_previous, detail=str(rows))
+    story.expect_rows(execution.stdout == "done\n", unrecorded == [], len(rows) == 1, rows[0].exit_code == 0, story.container.get(Queries).query(Process).count() == processes_previous, detail=str(rows))
 
 
 def test_a_failing_run_through_the_door_keeps_its_code(new_story):

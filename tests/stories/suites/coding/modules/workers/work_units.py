@@ -20,11 +20,11 @@ def test_tasks_sent_together_are_one_list_unit(new_story, monkeypatch):
 
 def test_a_phase_of_a_plan_worked_by_another_agent_is_the_unit_and_a_plan_assigned_to_the_worker_is_the_unit(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch, PHASE_DISPATCH)
-    by_phase = worker_unit(worker)
+    phase_unit = worker_unit(worker)
     worker.story.expect_success(f"plan assign 1 --to {agent_number(worker.story, worker.worker.id)} --environment main", actor=worker.story.user)
-    by_plan = worker_unit(worker)
-    worker.story.expect_rows(by_phase.plan is None, by_phase.phase is not None and by_phase.phase.id == 1, by_phase.task_ids == (1, 2, 3),
-                             by_plan.plan is not None and by_plan.plan.id == 1, by_plan.phase is None, detail=f"{by_phase} / {by_plan}")
+    plan_unit = worker_unit(worker)
+    worker.story.expect_rows(phase_unit.plan is None, phase_unit.phase is not None and phase_unit.phase.id == 1, phase_unit.task_ids == (1, 2, 3),
+                             plan_unit.plan is not None and plan_unit.plan.id == 1, plan_unit.phase is None, detail=f"{phase_unit} / {plan_unit}")
 
 
 def test_a_unit_counts_what_is_not_committed_and_is_committed_once_every_task_is(new_story, monkeypatch):

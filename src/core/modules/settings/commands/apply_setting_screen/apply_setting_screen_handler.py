@@ -24,8 +24,8 @@ class ApplySettingScreenHandler(Handler[ApplySettingScreen, ScreenReading]):
             if revision != read.revision:
                 raise Refusal(f"the settings of {read.screen} changed since you read them", f"run journal setting-screen show {read.screen} and apply again")
         shown = {node.key for read, _ in reads for node in read.nodes}
-        stray = [key for key, _ in command.changes if key not in shown]
-        if stray:
-            raise Refusal(f"{', '.join(stray)} is not on the screen {command.screen}", f"journal setting-screen show {command.screen} lists its settings")
+        unknown_keys = [key for key, _ in command.changes if key not in shown]
+        if unknown_keys:
+            raise Refusal(f"{', '.join(unknown_keys)} is not on the screen {command.screen}", f"journal setting-screen show {command.screen} lists its settings")
         self.changes.apply([(self.declared.value(key), text) for key, text in command.changes], context)
         return self.screens.read(command.screen)

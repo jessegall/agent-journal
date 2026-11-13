@@ -22,9 +22,9 @@ class QueuedRunFollow:
         stated, offset = -1, 0
         while True:
             process = self.queries.query(Process).find(process_id)
-            if process.queued_at is not None and (ahead := self.ahead(process)) != stated:
-                output.line(f"waiting: {ahead} ahead of you")
-                stated = ahead
+            if process.queued_at is not None and (queue_position := self.ahead(process)) != stated:
+                output.line(f"waiting: {queue_position} ahead of you")
+                stated = queue_position
             has_ended = process.ended_at is not None
             page = self.folder.page_after(process_id, offset, has_ended)
             for line in page.lines:

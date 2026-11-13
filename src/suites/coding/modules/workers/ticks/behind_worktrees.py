@@ -35,16 +35,16 @@ class BehindWorktrees:
             if not due:
                 continue
             container.get(Bus).run(RecordBehindLook(), Actor.core(), environment_id=environment_id)
-            for_merger = tuple(worktree_id for worktree_id, route in routes.items() if route is BehindRoute.MERGER)
-            if for_merger:
-                self.announced(container, for_merger, environment_id)
+            merger_checks = tuple(worktree_id for worktree_id, route in routes.items() if route is BehindRoute.MERGER)
+            if merger_checks:
+                self.announced(container, merger_checks, environment_id)
 
     @staticmethod
     def announced(container: Container, worktree_ids: tuple[int, ...], environment_id: int) -> None:
         lines = container.get(Bus).run(AnnounceBehindChecks(worktree_ids), Actor.core(), environment_id=environment_id)
         with container.get(Scopes).opened(None, environment_id):
-            merger_on = container.get(SettingValues).flag(MERGER_ENABLED)
-        if merger_on:
+            merger_enabled = container.get(SettingValues).flag(MERGER_ENABLED)
+        if merger_enabled:
             container.get(Bus).run(StartMerger(lines[0], container.get(Clock).timestamp()), Actor.core(), environment_id=environment_id)
 
     @staticmethod

@@ -77,9 +77,9 @@ def test_a_worktree_three_behind_opens_a_check_and_two_behind_does_not():
 def test_zero_commits_to_check_or_the_switch_off_looks_at_no_worktree():
     off = BehindChecks(Queries(Worktree=[worktree()]), Settings())
     off.settings.values[STALE_CHECK_COMMITS] = 0
-    switched = BehindChecks(Queries(Worktree=[worktree()]), Settings())
-    switched.settings.values[WORKTREE_UPDATES] = False
-    assert (off.due_worktrees(CURRENT_TIME), switched.due_worktrees(CURRENT_TIME)) == ((), ())
+    toggled = BehindChecks(Queries(Worktree=[worktree()]), Settings())
+    toggled.settings.values[WORKTREE_UPDATES] = False
+    assert (off.due_worktrees(CURRENT_TIME), toggled.due_worktrees(CURRENT_TIME)) == ((), ())
 
 
 def test_a_look_comes_once_per_ten_minutes_and_the_last_look_survives_a_restart():

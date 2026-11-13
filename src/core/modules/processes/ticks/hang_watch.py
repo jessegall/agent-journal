@@ -50,15 +50,15 @@ class HangWatch:
         cpu = container.get(GroupCpuTime).seconds(listing, group) if group is not None else None
         if cpu is None:
             return False
-        now = current.value.timestamp()
+        current_time = current.value.timestamp()
         recorded = folder.text(process.id, CPU_FILE).split()
         moved = len(recorded) != 2 or float(recorded[0]) != cpu
         if moved:
-            folder.write(process.id, CPU_FILE, f"{cpu} {now}")
+            folder.write(process.id, CPU_FILE, f"{cpu} {current_time}")
         silent = container.get(RunSilences).seconds(process, current)
         if moved:
-            return self.checked(container, process, silent, now, limits)
-        seconds = min(int(now - float(recorded[1])), container.get(RunSilences).unread_seconds(process, current))
+            return self.checked(container, process, silent, current_time, limits)
+        seconds = min(int(current_time - float(recorded[1])), container.get(RunSilences).unread_seconds(process, current))
         if seconds < limits.hang:
             return False
         self.stop(container, process, seconds)

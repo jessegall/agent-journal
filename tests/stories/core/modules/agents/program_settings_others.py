@@ -36,9 +36,9 @@ def test_two_projects_each_have_their_own_journal_settings(new_story, tmp_path):
     story = new_story(fixture=MainEnvironment)
     provider = story.container.get(Providers).provider("claude")
     different_home = JournalHome(tmp_path / "project-b" / ".journal")
-    homes = [story.home, different_home]
-    for home in homes:
+    journal_folders = [story.home, different_home]
+    for home in journal_folders:
         ProgramSettingsWriter(home).write(provider.journal_settings(home, f'"{home.hook_runner}"', (), [home.project_folder]))
-    commands = [{blocks[0]["hooks"][0]["command"] for blocks in json.loads(home.program_settings_file("claude").read_text())["hooks"].values()} for home in homes]
+    commands = [{blocks[0]["hooks"][0]["command"] for blocks in json.loads(home.program_settings_file("claude").read_text())["hooks"].values()} for home in journal_folders]
     story.expect_rows(commands[0] == {f'"{story.home.hook_runner}" claude "{story.home.project_folder}"'},
                       commands[1] == {f'"{different_home.hook_runner}" claude "{different_home.project_folder}"'})

@@ -367,8 +367,8 @@ class WorktreeGit:
         return sum(int(added) + int(deleted) for added, deleted in counts if added.isdigit() and deleted.isdigit())
 
     def has_worker_work(self, worktree: Worktree) -> bool:
-        own = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-list", "--count", f"{worktree.base_branch}..HEAD").stdout.strip()
-        return own != "0" or bool(self.uncommitted_files(worktree.folder))
+        worker_commits = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-list", "--count", f"{worktree.base_branch}..HEAD").stdout.strip()
+        return worker_commits != "0" or bool(self.uncommitted_files(worktree.folder))
 
     def fast_forward(self, worktree: Worktree, tip: str) -> bool:
         return self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "merge", "--ff-only", tip).returncode == 0

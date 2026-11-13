@@ -17,5 +17,5 @@ class LinkTarget:
     model: str
 
     def statement(self) -> Statement:
-        from_reference = AllOf(end("source", self.reference))
-        return AnyOf([AllOf([from_reference, Equal("target_model", self.model)]), AllOf([Excluding(from_reference), Equal("source_model", self.model)])]).statement()
+        source_reference = AllOf(end("source", self.reference))
+        return AnyOf([AllOf([source_reference, Equal("target_model", self.model)]), AllOf([Excluding(source_reference), Equal("source_model", self.model)])]).statement()

@@ -74,8 +74,8 @@ def test_204_the_old_name_worker_deliver_answers_with_the_command_that_took_its_
 
 def test_207_no_setting_of_the_workers_says_batch_and_the_two_task_counts_say_what_they_count(new_story):
     titles = {setting.key: setting.title for setting in WORKER_SETTING_VALUES}
-    worded = " ".join(f"{setting.title} {setting.description}" for setting in WORKER_SETTING_VALUES).lower()
-    expect_value_without(worded, "batch")
+    phrased = " ".join(f"{setting.title} {setting.description}" for setting in WORKER_SETTING_VALUES).lower()
+    expect_value_without(phrased, "batch")
     expect_value((titles["most-open-tasks"], titles["worker-batch-size"]), ("Tasks a worker may hold started at once", "Tasks handed to a worker at once"))
 
 

@@ -136,7 +136,7 @@ def test_a_task_of_the_unit_another_worker_started_after_its_proof_is_listed_ref
     story.expect_success("task start 1 --environment main", actor=story.user)
     status = two_tasks.status()
     refused = prove_task(two_tasks, 1, 1, TEST_LINE)
-    staged = prove_task(two_tasks, 2, 1, TEST_LINE)
+    prepared = prove_task(two_tasks, 2, 1, TEST_LINE)
     story.expect_rows("Tasks someone else holds: 1" in status, "task 1" in status.split("Tasks someone else holds")[1],
                       refused.code != 0, "task 1 is held by" in refused.output_text,
-                      "staged for task 2" in staged.output_text, detail=f"{status} | {refused.output_text} | {staged.output_text}")
+                      "staged for task 2" in prepared.output_text, detail=f"{status} | {refused.output_text} | {prepared.output_text}")

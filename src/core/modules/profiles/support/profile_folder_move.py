@@ -95,9 +95,9 @@ class ProfileFolderMove:
             return ProfileFields.read(text).native
         native = tomllib.loads(text)
         codex_model = str(native.get("model", ""))
-        could_write = native.get("sandbox_mode") == "workspace-write"
+        writable = native.get("sandbox_mode") == "workspace-write"
         settings: dict[str, object] = {"description": str(native.get("description", "")), "body": str(native.get("developer_instructions", "")), "model": "",
                                        "codex_model": "" if codex_model == "inherit" else codex_model,
                                        "mcp_tools": ProfileFormat.tools(native.get("mcp_tools", [])), "occupant": INDEPENDENT_OCCUPANTS[native.get("independent", False) is True]}
         agent_type = ProfileFormat.agent_type(str(native.get("type", native.get("kind", "helper"))))
-        return ProfileFields(settings, path.stem, agent_type, could_write=could_write).native
+        return ProfileFields(settings, path.stem, agent_type, could_write=writable).native

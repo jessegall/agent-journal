@@ -20,9 +20,9 @@ def test_a_worktree_with_a_relative_gitdir_reads_the_config_from_beside_its_git_
     worktree = tmp_path / "main" / "wt"
     worktree.mkdir()
     (worktree / ".git").write_text("gitdir: ../.git/worktrees/one\n")
-    elsewhere = tmp_path / "elsewhere"
-    elsewhere.mkdir()
-    monkeypatch.chdir(elsewhere)
+    remote_folder = tmp_path / "elsewhere"
+    remote_folder.mkdir()
+    monkeypatch.chdir(remote_folder)
     assert ProjectRepositories(JournalHome(worktree / ".journal")).names() == {"acme/cart"}
 
 

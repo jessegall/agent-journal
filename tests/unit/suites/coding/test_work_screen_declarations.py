@@ -43,8 +43,8 @@ def test_no_setting_is_on_two_screens_and_none_is_declared_twice():
 
 
 def test_the_nested_work_settings_still_depend_on_their_parent_switch():
-    by_key = {value.key: value for value in DECLARED}
-    assert all(by_key[key].required_settings for key in ("merger-on", "main-agent-may-merge"))
+    keyed = {value.key: value for value in DECLARED}
+    assert all(keyed[key].required_settings for key in ("merger-on", "main-agent-may-merge"))
 
 
 ADVANCED = {

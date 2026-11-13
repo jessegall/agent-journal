@@ -77,9 +77,9 @@ def test_a_number_finds_the_agent_of_its_environment_and_the_agent_has_that_numb
 def test_a_number_nobody_has_and_a_number_of_another_environment_are_refused_alike(numbers):
     with pytest.raises(Refusal) as absent:
         numbers.row_id("agent", 9, 1)
-    with pytest.raises(Refusal) as elsewhere:
+    with pytest.raises(Refusal) as foreign_number:
         numbers.row_id("agent", 3, 1)
-    assert str(absent.value).replace("9", "N") == str(elsewhere.value).replace("3", "N")
+    assert str(absent.value).replace("9", "N") == str(foreign_number.value).replace("3", "N")
     assert "no agent 9 in environment main" in str(absent.value)
 
 

@@ -87,8 +87,8 @@ def test_every_hold_names_an_exit_the_agent_takes_alone_and_its_commands_exist(n
     story = new_story(fixture=UserBuilder)
     text = declaration.nudge(**fields).text
     story.expect_rows(exit_text in text, detail=text)
-    for subject, verb in JOURNAL_COMMAND.findall(text):
-        story.expect_success(f"{subject} {verb} --help", actor=story.agent)
+    for subject, command_word in JOURNAL_COMMAND.findall(text):
+        story.expect_success(f"{subject} {command_word} --help", actor=story.agent)
 
 
 def test_a_peek_at_a_held_run_passes_and_leaves_the_hold_which_only_a_read_lifts(new_story):

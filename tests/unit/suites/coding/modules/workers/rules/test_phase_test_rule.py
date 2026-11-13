@@ -38,9 +38,9 @@ class Steps:
 
 
 def rule(runs_remaining: int, has_failure: bool) -> PhaseTestRule:
-    answering = PhaseTestRule(Rows(TaskState.STARTED), None, SimpleNamespace(worker_worktree=lambda worker_id: WORKTREE), Window(runs_remaining), Steps(has_failure))
-    answering.is_test_part = lambda part, shell: True
-    return answering
+    reply = PhaseTestRule(Rows(TaskState.STARTED), None, SimpleNamespace(worker_worktree=lambda worker_id: WORKTREE), Window(runs_remaining), Steps(has_failure))
+    reply.is_test_part = lambda part, shell: True
+    return reply
 
 
 def hook() -> SimpleNamespace:

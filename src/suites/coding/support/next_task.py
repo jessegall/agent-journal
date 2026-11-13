@@ -73,15 +73,15 @@ class NextTask(TaskAssigner[Task]):
         blocked = tuple(tasks.matching(Among("holder_id", agent_ids)).every_row(AGENT_TASKS_REASON))
         assigned = tuple(tasks.matching(AssigneeAmong(Task, tuple(agent_ids))).every_row(AGENT_TASKS_REASON))
         actor_ids = self.assignments.row_actor_ids(Task, sorted({task.id for task in (*blocked, *assigned)}))
-        own: dict[int, set[int]] = defaultdict(set)
+        agent_rows: dict[int, set[int]] = defaultdict(set)
         for task in blocked:
             assignees = actor_ids.get(task.id, ())
             if not assignees or task.holder_id in assignees:
-                own[task.holder_id].add(task.id)
+                agent_rows[task.holder_id].add(task.id)
         for task in assigned:
             for agent_id in set(actor_ids.get(task.id, ())).intersection(agent_ids):
-                own[agent_id].add(task.id)
-        return {agent_id: tuple(sorted(ids)) for agent_id, ids in own.items()}
+                agent_rows[agent_id].add(task.id)
+        return {agent_id: tuple(sorted(ids)) for agent_id, ids in agent_rows.items()}
 
     def blocked_tasks(self) -> tuple[int, ...]:
         return tuple(task.id for task in self.tasks.unopenable_blocks().oldest().page(1, BLOCKED_TASK_PAGE_SIZE).rows)

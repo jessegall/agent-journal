@@ -30,5 +30,5 @@ class ConditionJoin:
     def sql(self) -> str:
         source = self.source if isinstance(self.source, str) else self.source.sql()
         matching = source if self.alias is None else f"{source} AS {self.alias}"
-        on = f" ON {Inlined(self.condition).text()}" if self.condition is not None else ""
-        return f"{'LEFT JOIN' if self.left else 'JOIN'} {matching}{on}"
+        join_condition = f" ON {Inlined(self.condition).text()}" if self.condition is not None else ""
+        return f"{'LEFT JOIN' if self.left else 'JOIN'} {matching}{join_condition}"

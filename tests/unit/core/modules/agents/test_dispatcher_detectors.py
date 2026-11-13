@@ -92,7 +92,7 @@ def test_every_file_the_import_detector_still_allows_imports_what_it_guards():
 
 
 def test_every_file_the_row_detector_still_allows_writes_the_row_and_its_writers_sit_in_their_files():
-    stale = [path for path in allowed_files(ROW_RULE) if not any(write in (ROOT / path).read_text() for write in ROW_WRITES)]
+    stale = [path for path in allowed_files(ROW_RULE) if not any(row_save in (ROOT / path).read_text() for row_save in ROW_WRITES)]
     assert stale == [], "these files no longer write an agent's ended_at or pid: take them off the detector's list"
     writers = next(step["nameIn"] for step in declared(ROW_RULE)["find"]["reject"] if "nameIn" in step)
     assert sorted(writers) == sorted(ROW_WRITERS)

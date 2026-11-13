@@ -35,9 +35,9 @@ class AgentRowNumbers(RowNumbers):
         if not row_ids:
             return {}
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
-            agents_by_id = self.folds.agent_ids(row_ids)
-            numbers = {agent.id: agent.number for agent in self.queries.query(Agent).find_many(list(set(agents_by_id.values())))}
-        return {row_id: numbers[agent_id] for row_id, agent_id in agents_by_id.items() if agent_id in numbers}
+            agent_index = self.folds.agent_ids(row_ids)
+            numbers = {agent.id: agent.number for agent in self.queries.query(Agent).find_many(list(set(agent_index.values())))}
+        return {row_id: numbers[agent_id] for row_id, agent_id in agent_index.items() if agent_id in numbers}
 
     def environment_number(self, model_name: str, row_id: int, environment_id: int | None) -> int:
         return self.environment_agent(model_name, environment_id, f"agent with row {row_id}", id=self.folds.agent_id(row_id)).number

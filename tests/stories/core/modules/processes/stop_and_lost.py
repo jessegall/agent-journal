@@ -258,17 +258,17 @@ def test_a_run_the_runner_reported_first_is_passed_over_and_the_others_still_end
 
 def test_a_start_ends_each_run_marked_running_whose_process_is_gone_and_leaves_one_whose_process_lives(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    lost, running = start_process(story, "make build"), start_process(story, "make test")
+    missing_run, running = start_process(story, "make build"), start_process(story, "make test")
     ended_program = subprocess.Popen(["true"])
     ended_program.wait()
     living = subprocess.Popen(["sleep", "60"], start_new_session=True)
     try:
         folder = story.container.get(OutputFolder)
-        folder.write_pid(lost.id, ended_program.pid)
+        folder.write_pid(missing_run.id, ended_program.pid)
         folder.write_pid(running.id, living.pid)
         BootingWork().run(story.container)
         story.run_listeners()
-        story.expect_success(f"process show {lost.id}", "state: orphaned", actor=story.agent)
+        story.expect_success(f"process show {missing_run.id}", "state: orphaned", actor=story.agent)
         story.expect_success(f"process show {running.id}", "state: running", actor=story.agent)
     finally:
         living.kill()

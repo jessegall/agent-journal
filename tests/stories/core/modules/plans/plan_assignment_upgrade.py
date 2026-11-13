@@ -31,9 +31,9 @@ def test_phases_and_tasks_of_an_assigned_plan_are_marked_inherited_only_where_th
     run_plan_assignments_migration(old_plan)
     old_plan.expect_success("phase show 1 --environment main", actor=old_plan.user)
     plan_row, phase_row = assignment_record(old_plan, "plan", 1), assignment_record(old_plan, "phase", 1)
-    inherited, by_hand = assignment_record(old_plan, "task", 1), assignment_record(old_plan, "task", HAND_GIVEN_TASK)
-    old_plan.expect_rows(phase_row["source_id"] == plan_row["id"], inherited["source_id"] == phase_row["id"], by_hand["source_id"] is None,
-                         by_hand["actor_id"] == plan_worker(old_plan, 2).id, detail=str([phase_row, inherited, by_hand]))
+    inherited, manual_assignment = assignment_record(old_plan, "task", 1), assignment_record(old_plan, "task", HAND_GIVEN_TASK)
+    old_plan.expect_rows(phase_row["source_id"] == plan_row["id"], inherited["source_id"] == phase_row["id"], manual_assignment["source_id"] is None,
+                         manual_assignment["actor_id"] == plan_worker(old_plan, 2).id, detail=str([phase_row, inherited, manual_assignment]))
 
 
 def test_plan_inspect_shows_the_same_assignee_after_the_upgrade_as_before(old_plan):

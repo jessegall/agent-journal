@@ -37,8 +37,8 @@ class ReaderDrafting:
                          count_pattern=stock.count, count_command=stock.count_command, step_pattern=stock.step) for stock in STOCK_READERS)
         stored = self.readers.all()
         matching = self.readers.layers().ordered(reader for reader in stored if ReaderSelection.matches(reader.commands, request.command))
-        stored_by_name = {reader.name: reader for reader in stored}
-        shipped = sorted((stored_by_name.get(reader.name, reader) for reader in stock_readers), key=lambda reader: not ReaderSelection.matches(reader.commands, request.command))
+        stored_index = {reader.name: reader for reader in stored}
+        shipped = sorted((stored_index.get(reader.name, reader) for reader in stock_readers), key=lambda reader: not ReaderSelection.matches(reader.commands, request.command))
         readers = (*matching, *shipped)
         for reader in readers:
             if not self.judge.fields_missing(reader, request.category) and not self.judge.misses(reader, request.category, text):

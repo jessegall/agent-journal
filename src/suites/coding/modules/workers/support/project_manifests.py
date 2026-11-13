@@ -25,7 +25,7 @@ class ProjectManifests:
     folder, and reads from each the language it names and the test command a worker runs it with. Each read
     walks the folder again, so a changed or new manifest counts at once."""
 
-    def found(self, folder: Path) -> tuple[ProjectManifest, ...]:
+    def manifest_hits(self, folder: Path) -> tuple[ProjectManifest, ...]:
         read = [matched for place, file_names in self.manifest_folders(folder) for matched in self.read_folder(folder, place, file_names)]
         tool_counts = Counter(matched.tool for matched in read if matched.command is not None)
         manifests: list[ProjectManifest] = []
@@ -38,12 +38,12 @@ class ProjectManifests:
 
     @staticmethod
     def manifest_folders(folder: Path) -> list[tuple[str, list[str]]]:
-        found: list[tuple[str, list[str]]] = []
+        manifest_hits: list[tuple[str, list[str]]] = []
         for current, folder_names, file_names in os.walk(folder):
             folder_names[:] = sorted(name for name in folder_names if name not in LIBRARY_FOLDERS and not name.startswith("."))
             place = Path(current).relative_to(folder).as_posix()
-            found.append((place, sorted(file_names)))
-        return found
+            manifest_hits.append((place, sorted(file_names)))
+        return manifest_hits
 
     def read_folder(self, folder: Path, place: str, file_names: list[str]) -> list[ManifestReading]:
         read: list[ManifestReading] = []

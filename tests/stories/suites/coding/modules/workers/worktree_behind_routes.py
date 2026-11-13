@@ -53,8 +53,8 @@ def g57_five_worktrees_in_one_look_start_the_merger_once(story, repository: GitR
     for number in range(2, SEVERAL_WORKERS + 1):
         task_id = story.new_row_id(f'task make "Work {number}" --brief "done when it is done"', actor=story.agent)
         workers.append(Actor(story.new_row_id(DISPATCH.replace(" 1", f" {task_id}"), actor=story.agent), ActorType.AGENT))
-    for each in workers:
-        worker_commits(repository, each.id, 1)
+    for worktree_case in workers:
+        worker_commits(repository, worktree_case.id, 1)
     base_commits(repository, 3)
     stale_check(story)
     mergers = [agent for agent in story.container.get(Queries).query(Agent).every_row(TEST_ROWS_REASON) if agent.profile == f"{MERGER_PROFILE.name}"]

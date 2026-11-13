@@ -52,9 +52,9 @@ class RowSearch:
 
     def closest(self, terms: Sequence[str], search_models: Sequence[type[Model]]) -> SearchResult:
         hits: dict[tuple[str, int], SearchHit] = {}
-        for words in range(len(terms) - 1, (len(terms) + 1) // 2 - 1, -1):
+        for query_terms in range(len(terms) - 1, (len(terms) + 1) // 2 - 1, -1):
             for model in search_models:
-                for row in self.searchable(model).matching(ContainsMost(model.search_fields, terms, words)).newest().take(HIT_LIMIT_ROWS):
+                for row in self.searchable(model).matching(ContainsMost(model.search_fields, terms, query_terms)).newest().take(HIT_LIMIT_ROWS):
                     hits.setdefault((row.cli_name, row.id), SearchHit.matched(row, terms))
             if len(hits) >= HIT_LIMIT_ROWS:
                 break

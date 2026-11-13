@@ -52,5 +52,5 @@ def test_no_source_or_test_file_names_a_moved_area_by_its_previous_path(new_stor
 
 def test_387_no_product_file_is_named_like_a_test(new_story):
     story = new_story()
-    named_like_tests = [str(path.relative_to(ROOT)) for path in python_files(ROOT / "src") if path.name.startswith("test_") and "testing" not in path.parts]
-    story.expect_rows(named_like_tests == [], detail=str(named_like_tests))
+    test_like_names = [str(path.relative_to(ROOT)) for path in python_files(ROOT / "src") if path.name.startswith("test_") and "testing" not in path.parts]
+    story.expect_rows(test_like_names == [], detail=str(test_like_names))

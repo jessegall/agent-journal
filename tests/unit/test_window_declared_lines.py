@@ -43,7 +43,7 @@ def component_files(entry: Path) -> set[Path]:
 
 
 def component_lines(files: set[Path]) -> set[str]:
-    return {f"{cli} {verb}" for path in files for argument in call_arguments(path.read_text()) for cli, verb in LINE.findall(argument)}
+    return {f"{cli} {command_word}" for path in files for argument in call_arguments(path.read_text()) for cli, command_word in LINE.findall(argument)}
 
 
 def declared_lines(window: WindowDeclaration) -> set[str]:

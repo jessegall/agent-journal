@@ -102,10 +102,10 @@ def test_213_a_proof_test_that_runs_when_the_rule_changes_ends_as_it_was_and_the
     worker.prove(TEST_LINE)
     story.expect_success(COMMIT, actor=worker.worker)
     story.run_listeners()
-    started_by_the_commit = [process_id for process_id in worker.started if process_id not in running_previous]
+    commit_started = [process_id for process_id in worker.started if process_id not in running_previous]
     worker.end_all_tests()
     states = {task_id: proof["state"] for task_id, proof in task_proofs(worker).items()}
-    story.expect_rows(len(running_previous) == 1, started_by_the_commit == [], states == {1: "checked", 2: "committed", 3: "committed"}, detail=f"{run_lines(worker)}, {states}")
+    story.expect_rows(len(running_previous) == 1, commit_started == [], states == {1: "checked", 2: "committed", 3: "committed"}, detail=f"{run_lines(worker)}, {states}")
 
 
 def test_the_workers_screen_shows_neither_removed_setting_and_each_number_of_its_tests_tab_still_changes(new_story, monkeypatch):

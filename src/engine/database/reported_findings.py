@@ -21,10 +21,10 @@ class ReportedFindings:
         keyed_findings: dict[str, RepeatedFinding] = {}
         for finding in findings:
             keyed_findings.setdefault(finding.key, finding)
-        now = self.seconds()
+        current_time = self.seconds()
         with self.lock:
-            unreported_findings = [finding for key, finding in keyed_findings.items() if self.is_new(key, finding.count, now)]
-            self.keys.update({finding.key: (finding.count, now) for finding in unreported_findings})
+            unreported_findings = [finding for key, finding in keyed_findings.items() if self.is_new(key, finding.count, current_time)]
+            self.keys.update({finding.key: (finding.count, current_time) for finding in unreported_findings})
         return unreported_findings
 
     def is_new(self, key: str, count: int, current_time: float) -> bool:

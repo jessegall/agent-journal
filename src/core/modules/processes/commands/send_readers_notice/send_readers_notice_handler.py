@@ -24,7 +24,7 @@ class SendReadersNoticeHandler(Handler[SendReadersNotice, None]):
     def handle(self, command: SendReadersNotice, context: Context) -> None:
         fields_missing = self.audit.fields_missing_count()
         broken = self.audit.readers_needing_repair()
-        behind = self.audit.stale_readers()
+        stale_readers = self.audit.stale_readers()
         main_agents = MainAgentFinder.rows(self.queries)
         for agent in main_agents:
             last_audit_at = self.audit.last_audit_at(agent)
@@ -38,7 +38,7 @@ class SendReadersNoticeHandler(Handler[SendReadersNotice, None]):
                 self.nudger.send(agent.id, UNREADABLE_AUDIT, AUDIT_SOURCE, context, count=agent_marks)
             if missing_readers:
                 self.nudger.send(agent.id, READONLY_MISSING_NOTICE, AUDIT_SOURCE, context, count=missing_readers)
-            for reader, _ in behind:
+            for reader, _ in stale_readers:
                 self.nudger.send(agent.id, STOCK_READER_STALE, AUDIT_SOURCE, context, reader=reader.name)
-        for reader, digest in behind:
+        for reader, digest in stale_readers:
             self.repository.update(reader, context, shipped_digest=digest)

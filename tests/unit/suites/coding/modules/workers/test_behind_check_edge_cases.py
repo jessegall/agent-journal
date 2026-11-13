@@ -25,8 +25,8 @@ class Away:
     def required(self, model: type, row_id: int):
         if model.__name__ == "Worktree":
             return replace(WORKTREE, session_agent_id=self.owner)
-        away = ORDERED_AT if self.now < self.until else None
-        return SimpleNamespace(paused_at=away if self.field == "paused_at" else None, ended_at=away if self.field == "ended_at" else None)
+        absent = ORDERED_AT if self.now < self.until else None
+        return SimpleNamespace(paused_at=absent if self.field == "paused_at" else None, ended_at=absent if self.field == "ended_at" else None)
 
 
 class Sent:

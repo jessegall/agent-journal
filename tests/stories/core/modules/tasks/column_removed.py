@@ -30,8 +30,8 @@ def test_a_journal_started_on_the_new_code_serves_the_tasks_window_with_the_old_
     code, output_text = story.synced()
     story.expect_rows(code == 0, detail=output_text)
     for task_id in DELEGATED_TASKS:
-        info = json.loads(story.run(f"task info {task_id} --json --environment main", actor=story.agent).output_text)
-        story.expect_rows(info["assigned_actor_id"] == worker(story).id, detail=str(info))
+        table_columns = json.loads(story.run(f"task info {task_id} --json --environment main", actor=story.agent).output_text)
+        story.expect_rows(table_columns["assigned_actor_id"] == worker(story).id, detail=str(table_columns))
 
 
 def test_a_search_for_delegated_to_in_src_finds_only_the_history_migrations():

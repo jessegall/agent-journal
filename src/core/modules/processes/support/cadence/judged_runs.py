@@ -39,5 +39,5 @@ class JudgedRuns:
     @staticmethod
     def is_judged(process: Process, parts: Sequence[ProcessPart]) -> bool:
         started = process.started_at is not None and process.queued_at is None
-        own = process.creator_id == process.session_agent_id and not process.plugin
-        return started and own and any(not part.category.is_short or Path(part.program).name.startswith(PYTHON_PROGRAM) for part in parts)
+        owner_run = process.creator_id == process.session_agent_id and not process.plugin
+        return started and owner_run and any(not part.category.is_short or Path(part.program).name.startswith(PYTHON_PROGRAM) for part in parts)
