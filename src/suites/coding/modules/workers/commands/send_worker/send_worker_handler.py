@@ -43,6 +43,7 @@ from suites.coding.modules.workers.support.gone_agents import GoneAgents
 from suites.coding.modules.workers.support.kept_worker_tasks import KeptWorkerTasks
 from suites.coding.modules.workers.support.worker_recipient import WorkerRecipient
 from suites.coding.modules.workers.errors.retired_worker_refusal import RetiredWorkerRefusal
+from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.started_task_release import StartedTaskRelease
@@ -62,8 +63,8 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
     runs_once = True
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks, environments: EnvironmentRows, settings: SettingValues, scopes: Scopes, admission: AgentAdmission, libraries: LibraryFolders, release: StartedTaskRelease, numbers: RowNumbers, timing: Timing) -> None:
-        self.numbers, self.timing = numbers, timing
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks, environments: EnvironmentRows, settings: SettingValues, scopes: Scopes, admission: AgentAdmission, libraries: LibraryFolders, release: StartedTaskRelease, numbers: RowNumbers, timing: Timing, places: WorkerPlaces) -> None:
+        self.numbers, self.timing, self.places = numbers, timing, places
         self.admission, self.libraries, self.release = admission, libraries, release
         self.rows, self.worktrees, self.repository, self.git, self.nudger = rows, worktrees, repository, git, nudger
         self.advance, self.bus, self.missing_agents = advance, bus, missing_agents
@@ -78,6 +79,10 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
             raise RetiredWorkerRefusal.create(worker)
         if not command.job.strip() and not command.task_ids:
             raise Refusal("a send needs a job or a task", f'journal worker send {worker.number} "<job>", or --task <task>')
+        running, limit = len(self.places.running()), self.places.run_limit()
+        if command.task_ids and running > limit:
+            raise Refusal(f"{running} workers run and the running limit is {limit}: no worker takes new tasks until fewer run",
+                          "send instructions about the work it holds without --task, or wait for a merge or a stop")
 
     def check_session(self, worker: Agent) -> None:
         if worker.ended_at is not None:
