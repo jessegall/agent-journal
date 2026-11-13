@@ -6,15 +6,15 @@ from server.request import request_handler
 from server.request.request_handler import RequestHandler
 
 
-class HungUpSocketFile:
-    """The server's end of a socket whose caller hangs up once the answer's headers are sent."""
+class BrokenPipeWriter:
+    """The server's end of a socket whose caller disconnects once the answer's headers are sent."""
 
     def __init__(self) -> None:
         self.writes: list[bytes] = []
-        self.caller_hung_up = False
+        self.caller_disconnected = False
 
     def write(self, data: bytes) -> int:
-        if self.caller_hung_up:
+        if self.caller_disconnected:
             raise BrokenPipeError(32, "Broken pipe")
         self.writes.append(data)
         return len(data)
@@ -26,17 +26,17 @@ class HungUpSocketFile:
 class RefusingCliEndpoint:
     """A command that refuses after its caller hung up: writing the refusal breaks the pipe."""
 
-    def __init__(self, socket_file: HungUpSocketFile) -> None:
+    def __init__(self, socket_file: BrokenPipeWriter) -> None:
         self.socket_file = socket_file
 
     def answer(self, request, stream) -> int:
-        self.socket_file.caller_hung_up = True
+        self.socket_file.caller_disconnected = True
         stream.write("refused: the task is not yours\n")
         return 1
 
 
 def test_a_caller_hanging_up_during_a_refusal_is_no_server_error_and_gets_no_further_write(monkeypatch):
-    socket_file = HungUpSocketFile()
+    socket_file = BrokenPipeWriter()
     server = MagicMock()
     handler = object.__new__(RequestHandler)
     handler.wfile, handler.request_version, handler.requestline, handler.client_address = socket_file, "HTTP/1.1", "POST /cli HTTP/1.1", ("", 0)
