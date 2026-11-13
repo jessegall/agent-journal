@@ -125,3 +125,15 @@ def test_a_kept_worker_sent_a_built_task_finds_the_earlier_work_too(base_story):
     built_and_released(story, repository, f"{WORKER_DISPATCH_LINE} 1")
     story.expect_success(f"worker send --wait {agent_number(story, kept.id)} --task 1", actor=story.agent)
     expect_value((repository.worktree_folder(kept.id) / "cart.py").read_text(), CART_CHANGE)
+
+
+def test_it_hands_in_with_differences_already_built_and_the_task_closes(proved_second):
+    story, repository, first, second = proved_second
+    story.expect_success(BUILT_HAND_IN, actor=second)
+    repository.expect_file(repository.worker_branch(second.id), "cart.py", CART_CHANGE)
+    story.expect_text("task show 1", "state: testing", actor=story.agent)
+
+
+def test_a_clash_of_the_earlier_work_with_the_moved_base_is_named_at_the_hand_in(cart_conflict):
+    story, repository, second = cart_conflict
+    story.expect_refusal(BUILT_HAND_IN, f"your work clashes with {ENVIRONMENT_BRANCH} in cart.py", actor=second)

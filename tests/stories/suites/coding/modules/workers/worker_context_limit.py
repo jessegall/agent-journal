@@ -105,3 +105,11 @@ def test_a_worker_past_the_limit_at_an_interim_commit_is_told_to_stop_and_may_st
     story.expect_hook_allowed(session, HookSamples.sample("post_tool_use"), "stop now")
     story.expect_success('memory skip "nothing to keep"', actor=worker)
     story.expect_hook_allowed(session, HookSamples.stop())
+
+
+def test_a_worker_under_the_limit_at_an_interim_commit_goes_on_and_may_not_stop(new_story):
+    story, worker = finished_task_ids(new_story)
+    limit_enabled(story)
+    has_context(story, worker, LIMIT - 1)
+    story.expect_success(COMMIT, actor=worker)
+    story.expect_hook_refusal(worker_session(story, worker), HookSamples.stop(), "task")

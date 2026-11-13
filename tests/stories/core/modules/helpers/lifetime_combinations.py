@@ -9,6 +9,7 @@ from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, re
 from tests.stories.core.modules.helpers.support.rotating_helper import EndedColdRotationHelper, EndedContinueHelper, EndedEachLaunchHelper, real_program_states, story_with_profile_file
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.agent_labels import agent_number
+from core.modules.agents.models.agent import Agent
 
 LIMIT_TOKENS = 400000
 UNAVAILABLE_TEXT = "The earlier conversation is unavailable"
@@ -89,3 +90,16 @@ def test_cold_minutes_at_zero_changes_nothing_for_an_each_launch_helper(new_stor
     story.expect_success(f"setting set {COLD_SESSION_MINUTES} 0 --project", actor=story.user)
     helper, request = with_job(story, monkeypatch, 1, 10)
     story.expect_rows(helper_agent(story).session != helper.session, "--resume" not in request["command"], detail=str(request["command"][-4:]))
+
+
+def test_an_each_launch_helper_sent_three_jobs_is_one_kept_agent(new_story):
+    story = story_with_profile_file(new_story, EndedEachLaunchHelper)
+    helper = helper_agent(story)
+    sessions = [helper.session]
+    for _ in range(3):
+        launched_job(story)
+        sessions.append(helper_agent(story).session)
+        story.expect_success(f"agent end {helper.id}", actor=story.user)
+        story.run_listeners()
+    helpers = list(story.story_rows(Agent, role="helper"))
+    story.expect_rows(len(helpers) == 1, len(set(sessions)) == 4, detail=str(sessions))

@@ -137,3 +137,16 @@ def test_an_answered_ask_returns_the_worker_to_its_point(phase_worker):
     wait = phase_worker.story.new_row_id('wait stuck "the plan is unclear"', actor=phase_worker.worker)
     phase_worker.story.expect_success(f"wait end {wait}", actor=phase_worker.worker)
     expect_step(phase_worker, "build")
+
+
+def test_worker_deliver_says_what_status_says(last_of_phase):
+    outcome = last_of_phase.story.run("worker commit --wait --differences none", actor=last_of_phase.worker)
+    expect_voice(last_of_phase, outcome.output_text)
+
+
+def test_a_clash_settled_and_delivered_is_no_longer_a_clash(clashed):
+    story, worker, repository = clashed
+    story.expect_rows("Point: conflict" in story.run("worker status", actor=worker).output_text)
+    repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
+    story.expect_success("worker commit --wait --differences none", actor=worker)
+    story.expect_rows("Point: conflict" not in story.run("worker status", actor=worker).output_text)

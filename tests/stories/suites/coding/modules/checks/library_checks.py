@@ -107,3 +107,11 @@ def test_the_check_of_a_task_wait_cannot_be_shared(new_story, shared_server):
     waiting = story.container.get(Queries).query(Check).first()
     story.expect_rows(waiting.task_wait_id is not None)
     story.expect_refusal(f"library share check {waiting.id}", f"check {waiting.id} cannot be shared: this check belongs to a task's wait", actor=story.user)
+
+
+def test_getting_a_check_shows_its_command_first_and_needs_a_person_to_read_it(new_story, shared_server):
+    server, tokens = shared_server
+    item_id = library_check(server, tokens.admin, **check_fields("Needs reading", "echo careful"))
+    story = connected(new_story, server, tokens.editor)
+    story.expect_refusal(f"library get check {item_id}", "this check runs on your computer: echo careful", actor=story.user)
+    story.expect_rows(len(story.story_rows(Check)) == 0)

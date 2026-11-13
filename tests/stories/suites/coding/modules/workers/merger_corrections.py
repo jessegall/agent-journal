@@ -16,6 +16,7 @@ from tests.stories.suites.coding.modules.workers.support.merger_launcher import 
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting
 from suites.coding.modules.workers.support.worker_settings import PHASE_TEST_DEFERRAL_LIMIT
+from tests.stories.server.support.server_client import server_story
 
 LATER_STORIES = "tests/stories/compaction_never_twice.py"
 OWN_TEST = f"pytest tests/build.py {LATER_STORIES}"
@@ -173,3 +174,11 @@ def test_105_only_the_merger_defers_a_test(later_stories_failed):
     story, worker = later_stories_failed.story, later_stories_failed.worker
     refused = story.run(f'merger defer-test {agent_number(story, worker.worker.id)} "{LATER_STORIES}" --why "{WHY}"', actor=worker.worker)
     story.expect_rows(refused.code != 0, rows(worker, DEFERRALS) == [], detail=refused.output_text)
+
+
+def test_153_the_plan_shows_an_open_deferral_on_its_checkpoint_phase_until_it_is_closed(deferred):
+    with server_story(deferred.story) as server:
+        cookie = server.expect_viewer_login(server.viewer_key("Ada"))
+        inspected = server.viewer_line_value(cookie, {"window": "plans.plans", "line": ["plan", "inspect", "1"], "environment": "main"})
+    lines = inspected["checkpoint_lines"]
+    deferred.story.expect_rows(f"phase 1: own test deferred: {LATER_STORIES}, until the checkpoint of phase 2" in lines, detail=str(lines))

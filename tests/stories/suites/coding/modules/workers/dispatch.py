@@ -82,3 +82,10 @@ def test_a_persons_dispatch_with_a_program_uses_the_tasks_environment(new_story)
     worker_id = story.new_row_id(f"{DISPATCH} --program claude", actor=person)
     story.expect_text(f"agent show {agent_number(story, worker_id)}", "environment_id: 1", "role: worker")
     story.expect_text("task show 1", f"holder_id: {worker_id}", "state: started")
+
+
+def test_a_dispatch_from_a_branch_that_does_not_exist_is_refused_and_makes_nothing(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = repository_environment(story, branch="version-6")
+    story.expect_refusal(DISPATCH, f"branch version-6 does not exist in {repository.folder}", actor=story.agent)
+    expect_clean_environment(story, repository)

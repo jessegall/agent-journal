@@ -251,3 +251,13 @@ def test_a_long_script_of_no_known_type_is_told_to_print_its_steps_and_its_card_
     tick_named(story, "read running outputs")
     story.expect_text(f"output show {process.id}", "progress: 17", actor=story.agent)
     expect_marks_text(story, "Moving the files")
+
+
+
+
+def test_a_person_raising_the_sparse_seconds_to_90_makes_a_running_50_second_dot_run_streaming(new_story):
+    story = install_runner(new_story(fixture=UserBuilder))
+    process = moved_run(story, "pytest tests/dots -q", CommandCategory.TEST_RUN)
+    story.expect_success(f"setting set {SPARSE_KEY} 90 --environment main", actor=story.user)
+    ticks(story, 130, process, every=50)
+    story.expect_rows("no reader can follow" not in kept_lines(story), detail=kept_lines(story))

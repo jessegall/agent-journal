@@ -284,3 +284,9 @@ def test_the_merger_may_not_grant_a_run_with_no_test_file(spent_case):
 def test_the_main_agent_hears_nothing_of_a_grant_the_merger_gives(spent_case):
     spent_case.story.expect_success(f"helper grant {agent_number(spent_case.story, spent_case.worker.id)} pytest tests/cart.py", actor=spent_case.merger)
     spent_case.story.expect_rows("helper-grant" not in spent_case.main_lines(), detail=spent_case.main_lines())
+
+
+def test_a_case_no_command_covers_ends_at_the_main_agent_with_the_facts_of_the_worker(own_files):
+    own_files.story.expect_success(f"{MERGER_QUESTION} --worker {agent_number(own_files.story, own_files.worker.id)}", actor=own_files.merger)
+    text = own_files.main_messages()[0].text
+    own_files.story.expect_rows("Recommendation: Dutch tax" in text, "point build, task 1" in text, "cart.py, rate.py" in text, detail=text)

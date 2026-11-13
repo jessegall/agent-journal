@@ -192,3 +192,13 @@ def test_a_helper_whose_end_hook_was_lost_is_ended_at_a_tick(new_story):
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.expect_text(f"agent show {agent_number(story, helper)}", "ended_at: 2026")
+
+
+def test_a_launcher_that_answers_no_pid_leaves_no_old_process_on_the_worker(running_worker):
+    worker = running_worker.worker
+    running_worker.expect_success(f"agent end {worker.id}", actor=running_worker.agent)
+    launcher = start_launcher(running_worker, b"started\n")
+    running_worker.expect_text(f'worker send --wait {agent_number(running_worker, worker.id)} "Add the tax"', "the job waits until it starts", actor=running_worker.agent)
+    running_worker.run_listeners()
+    launcher.drain_requests()
+    running_worker.expect_no_text(f"agent show {agent_number(running_worker, worker.id)}", "pid:")
