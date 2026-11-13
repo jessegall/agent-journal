@@ -20,7 +20,7 @@ class AgentProfileSkills:
     # the profile is read once, and the answer asks it for any number of skills
     def refused(self, agent_id: int) -> Callable[[str], bool]:
         profile = self.readable_profile(agent_id)
-        return lambda folder: profile is not None and self.skills.refuses(profile, folder)
+        return (lambda folder: False) if profile is None else self.skills.refused(profile)
 
     # the kind of agent a skill is written for: its profile's type, or main for a main agent without a profile
     def agent_type(self, agent_id: int) -> str:

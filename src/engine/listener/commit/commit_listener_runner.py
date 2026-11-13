@@ -25,6 +25,7 @@ from engine.performance.performance_state import PerformanceState
 from engine.errors.refusal import Refusal
 from engine.listener.errors.listener_time_limit_error import ListenerTimeLimitError
 from engine.setting.setting_values import SettingValues
+from engine.request.request_values import RequestValues
 
 
 FAILURE_LIMIT_ATTEMPTS = 3
@@ -202,7 +203,8 @@ class CommitListenerRunner:
         start_points = tools.begin()
         started_at = perf_counter()
         try:
-            with self.scopes.event_scope(listener_class.disabled_scopes, event):
+            # one event is one request, so the reads a listener repeats are loaded once
+            with self.container.get(RequestValues).opened(), self.scopes.event_scope(listener_class.disabled_scopes, event):
                 built_event = self.container.get(EventBuilder).built(listener_class.event_type(event.event), event)
                 if built_event is not None:
                     self.container.get(listener_class).handle(built_event, event)
