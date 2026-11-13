@@ -98,6 +98,8 @@ from core.modules.plugins.listeners.plugin_queue_file_listener import PluginQueu
 from core.modules.plugins.listeners.login_path_listener import LoginPathListener
 from core.modules.plugins.listeners.journal_instruction_file_listener import JournalInstructionFileListener
 from core.modules.plugins.listeners.plugin_skill_publish_listener import PluginSkillPublishListener
+from core.modules.plugins.listeners.plugin_readers_publish_listener import PluginReadersPublishListener
+from core.modules.plugins.commands.update_plugin_readers.update_plugin_readers_handler import UpdatePluginReadersHandler
 from core.modules.plugins.listeners.stale_managed_hooks_listener import StaleManagedHooksListener
 from core.modules.plugins.migrations.m001_plugins import PluginsTablesMigration
 from core.modules.plugins.migrations.m002_plugin_queue_index import PluginQueueIndexMigration
@@ -146,7 +148,7 @@ class PluginsModule(Module):
                                        WindowKey("dashboard-poll", "plugin dashboard {plugin}", tab="dashboard-poll", reload_seconds=60)],
                                  runs=["plugin service", "plugin upgrade", "plugin enable", "plugin disable", "plugin install", "plugin remove", "plugin configure", "message send"], events=["plugin.*"])]
     migrations = [QueuedRunsMigration, PlainColumnNamesMigration, PluginConfigMigration, PluginOutputEnvironmentMigration, PluginEventDeliveriesMigration, PluginSessionMigration, PluginOutputIndexMigration, PluginsTablesMigration, PluginQueueIndexMigration, PluginSettingEnvironmentsMigration, PluginRowsEnvironmentIndexMigration, QueuedRunNamesMigration]
-    handlers = [QueuePluginRunHandler, CancelQueuedRunHandler, ChangePluginServiceHandler, LogPluginLineHandler, RefreshPluginConfigHandler, PrunePluginDeliveriesHandler, RunPluginCommandHandler, SendPluginStepLineHandler, DeliverFileEditHandler, UpgradePluginHandler, InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler,
+    handlers = [UpdatePluginReadersHandler, QueuePluginRunHandler, CancelQueuedRunHandler, ChangePluginServiceHandler, LogPluginLineHandler, RefreshPluginConfigHandler, PrunePluginDeliveriesHandler, RunPluginCommandHandler, SendPluginStepLineHandler, DeliverFileEditHandler, UpgradePluginHandler, InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler,
                 RecordPluginFaultHandler, ClearPluginFaultsHandler, AddPluginOutputHandler,
                 ClearPluginQueueFileHandler]
     settings = [SettingValue("hold_window_ms", "Plugin answer limit", "The most milliseconds a plugin may take to answer an event it holds before the agent goes on.",
@@ -162,6 +164,6 @@ class PluginsModule(Module):
                      TickHandler(TickInterval(seconds=60), OrphanServiceStopping(), "orphan plugin service stopping"),
                      TickHandler(TickInterval(seconds=24 * 60 * 60), DeliveryPruning(), "plugin delivery pruning", starts_immediately=True)]
     guards = [PluginEventGuard]
-    listeners = [QueuedRunAdmissionListener, QueuedRunEndListener, PluginServicesRemovalListener, PluginServicesUpgradeListener, PluginWrongKeyMarkListener, PluginEventListener, SystemEventDeliveryListener, LoginPathListener, PluginSkillPublishListener, JournalInstructionFileListener, StaleManagedHooksListener, PluginDeliveryListener, PluginHealthMarkListener, PluginOutputListener, PluginQueueFileListener]
+    listeners = [QueuedRunAdmissionListener, QueuedRunEndListener, PluginServicesRemovalListener, PluginServicesUpgradeListener, PluginWrongKeyMarkListener, PluginEventListener, SystemEventDeliveryListener, LoginPathListener, PluginSkillPublishListener, PluginReadersPublishListener, JournalInstructionFileListener, StaleManagedHooksListener, PluginDeliveryListener, PluginHealthMarkListener, PluginOutputListener, PluginQueueFileListener]
     subcommands = [QueuePluginRunSubcommand, CancelQueuedRunSubcommand, QueuedRunReadSubcommand, QueuedRunShowSubcommand, ChangePluginServiceSubcommand, LogPluginLineSubcommand, PostPluginCardSubcommand, PluginTrySubcommand, PluginEventsSubcommand, RunPluginCommandSubcommand, PluginCheckoutSubcommand, PluginPathSubcommand, RefreshPluginConfigSubcommand, PluginChangesSubcommand, PluginFileSubcommand, PluginRecordSubcommand, PluginListSubcommand, PluginSettingsSubcommand, PluginServicesSubcommand, PluginServiceLogSubcommand, UpgradePluginSubcommand, PluginPreviewSubcommand, PluginLatestSubcommand, PluginDashboardSubcommand, PluginDashboardsSubcommand, PluginDescriptionsSubcommand, ProposePluginSubcommand, InstallPluginSubcommand, EnablePluginSubcommand,
                    DisablePluginSubcommand, ConfigurePluginSubcommand, RemovePluginSubcommand]

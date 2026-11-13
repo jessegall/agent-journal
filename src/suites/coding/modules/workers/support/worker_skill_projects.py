@@ -30,7 +30,7 @@ class WorkerSkillProjects(SkillProjects):
         return self.kept_folders[project][1]
 
     def permits(self, project: Path, folder: str) -> bool:
-        worktree = next((row for row in self.worktrees.open_worktrees() if Path(row.folder).resolve() == project), None)
+        worktree = next((row for row in self.worktrees.open_worktrees() if Path(row.folder).resolve() == project.resolve()), None)
         return worktree is None or not self.skills.refuses(worktree.session_agent_id, folder)
 
     def agent_folder(self, agent_id: int, environment_id: int) -> Path:

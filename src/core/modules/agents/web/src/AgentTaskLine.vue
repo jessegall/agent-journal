@@ -4,8 +4,8 @@ import {HoverTip, TaskBar, peekRef} from "@journal/window-kit";
 import {shortJobTitle, taskLine} from "./agentTaskLine.js";
 
 // the bottom line of an agent's row: "Plan" and its number for an agent working on a plan, else "Task" and its number with its title in a tooltip, or "Tasks" and the number of each task it has started when there are several, how many of its tasks are done at the far right
-// with the rest in a tooltip, and the thin bar of its tasks done and in testing; a helper has a job, named by the title its sender gave it or else the first words of the job, whose question is its tooltip, followed by the program the job runs on and whether it began a new conversation or resumed one
-const props = defineProps({tasks: {type: Array, default: () => []}, inHand: {type: Object, default: null}, job: {type: String, default: ""}, jobTitle: {type: String, default: ""}, jobLaunch: {type: String, default: ""}, perHour: {type: Number, default: 0}});
+// with the rest in a tooltip; a worker whose unit is merged keeps the count and bar at zero for its next batch; and the thin bar of its tasks done and in testing; a helper has a job, named by the title its sender gave it or else the first words of the job, whose question is its tooltip, followed by the program the job runs on and whether it began a new conversation or resumed one
+const props = defineProps({tasks: {type: Array, default: () => []}, inHand: {type: Object, default: null}, job: {type: String, default: ""}, jobTitle: {type: String, default: ""}, jobLaunch: {type: String, default: ""}, perHour: {type: Number, default: 0}, countsEmpty: {type: Boolean, default: false}});
 const MOST_LISTED = 3;
 const line = computed(() => (props.inHand ? taskLine({tasks: props.tasks, inHand: props.inHand, perHour: props.perHour}) : null));
 </script>
@@ -37,6 +37,10 @@ const line = computed(() => (props.inHand ? taskLine({tasks: props.tasks, inHand
 </template></template></HoverTip>
         </span>
         <TaskBar class="bar" data-agent-bar aria-hidden="true" :total="line.bar.total" :done="line.bar.done" :testing="line.bar.testing" :started="line.bar.started" />
+    </template>
+    <template v-else-if="countsEmpty">
+        <span class="task-line" data-agent-task-line><span class="task" data-agent-no-task>No task</span><span class="count" data-agent-count>0 of 0</span></span>
+        <TaskBar class="bar" data-agent-bar aria-hidden="true" :total="0" :done="0" :testing="0" :started="0" />
     </template>
 </template>
 

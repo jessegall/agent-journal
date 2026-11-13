@@ -304,3 +304,37 @@ def test_a_queued_send_keeps_the_request_selected_when_it_was_accepted(new_story
         scenario.command('task make "Parent continues" --environment main')
         scenario.expect_link("message:2", "task:2", "about")
         scenario.expect_no_link("message:1", "task:2")
+
+
+def merged_operation(story, worker):
+    story.expect_text(f"worker merge {agent_number(story, worker.id)}", "command accepted", actor=story.agent)
+    operation = story.container.get(Queries).query(WorkerOperation).newest().first()
+    outcome = run_operation_copy(story, operation)
+    story.expect_rows(outcome.code == 0, detail=outcome.output_text)
+    with operation_story(story) as ending_story:
+        end_operation(ending_story, operation)
+
+
+def main_line_keys(story):
+    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON)
+    return [line.nudge.key for line in lines]
+
+
+@pytest.mark.real_git
+@pytest.mark.parametrize("name", [WorkerOperationName.MERGE])
+def test_tasks_sent_while_a_delivery_waited_go_to_the_worker_as_one_batch_after_the_merge(worker_git_command):
+    story, _, worker, _ = worker_git_command
+    first = story.new_row_id('task make "The receipt" --brief "Add the receipt"', actor=story.agent)
+    second = story.new_row_id('task make "The invoice" --brief "Add the invoice"', actor=story.agent)
+    story.expect_success(f"worker send {agent_number(story, worker.id)} --wait --task {first} {second}", actor=story.agent)
+    merged_operation(story, worker)
+    story.expect_text(f"worker status {agent_number(story, worker.id)}", f"task:{first}", f"task:{second}", actor=story.agent)
+    story.expect_rows("workers.worker_without_tasks" not in main_line_keys(story), detail=str(main_line_keys(story)))
+
+
+@pytest.mark.real_git
+@pytest.mark.parametrize("name", [WorkerOperationName.MERGE])
+def test_a_worker_with_nothing_left_after_its_merge_stops_and_the_main_agent_is_told(worker_git_command):
+    story, _, worker, _ = worker_git_command
+    merged_operation(story, worker)
+    story.expect_rows("workers.worker_without_tasks" in main_line_keys(story), detail=str(main_line_keys(story)))
