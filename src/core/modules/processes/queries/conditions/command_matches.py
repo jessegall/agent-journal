@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from engine.database.statement import Statement
 
 PART_COMMAND = "coalesce(nullif(command, ''), text)"
-from engine.query.conditions.glob_condition import GlobCondition
+from engine.query.conditions.file_pattern_match import FilePatternMatch
 from engine.query.conditions.disjunction import Disjunction
 
 
@@ -15,4 +15,4 @@ class CommandMatches:
     patterns: Sequence[str]
 
     def statement(self) -> Statement:
-        return Disjunction([GlobCondition(PART_COMMAND, pattern) for pattern in self.patterns]).statement()
+        return Disjunction([FilePatternMatch(PART_COMMAND, pattern) for pattern in self.patterns]).statement()

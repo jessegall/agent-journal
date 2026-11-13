@@ -50,14 +50,14 @@ class UpdateWorkerHandler(Handler[UpdateWorker, UpdateOutcome]):
 
     def handle(self, command: UpdateWorker, context: Context) -> UpdateOutcome:
         worktree = self.worktrees.required_worker_worktree(context.actor.id)
-        result = self.classified(self.update)
+        outcome = self.classified(self.update)
         if self.update.base_commit and self.update.base_commit != worktree.base_commit:
             self.repository.save_change(worktree, worktree.updated(self.update.base_commit), context)
-        if result is UpdateResult.CONFLICTS:
+        if outcome is UpdateResult.CONFLICTS:
             self.closing.conflicted(worktree, context)
         else:
             self.closing.close_updated(worktree, context)
         operation = self.queries.query(WorkerOperation).filter(worker_id=context.actor.id, process_id=command.process_id).first() if command.process_id is not None else None
         if operation is not None:
-            self.repository.update(operation, context, update_outcome=result)
-        return UpdateOutcome(worktree.base_branch, self.update, result)
+            self.repository.update(operation, context, update_outcome=outcome)
+        return UpdateOutcome(worktree.base_branch, self.update, outcome)

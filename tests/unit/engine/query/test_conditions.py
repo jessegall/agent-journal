@@ -10,7 +10,7 @@ from engine.query.conditions.conjunction import Conjunction
 from engine.query.conditions.disjunction import Disjunction
 from engine.query.conditions.column_compare import ColumnCompare
 from engine.query.conditions.minimum_duration import MinimumDuration
-from engine.query.conditions.glob_condition import GlobCondition
+from engine.query.conditions.file_pattern_match import FilePatternMatch
 from engine.query.conditions.elapsed_interval import ElapsedInterval
 from engine.query.conditions.json_list_empty import JsonListEmpty
 from engine.query.conditions.prior_row_value import PriorRowValue
@@ -121,7 +121,7 @@ def test_all_of_joins_its_conditions_with_and_and_matches_every_row_when_empty()
 
 
 def test_the_new_conditions_give_their_sql_and_parameters_in_order():
-    assert GlobCondition("key", "mark:round:*").statement() == Statement("key GLOB ?", ["mark:round:*"])
+    assert FilePatternMatch("key", "mark:round:*").statement() == Statement("key GLOB ?", ["mark:round:*"])
     assert ColumnCompare("tasks.id", "=", "proofs.task_id").statement() == Statement("tasks.id = proofs.task_id")
     assert TextContains("last_output", "not found").statement() == Statement("instr(last_output, ?) > 0", ["not found"])
     assert PriorRowValue(("closed_at", "id"), ("2026", 9)).statement() == Statement("(closed_at, id) < (?, ?)", ("2026", 9))
