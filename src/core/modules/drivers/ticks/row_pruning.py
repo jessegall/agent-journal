@@ -23,7 +23,7 @@ class RowPruning:
         rows = PrunedRows(database)
         for model in RowPruning.prunable_models(container.get(Registry)):
             for _ in range(MOST_BATCHES):
-                ids = [int(str(row_id)) for row_id in model.prunable(queries.query(model).with_removed(), tables.table(model).name).oldest().limit(BATCH_ROWS, BATCH_REASON).pluck("id")]
+                ids = model.prunable(queries.query(model).with_removed(), tables.table(model).name).oldest().limit(BATCH_ROWS, BATCH_REASON).pluck("id", int)
                 if not ids:
                     break
                 with database.transaction():

@@ -24,6 +24,7 @@ from engine.driver.nudger import Nudger
 from core.modules.processes.commands.request_count_reader.request_count_reader import RequestCountReader
 from suites.coding.modules.workers.support.worker_test_limit_nudges import TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE
 from suites.coding.modules.workers.support.part_test_listing import PartTestListing
+from suites.coding.modules.workers.support.worker_own_runs import WorkerOwnRuns
 
 LISTINGS_REASON = "the count of a test command comes from the newest kept output of it that holds one"
 
@@ -31,16 +32,16 @@ LISTINGS_REASON = "the count of a test command comes from the newest kept output
 class WorkerTestListings(RunCounts):
     """Builds per-part listings and adds their counts for a queued worker run."""
 
-    def __init__(self, queries: Queries, settings: SettingValues, run: ReaderRun, folder: OutputFolder, outputs: OutputQuery, readers: ReaderRows, visibility: RunVisibility, rows: EventRows, bus: Bus, nudger: Nudger) -> None:
+    def __init__(self, queries: Queries, settings: SettingValues, run: ReaderRun, folder: OutputFolder, outputs: OutputQuery, readers: ReaderRows, visibility: RunVisibility, rows: EventRows, bus: Bus, nudger: Nudger, own_runs: WorkerOwnRuns) -> None:
         self.queries, self.settings, self.run, self.folder, self.outputs, self.readers, self.visibility, self.rows = queries, settings, run, folder, outputs, readers, visibility, rows
-        self.bus, self.nudger = bus, nudger
+        self.bus, self.nudger, self.own_runs = bus, nudger, own_runs
 
     def parts(self, process: Process) -> tuple[PartTestListing, ...]:
         agent = self.rows.required(Agent, process.session_agent_id)
         return self.output_parts(process, self.outputs.process_output(process.id)) if self.is_counted(process, agent) else ()
 
     def is_counted(self, process: Process, agent: Agent) -> bool:
-        return process.is_queue_run and process.creator_id == process.session_agent_id and self.settings.number(WORKER_TEST_LIMIT) > 0 and agent.role == CodingHelperRole.WORKER
+        return process.is_queue_run and self.own_runs.is_own(process) and self.settings.number(WORKER_TEST_LIMIT) > 0 and agent.role == CodingHelperRole.WORKER
 
     def output_parts(self, process: Process, output: Output | None) -> tuple[PartTestListing, ...]:
         readers = self.readers.all()
@@ -74,7 +75,7 @@ class WorkerTestListings(RunCounts):
         return sum(counts) if counts and all(count > 0 for count in counts) else 0
 
     def requires_count(self, process: Process, agent: Agent) -> bool:
-        return (process.is_queue_run and process.creator_id == process.session_agent_id and agent.role == CodingHelperRole.WORKER
+        return (process.is_queue_run and self.own_runs.is_own(process) and agent.role == CodingHelperRole.WORKER
                 and self.settings.number(WORKER_TEST_LIMIT) > 0
                 and any(part.category is CommandCategory.TEST_RUN for part in self.visibility.parts(process.id)))
 

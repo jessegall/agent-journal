@@ -32,7 +32,7 @@ class Store:
     def ordered(self, *columns: str) -> "Store":
         return self
 
-    def limited(self, size: int) -> list[WorktreeBehindCheck]:
+    def take(self, size: int) -> list[WorktreeBehindCheck]:
         return self.rows[:size]
 
     def delete_many_stored(self, rows, context) -> None:

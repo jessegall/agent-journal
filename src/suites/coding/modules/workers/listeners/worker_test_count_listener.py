@@ -15,6 +15,7 @@ from core.modules.processes.models.process_part import ProcessPart
 from engine.setting.setting_values import SettingValues
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 from suites.coding.modules.workers.support.worker_test_limit_nudges import TEST_LIMIT_STOP, WORKER_TEST_LIMIT_SOURCE
+from suites.coding.modules.workers.support.worker_own_runs import WorkerOwnRuns
 from engine.event.changed import Changed
 from engine.event.deleted import Deleted
 from engine.command.context import Context
@@ -26,9 +27,9 @@ class WorkerTestCountListener(SaveListener[Changed[Output]]):
     name = WORKER_TEST_LIMIT_SOURCE
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, settings: SettingValues, bus: Bus, nudger: Nudger, rows: EventRows) -> None:
+    def __init__(self, queries: Queries, settings: SettingValues, bus: Bus, nudger: Nudger, rows: EventRows, own_runs: WorkerOwnRuns) -> None:
         self.queries, self.settings, self.bus, self.nudger = queries, settings, bus, nudger
-        self.rows = rows
+        self.rows, self.own_runs = rows, own_runs
 
     def handle(self, event: Changed[Output], context: Context) -> None:
         if isinstance(event, Deleted):
@@ -39,7 +40,7 @@ class WorkerTestCountListener(SaveListener[Changed[Output]]):
         if event.old_row is not None and event.old_row.test_count == output.test_count:
             return
         process = self.rows.required(Process, output.process_id)
-        if process.state not in RUNNING_STATES or process.creator_id != process.session_agent_id:
+        if process.state not in RUNNING_STATES or not self.own_runs.is_own(process):
             return
         agent = self.rows.required(Agent, process.session_agent_id)
         limit = self.settings.number(WORKER_TEST_LIMIT)

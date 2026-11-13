@@ -3,6 +3,8 @@ from types import SimpleNamespace
 
 from core.modules.agents.support.fold_record import FoldRecord
 
+KEPT = SimpleNamespace(read=lambda query, loader, name: loader())
+
 
 class FakeFoldQuery:
     """Folded main rows, filtered and ordered the way the fold record reads them."""
@@ -28,7 +30,7 @@ def fold(folded_agent_id: int, number: int, session: str, past_session: str, env
                            agent_row=json.dumps({"id": folded_agent_id, "session": session}), sessions=json.dumps([{"session": past_session}]))
 
 
-RECORD = FoldRecord(SimpleNamespace(query=lambda model: FakeFoldQuery([fold(894, 1, "s-894", "s-old"), fold(893, 29, "s-893", "s-older")])))
+RECORD = FoldRecord(SimpleNamespace(query=lambda model: FakeFoldQuery([fold(894, 1, "s-894", "s-old"), fold(893, 29, "s-893", "s-older")])), KEPT)
 
 
 def test_an_old_agent_id_resolves_to_the_survivor_and_any_other_id_stays_itself():

@@ -29,6 +29,8 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.bindings.worker_test_listings import WorkerTestListings
+from suites.coding.modules.workers.models.proof import Proof
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from engine.testing.expectations.expect_reply import expect_reply_refusal
 
 TEST_ROWS_REASON = "the test reads every row it checks"
@@ -92,14 +94,28 @@ def test_a_run_under_the_limit_and_a_limit_of_zero_go_on(limited_run, limit, cou
     story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.RUNNING)
 
 
-def test_the_tests_of_a_proof_are_not_limited(new_story):
-    story = new_story(fixture=TestLimitSetup)
-    worker = reader_worker(story)
-    actor = Actor.core()
-    process = story.container.get(Bus).run(StartProcess.single_part(worker.id, "pytest tests/proof.py", "/work", CommandCategory.TEST_RUN, 30), actor, environment_id=1)
-    story.container.get(OutputFolder).write_output(process.id, 1, "collected 100 items\n")
+class ProofLimitSetup(StoryFixture):
+    """The orchestrator's task 1 is open, its workers may run at most five tests a command, and readers are not forced."""
+
+    parent = OpenTaskOrchestrator
+
+    def steps(self, story: Story) -> None:
+        story.run("setting set journal.suites.coding.workers.worker-run-most-tests 5 --environment main")
+        story.run("setting set journal.core.processes.readers-forced off --environment main")
+
+
+def test_the_test_of_a_proof_over_the_limit_is_stopped_like_the_workers_own_run(new_story):
+    story = new_story(fixture=ProofLimitSetup)
+    repository = repository_environment(story)
+    worker = dispatched_worker(story)
+    repository.changed(worker.id, "cart.py", "TOTAL = 2\n")
+    story.expect_success('proof make 1 --task 1 "cart.py:1, its story" --test "python tests/cart.py"', actor=worker)
+    story.expect_success(COMMIT, actor=worker)
+    proof = story.container.get(Queries).query(Proof).filter(task_id=1).first()
+    story.expect_rows(proof is not None and proof.process_id is not None, detail=str(proof))
+    story.container.get(OutputFolder).write_output(proof.process_id, 1, "collected 8 items\n")
     OutputReading()(story.container)
-    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.RUNNING)
+    story.expect_rows(story.container.get(Queries).query(Process).find(proof.process_id).state is ProcessState.STOPPED)
 
 
 def test_stopping_from_the_output_tick_keeps_the_count_and_ends_the_output(limited_run):

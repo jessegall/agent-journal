@@ -1,4 +1,5 @@
 from engine.model.prunable import Prunable
+from engine.query.conditions.equal import Equal
 from dataclasses import dataclass
 
 from engine.actor.actor import Actor
@@ -35,6 +36,10 @@ class DockItem(Prunable, SessionBound, Model):
 
     def undock(self, timestamp: Timestamp, actor: Actor) -> "DockItem":
         return self.moved(DockItemLifecycle.undock, undocked_at=timestamp)
+
+    @classmethod
+    def prunable(cls, query, table):
+        return super().prunable(query, table).matching(Equal("state", DockItemState.UNDOCKED.value))
 
     def dock(self, timestamp: Timestamp, actor: Actor) -> "DockItem":
         return self.moved(DockItemLifecycle.dock, undocked_at=None)

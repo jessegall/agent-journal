@@ -1,3 +1,4 @@
+from core.modules.agents.support.fold_record import FoldRecord
 from contextlib import contextmanager
 from types import SimpleNamespace
 
@@ -5,6 +6,8 @@ import pytest
 
 from core.modules.agents.models.agent_fold import AgentFold
 from core.modules.agents.support.agent_numbers import AgentNumbers
+
+KEPT = SimpleNamespace(read=lambda query, loader, name: loader())
 
 
 class FakeAgentQuery:
@@ -49,7 +52,7 @@ class FakeScopes:
 
 
 def agent_numbers(used: list[int], folded: tuple[int, ...] = ()) -> AgentNumbers:
-    return AgentNumbers(SimpleNamespace(query=lambda model: FakeFoldQuery(list(folded)) if model is AgentFold else FakeAgentQuery(used)), FakeScopes())
+    return AgentNumbers(SimpleNamespace(query=lambda model: FakeFoldQuery(list(folded)) if model is AgentFold else FakeAgentQuery(used)), FakeScopes(), FoldRecord(SimpleNamespace(query=lambda model: FakeFoldQuery(list(folded))), KEPT))
 
 
 @pytest.mark.parametrize(("used", "role", "expected"), [

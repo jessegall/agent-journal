@@ -179,13 +179,13 @@ def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent
     story.expect_success('setting set journal.suites.coding.workers.merger-commands \'["journal sins --branch={commit}"]\' --project', actor=story.user)
     story.expect_text(f"merger merge {agent_number(story, worker.id)}", f"{agent_label(story, worker.id)} merged into", "run: journal sins --branch=", actor=actor)
     story.expect_text("merger next", "no worker waits", actor=actor)
-    expect_marks_text(story, f"Worker {worker.id} had")
+    expect_marks_text(story, f"Worker {agent_number(story, worker.id)} had")
     story.hook(merger.session, HookSamples.stop())
     merged_lines = merged_worker_lines(story, worker)
     story.expect_rows(len(merged_lines) == 1, merged_lines[0].wakes_agent, not any("could not be confirmed" in row.text for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).every_row(TEST_ROWS_REASON)))
     story.expect_success(f'merger findings {agent_number(story, worker.id)} "Fix the merged code"', actor=actor)
     story.run_listeners()
-    mark = story.container.get(Queries).query(ChatMark).filter(text=f"The merger sent Worker {worker.id} back").first()
+    mark = story.container.get(Queries).query(ChatMark).filter(text=f"The merger sent Worker {agent_number(story, worker.id)} back").first()
     story.expect_rows(mark.detail == "Fix the merged code")
     story.expect_text(f"agent-line list --agent {worker.id}", "Fix the merged code", actor=worker)
     story.expect_text("task list", "Fix the merged code", actor=worker)
@@ -236,8 +236,8 @@ def test_a_workers_report_goes_to_the_merger_and_the_merger_tells_the_main_agent
     story.expect_text(f"message read {reported_message.id}", "Worker asks which reader to keep", actor=story.agent)
 
     story.expect_success(f'merger findings {agent_number(story, worker.id)} "The tax is added twice"', actor=merger)
-    expect_marks_text(story, f"The merger sent Worker {worker.id} back")
-    mark = story.container.get(Queries).query(ChatMark).filter(text=f"The merger sent Worker {worker.id} back").first()
+    expect_marks_text(story, f"The merger sent Worker {agent_number(story, worker.id)} back")
+    mark = story.container.get(Queries).query(ChatMark).filter(text=f"The merger sent Worker {agent_number(story, worker.id)} back").first()
     story.expect_rows(mark.detail == "The tax is added twice")
 
 
@@ -320,7 +320,7 @@ def test_the_merger_pass_shows_the_reason_on_the_worker_mark(new_story, monkeypa
     story.expect_success(f'merger pass {agent_number(story, worker.id)} "{reason}"', actor=merger)
     story.expect_success(f'merger pass {agent_number(story, worker.id)} "Another decision"', actor=merger)
     story.run_listeners()
-    marks = tuple(story.container.get(Queries).query(ChatMark).filter(text=f"The merger left Worker {worker.id} to the main agent").every_row(TEST_ROWS_REASON))
+    marks = tuple(story.container.get(Queries).query(ChatMark).filter(text=f"The merger left Worker {agent_number(story, worker.id)} to the main agent").every_row(TEST_ROWS_REASON))
     story.expect_rows(len(marks) == 2, marks[0].detail == reason, marks[1].detail == "Another decision", marks[0].target_id == worker.id)
 
 

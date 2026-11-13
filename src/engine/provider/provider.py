@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from dataclasses import replace
 from collections.abc import Mapping, Sequence
 from pathlib import Path
+
+from engine.enums.agent_setting import AgentSetting
 from typing import TYPE_CHECKING, ClassVar
 
 from engine.driver.hook_event import HookEvent
@@ -169,6 +171,9 @@ class Provider(ABC):
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None: ...
 
     def folder_trusted(self, folder: Path) -> None:
+        pass
+
+    def change_agent_setting(self, folder: Path, setting: AgentSetting, value: int) -> None:
         pass
 
     @abstractmethod

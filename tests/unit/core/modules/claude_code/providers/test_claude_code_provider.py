@@ -164,3 +164,14 @@ def test_hook_trust_is_ready_when_the_journal_file_holds_every_event(provider, t
 def test_hook_trust_is_unwritten_when_only_the_local_project_file_holds_them(provider, tmp_path):
     ProgramHooks.hooks(ClaudeCodeProvider, tmp_path).write("journal-hook", tmp_path)
     assert provider.journal_trust(JournalHome(tmp_path / ".journal")) is HookTrust.UNWRITTEN
+
+
+def test_a_compact_window_is_held_between_the_sizes_claude_accepts(tmp_path):
+    from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
+    from engine.enums.agent_setting import AgentSetting
+    import json
+    provider = ClaudeCodeProvider.__new__(ClaudeCodeProvider)
+    provider.change_agent_setting(tmp_path, AgentSetting.COMPACT_WINDOW, 5_000)
+    assert json.loads((tmp_path / ".claude" / "settings.json").read_text())["autoCompactWindow"] == 100_000
+    provider.change_agent_setting(tmp_path, AgentSetting.COMPACT_WINDOW, 9_000_000)
+    assert json.loads((tmp_path / ".claude" / "settings.json").read_text())["autoCompactWindow"] == 1_000_000

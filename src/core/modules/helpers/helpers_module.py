@@ -23,6 +23,7 @@ from core.modules.helpers.commands.make_provider_outage.make_provider_outage_sub
 from core.modules.helpers.commands.end_provider_outages.end_provider_outages_handler import EndProviderOutagesHandler
 from core.modules.helpers.commands.end_provider_outages.end_provider_outages_subcommand import EndProviderOutagesSubcommand
 from core.modules.helpers.listeners.provider_outage_mark_listener import ProviderOutageMarkListener
+from core.modules.helpers.listeners.compact_window_listener import CompactWindowListener
 from core.modules.helpers.support.program_marks import PROGRAM_MARKS
 from core.modules.helpers.guards.program_split_guard import ProgramSplitGuard
 from core.modules.helpers.guards.open_job_retire_guard import OpenJobRetireGuard
@@ -94,5 +95,5 @@ class HelpersModule(Module):
     nudges = HELPER_NUDGES
     skills = [SkillDeclaration("journal-helpers", "Start a helper for a bounded read, send it more, stop it, and read its report; read it before the first helper command of a session", keywords=["helper start"])]
     subcommands = [ChangeAgentDriverSubcommand, HelperProfileScreenSubcommand, HelperLifetimesSubcommand, GrantHelperSubcommand, RunGrantedCommandSubcommand, ColdSessionsSubcommand, SetUsageLimitSubcommand, AgentMixSubcommand, StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand, RecordProgramExitSubcommand, HelperAvailabilitySubcommand, MakeProviderOutageSubcommand, EndProviderOutagesSubcommand]
-    listeners = [NewMainHelpersListener, HelperResumeListener, HelperProgramListener, MessagedHelperListener, HelperEndedListener, HelperJobMarkListener, HelperJobSourceListener, DeletedHelperSourceListener, ProviderOutageMarkListener]
+    listeners = [NewMainHelpersListener, HelperResumeListener, HelperProgramListener, MessagedHelperListener, HelperEndedListener, HelperJobMarkListener, HelperJobSourceListener, DeletedHelperSourceListener, ProviderOutageMarkListener, CompactWindowListener]
     driver_rules = [UnstartedHelperRule, HelperReportRule, StartNamesModelRule]
