@@ -17,7 +17,7 @@ from engine.helper_type.journal_line import JournalLine
 TYPES = HelperTypeBook(tuple([HelperTypeEntry.declared("journal.core.helpers", Helper)]))
 TASK_EDIT = JournalLine("task edit", frozenset([JournalLineClass.CHANGES]))
 SETTING_SET = JournalLine("setting set", frozenset([JournalLineClass.CHANGES, JournalLineClass.OUTWARD]))
-TASK_SHOW = JournalLine("task show", frozenset([JournalLineClass.READS]))
+TASK_READ = JournalLine("task show", frozenset([JournalLineClass.READS]))
 
 
 def line_check(role: str) -> AgentLineCheck:
@@ -35,7 +35,7 @@ def test_a_helper_is_refused_at_the_server_a_line_its_type_does_not_list():
 
 
 def test_a_helper_runs_a_line_its_type_lists():
-    line_check(Helper.key).check(agent_caller(), TASK_SHOW)
+    line_check(Helper.key).check(agent_caller(), TASK_READ)
 
 
 def test_the_main_agent_and_a_person_are_never_refused():
@@ -44,5 +44,5 @@ def test_the_main_agent_and_a_person_are_never_refused():
 
 
 def test_help_lists_for_a_helper_only_the_lines_its_type_lists():
-    assert line_check(Helper.key).allows(agent_caller(), TASK_SHOW) and not line_check(Helper.key).allows(agent_caller(), SETTING_SET)
+    assert line_check(Helper.key).allows(agent_caller(), TASK_READ) and not line_check(Helper.key).allows(agent_caller(), SETTING_SET)
     assert line_check(MAIN_KEY).allows(agent_caller(), TASK_EDIT)

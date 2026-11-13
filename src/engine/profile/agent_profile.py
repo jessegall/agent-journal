@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from collections.abc import Mapping, Sequence
 from typing import Any
 from engine.enums.access import Access
+from engine.helper_type.command_allow_list import CommandAllowList
 from engine.enums.model_tier import ModelTier
 from engine.enums.occupant import INDEPENDENT_OCCUPANTS, Occupant
 
@@ -43,6 +44,7 @@ class AgentProfile:
     last_used: int = 0
     title: str = ""
     has_parent_report: bool = True
+    commands: CommandAllowList | None = None
     messages_siblings: bool = False
     program_models: Mapping[str, str] = field(default_factory=dict[str, str])
     uses_project_instructions: bool = False

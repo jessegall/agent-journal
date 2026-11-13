@@ -12,6 +12,7 @@ from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.helper_type.helper_type_entry import HelperTypeEntry
 from engine.helper_type.journal_line import JournalLine
 from engine.setting.setting_values import SettingValues
+from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.base_commands import BASE_COMMANDS
 from core.modules.drivers.support.access_nudges import HELPER_TYPE_CATEGORY
 from core.modules.drivers.support.type_command_check import TypeCommandCheck
@@ -28,8 +29,8 @@ class HelperTypeCommandsRule(DriverRule):
     drivers = ["*"]
     single_action_refusal = "A helper runs only the shell command types and the journal lines its type lists"
 
-    def __init__(self, types: HelperTypeBook, lookup: SubcommandLookup, settings: SettingValues, commands: TypeCommandCheck) -> None:
-        self.types, self.lookup, self.settings, self.commands = types, lookup, settings, commands
+    def __init__(self, types: HelperTypeBook, lookup: SubcommandLookup, settings: SettingValues, commands: TypeCommandCheck, agents: AgentRows) -> None:
+        self.types, self.lookup, self.settings, self.commands, self.agents = types, lookup, settings, commands, agents
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
@@ -39,7 +40,7 @@ class HelperTypeCommandsRule(DriverRule):
         refused_part = shell.disallowed_part(self.command_types(helper_type, BASE_COMMANDS.joined(helper_type.commands)))
         if refused_part is not None:
             return RuleAnswer.refused(HELPER_TYPE_CATEGORY.nudge(helper_type=helper_type.label.lower(), category=refused_part.classification.category.value))
-        refusal = self.commands.refusal(hook.role, self.journal_lines(shell))
+        refusal = self.commands.refusal(self.agents.find(hook.agent_id), self.journal_lines(shell))
         return RuleAnswer.allowed() if refusal is None else RuleAnswer.refused(refusal)
 
     def command_types(self, helper_type: HelperTypeEntry, commands: CommandAllowList) -> Sequence[str]:

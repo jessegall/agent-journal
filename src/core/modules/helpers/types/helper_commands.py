@@ -16,5 +16,5 @@ class HelperCommands(CommandAllowList):
     groups: Sequence[str] = ("memory", "review-point")
     lines: Sequence[str] = ("doc make", "doc edit", "doc open", "doc close", "report make", "report edit", "report close", "plan make", "phase make", "task make",
                             "task overview", "plan context", "review record", "plan edit", "plan ready", "phase edit", "task edit", "task depend",
-                            "task waits-on-nothing", "task log", "output stop", "output read", "output title", "refusal skip", "refusal confirm", "refusal withdraw")
+                            "task waits-on-nothing", "task log", "task comment", "plan comment", "output stop", "output read", "output title", "refusal skip", "refusal confirm", "refusal withdraw")
     classes: Sequence[JournalLineClass] = tuple([JournalLineClass.READS])

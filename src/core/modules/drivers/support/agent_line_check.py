@@ -26,4 +26,4 @@ class AgentLineCheck(CallerLineCheck):
     def refusal(self, caller: Caller, line: JournalLine) -> Nudge | None:
         if caller.actor.type is not ActorType.AGENT:
             return None
-        return self.commands.refusal(self.agents.find_unscoped(caller.actor.id).role, [line])
+        return self.commands.refusal(self.agents.find_unscoped(caller.actor.id), [line])

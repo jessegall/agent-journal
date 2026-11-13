@@ -16,5 +16,7 @@ class WorkerCommands(CommandAllowList):
     groups: Sequence[str] = ("proof", "worker", "todo-item", "memory")
     lines: Sequence[str] = ("task show", "task overview", "task context", "task log", "task start", "task info", "task inspect", "task list", "plan context",
                             "doc show", "doc list", "report show", "report list", "output read", "output title", "reader draft", "helper run", "skill write",
-                            "search find", "refusal skip", "refusal confirm", "refusal withdraw")
+                            "search find", "refusal skip", "refusal confirm", "refusal withdraw", "task block", "task unblock", "task focus",
+                            "task test", "task tag", "task make", "wait stuck", "task tags", "task graph",
+                            "alias list", "command-type list", "reader list")
     classes: Sequence[JournalLineClass] = ()

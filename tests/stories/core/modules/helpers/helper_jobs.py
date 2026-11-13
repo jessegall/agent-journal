@@ -27,16 +27,24 @@ class StartedHelper(StoryFixture):
     parent = UserBuilder
 
     def steps(self, story):
-        launcher = FakeLauncher.accepting(story.home.socket("launcher"))
-        story.run(START, actor=story.agent)
-        story.run_listeners()
-        launcher.drain_requests()
-        launcher.server.close()
-        story.home.socket("launcher").unlink()
+        start_through_launcher(story, START)
+
+
+def start_through_launcher(story, line: str) -> None:
+    launcher = FakeLauncher.accepting(story.home.socket("launcher"))
+    story.run(line, actor=story.agent)
+    story.run_listeners()
+    launcher.drain_requests()
+    launcher.server.close()
+    story.home.socket("launcher").unlink()
 
 
 def helper_agent(story):
     return story.story_rows(Agent, role="helper")[0]
+
+
+def profile_agent(story, profile: str):
+    return story.story_rows(Agent, profile=profile)[0]
 
 
 def resumable_session(story, helper, monkeypatch) -> None:

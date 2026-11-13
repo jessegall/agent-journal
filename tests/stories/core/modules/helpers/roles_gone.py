@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
 
-from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.stories.story_fixture import StoryFixture
+from tests.stories.core.modules.helpers.helper_jobs import start_through_launcher
 from tests.stories.core.modules.reviews.support.review_fixtures import OneReviewerAllowed
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
@@ -27,12 +27,7 @@ class MergerStarted(StoryFixture):
     parent = UserBuilder
 
     def steps(self, story) -> None:
-        launcher = FakeLauncher.accepting(story.home.socket("launcher"))
-        story.run(MERGER_START, actor=story.agent)
-        story.run_listeners()
-        launcher.drain_requests()
-        launcher.server.close()
-        story.home.socket("launcher").unlink()
+        start_through_launcher(story, MERGER_START)
 
     def expect(self, story) -> None:
         story.expect_text("agent list --environment main", "journal-merger", actor=story.user)

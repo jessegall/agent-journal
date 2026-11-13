@@ -54,6 +54,8 @@ class HelperTypeCheck:
         problems.extend(f"{owner}: {role} is no registered helper type; register it in a module's or suite's helper_types"
                         for owner, role in dict.fromkeys(uses) if role not in names)
         problems.extend(self.group_problems(modules, names, profiles))
+        problems.extend(f"profile {profile.name} lists {name}, which its type {profile.agent_type} does not list" for profile in profiles.values()
+                        if profile.commands is not None and profile.agent_type in book.entries for name in book.entries[profile.agent_type].commands.widened_names(profile.commands))
         return tuple(problems)
 
     @staticmethod
