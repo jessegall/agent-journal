@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 
+from engine.execution.execution_class import ExecutionClass
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.process_type_admission import ProcessTypeAdmission
 
@@ -10,3 +11,7 @@ class ProcessTypeLimits:
 
     def admissions(self, waiting: Sequence[Process]) -> ProcessTypeAdmission:
         return ProcessTypeAdmission()
+
+    # the class of each declared kind among the waiting runs, by its plugin and kind; a kind nobody declares has none
+    def kind_classes(self, waiting: Sequence[Process]) -> dict[tuple[str, str], ExecutionClass]:
+        return {}
