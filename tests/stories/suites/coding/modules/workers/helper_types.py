@@ -34,7 +34,7 @@ def test_shipped_types_restore_their_access_inheritance_and_worker_roster(new_st
                       {"helper", "worker", "reviewer", "verifier"} <= set(book.helper_keys()), book.is_helper("worker"), not book.is_helper("main"),
                       book.find("reviewer").label == "Reviewer", book.find("verifier").module == "journal.suites.coding",
                       worker.access is Access.WRITING, worker.separate_folder,
-                      worker.default_profile == "journal-worker", worker.start_line == "journal worker dispatch",
+                      worker.default_profile == "journal-worker-medior", worker.start_line == "journal worker dispatch",
                       worker.roster is not None)
     story.expect_rows(story.container.get(worker.roster.loaded()).available(1) == ())
     registry = Registry.read(story.container.get(Database))

@@ -44,7 +44,7 @@ class RuleCalls:
         monkeypatch.setattr(driver_rules.DriverRules, "outcome", timed)
 
     def plans(self, rule: str) -> list[str]:
-        return [str(row[3]) for sql in self.statements[rule] for row in self.database.connection.execute(f"EXPLAIN QUERY PLAN {sql}")]
+        return [f"{row[3]} in {sql}" for sql in self.statements[rule] for row in self.database.connection.execute(f"EXPLAIN QUERY PLAN {sql}")]
 
 
 @pytest.fixture

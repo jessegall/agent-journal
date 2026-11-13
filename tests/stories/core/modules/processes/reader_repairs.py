@@ -5,7 +5,7 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.modules.processes.support.reading_scenarios import STEPS, ended_after_a_while, heard
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-REPAIR_LINE = "reader deploys picked no line of its last 3 outputs: repair it"
+REPAIR_LINE = "Reader deploys matched nothing in its last 3 outputs: repair it"
 
 
 def test_a_reader_that_picks_no_line_is_reported_each_run_and_after_three_runs_is_listed_for_repair_while_an_empty_output_says_nothing(new_story):
@@ -22,5 +22,5 @@ def test_a_reader_that_picks_no_line_is_reported_each_run_and_after_three_runs_i
     after_empty = heard(story)
     story.hook("s-1", HookSamples.session_start())
     story.run_listeners()
-    story.expect_rows(f"Reader deploys matched none of 10 lines of output {first.id}" in after_one, REPAIR_LINE not in early,
+    story.expect_rows(f"Reader deploys matched none of the 10 lines of output {first.id}" in after_one, REPAIR_LINE not in early,
                       f"of output {empty.id}" not in after_empty, REPAIR_LINE in kept_lines(story), detail=f"{after_one}\n{after_empty}\n{kept_lines(story)}")

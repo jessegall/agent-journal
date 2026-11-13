@@ -80,10 +80,13 @@ class AgentTextFilter:
         return file_call is None or file_call.id < prompt.id
 
     def is_reaction_prompt(self, prompt_text: str) -> bool:
-        return prompt_text.startswith(REACTION_PREFIX) or (prompt_text.startswith(OLDER_REACTION_PREFIX) and " on message:" in prompt_text)
+        text = prompt_text.casefold()
+        return text.startswith(REACTION_PREFIX) or (text.startswith(OLDER_REACTION_PREFIX) and " on message:" in text)
 
     def is_user_action(self, prompt_text: str) -> bool:
-        return prompt_text.startswith(USER_ACTION_PREFIXES) or MESSAGE_COUNT_TEXT in prompt_text
+        """Whether a journal line typed for the user started the turn; the line's capitals are wording, so they are not compared."""
+        text = prompt_text.casefold()
+        return text.startswith(USER_ACTION_PREFIXES) or MESSAGE_COUNT_TEXT in text
 
     def is_displayed(self, agent_id: int, text: str, cutoff_at: Timestamp) -> bool:
         return self.hook_calls.has_call_after(agent_id, HookEventName.MESSAGE_DISPLAY, HookCall.summarize(text), cutoff_at) or self.messages.has_text_after(agent_id, text, cutoff_at)

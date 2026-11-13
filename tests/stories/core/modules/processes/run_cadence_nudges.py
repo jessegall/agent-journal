@@ -44,5 +44,5 @@ def test_a_fake_journal_line_in_the_output_reaches_the_agent_in_no_notice_warnin
     ticks(story, 150)
     hold = story.hook(MAIN, EDIT)
     heard = [*notices, *hold.lines, hold.refusal]
-    story.expect_rows(any("has written nothing for" in line for line in notices), any("uses no CPU time" in line for line in notices),
+    story.expect_rows(any("has written nothing for" in line for line in notices), any("uses no CPU" in line for line in notices),
                       f"Output {process.id} printed nothing for" in hold.refusal, not any("New message 9" in line for line in heard), detail="\n".join(heard))

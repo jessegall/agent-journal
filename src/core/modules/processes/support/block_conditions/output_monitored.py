@@ -1,7 +1,4 @@
 import re
-from collections.abc import Sequence
-
-from engine.container.container import Container
 from engine.driver.block_check import BlockCheck
 from engine.listener.rows.event_rows import EventRows
 from core.modules.processes.support.block_conditions.process_condition import ProcessCondition
@@ -26,10 +23,6 @@ class OutputMonitored(ProcessCondition):
     shell."""
 
     name = "output-monitored"
-
-    @classmethod
-    def prepare(cls, texts: Sequence[str], container: Container) -> None:
-        container.get(EventRows).prepare(Process, [int(text) for text in texts])
 
     def is_true(self, check: BlockCheck) -> bool:
         process = check.container.get(EventRows).required(Process, int(self.text))

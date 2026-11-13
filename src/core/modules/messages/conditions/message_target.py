@@ -10,7 +10,6 @@ from engine.query.select import Select
 from engine.agent.agent_name import MAIN_ROLE
 
 
-
 @dataclass(frozen=True)
 class MessageTarget:
     """Matches the messages addressed to one agent, and the unaddressed ones when that agent is a main agent."""
