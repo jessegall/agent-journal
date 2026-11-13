@@ -2,9 +2,9 @@ from dataclasses import dataclass
 
 from core.modules.codex.providers.codex_provider import CodexProvider
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
-from core.modules.plans.support.checkpoint_review_model import CheckpointReviewModel
-from core.modules.plans.support.checkpoint_review_choice import CheckpointReviewChoice
-from core.modules.plans.support.plan_settings import REVIEW_MODEL_SETTING
+from core.modules.plan_reviews.support.checkpoint_review_model import CheckpointReviewModel
+from core.modules.plan_reviews.support.checkpoint_review_choice import CheckpointReviewChoice
+from core.modules.plan_reviews.support.plan_review_settings import REVIEW_MODEL_SETTING
 
 
 @dataclass

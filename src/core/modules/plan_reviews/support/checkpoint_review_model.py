@@ -1,8 +1,8 @@
 
 from engine.provider.providers import Providers
 from engine.setting.setting_values import SettingValues
-from core.modules.plans.support.plan_settings import REVIEW_MODEL_SETTING, REVIEW_MODELS
-from core.modules.plans.support.checkpoint_review_choice import CheckpointReviewChoice
+from core.modules.plan_reviews.support.plan_review_settings import REVIEW_MODEL_SETTING, REVIEW_MODELS
+from core.modules.plan_reviews.support.checkpoint_review_choice import CheckpointReviewChoice
 
 SONNET, EQUAL = REVIEW_MODELS
 

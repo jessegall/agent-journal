@@ -4,7 +4,7 @@ from engine.listener.save_listener import SaveListener
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.drivers.models.helper_job import HelperJob
-from core.modules.plans.models.checkpoint_review import CheckpointReview
+from core.modules.plan_reviews.models.checkpoint_review import CheckpointReview
 
 
 class CheckpointReviewReportListener(SaveListener[Changed[HelperJob]]):

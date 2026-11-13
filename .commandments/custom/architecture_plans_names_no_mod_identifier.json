@@ -17,6 +17,12 @@
             },
             {
                 "testCode": true
+            },
+            {
+                "file": "src/core/modules/plans/migrations/**"
+            },
+            {
+                "nameMatches": "BlockReview"
             }
         ]
     },

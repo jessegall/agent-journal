@@ -6,10 +6,10 @@ from engine.repository.repository import Repository
 from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.reviewer_start import ReviewerStart
-from core.modules.plans.commands.start_checkpoint_review.start_checkpoint_review import StartCheckpointReview
-from core.modules.plans.models.checkpoint_review import CheckpointReview
+from core.modules.plan_reviews.commands.start_checkpoint_review.start_checkpoint_review import StartCheckpointReview
+from core.modules.plan_reviews.models.checkpoint_review import CheckpointReview
 from core.modules.plans.models.phase import Phase
-from core.modules.plans.support.checkpoint_review_model import CheckpointReviewModel
+from core.modules.plan_reviews.support.checkpoint_review_model import CheckpointReviewModel
 
 BRIEF = "Read what phase {phase} of plan {plan} changed and compare it with the plan's brief and the phase's goal. Report what matches, what is missing and what differs."
 

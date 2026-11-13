@@ -1,7 +1,8 @@
 from engine.registry.setting_tree import SettingTree
-from core.modules.plans.support.plan_settings import CHECKPOINT_COMMAND_SETTING, PLAN_SETTINGS, QUICK_REVIEW_SETTING, REVIEW_MODEL_SETTING, REVIEW_MODELS, WAIT_FOR_PERSON_SETTING
+from core.modules.plan_reviews.support.plan_review_settings import PLAN_REVIEW_SETTINGS, QUICK_REVIEW_SETTING, REVIEW_MODEL_SETTING, REVIEW_MODELS
+from core.modules.plans.support.plan_settings import CHECKPOINT_COMMAND_SETTING, PLAN_SETTINGS, WAIT_FOR_PERSON_SETTING
 
-ENTRIES = {entry.key: entry for entry in SettingTree().entries("journal.core.plans", PLAN_SETTINGS)}
+ENTRIES = {entry.key: entry for entry in (*SettingTree().entries("journal.core.plans", PLAN_SETTINGS), *SettingTree().entries("journal.core.plan_reviews", PLAN_REVIEW_SETTINGS))}
 KEYS = (QUICK_REVIEW_SETTING, REVIEW_MODEL_SETTING, CHECKPOINT_COMMAND_SETTING, WAIT_FOR_PERSON_SETTING)
 
 

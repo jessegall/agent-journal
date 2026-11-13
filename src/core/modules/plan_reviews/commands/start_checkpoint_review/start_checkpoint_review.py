@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from core.modules.plans.models.checkpoint_review import CheckpointReview
+from core.modules.plan_reviews.models.checkpoint_review import CheckpointReview
 
 
 @dataclass(frozen=True)

@@ -4,8 +4,9 @@ import {SettingsScreen, settingComponents, useSettingsDraft} from "@journal/sett
 import {drawnSettingComponent} from "./support/settingComponent.js";
 
 const GROUP = "journal.core.plans.checkpoints";
-const REVIEW = `${GROUP}.quick-review`;
-const MODEL = `${GROUP}.review-model`;
+const REVIEW_GROUP = "journal.core.plan_reviews.checkpoints";
+const REVIEW = `${REVIEW_GROUP}.quick-review`;
+const MODEL = `${REVIEW_GROUP}.review-model`;
 const COMMAND = `${GROUP}.command`;
 const WAIT = `${GROUP}.wait-for-person`;
 

@@ -3887,6 +3887,60 @@
       "title"
     ]
   },
+  "core.plan_reviews.checkpoint_review.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "creator_id",
+      "environment_id",
+      "phase_id",
+      "plan_id",
+      "program",
+      "program_model",
+      "report",
+      "reviewer_id"
+    ]
+  },
+  "core.plan_reviews.checkpoint_review.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "creator_id",
+      "environment_id",
+      "phase_id",
+      "plan_id",
+      "program",
+      "program_model",
+      "report",
+      "reviewer_id"
+    ]
+  },
+  "core.plan_reviews.checkpoint_review.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "brief",
+      "creator_id",
+      "environment_id",
+      "phase_id",
+      "plan_id",
+      "program",
+      "program_model",
+      "report",
+      "reviewer_id"
+    ]
+  },
   "core.plans.checkpoint_pass.created": {
     "forms": [
       "commit",
@@ -4017,60 +4071,6 @@
       "source",
       "state",
       "task_ids"
-    ]
-  },
-  "core.plans.checkpoint_review.created": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "brief",
-      "creator_id",
-      "environment_id",
-      "phase_id",
-      "plan_id",
-      "program",
-      "program_model",
-      "report",
-      "reviewer_id"
-    ]
-  },
-  "core.plans.checkpoint_review.deleted": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "brief",
-      "creator_id",
-      "environment_id",
-      "phase_id",
-      "plan_id",
-      "program",
-      "program_model",
-      "report",
-      "reviewer_id"
-    ]
-  },
-  "core.plans.checkpoint_review.updated": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "brief",
-      "creator_id",
-      "environment_id",
-      "phase_id",
-      "plan_id",
-      "program",
-      "program_model",
-      "report",
-      "reviewer_id"
     ]
   },
   "core.plans.phase.created": {

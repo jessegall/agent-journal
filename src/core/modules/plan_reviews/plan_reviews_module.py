@@ -13,6 +13,13 @@ from core.modules.plan_reviews.commands.plan_review_tip.plan_review_tip_subcomma
 from core.modules.plan_reviews.commands.plan_rounds.plan_rounds_subcommand import PlanRoundsSubcommand
 from core.modules.plan_reviews.listeners.critique_report_listener import CritiqueReportListener
 from core.modules.plan_reviews.support.review_state import REVIEW_STATE
+from core.modules.plan_reviews.commands.start_checkpoint_review.start_checkpoint_review_handler import StartCheckpointReviewHandler
+from core.modules.plan_reviews.listeners.checkpoint_review_report_listener import CheckpointReviewReportListener
+from core.modules.plan_reviews.listeners.checkpoint_review_start_listener import CheckpointReviewStartListener
+from core.modules.plan_reviews.migrations.m001_review_setting_keys import ReviewSettingKeysMigration
+from core.modules.plan_reviews.models.checkpoint_review import CheckpointReview
+from core.modules.plan_reviews.support.plan_review_settings import PLAN_REVIEW_SETTINGS
+from engine.module.model_declaration import ModelDeclaration
 
 
 class PlanReviewsModule(Module):
@@ -26,7 +33,12 @@ class PlanReviewsModule(Module):
     dependencies = ["journal.core.agents", "journal.core.documents", "journal.core.drivers", "journal.core.plans", "journal.core.skills", "journal.core.templates", "journal.core.viewer", "journal.core.actors"]
     skills = [SkillDeclaration("journal-plan-review-applying", "Work a critique of a plan into the plan, which is a light job; read it before you work a report of reviews into a plan or end its review", keywords=("review", "critique"), commands=tuple(["plan reviewed"]))]
     added_states = tuple([REVIEW_STATE])
-    listeners = [CritiqueReportListener]
+    listeners = [CritiqueReportListener, CheckpointReviewReportListener, CheckpointReviewStartListener]
+    handlers = [StartCheckpointReviewHandler]
+    models = [ModelDeclaration(CheckpointReview, excluded_subcommands=["make", "edit", "delete"])]
+    migrations = [ReviewSettingKeysMigration]
+    settings = PLAN_REVIEW_SETTINGS
+    former_event_keys = {f"core.plans.checkpoint_review.{action}": f"core.plan_reviews.checkpoint_review.{action}" for action in ("created", "updated", "deleted")}
     subcommands = [PlanRoundsSubcommand, PlanReviewTipSubcommand]
     buttons = [ButtonDeclaration("plan_reviews.critique", WAITING_PLAN_SLOTS, "Request critique",
                                  "template send {template} --on=plan:{row_id} --set=agents={agents} --set=size={size}", icon="review",
