@@ -10,7 +10,7 @@ SMALL_CONTEXT = 100_000
 LOWER_LIMIT = 250_000
 TOKENS_OVER_LOWER_LIMIT = 300_000
 TOKENS_OVER_LIMIT = LIMIT_TOKENS + 10_000
-DEFAULT_GROWTH = LIMIT_TOKENS // 10
+PERCENT = 100
 HALVED_GROWTH_PERCENT = 5
 EDIT = HookSamples.edit("src/cart.py")
 
@@ -67,17 +67,18 @@ def test_e1_e2_e3_a_context_that_fills_again_after_a_compaction_that_helped_is_c
 
 def test_e5_a_compaction_that_left_the_context_over_the_limit_is_followed_by_another_only_after_the_growth_share(unreduced):
     unreduced.expect_hook_allowed(SESSION, EDIT)
-    has_context(unreduced, TOKENS_OVER_LIMIT + DEFAULT_GROWTH - 1)
+    growth = LIMIT_TOKENS * unreduced.number_default(CONTEXT_LIMIT_GROWTH_PERCENT) // PERCENT
+    has_context(unreduced, TOKENS_OVER_LIMIT + growth - 1)
     stops(unreduced)
     expect_compaction_count(unreduced, 0)
-    has_context(unreduced, TOKENS_OVER_LIMIT + DEFAULT_GROWTH)
+    has_context(unreduced, TOKENS_OVER_LIMIT + growth)
     stops(unreduced)
     expect_compaction_count(unreduced, 1)
 
 
 def test_the_growth_share_is_a_setting_a_person_changes(unreduced):
     set_value(unreduced, CONTEXT_LIMIT_GROWTH_PERCENT, HALVED_GROWTH_PERCENT)
-    has_context(unreduced, TOKENS_OVER_LIMIT + DEFAULT_GROWTH // 2)
+    has_context(unreduced, TOKENS_OVER_LIMIT + LIMIT_TOKENS * HALVED_GROWTH_PERCENT // PERCENT)
     stops(unreduced)
     expect_compaction_count(unreduced, 1)
 

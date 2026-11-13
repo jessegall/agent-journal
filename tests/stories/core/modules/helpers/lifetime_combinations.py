@@ -3,7 +3,7 @@ from datetime import timedelta
 import pytest
 
 from core.modules.agents.testing.fake_launcher import FakeLauncher
-from core.modules.helpers.support.helper_settings import COLD_SESSION_MINUTES, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
+from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PERCENT, COLD_SESSION_MINUTES, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from tests.stories.core.modules.helpers.cold_sessions import with_job
 from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, resumable_session
 from tests.stories.core.modules.helpers.support.rotating_helper import EndedColdRotationHelper, EndedContinueHelper, EndedEachLaunchHelper, real_program_states, story_with_profile_file
@@ -60,7 +60,7 @@ def test_a_when_cold_helper_that_is_warm_or_small_and_a_continue_helper_that_is_
 
 def test_a_when_cold_helper_that_is_cold_and_large_gets_a_new_session_on_its_program_and_number(cooling, monkeypatch):
     number = agent_number(cooling, helper_agent(cooling).id)
-    helper, request = with_job(cooling, monkeypatch, 55, 20)
+    helper, request = with_job(cooling, monkeypatch, cooling.number_default(COLD_SESSION_MINUTES), cooling.number_default(COLD_SESSION_CONTEXT_PERCENT))
     current = helper_agent(cooling)
     cooling.expect_rows(current.session != helper.session, current.program == helper.program, request["command"][0] == "claude",
                         agent_number(cooling, current.id) == number, detail=str(request["command"][:2]))

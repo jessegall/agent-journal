@@ -6,7 +6,6 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.support.story_checks import expect_answers, expect_lines_with
 
 MAIN_SESSION = "s-1"
-DEFAULT_SIZE = 3
 QUEUE_EXTRA = "queue more tasks per worker"
 
 

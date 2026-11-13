@@ -4,7 +4,7 @@ from datetime import timedelta
 import pytest
 
 from core.modules.agents.models.agent import Agent
-from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PERCENT
+from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PERCENT, COLD_SESSION_MINUTES
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from tests.stories.core.modules.helpers.helper_jobs import resumable_session
@@ -41,7 +41,7 @@ def with_job(story, minutes, percent):
 
 def test_a_cold_worker_starts_a_new_session_and_keeps_its_agent_and_worktree(stopped_worker):
     folder = stopped_worker.container.get(WorktreeQuery).worker_worktree(stopped_worker.worker.id).folder
-    worker, request = with_job(stopped_worker, 55, 20)
+    worker, request = with_job(stopped_worker, stopped_worker.number_default(COLD_SESSION_MINUTES), stopped_worker.number_default(COLD_SESSION_CONTEXT_PERCENT))
     replaced = stopped_worker.row(Agent, worker.id)
     worktree = stopped_worker.container.get(WorktreeQuery).worker_worktree(worker.id)
     prompt = " ".join(request["command"])

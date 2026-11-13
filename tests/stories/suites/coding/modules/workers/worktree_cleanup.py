@@ -15,7 +15,6 @@ from tests.stories.suites.coding.modules.workers.support.worktree_samples import
 pytestmark = pytest.mark.real_git
 
 MAIN_SESSION = "s-1"
-DEFAULT_HOURS = 6
 
 
 def hours(count: int) -> timedelta:
@@ -27,13 +26,17 @@ def next_hour_start(story) -> timedelta:
     return timedelta(minutes=60 - now.minute, seconds=-now.second)
 
 
+def idle_hours(story) -> int:
+    return story.number_default(WORKER_IDLE_HOURS)
+
+
 def test_a_worker_that_used_a_tool_within_the_hours_keeps_running(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
-    story.advance(hours(DEFAULT_HOURS - 1))
+    story.advance(hours(idle_hours(story) - 1))
     story.hook(worker_session(story, worker), HookSamples.prompt("Fix the cart"))
-    story.advance(hours(DEFAULT_HOURS - 1))
+    story.advance(hours(idle_hours(story) - 1))
     story.tick(MAIN_SESSION)
     story.expect_success("worker-worktree show 1", "state: cut")
     story.expect_success(lines.TASK_DETAILS, "state: started")
@@ -43,7 +46,7 @@ def test_a_worker_with_delivered_work_is_never_stopped_for_being_idle(new_story)
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     delivered_worker(story, repository)
-    story.advance(hours(DEFAULT_HOURS * 4))
+    story.advance(hours(idle_hours(story) * 4))
     story.tick(MAIN_SESSION)
     story.expect_success("worker-worktree show 1", "state: delivered")
 
@@ -52,11 +55,11 @@ def test_the_setting_sets_the_hours_a_worker_may_be_idle(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
-    story.expect_success(f"setting make {WORKER_IDLE_HOURS} {DEFAULT_HOURS * 2} --environment main", f"key: {WORKER_IDLE_HOURS}")
-    story.advance(hours(DEFAULT_HOURS))
+    story.expect_success(f"setting make {WORKER_IDLE_HOURS} {idle_hours(story) * 2} --environment main", f"key: {WORKER_IDLE_HOURS}")
+    story.advance(hours(idle_hours(story)))
     story.tick(MAIN_SESSION)
     story.expect_success("worker-worktree show 1", "state: cut")
-    story.advance(hours(DEFAULT_HOURS))
+    story.advance(hours(idle_hours(story)))
     story.tick(MAIN_SESSION)
     story.expect_text(f"agent show {agent_number(story, worker.id)}", "ended_at: ")
 
