@@ -81,7 +81,7 @@ class PluginManifest:
     def read(cls, folder: Path) -> "PluginManifest":
         manifests = PluginManifestFiles.listed(folder)
         path = manifests.chosen(JOURNAL_VERSION)
-        fields = cls.loaded_fields(path, FileAccess.shared().version(path))
+        fields = cls.loaded_fields(path, FileAccess.version(path))
         program = str(fields["program"]) if "program" in fields else ""
         settings_file = str(fields["settings"]) if "settings" in fields else ""
         names: object = fields["hears"] if "hears" in fields else None
@@ -115,7 +115,7 @@ class PluginManifest:
     @lru_cache(maxsize=128)
     def kept_fields(cls, path: Path, version: FileVersion) -> Mapping[str, object] | Refusal:
         try:
-            fields: object = json.loads(FileAccess.shared().read(path))
+            fields: object = json.loads(FileAccess.read(path))
         except json.JSONDecodeError as error:
             return Refusal(f"the manifest {path} is not valid JSON: {error}", "correct the file, or remove and install the plugin again")
         if not is_string_mapping(fields) or not all(field in fields for field in REQUIRED_FIELDS):
@@ -209,9 +209,9 @@ class PluginManifest:
     @staticmethod
     def walked_files(folder: Path, entry: str) -> tuple[str, ...]:
         path = folder / entry
-        if not path.is_dir():
+        if not FileAccess.is_dir(path):
             return tuple([entry])
-        return tuple(sorted(str(file.relative_to(folder)) for file in path.rglob("*") if file.is_file()))
+        return tuple(sorted(str(file.relative_to(folder)) for file in FileAccess.rglob(path, "*") if FileAccess.is_file(file)))
 
     def wrong_files(self, folder: Path) -> tuple[str, ...]:
         return tuple(entry for entry in self.listed_files if not ManifestListener.is_contained_path(entry, folder))
@@ -240,12 +240,12 @@ class PluginManifest:
         if not settings_file:
             return ()
         path = folder / settings_file
-        return cls.loaded_settings(path, FileAccess.shared().version(path))
+        return cls.loaded_settings(path, FileAccess.version(path))
 
     @classmethod
     @lru_cache(maxsize=128)
     def loaded_settings(cls, path: Path, version: FileVersion) -> tuple[ManifestSetting, ...]:
-        listed: object = json.loads(FileAccess.shared().read(path))
+        listed: object = json.loads(FileAccess.read(path))
         return tuple(cls.manifest_setting(entry) for entry in listed) if is_list(listed) else ()
 
     @staticmethod

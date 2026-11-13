@@ -377,11 +377,11 @@ class Story:
         return int(json.loads(outcome.output_text.splitlines()[0])["id"])
 
     def report_context_percent(self, session: str, percent: int) -> None:
-        self.home.status_folder.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(self.home.status_folder / f"{session}.json", json.dumps({"session_id": session, "context_window": {"used_percentage": percent}}))
+        FileAccess.mkdir(self.home.status_folder, parents=True, exist_ok=True)
+        FileAccess.write(self.home.status_folder / f"{session}.json", json.dumps({"session_id": session, "context_window": {"used_percentage": percent}}))
 
     def system_log_text(self) -> str:
-        return FileAccess.shared().read(self.home.system_log) if self.home.system_log.exists() else ""
+        return FileAccess.read(self.home.system_log) if FileAccess.exists(self.home.system_log) else ""
 
     def expect_sync_refusal(self, module: str, text: str) -> None:
         registry_text = Registry.read(self.container.get(Database)).entries_text()
@@ -414,8 +414,8 @@ class Story:
         self.expected(self.container.get(EventLog).latest_event(name) is not None, f"no {name} event was logged")
 
     def synced_with(self, module: str) -> tuple[int, str]:
-        modules = json.loads(FileAccess.shared().read(self.home.module_list))
-        FileAccess.shared().write(self.home.module_list, json.dumps([*modules, module]))
+        modules = json.loads(FileAccess.read(self.home.module_list))
+        FileAccess.write(self.home.module_list, json.dumps([*modules, module]))
         return self.synced()
 
     def synced(self) -> tuple[int, str]:

@@ -77,7 +77,7 @@ class ViewerWorkload:
                         *(source_root / "src/viewer/src" / name for name in (
                             "api/transport.js", "api/joinedRead.js", "windows/lineBatch.js",
                             "windows/windowContext.js", "windows/windowSubscriptions.js")))
-        definition["build"] = sha256(b"".join(FileAccess.shared().binary(path) for path in source_files)).hexdigest()
+        definition["build"] = sha256(b"".join(FileAccess.binary(path) for path in source_files)).hexdigest()
         definition["dataset"] = sha256(json.dumps(asdict(self), sort_keys=True).encode()).hexdigest()
         definition["counter_scope"] = "/api/line and /api/lines; joined callers entering JoinedRead; receipt HTTP excluded"
         return definition
@@ -406,17 +406,17 @@ def run_workload_browser(sample: WorkloadServer, tmp_path: Path, case: str = "sc
     comparisons = {"messages": sample.message_page_comparison().report(), "output": sample.output_page_comparison().report()}
     manifest = tmp_path / "viewer-workload.json"
     measurement_file = tmp_path / f"viewer-{case}.json"
-    FileAccess.shared().write(manifest, json.dumps(sample.manifest()))
+    FileAccess.write(manifest, json.dumps(sample.manifest()))
     address = f"http://127.0.0.1:{sample.server.viewer_port()}/?key={sample.server.viewer_key('Ada')}&environment=main"
     script = Path(__file__).resolve().parents[3] / "src/viewer/tests/viewerReadCounts.browser.mjs"
     completed = subprocess.run(["node", str(script), address, str(manifest), str(measurement_file), case],
                                cwd=script.parent.parent, env=os.environ, capture_output=True, text=True, timeout=180)
     assert completed.returncode == 0, completed.stdout + completed.stderr
-    sample_data = json.loads(FileAccess.shared().read(measurement_file))
+    sample_data = json.loads(FileAccess.read(measurement_file))
     sample_data["server_reads"] = measured
     sample_data["page_comparisons"] = comparisons
     assert sample_data["workload"]["identifier"] == sample.workload.identifier
-    assert sample_data["workload"]["build"] == json.loads(FileAccess.shared().read(manifest))["build"]
+    assert sample_data["workload"]["build"] == json.loads(FileAccess.read(manifest))["build"]
     try:
         sample_data["counter_agreement"] = sample.attributed_evidence(sample_data["result"]["funnel"])
         sample_data["sample_complete"] = True
@@ -426,7 +426,7 @@ def run_workload_browser(sample: WorkloadServer, tmp_path: Path, case: str = "sc
     status, _, text = viewer_answer(sample.server.viewer_port(), "/api/request-log-status", sample.cookie, "")
     assert status == 200, text
     sample_data["log_status"] = json.loads(text)
-    FileAccess.shared().write(measurement_file, json.dumps(sample_data))
+    FileAccess.write(measurement_file, json.dumps(sample_data))
     print(json.dumps({"identifier": sample_data["workload"]["identifier"], "build": sample_data["workload"]["build"],
                       "dataset": sample_data["workload"]["dataset"], "case": case,
                       "sample_complete": sample_data["sample_complete"], "incomplete_reason": sample_data.get("incomplete_reason", ""), "log_status": sample_data["log_status"],

@@ -18,7 +18,7 @@ class PluginCodeDiff:
         return shown
 
     def files(self, folder: Path) -> set[str]:
-        return {str(path.relative_to(folder)) for path in folder.rglob("*") if path.is_file() and GIT_FOLDER not in path.relative_to(folder).parts}
+        return {str(path.relative_to(folder)) for path in FileAccess.rglob(folder, "*") if FileAccess.is_file(path) and GIT_FOLDER not in path.relative_to(folder).parts}
 
     def file_lines(self, relative: str, old: Path, new: Path) -> list[str]:
         old_text, new_text = self.text(old), self.text(new)
@@ -31,19 +31,19 @@ class PluginCodeDiff:
 
     @staticmethod
     def has_changed_bytes(old: Path, new: Path) -> bool:
-        return old.exists() and new.exists() and FileAccess.shared().binary(old) != FileAccess.shared().binary(new)
+        return FileAccess.exists(old) and FileAccess.exists(new) and FileAccess.binary(old) != FileAccess.binary(new)
 
     @staticmethod
     def presence(relative: str, old: Path, new: Path) -> list[str]:
-        if old.exists() and not new.exists():
+        if FileAccess.exists(old) and not FileAccess.exists(new):
             return [f"removed {relative}"]
-        return [f"added {relative}"] if new.exists() and not old.exists() else []
+        return [f"added {relative}"] if FileAccess.exists(new) and not FileAccess.exists(old) else []
 
     @staticmethod
     def text(path: Path) -> str | None:
-        if not path.exists():
+        if not FileAccess.exists(path):
             return ""
         try:
-            return FileAccess.shared().read(path)
+            return FileAccess.read(path)
         except UnicodeDecodeError:
             return None

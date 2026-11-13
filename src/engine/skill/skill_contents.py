@@ -31,9 +31,9 @@ class SkillContents:
     @classmethod
     def read(cls, path: Path) -> "SkillContents":
         path = path.resolve()
-        return cls.loaded(path, FileAccess.shared().version(path))
+        return cls.loaded(path, FileAccess.version(path))
 
     @staticmethod
     @lru_cache(maxsize=1024)
     def loaded(path: Path, version: FileVersion) -> "SkillContents":
-        return SkillContents(FileAccess.shared().read(path))
+        return SkillContents(FileAccess.read(path))

@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import os
 import shlex
 import shutil
@@ -166,15 +167,15 @@ class GraphifyTool(ToolRunner):
     @staticmethod
     def copy_graph(source: Path, target: Path) -> None:
         graph = GraphFiles(source).output
-        if not graph.is_dir():
+        if not FileAccess.is_dir(graph):
             return
         copied = GraphFiles(target).output
-        copied.mkdir(parents=True, exist_ok=True)
-        for file in graph.iterdir():
-            if file.is_file() and file.name not in (RUNNING_FILE, FAILED_FILE, REBUILD_LOCK_FILE):
-                shutil.copy2(file, copied / file.name)
+        FileAccess.mkdir(copied, parents=True, exist_ok=True)
+        for file in FileAccess.iterdir(graph):
+            if FileAccess.is_file(file) and file.name not in (RUNNING_FILE, FAILED_FILE, REBUILD_LOCK_FILE):
+                FileAccess.copy(file, copied / file.name)
 
     @staticmethod
     def checked_folder(folder: Path) -> None:
-        if not folder.is_dir():
+        if not FileAccess.is_dir(folder):
             raise Refusal(f"{folder} is not a folder")

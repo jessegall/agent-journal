@@ -93,7 +93,7 @@ def test_a_broken_line_in_the_request_log_is_left_out_and_the_rows_around_it_are
     story = new_story(fixture=BuilderStarted)
     log = story.container.get(RequestLog)
     log.append(RequestLogEntry(1, None, ProcessType.JOURNAL, "journal task list", 0, story.clock.timestamp().text))
-    FileAccess.shared().write(log.lines.path, FileAccess.shared().read(log.lines.path) + "{half a line\n" + "{\"line\": \"journal task done\"}\n")
+    FileAccess.write(log.lines.path, FileAccess.read(log.lines.path) + "{half a line\n" + "{\"line\": \"journal task done\"}\n")
     log.append(RequestLogEntry(1, None, ProcessType.JOURNAL, "journal task show", 0, story.clock.timestamp().text))
     logged_rows_saved(story)
     story.expect_rows([row.line for row in category_runs(story, ProcessType.JOURNAL)] == ["journal task list", "journal task show"], not log.lines.taken_path.exists())

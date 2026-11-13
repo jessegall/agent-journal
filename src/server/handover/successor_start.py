@@ -44,7 +44,7 @@ class SuccessorStart:
 
     def started(self, version: Path, descriptors: HandoverDescriptors) -> subprocess.Popen[bytes]:
         environment = {**os.environ, PYTHON_PATH_VARIABLE: str(version)}
-        with FileAccess.shared().writer(self.files.log, "a") as log:
+        with FileAccess.writer(self.files.log, "a") as log:
             return subprocess.Popen([sys.executable, str(version / "server" / "server.py"), "--home", str(self.home.folder), "--take-over", descriptors.text],
                                     cwd=self.home.folder.parent, env=environment, pass_fds=astuple(descriptors), stdin=subprocess.DEVNULL, stdout=log, stderr=log,
                                     start_new_session=True)

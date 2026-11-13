@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
@@ -36,19 +37,19 @@ class RestoreVersionFour:
 
     def restore(self, backup: Path, lines: list[str]) -> None:
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        moved_names = [f"{self.home.database.name}{suffix}" for suffix in ("", *SIDE_FILES) if (self.home.folder / f"{self.home.database.name}{suffix}").exists()]
+        moved_names = [f"{self.home.database.name}{suffix}" for suffix in ("", *SIDE_FILES) if FileAccess.exists(self.home.folder / f"{self.home.database.name}{suffix}")]
         for name in moved_names:
-            shutil.move(self.home.folder / name, self.home.folder / name.replace("version-5", f"version-5.{stamp}", 1))
-        shutil.copy2(backup, self.home.folder / DATABASE)
+            FileAccess.move(self.home.folder / name, self.home.folder / name.replace("version-5", f"version-5.{stamp}", 1))
+        FileAccess.copy(backup, self.home.folder / DATABASE)
         retired = VersionFourFiles(self.home.folder).retired / CODE_FOLDER
-        if retired.is_dir() and not (self.home.folder / CODE_FOLDER).exists():
-            shutil.copytree(retired, self.home.folder / CODE_FOLDER)
+        if FileAccess.is_dir(retired) and not FileAccess.exists(self.home.folder / CODE_FOLDER):
+            FileAccess.copytree(retired, self.home.folder / CODE_FOLDER)
         readers = VersionFourFiles(self.home.folder).retired / READERS_FOLDER
-        if readers.is_dir() and not (self.home.folder / READERS_FOLDER).exists():
-            shutil.copytree(readers, self.home.folder / READERS_FOLDER)
+        if FileAccess.is_dir(readers) and not FileAccess.exists(self.home.folder / READERS_FOLDER):
+            FileAccess.copytree(readers, self.home.folder / READERS_FOLDER)
         entry = VersionFourFiles(self.home.folder).retired / SHELL_ENTRY
-        if entry.is_file():
-            shutil.copy2(entry, self.home.folder / SHELL_ENTRY)
+        if FileAccess.is_file(entry):
+            FileAccess.copy(entry, self.home.folder / SHELL_ENTRY)
         HookManager(self.home.project_folder, ManagedHooks(self.home)).restore()
         lines.extend([f"version 5's database moved aside as version-5.{stamp}.db", f"version 4's journal.db restored from {backup}",
                       *HookSwitch(self.home.folder.parent).restore()])

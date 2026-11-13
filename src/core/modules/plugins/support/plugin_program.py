@@ -167,10 +167,10 @@ class PluginProgram:
 
     def write_settings(self, plugin_name: str, settings: Mapping[str, object], environment: str = "") -> None:
         file, text = self.settings_path(plugin_name, environment), json.dumps(dict(settings))
-        if self.written_settings.get(file) == text and file.is_file():
+        if self.written_settings.get(file) == text and FileAccess.is_file(file):
             return
-        file.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(file, text)
+        FileAccess.mkdir(file.parent, parents=True, exist_ok=True)
+        FileAccess.write(file, text)
         self.written_settings[file] = text
 
     def environment(self, plugin_name: str, environment: str) -> dict[str, str]:

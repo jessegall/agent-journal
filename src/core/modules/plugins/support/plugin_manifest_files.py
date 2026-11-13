@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -21,8 +22,8 @@ class PluginManifestFiles:
 
     @classmethod
     def listed(cls, folder: Path) -> "PluginManifestFiles":
-        versions = tuple(match.group(1) for match in (VERSIONED_MANIFEST.fullmatch(path.name) for path in folder.glob("journal-plugin.*.json")) if match)
-        return cls(folder, (folder / MANIFEST_FILE).is_file(), tuple(sorted(versions, key=VersionNumbers.parsed)))
+        versions = tuple(match.group(1) for match in (VERSIONED_MANIFEST.fullmatch(path.name) for path in FileAccess.glob(folder, "journal-plugin.*.json")) if match)
+        return cls(folder, FileAccess.is_file(folder / MANIFEST_FILE), tuple(sorted(versions, key=VersionNumbers.parsed)))
 
     @property
     def names(self) -> tuple[str, ...]:

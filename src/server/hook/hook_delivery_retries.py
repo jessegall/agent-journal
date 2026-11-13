@@ -24,12 +24,12 @@ class HookDeliveryRetries:
         self.folder = home.folder / "runtime" / "lost-hook-answers"
 
     def keep(self, hook_call_id: int) -> None:
-        self.folder.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().update_timestamp(self.folder / str(hook_call_id))
+        FileAccess.mkdir(self.folder, parents=True, exist_ok=True)
+        FileAccess.update_timestamp(self.folder / str(hook_call_id))
 
     def retry(self, container: Container) -> None:
-        for path in self.folder.glob("*"):
-            if path.is_file():
+        for path in FileAccess.glob(self.folder, "*"):
+            if FileAccess.is_file(path):
                 self.retry_file(path, container)
 
     def retry_file(self, path: Path, container: Container) -> None:
@@ -43,7 +43,7 @@ class HookDeliveryRetries:
             self.note_removal(path, error, container)
         except Exception as error:
             self.note_removal(path, error, container)
-        path.unlink(missing_ok=True)
+        FileAccess.unlink(path, missing_ok=True)
 
     @staticmethod
     def note_removal(path: Path, error: Exception, container: Container) -> None:

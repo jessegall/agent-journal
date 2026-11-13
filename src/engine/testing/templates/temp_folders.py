@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import getpass
 import os
 import shutil
@@ -33,14 +34,14 @@ class TempFolders:
         self.remove_dead_runs()
         self.remove_old()
         run = self.user_folder / f"{RUNNING_PREFIX}{time.strftime('%Y%m%dT%H%M%S')}-{os.getpid()}"
-        run.mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(run, parents=True, exist_ok=True)
         return run
 
     def finish(self, run: Path, passed: bool) -> None:
         if passed:
             shutil.rmtree(run, ignore_errors=True)
         else:
-            run.rename(run.with_name(FAILED_PREFIX + run.name.removeprefix(RUNNING_PREFIX)))
+            FileAccess.rename(run, run.with_name(FAILED_PREFIX + run.name.removeprefix(RUNNING_PREFIX)))
         self.remove_old()
 
     def remove_dead_runs(self) -> None:
@@ -57,7 +58,7 @@ class TempFolders:
             shutil.rmtree(folder, ignore_errors=True)
 
     def folders(self, prefix: str) -> list[Path]:
-        return [folder for folder in self.user_folder.glob(prefix + "*") if folder.is_dir()]
+        return [folder for folder in FileAccess.glob(self.user_folder, prefix + "*") if FileAccess.is_dir(folder)]
 
     def size(self) -> int:
         return FolderStat.bytes(self.user_folder)

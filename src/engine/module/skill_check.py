@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from collections.abc import Sequence
 
 from engine.event.event_pattern import EventPattern
@@ -20,7 +21,7 @@ class SkillCheck:
                 name = f"the skill {skill.folder}"
                 if not skill.folder.startswith(FOLDER_PREFIX):
                     problems.append(f"{name} does not start with {FOLDER_PREFIX}")
-                if not (module.folder() / SKILLS_FOLDER / skill.folder / skill.file).exists():
+                if not FileAccess.exists(module.folder() / SKILLS_FOLDER / skill.folder / skill.file):
                     problems.append(f"{name} has no {skill.file} in its module's {SKILLS_FOLDER} folder")
                 problems += [f"{name} names {event}, which no model's events match" for event in skill.events
                              if not any(EventPattern(event).matches(raised) for raised in events)]

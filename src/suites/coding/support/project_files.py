@@ -36,11 +36,11 @@ class ProjectFiles:
     def listed(self, folder: str) -> ProjectFileRows:
         root = self.root()
         place = self.resolved_path(root, folder)
-        if not place.is_dir():
+        if not FileAccess.is_dir(place):
             raise Refusal(f"{folder} is no folder", "name a folder of the project")
-        entries = [entry for entry in place.iterdir() if entry.name not in HIDDEN_NAMES]
-        ordered = sorted(entries, key=lambda entry: (not entry.is_dir(), entry.name.lower()))
-        return ProjectFileRows([{"id": str(entry.relative_to(root)), "name": entry.name, "folder": entry.is_dir(), "size": entry.stat().st_size if entry.is_file() else 0} for entry in ordered])
+        entries = [entry for entry in FileAccess.iterdir(place) if entry.name not in HIDDEN_NAMES]
+        ordered = sorted(entries, key=lambda entry: (not FileAccess.is_dir(entry), entry.name.lower()))
+        return ProjectFileRows([{"id": str(entry.relative_to(root)), "name": entry.name, "folder": FileAccess.is_dir(entry), "size": FileAccess.stat(entry).st_size if FileAccess.is_file(entry) else 0} for entry in ordered])
 
     def found(self, terms: str) -> ProjectFileRows:
         wanted = terms.lower().split()
@@ -51,9 +51,9 @@ class ProjectFiles:
     def shown(self, path: str) -> ProjectFileText:
         root = self.root()
         place = self.resolved_path(root, path)
-        if not place.is_file():
+        if not FileAccess.is_file(place):
             raise Refusal(f"{path} is no file", "name a file of the project")
-        data = FileAccess.shared().binary(place)
+        data = FileAccess.binary(place)
         if b"\0" in data[:8000]:
             raise Refusal(f"{path} is not text", "it can only be opened outside the viewer")
         return ProjectFileText(path, data[:SHOWN_BYTES].decode(errors="replace"), len(data) > SHOWN_BYTES)

@@ -15,6 +15,6 @@ class UpgradeReportFile:
 
     def save(self, text: str) -> None:
         current = self.journal / REPORT
-        if current.exists():
-            current.replace(self.journal / PREVIOUS)
-        FileAccess.shared().write(current, text + "\n")
+        if FileAccess.exists(current):
+            FileAccess.replace(current, self.journal / PREVIOUS)
+        FileAccess.write(current, text + "\n")

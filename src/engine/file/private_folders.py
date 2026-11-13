@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 PRIVATE_FOLDER_MODE = 0o700
@@ -9,6 +10,6 @@ class PrivateFolders:
     @staticmethod
     def made(folder: Path) -> Path:
         for missing in reversed([folder, *folder.parents]):
-            if not missing.exists():
-                missing.mkdir(mode=PRIVATE_FOLDER_MODE, exist_ok=True)
+            if not FileAccess.exists(missing):
+                FileAccess.mkdir(missing, mode=PRIVATE_FOLDER_MODE, exist_ok=True)
         return folder

@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import hashlib
 from dataclasses import dataclass
 from pathlib import Path
@@ -127,7 +128,7 @@ class JournalHome:
 
     def status_file(self, session: str) -> Path:
         running = self.status_folder / f"{session}.json"
-        return running if running.is_file() else self.status_folder / ENDED_STATUS_FOLDER / f"{session}.json"
+        return running if FileAccess.is_file(running) else self.status_folder / ENDED_STATUS_FOLDER / f"{session}.json"
 
     @property
     def program_table(self) -> Path:

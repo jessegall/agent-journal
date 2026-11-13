@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import shutil
 
 from engine.command.context import Context
@@ -29,18 +30,18 @@ class PruneRuntimeFoldersHandler(Handler[PruneRuntimeFolders, int]):
 
     def pruned_scan_states(self) -> int:
         folder = self.home.folder / "runtime" / FILE_SCAN_FOLDER
-        stale = [state for state in folder.iterdir() if self.is_old(state.stat().st_mtime)] if folder.is_dir() else []
+        stale = [state for state in FileAccess.iterdir(folder) if self.is_old(FileAccess.stat(state).st_mtime)] if FileAccess.is_dir(folder) else []
         for state in stale:
             shutil.rmtree(state, ignore_errors=True)
         return len(stale)
 
     def pruned_terminal_logs(self) -> int:
         folder = self.home.folder / "runtime" / TERMINALS_FOLDER
-        old_logs = {int(log.stem): log for log in folder.glob("*.log") if log.stem.isdigit() and self.is_old(log.stat().st_mtime)} if folder.is_dir() else {}
+        old_logs = {int(log.stem): log for log in FileAccess.glob(folder, "*.log") if log.stem.isdigit() and self.is_old(FileAccess.stat(log).st_mtime)} if FileAccess.is_dir(folder) else {}
         running = {agent.id for agent in self.queries.query(Agent).matching(Among("id", list(old_logs))).every_row("the agents whose old terminal logs may go") if agent.ended_at is None}
         removed = [log for agent_id, log in old_logs.items() if agent_id not in running]
         for log in removed:
-            log.unlink(missing_ok=True)
+            FileAccess.unlink(log, missing_ok=True)
         return len(removed)
 
     def is_old(self, modified_at: float) -> bool:

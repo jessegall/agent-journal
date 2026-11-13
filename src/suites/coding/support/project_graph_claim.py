@@ -17,26 +17,26 @@ class ProjectGraphClaim:
         self.path = home.folder / "runtime" / CLAIM_FILE
 
     def is_claimed(self, clock: Clock) -> bool:
-        if not self.path.is_file():
+        if not FileAccess.is_file(self.path):
             return False
-        text = FileAccess.shared().read(self.path).strip()
-        is_blocked = clock.epoch_seconds() - self.path.stat().st_mtime < CLAIM_GRACE_SECONDS if not text else ProcessIds.text_exists(text)
+        text = FileAccess.read(self.path).strip()
+        is_blocked = clock.epoch_seconds() - FileAccess.stat(self.path).st_mtime < CLAIM_GRACE_SECONDS if not text else ProcessIds.text_exists(text)
         if not is_blocked:
-            self.path.unlink(missing_ok=True)
+            FileAccess.unlink(self.path, missing_ok=True)
         return is_blocked
 
     def claim(self, clock: Clock) -> bool:
         if self.is_claimed(clock):
             return False
-        self.path.parent.mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(self.path.parent, parents=True, exist_ok=True)
         try:
-            with FileAccess.shared().descriptor_writer(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600):
+            with FileAccess.descriptor_writer(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600):
                 return True
         except FileExistsError:
             return False
 
     def record_owner(self, pid: int) -> None:
-        FileAccess.shared().write(self.path, str(pid))
+        FileAccess.write(self.path, str(pid))
 
     def release(self) -> None:
-        self.path.unlink(missing_ok=True)
+        FileAccess.unlink(self.path, missing_ok=True)

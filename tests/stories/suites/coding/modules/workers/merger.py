@@ -95,7 +95,7 @@ def test_when_the_merger_cannot_start_the_main_agent_hears_what_waits(new_story,
     notice = WORKER_TESTS_PASSED.nudge(worker=agent_number(story, worker.id)).text
     story.expect_rows(lines.count(notice) == 1, "agent:0" not in lines, detail=lines)
     log = story.home.system_log
-    story.expect_rows(not log.exists() or "merger start failed" not in FileAccess.shared().read(log))
+    story.expect_rows(not log.exists() or "merger start failed" not in FileAccess.read(log))
 
 
 def test_a_merge_waits_until_a_main_agent_returns(new_story, monkeypatch):

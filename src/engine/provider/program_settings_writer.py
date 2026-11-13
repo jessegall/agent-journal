@@ -34,7 +34,7 @@ class ProgramSettingsWriter:
                 self._remove_stale_temporaries(folder)
             changed_files = tuple(file for file in settings.files if self._differs(file))
             for file in changed_files:
-                FileAccess.shared().write_whole(file.path, file.data, file.mode)
+                FileAccess.write_whole(file.path, file.data, file.mode)
             changed_links = tuple(link for link, target in settings.links.items() if self._link_differs(link, target))
             for link in changed_links:
                 self._relink(link, settings.links[link])
@@ -46,9 +46,9 @@ class ProgramSettingsWriter:
         return changed_files + tuple(link for link, target in settings.links.items() if self._link_differs(link, target))
 
     def recorded_digests(self) -> dict[str, str]:
-        if not self.home.program_settings_digests.is_file():
+        if not FileAccess.is_file(self.home.program_settings_digests):
             return {}
-        recorded = json.loads(FileAccess.shared().read(self.home.program_settings_digests))
+        recorded = json.loads(FileAccess.read(self.home.program_settings_digests))
         return {str(path): str(digest) for path, digest in recorded.items()} if is_mapping(recorded) else {}
 
     @staticmethod
@@ -57,34 +57,34 @@ class ProgramSettingsWriter:
 
     @staticmethod
     def _remove_stale_temporaries(folder: Path) -> None:
-        for stale in folder.glob(f"{tempfile.gettempprefix()}*"):
-            if stale.is_symlink() or stale.is_file():
-                stale.unlink(missing_ok=True)
+        for stale in FileAccess.glob(folder, f"{tempfile.gettempprefix()}*"):
+            if FileAccess.is_symlink(stale) or FileAccess.is_file(stale):
+                FileAccess.unlink(stale, missing_ok=True)
 
     @staticmethod
     def _differs(file: SettingsFile) -> bool:
-        if file.path.is_symlink() or not file.path.is_file():
+        if FileAccess.is_symlink(file.path) or not FileAccess.is_file(file.path):
             return True
-        if stat.S_IMODE(file.path.stat().st_mode) != file.mode:
+        if stat.S_IMODE(FileAccess.stat(file.path).st_mode) != file.mode:
             return True
         return KeptBytes.read(file.path) != file.data
 
     @staticmethod
     def _link_differs(link: Path, target: Path) -> bool:
-        return not link.is_symlink() or Path(os.readlink(link)) != target
+        return not FileAccess.is_symlink(link) or FileAccess.readlink(link) != target
 
     @staticmethod
     def _relink(link: Path, target: Path) -> None:
         temporary_link = link.parent / f"{tempfile.gettempprefix()}{link.name}{LINK_SUFFIX}"
-        os.symlink(target, temporary_link)
+        FileAccess.symlink_to(temporary_link, target)
         try:
-            FileAccess.shared().replace(temporary_link, link)
+            FileAccess.replace(temporary_link, link)
         finally:
-            temporary_link.unlink(missing_ok=True)
+            FileAccess.unlink(temporary_link, missing_ok=True)
 
     def _record_digests(self, files: tuple[SettingsFile, ...]) -> None:
         if not files:
             return
         digests: Mapping[str, str] = {**self.recorded_digests(), **{str(file.path): hashlib.sha256(file.data).hexdigest() for file in files}}
         PrivateFolders.made(self.home.program_settings_digests.parent)
-        FileAccess.shared().write_whole(self.home.program_settings_digests, (json.dumps(digests, indent=2, sort_keys=True) + "\n").encode(), DIGESTS_MODE)
+        FileAccess.write_whole(self.home.program_settings_digests, (json.dumps(digests, indent=2, sort_keys=True) + "\n").encode(), DIGESTS_MODE)

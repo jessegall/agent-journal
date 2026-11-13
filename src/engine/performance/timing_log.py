@@ -21,8 +21,8 @@ class TimingLog:
     def write(self, fields: dict[str, object]) -> None:
         if not self.state.can_measure:
             return
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        with FileAccess.shared().descriptor_writer(self.path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o644) as descriptor:
+        FileAccess.mkdir(self.path.parent, parents=True, exist_ok=True)
+        with FileAccess.descriptor_writer(self.path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o644) as descriptor:
             os.write(descriptor, (json.dumps(fields, separators=(",", ":")) + "\n").encode())
 
     def rotate(self) -> None:

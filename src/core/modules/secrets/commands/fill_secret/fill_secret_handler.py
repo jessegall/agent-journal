@@ -40,10 +40,10 @@ class FillSecretHandler(Handler[FillSecret, FilledField]):
     @staticmethod
     def read_file(name: str) -> str:
         file = Path(name)
-        if not file.is_file():
+        if not FileAccess.is_file(file):
             raise Refusal(f"no file at {name}", "write the value you made to a file, and the journal moves it into the secret")
-        value = FileAccess.shared().read(file).strip()
-        file.unlink()
+        value = FileAccess.read(file).strip()
+        FileAccess.unlink(file)
         if not value:
             raise Refusal(f"{name} held no value; it is deleted all the same")
         return value

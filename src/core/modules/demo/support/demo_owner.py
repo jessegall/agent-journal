@@ -14,12 +14,12 @@ class DemoOwner:
         self.file = journal_folder / OWNER_FILE
 
     def keep(self, pid: int) -> None:
-        FileAccess.shared().write(self.file, str(pid))
+        FileAccess.write(self.file, str(pid))
 
     def has_ended(self) -> bool:
-        if not self.file.is_file():
+        if not FileAccess.is_file(self.file):
             return False
-        text = FileAccess.shared().read(self.file).strip()
+        text = FileAccess.read(self.file).strip()
         if not text.isdigit():
             return False
         try:

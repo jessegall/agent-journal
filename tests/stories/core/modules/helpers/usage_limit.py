@@ -28,7 +28,7 @@ def report_window(story: Story, percent: int) -> None:
     resets_at = story.clock.timestamp().value.timestamp() + LIMIT_SECONDS
     story.home.status_folder.mkdir(parents=True, exist_ok=True)
     report = {"session_id": "s-1", "model": {"display_name": "Opus"}, "context_window": {"used_percentage": 10}, "rate_limits": {"five_hour": {"used_percentage": percent, "resets_at": resets_at}}}
-    FileAccess.shared().write(story.home.status_folder / "s-1.json", json.dumps(report))
+    FileAccess.write(story.home.status_folder / "s-1.json", json.dumps(report))
 
 
 def limited_story(new_story) -> Story:

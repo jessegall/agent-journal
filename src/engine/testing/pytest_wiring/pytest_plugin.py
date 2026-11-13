@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import os
 import shutil
 from collections.abc import Callable, Generator
@@ -109,7 +110,7 @@ def templates() -> Generator[TemplateDatabases]:
     TemplateDatabases.remove_stale_working_folders(time.time())
     databases = TemplateDatabases(run_template_folder())
     yield databases
-    databases.working_folder.cleanup()
+    FileAccess.rmtree(databases.working_folder, True)
 
 
 @pytest.fixture

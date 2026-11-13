@@ -14,7 +14,7 @@ class TextBody:
             raise Refusal("give the text with --body or with --file, not both", "drop one of them")
         if arguments.file is not None:
             path = Path(arguments.file)
-            if not path.is_file():
+            if not FileAccess.is_file(path):
                 raise Refusal(f"no such file: {arguments.file}", "name a markdown file")
-            return FileAccess.shared().read(path)
+            return FileAccess.read(path)
         return None if arguments.body is None else arguments.body.replace("\\n", "\n")

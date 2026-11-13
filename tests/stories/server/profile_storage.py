@@ -63,14 +63,14 @@ def profile_path(story, name="critic"):
 def save_profile_file(story, name, text, folder=".agents/profiles", suffix=".md"):
     path = story.home.project_folder / folder / f"{name}{suffix}"
     path.parent.mkdir(parents=True, exist_ok=True)
-    FileAccess.shared().write(path, text)
+    FileAccess.write(path, text)
     story.steps.append(f"profile file {folder}/{name}{suffix}: {text}")
     return path
 
 
 def change_version(story, version):
-    modules = json.loads(FileAccess.shared().read(story.home.module_list))
-    FileAccess.shared().write(story.home.module_list, json.dumps([MODULE + version if item.startswith(MODULE) else item for item in modules]))
+    modules = json.loads(FileAccess.read(story.home.module_list))
+    FileAccess.write(story.home.module_list, json.dumps([MODULE + version if item.startswith(MODULE) else item for item in modules]))
     code, text = story.synced()
     expect_value(code, 0)
     story.steps.append(f"profile module {version}: {text}")
@@ -107,7 +107,7 @@ def test_registered_profiles_are_listed_without_shared_files(profile_story):
 
 def test_only_changed_fields_are_saved_and_other_fields_follow_an_upgrade(changed_profile):
     story = changed_profile
-    text = FileAccess.shared().read(profile_path(story, "module-reader"))
+    text = FileAccess.read(profile_path(story, "module-reader"))
     expect_value("description:" in text or "Read the files." in text, False)
     change_version(story, "ProfileVersionTwo")
     row = profile_row(story, "module-reader")
@@ -120,7 +120,7 @@ def test_only_changed_fields_are_saved_and_other_fields_follow_an_upgrade(change
 def test_a_persons_text_survives_changed_module_text_and_reset(profile_story, body):
     story = profile_story
     save_registered(story, "--body", body)
-    expect_value("module-text:" in FileAccess.shared().read(profile_path(story, "module-reader")), True)
+    expect_value("module-text:" in FileAccess.read(profile_path(story, "module-reader")), True)
     change_version(story, "ProfileVersionTwo")
     row = profile_row(story, "module-reader")
     expect_value((row["body"], row["module_text_changed"]), (body, True))
@@ -218,8 +218,8 @@ def test_legacy_profiles_are_copied_without_deletion_and_keep_their_fields(profi
     original = save_profile_file(story, "critic", text, source, suffix)
     boot(story)
     row = profile_row(story, "critic")
-    expect_value(FileAccess.shared().read(original), text)
-    expect_value("moved-from:" in FileAccess.shared().read(profile_path(story)), True)
+    expect_value(FileAccess.read(original), text)
+    expect_value("moved-from:" in FileAccess.read(profile_path(story)), True)
     expect_value((row["agent_type"], row["access"]), ("helper", "read-only"))
     expect_value((row["model"], row["codex_model"]), ("sonnet", "gpt-6.1-sol"))
     expect_value((row["occupant"], row["mcp_tools"]), ("each-launch", ["mcp__wiki__search"]))
@@ -239,21 +239,21 @@ def test_copy_is_idempotent_and_a_changed_original_is_kept_as_a_clash(profile_st
     edited_at = profile_path(story).stat().st_mtime_ns
     boot(story)
     expect_value(profile_path(story).stat().st_mtime_ns, edited_at)
-    FileAccess.shared().write(original, "---\nname: critic\ndescription: Reads\n---\nRead twice.\n")
+    FileAccess.write(original, "---\nname: critic\ndescription: Reads\n---\nRead twice.\n")
     boot(story)
     expect_value(profile_path(story, "critic.clash").is_file(), True)
-    expect_value("Personal instructions." in FileAccess.shared().read(profile_path(story)), True)
+    expect_value("Personal instructions." in FileAccess.read(profile_path(story)), True)
     expect_value(any("clash" in note for note in profile_row(story, "critic")["notes"]), True)
 
 
 def test_a_legacy_registered_name_becomes_only_a_change_file(profile_story):
     story = profile_story
     original = save_profile_file(story, "module-reader", "---\nname: module-reader\ndescription: Reads one question\nmodel: opus\n---\nRead the files.\n", ".claude/agents")
-    native_text = FileAccess.shared().read(original)
+    native_text = FileAccess.read(original)
     boot(story)
-    expect_value(FileAccess.shared().read(original), native_text)
+    expect_value(FileAccess.read(original), native_text)
     expect_value(profile_row(story, "module-reader")["changed"], ["model"])
-    expect_value("Read the files." in FileAccess.shared().read(profile_path(story, "module-reader")), False)
+    expect_value("Read the files." in FileAccess.read(profile_path(story, "module-reader")), False)
 
 
 def test_a_read_only_profile_folder_leaves_copy_undone_and_start_continues(profile_story, monkeypatch):
@@ -281,7 +281,7 @@ def test_default_models_are_effective_and_native_profiles_still_publish(profile_
     story.container.get(ProfileFiles).publish()
     native = story.home.project_folder / ".claude/agents/journal-researcher.md"
     expect_value(native.is_file(), True)
-    expect_value("tools:" in FileAccess.shared().read(native), False)
+    expect_value("tools:" in FileAccess.read(native), False)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.run(f'helper start {RESEARCHER_PROFILE.name} --model haiku --brief "Read the cart" --environment main', actor=story.agent)
     launcher.server.close()

@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import shutil
 from pathlib import Path
 
@@ -36,4 +37,4 @@ class PruneTempFoldersHandler(Handler[PruneTempFolders, int]):
         agents = tuple(self.queries.query(Agent).filter(session=session).get())
         if agents:
             return all(agent.ended_at is not None for agent in agents)
-        return self.clock.epoch_seconds() - folder.stat().st_mtime > UNKNOWN_SESSION_KEPT_SECONDS
+        return self.clock.epoch_seconds() - FileAccess.stat(folder).st_mtime > UNKNOWN_SESSION_KEPT_SECONDS

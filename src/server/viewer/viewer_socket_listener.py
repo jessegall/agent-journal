@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import os
 import shutil
 import socket
@@ -33,10 +34,10 @@ class ViewerSocketListener(ViewerEndpoint, UnixStreamServer):
 
     def server_bind(self) -> None:
         if self.inherited_socket is None:
-            self.socket_path.unlink(missing_ok=True)
+            FileAccess.unlink(self.socket_path, missing_ok=True)
         super().server_bind()
         if self.inherited_socket is None:
-            os.chmod(self.socket_path, SOCKET_MODE)
+            FileAccess.chmod(self.socket_path, SOCKET_MODE)
             shutil.chown(self.socket_path, group=self.group)
 
     @property

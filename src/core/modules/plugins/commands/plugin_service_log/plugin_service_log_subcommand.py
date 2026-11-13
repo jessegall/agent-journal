@@ -32,9 +32,9 @@ class PluginServiceLogSubcommand(ReadSubcommand[str]):
         if arguments.lines < 1:
             raise Refusal("the line count must be positive", "use --lines with a positive number")
         path = self.folders.service_log(arguments.plugin, arguments.service)
-        if not path.is_file():
+        if not FileAccess.is_file(path):
             return ""
-        return "\n".join(FileAccess.shared().read(path, errors="replace").splitlines()[-arguments.lines:])
+        return "\n".join(FileAccess.read(path, errors="replace").splitlines()[-arguments.lines:])
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, str):

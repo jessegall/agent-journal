@@ -46,12 +46,12 @@ class ProcessTable:
         return [ProcessCommand(int(columns[0]), int(columns[1]), tuple(columns[2:])) for columns in lines if len(columns) > 2]
 
     def proc_rows(self) -> list[ProcessRow]:
-        boot_line = next(line for line in FileAccess.shared().read(PROC_FOLDER / "stat").splitlines() if line.startswith("btime "))
+        boot_line = next(line for line in FileAccess.read(PROC_FOLDER / "stat").splitlines() if line.startswith("btime "))
         boot_seconds, tick_rate_hertz = float(boot_line.split()[1]), os.sysconf("SC_CLK_TCK")
         rows: list[ProcessRow] = []
-        for stat_file in PROC_FOLDER.glob("[0-9]*/stat"):
+        for stat_file in FileAccess.glob(PROC_FOLDER, "[0-9]*/stat"):
             try:
-                rows.append(proc_row(FileAccess.shared().read(stat_file), boot_seconds, tick_rate_hertz))
+                rows.append(proc_row(FileAccess.read(stat_file), boot_seconds, tick_rate_hertz))
             except OSError:
                 continue
         return rows

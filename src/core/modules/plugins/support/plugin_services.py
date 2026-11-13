@@ -64,7 +64,7 @@ class PluginServices:
                 wanted.add(key)
                 if key in processes.running and processes.digests.get(key, plugin.files_digest) != plugin.files_digest:
                     processes.stop(key)
-                    self.sockets.pid(*key).unlink(missing_ok=True)
+                    FileAccess.unlink(self.sockets.pid(*key), missing_ok=True)
                 if self.is_checkable(processes, key):
                     faults.extend(ServiceFault(plugin, fault) for fault in self.keep(processes, key, folder, service, manifest, plugin.files_digest))
         for key in [key for key in processes.running if key not in wanted]:
@@ -96,7 +96,7 @@ class PluginServices:
         program, pid_file = str(folder / service.command[0]), self.sockets.pid(*key)
         environment = self.environment(key, manifest)
         with self.start_lock(key):
-            recorded_pid = int(FileAccess.shared().read(pid_file)) if pid_file.is_file() else None
+            recorded_pid = int(FileAccess.read(pid_file)) if FileAccess.is_file(pid_file) else None
             if recorded_pid is not None and self.is_kept(recorded_pid, pid_file, program, digest):
                 processes.running[key], processes.digests[key] = AdoptedProcess(recorded_pid, program), digest
                 return faults
@@ -129,9 +129,9 @@ class PluginServices:
 
     @contextmanager
     def start_lock(self, key: tuple[str, str]) -> Iterator[None]:
-        self.sockets.folder.mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(self.sockets.folder, parents=True, exist_ok=True)
         pid_file = self.sockets.pid(*key)
-        with FileAccess.shared().writer(pid_file.with_name(f"{pid_file.name}.lock"), "a") as lock:
+        with FileAccess.writer(pid_file.with_name(f"{pid_file.name}.lock"), "a") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
             yield
 
@@ -141,17 +141,17 @@ class PluginServices:
 
     def start(self, processes: ServiceProcesses, key: tuple[str, str], folder: Path, service: ManifestService, manifest: PluginManifest, digest: str, environment: dict[str, str]) -> None:
         program, pid_file = str(folder / service.command[0]), self.sockets.pid(*key)
-        self.sockets.folder.mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(self.sockets.folder, parents=True, exist_ok=True)
         for stale in (self.sockets.answers(*key), self.sockets.health(*key)):
-            stale.unlink(missing_ok=True)
+            FileAccess.unlink(stale, missing_ok=True)
         log = self.folders.service_log(*key)
-        log.parent.mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(log.parent, parents=True, exist_ok=True)
         self.trim_log(log)
-        with FileAccess.shared().writer(log, "ab") as output:
+        with FileAccess.writer(log, "ab") as output:
             started = subprocess.Popen([program, *service.command[1:]], cwd=folder, env=environment, stdin=subprocess.DEVNULL, stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
         processes.running[key] = ChildProcess(started)
-        FileAccess.shared().write(pid_file, str(processes.running[key].pid))
-        FileAccess.shared().write(self.digest_file(pid_file), digest)
+        FileAccess.write(pid_file, str(processes.running[key].pid))
+        FileAccess.write(self.digest_file(pid_file), digest)
         processes.digests[key] = digest
         if service.answers:
             self.poll_socket(self.sockets.answers(*key), processes.running[key])
@@ -160,7 +160,7 @@ class PluginServices:
 
     def is_kept(self, pid: int, pid_file: Path, program: str, digest: str) -> bool:
         digest_file = self.digest_file(pid_file)
-        if not digest_file.is_file() or FileAccess.shared().read(digest_file) != digest:
+        if not FileAccess.is_file(digest_file) or FileAccess.read(digest_file) != digest:
             return False
         return LeftoverProcess.is_running(pid) and LeftoverProcess.runs_program(pid, program)
 
@@ -170,8 +170,8 @@ class PluginServices:
 
     @staticmethod
     def trim_log(path: Path) -> None:
-        access = FileAccess.shared()
-        if path.is_file() and path.stat().st_size > SERVICE_LOG_LIMIT_BYTES:
+        access = FileAccess()
+        if FileAccess.is_file(path) and FileAccess.stat(path).st_size > SERVICE_LOG_LIMIT_BYTES:
             access.write_binary(path, access.binary(path)[-SERVICE_LOG_LIMIT_BYTES:])
 
     def poll_socket(self, path: Path, process: ChildProcess | AdoptedProcess) -> None:

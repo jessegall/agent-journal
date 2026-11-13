@@ -40,7 +40,7 @@ class SettingViewCheck:
         problems = []
         for path in self.view_files():
             relative = path.relative_to(self.project_folder).as_posix()
-            matching = self.matching_keys(FileAccess.shared().read(path), keys)
+            matching = self.matching_keys(FileAccess.read(path), keys)
             if matching and relative not in self.allowed:
                 problems.append(f"{relative} names the declared settings {', '.join(matching)}: draw them from their declaration")
         return problems

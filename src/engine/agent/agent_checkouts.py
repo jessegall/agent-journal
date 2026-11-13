@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from engine.checkout.checkout import Checkout
@@ -25,5 +26,5 @@ class AgentCheckouts:
         return ()
 
     def file_state(self, checkout: Checkout, relative: str) -> FileState:
-        missing = checkout.exists and not (checkout.root / relative).exists()
+        missing = checkout.exists and not FileAccess.exists(checkout.root / relative)
         return FileState(FileStatus.DELETED if missing else FileStatus.CHANGED, False)

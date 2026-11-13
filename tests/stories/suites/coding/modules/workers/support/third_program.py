@@ -14,11 +14,11 @@ class SampleServerFile(ProgramServerFile):
     """A sample program's list of installed servers."""
 
     def names(self) -> set[str]:
-        return set(FileAccess.shared().read(self.path).splitlines()) if self.path.is_file() else set()
+        return set(FileAccess.read(self.path).splitlines()) if self.path.is_file() else set()
 
     def write(self, servers: Sequence[ToolServer], dropped: Sequence[str]) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(self.path, "\n".join(server.name for server in servers))
+        FileAccess.write(self.path, "\n".join(server.name for server in servers))
 
 
 class ThirdProgram(SampleProgram):

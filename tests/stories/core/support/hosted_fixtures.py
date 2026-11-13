@@ -50,6 +50,6 @@ class HostedKernel:
 
 def start_hosted(story: Story, agent_group: Mapping[int, int] = EMPTY_AGENTS, text: str = HOSTED_TEXT) -> HostedKernel:
     path = story.home.folder / HOSTED_FILE_NAME
-    FileAccess.shared().write(path, text)
+    FileAccess.write(path, text)
     story.bind(Hosting, HostedFile(path).hosting())
     return HostedKernel(FakeHost(), FakeSocketPeers(), FakeAgentGroup(agent_group))

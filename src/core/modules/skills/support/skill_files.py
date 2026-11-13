@@ -46,7 +46,7 @@ class SkillFiles:
         return {folder: self.first_present([project / program_folder / folder / SKILL_FILE for project in projects for program_folder in program_folders]) for folder in folders}
 
     def first_present(self, paths: Sequence[Path]) -> Path:
-        return next((path for path in paths if path.exists()), paths[0])
+        return next((path for path in paths if FileAccess.exists(path)), paths[0])
 
     def write_all(self, skills: Sequence[SkillEntry]) -> dict[str, bool]:
         projects = self.projects.projects()
@@ -55,7 +55,7 @@ class SkillFiles:
         for skill in skills:
             source = Path(skill.path)
             # a skill whose file the registry still names but that is gone is left out; the others are written all the same
-            if not source.is_file():
+            if not FileAccess.is_file(source):
                 published[skill.folder] = False
                 continue
             text = SkillContents.read(source).text
@@ -73,10 +73,10 @@ class SkillFiles:
             target = project / program_folder / skill.folder / SKILL_FILE
             if target.resolve() == Path(skill.path).resolve():
                 continue
-            if target.exists() and SkillContents.read(target).digest == SkillDigest.digest(text):
+            if FileAccess.exists(target) and SkillContents.read(target).digest == SkillDigest.digest(text):
                 continue
-            target.parent.mkdir(parents=True, exist_ok=True)
-            FileAccess.shared().write(target, text)
+            FileAccess.mkdir(target.parent, parents=True, exist_ok=True)
+            FileAccess.write(target, text)
             changed = True
         return changed
 
@@ -91,7 +91,7 @@ class SkillFiles:
         permitted: dict[Path, Callable[[str], bool]] = {}
         for root in (*self.projects.roots(self.providers.skill_folders()), *legacy_roots):
             is_permitted = permitted.setdefault(root.parents[1], self.projects.permitted(root.parents[1]))
-            stale = [folder for folder in root.glob(f"{FOLDER_PREFIX}*") if folder.is_dir() and (root in legacy_roots or folder.name not in names or not is_permitted(folder.name))]
+            stale = [folder for folder in FileAccess.glob(root, f"{FOLDER_PREFIX}*") if FileAccess.is_dir(folder) and (root in legacy_roots or folder.name not in names or not is_permitted(folder.name))]
             for folder in stale:
                 shutil.rmtree(folder)
                 cleared.append(folder.name)

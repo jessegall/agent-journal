@@ -26,7 +26,7 @@ class SourceHash:
     @cache
     def folder_hash(root: Path) -> bytes:
         digest = hashlib.sha256()
-        for folder, directories, files in os.walk(root):
+        for folder, directories, files in FileAccess.walk_folders(root):
             directories[:] = sorted(name for name in directories if not any(fnmatch.fnmatch(name, pattern) for pattern in IGNORED))
             for name in sorted(name for name in files if not any(fnmatch.fnmatch(name, pattern) for pattern in IGNORED)):
                 path = Path(folder) / name
@@ -41,6 +41,6 @@ class SourceHash:
     @cache
     def file_hash(path: Path) -> bytes | None:
         try:
-            return hashlib.sha256(FileAccess.shared().binary(path)).digest()
+            return hashlib.sha256(FileAccess.binary(path)).digest()
         except FileNotFoundError:
             return None

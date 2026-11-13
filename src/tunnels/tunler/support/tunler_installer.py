@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import platform
 import shutil
 import ssl
@@ -27,11 +28,11 @@ class TunlerInstaller:
     def install(self, host: str) -> str:
         target = self.local_path()
         part = target.with_name("tunler.part")
-        part.parent.mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(part.parent, parents=True, exist_ok=True)
         self.download(host, part)
-        part.chmod(0o700)
+        FileAccess.chmod(part, 0o700)
         version = self.checked_version(part)
-        part.replace(target)
+        FileAccess.replace(part, target)
         return f"tunler {version} is installed"
 
     def download(self, host: str, part: Path) -> None:
@@ -39,16 +40,16 @@ class TunlerInstaller:
         url = f"https://{host}/dl/tunler-{platform.system().lower()}-{ARCHITECTURES.get(machine, machine)}"
         try:
             with urlopen(url, timeout=DOWNLOAD_LIMIT_SECONDS) as answer:
-                part.write_bytes(answer.read())
+                FileAccess.write_binary(part, answer.read())
             return
         except OSError as error:
             if not isinstance(getattr(error, "reason", error), ssl.SSLCertVerificationError):
-                part.unlink(missing_ok=True)
+                FileAccess.unlink(part, missing_ok=True)
                 raise Refusal(f"tunler could not be downloaded from {host}: {error}") from error
         curl = shutil.which("curl")
         finished = self.finished([curl, "-fsSL", "-o", str(part), url], DOWNLOAD_LIMIT_SECONDS) if curl else None
         if finished is None or finished.returncode:
-            part.unlink(missing_ok=True)
+            FileAccess.unlink(part, missing_ok=True)
             raise Refusal(CERTIFICATES_MISSING)
 
     def checked_version(self, program: Path) -> str:
@@ -58,7 +59,7 @@ class TunlerInstaller:
             finished = self.finished([str(program), "version"], VERSION_LIMIT_SECONDS)
         if finished is not None and finished.returncode == 0 and finished.stdout.startswith("tunler "):
             return finished.stdout.split()[-1]
-        program.unlink(missing_ok=True)
+        FileAccess.unlink(program, missing_ok=True)
         raise Refusal(BLOCKED if finished is not None and finished.returncode == KILLED_CODE else BROKEN_PROGRAM)
 
     @staticmethod

@@ -62,12 +62,12 @@ class ModuleFinder:
                 and item.__module__ == module.__module__ and module in item.modules]
 
     def plugin_paths(self) -> tuple[str, ...]:
-        if not self.home.module_list.exists():
+        if not FileAccess.exists(self.home.module_list):
             return ()
-        version = FileAccess.shared().version(self.home.module_list)
+        version = FileAccess.version(self.home.module_list)
         if version in self.plugin_lists:
             return self.plugin_lists[version]
-        listed: object = json.loads(FileAccess.shared().read(self.home.module_list))
+        listed: object = json.loads(FileAccess.read(self.home.module_list))
         if not is_list(listed):
             raise ModuleError(f"{self.home.module_list} must list module paths, such as [\"reviews.module:ReviewsModule\"]")
         paths: list[str] = []

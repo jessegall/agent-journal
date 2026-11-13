@@ -44,10 +44,10 @@ class RunSize:
             if RunTarget(target).is_single_test:
                 yield 1
             else:
-                yield from (len(TEST_FUNCTION.findall(FileAccess.shared().read(path, errors="replace"))) for path in self.python_files(Path(target)))
+                yield from (len(TEST_FUNCTION.findall(FileAccess.read(path, errors="replace"))) for path in self.python_files(Path(target)))
 
     @staticmethod
     def python_files(target: Path) -> Iterable[Path]:
-        if target.is_dir():
-            return target.rglob("*.py")
-        return [target] if target.is_file() else []
+        if FileAccess.is_dir(target):
+            return FileAccess.rglob(target, "*.py")
+        return [target] if FileAccess.is_file(target) else []

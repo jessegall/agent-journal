@@ -17,8 +17,8 @@ class MergeRunLock:
 
     @contextmanager
     def locked(self) -> Generator[None]:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        with FileAccess.shared().writer(self.path, "a") as lock:
+        FileAccess.mkdir(self.path.parent, parents=True, exist_ok=True)
+        with FileAccess.writer(self.path, "a") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
             try:
                 yield

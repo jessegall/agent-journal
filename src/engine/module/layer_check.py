@@ -32,7 +32,7 @@ class LayerCheck:
         return [self.folder_failure(folder) for folder in sorted(self.module_folders()) if self.relative(folder) not in declared]
 
     def folder_failure(self, folder: Path) -> str:
-        if any((folder / f"{folder.name}_{ending}.py").is_file() for ending in DECLARATION_FILE_ENDINGS):
+        if any(FileAccess.is_file(folder / f"{folder.name}_{ending}.py") for ending in DECLARATION_FILE_ENDINGS):
             return f"{self.relative(folder)}: its declaration is not found by the loader"
         return f"{self.relative(folder)}: has no declaration class"
 
@@ -41,9 +41,9 @@ class LayerCheck:
 
     def module_folders(self) -> set[Path]:
         source = self.project_folder / "src"
-        parents = [source / "core" / "modules", source / "suites", source / "tunnels", *source.glob("suites/*/modules")]
-        direct = {child for parent in parents if parent.is_dir() for child in parent.iterdir() if child.is_dir() and child.name not in SKIPPED_FOLDERS}
-        declaration_folders = {path.parent for ending in DECLARATION_FILE_ENDINGS for path in source.rglob(f"*_{ending}.py") if path.stem == f"{path.parent.name}_{ending}" and self.is_source(path)}
+        parents = [source / "core" / "modules", source / "suites", source / "tunnels", *FileAccess.glob(source, "suites/*/modules")]
+        direct = {child for parent in parents if FileAccess.is_dir(parent) for child in FileAccess.iterdir(parent) if FileAccess.is_dir(child) and child.name not in SKIPPED_FOLDERS}
+        declaration_folders = {path.parent for ending in DECLARATION_FILE_ENDINGS for path in FileAccess.rglob(source, f"*_{ending}.py") if path.stem == f"{path.parent.name}_{ending}" and self.is_source(path)}
         return direct | declaration_folders
 
     def dependency_failures(self) -> list[str]:
@@ -60,7 +60,7 @@ class LayerCheck:
 
     def source_failures(self) -> list[str]:
         lines: list[str] = []
-        for path in sorted((self.project_folder / "src").rglob("*.py")):
+        for path in sorted(FileAccess.rglob(self.project_folder / "src", "*.py")):
             if self.is_source(path):
                 lines.extend(self.file_failures(path))
         return lines
@@ -85,7 +85,7 @@ class LayerCheck:
 
     def imported_names(self, path: Path) -> Iterator[str]:
         package = self.relative(path).removeprefix("src/").rpartition("/")[0].split("/")
-        for node in ast.walk(ast.parse(FileAccess.shared().read(path))):
+        for node in ast.walk(ast.parse(FileAccess.read(path))):
             if isinstance(node, ast.Import):
                 yield from (alias.name for alias in node.names)
             if isinstance(node, ast.ImportFrom):

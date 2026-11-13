@@ -39,7 +39,7 @@ class ProjectManifests:
     @staticmethod
     def manifest_folders(folder: Path) -> list[tuple[str, list[str]]]:
         manifest_hits: list[tuple[str, list[str]]] = []
-        for current, folder_names, file_names in os.walk(folder):
+        for current, folder_names, file_names in FileAccess.walk_folders(folder):
             folder_names[:] = sorted(name for name in folder_names if name not in LIBRARY_FOLDERS and not name.startswith("."))
             place = Path(current).relative_to(folder).as_posix()
             manifest_hits.append((place, sorted(file_names)))
@@ -67,7 +67,7 @@ class ProjectManifests:
 
     def package(self, folder: Path, place: str) -> ManifestReading:
         try:
-            package = json.loads(FileAccess.shared().read(folder / place / PACKAGE_JSON))
+            package = json.loads(FileAccess.read(folder / place / PACKAGE_JSON))
         except (OSError, ValueError):
             package = {}
         package = package if isinstance(package, dict) else {}
@@ -85,7 +85,7 @@ class ProjectManifests:
     @staticmethod
     def python_program(folder: Path, place: str) -> str:
         environment = folder / place / ".venv" / "bin" / "python"
-        if environment.exists():
+        if FileAccess.exists(environment):
             return ".venv/bin/python" if place == ROOT else f"{place}/.venv/bin/python"
         return "python3"
 

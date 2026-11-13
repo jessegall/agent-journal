@@ -91,7 +91,7 @@ CODE_CHECK_SECONDS = 10.0
 
 
 def last_port(home: JournalHome) -> int:
-    text = FileAccess.shared().read(home.viewer_port_file).strip() if home.viewer_port_file.is_file() else ""
+    text = FileAccess.read(home.viewer_port_file).strip() if FileAccess.is_file(home.viewer_port_file) else ""
     return int(text) if text.isdigit() else 0
 
 
@@ -169,7 +169,7 @@ def main(argv: list[str]) -> int:
     else:
         viewer = ViewerListener(login, routes, tunnel.address, last_port(home), inherited_socket=inherited_viewer)
         journal_door = LocalJournalDoor()
-        FileAccess.shared().write(home.viewer_port_file, str(viewer.port))
+        FileAccess.write(home.viewer_port_file, str(viewer.port))
     ticker_thread = ListenerThread(ticker.tick, lambda error: files.log_line(f"the ticker could not tick: {error}", LogLevel.ERROR), TICK_PERIOD_SECONDS, "ticker")
     plugin_services = ServerPluginServices(home)
     backup = ServerBackup(home, clock)
@@ -200,7 +200,7 @@ def main(argv: list[str]) -> int:
     files.log_line(f"listening on {files.socket}")
     if threading.current_thread() is threading.main_thread():
         signal.signal(signal.SIGTERM, lambda signal_number, frame: server.request_stop())
-        faulthandler.register(signal.SIGUSR1, file=FileAccess.shared().lifetime_writer(home.stacks_file), all_threads=True)
+        faulthandler.register(signal.SIGUSR1, file=FileAccess.lifetime_writer(home.stacks_file), all_threads=True)
     for starting_round in (JournalRound(home, "code sync", CodeSyncWork(), opened_container),JournalRound(home, "booting", BootingWork())):
         try:
             starting_round.run()

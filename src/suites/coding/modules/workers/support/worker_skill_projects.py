@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from collections.abc import Callable
 from pathlib import Path
 
@@ -20,12 +21,12 @@ class WorkerSkillProjects(SkillProjects):
 
     def projects(self) -> tuple[Path, ...]:
         projects = super().projects()
-        worktrees = (folder for project in projects if (project / ".git").exists() for folder in self.worktree_folders(project) if folder.is_dir())
+        worktrees = (folder for project in projects if FileAccess.exists(project / ".git") for folder in self.worktree_folders(project) if FileAccess.is_dir(folder))
         return tuple(dict.fromkeys((*projects, *worktrees)))
 
     def worktree_folders(self, project: Path) -> tuple[Path, ...]:
         listing = project / ".git" / "worktrees"
-        mark = listing.stat().st_mtime_ns if listing.exists() else 0
+        mark = FileAccess.stat(listing).st_mtime_ns if FileAccess.exists(listing) else 0
         if project not in self.kept_folders or self.kept_folders[project][0] != mark:
             self.kept_folders[project] = (mark, tuple(Path(folder) for folder, _ in self.git.folders(str(project))))
         return self.kept_folders[project][1]

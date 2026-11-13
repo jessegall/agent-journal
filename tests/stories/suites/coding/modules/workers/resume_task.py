@@ -48,7 +48,7 @@ def test_a_task_sent_to_a_stopped_worker_resumes_it_once(new_story, monkeypatch,
     path = repository.folder / ".codex/hooks.json"
     if merged:
         path.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(path, json.dumps({"hooks": {}}))
+        FileAccess.write(path, json.dumps({"hooks": {}}))
         JsonSettings.loaded.cache_clear()
     reads = []
     original = FileAccess.binary

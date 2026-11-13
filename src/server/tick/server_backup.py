@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import sqlite3
 from pathlib import Path
 
@@ -33,22 +34,22 @@ class ServerBackup:
         if minutes > 0 and not self.has_recent_copy(minutes):
             self.write_copy()
         for extra_copy in self.copies()[max(count, LEAST_COPIES):]:
-            extra_copy.unlink()
+            FileAccess.unlink(extra_copy)
 
     def folder(self) -> Path:
         return self.home.folder / BACKUP_FOLDER
 
     def has_recent_copy(self, minutes: int) -> bool:
         copies = self.copies()
-        return bool(copies) and self.clock.epoch_seconds() - copies[0].stat().st_mtime < minutes * MINUTE_SECONDS
+        return bool(copies) and self.clock.epoch_seconds() - FileAccess.stat(copies[0]).st_mtime < minutes * MINUTE_SECONDS
 
     def copies(self) -> list[Path]:
-        return sorted(self.folder().glob(f"{COPY_PREFIX}*.db"), reverse=True)
+        return sorted(FileAccess.glob(self.folder(), f"{COPY_PREFIX}*.db"), reverse=True)
 
     def write_copy(self) -> None:
-        self.folder().mkdir(parents=True, exist_ok=True)
-        for leftover in self.folder().glob(f"{COPY_PREFIX}*{PARTIAL_SUFFIX}*"):
-            leftover.unlink()
+        FileAccess.mkdir(self.folder(), parents=True, exist_ok=True)
+        for leftover in FileAccess.glob(self.folder(), f"{COPY_PREFIX}*{PARTIAL_SUFFIX}*"):
+            FileAccess.unlink(leftover)
         target = self.folder() / f"{COPY_PREFIX}{self.clock.timestamp().value.strftime('%Y%m%d-%H%M%S')}.db"
         partial = target.with_suffix(PARTIAL_SUFFIX)
         source = sqlite3.connect(self.home.database)
@@ -56,8 +57,8 @@ class ServerBackup:
         try:
             source.backup(copy)
             copy.close()
-            partial.replace(target)
+            FileAccess.replace(partial, target)
         finally:
             copy.close()
             source.close()
-            partial.unlink(missing_ok=True)
+            FileAccess.unlink(partial, missing_ok=True)

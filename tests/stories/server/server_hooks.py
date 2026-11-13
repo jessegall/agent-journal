@@ -172,7 +172,7 @@ def builder_server(new_story):
 
 def test_a_hook_held_while_the_journal_starts_keeps_its_row_under_its_session(lead_server):
     home = lead_server.story.home
-    FileAccess.shared().write(ServerFiles(home).start_mark, "starting")
+    FileAccess.write(ServerFiles(home).start_mark, "starting")
     lead_server.expect_hook_answer("/hook", lead_stop("server-7"), 200, '"refusal"')
-    logged = [RequestLogEntry.parsed(line) for line in FileAccess.shared().read(RequestLog(home, FileAccess.shared()).lines.path).splitlines() if line]
+    logged = [RequestLogEntry.parsed(line) for line in FileAccess.read(RequestLog(home, FileAccess()).lines.path).splitlines() if line]
     lead_server.story.expect_rows(any(entry.session == "s-1" and entry.exit_code == 2 and entry.environment_id is None for entry in logged), detail=str(logged))

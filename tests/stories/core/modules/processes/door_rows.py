@@ -34,7 +34,7 @@ class TickClock:
 def test_the_ticker_writes_the_logged_requests_and_a_held_hook_keeps_its_row_under_its_session(new_story):
     story = new_story(fixture=UserJoined)
     main_id = story.container.get(EnvironmentNames).environment_id("main")
-    log = RequestLog(story.home, FileAccess.shared())
+    log = RequestLog(story.home, FileAccess())
     log.append(RequestLogEntry(main_id, None, ProcessType.JOURNAL, "journal task list", 0, "2026-10-31T09:00:00+00:00"))
     log.append(RequestLogEntry(None, None, ProcessType.HOOK, "claude stop", 2, "2026-10-31T09:00:00+00:00", "s-1"))
     handlers = [handler for handler in Ticker.module_handlers(ModuleFinder(story.home)) if handler.label == IMPORT_LABEL]
@@ -52,7 +52,7 @@ def test_the_ticker_writes_the_logged_requests_and_a_held_hook_keeps_its_row_und
 def test_a_door_run_waits_while_the_journal_starts_and_runs_once_it_is_ready(new_story, tmp_path: Path):
     story = new_story(fixture=UserJoined)
     files = ServerFiles(story.home)
-    FileAccess.shared().write(files.start_mark, "starting")
+    FileAccess.write(files.start_mark, "starting")
     finished: list[str] = []
     run = threading.Thread(target=lambda: finished.append(story.container.get(ProcessExecutor).execute(ExecutionRequest(["echo", "ran"], tmp_path, ProcessType.QUICK, 5)).stdout))
     run.start()

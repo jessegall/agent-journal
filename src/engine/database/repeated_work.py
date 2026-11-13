@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from collections import Counter
 from collections.abc import Generator, Iterator, Sequence
 from contextlib import contextmanager
@@ -273,7 +274,7 @@ class RepeatedWork(PointTally):
 
     @staticmethod
     def file_version(path: str) -> int:
-        return Path(path).stat().st_mtime_ns if Path(path).exists() else 0
+        return FileAccess.stat(path).st_mtime_ns if FileAccess.exists(path) else 0
 
     @staticmethod
     def is_allowed_file_read() -> bool:

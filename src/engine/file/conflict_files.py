@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import os
 from pathlib import Path
 
@@ -17,15 +18,15 @@ class ConflictFiles:
         return tuple(sorted(str(path.relative_to(self.folder)) for path in self.files() if self.has_marker(path)))
 
     def files(self):
-        for folder, directories, names in os.walk(self.folder):
+        for folder, directories, names in FileAccess.walk_folders(self.folder):
             directories[:] = [name for name in directories if name not in IGNORED_FOLDERS]
             for name in names:
                 path = Path(folder, name)
-                if not path.is_symlink() and path.is_file():
+                if not FileAccess.is_symlink(path) and FileAccess.is_file(path):
                     yield path
 
     def has_marker(self, path: Path) -> bool:
-        with path.open("rb") as file:
+        with FileAccess.reader(path, "rb") as file:
             return any(line.startswith(MARKER_PREFIXES) for line in file)
 
     def check(self) -> None:

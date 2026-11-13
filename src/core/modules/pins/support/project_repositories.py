@@ -30,9 +30,9 @@ class ProjectRepositories:
         pending = [config] if config is not None else []
         while pending and len(texts) < MOST_CONFIG_FILES:
             current = pending.pop(0)
-            if current in texts or not current.is_file():
+            if current in texts or not FileAccess.is_file(current):
                 continue
-            texts[current] = FileAccess.shared().read(current)
+            texts[current] = FileAccess.read(current)
             pending.extend(ProjectRepositories.included(current, texts[current]))
         return texts
 
@@ -49,11 +49,11 @@ class ProjectRepositories:
         return paths
 
     def config(self) -> Path | None:
-        if self.git.is_dir():
+        if FileAccess.is_dir(self.git):
             return self.git / "config"
-        if not self.git.is_file():
+        if not FileAccess.is_file(self.git):
             return None
-        pointed = (self.git.parent / FileAccess.shared().read(self.git).removeprefix("gitdir:").strip()).resolve()
+        pointed = (self.git.parent / FileAccess.read(self.git).removeprefix("gitdir:").strip()).resolve()
         common = pointed / "commondir"
-        folder = (pointed / FileAccess.shared().read(common).strip()).resolve() if common.is_file() else pointed
-        return folder / "config" if (folder / "config").is_file() else None
+        folder = (pointed / FileAccess.read(common).strip()).resolve() if FileAccess.is_file(common) else pointed
+        return folder / "config" if FileAccess.is_file(folder / "config") else None

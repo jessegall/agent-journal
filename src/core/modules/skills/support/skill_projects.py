@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
@@ -13,7 +14,7 @@ class SkillProjects:
 
     def projects(self) -> tuple[Path, ...]:
         folders = (self.home.project_folder, *(Path(environment.folder) for environment in self.environments.all()))
-        return tuple(dict.fromkeys(folder.resolve() for folder in folders if folder.is_dir()))
+        return tuple(dict.fromkeys(folder.resolve() for folder in folders if FileAccess.is_dir(folder)))
 
     def agent_folder(self, agent_id: int, environment_id: int) -> Path:
         return Path(self.environments.find(environment_id).folder)

@@ -23,22 +23,22 @@ class TemplateAdaptation:
 
     def builder_name(self, folder: Path) -> str:
         file = folder / CHECKOUT_FILE
-        return FileAccess.shared().read(file) if file.is_file() else self.checkout
+        return FileAccess.read(file) if FileAccess.is_file(file) else self.checkout
 
     def mark(self, folder: Path) -> None:
-        FileAccess.shared().write(folder / CHECKOUT_FILE, self.checkout)
+        FileAccess.write(folder / CHECKOUT_FILE, self.checkout)
 
     def adapted(self, template: Path, adapted: Path) -> None:
         builder = self.builder_name(template)
         shutil.rmtree(adapted, ignore_errors=True)
-        shutil.copytree(template, adapted)
-        for database in adapted.rglob("*.db"):
+        FileAccess.copytree(template, adapted)
+        for database in FileAccess.rglob(adapted, "*.db"):
             DatabaseTextReplacement(database).replace(builder, self.checkout)
         for name in REWRITTEN_FILES:
-            for file in adapted.rglob(name):
-                FileAccess.shared().write(file, FileAccess.shared().read(file).replace(builder, self.checkout))
-        for state in adapted.rglob(STATE_FILE):
-            FileAccess.shared().write_binary(state, pickle.dumps(self.adapted_value(pickle.loads(FileAccess.shared().binary(state)), builder)))
+            for file in FileAccess.rglob(adapted, name):
+                FileAccess.write(file, FileAccess.read(file).replace(builder, self.checkout))
+        for state in FileAccess.rglob(adapted, STATE_FILE):
+            FileAccess.write_binary(state, pickle.dumps(self.adapted_value(pickle.loads(FileAccess.binary(state)), builder)))
         self.mark(adapted)
 
     def adapted_value(self, value: object, builder: str) -> object:

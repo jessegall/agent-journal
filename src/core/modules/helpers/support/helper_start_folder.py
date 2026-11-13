@@ -36,37 +36,37 @@ class HelperStartFolder:
         if text is None or not self.settings.flag(HELPER_INSTRUCTION_FILES):
             return
         project, folder = self.checkout(helper), self.folders.start_folder(helper)
-        if not project.is_dir():
+        if not FileAccess.is_dir(project):
             return
-        folder.mkdir(parents=True, exist_ok=True)
-        for entry in project.iterdir():
+        FileAccess.mkdir(folder, parents=True, exist_ok=True)
+        for entry in FileAccess.iterdir(project):
             if entry.name not in (*INSTRUCTION_FILES, *PROGRAM_FOLDERS):
                 self.link(folder / entry.name, entry)
         for name in PROGRAM_FOLDERS:
             self.link_skills(folder / name, project / name, helper)
         for name in INSTRUCTION_FILES:
-            FileAccess.shared().write(folder / name, text)
+            FileAccess.write(folder / name, text)
 
     def checkout(self, helper: Agent) -> Path:
         return self.folders.folder(self.folders.agents.find(helper.parent_id)) if helper.parent_id is not None else self.home.project_folder
 
     @staticmethod
     def link(path: Path, target: Path) -> None:
-        if path.is_symlink() and path.resolve() == target.resolve():
+        if FileAccess.is_symlink(path) and path.resolve() == target.resolve():
             return
-        path.unlink(missing_ok=True)
-        path.symlink_to(target)
+        FileAccess.unlink(path, missing_ok=True)
+        FileAccess.symlink_to(path, target)
 
     def link_skills(self, folder: Path, project_folder: Path, helper: Agent) -> None:
-        folder.mkdir(exist_ok=True)
+        FileAccess.mkdir(folder, exist_ok=True)
         skills, source = folder / "skills", project_folder / "skills"
-        if skills.is_symlink():
-            skills.unlink()
-        if not source.is_dir():
+        if FileAccess.is_symlink(skills):
+            FileAccess.unlink(skills)
+        if not FileAccess.is_dir(source):
             return
-        skills.mkdir(exist_ok=True)
-        for entry in source.iterdir():
+        FileAccess.mkdir(skills, exist_ok=True)
+        for entry in FileAccess.iterdir(source):
             if self.skills.refuses(helper.id, entry.name):
-                (skills / entry.name).unlink(missing_ok=True)
+                FileAccess.unlink(skills / entry.name, missing_ok=True)
                 continue
             self.link(skills / entry.name, entry)

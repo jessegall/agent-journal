@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import os
 import re
 import subprocess
@@ -26,7 +27,7 @@ class PluginReleases:
         self.executor = executor
 
     def latest(self, name: str, installed: str, source: str) -> PluginLatest:
-        newest = PluginManifest.read(Path(source)).version if Path(source).is_dir() else self.newest_tag(source)
+        newest = PluginManifest.read(Path(source)).version if FileAccess.is_dir(Path(source)) else self.newest_tag(source)
         return PluginLatest(name, installed, newest, newest is not None and VersionNumbers.parsed(newest) > VersionNumbers.parsed(installed))
 
     def newest_tag(self, source: str) -> str | None:

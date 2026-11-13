@@ -16,7 +16,7 @@ class ClaudeTrust:
         self.state_file = state_file
 
     def trusted(self, folder: Path) -> None:
-        loaded: object = json.loads(FileAccess.shared().read(self.state_file)) if self.state_file.is_file() else {}
+        loaded: object = json.loads(FileAccess.read(self.state_file)) if FileAccess.is_file(self.state_file) else {}
         state = dict(loaded) if is_mapping(loaded) else {}
         stored_projects = state.get("projects")
         projects = dict(stored_projects) if is_mapping(stored_projects) else {}
@@ -26,5 +26,5 @@ class ClaudeTrust:
         projects[str(folder)] = {**(dict(entry) if is_mapping(entry) else {}), TRUSTED_KEY: True}
         state["projects"] = projects
         temporary_file = self.state_file.with_name(f".{self.state_file.name}.{os.getpid()}.journal")
-        FileAccess.shared().write(temporary_file, json.dumps(state, indent=2) + "\n")
-        FileAccess.shared().replace(temporary_file, self.state_file)
+        FileAccess.write(temporary_file, json.dumps(state, indent=2) + "\n")
+        FileAccess.replace(temporary_file, self.state_file)

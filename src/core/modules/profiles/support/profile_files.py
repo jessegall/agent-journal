@@ -54,11 +54,11 @@ class ProfileFiles:
             raise Refusal(f"{profile.name} is a base profile: it is not dispatched on its own", f"use a profile that extends it: {', '.join(extending)}")
 
     def has(self, name: str) -> bool:
-        return bool(PROFILE_NAME.fullmatch(name)) and (self.registered(name) is not None or self.path(name).is_file())
+        return bool(PROFILE_NAME.fullmatch(name)) and (self.registered(name) is not None or FileAccess.is_file(self.path(name)))
 
     def listed(self) -> list[AgentProfile | ProfileProblem]:
         names = {profile.name for profile in self.module_profiles}
-        names.update(path.stem for path in self.folder(PROFILE_FOLDER).glob("*.md") if not path.name.endswith(".clash.md"))
+        names.update(path.stem for path in FileAccess.glob(self.folder(PROFILE_FOLDER), "*.md") if not path.name.endswith(".clash.md"))
         return [self.listed_row(name) for name in sorted(names)]
 
     def listed_row(self, name: str) -> AgentProfile | ProfileProblem:
@@ -74,7 +74,7 @@ class ProfileFiles:
     def row(self, name: str) -> AgentProfile | ProfileProblem:
         registered = self.registered(name)
         path = self.path(name)
-        if not path.is_file():
+        if not FileAccess.is_file(path):
             if registered is None:
                 raise Refusal(f"no profile is named {name}", "run journal profile list to see the available profiles")
             return self.checked_type(registered)
@@ -129,7 +129,7 @@ class ProfileFiles:
         notes: list[str] = []
         if fields.writable:
             notes.append(WRITABLE_NOTE)
-        if path.with_name(f"{path.stem}.clash.md").is_file():
+        if FileAccess.is_file(path.with_name(f"{path.stem}.clash.md")):
             notes.append(f"Changed original kept in {path.stem}.clash.md")
         return tuple(notes)
 
@@ -161,35 +161,35 @@ class ProfileFiles:
 
     def save_fields(self, fields: ProfileFields) -> None:
         path = self.path(fields.name)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(path, fields.text())
+        FileAccess.mkdir(path.parent, parents=True, exist_ok=True)
+        FileAccess.write(path, fields.text())
 
     def reset(self, name: str) -> None:
-        self.path(name).unlink(missing_ok=True)
+        FileAccess.unlink(self.path(name), missing_ok=True)
 
     def remove(self, name: str) -> None:
         if self.registered(name) is not None:
             raise Refusal(f"{name} comes with a module", f"journal profile reset {name} removes personal changes")
-        self.path(name).unlink(missing_ok=True)
+        FileAccess.unlink(self.path(name), missing_ok=True)
 
     def folder(self, program_folder: str) -> Path:
         return self.home.project_folder / program_folder
 
     def publish(self, preserved: tuple[Path, ...] = ()) -> None:
         for folder in (self.folder(CLAUDE_FOLDER), self.folder(CODEX_FOLDER)):
-            for path in (*folder.glob(f"{SHIPPED_PREFIX}*.md"), *folder.glob(f"{SHIPPED_PREFIX}*.toml")):
-                path.unlink()
+            for path in (*FileAccess.glob(folder, f"{SHIPPED_PREFIX}*.md"), *FileAccess.glob(folder, f"{SHIPPED_PREFIX}*.toml")):
+                FileAccess.unlink(path)
         for profile in self.module_profiles:
             profile = self.defaults(profile)
             path = self.folder(CLAUDE_FOLDER) / f"{profile.name}.md"
-            path.parent.mkdir(parents=True, exist_ok=True)
+            FileAccess.mkdir(path.parent, parents=True, exist_ok=True)
             if path not in preserved:
-                FileAccess.shared().write(path, self.claude_text(profile))
-            if (self.home.project_folder / CODEX_HOME).is_dir():
+                FileAccess.write(path, self.claude_text(profile))
+            if FileAccess.is_dir(self.home.project_folder / CODEX_HOME):
                 path = self.folder(CODEX_FOLDER) / f"{profile.name}.toml"
-                path.parent.mkdir(parents=True, exist_ok=True)
+                FileAccess.mkdir(path.parent, parents=True, exist_ok=True)
                 if path not in preserved:
-                    FileAccess.shared().write(path, self.codex_text(profile))
+                    FileAccess.write(path, self.codex_text(profile))
 
     @staticmethod
     def claude_text(profile: AgentProfile) -> str:

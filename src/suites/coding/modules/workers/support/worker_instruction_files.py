@@ -50,15 +50,15 @@ class WorkerInstructionFiles:
         return tuple(injections)
 
     def block_text(self, folder: Path, file: str, path: Path) -> str:
-        if not ManifestListener.is_contained_path(file, folder) or not path.is_file():
+        if not ManifestListener.is_contained_path(file, folder) or not FileAccess.is_file(path):
             return ""
         return self.kept_text(path).strip()
 
     def kept_text(self, path: Path) -> str:
-        version = FileAccess.shared().version(path)
+        version = FileAccess.version(path)
         kept = self.file_texts.get(path)
         if kept is None or kept[0] != version:
-            kept = (version, FileAccess.shared().read(path))
+            kept = (version, FileAccess.read(path))
             self.file_texts[path] = kept
         return kept[1]
 
@@ -84,10 +84,10 @@ class WorkerInstructionFiles:
             original_text = original_texts[name]
             if originals and profile.uses_project_instructions and original_text is not None:
                 original = path.with_name(f"{path.stem}{ORIGINAL_SUFFIX}{path.suffix}")
-                FileAccess.shared().write(original, original_text)
+                FileAccess.write(original, original_text)
                 restored.append(original.name)
             if original_text != text:
-                FileAccess.shared().write(path, text)
+                FileAccess.write(path, text)
             if name in untracked_after:
                 restored.append(name)
         self.libraries.exclude(folder, restored)
@@ -96,4 +96,4 @@ class WorkerInstructionFiles:
         self.write(worktree.folder, self.agents.find(worktree.session_agent_id).profile, originals=False)
 
     def file_text(self, path: Path) -> str | None:
-        return self.kept_text(path) if path.is_file() else None
+        return self.kept_text(path) if FileAccess.is_file(path) else None

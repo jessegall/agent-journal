@@ -42,7 +42,7 @@ class ProgramSettingsSync:
 
     def runner(self) -> str:
         choice = self.home.hook_runner_choice
-        if not choice.is_file():
+        if not FileAccess.is_file(choice):
             return f'"{self.home.hook_runner}"'
         return KeptBytes.read(choice).decode().strip()
 
@@ -82,9 +82,9 @@ class ProgramSettingsSync:
 
     def switched_at(self) -> Timestamp:
         switch = self.home.program_settings_switch
-        if not switch.is_file():
+        if not FileAccess.is_file(switch):
             PrivateFolders.made(switch.parent)
-            FileAccess.shared().write(switch, f"{self.clock.timestamp().text}\n")
+            FileAccess.write(switch, f"{self.clock.timestamp().text}\n")
         return Timestamp.parsed(KeptBytes.read(switch).decode().strip())
 
     def unreadable_person_files(self) -> tuple[Path, ...]:

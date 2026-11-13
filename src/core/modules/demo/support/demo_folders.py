@@ -22,8 +22,8 @@ class DemoFolders:
 
     def prune(self) -> int:
         removed = 0
-        for folder in (folder for root in self.roots for folder in root.glob("journal-demo-*")):
-            age_seconds = self.clock.epoch_seconds() - folder.stat().st_mtime
+        for folder in (folder for root in self.roots for folder in FileAccess.glob(root, "journal-demo-*")):
+            age_seconds = self.clock.epoch_seconds() - FileAccess.stat(folder).st_mtime
             pid = self.running_pid(folder)
             if pid is not None and age_seconds > DEMO_LIFE_SECONDS:
                 os.kill(pid, signal.SIGTERM)
@@ -34,7 +34,7 @@ class DemoFolders:
 
     def running_pid(self, folder: Path) -> int | None:
         pid_file = folder / ".journal" / "server.pid"
-        text = FileAccess.shared().read(pid_file).strip() if pid_file.is_file() else ""
+        text = FileAccess.read(pid_file).strip() if FileAccess.is_file(pid_file) else ""
         if not text.isdigit():
             return None
         try:

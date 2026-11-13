@@ -159,7 +159,7 @@ class HookEndpoint:
 
     def kept_row(self, sender: HookSender, program: str) -> None:
         line = " ".join(word for word in (program, sender.event_name) if word)
-        RequestLog(self.context.home, FileAccess.shared()).append(RequestLogEntry(None, None, ProcessType.HOOK, line, REFUSED_HOOK_EXIT_CODE, self.context.clock.timestamp().text, sender.session))
+        RequestLog(self.context.home, FileAccess()).append(RequestLogEntry(None, None, ProcessType.HOOK, line, REFUSED_HOOK_EXIT_CODE, self.context.clock.timestamp().text, sender.session))
 
     @staticmethod
     def locked(sender: HookSender) -> HookReply:

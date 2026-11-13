@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
 from engine.enums.process_type import ProcessType
 from engine.errors.run_time_limit_error import RunTimeLimitError
@@ -15,7 +16,6 @@ from pathlib import Path
 import os
 import re
 import shutil
-import tempfile
 
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
 HOME_VARIABLES = ("HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME", "XDG_DATA_HOME", "XDG_STATE_HOME", "GH_CONFIG_DIR", "DOCKER_CONFIG")
@@ -42,8 +42,8 @@ class SecretRun:
         stdin_text = PLACEHOLDER.sub(lambda match: field_values.get(match[1], match[0]), template) if template else hidden
         variables = {field.variable: stored[field.variable] for field in secret.secret_fields()} if as_variables else {}
         runs = self.folder.made_folder() / RUNS_FOLDER
-        runs.mkdir(mode=0o700, exist_ok=True)
-        home = tempfile.mkdtemp(prefix="run-", dir=runs)
+        FileAccess.mkdir(runs, mode=0o700, exist_ok=True)
+        home = str(FileAccess.make_temporary_folder(prefix="run-", folder=runs))
         try:
             environment = {"PATH": self.search_path(), "LANG": os.environ.get("LANG", "C.UTF-8"), **dict.fromkeys(HOME_VARIABLES, home), **variables}
             finished = self.executor.execute(ExecutionRequest([program, *command[1:]], self.home.project_folder, ProcessType.SHELL, LIMIT_SECONDS,

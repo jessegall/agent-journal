@@ -79,7 +79,7 @@ def report_full_window(story) -> None:
     resets_at = story.clock.timestamp().value.timestamp() + LIMIT_WINDOW_SECONDS
     story.home.status_folder.mkdir(parents=True, exist_ok=True)
     report = {"session_id": MAIN_SESSION, "model": {"display_name": "Opus"}, "context_window": {"used_percentage": 10}, "rate_limits": {"five_hour": {"used_percentage": 100, "resets_at": resets_at}}}
-    FileAccess.shared().write(story.home.status_folder / f"{MAIN_SESSION}.json", json.dumps(report))
+    FileAccess.write(story.home.status_folder / f"{MAIN_SESSION}.json", json.dumps(report))
 
 
 def test_a_dispatch_at_the_kept_limit_is_refused_naming_the_idle_worker_to_send_to_and_the_person_who_retires(merged_worker):

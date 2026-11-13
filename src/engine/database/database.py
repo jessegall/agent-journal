@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import sqlite3
 from pathlib import Path
 from contextlib import contextmanager
@@ -50,12 +51,12 @@ class Database:
 
     @classmethod
     def opened(cls, home: JournalHome, turns: WriteTurns | None = None) -> "Database":
-        home.database.parent.mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(home.database.parent, parents=True, exist_ok=True)
         return cls.configured(sqlite3.connect(home.database, autocommit=True), turns)
 
     @classmethod
     def shared(cls, home: JournalHome, turns: WriteTurns | None = None) -> "Database":
-        home.database.parent.mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(home.database.parent, parents=True, exist_ok=True)
         return cls.configured(sqlite3.connect(home.database, autocommit=True, check_same_thread=False), turns)
 
     @classmethod

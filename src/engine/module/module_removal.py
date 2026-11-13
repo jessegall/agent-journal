@@ -50,14 +50,14 @@ class ModuleRemoval:
             self.schema.remove_migration_records(module.name)
             for model in self.check.models(remaining_modules):
                 self.database.update(TableStatements(self.tables.table(model)).metadata_removal(module.name))
-        FileAccess.shared().write(self.home.module_list, json.dumps([path for path in listed if path != module_paths[0]]))
+        FileAccess.write(self.home.module_list, json.dumps([path for path in listed if path != module_paths[0]]))
         self.sync.run()
         self.remove_folder(module_paths[0])
 
     def remove_folder(self, module_path: str) -> None:
         package = module_path.partition(":")[0].partition(".")[0]
         folder = self.home.modules_folder / package
-        if not folder.is_dir():
+        if not FileAccess.is_dir(folder):
             return
         shutil.rmtree(folder)
         for name in tuple(sys.modules):

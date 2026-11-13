@@ -28,29 +28,29 @@ class PanicWatch:
         bus, environments = container.get(Bus), tuple(container.get(Queries).query(Environment).get())
         actor = container.get(ModuleActors).actor(MODULE_KEY)
         announced = home.panic_announced
-        text = FileAccess.shared().read(home.panic_file, errors="replace") if home.panic_file.is_file() else ""
+        text = FileAccess.read(home.panic_file, errors="replace") if FileAccess.is_file(home.panic_file) else ""
         reason = next((line.split(":", 1)[1].strip() for line in text.splitlines() if line.strip().startswith("why:")), "")
-        if reason and not announced.is_file():
-            FileAccess.shared().write(announced, reason)
+        if reason and not FileAccess.is_file(announced):
+            FileAccess.write(announced, reason)
             log.write(LogLevel.WARNING, f"panic file written: {text.strip()}", LogSource.BYPASS)
-            self.show(bus, actor, environments, ShowMark(BypassMarkType.BYPASS, BypassMarkVariant.PANIC_STARTED, f"panic:{announced.stat().st_mtime_ns}", f"Panic: the main agent works around the journal. {reason}",
+            self.show(bus, actor, environments, ShowMark(BypassMarkType.BYPASS, BypassMarkVariant.PANIC_STARTED, f"panic:{FileAccess.stat(announced).st_mtime_ns}", f"Panic: the main agent works around the journal. {reason}",
                              detail=text.strip(), outcome=MarkOutcome.FAILED))
-        has_unresolved_panic = announced.is_file() and home.panic_file.is_file() and home.bypass_log.is_file()
+        has_unresolved_panic = FileAccess.is_file(announced) and FileAccess.is_file(home.panic_file) and FileAccess.is_file(home.bypass_log)
         if has_unresolved_panic:
             claimed = home.bypass_log.with_suffix(".taken")
-            home.bypass_log.replace(claimed)
-            lines = [line for line in FileAccess.shared().read(claimed, errors="replace").splitlines() if line.strip()]
-            claimed.unlink()
+            FileAccess.replace(home.bypass_log, claimed)
+            lines = [line for line in FileAccess.read(claimed, errors="replace").splitlines() if line.strip()]
+            FileAccess.unlink(claimed)
             if lines:
                 log.write(LogLevel.WARNING, "\n".join(lines), LogSource.BYPASS)
-                self.show(bus, actor, environments, ShowMark(BypassMarkType.BYPASS, BypassMarkVariant.UNCHECKED, f"panic-hooks:{claimed.parent.stat().st_mtime_ns}", f"{len(lines)} {HOOK_WORD}{'s' if len(lines) != 1 else ''} went through unchecked during the panic",
+                self.show(bus, actor, environments, ShowMark(BypassMarkType.BYPASS, BypassMarkVariant.UNCHECKED, f"panic-hooks:{FileAccess.stat(claimed.parent).st_mtime_ns}", f"{len(lines)} {HOOK_WORD}{'s' if len(lines) != 1 else ''} went through unchecked during the panic",
                                  outcome=MarkOutcome.FAILED, ended=True))
-        if announced.is_file() and not home.panic_file.is_file():
-            began = FileAccess.shared().read(announced)
-            announced.unlink()
-            home.panic_count.unlink(missing_ok=True)
+        if FileAccess.is_file(announced) and not FileAccess.is_file(home.panic_file):
+            began = FileAccess.read(announced)
+            FileAccess.unlink(announced)
+            FileAccess.unlink(home.panic_count, missing_ok=True)
             log.write(LogLevel.WARNING, "panic file removed", LogSource.BYPASS)
-            self.show(bus, actor, environments, ShowMark(BypassMarkType.BYPASS, BypassMarkVariant.PANIC_ENDED, f"panic-ended:{home.folder.stat().st_mtime_ns}", f"The panic ended: the journal answers again. It began because: {began}",
+            self.show(bus, actor, environments, ShowMark(BypassMarkType.BYPASS, BypassMarkVariant.PANIC_ENDED, f"panic-ended:{FileAccess.stat(home.folder).st_mtime_ns}", f"The panic ended: the journal answers again. It began because: {began}",
                              outcome=MarkOutcome.PASSED, ended=True))
 
     @staticmethod
