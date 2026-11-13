@@ -1,15 +1,11 @@
 from collections.abc import Callable, Sequence
 from dataclasses import replace
-from typing import TYPE_CHECKING, TypeVar, cast
+from typing import TypeVar, cast
 
 from engine.database.database import Database
+from engine.database.kept_source import KeptSource
 from engine.database.kept_value import KeptValue
 from engine.database.statement import Statement
-
-if TYPE_CHECKING:
-    from engine.model.model import Model
-    from engine.model.view_model import ViewModel
-    from engine.query.query import Query
 
 T = TypeVar("T")
 Signature = tuple[tuple[object, ...], ...]
@@ -28,27 +24,27 @@ class KeptRows:
         self.kept: dict[str, KeptValue] = {}
         self.write_rollback_count = database.write_rollback_count
 
-    def read(self, source: "Query[Model | ViewModel]", loader: Callable[[], T], *, name: str) -> T:
+    def read(self, source: KeptSource, loader: Callable[[], T], *, name: str) -> T:
         """Keeps what the loader read for a query until the rows of that query change."""
         select = source.kept_select()
         if select.is_empty:
             return loader()
         return self.kept_value(self.query_key(source, name), lambda _signature: loader(), select.signature_statement())
 
-    def owner_read(self, source: "Query[Model | ViewModel]", loader: Callable[[], T], *, name: str) -> T:
+    def owner_read(self, source: KeptSource, loader: Callable[[], T], *, name: str) -> T:
         return self.read(source, loader, name=f"{name}:{self.database.row_owner}")
 
-    def read_across(self, sources: "Sequence[Query[Model | ViewModel]]", loader: Callable[[], T], *, name: str) -> T:
+    def read_across(self, sources: Sequence[KeptSource], loader: Callable[[], T], *, name: str) -> T:
         """Keeps what the loader read from the rows of several queries until any of them changes."""
         signatures = tuple(source.kept_select().signature_statement() for source in sources)
         key = "|".join(self.query_key(source, name) for source in sources)
         return self.kept_value(key, lambda _signature: loader(), Statement.all_joined(signatures, " UNION ALL "))
 
-    def read_matching_signature(self, source: "Query[Model | ViewModel]", loader: Callable[[Signature], T], *, name: str) -> T:
+    def read_matching_signature(self, source: KeptSource, loader: Callable[[Signature], T], *, name: str) -> T:
         """Keeps what the loader read for the signature of a query's rows, which the loader is handed."""
         return self.kept_value(self.query_key(source, name), loader, source.kept_select().signature_statement())
 
-    def read_newest(self, source: "Query[Model | ViewModel]", loader: Callable[[], T], *, name: str) -> T:
+    def read_newest(self, source: KeptSource, loader: Callable[[], T], *, name: str) -> T:
         """Keeps what the loader read until the newest row of the query changes."""
         select = source.kept_select()
         if select.is_empty:
@@ -75,7 +71,7 @@ class KeptRows:
         self.kept[cache_key] = KeptValue(signature, change_mark, loaded)
         return loaded
 
-    def update(self, source: "Query[Model | ViewModel]", updater: Callable[[T], T], *, name: str) -> None:
+    def update(self, source: KeptSource, updater: Callable[[T], T], *, name: str) -> None:
         """Changes a kept read of the query in place, after a write the caller knows the outcome of."""
         self.check_rollback()
         previous = self.kept.pop(self.query_key(source, name), None)
@@ -95,6 +91,6 @@ class KeptRows:
             self.write_rollback_count = self.database.write_rollback_count
 
     @staticmethod
-    def query_key(query: "Query[Model | ViewModel]", name: str) -> str:
+    def query_key(query: KeptSource, name: str) -> str:
         conditions = query.kept_select().conditions_statement()
         return f"{name}:{conditions.sql}:{tuple(conditions.parameters)}"

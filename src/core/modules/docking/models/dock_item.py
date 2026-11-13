@@ -1,4 +1,4 @@
-from engine.model.prunable import Prunable
+from engine.query.prunable import Prunable
 from engine.query.conditions.equal import Equal
 from dataclasses import dataclass
 

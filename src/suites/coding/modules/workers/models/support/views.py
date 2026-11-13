@@ -1,5 +1,5 @@
 from engine.query.conditions.condition import Condition
-from engine.query.conditions.condition_join import ConditionJoin
+from engine.query.condition_join import ConditionJoin
 from engine.query.conditions.all_of import AllOf
 from engine.query.conditions.among import Among
 from engine.query.conditions.any_of import AnyOf

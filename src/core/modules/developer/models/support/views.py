@@ -1,4 +1,4 @@
-from engine.query.conditions.condition_join import ConditionJoin
+from engine.query.condition_join import ConditionJoin
 from engine.query.conditions.any_of import AnyOf
 from engine.query.enums.comparison_operator import ComparisonOperator
 from engine.query.enums.sql_function import SqlFunction

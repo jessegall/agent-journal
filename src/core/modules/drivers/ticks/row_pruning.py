@@ -2,7 +2,7 @@ from engine.container.container import Container
 from engine.database.database import Database
 from engine.database.pruned_rows import PrunedRows
 from engine.model.model import Model
-from engine.model.prunable import Prunable
+from engine.query.prunable import Prunable
 from engine.model.tables import Tables
 from engine.query.queries import Queries
 from engine.registry.registry import Registry

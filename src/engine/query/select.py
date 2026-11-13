@@ -2,7 +2,7 @@ from dataclasses import dataclass, replace
 
 from engine.database.statement import Statement
 from engine.query.conditions.condition import Condition
-from engine.query.conditions.condition_join import ConditionJoin
+from engine.query.condition_join import ConditionJoin
 from engine.query.expressions.expression import Expression
 from engine.query.expressions.inlined import Inlined
 from engine.query.join import Join

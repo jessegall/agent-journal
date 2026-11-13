@@ -1,4 +1,4 @@
-from engine.model.prunable import Prunable
+from engine.query.prunable import Prunable
 from engine.query.conditions.among import Among
 from dataclasses import dataclass
 
