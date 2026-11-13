@@ -4,6 +4,7 @@ from engine.query.conditions.among import Among
 from engine.query.conditions.has_value import HasValue
 from engine.query.queries import Queries
 from engine.subcommand.output import Output
+from engine.database.database import Database
 from engine.time.clock import Clock
 from core.modules.plugins.support.plugins_module_name import MODULE_NAME
 from core.modules.processes.commands.stop_process.stop_process import StopProcess
@@ -22,10 +23,11 @@ class QueuedRunFollow:
     hangs up, such as a terminal stopped with Ctrl+C, takes its run with it: a waiting run leaves the queue and a
     running one is stopped with its whole tree."""
 
-    def __init__(self, folder: OutputFolder, queries: Queries, clock: Clock, bus: Bus, actors: ModuleActors) -> None:
-        self.folder, self.queries, self.clock, self.bus, self.actors = folder, queries, clock, bus, actors
+    def __init__(self, folder: OutputFolder, queries: Queries, clock: Clock, bus: Bus, actors: ModuleActors, database: Database) -> None:
+        self.folder, self.queries, self.clock, self.bus, self.actors, self.database = folder, queries, clock, bus, actors, database
 
     def exit_code(self, process_id: int, output: Output) -> int:
+        self.database.turns.refuse_wait(f"the follow of queued run {process_id}")
         stated, offset = -1, 0
         while True:
             process = self.queries.query(Process).find(process_id)
@@ -39,7 +41,7 @@ class QueuedRunFollow:
             offset = page.last_byte
             if has_ended and offset >= page.total:
                 return process.exit_code if process.exit_code is not None else STOPPED_EXIT_CODE
-            if not has_ended and output.is_reader_gone():
+            if not has_ended and output.has_reader_disconnected():
                 self.bus.run(StopProcess(process_id), self.actors.actor(MODULE_NAME), environment_id=process.environment_id)
                 return INTERRUPTED_EXIT_CODE
             self.clock.sleep(END_POLL_SECONDS)

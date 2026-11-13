@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Generator
 from contextlib import contextmanager
 
+from engine.database.errors.wait_in_write_turn_error import WaitInWriteTurnError
 from engine.database.turn_depth import TurnDepth
 
 
@@ -24,6 +25,11 @@ class WriteTurns(ABC):
             self.depth.count = depth
             if depth == 0:
                 self.release()
+
+    # nobody waits for a slot or a child run while every other write waits on its turn
+    def refuse_wait(self, subject: str) -> None:
+        if self.depth.count:
+            raise WaitInWriteTurnError(subject)
 
     @abstractmethod
     def acquire(self) -> None: ...
