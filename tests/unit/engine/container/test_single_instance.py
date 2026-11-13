@@ -40,7 +40,7 @@ def built_twice(base: type, implementation: type) -> BuiltTwiceError:
 
 def test_a_listener_built_twice_in_one_container_raises_naming_both_places():
     error = built_twice(CountedItems, ModuleCountedItems)
-    assert error.class_type is ModuleCountedItems and str(error).count("test_built_once.py") >= 2
+    assert error.class_type is ModuleCountedItems and str(error).count("test_single_instance.py") >= 2
 
 
 def test_a_handler_built_twice_in_one_container_raises():
