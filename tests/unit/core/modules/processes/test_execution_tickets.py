@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import datetime, timezone
 
 from engine.enums.command_category import CommandCategory
@@ -8,6 +9,7 @@ from engine.execution.execution_classes import ExecutionClasses
 from engine.time.clock import Clock
 from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
+from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.execution_tickets import ExecutionTickets
 from core.modules.processes.support.process_type_limits import ProcessTypeLimits
@@ -76,3 +78,16 @@ def test_reader_request_sets_waits_for_reader():
 def test_row_without_a_class_is_matched():
     lane = tickets().of_rows([process(1, 2, CommandCategory.SEARCH, waiting=True)], ExecutionLane.SHORT)
     assert lane.waiting[0].execution_class.name == "agent short line"
+
+
+def moved(number: int, category: CommandCategory) -> Process:
+    return replace(process(number, 2, category, waiting=False), state=ProcessState.BACKGROUND, moved_at=ENTERED)
+
+
+def test_move_frees_the_short_slot():
+    assert tickets().of_rows([moved(1, CommandCategory.SEARCH)], ExecutionLane.SHORT).running == ()
+
+
+def test_moved_row_counts_in_the_long_lane():
+    long_lane = tickets().of_rows([moved(1, CommandCategory.SEARCH)], ExecutionLane.LONG)
+    assert [(ticket.execution_class.lane, ticket.execution_class.slot_cost) for ticket in long_lane.running] == [(ExecutionLane.LONG, 1)]

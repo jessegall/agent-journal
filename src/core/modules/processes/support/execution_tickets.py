@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from dataclasses import replace
 
 from engine.enums.agent_role import AgentRole
 from engine.enums.execution_lane import ExecutionLane
@@ -12,6 +13,7 @@ from engine.execution.execution_ticket import ExecutionTicket
 from engine.listener.rows.event_rows import EventRows
 from engine.time.clock import Clock
 from core.modules.agents.models.agent import Agent
+from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.lane_tickets import LaneTickets
 from core.modules.processes.support.process_type_limits import ProcessTypeLimits
@@ -38,6 +40,9 @@ class ExecutionTickets:
     def ticket(self, process: Process, agent: Agent, kind_classes: dict[tuple[str, str], ExecutionClass], parts: dict) -> ExecutionTicket:
         starter = self.starter(process, agent)
         execution_class = self.execution_class(process, starter, kind_classes)
+        # a line moved to the background gives its short place back and counts in the long lane at its own cost
+        if process.state is ProcessState.BACKGROUND and execution_class.lane is not ExecutionLane.LONG:
+            execution_class = replace(execution_class, name=f"{execution_class.name} in the background", lane=ExecutionLane.LONG)
         entered_at = process.queued_at or process.started_at or process.creation_timestamp()
         waits_for_reader = process.queued_at is not None and self.admission.waits_for_reader(process, parts.get(process.id, ()), self.clock.timestamp())
         return ExecutionTicket(execution_class, process.first_priority, process.priority, starter, process.line, entered_at, process.raised_at or entered_at,
