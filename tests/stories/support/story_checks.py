@@ -77,15 +77,9 @@ def expect_value_2(story, text, expected) -> None:
 
 
 def expect_bytes_database_home(story, expected) -> None:
-    """The database holds the same pages as before; its header's change counters (bytes 24-27 and 92-95) count any
-    write transaction, such as the incremental vacuum an opening runs, so they are left out."""
     actual = story.home.database.read_bytes()
-    pages = sorted({place // 4096 for place, (one, two) in enumerate(zip(without_counters(actual), without_counters(expected))) if one != two})
-    assert len(actual) == len(expected) and not pages, f"the database changed on pages {pages}, {len(expected)} bytes before and {len(actual)} after"
-
-
-def without_counters(database: bytes) -> bytes:
-    return database[:24] + database[28:92] + database[96:]
+    pages = sorted({place // 4096 for place, (one, two) in enumerate(zip(actual, expected)) if one != two})
+    assert actual == expected, f"the database changed on pages {pages}, {len(expected)} bytes before and {len(actual)} after"
 
 
 def expect_bytes_source(source, expected) -> None:

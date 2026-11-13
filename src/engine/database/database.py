@@ -15,7 +15,9 @@ from engine.row.row_owner import RowOwner
 if TYPE_CHECKING:
     from engine.database.kept_rows import KeptRows
 
-PRAGMAS = ("auto_vacuum = INCREMENTAL", "foreign_keys = ON", "journal_mode = WAL", "synchronous = NORMAL")
+# the file settings take the write lock to change, so each is set only when the file holds another value
+FILE_PRAGMAS = {"auto_vacuum": ("INCREMENTAL", "2"), "journal_mode": ("WAL", "wal")}
+CONNECTION_PRAGMAS = ("foreign_keys = ON", "synchronous = NORMAL")
 BUSY_TIMEOUT_SECONDS = 5.0
 READ_LIMIT_ROWS = 50
 NESTING_LIMIT_LEVELS = 8
@@ -57,12 +59,14 @@ class Database:
     @classmethod
     def configured(cls, connection: sqlite3.Connection) -> "Database":
         connection.row_factory = sqlite3.Row
-        for pragma in PRAGMAS:
+        connection.execute(f"PRAGMA busy_timeout = {int(BUSY_TIMEOUT_SECONDS * 1000)}")
+        for name, (value, stored) in FILE_PRAGMAS.items():
+            if str(connection.execute(f"PRAGMA {name}").fetchone()[0]) != stored:
+                connection.execute(f"PRAGMA {name} = {value}")
+        for pragma in CONNECTION_PRAGMAS:
             connection.execute(f"PRAGMA {pragma}")
         database_file = connection.execute("PRAGMA database_list").fetchone()[2]
-        database = cls(connection, database_file or connection)
-        database.set_busy_timeout(BUSY_TIMEOUT_SECONDS)
-        return database
+        return cls(connection, database_file or connection)
 
     def file(self) -> Path:
         return Path(self.connection.execute("PRAGMA database_list").fetchone()[2])
