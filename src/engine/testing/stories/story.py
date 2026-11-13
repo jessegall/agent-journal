@@ -33,6 +33,10 @@ from engine.hosting.hosting import Hosting
 from engine.journal.journal_home import JournalHome
 from engine.model.model import Model
 from core.modules import DEFAULT_MODULES
+from core.modules.settings.support.setting_catalogue import SettingCatalogue
+from core.modules.settings.support.setting_reader import SettingReader
+from engine.setting.errors.setting_type_error import SettingTypeError
+from engine.setting.setting_declaration import SettingDefault
 from engine.module.module import Module
 from engine.model.tables import Tables
 from engine.subcommand.output import Output
@@ -190,6 +194,16 @@ class Story:
 
     def row(self, model: type[M], row_id: int) -> M:
         return self.container.get(Queries).query(model).find(row_id)
+
+    def setting_default(self, key: str) -> SettingDefault:
+        """The default a module declares for a setting, so a story counts from it and a new default breaks no story."""
+        return SettingReader.default(self.container.get(SettingCatalogue).value(key))
+
+    def number_default(self, key: str) -> int:
+        default = self.setting_default(key)
+        if not isinstance(default, int) or isinstance(default, bool):
+            raise SettingTypeError(f"{key} declares {default!r}, not a whole number")
+        return default
 
     def refusals(self) -> tuple[RecordedRefusal, ...]:
         return self.container.get(RefusalLog).page(1, 1000).rows

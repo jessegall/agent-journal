@@ -27,6 +27,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import D
 from tests.stories.support.story_checks import expect_absent_value, expect_count_output_2, expect_total_cost_less
 from tests.stories.core.support.agent_labels import agent_label
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
+from suites.coding.modules.workers.support.worker_settings import STOPPED_WORKER_RUN_MINUTES, WORKER_RESUME_LIMIT
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -84,12 +85,16 @@ def test_a_worker_past_its_restarts_on_old_tasks_is_restarted_for_a_queued_task(
     expect_count_output_2(story, f"agent-line list --agent {worker.id}", "You ended with tasks left", 2)
 
 
+def past_the_stopped_run_limit(story) -> timedelta:
+    return timedelta(minutes=story.number_default(STOPPED_WORKER_RUN_MINUTES) + 1)
+
+
 def test_a_tick_reads_no_ended_worker_that_has_no_running_process(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     for number in range(30):
         worker_id = story.new_row_id(f"agent start ended-{number} claude worker --parent {story.agent.id} --environment main")
         story.run(f"agent end {worker_id}", actor=story.agent)
-    story.advance(timedelta(minutes=31))
+    story.advance(past_the_stopped_run_limit(story))
     database = story.container.get(Database)
     start = database.repeated_work.points()
     StoppedWorkerRuns()(story.container)
@@ -102,7 +107,7 @@ def test_with_the_merger_off_a_worker_stopped_past_the_limit_on_a_run_that_goes_
     story.run(f"agent end {worker.id}", actor=worker)
     StoppedWorkerRuns()(story.container)
     story.expect_rows(stopped_run_texts(story) == [], detail="the limit has not gone by")
-    story.advance(timedelta(minutes=31))
+    story.advance(past_the_stopped_run_limit(story))
     StoppedWorkerRuns()(story.container)
     StoppedWorkerRuns()(story.container)
     texts = stopped_run_texts(story)
@@ -130,10 +135,9 @@ def test_a_worker_with_a_run_going_may_stop(new_story):
 
 def test_a_worker_past_its_restarts_that_stops_with_a_run_going_leaves_the_main_agent_no_line_until_it_stops_with_none(worker_with_a_run):
     story, worker, run, bus = worker_with_a_run
-    set_resume_limit(story.container, 1)
     session = worker_session(story, worker)
     line = f"worker:{agent_number(story, worker.id)} ended with"
-    for _ in range(3):
+    for _ in range(story.number_default(WORKER_RESUME_LIMIT) + 2):
         story.run(f"agent end {worker.id}", actor=worker)
         story.run_listeners()
         story.hook(session, HookSamples.session_start())
