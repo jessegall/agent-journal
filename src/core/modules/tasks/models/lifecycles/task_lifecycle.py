@@ -15,7 +15,7 @@ class TaskLifecycle(Lifecycle):
     test = Move("test", [TaskState.STARTED], TaskState.TESTING)
     retest = Move("retest", [TaskState.TESTING], TaskState.STARTED)
     release = Move("release", (TaskState.STARTED, TaskState.TESTING), TaskState.OPEN)
-    release_holder = Move("drop_hold", [TaskState.BLOCKED], TaskState.BLOCKED)
+    release_holder = Move("release_holder", [TaskState.BLOCKED], TaskState.BLOCKED)
     close = Move("close", (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED), TaskState.COMPLETED)
     cancel = Move("cancel", (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED, TaskState.TESTING), TaskState.CANCELLED)
     reopen = Move("reopen", (TaskState.COMPLETED, TaskState.CANCELLED), TaskState.OPEN)

@@ -7,7 +7,7 @@ class PlainWorkerColumnsMigration(Migration):
     of an environment's worktrees checked_at."""
 
     number = 80
-    statements = ["ALTER TABLE merge_asks RENAME COLUMN is_whole TO is_full",
+    statements = ["ALTER TABLE worker_merge_asks RENAME COLUMN is_whole TO is_full",
                   "ALTER TABLE worker_operations RENAME COLUMN update_result TO update_outcome",
                   "ALTER TABLE worktree_behind_checks RENAME COLUMN behind TO commits_lagging",
                   "ALTER TABLE worktree_behind_checks RENAME COLUMN decided_by TO decider_id",

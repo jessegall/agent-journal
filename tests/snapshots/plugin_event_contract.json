@@ -2134,11 +2134,11 @@
       "line",
       "reason",
       "request_tokens",
+      "resumed_at",
       "session_agent_id",
       "started_at",
       "state",
-      "tokens_after",
-      "woken_at"
+      "tokens_after"
     ]
   },
   "core.drivers.context_compaction.deleted": {
@@ -2155,11 +2155,11 @@
       "line",
       "reason",
       "request_tokens",
+      "resumed_at",
       "session_agent_id",
       "started_at",
       "state",
-      "tokens_after",
-      "woken_at"
+      "tokens_after"
     ]
   },
   "core.drivers.context_compaction.updated": {
@@ -2176,11 +2176,11 @@
       "line",
       "reason",
       "request_tokens",
+      "resumed_at",
       "session_agent_id",
       "started_at",
       "state",
-      "tokens_after",
-      "woken_at"
+      "tokens_after"
     ]
   },
   "core.drivers.context_compaction_notice.created": {
@@ -4639,9 +4639,9 @@
       "duration_ms",
       "environment_id",
       "exit_code",
-      "kind",
       "plugin",
       "process_id",
+      "run_name",
       "session_agent_id",
       "state",
       "timed_out"
@@ -4656,9 +4656,9 @@
       "duration_ms",
       "environment_id",
       "exit_code",
-      "kind",
       "plugin",
       "process_id",
+      "run_name",
       "session_agent_id",
       "state",
       "timed_out"
@@ -4673,9 +4673,9 @@
       "duration_ms",
       "environment_id",
       "exit_code",
-      "kind",
       "plugin",
       "process_id",
+      "run_name",
       "session_agent_id",
       "state",
       "timed_out"
@@ -4690,9 +4690,9 @@
       "duration_ms",
       "environment_id",
       "exit_code",
-      "kind",
       "plugin",
       "process_id",
+      "run_name",
       "session_agent_id",
       "state",
       "timed_out"
@@ -4936,7 +4936,6 @@
       "hook_call_id",
       "is_full_test_run",
       "is_queue_run",
-      "kind",
       "limit_seconds",
       "line",
       "moved_at",
@@ -4946,6 +4945,7 @@
       "priority",
       "progress",
       "queued_at",
+      "run_name",
       "sandbox_level",
       "session_agent_id",
       "shell",
@@ -4973,7 +4973,6 @@
       "hook_call_id",
       "is_full_test_run",
       "is_queue_run",
-      "kind",
       "limit_seconds",
       "line",
       "moved_at",
@@ -4983,6 +4982,7 @@
       "priority",
       "progress",
       "queued_at",
+      "run_name",
       "sandbox_level",
       "session_agent_id",
       "shell",
@@ -5010,7 +5010,6 @@
       "hook_call_id",
       "is_full_test_run",
       "is_queue_run",
-      "kind",
       "limit_seconds",
       "line",
       "moved_at",
@@ -5020,6 +5019,7 @@
       "priority",
       "progress",
       "queued_at",
+      "run_name",
       "sandbox_level",
       "session_agent_id",
       "shell",
@@ -5047,7 +5047,6 @@
       "hook_call_id",
       "is_full_test_run",
       "is_queue_run",
-      "kind",
       "limit_seconds",
       "line",
       "moved_at",
@@ -5057,6 +5056,7 @@
       "priority",
       "progress",
       "queued_at",
+      "run_name",
       "sandbox_level",
       "session_agent_id",
       "shell",
@@ -5084,7 +5084,6 @@
       "hook_call_id",
       "is_full_test_run",
       "is_queue_run",
-      "kind",
       "limit_seconds",
       "line",
       "moved_at",
@@ -5094,6 +5093,7 @@
       "priority",
       "progress",
       "queued_at",
+      "run_name",
       "sandbox_level",
       "session_agent_id",
       "shell",
@@ -5121,7 +5121,6 @@
       "hook_call_id",
       "is_full_test_run",
       "is_queue_run",
-      "kind",
       "limit_seconds",
       "line",
       "moved_at",
@@ -5131,6 +5130,7 @@
       "priority",
       "progress",
       "queued_at",
+      "run_name",
       "sandbox_level",
       "session_agent_id",
       "shell",
@@ -5158,7 +5158,6 @@
       "hook_call_id",
       "is_full_test_run",
       "is_queue_run",
-      "kind",
       "limit_seconds",
       "line",
       "moved_at",
@@ -5168,6 +5167,7 @@
       "priority",
       "progress",
       "queued_at",
+      "run_name",
       "sandbox_level",
       "session_agent_id",
       "shell",
@@ -5195,7 +5195,6 @@
       "hook_call_id",
       "is_full_test_run",
       "is_queue_run",
-      "kind",
       "limit_seconds",
       "line",
       "moved_at",
@@ -5205,6 +5204,7 @@
       "priority",
       "progress",
       "queued_at",
+      "run_name",
       "sandbox_level",
       "session_agent_id",
       "shell",
@@ -5232,7 +5232,6 @@
       "hook_call_id",
       "is_full_test_run",
       "is_queue_run",
-      "kind",
       "limit_seconds",
       "line",
       "moved_at",
@@ -5242,6 +5241,7 @@
       "priority",
       "progress",
       "queued_at",
+      "run_name",
       "sandbox_level",
       "session_agent_id",
       "shell",
@@ -5269,7 +5269,6 @@
       "hook_call_id",
       "is_full_test_run",
       "is_queue_run",
-      "kind",
       "limit_seconds",
       "line",
       "moved_at",
@@ -5279,6 +5278,7 @@
       "priority",
       "progress",
       "queued_at",
+      "run_name",
       "sandbox_level",
       "session_agent_id",
       "shell",
@@ -5516,8 +5516,8 @@
       "command_key",
       "decided_at",
       "level",
-      "moment",
       "part_position",
+      "phase",
       "process_id",
       "reason",
       "state"
@@ -5534,8 +5534,8 @@
       "command_key",
       "decided_at",
       "level",
-      "moment",
       "part_position",
+      "phase",
       "process_id",
       "reason",
       "state"
@@ -5552,8 +5552,8 @@
       "command_key",
       "decided_at",
       "level",
-      "moment",
       "part_position",
+      "phase",
       "process_id",
       "reason",
       "state"
@@ -5570,8 +5570,8 @@
       "ended_at",
       "environment_id",
       "exit_code",
-      "kind",
       "line",
+      "process_type",
       "session_agent_id"
     ]
   },
@@ -5586,8 +5586,8 @@
       "ended_at",
       "environment_id",
       "exit_code",
-      "kind",
       "line",
+      "process_type",
       "session_agent_id"
     ]
   },
@@ -5602,8 +5602,8 @@
       "ended_at",
       "environment_id",
       "exit_code",
-      "kind",
       "line",
+      "process_type",
       "session_agent_id"
     ]
   },
@@ -5619,7 +5619,7 @@
       "lifter_id",
       "note",
       "reason",
-      "words"
+      "terms"
     ]
   },
   "core.processes.unreadable_mark.deleted": {
@@ -5634,7 +5634,7 @@
       "lifter_id",
       "note",
       "reason",
-      "words"
+      "terms"
     ]
   },
   "core.processes.unreadable_mark.updated": {
@@ -5649,7 +5649,7 @@
       "lifter_id",
       "note",
       "reason",
-      "words"
+      "terms"
     ]
   },
   "core.processes.watch.created": {
@@ -7064,7 +7064,7 @@
       "title"
     ]
   },
-  "core.tasks.task.drop_hold": {
+  "core.tasks.task.release": {
     "forms": [
       "commit",
       "guard",
@@ -7087,7 +7087,7 @@
       "title"
     ]
   },
-  "core.tasks.task.release": {
+  "core.tasks.task.release_holder": {
     "forms": [
       "commit",
       "guard",
@@ -8941,7 +8941,7 @@
       "commit_id",
       "creator_id",
       "environment_id",
-      "is_whole",
+      "is_full",
       "note",
       "state",
       "task_ids",
@@ -8959,7 +8959,7 @@
       "commit_id",
       "creator_id",
       "environment_id",
-      "is_whole",
+      "is_full",
       "note",
       "state",
       "task_ids",
@@ -8977,7 +8977,7 @@
       "commit_id",
       "creator_id",
       "environment_id",
-      "is_whole",
+      "is_full",
       "note",
       "state",
       "task_ids",
@@ -8985,7 +8985,7 @@
       "worktree_id"
     ]
   },
-  "suites.coding.workers.worker_merge_ask.send_back": {
+  "suites.coding.workers.worker_merge_ask.reject": {
     "forms": [
       "commit",
       "guard",
@@ -8995,7 +8995,7 @@
       "commit_id",
       "creator_id",
       "environment_id",
-      "is_whole",
+      "is_full",
       "note",
       "state",
       "task_ids",
@@ -9013,7 +9013,7 @@
       "commit_id",
       "creator_id",
       "environment_id",
-      "is_whole",
+      "is_full",
       "note",
       "state",
       "task_ids",
@@ -9048,7 +9048,7 @@
       "source_unavailable",
       "source_version",
       "started_at",
-      "update_result",
+      "update_outcome",
       "worker_id"
     ]
   },
@@ -9072,7 +9072,7 @@
       "source_unavailable",
       "source_version",
       "started_at",
-      "update_result",
+      "update_outcome",
       "worker_id"
     ]
   },
@@ -9096,7 +9096,7 @@
       "source_unavailable",
       "source_version",
       "started_at",
-      "update_result",
+      "update_outcome",
       "worker_id"
     ]
   },
@@ -10093,7 +10093,7 @@
       "tests_passed_at"
     ]
   },
-  "suites.coding.workers.worker_worktree.take_over_cut": {
+  "suites.coding.workers.worker_worktree.transfer_cut": {
     "forms": [
       "commit",
       "guard",
@@ -10134,7 +10134,7 @@
       "tests_passed_at"
     ]
   },
-  "suites.coding.workers.worker_worktree.take_over_delivered": {
+  "suites.coding.workers.worker_worktree.transfer_delivered": {
     "forms": [
       "commit",
       "guard",
@@ -10216,24 +10216,6 @@
       "tests_passed_at"
     ]
   },
-  "suites.coding.workers.worktree_behind_check.bring_up_to_date": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "base_tip",
-      "behind",
-      "decided_by",
-      "environment_id",
-      "failure",
-      "reason",
-      "reminders",
-      "state",
-      "worktree_id"
-    ]
-  },
   "suites.coding.workers.worktree_behind_check.conflict": {
     "forms": [
       "commit",
@@ -10242,8 +10224,8 @@
     ],
     "fields": [
       "base_tip",
-      "behind",
-      "decided_by",
+      "commits_lagging",
+      "decider_id",
       "environment_id",
       "failure",
       "reason",
@@ -10260,8 +10242,8 @@
     ],
     "fields": [
       "base_tip",
-      "behind",
-      "decided_by",
+      "commits_lagging",
+      "decider_id",
       "environment_id",
       "failure",
       "reason",
@@ -10278,8 +10260,8 @@
     ],
     "fields": [
       "base_tip",
-      "behind",
-      "decided_by",
+      "commits_lagging",
+      "decider_id",
       "environment_id",
       "failure",
       "reason",
@@ -10296,8 +10278,8 @@
     ],
     "fields": [
       "base_tip",
-      "behind",
-      "decided_by",
+      "commits_lagging",
+      "decider_id",
       "environment_id",
       "failure",
       "reason",
@@ -10306,7 +10288,7 @@
       "worktree_id"
     ]
   },
-  "suites.coding.workers.worktree_behind_check.hold": {
+  "suites.coding.workers.worktree_behind_check.escalate": {
     "forms": [
       "commit",
       "guard",
@@ -10314,8 +10296,8 @@
     ],
     "fields": [
       "base_tip",
-      "behind",
-      "decided_by",
+      "commits_lagging",
+      "decider_id",
       "environment_id",
       "failure",
       "reason",
@@ -10332,8 +10314,26 @@
     ],
     "fields": [
       "base_tip",
-      "behind",
-      "decided_by",
+      "commits_lagging",
+      "decider_id",
+      "environment_id",
+      "failure",
+      "reason",
+      "reminders",
+      "state",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.worktree_behind_check.mark_updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_tip",
+      "commits_lagging",
+      "decider_id",
       "environment_id",
       "failure",
       "reason",
@@ -10350,8 +10350,8 @@
     ],
     "fields": [
       "base_tip",
-      "behind",
-      "decided_by",
+      "commits_lagging",
+      "decider_id",
       "environment_id",
       "failure",
       "reason",
@@ -10368,8 +10368,8 @@
     ],
     "fields": [
       "base_tip",
-      "behind",
-      "decided_by",
+      "commits_lagging",
+      "decider_id",
       "environment_id",
       "failure",
       "reason",
@@ -10386,8 +10386,8 @@
     ],
     "fields": [
       "base_tip",
-      "behind",
-      "decided_by",
+      "commits_lagging",
+      "decider_id",
       "environment_id",
       "failure",
       "reason",
@@ -10396,7 +10396,7 @@
       "worktree_id"
     ]
   },
-  "suites.coding.workers.worktree_behind_check.pass_on": {
+  "suites.coding.workers.worktree_behind_check.pause": {
     "forms": [
       "commit",
       "guard",
@@ -10404,8 +10404,8 @@
     ],
     "fields": [
       "base_tip",
-      "behind",
-      "decided_by",
+      "commits_lagging",
+      "decider_id",
       "environment_id",
       "failure",
       "reason",
@@ -10422,8 +10422,8 @@
     ],
     "fields": [
       "base_tip",
-      "behind",
-      "decided_by",
+      "commits_lagging",
+      "decider_id",
       "environment_id",
       "failure",
       "reason",
@@ -10440,8 +10440,8 @@
     ],
     "fields": [
       "base_tip",
-      "behind",
-      "decided_by",
+      "commits_lagging",
+      "decider_id",
       "environment_id",
       "failure",
       "reason",
@@ -10458,8 +10458,8 @@
     ],
     "fields": [
       "base_tip",
-      "behind",
-      "decided_by",
+      "commits_lagging",
+      "decider_id",
       "environment_id",
       "failure",
       "reason",
@@ -10475,8 +10475,8 @@
       "listen"
     ],
     "fields": [
-      "environment_id",
-      "looked_at"
+      "checked_at",
+      "environment_id"
     ]
   },
   "suites.coding.workers.worktree_behind_look.deleted": {
@@ -10486,8 +10486,8 @@
       "listen"
     ],
     "fields": [
-      "environment_id",
-      "looked_at"
+      "checked_at",
+      "environment_id"
     ]
   },
   "suites.coding.workers.worktree_behind_look.updated": {
@@ -10497,8 +10497,8 @@
       "listen"
     ],
     "fields": [
-      "environment_id",
-      "looked_at"
+      "checked_at",
+      "environment_id"
     ]
   },
   "suites.coding.workers.worktree_reach.created": {

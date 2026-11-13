@@ -12,4 +12,4 @@ class MergeAskLifecycle(Lifecycle):
     deletable = ()
 
     merge = Move("merge", [MergeAskState.WAITING], MergeAskState.MERGED)
-    reject = Move("send_back", [MergeAskState.WAITING], MergeAskState.RETURNED)
+    reject = Move("reject", [MergeAskState.WAITING], MergeAskState.RETURNED)
