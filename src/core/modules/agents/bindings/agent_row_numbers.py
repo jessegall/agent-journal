@@ -21,7 +21,8 @@ class AgentRowNumbers(RowNumbers):
     def row_id(self, model_name: str, number: int, environment_id: int | None) -> int:
         label = f"agent {number}"
         environment = self.environment_of(label, environment_id)
-        survivor_id = self.folds.number_holder(environment, number)
+        with self.scopes.opened(None, environment):
+            survivor_id = self.folds.number_holder(number)
         return survivor_id if survivor_id is not None else self.environment_agent(model_name, environment, label, number=number).id
 
     def number(self, model_name: str, row_id: int) -> int:

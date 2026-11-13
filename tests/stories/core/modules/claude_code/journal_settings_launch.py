@@ -40,6 +40,6 @@ def test_a_terminal_launch_reads_only_the_journal_settings_and_the_project_sourc
 def test_the_person_s_own_settings_flags_are_refused(new_story):
     story = new_story(fixture=MainEnvironment)
     root = story.home.project_folder
-    refusal = "the journal launches Claude Code on its own settings; --settings and --setting-sources cannot be given"
+    refusal = "the journal launches Claude Code on its own settings; --settings and --setting-sources cannot be passed"
     story.expect_refusal(f'program command claude "{root}" --launch launch-1 --program-argument=--settings --program-argument=my.json', refusal)
     story.expect_refusal(f'program command claude "{root}" --launch launch-1 --program-argument=--setting-sources=user', refusal)

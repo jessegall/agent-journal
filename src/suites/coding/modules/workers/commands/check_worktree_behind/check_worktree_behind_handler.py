@@ -51,7 +51,7 @@ class CheckWorktreeBehindHandler(Handler[CheckWorktreeBehind, BehindRoute]):
         worktree = self.rows.required(Worktree, command.worktree_id)
         if not self.checks.opens(worktree, self.behind):
             return BehindRoute.NONE
-        check = self.repository.save(WorktreeBehindCheck.opened(worktree.environment_id, worktree.id, self.tip, self.behind), context)
+        check = self.repository.save(WorktreeBehindCheck.opened(worktree.id, self.tip, self.behind), context)
         worker = self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)
         if self.moved:
             self.repository.save_change(check, check.updated(), context)

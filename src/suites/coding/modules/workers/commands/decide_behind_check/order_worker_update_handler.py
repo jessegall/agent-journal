@@ -34,7 +34,7 @@ class OrderWorkerUpdateHandler(Handler[OrderWorkerUpdate, None]):
     def opened(self, worktree: Worktree, deciding_id: int, context: Context) -> WorktreeBehindCheck:
         if not self.agents.is_main(deciding_id):
             raise Refusal(NO_OPEN_CHECK, "journal merger behind <worker> shows how far it is behind")
-        return self.repository.save(WorktreeBehindCheck.opened(worktree.environment_id, worktree.id, self.tip, self.behind), context)
+        return self.repository.save(WorktreeBehindCheck.opened(worktree.id, self.tip, self.behind), context)
 
     def prepare(self, command: OrderWorkerUpdate, actor: Actor) -> None:
         worktree = self.decisions.worktree(command.worker_id)

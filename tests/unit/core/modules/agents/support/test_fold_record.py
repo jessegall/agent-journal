@@ -37,12 +37,8 @@ def test_an_old_agent_id_resolves_to_the_survivor_and_any_other_id_stays_itself(
     assert (RECORD.agent_id(894), RECORD.agent_id(12)) == (78, 12)
 
 
-def test_an_old_number_in_its_environment_resolves_to_the_survivor():
-    assert (RECORD.number_holder(1, 29), RECORD.number_holder(2, 29), RECORD.number_holder(1, 40)) == (78, None, None)
-
-
-def test_an_old_session_of_a_folded_row_or_of_its_past_sessions_resolves_to_the_survivor():
-    assert (RECORD.session_holder(1, "s-893"), RECORD.session_holder(1, "s-older"), RECORD.session_holder(1, "s-new")) == (78, 78, None)
+def test_an_old_number_resolves_to_the_survivor():
+    assert (RECORD.number_holder(29), RECORD.number_holder(40)) == (78, None)
 
 
 def test_many_ids_resolve_in_one_read_each_folded_one_to_the_survivor():

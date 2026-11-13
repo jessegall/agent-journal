@@ -16,9 +16,6 @@ class ReviewerQuery(Query[Reviewer]):
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, Reviewer)
 
-    def in_environment(self, environment_id: int) -> Self:
-        return self.filter(environment_id=environment_id)
-
     def active(self) -> Self:
         return self.matching(Among("state", ACTIVE))
 

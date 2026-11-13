@@ -49,7 +49,7 @@ def test_an_agent_cannot_get_its_hook_in_through_the_person_s_settings_or_point_
     claude_arguments = story.run(f'program command claude "{root}" --launch launch-1').output_text.splitlines()
     codex = json.loads(story.run(f'program command codex "{root}" --launch launch-2 --format json').output_text)
     story.expect_refusal(f'program command claude "{root}" --launch launch-3 --program-argument=--settings --program-argument=/tmp/mine.json',
-                         "--settings and --setting-sources cannot be given")
+                         "--settings and --setting-sources cannot be passed")
     journal_files = [story.home.folder / "programs" / "claude" / "settings.json", story.home.folder / "programs" / "codex" / "hooks.json"]
     # A shell line that starts claude or codex itself runs a program the journal did not launch: no rule of this plan adds to how
     # such a line is judged, and that program reads neither of the journal's files.

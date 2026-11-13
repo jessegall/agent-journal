@@ -32,8 +32,8 @@ class WorktreeBehindCheck(EnvironmentScoped, Model):
     failure: str = ""
 
     @classmethod
-    def opened(cls, environment_id: int, worktree_id: int, base_tip: str, behind: int) -> "WorktreeBehindCheck":
-        return cls(environment_id=environment_id, worktree_id=worktree_id, base_tip=base_tip, behind=behind)
+    def opened(cls, worktree_id: int, base_tip: str, behind: int) -> "WorktreeBehindCheck":
+        return cls(worktree_id=worktree_id, base_tip=base_tip, behind=behind)
 
     def decision_text(self, decider: str) -> str:
         match self.state:
