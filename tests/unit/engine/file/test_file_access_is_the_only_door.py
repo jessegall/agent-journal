@@ -14,6 +14,15 @@ PATH_ONLY_METHODS = frozenset({
     "is_dir", "is_file", "is_symlink", "mkdir", "rglob", "iterdir", "unlink", "rmdir", "symlink_to", "readlink", "read_text",
     "read_bytes", "write_text", "write_bytes", "touch", "lstat", "samefile", "hardlink_to",
 })
+MODULE_FUNCTIONS = frozenset({
+    "open", "io.open", "shutil.rmtree", "shutil.move", "shutil.copy", "shutil.copy2", "shutil.copyfile", "shutil.copytree",
+    "shutil.copymode", "shutil.copystat", "os.walk", "os.fwalk", "os.listdir", "os.scandir", "os.remove", "os.unlink",
+    "os.rename", "os.renames", "os.replace", "os.makedirs", "os.mkdir", "os.rmdir", "os.removedirs", "os.stat", "os.lstat",
+    "os.open", "os.chmod", "os.symlink", "os.link", "os.readlink", "os.truncate", "os.utime", "os.path.exists",
+    "os.path.isfile", "os.path.isdir", "os.path.islink", "os.path.lexists", "os.path.getsize", "os.path.getmtime",
+    "glob.glob", "glob.iglob", "tempfile.NamedTemporaryFile", "tempfile.TemporaryFile", "tempfile.mkstemp",
+    "tempfile.mkdtemp", "tempfile.TemporaryDirectory",
+})
 CONFIG = f"""[mypy]
 mypy_path = {SOURCE}
 plugins = {PLUGIN}
@@ -31,12 +40,23 @@ def typed_bypasses(config: Path) -> list[str]:
     return [line for line in (output + errors).splitlines() if BYPASS in line]
 
 
+def dotted_name(node: ast.expr) -> str:
+    if isinstance(node, ast.Name):
+        return node.id
+    return f"{dotted_name(node.value)}.{node.attr}" if isinstance(node, ast.Attribute) else ""
+
+
 def is_path_only_call(node: ast.AST) -> bool:
-    return (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr in PATH_ONLY_METHODS
+    if not isinstance(node, ast.Call):
+        return False
+    if dotted_name(node.func) in MODULE_FUNCTIONS:
+        return True
+    return (isinstance(node.func, ast.Attribute) and node.func.attr in PATH_ONLY_METHODS
             and not (isinstance(node.func.value, ast.Name) and node.func.value.id == "FileAccess"))
 
 
-# a receiver the type checker cannot type, such as a loop variable over an untyped list, is still caught by its name
+# a call the type checker cannot see, such as one on an untyped receiver or through a callable object like
+# shutil.rmtree, is still caught by its name
 def untyped_bypasses() -> list[str]:
     return [f"{file.relative_to(PROJECT)}:{node.lineno}" for file in sorted(SOURCE.rglob("*.py")) if file != FILE_ACCESS
             for node in ast.walk(ast.parse(file.read_text(), str(file))) if is_path_only_call(node)]

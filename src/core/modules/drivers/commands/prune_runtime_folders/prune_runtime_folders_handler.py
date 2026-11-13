@@ -1,5 +1,4 @@
 from engine.file.file_access import FileAccess
-import shutil
 
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -32,7 +31,7 @@ class PruneRuntimeFoldersHandler(Handler[PruneRuntimeFolders, int]):
         folder = self.home.folder / "runtime" / FILE_SCAN_FOLDER
         stale = [state for state in FileAccess.iterdir(folder) if self.is_old(FileAccess.stat(state).st_mtime)] if FileAccess.is_dir(folder) else []
         for state in stale:
-            shutil.rmtree(state, ignore_errors=True)
+            FileAccess.rmtree(state, ignore_errors=True)
         return len(stale)
 
     def pruned_terminal_logs(self) -> int:

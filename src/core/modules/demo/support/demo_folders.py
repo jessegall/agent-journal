@@ -1,7 +1,6 @@
 from engine.time.clock import Clock
 from engine.file.file_access import FileAccess
 import os
-import shutil
 import signal
 import tempfile
 from collections.abc import Sequence
@@ -28,7 +27,7 @@ class DemoFolders:
             if pid is not None and age_seconds > DEMO_LIFE_SECONDS:
                 os.kill(pid, signal.SIGTERM)
             if pid is None and age_seconds > START_SECONDS:
-                shutil.rmtree(folder, ignore_errors=True)
+                FileAccess.rmtree(folder, ignore_errors=True)
                 removed += 1
         return removed
 

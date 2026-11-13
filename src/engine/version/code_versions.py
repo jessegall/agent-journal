@@ -2,7 +2,6 @@ from engine.file.file_access import FileAccess
 import fnmatch
 import hashlib
 import os
-import shutil
 from pathlib import Path
 
 from engine.time.clock import Clock
@@ -53,7 +52,7 @@ class CodeVersions:
         tag = self.tag(source)
         if not FileAccess.is_dir(self.version(tag)):
             partial = self.version(tag + PARTIAL_VERSION)
-            shutil.rmtree(partial, ignore_errors=True)
+            FileAccess.rmtree(partial, ignore_errors=True)
             FileAccess.mkdir(self.folder, parents=True, exist_ok=True)
             self.remove_stale_partials(clock)
             CodeCopy(source, self.home).write(partial)
@@ -63,7 +62,7 @@ class CodeVersions:
     def remove_stale_partials(self, clock: Clock) -> None:
         for partial in FileAccess.glob(self.folder, f"*{PARTIAL_VERSION}"):
             if clock.epoch_seconds() - FileAccess.stat(partial).st_mtime > STALE_PARTIAL_SECONDS:
-                shutil.rmtree(partial, ignore_errors=True)
+                FileAccess.rmtree(partial, ignore_errors=True)
 
     def switch(self, tag: str) -> None:
         if not FileAccess.is_dir(self.version(tag)):
@@ -81,7 +80,7 @@ class CodeVersions:
             return self.link.resolve().name
         if not FileAccess.is_dir(self.link):
             return ""
-        shutil.rmtree(self.version(FIRST_VERSION), ignore_errors=True)
+        FileAccess.rmtree(self.version(FIRST_VERSION), ignore_errors=True)
         FileAccess.mkdir(self.folder, parents=True, exist_ok=True)
         FileAccess.rename(self.link, self.version(FIRST_VERSION))
         return FIRST_VERSION
@@ -90,7 +89,7 @@ class CodeVersions:
         kept = {self.link.resolve().name, FileAccess.read(self.previous_file) if FileAccess.is_file(self.previous_file) else ""}
         for version in FileAccess.iterdir(self.folder):
             if FileAccess.is_dir(version) and version.suffix != PARTIAL_VERSION and version.name not in kept:
-                shutil.rmtree(version)
+                FileAccess.rmtree(version)
 
     def install(self, source: Path, clock: Clock) -> None:
         if FileAccess.is_symlink(self.link):

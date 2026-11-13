@@ -49,7 +49,7 @@ class ModuleAddition:
             else:
                 FileAccess.write(self.home.module_list, saved_list)
             if FileAccess.exists(target):
-                shutil.rmtree(target)
+                FileAccess.rmtree(target)
             for name in tuple(sys.modules):
                 if name == source.name or name.startswith(source.name + "."):
                     del sys.modules[name]

@@ -5,7 +5,6 @@ from engine.skill.skill_declaration import SKILL_FILE
 from core.modules.skills.support.skill_catalogue import PLUGIN_KEY, SkillCatalogue
 from core.modules.skills.support.skill_projects import SkillProjects
 from pathlib import Path
-import shutil
 
 
 class PluginSkillRemoval:
@@ -26,4 +25,4 @@ class PluginSkillRemoval:
         if FileAccess.is_symlink(folder):
             FileAccess.unlink(folder)
             return
-        shutil.rmtree(folder)
+        FileAccess.rmtree(folder)

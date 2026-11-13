@@ -1,6 +1,5 @@
 from engine.file.file_access import FileAccess
 import codecs
-import shutil
 import os
 from collections.abc import Iterator
 from pathlib import Path
@@ -339,7 +338,7 @@ class OutputFolder:
         return size, lines
 
     def remove(self, process_id: int) -> None:
-        shutil.rmtree(self.home.folder / FOLDER_NAME / str(process_id), ignore_errors=True)
+        FileAccess.rmtree(self.home.folder / FOLDER_NAME / str(process_id), ignore_errors=True)
 
     def read_mark(self, process_id: int, mark: str) -> str:
         path = self.home.folder / FOLDER_NAME / str(process_id) / READS_FILE

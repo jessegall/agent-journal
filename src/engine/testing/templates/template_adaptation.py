@@ -1,6 +1,5 @@
 import dataclasses
 import pickle
-import shutil
 from pathlib import Path
 
 from engine.database.database_text_replacement import DatabaseTextReplacement
@@ -30,7 +29,7 @@ class TemplateAdaptation:
 
     def adapted(self, template: Path, adapted: Path) -> None:
         builder = self.builder_name(template)
-        shutil.rmtree(adapted, ignore_errors=True)
+        FileAccess.rmtree(adapted, ignore_errors=True)
         FileAccess.copytree(template, adapted)
         for database in FileAccess.rglob(adapted, "*.db"):
             DatabaseTextReplacement(database).replace(builder, self.checkout)

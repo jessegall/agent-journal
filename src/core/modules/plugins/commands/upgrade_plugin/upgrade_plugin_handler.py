@@ -1,4 +1,3 @@
-import shutil
 from pathlib import Path
 
 from engine.process.plugin_script_processes import PluginScriptProcesses
@@ -67,17 +66,17 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
 
     def replaced(self, manifest: PluginManifest, source: Path, code: Path) -> None:
         new_code, old_code = code.with_name(code.name + NEW_SUFFIX), code.with_name(code.name + OLD_SUFFIX)
-        shutil.rmtree(new_code, ignore_errors=True)
+        FileAccess.rmtree(new_code, ignore_errors=True)
         try:
             FileAccess.copytree(source, new_code, ignore=EXCLUDED_NAMES)
             self.steps.run_setup(manifest, new_code)
         except Exception:
-            shutil.rmtree(new_code, ignore_errors=True)
+            FileAccess.rmtree(new_code, ignore_errors=True)
             raise
-        shutil.rmtree(old_code, ignore_errors=True)
+        FileAccess.rmtree(old_code, ignore_errors=True)
         FileAccess.rename(code, old_code)
         FileAccess.rename(new_code, code)
-        shutil.rmtree(old_code, ignore_errors=True)
+        FileAccess.rmtree(old_code, ignore_errors=True)
 
     def handle(self, command: UpgradePlugin, context: Context) -> PluginUpgrade:
         plugin = self.plugins.find_name(command.name)
