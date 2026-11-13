@@ -140,3 +140,8 @@ def story_git_choice(request: pytest.FixtureRequest) -> Generator[None]:
     token = REAL_GIT.set(request.node.get_closest_marker(REAL_GIT_MARK) is not None)
     yield
     REAL_GIT.reset(token)
+
+
+@pytest.fixture(autouse=True)
+def no_built_listener_sets() -> None:
+    ListenerSet.built_sets.clear()

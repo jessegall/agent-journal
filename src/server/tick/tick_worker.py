@@ -2,7 +2,7 @@ import queue
 import threading
 from collections.abc import Callable
 
-from engine.ticker.tick_handler import TickHandler
+from server.tick.queued_tick_handler import QueuedTickHandler
 from server.work.round_container import RoundContainer
 
 
@@ -10,7 +10,7 @@ class TickWorker:
     """One of the ticker's worker threads: it takes due handlers from the queue it shares with the other workers
     and runs each on the container it keeps for its life, which it closes from its own thread when it stops."""
 
-    def __init__(self, name: str, handlers: "queue.Queue[TickHandler]", handler_runner: Callable[[TickHandler, RoundContainer], None], containers: RoundContainer) -> None:
+    def __init__(self, name: str, handlers: "queue.Queue[QueuedTickHandler]", handler_runner: Callable[[QueuedTickHandler, RoundContainer], None], containers: RoundContainer) -> None:
         self.handlers, self.handler_runner, self.containers = handlers, handler_runner, containers
         self.thread = threading.Thread(target=self.loop, name=name, daemon=True)
 
@@ -26,7 +26,7 @@ class TickWorker:
     def run_handlers(self) -> None:
         while True:
             try:
-                handler = self.handlers.get()
+                queued = self.handlers.get()
             except queue.ShutDown:
                 return
-            self.handler_runner(handler, self.containers)
+            self.handler_runner(queued, self.containers)

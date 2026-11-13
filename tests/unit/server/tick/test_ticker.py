@@ -5,6 +5,7 @@ from engine.journal.journal_home import JournalHome
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from server.tick.ticker import Ticker
+from server.tick.queued_tick_handler import QueuedTickHandler
 from server.work.round_container import RoundContainer
 
 TIMEOUT_SECONDS = 10.0
@@ -55,8 +56,8 @@ def handler(name: str, run, starts_immediately: bool = False) -> TickHandler:
     return TickHandler(TickInterval(seconds=INTERVAL_SECONDS), run, name, starts_immediately)
 
 
-def ticker(tmp_path, handlers: list[TickHandler], clock: SampleClock, workers: int = 3) -> Ticker:
-    return Ticker(JournalHome(tmp_path), handlers, lambda: None, clock, containers=SampleRoundContainer, workers=workers)
+def ticker(tmp_path, handlers: list[TickHandler], clock: SampleClock) -> Ticker:
+    return Ticker(JournalHome(tmp_path), handlers, lambda: None, clock, containers=SampleRoundContainer)
 
 
 def test_due_handlers_are_queued_not_started_on_new_threads(tmp_path):
@@ -96,8 +97,8 @@ def test_a_slow_handler_occupies_one_worker_the_others_keep_running(tmp_path):
     clock, blocked = SampleClock(), BlockedHandler()
     handler_runs = [threading.Event(), threading.Event()]
     handlers = [handler("slow", blocked), handler("first", lambda container: handler_runs[0].set()), handler("second", lambda container: handler_runs[1].set())]
-    ticks = ticker(tmp_path, handlers, clock, workers=3)
-    ticks.start()
+    ticks = ticker(tmp_path, handlers, clock)
+    ticks.start(3)
     clock.now = INTERVAL_SECONDS
     ticks.tick()
     assert blocked.started.wait(TIMEOUT_SECONDS) and all(event.wait(TIMEOUT_SECONDS) for event in handler_runs)
@@ -123,8 +124,8 @@ def test_a_handler_error_is_reported_and_the_worker_goes_on(tmp_path):
     def failing(container: Container) -> None:
         raise SampleHandlerError()
 
-    ticks = ticker(tmp_path, [handler("failing", failing), handler("next", lambda container: handler_run.set())], clock, workers=1)
-    ticks.start()
+    ticks = ticker(tmp_path, [handler("failing", failing), handler("next", lambda container: handler_run.set())], clock)
+    ticks.start(1)
     clock.now = INTERVAL_SECONDS
     ticks.tick()
     assert handler_run.wait(TIMEOUT_SECONDS)
@@ -139,3 +140,42 @@ def test_stop_ends_every_worker(tmp_path):
     ticks.stop(TIMEOUT_SECONDS)
     assert not any(worker.thread.is_alive() for worker in ticks.workers)
     assert all(worker.containers.is_closed for worker in ticks.workers)
+
+
+def late_lines(tmp_path) -> list[str]:
+    log = JournalHome(tmp_path).system_log
+    return [line for line in log.read_text().splitlines() if "the ticker could not keep up" in line] if log.exists() else []
+
+
+def test_a_handler_that_waits_longer_than_its_interval_is_named_in_one_log_line(tmp_path):
+    clock = SampleClock()
+    ticks = ticker(tmp_path, [], clock)
+    clock.now = INTERVAL_SECONDS + 1
+    ticks.log_late_start(QueuedTickHandler(handler("output reading", lambda container: None), 0.0))
+    lines = late_lines(tmp_path)
+    assert len(lines) == 1 and "output reading waited 61 s for a worker (interval 60 s)" in lines[0]
+
+
+def test_a_handler_that_waits_less_is_not_named(tmp_path):
+    clock = SampleClock()
+    ticks = ticker(tmp_path, [], clock)
+    clock.now = INTERVAL_SECONDS - 1
+    ticks.log_late_start(QueuedTickHandler(handler("output reading", lambda container: None), 0.0))
+    assert late_lines(tmp_path) == []
+
+
+def test_the_line_repeats_at_most_once_per_five_minutes(tmp_path):
+    clock = SampleClock()
+    ticks = ticker(tmp_path, [], clock)
+    late = handler("output reading", lambda container: None)
+    for queued_seconds in (0.0, 100.0, 200.0, 400.0):
+        clock.now = queued_seconds + 2 * INTERVAL_SECONDS
+        ticks.log_late_start(QueuedTickHandler(late, queued_seconds))
+    assert len(late_lines(tmp_path)) == 2
+
+
+def test_worker_count_follows_the_setting(tmp_path):
+    ticks = ticker(tmp_path, [], SampleClock())
+    ticks.start(5)
+    assert sum(1 for worker in ticks.workers if worker.thread.is_alive()) == 5
+    ticks.stop(TIMEOUT_SECONDS)

@@ -211,14 +211,15 @@ def main(argv: list[str]) -> int:
             plugin_services.follow()
         except Exception as error:
             files.log_line(f"the plugin services could not be started: {error}", LogLevel.ERROR)
-    server.context.request_trace.refresh(synced_database_container(home, hook_database.databases[0]))
+    settings_container = synced_database_container(home, hook_database.databases[0])
+    server.context.request_trace.refresh(settings_container)
     listener_thread.wake()
     listener_thread.start()
     urgent_thread.start()
     if not viewer.closed_doors.closes_service(ClosedService.PLUGIN_SCRIPTS):
         plugin_thread.start()
     stop_thread.start()
-    ticker.start()
+    ticker.start(Ticker.worker_count(settings_container))
     ticker_thread.start()
     viewer.start()
     files.clear_restart()

@@ -1,5 +1,3 @@
-import os
-
 import pytest
 
 from engine.container.container import Container
@@ -20,7 +18,8 @@ from tests.stories.core.modules.assignments.support.assignable_samples import DE
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.fixtures import StartedPlanTask, UserJoined
 from tests.stories.server.support.server_client import server_story
-from tests.stories.support.connection_counts import counted_connections
+from engine.testing.stories.counted_connections import CountedConnections
+from engine.testing.stories.database_file_copy import replace_with_copy
 
 TICK_COUNT = 10
 JOIN_SECONDS = 30.0
@@ -49,7 +48,7 @@ class RecordedRound(RoundWork):
         OrdinaryListenerWork().run(container)
 
 
-class TaskTitleReading:
+class TaskTitleReader:
     def __init__(self) -> None:
         self.titles: list[str] = []
 
@@ -70,7 +69,7 @@ def test_ten_ticks_open_no_connection(new_story):
     ticker = Ticker(story.home, Ticker.module_handlers(ModuleFinder(story.home)), lambda: None, clock)
     ticker.start()
     ticks(ticker, clock, 1)
-    with counted_connections(story.home.database) as connections:
+    with CountedConnections(story.home) as connections:
         ticks(ticker, clock, TICK_COUNT)
     ticker.stop(JOIN_SECONDS)
     story.expected(connections.count == 0, f"ten ticks opened {connections.count} connections")
@@ -79,14 +78,14 @@ def test_ten_ticks_open_no_connection(new_story):
 def test_a_tick_handler_sees_a_task_changed_between_two_ticks(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success('task make "First title" --environment main')
-    clock, reading = TickClock(), TaskTitleReading()
-    ticker = Ticker(story.home, [TickHandler(TickInterval(seconds=1), reading, "task title")], lambda: None, clock, workers=1)
-    ticker.start()
+    clock, title_reader = TickClock(), TaskTitleReader()
+    ticker = Ticker(story.home, [TickHandler(TickInterval(seconds=1), title_reader, "task title")], lambda: None, clock)
+    ticker.start(1)
     ticks(ticker, clock, 1)
     story.expect_success('task edit 1 --title "Second title"')
     ticks(ticker, clock, 1)
     ticker.stop(JOIN_SECONDS)
-    story.expected(reading.titles == ["First title", "Second title"], f"the handler read {reading.titles}")
+    story.expected(title_reader.titles == ["First title", "Second title"], f"the handler read {title_reader.titles}")
 
 
 def test_a_listener_round_starts_with_nothing_prepared(new_story):
@@ -132,14 +131,12 @@ def test_a_broken_connection_is_rebuilt_with_a_logged_reason(new_story):
     story.expected(work.containers[-1] is not work.containers[0] and "kept container rebuilt: listener thread" in log, f"containers {len(work.containers)}")
 
 
-def test_a_replaced_database_is_picked_up(new_story, tmp_path):
+def test_a_replaced_database_is_picked_up(new_story):
     story = new_story(fixture=UserJoined)
     work = RecordedRound()
     journal_round = JournalRound(story.home, "listener thread", work, KeptRoundContainer(story.home))
     journal_round.run()
-    copy = tmp_path / "restored.sqlite"
-    work.containers[0].get(Database).write_backup(copy)
-    os.replace(copy, story.home.database)
+    replace_with_copy(story.home)
     journal_round.run()
     journal_round.close()
     story.expected(work.containers[1] is not work.containers[0] and "kept container rebuilt: database file replaced" in story.home.system_log.read_text(), "the round kept its container")
@@ -147,7 +144,7 @@ def test_a_replaced_database_is_picked_up(new_story, tmp_path):
 
 def test_a_server_stop_closes_every_kept_connection(new_story):
     story = new_story(fixture=StartedPlanTask)
-    with counted_connections(story.home.database) as connections:
+    with CountedConnections(story.home) as connections:
         with server_story(story) as running:
             running.run_as(lines.TASK_CLOSE, SESSION)
             running.expect_eventually(lines.SECOND_TASK_DETAILS, "state: started")

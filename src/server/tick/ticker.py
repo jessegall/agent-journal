@@ -12,9 +12,17 @@ from server.work.kept_round_container import KeptRoundContainer
 from server.work.round_container import RoundContainer
 from server.tick.tick_handler_work import TickHandlerWork
 from server.tick.tick_worker import TickWorker
+from server.tick.queued_tick_handler import QueuedTickHandler
+from engine.enums.log_level import LogLevel
+from engine.log.system_log_writer import SystemLogWriter
+from engine.time.clock import Clock
+from core.modules.processes.models.enums.process_setting import ProcessSetting
+from core.modules.processes.support.process_settings import ProcessSettings
+from engine.container.container import Container
 from server.hook.server_queue import ServerQueue
 
-TICK_WORKER_COUNT = 3
+TICK_WORKER_COUNT = ProcessSetting.TICK_WORKERS.value.default
+LATE_LINE_SECONDS = 300.0
 
 
 class Ticker:
@@ -24,23 +32,30 @@ class Ticker:
     under its name and stops nothing. The handlers are the modules' declared ones and those registered."""
 
     def __init__(self, home: JournalHome, handlers: Sequence[TickHandler], wake_listeners: Callable[[], None], seconds: Callable[[], float] = time.monotonic, queue: ServerQueue | None = None,
-                 containers: Callable[[JournalHome], RoundContainer] = KeptRoundContainer, workers: int = TICK_WORKER_COUNT) -> None:
+                 containers: Callable[[JournalHome], RoundContainer] = KeptRoundContainer) -> None:
         self.home, self.wake_listeners, self.seconds = home, wake_listeners, seconds
         self.queue = queue
         self.due = DueTickHandlers(handlers, seconds())
-        self.waiting_handlers: "queue_module.Queue[TickHandler]" = queue_module.Queue()
+        self.waiting_handlers: "queue_module.Queue[QueuedTickHandler]" = queue_module.Queue()
         self.busy: set[str] = set()
         self.labels_changed = threading.Condition()
-        self.workers = [TickWorker(f"tick worker {number}", self.waiting_handlers, self.run, containers(home)) for number in range(1, workers + 1)]
+        self.late_logged_seconds: dict[str, float] = {}
+        self.containers = containers
+        self.workers: list[TickWorker] = []
 
     @staticmethod
     def module_handlers(finder: ModuleFinder) -> list[TickHandler]:
         return [handler for module in finder.modules() for handler in module.tick_handlers]
 
+    @staticmethod
+    def worker_count(container: Container) -> int:
+        return container.get(ProcessSettings).integer(ProcessSetting.TICK_WORKERS)
+
     def register(self, handler: TickHandler) -> None:
         self.due.register(handler)
 
-    def start(self) -> None:
+    def start(self, worker_count: int = TICK_WORKER_COUNT) -> None:
+        self.workers = [TickWorker(f"tick worker {number}", self.waiting_handlers, self.run, self.containers(self.home)) for number in range(1, worker_count + 1)]
         for worker in self.workers:
             worker.start()
 
@@ -56,11 +71,13 @@ class Ticker:
         with self.labels_changed:
             self.busy.add(handler.label)
         try:
-            self.waiting_handlers.put(handler)
+            self.waiting_handlers.put(QueuedTickHandler(handler, self.seconds()))
         except queue_module.ShutDown:
             self.release_label(handler)
 
-    def run(self, handler: TickHandler, containers: RoundContainer) -> None:
+    def run(self, queued: QueuedTickHandler, containers: RoundContainer) -> None:
+        self.log_late_start(queued)
+        handler = queued.handler
         journal_round = JournalRound(self.home, handler.label, TickHandlerWork(handler, self.wake_listeners), containers, self.queue)
         try:
             journal_round.run()
@@ -68,6 +85,17 @@ class Ticker:
             journal_round.report(error)
         finally:
             self.release_label(handler)
+
+    def log_late_start(self, queued: QueuedTickHandler) -> None:
+        current_seconds, label = self.seconds(), queued.handler.label
+        if not queued.has_waited_past_interval(current_seconds):
+            return
+        with self.labels_changed:
+            if label in self.late_logged_seconds and current_seconds - self.late_logged_seconds[label] < LATE_LINE_SECONDS:
+                return
+            self.late_logged_seconds[label] = current_seconds
+        SystemLogWriter(self.home, Clock()).write(LogLevel.INFORMATION, f"the ticker could not keep up: {label} waited {queued.waited_seconds(current_seconds):.0f} s for a worker"
+                                                                         f" (interval {queued.handler.interval.seconds} s)")
 
     def release_label(self, handler: TickHandler) -> None:
         with self.labels_changed:
