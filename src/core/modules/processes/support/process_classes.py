@@ -1,4 +1,7 @@
+from collections.abc import Sequence
 from dataclasses import replace
+
+from engine.enums.command_category import CommandCategory
 
 from engine.enums.agent_role import AgentRole
 from engine.enums.execution_source import ExecutionSource
@@ -24,13 +27,21 @@ class ProcessClasses:
             plugin_class = self.classes.match(ExecutionSubject(ExecutionSource.PLUGIN_PROGRAM, starter, category=command.category, plugin_name=command.plugin,
                                                               plugin_kind=command.run_name, line=command.line))
             return replace(plugin_class, name=f"{command.plugin} {command.run_name}") if command.run_name and not plugin_class.plugin else plugin_class
-        subjects = [ExecutionSubject(ExecutionSource.SHELL_LINE, starter, category=part.category, line=command.line) for part in command.parts]
-        return self.classes.for_line(subjects or [ExecutionSubject(ExecutionSource.SHELL_LINE, starter, category=command.category, line=command.line)])
+        return self.for_categories([part.category for part in command.parts] or [command.category], command.line, agent)
+
+    # the class of an agent's shell line by the categories of its parts: its longest lane and highest cost
+    def for_categories(self, categories: Sequence[CommandCategory], line: str, agent: Agent) -> ExecutionClass:
+        starter = self.agent_starter(agent)
+        return self.classes.for_line([ExecutionSubject(ExecutionSource.SHELL_LINE, starter, category=category, line=line) for category in categories])
 
     @staticmethod
     def starter(command: StartProcess, agent: Agent) -> ExecutionStarter:
         if command.plugin:
             return ExecutionStarter(StarterType.PLUGIN, plugin_name=command.plugin)
+        return ProcessClasses.agent_starter(agent)
+
+    @staticmethod
+    def agent_starter(agent: Agent) -> ExecutionStarter:
         if agent.role == AgentRole.MAIN:
             return ExecutionStarter(StarterType.MAIN_AGENT, agent_id=agent.id)
         return ExecutionStarter(StarterType.HELPER, agent_id=agent.id, agent_role=str(agent.role))
