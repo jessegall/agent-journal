@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "fileMatches": "(^|/)(src|tests)/"
+            },
+            {
+                "textMatches": "\\bJOURNAL_PLUGIN_TOKEN\\b"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/engine/process/plugin_script_processes\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "plugin-token-variable-named-twice",
+        "description": "The name of the variable that carries a plugin script's token is written again outside the engine, so a rename of it misses this copy.",
+        "rule": "Import PLUGIN_TOKEN_VARIABLE from engine.process.plugin_script_processes; it is the one place that names the variable.",
+        "skill": "python/fix-at-the-source"
+    }
+}
