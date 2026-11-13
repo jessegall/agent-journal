@@ -97,7 +97,6 @@ src/core/modules/messages/listeners/tagged_image_hold_listener.py:every open blo
 src/core/modules/messages/queries/message_query.py:a turn is judged on every reply the agent wrote in it
 src/core/modules/messages/queries/message_query.py:every recent message of the agent is compared, newest first
 src/core/modules/messages/rules/message_read_rule.py:reading the unread list marks every delivered unread message as read
-src/core/modules/messages/rules/unanswered_message_rule.py:every message of a user read since the agent last wrote waits for an answer
 src/core/modules/messages/support/message_replies.py:a message counts as answered by any reply the agent wrote to it
 src/core/modules/messages/support/unread_messages.py:every unread message of a user is shared out to the agents it addresses
 src/core/modules/plan_reviews/support/plan_rounds.py:the review rounds of a plan count every report filed on it

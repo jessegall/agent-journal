@@ -15,11 +15,11 @@ def read_rows(story, line: str) -> list[dict[str, object]]:
 @pytest.fixture
 def multi_agent_story(new_story):
     story = new_story(SAMPLES, fixture=SampleSuiteChoice)
-    for number in range(WORKER_ROWS):
-        story.run(f"agent start worker-{number} claude worker --environment main")
     story.ended_main_id = story.new_row_id("agent start s-old claude main --environment main")
     story.run(f"agent end {story.ended_main_id}")
     story.main_id = story.new_row_id("agent start s-new claude main --environment main")
+    for number in range(WORKER_ROWS):
+        story.run(f"agent start worker-{number} claude worker --environment main")
     story.run("agent start s-codex codex worker --environment main")
     return story
 

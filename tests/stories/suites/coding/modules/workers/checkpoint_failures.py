@@ -100,7 +100,7 @@ def test_182_a_failed_own_test_goes_to_the_task_whose_proof_names_the_failing_pa
     reach = rows(worker, REACHES)[0]
     expect_returned(worker, 1)
     story.expect_text("proof show 1", "state: checked", actor=story.agent)
-    story.expect_rows(reach["failed_task_ids"] == "1", f"Output {output_id(worker, BUILD_TEST)}" in " | ".join(failure_lines(worker)), detail=f"{reach} | {worker.worker_lines()}")
+    story.expect_rows(reach["failed_task_ids"] == "1", f"output {output_id(worker, BUILD_TEST)}" in " | ".join(failure_lines(worker)), detail=f"{reach} | {worker.worker_lines()}")
 
 
 def test_183_a_failure_that_names_no_task_goes_to_the_task_completed_last_and_the_merger_gets_a_line(running_checkpoint, monkeypatch):

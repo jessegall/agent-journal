@@ -67,10 +67,13 @@ class AgentRows:
         environment_id = self.scopes.environment_id
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
             running = self.agents.running().oldest()
-            agents = self.kept.read(running, lambda: tuple(running.every_row(RUNNING_AGENTS_REASON)), name="agents.running")
-        agents = tuple(agent for agent in agents if environment_id is None or agent.environment_id == environment_id)
-        agents = tuple(agent for agent in agents if role is None or agent.role == role)
-        return tuple(agent for agent in agents if parent_id is None or agent.parent_id == parent_id)
+            if environment_id is not None:
+                running = running.filter(environment_id=environment_id)
+            if role is not None:
+                running = running.filter(role=role)
+            if parent_id is not None:
+                running = running.filter(parent_id=parent_id)
+            return self.kept.read(running, lambda: tuple(running.every_row(RUNNING_AGENTS_REASON)), name=f"agents.running.{environment_id}.{role}.{parent_id}")
 
     def running_main_agents(self) -> tuple[Agent, ...]:
         mains = self.agents.running().filter(role=AgentRole.MAIN)
