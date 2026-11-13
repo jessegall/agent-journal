@@ -4,9 +4,10 @@ from engine.container.container import Container
 from engine.database.database import Database
 from engine.journal.journal_home import JournalHome
 from server.work.kept_round_container import background_container
+from server.work.round_container import RoundContainer
 
 
-class FreshRoundContainer:
+class PerRoundContainer(RoundContainer):
     """A container built for one round and closed when the round ends, for a round that runs once or a tick
     handler's round."""
 

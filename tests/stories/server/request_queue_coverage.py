@@ -7,6 +7,7 @@ from server.endpoints.hook_endpoint import HookEndpoint
 from server.enums.queue_priority import QueuePriority
 from server.hook.queue_request import QueueRequest
 from server.work.journal_round import JournalRound
+from server.work.per_round_container import PerRoundContainer
 from server.work.round_work import RoundWork
 from server.viewer.windows_route import WindowsRoute
 from tests.stories.server.developer_hook_requests import recording_server
@@ -121,7 +122,7 @@ def test_a_slow_round_is_listed_in_the_inspector_and_a_cli_line_is_not_queued_be
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
     work = BlockedRound()
     with ThreadPoolExecutor(1) as pool:
-        running = pool.submit(JournalRound(server.story.home, "plugin listener thread", work, queue=queue).run)
+        running = pool.submit(JournalRound(server.story.home, "plugin listener thread", work, PerRoundContainer(server.story.home), queue).run)
         try:
             server.story.expect_rows(work.entered.wait(ROUND_START_LIMIT_SECONDS))
             with queue.cli_turn(QueueRequest.started("CLI", "task list")):
@@ -139,5 +140,5 @@ def test_a_tick_round_does_not_wait_behind_a_running_hook(recording_server):
     work = BlockedRound()
     work.release.set()
     with server.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, 1):
-        JournalRound(server.story.home, "output reading", work, queue=queue).run()
+        JournalRound(server.story.home, "output reading", work, PerRoundContainer(server.story.home), queue).run()
         server.story.expect_rows(work.entered.is_set())

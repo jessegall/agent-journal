@@ -1,4 +1,3 @@
-import json
 import os
 import sqlite3
 
@@ -7,7 +6,6 @@ import pytest
 from engine.container.round_state import RoundState
 from engine.database.database import Database
 from engine.journal.journal_home import JournalHome
-from engine.module.journal_container import sync_modules
 from server.work.kept_round_container import KeptRoundContainer
 
 
@@ -17,15 +15,6 @@ class CountedRoundState(RoundState):
 
     def reset(self) -> None:
         self.reset_count += 1
-
-
-@pytest.fixture
-def home(tmp_path) -> JournalHome:
-    home = JournalHome(tmp_path)
-    home.module_list.parent.mkdir(parents=True, exist_ok=True)
-    home.module_list.write_text(json.dumps([]))
-    sync_modules(home)
-    return home
 
 
 @pytest.fixture
@@ -74,10 +63,11 @@ def test_a_new_registry_version_rebuilds_once(home, connections):
     kept = KeptRoundContainer(home)
     first = kept.round_container()
     new_registry_version(home, "2099-01-01T00:00:00")
+    connection_count = len(connections)
     second = kept.round_container()
     third = kept.round_container()
     assert second is not first and third is second
-    assert len(connections) == 3
+    assert len(connections) == connection_count + 1
     kept.close()
 
 

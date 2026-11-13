@@ -12,6 +12,7 @@ from engine.journal.journal_home import JournalHome
 from engine.log.system_log_writer import SystemLogWriter
 from engine.module.journal_container import synced_database_container
 from engine.time.clock import Clock
+from server.work.round_container import RoundContainer
 
 BACKGROUND_BUSY_TIMEOUT_SECONDS = 60.0
 PRIMARY_ERROR_CODE_MASK = 0xFF
@@ -28,7 +29,7 @@ def background_container(home: JournalHome, turns: WriteTurns | None = None) -> 
         raise
 
 
-class KeptRoundContainer:
+class KeptRoundContainer(RoundContainer):
     """The container one background thread keeps for its life: one connection, one registry, one set of
     services. Each round resets the RoundState services; a new registry, a replaced database file or a
     broken connection builds it once more."""

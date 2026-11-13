@@ -43,6 +43,7 @@ from server.context.server_context import ServerContext
 from server.hook.hook_database import HookDatabase
 from server.enums.queue_priority import QueuePriority
 from server.work.journal_round import JournalRound
+from server.work.kept_round_container import KeptRoundContainer
 from server.work.listeners.listener_thread import ListenerThread
 from server.work.listeners.listener_wake import ListenerWake
 from server.work.listeners.listener_work import ListenerWork
@@ -369,8 +370,8 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
         assert files.acquire_lock(), "a server already holds the lock of this journal"
         files.clear_leftover_socket()
         hook_database = HookDatabase(home, running_hooks_count=STORY_RUNNING_HOOKS_COUNT)
-        listener_round = JournalRound(home, "listener thread", ListenerWork(), queue=hook_database.queue)
-        listener_thread = ListenerThread(listener_round.run, listener_round.report)
+        listener_round = JournalRound(home, "listener thread", ListenerWork(), KeptRoundContainer(home), hook_database.queue)
+        listener_thread = ListenerThread(listener_round.run, listener_round.report, stop_callback=listener_round.close)
         phones = PhoneSessions(home, listener_thread)
         login = ViewerLogin(phones, ShareSessions(phones.journal_output, clock))
         reported = ReportedFindings()
