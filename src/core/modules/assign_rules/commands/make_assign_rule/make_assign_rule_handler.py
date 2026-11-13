@@ -4,6 +4,7 @@ from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.assign_rules.commands.make_assign_rule.make_assign_rule import MakeAssignRule
+from core.modules.assign_rules.support.rule_revision import RuleRevision
 from core.modules.assign_rules.models.assign_rule import ENVIRONMENT_COLUMN, AssignRule
 from core.modules.assign_rules.support.rule_conditions import RuleConditions
 from core.modules.assign_rules.support.rule_limits import RuleLimits
@@ -15,10 +16,11 @@ class MakeAssignRuleHandler(Handler[MakeAssignRule, AssignRule]):
 
     command = MakeAssignRule
 
-    def __init__(self, queries: Queries, repository: Repository, positions: Positions, conditions: RuleConditions) -> None:
-        self.queries, self.repository, self.positions, self.conditions = queries, repository, positions, conditions
+    def __init__(self, queries: Queries, repository: Repository, positions: Positions, conditions: RuleConditions, revision: RuleRevision) -> None:
+        self.queries, self.repository, self.positions, self.conditions, self.revision = queries, repository, positions, conditions, revision
 
     def handle(self, command: MakeAssignRule, context: Context) -> AssignRule:
+        self.revision.check(command.revision)
         if context.environment_id is None:
             raise Refusal("a rule belongs to an environment", "add --environment <name>")
         RuleLimits.check_condition_count(len(command.conditions))

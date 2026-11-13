@@ -14,7 +14,8 @@ from core.modules.tasks.models.task_tag import TAG_WORD
 
 @dataclass(frozen=True)
 class ConditionLine:
-    """One condition of a rule as a person writes it, `<field> <operator> <value>`, checked against the limits."""
+    """One condition of a rule as a person writes it, `<field> <operator> <value>`, checked against the
+    limits."""
 
     field: ConditionField
     operator: ConditionOperator

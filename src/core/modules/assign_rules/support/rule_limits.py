@@ -8,7 +8,8 @@ MOST_PHRASE_WORDS = 5
 
 
 class RuleLimits:
-    """The limits of the assign rules: rules in an environment, conditions in a rule, and the words a condition looks for."""
+    """The limits of the assign rules: rules in an environment, conditions in a rule, and the words a
+    condition looks for."""
 
     @staticmethod
     def check_rule_count(count: int) -> None:

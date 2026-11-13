@@ -11,8 +11,8 @@ REVISION_FIELD = "revision"
 
 @dataclass(frozen=True)
 class EditAssignRule(EditCommand[AssignRule]):
-    """Changes a rule's target, or replaces all its conditions; a field left as None is not changed. A new target
-    clears the agent, program and model the command does not give."""
+    """Changes a rule's target, or replaces all its conditions; a field left as None is not changed. A new
+    target clears the agent, program and model the command does not give."""
 
     target: RuleTarget | None = None
     agent_id: int | None = None

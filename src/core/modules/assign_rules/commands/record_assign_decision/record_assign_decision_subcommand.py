@@ -8,8 +8,8 @@ from core.modules.assign_rules.models.assign_decision import AssignDecision
 
 
 class RecordAssignDecisionSubcommand(Subcommand[RecordAssignDecision, tuple[AssignDecision, ...]]):
-    """`journal assign-decision record <task> [<task> ...]`: judges waiting tasks against the rules by hand, in one
-    step, and records a decision for each."""
+    """`journal assign-decision record <task> [<task> ...]`: judges waiting tasks against the rules by hand,
+    in one step, and records a decision for each."""
 
     cli_name = "assign-decision"
     name = "record"

@@ -7,8 +7,9 @@ from core.modules.assign_rules.models.assign_rule_condition import AssignRuleCon
 from core.modules.assign_rules.models.enums.decision_outcome import DecisionOutcome
 from core.modules.assign_rules.models.support.task_facts import TaskFacts
 from core.modules.assign_rules.support.assign_rules_mode import AssignRulesMode
-from core.modules.assign_rules.support.decision_batch import DecisionBatch
-from core.modules.assign_rules.support.rule_targets import RuleTargets, Usable
+from core.modules.assign_rules.support.targets.decision_batch import DecisionBatch
+from core.modules.assign_rules.support.targets.rule_targets import RuleTargets
+from core.modules.assign_rules.support.targets.usable import Usable
 from core.modules.assign_rules.support.task_facts_reader import TaskFactsReader
 from core.modules.tasks.models.task import Task
 
@@ -18,9 +19,9 @@ RULES_REASON = "a task is judged against every enabled rule of its environment"
 
 
 class AssignRules:
-    """Judges a task against the enabled rules of its environment in position order and records the one decision
-    about it: the first matching rule whose target can take the task wins, and a rule whose target cannot is skipped
-    with the reason. While the mode does not assign, the winner is recorded as a dry run."""
+    """Judges a task against the enabled rules of its environment in position order and records the one
+    decision about it: the first matching rule whose target can take the task wins, and a rule whose target
+    cannot is skipped with the reason. While the mode does not assign, the winner is recorded as a dry run."""
 
     def __init__(self, queries: Queries, facts_reader: TaskFactsReader, repository: Repository, mode: AssignRulesMode, targets: RuleTargets) -> None:
         self.queries, self.facts_reader, self.repository, self.mode, self.targets = queries, facts_reader, repository, mode, targets

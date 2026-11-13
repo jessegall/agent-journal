@@ -38,7 +38,7 @@ def test_a_kind_rule_never_picks_a_worker_of_another_environment(new_story):
     story.run(f"assign-rule make --target model --program claude --model sonnet --condition any {SECOND}", actor=story.user)
     task_id = story.new_row_id(f'task make "Second cart" {SECOND}', actor=story.user)
     decision = recorded_reason(story, task_id, SECOND)
-    story.expect_rows(decision["outcome"] == "skipped", "no worker of this kind" in decision["reason"], detail=str(decision))
+    story.expect_rows(decision["outcome"] == "skipped", "no agent runs that program and model" in decision["reason"], detail=str(decision))
 
 
 def test_a_reason_names_rules_and_fields_and_no_text_of_a_task(new_story):

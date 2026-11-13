@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from engine.enums.agent_role import AgentRole
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
@@ -8,29 +6,21 @@ from core.modules.agents.support.agent_label import AgentLabel
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.assign_rules.models.assign_rule import AssignRule
 from core.modules.assign_rules.models.enums.rule_target import RuleTarget
-from core.modules.assign_rules.support.decision_batch import DecisionBatch
+from core.modules.assign_rules.support.targets.decision_batch import DecisionBatch
+from core.modules.assign_rules.support.targets.usable import Usable
 from core.modules.assignments.models.assignment import Assignment
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.support.task_assignees import TaskAssignees
 
-KIND_AGENTS_REASON = "a kind target is chosen among every agent of the environment on its program and model"
-
-
-@dataclass(frozen=True)
-class Usable:
-    """The agent a rule's target resolves to now, or why none can take the task; for a usable agent the reason
-    notes a limit or a pause."""
-
-    actor_id: int | None
-    reason: str
+MODEL_AGENTS_REASON = "a model target is chosen among every agent of the environment on its program and model"
 
 
 class RuleTargets:
-    """Resolves a rule's target to one agent that can take a task now: the running main agent, the one agent named,
-    or an agent of the program and model named, the one with the fewest open tasks and, on a tie, the one that has
-    waited longest for a new task. The suite's own checks are reached through TaskAssignees, as AssignTask reaches
-    them, and a refusal there means that agent cannot take it."""
+    """Resolves a rule's target to one agent that can take a task now: the running main agent, the one agent
+    named, or an agent of the program and model named, the one with the fewest open tasks and, on a tie, the
+    one that has waited longest for a new task. Whether an agent takes tasks is asked of TaskAssignees, as
+    AssignTask asks it, and a refusal there means that agent cannot take it."""
 
     def __init__(self, queries: Queries, assignees: TaskAssignees, tasks: TaskQuery) -> None:
         self.queries, self.assignees, self.tasks = queries, assignees, tasks
@@ -38,9 +28,9 @@ class RuleTargets:
     def usable(self, rule: AssignRule, batch: DecisionBatch) -> Usable:
         match rule.target:
             case RuleTarget.AGENT:
-                return self.named_agent(rule, batch)
+                return self.rule_agent(rule, batch)
             case RuleTarget.MODEL:
-                return self.kind_agent(rule, batch)
+                return self.model_agent(rule, batch)
             case _:
                 return self.main_agent(rule, batch)
 
@@ -50,7 +40,7 @@ class RuleTargets:
             return Usable(None, "no main agent runs")
         return self.checked(main, rule, batch)
 
-    def named_agent(self, rule: AssignRule, batch: DecisionBatch) -> Usable:
+    def rule_agent(self, rule: AssignRule, batch: DecisionBatch) -> Usable:
         agent = None if rule.agent_id is None else self.queries.query(Agent).filter(id=rule.agent_id).first()
         if agent is None:
             return Usable(None, f"the agent of rule {rule.id} is gone")
@@ -63,29 +53,29 @@ class RuleTargets:
             return Usable(agent.id, f"limit ends at {agent.usage_limit_ends_at}")
         return usable
 
-    def kind_agent(self, rule: AssignRule, batch: DecisionBatch) -> Usable:
-        none_can = f"no worker of {rule.program} {rule.program_model} can take it now"
-        agents = [agent for agent in self.queries.query(Agent).every_row(KIND_AGENTS_REASON) if agent.role != AgentRole.MAIN and self.is_of_kind(agent, rule)]
+    def model_agent(self, rule: AssignRule, batch: DecisionBatch) -> Usable:
+        none_can = f"no agent of {rule.program} {rule.program_model} can take it now"
+        agents = [agent for agent in self.queries.query(Agent).every_row(MODEL_AGENTS_REASON) if agent.role != AgentRole.MAIN and self.runs_rule_model(agent, rule)]
         if not agents:
-            return Usable(None, f"{none_can}: no worker of this kind")
+            return Usable(None, f"{none_can}: no agent runs that program and model")
         ready = [agent for agent in agents if not agent.is_paused and agent.usage_limit_ends_at is None and self.checked(agent, rule, batch).actor_id is not None]
         if not ready:
             return Usable(None, none_can)
-        chosen = min(ready, key=lambda agent: (self.held(agent, batch), batch.last_turn(agent.id), self.last_given_at(agent, batch), agent.id))
-        return Usable(chosen.id, f"{AgentLabel.labelled(chosen).text} holds the fewest open tasks of its kind")
+        chosen = min(ready, key=lambda agent: (self.open_task_count(agent, batch), batch.last_place(agent.id), self.newest_assignment(agent, batch), agent.id))
+        return Usable(chosen.id, f"{AgentLabel.labelled(chosen).text} holds the fewest open tasks of its program and model")
 
-    def held(self, agent: Agent, batch: DecisionBatch) -> int:
-        return batch.held(agent.id, lambda: len(self.tasks.unfinished_assigned(agent.id)))
+    def open_task_count(self, agent: Agent, batch: DecisionBatch) -> int:
+        return batch.open_task_count(agent.id, lambda: len(self.tasks.unfinished_assigned(agent.id)))
 
-    def last_given_at(self, agent: Agent, batch: DecisionBatch) -> str:
-        return batch.last_given_at(agent.id, lambda: self.newest_assignment_time(agent))
+    def newest_assignment(self, agent: Agent, batch: DecisionBatch) -> str:
+        return batch.newest_assignment(agent.id, lambda: self.newest_assignment_time(agent))
 
     def newest_assignment_time(self, agent: Agent) -> str:
         newest = self.queries.query(Assignment).filter(actor_id=agent.id, subject_model=Task.model_name).newest().first()
         return "" if newest is None else newest.creation_timestamp().text
 
     @staticmethod
-    def is_of_kind(agent: Agent, rule: AssignRule) -> bool:
+    def runs_rule_model(agent: Agent, rule: AssignRule) -> bool:
         model, agent_model = rule.program_model.lower(), agent.program_model.lower()
         return agent.program.lower() == rule.program.lower() and (agent_model == model or model in agent_model.split("-"))
 
@@ -97,7 +87,7 @@ class RuleTargets:
             self.assignees.check_running(agent)
         except Refusal as refusal:
             return Usable(None, refusal.reason)
-        held = self.held(agent, batch)
-        if rule.queue_limit and held >= rule.queue_limit:
-            return Usable(None, f"{label} holds {held} of {rule.queue_limit}")
+        open_tasks = self.open_task_count(agent, batch)
+        if rule.queue_limit and open_tasks >= rule.queue_limit:
+            return Usable(None, f"{label} holds {open_tasks} of {rule.queue_limit}")
         return Usable(agent.id, "")

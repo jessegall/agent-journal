@@ -1,5 +1,7 @@
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
+from core.modules.assign_rules.commands.assign_rule_board.assign_rule_board_subcommand import AssignRuleBoardSubcommand
+from core.modules.assign_rules.commands.count_assign_rule.count_assign_rule_subcommand import CountAssignRuleSubcommand
 from core.modules.assign_rules.commands.delete_assign_rule.delete_assign_rule_handler import DeleteAssignRuleHandler
 from core.modules.assign_rules.commands.delete_assign_rule.delete_assign_rule_subcommand import DeleteAssignRuleSubcommand
 from core.modules.assign_rules.commands.edit_assign_rule.edit_assign_rule_handler import EditAssignRuleHandler
@@ -25,7 +27,8 @@ EXCLUDED_WRITES = ["make", "edit", "delete"]
 
 
 class AssignRulesModule(Module):
-    """Adds a user's standing rules that give new free tasks to the main agent, one agent or a kind of agent."""
+    """Adds a user's standing rules that give new free tasks to the main agent, one agent or the agents of one
+    program and model."""
 
     name = "journal.core.assign_rules"
     seed_reason = "a rule assigns new tasks, which the demo does not make"
@@ -36,5 +39,5 @@ class AssignRulesModule(Module):
     migrations = [AssignRulesMigration]
     handlers = [RecordAssignDecisionHandler, MakeAssignRuleHandler, EditAssignRuleHandler, MoveAssignRuleHandler, SwitchAssignRuleHandler, DeleteAssignRuleHandler]
     subcommands = [MakeAssignRuleSubcommand, EditAssignRuleSubcommand, MoveAssignRuleSubcommand, EnableAssignRuleSubcommand, DisableAssignRuleSubcommand, DeleteAssignRuleSubcommand,
-                   TryAssignRuleSubcommand, RecordAssignDecisionSubcommand]
+                   TryAssignRuleSubcommand, RecordAssignDecisionSubcommand, AssignRuleBoardSubcommand, CountAssignRuleSubcommand]
     guards = [AssignRulePersonGuard, AssignRuleTargetGuard]

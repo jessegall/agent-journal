@@ -6,7 +6,7 @@ from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.assign_rules.models.assign_rule import AssignRule
 from core.modules.assign_rules.support.rule_arguments import CONDITION_HELP, RuleArguments
 from core.modules.assign_rules.support.rule_conditions import RuleConditions
-from core.modules.assign_rules.support.rule_trial import RuleTrial
+from core.modules.assign_rules.support.trial.rule_trial import RuleTrial
 from core.modules.assign_rules.support.task_facts_reader import TaskFactsReader
 from core.modules.tasks.models.task import Task
 
@@ -14,8 +14,9 @@ UNSAVED_RULE_NAME = "the rule"
 
 
 class TryAssignRuleSubcommand(ReadSubcommand[RuleTrial]):
-    """`journal assign-rule try <task> --rule <rule>` or `--condition ...`: a dry run that prints whether a saved or
-    unsaved rule would match the task and what each condition found; it assigns nothing and records nothing."""
+    """`journal assign-rule try <task> --rule <rule>` or `--condition ...`: a dry run that prints whether a
+    saved or unsaved rule would match the task and what each condition found; it assigns nothing and records
+    nothing."""
 
     cli_name = "assign-rule"
     name = "try"

@@ -3,26 +3,13 @@ from dataclasses import dataclass
 
 from core.modules.assign_rules.models.support.task_facts import TaskFacts
 from core.modules.assign_rules.support.condition_line import ConditionLine
-
-
-@dataclass(frozen=True)
-class ConditionResult:
-    """One condition of a tried rule and whether the task meets it."""
-
-    condition: ConditionLine
-    matched: bool
-
-    @property
-    def line(self) -> str:
-        return f"  {self.condition.text}: {'met' if self.matched else 'missed'}"
-
-    def json(self) -> Mapping[str, object]:
-        return {"field": self.condition.field.value, "operator": self.condition.operator.value, "value": self.condition.value, "matched": self.matched}
+from core.modules.assign_rules.support.trial.condition_result import ConditionResult
 
 
 @dataclass(frozen=True)
 class RuleTrial:
-    """What a rule would say about one task, condition by condition; trying a rule assigns nothing and records nothing."""
+    """What a rule would say about one task, condition by condition; trying a rule assigns nothing and records
+    nothing."""
 
     rule_name: str
     task_id: int

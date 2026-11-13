@@ -35,14 +35,14 @@ def test_a_kind_rule_finds_a_worker_whose_model_has_the_word(new_story):
 def test_a_kind_with_no_worker_skips_the_rule(new_story):
     story = new_story(fixture=SonnetWorkerAndFreeTask)
     rule_id = rule_for(story, "--target model --program claude --model opus")
-    expect_decision(story, "skipped", None, f"rule {rule_id} skipped", "no worker of claude opus can take it now: no worker of this kind")
+    expect_decision(story, "skipped", None, f"rule {rule_id} skipped", "no agent of claude opus can take it now: no agent runs that program and model")
 
 
 def test_a_paused_worker_is_passed_over_for_a_kind_and_kept_as_the_one_named(new_story):
     story = new_story(fixture=SonnetWorkerAndFreeTask)
     story.expect_success(f"agent pause {agent_number(story, story.helper.id)}", actor=story.user)
     rule_for(story, KIND_FLAGS)
-    expect_decision(story, "skipped", None, "no worker of claude sonnet can take it now")
+    expect_decision(story, "skipped", None, "no agent of claude sonnet can take it now")
     named = rule_for(story, worker_flags(story, story.helper))
     expect_decision(story, "dry_run", story.helper.id, f"rule {named} matches", "paused")
 

@@ -10,8 +10,8 @@ PERSON_WRITES_RULES = "only a person writes rules"
 
 
 class AssignRulePersonGuard(Guard[Changed[AssignRule] | Changed[AssignRuleCondition]]):
-    """Only a person writes assign rules and their conditions: a rule decides who does what work, so an agent that
-    wrote one could take work or push it away. Agents may read and try rules."""
+    """Only a person writes assign rules and their conditions: a rule decides who does what work, so an agent
+    that wrote one could take work or push it away. Agents may read and try rules."""
 
     name = "assign-rules.person-writes"
     is_safety = True

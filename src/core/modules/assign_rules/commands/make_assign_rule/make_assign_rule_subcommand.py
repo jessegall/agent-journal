@@ -8,13 +8,15 @@ from core.modules.assign_rules.support.rule_arguments import RuleArguments
 
 
 class MakeAssignRuleSubcommand(Subcommand[MakeAssignRule, AssignRule]):
-    """`journal assign-rule make --target <target> --condition "<field> <operator> <value>"`: adds a rule; only a person may."""
+    """`journal assign-rule make --target <target> --condition "<field> <operator> <value>"`: adds a rule;
+    only a person may."""
 
     cli_name = "assign-rule"
     name = "make"
 
     def arguments(self, parser: ArgumentParser) -> None:
         RuleArguments.add(parser, target_required=True)
+        parser.set_defaults(program="", program_model="", queue_limit=0)
 
     def command(self, arguments: Namespace, caller: Caller) -> MakeAssignRule:
-        return MakeAssignRule(arguments.target, RuleArguments.conditions(arguments), arguments.agent_id, arguments.program or "", arguments.program_model or "", arguments.queue_limit or 0)
+        return MakeAssignRule(arguments.target, RuleArguments.conditions(arguments), arguments.agent_id, arguments.program, arguments.program_model, arguments.queue_limit, arguments.revision)

@@ -10,8 +10,8 @@ CONDITIONS_REASON = "the revision covers every condition of the environment's ru
 
 
 class RuleRevision:
-    """A short text that changes whenever a rule of the environment or one of its conditions changes, so a save made
-    from an older reading of the rules is refused."""
+    """A short text that changes whenever a rule of the environment or one of its conditions changes, so a
+    save made from an older reading of the rules is refused."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
