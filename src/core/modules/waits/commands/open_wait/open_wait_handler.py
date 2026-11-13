@@ -12,7 +12,7 @@ from core.modules.waits.support.wait_targets import WaitTargets
 
 class OpenWaitHandler(Handler[OpenWait, Wait]):
     """Opens the calling agent's wait, with a target row for each table:id it names; a wait on rows names at
-    least one, and none of them is already done, which the refusal answers with the result."""
+    least one, each of them exists, and none of them is already done, which the refusal answers with the result."""
 
     command = OpenWait
 
@@ -38,7 +38,10 @@ class OpenWaitHandler(Handler[OpenWait, Wait]):
         model = self.targets.model(word)
         if model is None:
             raise Refusal(f"{word} is not a kind of row a wait can end on", f"write a target as word:id with one of these words: {', '.join(self.targets.registered_names())}")
-        ended = self.targets.ended_row(model, int(row_id))
+        row = self.targets.row(model, int(row_id))
+        if row is None:
+            raise Refusal(f"{target} does not exist, so a wait on it could never end", "name a row that exists")
+        ended = self.targets.ended_row(row)
         if ended is not None:
             raise Refusal(self.targets.result(ended, target), "there is nothing to wait for: it is done, so use its result")
         return self.targets.table(model), int(row_id)

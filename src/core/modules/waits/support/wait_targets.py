@@ -25,12 +25,14 @@ class WaitTargets:
         models = [cli_name for cli_name, entry in self.registry.models.items() if self.book.lifecycle(entry.model.checked_class(Model)) is not None]
         return tuple(sorted({*models, *self.aliases}))
 
-    def ended_row(self, model: type[Model], row_id: int) -> Model | None:
-        lifecycle = self.book.lifecycle(model)
-        row = self.queries.query(model).filter(id=row_id).first()
-        if row is None or lifecycle is None or getattr(row, "state", None) in lifecycle.editable:
+    def ended_row(self, row: Model) -> Model | None:
+        lifecycle = self.book.lifecycle(type(row))
+        if lifecycle is None or getattr(row, "state", None) in lifecycle.editable:
             return None
         return row
+
+    def row(self, model: type[Model], row_id: int) -> Model | None:
+        return self.queries.query(model).filter(id=row_id).first()
 
     def model(self, word: str) -> type[Model] | None:
         name = self.aliases.get(word, word)

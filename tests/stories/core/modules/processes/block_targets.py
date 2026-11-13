@@ -23,6 +23,7 @@ def test_a_block_on_an_output_that_does_not_exist_is_refused_when_made(new_story
     story = new_story(fixture=BuilderStarted)
     with pytest.raises(MissingBlockTargetRefusal, match=str(MISSING_OUTPUT)):
         block_on(story, MISSING_OUTPUT)
+    story.expect_refusal(f"wait on 'the build' --target output:{MISSING_OUTPUT}", str(MISSING_OUTPUT), actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
 
 
