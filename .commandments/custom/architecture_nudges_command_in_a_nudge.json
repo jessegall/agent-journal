@@ -52,7 +52,7 @@
             {
                 "argument": {
                     "at": 1,
-                    "textMatches": "NudgeType\\.REFUSAL"
+                    "name": "REFUSAL"
                 }
             }
         ]
