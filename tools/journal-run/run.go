@@ -27,12 +27,13 @@ type Options struct {
 	Background           bool
 	Queue                bool
 	QueueWait            time.Duration
-	CountedQueue            bool
+	CountedQueue         bool
 	SlotWaitLimitSeconds int
 	OnlyReads            bool
 	ReadOnlyShell        bool
 	WriteFolder          string
 	ReadFolders          []string
+	WriteFolders         []string
 	Sandbox              shellSandbox
 	Aliases              []string
 	Line                 string

@@ -49,7 +49,7 @@ class PluginCommandRunner:
             raise Refusal(f"the journal has no runner at {self.runner.path}", "install it again")
         start = StartProcess.single_part(agent_id, line, str(checkout.root), self.category(plugin, category), RUN_LIMIT_SECONDS, plugin, category)
         process = self.bus.run(start, actor, environment_id=self.queries.query(Agent).find(agent_id).environment_id)
-        runner_line = RunnerLine.build(self.runner.path, process.id, self.foreground_run(checkout, is_readonly), line, "", checkout)
+        runner_line = RunnerLine.build(self.runner.path, process.id, self.foreground_run(checkout, is_readonly, plugin), line, "", checkout)
         running = subprocess.Popen(["sh", "-c", runner_line], cwd=checkout.root, env=self.run_environment(plugin, agent_id), stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                    text=True, start_new_session=True)
         self.scripts.start(running, plugin, RUN_KEY, EventForm.COMMIT, started_at)
@@ -80,7 +80,10 @@ class PluginCommandRunner:
             raise Refusal(f"plugin {plugin} declares no kind of run named {category}", "name a kind its manifest lists under processes")
         return declared.category
 
-    def foreground_run(self, checkout: Checkout, is_readonly: bool) -> ForegroundRun:
+    # A plugin's run writes its own data folder in every sandbox: the plugin keeps its events and caches there.
+    def foreground_run(self, checkout: Checkout, is_readonly: bool, plugin: str) -> ForegroundRun:
         folder: Path | None = checkout.root if checkout.checkout_type.is_separate_copy and not is_readonly else None
         reads = self.reads.folders(checkout.project_root) if checkout.checkout_type.is_separate_copy else ()
-        return ForegroundRun(RUN_LIMIT_SECONDS, False, queued=True, queue_wait_seconds=RUN_LIMIT_SECONDS, shell_sandbox=is_readonly or folder is not None, folder=folder, read_folders=reads)
+        writes = (self.folders.data(plugin).resolve(),) if plugin else ()
+        return ForegroundRun(RUN_LIMIT_SECONDS, False, queued=True, queue_wait_seconds=RUN_LIMIT_SECONDS, shell_sandbox=is_readonly or folder is not None, folder=folder,
+                             read_folders=reads, write_folders=writes)

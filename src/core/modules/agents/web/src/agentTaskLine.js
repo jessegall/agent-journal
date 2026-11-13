@@ -1,4 +1,4 @@
-// the task line of an agent's row: the task in hand, every task it has started when there are several, how many of the agent's tasks are done, and the counts its bar draws: done, in testing and all
+// the task line of an agent's row: the task in hand, every task it has started when there are several, how many of the agent's tasks are done, and the counts its bar draws: done, in testing, started and all
 
 const STAGES = {started: {words: "started"}, testing: {words: "being tested"}, blocked: {words: "blocked"}};
 
@@ -30,6 +30,6 @@ export function taskLine({tasks, inHand, perHour}) {
         countTip: finished ? `All ${all.length} tasks done` : `${done} done, ${inHandCount} in hand, ${left} to go`,
         paceTip: !finished && perHour ? `About ${perHour} an hour.` : "",
         rate: !finished && perHour ? `${Math.round(perHour)}/hour` : "",
-        bar: {total: all.length, done, testing: inState(all, "testing")},
+        bar: {total: all.length, done, testing: inState(all, "testing"), started: inState(all, "started")},
     };
 }
