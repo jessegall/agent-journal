@@ -132,3 +132,9 @@ def test_a_mark_counts_against_the_window_when_it_is_smaller_than_the_limit(new_
     story = new_story(fixture=LimitedAboveWindow)
     expect_context(story, 240_000, 60)
     story.expect_hook_allowed("s-1", EDITED, "Context at 50%")
+
+
+def test_making_a_memory_at_an_open_mark_leaves_the_mark_open_until_the_agent_weighs(open_context_mark):
+    story = open_context_mark
+    story.expect_success('memory make "Ship the publish fix today" --weight 9', actor=story.agent)
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "Weigh your memories first")
