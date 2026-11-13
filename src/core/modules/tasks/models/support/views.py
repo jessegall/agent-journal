@@ -103,7 +103,7 @@ TASK_TAG_COUNTS_SELECT = Select("task_tags").selecting(Column("word"), Aliased(C
 TASK_EDGES_SELECT = (
     Select("task_dependencies").selecting(Column("task_id"), Aliased(Column("dependency_id"), "blocker_id"))
     .union(Select("task_waits").selecting(Column("task_id"), CastInteger(FunctionCall(SqlFunction.SUBSTR, [Column("target"), Literal(7)])))
-           .matching(IsNull("ended_at")).matching(Comparison(Column("target"), ComparisonOperator.LIKE, Literal("tasks:%"))), every=False)
+           .matching(IsNull("ended_at")).matching(Comparison(Column("target"), ComparisonOperator.LIKE, Literal("tasks:%"))), is_union_all=False)
 ).view_sql()
 
 HELPER_COLUMNS = (Aliased(Column("helper.id"), "helper_id"), Aliased(agent_name("helper"), "helper_name"), Aliased(zero_fallback(is_main("helper")), "helper_main"))

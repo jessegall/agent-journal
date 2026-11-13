@@ -5,7 +5,7 @@ from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from core.modules.plugins.commands.cancel_queued_run.cancel_queued_run import CancelQueuedRun
 from core.modules.plugins.models.queued_run import QueuedRun
-from core.modules.plugins.support.queued_run_output import print_queued_run
+from core.modules.plugins.support.queued_run_output import render_queued_run
 
 
 class CancelQueuedRunSubcommand(Subcommand[CancelQueuedRun, QueuedRun]):
@@ -21,4 +21,4 @@ class CancelQueuedRunSubcommand(Subcommand[CancelQueuedRun, QueuedRun]):
         return CancelQueuedRun(arguments.run)
 
     def write_output(self, value: object, output: Output) -> None:
-        print_queued_run(value, output)
+        render_queued_run(value, output)

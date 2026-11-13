@@ -5,7 +5,7 @@ from engine.query.queries import Queries
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plugins.models.queued_run import QueuedRun
-from core.modules.plugins.support.queued_run_output import print_queued_run
+from core.modules.plugins.support.queued_run_output import render_queued_run
 
 
 class QueuedRunShowSubcommand(ReadSubcommand[QueuedRun]):
@@ -25,4 +25,4 @@ class QueuedRunShowSubcommand(ReadSubcommand[QueuedRun]):
         return self.queries.query(QueuedRun).find(arguments.run)
 
     def write_output(self, value: object, output: Output) -> None:
-        print_queued_run(value, output)
+        render_queued_run(value, output)

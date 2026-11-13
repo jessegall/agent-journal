@@ -154,9 +154,9 @@ class Query(Generic[M]):
         self.checked(column)
         return self.matching(Prefix(column, text))
 
-    def where_column(self, column: str, other_column: str) -> Self:
+    def where_column(self, column: str, compared_column: str) -> Self:
         self.checked(column)
-        return self.matching(ColumnEqual(column, other_column))
+        return self.matching(ColumnEqual(column, compared_column))
 
     def where_exists(self, query: "Query[Model]") -> Self:
         return self.matching(Exists(query.scoped(query.select)))
@@ -205,11 +205,11 @@ class Query(Generic[M]):
     def left_join(self, model: type[Model], first: str, operator: str, second: str) -> Self:
         return self.joining(model, first, operator, second, True)
 
-    def joining(self, model: type[Model], first: str, operator: str, second: str, left: bool) -> Self:
+    def joining(self, model: type[Model], first: str, operator: str, second: str, is_outer: bool) -> Self:
         if operator not in OPERATORS:
             raise UnknownOperatorError(f"unknown operator {operator}; use one of {' '.join(OPERATORS)}")
         table = self.tables.table(model)
-        query = self.with_select(self.select.joined(Join(table.name, left, first, operator, second)))
+        query = self.with_select(self.select.joined(Join(table.name, is_outer, first, operator, second)))
         query.joined_tables = (*self.joined_tables, table)
         query.checked_qualified(first, second)
         if owner := self.database.row_owner:
@@ -241,21 +241,21 @@ class Query(Generic[M]):
 
     # The values of one column of the rows, at most the limit of the read, each of the kind named; a value of another
     # kind is refused, since the column's type names what it holds.
-    def pluck(self, column: str, kind: type[V]) -> list[V]:
+    def pluck(self, column: str, value_type: type[V]) -> list[V]:
         self.checked(column)
         limit = self.select.limit or DEFAULT_LIMIT_ROWS
         select = self.scoped(self.select.column(column).sliced(limit + 1, 0).named(limit + 1))
         if select.is_empty:
             return []
-        values = [Query.categorized(row[0], kind, column) for row in self.database.rows(select.statement())]
+        values = [Query.converted_value(row[0], value_type, column) for row in self.database.rows(select.statement())]
         if len(values) > limit:
             self.database.report_cut(select.statement().sql, limit)
         return values[:limit]
 
     @staticmethod
-    def categorized(value: object, kind: type[V], column: str) -> V:
-        if not isinstance(value, kind):
-            raise ColumnKindError(f"{column} holds {type(value).__name__} {value!r}, not {kind.__name__}")
+    def converted_value(value: object, value_type: type[V], column: str) -> V:
+        if not isinstance(value, value_type):
+            raise ColumnKindError(f"{column} holds {type(value).__name__} {value!r}, not {value_type.__name__}")
         return value
 
     def page(self, number: int = 1, size: int = PAGE_SIZE_ROWS) -> Page[M]:

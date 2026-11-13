@@ -27,8 +27,8 @@ class ProvidersSample:
         return next(program for program in PROVIDERS if model in self.provider(program).model_names())
 
 
-def model(chosen: str) -> CheckpointReviewModel:
-    return CheckpointReviewModel(SettingsSample(chosen), ProvidersSample())
+def model(selection: str) -> CheckpointReviewModel:
+    return CheckpointReviewModel(SettingsSample(selection), ProvidersSample())
 
 
 def test_sonnet_is_sonnet_on_claude_whatever_program_the_main_agent_runs():

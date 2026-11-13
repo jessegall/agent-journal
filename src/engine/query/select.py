@@ -59,8 +59,8 @@ class Select:
         return replace(self, derived=derived)
 
     # Adds the rows of another select; every keeps rows both give twice (UNION ALL), else each once (UNION).
-    def union(self, other: "Select", every: bool = True) -> "Select":
-        return replace(self, unions=(*self.unions, (every, other)))
+    def union(self, second_select: "Select", is_union_all: bool = True) -> "Select":
+        return replace(self, unions=(*self.unions, (is_union_all, second_select)))
 
     # The table of the read with the tables it joins.
     @property

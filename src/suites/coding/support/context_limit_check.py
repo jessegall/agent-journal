@@ -22,7 +22,7 @@ class ContextLimitCheck:
         self.compactions, self.share, self.providers = compactions, share, providers
 
     def has_windowed_compaction(self, agent_id: int) -> bool:
-        return self.providers.provider(self.agents.find(agent_id).program).compacts_by_window
+        return self.providers.provider(self.agents.find(agent_id).program).has_windowed_compaction
 
     def is_compaction_requested(self, agent_id: int, timestamp: Timestamp) -> bool:
         return self.compactions.blocks_request(agent_id, timestamp)

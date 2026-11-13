@@ -62,8 +62,8 @@ def test_the_accepted_line_of_an_update_tells_the_worker_not_to_edit_files_meanw
 class Operations:
     """An earlier command of the worker that ends after a few looks."""
 
-    def __init__(self, looks_until_ended: int) -> None:
-        self.looks = looks_until_ended
+    def __init__(self, end_check_count: int) -> None:
+        self.looks = end_check_count
 
     def runs_prior(self, worker_id: int, process_id: int) -> bool:
         self.looks -= 1

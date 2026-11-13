@@ -99,7 +99,7 @@ WORKER_WAITS_SELECT = worktrees().selecting(
 ).joined(WORKER_AGENT).matching(IsNull("worktree.removed_at")).matching(LATEST_WORKTREE).view_sql()
 
 WORKER_TASK_IDS = assigned_row_ids("task", WORKER).union(Select("tasks").named_as("held").selecting(Column("held.id"))
-                                                         .matching(ColumnCompare("held.holder_id", "=", WORKER)), every=False)
+                                                         .matching(ColumnCompare("held.holder_id", "=", WORKER)), is_union_all=False)
 WORKER_PROGRESS_SELECT = worktrees().selecting(
     Aliased(Column(WORKER), "agent_id"), Column("worktree.environment_id"), Column("worktree.branch"), Column("worktree.task_id"),
     Aliased(STARTED_AT, "started_at"), Aliased(Column("worktree.removed_at"), "finished_at"),

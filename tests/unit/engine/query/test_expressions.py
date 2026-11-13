@@ -89,7 +89,7 @@ def test_a_select_of_expressions_with_an_alias_a_join_a_group_and_a_union():
         ConditionJoin(ScalarSubselect(counts), condition=Comparison(Column("counts.agent_id"), ComparisonOperator.EQUAL, Column("agents.id")), alias="counts"))
     assert holders.view_sql() == ("SELECT agents.id, counts.active_memories FROM agents JOIN (SELECT agent_id, sum((state = 'active')) AS active_memories"
                                   " FROM memories GROUP BY agent_id) AS counts ON (counts.agent_id = agents.id)")
-    rows = Select("docs").selecting(Column("id")).union(Select("reports").selecting(Column("id"))).union(Select("dumps").selecting(Column("id")), every=False)
+    rows = Select("docs").selecting(Column("id")).union(Select("reports").selecting(Column("id"))).union(Select("dumps").selecting(Column("id")), is_union_all=False)
     assert rows.view_sql() == "SELECT id FROM docs UNION ALL SELECT id FROM reports UNION SELECT id FROM dumps"
     assert Select("worker_worktrees").named_as("worktree").selecting(Column("worktree.id")).view_sql() == "SELECT worktree.id FROM worker_worktrees AS worktree"
     latest = Select("task_logs").selecting(Column("id")).ordered("id", True).sliced(100, 0)

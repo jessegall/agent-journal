@@ -88,7 +88,7 @@ class CompactedFact(StoryFixture):
 def program_without_its_own_window(monkeypatch):
     """These stories are of the typed compaction line, which the stop types only for a program that does not
     compact by its own window."""
-    monkeypatch.setattr(ClaudeCodeProvider, "compacts_by_window", False)
+    monkeypatch.setattr(ClaudeCodeProvider, "has_windowed_compaction", False)
 
 
 @pytest.fixture

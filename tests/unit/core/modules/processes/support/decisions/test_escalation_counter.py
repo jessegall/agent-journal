@@ -38,8 +38,8 @@ class DecisionsSample:
     def matching(self, condition: Among) -> "DecisionsSample":
         return DecisionsSample(self.rows, tuple(condition.values))
 
-    def filter(self, moment: ReadingMoment) -> "DecisionsSample":
-        return DecisionsSample(self.rows, self.keys, moment)
+    def filter(self, phase: ReadingMoment) -> "DecisionsSample":
+        return DecisionsSample(self.rows, self.keys, phase)
 
     def descending(self, *columns: str) -> "DecisionsSample":
         return self

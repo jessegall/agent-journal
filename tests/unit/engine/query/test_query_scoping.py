@@ -104,9 +104,9 @@ def test_where_not_exists_inner_query_hides_removed_rows(database, tables, state
 
 
 @pytest.mark.parametrize("left", [False, True])
-def test_a_join_to_a_removable_model_hides_its_removed_rows(database, tables, left):
+def test_a_join_to_a_removable_model_hides_its_removed_rows(database, tables, is_outer):
     query = shelves(database, tables)
-    joined = (query.left_join if left else query.join)(Card, "cards.shelf_id", "=", "shelves.id")
+    joined = (query.left_join if is_outer else query.join)(Card, "cards.shelf_id", "=", "shelves.id")
     assert "cards.removed_at IS NULL" in joined.scoped(joined.select).statement().sql
 
 
