@@ -34,6 +34,8 @@ from server.request.journal_server import JournalServer
 from server.work.listeners.listener_wake import ListenerWake
 from server.door.socket_peer import socket_peer
 from server.handover.successor_start import SuccessorStart
+from server.execution.execution_priorities import ExecutionPriorities
+from server.execution.session_starters import SessionStarters
 
 EXIT_CODE_TRAILER = "Journal-Exit-Code"
 CODE_VERSION_HEADER = "Journal-Code-Version"
@@ -219,7 +221,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         try:
             queued = QueueRequest.started("CLI", " ".join(request.argv), request.caller.variables.get(SESSION_VARIABLE, ""), "cli")
             queue = context.hook_database.queue
-            turn = queue.observing(queued) if context.viewer.routes.priorities.is_unqueued(request.argv) else queue.cli_turn(queued, request.caller.execution_priority)
+            priority = ExecutionPriorities(SessionStarters.shared(context.home)).command_ticket(queued.session, queued.event, context.clock.timestamp()).priority
+            turn = queue.observing(queued) if context.viewer.routes.priorities.is_unqueued(request.argv) else queue.cli_turn(queued, priority)
             with turn:
                 queued_ms = (perf_counter() - started_at) * 1000
                 code = CliEndpoint(context.home, ListenerWake(context.listener_wakes), context.reported_findings, queue, context.request_trace.completed, context.hook_database.turns).answer(request, ChunkStream(self.send_chunk, self.has_caller_disconnected))

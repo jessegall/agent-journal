@@ -2,7 +2,6 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from engine.types.type_guards import is_mapping
 from engine.caller.errors.caller_request_error import CallerRequestError
-from engine.enums.execution_priority import ExecutionPriority
 
 SESSION_VARIABLE = "JOURNAL_AGENT_SESSION"
 
@@ -22,11 +21,6 @@ class CallerRequest:
     def process_id(self) -> int | None:
         number = self.variables.get("JOURNAL_PROCESS", "")
         return int(number) if number.isdecimal() else None
-
-    # a command from an agent waits as an agent's work; one from a person's own shell goes first
-    @property
-    def execution_priority(self) -> ExecutionPriority:
-        return ExecutionPriority.AGENT if self.variables.get(SESSION_VARIABLE, "") else ExecutionPriority.IMMEDIATE
 
     @classmethod
     def parsed(cls, data: object) -> "CallerRequest":
