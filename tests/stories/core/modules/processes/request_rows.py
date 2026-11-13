@@ -41,7 +41,7 @@ def events_of(story, work) -> list:
 def expect_single_request_row(story, events: list, category: ProcessType) -> None:
     requests = [event for event in events if event.row_table == REQUEST_RUNS_TABLE]
     processes = [event for event in events if event.row_table == PROCESSES_TABLE]
-    rows = [row for row in story.container.get(Queries).query(RequestRun).filter(kind=category.value).every_row(TEST_ROWS_REASON) if row.id in {event.row_id for event in requests}]
+    rows = [row for row in story.container.get(Queries).query(RequestRun).filter(process_type=category.value).every_row(TEST_ROWS_REASON) if row.id in {event.row_id for event in requests}]
     story.expect_rows(len(requests) == 1, not processes, len(rows) == 1, detail=f"events {events}, rows {rows}")
     story.expect_rows(requests[0].is_creation, detail=f"events {events}")
 

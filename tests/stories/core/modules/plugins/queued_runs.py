@@ -59,7 +59,7 @@ def test_a_kind_limited_to_one_gives_the_free_place_to_the_high_priority_run_and
     calls = script_calls(story, "ended.sh", PLUGIN)
     rows = {call["data"]["row"]["id"]: call["data"]["row"] for call in calls}
     story.expect_rows(shown(story, first)["state"] == "ended", shown(story, first)["exit_code"] == 3, shown(story, high)["state"] == "running",
-                      shown(story, normal)["state"] == "waiting", sorted(rows) == sorted([first, cancelled]), rows[first]["kind"] == "judge",
+                      shown(story, normal)["state"] == "waiting", sorted(rows) == sorted([first, cancelled]), rows[first]["run_name"] == "judge",
                       rows[cancelled]["state"] == "cancelled", detail=json.dumps(calls)[:600])
 
 

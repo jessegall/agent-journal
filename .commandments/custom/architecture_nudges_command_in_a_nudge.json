@@ -4,7 +4,7 @@
     "sin": {
         "name": "command-in-a-nudge",
         "description": "A nudge's text tells the agent which journal command to run.",
-        "rule": "Name the row, its number and what happened, nothing more. The agent knows the commands from its skills, so a nudge never repeats one.",
+        "rule": "Name the row, its number and what happened, nothing more. The agent knows the commands from its skills, so a nudge never repeats one. A refusal is left out: a hold names the command that is its way out, so the agent is never stuck.",
         "skill": "plain-code-words"
     },
     "find": {
@@ -48,6 +48,12 @@
         "reject": [
             {
                 "testCode": true
+            },
+            {
+                "argument": {
+                    "at": 1,
+                    "textMatches": "NudgeType\\.REFUSAL"
+                }
             }
         ]
     }

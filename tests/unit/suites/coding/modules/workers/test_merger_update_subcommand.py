@@ -89,7 +89,7 @@ class Nudger:
 
 class Reader:
     def read(self, worktree, worker):
-        return SimpleNamespace(overlap=("src/cart.py", "src/tax.py"), behind=4, base_tip="abc")
+        return SimpleNamespace(overlap=("src/cart.py", "src/tax.py"), commits_lagging=4, base_tip="abc")
 
 
 def handler(checks: Checks, worktrees: Worktrees | None = None) -> tuple[OrderWorkerUpdateHandler, Repository, Visits, Nudger]:

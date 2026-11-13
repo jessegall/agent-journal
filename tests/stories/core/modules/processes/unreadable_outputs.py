@@ -17,7 +17,7 @@ def test_an_agent_marks_a_command_unreadable_only_with_a_reason_of_three_words_a
     story = new_story(fixture=UserBuilder)
     story.expect_refusal('reader unreadable "make watch" --reason "spinner only"', "at least three words", actor=story.agent)
     story.expect_success('reader unreadable "make  watch" --reason "prints only a spinner"', actor=story.agent)
-    story.expect_text("unreadable-mark show 1", "words: make watch", "reason: declared", "note: prints only a spinner", f"creator_id: {story.agent.id}", actor=story.agent)
+    story.expect_text("unreadable-mark show 1", "terms: make watch", "reason: declared", "note: prints only a spinner", f"creator_id: {story.agent.id}", actor=story.agent)
     story.expect_success('reader readable "make watch"', actor=story.agent)
     story.expect_text("unreadable-mark show 1", f"lifter_id: {story.agent.id}", "lifted_at: ", actor=story.agent)
     story.expect_refusal('reader readable "make watch"', "no command make watch is marked unreadable", actor=story.agent)
@@ -29,7 +29,7 @@ def test_two_runs_that_redraw_one_line_mark_their_command_once_and_two_readable_
     first = ended_after_a_while(story, moved_run(story, "make spin", CommandCategory.BUILD), SPINNER)
     second = ended_after_a_while(story, moved_run(story, "make spin", CommandCategory.BUILD), SPINNER)
     flagged = received(story)
-    story.expect_text("unreadable-mark show 1", "words: make spin", "reason: single line", f"creator_id: {Actor.core().id}", actor=story.agent)
+    story.expect_text("unreadable-mark show 1", "terms: make spin", "reason: single line", f"creator_id: {Actor.core().id}", actor=story.agent)
     for _ in range(2):
         ended_after_a_while(story, moved_run(story, "make spin", CommandCategory.BUILD), STEPS)
     lifted = received(story)

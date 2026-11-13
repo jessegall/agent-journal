@@ -18,8 +18,8 @@ from engine.script.script_skip import ScriptSkip
 from engine.enums.script_stop import ScriptStop
 from engine.time.timestamp import Timestamp
 
-
 KEPT_LINE_COUNT = 50
+PLUGIN_TOKEN_VARIABLE = "JOURNAL_PLUGIN_TOKEN"
 
 
 class PluginScriptProcesses:

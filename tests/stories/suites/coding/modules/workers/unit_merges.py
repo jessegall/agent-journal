@@ -103,7 +103,7 @@ def test_a_part_asked_before_a_rebase_is_merged_by_its_tasks(new_story, monkeypa
     worker.repository.committed("readme.md", "moved\n", "The branch moves")
     commit_tasks_singly(worker, tuple([2]))
     merge_request = worker.story.run(MERGE_REQUEST, actor=worker.story.agent).output_text
-    worker.story.expect_rows("task_ids: 1" in merge_request, "is_whole: false" in merge_request.lower(), detail=merge_request)
+    worker.story.expect_rows("task_ids: 1" in merge_request, "is_full: false" in merge_request.lower(), detail=merge_request)
 
 
 def test_the_merge_commit_of_a_unit_names_every_task_it_brings_in(new_story, monkeypatch):

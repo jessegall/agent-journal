@@ -28,6 +28,9 @@ class AbsentWorker:
         absent = ORDERED_AT if self.now < self.until else None
         return SimpleNamespace(paused_at=absent if self.field == "paused_at" else None, ended_at=absent if self.field == "ended_at" else None)
 
+    def required_index(self, model: type, row_ids) -> dict:
+        return {row_id: self.required(model, row_id) for row_id in row_ids}
+
 
 class NudgeRecorder:
     def __init__(self) -> None:

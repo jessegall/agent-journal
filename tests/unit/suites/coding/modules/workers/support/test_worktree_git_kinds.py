@@ -22,7 +22,7 @@ def run_git(*arguments: str) -> ProcessType:
     git = WorktreeGit.__new__(WorktreeGit)
     git.executor = RecordingExecutor()
     git.git("/tmp/folder", 5, *arguments)
-    return git.executor.requests[0].kind
+    return git.executor.requests[0].process_type
 
 
 @pytest.mark.parametrize("arguments", [("merge", "main"), ("-c", "user.name=x", "merge", "main"), ("-C", "/tmp/other", "rebase", "main"), ("--git-dir=/tmp/g", "commit", "-m", "x")],

@@ -48,8 +48,8 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
         wait = timedelta(minutes=self.settings.number(UPDATE_WAIT_MINUTES))
         limit = self.settings.number(UPDATE_REMINDERS)
         ordered = [check for check in self.queries.query(WorktreeBehindCheck).filter(state=BehindCheckState.ORDERED).every_row(CHECKS_REASON) if check.reminders <= limit]
-        worktrees = {worktree.id: worktree for worktree in self.queries.query(Worktree).find_many(list({check.worktree_id for check in ordered}))}
-        workers = {agent.id: agent for agent in self.queries.query(Agent).find_many(list({worktree.session_agent_id for worktree in worktrees.values()}))}
+        worktrees = self.rows.required_index(Worktree, list({check.worktree_id for check in ordered}))
+        workers = self.rows.required_index(Agent, list({worktree.session_agent_id for worktree in worktrees.values()}))
         for check in ordered:
             worktree = worktrees[check.worktree_id]
             worker = workers[worktree.session_agent_id]

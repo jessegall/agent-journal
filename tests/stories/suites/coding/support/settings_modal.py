@@ -47,7 +47,7 @@ class Modal:
         self.server.expect_viewer_line(self.cookie, body, 200, text)
 
     def category_first(self, name: str, category: str) -> dict[str, object]:
-        return next(node for node in self.screen(name)["nodes"] if node["kind"] == category and not node["requires"])
+        return next(node for node in self.screen(name)["nodes"] if node["node_type"] == category and not node["requires"])
 
     def window_keys(self, keys: str, window: str = WINDOW, query: str = "environment=main") -> dict[str, object]:
         status, answer = window_data(self.server, self.cookie, keys=keys, window=window, query=query)

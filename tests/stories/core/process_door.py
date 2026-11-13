@@ -45,7 +45,7 @@ def logged_rows_saved(story) -> None:
 
 
 def category_runs(story, category: ProcessType) -> list[RequestRun]:
-    return list(story.container.get(Queries).query(RequestRun).filter(kind=category.value).every_row(TEST_ROWS_REASON))
+    return list(story.container.get(Queries).query(RequestRun).filter(process_type=category.value).every_row(TEST_ROWS_REASON))
 
 
 def test_each_hook_leaves_one_ended_request_row_of_the_hook_kind_and_no_process_row(new_story):

@@ -13,7 +13,7 @@ from engine.enums.event_form import EventForm
 from engine.file.project_reads import ProjectReads
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
-from engine.process.plugin_script_processes import PluginScriptProcesses
+from engine.process.plugin_script_processes import PluginScriptProcesses, PLUGIN_TOKEN_VARIABLE
 from engine.enums.script_stop import ScriptStop
 from core.modules.agents.models.agent import Agent
 from core.modules.plugins.support.plugin_command_run import PluginCommandRun
@@ -31,7 +31,6 @@ from core.modules.environments.models.environment import Environment
 
 RUN_LIMIT_SECONDS = 3600
 RUN_KEY = "plugin run"
-PLUGIN_TOKEN_VARIABLE = "JOURNAL_PLUGIN_TOKEN"
 
 
 class PluginCommandRunner:

@@ -7,7 +7,7 @@ from engine.enums.process_type import ProcessType
 
 @dataclass(frozen=True)
 class ExecutionRequest:
-    """A program the journal is asked to run through its one door: its words, the folder it runs in, its kind and
+    """A program the journal is asked to run through its one door: its words, the folder it runs in, its type and
     how long it may run."""
 
     line: Sequence[str]

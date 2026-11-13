@@ -21,21 +21,21 @@ class BuildWithStartDecision(StoryFixture):
         stored_missing_reader(story, moved_run(story, "make build"), ReadingPhase.START)
 
 
-def test_a_kept_decision_is_read_back_with_its_part_moment_and_reason(new_story):
+def test_a_kept_decision_is_read_back_with_its_part_phase_and_reason(new_story):
     story = new_story(fixture=BuildWithStartDecision)
-    story.expect_text("reading-decision show 1", "process_id: 1", "part_position: 1", "command_key: make build", "moment: start",
+    story.expect_text("reading-decision show 1", "process_id: 1", "part_position: 1", "command_key: make build", "phase: start",
                       "state: missing", "action: require", "level: 2", "reason: reader missing", actor=story.agent)
 
 
-def test_a_second_decision_for_the_same_moment_replaces_the_first_and_an_end_decision_is_kept_beside_it(new_story):
+def test_a_second_decision_for_the_same_phase_replaces_the_first_and_an_end_decision_is_kept_beside_it(new_story):
     story = new_story(fixture=BuildWithStartDecision)
     story.advance(timedelta(seconds=5))
     process = moved_run(story, "make build")
     stored_suitable_reader(story, process, ReadingPhase.START)
     stored_missing_reader(story, process, ReadingPhase.START)
     stored_suitable_reader(story, process, ReadingPhase.END)
-    story.expect_text("reading-decision show 2", "moment: start", "state: missing", actor=story.agent)
-    story.expect_text("reading-decision show 3", "moment: end", "state: suitable", actor=story.agent)
+    story.expect_text("reading-decision show 2", "phase: start", "state: missing", actor=story.agent)
+    story.expect_text("reading-decision show 3", "phase: end", "state: suitable", actor=story.agent)
     story.expect_refusal("reading-decision show 4", "no reading-decision 4", actor=story.agent)
 
 
@@ -49,7 +49,7 @@ def test_a_background_build_with_no_reader_keeps_a_missing_reader_at_its_end_and
     story.advance(LONG_RUN)
     end_run(story, process, "compiling\n" * 3 + "done\n")
     story.run_listeners()
-    story.expect_text("reading-decision show 2", "moment: end", "state: missing", "reason: reader missing", actor=story.agent)
+    story.expect_text("reading-decision show 2", "phase: end", "state: missing", "reason: reader missing", actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), f"Output {process.id} ended", "No reader reads custom-build yet")
     story.expect_text(f"process card {process.id} --json", '"read_text": "Reader: none"', actor=story.agent)
 

@@ -12,11 +12,11 @@ def check(state: State = State.OPEN) -> WorktreeBehindCheck:
 
 
 MOVES = {
-    State.OPEN: {"ordered": State.ORDERED, "left": State.IGNORED, "passed": State.PASSED, "updated": State.UPDATED, "gone": State.REMOVED},
-    State.ORDERED: {"updated": State.UPDATED, "conflicted": State.CONFLICTED, "passed": State.PASSED, "gone": State.REMOVED, "reminded": State.ORDERED},
-    State.CONFLICTED: {"updated": State.UPDATED, "passed": State.PASSED, "gone": State.REMOVED, "reminded": State.CONFLICTED},
-    State.PASSED: {"ordered": State.ORDERED, "left": State.IGNORED, "gone": State.REMOVED},
-    State.IGNORED: {"gone": State.REMOVED},
+    State.OPEN: {"ordered": State.ORDERED, "ignored": State.IGNORED, "passed": State.PASSED, "updated": State.UPDATED, "ended": State.REMOVED},
+    State.ORDERED: {"updated": State.UPDATED, "conflicted": State.CONFLICTED, "passed": State.PASSED, "ended": State.REMOVED, "reminded": State.ORDERED},
+    State.CONFLICTED: {"updated": State.UPDATED, "passed": State.PASSED, "ended": State.REMOVED, "reminded": State.CONFLICTED},
+    State.PASSED: {"ordered": State.ORDERED, "ignored": State.IGNORED, "ended": State.REMOVED},
+    State.IGNORED: {"ended": State.REMOVED},
     State.UPDATED: {},
     State.REMOVED: {},
 }
@@ -24,7 +24,7 @@ MOVES = {
 
 def claimed(row: WorktreeBehindCheck, name: str) -> WorktreeBehindCheck:
     method = getattr(row, name)
-    return method(MERGER, "the reason") if name in ("ordered", "left", "passed") else method()
+    return method(MERGER, "the reason") if name in ("ordered", "ignored", "passed") else method()
 
 
 @pytest.mark.parametrize("state, name, target", [(state, name, target) for state, moves in MOVES.items() for name, target in moves.items()])
@@ -32,7 +32,7 @@ def test_every_allowed_move_reaches_its_state(state, name, target):
     assert claimed(check(state), name).state is target
 
 
-@pytest.mark.parametrize("state, name", [(state, name) for state, moves in MOVES.items() for name in ("ordered", "left", "passed", "updated", "conflicted", "gone", "reminded") if name not in moves])
+@pytest.mark.parametrize("state, name", [(state, name) for state, moves in MOVES.items() for name in ("ordered", "ignored", "passed", "updated", "conflicted", "ended", "reminded") if name not in moves])
 def test_every_other_move_is_refused(state, name):
     with pytest.raises(Refusal, match=f"is {state}"):
         claimed(check(state), name)

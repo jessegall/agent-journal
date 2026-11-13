@@ -11,7 +11,7 @@ from engine.cli.errors.usage_error import UsageError
 from engine.provider.providers import Providers
 from engine.query.conditions.among import Among
 from engine.command.script_policy import ScriptPolicy
-from engine.process.plugin_script_processes import PluginScriptProcesses
+from engine.process.plugin_script_processes import PluginScriptProcesses, PLUGIN_TOKEN_VARIABLE
 from engine.caller.caller import Caller
 from core.modules.actors.queries.actor_query import ActorQuery
 from core.modules.agents.models.agent import Agent
@@ -22,7 +22,6 @@ LOGIN_VARIABLE = "USER"
 
 
 PLUGIN_VARIABLE = "JOURNAL_PLUGIN"
-PLUGIN_TOKEN_VARIABLE = "JOURNAL_PLUGIN_TOKEN"
 
 
 class AgentCallerResolver(CallerResolver):
