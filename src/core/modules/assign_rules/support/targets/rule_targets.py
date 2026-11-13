@@ -9,6 +9,7 @@ from core.modules.assign_rules.models.enums.rule_target import RuleTarget
 from core.modules.assign_rules.support.targets.decision_batch import DecisionBatch
 from core.modules.assign_rules.support.targets.usable import Usable
 from core.modules.assignments.models.assignment import Assignment
+from core.modules.assignments.support.assignments import Assignments
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.support.task_assignees import TaskAssignees
@@ -22,8 +23,8 @@ class RuleTargets:
     one that has waited longest for a new task. Whether an agent takes tasks is asked of TaskAssignees, as
     AssignTask asks it, and a refusal there means that agent cannot take it."""
 
-    def __init__(self, queries: Queries, assignees: TaskAssignees, tasks: TaskQuery) -> None:
-        self.queries, self.assignees, self.tasks = queries, assignees, tasks
+    def __init__(self, queries: Queries, assignees: TaskAssignees, tasks: TaskQuery, assignments: Assignments) -> None:
+        self.queries, self.assignees, self.tasks, self.assignments = queries, assignees, tasks, assignments
 
     def usable(self, rule: AssignRule, batch: DecisionBatch) -> Usable:
         match rule.target:
@@ -41,7 +42,7 @@ class RuleTargets:
         return self.checked(main, rule, batch)
 
     def rule_agent(self, rule: AssignRule, batch: DecisionBatch) -> Usable:
-        agent = None if rule.agent_id is None else self.queries.query(Agent).filter(id=rule.agent_id).first()
+        agent = None if rule.agent_id is None else self.assignments.agent_row(rule.agent_id)
         if agent is None:
             return Usable(None, f"the agent of rule {rule.id} is gone")
         usable = self.checked(agent, rule, batch)

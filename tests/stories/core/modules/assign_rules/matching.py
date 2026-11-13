@@ -101,12 +101,12 @@ def test_a_rule_that_does_not_match_is_passed_over(rule_story):
     rule_story.expect_rows(decide(rule_story).outcome is DecisionOutcome.UNMATCHED)
 
 
-def test_the_first_matching_rule_by_position_is_recorded_and_nothing_is_assigned(rule_story):
+def test_the_first_matching_rule_by_position_gives_the_task_to_its_target(rule_story):
     insert_rule(rule_story, 2)
     first = insert_rule(rule_story, 1)
     decision = decide(rule_story)
     task = rule_story.container.get(Queries).query(Task).find(TASK_ID)
-    rule_story.expect_rows(decision.outcome is DecisionOutcome.DRY_RUN, decision.rule_id == first, assignee_of(rule_story, task) is None)
+    rule_story.expect_rows(decision.outcome is DecisionOutcome.ASSIGNED, decision.rule_id == first, assignee_of(rule_story, task) == rule_story.agent.id)
 
 
 def test_a_disabled_rule_is_not_used(rule_story):

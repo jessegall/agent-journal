@@ -4,6 +4,7 @@ from tests.stories.core.modules.assign_rules.support.rule_steps import ENVIRONME
 from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
 
 TASK_ID = 1
+RULES_MODULE = "journal.core.assign_rules"
 
 
 def decision_of(story, task_id: int) -> dict:
@@ -15,27 +16,26 @@ def task_assignments(story) -> list[dict]:
     return [row for row in rows if row["subject_model"] == "task" and row["subject_id"] == TASK_ID]
 
 
-def test_a_task_that_meets_a_rule_gets_a_dry_run_naming_the_rule_and_the_target(new_story):
+def test_a_task_that_meets_a_rule_is_given_to_the_target_with_the_rule_on_the_assignment(new_story):
     story = new_story(fixture=OrchestratorWithPerson)
     rule_id = story.new_row_id(make_line("title has_word cart"), actor=story.user)
-    holder_before = json.loads(story.run(f"task show {TASK_ID} --json", actor=story.user).output_text)["holder_id"]
     decision = decision_of(story, TASK_ID)
-    holder_after = json.loads(story.run(f"task show {TASK_ID} --json", actor=story.user).output_text)["holder_id"]
-    story.expect_rows(decision["outcome"] == "dry_run", decision["rule_id"] == rule_id, f"rule {rule_id}" in decision["reason"], "the main agent" in decision["reason"],
-                      holder_after == holder_before, detail=str(decision))
+    given = task_assignments(story)
+    story.expect_rows(decision["outcome"] == "assigned", decision["rule_id"] == rule_id, f"rule {rule_id} applied: given to the main agent" in decision["reason"],
+                      [row["actor_id"] for row in given] == [story.agent.id], given[0]["metadata"].get(RULES_MODULE) == {"rule": rule_id}, detail=str(given))
 
 
-def test_a_dry_run_never_partly_assigns_the_task(new_story):
+def test_a_task_judged_twice_gets_one_assignment(new_story):
     story = new_story(fixture=OrchestratorWithPerson)
-    assignments_before = task_assignments(story)
     story.run(make_line("any"), actor=story.user)
-    decision = decision_of(story, TASK_ID)
-    story.expect_rows(decision["outcome"] == "dry_run", decision["actor_id"] == story.agent.id, task_assignments(story) == assignments_before, detail=str(task_assignments(story)))
+    first = decision_of(story, TASK_ID)
+    second = decision_of(story, TASK_ID)
+    story.expect_rows(first == second, len(task_assignments(story)) == 1, detail=str(task_assignments(story)))
 
 
-def test_rules_and_try_work_before_rules_assign(new_story):
+def test_rules_and_try_work_after_rules_assign(new_story):
     story = new_story(fixture=OrchestratorWithPerson)
     rule_id = story.new_row_id(make_line("title has_word cart"), actor=story.user)
     story.expect_text(f"assign-rule try {TASK_ID} --rule {rule_id} {ENVIRONMENT}", f"rule {rule_id} matches task {TASK_ID}", actor=story.user)
     story.expect_text(f"assign-rule disable {rule_id} {ENVIRONMENT}", "enabled: False", actor=story.user)
-    story.expect_rows(decision_of(story, TASK_ID)["outcome"] == "unmatched")
+    story.expect_rows(decision_of(story, TASK_ID)["outcome"] == "unmatched", task_assignments(story) == [])

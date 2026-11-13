@@ -9,7 +9,7 @@ from tests.stories.core.modules.assign_rules.support.decision_seeds import Assig
 from tests.stories.core.modules.assign_rules.support.rule_steps import SonnetWorkerAndFreeTask
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
-from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.server.support.server_client import SYSTEM_CLOCK, server_story, viewer_answer
 from tests.stories.server.window_data_route import window_data
 
 WINDOW = "coding.agent-settings"
@@ -159,15 +159,17 @@ def test_before_saving_the_tab_says_how_many_of_the_last_20_tasks_a_rule_would_t
 
 class RulesWithDecisions(StoryFixture):
     """Ada's two rules for the main agent over the twenty scored tasks: rule 1 gave tasks 2 to 4 in the last day and
-    was last skipped for task 5; rule 2 never matched a task."""
+    was last skipped for task 5; rule 2 never matched a task. The viewer runs its lines on the wall clock, so the
+    decisions are stamped with the wall time."""
 
     parent = TwentyScoredTasks
 
     def steps(self, story: Story) -> None:
         story.run('assign-rule make --target main --condition "complexity minimum 1" --environment main', actor=story.user)
         story.run('assign-rule make --target main --condition "tag has backend" --environment main', actor=story.user)
+        decided_at = SYSTEM_CLOCK.timestamp().text
         for task_id in (2, 3, 4):
-            story.seed(AssignDecisionSeed, 1, task_id=task_id, rule_id=1)
+            story.seed(AssignDecisionSeed, 1, task_id=task_id, rule_id=1, updated_at=decided_at)
         story.seed(AssignDecisionSeed, 1, task_id=5, rule_id=1, outcome="skipped", reason="rule 1 skipped: no main agent runs")
 
     def expect(self, story: Story) -> None:
@@ -176,6 +178,7 @@ class RulesWithDecisions(StoryFixture):
 
 def test_each_rule_shows_the_tasks_it_gave_in_the_last_day_and_its_last_skip(new_story):
     story = new_story(fixture=RulesWithDecisions)
+    story.expect_text("assign-decision list --rule 1 --environment main", "assigned", "skipped", actor=story.user)
     story.expect_text("assign-rule board --environment main", "Tasks given in the last day: 3", "Never matched a task", actor=story.user)
     with assign_tab(story) as tab:
         first, second = tab.rules()

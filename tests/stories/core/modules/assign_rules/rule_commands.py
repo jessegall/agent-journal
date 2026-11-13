@@ -90,9 +90,10 @@ def test_a_person_deletes_a_rule_and_the_gap_closes(new_story):
 def test_trying_a_saved_rule_names_each_condition_and_assigns_nothing(new_story):
     story = new_story(fixture=PersonWithTwoRules)
     story.expect_success("task edit 1 --complexity 5", actor=story.agent)
+    decisions_before = story.run("assign-decision list --json", actor=story.user).output_text
     story.expect_text(f"assign-rule try 1 --rule {COMPLEXITY_RULE} {ENVIRONMENT}", f"rule {COMPLEXITY_RULE} matches task 1", "complexity minimum 4: met", actor=story.user)
     story.expect_text(f"assign-rule try 1 --rule {MIGRATION_RULE} {ENVIRONMENT}", f"rule {MIGRATION_RULE} does not match task 1", "title has_word migration: missed", actor=story.user)
-    story.expect_no_text("assign-decision list", "dry_run", "assigned", actor=story.user)
+    story.expect_rows(story.run("assign-decision list --json", actor=story.user).output_text == decisions_before)
 
 
 def test_trying_unsaved_conditions_saves_no_rule(new_story):

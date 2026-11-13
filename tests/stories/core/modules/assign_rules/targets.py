@@ -29,7 +29,7 @@ def expect_decision(story: Story, outcome: str, actor_id: int | None, *reason_pa
 def test_a_kind_rule_finds_a_worker_whose_model_has_the_word(new_story):
     story = new_story(fixture=SonnetWorkerAndFreeTask)
     rule_id = rule_for(story, KIND_FLAGS)
-    expect_decision(story, "dry_run", story.helper.id, f"rule {rule_id} matches", "claude sonnet")
+    expect_decision(story, "assigned", story.helper.id, f"rule {rule_id} applied", "claude sonnet")
 
 
 def test_a_kind_with_no_worker_skips_the_rule(new_story):
@@ -44,7 +44,7 @@ def test_a_paused_worker_is_passed_over_for_a_kind_and_kept_as_the_one_named(new
     rule_for(story, KIND_FLAGS)
     expect_decision(story, "skipped", None, "no agent of claude sonnet can take it now")
     named = rule_for(story, worker_flags(story, story.helper))
-    expect_decision(story, "dry_run", story.helper.id, f"rule {named} matches", "paused")
+    expect_decision(story, "assigned", story.helper.id, f"rule {named} applied", "paused")
 
 
 def test_an_ended_worker_is_skipped_since_a_task_cannot_be_assigned_to_it(new_story):
@@ -79,4 +79,4 @@ def test_a_full_queue_skips_the_rule_and_the_next_rule_wins(new_story):
     capped = rule_for(story, worker_flags(story, story.helper), "--queue-limit 1")
     fallback = rule_for(story, "--target main")
     label = f"worker {agent_number(story, story.helper.id)}"
-    expect_decision(story, "dry_run", story.agent.id, f"rule {capped} skipped: {label} holds 1 of 1", f"rule {fallback} matches")
+    expect_decision(story, "assigned", story.agent.id, f"rule {capped} skipped: {label} holds 1 of 1", f"rule {fallback} applied")
