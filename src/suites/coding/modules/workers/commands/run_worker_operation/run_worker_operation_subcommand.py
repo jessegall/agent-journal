@@ -3,7 +3,6 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
-from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from engine.time.polled_wait import PolledWait
 from suites.coding.modules.workers.commands.run_worker_operation.claim_worker_operation import ClaimWorkerOperation
@@ -40,7 +39,3 @@ class RunWorkerOperationSubcommand(Subcommand[RunWorkerOperation, str]):
     def waited_turn(self, operation: WorkerOperation) -> None:
         if not TURN_WAIT.until(lambda: not self.operations.runs_before(operation.worker_id, operation.process_id)):
             raise Refusal(f"the update waited {int(TURN_WAIT.limit_seconds)} seconds for the worker's earlier command to end", "run journal worker update again once it ended")
-
-    def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, str):
-            output.line(value)

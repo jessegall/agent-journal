@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.subcommand.subcommand import Subcommand
 from core.modules.plans.commands.choose_plan_focus.choose_plan_focus import ChoosePlanFocus
+from engine.subcommand.focus_arguments import focus_arguments
 
 
 class ChoosePlanFocusSubcommand(Subcommand[ChoosePlanFocus, tuple[str, ...]]):
@@ -14,8 +15,7 @@ class ChoosePlanFocusSubcommand(Subcommand[ChoosePlanFocus, tuple[str, ...]]):
     name = "focus"
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("plan_id", type=int, nargs="?", default=None)
-        parser.add_argument("--clear", dest="clears", action="store_true")
+        focus_arguments(parser, "plan_id")
 
     def command(self, arguments: Namespace, caller: Caller) -> ChoosePlanFocus:
         return ChoosePlanFocus(arguments.plan_id, arguments.clears)

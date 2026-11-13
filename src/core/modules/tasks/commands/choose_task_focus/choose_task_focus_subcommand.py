@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.subcommand.subcommand import Subcommand
 from core.modules.tasks.commands.choose_task_focus.choose_task_focus import ChooseTaskFocus
+from engine.subcommand.focus_arguments import focus_arguments
 
 
 class ChooseTaskFocusSubcommand(Subcommand[ChooseTaskFocus, tuple[str, ...]]):
@@ -14,8 +15,7 @@ class ChooseTaskFocusSubcommand(Subcommand[ChooseTaskFocus, tuple[str, ...]]):
     name = "focus"
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("task_id", type=int, nargs="?", default=None)
-        parser.add_argument("--clear", dest="clears", action="store_true")
+        focus_arguments(parser, "task_id")
 
     def command(self, arguments: Namespace, caller: Caller) -> ChooseTaskFocus:
         return ChooseTaskFocus(arguments.task_id, arguments.clears)

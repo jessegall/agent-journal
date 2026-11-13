@@ -77,6 +77,16 @@ class Query(Generic[M]):
         statement = self.with_removed().scoped(self.select).conditions
         return kept.read_newest(self.with_removed().matching(Equal(self.table.key, row_id)), lambda: self.find_many([row_id])[0], name=f"query.find:{statement}")
 
+    def kept_first(self, *, name: str) -> M | None:
+        """The first row, kept until the rows of this query change."""
+        kept = self.database.kept_rows
+        return self.first() if kept is None else kept.read(self, self.first, name=name)
+
+    def kept_exists(self, *, name: str) -> bool:
+        """Whether a row matches, kept until the rows of this query change."""
+        kept = self.database.kept_rows
+        return self.exists() if kept is None else kept.read(self, self.exists, name=name)
+
     def find_many(self, row_ids: Sequence[int]) -> list[M]:
         row_index = {getattr(row, self.table.key): row for row in self.with_removed().rows(self.select.matching(Among(self.table.key, row_ids)))}
         missing = tuple(row_id for row_id in row_ids if row_id not in row_index)

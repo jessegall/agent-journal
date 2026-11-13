@@ -1,6 +1,4 @@
-from engine.query.prunable import Prunable
-from engine.query.conditions.excluding import Excluding
-from engine.query.conditions.is_null import IsNull
+from engine.query.prunable import ClosedPrunable
 from dataclasses import dataclass
 
 from engine.model.environment_scoped import EnvironmentScoped
@@ -13,7 +11,7 @@ CLOCK_FORMAT = "%H:%M"
 
 
 @dataclass(frozen=True, kw_only=True)
-class MergerLine(Prunable, EnvironmentScoped, Model):
+class MergerLine(ClosedPrunable, EnvironmentScoped, Model):
     """A line about a worker that waits for the merger to read it, in place of reaching the main agent. A line
     with a worker is that worker's question: it records its wait, its task, when an answer is due, when it is
     forwarded to the main agent, how often a merger read it, and how and when it ended."""
@@ -61,6 +59,3 @@ class MergerLine(Prunable, EnvironmentScoped, Model):
     def is_open_question(self) -> bool:
         return self.worker_id is not None and self.outcome is None
 
-    @classmethod
-    def prunable(cls, query, table):
-        return super().prunable(query, table).matching(Excluding(IsNull("closed_at")))

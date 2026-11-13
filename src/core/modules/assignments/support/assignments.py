@@ -89,12 +89,10 @@ class Assignments:
         return self.agent_row(actor_id)
 
     def agent_row(self, actor_id: int) -> Agent | None:
-        agents = self.queries.query(Agent).filter(id=actor_id)
-        return self.kept.read(agents, agents.first, name="assignments.assigned_agent")
+        return self.queries.query(Agent).where(id=actor_id).kept_first(name="assignments.assigned_agent")
 
     def actor_record(self, actor_id: int) -> ActorRecord | None:
-        actors = self.queries.query(ActorRecord).filter(id=actor_id)
-        return self.kept.read(actors, actors.first, name="assignments.actor_record")
+        return self.queries.query(ActorRecord).where(id=actor_id).kept_first(name="assignments.actor_record")
 
     def assign(self, row: Assignable, actor_id: int, context: Context, *, cascade: bool = True, override: bool = False) -> Cascade:
         self.require_working_actor(actor_id)
@@ -220,8 +218,7 @@ class Assignments:
             self.repository.save(Assignment(creator_id=context.actor.id, subject_model=row.model_name, subject_id=row.id, actor_id=actor_id), context)
 
     def actor_exists(self, actor_id: int) -> bool:
-        actors = self.queries.query(ActorRecord).filter(id=actor_id)
-        return self.kept.read(actors, actors.exists, name="assignments.actor_exists")
+        return self.queries.query(ActorRecord).where(id=actor_id).kept_exists(name="assignments.actor_exists")
 
     def require_working_actor(self, actor_id: int) -> None:
         actor = self.actor_record(actor_id)
