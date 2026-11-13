@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 
 from engine.database.database import Database
 from engine.database.reference_rewrite import SCHEMA_REASON, ReferenceRewrite
+from engine.database.row_insert import RowInsert
 from engine.database.schema_columns import SchemaColumns
 from engine.database.statement import Statement
 from engine.enums.agent_role import AgentRole
@@ -16,10 +17,7 @@ SESSIONS = ("agent_sessions", "session_agent_id")
 AGENTS_TABLE = "agents"
 ACTORS_TABLE = "actors"
 FOLD_TABLES = ("agent_folds", "agent_fold_rows")
-FOLD_RECORD = ("INSERT INTO agent_folds (environment_id, folded_agent_id, survivor_id, folded_number, agent_row, actor_row, sessions,"
-               " folded_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id")
 MAIN_ROWS = Statement("SELECT * FROM agents WHERE role = ?", [AgentRole.MAIN.value], scan_reason=SCHEMA_REASON)
-FOLD_ROW_RECORD = "INSERT INTO agent_fold_rows (environment_id, fold_id, table_name, row, rule, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 
 
 @dataclass
@@ -60,6 +58,7 @@ class MainFold:
     def __init__(self, database: Database) -> None:
         self.database = database
         self.rewrite = ReferenceRewrite(database)
+        self.inserts = RowInsert(database)
 
     def plan(self) -> tuple[EnvironmentFold, ...]:
         return MainFoldPlan.folds([MainRow.from_row(row) for row in self.database.rows(MAIN_ROWS)])
@@ -116,9 +115,11 @@ class MainFold:
         agent_rows = self.rewrite.rows(AGENTS_TABLE, "id", [agent.id])
         actor_rows = self.rewrite.rows(ACTORS_TABLE, "id", [agent.id])
         sessions = self.rewrite.rows(*SESSIONS, [agent.id])
-        values = [fold.environment_id, agent.id, fold.survivor.id, agent.number, json.dumps(agent_rows[0], default=str),
-                  json.dumps(actor_rows[0] if actor_rows else {}, default=str), json.dumps(sessions, default=str), folded_at, folded_at, folded_at]
-        return int(self.database.rows(Statement(FOLD_RECORD, values))[0]["id"])
+        return self.inserts.insert(FOLD_TABLES[0], {"environment_id": fold.environment_id, "folded_agent_id": agent.id, "survivor_id": fold.survivor.id,
+                                                    "folded_number": agent.number, "agent_row": json.dumps(agent_rows[0], default=str),
+                                                    "actor_row": json.dumps(actor_rows[0] if actor_rows else {}, default=str),
+                                                    "sessions": json.dumps(sessions, default=str), "folded_at": folded_at,
+                                                    "created_at": folded_at, "updated_at": folded_at})
 
     def settle_clashes(self, fold: EnvironmentFold, columns: AgentColumns, counts: FoldCounts, fold_id: int, folded_at: str) -> None:
         for table, key, guarded in self.rewrite.unique_keys():
@@ -128,8 +129,9 @@ class MainFold:
                 for group in self.clashing_groups(fold, table, key, column, model_column, guarded):
                     settled = FoldClashRules.settled(table, group, fold.survivor.id, column)
                     for removed in settled.removed:
-                        self.database.update(Statement(FOLD_ROW_RECORD, [fold.environment_id, fold_id, table, json.dumps(removed, default=str),
-                                                                         settled.rule, folded_at, folded_at]))
+                        self.inserts.insert(FOLD_TABLES[1], {"environment_id": fold.environment_id, "fold_id": fold_id, "table_name": table,
+                                                             "row": json.dumps(removed, default=str), "rule": settled.rule,
+                                                             "created_at": folded_at, "updated_at": folded_at})
                         counts.add_removed(table, MainFold.references_held(columns, table, removed, fold), settled.rule)
                     self.rewrite.delete_past_state_rule(table, [int(row["id"]) for row in settled.removed])
 

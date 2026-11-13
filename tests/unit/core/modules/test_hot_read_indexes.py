@@ -26,7 +26,7 @@ def database(tmp_path):
     (Statement("SELECT id FROM agents WHERE role <> ?", ["main"]), "agents_role"),
     (Statement("SELECT * FROM worker_worktrees WHERE environment_id = ? AND removed_at IS NULL ORDER BY id", [1]), "worker_worktrees_environment (environment_id=?)"),
     (Statement("SELECT * FROM watches WHERE process_id = ? AND state = ?", (1, "open")), "watches_process_state"),
-    (Statement("SELECT * FROM reader_requests WHERE completed_at IS NULL"), "reader_requests_open_command"),
+    (Statement("SELECT * FROM reader_requests WHERE completed_at IS NULL"), "reader_requests_open"),
     (Statement("SELECT * FROM proofs WHERE process_id = ? AND state = ?", (1, "running")), "proofs_process_state"),
     (Statement("SELECT * FROM affected_tests WHERE process_id = ? AND state IN (?, ?)", (1, "picking", "testing")), "affected_tests_process_state"),
     (Statement("SELECT * FROM phones WHERE state = ? AND notice_waiting = ?", ("paired", 0)), "phones_state_notice"),
