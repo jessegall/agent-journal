@@ -88,7 +88,7 @@ def insert_rule(story, position, enabled=1, field=ConditionField.ANY, operator=C
 
 
 def decide(story):
-    return story.container.get(Bus).run(RecordAssignDecision(TASK_ID), Actor.core(), environment_id=story.environment_id)
+    return story.container.get(Bus).run(RecordAssignDecision(tuple([TASK_ID])), Actor.core(), environment_id=story.environment_id)[0]
 
 
 def test_no_rule_leaves_the_task_free_and_says_so(rule_story):
