@@ -21,7 +21,7 @@ class ContextLimitCheck:
         self.settings, self.agents, self.current_window, self.tasks = settings, agents, current_window, tasks
         self.compactions, self.share, self.providers = compactions, share, providers
 
-    def compacts_by_window(self, agent_id: int) -> bool:
+    def has_windowed_compaction(self, agent_id: int) -> bool:
         return self.providers.provider(self.agents.find(agent_id).program).compacts_by_window
 
     def is_compaction_requested(self, agent_id: int, timestamp: Timestamp) -> bool:

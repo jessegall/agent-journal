@@ -82,4 +82,4 @@ class ColdSessions:
             return False
         if not activity.is_inactive(self.clock.timestamp(), minutes * MINUTE_SECONDS):
             return False
-        return (self.share.percent_of(agent) or 0) >= percent
+        return (self.share.agent_percent(agent) or 0) >= percent

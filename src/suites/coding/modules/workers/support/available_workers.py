@@ -29,4 +29,4 @@ class AvailableWorkers:
         provider = self.providers.provider(worker.program)
         if not provider.session_matches_folder(Path(last.folder), worker.session):
             return False
-        return (self.share.percent_of(worker) or 0) < FULL_SESSION_PERCENT
+        return (self.share.agent_percent(worker) or 0) < FULL_SESSION_PERCENT

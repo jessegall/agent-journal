@@ -60,7 +60,7 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
 
     def with_share(self, agent: Agent) -> SessionStatus:
         status = self.files.status(agent.session)
-        usage = self.share.usage_of(agent)
+        usage = self.share.agent_usage(agent)
         if self.current_window.is_unknown(agent):
             return replace(status, context=replace(status.context, used_percentage=None, total_input_tokens=None))
         if status.context.used_percentage is None:

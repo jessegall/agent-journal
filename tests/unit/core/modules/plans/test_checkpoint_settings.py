@@ -25,4 +25,4 @@ def test_waiting_for_the_person_is_set_by_a_person_and_says_what_it_does_in_its_
 
 
 def test_the_kinds_are_a_switch_a_choice_a_text_and_a_switch_so_the_generic_screen_draws_them():
-    assert [ENTRIES[key].drawn_by().value for key in KEYS] == ["toggle", "choice", "text", "toggle"]
+    assert [ENTRIES[key].source_component().value for key in KEYS] == ["toggle", "choice", "text", "toggle"]

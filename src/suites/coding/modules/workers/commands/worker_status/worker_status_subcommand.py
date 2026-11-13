@@ -76,7 +76,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
 
     def stale_line(self, worktree: Worktree) -> str:
         try:
-            counted = f"{self.git.behind(worktree)} behind {worktree.base_branch}"
+            counted = f"{self.git.lag_count(worktree)} behind {worktree.base_branch}"
         except Refusal as refusal:
             return f"behind {worktree.base_branch} unknown: {refusal.reason}"
         check = self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).newest().first()

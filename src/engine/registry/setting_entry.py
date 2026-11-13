@@ -42,7 +42,7 @@ class SettingEntry:
         return cls(stored["key"], stored["module"], stored["parent"], stored["title"], stored["description"], stored["type"], stored["default"],
                    stored["secret"], stored["scope"], tuple(stored["choices"]), stored["toggleable"], stored["enabled"], stored.get("target", ""), stored.get("person_set", False), stored.get("rule", ""), stored.get("requires_main_agent", False), tuple(stored.get("required_settings", ())), stored.get("screen", ""), stored.get("section", ""), stored.get("component", ""))
 
-    def drawn_by(self) -> SettingComponent:
+    def source_component(self) -> SettingComponent:
         return SettingComponent(self.component) if self.component else SettingComponent.default_for(SettingType(self.type))
 
     def problems(self, value: object) -> list[str]:

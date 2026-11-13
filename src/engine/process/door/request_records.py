@@ -36,11 +36,11 @@ class RequestRecords:
 
     def recorded_safely(self, category: ProcessKind, line: str, exit_code: int) -> None:
         try:
-            self.ended_now(category, line, exit_code)
+            self.record_end(category, line, exit_code)
         except Exception as failure:
             self.write_failed(line, failure)
 
-    def ended_now(self, category: ProcessKind, line: str, exit_code: int) -> None:
+    def record_end(self, category: ProcessKind, line: str, exit_code: int) -> None:
         return None
 
     def write_failed(self, line: str, failure: Exception) -> None:

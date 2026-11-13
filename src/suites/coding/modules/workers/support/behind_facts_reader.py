@@ -27,7 +27,7 @@ class BehindFactsReader:
         folders = {str(PurePosixPath(name).parent) for name in worker_files}
         shared_folder = tuple(name for name in base_files if name not in overlap and str(PurePosixPath(name).parent) in folders)
         uncommitted = bool(self.git.uncommitted_files(worktree.folder))
-        return BehindFacts(worktree.base_branch, self.git.behind_tip(worktree, tip), commits, worker_files, overlap, shared_folder, self.git.overlap_lines(worktree, overlap, tip),
+        return BehindFacts(worktree.base_branch, self.git.tip_lag_count(worktree, tip), commits, worker_files, overlap, shared_folder, self.git.overlap_lines(worktree, overlap, tip),
                            uncommitted, worker.program, worker.program_model, self.earlier_decisions(worktree), tip)
 
     def earlier_decisions(self, worktree: Worktree) -> tuple[str, ...]:

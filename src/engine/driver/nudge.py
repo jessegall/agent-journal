@@ -31,7 +31,7 @@ class Nudge:
     def labelled(self) -> str:
         return f"journal: {self.text}"
 
-    def for_role(self, role: str) -> "Nudge":
+    def role_variant(self, role: str) -> "Nudge":
         if self.declaration is None or role not in self.declaration.role_texts:
             return self
         rendered = self.declaration.rendered(self.declaration.role_texts[role], dict(self.fields))

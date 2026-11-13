@@ -28,7 +28,7 @@ class SettingScreen:
 
     def node(self, entry: SettingEntry) -> ScreenNode:
         current = self.reader.current(entry.key)
-        return ScreenNode(entry.key, entry.type, entry.drawn_by().value, entry.section, entry.parent, entry.title, entry.description, None if entry.secret else current.value,
+        return ScreenNode(entry.key, entry.type, entry.source_component().value, entry.section, entry.parent, entry.title, entry.description, None if entry.secret else current.value,
                           None if entry.secret else entry.default, current.source, tuple(entry.choices), entry.rule, tuple(entry.required_settings), entry.person_set)
 
     def index(self) -> tuple[ScreenIndexEntry, ...]:

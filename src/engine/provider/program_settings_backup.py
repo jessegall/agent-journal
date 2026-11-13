@@ -28,7 +28,7 @@ class ProgramSettingsBackup:
     def __init__(self, home: JournalHome, log: SystemLogWriter, clock: Clock) -> None:
         self.home, self.log, self.clock = home, log, clock
 
-    def backed_up(self, settings: ProgramSettings) -> tuple[Path, ...]:
+    def backup_copies(self, settings: ProgramSettings) -> tuple[Path, ...]:
         copies = (self._stored(settings.program, path.name, settings.person_data[path]) if path in settings.person_data
                   else self.copied(settings.program, path) for path in settings.person_files)
         return tuple(copy for copy in copies if copy is not None)

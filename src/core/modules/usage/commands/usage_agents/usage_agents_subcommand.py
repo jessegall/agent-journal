@@ -135,8 +135,8 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
             return None
         cap = self.share.cap(card.role, card.profile)
         if not status.is_reported:
-            return self.share.usage_within(card.program, card.session, cap).percent
-        return None if status.context.used_percentage is None else self.share.reading_within(status.context, cap).percent
+            return self.share.session_usage(card.program, card.session, cap).percent
+        return None if status.context.used_percentage is None else self.share.limited_reading(status.context, cap).percent
 
     def model(self, card: AgentCard, status: SessionStatus) -> str:
         return status.model or self.providers.reported_model(card.program, self.home, card.session)

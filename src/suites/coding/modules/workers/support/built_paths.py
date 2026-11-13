@@ -16,7 +16,7 @@ class BuiltPaths:
     def contains(self, path: str) -> bool:
         return any(PurePosixPath(path).full_match(pattern) for pattern in self.patterns)
 
-    def of(self, paths: Iterable[str]) -> tuple[str, ...]:
+    def matching(self, paths: Iterable[str]) -> tuple[str, ...]:
         return tuple(path for path in paths if self.contains(path))
 
     def remainder(self, paths: Iterable[str]) -> tuple[str, ...]:
@@ -24,7 +24,7 @@ class BuiltPaths:
 
     # The folders the build writes the built files among these paths into, each once.
     def folders(self, paths: Iterable[str]) -> tuple[str, ...]:
-        return tuple(sorted({self.folder(path) for path in self.of(paths)}))
+        return tuple(sorted({self.folder(path) for path in self.matching(paths)}))
 
     # The folder of a built file that its pattern names, such as app/web/dist for **/web/dist/**; the file's own folder
     # when the pattern names no folder without wildcards.

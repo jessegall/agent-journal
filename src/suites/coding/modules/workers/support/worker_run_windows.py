@@ -16,7 +16,7 @@ class WorkerRunWindows:
     def __init__(self, plans: TaskPlans, checkpoints: PlanCheckpoints, units: WorkUnits) -> None:
         self.plans, self.checkpoints, self.units = plans, checkpoints, units
 
-    def completed_by(self, worktree: Worktree) -> tuple[WorkerRunWindow, ...]:
+    def completed_windows(self, worktree: Worktree) -> tuple[WorkerRunWindow, ...]:
         unit_ids = frozenset(self.units.unit(worktree.session_agent_id).task_ids)
         self.plans.prepare(worktree.commit_tasks())
         phases = [phase for phase in (self.plans.find_phase(task_id) for task_id in worktree.commit_tasks()) if phase is not None]

@@ -50,4 +50,4 @@ class SettingViewCheck:
 
     def component_failures(self) -> list[str]:
         entries: list[SettingEntry] = [entry for module in self.modules for entry in SettingTree().entries(module.name, module.settings) if entry.type in {category.value for category in SettingType}]
-        return [f"{entry.key} is a {entry.type}, which the component {entry.drawn_by().value} cannot draw" for entry in entries if entry.type not in {category.value for category in entry.drawn_by().categories()}]
+        return [f"{entry.key} is a {entry.type}, which the component {entry.source_component().value} cannot draw" for entry in entries if entry.type not in {category.value for category in entry.source_component().categories()}]

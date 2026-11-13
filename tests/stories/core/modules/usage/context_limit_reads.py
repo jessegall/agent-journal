@@ -48,7 +48,7 @@ def test_a_status_file_that_changes_during_a_hook_is_read_once_and_gives_both_nu
 
     monkeypatch.setattr(JournalHome, "status_file", status_file_race)
     with story.repeated_work.request():
-        usage = story.container.get(ContextShare).usage_within("claude", "s-1", None)
+        usage = story.container.get(ContextShare).session_usage("claude", "s-1", None)
     expect_value((usage.percent, usage.used_tokens), (WINDOW_PERCENT, USED_TOKENS))
     expect_value(len(requested), 1)
 
@@ -58,4 +58,4 @@ def test_the_card_and_every_other_read_give_the_percent_of_the_agents_own_cap(ne
     story.expect_success(f"setting set {CONTEXT_LIMIT_CATEGORIES} main:300000 --project", actor=story.user)
     row = reported(story, "true", 400000)
     agent = story.container.get(Queries).query(Agent).first()
-    expect_value((agent.role, row["context_percent"], story.container.get(ContextShare).percent_of(agent)), ("main", 82, 82))
+    expect_value((agent.role, row["context_percent"], story.container.get(ContextShare).agent_percent(agent)), ("main", 82, 82))

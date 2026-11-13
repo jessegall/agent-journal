@@ -8,5 +8,5 @@ class ProcessKindLimits:
     """The limits of the declared kinds of run for one pass of the queue, read once for the runs that wait. A module
     that declares kinds of run, such as the plugins module, binds its own answer."""
 
-    def pass_over(self, waiting: Sequence[Process]) -> KindPass:
+    def admissions(self, waiting: Sequence[Process]) -> KindPass:
         return KindPass()

@@ -35,19 +35,19 @@ class ContextShare:
         pairs = (text.rsplit(":", 1) for text in self.settings.texts(key) if ":" in text)
         return {name.strip(): value.strip() for name, value in pairs if value.strip() == UNCAPPED or value.strip().isdigit()}
 
-    def usage_of(self, agent: ContextOwner) -> ContextReading:
-        return self.usage_within(agent.program, agent.session, self.cap(agent.role, agent.profile))
+    def agent_usage(self, agent: ContextOwner) -> ContextReading:
+        return self.session_usage(agent.program, agent.session, self.cap(agent.role, agent.profile))
 
-    def reading_of(self, agent: ContextOwner, window: ContextWindow) -> ContextReading:
-        return self.reading_within(window, self.cap(agent.role, agent.profile))
+    def window_reading(self, agent: ContextOwner, window: ContextWindow) -> ContextReading:
+        return self.limited_reading(window, self.cap(agent.role, agent.profile))
 
-    def percent_of(self, agent: ContextOwner) -> int | None:
-        return self.usage_of(agent).percent
+    def agent_percent(self, agent: ContextOwner) -> int | None:
+        return self.agent_usage(agent).percent
 
-    def usage_within(self, program: str, session: str, limit: int | None) -> ContextReading:
-        return self.reading_within(self.providers.provider(program).context_window(self.home, session), limit)
+    def session_usage(self, program: str, session: str, limit: int | None) -> ContextReading:
+        return self.limited_reading(self.providers.provider(program).context_window(self.home, session), limit)
 
-    def reading_within(self, window: ContextWindow, limit: int | None) -> ContextReading:
+    def limited_reading(self, window: ContextWindow, limit: int | None) -> ContextReading:
         window_percent, tokens = window.used_percentage, window.total_input_tokens
         window_tokens = window.window_size_tokens or self.window_tokens_from_percent(window)
         if tokens is None or limit is None:

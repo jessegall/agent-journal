@@ -338,10 +338,10 @@ class WorktreeGit:
                 FileAccess.shared().replace(kept[name], Path(folder) / name)
                 self.git(folder, GIT_LIMIT_SECONDS, "update-index", "--skip-worktree", "--", name)
 
-    def behind(self, worktree: Worktree) -> int:
-        return self.behind_tip(worktree, self.tip(worktree.folder, worktree.base_branch))
+    def lag_count(self, worktree: Worktree) -> int:
+        return self.tip_lag_count(worktree, self.tip(worktree.folder, worktree.base_branch))
 
-    def behind_tip(self, worktree: Worktree, base: str) -> int:
+    def tip_lag_count(self, worktree: Worktree, base: str) -> int:
         listing = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-list", "--first-parent", "--parents", f"HEAD..{base}").stdout
         return sum(1 for line in listing.splitlines() if line and not self.is_worker_merge(worktree, line.split()[1:]))
 
@@ -503,7 +503,7 @@ class WorktreeGit:
         if built.remainder(conflicts):
             self.git(folder, GIT_LIMIT_SECONDS, "merge", "--abort")
             raise Refusal(f"git merge of {revision} failed in {folder}", (finished.stderr or finished.stdout).strip())
-        clashed = built.of(conflicts)
+        clashed = built.matching(conflicts)
         if clashed:
             self.checked(folder, GIT_LIMIT_SECONDS, "checkout", "--ours", "--", *clashed)
             self.checked(folder, GIT_LIMIT_SECONDS, "add", "--", *clashed)

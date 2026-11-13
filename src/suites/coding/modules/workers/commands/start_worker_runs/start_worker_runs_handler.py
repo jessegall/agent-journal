@@ -26,7 +26,7 @@ class StartWorkerRunsHandler(Handler[StartWorkerRuns, tuple[CheckpointReach, ...
         worktree = self.rows.required(Worktree, command.worktree_id)
         run_phase_ids = set(self.queries.query(WorktreeReach).filter(worktree_id=worktree.id, commit_id=command.commit_id).pluck("phase_id", int))
         reaches = list[CheckpointReach]()
-        for window in self.windows.completed_by(worktree):
+        for window in self.windows.completed_windows(worktree):
             if window.checkpoint_id in run_phase_ids:
                 continue
             reach = self.checkpoints.reach_agent_commit(window.plan_id, window.checkpoint_id, window.task_ids, context)

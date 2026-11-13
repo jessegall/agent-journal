@@ -70,7 +70,7 @@ class MemoryWorktreeGit(WorktreeGit):
             raise Refusal(f"branch {branch} does not exist in {folder}", "make it there, or name another with journal environment edit <name> --branch <branch>")
         return self.history.branches[branch]
 
-    def behind_tip(self, worktree: Worktree, base: str) -> int:
+    def tip_lag_count(self, worktree: Worktree, base: str) -> int:
         return len(self.base_changes(worktree, base))
 
     def base_changes(self, worktree: Worktree, base: str) -> tuple[BaseCommit, ...]:
@@ -193,12 +193,12 @@ class MemoryWorktreeGit(WorktreeGit):
         return [committed for committed in self.committed_tree(worktree.folder) if any(committed.startswith(folder) for folder in folders)]
 
     def refuse_deleted_built_files(self, worktree: Worktree, changes: WorktreeChanges) -> None:
-        if self.builds.paths().of(change.relative for change in changes.changes if change.status is FileStatus.DELETED):
+        if self.builds.paths().matching(change.relative for change in changes.changes if change.status is FileStatus.DELETED):
             raise GitStoryRequired("a story about deleted built files builds its repository with real git")
 
     def rebuild(self, worktree: Worktree, base_folder: str) -> bool:
         changed = TreeChanges(self.history.tip(worktree.base_branch).tree, self.history.tip(worktree.branch).tree).names()
-        if self.builds.paths().of(changed):
+        if self.builds.paths().matching(changed):
             raise GitStoryRequired("a story about rebuilt web files builds its repository with real git")
         return False
 

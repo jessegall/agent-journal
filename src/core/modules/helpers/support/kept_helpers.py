@@ -66,7 +66,7 @@ class KeptHelpers:
         provider = self.providers.provider(helper.program)
         if not provider.session_matches_folder(self.folders.folder(helper), helper.session):
             return False
-        return (self.share.percent_of(helper) or 0) < FULL_SESSION_PERCENT
+        return (self.share.agent_percent(helper) or 0) < FULL_SESSION_PERCENT
 
     def idle_refusal(self, helpers: tuple[Agent, ...]) -> Refusal:
         additional_helpers = f" (also {', '.join(str(helper.number) for helper in helpers[1:3])})" if helpers[1:] else ""

@@ -15,7 +15,7 @@ class ProcessRowWrapper(RequestRecords):
     def __init__(self, log: RequestLog, clock: Clock, errors: ErrorLog) -> None:
         self.log, self.clock, self.errors = log, clock, errors
 
-    def ended_now(self, category: ProcessKind, line: str, exit_code: int) -> None:
+    def record_end(self, category: ProcessKind, line: str, exit_code: int) -> None:
         if self.caller is None:
             return
         actor, environment_id = self.caller

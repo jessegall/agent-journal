@@ -48,19 +48,19 @@ def worktree_folder(worktree: Worktree) -> Path:
 def test_a_no_ff_merge_of_a_four_commit_branch_counts_once(tmp_path):
     repository, worktree = cut_worktree(tmp_path)
     merged_branch(repository, DIFFERENT_BRANCH, 4)
-    assert git().behind(worktree) == 1
+    assert git().lag_count(worktree) == 1
 
 
 def test_five_own_commits_on_an_unmoved_base_count_nothing(tmp_path):
     _, worktree = cut_worktree(tmp_path)
     worker_commits(worktree, 5)
-    assert git().behind(worktree) == 0
+    assert git().lag_count(worktree) == 0
 
 
 def test_a_commit_made_straight_on_the_base_counts_once(tmp_path):
     repository, worktree = cut_worktree(tmp_path)
     repository.committed("tax.py", "TAX = 1\n", "Tax on the base")
-    assert git().behind(worktree) == 1
+    assert git().lag_count(worktree) == 1
 
 
 def test_two_worktrees_cut_from_different_bases_count_only_their_own_base(tmp_path):
@@ -68,23 +68,23 @@ def test_two_worktrees_cut_from_different_bases_count_only_their_own_base(tmp_pa
     repository.git("branch", "other-base", BASE_BRANCH)
     _, second = cut_worktree(tmp_path, base_branch="other-base", name="second", branch="workers/two")
     repository.committed("tax.py", "TAX = 1\n", "Tax on the base")
-    assert (git().behind(first), git().behind(second)) == (1, 0)
+    assert (git().lag_count(first), git().lag_count(second)) == (1, 0)
 
 
 def test_a_merge_of_this_worktrees_own_earlier_commits_is_not_counted_but_another_workers_merge_is(tmp_path):
     repository, worktree = cut_worktree(tmp_path)
     worker_commits(worktree, 2)
     repository.git("merge", "--no-ff", "-m", "Merge the first part of this worker", WORKER_BRANCH)
-    assert git().behind(worktree) == 0
+    assert git().lag_count(worktree) == 0
     merged_branch(repository, DIFFERENT_BRANCH, 1)
-    assert git().behind(worktree) == 1
+    assert git().lag_count(worktree) == 1
 
 
 def test_a_deleted_base_branch_is_refused_and_never_counted_as_nothing_behind(tmp_path):
     _, worktree = cut_worktree(tmp_path)
     removed = Worktree(session_agent_id=1, task_id=1, creator_id=1, folder=worktree.folder, branch=worktree.branch, base_branch="gone", base_commit=worktree.base_commit)
     with pytest.raises(Refusal, match="branch gone does not exist"):
-        git().behind(removed)
+        git().lag_count(removed)
 
 
 def test_base_changes_lists_the_files_of_each_base_commit_merges_included(tmp_path):
@@ -117,5 +117,5 @@ def test_counting_a_worktree_takes_one_rev_list_and_no_walk_of_the_whole_history
     for number in range(4):
         repository.committed(f"base_{number}.py", "B\n", f"Base {number}")
     counting = CountingGit()
-    assert counting.behind(worktree) == 4
+    assert counting.lag_count(worktree) == 4
     assert counting.commands == ["rev-parse", "rev-list"]

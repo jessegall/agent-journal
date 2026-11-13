@@ -41,7 +41,7 @@ class OpenMarkRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         agent = self.agents.find(hook.agent_id)
-        usage = self.share.reading_of(agent, self.current_window.window(agent))
+        usage = self.share.window_reading(agent, self.current_window.window(agent))
         percent = usage.percent
         if percent is None:
             return RuleAnswer.allowed()

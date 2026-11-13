@@ -21,6 +21,6 @@ class WorkerCompactionStop(CompactionStop):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if hook.role not in COMPACTED_ROLES or not self.limit_check.needs_compaction(hook.agent_id):
             return super().answer(hook)
-        if self.limit_check.compacts_by_window(hook.agent_id) or self.limit_check.is_compaction_requested(hook.agent_id, hook.timestamp):
+        if self.limit_check.has_windowed_compaction(hook.agent_id) or self.limit_check.is_compaction_requested(hook.agent_id, hook.timestamp):
             return RuleAnswer.final_allowance()
         return RuleAnswer.final_allowance(CONTEXT_COMPACTED.nudge()).running(CompactAgentContext(hook.agent_id))

@@ -62,7 +62,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         if arguments.session and not arguments.no_program:
             raise Refusal("--session is the session of a program that is not started", "add --no-program")
         source_worker = self.stopped_worker(arguments, caller)
-        task_ids = self.taken_over_tasks(source_worker) if source_worker is not None else self.picked(arguments)
+        task_ids = self.takeover_tasks(source_worker) if source_worker is not None else self.picked(arguments)
         commands = WorkerTestCommandEntry.parsed(arguments.test_command)
         if not commands and caller.actor.type is ActorType.AGENT and not self.has_presets(caller):
             raise Refusal("a worker gets the test commands it may run", TEST_COMMAND_EXAMPLE)
@@ -81,7 +81,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         with self.scopes.opened(caller.read_actor_id, caller.environment_id):
             return self.agents.find(arguments.take_over)
 
-    def taken_over_tasks(self, stopped: Agent) -> tuple[int, ...]:
+    def takeover_tasks(self, stopped: Agent) -> tuple[int, ...]:
         return tuple([self.worktrees.required_worker_worktree(stopped.id).task_id])
 
     def picked(self, arguments: Namespace) -> tuple[int, ...]:

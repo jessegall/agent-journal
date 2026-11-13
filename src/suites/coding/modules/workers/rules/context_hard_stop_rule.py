@@ -40,4 +40,4 @@ class ContextHardStopRule(DriverRule):
         if is_stop_requirement or self.watch_call.is_watch(hook) or not self.limit_check.exceeds_hard_limit(hook.agent_id):
             return RuleAnswer.allowed()
         refusal = RuleAnswer.refused(CONTEXT_HARD_STOP.nudge())
-        return refusal if self.limit_check.compacts_by_window(hook.agent_id) or self.limit_check.is_compaction_unfinished(hook.agent_id, hook.timestamp) else refusal.running(CompactAgentContext(hook.agent_id, CompactionReason.HARD_STOP))
+        return refusal if self.limit_check.has_windowed_compaction(hook.agent_id) or self.limit_check.is_compaction_unfinished(hook.agent_id, hook.timestamp) else refusal.running(CompactAgentContext(hook.agent_id, CompactionReason.HARD_STOP))

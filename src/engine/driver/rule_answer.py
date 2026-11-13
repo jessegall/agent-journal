@@ -41,8 +41,8 @@ class RuleAnswer:
     def refused(cls, nudge: Nudge) -> "RuleAnswer":
         return cls(refusal=nudge.text, nudges=tuple([nudge]), last=True)
 
-    def for_role(self, role: str) -> "RuleAnswer":
-        nudges = tuple(nudge.for_role(role) for nudge in self.nudges)
+    def role_variant(self, role: str) -> "RuleAnswer":
+        nudges = tuple(nudge.role_variant(role) for nudge in self.nudges)
         if all(new is old for new, old in zip(nudges, self.nudges)):
             return self
         refusal = next((new.text for new, old in zip(nudges, self.nudges) if old.text == self.refusal), self.refusal)

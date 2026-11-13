@@ -41,7 +41,7 @@ class RunSlots:
         parts = self.admission.waiting_parts(queued)
         processes = self.rows.required_index(Process, [waiting.id for waiting in queued])
         agents = self.rows.required_index(Agent, [waiting.session_agent_id for waiting in queued])
-        categories = self.kind_limits.pass_over(queued)
+        categories = self.kind_limits.admissions(queued)
         for waiting in queued:
             agent = agents[waiting.session_agent_id]
             needs_slot = self.admission.needs_slot(waiting, agent)

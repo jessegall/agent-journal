@@ -13,13 +13,13 @@ def entries(*values: SettingValue) -> dict[str, SettingEntry]:
 
 def test_a_declaration_with_no_component_resolves_to_the_default_of_its_kind():
     matched = entries(SettingValue("auto", "Auto", "Whether it goes on.", SettingType.FLAG, default=True))
-    assert matched["journal.test.g.auto"].drawn_by() is SettingComponent.TOGGLE
+    assert matched["journal.test.g.auto"].source_component() is SettingComponent.TOGGLE
 
 
 def test_a_declared_component_and_place_reach_the_entry():
     matched = entries(SettingValue("cap", "Cap", "A size.", SettingType.NUMBER, default=1, screen="advanced", section="Context size", component=SettingComponent.TYPE_OVERRIDE))
     entry = matched["journal.test.g.cap"]
-    assert (entry.screen, entry.section, entry.drawn_by()) == ("advanced", "Context size", SettingComponent.TYPE_OVERRIDE)
+    assert (entry.screen, entry.section, entry.source_component()) == ("advanced", "Context size", SettingComponent.TYPE_OVERRIDE)
     assert matched["journal.test.g"].screen == "work"
 
 
@@ -33,4 +33,4 @@ def test_an_old_stored_entry_without_the_new_fields_still_loads():
     stored = {"key": "k", "module": "m", "parent": None, "title": "T", "description": "D", "type": "flag", "default": True, "secret": False, "scope": "both",
               "choices": [], "toggleable": False, "enabled": True}
     entry = SettingEntry.restored(stored)
-    assert (entry.screen, entry.section, entry.drawn_by()) == ("", "", SettingComponent.TOGGLE)
+    assert (entry.screen, entry.section, entry.source_component()) == ("", "", SettingComponent.TOGGLE)

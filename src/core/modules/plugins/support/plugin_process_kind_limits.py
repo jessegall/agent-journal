@@ -26,7 +26,7 @@ class PluginProcessKindLimits(ProcessKindLimits):
     def __init__(self, queries: Queries, folders: PluginFolders, settings: PluginSettings, machine: MachineRuns, memory: FreeMemory) -> None:
         self.queries, self.folders, self.settings, self.machine, self.memory = queries, folders, settings, machine, memory
 
-    def pass_over(self, waiting: Sequence[Process]) -> PluginKindPass:
+    def admissions(self, waiting: Sequence[Process]) -> PluginKindPass:
         categories = {(process.plugin, process.kind, process.environment_id) for process in waiting if process.plugin and process.kind}
         if not categories:
             return PluginKindPass({}, 0, {})

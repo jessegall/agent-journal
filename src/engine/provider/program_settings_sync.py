@@ -53,7 +53,7 @@ class ProgramSettingsSync:
     def prepare(self, program: str) -> tuple[Path, ...]:
         settings = self.settings(program)
         with self.refused_on_failure(program):
-            self.backup.backed_up(settings)
+            self.backup.backup_copies(settings)
             self.clean_project_files(program)
             return self.writer.write(settings)
 

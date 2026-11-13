@@ -38,7 +38,7 @@ class CheckWorktreeBehindHandler(Handler[CheckWorktreeBehind, BehindRoute]):
     def prepare(self, command: CheckWorktreeBehind, actor: Actor) -> None:
         worktree = self.rows.required(Worktree, command.worktree_id)
         self.tip = self.git.tip(worktree.folder, worktree.base_branch)
-        self.behind = self.git.behind_tip(worktree, self.tip)
+        self.behind = self.git.tip_lag_count(worktree, self.tip)
         self.moved = False
         if self.may_fast_forward(worktree):
             self.moved = self.git.fast_forward(worktree, self.tip)

@@ -22,7 +22,7 @@ class QueuedRunFollow:
         stated, offset = -1, 0
         while True:
             process = self.queries.query(Process).find(process_id)
-            if process.queued_at is not None and (queue_position := self.ahead(process)) != stated:
+            if process.queued_at is not None and (queue_position := self.waiting_count(process)) != stated:
                 output.line(f"waiting: {queue_position} ahead of you")
                 stated = queue_position
             has_ended = process.ended_at is not None
@@ -34,6 +34,6 @@ class QueuedRunFollow:
                 return process.exit_code if process.exit_code is not None else STOPPED_EXIT_CODE
             self.clock.sleep(END_POLL_SECONDS)
 
-    def ahead(self, process: Process) -> int:
+    def waiting_count(self, process: Process) -> int:
         waiting = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(HasValue("queued_at")).every_row(QUEUED_RUNS_REASON)
         return sum((different.priority.rank, different.id) < (process.priority.rank, process.id) for different in waiting)

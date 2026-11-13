@@ -30,7 +30,7 @@ class ColdSessionsSubcommand(ReadSubcommand[tuple[ColdSession, ...]]):
         main = MainAgentFinder.numbered_one(self.queries)
         if main is None or main.program != arguments.program or not self.cold.is_cold(main):
             return ()
-        return tuple([ColdSession(main.session, self.share.percent_of(main))])
+        return tuple([ColdSession(main.session, self.share.agent_percent(main))])
 
     def write_output(self, value: object, output: Output) -> None:
         if is_tuple(value):
