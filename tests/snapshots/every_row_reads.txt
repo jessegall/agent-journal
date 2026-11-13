@@ -156,6 +156,7 @@ src/core/modules/processes/listeners/ended_agent_runs_listener.py:an ended agent
 src/core/modules/processes/listeners/process_removal_listener.py:every reader request that sampled a removed process loses its sample
 src/core/modules/processes/listeners/reader_request_complete_listener.py:a completed request gives its reader to every part that waited for it
 src/core/modules/processes/queries/output_query.py:the output of every process asked about is read
+src/core/modules/processes/queries/process_part_query.py:a run is judged by all of its parts, and one shell line may have more than fifty
 src/core/modules/processes/queries/reader_request_query.py:the open reader requests are read once and kept until one completes
 src/core/modules/processes/rules/ended_output_line_rule.py:the agent is told of every run of its that ended since the last answer
 src/core/modules/processes/rules/leftover_run_rule.py:every run the agent left running when it stopped is orphaned
@@ -174,6 +175,7 @@ src/core/modules/processes/support/reading/catalogue_audit.py:every creator of a
 src/core/modules/processes/support/run_slots.py:the run slots are shared out over every running and queued run
 src/core/modules/processes/support/run_slots.py:the run slots are shared out over every running and queued run
 src/core/modules/processes/support/run_slots.py:the run slots are shared out over every running and queued run
+src/core/modules/processes/support/run_visibility.py:every part of the runs asked about decides how each run shows
 src/core/modules/processes/support/run_visibility.py:every part of the runs asked about decides how each run shows
 src/core/modules/processes/support/running_output_readers.py:a new reader is offered to every running output that has none
 src/core/modules/processes/support/running_output_readers.py:a new reader is offered to every running output that has none
@@ -325,7 +327,6 @@ src/suites/coding/modules/workers/support/worker_ask_facts_query.py:the facts na
 src/suites/coding/modules/workers/support/worker_ask_facts_query.py:the facts name every unfinished task of the phase and what it waits on
 src/suites/coding/modules/workers/support/worker_folder_runs.py:every helper of the worker and every run in its folder is stopped
 src/suites/coding/modules/workers/support/worker_folder_runs.py:every helper of the worker and every run in its folder is stopped
-src/suites/coding/modules/workers/support/worker_folders.py:the folder of every agent asked about comes from its newest worktree
 src/suites/coding/modules/workers/support/worker_log_lines.py:the review of a worker reads every log line of the tasks of its worktree
 src/suites/coding/modules/workers/support/worker_merge_range.py:a worker's unit is every task assigned to it, which can hold more than fifty
 src/suites/coding/modules/workers/support/worker_open_tasks.py:every task asked about is checked for an open dependency
