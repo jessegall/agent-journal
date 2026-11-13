@@ -2,6 +2,12 @@ from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
+from core.modules.assign_rules.commands.record_assign_decision.apply_assign_rule_handler import ApplyAssignRuleHandler
+from core.modules.assign_rules.commands.record_assign_decision.apply_assign_rule_subcommand import ApplyAssignRuleSubcommand
+from core.modules.assign_rules.commands.edit_assign_rule.move_rule_tasks_handler import MoveRuleTasksHandler
+from core.modules.assign_rules.commands.edit_assign_rule.move_rule_tasks_subcommand import MoveRuleTasksSubcommand
+from core.modules.assign_rules.commands.delete_assign_rule.return_rule_tasks_handler import ReturnRuleTasksHandler
+from core.modules.assign_rules.commands.delete_assign_rule.return_rule_tasks_subcommand import ReturnRuleTasksSubcommand
 from core.modules.assign_rules.commands.assign_rule_board.assign_rule_board_subcommand import AssignRuleBoardSubcommand
 from core.modules.assign_rules.commands.count_assign_rule.count_assign_rule_subcommand import CountAssignRuleSubcommand
 from core.modules.assign_rules.commands.delete_assign_rule.delete_assign_rule_handler import DeleteAssignRuleHandler
@@ -53,9 +59,11 @@ class AssignRulesModule(Module):
     models = [ModelDeclaration(AssignRule, excluded_subcommands=EXCLUDED_WRITES), ModelDeclaration(AssignRuleCondition, excluded_subcommands=EXCLUDED_WRITES), ModelDeclaration(AssignDecision, excluded_subcommands=EXCLUDED_WRITES)]
     migrations = [AssignRulesMigration, DecisionIndexesMigration, RuleTargetAgentMigration]
     listeners = [AutoAssignTaskListener, AutoAssignTagListener, AgentStartRetryListener]
-    handlers = [RecordAssignDecisionHandler, JudgeTaskHandler, RecordFailedDecisionHandler, JudgeSkippedTasksHandler, MakeAssignRuleHandler, EditAssignRuleHandler, MoveAssignRuleHandler, SwitchAssignRuleHandler, DeleteAssignRuleHandler]
+    handlers = [RecordAssignDecisionHandler, JudgeTaskHandler, RecordFailedDecisionHandler, JudgeSkippedTasksHandler, MakeAssignRuleHandler, EditAssignRuleHandler, MoveAssignRuleHandler, SwitchAssignRuleHandler, DeleteAssignRuleHandler,
+                ApplyAssignRuleHandler, MoveRuleTasksHandler, ReturnRuleTasksHandler]
     subcommands = [MakeAssignRuleSubcommand, EditAssignRuleSubcommand, MoveAssignRuleSubcommand, EnableAssignRuleSubcommand, DisableAssignRuleSubcommand, DeleteAssignRuleSubcommand,
-                   TryAssignRuleSubcommand, WhyAssignRuleSubcommand, RecordAssignDecisionSubcommand, AssignRuleBoardSubcommand, CountAssignRuleSubcommand]
+                   TryAssignRuleSubcommand, WhyAssignRuleSubcommand, RecordAssignDecisionSubcommand, AssignRuleBoardSubcommand, CountAssignRuleSubcommand,
+                   ApplyAssignRuleSubcommand, MoveRuleTasksSubcommand, ReturnRuleTasksSubcommand]
     guards = [AssignRulePersonGuard, AssignRuleTargetGuard]
     bindings = {AssignmentReasons: RuleAssignmentReasons}
     nudges = ASSIGN_RULES_NUDGES

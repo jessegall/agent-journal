@@ -71,11 +71,11 @@ def test_s30_only_a_variable_naming_a_plugin_leaves_the_script_empty_and_reads_t
     story.expect_rows(caller.plugin_script == "", caller.actor == story.user, len(reads) == 1)
 
 
-def test_s30_a_session_reads_no_table_and_names_no_plugin(new_story):
+def test_s30_a_session_reads_the_table_once_for_its_chain_and_names_no_plugin(new_story):
     story = event_plugin_story(new_story)
     reads = counted_table_reads(story)
     caller = story.container.get(CallerResolver).caller(CallerRequest(variables={SESSION_VARIABLE: "s-1"}, folder="/", pid=CLIENT_PID))
-    story.expect_rows(caller.plugin_script == "", caller.actor == story.agent, not reads)
+    story.expect_rows(caller.plugin_script == "", caller.actor == story.agent, len(reads) == 1)
 
 
 def test_s30_an_agent_that_names_a_plugin_in_a_variable_is_still_guarded(new_story):

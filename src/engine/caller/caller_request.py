@@ -9,11 +9,13 @@ SESSION_VARIABLE = "JOURNAL_AGENT_SESSION"
 @dataclass(frozen=True)
 class CallerRequest:
     """What a run knows of its caller: the environment variables it was started with, its working folder, and
-    the pid of the process that asked."""
+    the pid of the process that asked. A request from a hosted journal's agent does not trust its variables:
+    only its chain of processes names its caller."""
 
     variables: Mapping[str, str] = field(default_factory=dict[str, str])
     folder: str = ""
     pid: int = 0
+    trusts_variables: bool = True
 
     @property
     def process_id(self) -> int | None:

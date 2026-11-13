@@ -17,5 +17,9 @@ class AssignRulePersonGuard(Guard[Changed[AssignRule] | Changed[AssignRuleCondit
     is_safety = True
 
     def check(self, event: Changed[AssignRule] | Changed[AssignRuleCondition], context: Context) -> None:
+        self.require_person(context)
+
+    @staticmethod
+    def require_person(context: Context) -> None:
         if context.actor.type is not ActorType.USER:
             raise Refusal(PERSON_WRITES_RULES, "a person changes rules in the agent settings")

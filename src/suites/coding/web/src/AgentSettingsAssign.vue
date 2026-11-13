@@ -2,11 +2,12 @@
 import {computed, onMounted, ref} from "vue";
 import {useWindow} from "@journal/window-kit";
 import AssignRuleActivity from "./AssignRuleActivity.vue";
+import AssignRuleTaskChange from "./AssignRuleTaskChange.vue";
 
 // the assign tab: the targets a person gives rules to, the rules of the chosen one in the order where the first match
 // wins, and a form for a new rule; every change names the revision of the rules it was made from, so a change made
 // from an older reading is refused and the tab reads the rules again; a rule is tried on one task before it is
-// saved, which assigns nothing
+// saved, which assigns nothing; a rule's tasks are applied, moved or given back after a list and a confirmation
 const WRITES_CODE = "journal.suites.coding.main-writes-code";
 const props = defineProps({draft: {type: Object, required: true}, readOnly: Boolean});
 const view = useWindow();
@@ -107,6 +108,7 @@ async function countRecent() {
                                 <button type="button" :title="rule.enabled ? 'Turn the rule off' : 'Turn the rule on'" @click="turn(rule)">{{ rule.enabled ? "Turn off" : "Turn on" }}</button>
                                 <button type="button" title="Delete the rule" @click="remove(rule)">Delete</button>
                             </span>
+                            <AssignRuleTaskChange :rule="rule" :revision="board.revision" @changed="view.reload('assign')" @failed="failure = $event" />
                         </template>
                     </div>
                 </template>
@@ -173,7 +175,7 @@ async function countRecent() {
 .facts { color: var(--text-3); font-size: 11.5px; }
 .rules { display: flex; flex-direction: column; gap: 8px; }
 .note, .all, .empty { margin: 0; color: var(--text-3); font-size: 12px; }
-.rule { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid var(--border-2); border-radius: 8px; }
+.rule { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid var(--border-2); border-radius: 8px; }
 .rule.off { opacity: 0.6; }
 .rule.warned { border-color: var(--warn); }
 .place { min-width: 18px; color: var(--text-3); }

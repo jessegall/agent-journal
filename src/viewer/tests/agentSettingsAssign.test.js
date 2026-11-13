@@ -101,3 +101,19 @@ test("a main-agent rule warns while the main agent writes no code here", async (
     await settled();
     expect(element.querySelector("[data-assign-main-warning]")).toBeNull();
 });
+
+test("Apply now lists the tasks first and changes them only once the person confirms", async () => {
+    const listing = {rule_id: 7, confirmed: false, text: "rule 7: 1 tasks", tasks: [{task_id: 12, title: "Fix the cart", target: "the main agent"}]};
+    const {element, reads, runs} = await mount({runAnswer: {ok: true, value: listing}});
+    await choose(element, "assign");
+    element.querySelector('[data-assign-rule="7"] [data-assign-change="apply"]').click();
+    await settled();
+    expect(runs).toEqual([["assign-rule", "apply", "7", "--revision", "r1", "--environment", "main"]]);
+    expect(texts(element, "[data-assign-listing] .task")).toEqual(["Task 12, Fix the cart: the main agent"]);
+    const before = boardReads(reads);
+    element.querySelector("[data-assign-confirm]").click();
+    await settled();
+    expect(runs[1]).toEqual(["assign-rule", "apply", "7", "--confirm", "--revision", "r1", "--environment", "main"]);
+    expect(element.querySelector("[data-assign-listing]")).toBeNull();
+    expect(boardReads(reads)).toBeGreaterThan(before);
+});

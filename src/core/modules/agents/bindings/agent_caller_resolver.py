@@ -22,31 +22,42 @@ LOGIN_VARIABLE = "USER"
 
 
 PLUGIN_VARIABLE = "JOURNAL_PLUGIN"
+CHAIN_ONLY_REFUSAL = "a hosted journal knows its caller by its chain of processes, and no agent of the journal started this command"
 
 
 class AgentCallerResolver(CallerResolver):
-    """Resolves explicit sessions, then ancestors matching PID and start time or open program sessions.
-    Login and folder resolve callers; unresolved programs use core.
-    Runner sessions may name ended agents."""
+    """Resolves the agent in the chain of processes first, matching PID and start time, then an explicit session
+    or an open program session, then the login. A request that does not trust its variables (an agent of a
+    hosted journal) is never named by them: with no agent in its chain it is refused. Runner sessions may name
+    ended agents."""
 
     def __init__(self, agents: AgentQuery, chain: ProcessChain, environments: EnvironmentQuery, actors: ActorQuery, providers: Providers, scripts: PluginScriptProcesses, policy: ScriptPolicy) -> None:
         self.agents, self.chain, self.environments, self.actors, self.providers, self.scripts, self.policy = agents, chain, environments, actors, providers, scripts, policy
 
     def caller(self, request: CallerRequest) -> Caller:
-        program_sessions = tuple(request.variables[provider.session_variable] for provider in self.providers.all() if provider.session_variable in request.variables)
+        steps = self.chain.steps(request.pid)
+        chain_agent = self.ancestor_agent(steps)
+        if chain_agent is not None:
+            return Caller(Actor(chain_agent.id, ActorType.AGENT), chain_agent.environment_id, self.plugin_script(request, steps))
+        if not request.trusts_variables:
+            raise UsageError(CHAIN_ONLY_REFUSAL)
         session_agent = self.session_agent(request)
         if session_agent is not None:
             return Caller(Actor(session_agent.id, ActorType.AGENT), session_agent.environment_id)
-        steps = self.chain.steps(request.pid)
-        # A variable proves nothing in a server, where the chain of processes decides. In a direct run the server's list
-        # of scripts cannot be reached, and an agent setting it only skips the commit scripts of that plugin there.
-        plugin_script = self.scripts.owner(steps) or self.token_plugin(request) or ("" if self.policy.guards_run else request.variables.get(PLUGIN_VARIABLE, ""))
-        agent = self.ancestor_agent(steps) or self.program_agent(program_sessions)
+        plugin_script = self.plugin_script(request, steps)
+        environment = self.environments.folder_environment(request.folder)
+        environment_id = environment.id if environment else None
+        program_sessions = tuple(request.variables[provider.session_variable] for provider in self.providers.all() if provider.session_variable in request.variables)
+        agent = self.program_agent(program_sessions)
         if agent is not None:
             return Caller(Actor(agent.id, ActorType.AGENT), agent.environment_id, plugin_script)
-        environment = self.environments.folder_environment(request.folder)
         person = None if program_sessions else self.actors.person(request.variables.get(LOGIN_VARIABLE, ""))
-        return Caller(Actor(person.id, ActorType.USER) if person else Actor.core(), environment.id if environment else None, plugin_script)
+        return Caller(Actor(person.id, ActorType.USER) if person else Actor.core(), environment_id, plugin_script)
+
+    # A variable proves nothing in a server, where the chain of processes decides. In a direct run the server's list
+    # of scripts cannot be reached, and an agent setting it only skips the commit scripts of that plugin there.
+    def plugin_script(self, request: CallerRequest, steps: Sequence[ProcessRow]) -> str:
+        return self.scripts.owner(steps) or self.token_plugin(request) or ("" if self.policy.guards_run else request.variables.get(PLUGIN_VARIABLE, ""))
 
     def token_plugin(self, request: CallerRequest) -> str:
         return self.scripts.token_owner(request.variables.get(PLUGIN_VARIABLE, ""), request.variables.get(PLUGIN_TOKEN_VARIABLE, ""))

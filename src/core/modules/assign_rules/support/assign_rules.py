@@ -108,12 +108,30 @@ class AssignRules:
         if not self.mode.is_assigning():
             return None
         try:
-            self.assignments.assign(task, actor_id, context, cascade=False)
+            self.give(task, rule, actor_id, context)
         except Refusal as refusal:
             return refusal.reason
+        return None
+
+    def give(self, task: Task, rule: AssignRule, actor_id: int, context: Context) -> None:
+        self.assignments.assign(task, actor_id, context, cascade=False)
         given = next(assignment for assignment in self.assignments.assignments(task) if assignment.actor_id == actor_id)
         self.repository.save_metadata(given, RuleMark(rule.id).stored_metadata(given.metadata), context)
         self.nudge_main_agent(task, rule, actor_id, context)
+
+    def move(self, task: Task, rule: AssignRule, actor_id: int, context: Context) -> AssignDecision:
+        self.assignments.unassign(task, context)
+        self.give(task, rule, actor_id, context)
+        return self.record(task, self.stored_decision(task), DecisionOutcome.ASSIGNED, rule, actor_id, f"rule {rule.id} moved it to {rule.target_name}", context)
+
+    def choose_rule(self, task: Task, batch: DecisionBatch) -> AssignRule | None:
+        if self.is_given(self.stored_decision(task)) or self.unfree(task) is not None:
+            return None
+        for rule in self.matching_rules(self.facts_reader.read(task)):
+            usable = self.targets.usable(rule, batch)
+            if usable.actor_id is not None:
+                batch.give(usable.actor_id)
+                return rule
         return None
 
     def nudge_main_agent(self, task: Task, rule: AssignRule, actor_id: int, context: Context) -> None:

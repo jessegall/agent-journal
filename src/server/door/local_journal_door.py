@@ -8,3 +8,6 @@ class LocalJournalDoor(JournalDoor):
 
     def refusal(self, route: str, peer: SocketPeer) -> DoorRefusal | None:
         return None
+
+    def trusts_variables(self, peer: SocketPeer) -> bool:
+        return True

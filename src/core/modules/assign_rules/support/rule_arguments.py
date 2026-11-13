@@ -5,11 +5,13 @@ from core.modules.assign_rules.models.enums.rule_target import RuleTarget
 from core.modules.assign_rules.support.condition_line import ConditionLine
 
 REVISION_HELP = "the revision of the rules the change was made from; a change from an older one is refused"
+CONFIRM_HELP = "change the listed tasks; without it the tasks are only listed"
 CONDITION_HELP = "a condition as <field> <operator> <value>, such as 'complexity minimum 4' or 'any'; repeat it for more"
 
 
 class RuleArguments:
-    """The flags of a rule shared by make and edit: its target and its conditions."""
+    """The flags of a rule shared by its commands: its target, its conditions, and the rule and confirmation of a
+    change to the tasks it gave."""
 
     @staticmethod
     def add(parser: ArgumentParser, target_required: bool) -> None:
@@ -24,6 +26,12 @@ class RuleArguments:
     @staticmethod
     def add_revision(parser: ArgumentParser) -> None:
         parser.add_argument("--revision", default="", help=REVISION_HELP)
+
+    @staticmethod
+    def add_task_change(parser: ArgumentParser) -> None:
+        parser.add_argument("rule_id", type=int)
+        parser.add_argument("--confirm", dest="is_confirmed", action="store_true", help=CONFIRM_HELP)
+        RuleArguments.add_revision(parser)
 
     @staticmethod
     def conditions(arguments: Namespace) -> tuple[ConditionLine, ...]:
