@@ -19,4 +19,4 @@ class MetadataEqual:
     def statement(self) -> Statement:
         if not (MODULE_NAME.match(self.module) and PLAIN_KEY.match(self.key)):
             raise MetadataKeyError(f"metadata is read by plain names, not {self.module}.{self.key}")
-        return Statement(f"json_extract(metadata, '$."{self.module}".{self.key}') = ?", [self.value])
+        return Statement(f"json_extract(metadata, '$.\"{self.module}\".{self.key}') = ?", [self.value])

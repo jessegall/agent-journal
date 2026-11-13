@@ -132,7 +132,7 @@ class CodingModule(Module):
                                        WindowKey("type-screen", "setting-screen show helper-type", arguments=["type"], loading=KeyLoading.REQUESTED, events=["setting.*"]),
                                        WindowKey("count-agents", "agent cards --show all --reusable", arguments=["role", "profile", "page"], loading=KeyLoading.REQUESTED, events=["agent.*"])]),
                WindowDeclaration("coding.agent-settings", "Agent settings", "agent-settings.js", WindowLoading.COMPONENT, skeleton=CODING_AGENT_SETTINGS_SKELETON, icon=WindowIcon.WINDOW,
-                                 reads=["work-settings show", "setting-screen show", "setting-screen index", "agent limits", "agent cards", "setting show", "assign-rule board", "assign-rule try", "assign-rule recent"],
+                                 reads=["work-settings show", "setting-screen show", "setting-screen index", "agent limits", "agent cards", "setting show", "assign-rule board", "assign-rule try", "assign-rule recent", "worker-route list"],
                                  runs=["work-settings apply", "work-settings preset", "setting-screen apply", "setting set", "agent profile-limits", "agent retire", "assign-rule make", "assign-rule edit", "assign-rule move",
                                        "assign-rule enable", "assign-rule disable", "assign-rule delete", "assign-rule apply", "assign-rule reassign", "assign-rule give-back"],
                                  events=["setting.*", "agent.*", "assign_rule.*", "assign_rule_condition.*", "worker_route.*"],
