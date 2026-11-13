@@ -1,7 +1,10 @@
 from datetime import timedelta
 from threading import Event, Thread
 
+import json
+
 from engine.database.database import Database
+from engine.database.hook_requests_table import HookRequestsTable
 from engine.enums.execution_priority import ExecutionPriority
 from engine.execution.current_execution import CurrentExecution
 from engine.testing.stories.story import Story
@@ -79,9 +82,11 @@ class StoryWriteTurns(WriteTurnQueue):
                     return
                 self.changed.wait(WAITING_CHECK_SECONDS)
 
-    def transaction_run(self, line: str) -> None:
-        with self.story.container.get(Database).transaction():
-            self.story.run(line)
+    # Writes one row in a savepoint of a transaction, as a command dispatched inside another one does.
+    def savepoint_write(self) -> None:
+        database = self.story.container.get(Database)
+        with database.transaction(), database.savepoint("story write"):
+            HookRequestsTable(database).insert(json.dumps({"body": {"event": "savepoint write"}}))
 
     # Runs the line inside one turn held by a named class at agent priority while the story's clock moves on.
     def slow_turn_run(self, line: str, seconds: int) -> None:

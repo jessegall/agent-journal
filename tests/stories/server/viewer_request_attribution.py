@@ -113,7 +113,7 @@ def test_contention_drops_no_row_and_a_tick_writes_it_once_the_database_is_free(
     with sqlite3.connect(server.story.home.database, autocommit=True) as writer:
         writer.execute("BEGIN IMMEDIATE")
         request(server, cookie, "/api/line", line())
-        writer.rollback()
+        writer.execute("ROLLBACK")
     _, status = request(server, cookie, "/api/request-log-status")
     expect_value(status["attempted"], 1)
     expect_value(status["recorded"], 1)

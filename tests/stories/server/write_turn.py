@@ -37,9 +37,8 @@ def test_a_write_that_raises_rolls_back_and_the_next_writer_starts_at_once(turns
 
 
 def test_a_savepoint_inside_a_held_transaction_uses_the_turn_it_has(turns):
-    turns.transaction_run('task make "Inside one transaction" --brief "Its command runs in a savepoint" --environment main')
-    turns.story.expect_rows(len(turns.turn_statements) == 1, turns.turn_statements[0] > 0,
-                            detail=f"each turn handed out and its statements: {turns.turn_statements}")
+    turns.savepoint_write()
+    turns.story.expect_rows(turns.turn_statements == [1], detail=f"each turn handed out and its statements: {turns.turn_statements}")
 
 
 def test_a_writer_turn_started_the_turn_over_a_second_is_logged_with_its_class_priority_line_and_statements(turns):

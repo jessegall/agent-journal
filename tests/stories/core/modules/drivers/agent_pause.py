@@ -147,7 +147,7 @@ def test_the_pause_ends_with_the_agent(paused_task_holder):
 
 
 def test_a_worker_of_a_paused_agent_may_only_read_and_goes_on_after_the_resume(new_story):
-    story = paused_story(new_story, MainWithOneWorker)
+    story = new_story(fixture=MainWithOneWorker)
     story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
     story.expect_hook_refusal(WORKER_SESSION, EDIT_SAMPLE, "The user paused you")
     story.expect_hook_refusal(WORKER_SESSION, WRITING_LISTING_SAMPLE, "The user paused you")
