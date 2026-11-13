@@ -1,5 +1,5 @@
 <script setup>
-import {computed, inject, ref, watch} from "vue";
+import {computed, inject, nextTick, ref, watch} from "vue";
 import {INSPECTOR_ACTIONS} from "../../../kit/windowContextKey.js";
 import {render} from "../../text/index.js";
 import Btn from "../../kit/Btn.vue";
@@ -31,6 +31,7 @@ const questionFailure = ref("");
 const notesMode = ref("comments");
 const tab = ref("text");
 const hot = ref(0);
+const notesOpen = ref(false);
 const inline = ref(0);
 const lost = ref([]);
 const selection = ref(null);
@@ -83,14 +84,19 @@ function clearSelection() {
     if (!draft.value.trim()) selection.value = null;
 }
 
-function linked(id) {
+async function linked(id) {
     hot.value = id;
     if (narrow.value && notesMode.value === "questions") {
         tab.value = "comments";
         return;
     }
-    if (narrow.value) inline.value = inline.value === id ? 0 : id;
-    else panel.value.querySelector(notesMode.value === "questions" ? `[data-question-id="${id}"]` : `[data-comment-id="${id}"]`)?.scrollIntoView({block: "nearest"});
+    if (narrow.value) {
+        inline.value = inline.value === id ? 0 : id;
+        return;
+    }
+    notesOpen.value = true;
+    await nextTick();
+    panel.value.querySelector(notesMode.value === "questions" ? `[data-question-id="${id}"]` : `[data-comment-id="${id}"]`)?.scrollIntoView({block: "nearest"});
 }
 
 async function showInText(id) {
@@ -108,6 +114,7 @@ function saved() {
 watch(() => `${props.term}:${props.id}`, () => {
     row.value = null;
     tab.value = "text";
+    notesOpen.value = false;
     hot.value = 0;
     inline.value = 0;
     selection.value = null;
@@ -138,6 +145,9 @@ watch(notesMode, () => {
             <button type="button" :class="['document-tab-button', {on: shownTab === 'text'}]" data-document-tab="text" @click="tab = 'text'">Text</button>
             <template v-if="narrow">
                 <button type="button" :class="['document-tab-button', {on: shownTab === 'comments'}]" data-document-tab="comments" @click="tab = 'comments'">{{ notesMode === 'questions' ? 'Questions' : 'Comments' }} <em>{{ annotationTotal || "" }}</em></button>
+            </template>
+            <template v-else>
+                <button type="button" :class="['document-tab-button', {on: notesOpen}]" :aria-pressed="notesOpen" data-document-notes-toggle @click="notesOpen = !notesOpen">{{ notesMode === 'questions' ? 'Questions' : 'Comments' }} <em>{{ annotationTotal || "" }}</em></button>
             </template>
             <template v-if="term === 'doc'">
                 <button type="button" :class="['document-tab-button', {on: shownTab === 'revisions'}]" data-document-tab="revisions" @click="tab = 'revisions'">Revisions <em>{{ revisions.length || "" }}</em></button>
@@ -173,7 +183,7 @@ watch(notesMode, () => {
                         <dt>Updated</dt><dd><TimeAgo :at="row.updated_at" /></dd>
                     </dl>
                 </DocumentText>
-                <template v-if="!narrow">
+                <template v-if="!narrow && notesOpen">
                     <DocumentSidebar v-model:mode="notesMode" :comments="comments" :questions="questions" :hot="hot" :lost="lost" :failure="questionFailure" :read="read" :comment-more="Boolean(textComments.nextPage.value)" :comment-loading="textComments.loading.value" :comment-failure="textComments.failure.value" :comment-total="textComments.total.value" @more="textComments.loadMore" @show="showInText" @changed="load" />
                 </template>
             </template>
