@@ -222,6 +222,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                 queued_ms = (perf_counter() - started_at) * 1000
                 code = CliEndpoint(context.home, ListenerWake(context.listener_thread), context.reported_findings, queue, context.request_trace.completed, context.hook_database.turns).answer(request, ChunkStream(self.send_chunk, self.has_caller_disconnected))
         except Exception as error:
+            if client_disconnected(error):
+                self.close_connection = True
+                return
             self.journal_server().context.files.log_line("".join(traceback.format_exception(error)), LogLevel.ERROR)
             self.send_chunk(f"{type(error).__name__}: {error}\n".encode())
             code = ERROR_CODE
