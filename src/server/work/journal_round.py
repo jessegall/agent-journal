@@ -13,10 +13,9 @@ from engine.journal.journal_home import JournalHome
 from engine.listener.round_yield import RoundYield
 from server.hook.queue_round_yield import QueueRoundYield
 from server.work.round_work import RoundWork
+from server.work.kept_round_container import BACKGROUND_BUSY_TIMEOUT_SECONDS
 from server.hook.server_queue import ServerQueue
 from server.hook.queue_request import QueueRequest
-
-BACKGROUND_BUSY_TIMEOUT_SECONDS = 60.0
 
 
 def background_container(home: JournalHome, turns: WriteTurns | None = None) -> Container:
