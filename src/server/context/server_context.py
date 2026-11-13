@@ -14,15 +14,18 @@ from server.tick.server_tunnel import ServerTunnel
 from server.viewer.viewer_endpoint import ViewerEndpoint
 from server.viewer.request_trace import RequestTrace
 
+# a client that keeps its connection and sends nothing more is let go; a running request is never cut
+IDLE_CONNECTION_SECONDS = 30
 
 
 @dataclass(frozen=True)
 class ServerContext:
     """What every request of one server shares: the journal's folder, the code the server started with, its
-    files, when it started, its listener thread, the database connection its hooks share, the viewer's
+    files, when it started, the wakes of its listener threads, the database connection its hooks share, the viewer's
     listener, the findings of repeated work it has reported (the viewer's lines share them), the door its
     socket's requests pass, how long a hook
-    waits for another writer, and how far its hooks have read each session file."""
+    waits for another writer, how far its hooks have read each session file, and how long a kept connection may
+    sit idle before the server closes it."""
 
     home: JournalHome
     code_version: CodeVersion
@@ -39,6 +42,7 @@ class ServerContext:
     stop_limit_seconds: float = STOP_LIMIT_SECONDS
     transcript_entries: TranscriptEntries = field(default_factory=TranscriptEntries)
     clock: Clock = field(default_factory=Clock)
+    idle_connection_seconds: float = IDLE_CONNECTION_SECONDS
 
     @property
     def request_trace(self) -> RequestTrace:

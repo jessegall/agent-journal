@@ -291,7 +291,7 @@ func destination(outgoing delivery) (string, http.RoundTripper, bool) {
 		return "", nil, false
 	}
 	address := fmt.Sprintf("http://127.0.0.1:%s/hooks/%s", strings.TrimSpace(string(port)), outgoing.program)
-	return address, &http.Transport{DialContext: (&net.Dialer{Timeout: connectLimit}).DialContext}, true
+	return address, &http.Transport{DialContext: (&net.Dialer{Timeout: connectLimit}).DialContext, DisableKeepAlives: true}, true
 }
 
 // The version a running journal reports, from its version.py: VERSION = "4.69.9".

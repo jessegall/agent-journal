@@ -55,7 +55,9 @@ class RequestHandler(BaseHTTPRequestHandler):
     status: int = 0
     exit_code: int | None = None
 
+    # the timeout holds only while the handler waits to read the next request, so a running request is never cut
     def setup(self) -> None:
+        self.timeout = self.journal_server().context.idle_connection_seconds
         super().setup()
         self.timing = Timing.started("server_accepted", PerformanceState(self.journal_server().context.home))
         self.peer = socket_peer(self.connection)
