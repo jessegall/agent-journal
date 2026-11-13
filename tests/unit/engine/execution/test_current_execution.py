@@ -17,9 +17,9 @@ def test_set_for_a_block_and_restored():
 
 
 def test_other_thread_keeps_its_own():
-    seen = []
+    executions_read = []
     with HOOK.applied():
-        thread = threading.Thread(target=lambda: seen.append(CurrentExecution.read()))
+        thread = threading.Thread(target=lambda: executions_read.append(CurrentExecution.read()))
         thread.start()
         thread.join()
-    assert seen == [BACKGROUND_EXECUTION]
+    assert executions_read == [BACKGROUND_EXECUTION]

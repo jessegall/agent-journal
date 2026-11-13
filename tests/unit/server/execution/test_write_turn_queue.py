@@ -31,20 +31,20 @@ class TurnThreads:
         self.threads: list[threading.Thread] = []
 
     def ask(self, name: str, priority: ExecutionPriority) -> threading.Event:
-        asked = threading.Event()
+        ask_started = threading.Event()
 
         def run() -> None:
             with CurrentExecution(priority, name, name).applied():
-                asked.set()
+                ask_started.set()
                 with self.queue.write_turn():
                     self.order.append(name)
 
         thread = threading.Thread(target=run)
         self.threads.append(thread)
         thread.start()
-        asked.wait()
+        ask_started.wait()
         self.wait_until_waiting(len(self.threads))
-        return asked
+        return ask_started
 
     def wait_until_waiting(self, count: int) -> None:
         with self.queue.changed:
@@ -115,13 +115,13 @@ def test_wait_past_limit_names_the_holder(turn_threads):
             failures.append(error)
 
     with CurrentExecution(ExecutionPriority.AGENT, "hook", "task close 4").applied(), turn_threads.queue.write_turn():
-        waiter = threading.Thread(target=ask)
-        waiter.start()
-        turn_threads.threads.append(waiter)
+        busy_writer = threading.Thread(target=ask)
+        busy_writer.start()
+        turn_threads.threads.append(busy_writer)
         turn_threads.wait_until_waiting(1)
         turn_threads.clock.seconds += LIMIT_SECONDS
         turn_threads.queue.wake_waiters()
-        waiter.join()
+        busy_writer.join()
     assert "hook at agent priority: task close 4" in str(failures[0])
 
 
