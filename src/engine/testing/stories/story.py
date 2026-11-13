@@ -96,6 +96,7 @@ class Story:
         self.failed_expectations: list[str] = []
         self.steps: list[str] = []
         self.path: list[str] = []
+        self.checks: list[str] = []
         self.state = state
         self.environment: str | None = None
         self.fixture_environment: str | None = None
@@ -236,12 +237,14 @@ class Story:
         return self.hook(session, HookSamples.tick())
 
     def expect_hook_allowed(self, session: str, sample: HookSample, *expected_lines: ExpectedText) -> None:
+        self.checked(f"hook {sample.action}")
         reply = self.hook(session, sample)
         self.expected(reply.refusal == "", f"the hook was refused: {reply.refusal}")
         missing = [line for line in expected_lines if not holds_line(reply.lines, line)]
         self.expected(not missing, f"the hook's lines {list(reply.lines)} hold none of {missing}")
 
     def expect_hook_nudges(self, session: str, sample: HookSample, *nudges: SaidNudge) -> HookReply:
+        self.checked(f"hook {sample.action}")
         reply = self.hook(session, sample)
         told = [*reply.lines, reply.refusal]
         missing = [nudge.declaration.key for nudge in nudges if not nudge.is_in_any(told)]
@@ -249,33 +252,44 @@ class Story:
         return reply
 
     def expect_no_hook_nudge(self, session: str, sample: HookSample, nudge: SaidNudge) -> HookReply:
+        self.checked(f"hook {sample.action}")
         reply = self.hook(session, sample)
         told = [*reply.lines, reply.refusal]
         self.expected(not nudge.is_in_any(told), f"the hook told {nudge.declaration.key}: {told}")
         return reply
 
     def expect_ordered_hook_lines(self, session: str, sample: HookSample, *texts: str) -> None:
+        self.checked(f"hook {sample.action}")
         reply = self.hook(session, sample)
         places = [next((place for place, line in enumerate(reply.lines) if text in line), -1) for text in texts]
         self.expected(-1 not in places and places == sorted(places), f"the hook's lines {list(reply.lines)} do not hold {list(texts)} in this order")
 
     def expect_hook_silent(self, session: str, sample: HookSample) -> None:
+        self.checked(f"hook {sample.action}")
         reply = self.hook(session, sample)
         self.expected(reply.refusal == "" and not reply.lines, f"the hook was answered: {reply}")
 
     def expect_absent_hook_line(self, session: str, sample: HookSample, line: ExpectedText) -> None:
+        self.checked(f"hook {sample.action}")
         reply = self.hook(session, sample)
         self.expected(not holds_line(reply.lines, line), f"the hook's lines {list(reply.lines)} hold {line!r}")
 
     def expect_hook_refusal(self, session: str, sample: HookSample, reason: ExpectedText) -> None:
+        self.checked(f"hook {sample.action}")
         reply = self.hook(session, sample)
         self.expected(holds_text(reply.refusal, reason), f"the hook's refusal {reply.refusal!r} does not say {reason!r}")
+
+    def checked(self, subject: str) -> None:
+        """Keeps what a check reads, its numbers left out, so the overlap check can tell stories that check the
+        same thing from stories that check wholly different things."""
+        self.checks.append(re.sub(r"\d+", "N", subject))
 
     def expected(self, passed: bool, message: str) -> None:
         if not passed:
             self.failed_expectations.append(message)
 
     def expect_success(self, line: str, *expected_lines: str, actor: Actor | None = None) -> None:
+        self.checked(line)
         outcome = self.run(line, actor)
         self.expected(outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}")
         lines = self.with_touched_rows(outcome).splitlines()
@@ -294,11 +308,13 @@ class Story:
         return outcome.output_text + stream.getvalue()
 
     def expect_ordered_lines(self, line: str, *texts: str, actor: Actor | None = None) -> None:
+        self.checked(line)
         outcome = self.run(line, actor)
         places = [outcome.output_text.find(text) for text in texts]
         self.expected(outcome.code == 0 and -1 not in places and places == sorted(places), f"{line} did not name {texts} in order: {outcome.output_text}")
 
     def expect_text(self, line: str, *texts: ExpectedText, actor: Actor | None = None) -> None:
+        self.checked(line)
         outcome = self.run(line, actor)
         self.expected(outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}")
         output_text = self.with_touched_rows(outcome)
@@ -306,11 +322,13 @@ class Story:
         self.expected(not missing, f"{line} printed none of {missing}:\n{outcome.output_text}")
 
     def expect_no_text(self, line: str, *texts: ExpectedText, actor: Actor | None = None) -> None:
+        self.checked(line)
         outcome = self.run(line, actor)
         matching = [text for text in texts if holds_text(outcome.output_text, text)]
         self.expected(not matching, f"{line} printed {matching}:\n{outcome.output_text}")
 
     def expect_refusal(self, line: str, reason: ExpectedText, actor: Actor | None = None) -> None:
+        self.checked(line)
         outcome = self.run(line, actor)
         self.expected(outcome.code == 1, f"{line} was not refused: {outcome.code} {outcome.output_text}")
         self.expected(holds_text(outcome.output_text, reason), f"{line} was refused, but not for {reason!r}: {outcome.output_text}")
@@ -320,12 +338,14 @@ class Story:
         self.expected(outcome.code == 2, f"{line} was no usage error: {outcome.code} {outcome.output_text}")
 
     def expect_absent(self, line: str, *absent_lines: str, actor: Actor | None = None) -> None:
+        self.checked(line)
         outcome = self.run(line, actor)
         self.expected(outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}")
         for absent_line in absent_lines:
             self.expected(absent_line not in outcome.output_text.splitlines(), f"{line} printed {absent_line!r}:\n{outcome.output_text}")
 
     def expect_requested_success(self, line: str, request: CallerRequest, *expected_lines: str) -> None:
+        self.checked(line)
         outcome = self.run_requested(line, request)
         self.expected(outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}")
         lines = self.with_touched_rows(outcome).splitlines()
@@ -333,6 +353,7 @@ class Story:
             self.expected(expected_line in lines, f"{line} printed no line {expected_line!r}:\n{outcome.output_text}")
 
     def expect_requested_exit(self, line: str, request: CallerRequest, code: int, text: str) -> None:
+        self.checked(line)
         outcome = self.run_requested(line, request)
         self.expected(outcome.code == code and holds_text(outcome.output_text, text), f"{line} did not exit {code} naming {text!r}: {outcome.code} {outcome.output_text}")
 
@@ -394,6 +415,7 @@ class Story:
         return code, stream.getvalue()
 
     def expect_rows(self, *checks: object, detail: str = "") -> None:
+        self.checked("rows")
         self.expected(all(checks), detail or f"a row check failed: {checks}")
 
 

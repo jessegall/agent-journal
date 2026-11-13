@@ -15,6 +15,8 @@ class StorySteps:
         self.last_step = 0
         self.first_path_step = 0
         self.last_path_step = 0
+        self.first_check = 0
+        self.last_check = 0
         self.first_points = story.repeated_work.points().total
         self.first_cpu = StoryBudget.clock()
         self.points = 0
@@ -23,12 +25,14 @@ class StorySteps:
     def begin_test(self) -> None:
         self.first_step = len(self.story.steps)
         self.first_path_step = len(self.story.path)
+        self.first_check = len(self.story.checks)
         self.first_points = self.story.repeated_work.points().total
         self.first_cpu = StoryBudget.clock()
 
     def finish_test(self) -> None:
         self.last_step = len(self.story.steps)
         self.last_path_step = len(self.story.path)
+        self.last_check = len(self.story.checks)
         self.points = self.story.repeated_work.points().total - self.first_points
         self.cpu_seconds = StoryBudget.clock() - self.first_cpu
 
@@ -37,3 +41,6 @@ class StorySteps:
 
     def path(self) -> list[str]:
         return self.story.path[self.first_path_step:self.last_path_step]
+
+    def checks(self) -> list[str]:
+        return self.story.checks[self.first_check:self.last_check]

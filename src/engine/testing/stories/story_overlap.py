@@ -23,15 +23,18 @@ class StoryOverlap:
         self.stories: dict[str, list[str]] = {}
         self.story_paths: dict[str, list[str]] = {}
         self.story_fixtures: dict[str, str] = {}
+        self.story_checks: dict[str, set[str]] = defaultdict(set)
 
-    def add(self, test_id: str, start: str, lines: Sequence[str], path: Sequence[str], fixture: str = "") -> None:
+    def add(self, test_id: str, start: str, lines: Sequence[str], path: Sequence[str], fixture: str = "", checks: Sequence[str] = ()) -> None:
         self.stories[test_id] = [start, *(line for line in lines if not line.startswith(LISTENER_STEP))]
         self.story_fixtures[test_id] = fixture
         self.story_paths[test_id] = [start, *path]
+        self.story_checks[test_id.partition("[")[0]] |= set(checks)
 
     def report_lines(self) -> list[str]:
         paths = self.paths()
-        return [*self.shared_openings(), *self.overlapping_pairs(paths), *self.redundant_stories(paths)]
+        reached = {name: step_keys | {f"checks {subject}" for subject in self.story_checks[name]} for name, step_keys in paths.items()}
+        return [*self.shared_openings(), *self.overlapping_pairs(paths), *self.redundant_stories(reached)]
 
     def shared_openings(self) -> list[str]:
         lines: list[str] = []
@@ -64,9 +67,15 @@ class StoryOverlap:
         lines: list[str] = []
         for first, second in sorted(self.candidate_pairs(paths)):
             share = len(paths[first] & paths[second]) / len(paths[first] | paths[second])
-            if share > OVERLAP_LIMIT_SHARE:
-                lines.append(f"stories share {round(share * 100)}% of their steps, delete one or make them differ: {first} and {second}")
+            if share > OVERLAP_LIMIT_SHARE and self.check_the_same_thing(first, second):
+                lines.append(f"stories share {round(share * 100)}% of their steps and check the same thing, merge their checks into one story: {first} and {second}")
         return lines
+
+    def check_the_same_thing(self, first: str, second: str) -> bool:
+        """Two stories check the same thing unless each records what it checks and nothing of the one is in
+        the other: stories that check wholly different things are different tests."""
+        first_checks, second_checks = self.story_checks[first], self.story_checks[second]
+        return not first_checks or not second_checks or bool(first_checks & second_checks)
 
     @staticmethod
     def redundant_stories(paths: dict[str, set[str]]) -> list[str]:

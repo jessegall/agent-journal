@@ -125,7 +125,7 @@ def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.Fixt
         return story
     yield started
     for steps in created if item.stash.get(CALL_PASSED, False) else []:
-        overlap.add(item.nodeid, steps.start, steps.lines(), [] if StoryBody.reaches_internals(getattr(item, "function")) else steps.path(), steps.fixture)
+        overlap.add(item.nodeid, steps.start, steps.lines(), [] if StoryBody.reaches_internals(getattr(item, "function")) else steps.path(), steps.fixture, steps.checks())
         steps.story.close()
     created.clear()
     SharedTables.shared.cache_clear()

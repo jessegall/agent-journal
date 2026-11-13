@@ -167,3 +167,28 @@ def test_a_fixture_that_builds_on_another_and_adds_no_step_is_named():
     named = StoryOverlap.empty_fixture_lines([Base, Empty, Inherits, Adds])
     assert [line.rpartition(".")[2] for line in named] == ["Empty", "Inherits"], named
     assert all("adds no step to Base" in line for line in named)
+
+
+def overlap_with_checks(stories: dict[str, tuple[list[str], list[str]]]) -> list[str]:
+    overlap = StoryOverlap()
+    for test_id, (lines, checks) in stories.items():
+        overlap.add(test_id, "Started", lines, lines, "", checks)
+    return overlap.report_lines()
+
+
+SHARED_STEPS = [command("task list"), command("plan list"), command("task show"), command("plan show")]
+
+
+def test_stories_that_share_their_steps_but_check_wholly_different_things_are_different_tests():
+    report = overlap_with_checks({FIRST: ([*SHARED_STEPS, command("doc list")], ["task show N"]), SECOND: ([*SHARED_STEPS, command("doc show")], ["plan show N"])})
+    assert not any("share" in line for line in report), report
+
+
+def test_stories_that_share_their_steps_and_check_the_same_thing_are_told_to_merge_their_checks():
+    report = overlap_with_checks({FIRST: ([*SHARED_STEPS, command("doc list")], ["task show N"]), SECOND: ([*SHARED_STEPS, command("doc show")], ["task show N", "plan show N"])})
+    assert any("merge their checks" in line and FIRST in line and SECOND in line for line in report), report
+
+
+def test_a_story_that_checks_what_no_other_story_checks_reaches_something_new():
+    report = overlap_with_checks({FIRST: (SHARED_STEPS, ["task show N"]), SECOND: ([*SHARED_STEPS, command("doc show")], ["plan show N"])})
+    assert not any("reaches nothing" in line and FIRST in line for line in report), report
