@@ -41,11 +41,11 @@ At every context mark, take each memory and go down this ladder. Stop at the fir
 4. **Is there something you must still do but cannot start yet?** The user asked it, another agent asked it, or it
    waits on a test run, a helper, a worker or a release ("when the tests pass, install"; "tell the plugin session when
    task 9733 lands"). Weigh it 9, every time, until it is done. Work you owe never fades.
-5. **Do you need it for the work in hand?** Weigh it 7.
-6. **Will you need it later today?** Weigh it 6.
+5. **Will you need it later today?** Weigh it 7: it must outlast the work in hand.
+6. **Do you need it for the work in hand?** Weigh it 5.
 7. **Is it only nice to know?** Leave it alone and let it fade.
 
-`journal memory weigh 3,7,9 9,7,6` gives each memory its own weight, in order. A weight is never lowered: a memory that
+`journal memory weigh 3,7,9 9,7,5` gives each memory its own weight, in order. A weight is never lowered: a memory that
 matters less is left to fade, or removed when it is no longer true. `journal memory edit <n>` corrects one that is
 mostly true.
 

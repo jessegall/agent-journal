@@ -5,7 +5,10 @@ from engine.cli.move_subcommand import MoveSubcommand
 from engine.subcommand.subcommand import Subcommand, is_subcommand_class
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.command.command import Command
+from engine.command.edit_command import EditCommand
 from engine.command.move_command import MoveCommand
+from engine.cli.edit_subcommand import edit_command
+from engine.model.table import Table
 from engine.container.container import Container
 from engine.model.model import Model
 from engine.registry.model_entry import ModelEntry
@@ -45,6 +48,10 @@ class SubcommandLookup:
         entry = self.registry.models[cli_name]
         moves = self.defaults.moves(self.model(entry), entry.commands)
         return next(move.command_class for move in moves if move.command_class.move.name == move_name)
+
+    def edit_command(self, cli_name: str) -> type[EditCommand[Model]]:
+        entry = self.registry.models[cli_name]
+        return edit_command(Table.build(self.model(entry)))
 
     @staticmethod
     def model(entry: ModelEntry) -> type[Model]:

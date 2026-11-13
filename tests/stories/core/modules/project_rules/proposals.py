@@ -44,3 +44,12 @@ def test_a_person_who_accepts_an_agents_removal_of_a_rule_removes_it(new_story):
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", "1"])
     story.expect_no_text("rule list --state active", "Name things plainly", actor=story.agent)
+
+
+def test_a_person_who_accepts_an_agents_edit_of_a_rule_changes_its_text(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success('rule make "Name things plainly"', "state: active")
+    story.run('rule edit 1 --text "Name every thing plainly" --reason "clearer"', actor=story.agent)
+    with viewer_client(story) as viewer:
+        viewer.value("messages.chat", ["approval", "accept", "1"])
+    story.expect_text("rule show 1", "text: Name every thing plainly", actor=story.agent)
