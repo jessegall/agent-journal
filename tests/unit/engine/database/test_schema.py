@@ -87,7 +87,7 @@ def test_a_failing_statement_undoes_its_whole_migration(database):
     assert Schema(database, Tables(), Clock()).migrate([ModuleMigrations("shelves", [ShelvesTable()])]) == []
 
 
-class DeferredOnce(Migration):
+class PostponedOnce(Migration):
     number = 2
 
     def __init__(self) -> None:
@@ -100,7 +100,7 @@ class DeferredOnce(Migration):
 
 
 def test_a_deferred_migration_is_not_recorded_and_runs_again(database):
-    plan = [ModuleMigrations("shelves", (ShelvesTable(), DeferredOnce()))]
+    plan = [ModuleMigrations("shelves", (ShelvesTable(), PostponedOnce()))]
     assert Schema(database, Tables(), Clock()).migrate(plan) == ["shelves 1"]
     assert Schema(database, Tables(), Clock()).migrate(plan) == ["shelves 2"]
     assert Schema(database, Tables(), Clock()).migrate(plan) == []

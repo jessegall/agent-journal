@@ -16,7 +16,7 @@ SELECT_ALL = "SELECT * FROM log_entries"
 
 
 @dataclass(frozen=True, kw_only=True)
-class Loan(Model):
+class EntryLending(Model):
     model_name = "loan"
     cli_name = "loan"
 
@@ -25,10 +25,10 @@ class Loan(Model):
 
 
 @pytest.fixture
-def loans(entries: Query[LogEntry]) -> Query[Loan]:
+def lendings(entries: Query[LogEntry]) -> Query[EntryLending]:
     entries.database.update(Statement("CREATE TABLE loans (id INTEGER PRIMARY KEY, version INTEGER NOT NULL, metadata TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL,"
                                       " updated_at TEXT NOT NULL, entry_id INTEGER NOT NULL, returned_at TEXT) STRICT"))
-    return Query(entries.database, entries.tables, Loan)
+    return Query(entries.database, entries.tables, EntryLending)
 
 
 @pytest.fixture
@@ -75,16 +75,16 @@ def test_where_in_an_empty_list_reads_nothing_and_runs_no_statement(entries: Que
     assert list(entries.where_in("id", []).every_row(TEST_ROWS_REASON)) == [] and statements_run == []
 
 
-def test_where_in_another_query_writes_a_subselect_with_its_parameters_in_order(entries: Query[LogEntry], loans: Query[Loan]):
-    inner = loans.where_null("returned_at").where("entry_id", ">", 2).select_columns("entry_id")
+def test_where_in_another_query_writes_a_subselect_with_its_parameters_in_order(entries: Query[LogEntry], lendings: Query[EntryLending]):
+    inner = lendings.where_null("returned_at").where("entry_id", ">", 2).select_columns("entry_id")
     assert saved(entries.where(state="open").where_in("id", inner)) == Statement(
         f"{SELECT_ALL} WHERE state = ? AND id IN (SELECT entry_id FROM loans WHERE returned_at IS NULL AND entry_id > ?)", ["open", 2])
 
 
-def test_where_exists_writes_exists_and_where_not_exists_writes_not_exists(entries: Query[LogEntry], loans: Query[Loan]):
-    open_loans = loans.where_column("entry_id", "log_entries.id").where_null("returned_at")
-    assert saved(entries.where_exists(open_loans)) == Statement(f"{SELECT_ALL} WHERE EXISTS (SELECT 1 FROM loans WHERE entry_id = log_entries.id AND returned_at IS NULL)")
-    assert saved(entries.where_not_exists(open_loans)) == Statement(f"{SELECT_ALL} WHERE NOT EXISTS (SELECT 1 FROM loans WHERE entry_id = log_entries.id AND returned_at IS NULL)")
+def test_where_exists_writes_exists_and_where_not_exists_writes_not_exists(entries: Query[LogEntry], lendings: Query[EntryLending]):
+    open_lendings = lendings.where_column("entry_id", "log_entries.id").where_null("returned_at")
+    assert saved(entries.where_exists(open_lendings)) == Statement(f"{SELECT_ALL} WHERE EXISTS (SELECT 1 FROM loans WHERE entry_id = log_entries.id AND returned_at IS NULL)")
+    assert saved(entries.where_not_exists(open_lendings)) == Statement(f"{SELECT_ALL} WHERE NOT EXISTS (SELECT 1 FROM loans WHERE entry_id = log_entries.id AND returned_at IS NULL)")
 
 
 def test_where_prefix_and_where_null_and_where_not_null_write_their_sql(entries: Query[LogEntry]):

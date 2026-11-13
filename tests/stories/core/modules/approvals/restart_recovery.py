@@ -26,7 +26,7 @@ from tests.stories.support.story_checks import expect_value
 TEST_ROWS_REASON = "the test reads every row it checks"
 
 
-class ApprovalAsked(StoryFixture):
+class ApprovalRequested(StoryFixture):
     """An agent asked a user in the dock and nobody has answered."""
 
     parent = UserJoined
@@ -35,10 +35,10 @@ class ApprovalAsked(StoryFixture):
         story.expect_refusal("phone pair --reason needed", "A user was asked in the dock", actor=story.agent)
 
 
-class ApprovalRunning(StoryFixture):
+class ApprovalInProgress(StoryFixture):
     """A user accepted that request after the journal started, and its action is still running."""
 
-    parent = ApprovalAsked
+    parent = ApprovalRequested
 
     def steps(self, story: Story) -> None:
         request = story.container.get(Queries).query(ApprovalRequest).first()
@@ -48,7 +48,7 @@ class ApprovalRunning(StoryFixture):
             story.container.get(Bus).run(MoveApproval(request.id, ApprovalLifecycle.begin), story.user, environment_id=request.environment_id)
 
 
-class CoveredRequestRunning(StoryFixture):
+class CoveredRequestInProgress(StoryFixture):
     """A standing yes covered a request, and the server stopped while its action ran, so it stays running."""
 
     parent = ResumeFixedSession
@@ -66,7 +66,7 @@ class CoveredRequestRunning(StoryFixture):
 class ServerRestarted(StoryFixture):
     """The journal started again while that action was running."""
 
-    parent = ApprovalRunning
+    parent = ApprovalInProgress
 
     def steps(self, story: Story) -> None:
         story.advance(timedelta(minutes=1))
@@ -77,7 +77,7 @@ class ServerRestarted(StoryFixture):
 class CoveredRequestRestarted(StoryFixture):
     """The journal started again while the covered request's action was running."""
 
-    parent = CoveredRequestRunning
+    parent = CoveredRequestInProgress
 
     def steps(self, story: Story) -> None:
         story.advance(timedelta(minutes=1))

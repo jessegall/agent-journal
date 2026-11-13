@@ -3,7 +3,7 @@ from pathlib import Path
 
 from engine.database.database import Database
 from engine.database.statement import Statement
-from tests.stories.core.modules.tasks.support.assignment_migration_fixtures import DELEGATED_TASKS, TasksBeforeColumnRemoval, worker
+from tests.stories.core.modules.tasks.support.assignment_migration_fixtures import DELEGATED_TASKS, PreRemovalTasks, worker
 from tests.stories.support.story_checks import expect_value_4
 
 SOURCE_FOLDER = Path(__file__).resolve().parents[4] / "src"
@@ -19,14 +19,14 @@ def task_columns(story) -> list[str]:
 
 
 def test_rebuilding_the_views_after_the_column_is_removed_needs_no_manual_step(new_story):
-    story = new_story(fixture=TasksBeforeColumnRemoval)
+    story = new_story(fixture=PreRemovalTasks)
     code, output_text = story.synced()
     story.expect_rows(code == 0, COLUMN not in task_columns(story), detail=output_text)
     story.expect_text("task list --environment main", "Delegated and open", actor=story.agent)
 
 
 def test_a_journal_started_on_the_new_code_serves_the_tasks_window_with_the_old_data(new_story):
-    story = new_story(fixture=TasksBeforeColumnRemoval)
+    story = new_story(fixture=PreRemovalTasks)
     code, output_text = story.synced()
     story.expect_rows(code == 0, detail=output_text)
     for task_id in DELEGATED_TASKS:

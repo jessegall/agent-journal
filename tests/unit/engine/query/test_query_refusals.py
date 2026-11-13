@@ -15,7 +15,7 @@ from tests.unit.engine.query.test_query import entries  # noqa: F401  (the share
 
 
 @dataclass(frozen=True, kw_only=True)
-class Keeper(Model):
+class SampleAgent(Model):
     model_name = "agent"
     cli_name = "agent"
 
@@ -59,12 +59,12 @@ def test_an_unknown_column_is_refused_before_reading(entries: Query[LogEntry], s
 
 def test_an_unknown_column_in_a_join_is_refused(entries: Query[LogEntry]):
     with pytest.raises(UnknownColumnError, match="agents has no column idd"):
-        entries.join(Keeper, "agents.idd", "=", "log_entries.shelf_id")
+        entries.join(SampleAgent, "agents.idd", "=", "log_entries.shelf_id")
 
 
 def test_a_join_qualifier_that_is_no_table_of_the_read_is_refused(entries: Query[LogEntry]):
     with pytest.raises(UnknownTableError, match="shelves is not a table of this read"):
-        entries.join(Keeper, "agents.id", "=", "shelves.id")
+        entries.join(SampleAgent, "agents.id", "=", "shelves.id")
 
 
 @pytest.mark.parametrize("rows", [0, -1])

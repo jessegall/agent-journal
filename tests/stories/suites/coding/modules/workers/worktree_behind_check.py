@@ -57,7 +57,7 @@ def behind_lines(story) -> list[str]:
 
 
 @dataclass(frozen=True)
-class LookCase:
+class CheckCase:
     """One story of the book: the settings and base before the worker is sent, then what the look finds."""
 
     setup: Callable[..., None]
@@ -170,13 +170,13 @@ def s13_a_partial_merge_of_its_own_unit_does_not_count(story, repository, worker
     story.expect_rows(checks(story) == [], detail=str(checks(story)))
 
 
-CASES = [LookCase(defaults, s1_three_merged_workers_open_one_check_and_start_the_merger), LookCase(single_threshold, s2_own_commits_and_an_unmoved_base_open_none),
-         LookCase(single_threshold, s3_a_merged_four_commit_worker_counts_once), LookCase(single_threshold, s4_a_commit_straight_on_the_base_counts),
-         LookCase(login_base, s5_a_worktree_counts_against_its_own_base), LookCase(defaults, s6_two_behind_with_three_to_check_opens_none),
-         LookCase(defaults, s7_the_look_comes_once_per_ten_minutes), LookCase(defaults, s8_zero_to_check_looks_at_nothing),
-         LookCase(defaults, s9_a_delivered_worktree_is_skipped), LookCase(defaults, s10_an_open_check_is_not_doubled),
-         LookCase(defaults, s12_a_worktree_with_nothing_of_its_own_moves_with_no_merger),
-         LookCase(single_threshold, s13_a_partial_merge_of_its_own_unit_does_not_count)]
+CASES = [CheckCase(defaults, s1_three_merged_workers_open_one_check_and_start_the_merger), CheckCase(single_threshold, s2_own_commits_and_an_unmoved_base_open_none),
+         CheckCase(single_threshold, s3_a_merged_four_commit_worker_counts_once), CheckCase(single_threshold, s4_a_commit_straight_on_the_base_counts),
+         CheckCase(login_base, s5_a_worktree_counts_against_its_own_base), CheckCase(defaults, s6_two_behind_with_three_to_check_opens_none),
+         CheckCase(defaults, s7_the_look_comes_once_per_ten_minutes), CheckCase(defaults, s8_zero_to_check_looks_at_nothing),
+         CheckCase(defaults, s9_a_delivered_worktree_is_skipped), CheckCase(defaults, s10_an_open_check_is_not_doubled),
+         CheckCase(defaults, s12_a_worktree_with_nothing_of_its_own_moves_with_no_merger),
+         CheckCase(single_threshold, s13_a_partial_merge_of_its_own_unit_does_not_count)]
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case.after.__name__.split("_")[0])

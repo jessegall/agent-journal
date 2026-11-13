@@ -171,7 +171,7 @@ def test_five_worktrees_of_one_look_leave_five_lines_for_the_merger():
     assert (len(inbox.sent), len(lines)) == (5, 5)
 
 
-class LookBus:
+class CheckBus:
     def __init__(self) -> None:
         self.ran: list[object] = []
 
@@ -185,9 +185,9 @@ class OpenScopes:
         return nullcontext()
 
 
-class LookContainer:
+class CheckContainer:
     def __init__(self, merger_on: bool) -> None:
-        self.bus = LookBus()
+        self.bus = CheckBus()
         self.instances = {CommandBus: self.bus, Scopes: OpenScopes(), SettingValues: Settings(merger=merger_on), Clock: Clock()}
 
     def get(self, kind):
@@ -195,7 +195,7 @@ class LookContainer:
 
 
 def test_one_look_starts_the_merger_once_for_all_its_worktrees_and_none_with_the_merger_off():
-    on, off = LookContainer(True), LookContainer(False)
+    on, off = CheckContainer(True), CheckContainer(False)
     BehindWorktrees.announced(on, (1, 2, 3, 4, 5), 1)
     BehindWorktrees.announced(off, (1, 2, 3, 4, 5), 1)
     assert [type(command) for command in on.bus.ran] == [AnnounceBehindChecks, StartMerger]

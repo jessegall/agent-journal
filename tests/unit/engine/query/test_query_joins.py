@@ -14,7 +14,7 @@ from tests.unit.engine.query.test_query import FIXED_TIME, entries  # noqa: F401
 
 
 @dataclass(frozen=True, kw_only=True)
-class Keeper(Model):
+class SampleAgent(Model):
     model_name = "agent"
     cli_name = "agent"
 
@@ -35,12 +35,12 @@ def saved(query: Query) -> Statement:
 
 
 def test_join_writes_join_on(entries: Query[LogEntry]):
-    joined = entries.join(Keeper, "agents.id", "=", "log_entries.shelf_id").select_columns("log_entries.*", "agents.given_name")
+    joined = entries.join(SampleAgent, "agents.id", "=", "log_entries.shelf_id").select_columns("log_entries.*", "agents.given_name")
     assert saved(joined) == Statement("SELECT log_entries.*, agents.given_name FROM log_entries JOIN agents ON agents.id = log_entries.shelf_id")
 
 
 def test_left_join_writes_left_join(entries: Query[LogEntry]):
-    assert saved(entries.left_join(Keeper, "agents.id", "=", "log_entries.shelf_id")) == Statement(
+    assert saved(entries.left_join(SampleAgent, "agents.id", "=", "log_entries.shelf_id")) == Statement(
         "SELECT * FROM log_entries LEFT JOIN agents ON agents.id = log_entries.shelf_id")
 
 

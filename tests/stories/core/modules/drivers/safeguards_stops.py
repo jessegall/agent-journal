@@ -21,7 +21,7 @@ def chat_notes(story) -> list[Message]:
     return list(story.story_rows(Message, type=MessageType.JOURNAL))
 
 
-class AgentRunning(StoryFixture):
+class AgentInProgress(StoryFixture):
     """The main agent of the reply stories, a second after its session began."""
 
     parent = ReplySession
@@ -33,7 +33,7 @@ class AgentRunning(StoryFixture):
 class SafeguardsStopped(StoryFixture):
     """The main agent whose first turn was ended by a safeguards error."""
 
-    parent = AgentRunning
+    parent = AgentInProgress
 
     def steps(self, story):
         story.hook("s-1", HookSamples.stop_failure(SAFEGUARDS_ERROR))
@@ -67,6 +67,6 @@ def test_a_turn_that_ended_on_its_own_between_two_stops_wakes_the_agent_again(ne
 
 
 def test_an_api_error_that_is_not_a_safeguards_stop_wakes_and_tells_nobody(new_story):
-    story = new_story(SAMPLES, fixture=AgentRunning)
+    story = new_story(SAMPLES, fixture=AgentInProgress)
     story.hook("s-1", HookSamples.stop_failure(DIFFERENT_ERROR))
     story.expect_rows(wake_lines(story) == [], chat_notes(story) == [])

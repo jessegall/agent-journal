@@ -16,11 +16,11 @@ from tests.unit.suites.coding.modules.workers.test_update_reminders import ORDER
 NEW_OWNER = 9
 
 
-class Away:
+class AbsentWorker:
     """A worker paused or stopped until the given minute, then back."""
 
-    def __init__(self, until_minute: int, owner: int = WORKTREE.session_agent_id, field: str = "paused_at") -> None:
-        self.until, self.owner, self.field, self.now = until_minute, owner, field, 0
+    def __init__(self, return_minute: int, owner: int = WORKTREE.session_agent_id, field: str = "paused_at") -> None:
+        self.until, self.owner, self.field, self.now = return_minute, owner, field, 0
 
     def required(self, model: type, row_id: int):
         if model.__name__ == "Worktree":
@@ -29,7 +29,7 @@ class Away:
         return SimpleNamespace(paused_at=absent if self.field == "paused_at" else None, ended_at=absent if self.field == "ended_at" else None)
 
 
-class Sent:
+class NudgeRecorder:
     def __init__(self) -> None:
         self.to: list[int] = []
 
@@ -40,9 +40,9 @@ class Sent:
         self.to.append(0)
 
 
-def reminded_at(minutes: list[int], rows: Away) -> list[tuple[int, int]]:
-    store, nudger = Store(), Sent()
-    handler = RemindBehindUpdatesHandler(store, rows, store, Settings(2), nudger, Sent(), Numbers(), NoMarkers())
+def reminded_at(minutes: list[int], rows: AbsentWorker) -> list[tuple[int, int]]:
+    store, nudger = Store(), NudgeRecorder()
+    handler = RemindBehindUpdatesHandler(store, rows, store, Settings(2), nudger, NudgeRecorder(), Numbers(), NoMarkers())
     delivered = []
     for minute in minutes:
         rows.now = minute
@@ -53,15 +53,15 @@ def reminded_at(minutes: list[int], rows: Away) -> list[tuple[int, int]]:
 
 
 def test_a_paused_worker_gets_no_reminder_and_its_wait_starts_again_when_it_is_back():
-    assert reminded_at([30, 40, 45, 60, 75], Away(until_minute=45)) == [(75, WORKTREE.session_agent_id)]
+    assert reminded_at([30, 40, 45, 60, 75], AbsentWorker(return_minute=45)) == [(75, WORKTREE.session_agent_id)]
 
 
 def test_a_stopped_worker_keeps_its_order_and_is_reminded_only_a_wait_after_it_is_back():
-    assert reminded_at([30, 60, 90, 110, 130], Away(until_minute=100, field="ended_at")) == [(130, WORKTREE.session_agent_id)]
+    assert reminded_at([30, 60, 90, 110, 130], AbsentWorker(return_minute=100, field="ended_at")) == [(130, WORKTREE.session_agent_id)]
 
 
 def test_after_a_takeover_the_reminder_goes_to_the_new_owner_of_the_worktree():
-    assert reminded_at([30], Away(until_minute=0, owner=NEW_OWNER)) == [(30, NEW_OWNER)]
+    assert reminded_at([30], AbsentWorker(return_minute=0, owner=NEW_OWNER)) == [(30, NEW_OWNER)]
 
 
 def test_a_worktree_released_or_retired_closes_its_open_or_ordered_check_as_gone():

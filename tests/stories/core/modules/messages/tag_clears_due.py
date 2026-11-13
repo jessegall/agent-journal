@@ -16,7 +16,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 
-class ImageTagHeld(StoryFixture):
+class ImageTagPending(StoryFixture):
     """Ada sent a picture, cart.png; the builder read the message and used up the tool uses it had to tag it, so
     the hold to tag it holds."""
 
@@ -54,7 +54,7 @@ def expect_tag_clears(story, message, line, *parts):
 
 
 def test_a_tag_in_a_shell_chain_during_memory_weighing_clears_its_due_mark(new_story):
-    story = new_story(fixture=ImageTagHeld)
+    story = new_story(fixture=ImageTagPending)
     message = blocked_message(story)
     line = f'cat notes && journal message tag {message.id} "cart.png" "The cart total is wrong"'
     expect_tag_clears(story, message, line, ShellPart("cat", CommandCategory.READ, ["notes"]), ShellPart("journal", CommandCategory.JOURNAL, ["message", "tag", str(message.id), "cart.png", "The cart total is wrong"]))
@@ -62,7 +62,7 @@ def test_a_tag_in_a_shell_chain_during_memory_weighing_clears_its_due_mark(new_s
 
 def test_a_tag_the_hold_did_not_see_as_its_command_still_ends_the_hold(new_story):
     # task 9355: message 118703 had its picture tagged twice and its tag hold still held every write
-    story = new_story(fixture=ImageTagHeld)
+    story = new_story(fixture=ImageTagPending)
     message = blocked_message(story)
     story.expect_rows(has_open_tag_block(story, message))
     story.expect_success(f'message tag {message.id} "cart.png" "The cart total is wrong"', actor=story.agent)

@@ -34,7 +34,7 @@ class SavedBuildSeed(Seed):
         return {"creator_id": CORE_ACTOR_ID, "name": f"seeded-build-{index}", "line": f"cd seeded/package_{index} && make all", "description": "", "category": "build"}
 
 
-class RefusedHookCallSeed(Seed):
+class HookCallRefusalSeed(Seed):
     """A hook call refused by the rule the story does not skip; the story names the agent."""
 
     table = "hook_calls"

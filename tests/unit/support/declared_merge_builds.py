@@ -2,7 +2,7 @@ from suites.coding.modules.workers.support.merge_builds import MergeBuilds
 from suites.coding.modules.workers.support.worker_settings import MODULE_KEY, WORKER_SETTING_VALUES
 
 
-class DeclaredWorkerSettings:
+class WorkerSettingsDeclarations:
     """Answers each workers setting with the default it is declared with, as a project that set none of them."""
 
     def value(self, key: str) -> object:
@@ -16,4 +16,4 @@ class DeclaredWorkerSettings:
 
 
 def declared_merge_builds() -> MergeBuilds:
-    return MergeBuilds(DeclaredWorkerSettings())
+    return MergeBuilds(WorkerSettingsDeclarations())

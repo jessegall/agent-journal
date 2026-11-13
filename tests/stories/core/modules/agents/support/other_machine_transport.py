@@ -3,11 +3,11 @@ from collections.abc import Mapping
 from engine.module.module import Module
 from core.modules.agents.support.program_transport import ProgramTransport
 
-DIFFERENT_MACHINE = "tests.stories.core.modules.agents.support.other_machine_transport:OtherMachineModule"
+DIFFERENT_MACHINE = "tests.stories.core.modules.agents.support.other_machine_transport:RemoteMachineModule"
 STARTED_ANSWER = b"started 9001\n"
 
 
-class OtherMachineTransport(ProgramTransport):
+class RemoteMachineTransport(ProgramTransport):
     """A made-up transport to a launcher on another machine: it keeps what it was asked, and a program it
     started runs until it is stopped."""
 
@@ -36,11 +36,11 @@ class OtherMachineTransport(ProgramTransport):
         return any(start["agent_id"] == agent_id for start in self.starts) and agent_id not in self.stopped_ids
 
 
-class OtherMachineModule(Module):
+class RemoteMachineModule(Module):
     """A sample module that binds the transport to another machine, loaded after the agents module so that its
     binding is the one in force."""
 
     name = "acme.other-machine"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.agents", "journal.suites.coding.workers"]
-    bindings = {ProgramTransport: OtherMachineTransport}
+    bindings = {ProgramTransport: RemoteMachineTransport}

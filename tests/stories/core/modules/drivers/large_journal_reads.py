@@ -7,7 +7,7 @@ from tests.stories.core.modules.helpers.helper_jobs import START, EndedHelper, h
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.large_reads import seeded_children, seeded_finished_jobs
 from tests.stories.core.support.read_limit import limit_reads
-from tests.stories.core.support.seeds.large_read_seeds import AgentSkillSeed, RefusedHookCallSeed, SavedBuildSeed
+from tests.stories.core.support.seeds.large_read_seeds import AgentSkillSeed, HookCallRefusalSeed, SavedBuildSeed
 from tests.stories.server.support.go_build import GoBuild
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
@@ -32,7 +32,7 @@ class LargeJournal(StoryFixture):
     def steps(self, story):
         seeded_finished_jobs(story, story.agent.id, helper_agent(story).id, FINISHED_JOBS)
         story.seed(SavedBuildSeed, SAVED_BUILDS)
-        story.seed(RefusedHookCallSeed, DIFFERENT_RULE_REFUSALS, session_agent_id=story.agent.id)
+        story.seed(HookCallRefusalSeed, DIFFERENT_RULE_REFUSALS, session_agent_id=story.agent.id)
         seeded_children(story, story.agent.id, ENDED_CHILDREN)
         story.seed(AgentSkillSeed, SKILL_ROWS, session_agent_id=story.agent.id)
 
