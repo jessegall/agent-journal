@@ -58,8 +58,8 @@ class RunSlots:
             self.remember(saved)
             categories.admitted(saved)
 
-    # A merge the journal runs itself waits in no queue: its slot is written at once.
-    def grant_journal_merge(self, process: Process) -> None:
+    # a run that waits in no lane, an immediate one or a merge the journal runs itself, has its slot written at once
+    def grant_at_once(self, process: Process) -> None:
         self.folder.write_slot(process.id)
 
     def admitted_runs(self) -> tuple[Process, ...]:
