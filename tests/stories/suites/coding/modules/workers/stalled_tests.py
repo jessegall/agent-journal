@@ -4,7 +4,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from suites.coding.modules.workers.listeners.worker_test_listener import WorkerTestListener
+from suites.coding.modules.workers.support.worker_test_starts import WorkerTestStarts
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
 from suites.coding.modules.workers.ticks.unlaunched_worker_test_runs import UnlaunchedWorkerTestRuns
@@ -32,7 +32,7 @@ def two_tasks(new_story, monkeypatch):
 def test_a_queued_test_a_server_update_left_behind_is_started_by_the_tick(two_tasks, monkeypatch):
     story, worker, _ = two_tasks
     with monkeypatch.context() as stopped_server:
-        stopped_server.setattr(WorkerTestListener, "start_next", lambda listener, logged: None)
+        stopped_server.setattr(WorkerTestStarts, "start_next", lambda starts, logged: None)
         story.expect_text(COMMIT, "its tests are queued", actor=worker)
     story.expect_text("proof show 1 --environment main", "state: queued")
     StalledWorkerTestRuns()(story.container)

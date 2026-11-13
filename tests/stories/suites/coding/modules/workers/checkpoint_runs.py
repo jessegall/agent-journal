@@ -6,7 +6,7 @@ import pytest
 from engine.database.database import Database
 from engine.database.statement import Statement
 from core.modules.processes.models.enums.process_state import ProcessState
-from suites.coding.modules.workers.listeners.worker_test_listener import WorkerTestListener
+from suites.coding.modules.workers.support.worker_test_starts import WorkerTestStarts
 from suites.coding.modules.workers.support.worker_run_windows import WorkerRunWindows
 from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
 from tests.stories.core.support.agent_labels import agent_number
@@ -222,7 +222,7 @@ def test_193_a_plan_cancelled_while_a_run_goes_stops_the_run_and_tells_the_main_
 def test_194_the_proof_tests_of_a_run_a_server_update_left_queued_are_started_by_the_sweep_of_waiting_tests(committed_window, monkeypatch):
     worker = committed_window
     with monkeypatch.context() as stopped_server:
-        stopped_server.setattr(WorkerTestListener, "start_next", lambda listener, logged: None)
+        stopped_server.setattr(WorkerTestStarts, "start_next", lambda starts, logged: None)
         merge(worker)
     unstarted_count = len(worker.started)
     StalledWorkerTestRuns()(worker.story.container)

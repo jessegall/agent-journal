@@ -385,9 +385,9 @@ def test_a_queued_proof_whose_runner_never_started_is_launched_again_and_counts(
 
 def ended_with_nothing_recorded(story, monkeypatch, process_id: int, code: int) -> None:
     """The process ends while the listener that records its test does not run, as when a listener before it failed."""
-    from suites.coding.modules.workers.listeners.worker_test_listener import WorkerTestListener
+    from suites.coding.modules.workers.listeners.worker_test_end_listener import WorkerTestEndListener
     with monkeypatch.context() as failed_listener:
-        failed_listener.setattr(WorkerTestListener, "ended", lambda listener, process, logged: None)
+        failed_listener.setattr(WorkerTestEndListener, "ended", lambda listener, process, logged: None)
         ended(story, process_id, code)
     story.expect_text("proof show 1", "state: running", actor=story.agent)
 

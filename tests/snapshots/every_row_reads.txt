@@ -1,6 +1,5 @@
 src/core/modules/agents/support/agent_dispatcher.py:every agent that ended lately and is kept may be started again
 src/core/modules/agents/support/agent_rows.py:The agents that have not ended, which the running programs bound; every reader of a request shares this one kept load.
-src/core/modules/agents/support/fold_record.py:an old session is looked up among the folded main rows of one environment, which are few
 src/core/modules/agents/support/fold_record.py:the ids asked for are looked up among the folded main rows, which are few
 src/core/modules/agents/support/kept_agents.py:the agent list shows every agent that is not retired
 src/core/modules/agents/support/kept_agents.py:the agent list shows every retired agent
