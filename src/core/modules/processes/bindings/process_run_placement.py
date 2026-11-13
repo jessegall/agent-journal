@@ -3,7 +3,7 @@ from contextlib import AbstractContextManager, nullcontext
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.database.database import Database
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.process.door.execution import Execution
 from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.placed_run import PlacedRun
@@ -34,12 +34,12 @@ class ProcessRunPlacement(RunPlacement):
         owner = self.database.row_owner
         if owner is None or owner.environment_id is None:
             return PlacedRun(request, None, False)
-        if request.kind is not ProcessKind.MERGE:
+        if request.process_type is not ProcessType.MERGE:
             return PlacedRun(request, None, False, owner.stored_agent_id, owner.environment_id, owner.is_main)
         agent_id = owner.stored_agent_id if owner.stored_agent_id is not None else self.main_agent_id(owner.environment_id)
         if agent_id is None:
             return PlacedRun(request, None, True, None, owner.environment_id)
-        command = StartProcess.single_part(agent_id, request.text, str(request.folder), request.kind.category, int(request.limit_seconds), part_category=request.kind.value)
+        command = StartProcess.single_part(agent_id, request.text, str(request.folder), request.process_type.category, int(request.limit_seconds), part_category=request.process_type.value)
         process = self.bus.run(command, Actor.core(), environment_id=owner.environment_id)
         return PlacedRun(request, process.id, True, agent_id, owner.environment_id)
 
@@ -54,7 +54,7 @@ class ProcessRunPlacement(RunPlacement):
         if run.environment_id is None:
             return None
         if run.process_id is None:
-            self.log.append(RequestLogEntry(run.environment_id, run.agent_id, run.request.kind, run.request.text, execution.exit_code, self.clock.timestamp().text))
+            self.log.append(RequestLogEntry(run.environment_id, run.agent_id, run.request.process_type, run.request.text, execution.exit_code, self.clock.timestamp().text))
             return None
         emitted = execution.stdout + execution.stderr
         self.outputs.write_output(run.process_id, FIRST_PART, emitted)

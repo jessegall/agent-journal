@@ -1,7 +1,7 @@
 from engine.query.rows.prunable import Prunable
 from dataclasses import dataclass
 
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
 from engine.time.timestamp import Timestamp
@@ -20,7 +20,7 @@ class RequestRun(Prunable, EnvironmentScoped, Model):
     environment_id: int = 0
     session_agent_id: int
     creator_id: int
-    kind: ProcessKind
+    process_type: ProcessType
     line: str
     exit_code: int
     ended_at: Timestamp

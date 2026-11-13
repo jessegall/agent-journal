@@ -5,19 +5,19 @@ from engine.enums.command_category import CommandCategory
 from engine.query.queries import Queries
 from engine.testing.stories.story import Story
 from core.modules.processes.commands.start_process.start_process import StartProcess
-from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.support.decisions.reading_case import ReadingCase
 from core.modules.processes.support.reading.reading_facts import ReadingFacts
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 
-ENDED = ReadingMoment.END
-STARTED = ReadingMoment.START
-RUNNING = ReadingMoment.RUNNING
+ENDED = ReadingPhase.END
+STARTED = ReadingPhase.START
+RUNNING = ReadingPhase.RUNNING
 
 
-def case_of(story: Story, process: Process, point: ReadingMoment) -> ReadingCase:
+def case_of(story: Story, process: Process, point: ReadingPhase) -> ReadingCase:
     part = story.container.get(Queries).query(ProcessPart).filter(process_id=process.id, position=1).first()
     return story.container.get(ReadingFacts).gathered_cases(process, [part], point)[0]
 

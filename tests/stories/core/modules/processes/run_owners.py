@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.process_executor import ProcessExecutor
 from engine.query.queries import Queries
@@ -24,9 +24,9 @@ def test_a_run_lands_on_its_own_environments_main_agent_and_a_merge_keeps_a_proc
     web_agent = story.new_row_id("agent start s-web claude main --environment web", actor=story.user)
     main_id = story.container.get(EnvironmentNames).environment_id("main")
     with story.container.get(Scopes).opened(None, main_id):
-        story.container.get(ProcessExecutor).execute(ExecutionRequest(["sh", "-c", RUN_LINE], tmp_path, ProcessKind.QUICK, 5))
+        story.container.get(ProcessExecutor).execute(ExecutionRequest(["sh", "-c", RUN_LINE], tmp_path, ProcessType.QUICK, 5))
     with story.container.get(Scopes).opened(None, main_id):
-        merged = story.container.get(ProcessExecutor).execute(ExecutionRequest(["sh", "-c", MERGE_LINE], tmp_path, ProcessKind.MERGE, 5))
+        merged = story.container.get(ProcessExecutor).execute(ExecutionRequest(["sh", "-c", MERGE_LINE], tmp_path, ProcessType.MERGE, 5))
     RequestLogImport()(story.container)
     RequestLogImport()(story.container)
     with story.container.get(Scopes).opened(None, main_id):

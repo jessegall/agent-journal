@@ -14,7 +14,7 @@ class UnreadableMark(Model):
     cli_name = "unreadable-mark"
 
     creator_id: int
-    words: str
+    terms: str
     reason: UnreadableReason
     note: str = ""
     lifter_id: int | None = None

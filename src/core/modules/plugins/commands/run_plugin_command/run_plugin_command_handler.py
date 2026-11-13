@@ -14,4 +14,4 @@ class RunPluginCommandHandler(Handler[RunPluginCommand, PluginCommandRun]):
         self.runner = runner
 
     def handle(self, command: RunPluginCommand, context: Context) -> PluginCommandRun:
-        return self.runner.run(command.agent_id, command.line, command.is_readonly, command.plugin, context.actor, context.timestamp, command.kind)
+        return self.runner.run(command.agent_id, command.line, command.is_readonly, command.plugin, context.actor, context.timestamp, command.run_name)

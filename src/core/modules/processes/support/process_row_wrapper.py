@@ -1,4 +1,4 @@
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.log.error_log import ErrorLog
 from engine.process.door.request_records import RequestRecords
 from engine.time.clock import Clock
@@ -15,7 +15,7 @@ class ProcessRowWrapper(RequestRecords):
     def __init__(self, log: RequestLog, clock: Clock, errors: ErrorLog) -> None:
         self.log, self.clock, self.errors = log, clock, errors
 
-    def record_end(self, category: ProcessKind, line: str, exit_code: int) -> None:
+    def record_end(self, category: ProcessType, line: str, exit_code: int) -> None:
         if self.caller is None:
             return
         actor, environment_id = self.caller
@@ -24,7 +24,7 @@ class ProcessRowWrapper(RequestRecords):
         self.log.append(RequestLogEntry(environment_id, actor.id if actor.is_agent() else None, category, line, exit_code, self.clock.timestamp().text))
 
     def recorded_hook(self, agent_id: int, environment_id: int, line: str, exit_code: int) -> None:
-        self.log.append(RequestLogEntry(environment_id, agent_id, ProcessKind.HOOK, line, exit_code, self.clock.timestamp().text))
+        self.log.append(RequestLogEntry(environment_id, agent_id, ProcessType.HOOK, line, exit_code, self.clock.timestamp().text))
 
     def write_failed(self, line: str, failure: Exception) -> None:
         self.errors.recorded(["record-request", line], failure, None)

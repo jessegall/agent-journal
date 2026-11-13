@@ -24,8 +24,8 @@ const isWide = computed(() => wideSettingComponents.includes(name.value));
 const children = computed(() => props.nodes.filter((child) => child.parent === props.node.key && isDrawn(child) && props.draft.visible(child.key)));
 // what a component needs beyond the value, read from the node: the choices of a choice, the least of a number
 const given = computed(() => ({
-    ...(props.node.kind === "choice" ? {choices: props.node.choices} : {}),
-    ...(props.node.kind === "number" ? {least: ruleOf(props.node.rule)?.minimum ?? 0} : {}),
+    ...(props.node.node_type === "choice" ? {choices: props.node.choices} : {}),
+    ...(props.node.node_type === "number" ? {least: ruleOf(props.node.rule)?.minimum ?? 0} : {}),
     ...(props.extras[name.value] ?? {}),
 }));
 </script>

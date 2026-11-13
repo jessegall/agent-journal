@@ -2,7 +2,7 @@ import os
 import shlex
 import shutil
 import subprocess
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.process_executor import ProcessExecutor
@@ -74,7 +74,7 @@ class GraphifyTool(ToolRunner):
 
     def run_install(self, line: list[str], folder: Path) -> None:
         try:
-            outcome = self.executor.execute(ExecutionRequest(line, folder, ProcessKind.SHELL, INSTALL_LIMIT_SECONDS))
+            outcome = self.executor.execute(ExecutionRequest(line, folder, ProcessType.SHELL, INSTALL_LIMIT_SECONDS))
         except (OSError, RunTimeLimitError) as error:
             raise Refusal(f"installing Graphify failed: {error}") from error
         if not outcome.succeeded:

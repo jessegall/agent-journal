@@ -7,7 +7,7 @@ class ScreenNode:
     it holds now and where that came from, and the keys that must be on for it to show."""
 
     key: str
-    kind: str
+    node_type: str
     component: str
     section: str
     parent: str | None

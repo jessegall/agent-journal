@@ -14,5 +14,5 @@ class RecordRequestRunHandler(Handler[RecordRequestRun, RequestRun]):
         self.repository = repository
 
     def handle(self, command: RecordRequestRun, context: Context) -> RequestRun:
-        return self.repository.save(RequestRun(session_agent_id=command.agent_id, creator_id=context.actor.id, kind=command.kind, line=command.line,
+        return self.repository.save(RequestRun(session_agent_id=command.agent_id, creator_id=context.actor.id, process_type=command.process_type, line=command.line,
                                                exit_code=command.exit_code, ended_at=context.timestamp), context)

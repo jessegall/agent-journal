@@ -34,21 +34,21 @@ class QueuePluginRunHandler(Handler[QueuePluginRun, QueuedRunStart]):
     def handle(self, command: QueuePluginRun, context: Context) -> QueuedRunStart:
         if self.queries.query(Plugin).filter(name=command.plugin).first() is None:
             raise Refusal(f"no plugin is named {command.plugin}", "journal plugin list shows them")
-        declared = PluginManifest.read(self.folders.code(command.plugin)).process_category(command.kind)
+        declared = PluginManifest.read(self.folders.code(command.plugin)).process_category(command.run_name)
         if declared is None:
-            raise Refusal(f"plugin {command.plugin} declares no kind of run named {command.kind}", "name a kind its manifest lists under processes")
+            raise Refusal(f"plugin {command.plugin} declares no kind of run named {command.run_name}", "name a kind its manifest lists under processes")
         folder = command.folder or str(self.checkouts.checkout(command.agent_id).root)
         if declared.coalesce:
-            waiting_runs = tuple(self.queries.query(QueuedRun).filter(plugin=command.plugin, kind=command.kind, state=QueuedRunState.WAITING).every_row(WAITING_RUNS_REASON))
+            waiting_runs = tuple(self.queries.query(QueuedRun).filter(plugin=command.plugin, run_name=command.run_name, state=QueuedRunState.WAITING).every_row(WAITING_RUNS_REASON))
             processes = {process.id: process for process in self.queries.query(Process).find_many([waiting.process_id for waiting in waiting_runs])}
             for waiting in waiting_runs:
                 process = processes[waiting.process_id]
                 if process.queued_at is not None and (process.folder, process.line) == (folder, command.line):
                     return QueuedRunStart(waiting, process, True, command.is_detached)
         start = StartProcess(command.agent_id, None, command.line, folder, "", declared.category, RUN_LIMIT_SECONDS, [PartSpec(command.line, command.line.split()[0], False, declared.category)],
-                             timeout_durations=command.timeout_durations, plugin=command.plugin, kind=command.kind, priority=command.priority)
+                             timeout_durations=command.timeout_durations, plugin=command.plugin, run_name=command.run_name, priority=command.priority)
         started = self.bus.dispatch(start, context)
-        run = self.repository.save(QueuedRun(environment_id=started.environment_id, creator_id=context.actor.id, plugin=command.plugin, kind=command.kind,
+        run = self.repository.save(QueuedRun(environment_id=started.environment_id, creator_id=context.actor.id, plugin=command.plugin, run_name=command.run_name,
                                              session_agent_id=command.agent_id, process_id=started.id), context)
         process = self.queries.query(Process).find(started.id)
         if process.queued_at is None:

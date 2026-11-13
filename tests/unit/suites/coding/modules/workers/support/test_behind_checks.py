@@ -63,7 +63,7 @@ def worktree(worktree_id: int = 1, state: WorktreeState = WorktreeState.CUT) -> 
 
 
 def check(state: BehindCheckState, behind: int = 3) -> WorktreeBehindCheck:
-    return WorktreeBehindCheck(id=1, environment_id=1, worktree_id=1, base_tip="abc", behind=behind, state=state)
+    return WorktreeBehindCheck(id=1, environment_id=1, worktree_id=1, base_tip="abc", commits_lagging=behind, state=state)
 
 
 def checks(settings: Settings | None = None, **rows: list[object]) -> BehindChecks:
@@ -83,7 +83,7 @@ def test_zero_commits_to_check_or_the_switch_off_looks_at_no_worktree():
 
 
 def test_a_look_comes_once_per_ten_minutes_and_the_last_look_survives_a_restart():
-    check = WorktreeBehindLook(id=1, environment_id=1, looked_at=Timestamp(CURRENT_TIME.value - timedelta(minutes=5)))
+    check = WorktreeBehindLook(id=1, environment_id=1, checked_at=Timestamp(CURRENT_TIME.value - timedelta(minutes=5)))
     assert checks(Worktree=[worktree()], WorktreeBehindLook=[check]).due_worktrees(CURRENT_TIME) == ()
     later = Timestamp(CURRENT_TIME.value + timedelta(minutes=5))
     assert checks(Worktree=[worktree()], WorktreeBehindLook=[check]).due_worktrees(later) == tuple([worktree()])

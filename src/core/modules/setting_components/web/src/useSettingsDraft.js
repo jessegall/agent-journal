@@ -6,11 +6,11 @@ const BLANK_NUMBER = "A number is missing.";
 const STALE_TEXT = "These settings changed since you opened them. Cancel to read them again.";
 const NUMBER_LIST = "number list";
 
-const isList = (node) => node.kind === "list" || node.kind === NUMBER_LIST;
+const isList = (node) => node.node_type === "list" || node.node_type === NUMBER_LIST;
 
 // the value a draft holds for a node: a switch is on or off, a list is the entries, anything else is its text
 function drafted(node) {
-    if (node.kind === "flag") return Boolean(node.value);
+    if (node.node_type === "flag") return Boolean(node.value);
     if (isList(node)) return Array.isArray(node.value) ? [...node.value] : listItems(node.value);
     return node.value === null || node.value === undefined ? "" : String(node.value);
 }
@@ -20,7 +20,7 @@ const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
 
 // the words that show a value in the foot and that go to the server
 function worded(node, value) {
-    if (node.kind === "flag") return value ? "on" : "off";
+    if (node.node_type === "flag") return value ? "on" : "off";
     if (isList(node)) return value.join(", ");
     return String(value).trim();
 }
@@ -51,7 +51,7 @@ export function useSettingsDraft({run, reload}) {
 
     function errors(key) {
         const node = nodeOf(key);
-        if (node === undefined || !visible(key) || node.kind !== "number") return "";
+        if (node === undefined || !visible(key) || node.node_type !== "number") return "";
         const text = String(draft[key]).trim();
         return text === "" ? BLANK_NUMBER : numberRuleProblem(node.rule, text);
     }
@@ -86,7 +86,7 @@ export function useSettingsDraft({run, reload}) {
         const sent = changedNodes.value;
         const screens = base.value.filter((screen) => screen.nodes.some((node) => sent.includes(node)));
         const [first, ...others] = screens;
-        const pairs = sent.map((node) => `${node.key}=${isList(node) ? sentList(draft[node.key], node.kind === NUMBER_LIST) : worded(node, draft[node.key])}`);
+        const pairs = sent.map((node) => `${node.key}=${isList(node) ? sentList(draft[node.key], node.node_type === NUMBER_LIST) : worded(node, draft[node.key])}`);
         return ["setting-screen", "apply", first.screen, "--revision", first.revision, ...others.flatMap((screen) => ["--also", `${screen.screen}=${screen.revision}`]), ...pairs];
     }
 

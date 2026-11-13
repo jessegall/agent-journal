@@ -8,4 +8,4 @@ class OrderWorkerUpdate(Command[None]):
     """The merger or the main agent orders a worker behind its base to update its worktree, saying what overlaps."""
 
     worker_id: int
-    why: str
+    reason: str

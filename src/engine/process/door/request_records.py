@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 from engine.actor.actor import Actor
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.errors.exit_coded_error import ExitCodedError
 
 # A hook refused, held, let through unchecked or failed keeps its row with this exit code.
@@ -23,7 +23,7 @@ class RequestRecords:
     def recorded_hook(self, agent_id: int, environment_id: int, line: str, exit_code: int) -> None:
         return None
 
-    def recorded(self, category: ProcessKind, line: str, answer: Callable[[], int]) -> int:
+    def recorded(self, category: ProcessType, line: str, answer: Callable[[], int]) -> int:
         exit_code = ExitCodedError.exit_code
         try:
             exit_code = answer()
@@ -34,13 +34,13 @@ class RequestRecords:
             self.recorded_safely(category, line, exit_code)
         return exit_code
 
-    def recorded_safely(self, category: ProcessKind, line: str, exit_code: int) -> None:
+    def recorded_safely(self, category: ProcessType, line: str, exit_code: int) -> None:
         try:
             self.record_end(category, line, exit_code)
         except Exception as failure:
             self.write_failed(line, failure)
 
-    def record_end(self, category: ProcessKind, line: str, exit_code: int) -> None:
+    def record_end(self, category: ProcessType, line: str, exit_code: int) -> None:
         return None
 
     def write_failed(self, line: str, failure: Exception) -> None:

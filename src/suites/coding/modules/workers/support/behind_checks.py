@@ -34,7 +34,7 @@ class BehindChecks:
 
     def is_check_due(self, current_time: Timestamp) -> bool:
         check = self.last_check()
-        return check is None or current_time.value - check.looked_at.value >= timedelta(minutes=self.settings.number(STALE_CHECK_MINUTES))
+        return check is None or current_time.value - check.checked_at.value >= timedelta(minutes=self.settings.number(STALE_CHECK_MINUTES))
 
     def last_check(self) -> WorktreeBehindLook | None:
         return self.queries.query(WorktreeBehindLook).first()
@@ -46,7 +46,7 @@ class BehindChecks:
         if any(check.state in ACTIVE_STATES for check in checks):
             return False
         remaining = next((check for check in checks if check.state is BehindCheckState.IGNORED), None)
-        return remaining is None or commits_lagging >= remaining.behind + self.settings.number(STALE_RECHECK_COMMITS)
+        return remaining is None or commits_lagging >= remaining.commits_lagging + self.settings.number(STALE_RECHECK_COMMITS)
 
     def is_passable(self, worktree: Worktree) -> bool:
         return any(check.is_passable() for check in self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).every_row(CHECKS_REASON))

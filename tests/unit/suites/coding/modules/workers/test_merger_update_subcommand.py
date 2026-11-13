@@ -35,7 +35,7 @@ class Worktrees:
 
 class Checks:
     def __init__(self, *states: State) -> None:
-        self.rows = [WorktreeBehindCheck(id=number, environment_id=1, worktree_id=1, base_tip="abc", behind=4, state=state) for number, state in enumerate(states, 1)]
+        self.rows = [WorktreeBehindCheck(id=number, environment_id=1, worktree_id=1, base_tip="abc", commits_lagging=4, state=state) for number, state in enumerate(states, 1)]
 
     def query(self, model: type) -> "Checks":
         return self
@@ -109,7 +109,7 @@ def ordering_actor(actor_id: int, checks: Checks, worktrees: Worktrees | None = 
 def test_the_merger_orders_the_update_with_who_and_why_and_the_worker_is_woken_with_how_far_its_base_moved():
     repository, visits, nudger = ordering_actor(MERGER, Checks(State.OPEN))
     check = repository.saved[0]
-    assert (check.state, check.decided_by, check.reason, visits.closed) == (State.ORDERED, MERGER, "cart.py is changed on both sides", 1)
+    assert (check.state, check.decider_id, check.reason, visits.closed) == (State.ORDERED, MERGER, "cart.py is changed on both sides", 1)
     worker, declaration, fields = nudger.sent[0]
     assert (worker, declaration, fields) == (WORKER, UPDATE_ORDERED, {"count": 4})
     assert UPDATE_ORDERED.nudge(**fields).text.startswith(f"Your base branch moved {fields['count']} commits")

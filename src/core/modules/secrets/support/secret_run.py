@@ -1,5 +1,5 @@
 from engine.journal.journal_home import JournalHome
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.process_executor import ProcessExecutor
@@ -46,7 +46,7 @@ class SecretRun:
         home = tempfile.mkdtemp(prefix="run-", dir=runs)
         try:
             environment = {"PATH": self.search_path(), "LANG": os.environ.get("LANG", "C.UTF-8"), **dict.fromkeys(HOME_VARIABLES, home), **variables}
-            finished = self.executor.execute(ExecutionRequest([program, *command[1:]], self.home.project_folder, ProcessKind.SHELL, LIMIT_SECONDS,
+            finished = self.executor.execute(ExecutionRequest([program, *command[1:]], self.home.project_folder, ProcessType.SHELL, LIMIT_SECONDS,
                                                               stdin=f"{stdin_text}\n", variables=environment))
         except RunTimeLimitError as late:
             raise Refusal(f"{command[0]} ran past {LIMIT_SECONDS} seconds and was stopped", "give a secret to a program that finishes sooner") from late

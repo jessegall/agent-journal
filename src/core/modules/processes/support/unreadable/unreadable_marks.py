@@ -38,15 +38,15 @@ class UnreadableMarks:
         newest: dict[str, Timestamp] = {}
         for mark in self.marks.matching_terms(terms).every_row(TERM_MARKS_REASON):
             made_at = mark.creation_timestamp()
-            if mark.words not in newest or made_at > newest[mark.words]:
-                newest[mark.words] = made_at
+            if mark.terms not in newest or made_at > newest[mark.terms]:
+                newest[mark.terms] = made_at
         return {command: max((newest[word] for word in leading if word in newest), default=None) for command, leading in covering.items()}
 
     def declare(self, terms: str, note: str, context: Context) -> UnreadableMark:
         return self.mark(context.actor.id, terms, UnreadableReason.DECLARED, UnreadableMarks.checked_note(note), context)
 
     def mark(self, creator_id: int, terms: str, reason: UnreadableReason, note: str, context: Context) -> UnreadableMark:
-        return self.repository.save(UnreadableMark(creator_id=creator_id, words=UnreadableMarks.leading_words(terms), reason=reason, note=note), context)
+        return self.repository.save(UnreadableMark(creator_id=creator_id, terms=UnreadableMarks.leading_words(terms), reason=reason, note=note), context)
 
     def lift(self, terms: str, lifter_id: int, context: Context) -> UnreadableMark:
         mark = self.marks.standing().matching_terms([UnreadableMarks.leading_words(terms)]).newest().first()

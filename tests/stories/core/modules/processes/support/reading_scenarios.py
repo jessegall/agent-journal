@@ -5,7 +5,7 @@ from engine.query.queries import Queries
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from core.modules.agents.models.agent import Agent
-from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.reading_decision_row import ReadingDecisionRow
 from tests.stories.core.modules.processes.support.cadence_probe import informed
@@ -68,7 +68,7 @@ def ended_after_a_while(story: Story, process: Process, text: str = BUILD_OUTPUT
 
 def end_decision(story: Story, process: Process) -> tuple[str, str, int]:
     story.run_listeners()
-    row = story.container.get(Queries).query(ReadingDecisionRow).filter(process_id=process.id, moment=ReadingMoment.END).first()
+    row = story.container.get(Queries).query(ReadingDecisionRow).filter(process_id=process.id, phase=ReadingPhase.END).first()
     assert row is not None, f"no end decision was kept for output {process.id}"
     return row.state.value, row.action.value, int(row.level)
 
@@ -76,7 +76,7 @@ def end_decision(story: Story, process: Process) -> tuple[str, str, int]:
 def end_reason(story: Story, process: Process) -> str:
     """The reason the engine kept at the end of a run's first part."""
     story.run_listeners()
-    row = story.container.get(Queries).query(ReadingDecisionRow).filter(process_id=process.id, moment=ReadingMoment.END).first()
+    row = story.container.get(Queries).query(ReadingDecisionRow).filter(process_id=process.id, phase=ReadingPhase.END).first()
     assert row is not None, f"no end decision was kept for output {process.id}"
     return row.reason.value
 
@@ -84,7 +84,7 @@ def end_reason(story: Story, process: Process) -> str:
 def end_positions(story: Story, process: Process) -> list[int]:
     """The part of each end decision kept for a run, one entry per decision."""
     story.run_listeners()
-    return sorted(row.part_position for row in story.container.get(Queries).query(ReadingDecisionRow).filter(process_id=process.id, moment=ReadingMoment.END).every_row(TEST_ROWS_REASON))
+    return sorted(row.part_position for row in story.container.get(Queries).query(ReadingDecisionRow).filter(process_id=process.id, phase=ReadingPhase.END).every_row(TEST_ROWS_REASON))
 
 
 def received(story: Story, session: str = "s-1") -> str:

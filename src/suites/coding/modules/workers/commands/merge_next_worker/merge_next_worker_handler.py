@@ -42,4 +42,4 @@ class MergeNextWorkerHandler(Handler[MergeNextWorker, MergeOutcome]):
         worktree = self.worktrees.worker_worktree(worker_id)
         if worktree is None:
             return None
-        return self.queries.query(MergeAsk).filter(worktree_id=worktree.id, state=MergeAskState.WAITING, is_whole=False).first()
+        return self.queries.query(MergeAsk).filter(worktree_id=worktree.id, state=MergeAskState.WAITING, is_full=False).first()

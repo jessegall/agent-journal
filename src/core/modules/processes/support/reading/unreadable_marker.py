@@ -2,7 +2,7 @@ from engine.actor.actor import CORE_ACTOR_ID
 from engine.command.context import Context
 from engine.listener.rows.event_rows import EventRows
 from core.modules.processes.models.enums.output_state import OutputState
-from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.unreadable_mark import UnreadableMark
@@ -39,12 +39,12 @@ class UnreadableMarker:
         if mark is None and reason is not None and prior_reason is reason:
             return tuple([self.marks.mark(CORE_ACTOR_ID, command_key, reason, "", context)])
         if mark is not None and reason is None and prior_reason is None and previous[0].creation_timestamp() >= mark.creation_timestamp():
-            return tuple([self.marks.lift(mark.words, CORE_ACTOR_ID, context)])
+            return tuple([self.marks.lift(mark.terms, CORE_ACTOR_ID, context)])
         return ()
 
     # The part of the run of the same command that ended before this one, while its output is kept.
     def previous_run(self, process: Process, command_key: str) -> tuple[Process, ProcessPart] | None:
-        rows = self.decisions.command_key_decisions(command_key).filter(moment=ReadingMoment.END).descending("decided_at", "id").take(RUNS_COMPARED)
+        rows = self.decisions.command_key_decisions(command_key).filter(phase=ReadingPhase.END).descending("decided_at", "id").take(RUNS_COMPARED)
         row = next((row for row in rows if row.process_id != process.id), None)
         if row is None:
             return None

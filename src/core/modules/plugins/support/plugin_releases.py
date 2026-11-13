@@ -1,7 +1,7 @@
 import os
 import re
 import subprocess
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.process_executor import ProcessExecutor
@@ -31,7 +31,7 @@ class PluginReleases:
 
     def newest_tag(self, source: str) -> str | None:
         try:
-            finished = self.executor.execute(ExecutionRequest(["git", "ls-remote", "--tags", self.address(source)], Path.cwd(), ProcessKind.QUICK, GIT_LIMIT_SECONDS,
+            finished = self.executor.execute(ExecutionRequest(["git", "ls-remote", "--tags", self.address(source)], Path.cwd(), ProcessType.QUICK, GIT_LIMIT_SECONDS,
                                                               variables={**os.environ, "GIT_TERMINAL_PROMPT": "0"}))
         except RunTimeLimitError as timeout:
             raise Refusal(f"{source} did not answer within {GIT_LIMIT_SECONDS} seconds", "try again once the network is back") from timeout

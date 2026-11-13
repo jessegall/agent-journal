@@ -23,7 +23,7 @@ class ExecutionGate:
         self.home, self.database, self.pauses = home, database, pauses
 
     def opened(self, run: PlacedRun) -> bool:
-        if run.request.kind.takes_place and self.pauses.is_paused(run):
+        if run.request.process_type.takes_place and self.pauses.is_paused(run):
             raise Refusal(PAUSED_AGENT_REFUSAL, PAUSED_AGENT_HELP)
         files = ServerFiles(self.home)
         if files.phase().runs_programs:

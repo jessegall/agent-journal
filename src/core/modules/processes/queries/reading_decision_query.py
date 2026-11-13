@@ -10,7 +10,7 @@ from engine.query.query import Query
 from engine.query.select import Select
 from engine.time.timestamp import Timestamp
 from core.modules.processes.models.enums.reader_state import ReaderState
-from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.reading_decision_row import ReadingDecisionRow
 
 
@@ -30,7 +30,7 @@ class ReadingDecisionQuery(Query[ReadingDecisionRow]):
         return self.filter(process_id=process_id, part_position=part_position).descending("decided_at", "id").first()
 
     def part_end_decision(self, process_id: int, part_position: int) -> ReadingDecisionRow | None:
-        return self.filter(process_id=process_id, part_position=part_position, moment=ReadingMoment.END).first()
+        return self.filter(process_id=process_id, part_position=part_position, phase=ReadingPhase.END).first()
 
     def command_key_decisions(self, command_key: str) -> Self:
         return self.filter(command_key=command_key)
@@ -39,7 +39,7 @@ class ReadingDecisionQuery(Query[ReadingDecisionRow]):
         return self.matching(Greater("decided_at", timestamp.text))
 
     def readerless_endings(self) -> Self:
-        return self.filter(moment=ReadingMoment.END).matching(Among("state", READERLESS_STATES))
+        return self.filter(phase=ReadingPhase.END).matching(Among("state", READERLESS_STATES))
 
     def excluding_agents(self, agent_ids: Sequence[int]) -> Self:
         runs = Select("processes").matching(Among("session_agent_id", agent_ids, negated=True)).column("id")

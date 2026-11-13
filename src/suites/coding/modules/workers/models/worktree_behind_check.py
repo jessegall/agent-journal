@@ -24,16 +24,16 @@ class WorktreeBehindCheck(EnvironmentScoped, Model):
     environment_id: int = 0
     worktree_id: int
     base_tip: str
-    behind: int
+    commits_lagging: int
     state: BehindCheckState = BehindCheckState.OPEN
-    decided_by: int | None = None
+    decider_id: int | None = None
     reason: str = ""
     reminders: int = 0
     failure: str = ""
 
     @classmethod
     def opened(cls, worktree_id: int, base_tip: str, behind: int) -> "WorktreeBehindCheck":
-        return cls(worktree_id=worktree_id, base_tip=base_tip, behind=behind)
+        return cls(worktree_id=worktree_id, base_tip=base_tip, commits_lagging=behind)
 
     def decision_text(self, decider: str) -> str:
         match self.state:
@@ -53,16 +53,16 @@ class WorktreeBehindCheck(EnvironmentScoped, Model):
         return self.state in DECIDING_STATES
 
     def ordered(self, by: int, reason: str) -> "WorktreeBehindCheck":
-        return self.taken(BehindCheckLifecycle.order, decided_by=by, reason=reason)
+        return self.taken(BehindCheckLifecycle.order, decider_id=by, reason=reason)
 
     def left(self, by: int, reason: str) -> "WorktreeBehindCheck":
-        return self.taken(BehindCheckLifecycle.leave, decided_by=by, reason=reason)
+        return self.taken(BehindCheckLifecycle.leave, decider_id=by, reason=reason)
 
     def passed(self, by: int, reason: str) -> "WorktreeBehindCheck":
-        return self.taken(BehindCheckLifecycle.pass_on, decided_by=by, reason=reason)
+        return self.taken(BehindCheckLifecycle.pass_on, decider_id=by, reason=reason)
 
     def passed_to_main_agent(self, reason: str) -> "WorktreeBehindCheck":
-        return self.taken(BehindCheckLifecycle.pass_on, decided_by=None, reason=reason)
+        return self.taken(BehindCheckLifecycle.pass_on, decider_id=None, reason=reason)
 
     def conflicted(self) -> "WorktreeBehindCheck":
         return self.taken(BehindCheckLifecycle.conflict)

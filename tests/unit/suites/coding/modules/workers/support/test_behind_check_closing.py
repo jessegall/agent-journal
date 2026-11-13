@@ -11,7 +11,7 @@ class Store:
     """The checks of one worktree, read and changed as the query and the repository do."""
 
     def __init__(self, *states: State) -> None:
-        self.rows = {number: WorktreeBehindCheck(id=number, environment_id=1, worktree_id=1, base_tip="abc", behind=3, state=state) for number, state in enumerate(states, 1)}
+        self.rows = {number: WorktreeBehindCheck(id=number, environment_id=1, worktree_id=1, base_tip="abc", commits_lagging=3, state=state) for number, state in enumerate(states, 1)}
         self.condition = None
 
     def query(self, model: type) -> "Store":

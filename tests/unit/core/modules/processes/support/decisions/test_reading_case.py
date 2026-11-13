@@ -7,7 +7,7 @@ from core.modules.processes.models.enums.cadence_state import CadenceState
 from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.enums.reading_exit import ReadingExit
-from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.enums.unreadable_reason import UnreadableReason
 from core.modules.processes.support.reader_judgement import ReaderJudgement
 from core.modules.processes.support.decisions.output_facts import OutputFacts
@@ -16,14 +16,14 @@ from core.modules.processes.support.decisions.reading_case import ReadingCase
 
 TEST_OUTPUT = b"collected 3 items\n\n===== 3 passed in 0.10s =====\n"
 RUNNING_TESTS = ReadingCase(command_key="pytest", category=CommandCategory.TEST_RUN, classification_recognized=True, has_asking_flag=False,
-                            output_hidden=False, is_saved_command=False, is_plugin_run=False, moment=ReadingMoment.RUNNING, age_seconds=120,
+                            output_hidden=False, is_saved_command=False, is_plugin_run=False, phase=ReadingPhase.RUNNING, age_seconds=120,
                             run_state=ProcessState.BACKGROUND, cadence_state=CadenceState.STREAMING, exit_code=None, reader_layer=None, reader_judgement=None, default_reader=False, reader_failed=False, draft_fits=False,
                             output=None, runs_without_change=0, waiting_request=False, skipped=False, has_unreadable_mark=False, count_missing=False,
                             reader_required=True, reader_writing_allowed=True, role_uses_saved_commands=False, readers_forced=True)
 
 
 def ended(sample: bytes, exit_code: int, age_seconds: int = 120) -> ReadingCase:
-    return replace(RUNNING_TESTS, moment=ReadingMoment.END, run_state=ProcessState.FINISHED, exit_code=exit_code, age_seconds=age_seconds,
+    return replace(RUNNING_TESTS, phase=ReadingPhase.END, run_state=ProcessState.FINISHED, exit_code=exit_code, age_seconds=age_seconds,
                    output=OutputFacts.measured(sample, len(sample), exit_code, CommandCategory.TEST_RUN))
 
 

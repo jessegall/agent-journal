@@ -4,7 +4,7 @@ from engine.actor.actor import Actor
 from engine.enums.sandbox_level import SandboxLevel
 from engine.enums.command_category import CommandCategory
 from engine.model.environment_scoped import EnvironmentScoped
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.model.model import Model
 from engine.time.timestamp import MINUTE_SECONDS, Timestamp
 from engine.time.duration import Duration
@@ -52,7 +52,7 @@ class Process(EnvironmentScoped, Model):
     owner_agent_id: int | None = None
     task_id: int | None = None
     plugin: str = ""
-    kind: str = ""
+    run_name: str = ""
     timeout_seconds: int | None = None
     expired_at: Timestamp | None = None
     sandbox_level: SandboxLevel = SandboxLevel.NONE
@@ -100,7 +100,7 @@ class Process(EnvironmentScoped, Model):
 
     @property
     def is_journal_merge(self) -> bool:
-        return self.kind == ProcessKind.MERGE.value
+        return self.run_name == ProcessType.MERGE.value
 
     def finish(self, timestamp: Timestamp, actor: Actor, exit_code: int) -> "Process":
         return self.moved(ProcessLifecycle.finish, exit_code=exit_code, ended_at=timestamp, queued_at=None, slot_assigned=False, progress=FINISHED_PROGRESS)

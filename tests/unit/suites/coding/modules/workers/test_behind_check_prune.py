@@ -12,7 +12,7 @@ NOW = datetime(2026, 11, 12, 9, 0, tzinfo=timezone.utc)
 
 
 def check(number: int, state: State, days_old: int) -> WorktreeBehindCheck:
-    return WorktreeBehindCheck(id=number, environment_id=1, worktree_id=1, base_tip="abc", behind=3, state=state, updated_at=Timestamp(NOW - timedelta(days=days_old)))
+    return WorktreeBehindCheck(id=number, environment_id=1, worktree_id=1, base_tip="abc", commits_lagging=3, state=state, updated_at=Timestamp(NOW - timedelta(days=days_old)))
 
 
 class Store:

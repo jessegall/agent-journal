@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.listener.rows.event_rows import EventRows
 from core.modules.processes.commands.store_end_decisions.store_end_decisions import StoreEndDecisions
-from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.reading.shadow_decisions import ShadowDecisions
 from core.modules.processes.support.run_visibility import RunVisibility
@@ -18,4 +18,4 @@ class StoreEndDecisionsHandler(Handler[StoreEndDecisions, None]):
 
     def handle(self, command: StoreEndDecisions, context: Context) -> None:
         process = self.rows.required(Process, command.process_id)
-        self.shadow.store(process, self.visibility.shown_parts(process), ReadingMoment.END, context)
+        self.shadow.store(process, self.visibility.shown_parts(process), ReadingPhase.END, context)

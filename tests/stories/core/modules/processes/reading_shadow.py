@@ -1,6 +1,6 @@
 from engine.enums.command_category import CommandCategory
 from engine.query.queries import Queries
-from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.reading_decision_row import ReadingDecisionRow
 from tests.stories.core.modules.processes.support.process_samples import install_runner, start_process
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders
@@ -52,5 +52,5 @@ def test_a_line_of_many_parts_reads_the_reading_facts_and_kept_decisions_of_its_
     story = new_story(fixture=BuilderStarted)
     with story.repeated_work.request():
         process = start_process(story, SEVERAL_PARTS_LINE, category=CommandCategory.TEST_RUN)
-    kept = tuple(story.container.get(Queries).query(ReadingDecisionRow).filter(process_id=process.id, moment=ReadingMoment.START).every_row(TEST_ROWS_REASON))
+    kept = tuple(story.container.get(Queries).query(ReadingDecisionRow).filter(process_id=process.id, phase=ReadingPhase.START).every_row(TEST_ROWS_REASON))
     story.expect_rows(len(kept) == SEVERAL_PARTS, detail=str(len(kept)))

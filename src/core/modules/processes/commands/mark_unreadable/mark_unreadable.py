@@ -8,5 +8,5 @@ from core.modules.processes.models.unreadable_mark import UnreadableMark
 class MarkUnreadable(Command[UnreadableMark]):
     """Marks a command, by its leading words, as one whose output no reader can read, with the agent's reason."""
 
-    words: str
+    terms: str
     reason: str

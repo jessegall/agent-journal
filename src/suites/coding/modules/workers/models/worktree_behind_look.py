@@ -14,4 +14,4 @@ class WorktreeBehindLook(EnvironmentScoped, Model):
     cli_name = "behind-look"
 
     environment_id: int = 0
-    looked_at: Timestamp
+    checked_at: Timestamp

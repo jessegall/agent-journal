@@ -1,4 +1,4 @@
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.process_executor import ProcessExecutor
@@ -50,7 +50,7 @@ class LibraryFolders:
     def copy(self, source: Path, target: Path) -> None:
         program = MAC_COPY if sys.platform == "darwin" else LINUX_COPY
         try:
-            finished = self.executor.execute(ExecutionRequest([*program, str(source), str(target)], source.parent, ProcessKind.SHELL, COPY_LIMIT_SECONDS))
+            finished = self.executor.execute(ExecutionRequest([*program, str(source), str(target)], source.parent, ProcessType.SHELL, COPY_LIMIT_SECONDS))
         except RunTimeLimitError as timeout:
             raise Refusal(f"copying {source} took longer than {COPY_LIMIT_SECONDS} seconds", "link it with --library-link instead") from timeout
         if not finished.succeeded:

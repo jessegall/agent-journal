@@ -29,7 +29,7 @@ class RecordRequestRunsHandler(Handler[RecordRequestRuns, None]):
             agent_id = self.owner_id(entry, self.agents.environment_main_agent(entry.environment_id))
             if agent_id is None:
                 continue
-            self.repository.save(RequestRun(session_agent_id=agent_id, creator_id=context.actor.id, kind=entry.kind, line=entry.line, exit_code=entry.exit_code,
+            self.repository.save(RequestRun(session_agent_id=agent_id, creator_id=context.actor.id, process_type=entry.process_type, line=entry.line, exit_code=entry.exit_code,
                                             ended_at=Timestamp.parsed(entry.ended_at)), context)
         days = max(1, self.settings.integer(ProcessSetting.REQUEST_RUN_DAYS))
         old = self.request_runs.ended_prior(context.timestamp, days).ordered("ended_at", "id").take(PRUNE_BATCH)

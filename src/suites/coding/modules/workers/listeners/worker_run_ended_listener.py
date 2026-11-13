@@ -81,9 +81,9 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
 
     def update_nudge(self, operation: WorkerOperation, process: Process) -> Nudge:
         worker = self.numbers.number(AGENT_MODEL_NAME, operation.worker_id)
-        if operation.update_result is UpdateResult.CONFLICTS:
+        if operation.update_outcome is UpdateResult.CONFLICTS:
             return WORKER_OPERATION_UPDATE_CONFLICT.nudge(worker=worker, output=process.id)
-        if operation.update_result is None or process.exit_code != 0:
+        if operation.update_outcome is None or process.exit_code != 0:
             return WORKER_OPERATION_UPDATE_FAILED.nudge(worker=worker, output=process.id)
         return WORKER_OPERATION_UPDATED.nudge(worker=worker, output=process.id)
 

@@ -27,7 +27,7 @@ class PluginProcessKindLimits(ProcessKindLimits):
         self.queries, self.folders, self.settings, self.machine, self.memory = queries, folders, settings, machine, memory
 
     def admissions(self, waiting: Sequence[Process]) -> PluginKindPass:
-        categories = {(process.plugin, process.kind, process.environment_id) for process in waiting if process.plugin and process.kind}
+        categories = {(process.plugin, process.run_name, process.environment_id) for process in waiting if process.plugin and process.run_name}
         if not categories:
             return PluginKindPass({}, 0, {})
         plugins = {plugin.name: plugin for plugin in self.queries.query(Plugin).matching(Among("name", sorted({plugin for plugin, _, _ in categories}))).every_row(PLUGINS_REASON)}

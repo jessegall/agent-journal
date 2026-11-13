@@ -71,7 +71,7 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
 
     def remind(self, check: WorktreeBehindCheck, worktree: Worktree, limit: int, context: Context) -> None:
         if check.reminders < limit:
-            self.nudger.send(worktree.session_agent_id, UPDATE_REMINDER, STALE_SOURCE, context, count=check.behind)
+            self.nudger.send(worktree.session_agent_id, UPDATE_REMINDER, STALE_SOURCE, context, count=check.commits_lagging)
         else:
             self.inbox.send_nudge(UPDATE_SKIPPED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)), STALE_SOURCE, context)
         self.repository.save_change(check, check.reminded(), context)

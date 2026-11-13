@@ -60,5 +60,5 @@ class UpdateWorkerHandler(Handler[UpdateWorker, UpdateOutcome]):
             self.closing.close_updated(worktree, context)
         operation = self.queries.query(WorkerOperation).filter(worker_id=context.actor.id, process_id=command.process_id).first() if command.process_id is not None else None
         if operation is not None:
-            self.repository.update(operation, context, update_result=self.result)
+            self.repository.update(operation, context, update_outcome=self.result)
         return UpdateOutcome(worktree.base_branch, self.update, self.result)

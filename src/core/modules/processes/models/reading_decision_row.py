@@ -6,7 +6,7 @@ from engine.time.timestamp import Timestamp
 from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.models.enums.reader_action import ReaderAction
 from core.modules.processes.models.enums.reader_state import ReaderState
-from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.enums.reason_code import ReasonCode
 
 
@@ -23,7 +23,7 @@ class ReadingDecisionRow(Prunable, Model):
     process_id: int
     part_position: int
     command_key: str
-    moment: ReadingMoment
+    phase: ReadingPhase
     state: ReaderState
     action: ReaderAction
     level: PressureLevel

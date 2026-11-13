@@ -12,7 +12,7 @@ class QueuePluginRun(Command[QueuedRunStart]):
     detached run is not waited for."""
 
     plugin: str
-    kind: str
+    run_name: str
     agent_id: int
     folder: str
     line: str

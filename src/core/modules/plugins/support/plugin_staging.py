@@ -2,7 +2,7 @@ import hashlib
 import os
 import shutil
 import subprocess
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.process_executor import ProcessExecutor
@@ -38,7 +38,7 @@ class PluginStaging:
         branch = ["--branch", tag] if tag else []
         command = ["git", "clone", "--quiet", "--depth", "1", *branch, self.releases.address(source), str(folder)]
         try:
-            finished = self.executor.execute(ExecutionRequest(command, Path.cwd(), ProcessKind.MERGE, CLONE_LIMIT_SECONDS, variables={**os.environ, "GIT_TERMINAL_PROMPT": "0"}))
+            finished = self.executor.execute(ExecutionRequest(command, Path.cwd(), ProcessType.MERGE, CLONE_LIMIT_SECONDS, variables={**os.environ, "GIT_TERMINAL_PROMPT": "0"}))
         except RunTimeLimitError as timeout:
             raise Refusal(f"{source} took longer than {CLONE_LIMIT_SECONDS} seconds to clone", "try again") from timeout
         if not finished.succeeded:

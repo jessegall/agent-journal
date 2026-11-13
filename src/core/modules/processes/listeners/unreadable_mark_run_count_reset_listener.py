@@ -15,4 +15,4 @@ class UnreadableMarkRunCountResetListener(SaveListener[Created[UnreadableMark]])
         self.run_counts = run_counts
 
     def handle(self, event: Created[UnreadableMark], context: Context) -> None:
-        self.run_counts.reset(lambda command_key: UnreadableMarks.covers(event.row.words, command_key), context)
+        self.run_counts.reset(lambda command_key: UnreadableMarks.covers(event.row.terms, command_key), context)

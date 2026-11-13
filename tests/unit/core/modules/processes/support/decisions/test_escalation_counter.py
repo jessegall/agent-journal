@@ -8,7 +8,7 @@ import pytest
 from engine.time.timestamp import Timestamp
 from core.modules.processes.models.enums.reader_state import ReaderState
 from core.modules.processes.models.enums.reader_type import ReaderType
-from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.decisions.escalation_counter import EscalationCounter
 from core.modules.processes.support.decisions.escalation_resets import EscalationResets
@@ -26,19 +26,19 @@ class DecisionSample:
     command_key: str
     state: ReaderState
     decided_at: Timestamp
-    moment: ReadingMoment = ReadingMoment.END
+    moment: ReadingPhase = ReadingPhase.END
 
 
 @dataclass
 class DecisionsSample:
     rows: list[DecisionSample]
     keys: tuple[object, ...] = ()
-    moment: ReadingMoment | None = None
+    moment: ReadingPhase | None = None
 
     def matching(self, condition: Among) -> "DecisionsSample":
         return DecisionsSample(self.rows, tuple(condition.values))
 
-    def filter(self, phase: ReadingMoment) -> "DecisionsSample":
+    def filter(self, phase: ReadingPhase) -> "DecisionsSample":
         return DecisionsSample(self.rows, self.keys, phase)
 
     def descending(self, *columns: str) -> "DecisionsSample":

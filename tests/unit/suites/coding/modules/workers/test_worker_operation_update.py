@@ -25,7 +25,7 @@ OUTPUT = 40
 
 def operation(name: WorkerOperationName = WorkerOperationName.UPDATE, outcome: UpdateResult | None = None, process_id: int = OUTPUT) -> WorkerOperation:
     return WorkerOperation(worker_id=WORKER, creator_id=WORKER, actor_type=ActorType.AGENT, process_id=process_id, line="worker update --wait", name=name,
-                           source_message_id=None, source_version=0, source_unavailable=False, selecting_actor_id=None, source_origin="", update_result=outcome)
+                           source_message_id=None, source_version=0, source_unavailable=False, selecting_actor_id=None, source_origin="", update_outcome=outcome)
 
 
 def ended(exit_code: int) -> Process:

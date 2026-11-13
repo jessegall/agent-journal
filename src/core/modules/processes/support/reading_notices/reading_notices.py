@@ -9,7 +9,7 @@ from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.enums.reader_action import ReaderAction
 from core.modules.processes.models.enums.reader_state import ReaderState
 from core.modules.processes.models.enums.reason_code import ReasonCode
-from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.enums.unreadable_reason import UnreadableReason
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.output import Output
@@ -54,7 +54,7 @@ class ReadingNotices:
         failures = self.silent_failure_nudges(process, output, parts)
         if not self.writers.allows(Actor(process.session_agent_id, ActorType.AGENT)) or RunVisibility.select_visible_part(process, parts) is None:
             return failures
-        decisions = self.decisions.kept(process, ReadingMoment.END)
+        decisions = self.decisions.kept(process, ReadingPhase.END)
         read_position = output.reader_position if output is not None and output.reader_position else 1
         if read_position in decisions and decisions[read_position].state is ReaderState.UNREADABLE:
             return failures
@@ -69,9 +69,9 @@ class ReadingNotices:
     @staticmethod
     def mark_nudge(process: Process, mark: UnreadableMark) -> Nudge:
         if mark.lifted_at is not None:
-            return UNREADABLE_LIFTED.nudge(name=mark.words)
+            return UNREADABLE_LIFTED.nudge(name=mark.terms)
         if mark.reason is UnreadableReason.DECLARED:
-            return UNREADABLE_DECLARED.nudge(name=mark.words)
+            return UNREADABLE_DECLARED.nudge(name=mark.terms)
         return MARK_NUDGES[mark.reason].nudge(output=process.id)
 
     @staticmethod

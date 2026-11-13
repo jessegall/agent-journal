@@ -3,7 +3,7 @@ import time
 import pytest
 
 from engine.database.database import Database
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.errors.refusal import Refusal
 from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.process_executor import ProcessExecutor
@@ -28,6 +28,6 @@ def test_a_run_asked_for_inside_a_write_while_the_server_updates_is_refused_at_o
     database = story.container.get(Database)
     started = time.monotonic()
     with pytest.raises(Refusal, match="the journal is updating"), database.transaction():
-        story.container.get(ProcessExecutor).execute(ExecutionRequest(["echo", "done"], story.home.project_folder, ProcessKind.QUICK, 10))
+        story.container.get(ProcessExecutor).execute(ExecutionRequest(["echo", "done"], story.home.project_folder, ProcessType.QUICK, 10))
     files.clear_maintenance()
     story.expect_rows(time.monotonic() - started < 5)

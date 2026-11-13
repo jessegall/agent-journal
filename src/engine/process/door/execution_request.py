@@ -2,7 +2,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 
 
 @dataclass(frozen=True)
@@ -12,7 +12,7 @@ class ExecutionRequest:
 
     line: Sequence[str]
     folder: Path
-    kind: ProcessKind
+    process_type: ProcessType
     limit_seconds: float
     title: str = ""
     stdin: str | None = None

@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from itertools import takewhile
 
 from engine.time.timestamp import Timestamp
-from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from engine.query.conditions.among import Among
 from core.modules.processes.models.reading_decision_row import ReadingDecisionRow
 from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
@@ -32,7 +32,7 @@ class EscalationCounter:
         return {key: self.counted_runs(key, rows[key], flagged[key]) for key in keys}
 
     def ended_runs(self, keys: Sequence[str]) -> list[ReadingDecisionRow]:
-        return self.decisions.matching(Among("command_key", tuple(keys))).filter(moment=ReadingMoment.END).descending("decided_at", "id").take(RUNS_READ * len(keys))
+        return self.decisions.matching(Among("command_key", tuple(keys))).filter(phase=ReadingPhase.END).descending("decided_at", "id").take(RUNS_READ * len(keys))
 
     def counted_runs(self, command_key: str, ended: Sequence[ReadingDecisionRow], flagged_at: Timestamp | None) -> int:
         changed_at = self.reader_changed_at(command_key)

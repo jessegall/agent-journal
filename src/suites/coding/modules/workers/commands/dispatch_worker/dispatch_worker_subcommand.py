@@ -66,7 +66,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         commands = WorkerTestCommandEntry.parsed(arguments.test_command)
         if not commands and caller.actor.type is ActorType.AGENT and not self.has_presets(caller):
             raise Refusal("a worker gets the test commands it may run", TEST_COMMAND_EXAMPLE)
-        return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], ModelChoice.chosen(arguments.model), arguments.profile, arguments.name, arguments.fresh, arguments.tier, arguments.plan, arguments.phase, session=arguments.session, starts_program=not arguments.no_program, sandboxed=not arguments.no_sandbox, test_commands=commands, taken_from=source_worker.id if source_worker is not None else None)
+        return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], ModelChoice.chosen(arguments.model), arguments.profile, arguments.name, arguments.fresh, arguments.tier, arguments.plan, arguments.phase, session=arguments.session, starts_program=not arguments.no_program, sandboxed=not arguments.no_sandbox, test_commands=commands, source_worker_id=source_worker.id if source_worker is not None else None)
 
     def has_presets(self, caller: Caller) -> bool:
         if caller.environment_id is None:

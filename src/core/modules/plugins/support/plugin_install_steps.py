@@ -1,6 +1,6 @@
 import json
 import subprocess
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.process_executor import ProcessExecutor
@@ -46,7 +46,7 @@ class PluginInstallSteps:
 
     def shell(self, line: str, plugin_name: str, folder: Path) -> "subprocess.CompletedProcess[str]":
         try:
-            finished = self.executor.execute(ExecutionRequest(["sh", "-c", line], folder, ProcessKind.PLUGIN, STEP_LIMIT_SECONDS, variables=self.program.environment(plugin_name, "")))
+            finished = self.executor.execute(ExecutionRequest(["sh", "-c", line], folder, ProcessType.PLUGIN, STEP_LIMIT_SECONDS, variables=self.program.environment(plugin_name, "")))
         except RunTimeLimitError as error:
             raise subprocess.TimeoutExpired(line, STEP_LIMIT_SECONDS) from error
         return subprocess.CompletedProcess(["sh", "-c", line], finished.exit_code, finished.stdout, finished.stderr)

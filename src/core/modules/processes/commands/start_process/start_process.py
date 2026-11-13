@@ -5,7 +5,7 @@ from pathlib import Path
 from engine.command.command import Command
 from engine.driver.agent_hook import AgentHook
 from engine.enums.command_category import CommandCategory
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.driver.shell_line import ShellLine
 from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.models.enums.queue_priority import QueuePriority
@@ -32,17 +32,17 @@ class StartProcess(Command[Process]):
     task_id: int | None = None
     timeout_durations: tuple[str, ...] = ()
     plugin: str = ""
-    kind: str = ""
+    run_name: str = ""
     priority: QueuePriority = QueuePriority.NORMAL
 
     # A merge the journal runs itself through its door: the door runs it at once, so it never waits in the queue.
     @property
     def is_journal_merge(self) -> bool:
-        return self.kind == ProcessKind.MERGE.value
+        return self.run_name == ProcessType.MERGE.value
 
     @classmethod
     def single_part(cls, agent_id: int, line: str, folder: str, category: CommandCategory, limit_seconds: int, plugin: str = "", part_category: str = "") -> "StartProcess":
-        return cls(agent_id, None, line, folder, "", category, limit_seconds, [PartSpec(line, line.split()[0], False, category)], plugin=plugin, kind=part_category)
+        return cls(agent_id, None, line, folder, "", category, limit_seconds, [PartSpec(line, line.split()[0], False, category)], plugin=plugin, run_name=part_category)
 
     @classmethod
     def build(cls, hook: AgentHook, shell: ShellLine, run: ForegroundRun) -> "StartProcess":

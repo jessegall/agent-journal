@@ -15,7 +15,7 @@ class PluginKindPass(KindPass):
         self.rules, self.free_megabytes, self.machine_counts = rules, free_megabytes, machine_counts
 
     def is_blocked(self, waiting: Process, running: Sequence[Process]) -> bool:
-        rule = self.rules.get((waiting.plugin, waiting.kind, waiting.environment_id))
+        rule = self.rules.get((waiting.plugin, waiting.run_name, waiting.environment_id))
         if rule is None:
             return False
         if self.free_megabytes is not None and self.free_megabytes < rule.declared.memory_mb:
@@ -24,12 +24,12 @@ class PluginKindPass(KindPass):
 
     def count(self, rule: KindRule, waiting: Process, running: Sequence[Process]) -> int:
         if rule.declared.scope is RunScope.MACHINE:
-            return self.machine_counts[(waiting.plugin, waiting.kind)]
-        return sum((run.plugin, run.kind) == (waiting.plugin, waiting.kind) for run in running)
+            return self.machine_counts[(waiting.plugin, waiting.run_name)]
+        return sum((run.plugin, run.run_name) == (waiting.plugin, waiting.run_name) for run in running)
 
     def admitted(self, process: Process) -> None:
-        rule = self.rules.get((process.plugin, process.kind, process.environment_id))
+        rule = self.rules.get((process.plugin, process.run_name, process.environment_id))
         if rule is not None and self.free_megabytes is not None:
             self.free_megabytes -= rule.declared.memory_mb
-        if (process.plugin, process.kind) in self.machine_counts:
-            self.machine_counts[(process.plugin, process.kind)] += 1
+        if (process.plugin, process.run_name) in self.machine_counts:
+            self.machine_counts[(process.plugin, process.run_name)] += 1

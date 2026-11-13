@@ -49,7 +49,7 @@ def test_a_passed_check_goes_to_the_main_agent_by_its_number_and_no_worktree_sta
     handler = PassBehindCheckHandler(Agents(), BehindDecisions(Worktrees(), Checks(State.OPEN), Numbers()), repository, visits, main_line, Numbers())
     command = PassBehindCheck(WORKER, "it is too large")
     handler.handle(command, SimpleNamespace(actor=Actor(MERGER, ActorType.AGENT)))
-    assert [(row.state, row.decided_by) for row in repository.saved] == [(State.PASSED, MERGER)] and visits.closed == 1
+    assert [(row.state, row.decider_id) for row in repository.saved] == [(State.PASSED, MERGER)] and visits.closed == 1
     assert main_line.sent[0].key == STALE_PASSED.key
 
 

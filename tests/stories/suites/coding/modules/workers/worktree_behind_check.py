@@ -82,7 +82,7 @@ def s1_three_merged_workers_open_one_check_and_start_the_merger(story, repositor
     worker_commits(repository, worker.id, 1)
     merged_workers(repository, 3)
     stale_check(story)
-    story.expect_rows([check.behind for check in checks(story)] == [3], len(behind_lines(story)) == 1, detail=f"{checks(story)} {behind_lines(story)}")
+    story.expect_rows([check.commits_lagging for check in checks(story)] == [3], len(behind_lines(story)) == 1, detail=f"{checks(story)} {behind_lines(story)}")
 
 
 def s2_own_commits_and_an_unmoved_base_open_none(story, repository, worker: Actor) -> None:
@@ -95,14 +95,14 @@ def s3_a_merged_four_commit_worker_counts_once(story, repository, worker: Actor)
     worker_commits(repository, worker.id, 1)
     merged_workers(repository, 1, commits=4)
     stale_check(story)
-    story.expect_rows([check.behind for check in checks(story)] == [1], detail=str(checks(story)))
+    story.expect_rows([check.commits_lagging for check in checks(story)] == [1], detail=str(checks(story)))
 
 
 def s4_a_commit_straight_on_the_base_counts(story, repository, worker: Actor) -> None:
     worker_commits(repository, worker.id, 1)
     base_commits(repository, 1)
     stale_check(story)
-    story.expect_rows([check.behind for check in checks(story)] == [1], detail=str(checks(story)))
+    story.expect_rows([check.commits_lagging for check in checks(story)] == [1], detail=str(checks(story)))
 
 
 def s5_a_worktree_counts_against_its_own_base(story, repository, worker: Actor) -> None:
@@ -129,7 +129,7 @@ def s7_the_look_comes_once_per_ten_minutes(story, repository, worker: Actor) -> 
     first = list(checks(story))
     story.advance(timedelta(minutes=10))
     stale_check(story)
-    story.expect_rows(first == [], [check.behind for check in checks(story)] == [3], detail=f"{first} {checks(story)}")
+    story.expect_rows(first == [], [check.commits_lagging for check in checks(story)] == [3], detail=f"{first} {checks(story)}")
 
 
 def s8_zero_to_check_looks_at_nothing(story, repository, worker: Actor) -> None:

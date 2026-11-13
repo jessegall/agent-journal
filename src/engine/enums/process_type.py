@@ -3,7 +3,7 @@ from enum import StrEnum
 from engine.enums.command_category import CommandCategory
 
 
-class ProcessKind(StrEnum):
+class ProcessType(StrEnum):
     """What kind of run a process is. Hooks, reading, writing and searching have priority 0: they leave the
     queue at once and never move to the background. A quick kind, such as the journal's own version control
     status, takes no place in the queue and is stopped at its time limit like every run. The rest wait for a
@@ -11,7 +11,7 @@ class ProcessKind(StrEnum):
 
     HOOK = "hook"
     READ = "read"
-    WRITE = "write"
+    EDIT = "edit"
     SEARCH = "search"
     JOURNAL = "journal"
     QUICK = "quick"
@@ -21,11 +21,11 @@ class ProcessKind(StrEnum):
 
     @property
     def is_priority_zero(self) -> bool:
-        return self is ProcessKind.HOOK or self.category.is_priority_zero
+        return self is ProcessType.HOOK or self.category.is_priority_zero
 
     @property
     def is_quick(self) -> bool:
-        return self is ProcessKind.QUICK
+        return self is ProcessType.QUICK
 
     @property
     def takes_place(self) -> bool:
@@ -40,6 +40,6 @@ class ProcessKind(StrEnum):
         return PROCESS_CATEGORIES[self]
 
 
-PROCESS_CATEGORIES = {ProcessKind.HOOK: CommandCategory.JOURNAL, ProcessKind.READ: CommandCategory.READ, ProcessKind.WRITE: CommandCategory.EDIT,
-                   ProcessKind.SEARCH: CommandCategory.SEARCH, ProcessKind.JOURNAL: CommandCategory.JOURNAL, ProcessKind.QUICK: CommandCategory.PROCESS,
-                   ProcessKind.SHELL: CommandCategory.PROCESS, ProcessKind.MERGE: CommandCategory.VERSION_CONTROL, ProcessKind.PLUGIN: CommandCategory.CHECK}
+PROCESS_CATEGORIES = {ProcessType.HOOK: CommandCategory.JOURNAL, ProcessType.READ: CommandCategory.READ, ProcessType.EDIT: CommandCategory.EDIT,
+                   ProcessType.SEARCH: CommandCategory.SEARCH, ProcessType.JOURNAL: CommandCategory.JOURNAL, ProcessType.QUICK: CommandCategory.PROCESS,
+                   ProcessType.SHELL: CommandCategory.PROCESS, ProcessType.MERGE: CommandCategory.VERSION_CONTROL, ProcessType.PLUGIN: CommandCategory.CHECK}

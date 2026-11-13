@@ -21,7 +21,7 @@ def ignoring_actor(actor_id: int, checks: Checks, worktrees: Worktrees | None = 
 
 def test_leaving_closes_the_check_as_left_with_the_reason_and_closes_the_visit():
     repository, visits = ignoring_actor(MERGER, Checks(State.OPEN))
-    assert (repository.saved[0].state, repository.saved[0].reason, repository.saved[0].decided_by, visits.closed) == (State.IGNORED, "only the docs moved", MERGER, 1)
+    assert (repository.saved[0].state, repository.saved[0].reason, repository.saved[0].decider_id, visits.closed) == (State.IGNORED, "only the docs moved", MERGER, 1)
 
 
 def test_the_main_agent_may_leave_a_passed_check_and_another_agent_is_refused():

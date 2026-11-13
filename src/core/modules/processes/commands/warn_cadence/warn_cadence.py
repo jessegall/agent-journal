@@ -13,6 +13,6 @@ class WarnCadence(Command[Process]):
 
     process_id: int
     part_position: int
-    kind: NoticeKind
+    notice_type: NoticeKind
     seconds: int
     limit: int

@@ -15,4 +15,4 @@ class RunPluginCommand(Command[PluginCommandRun]):
     line: str
     is_readonly: bool
     plugin: str
-    kind: str = ""
+    run_name: str = ""

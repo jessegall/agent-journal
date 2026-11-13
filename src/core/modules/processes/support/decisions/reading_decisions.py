@@ -1,7 +1,7 @@
 from engine.command.context import Context
 from engine.database.kept_rows import KeptRows
 from engine.repository.repository import Repository
-from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reading_decision_row import ReadingDecisionRow
@@ -21,16 +21,16 @@ class ReadingDecisions:
 
     # The kept decision of each part of a run at one moment, by the part's position, read again only after the decisions
     # of that run changed, so storing and telling them read once.
-    def kept(self, process: Process, moment: ReadingMoment) -> dict[int, ReadingDecisionRow]:
-        decisions = self.decisions.process_decisions(process.id).filter(moment=moment)
+    def kept(self, process: Process, phase: ReadingPhase) -> dict[int, ReadingDecisionRow]:
+        decisions = self.decisions.process_decisions(process.id).filter(phase=phase)
         rows = self.kept_rows.read(decisions, lambda: tuple(decisions.get()), name="processes.kept_decisions")
         return {row.part_position: row for row in rows}
 
-    def store(self, process: Process, part: ProcessPart, point: ReadingMoment, decision: ReadingDecision, stored: ReadingDecisionRow | None, context: Context) -> ReadingDecisionRow:
+    def store(self, process: Process, part: ProcessPart, point: ReadingPhase, decision: ReadingDecision, stored: ReadingDecisionRow | None, context: Context) -> ReadingDecisionRow:
         values = {"state": decision.state, "action": decision.action, "level": decision.level, "reason": decision.reason, "decided_at": context.timestamp}
         if stored is not None:
             return self.repository.update(stored, context, **values)
         command_key = SilentStartRuns.name(part.text, part.program, part.category)
-        if point is ReadingMoment.END and decision.state.is_readerless:
+        if point is ReadingPhase.END and decision.state.is_readerless:
             self.run_counts.add_run(command_key, context)
-        return self.repository.save(ReadingDecisionRow(process_id=process.id, part_position=part.position, command_key=command_key, moment=point, **values), context)
+        return self.repository.save(ReadingDecisionRow(process_id=process.id, part_position=part.position, command_key=command_key, phase=point, **values), context)

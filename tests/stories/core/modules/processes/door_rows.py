@@ -1,7 +1,7 @@
 import threading
 from pathlib import Path
 
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.environment.environment_names import EnvironmentNames
 from engine.file.file_access import FileAccess
 from engine.module.module_finder import ModuleFinder
@@ -35,8 +35,8 @@ def test_the_ticker_writes_the_logged_requests_and_a_held_hook_keeps_its_row_und
     story = new_story(fixture=UserJoined)
     main_id = story.container.get(EnvironmentNames).environment_id("main")
     log = RequestLog(story.home, FileAccess.shared())
-    log.append(RequestLogEntry(main_id, None, ProcessKind.JOURNAL, "journal task list", 0, "2026-10-31T09:00:00+00:00"))
-    log.append(RequestLogEntry(None, None, ProcessKind.HOOK, "claude stop", 2, "2026-10-31T09:00:00+00:00", "s-1"))
+    log.append(RequestLogEntry(main_id, None, ProcessType.JOURNAL, "journal task list", 0, "2026-10-31T09:00:00+00:00"))
+    log.append(RequestLogEntry(None, None, ProcessType.HOOK, "claude stop", 2, "2026-10-31T09:00:00+00:00", "s-1"))
     handlers = [handler for handler in Ticker.module_handlers(ModuleFinder(story.home)) if handler.label == IMPORT_LABEL]
     clock = TickClock()
     ticker = Ticker(story.home, handlers, lambda: None, clock)
@@ -54,7 +54,7 @@ def test_a_door_run_waits_while_the_journal_starts_and_runs_once_it_is_ready(new
     files = ServerFiles(story.home)
     FileAccess.shared().write(files.start_mark, "starting")
     finished: list[str] = []
-    run = threading.Thread(target=lambda: finished.append(story.container.get(ProcessExecutor).execute(ExecutionRequest(["echo", "ran"], tmp_path, ProcessKind.QUICK, 5)).stdout))
+    run = threading.Thread(target=lambda: finished.append(story.container.get(ProcessExecutor).execute(ExecutionRequest(["echo", "ran"], tmp_path, ProcessType.QUICK, 5)).stdout))
     run.start()
     run.join(WAIT_CHECK_SECONDS)
     blocked_during_start = run.is_alive() and not finished

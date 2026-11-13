@@ -8,7 +8,7 @@ MERGER = 12
 
 
 def check(state: State = State.OPEN) -> WorktreeBehindCheck:
-    return WorktreeBehindCheck(id=1, environment_id=1, worktree_id=3, base_tip="abc", behind=4, state=state)
+    return WorktreeBehindCheck(id=1, environment_id=1, worktree_id=3, base_tip="abc", commits_lagging=4, state=state)
 
 
 MOVES = {
@@ -40,12 +40,12 @@ def test_every_other_move_is_refused(state, name):
 
 def test_a_pass_goes_back_to_the_main_agent_who_may_order_the_update():
     ordered = check(State.OPEN).passed(MERGER, "risky").ordered(1, "go on")
-    assert (ordered.state, ordered.decided_by, ordered.reason) == (State.ORDERED, 1, "go on")
+    assert (ordered.state, ordered.decider_id, ordered.reason) == (State.ORDERED, 1, "go on")
 
 
 def test_an_order_holds_who_and_why_and_reminders_count():
     reminded = check().ordered(MERGER, "three commits behind").reminded().reminded()
-    assert (reminded.decided_by, reminded.reason, reminded.reminders) == (MERGER, "three commits behind", 2)
+    assert (reminded.decider_id, reminded.reason, reminded.reminders) == (MERGER, "three commits behind", 2)
 
 
 def test_only_an_open_or_passed_check_waits_for_a_decision():

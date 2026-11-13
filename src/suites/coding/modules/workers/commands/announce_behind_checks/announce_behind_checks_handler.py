@@ -37,4 +37,4 @@ class AnnounceBehindChecksHandler(Handler[AnnounceBehindChecks, tuple[Nudge, ...
 
     def nudge(self, worktree: Worktree, declaration: NudgeDeclaration) -> Nudge:
         check = self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).newest().first()
-        return declaration.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), count=check.behind if check else 0)
+        return declaration.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id), count=check.commits_lagging if check else 0)

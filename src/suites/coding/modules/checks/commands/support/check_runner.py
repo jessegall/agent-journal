@@ -1,6 +1,6 @@
 from collections.abc import Callable
 
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.journal.journal_home import JournalHome
 from engine.process.door.execution_request import ExecutionRequest
@@ -19,7 +19,7 @@ class CheckRunner:
 
     def run(self, command: str, read_line: Callable[[str], None]) -> CheckResult:
         try:
-            finished = self.executor.execute(ExecutionRequest(["sh", "-c", command], self.home.project_folder, ProcessKind.PLUGIN, self.limit_seconds, on_line=read_line))
+            finished = self.executor.execute(ExecutionRequest(["sh", "-c", command], self.home.project_folder, ProcessType.PLUGIN, self.limit_seconds, on_line=read_line))
         except RunTimeLimitError:
             return CheckResult(False, f"it did not end within {int(self.limit_seconds)} seconds")
         return CheckResult(finished.succeeded, finished.stdout.strip())

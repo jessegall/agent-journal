@@ -29,7 +29,7 @@ class WorkerCompaction:
 
     def is_running(self, worker_id: int) -> bool:
         compaction = self.compactions.program_compaction(worker_id)
-        return compaction is not None and compaction.woken_at is None
+        return compaction is not None and compaction.resumed_at is None
 
     def start_record(self, worker: Agent) -> RecordProgramCompaction | None:
         self.finished_task_ids.discard(worker.id)

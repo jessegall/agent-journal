@@ -14,4 +14,4 @@ class LiftUnreadableHandler(Handler[LiftUnreadable, UnreadableMark]):
         self.marks = marks
 
     def handle(self, command: LiftUnreadable, context: Context) -> UnreadableMark:
-        return self.marks.lift(command.words, context.actor.id, context)
+        return self.marks.lift(command.terms, context.actor.id, context)

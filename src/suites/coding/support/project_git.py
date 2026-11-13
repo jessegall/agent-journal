@@ -4,7 +4,7 @@ from suites.coding.support.project_git_pull_record import ProjectGitPullRecord
 import shutil
 from pathlib import Path
 
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.process_executor import ProcessExecutor
@@ -37,7 +37,7 @@ class ProjectGit:
             raise Refusal("a repository is read in one environment", "run this from an environment")
         folder = Path(self.queries.query(Environment).find(environment_id).folder)
         try:
-            finished = self.executor.execute(ExecutionRequest(command, folder, ProcessKind.QUICK, COMMAND_LIMIT_SECONDS))
+            finished = self.executor.execute(ExecutionRequest(command, folder, ProcessType.QUICK, COMMAND_LIMIT_SECONDS))
         except (OSError, RunTimeLimitError):
             return None
         return finished.stdout if finished.succeeded else None

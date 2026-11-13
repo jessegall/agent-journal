@@ -14,4 +14,4 @@ class MarkUnreadableHandler(Handler[MarkUnreadable, UnreadableMark]):
         self.marks = marks
 
     def handle(self, command: MarkUnreadable, context: Context) -> UnreadableMark:
-        return self.marks.declare(command.words, command.reason, context)
+        return self.marks.declare(command.terms, command.reason, context)

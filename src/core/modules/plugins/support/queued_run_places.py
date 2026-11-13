@@ -17,7 +17,7 @@ class QueuedRunPlaces:
         self.repository, self.folders, self.machine = repository, folders, machine
 
     def admitted(self, run: QueuedRun, process: Process, context: Context) -> QueuedRun:
-        declared = PluginManifest.read(self.folders.code(process.plugin)).process_category(process.kind)
+        declared = PluginManifest.read(self.folders.code(process.plugin)).process_category(process.run_name)
         if declared is not None and declared.scope is RunScope.MACHINE:
             self.machine.claim(process)
         return self.repository.update(run, context, state=QueuedRunState.RUNNING)

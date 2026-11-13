@@ -28,13 +28,13 @@ class AskMergeHandler(Handler[AskMerge, MergeAskOutcome]):
         self.scope, self.repository, self.settings, self.main_line, self.numbers = scope, repository, settings, main_line, numbers
 
     def check_rows(self, command: AskMerge, actor: Actor) -> None:
-        self.scope.checked(command.worker_id, command.note, command.up_to)
+        self.scope.checked(command.worker_id, command.note, command.last_task)
 
     def handle(self, command: AskMerge, context: Context) -> MergeAskOutcome:
-        part = self.scope.checked(command.worker_id, command.note, command.up_to)
+        part = self.scope.checked(command.worker_id, command.note, command.last_task)
         task_ids = ",".join(str(task_id) for task_id in part.task_ids)
         merge_request = self.repository.save(MergeAsk(creator_id=context.actor.id, worktree_id=part.worktree.id, commit_id=part.commit_id, task_ids=task_ids, unit_name=part.unit.merge_name,
-                                                  note=command.note, is_whole=part.is_full), context)
+                                                  note=command.note, is_full=part.is_full), context)
         worktree = part.worktree
         if part.is_full:
             worktree = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, merge_ready_at=context.timestamp), context)

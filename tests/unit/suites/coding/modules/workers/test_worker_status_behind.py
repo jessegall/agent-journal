@@ -5,7 +5,7 @@ from suites.coding.modules.workers.models.worktree_behind_check import WorktreeB
 
 
 def check(state: State) -> WorktreeBehindCheck:
-    return WorktreeBehindCheck(id=1, environment_id=1, worktree_id=1, base_tip="abc", behind=4, state=state, reason="different area")
+    return WorktreeBehindCheck(id=1, environment_id=1, worktree_id=1, base_tip="abc", commits_lagging=4, state=state, reason="different area")
 
 
 @pytest.mark.parametrize("state, text", [(State.OPEN, "waiting for a decision"), (State.ORDERED, "update ordered by the merger: different area"),

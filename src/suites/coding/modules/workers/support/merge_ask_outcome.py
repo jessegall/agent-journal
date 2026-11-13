@@ -18,6 +18,6 @@ class MergeAskOutcome:
     unit: WorkUnit
 
     def line(self) -> str:
-        if not self.merge_request.is_whole:
+        if not self.merge_request.is_full:
             return PART_TEXT.format(commit=self.merge_request.commit_id, task_count=len(self.merge_request.tasks()))
         return ANSWER_TEXT.format(unit=self.unit.merge_name, task_count=self.unit.total_count, commit_count=self.worktree.commit_count, commit=self.merge_request.commit_id)

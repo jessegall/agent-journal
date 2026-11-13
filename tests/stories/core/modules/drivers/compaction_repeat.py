@@ -109,7 +109,7 @@ def test_g3_a_typed_compaction_is_woken_by_the_listener_and_a_tick_after_600_sec
     agent.run_listeners()
     agent.expect_rows(len(agent.typing.typed) == 1, "compacted" in agent.typing.typed[0], detail=str(agent.typing.typed))
     rows = compactions(agent)
-    agent.expect_rows(len(rows) == 1, rows[0].woken_at is not None, detail=str(rows))
+    agent.expect_rows(len(rows) == 1, rows[0].resumed_at is not None, detail=str(rows))
     agent.advance(SLOW_TICK)
     agent.tick(SESSION)
     agent.advance(SLOW_TICK)

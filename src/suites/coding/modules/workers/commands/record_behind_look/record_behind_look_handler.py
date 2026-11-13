@@ -19,6 +19,6 @@ class RecordBehindLookHandler(Handler[RecordBehindLook, None]):
     def handle(self, command: RecordBehindLook, context: Context) -> None:
         check = self.queries.query(WorktreeBehindLook).first()
         if check is None:
-            self.repository.save(WorktreeBehindLook(looked_at=context.timestamp), context)
+            self.repository.save(WorktreeBehindLook(checked_at=context.timestamp), context)
             return
-        self.repository.update(check, context, looked_at=context.timestamp)
+        self.repository.update(check, context, checked_at=context.timestamp)

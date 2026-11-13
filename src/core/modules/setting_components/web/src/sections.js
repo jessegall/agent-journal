@@ -11,7 +11,7 @@ const DEFAULT_COMPONENTS = Object.freeze({
     "any": "text",
 });
 
-export const componentNameOf = (node) => node.component || DEFAULT_COMPONENTS[node.kind];
+export const componentNameOf = (node) => node.component || DEFAULT_COMPONENTS[node.node_type];
 // settings a screen holds for the draft and another screen draws with a component that needs more than the setting
 export const DRAWN_ELSEWHERE = Object.freeze(["three-way-cap", "per-type-override"]);
 export const isDrawn = (node) => !DRAWN_ELSEWHERE.includes(componentNameOf(node));

@@ -44,7 +44,7 @@ class ProcessCardSubcommand(ReadSubcommand[ProcessCard]):
 
     def flagged_terms(self, terms: str) -> str:
         mark = self.marks.flagged(terms) if terms else None
-        return mark.words if mark is not None else ""
+        return mark.terms if mark is not None else ""
 
     def reading_text(self, process_id: int, visible: ProcessPart | None) -> str | None:
         decision = self.decisions.part_end_decision(process_id, visible.position) if visible is not None else None

@@ -8,7 +8,7 @@ from engine.database.database import Database
 from engine.database.reported_findings import ReportedFindings
 from engine.database.request_watch import RequestWatch
 from engine.enums.log_level import LogLevel
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.file.file_access import FileAccess
 from engine.process.door.request_records import REFUSED_HOOK_EXIT_CODE
 from core.modules.processes.support.request_log import RequestLog
@@ -159,7 +159,7 @@ class HookEndpoint:
 
     def kept_row(self, sender: HookSender, program: str) -> None:
         line = " ".join(word for word in (program, sender.event_name) if word)
-        RequestLog(self.context.home, FileAccess.shared()).append(RequestLogEntry(None, None, ProcessKind.HOOK, line, REFUSED_HOOK_EXIT_CODE, self.context.clock.timestamp().text, sender.session))
+        RequestLog(self.context.home, FileAccess.shared()).append(RequestLogEntry(None, None, ProcessType.HOOK, line, REFUSED_HOOK_EXIT_CODE, self.context.clock.timestamp().text, sender.session))
 
     @staticmethod
     def locked(sender: HookSender) -> HookReply:

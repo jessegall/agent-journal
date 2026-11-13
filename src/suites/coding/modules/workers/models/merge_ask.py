@@ -21,7 +21,7 @@ class MergeAsk(EnvironmentScoped, Model):
     task_ids: str
     unit_name: str
     note: str
-    is_whole: bool
+    is_full: bool
     state: MergeAskState = MergeAskState.WAITING
 
     def tasks(self) -> tuple[int, ...]:

@@ -32,4 +32,4 @@ class BehindFactsReader:
 
     def earlier_decisions(self, worktree: Worktree) -> tuple[str, ...]:
         checks = self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).every_row(CHECKS_REASON)
-        return tuple(f"{check.behind} behind, {check.state}{': ' + check.reason if check.reason else ''}" for check in checks if not check.open_for_decision())
+        return tuple(f"{check.commits_lagging} behind, {check.state}{': ' + check.reason if check.reason else ''}" for check in checks if not check.open_for_decision())

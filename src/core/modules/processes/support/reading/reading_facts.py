@@ -7,7 +7,7 @@ from engine.time.clock import Clock
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.processes.models.enums.process_setting import ProcessSetting
-from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.enums.unreadable_reason import UnreadableReason
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
@@ -46,14 +46,14 @@ class ReadingFacts:
         self.resets, self.folder, self.settings, self.suites, self.rows, self.clock, self.cadences = resets, folder, settings, suites, rows, clock, cadences
         self.run, self.counts = run, counts
 
-    def gathered_cases(self, process: Process, parts: Sequence[ProcessPart], point: ReadingMoment) -> list[ReadingCase]:
+    def gathered_cases(self, process: Process, parts: Sequence[ProcessPart], point: ReadingPhase) -> list[ReadingCase]:
         keys = [SilentStartRuns.name(part.text, part.program, part.category) for part in parts]
         runs = self.run_counts.runs_without_reader(keys)
         waiting = self.waiting_commands(process, [part.command or part.text for part in parts])
         flagged = self.resets.flagged_keys(keys)
         return [self.gathered_case(process, part, point, runs[key], (part.command or part.text) in waiting, key in flagged) for part, key in zip(parts, keys)]
 
-    def gathered_case(self, process: Process, part: ProcessPart, point: ReadingMoment, runs_without_change: int, waiting_request: bool, is_flagged: bool) -> ReadingCase:
+    def gathered_case(self, process: Process, part: ProcessPart, point: ReadingPhase, runs_without_change: int, waiting_request: bool, is_flagged: bool) -> ReadingCase:
         agent = self.rows.required(Agent, process.session_agent_id)
         command = part.command or part.text
         command_key = SilentStartRuns.name(part.text, part.program, part.category)
@@ -61,7 +61,7 @@ class ReadingFacts:
         policy = self.suites.agent_policy()
         return ReadingCase(command_key=command_key, category=part.category, classification_recognized=part.category is not CommandCategory.UNKNOWN,
                            has_asking_flag=ReaderDemands.is_help_request(command), output_hidden=part.piped, is_saved_command=bool(part.saved_command),
-                           is_plugin_run=bool(process.plugin), moment=point, age_seconds=self.age_seconds(process), run_state=process.state,
+                           is_plugin_run=bool(process.plugin), phase=point, age_seconds=self.age_seconds(process), run_state=process.state,
                            cadence_state=self.cadences.process_cadence(process, self.clock.timestamp()).state(),
                            exit_code=part.exit_code, reader_layer=self.layer(reader), reader_judgement=self.judgement(process, part, reader),
                            default_reader=reader is not None and reader.is_default, reader_failed=self.reader_failed(process, reader, point),
@@ -78,13 +78,13 @@ class ReadingFacts:
         return None if selected is None else selected.reader
 
     def measured_reason(self, process: Process, part: ProcessPart) -> UnreadableReason | None:
-        return OutputFacts.end_reason(self.output(process, part, ReadingMoment.END))
+        return OutputFacts.end_reason(self.output(process, part, ReadingPhase.END))
 
-    def reader_failed(self, process: Process, reader: Reader | None, point: ReadingMoment) -> bool:
-        return reader is not None and point is ReadingMoment.END and ReaderRun.has_failed(reader, self.folder.reader_lines(process.id))
+    def reader_failed(self, process: Process, reader: Reader | None, point: ReadingPhase) -> bool:
+        return reader is not None and point is ReadingPhase.END and ReaderRun.has_failed(reader, self.folder.reader_lines(process.id))
 
-    def draft_fits(self, process: Process, part: ProcessPart, reader: Reader | None, point: ReadingMoment) -> bool:
-        if reader is not None or point is not ReadingMoment.END:
+    def draft_fits(self, process: Process, part: ProcessPart, reader: Reader | None, point: ReadingPhase) -> bool:
+        if reader is not None or point is not ReadingPhase.END:
             return False
         text = self.folder.part_head(process.id, part.position, SAMPLE_BYTES).decode(errors="replace")
         layers = self.readers.layers()
@@ -101,8 +101,8 @@ class ReadingFacts:
         scope = ReaderSampleScope(process.session_agent_id, part.command or part.text)
         return None if reader is None else self.judge.judged_command(reader, part.category, scope)
 
-    def output(self, process: Process, part: ProcessPart, point: ReadingMoment) -> OutputFacts | None:
-        if point is ReadingMoment.START:
+    def output(self, process: Process, part: ProcessPart, point: ReadingPhase) -> OutputFacts | None:
+        if point is ReadingPhase.START:
             return None
         sample = self.folder.part_head(process.id, part.position, SAMPLE_BYTES)
         return OutputFacts.measured(sample, self.folder.part_bytes(process.id, part.position), part.exit_code, part.category)

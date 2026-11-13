@@ -80,7 +80,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
         except Refusal as refusal:
             return f"behind {worktree.base_branch} unknown: {refusal.reason}"
         check = self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).newest().first()
-        decision = check.decision_text(self.decider(check.decided_by)) if check is not None else ""
+        decision = check.decision_text(self.decider(check.decider_id)) if check is not None else ""
         return f"{counted}; {decision}" if decision else counted
 
     def decider(self, agent_id: int | None) -> str:

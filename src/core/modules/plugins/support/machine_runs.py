@@ -31,7 +31,7 @@ class MachineRuns:
 
     def run_file(self, process: Process) -> Path:
         project = hashlib.sha256(str(self.home.folder.resolve()).encode()).hexdigest()[:PROJECT_MARK_CHARACTERS]
-        return self.category_folder(process.plugin, process.kind) / f"{project}-{process.id}"
+        return self.category_folder(process.plugin, process.run_name) / f"{project}-{process.id}"
 
     def claim(self, process: Process) -> None:
         path = self.run_file(process)

@@ -1,5 +1,5 @@
 import json
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.process_executor import ProcessExecutor
@@ -39,7 +39,7 @@ class SavedCommandGuard(Guard[Created[Alias] | Updated[Alias]]):
             return
         check = SavedCommandCheck(alias.line, saved)
         finished = self.executor.execute(ExecutionRequest([str(self.home.folder / "bin" / "journal-hook"), "--saved-command-conflict", str(self.home.folder / "command_table.json")],
-                                                          self.home.folder, ProcessKind.QUICK, CONFLICT_LIMIT_SECONDS, stdin=json.dumps(asdict(check))))
+                                                          self.home.folder, ProcessType.QUICK, CONFLICT_LIMIT_SECONDS, stdin=json.dumps(asdict(check))))
         if not finished.succeeded:
             raise Refusal("the saved-command check could not run", finished.stderr.strip())
         if finished.stdout:

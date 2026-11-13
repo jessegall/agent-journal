@@ -5,7 +5,7 @@ from engine.driver.nudge import Nudge
 from engine.driver.part import Part
 from engine.driver.shell_line import ShellLine
 from engine.driver.rule_answer import RuleAnswer
-from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.queries.reading_decision_query import ReadingDecisionQuery
 from core.modules.processes.support.decisions.command_run_counts import CommandRunCounts
 from core.modules.processes.support.decisions.reading_decider import PREVENT_AFTER_RUNS
@@ -91,7 +91,7 @@ class ReadingEnforcer:
         return RuleAnswer(refusal=refused.text, nudges=(refused, ready), last=True)
 
     def prevented(self, name: str) -> RuleAnswer:
-        last = self.decisions.command_key_decisions(name).filter(moment=ReadingMoment.END).descending("decided_at", "id").first()
+        last = self.decisions.command_key_decisions(name).filter(phase=ReadingPhase.END).descending("decided_at", "id").first()
         output = last.process_id if last is not None else 0
         return RuleAnswer.refused(READING_PREVENTED.nudge(output=output, name=name))
 

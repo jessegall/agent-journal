@@ -1,7 +1,7 @@
 from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.models.enums.reader_action import ReaderAction
 from core.modules.processes.models.enums.reader_state import ReaderState
-from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.enums.reason_code import ReasonCode
 from core.modules.processes.support.decisions.reading_case import ReadingCase
 from core.modules.processes.support.decisions.reading_decision import ReadingDecision
@@ -52,7 +52,7 @@ class ReadingDecider:
     def action(case: ReadingCase, level: PressureLevel) -> ReaderAction:
         if case.reader_required and level in ENFORCED_LEVELS:
             return ReaderAction.REQUIRE
-        if case.moment is not ReadingMoment.END:
+        if case.phase is not ReadingPhase.END:
             return ReaderAction.NOTHING
         return ReaderAction.DRAFT_READY if case.draft_fits else ReaderAction.SUGGEST
 

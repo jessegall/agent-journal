@@ -11,7 +11,7 @@ import shutil
 from pathlib import Path, PurePosixPath
 
 from engine.file.conflict_files import ConflictFiles
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.process_executor import ProcessExecutor
@@ -311,7 +311,7 @@ class WorktreeGit:
         if linked:
             modules.symlink_to(base_modules.resolve(), target_is_directory=True)
         try:
-            finished = self.executor.execute(ExecutionRequest(self.builds.command(), Path(folder), ProcessKind.SHELL, BUILD_LIMIT_SECONDS))
+            finished = self.executor.execute(ExecutionRequest(self.builds.command(), Path(folder), ProcessType.SHELL, BUILD_LIMIT_SECONDS))
             if not finished.succeeded:
                 raise Refusal("the build of the built files failed", (finished.stderr or finished.stdout).strip())
         except RunTimeLimitError as timeout:
@@ -703,7 +703,7 @@ class WorktreeGit:
 
     def git(self, folder: str, limit_seconds: int, *arguments: str) -> subprocess.CompletedProcess[str]:
         line = ["git", "-C", folder, *arguments]
-        category = ProcessKind.MERGE if self.changes_branches(arguments) else ProcessKind.QUICK
+        category = ProcessType.MERGE if self.changes_branches(arguments) else ProcessType.QUICK
         try:
             finished = self.executor.execute(ExecutionRequest(line, Path.cwd(), category, limit_seconds))
             return subprocess.CompletedProcess(line, finished.exit_code, finished.stdout, finished.stderr)

@@ -26,6 +26,6 @@ class WarnCadenceHandler(Handler[WarnCadence, Process]):
         part = self.queries.query(ProcessPart).filter(process_id=process.id, position=command.part_position).first()
         if part is None:
             return process
-        notice = CadenceNudges.notice(command.kind, process, part, command.seconds, command.limit)
+        notice = CadenceNudges.notice(command.notice_type, process, part, command.seconds, command.limit)
         self.nudger.send(process.session_agent_id, notice.declaration, CADENCE_SOURCE, context, **notice.fields)
         return process

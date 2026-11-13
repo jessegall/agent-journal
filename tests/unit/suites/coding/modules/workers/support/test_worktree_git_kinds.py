@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.process.door.execution import Execution
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
@@ -18,7 +18,7 @@ class RecordingExecutor:
         return Execution(None, 0, "", "")
 
 
-def run_git(*arguments: str) -> ProcessKind:
+def run_git(*arguments: str) -> ProcessType:
     git = WorktreeGit.__new__(WorktreeGit)
     git.executor = RecordingExecutor()
     git.git("/tmp/folder", 5, *arguments)
@@ -28,12 +28,12 @@ def run_git(*arguments: str) -> ProcessKind:
 @pytest.mark.parametrize("arguments", [("merge", "main"), ("-c", "user.name=x", "merge", "main"), ("-C", "/tmp/other", "rebase", "main"), ("--git-dir=/tmp/g", "commit", "-m", "x")],
                          ids=["plain", "config-option", "folder-option", "joined-option"])
 def test_a_git_command_that_changes_a_branch_is_a_merge_run_whatever_options_come_before_it(arguments):
-    assert run_git(*arguments) is ProcessKind.MERGE
+    assert run_git(*arguments) is ProcessType.MERGE
 
 
 @pytest.mark.parametrize("arguments", [tuple(["status"]), ("-c", "color.ui=never", "log", "-1"), ("rev-parse", "HEAD")], ids=["status", "config-option", "rev-parse"])
 def test_a_git_command_that_only_reads_is_a_quick_run(arguments):
-    assert run_git(*arguments) is ProcessKind.QUICK
+    assert run_git(*arguments) is ProcessType.QUICK
 
 
 def test_the_command_of_arguments_with_only_options_is_empty():

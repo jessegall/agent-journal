@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.log.error_log import ErrorLog
 from engine.process.door.execution import Execution
@@ -22,7 +22,7 @@ class CountedPlacement(RunPlacement):
         self.ended_runs: list[tuple[PlacedRun, Execution]] = []
 
     def placed(self, request: ExecutionRequest) -> PlacedRun:
-        return PlacedRun(request, len(self.ended_runs) + 1, request.kind.takes_place)
+        return PlacedRun(request, len(self.ended_runs) + 1, request.process_type.takes_place)
 
     def ended(self, run: PlacedRun, execution: Execution) -> int | None:
         self.ended_runs.append((run, execution))
@@ -57,32 +57,32 @@ def executor() -> tuple[ProcessExecutor, CountedPlacement]:
 
 def test_a_run_goes_through_the_queue_and_its_end_is_recorded_with_its_row(tmp_path: Path):
     door, placement = executor()
-    execution = door.execute(ExecutionRequest(["echo", "done"], tmp_path, ProcessKind.SHELL, 5))
+    execution = door.execute(ExecutionRequest(["echo", "done"], tmp_path, ProcessType.SHELL, 5))
     assert (execution.stdout, execution.process_id, placement.ended_runs[0][0].has_place, placement.ended_runs[0][1].exit_code) == ("done\n", 1, True, 0)
 
 
 def test_a_quick_run_and_a_priority_zero_run_get_a_row_and_take_no_place(tmp_path: Path):
     door, placement = executor()
-    door.execute(ExecutionRequest(["true"], tmp_path, ProcessKind.QUICK, 5))
-    door.execute(ExecutionRequest(["true"], tmp_path, ProcessKind.READ, 5))
+    door.execute(ExecutionRequest(["true"], tmp_path, ProcessType.QUICK, 5))
+    door.execute(ExecutionRequest(["true"], tmp_path, ProcessType.READ, 5))
     assert [(run.process_id, run.has_place) for run, _ in placement.ended_runs] == [(1, False), (2, False)]
 
 
 def test_a_run_past_its_limit_fails_naming_its_command_and_its_end_is_still_recorded(tmp_path: Path):
     door, placement = executor()
     with pytest.raises(RunTimeLimitError, match="sleep 5 ran past its limit of 0.2 seconds"):
-        door.execute(ExecutionRequest(["sleep", "5"], tmp_path, ProcessKind.SHELL, 0.2))
+        door.execute(ExecutionRequest(["sleep", "5"], tmp_path, ProcessType.SHELL, 0.2))
     assert placement.ended_runs[0][1].exit_code == 124
 
 
 def test_reading_writing_searching_and_hooks_never_move_to_the_background():
-    assert [category for category in ProcessKind if not category.is_backgroundable] == [ProcessKind.HOOK, ProcessKind.READ, ProcessKind.WRITE, ProcessKind.SEARCH]
+    assert [category for category in ProcessType if not category.is_backgroundable] == [ProcessType.HOOK, ProcessType.READ, ProcessType.EDIT, ProcessType.SEARCH]
 
 
 def test_a_quick_run_past_its_limit_is_stopped_and_fails_naming_its_command(tmp_path: Path):
     door, placement = executor()
     with pytest.raises(RunTimeLimitError, match="sleep 5 ran past its limit of 1 seconds"):
-        door.execute(ExecutionRequest(["sleep", "5"], tmp_path, ProcessKind.QUICK, 1))
+        door.execute(ExecutionRequest(["sleep", "5"], tmp_path, ProcessType.QUICK, 1))
     assert (len(placement.ended_runs), placement.ended_runs[0][1].exit_code) == (1, 124)
 
 
@@ -90,7 +90,7 @@ def test_a_run_past_its_limit_is_stopped_with_the_grandchild_that_holds_its_outp
     door, _ = executor()
     started = time.monotonic()
     with pytest.raises(RunTimeLimitError):
-        door.execute(ExecutionRequest(["sh", "-c", "sleep 30 & wait"], tmp_path, ProcessKind.SHELL, 1))
+        door.execute(ExecutionRequest(["sh", "-c", "sleep 30 & wait"], tmp_path, ProcessType.SHELL, 1))
     assert time.monotonic() - started < 2.5
 
 
@@ -104,7 +104,7 @@ class BrokenPlacement(CountedPlacement):
 def test_a_row_that_cannot_be_written_is_recorded_as_an_exception_and_the_answer_of_the_run_still_returns(tmp_path: Path):
     errors = NotedErrors()
     door = ProcessExecutor(BrokenPlacement(), RunnerProgram(), OpenGate(), errors)
-    execution = door.execute(ExecutionRequest(["echo", "done"], tmp_path, ProcessKind.SHELL, 5))
+    execution = door.execute(ExecutionRequest(["echo", "done"], tmp_path, ProcessType.SHELL, 5))
     assert (execution.stdout, execution.process_id, [(argv, str(error)) for argv, error in errors.noted]) == ("done\n", None, [(["record-run", "echo done"], "the row cannot be written")])
 
 
@@ -112,7 +112,7 @@ def test_a_row_that_cannot_be_written_after_a_run_past_its_limit_does_not_hide_t
     errors = NotedErrors()
     door = ProcessExecutor(BrokenPlacement(), RunnerProgram(), OpenGate(), errors)
     with pytest.raises(RunTimeLimitError, match="sleep 5 ran past its limit"):
-        door.execute(ExecutionRequest(["sleep", "5"], tmp_path, ProcessKind.SHELL, 0.2))
+        door.execute(ExecutionRequest(["sleep", "5"], tmp_path, ProcessType.SHELL, 0.2))
     assert [argv for argv, _ in errors.noted] == [["record-run", "sleep 5"]]
 
 
@@ -120,12 +120,12 @@ def test_a_row_that_cannot_be_written_after_a_program_that_does_not_start_does_n
     errors = NotedErrors()
     door = ProcessExecutor(BrokenPlacement(), RunnerProgram(), OpenGate(), errors)
     with pytest.raises(FileNotFoundError):
-        door.execute(ExecutionRequest(["no-such-program-here"], tmp_path, ProcessKind.QUICK, 5))
+        door.execute(ExecutionRequest(["no-such-program-here"], tmp_path, ProcessType.QUICK, 5))
     assert [argv for argv, _ in errors.noted] == [["record-run", "no-such-program-here"]]
 
 
 def test_a_byte_that_is_not_utf8_on_either_pipe_is_replaced_and_the_run_still_ends(tmp_path: Path):
     door, placement = executor()
-    execution = door.execute(ExecutionRequest(["sh", "-c", r"printf 'a\377b'; printf 'c\377d' >&2"], tmp_path, ProcessKind.SHELL, 5))
+    execution = door.execute(ExecutionRequest(["sh", "-c", r"printf 'a\377b'; printf 'c\377d' >&2"], tmp_path, ProcessType.SHELL, 5))
     assert (execution.stdout, execution.stderr, placement.ended_runs[0][1].exit_code) == ("a�b", "c�d", 0)
 

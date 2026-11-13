@@ -45,6 +45,6 @@ class OrderWorkerUpdateHandler(Handler[OrderWorkerUpdate, None]):
         deciding = require_merging_agent(self.agents, context)
         worktree = self.decisions.worktree(command.worker_id)
         check = self.decisions.check(worktree, WorktreeBehindCheck.open_for_decision) or self.opened(worktree, deciding.id, context)
-        self.repository.save_change(check, check.ordered(deciding.id, command.why), context)
+        self.repository.save_change(check, check.ordered(deciding.id, command.reason), context)
         self.visits.close_newest(context)
-        self.nudger.send(worktree.session_agent_id, UPDATE_ORDERED, STALE_SOURCE, context, count=check.behind)
+        self.nudger.send(worktree.session_agent_id, UPDATE_ORDERED, STALE_SOURCE, context, count=check.commits_lagging)

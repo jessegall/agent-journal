@@ -7,7 +7,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process
 from tests.stories.core.modules.processes.support.reading_scenarios import (FAILING_TESTS, STEPS, TOX_OUTPUT, TwoToxReaders, end_decision, end_positions, end_reason,
                                                                              ended_after_a_while, received)
-from tests.stories.core.modules.processes.support.reading_decision_samples import ReadingMoment, stored_missing_reader, stored_suitable_reader
+from tests.stories.core.modules.processes.support.reading_decision_samples import ReadingPhase, stored_missing_reader, stored_suitable_reader
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.modules.processes.support.process_nudges import READER_FAILED
 
@@ -18,7 +18,7 @@ class BuildWithStartDecision(StoryFixture):
     parent = BuilderStarted
 
     def steps(self, story: Story) -> None:
-        stored_missing_reader(story, moved_run(story, "make build"), ReadingMoment.START)
+        stored_missing_reader(story, moved_run(story, "make build"), ReadingPhase.START)
 
 
 def test_a_kept_decision_is_read_back_with_its_part_moment_and_reason(new_story):
@@ -31,9 +31,9 @@ def test_a_second_decision_for_the_same_moment_replaces_the_first_and_an_end_dec
     story = new_story(fixture=BuildWithStartDecision)
     story.advance(timedelta(seconds=5))
     process = moved_run(story, "make build")
-    stored_suitable_reader(story, process, ReadingMoment.START)
-    stored_missing_reader(story, process, ReadingMoment.START)
-    stored_suitable_reader(story, process, ReadingMoment.END)
+    stored_suitable_reader(story, process, ReadingPhase.START)
+    stored_missing_reader(story, process, ReadingPhase.START)
+    stored_suitable_reader(story, process, ReadingPhase.END)
     story.expect_text("reading-decision show 2", "moment: start", "state: missing", actor=story.agent)
     story.expect_text("reading-decision show 3", "moment: end", "state: suitable", actor=story.agent)
     story.expect_refusal("reading-decision show 4", "no reading-decision 4", actor=story.agent)
@@ -86,7 +86,7 @@ def test_the_first_run_of_a_command_with_no_reader_starts_freely_with_a_suggesti
     process = moved_run(story, "custom-check run", CommandCategory.BUILD)
     story.run_listeners()
     story.expect_text(f"process show {process.id}", "state: background", actor=story.agent)
-    story.expect_text("reading-decision list --json", '"moment": "start"', '"state": "missing"', '"action": "nothing"', '"level": 1', actor=story.agent)
+    story.expect_text("reading-decision list --json", '"phase": "start"', '"state": "missing"', '"action": "nothing"', '"level": 1', actor=story.agent)
 
 
 def test_readers_that_pick_no_line_keep_every_line_find_no_summary_or_no_progress_are_poor_each_for_its_reason(new_story):

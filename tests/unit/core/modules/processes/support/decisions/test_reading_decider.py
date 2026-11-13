@@ -9,7 +9,7 @@ from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.enums.reader_action import ReaderAction
 from core.modules.processes.models.enums.reader_state import ReaderState
 from core.modules.processes.models.enums.reading_exit import ReadingExit
-from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.enums.reason_code import ReasonCode
 from core.modules.processes.support.reader_judgement import ReaderJudgement
 from core.modules.processes.support.decisions.output_facts import OutputFacts
@@ -23,7 +23,7 @@ BLOCK = PressureLevel.BLOCK.exits
 TEST_OUTPUT = b"collected 3 items\n\n===== 3 passed in 0.10s =====\n"
 
 MAIN_BUILD = ReadingCase(command_key="custom-build run", category=CommandCategory.BUILD, classification_recognized=True, has_asking_flag=False,
-                         output_hidden=False, is_saved_command=False, is_plugin_run=False, moment=ReadingMoment.START, age_seconds=0,
+                         output_hidden=False, is_saved_command=False, is_plugin_run=False, phase=ReadingPhase.START, age_seconds=0,
                          run_state=ProcessState.RUNNING, cadence_state=CadenceState.STREAMING, exit_code=None, reader_layer=None, reader_judgement=None, default_reader=False, reader_failed=False, count_missing=False,
                          draft_fits=False, output=None, runs_without_change=0, waiting_request=False, skipped=False, has_unreadable_mark=False,
                          reader_required=False, reader_writing_allowed=True, role_uses_saved_commands=True, readers_forced=True)
@@ -32,7 +32,7 @@ HELPER_SEARCH = replace(MAIN_BUILD, category=CommandCategory.SEARCH, reader_writ
 
 
 def ended(case: ReadingCase, sample: bytes = TEST_OUTPUT, exit_code: int = 0, age_seconds: int = 120) -> ReadingCase:
-    return replace(case, moment=ReadingMoment.END, run_state=ProcessState.FINISHED, exit_code=exit_code, age_seconds=age_seconds,
+    return replace(case, phase=ReadingPhase.END, run_state=ProcessState.FINISHED, exit_code=exit_code, age_seconds=age_seconds,
                    output=OutputFacts.measured(sample, len(sample), exit_code, case.category))
 
 
@@ -53,7 +53,7 @@ TABLE = {
     "marked unreadable": (replace(MAIN_BUILD, has_unreadable_mark=True), (ReaderState.UNREADABLE, ReaderAction.NOTHING, PressureLevel.SUGGEST, SUGGEST)),
     "found unreadable": (ended(MAIN_BUILD, b"", exit_code=1), (ReaderState.UNREADABLE, ReaderAction.DECLARE_UNREADABLE, PressureLevel.SUGGEST, SUGGEST)),
     "missing at start": (MAIN_BUILD, (ReaderState.MISSING, ReaderAction.NOTHING, PressureLevel.SUGGEST, SUGGEST)),
-    "missing while running": (replace(MAIN_BUILD, moment=ReadingMoment.RUNNING), (ReaderState.MISSING, ReaderAction.NOTHING, PressureLevel.SUGGEST, SUGGEST)),
+    "missing while running": (replace(MAIN_BUILD, phase=ReadingPhase.RUNNING), (ReaderState.MISSING, ReaderAction.NOTHING, PressureLevel.SUGGEST, SUGGEST)),
     "missing at end": (ended(MAIN_BUILD), (ReaderState.MISSING, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
     "poor at end": (with_reader(ended(MAIN_BUILD), ReaderJudgement(missing=tuple(["--summary"]))), (ReaderState.POOR, ReaderAction.SUGGEST, PressureLevel.SUGGEST, SUGGEST)),
     "draftable at end": (replace(ended(MAIN_BUILD), draft_fits=True), (ReaderState.DRAFTABLE, ReaderAction.DRAFT_READY, PressureLevel.SUGGEST, SUGGEST)),

@@ -69,11 +69,11 @@ class ContextCompactions:
     def record_wake(self, agent_id: int, context: Context) -> None:
         newest = self.newest(agent_id)
         if newest is not None:
-            self.repository.save(replace(newest, woken_at=context.timestamp), context)
+            self.repository.save(replace(newest, resumed_at=context.timestamp), context)
 
     def is_awakened(self, agent_id: int) -> bool:
         newest = self.newest(agent_id)
-        return newest is not None and newest.woken_at is not None
+        return newest is not None and newest.resumed_at is not None
 
     def record_end(self, agent_id: int, change: ContextChange, context: Context) -> None:
         running = self.open_compaction(agent_id)
@@ -117,10 +117,10 @@ class ContextCompactions:
 
     def record_program_end(self, agent_id: int, context: Context) -> None:
         compaction = self.program_compaction(agent_id)
-        if compaction is None or compaction.woken_at is not None:
+        if compaction is None or compaction.resumed_at is not None:
             return
         ended = replace(compaction, state=CompactionState.ENDED, ended_at=context.timestamp) if compaction.state.is_open else compaction
-        self.repository.save(replace(ended, woken_at=context.timestamp), context)
+        self.repository.save(replace(ended, resumed_at=context.timestamp), context)
 
     def newest_rows(self, agent_ids: Sequence[int]) -> dict[int, ContextCompaction]:
         rows = self.queries.query(ContextCompaction).matching(Among("session_agent_id", tuple(agent_ids))).descending("id").take(NEWEST_ROWS_READ)

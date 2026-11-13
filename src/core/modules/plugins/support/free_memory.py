@@ -2,7 +2,7 @@ import re
 import sys
 from pathlib import Path
 
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.file.file_access import FileAccess
 from engine.enums.log_level import LogLevel
 from engine.journal.journal_home import JournalHome
@@ -45,7 +45,7 @@ class FreeMemory:
         return int(matched.group(1)) // MEGABYTE_KILOBYTES if matched else None
 
     def mac_megabytes(self) -> int | None:
-        text = self.executor.execute(ExecutionRequest(["vm_stat"], self.home.project_folder, ProcessKind.QUICK, VM_STAT_LIMIT_SECONDS)).stdout
+        text = self.executor.execute(ExecutionRequest(["vm_stat"], self.home.project_folder, ProcessType.QUICK, VM_STAT_LIMIT_SECONDS)).stdout
         page = re.search(r"page size of (\d+) bytes", text)
         pages = sum(int(matched.group(1)) for line in FREE_PAGE_LINES if (matched := re.search(rf"^{line}:\s+(\d+)\.", text, re.M)))
         return pages * int(page.group(1)) // MEGABYTE_BYTES if page else None

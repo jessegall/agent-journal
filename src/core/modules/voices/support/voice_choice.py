@@ -1,5 +1,5 @@
 
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.process_executor import ProcessExecutor
@@ -45,7 +45,7 @@ class VoiceChoice:
 
     def git_first_name(self) -> str:
         try:
-            full = self.executor.execute(ExecutionRequest(["git", "config", "user.name"], self.home.project_folder, ProcessKind.QUICK, GIT_SECONDS)).stdout.strip()
+            full = self.executor.execute(ExecutionRequest(["git", "config", "user.name"], self.home.project_folder, ProcessType.QUICK, GIT_SECONDS)).stdout.strip()
         except (OSError, RunTimeLimitError):
             return ""
         return full.split(" ")[0] if full else ""

@@ -34,4 +34,4 @@ class DispatchWorker(Command[WorkerLaunch]):
     starts_program: bool = True
     sandboxed: bool = True
     test_commands: tuple[WorkerTestCommandEntry, ...] = ()
-    taken_from: int | None = None
+    source_worker_id: int | None = None

@@ -8,4 +8,4 @@ from core.modules.processes.models.unreadable_mark import UnreadableMark
 class LiftUnreadable(Command[UnreadableMark]):
     """Lifts the mark of a command, by its leading words, so its runs are asked for a reader again."""
 
-    words: str
+    terms: str

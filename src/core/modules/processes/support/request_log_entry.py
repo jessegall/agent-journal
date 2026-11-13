@@ -1,7 +1,10 @@
 import json
 from dataclasses import asdict, dataclass
 
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
+
+
+FORMER_TYPE_VALUES = {"write": "edit"}
 
 
 @dataclass(frozen=True)
@@ -13,7 +16,7 @@ class RequestLogEntry:
 
     environment_id: int | None
     agent_id: int | None
-    kind: ProcessKind
+    process_type: ProcessType
     line: str
     exit_code: int
     ended_at: str
@@ -22,7 +25,14 @@ class RequestLogEntry:
     @classmethod
     def parsed(cls, text: str) -> "RequestLogEntry":
         fields = json.loads(text)
-        return cls(fields["environment_id"], fields["agent_id"], ProcessKind(fields["kind"]), fields["line"], fields["exit_code"], fields["ended_at"], fields.get("session", ""))
+        return cls(fields["environment_id"], fields["agent_id"], RequestLogEntry.process_type_of(fields), fields["line"], fields["exit_code"], fields["ended_at"], fields.get("session", ""))
+
+    # A line an earlier version wrote names its type under kind, and the type that edits a file write.
+    @staticmethod
+    def process_type_of(fields: dict[str, str]) -> ProcessType:
+        if "process_type" in fields:
+            return ProcessType(fields["process_type"])
+        return ProcessType(FORMER_TYPE_VALUES.get(fields["kind"], fields["kind"]))
 
     def text(self) -> str:
         return json.dumps(asdict(self))

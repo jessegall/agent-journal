@@ -34,7 +34,7 @@ class ContextCompaction(Model):
     tokens_after: int | None = None
     started_at: Timestamp | None = None
     ended_at: Timestamp | None = None
-    woken_at: Timestamp | None = None
+    resumed_at: Timestamp | None = None
     is_retry: bool = False
     failure: str = ""
 

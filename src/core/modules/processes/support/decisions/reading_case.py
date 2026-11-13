@@ -5,7 +5,7 @@ from core.modules.processes.models.enums.cadence_state import CadenceState
 from core.modules.processes.models.enums.pressure_level import PressureLevel
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.enums.reading_exit import ReadingExit
-from core.modules.processes.models.enums.reading_moment import ReadingMoment
+from core.modules.processes.models.enums.reading_phase import ReadingPhase
 from core.modules.processes.models.enums.unreadable_reason import UnreadableReason
 from core.modules.processes.support.reader_judgement import ReaderJudgement
 from core.modules.processes.support.decisions.output_facts import OutputFacts
@@ -27,7 +27,7 @@ class ReadingCase:
     output_hidden: bool
     is_saved_command: bool
     is_plugin_run: bool
-    moment: ReadingMoment
+    phase: ReadingPhase
     age_seconds: int
     run_state: ProcessState
     cadence_state: CadenceState
@@ -68,7 +68,7 @@ class ReadingCase:
 
     @property
     def is_short_success(self) -> bool:
-        return self.moment is ReadingMoment.END and self.exit_code == 0 and self.age_seconds < SHORT_RUN_SECONDS
+        return self.phase is ReadingPhase.END and self.exit_code == 0 and self.age_seconds < SHORT_RUN_SECONDS
 
     @property
     def has_suitable_reader(self) -> bool:
@@ -84,7 +84,7 @@ class ReadingCase:
     # prompt the run stopped growing on, never the words it printed.
     @property
     def measured_unreadable_reason(self) -> UnreadableReason | None:
-        if self.moment is ReadingMoment.END:
+        if self.phase is ReadingPhase.END:
             return OutputFacts.end_reason(self.output)
         return OutputFacts.measured_reason(self.output, self.cadence_state)
 

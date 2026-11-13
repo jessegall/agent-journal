@@ -11,4 +11,4 @@ class AskMerge(Command[MergeAskOutcome]):
 
     worker_id: int
     note: str
-    up_to: str = ""
+    last_task: str = ""

@@ -30,7 +30,7 @@ class WorkerOperation(Model):
     plugin_script: str = ""
     started_at: Timestamp | None = None
     ended_at: Timestamp | None = None
-    update_result: UpdateResult | None = None
+    update_outcome: UpdateResult | None = None
 
     @property
     def recipient_id(self) -> int:

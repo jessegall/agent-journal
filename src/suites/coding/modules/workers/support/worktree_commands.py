@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from collections.abc import Mapping, Sequence
 
-from engine.enums.process_kind import ProcessKind
+from engine.enums.process_type import ProcessType
 from engine.errors.refusal import Refusal
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.process.door.execution_request import ExecutionRequest
@@ -39,7 +39,7 @@ class WorktreeCommands:
 
     def executed(self, folder: str, line: str, variables: Mapping[str, str], setting: str) -> CommandResult:
         try:
-            finished = self.executor.execute(ExecutionRequest(["sh", "-c", line], Path(folder), ProcessKind.SHELL, COMMAND_LIMIT_SECONDS, variables=variables))
+            finished = self.executor.execute(ExecutionRequest(["sh", "-c", line], Path(folder), ProcessType.SHELL, COMMAND_LIMIT_SECONDS, variables=variables))
         except RunTimeLimitError:
             return CommandResult(UNCERTAIN_STEP, f"the command {line!r} took longer than {COMMAND_LIMIT_SECONDS} seconds and may have done part of its work",
                                  f"check what it did, then merge again with --reconcile, or change workers.{setting}")

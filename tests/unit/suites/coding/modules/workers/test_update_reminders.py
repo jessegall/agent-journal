@@ -18,7 +18,7 @@ class Store:
     """One check, read by state and saved with the time of the save, as the repository stamps it."""
 
     def __init__(self, state: State = State.ORDERED) -> None:
-        self.check = WorktreeBehindCheck(id=1, environment_id=1, worktree_id=1, base_tip="abc", behind=4, state=state, updated_at=Timestamp(ORDERED_AT))
+        self.check = WorktreeBehindCheck(id=1, environment_id=1, worktree_id=1, base_tip="abc", commits_lagging=4, state=state, updated_at=Timestamp(ORDERED_AT))
 
     def query(self, model: type) -> "Store":
         return self
