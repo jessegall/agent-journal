@@ -5,13 +5,13 @@ from engine.setting.setting_source import SettingSource
 
 
 class SampleSettings(SettingSource):
-    """Setting values a unit test sets by key; a key it never set reads as 0."""
+    """Setting values a unit test sets by key; a key it never set reads as off."""
 
     def __init__(self) -> None:
         self.values: dict[str, object] = {}
 
     def current_value(self, key: str) -> object:
-        return self.values.get(key, 0)
+        return self.values.get(key, False)
 
     def project_value(self, key: str) -> object:
         return self.current_value(key)

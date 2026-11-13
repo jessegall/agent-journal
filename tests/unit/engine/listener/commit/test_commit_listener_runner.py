@@ -21,7 +21,7 @@ from engine.database.listener_cursor_table import ListenerCursorTable
 from engine.database.statement import Statement
 from engine.listener.commit.commit_listener import CommitListener
 import engine.listener.commit.commit_listener_runner as runner_module
-from engine.listener.commit.commit_listener_runner import LISTENER_TIME_LIMIT_SETTING, PLUGIN_RUN_ORDER, CommitListenerRunner
+from engine.listener.commit.commit_listener_runner import LISTENER_TIME_LIMIT_ON_SETTING, LISTENER_TIME_LIMIT_SETTING, PLUGIN_RUN_ORDER, CommitListenerRunner
 from engine.setting.setting_source import SettingSource
 from engine.performance.performance_state import PerformanceState
 from engine.dotted_path.dotted_path import DottedPath
@@ -306,7 +306,7 @@ def test_a_listener_whose_prepare_fails_holds_back_only_itself_and_is_skipped_pa
 
 def test_a_listener_over_the_time_limit_runs_no_more_events_and_keeps_its_cursor(tmp_path, monkeypatch):
     container = container_with(tmp_path, NewItemPause)
-    container.get(SettingSource).values[LISTENER_TIME_LIMIT_SETTING] = 100
+    container.get(SettingSource).values.update({LISTENER_TIME_LIMIT_ON_SETTING: True, LISTENER_TIME_LIMIT_SETTING: 100})
     readings = iter(float(second) for second in range(100))
     monkeypatch.setattr(runner_module, "perf_counter", lambda: next(readings))
     container.get(Bus).run(MakeItem(title="Dune"), AGENT)
@@ -337,7 +337,7 @@ class SlowRoundPause(NewItemPause):
 
 def test_a_listener_of_a_slow_round_is_never_held_by_the_time_limit(tmp_path, monkeypatch):
     container = container_with(tmp_path, SlowRoundPause)
-    container.get(SettingSource).values[LISTENER_TIME_LIMIT_SETTING] = 100
+    container.get(SettingSource).values.update({LISTENER_TIME_LIMIT_ON_SETTING: True, LISTENER_TIME_LIMIT_SETTING: 100})
     readings = iter(float(second) for second in range(100))
     monkeypatch.setattr(runner_module, "perf_counter", lambda: next(readings))
     container.get(Bus).run(MakeItem(title="Dune"), AGENT)

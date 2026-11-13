@@ -13,7 +13,7 @@ command refers to the plugin.
 | `protocol` | The version of the event line it reads, 1 if left out. A plugin above this journal's version installs, runs nothing, and its card says it needs a newer journal. |
 | `listen` | Scripts to run for a change. See the three forms. |
 | `program` | The file run for each name in `hears` and `holds`. |
-| `hears` | Older event names it runs for after the event. |
+| `hears` | Older event names it runs for after the event. An entry may be an object instead of a name: `{"event": "tool_starting", "tools": ["Edit", "Bash"]}` delivers that event only for the tools named, and `{"event": "ticked", "every_minutes": 5}` delivers it at most once in that many minutes. |
 | `holds` | Older event names it answers before they go on, each with an optional `window_ms`. |
 | `settings` | A JSON file listing its settings, each with a key, title and type. |
 | `requires` | Programs that must be installed, each with a check command and a hint. |

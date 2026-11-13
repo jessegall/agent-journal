@@ -251,11 +251,11 @@ class FileAccess:
             yield current, folder_names, file_names
             waiting.extend(current / name for name in reversed(folder_names))
 
+    # a stream read, for a file read in parts or line by line, so it is never counted as a repeated whole read
     @classmethod
     @contextmanager
     def reader(cls, file: Path | str, mode: str = "r", encoding: str | None = None, errors: str | None = None) -> Generator[IO[Any]]:
         path = Path(file).resolve()
-        sys.audit(FILE_READ_EVENT, str(path))
         with path.open(mode, encoding=encoding, errors=errors) as opened:
             yield opened
 

@@ -35,6 +35,7 @@ SLOW_LISTENER_SECONDS = 0.5
 PROGRAM_STOP_RUN_ORDER = 500
 PLUGIN_RUN_ORDER = 1000
 LISTENER_TIME_LIMIT_SETTING = "journal.core.developer.tools.listener-time-limit"
+LISTENER_TIME_LIMIT_ON_SETTING = f"{LISTENER_TIME_LIMIT_SETTING}-on"
 
 
 class CommitListenerRunner:
@@ -226,13 +227,16 @@ class CommitListenerRunner:
             return failures >= FAILURE_LIMIT_ATTEMPTS
         return True
 
-    # a developer setting, 0 when off: a listener of the ordinary rounds over the limit runs no more events until the server restarts, and its
+    # a developer setting, off by default: a listener of the ordinary rounds over the limit runs no more events until the server restarts, and its
     # error reaches the main agent at once; its cursor stays, so the held events run after the restart
     def hold_when_over_time_limit(self, entry: ListenerEntry, event: LoggedEvent, elapsed: float) -> None:
         if self.has_slow_round(entry):
             return
-        limit_ms = self.container.get(SettingValues).number(LISTENER_TIME_LIMIT_SETTING)
-        if limit_ms <= 0 or elapsed * 1000 <= limit_ms:
+        settings = self.container.get(SettingValues)
+        if not settings.flag(LISTENER_TIME_LIMIT_ON_SETTING):
+            return
+        limit_ms = settings.number(LISTENER_TIME_LIMIT_SETTING)
+        if elapsed * 1000 <= limit_ms:
             return
         self.held_listeners.add(entry.name)
         error = ListenerTimeLimitError(entry.name, round(elapsed * 1000), limit_ms, event.id, event.event)
