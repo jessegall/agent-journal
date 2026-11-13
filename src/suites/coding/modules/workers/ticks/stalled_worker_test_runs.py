@@ -25,11 +25,12 @@ class StalledWorkerTestRuns:
     nothing recorded, or whose process is gone, is recorded from how it ended or as lost; a proof of a task in
     testing whose test nothing queued, as after a proof edit, is queued, or committed in a started plan; and a
     queued test a server update left behind is started. A test that has run longer than the stuck limit,
-    whatever its process is doing, is ended and recorded as failed, and the worker and the merger are told."""
+    whatever its process is doing, is ended and recorded as failed, and the worker and the merger are told. A proof
+    of a removed worktree is left as it is: nothing can mark its tests any more."""
 
     def __call__(self, container: Container) -> None:
         bus = container.get(Bus)
-        environments = {worktree.id: worktree.environment_id for worktree in container.get(WorktreeQuery).all_worktrees()}
+        environments = {worktree.id: worktree.environment_id for worktree in container.get(WorktreeQuery).open_worktrees()}
         self.record_ended(container, [proof for proof in container.get(ProofQuery).test_rows() if proof.state is ProofState.RUNNING and proof.worktree_id in environments], environments)
         bus.run(QueueStalledTests(), Actor.core())
         queued = {environments[proof.worktree_id] for proof in container.get(ProofQuery).test_rows() if proof.state is ProofState.QUEUED and proof.worktree_id in environments}
