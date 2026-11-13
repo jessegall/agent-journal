@@ -1,6 +1,7 @@
 from engine.testing.stories.story import Story, story_container
 from install.version_four.upgrade_journal import UpgradeJournal
 from server.work.booting_work import BootingWork
+from engine.serving.server_files import ServerFiles
 from tests.stories.fixtures.worktree_upgrade import LEGACY_BRANCH, prepare_worktree_upgrade
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
 from tests.stories.suites.coding.modules.workers.support.worktree_samples import orphan_worktree
@@ -22,6 +23,7 @@ def expect_upgrade_started(story: Story) -> None:
     assert outcome.code == 0, outcome.text
     story.container = story_container(story.home, story.clock, story.process_table)
     BootingWork().run(story.container)
+    ServerFiles(story.home).clear_restart()
     story.run_listeners()
 
 
