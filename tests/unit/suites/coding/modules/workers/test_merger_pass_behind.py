@@ -55,7 +55,7 @@ def test_a_passed_check_goes_to_the_main_agent_by_its_number_and_no_worktree_sta
 
 def test_with_the_merger_off_the_line_reaches_the_main_agent_and_names_the_facts_and_the_three_choices():
     inbox = Lines()
-    AnnounceBehindChecksHandler(Rows(), NoChecks(), inbox, Settings(merger=False), Numbers()).handle(AnnounceBehindChecks((1,)), SimpleNamespace(timestamp=None))
+    AnnounceBehindChecksHandler(Rows(), NoChecks(), inbox, Settings(merger=False), Numbers()).handle(AnnounceBehindChecks(tuple([1])), SimpleNamespace(timestamp=None))
     text = inbox.sent[0].text
     assert inbox.sent[0].key == STALE_CHOICES.key
     assert text.startswith("worker:999 is ")

@@ -74,7 +74,7 @@ def stored_settings(home: JournalHome, program: str) -> dict[str, object]:
 def test_the_person_files_are_backed_up_before_writing(sync, home):
     person_file(home, "sample").parent.mkdir(parents=True)
     person_file(home, "sample").write_text('{"env": {}}\n')
-    assert sync.prepare("sample") == (home.program_settings_file("sample"),)
+    assert sync.prepare("sample") == tuple([home.program_settings_file("sample")])
     assert [copy.read_text() for copy in (home.program_settings_backups / "sample").glob("2*")] == ['{"env": {}}\n']
     person_file(home, "sample").write_text('{"env": {"A": "1"}}\n')
     assert sync.write("sample") == ()

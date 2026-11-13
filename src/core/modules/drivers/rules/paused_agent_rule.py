@@ -26,4 +26,4 @@ class PausedAgentRule(DriverRule):
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is None:
             return False
-        return any(line[:1] != ("message",) for line in shell.journal_argument_lines())
+        return any(line[:1] != tuple(["message"]) for line in shell.journal_argument_lines())

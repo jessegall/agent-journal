@@ -26,9 +26,10 @@ SESSIONS = ("agent_sessions", "session_agent_id")
 
 class MainFold:
     """Folds the older main agent rows of each environment into its one main agent in one transaction with
-    foreign keys off: settles the rows that would clash, moves the sessions first, points every column and model
-    pair that holds a folded agent at the survivor, records each folded agent whole, removes the folded rows and
-    gives the survivor number 1, then compares the counts and the keys and rolls everything back on a mismatch."""
+    foreign keys off: settles the rows that would clash, moves the sessions first, points every column and
+    model pair that holds a folded agent at the survivor, records each folded agent whole, removes the folded
+    rows and gives the survivor number 1, then compares the counts and the keys and rolls everything back on a
+    mismatch."""
 
     def __init__(self, database: Database) -> None:
         self.database = database

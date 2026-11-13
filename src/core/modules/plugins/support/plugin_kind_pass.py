@@ -7,9 +7,9 @@ from core.modules.plugins.support.kind_rule import KindRule
 
 
 class PluginKindPass(KindPass):
-    """The plugins' kinds of run for one pass of the queue: the rule of each kind waiting, the free memory and the
-    runs of each machine-wide kind on the machine, read once; a run given its place in the pass counts at once,
-    with the memory it asks for. Memory that is not known holds nothing back."""
+    """The plugins' kinds of run for one pass of the queue: the rule of each kind waiting, the free memory and
+    the runs of each machine-wide kind on the machine, read once; a run given its place in the pass counts at
+    once, with the memory it asks for. Memory that is not known holds nothing back."""
 
     def __init__(self, rules: Mapping[tuple[str, str, int], KindRule], free_megabytes: int | None, machine_counts: dict[tuple[str, str], int]) -> None:
         self.rules, self.free_megabytes, self.machine_counts = rules, free_megabytes, machine_counts

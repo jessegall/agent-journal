@@ -18,7 +18,7 @@ SETTINGS_TEXT = '{\n  "permissions": {"defaultMode": "bypassPermissions"}\n}\n'
 
 
 def sample_settings(home: JournalHome, text: str = SETTINGS_TEXT, links: dict[Path, Path] | None = None) -> ProgramSettings:
-    return ProgramSettings("claude", (SettingsFile(home.program_settings_file("claude"), text),), links or {})
+    return ProgramSettings("claude", tuple([SettingsFile(home.program_settings_file("claude"), text)]), links or {})
 
 
 def mode_of(path: Path) -> int:
@@ -32,7 +32,7 @@ def temporaries_in(folder: Path) -> list[Path]:
 def test_writes_the_whole_file_read_only(tmp_path: Path):
     home = JournalHome(tmp_path)
     settings_file = home.program_settings_file("claude")
-    assert ProgramSettingsWriter(home).write(sample_settings(home)) == (settings_file,)
+    assert ProgramSettingsWriter(home).write(sample_settings(home)) == tuple([settings_file])
     assert settings_file.read_bytes() == SETTINGS_TEXT.encode()
     assert mode_of(settings_file) == 0o444
     assert mode_of(home.program_folder("claude")) == 0o700
@@ -43,7 +43,7 @@ def test_rewrites_over_a_read_only_file(tmp_path: Path):
     home = JournalHome(tmp_path)
     writer = ProgramSettingsWriter(home)
     writer.write(sample_settings(home, "{}\n"))
-    assert writer.write(sample_settings(home)) == (home.program_settings_file("claude"),)
+    assert writer.write(sample_settings(home)) == tuple([home.program_settings_file("claude")])
     assert home.program_settings_file("claude").read_bytes() == SETTINGS_TEXT.encode()
     assert mode_of(home.program_settings_file("claude")) == 0o444
 
@@ -62,7 +62,7 @@ def test_a_changed_mode_is_set_again(tmp_path: Path):
     writer = ProgramSettingsWriter(home)
     writer.write(sample_settings(home))
     os.chmod(home.program_settings_file("claude"), 0o644)
-    assert writer.write(sample_settings(home)) == (home.program_settings_file("claude"),)
+    assert writer.write(sample_settings(home)) == tuple([home.program_settings_file("claude")])
     assert mode_of(home.program_settings_file("claude")) == 0o444
 
 
@@ -101,7 +101,7 @@ def test_a_missing_or_wrong_link_is_made_again(tmp_path: Path):
     folder = home.program_folder("codex")
     person_folder = tmp_path / "person"
     links = {folder / "auth.json": person_folder / "auth.json", folder / "sessions": person_folder / "sessions"}
-    settings = ProgramSettings("codex", (SettingsFile(folder / "config.toml", "approval_policy = \"never\"\n"),), links)
+    settings = ProgramSettings("codex", tuple([SettingsFile(folder / "config.toml", "approval_policy = \"never\"\n")]), links)
     writer = ProgramSettingsWriter(home)
     assert set(writer.write(settings)) == {folder / "config.toml", *links}
     assert all(Path(os.readlink(link)) == target for link, target in links.items())
@@ -138,7 +138,7 @@ def test_the_digests_of_the_files_are_recorded(tmp_path: Path):
     writer = ProgramSettingsWriter(home)
     codex_file = SettingsFile(home.program_folder("codex") / "config.toml", "sandbox_mode = \"danger-full-access\"\n")
     writer.write(sample_settings(home))
-    writer.write(ProgramSettings("codex", (codex_file,)))
+    writer.write(ProgramSettings("codex", tuple([codex_file])))
     recorded = json.loads(home.program_settings_digests.read_text())
     assert recorded == {str(home.program_settings_file("claude")): hashlib.sha256(SETTINGS_TEXT.encode()).hexdigest(),
                         str(codex_file.path): hashlib.sha256(codex_file.data).hexdigest()}

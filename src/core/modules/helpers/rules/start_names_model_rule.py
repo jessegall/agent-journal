@@ -15,7 +15,7 @@ class StartNamesModelRule(DriverRule):
     single_action_refusal = "A helper start that names no model is refused, naming the flag"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    starts: tuple[str, ...] = ("helper start",)
+    starts: tuple[str, ...] = tuple(["helper start"])
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None

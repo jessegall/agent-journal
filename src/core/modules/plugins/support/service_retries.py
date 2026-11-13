@@ -8,9 +8,9 @@ REPORTED_AFTER_FAILURES = 3
 
 @dataclass
 class ServiceRetries:
-    """The services that record_failure to run, by plugin and service name: each is tried again at once after its first
-    failure, then after a pause that doubles up to ten minutes; one that failed three times in a row is
-    named once to the user, and one that ran for five minutes starts over."""
+    """The services that record_failure to run, by plugin and service name: each is tried again at once after
+    its first failure, then after a pause that doubles up to ten minutes; one that failed three times in a row
+    is named once to the user, and one that ran for five minutes starts over."""
 
     retries: dict[tuple[str, str], ServiceRetry] = field(default_factory=dict[tuple[str, str], ServiceRetry])
 

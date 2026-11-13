@@ -6,7 +6,8 @@ from core.modules.agents.commands.fold_mains_check.fold_mains_check import FoldM
 
 
 class FoldMainsCheckSubcommand(Subcommand[FoldMainsCheck, str]):
-    """`journal agent fold-mains --check`: folds the older main agent rows on a copy of the database and files a report."""
+    """`journal agent fold-mains --check`: folds the older main agent rows on a copy of the database and files
+    a report."""
 
     cli_name = "agent"
     name = "fold-mains"

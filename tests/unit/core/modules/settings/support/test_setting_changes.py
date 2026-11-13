@@ -33,7 +33,7 @@ class FakeScreens:
 
     def read(self, screen: str) -> ScreenReading:
         node = ScreenNode("a", "number", "number", "S", None, "A", "A.", 1, 1, "default", (), "", (), False)
-        return ScreenReading(screen, self.revision, (node,))
+        return ScreenReading(screen, self.revision, tuple([node]))
 
 
 class FakeCatalogue:
@@ -61,7 +61,7 @@ def test_one_invalid_number_writes_none_and_names_its_key():
 def test_a_stale_revision_writes_nothing():
     store = RecordingStore()
     with pytest.raises(Refusal):
-        handler(store, revision="r2").handle(ApplySettingScreen("work", "r1", (("a", "2"),)), CONTEXT)
+        handler(store, revision="r2").handle(ApplySettingScreen("work", "r1", tuple([("a", "2")])), CONTEXT)
     assert store.written == []
 
 
@@ -74,18 +74,18 @@ def test_a_setting_that_is_not_on_the_screen_writes_nothing():
 
 def test_a_valid_request_on_a_current_reading_writes_every_change():
     store = RecordingStore()
-    handler(store).handle(ApplySettingScreen("work", "r1", (("a", "5"),)), CONTEXT)
+    handler(store).handle(ApplySettingScreen("work", "r1", tuple([("a", "5")])), CONTEXT)
     assert store.written == [("a", 5)]
 
 
 def test_a_request_may_carry_a_further_screen_and_writes_the_changes_of_both_together():
     store = RecordingStore()
-    handler(store).handle(ApplySettingScreen("work", "r1", (("a", "5"),), (("tests", "r1"),)), CONTEXT)
+    handler(store).handle(ApplySettingScreen("work", "r1", tuple([("a", "5")]), tuple([("tests", "r1")])), CONTEXT)
     assert store.written == [("a", 5)]
 
 
 def test_a_further_screen_read_at_another_revision_writes_nothing():
     store = RecordingStore()
     with pytest.raises(Refusal) as refusal:
-        handler(store).handle(ApplySettingScreen("work", "r1", (("a", "5"),), (("tests", "r0"),)), CONTEXT)
+        handler(store).handle(ApplySettingScreen("work", "r1", tuple([("a", "5")]), tuple([("tests", "r0")])), CONTEXT)
     assert store.written == [] and "tests" in refusal.value.text

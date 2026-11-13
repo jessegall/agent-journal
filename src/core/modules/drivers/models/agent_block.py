@@ -46,8 +46,8 @@ class AgentBlock(ClosedPrunable, Model):
     is_skippable: bool = False
     countdown_limit: int = COUNTDOWN_TOOL_USES
 
+    # The block's condition holds, or the row it waits on is gone, so it could never hold.
     def is_finished(self, conditions: BlockConditions, hook: AgentHook, container: Container) -> bool:
-        """The block's condition holds, or the row it waits on is gone, so it could never hold."""
         condition = conditions.built(self.condition_name, self.condition_text)
         return not condition.has_target(container) or condition.is_true(BlockCheck(hook, self.creation_timestamp(), container))
 

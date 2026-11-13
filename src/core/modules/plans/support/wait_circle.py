@@ -20,9 +20,9 @@ TARGET_TYPES = {"tasks": TASK, "plans": PLAN}
 
 
 class WaitCircle:
-    """Finds the circle a new wait would close through tasks and plans: a task waits on a task or a plan, a plan on
-    a plan, and a plan on its own unfinished tasks. A wait that comes back to the one that waits never ends. Each
-    step's rows are kept for the request, so many new waits on one target walk it once."""
+    """Finds the circle a new wait would close through tasks and plans: a task waits on a task or a plan, a
+    plan on a plan, and a plan on its own unfinished tasks. A wait that comes back to the one that waits never
+    ends. Each step's rows are kept for the request, so many new waits on one target walk it once."""
 
     def __init__(self, queries: Queries, kept: KeptRows) -> None:
         self.queries, self.kept = queries, kept
