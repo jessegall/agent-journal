@@ -277,3 +277,35 @@ def test_commit_listener_runner_reset_clears_round_state(tmp_path):
     runner.reset()
     assert (runner.positions, runner.positions_stale) == ({}, False)
     assert runner.known_positions(runner.commit_entries())[PausedItemCounter.name] == cursor(container, PausedItemCounter.name)
+
+
+class FailingPrepareListener(CommitListener[Created[Item]]):
+    """Fails while it prepares the rows of its events."""
+
+    name = "items.prepare-fails"
+
+    def prepare(self, events: list[LoggedEvent]) -> None:
+        HANDLED.append("prepare failed")
+        raise RuntimeError("the prepare failed")
+
+    def handle(self, event: Created[Item], logged: LoggedEvent) -> None:
+        HANDLED.append("handled after a failed prepare")
+
+
+class NewItemCounter(CommitListener[Created[Item]]):
+    """Counts the items made."""
+
+    name = "items.made-count"
+
+    def handle(self, event: Created[Item], logged: LoggedEvent) -> None:
+        HANDLED.append(f"made {logged.row_id}")
+
+
+def test_a_listener_whose_prepare_fails_holds_back_only_itself_and_is_skipped_past_after_three_tries(tmp_path):
+    container = container_with(tmp_path, FailingPrepareListener, NewItemCounter)
+    container.get(CommitListenerRunner).run()
+    container.get(Bus).run(MakeItem(title="Dune"), AGENT)
+    for _ in range(3):
+        container.get(CommitListenerRunner).run()
+    assert HANDLED == ["prepare failed", "made 1", "prepare failed", "prepare failed"]
+    assert (cursor(container, FailingPrepareListener.name), cursor(container, NewItemCounter.name)) == (1, 1)

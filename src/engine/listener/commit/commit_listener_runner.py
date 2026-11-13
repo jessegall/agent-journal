@@ -143,7 +143,8 @@ class CommitListenerRunner(RoundState):
         events = [event for event in round_events if event.id > position]
         progress = False
         matching = [event for event in events if entry.event.matches(event.event)]
-        self.prepare_rows(entry, matching)
+        if not self.is_prepared(entry, matching, position):
+            return progress
         for event in matching:
             if not self.cursors.claimed(entry.name, position, event.id):
                 self.positions_stale = True
@@ -160,6 +161,21 @@ class CommitListenerRunner(RoundState):
                 self.positions[entry.name] = events[-1].id
             return advanced or progress
         return progress
+
+    # a prepare that raises holds back this listener alone, and past the failure limit its first event is skipped
+    def is_prepared(self, entry: ListenerEntry, events: list[LoggedEvent], position: int) -> bool:
+        try:
+            self.prepare_rows(entry, events)
+        except ServerStoppingError:
+            return False
+        except Exception as error:
+            first = events[0]
+            failures = self.cursors.failure_count(entry.name, first.id)
+            self.errors.reported(["listener", entry.name, "prepare", "event", str(first.id)], error, first.environment_id)
+            if failures >= FAILURE_LIMIT_ATTEMPTS and self.cursors.claimed(entry.name, position, first.id):
+                self.positions[entry.name] = first.id
+            return False
+        return True
 
     def prepare_rows(self, entry: ListenerEntry, events: list[LoggedEvent]) -> None:
         listener_class = entry.path.loaded()
