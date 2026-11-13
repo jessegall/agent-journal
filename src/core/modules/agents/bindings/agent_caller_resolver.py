@@ -22,6 +22,7 @@ LOGIN_VARIABLE = "USER"
 
 
 PLUGIN_VARIABLE = "JOURNAL_PLUGIN"
+PLUGIN_TOKEN_VARIABLE = "JOURNAL_PLUGIN_TOKEN"
 
 
 class AgentCallerResolver(CallerResolver):
@@ -40,13 +41,16 @@ class AgentCallerResolver(CallerResolver):
         steps = self.chain.steps(request.pid)
         # A variable proves nothing in a server, where the chain of processes decides. In a direct run the server's list
         # of scripts cannot be reached, and an agent setting it only skips the commit scripts of that plugin there.
-        plugin_script = self.scripts.owner(steps) or ("" if self.policy.guards_run else request.variables.get(PLUGIN_VARIABLE, ""))
+        plugin_script = self.scripts.owner(steps) or self.token_plugin(request) or ("" if self.policy.guards_run else request.variables.get(PLUGIN_VARIABLE, ""))
         agent = self.ancestor_agent(steps) or self.program_agent(program_sessions)
         if agent is not None:
             return Caller(Actor(agent.id, ActorType.AGENT), agent.environment_id, plugin_script)
         environment = self.environments.folder_environment(request.folder)
         person = None if program_sessions else self.actors.person(request.variables.get(LOGIN_VARIABLE, ""))
         return Caller(Actor(person.id, ActorType.USER) if person else Actor.core(), environment.id if environment else None, plugin_script)
+
+    def token_plugin(self, request: CallerRequest) -> str:
+        return self.scripts.token_owner(request.variables.get(PLUGIN_VARIABLE, ""), request.variables.get(PLUGIN_TOKEN_VARIABLE, ""))
 
     def program_agent(self, sessions: tuple[str, ...]) -> Agent | None:
         return self.agents.running().matching(Among("session", sessions)).first() if sessions else None

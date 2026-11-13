@@ -1,5 +1,6 @@
 from collections import deque
 import os
+import secrets
 import signal
 import subprocess
 import threading
@@ -34,6 +35,7 @@ class PluginScriptProcesses:
         self.skips: dict[tuple[str, str, EventForm], ScriptSkip] = {}
         self.failing_tries: dict[str, Timestamp] = {}
         self.server_stopped = False
+        self.tokens: dict[str, str] = {}
 
     @classmethod
     @cache
@@ -107,6 +109,17 @@ class PluginScriptProcesses:
     def keep_services(self, services: Mapping[int, str]) -> None:
         with self.lock:
             self.services = dict(services)
+
+    # A script that starts a run detached leaves the chain of processes, so the server gives each plugin's scripts a
+    # token of this server's life that names the plugin in their environment.
+    def token(self, plugin: str) -> str:
+        with self.lock:
+            return self.tokens.setdefault(plugin, secrets.token_hex(16))
+
+    def token_owner(self, plugin: str, token: str) -> str:
+        with self.lock:
+            known = self.tokens.get(plugin)
+        return plugin if known is not None and secrets.compare_digest(known, token) else ""
 
     def owner(self, steps: Sequence[ProcessRow]) -> str:
         with self.lock:

@@ -177,4 +177,4 @@ class PluginProgram:
         passed = {variable: os.environ[variable] for variable in PASSED_VARIABLES if variable in os.environ}
         code, data, journal = self.folders.code(plugin_name).resolve(), self.folders.data(plugin_name).resolve(), self.home.folder.resolve()
         return {**passed, "PATH": f"{journal / 'bin'}:{LoginPath(self.home).value()}", "JOURNAL_ROOT": str(journal.parent), "JOURNAL_ENV": environment, "JOURNAL_PLUGIN": plugin_name,
-                "JOURNAL_PLUGIN_DIR": str(code), "JOURNAL_PLUGIN_DATA": str(data), "JOURNAL_SETTINGS": str(self.settings_path(plugin_name, environment))}
+                "JOURNAL_PLUGIN_DIR": str(code), "JOURNAL_PLUGIN_DATA": str(data), "JOURNAL_PLUGIN_TOKEN": self.scripts.token(plugin_name), "JOURNAL_SETTINGS": str(self.settings_path(plugin_name, environment))}
