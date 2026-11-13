@@ -2,7 +2,7 @@ import pytest
 
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
-from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task, unplanned_holding_worker
+from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task, unplanned_worker_with_tasks
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker
 
 THREE_TASKS = 3
@@ -12,7 +12,7 @@ THREE_POINT_BRIEF = 'task edit 3 --brief "- the totals are added\n- the totals a
 @pytest.fixture
 def three_started(new_story, monkeypatch) -> StoryWorker:
     """A worker that holds tasks 1, 2 and 3 started, in no plan; task 3 has three points."""
-    worker = unplanned_holding_worker(new_story, monkeypatch, THREE_TASKS)
+    worker = unplanned_worker_with_tasks(new_story, monkeypatch, THREE_TASKS)
     worker.story.expect_success(THREE_POINT_BRIEF, actor=worker.story.agent)
     return worker
 

@@ -1,4 +1,4 @@
-from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
+from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from tests.stories.server.support.server_client import server_story
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
@@ -125,7 +125,7 @@ def test_manual_merge_keeps_mechanical_judging(new_story, monkeypatch):
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
-    asked_for_merge(story, worker)
+    request_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 

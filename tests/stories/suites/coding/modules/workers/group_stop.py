@@ -1,4 +1,4 @@
-from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
+from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
@@ -8,7 +8,7 @@ from tests.stories.core.modules.processes.support.process_samples import start_p
 from engine.enums.command_category import CommandCategory
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
-from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, prove_task, unplanned_holding_worker
+from tests.stories.suites.coding.modules.workers.support.held_tasks import worker_with_tasks, prove_task, unplanned_worker_with_tasks
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, start_planned_worker, unplanned_worker
 from suites.coding.modules.workers.support.worker_nudges import UNFINISHED_TASKS_SOURCE
@@ -50,7 +50,7 @@ def phase_worker(new_story, monkeypatch):
 @pytest.fixture
 def three_proved(new_story, monkeypatch):
     """A worker of phase Build that started its three tasks and proved each with a test; nothing is committed."""
-    worker = holding_worker(new_story, monkeypatch, BUILD_TASKS)
+    worker = worker_with_tasks(new_story, monkeypatch, BUILD_TASKS)
     for task_id, test_line in ((1, TEST_LINE), (2, SECOND_TEST_LINE), (3, TEST_LINE)):
         prove_task(worker, task_id, 1, test_line)
     return worker
@@ -80,7 +80,7 @@ def failed_commit(new_story, monkeypatch):
 
 
 def test_a_worker_whose_two_tasks_are_committed_stops_quietly(new_story, monkeypatch):
-    worker = unplanned_holding_worker(new_story, monkeypatch)
+    worker = unplanned_worker_with_tasks(new_story, monkeypatch)
     prove_task(worker, 1, 1, TEST_LINE)
     prove_task(worker, 2, 1, SECOND_TEST_LINE)
     worker.story.run(COMMIT, actor=worker.worker)
@@ -98,7 +98,7 @@ def test_a_single_task_committed_with_its_next_task_not_started_stops_quietly(ne
 
 
 def test_a_worker_whose_commit_in_a_started_plan_waits_for_its_merge_stops_quietly(committed):
-    asked_for_merge(committed.story, committed.worker)
+    request_merge(committed.story, committed.worker)
     committed.story.expect_hook_allowed(committed.session, HookSamples.stop())
     committed.program_ended()
     expect_silent_stop(committed)

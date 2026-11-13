@@ -1,4 +1,4 @@
-from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
+from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from datetime import timedelta
 
 import pytest
@@ -10,7 +10,7 @@ from tests.stories.suites.coding.modules.workers.hand_in_rebase import expect_ti
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT, COMMIT_COMMAND
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, proofs, prove_task, unplanned_holding_worker
+from tests.stories.suites.coding.modules.workers.support.held_tasks import worker_with_tasks, proofs, prove_task, unplanned_worker_with_tasks
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker
 from suites.coding.modules.workers.support.worker_settings import PROTECTED_FOLDERS
@@ -36,25 +36,25 @@ def states(worker: StoryWorker) -> list[ProofState]:
 @pytest.fixture
 def two_proved_unplanned(new_story, monkeypatch) -> StoryWorker:
     """A worker that holds tasks 1 and 2 started, in no plan, and proved the one point of each with a test."""
-    return prove_both(unplanned_holding_worker(new_story, monkeypatch))
+    return prove_both(unplanned_worker_with_tasks(new_story, monkeypatch))
 
 
 @pytest.fixture
 def two_proved(new_story, monkeypatch) -> StoryWorker:
     """A worker of phase Build that holds tasks 1 and 2 started and proved the one point of each with a test."""
-    return prove_both(holding_worker(new_story, monkeypatch, 2))
+    return prove_both(worker_with_tasks(new_story, monkeypatch, 2))
 
 
 @pytest.fixture
 def two_started(new_story, monkeypatch) -> StoryWorker:
     """A worker of phase Build that holds tasks 1 and 2 started and proved nothing."""
-    return holding_worker(new_story, monkeypatch, 2)
+    return worker_with_tasks(new_story, monkeypatch, 2)
 
 
 @pytest.fixture
 def three_started(new_story, monkeypatch) -> StoryWorker:
     """A worker of phase Build that holds tasks 1, 2 and 3 started; task 2 has four points and task 3 three."""
-    worker = holding_worker(new_story, monkeypatch, 3)
+    worker = worker_with_tasks(new_story, monkeypatch, 3)
     worker.story.expect_success(f'task edit 2 --brief "{FOUR_POINT_BRIEF}"', actor=worker.story.agent)
     worker.story.expect_success(f'task edit 3 --brief "{THREE_POINT_BRIEF}"', actor=worker.story.agent)
     return worker
@@ -77,7 +77,7 @@ def test_25_158_163_165_a_commit_of_two_tasks_in_a_started_plan_is_one_git_commi
     story = two_proved.story
     outcome = story.run(COMMIT, actor=two_proved.worker)
     story.run_listeners()
-    asked_for_merge(story, two_proved.worker)
+    request_merge(story, two_proved.worker)
     story.expect_text("worker-worktree show 1", "state: delivered", actor=story.agent)
     two_proved.repository.expect_commit(two_proved.repository.worker_branch(two_proved.worker.id), "tasks 1, 2: Fix the cart", f"Journal: worker worker-{two_proved.worker.id}")
     merge(two_proved)

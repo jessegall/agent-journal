@@ -18,7 +18,7 @@ def base_tax(repository: GitRepository) -> None:
     committed_on(repository, checkout_of(repository, ENVIRONMENT_BRANCH), "tax.py", "TAX = 1\n", "Tax on the base")
 
 
-def no_setup(repository: GitRepository) -> None:
+def empty_setup(repository: GitRepository) -> None:
     return None
 
 
@@ -82,9 +82,9 @@ class UpdateCase:
     after_dispatch: Callable[..., None]
 
 
-CASES = [UpdateCase(no_setup, s25_uncommitted_changes_in_two_files_stay), UpdateCase(no_setup, s26_the_accepted_line_says_to_edit_nothing_until_it_ends),
-         UpdateCase(no_setup, s27_three_own_commits_sit_on_the_new_tip), UpdateCase(no_setup, s28_an_untracked_new_file_comes_back),
-         UpdateCase(no_setup, s30_the_new_base_is_recorded_and_the_count_starts_there), UpdateCase(no_setup, s32_already_up_to_date_changes_nothing),
+CASES = [UpdateCase(empty_setup, s25_uncommitted_changes_in_two_files_stay), UpdateCase(empty_setup, s26_the_accepted_line_says_to_edit_nothing_until_it_ends),
+         UpdateCase(empty_setup, s27_three_own_commits_sit_on_the_new_tip), UpdateCase(empty_setup, s28_an_untracked_new_file_comes_back),
+         UpdateCase(empty_setup, s30_the_new_base_is_recorded_and_the_count_starts_there), UpdateCase(empty_setup, s32_already_up_to_date_changes_nothing),
          UpdateCase(claude_file_on_the_base, s35_the_instruction_files_do_not_clash)]
 
 

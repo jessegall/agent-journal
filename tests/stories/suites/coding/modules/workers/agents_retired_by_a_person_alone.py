@@ -1,4 +1,4 @@
-from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
+from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from core.modules.agents.models.agent import Agent
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
@@ -18,7 +18,7 @@ def test_a_merger_start_on_another_program_reviews_and_a_worker_merge_retire_no_
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
-    asked_for_merge(story, worker)
+    request_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     ended_merger(story, monkeypatch)
     story.expect_success(PROGRAM_SAVE.format(program="codex"), actor=story.user)

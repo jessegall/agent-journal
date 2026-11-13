@@ -3,7 +3,7 @@ import pytest
 from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_reply_refusal
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
-from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task, unplanned_holding_worker
+from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task, unplanned_worker_with_tasks
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import apply_work_setting
 from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND
@@ -32,7 +32,7 @@ def expect_proof_states(worker: StoryWorker, state: str, *proof_ids: int) -> Non
 @pytest.fixture
 def three_started(new_story, monkeypatch) -> StoryWorker:
     """A worker that holds tasks 1, 2 and 3 started, in no plan; task 1 has two points."""
-    worker = unplanned_holding_worker(new_story, monkeypatch, THREE_TASKS)
+    worker = unplanned_worker_with_tasks(new_story, monkeypatch, THREE_TASKS)
     worker.story.expect_success(TWO_POINT_BRIEF, actor=worker.story.agent)
     return worker
 
@@ -57,7 +57,7 @@ def first_failed(interim_tested) -> StoryWorker:
 def two_committed(new_story, monkeypatch) -> StoryWorker:
     """A worker that held tasks 1 and 2, in no plan, proved each with a test and committed both: no task is
     left started and the two tests run."""
-    worker = unplanned_holding_worker(new_story, monkeypatch)
+    worker = unplanned_worker_with_tasks(new_story, monkeypatch)
     prove_task(worker, 1, 1, TEST_LINE)
     prove_task(worker, 2, 1, SECOND_TEST_LINE)
     return commit(worker)
@@ -80,7 +80,7 @@ def test_47_48_only_the_failed_proof_is_tested_at_the_commit_after_it_is_shown_a
 
 
 def test_50_a_failed_run_of_the_selected_tests_returns_the_tasks_of_the_commit_and_names_the_output(new_story, monkeypatch):
-    worker = unplanned_holding_worker(new_story, monkeypatch)
+    worker = unplanned_worker_with_tasks(new_story, monkeypatch)
     story = worker.story
     story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "python3 pick.py" --environment main')
     story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "python3 -m pytest -q" --environment main')

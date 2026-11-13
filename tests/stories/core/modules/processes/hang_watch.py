@@ -9,7 +9,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
-from tests.stories.core.modules.processes.support.cadence_probe import (HelperBesideWorker, agent_run, cadence_tick, expect_told, kept_lines, printed_now,
+from tests.stories.core.modules.processes.support.cadence_probe import (HelperBesideWorker, agent_run, cadence_tick, expect_informed, kept_lines, printed_now,
                                                                        running_run, told, tree_of, worker_agent)
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
@@ -205,8 +205,8 @@ def test_a_helpers_and_a_workers_stuck_runs_wake_them_with_the_same_warning(new_
     tree_of(story, FakeGroupCpuTime(12.0), MISSING_GROUP, *runs)
     watch_tick(story)
     watched(story, HALF)
-    expect_told(story, helper.session, stuck_line(runs[0].id))
-    expect_told(story, worker.session, stuck_line(runs[1].id))
+    expect_informed(story, helper.session, stuck_line(runs[0].id))
+    expect_informed(story, worker.session, stuck_line(runs[1].id))
 
 
 def test_a_busy_silent_test_run_gets_no_stuck_warning_and_is_still_asked_to_be_looked_at(new_story):
@@ -242,7 +242,7 @@ def test_reading_a_stuck_run_after_the_warning_starts_the_hold_anew_and_the_stop
     story.expect_text("process show 1", "state: background", actor=story.agent)
     watched(story, HALF)
     story.expect_text("process show 1", "state: stopped", actor=story.agent)
-    expect_told(story, "s-1", hung_line(1))
+    expect_informed(story, "s-1", hung_line(1))
 
 
 def test_a_stuck_build_that_prints_again_is_warned_again_after_a_new_silence(new_story):

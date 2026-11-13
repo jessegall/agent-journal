@@ -5,7 +5,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.messages.models.message import Message
-from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
+from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.checkpoint_failures import end_run, expect_returned, print_output
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import branch_runs_only, CART_COMMAND, PASSES, REACHES, commit_tasks, merge, rows, run_lines
@@ -66,7 +66,7 @@ def failed_checkpoint(new_story, monkeypatch, output: str, *failing_lines: str) 
 
 def merge_again(worker: StoryWorker) -> None:
     """The worker asks for the merge of the task it handed in again, and that ask takes it in."""
-    asked_for_merge(worker.story, worker.worker)
+    request_merge(worker.story, worker.worker)
     worker.story.run_listeners()
 
 
@@ -99,7 +99,7 @@ def test_214_a_merger_defers_the_stories_of_a_later_task_the_own_test_of_a_check
 
 
 @pytest.fixture
-def handed_in_again(deferred) -> FailedOwnTest:
+def repeated_hand_in(deferred) -> FailedOwnTest:
     """After the deferral the worker handed its returned task in again and that work is merged: the checkpoint
     of phase 1 is reached a second time and its second run goes."""
     deferred.story.expect_success(REPEATED_HAND_IN, actor=deferred.worker.worker)
@@ -108,16 +108,16 @@ def handed_in_again(deferred) -> FailedOwnTest:
     return deferred
 
 
-def test_94_the_run_after_a_deferral_leaves_the_deferred_paths_out_of_the_own_test_and_passes(handed_in_again):
-    worker, story = handed_in_again.worker, handed_in_again.story
+def test_94_the_run_after_a_deferral_leaves_the_deferred_paths_out_of_the_own_test_and_passes(repeated_hand_in):
+    worker, story = repeated_hand_in.worker, repeated_hand_in.story
     second_run = run_lines(worker)[FIRST_RUN_SIZE:]
     end_run(worker)
     story.expect_rows(second_run == [SHORTER_TEST], [row["state"] for row in rows(worker, REACHES)] == ["failed", "passed"], [row["phase_id"] for row in rows(worker, PASSES)] == [1],
                       detail=f"{second_run} | {rows(worker, REACHES)}")
 
 
-def test_95_the_deferred_paths_run_at_the_next_checkpoint_and_the_deferral_is_closed_when_it_passed(handed_in_again):
-    worker, story = handed_in_again.worker, handed_in_again.story
+def test_95_the_deferred_paths_run_at_the_next_checkpoint_and_the_deferral_is_closed_when_it_passed(repeated_hand_in):
+    worker, story = repeated_hand_in.worker, repeated_hand_in.story
     end_run(worker)
     story.run("task start 4", actor=story.agent)
     story.expect_success('task close 4 --outcome "released"', actor=story.agent)

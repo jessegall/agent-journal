@@ -6,7 +6,7 @@ import pytest
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import merge
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
-from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, prove_task, unplanned_holding_worker
+from tests.stories.suites.coding.modules.workers.support.held_tasks import worker_with_tasks, prove_task, unplanned_worker_with_tasks
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker
 
 THREE_TASKS = 3
@@ -38,14 +38,14 @@ def worktree(worker: StoryWorker) -> dict[str, object]:
 @pytest.fixture
 def two_of_three_proved(new_story, monkeypatch) -> StoryWorker:
     """A worker that holds tasks 1, 2 and 3 started, in no plan, and proved tasks 1 and 2 with a test each."""
-    return prove_first_two(unplanned_holding_worker(new_story, monkeypatch, THREE_TASKS))
+    return prove_first_two(unplanned_worker_with_tasks(new_story, monkeypatch, THREE_TASKS))
 
 
 @pytest.fixture
 def two_of_three_proved_in_plan(new_story, monkeypatch) -> StoryWorker:
     """A worker of phase Build of a started plan that holds tasks 1, 2 and 3 started and proved tasks 1 and 2
     with a test each."""
-    return prove_first_two(holding_worker(new_story, monkeypatch, THREE_TASKS))
+    return prove_first_two(worker_with_tasks(new_story, monkeypatch, THREE_TASKS))
 
 
 @pytest.fixture

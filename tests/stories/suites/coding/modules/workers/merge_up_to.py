@@ -1,4 +1,4 @@
-from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
+from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
@@ -72,9 +72,9 @@ def test_the_later_merge_brings_only_the_rest(proven_worker):
     story.expect_success(f'proof make 1 --task {second_task} "receipt.py:1, the receipt story"', actor=worker)
     story.expect_success(COMMIT, actor=worker)
     story.expect_success("proof check 2", actor=story.agent)
-    asked_for_merge(story, worker)
+    request_merge(story, worker)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
-    asked_for_merge(story, worker)
+    request_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, "receipt.py", RECEIPT)
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)

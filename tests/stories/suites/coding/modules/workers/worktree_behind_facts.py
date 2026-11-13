@@ -13,7 +13,7 @@ LOGIN_BRANCH = "feature/login"
 DIFFERENT_WORKER_BRANCH = "journal/main/worker-other"
 
 
-def no_base_change(story, repository: GitRepository) -> None:
+def unchanged_base(story, repository: GitRepository) -> None:
     return None
 
 
@@ -69,9 +69,9 @@ class BehindCase:
     after_dispatch: Callable[..., tuple[str, ...]]
 
 
-CASES = [BehindCase(no_base_change, a2_own_commits_and_an_unmoved_base), BehindCase(no_base_change, a3_one_merge_of_a_four_commit_worker),
-         BehindCase(no_base_change, a4_a_commit_straight_on_the_base), BehindCase(login_base, a5_a_worktree_cut_from_another_branch),
-         BehindCase(no_base_change, a13_part_of_the_own_unit_merged_into_the_base), BehindCase(no_base_change, b14_the_merger_reads_the_facts)]
+CASES = [BehindCase(unchanged_base, a2_own_commits_and_an_unmoved_base), BehindCase(unchanged_base, a3_one_merge_of_a_four_commit_worker),
+         BehindCase(unchanged_base, a4_a_commit_straight_on_the_base), BehindCase(login_base, a5_a_worktree_cut_from_another_branch),
+         BehindCase(unchanged_base, a13_part_of_the_own_unit_merged_into_the_base), BehindCase(unchanged_base, b14_the_merger_reads_the_facts)]
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case.after_dispatch.__name__.split("_")[0])

@@ -4,7 +4,7 @@ import pytest
 
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT, asked_for_merge
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT, request_merge
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
@@ -55,7 +55,7 @@ def worker_changes_one_view(story, repository, task_id: int, dispatch: str, view
 def merged(story, worker, proof_id: int) -> None:
     story.expect_success(f"proof check {proof_id}", "state: checked", actor=story.agent)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
-    asked_for_merge(story, worker)
+    request_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
 
 

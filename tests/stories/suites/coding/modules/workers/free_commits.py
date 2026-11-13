@@ -15,7 +15,7 @@ def worktree_state(worker: StoryWorker) -> str:
     return str(next(row["state"] for row in listed["rows"] if row["session_agent_id"] == worker.worker.id and row["state"] != "removed"))
 
 
-def commit_each(worker: StoryWorker, task_ids: tuple[int, ...]) -> None:
+def commit_tasks_singly(worker: StoryWorker, task_ids: tuple[int, ...]) -> None:
     """The worker starts, proves and commits each task on its own."""
     for task_id in task_ids:
         worker.story.run(f"task start {task_id}", actor=worker.worker)
@@ -47,20 +47,20 @@ def test_19_a_short_proof_still_refuses(new_story, monkeypatch):
 
 def test_20_commits_are_not_counted(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, (1, 2, 3))
+    commit_tasks_singly(worker, (1, 2, 3))
     lines = " | ".join(worker.worker_lines())
     worker.story.expect_rows("commits left" not in lines, "too many commits" not in lines, detail=lines)
 
 
 def test_21_a_commit_of_a_unit_of_more_never_delivers(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch)
-    commit_each(worker, tuple([1]))
+    commit_tasks_singly(worker, tuple([1]))
     worker.story.expect_rows(worktree_state(worker) == "cut", detail=worker.status())
 
 
 def test_22_a_commit_of_the_last_task_of_a_list_never_delivers(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, (1, 2, 3))
+    commit_tasks_singly(worker, (1, 2, 3))
     worker.end_all_tests()
     worker.story.expect_rows(worktree_state(worker) == "cut", "Point: merge_due" in worker.status(), detail=worker.status())
 
@@ -74,20 +74,20 @@ def test_23_a_unit_of_one_concludes_by_its_commit(new_story, monkeypatch):
 
 def test_24_the_merger_is_not_woken_by_a_commit_of_a_unit_of_more(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, (1, 2, 3))
+    commit_tasks_singly(worker, (1, 2, 3))
     worker.story.expect_absent("agent list --role merger --environment main", "running", actor=worker.story.agent)
 
 
 def test_25_main_hears_nothing_per_commit(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
     previous = worker.main_agent_lines()
-    commit_each(worker, (1, 2))
+    commit_tasks_singly(worker, (1, 2))
     worker.story.expect_rows(worker.main_agent_lines() == previous, detail=str(worker.main_agent_lines()))
 
 
 def test_26_a_list_of_three_tasks_is_merged_once(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, (1, 2, 3))
+    commit_tasks_singly(worker, (1, 2, 3))
     worker.end_all_tests()
     worker.story.expect_success(REQUEST_MERGE, actor=worker.worker)
     merge(worker)
@@ -97,7 +97,7 @@ def test_26_a_list_of_three_tasks_is_merged_once(new_story, monkeypatch):
 
 def test_27_a_plan_of_three_phases_is_merged_once(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch)
-    commit_each(worker, (1, 2, 3, 4))
+    commit_tasks_singly(worker, (1, 2, 3, 4))
     worker.end_all_tests()
     worker.end_all_tests()
     worker.story.expect_success(REQUEST_MERGE, actor=worker.worker)
@@ -108,7 +108,7 @@ def test_27_a_plan_of_three_phases_is_merged_once(new_story, monkeypatch):
 
 def test_a_worker_waiting_with_its_unit_committed_is_woken_by_the_pass(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, (1, 2, 3))
+    commit_tasks_singly(worker, (1, 2, 3))
     worker.end_all_tests()
     lines = " | ".join(worker.worker_lines())
     worker.story.expect_rows("passed on your commit" in lines or "Point: merge_due" in worker.status(), detail=lines)
@@ -116,7 +116,7 @@ def test_a_worker_waiting_with_its_unit_committed_is_woken_by_the_pass(new_story
 
 def test_a_stop_of_a_worker_whose_unit_is_committed_is_no_report(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, (1, 2, 3))
+    commit_tasks_singly(worker, (1, 2, 3))
     previous = worker.main_agent_lines()
     worker.stop()
     worker.story.expect_rows(worker.main_agent_lines() == previous, detail=str(worker.main_agent_lines()))

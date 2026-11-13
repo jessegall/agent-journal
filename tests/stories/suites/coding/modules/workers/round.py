@@ -1,7 +1,7 @@
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
-from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, prove_task, unplanned_holding_worker
+from tests.stories.suites.coding.modules.workers.support.held_tasks import worker_with_tasks, prove_task, unplanned_worker_with_tasks
 from tests.stories.suites.coding.modules.workers.support.judge_plugin import SINFUL_TEXT, judge_plugin_folder
 from tests.stories.support.story_checks import expect_value
 
@@ -16,7 +16,7 @@ def worker_test_hook(worker, *test_arguments):
 
 
 def test_three_tasks_committed_together_with_a_failure_and_a_free_run(new_story, monkeypatch):
-    worker = unplanned_holding_worker(new_story, monkeypatch, THREE_TASKS)
+    worker = unplanned_worker_with_tasks(new_story, monkeypatch, THREE_TASKS)
     prove_task(worker, 1, 1, FILE_TEST_COMMAND)
     status = worker.status_json()
     expect_value((status["step"], status["test_runs_available"], worker.started), ("commit", 3, []))
@@ -39,7 +39,7 @@ def test_three_tasks_committed_together_with_a_failure_and_a_free_run(new_story,
 
 
 def test_a_commit_of_three_tasks_judges_them_together(new_story, monkeypatch):
-    worker = holding_worker(new_story, monkeypatch, THREE_TASKS)
+    worker = worker_with_tasks(new_story, monkeypatch, THREE_TASKS)
     worker.story.expect_success(f"plugin install {judge_plugin_folder(worker.story.home.folder.parent)} --yes", actor=worker.story.user)
     worker.repository.changed(worker.worker.id, "own.py", SINFUL_TEXT)
     for task_id in TASK_IDS:

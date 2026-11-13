@@ -8,7 +8,7 @@ PLANNED_BUILD_TASK_COUNT = 3
 UNPLANNED_PAIR = 2
 
 
-def holding_worker(new_story, monkeypatch, count: int, build_task_count: int = PLANNED_BUILD_TASK_COUNT, build_test: str = "") -> StoryWorker:
+def worker_with_tasks(new_story, monkeypatch, count: int, build_task_count: int = PLANNED_BUILD_TASK_COUNT, build_test: str = "") -> StoryWorker:
     """A worker sent to phase Build of plan 1, which holds tasks 1, 2 and 3 and, when more are asked for, tasks
     5, 6 and 7: task 1 is started for it and it started the next tasks itself, up to the count."""
     story = planned_story(new_story, approve=False, build_test=build_test)
@@ -21,7 +21,7 @@ def holding_worker(new_story, monkeypatch, count: int, build_task_count: int = P
     return worker
 
 
-def unplanned_holding_worker(new_story, monkeypatch, count: int = UNPLANNED_PAIR) -> StoryWorker:
+def unplanned_worker_with_tasks(new_story, monkeypatch, count: int = UNPLANNED_PAIR) -> StoryWorker:
     """A worker that holds two or three tasks started, none of them in a plan and none waiting behind them."""
     worker = unplanned_worker(new_story, monkeypatch) if count == UNPLANNED_PAIR else unplanned_group_worker(new_story, monkeypatch)
     for task_id in range(2, count + 1):

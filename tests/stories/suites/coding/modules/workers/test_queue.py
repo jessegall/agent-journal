@@ -1,4 +1,4 @@
-from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
+from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from tests.stories.core.support.agent_labels import agent_number
 from suites.coding.modules.workers.models.merger_line import MergerLine
 import json
@@ -90,7 +90,7 @@ def test_all_tests_passing_checks_the_proofs_and_tells_the_main_agent_and_the_me
     story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(WORKER_TESTS_PASSED), actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
-    asked_for_merge(story, worker)
+    request_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
 
@@ -152,7 +152,7 @@ def test_passed_tests_with_a_proof_with_no_test_ask_for_the_check_not_the_merge(
     story.expect_success("proof check 2", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
-    asked_for_merge(story, worker)
+    request_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
 
 

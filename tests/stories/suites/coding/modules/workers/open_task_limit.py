@@ -1,6 +1,6 @@
 import pytest
 
-from tests.stories.suites.coding.modules.workers.support.held_tasks import BUILD_TASK_IDS, holding_worker
+from tests.stories.suites.coding.modules.workers.support.held_tasks import BUILD_TASK_IDS, worker_with_tasks
 from tests.stories.suites.coding.modules.workers.support.phase_steps import StoryWorker
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_COUNT
 from engine.testing.expectations.expected_nudge import expected_nudge
@@ -13,21 +13,21 @@ SIX_BUILD_TASKS = 6
 
 
 @pytest.fixture
-def one_task(new_story, monkeypatch) -> StoryWorker:
+def task_worker(new_story, monkeypatch) -> StoryWorker:
     """A worker of phase Build that holds task 1 started; tasks 2 and 3 are its next ones."""
-    return holding_worker(new_story, monkeypatch, 1)
+    return worker_with_tasks(new_story, monkeypatch, 1)
 
 
 @pytest.fixture
 def three_tasks(new_story, monkeypatch) -> StoryWorker:
     """A worker of a phase Build of six tasks that holds tasks 1, 2 and 3 started."""
-    return holding_worker(new_story, monkeypatch, 3, SIX_BUILD_TASKS)
+    return worker_with_tasks(new_story, monkeypatch, 3, SIX_BUILD_TASKS)
 
 
 @pytest.fixture
 def five_tasks(new_story, monkeypatch) -> StoryWorker:
     """A worker of a phase Build of six tasks that holds tasks 1, 2, 3, 5 and 6 started; task 7 is open."""
-    return holding_worker(new_story, monkeypatch, 5, SIX_BUILD_TASKS)
+    return worker_with_tasks(new_story, monkeypatch, 5, SIX_BUILD_TASKS)
 
 
 def started_ids(worker: StoryWorker) -> list[int]:
@@ -35,9 +35,9 @@ def started_ids(worker: StoryWorker) -> list[int]:
     return [task_id for task_id in BUILD_TASK_IDS if f'"id": {task_id},' in listed]
 
 
-def test_12_a_worker_starts_a_second_task_and_hears_how_many_it_holds_of_the_most_it_may(one_task):
-    outcome = one_task.story.run("task start 2", actor=one_task.worker)
-    one_task.story.expect_rows(outcome.code == 0, started_ids(one_task) == [1, 2], expected_nudge(WORKER_TASK_COUNT, count=2, limit=5).is_in_any(one_task.worker_lines()), detail=f"{outcome.output_text} | {one_task.worker_lines()}")
+def test_12_a_worker_starts_a_second_task_and_hears_how_many_it_holds_of_the_most_it_may(task_worker):
+    outcome = task_worker.story.run("task start 2", actor=task_worker.worker)
+    task_worker.story.expect_rows(outcome.code == 0, started_ids(task_worker) == [1, 2], expected_nudge(WORKER_TASK_COUNT, count=2, limit=5).is_in_any(task_worker.worker_lines()), detail=f"{outcome.output_text} | {task_worker.worker_lines()}")
 
 
 def test_13_a_worker_holds_five_started_tasks_and_its_status_lists_them(five_tasks):

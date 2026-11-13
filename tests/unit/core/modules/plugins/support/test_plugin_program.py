@@ -26,7 +26,7 @@ from core.modules.plugins.support.plugin_program import PluginProgram, STOP_LIMI
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 
 DETACHED_CHILD_PROGRAM = """#!/bin/sh
-python3 -c 'import os, signal; os.setsid(); signal.pause()' &
+python3 -c 'import os, time; os.setsid(); time.sleep(30)' &
 python3 -c 'import signal; signal.pause()'
 """
 QUICK_PROGRAM = """#!/bin/sh

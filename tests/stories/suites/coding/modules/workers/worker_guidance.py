@@ -7,7 +7,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
-from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, prove_task, unplanned_holding_worker
+from tests.stories.suites.coding.modules.workers.support.held_tasks import worker_with_tasks, prove_task, unplanned_worker_with_tasks
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, PLAN_DISPATCH, SECOND_TEST_LINE, TEST_LINE, start_planned_worker, unplanned_worker
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
@@ -46,7 +46,7 @@ def plan_worker(new_story, monkeypatch):
 @pytest.fixture
 def last_of_phase(new_story, monkeypatch):
     """A worker of phase Build that started its three tasks and proved each with a test; nothing is committed."""
-    worker = holding_worker(new_story, monkeypatch, BUILD_TASKS)
+    worker = worker_with_tasks(new_story, monkeypatch, BUILD_TASKS)
     for task_id, test_line in ((1, TEST_LINE), (2, SECOND_TEST_LINE), (3, TEST_LINE)):
         prove_task(worker, task_id, 1, test_line)
     return worker
@@ -117,7 +117,7 @@ def test_the_failed_tests_line_outside_a_phase_says_what_status_says(new_story, 
 
 
 def test_the_passed_tests_line_of_an_interim_commit_says_what_status_says(new_story, monkeypatch):
-    worker = unplanned_holding_worker(new_story, monkeypatch)
+    worker = unplanned_worker_with_tasks(new_story, monkeypatch)
     prove_task(worker, 1, 1, TEST_LINE)
     worker.story.run(COMMIT, actor=worker.worker)
     worker.story.run_listeners()

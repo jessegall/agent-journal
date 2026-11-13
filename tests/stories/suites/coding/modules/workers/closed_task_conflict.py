@@ -1,4 +1,4 @@
-from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
+from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
@@ -28,7 +28,7 @@ def test_a_conflict_reopens_the_closed_task_before_asking_the_worker_to_edit(new
     path.write_text("TOTAL = 3\n")
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
-    asked_for_merge(story, worker)
+    request_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")
 

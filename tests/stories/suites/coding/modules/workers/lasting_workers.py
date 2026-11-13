@@ -1,4 +1,4 @@
-from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
+from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 import json
 from datetime import timedelta
 from pathlib import Path
@@ -61,7 +61,7 @@ def merged_worker(new_story):
     story.worker = checked_worker(story, story.repository)
     story.expect_success(f'memory make "{MEMORY_TEXT}" --weight 5', actor=story.worker)
     story.repository.checkout(ENVIRONMENT_BRANCH)
-    asked_for_merge(story, story.worker)
+    request_merge(story, story.worker)
     story.expect_success(f"worker merge --wait {agent_number(story, story.worker.id)}", actor=story.agent)
     story.run_listeners()
     return story

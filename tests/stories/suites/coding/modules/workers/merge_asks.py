@@ -2,7 +2,7 @@ import pytest
 
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import BUILD_TEST
-from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_each
+from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_tasks_singly
 from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PLAN_DISPATCH, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story, unplanned_group_worker, single_task_worker
 
@@ -14,7 +14,7 @@ STOP_REFUSED = "Not finished"
 def committed_list(new_story, monkeypatch) -> StoryWorker:
     """A worker of three tasks sent together committed all three and every run of them passed."""
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, (1, 2, 3))
+    commit_tasks_singly(worker, (1, 2, 3))
     worker.end_all_tests()
     return worker
 
@@ -22,7 +22,7 @@ def committed_list(new_story, monkeypatch) -> StoryWorker:
 def running_plan(new_story, monkeypatch) -> StoryWorker:
     """The worker of plan 1, whose phase Build is a checkpoint, committed the three tasks of Build; their run goes."""
     worker = dispatched_story_worker(planned_story(new_story, build_test=BUILD_TEST), PLAN_DISPATCH, monkeypatch)
-    commit_each(worker, (1, 2, 3))
+    commit_tasks_singly(worker, (1, 2, 3))
     return worker
 
 
@@ -39,7 +39,7 @@ def test_46_a_stop_at_merge_due_is_refused_with_its_line(new_story, monkeypatch)
 
 def test_47_a_stop_while_the_last_run_is_open_is_allowed_and_no_report(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, (1, 2, 3))
+    commit_tasks_singly(worker, (1, 2, 3))
     previous = worker.main_agent_lines()
     reply = worker.stop()
     worker.story.expect_rows(STOP_REFUSED not in str(reply), worker.main_agent_lines() == previous, detail=str(reply))
@@ -52,7 +52,7 @@ def test_48_the_whole_ask(new_story, monkeypatch):
 
 def test_49_refused_a_started_task(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, tuple([1]))
+    commit_tasks_singly(worker, tuple([1]))
     worker.story.run("task start 2", actor=worker.worker)
     worker.story.expect_refusal(REQUEST_MERGE, "task 2 is started", actor=worker.worker)
 
@@ -77,7 +77,7 @@ def test_53_refused_nothing_committed_since_the_last_merge(new_story, monkeypatc
 @pytest.mark.real_git
 def test_54_refused_an_ask_already_waits(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, tuple([1]))
+    commit_tasks_singly(worker, tuple([1]))
     worker.end_all_tests()
     worker.story.expect_success('worker ask-merge "the first task" --up-to 1', actor=worker.worker)
     worker.story.expect_refusal('worker ask-merge "again" --up-to 1', "your ask 1 waits for the merge", actor=worker.worker)
@@ -97,7 +97,7 @@ def test_56_refused_in_a_unit_of_one(new_story, monkeypatch):
 @pytest.mark.real_git
 def test_57_an_early_ask_up_to_a_task(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, (1, 2))
+    commit_tasks_singly(worker, (1, 2))
     worker.end_all_tests()
     worker.story.expect_text('worker ask-merge "the first part" --up-to 1', "Asked for the merge up to commit", "Your later commits stay in your worktree", actor=worker.worker)
 
@@ -105,7 +105,7 @@ def test_57_an_early_ask_up_to_a_task(new_story, monkeypatch):
 @pytest.mark.real_git
 def test_58_an_early_ask_carries_every_earlier_commit(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, (1, 2, 3))
+    commit_tasks_singly(worker, (1, 2, 3))
     worker.end_all_tests()
     worker.story.expect_text('worker ask-merge "the first two" --up-to 2', "2 tasks, with every commit before it", actor=worker.worker)
 
@@ -119,7 +119,7 @@ def test_59_an_early_ask_over_a_part_whose_run_has_not_passed_is_refused(new_sto
 @pytest.mark.real_git
 def test_60_refused_up_to_a_task_not_committed_or_a_commit_not_on_the_branch(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, tuple([1]))
+    commit_tasks_singly(worker, tuple([1]))
     worker.end_all_tests()
     worker.story.expect_refusal('worker ask-merge "the rest" --up-to 3', "task 3 is not committed in your worktree", actor=worker.worker)
     worker.story.expect_refusal('worker ask-merge "the rest" --up-to abcdef1', "commit abcdef1 is not on your branch", actor=worker.worker)
@@ -128,7 +128,7 @@ def test_60_refused_up_to_a_task_not_committed_or_a_commit_not_on_the_branch(new
 @pytest.mark.real_git
 def test_61_the_judgment_of_the_worker_is_not_second_guessed(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, tuple([1]))
+    commit_tasks_singly(worker, tuple([1]))
     worker.end_all_tests()
     worker.story.expect_success('worker ask-merge "the first task is needed now" --up-to 1', actor=worker.worker)
 
@@ -136,7 +136,7 @@ def test_61_the_judgment_of_the_worker_is_not_second_guessed(new_story, monkeypa
 @pytest.mark.real_git
 def test_62_main_may_still_take_a_part_early(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, (1, 2))
+    commit_tasks_singly(worker, (1, 2))
     worker.end_all_tests()
     worker.story.expect_success(f"worker merge --wait {agent_number(worker.story, worker.worker.id)} --up-to 1", actor=worker.story.agent)
 

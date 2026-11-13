@@ -4,7 +4,7 @@ import pytest
 
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import merge
-from tests.stories.suites.coding.modules.workers.free_commits import commit_each
+from tests.stories.suites.coding.modules.workers.free_commits import commit_tasks_singly
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.phase_steps import StoryWorker, unplanned_group_worker
 from tests.stories.support.story_checks import expect_value
@@ -20,13 +20,13 @@ def card_task_ids(worker: StoryWorker) -> list[int]:
 
 def test_a_worker_never_merged_counts_all_its_tasks(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, tuple([1]))
+    commit_tasks_singly(worker, tuple([1]))
     expect_value(card_task_ids(worker), [1, 2, 3])
 
 
 def test_a_worker_starts_again_from_zero_once_its_hand_in_is_merged(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, (1, 2, 3))
+    commit_tasks_singly(worker, (1, 2, 3))
     merge(worker)
     expect_value(card_task_ids(worker), [])
     for title in ("Receipts", "Totals"):
@@ -38,7 +38,7 @@ def test_a_worker_starts_again_from_zero_once_its_hand_in_is_merged(new_story, m
 @pytest.mark.real_git
 def test_a_part_merge_takes_the_merged_tasks_out_of_the_count_and_keeps_the_rest(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, (1, 2))
+    commit_tasks_singly(worker, (1, 2))
     worker.end_all_tests()
     number = agent_number(worker.story, worker.worker.id)
     worker.repository.checkout(ENVIRONMENT_BRANCH)

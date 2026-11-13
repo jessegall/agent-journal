@@ -1,4 +1,4 @@
-from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
+from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from tests.stories.core.support.agent_labels import agent_number
 import json
 from datetime import timedelta
@@ -17,7 +17,7 @@ def test_a_second_dispatch_counts_only_its_tasks_from_its_worktree_start(new_sto
     story.advance(timedelta(hours=2))
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {agent_number(story, first.id)}", actor=story.agent)
-    asked_for_merge(story, first)
+    request_merge(story, first)
     story.expect_success(f"worker merge --wait {agent_number(story, first.id)}", actor=story.agent)
     story.run('task make "Add tax" --environment main', actor=story.agent)
     second = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet 2")

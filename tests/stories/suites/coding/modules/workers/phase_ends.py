@@ -3,7 +3,7 @@ import pytest
 from engine.query.queries import Queries
 from suites.coding.modules.workers.models.affected_test import AffectedTest
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
-from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, prove_task
+from tests.stories.suites.coding.modules.workers.support.held_tasks import worker_with_tasks, prove_task
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story, start_planned_worker
 from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND
 from suites.coding.modules.workers.support.worker_settings import PROJECT_TEST_COMMAND
@@ -22,12 +22,12 @@ def proved_phase(worker: StoryWorker, first_test: str = "", last_test: str = "")
 
 @pytest.fixture
 def declared_tests(new_story, monkeypatch) -> StoryWorker:
-    return proved_phase(holding_worker(new_story, monkeypatch, BUILD_TASKS), TEST_LINE, SECOND_TEST_LINE)
+    return proved_phase(worker_with_tasks(new_story, monkeypatch, BUILD_TASKS), TEST_LINE, SECOND_TEST_LINE)
 
 
 @pytest.fixture
 def undeclared_tests(new_story, monkeypatch) -> StoryWorker:
-    return proved_phase(holding_worker(new_story, monkeypatch, BUILD_TASKS))
+    return proved_phase(worker_with_tasks(new_story, monkeypatch, BUILD_TASKS))
 
 
 @pytest.fixture
@@ -43,7 +43,7 @@ def test_a_worker_cannot_make_a_proof_at_the_point_of_a_phases_own_test(new_stor
 
 
 def test_the_phases_own_test_runs_in_the_background_on_the_commit_of_its_last_task_in_a_started_plan(new_story, monkeypatch):
-    worker = proved_phase(holding_worker(new_story, monkeypatch, BUILD_TASKS, build_test=PHASE_TEST))
+    worker = proved_phase(worker_with_tasks(new_story, monkeypatch, BUILD_TASKS, build_test=PHASE_TEST))
     worker.story.expect_text(COMMIT, "committed tasks 1, 2, 3", actor=worker.worker)
     worker.story.expect_absent("proof list --task 3", PHASE_TEST, actor=worker.story.agent)
     worker.story.expect_rows(PHASE_TEST in [process.line for process in worker.started_processes()], detail=str(worker.started))

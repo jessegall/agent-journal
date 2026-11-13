@@ -76,13 +76,13 @@ def test_the_viewer_is_no_part_of_a_template_key_or_of_the_pinned_code():
 
 
 @pytest.fixture
-def found_variables():
+def matched_variables():
     return os.environ.get(TEMPLATE_FOLDER_VARIABLE), os.environ.get(PINNED_CODE_VARIABLE)
 
 
-def test_a_test_using_the_first_process_leaves_the_variables_as_it_found_them(found_variables, first_process, tmp_path):
+def test_a_test_using_the_first_process_leaves_the_variables_as_it_found_them(matched_variables, first_process, tmp_path):
     first_process.setattr(TemplateCache, "folder", lambda *_: tmp_path)
     run_template_folder()
     pytest_plugin.pinned_code_text()
     first_process.undo()
-    assert (os.environ.get(TEMPLATE_FOLDER_VARIABLE), os.environ.get(PINNED_CODE_VARIABLE)) == found_variables
+    assert (os.environ.get(TEMPLATE_FOLDER_VARIABLE), os.environ.get(PINNED_CODE_VARIABLE)) == matched_variables

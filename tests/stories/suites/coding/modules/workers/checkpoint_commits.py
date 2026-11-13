@@ -1,4 +1,4 @@
-from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
+from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 import json
 
 import pytest
@@ -8,7 +8,7 @@ from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, prove_task
+from tests.stories.suites.coding.modules.workers.support.held_tasks import worker_with_tasks, prove_task
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, start_planned_worker, unplanned_worker
 from suites.coding.modules.workers.support.worker_nudges import WORKER_COMMITTED_UNMERGED
 from engine.testing.expectations.expected_nudge import expected_nudge
@@ -28,7 +28,7 @@ def proof_states(worker: StoryWorker) -> dict[int, str]:
 
 def merge(worker: StoryWorker):
     worker.repository.checkout(ENVIRONMENT_BRANCH)
-    asked_for_merge(worker.story, worker.worker)
+    request_merge(worker.story, worker.worker)
     worker.story.run(f"worker logs {agent_number(worker.story, worker.worker.id)}", actor=worker.story.agent)
     return worker.story.run(f"worker merge --wait {agent_number(worker.story, worker.worker.id)}", actor=worker.story.agent)
 
@@ -42,7 +42,7 @@ def worktree_row(worker: StoryWorker) -> dict[str, object]:
 def group_worker(new_story, monkeypatch) -> StoryWorker:
     """A worker of a started plan that started the three tasks of phase Build and committed tasks 1 and 2 in an
     interim commit, the first proved with a test; it has proved the last task 3 with a test and not committed it."""
-    worker = holding_worker(new_story, monkeypatch, BUILD_TASKS)
+    worker = worker_with_tasks(new_story, monkeypatch, BUILD_TASKS)
     worker.repository.changed(worker.worker.id, "cart.py", CART_CHANGE)
     prove_task(worker, 1, 1, TEST_LINE)
     prove_task(worker, 2, 1)

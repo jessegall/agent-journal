@@ -4,7 +4,7 @@ import pytest
 
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import merge
-from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_each, worktree_state
+from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_tasks_singly, worktree_state
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, StoryWorker, start_planned_worker, unplanned_group_worker, single_task_worker
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
@@ -16,7 +16,7 @@ MERGE_ASK = "merge-ask show 1 --environment main"
 def asked_list(new_story, monkeypatch) -> StoryWorker:
     """A worker of three tasks sent together committed all three, its runs passed, and it asked for the merge."""
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, (1, 2, 3))
+    commit_tasks_singly(worker, (1, 2, 3))
     worker.end_all_tests()
     worker.story.expect_success(REQUEST_MERGE, actor=worker.worker)
     worker.story.run_listeners()
@@ -26,7 +26,7 @@ def asked_list(new_story, monkeypatch) -> StoryWorker:
 def asked_plan(new_story, monkeypatch) -> StoryWorker:
     """The worker of plan 1 committed its four tasks, every run passed, and it asked for the merge."""
     worker = start_planned_worker(new_story, monkeypatch)
-    commit_each(worker, (1, 2, 3, 4))
+    commit_tasks_singly(worker, (1, 2, 3, 4))
     worker.end_all_tests()
     worker.story.expect_success(REQUEST_MERGE, actor=worker.worker)
     worker.story.run_listeners()
@@ -69,7 +69,7 @@ def test_72_in_a_unit_of_one_the_commit_asks_again(new_story, monkeypatch):
 def test_73_important_log_lines_still_need_the_answer_of_the_main_agent(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
     worker.story.run('task log 1 "the brief named the wrong file" --important', actor=worker.worker)
-    commit_each(worker, (1, 2, 3))
+    commit_tasks_singly(worker, (1, 2, 3))
     worker.end_all_tests()
     worker.story.expect_success(REQUEST_MERGE, actor=worker.worker)
     number = agent_number(worker.story, worker.worker.id)
@@ -81,7 +81,7 @@ def test_73_important_log_lines_still_need_the_answer_of_the_main_agent(new_stor
 def test_an_ask_is_heard_by_the_main_agent_with_the_merger_off(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
     worker.story.run(f"setting set {MERGER_ENABLED} false --project", actor=worker.story.user)
-    commit_each(worker, (1, 2, 3))
+    commit_tasks_singly(worker, (1, 2, 3))
     worker.end_all_tests()
     worker.story.expect_success(REQUEST_MERGE, actor=worker.worker)
     worker.story.expect_rows(any("merge-ask:1" in line for line in worker.main_agent_lines()), detail=str(worker.main_agent_lines()))
@@ -97,11 +97,11 @@ def test_a_send_onto_a_waiting_ask_keeps_the_ask_and_queues_the_task(new_story, 
 @pytest.mark.real_git
 def test_a_part_asked_before_a_rebase_is_merged_by_its_tasks(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    commit_each(worker, tuple([1]))
+    commit_tasks_singly(worker, tuple([1]))
     worker.end_all_tests()
     worker.story.expect_success('worker ask-merge "the first task" --up-to 1', actor=worker.worker)
     worker.repository.committed("readme.md", "moved\n", "The branch moves")
-    commit_each(worker, tuple([2]))
+    commit_tasks_singly(worker, tuple([2]))
     merge_ask = worker.story.run(MERGE_ASK, actor=worker.story.agent).output_text
     worker.story.expect_rows("task_ids: 1" in merge_ask, "is_whole: false" in merge_ask.lower(), detail=merge_ask)
 

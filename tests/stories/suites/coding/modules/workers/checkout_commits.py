@@ -4,7 +4,7 @@ import pytest
 
 from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
-from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task, unplanned_holding_worker
+from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task, unplanned_worker_with_tasks
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker
 
 pytestmark = pytest.mark.real_git
@@ -24,7 +24,7 @@ def checkout_of_tests(worker: StoryWorker) -> Path:
 
 
 def test_a_test_queued_by_a_later_commit_waits_for_the_running_one_and_then_runs_on_the_later_commits_files(new_story, monkeypatch):
-    worker = unplanned_holding_worker(new_story, monkeypatch)
+    worker = unplanned_worker_with_tasks(new_story, monkeypatch)
     prove_task(worker, 1, 1, TEST_LINE)
     committed(worker)
     worker.repository.changed(worker.worker.id, LATER_FILE, "made after the first commit\n")

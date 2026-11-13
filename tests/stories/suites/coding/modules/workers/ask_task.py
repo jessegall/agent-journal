@@ -4,14 +4,14 @@ from engine.testing.examples.hook_samples import HookSamples
 
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 from tests.stories.suites.coding.modules.workers.ask_ledger import QUESTION, SECOND_QUESTION, questions, waits_of
-from tests.stories.suites.coding.modules.workers.support.held_tasks import unplanned_holding_worker
+from tests.stories.suites.coding.modules.workers.support.held_tasks import unplanned_worker_with_tasks
 from tests.stories.suites.coding.modules.workers.support.phase_steps import StoryWorker
 
 
 @pytest.fixture
 def two_started(new_story, monkeypatch) -> StoryWorker:
     """A worker that holds tasks 1 and 2 started, in no plan; task 1 is the task of its worktree."""
-    return unplanned_holding_worker(new_story, monkeypatch)
+    return unplanned_worker_with_tasks(new_story, monkeypatch)
 
 
 def test_91a_an_ask_that_names_a_started_task_is_recorded_for_that_task_and_not_for_the_task_of_the_worktree(two_started):

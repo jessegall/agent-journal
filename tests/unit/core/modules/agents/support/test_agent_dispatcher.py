@@ -117,7 +117,7 @@ class Parts:
 
 
 @pytest.fixture(autouse=True)
-def no_recorded_process_runs(monkeypatch):
+def unrecorded_process_runs(monkeypatch):
     monkeypatch.setattr(LeftoverProcess, "command_line", staticmethod(lambda pid: ""))
 
 

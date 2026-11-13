@@ -1,4 +1,4 @@
-from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
+from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from datetime import timedelta
 
 import pytest
@@ -92,7 +92,7 @@ def test_a_worker_that_ended_with_finished_unmerged_work_is_named_too(ended_with
 def test_once_its_work_is_merged_a_worker_that_ended_holds_nothing_and_no_line_comes(ended_with_unmerged_work):
     story = ended_with_unmerged_work
     story.repository.checkout(ENVIRONMENT_BRANCH)
-    asked_for_merge(story, story.worker)
+    request_merge(story, story.worker)
     story.expect_success(f"worker merge --wait {agent_number(story, story.worker.id)}", actor=story.agent)
     story.run_listeners()
     next_round(story)

@@ -23,29 +23,29 @@ def stopped_lines(story) -> list[str]:
 
 
 @pytest.fixture
-def quiet_worker(new_story):
+def silent_worker(new_story):
     worker = asking_worker(new_story(fixture=OpenTaskOrchestrator))
     return worker
 
 
 @pytest.fixture
-def stopped_while_asking(quiet_worker):
-    quiet_worker.post_question()
-    quiet_worker.program_ended()
-    return quiet_worker
+def stopped_while_asking(silent_worker):
+    silent_worker.post_question()
+    silent_worker.program_ended()
+    return silent_worker
 
 
 @pytest.fixture
-def ended_with_work(quiet_worker):
-    quiet_worker.program_ended()
-    quiet_worker.story.advance(past_the_wait(quiet_worker.story))
-    return quiet_worker
+def ended_with_work(silent_worker):
+    silent_worker.program_ended()
+    silent_worker.story.advance(past_the_wait(silent_worker.story))
+    return silent_worker
 
 
-def test_a_worker_another_agent_stopped_is_not_named(quiet_worker):
-    story = quiet_worker.story
-    quiet_worker.post_question()
-    story.expect_success(f"agent end {quiet_worker.worker.id}", actor=story.agent)
+def test_a_worker_another_agent_stopped_is_not_named(silent_worker):
+    story = silent_worker.story
+    silent_worker.post_question()
+    story.expect_success(f"agent end {silent_worker.worker.id}", actor=story.agent)
     story.advance(past_the_wait(story))
     story.tick(MAIN_SESSION)
     story.expect_rows(stopped_lines(story) == [], detail=str(stopped_lines(story)))

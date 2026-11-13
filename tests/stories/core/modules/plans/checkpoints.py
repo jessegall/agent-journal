@@ -135,7 +135,7 @@ class TwoCheckpointsPlan(StoryFixture):
 
 
 @pytest.fixture(autouse=True)
-def held_runs(monkeypatch) -> None:
+def blocked_runs(monkeypatch) -> None:
     """The stories of this file end the run of a reach themselves, as a suite that runs tests does: the journal
     starts no run."""
     monkeypatch.setattr(StartCheckpointRunHandler, "handle", lambda handler, command, context: None)

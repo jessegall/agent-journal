@@ -3,7 +3,7 @@ from tests.stories.core.support.agent_labels import agent_number
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.hang_watch import MISSING_GROUP, FakeGroupCpuTime, watch_tick
-from tests.stories.core.modules.processes.support.cadence_probe import (TICK, HelperBesideWorker, agent_run, cadence_lines, cadence_tick, expect_told,
+from tests.stories.core.modules.processes.support.cadence_probe import (TICK, HelperBesideWorker, agent_run, cadence_lines, cadence_tick, expect_informed,
                                                                        printed, tick_named, ticks, told, tree_of, worker_agent)
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, started_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
@@ -36,7 +36,7 @@ def test_a_dot_every_25_seconds_added_to_quiet_the_notice_and_a_program_printing
     blank = moved_run(story, "make blank", CommandCategory.BUILD)
     story.expect_success(f'output title {dotted.id} "Running the jest tests"', actor=story.agent)
     ticks(story, 30, blank, every=10, text="   \n")
-    expect_told(story, MAIN, SILENT_RUN.nudge(output=dotted.id, seconds=30, hint='run jest with --verbose').text)
+    expect_informed(story, MAIN, SILENT_RUN.nudge(output=dotted.id, seconds=30, hint='run jest with --verbose').text)
     dots = ""
     for elapsed in range(10, 280, 10):
         if elapsed % 25 < 10:

@@ -7,7 +7,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.chat.support.mark_samples import expect_marks_text
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.core.modules.processes.support.cadence_probe import (TICK, HelperBesideWorker, agent_run, cadence_lines, cadence_tick,
-                                                                       expect_told, has_cadence_record, kept_lines, owned_run, printed, running_run, side_run,
+                                                                       expect_informed, has_cadence_record, kept_lines, owned_run, printed, running_run, side_run,
                                                                        tick_named, ticks, told, waiting_run, worker_agent)
 from tests.stories.core.modules.processes.background import SavedBuildMoved, SilentVitestRun, expect_streaming_line, expect_without_hint
 from tests.stories.core.modules.processes.hang_watch import HANG_SECONDS, ActiveBuild, expect_looks, started_tree, watch_tick
@@ -79,12 +79,12 @@ def test_a_sparse_pytest_run_keeps_running_and_after_printing_often_is_told_only
     process = moved_run(story, SLOW_TESTS, CommandCategory.TEST_RUN)
     titled(story, process, "Running the slow tests")
     ticks(story, 120, process, every=50)
-    expect_told(story, MAIN, RUN_SPARSE.nudge(output=process.id, seconds=50, hint='run pytest without -q').text)
+    expect_informed(story, MAIN, RUN_SPARSE.nudge(output=process.id, seconds=50, hint='run pytest without -q').text)
     story.expect_text(f"process show {process.id}", "state: background", actor=story.agent)
     ticks(story, 80, process, every=10)
     silent = cadence_lines(told(story, MAIN))
     ticks(story, 120, process)
-    expect_told(story, MAIN, f"Output {process.id} has written nothing for 120s and is still running")
+    expect_informed(story, MAIN, f"Output {process.id} has written nothing for 120s and is still running")
     story.expect_rows(silent == [], detail="\n".join(silent))
 
 
@@ -94,7 +94,7 @@ def test_a_read_only_helper_is_told_its_own_run_is_sparse(new_story):
     process = agent_run(story, helper, "pytest tests/search -q", CommandCategory.TEST_RUN)
     titled(story, process, "Running the search tests", Actor(helper.id, ActorType.AGENT))
     ticks(story, 120, process, every=40)
-    expect_told(story, helper.session, f"Output {process.id} prints about once every 40s, too sparse for a reader")
+    expect_informed(story, helper.session, f"Output {process.id} prints about once every 40s, too sparse for a reader")
 
 
 def test_a_helpers_and_a_workers_runs_that_print_nothing_for_30_seconds_are_told_they_do_not_stream(new_story):
@@ -104,8 +104,8 @@ def test_a_helpers_and_a_workers_runs_that_print_nothing_for_30_seconds_are_told
     build = agent_run(story, worker, "make build", CommandCategory.BUILD)
     titled(story, build, "Building the worker branch", Actor(worker.id, ActorType.AGENT))
     ticks(story, 30, build)
-    expect_told(story, helper.session, SILENT_RUN.nudge(output=scan.id, seconds=30, hint='it may hold its output back').text)
-    expect_told(story, worker.session, SILENT_RUN.nudge(output=build.id, seconds=30, hint='make it print its steps').text)
+    expect_informed(story, helper.session, SILENT_RUN.nudge(output=scan.id, seconds=30, hint='it may hold its output back').text)
+    expect_informed(story, worker.session, SILENT_RUN.nudge(output=build.id, seconds=30, hint='make it print its steps').text)
 
 
 def test_only_a_silent_go_test_over_several_packages_is_told_and_runs_printing_lines_or_a_progress_bar_never_are(new_story):
@@ -134,7 +134,7 @@ def test_a_busy_silent_build_is_told_it_does_not_stream_and_is_never_asked_to_be
         tree.used += 1
         watch_tick(story)
         cadence_tick(story)
-    expect_told(story, MAIN, "Output 1 printed nothing for 30s, so it is not streaming")
+    expect_informed(story, MAIN, "Output 1 printed nothing for 30s, so it is not streaming")
     expect_looks(story, 0)
     story.expect_text("process show 1", "state: background", actor=story.agent)
 
@@ -145,7 +145,7 @@ def test_a_waiting_agent_has_the_sparse_line_kept_without_a_wake_until_its_next_
     story.hook(MAIN, HookSamples.stop())
     ticks(story, 120, process, every=60)
     story.expect_text(f"agent-line list --agent {story.agent.id} --json", expected_nudge(RUN_SPARSE), '"wakes_agent": false', actor=story.agent)
-    expect_told(story, MAIN, f"Output {process.id} prints about once every 60s")
+    expect_informed(story, MAIN, f"Output {process.id} prints about once every 60s")
 
 
 def test_a_busy_agent_is_told_the_sparse_line_once_with_its_next_tool_use(new_story):
@@ -187,7 +187,7 @@ def test_two_sparse_runs_are_told_in_one_line_right_after_their_silence_was_told
     second = moved_run(story, "pytest tests/b -q", CommandCategory.TEST_RUN)
     titled(story, first, "Running the first tests")
     ticks(story, 120, first, second, every=50)
-    expect_told(story, MAIN, "printed nothing for 30s", f"outputs {first.id}, {second.id} print too seldom for a reader to follow: run pytest without -q")
+    expect_informed(story, MAIN, "printed nothing for 30s", f"outputs {first.id}, {second.id} print too seldom for a reader to follow: run pytest without -q")
 
 
 def test_a_run_that_ended_and_a_run_that_was_stopped_are_told_nothing(new_story):
@@ -237,7 +237,7 @@ def test_a_run_another_agent_owns_tells_the_agent_of_its_session(new_story):
     process = owned_run(story, worker, "make bundle")
     titled(story, process, "Building the bundle")
     ticks(story, 30)
-    expect_told(story, MAIN, f"Output {process.id} printed nothing for 30s")
+    expect_informed(story, MAIN, f"Output {process.id} printed nothing for 30s")
     story.expect_rows(cadence_lines(told(story, worker.session)) == [])
 
 
@@ -246,7 +246,7 @@ def test_a_long_script_of_no_known_type_is_told_to_print_its_steps_and_its_card_
     process = moved_run(story, "zsh tools/move.sh")
     titled(story, process, "Moving the files")
     ticks(story, 30)
-    expect_told(story, MAIN, SILENT_RUN.nudge(output=process.id, seconds=30, hint='make it print its steps').text)
+    expect_informed(story, MAIN, SILENT_RUN.nudge(output=process.id, seconds=30, hint='make it print its steps').text)
     story.expect_success('reader add move-files --commands "zsh tools/move.sh*" --lines "moved" --progress "\\[([0-9]+)/([0-9]+)\\]"', actor=story.agent)
     printed(story, process, "[3/17] moved a.txt\n")
     tick_named(story, "read running outputs")

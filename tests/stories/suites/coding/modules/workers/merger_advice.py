@@ -1,4 +1,4 @@
-from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
+from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.core.support.agent_labels import agent_number
 from dataclasses import dataclass
@@ -124,7 +124,7 @@ class AdvisedWorker:
         self.case.repository.checkout(ENVIRONMENT_BRANCH)
 
     def merged(self) -> None:
-        asked_for_merge(self.story, self.worker)
+        request_merge(self.story, self.worker)
         self.story.expect_success(f"worker merge --wait {agent_number(self.story, self.worker.id)}", actor=self.story.agent)
 
     def given_new_work(self) -> None:

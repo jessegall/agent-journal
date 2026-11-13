@@ -1,4 +1,4 @@
-from tests.stories.suites.coding.modules.workers.support.commit_command import asked_for_merge
+from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.core.support.agent_labels import agent_number
 import json
@@ -32,7 +32,7 @@ def test_s57_restart_retains_successful_steps(new_story):
     story, worker, repository = merge_story(new_story, ["echo ran >> ran.txt", "test -f marker.txt"])
     story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", "failed with code 1", actor=story.agent)
     Path(repository.folder, "marker.txt").write_text("")
-    asked_for_merge(story, worker)
+    request_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
     executed = Path(repository.folder, "ran.txt").read_text().splitlines()
@@ -45,7 +45,7 @@ def test_s57_uncertain_command_needs_reconciliation(new_story, monkeypatch):
     story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", "may have done part of its work", actor=story.agent)
     story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", "ended uncertain", actor=story.agent)
     story.expect_text("worker-worktree show 1", "state: delivered", actor=story.agent)
-    asked_for_merge(story, worker)
+    request_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)} --reconcile 'the command only waits'", actor=story.agent)
     story.expect_text("worker-worktree show 1", "state: removed", actor=story.agent)
 

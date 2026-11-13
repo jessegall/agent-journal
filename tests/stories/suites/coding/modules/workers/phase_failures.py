@@ -1,7 +1,7 @@
 import pytest
 
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
-from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task, unplanned_holding_worker
+from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task, unplanned_worker_with_tasks
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker
 
 THREE_TASKS = 3
@@ -11,7 +11,7 @@ THREE_TASKS = 3
 def first_failed(new_story, monkeypatch) -> StoryWorker:
     """A worker committed its three started tasks together, the first and the third with a test; the test of
     the first failed and the test of the third passed."""
-    worker = unplanned_holding_worker(new_story, monkeypatch, THREE_TASKS)
+    worker = unplanned_worker_with_tasks(new_story, monkeypatch, THREE_TASKS)
     prove_task(worker, 1, 1, TEST_LINE)
     prove_task(worker, 2, 1)
     prove_task(worker, 3, 1, SECOND_TEST_LINE)

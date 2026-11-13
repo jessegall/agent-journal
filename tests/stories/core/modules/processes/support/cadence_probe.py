@@ -168,7 +168,7 @@ def told(story: Story, session: str) -> list[str]:
     return list(story.hook(session, TOOL_USE).lines)
 
 
-def expect_told(story: Story, session: str, *texts: str) -> None:
+def expect_informed(story: Story, session: str, *texts: str) -> None:
     lines = told(story, session)
     story.expect_rows(*(any(text in line for line in lines) for text in texts), detail="\n".join(lines))
 

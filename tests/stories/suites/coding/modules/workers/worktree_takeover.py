@@ -1,7 +1,7 @@
 import json
 
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.free_commits import commit_each
+from tests.stories.suites.coding.modules.workers.free_commits import commit_tasks_singly
 from tests.stories.suites.coding.modules.workers.support.phase_steps import StoryWorker, start_planned_worker
 
 """A fresh worker takes over a stopped worker's open worktree, with its commits, its tasks and its plan (task 9025)."""
@@ -16,7 +16,7 @@ def open_worktree_owner(worker: StoryWorker) -> int:
 
 def test_a_new_worker_takes_over_the_open_worktree_the_tasks_and_the_plan_of_a_stopped_worker(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch)
-    commit_each(worker, tuple([1]))
+    commit_tasks_singly(worker, tuple([1]))
     worker.story.run("task start 2", actor=worker.worker)
     worker.story.expect_success(f"agent end {worker.worker.id}", actor=worker.worker)
     worker.story.expect_success(TAKE_OVER.format(number=agent_number(worker.story, worker.worker.id)), actor=worker.story.agent)
