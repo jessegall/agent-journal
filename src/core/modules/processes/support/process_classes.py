@@ -24,12 +24,13 @@ class ProcessClasses:
 
     def chosen(self, command: StartProcess, agent: Agent) -> ExecutionClass:
         starter = self.starter(command, agent)
-        if command.is_journal_merge:
-            return self.classes.match(ExecutionSubject(ExecutionSource.SHELL_LINE, starter, category=command.category, process_type=ProcessType.MERGE, line=command.line))
+        # a plugin's kind keeps its plugin's class, even one named like a journal kind such as merge
         if command.plugin:
             plugin_class = self.classes.match(ExecutionSubject(ExecutionSource.PLUGIN_PROGRAM, starter, category=command.category, plugin_name=command.plugin,
                                                               plugin_kind=command.run_name, line=command.line))
             return replace(plugin_class, name=f"{command.plugin} {command.run_name}") if command.run_name and not plugin_class.plugin else plugin_class
+        if command.is_journal_merge:
+            return self.classes.match(ExecutionSubject(ExecutionSource.SHELL_LINE, starter, category=command.category, process_type=ProcessType.MERGE, line=command.line))
         return self.for_categories([part.category for part in command.parts] or [command.category], command.line, agent)
 
     # the class of an agent's shell line by the categories of its parts: its longest lane and highest cost

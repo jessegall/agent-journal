@@ -1,3 +1,4 @@
+from engine.execution.person_classes import PersonClasses
 from engine.enums.execution_source import ExecutionSource
 from engine.enums.starter_type import StarterType
 from engine.enums.window_priority import WindowPriority
@@ -12,7 +13,7 @@ JOURNAL = ExecutionStarter(StarterType.JOURNAL)
 PERSON = ExecutionStarter(StarterType.PERSON)
 
 
-class NoPersonClasses:
+class NoPersonClasses(PersonClasses):
     """The instant lane takes the built-in classes only: a person's class names a shell line or a plugin."""
 
     def classes(self) -> tuple:

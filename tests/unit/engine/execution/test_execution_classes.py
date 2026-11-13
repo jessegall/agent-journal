@@ -1,3 +1,4 @@
+from engine.execution.person_classes import PersonClasses
 import pytest
 
 from engine.enums.command_category import CommandCategory
@@ -18,7 +19,7 @@ WORKER = ExecutionStarter(StarterType.HELPER, agent_id=849, agent_role="worker")
 HELPER = ExecutionStarter(StarterType.HELPER, agent_id=850, agent_role="helper")
 
 
-class SamplePersonClasses:
+class SamplePersonClasses(PersonClasses):
     """The person's own classes a test hands the matcher."""
 
     def __init__(self, *classes: ExecutionClass) -> None:

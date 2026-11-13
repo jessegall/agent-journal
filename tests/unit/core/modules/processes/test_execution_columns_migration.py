@@ -15,7 +15,7 @@ def upgraded() -> sqlite3.Connection:
 
 
 def test_old_rows_get_agent_defaults():
-    stored = upgraded().execute("SELECT id, execution_class, first_priority, raised_at FROM processes ORDER BY id").fetchall()
+    stored = [tuple(row) for row in upgraded().execute("SELECT id, execution_class, first_priority, raised_at FROM processes ORDER BY id").fetchall()]
     assert stored == [(1, "", ExecutionPriority.AGENT, None), (2, "", ExecutionPriority.NORMAL, None)]
 
 

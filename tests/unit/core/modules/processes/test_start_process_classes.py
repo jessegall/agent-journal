@@ -1,3 +1,4 @@
+from engine.execution.person_classes import PersonClasses
 from engine.enums.command_category import CommandCategory
 from engine.enums.execution_lane import ExecutionLane
 from engine.enums.execution_priority import ExecutionPriority
@@ -12,7 +13,7 @@ WORKER = Agent(id=2, creator_id=1, session="s-2", program="claude", role="worker
 HELPER = Agent(id=3, creator_id=1, session="s-3", program="claude", role="helper")
 
 
-class NoPersonClasses:
+class NoPersonClasses(PersonClasses):
     """No class of the person's own."""
 
     def classes(self) -> tuple:

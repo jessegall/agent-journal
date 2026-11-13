@@ -8,6 +8,10 @@ from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.support.foreground_limit import ForegroundLimit
 from core.modules.processes.support.part_command import PartCommand
 from core.modules.processes.support.run_waits import RunWaits
+from core.modules.processes.support.process_classes import ProcessClasses
+from core.modules.agents.models.agent import Agent
+from engine.execution.execution_classes import ExecutionClasses
+from engine.execution.person_classes import PersonClasses
 
 
 class Settings:
@@ -73,6 +77,23 @@ class Messages:
         return self.waiting
 
 
+class MainAgents:
+    """Every line of these tests is the main agent's."""
+
+    def find(self, agent_id: int) -> Agent:
+        return Agent(id=agent_id, creator_id=1, session="s-1", program="claude", role="main")
+
+
+class NoPersonClasses(PersonClasses):
+    """No class of the person's own."""
+
+    def classes(self) -> tuple:
+        return ()
+
+
+CLASSES = ProcessClasses(ExecutionClasses(NoPersonClasses()))
+
+
 def part(program: str, category: CommandCategory) -> Part:
     return Part(program, program, "", (), Classification(category, ()), (), (), "", None)
 
@@ -82,7 +103,7 @@ def line(*parts: Part, journal_shell: bool = False) -> ShellLine:
 
 
 def limit(excess: bool = False, waiting: bool = False, journal_commands: bool = False) -> ForegroundLimit:
-    return ForegroundLimit(Settings(), Background(journal_commands), Rows(excess), Messages(waiting), RunWaits())  # type: ignore[arg-type]
+    return ForegroundLimit(Settings(), Background(journal_commands), Rows(excess), Messages(waiting), RunWaits(), MainAgents(), CLASSES)  # type: ignore[arg-type]
 
 
 def test_a_journal_only_line_has_no_foreground_limit():
@@ -111,7 +132,7 @@ def test_a_pipe_that_ran_after_a_long_command_sends_no_quick_test_to_the_backgro
     head = Part("pytest", "pytest", "", (), Classification(CommandCategory.TEST_RUN, ()), (), (), "", 1)
     rows = Rows(excess=False)
     rows.has_moved_run = lambda text, seconds=0: text == "tail"
-    decided = ForegroundLimit(Settings(), Background(), rows, Messages(False), RunWaits()).decide(line(head, part("tail", CommandCategory.READ)), 1)  # type: ignore[arg-type]
+    decided = ForegroundLimit(Settings(), Background(), rows, Messages(False), RunWaits(), MainAgents(), CLASSES).decide(line(head, part("tail", CommandCategory.READ)), 1)  # type: ignore[arg-type]
     assert not decided.background
 
 

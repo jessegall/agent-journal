@@ -5,6 +5,7 @@ from engine.execution.default_lane_limits import DEFAULT_LANE_LIMITS
 from engine.execution.execution_class import ExecutionClass
 from engine.execution.execution_classes import ExecutionClasses
 from engine.execution.lane_limits import LaneLimits
+from engine.execution.person_classes import PersonClasses
 from engine.query.queries import Queries
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.execution_class_row import ExecutionClassRow
@@ -16,7 +17,7 @@ STORED_CLASSES_REASON = "The person's classes are few, and a match reads every o
 PERCENT = 100
 
 
-class StoredExecutionClasses:
+class StoredExecutionClasses(PersonClasses):
     """The classes the person added or changed, kept in the database, and the lane limits the settings give: the
     default table of limits stays in the engine, the settings change only each lane's capacity and the share of
     it one starter may hold."""

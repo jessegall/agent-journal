@@ -1,3 +1,4 @@
+from engine.execution.person_classes import PersonClasses
 from dataclasses import replace
 from datetime import datetime, timezone
 
@@ -34,11 +35,11 @@ class SampleAdmission:
     def waiting_parts(self, waiting) -> dict:
         return {}
 
-    def may_start(self, process: Process, agent: Agent, parts, current_time) -> bool:
-        return process.id not in self.waiting_on_reader
+    def waits_for_reader(self, process: Process, parts, current_time) -> bool:
+        return process.id in self.waiting_on_reader
 
 
-class NoPersonClasses:
+class NoPersonClasses(PersonClasses):
     """No class of the person's own."""
 
     def classes(self) -> tuple:

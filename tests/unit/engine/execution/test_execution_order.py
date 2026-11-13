@@ -10,7 +10,8 @@ from engine.execution.execution_ticket import ExecutionTicket
 from engine.execution.execution_order import ExecutionOrder
 from tests.unit.engine.execution.tickets import seconds_after_start, ticket
 
-ORDER = ExecutionOrder(DEFAULT_LANE_LIMITS)
+# one starter holds every sample ticket, so the share per starter is lifted except where a test is about it
+ORDER = ExecutionOrder(replace(DEFAULT_LANE_LIMITS, starter_caps=dict(DEFAULT_LANE_LIMITS.capacities)))
 CHECK_TIME = seconds_after_start(0)
 IMMEDIATE, RESERVED, AGENT, NORMAL, BACKGROUND = (ExecutionPriority.IMMEDIATE, ExecutionPriority.RESERVED, ExecutionPriority.AGENT,
                                                   ExecutionPriority.NORMAL, ExecutionPriority.BACKGROUND)
@@ -125,7 +126,7 @@ def test_raised_ticket_still_counts_as_first_priority():
 
 def test_reserved_past_wait_takes_next_room():
     overdue = replace(ticket(RESERVED, starter=starter(2), entered_second=5), raised_at=seconds_after_start(0))
-    fresh = ticket(RESERVED, starter=starter(3), entered_second=1)
+    fresh = ticket(RESERVED, starter=starter(3), entered_second=3)
     full = [ticket(AGENT, starter=starter(10 + number)) for number in range(11)]
     assert ORDER.starting([fresh, overdue], full, seconds_after_start(4), False) == (overdue,)
 
@@ -133,7 +134,7 @@ def test_reserved_past_wait_takes_next_room():
 def test_starter_cap_holds_while_other_starter_starts():
     held = [ticket(AGENT, starter=starter(1)) for _ in range(6)]
     capped, other = ticket(AGENT, starter=starter(1)), ticket(AGENT, starter=starter(2))
-    assert started_tickets([capped, other], held) == [other]
+    assert list(ExecutionOrder(DEFAULT_LANE_LIMITS).starting([capped, other], held, CHECK_TIME, False)) == [other]
 
 
 def test_class_at_limit_does_not_block_a_build_behind():

@@ -1,9 +1,10 @@
-from typing import Protocol
+from abc import ABC, abstractmethod
 
 from engine.execution.execution_class import ExecutionClass
 
 
-class PersonClasses(Protocol):
-    """The classes the person added, which the class store of phase 6 keeps; until then there are none."""
+class PersonClasses(ABC):
+    """The classes the person added or changed, which the processes module keeps in its class store."""
 
+    @abstractmethod
     def classes(self) -> tuple[ExecutionClass, ...]: ...
