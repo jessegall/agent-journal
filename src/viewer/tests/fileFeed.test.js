@@ -32,6 +32,15 @@ test("a file edit shows its path, its counts and its changed lines", async () =>
     expect(element.querySelectorAll(".diff-row.del").length).toBe(1);
 });
 
+test("a moved file shows once, as moved, with the path it came from", async () => {
+    const moved = {id: 1, path: "cart/total.py", added: 0, removed: 0, rows: "[]", edit_type: "moved", moved_from: "cart.py", created_at: "2026-11-01T10:00:00Z"};
+    const element = await mounted(FileFeed, context({"file-edit list": page([moved])}, 2));
+    await settle();
+    expect(element.querySelectorAll(".diff-card")).toHaveLength(1);
+    expect(element.querySelector(".diff-card-badge").textContent).toBe("moved");
+    expect(element.querySelector("[data-diff-card-from]").textContent).toBe("from cart.py");
+});
+
 test("the view menu hides removals and is kept", async () => {
     const window = context({"file-edit list": page([EDIT(1, "src/cart.py")])}, 2);
     const kept = [];

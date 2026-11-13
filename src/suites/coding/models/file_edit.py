@@ -13,8 +13,9 @@ AGENT_EDIT_ROWS = 500
 
 @dataclass(frozen=True, kw_only=True)
 class FileEdit(Prunable, EnvironmentScoped, Model):
-    """One file an agent edited or wrote: its path, the lines it added and removed, and the changed lines
-    themselves. The newest 10000 edits are kept, and of those an agent keeps only its newest 500."""
+    """One file an agent edited, wrote or moved: its path, the path it was moved from, the lines it added
+    and removed, and the changed lines themselves. The newest 10000 edits are kept, and of those an agent
+    keeps only its newest 500."""
 
     kept_rows = 10000
 
@@ -30,6 +31,7 @@ class FileEdit(Prunable, EnvironmentScoped, Model):
     removed: int
     rows: str = "[]"
     edit_type: str = "edit"
+    moved_from: str = ""
 
     @classmethod
     def prunable(cls, query: Query[Self], table: str) -> Query[Self]:

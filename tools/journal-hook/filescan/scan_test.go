@@ -333,3 +333,29 @@ func TestAFileOfALineThatChangedManyFilesCountsItsNextEditAgainstItsNewText(t *t
 	writeFile(t, root, "file0.py", "A = 1\nB = 2\n")
 	expectOne(t, scanned(t, root, state), "file0.py", 1, 0, true)
 }
+
+func TestAFileMovedToANewPathIsOneChangeThatNamesItsOldPath(t *testing.T) {
+	root, state := checkout(t)
+	if err := os.MkdirAll(filepath.Join(root, "cart"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Rename(filepath.Join(root, "cart.py"), filepath.Join(root, "cart", "total.py")); err != nil {
+		t.Fatal(err)
+	}
+	change := expectOne(t, scanned(t, root, state), "cart/total.py", 0, 0, false)
+	if change.MovedFrom != "cart.py" || len(change.Rows) != 0 {
+		t.Fatalf("want a move from cart.py with no rows, got %+v", change)
+	}
+}
+
+func TestANewFileWithTheTextOfNoRemovedFileIsACreationAndTheRemovedFileADeletion(t *testing.T) {
+	root, state := checkout(t)
+	writeFile(t, root, "other.py", "OTHER = 1\n")
+	if err := os.Remove(filepath.Join(root, "cart.py")); err != nil {
+		t.Fatal(err)
+	}
+	changes := scanned(t, root, state)
+	if len(changes) != 2 || changes[0].MovedFrom != "" || changes[1].MovedFrom != "" {
+		t.Fatalf("want a deletion and a creation, got %+v", changes)
+	}
+}

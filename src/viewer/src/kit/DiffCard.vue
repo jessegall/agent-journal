@@ -6,6 +6,7 @@ import Icon from "./Icon.vue";
 const props = defineProps({
     path: {type: String, required: true},
     change: {type: String, required: true},
+    from: {type: String, default: ""},
     added: {type: Number, required: true},
     removed: {type: Number, required: true},
     at: {type: [String, Number], required: true},
@@ -31,7 +32,7 @@ function openWithKey(e) {
     e.stopPropagation();
     emit("open", props.path);
 }
-const BADGES = {new: "created", deleted: "deleted"};
+const BADGES = {new: "created", deleted: "deleted", moved: "moved"};
 const SIGNS = {add: "+", del: "−"};
 
 const cut = computed(() => props.path.lastIndexOf("/") + 1);
@@ -90,6 +91,9 @@ onUnmounted(() => sized && sized.disconnect());
                 <span class="diff-card-name">{{ name }}</span>
                 <template v-if="badge">
                     <span :class="['diff-card-badge', change]">{{ badge }}</span>
+                </template>
+                <template v-if="from">
+                    <span class="diff-card-from" data-diff-card-from>from {{ from }}</span>
                 </template>
             </span>
             <span :class="['diff-card-count', 'add', {zero: !added}]">+{{ added }}</span>
@@ -267,6 +271,13 @@ onUnmounted(() => sized && sized.disconnect());
 
 .diff-card-badge.new {
     color: var(--add-fg);
+}
+
+.diff-card-from {
+    flex: none;
+    margin-left: 7px;
+    color: var(--text-4);
+    font-size: 11px;
 }
 
 .diff-card-badge.deleted {
