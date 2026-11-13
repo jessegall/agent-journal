@@ -77,7 +77,14 @@ async function check(width, height, name) {
             heights: [...new Set(rects.map((rect) => Math.round(rect.height)))], right: rows.map((row) => getComputedStyle(row).borderRightWidth),
             bottom: rows.map((row) => getComputedStyle(row).borderBottomWidth), top: rows.map((row) => getComputedStyle(row).borderTopWidth),
             titles: rows.map((row) => getComputedStyle(row.querySelector(".plan-title")).whiteSpace),
-            agentsWidth: rows.map((row, at) => Math.round(row.querySelector("[data-plan-agents]").getBoundingClientRect().width - rects[at].width)),
+            agentsOffLine: rows.map((row) => {
+                const agents = row.querySelector("[data-plan-agents]").getBoundingClientRect(), foot = row.querySelector(".plan-foot").getBoundingClientRect();
+                return Math.round(Math.abs((agents.top + agents.bottom) / 2 - (foot.top + foot.bottom) / 2));
+            }),
+            agentsRightOfFoot: rows.map((row) => row.querySelector("[data-plan-agents]").getBoundingClientRect().left > row.querySelector(".plan-foot").getBoundingClientRect().right),
+            agentsRightGap: rows.map((row, at) => Math.round(rects[at].right - row.querySelector("[data-plan-agents]").getBoundingClientRect().right)),
+            agentsBorder: rows.map((row) => getComputedStyle(row.querySelector("[data-plan-agents]")).borderTopWidth),
+            footRightGap: rows.map((row, at) => Math.round(rects[at].right - row.querySelector("[data-plan-foot-line]").getBoundingClientRect().right)),
             agentsText: rows.map((row) => row.querySelector("[data-plan-agents]").textContent.trim()),
             columns: new Set(rects.map((rect) => Math.round(rect.left))).size, widths: [...new Set(rects.map((rect) => Math.round(rect.width)))], gridWidth: Math.round(grid.getBoundingClientRect().width),
             gridLeft: grid.getBoundingClientRect().left, roomLeft: grid.closest("[data-window-room]").getBoundingClientRect().left,
@@ -93,8 +100,11 @@ async function check(width, height, name) {
     assert.deepEqual([...new Set(cards.top)], ["0px"]);
     assert.deepEqual([...new Set(cards.titles)], ["nowrap"]);
     assert.deepEqual([...new Set(cards.agentsText)], ["No agent assigned"]);
-    // the agents row runs across the cell, short of it only by the one line on the cell's right
-    assert.deepEqual([...new Set(cards.agentsWidth)], [-1]);
+    // the agents sit at the right end of the progress line, with no band of their own
+    assert.deepEqual([...new Set(cards.agentsOffLine)].filter((offset) => offset > 1), [], JSON.stringify(cards.agentsOffLine));
+    assert.deepEqual([...new Set(cards.agentsRightOfFoot)], [true]);
+    assert.deepEqual(cards.agentsRightGap, cards.footRightGap, "the agents end where the progress line ends");
+    assert.deepEqual([...new Set(cards.agentsBorder)], ["0px"]);
     assert.equal(cards.columns, 1, "one card per row");
     assert.ok(cards.widths.length === 1 && Math.abs(cards.widths[0] - cards.gridWidth) <= 1, `cards ${cards.widths} in a grid ${cards.gridWidth}`);
     assert.equal(cards.gridLeft, cards.roomLeft);
