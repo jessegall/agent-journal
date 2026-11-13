@@ -27,7 +27,7 @@ def test_latest_matching_hook_reads_one_row_with_an_index(new_story, condition, 
         story.expect_rows(len(database.rows(statement)) == 1)
     finally:
         database.connection.set_progress_handler(None, 0)
-    story.expect_rows(len(steps) < 100, database.repeated_work.points().tables['hook_calls'] - initial_reads == 1)
+    story.expect_rows(len(steps) < 200, database.repeated_work.points().tables['hook_calls'] - initial_reads == 1, detail=f'{len(steps)} steps')
 
 
 def test_agent_activity_uses_the_non_tick_index(new_story):

@@ -107,10 +107,10 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
         for task in tasks:
             self.differences.record(task.id, command.differences, context)
             self.bus.dispatch(MakeTaskLog(task.id, f"committed in {committed.commit_short_id} by {worker_label}"), replace(context, actor=Actor.core()))
-        self.free_task.give_next(context.actor.id, context)
         for task in tasks:
             if task.state is TaskState.STARTED:
                 self.repository.save_change(task, task.moved(TaskLifecycle.test), context)
+        self.free_task.give_next(context.actor.id, context)
         unit = self.units.unit(context.actor.id)
         worktree = self.repository.save_change(committed, self.moved_worktree(committed, open_tasks, tasks, unit, context), context)
         if open_tasks:
