@@ -20,7 +20,7 @@ from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGE
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting, set_resume_limit
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RESTARTED
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RUN_RUNS_AFTER_STOP
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 TEST_ROWS_REASON = "the test reads every row it checks"
@@ -54,7 +54,7 @@ def test_a_stopped_worker_shows_a_card_and_is_restarted_with_one_line_to_the_mer
     merger_lines = tuple(story.story_rows(MergerLine))
     lines = main_agent_lines(story)
     story.expect_rows("tasks left" in story.run(MARKS).output_text, len(merger_lines) == restart_line_count, lines.count(f"{worker_label(story)} ended with") == main_agent_line_count,
-                      not said(WORKER_RESTARTED).is_in(lines), all(line.environment_id == 1 for line in merger_lines), detail=f"{merger_texts(story)} | {lines}")
+                      not expected_nudge(WORKER_RESTARTED).is_in(lines), all(line.environment_id == 1 for line in merger_lines), detail=f"{merger_texts(story)} | {lines}")
 
 
 def test_a_stop_by_another_agent_shows_a_card_and_sends_no_line(two_task_worker):
@@ -103,7 +103,7 @@ def test_a_stopped_worker_whose_run_goes_on_past_the_minutes_set_on_the_workers_
     StoppedWorkerRuns()(story.container)
     StoppedWorkerRuns()(story.container)
     lines = stopped_run_lines(story)
-    story.expect_rows(len(lines) == 1, said(WORKER_RUN_RUNS_AFTER_STOP).is_in(lines[0].text), lines[0].outcome is None,
+    story.expect_rows(len(lines) == 1, expected_nudge(WORKER_RUN_RUNS_AFTER_STOP).is_in(lines[0].text), lines[0].outcome is None,
                       lines[0].worker_id == story.worker.id, "waits on output" not in main_agent_lines(story), detail=f"{lines} | {main_agent_lines(story)}")
     story.container.get(Bus).run(EndProcess(run.id, 0, 10, 1), story.worker, environment_id=1)
     StoppedWorkerRuns()(story.container)

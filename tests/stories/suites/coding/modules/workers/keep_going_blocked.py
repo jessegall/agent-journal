@@ -9,7 +9,7 @@ from tests.stories.suites.coding.modules.workers.gone_workers import RESUMED_PID
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.modules.workers.support.worker_nudges import BLOCKED_WORKER_TASK
 from tests.stories.support.story_checks import expect_value_4
 
@@ -51,7 +51,7 @@ def worker_blocked_its_task(worker_on_a_task):
 def test_a_blocked_task_is_not_left_to_the_merger(worker_blocked_its_task):
     story = worker_blocked_its_task
     texts = merger_line_texts(story)
-    story.expect_rows(not any(said(WORKER_TASK_BLOCKED).is_in(text) for text in texts), detail=str(texts))
+    story.expect_rows(not any(expected_nudge(WORKER_TASK_BLOCKED).is_in(text) for text in texts), detail=str(texts))
 
 
 def test_the_line_about_a_blocked_task_wakes_the_main_agent():

@@ -5,14 +5,14 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_value
 from core.modules.aliases.support.alias_nudges import COMMAND_TYPE_UNKNOWN
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 
 UNKNOWN_RUN = HookSamples.shell("scripts/dev go test ./cli/judge/", ShellPart("scripts/dev", "unknown", ["go", "test", "./cli/judge/"]), has_saved_commands=True)
 
 
 def test_a_command_of_unknown_type_is_refused_until_the_agent_classifies_it(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.expect_hook_refusal("s-1", UNKNOWN_RUN, said(COMMAND_TYPE_UNKNOWN, program='scripts/dev', hint='say'))
+    story.expect_hook_refusal("s-1", UNKNOWN_RUN, expected_nudge(COMMAND_TYPE_UNKNOWN, program='scripts/dev', hint='say'))
     story.expect_success('command-type make "scripts/dev go test" "test run"', "category: test run", actor=story.agent)
     story.run_listeners()
     expect_value(json.loads(story.home.command_type_file.read_text()), {"scripts/dev go test": "test run"})

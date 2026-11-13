@@ -13,7 +13,7 @@ from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment, worker_session
 from core.modules.messages.support.message_nudges import UNANSWERED
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from core.modules.agents.support.report_nudges import PARENT_REPORT
 
 REPORT = "The cart total now adds the tax once; the tests pass."
@@ -42,7 +42,7 @@ def test_what_a_worker_says_as_it_stops_with_every_task_handed_in_is_its_report_
     worker = delivered_worker(story, repository)
     story.expect_hook_allowed(worker_session(story, worker), stop_with_text(REPORT))
     story.expect_absent("message feed --json", REPORT)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", said(PARENT_REPORT))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(PARENT_REPORT))
     story.expect_text("message read 1", REPORT, actor=story.agent)
 
 
@@ -51,7 +51,7 @@ def test_a_workers_message_reaches_the_agent_that_sent_it_as_a_line(new_story):
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success('worker report "The cart needs a tax rate"', actor=worker)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", said(PARENT_REPORT))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(PARENT_REPORT))
     story.expect_text("message read 1", "The cart needs a tax rate", actor=story.agent)
     story.expect_text("task show 1", "state: started", f"holder_id: {worker.id}")
 
@@ -88,8 +88,8 @@ def test_a_worker_report_does_not_answer_a_users_message(new_story):
     read = HookSamples.shell("journal message read 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")).with_fields(event="post_tool_use")
     story.hook("s-1", read)
     view = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
-    story.expect_hook_allowed("s-1", view, said(UNANSWERED, messages=1))
+    story.expect_hook_allowed("s-1", view, expected_nudge(UNANSWERED, messages=1))
     story.advance(timedelta(seconds=301))
     story.expect_success('worker report "The work is ready"', actor=worker)
     story.hook("s-1", HookSamples.prompt("Continue"))
-    story.expect_hook_allowed("s-1", view, said(UNANSWERED, messages=1))
+    story.expect_hook_allowed("s-1", view, expected_nudge(UNANSWERED, messages=1))

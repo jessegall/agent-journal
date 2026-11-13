@@ -19,7 +19,7 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.support.behind_nudges import BEHIND_CHOICES
 from suites.coding.modules.workers.support.behind_nudges import BEHIND_PASSED
 from suites.coding.modules.workers.support.behind_nudges import UPDATE_ORDERED
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 
 MERGER_SESSION = "s-merger"
 HAIKU_DISPATCH = DISPATCH.replace("--model sonnet", "--model haiku")
@@ -53,14 +53,14 @@ def s15_another_area_is_left_alone_and_the_worker_is_not_woken(story, repository
     both_change(repository, worker, "src/core/modules/plans/plan_rows.py", "src/viewer/board.ts")
     look(story)
     story.expect_success(f'merger leave {agent_number(story, worker.id)} --why "only the viewer moved"', actor=merger(story))
-    story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.LEFT], not said(UPDATE_ORDERED).is_in(worker_lines(story, worker)), detail=str(checks(story)))
+    story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.LEFT], not expected_nudge(UPDATE_ORDERED).is_in(worker_lines(story, worker)), detail=str(checks(story)))
 
 
 def s16_an_overlap_is_ordered_and_the_worker_is_woken_with_the_order(story, repository, worker: Actor) -> None:
     both_change(repository, worker, "plan_checkpoints.py", "plan_checkpoints.py")
     look(story)
     story.expect_success(f'merger update {agent_number(story, worker.id)} --why "plan_checkpoints.py moved on both sides"', actor=merger(story))
-    story.expect_rows(said(UPDATE_ORDERED).is_in(worker_lines(story, worker)), detail=worker_lines(story, worker))
+    story.expect_rows(expected_nudge(UPDATE_ORDERED).is_in(worker_lines(story, worker)), detail=worker_lines(story, worker))
 
 
 def s17_a_sibling_file_is_same_folder_and_not_overlap(story, repository, worker: Actor) -> None:
@@ -80,7 +80,7 @@ def s18_a_large_update_for_a_small_model_is_passed_and_the_main_agent_reads_its_
     look(story)
     story.expect_success(f'merger pass {agent_number(story, worker.id)} "it is too large for a small model"', actor=merger(story))
     check = checks(story)[0]
-    story.expect_text(f"agent-line list --agent {story.agent.id}", said(BEHIND_PASSED))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(BEHIND_PASSED))
     story.expect_text(f"behind-check show {check.id}", "it is too large for a small model")
     story.expect_text(f"merger behind {agent_number(story, worker.id)}", f"part_{MANY_FILES - 1}.py", "haiku")
     state = story.run(f"worker-worktree list --json").output_text
@@ -113,7 +113,7 @@ def s23_with_the_merger_off_the_main_agent_gets_the_check_and_its_choices(story,
     both_change(repository, worker, "plan_checkpoints.py", "plan_checkpoints.py")
     look(story)
     number = agent_number(story, worker.id)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", said(BEHIND_CHOICES))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(BEHIND_CHOICES))
 
 
 CASES: list[tuple[str, Callable[..., None]]] = [(DISPATCH, s15_another_area_is_left_alone_and_the_worker_is_not_woken), (DISPATCH, s16_an_overlap_is_ordered_and_the_worker_is_woken_with_the_order),

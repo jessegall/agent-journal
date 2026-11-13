@@ -26,7 +26,7 @@ from engine.testing.expectations.expect_reply import expect_absent_reply_refusal
 from tests.stories.support.story_checks import expect_value
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_AFTER_REASSIGNED
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_REASSIGNED
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.modules.workers.support.worker_nudges import WORKER_COMMENT_COPY
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_COMMENT
 from suites.coding.support.shipped_profiles import WORKER_MEDIOR_PROFILE
@@ -80,9 +80,9 @@ def test_a_persons_comment_on_a_delegated_task_reaches_the_worker_and_the_main_a
     story, _, worker = delegated_story(new_story)
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
-    story.expect_text(f"agent-line list --agent {worker.id}", said(WORKER_TASK_COMMENT))
+    story.expect_text(f"agent-line list --agent {worker.id}", expected_nudge(WORKER_TASK_COMMENT))
     story.expect_text("task comments 1", "use the new cart", actor=worker)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", said(WORKER_COMMENT_COPY))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(WORKER_COMMENT_COPY))
     story.expect_text("message unread --environment main", "use the new cart", actor=story.agent)
     message_id = last_message_id(story)
     story.expect_text(f"link list --source message:{message_id}", f"message:{message_id}  sent_to  agent:{worker.id}")
@@ -103,7 +103,7 @@ def test_a_started_task_taken_from_a_worker_goes_back_open_and_the_worker_goes_o
     story.expect_text("task info 1", f"assigned to: agent {story.agent.id}", actor=story.agent)
     story.expect_text("task show 2", "state: started", f"holder_id: {worker.id}", actor=story.agent)
     story.expect_text("worker-worktree show 1", "task_id: 2", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {worker.id}", said(WORKER_TASK_REASSIGNED, task=1), said(WORKER_TASK_AFTER_REASSIGNED, task=2))
+    story.expect_text(f"agent-line list --agent {worker.id}", expected_nudge(WORKER_TASK_REASSIGNED, task=1), expected_nudge(WORKER_TASK_AFTER_REASSIGNED, task=2))
 
 
 def test_a_task_is_not_assigned_to_a_helper_and_the_refusal_names_who_takes_one(new_story):

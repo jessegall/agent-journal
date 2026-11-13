@@ -14,7 +14,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value
 from core.modules.sequences.support.sequence_nudges import STEP_EDIT_BAN
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from core.modules.sequences.support.sequence_nudges import STEP_WAITS
 
 
@@ -141,7 +141,7 @@ def test_a_step_that_holds_edits_refuses_them_until_the_next_step(new_story):
     story = triggered_story(new_story, guards=[{"file_edits_allowed": False, "allowed_commands": []}])
     story.run("sequence run 1", actor=story.agent)
     story.run("sequence follow", actor=story.agent)
-    story.expect_hook_refusal("s-1", HookSamples.edit("a.py"), said(STEP_EDIT_BAN))
+    story.expect_hook_refusal("s-1", HookSamples.edit("a.py"), expected_nudge(STEP_EDIT_BAN))
     story.run("sequence next", actor=story.agent)
     story.run("sequence follow", actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("a.py"))
@@ -174,7 +174,7 @@ def test_a_step_guard_changed_between_two_hooks_is_seen_on_the_next_hook(new_sto
     story.run("sequence follow", actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("a.py"))
     story.run(f"sequence edit 1 --step-guards {shlex.quote(json.dumps([{'file_edits_allowed': False, 'allowed_commands': []}]))}", actor=story.user)
-    story.expect_hook_refusal("s-1", HookSamples.edit("a.py"), said(STEP_EDIT_BAN))
+    story.expect_hook_refusal("s-1", HookSamples.edit("a.py"), expected_nudge(STEP_EDIT_BAN))
 
 
 def test_step_guards_that_do_not_read_are_refused_when_written(new_story):

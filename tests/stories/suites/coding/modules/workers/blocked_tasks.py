@@ -6,7 +6,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from tests.stories.core.modules.tasks.support.holder_assignee_check import assert_holders_are_assignees
 from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_reply_line
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 
@@ -29,7 +29,7 @@ def test_a_worker_blocking_its_task_tells_the_main_agent_with_the_reason(new_sto
 def test_a_main_agent_blocking_a_task_gets_no_line(new_story):
     story = new_story(fixture=StartedTaskBuilder)
     story.expect_success('task block 1 --reason "the build tool is missing"', actor=story.agent)
-    story.expect_no_text(f"agent-line list --agent {story.agent.id}", said(WORKER_TASK_BLOCKED))
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", expected_nudge(WORKER_TASK_BLOCKED))
     assert_holders_are_assignees(story)
 
 

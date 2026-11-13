@@ -14,7 +14,7 @@ from tests.stories.core.modules.processes.hang_watch import HANG_SECONDS, Active
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 from core.modules.processes.support.process_nudges import SILENT_RUN
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from core.modules.processes.support.process_nudges import RUN_SPARSE
 from core.modules.processes.support.process_nudges import SILENT_SAVED_RUN
 from core.modules.processes.support.process_nudges import STALLED_RUN
@@ -121,7 +121,7 @@ def test_only_a_silent_go_test_over_several_packages_is_told_and_runs_printing_l
         printed(story, bar, bar_text)
         ticks(story, 10, lines, every=10, text="compiled one more file\n" * 10)
         heard += cadence_lines(told(story, MAIN))
-    story.expect_rows(len(heard) == 1, said(SILENT_RUN, seconds=30, hint='run').is_in(heard[0]),
+    story.expect_rows(len(heard) == 1, expected_nudge(SILENT_RUN, seconds=30, hint='run').is_in(heard[0]),
                       detail="\n".join(heard))
 
 
@@ -144,7 +144,7 @@ def test_a_waiting_agent_has_the_sparse_line_kept_without_a_wake_until_its_next_
     process = moved_run(story, "pytest tests/nightly -q", CommandCategory.TEST_RUN)
     story.hook(MAIN, HookSamples.stop())
     ticks(story, 120, process, every=60)
-    story.expect_text(f"agent-line list --agent {story.agent.id} --json", said(RUN_SPARSE), '"wakes_agent": false', actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id} --json", expected_nudge(RUN_SPARSE), '"wakes_agent": false', actor=story.agent)
     expect_told(story, MAIN, f"Output {process.id} prints about once every 60s")
 
 

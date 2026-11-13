@@ -23,7 +23,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuild
 from tests.stories.core.support.fixtures import UserJoined
 from engine.testing.expectations.expect_row import expect_row
 from core.modules.processes.support.process_nudges import RUN_NAME
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 TEST_ROWS_REASON = "the test reads every row it checks"
@@ -367,7 +367,7 @@ def test_a_script_moved_to_the_background_shows_its_mark_asks_for_its_title_and_
     story.run_listeners()
     story.expect_text(MARKS, "Running python3 /tmp/move_files.py")
     story.advance(timedelta(seconds=6))
-    story.expect_hook_allowed("s-1", monitor(f"journal output monitor {process.id}"), said(RUN_NAME))
+    story.expect_hook_allowed("s-1", monitor(f"journal output monitor {process.id}"), expected_nudge(RUN_NAME))
     story.expect_text("process list --state background", "python3 /tmp/move_files.py", actor=story.agent)
     end_run(story, process, "moved\n")
     story.run_listeners()

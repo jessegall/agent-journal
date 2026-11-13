@@ -7,7 +7,7 @@ from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON, ended, main_agent_lines, missing_program, running_worker, two_task_worker, worker_story  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RESTARTED
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 
 HELP_REQUEST_LINE = 'wait stuck "the build tool is missing"'
 
@@ -36,7 +36,7 @@ def test_a_worker_that_stops_with_tasks_left_wakes_the_merger(two_task_worker, m
     marks = story.run("chat-mark list --environment 1").output_text
     story.expect_rows(len(lines) >= 1, all(line.read_at is None for line in lines), "tasks left" in marks, detail=f"{lines} | {marks}")
     worker = f"worker:{agent_number(story, story.worker.id)}"
-    story.expect_rows(not said(WORKER_RESTARTED).is_in(main_agent_lines(story)), f"{worker} ended with" not in main_agent_lines(story), detail=main_agent_lines(story))
+    story.expect_rows(not expected_nudge(WORKER_RESTARTED).is_in(main_agent_lines(story)), f"{worker} ended with" not in main_agent_lines(story), detail=main_agent_lines(story))
     with running_launcher(story):
         MergerRetry()(story.container)
         story.run_listeners()

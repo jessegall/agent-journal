@@ -8,7 +8,7 @@ from tests.stories.suites.coding.modules.workers.report import REPORT, MergerOff
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, repository_environment, worker_session
 from core.modules.agents.support.report_nudges import PARENT_REPORT
 from suites.coding.modules.workers.support.worker_nudges import WORKER_COMMENT_COPY
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 
 
 @pytest.fixture
@@ -37,7 +37,7 @@ def started_replacement(replacement):
 def test_a_new_main_session_hears_a_workers_report(replacement):
     story, worker, main = replacement
     story.expect_hook_allowed(worker_session(story, worker), stop_with_text(REPORT))
-    story.expect_text(f"agent-line list --agent {main.id}", said(PARENT_REPORT))
+    story.expect_text(f"agent-line list --agent {main.id}", expected_nudge(PARENT_REPORT))
 
 
 def test_a_new_main_session_is_held_for_a_delivered_workers_proof(started_replacement):
@@ -50,7 +50,7 @@ def test_a_new_main_session_hears_a_comment_sent_to_its_worker(replacement):
     story, worker, main = replacement
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
-    story.expect_text(f"agent-line list --agent {main.id}", said(WORKER_COMMENT_COPY))
+    story.expect_text(f"agent-line list --agent {main.id}", expected_nudge(WORKER_COMMENT_COPY))
 
 
 def test_a_main_session_in_another_environment_does_not_take_over_a_worker(delivered_story):

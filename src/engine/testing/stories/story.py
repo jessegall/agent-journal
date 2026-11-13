@@ -71,7 +71,7 @@ from engine.testing.stories.story_path import StoryPath
 from engine.testing.stories.story_state import StoryState
 from engine.testing.fakes.fixed_process_table import FixedProcessTable
 from engine.testing.expectations.line_outcome import LineOutcome
-from engine.testing.expectations.said_nudge import SaidNudge
+from engine.testing.expectations.expected_nudge import ExpectedNudge
 from engine.testing.expectations.text_match import ExpectedText, holds_line, holds_text
 
 STORY_ROWS_REASON = "the story kit lists every row of a table for an assertion"
@@ -245,7 +245,7 @@ class Story:
         missing = [line for line in expected_lines if not holds_line(reply.lines, line)]
         self.expected(not missing, f"the hook's lines {list(reply.lines)} hold none of {missing}")
 
-    def expect_hook_nudges(self, session: str, sample: HookSample, *nudges: SaidNudge) -> HookReply:
+    def expect_hook_nudges(self, session: str, sample: HookSample, *nudges: ExpectedNudge) -> HookReply:
         self.checked(f"hook {sample.action}")
         reply = self.hook(session, sample)
         told = [*reply.lines, reply.refusal]
@@ -253,7 +253,7 @@ class Story:
         self.expected(not missing, f"the hook told {told}, without {missing}")
         return reply
 
-    def expect_no_hook_nudge(self, session: str, sample: HookSample, nudge: SaidNudge) -> HookReply:
+    def expect_no_hook_nudge(self, session: str, sample: HookSample, nudge: ExpectedNudge) -> HookReply:
         self.checked(f"hook {sample.action}")
         reply = self.hook(session, sample)
         told = [*reply.lines, reply.refusal]

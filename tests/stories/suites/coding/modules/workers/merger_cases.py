@@ -24,7 +24,7 @@ from tests.stories.suites.coding.modules.workers.support.merger_launcher import 
 from tests.stories.suites.coding.modules.workers.support.phase_steps import start_planned_worker
 from tests.stories.support.story_checks import expect_value, expect_value_with
 from core.modules.helpers.support.helper_nudges import HELPER_GRANTED
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.modules.workers.support.worker_nudges import WORKER_LIBRARIES_LINKED
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
@@ -274,7 +274,7 @@ def test_the_main_agent_still_needs_a_delivery_to_review(case):
 
 def test_the_merger_grants_a_run_that_names_its_test_file(spent_case):
     spent_case.story.expect_success(f"helper grant {agent_number(spent_case.story, spent_case.worker.id)} pytest tests/cart.py", actor=spent_case.merger)
-    spent_case.story.expect_rows(said(HELPER_GRANTED).is_in(spent_case.worker_lines()), detail=spent_case.worker_lines())
+    spent_case.story.expect_rows(expected_nudge(HELPER_GRANTED).is_in(spent_case.worker_lines()), detail=spent_case.worker_lines())
 
 
 def test_the_merger_may_not_grant_a_run_with_no_test_file(spent_case):

@@ -24,7 +24,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.support.story_checks import expect_absent_value, expect_answers, expect_value, expect_value_with
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_PASSED
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.support.worker_settings import PROJECT_TEST_COMMAND
@@ -87,7 +87,7 @@ def test_all_tests_passing_checks_the_proofs_and_tells_the_main_agent_and_the_me
     ended(story, started[0], 0)
     story.expect_text("proof show 1", "state: checked", actor=story.agent)
     expect_marks_text(story, "passed")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", said(WORKER_TESTS_PASSED), actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(WORKER_TESTS_PASSED), actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     asked_for_merge(story, worker)

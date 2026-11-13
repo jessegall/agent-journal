@@ -36,7 +36,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.web_build import BUILT_TEXT, build_repository
 from tests.stories.support.story_checks import expect_requests_launcher
 from core.modules.processes.support.process_nudges import READ_COMMAND_OUTPUT
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.modules.workers.support.worker_nudges import MERGE_WAITS
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
@@ -339,10 +339,10 @@ def test_redirected_worker_logs_do_not_mark_the_logs_read(new_story):
     story = install_runner(new_story(fixture=OpenTaskOrchestrator))
     worker = delivered_worker(story, repository_environment(story))
     part = ShellPart("journal", CommandCategory.JOURNAL, ["worker", "logs", str(worker.id)], subcommand="worker")
-    story.expect_hook_refusal("s-1", HookSamples.shell(f"journal worker logs {agent_number(story, worker.id)} > /tmp/log", part, redirects=["> /tmp/log"]), said(READ_COMMAND_OUTPUT))
+    story.expect_hook_refusal("s-1", HookSamples.shell(f"journal worker logs {agent_number(story, worker.id)} > /tmp/log", part, redirects=["> /tmp/log"]), expected_nudge(READ_COMMAND_OUTPUT))
     piped = ShellPart("journal", CommandCategory.JOURNAL, ["worker", "logs", str(worker.id)], subcommand="worker", pipe_target=1)
     sink = ShellPart("cat", CommandCategory.READ, [])
-    story.expect_hook_refusal("s-1", HookSamples.shell(f"journal worker logs {agent_number(story, worker.id)} && cat", piped, sink), said(READ_COMMAND_OUTPUT))
+    story.expect_hook_refusal("s-1", HookSamples.shell(f"journal worker logs {agent_number(story, worker.id)} && cat", piped, sink), expected_nudge(READ_COMMAND_OUTPUT))
     worktree = story.container.get(Queries).query(Worktree).filter(session_agent_id=worker.id).first()
     story.expect_rows(worktree.logs_read_at is None)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)

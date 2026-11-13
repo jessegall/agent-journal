@@ -11,7 +11,7 @@ from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper
 from tests.stories.core.modules.helpers.helper_reports import stop_with_report
 from tests.stories.core.support.agent_labels import agent_number
 from core.modules.agents.support.report_nudges import PARENT_REPORT
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 
 PROGRAM_RUNS = b"running\n"
 ENDED = "ended_at: 20"
@@ -49,4 +49,4 @@ def test_544_the_exit_of_its_program_ends_an_agents_row_once_and_its_open_job_en
     after_exit = shown(story)
     story.expect_success(f"agent exited {story.helper.id} 1", actor=story.user)
     story.expect_rows(ENDED in after_exit, shown(story) == after_exit, story.container.get(HelperJobRows).open_job(story.helper.id) is None, detail=after_exit)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", said(PARENT_REPORT))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(PARENT_REPORT))

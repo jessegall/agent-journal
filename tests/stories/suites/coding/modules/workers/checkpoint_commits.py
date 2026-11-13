@@ -11,7 +11,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, prove_task
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, start_planned_worker, unplanned_worker
 from suites.coding.modules.workers.support.worker_nudges import WORKER_COMMITTED_UNMERGED
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 
 COMMITTED = "committed"
 BUILD_TASKS = 3
@@ -130,4 +130,4 @@ def test_a_committed_proof_of_a_started_plan_is_left_as_it_is_by_three_sweeps_of
 def test_239_a_worker_that_stops_with_committed_tasks_that_are_not_merged_has_them_named(group_worker):
     group_worker.story.run(f"agent end {group_worker.worker.id}", actor=group_worker.worker)
     lines = " | ".join(group_worker.main_agent_lines())
-    group_worker.story.expect_rows(said(WORKER_COMMITTED_UNMERGED, tasks='task:1, task:2', worker=2).is_in(lines), detail=lines)
+    group_worker.story.expect_rows(expected_nudge(WORKER_COMMITTED_UNMERGED, tasks='task:1, task:2', worker=2).is_in(lines), detail=lines)

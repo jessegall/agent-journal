@@ -19,7 +19,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted, ReadTaskBuilder, UnreadTaskBuilder, BriefedTaskBuilder
 from core.modules.processes.support.process_nudges import READ_COMMAND_OUTPUT
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from core.modules.tasks.support.task_nudges import TASK_BRIEF_FIRST
 
 EDIT = HookSamples.edit("src/cart.py")
@@ -168,7 +168,7 @@ def test_redirecting_or_piping_a_task_overview_does_not_mark_the_brief_read(new_
     story.expect_hook_refusal("s-1", HookSamples.shell("journal task overview 1 > /tmp/task", part, redirects=["> /tmp/task"]), BRIEF_REFUSAL)
     piped = ShellPart("journal", CommandCategory.JOURNAL, ["task", "overview", "1"], subcommand="task", pipe_target=1)
     sink = ShellPart("cat", CommandCategory.READ, [])
-    story.expect_hook_refusal("s-1", HookSamples.shell("journal task overview 1 && cat", piped, sink), said(READ_COMMAND_OUTPUT))
+    story.expect_hook_refusal("s-1", HookSamples.shell("journal task overview 1 && cat", piped, sink), expected_nudge(READ_COMMAND_OUTPUT))
     story.expect_rows(not story.container.get(Queries).query(TaskRead).filter(task_id=1, session_agent_id=story.agent.id).exists())
     story.expect_success("task overview 1", actor=story.agent)
     story.expect_rows(story.container.get(Queries).query(TaskRead).filter(task_id=1, session_agent_id=story.agent.id).exists())

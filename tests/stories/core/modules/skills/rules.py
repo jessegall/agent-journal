@@ -10,7 +10,7 @@ from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.modules.skills.due import DUE, JOURNAL_TASK_LIST, environment, expect_countdown, start, drain_countdown, start_countdown
 from tests.stories.support.story_checks import expect_value
 from core.modules.skills.support.skill_nudges import UNREAD_SKILLS
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from core.modules.skills.support.start_skills import SESSION_START_KEY
 
 EDIT = HookSamples.edit("src/cart.py")
@@ -57,7 +57,7 @@ def test_a_block_names_the_next_due_skill_once_the_first_is_read(exhausted_notes
 
 def test_a_stop_is_refused_naming_the_unread_skills(due_notes):
     story = due_notes
-    story.expect_hook_refusal("s-1", HookSamples.stop(), said(UNREAD_SKILLS))
+    story.expect_hook_refusal("s-1", HookSamples.stop(), expected_nudge(UNREAD_SKILLS))
 
 
 def test_a_journal_command_of_a_noun_whose_skill_is_unread_is_refused_until_it_is_read(due_notes):

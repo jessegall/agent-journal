@@ -9,7 +9,7 @@ from tests.stories.core.support import story_lines as lines
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from suites.coding.support.coding_nudges import WORKER_TASK_UNSTARTED
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.upgrade.coding_settings_move import LISTED_KEY
 
 WORKER_SESSION = "s-2"
@@ -32,7 +32,7 @@ def worker_with_started_task(story: Story) -> Actor:
 def test_a_worker_whose_task_has_not_started_runs_journal_commands_only(new_story):
     story = new_story(fixture=OpenTaskBuilder)
     started_worker(story)
-    story.expect_hook_refusal(WORKER_SESSION, CART_REMOVAL, said(WORKER_TASK_UNSTARTED))
+    story.expect_hook_refusal(WORKER_SESSION, CART_REMOVAL, expected_nudge(WORKER_TASK_UNSTARTED))
     story.expect_hook_allowed(WORKER_SESSION, CART_SEARCH)
     story.expect_hook_allowed(WORKER_SESSION, TASK_READ)
 

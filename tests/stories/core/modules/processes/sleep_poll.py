@@ -5,7 +5,7 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.support.coding_fixtures import BuilderStarted, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from core.modules.processes.support.process_nudges import SLEEP_REFUSED
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 BUILD = HookSamples.shell("make build", ShellPart("make", CommandCategory.BUILD, ["build"]))
 SLEEP_LOOP = HookSamples.shell("until pgrep -f build; do sleep 5; done", ShellPart("until", CommandCategory.PROCESS, ["pgrep"]))
 WAITING_SLEEP = HookSamples.shell("sleep 30", ShellPart("sleep", CommandCategory.READ, ["30"]))
@@ -41,5 +41,5 @@ def test_a_worker_and_the_main_agent_hear_the_same_sleep_refusal(new_story):
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
     story.run("task overview 1", actor=worker)
-    story.expect_hook_refusal(session, WAITING_SLEEP, said(SLEEP_REFUSED))
-    story.expect_hook_refusal("s-1", WAITING_SLEEP, said(SLEEP_REFUSED))
+    story.expect_hook_refusal(session, WAITING_SLEEP, expected_nudge(SLEEP_REFUSED))
+    story.expect_hook_refusal("s-1", WAITING_SLEEP, expected_nudge(SLEEP_REFUSED))

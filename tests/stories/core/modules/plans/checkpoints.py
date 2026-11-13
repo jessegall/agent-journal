@@ -19,7 +19,7 @@ from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.core.support.plan_steps import ready_plan
 from tests.stories.server.support.server_client import server_story
 from core.modules.plans.support.plan_nudges import CHECKPOINT_FINISHED
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from core.modules.plan_reviews.support.plan_review_settings import QUICK_REVIEW_SETTING
 from core.modules.plans.support.plan_settings import WAIT_FOR_PERSON_SETTING
 from tests.stories.support.story_checks import expect_value
@@ -200,7 +200,7 @@ def test_178_a_pass_saves_a_pass_row_and_opens_the_tasks_of_the_later_phase(new_
     story.run("task start 4", actor=story.agent)
     story.expect_success("task show 4", "state: started")
     story.expect_rows([row["phase_id"] for row in rows(story, PASSES)] == [3], rows(story, REACHES)[0]["state"] == "passed", detail=str(rows(story, PASSES)))
-    story.expect_text(f"agent-line list --agent {story.agent.id}", said(CHECKPOINT_FINISHED, plan=1, phase='Check'))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(CHECKPOINT_FINISHED, plan=1, phase='Check'))
     story.expect_text("task-log list --task 2", "tests passed at checkpoint phase 3", actor=story.agent)
 
 

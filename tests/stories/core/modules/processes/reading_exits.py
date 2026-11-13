@@ -24,7 +24,7 @@ from tests.stories.core.modules.processes.support.reader_block_fixtures import F
 from tests.stories.core.modules.processes.support.reading_scenarios import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from core.modules.processes.support.process_nudges import READER_BLOCK
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 
 EDIT = HookSamples.edit("cart.py")
 JOURNAL_COMMAND = re.compile(r"journal ([a-z][a-z-]*) ([a-z][a-z-]*)")
@@ -78,7 +78,7 @@ def test_an_exit_passes_under_a_silent_run_hold(new_story, line):
 def test_an_exit_passes_under_a_reader_block(new_story, line):
     story = new_story(fixture=ForcedReaders)
     process = worker_run(story)
-    story.expect_hook_refusal("s-reader", EDIT, said(READER_BLOCK))
+    story.expect_hook_refusal("s-reader", EDIT, expected_nudge(READER_BLOCK))
     story.expect_hook_allowed("s-reader", journal_line(line.format(output=process.id)))
 
 

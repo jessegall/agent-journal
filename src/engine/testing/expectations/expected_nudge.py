@@ -10,7 +10,7 @@ ANY_VALUE = "[^\n]+?"
 
 
 @dataclass(frozen=True)
-class SaidNudge:
+class ExpectedNudge:
     """A nudge a story expects, named by its declaration and the values it knows. A line matches the
     declaration's own template, a value left out matches any text and capitals do not count; a kept nudge
     matches by its key and fields. A story so holds none of a nudge's words, and a change of wording breaks
@@ -39,5 +39,5 @@ class SaidNudge:
         return nudge.key == self.declaration.key and all(str(fields.get(name)) == str(value) for name, value in self.values.items())
 
 
-def said(declaration: NudgeDeclaration, **values: object) -> SaidNudge:
-    return SaidNudge(declaration, values)
+def expected_nudge(declaration: NudgeDeclaration, **values: object) -> ExpectedNudge:
+    return ExpectedNudge(declaration, values)

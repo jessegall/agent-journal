@@ -3,7 +3,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment
 from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.modules.workers.support.worker_settings import MOST_OPEN_TASKS
 
 MAIN_SESSION = "s-1"
@@ -13,8 +13,8 @@ def test_a_main_agent_is_refused_its_stop_until_it_checks_a_proof_with_no_test(n
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
-    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), said(PROOF_CHECK))
-    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), said(PROOF_CHECK))
+    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), expected_nudge(PROOF_CHECK))
+    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), expected_nudge(PROOF_CHECK))
     story.expect_success("proof check 1", actor=story.agent)
     story.expect_hook_allowed(MAIN_SESSION, HookSamples.stop())
 
@@ -36,7 +36,7 @@ def test_a_proof_waits_for_the_task_to_be_handed_in(new_story):
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
     story.expect_hook_allowed(MAIN_SESSION, HookSamples.stop())
     story.expect_success("worker commit --wait --differences none", actor=worker)
-    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), said(PROOF_CHECK))
+    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), expected_nudge(PROOF_CHECK))
 
 
 def test_the_refused_stop_names_the_task_of_each_proof_that_waits(new_story):
@@ -50,5 +50,5 @@ def test_the_refused_stop_names_the_task_of_each_proof_that_waits(new_story):
     story.expect_success(f'proof make 1 --task {second_id} "cart.py:1, the second story"', actor=worker)
     story.expect_success("worker commit --wait --differences none", actor=worker)
     number = agent_number(story, worker.id)
-    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), said(PROOF_CHECK))
-    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), said(PROOF_CHECK))
+    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), expected_nudge(PROOF_CHECK))
+    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), expected_nudge(PROOF_CHECK))

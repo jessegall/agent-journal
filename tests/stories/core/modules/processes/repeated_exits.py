@@ -12,7 +12,7 @@ from tests.stories.core.modules.processes.support.reader_block_fixtures import F
 from tests.stories.core.modules.processes.support.reading_scenarios import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from core.modules.processes.support.process_nudges import BLOCK_LIFTED
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from core.modules.processes.support.process_nudges import READER_BLOCK
 
 EDIT = HookSamples.edit("cart.py")
@@ -48,6 +48,6 @@ def test_a_person_lifts_a_workers_reader_block_each_time_one_comes(new_story):
     number = agent_number(story, worker.id)
     for request, line in ((1, "custom-build run"), (2, "other-build run")):
         worker_run(story, line)
-        story.expect_hook_refusal("s-reader", EDIT, said(READER_BLOCK))
+        story.expect_hook_refusal("s-reader", EDIT, expected_nudge(READER_BLOCK))
         story.expect_success(f"process lift-hold {number} --environment main", "1 holds lifted", actor=person)
-        story.expect_hook_allowed("s-reader", PROMPT, said(BLOCK_LIFTED))
+        story.expect_hook_allowed("s-reader", PROMPT, expected_nudge(BLOCK_LIFTED))

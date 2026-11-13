@@ -18,11 +18,11 @@ from tests.stories.core.modules.processes.support.cadence_probe import cadence_t
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, parts_started
 from tests.stories.support.story_checks import expect_value
 from core.modules.processes.support.process_nudges import SILENT_SAVED_RUN
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from core.modules.aliases.support.alias_nudges import SAVED_COMMAND_SILENT
 
 READ_NOTES = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))
-SILENT_LINE = said(SILENT_SAVED_RUN, name='build-npm', seconds=30)
+SILENT_LINE = expected_nudge(SILENT_SAVED_RUN, name='build-npm', seconds=30)
 PACKAGES_LINE = "Alias gotest printed nothing for 30s: go test holds each package's output until it is done, so run one package at a time or with -p 1"
 REFUSAL = SAVED_COMMAND_SILENT.nudge(name="build-npm").text
 RUN = "journal build-npm --tail 5"

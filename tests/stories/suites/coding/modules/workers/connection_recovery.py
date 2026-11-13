@@ -27,7 +27,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import story_repository
 from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.modules.workers.support.worker_settings import IDLE_WORKER_MINUTES
 from suites.coding.modules.workers.support.worker_settings import IDLE_WORKER_REPEAT_MINUTES
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
@@ -194,7 +194,7 @@ def test_silent_recovery_waits_for_a_growing_gap_and_stops_after_three_attempts(
     rows = json.loads(recovery.story.run("merger-line list --json", actor=recovery.story.agent).output_text)["rows"]
     matching = [row for row in rows if f"agent:{agent_number(recovery.story, recovery.worker.id)} could not resume" in row["text"]]
     recovery.story.expect_rows(len(matching) == 1, "3 waking lines got no hook" in matching[0]["text"],
-                               any(said(MERGER_LINE_AVAILABLE).is_in(line.text) for line in notices), detail=f"{matching} | {[line.text for line in notices]}")
+                               any(expected_nudge(MERGER_LINE_AVAILABLE).is_in(line.text) for line in notices), detail=f"{matching} | {[line.text for line in notices]}")
 
 
 

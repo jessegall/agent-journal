@@ -13,7 +13,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment, worker_session
 from core.modules.processes.support.process_nudges import READ_COMMAND_OUTPUT
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 
@@ -75,7 +75,7 @@ def test_a_refused_status_read_does_not_release_the_compaction_block(worker_batc
     story.hook(session, HookSamples.session_start().with_raw({"source": "compact"}))
     piped = ShellPart("journal", CommandCategory.JOURNAL, ["worker", "status"], subcommand="worker", pipe_target=1)
     reader = ShellPart("cat", CommandCategory.READ, [])
-    story.expect_hook_refusal(session, HookSamples.shell("journal worker status && cat", piped, reader), said(READ_COMMAND_OUTPUT))
+    story.expect_hook_refusal(session, HookSamples.shell("journal worker status && cat", piped, reader), expected_nudge(READ_COMMAND_OUTPUT))
     story.expect_hook_refusal(session, HookSamples.edit("src/cart.py"), "read your worker status first")
     story.expect_success("worker status", actor=worker)
     story.expect_hook_allowed(session, HookSamples.shell("journal worker status", ShellPart("journal", CommandCategory.JOURNAL, ["worker", "status"], subcommand="worker")))

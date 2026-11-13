@@ -20,7 +20,7 @@ from engine.testing.stories.story import Story
 from tests.stories.core.modules.processes.hang_watch import ActiveBuild, started_tree, watch_tick
 from tests.stories.core.modules.processes.support.process_samples import end_run
 from core.modules.processes.support.process_nudges import SILENT_RUN_HELD
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 
 HANG_SECONDS = 300
 TASK_LIST = HookSamples.shell("journal task list", ShellPart("journal", CommandCategory.JOURNAL, ["task", "list"]))
@@ -49,7 +49,7 @@ def silent_story(new_story, seconds: int = HANG_SECONDS + 1) -> Story:
 def test_a_run_silent_for_the_hang_time_holds_the_next_tool_use_and_names_what_to_read(new_story):
     story = silent_story(new_story)
     story.expect_hook_refusal("s-1", EDIT, HELD)
-    story.expect_hook_refusal("s-1", EDIT, said(SILENT_RUN_HELD, output=1, seconds=301, processor='not known', hint='read'))
+    story.expect_hook_refusal("s-1", EDIT, expected_nudge(SILENT_RUN_HELD, output=1, seconds=301, processor='not known', hint='read'))
 
 
 def test_the_hold_says_the_processor_time_is_rising_when_it_moved_since_the_run_went_silent(new_story):

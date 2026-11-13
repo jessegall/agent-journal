@@ -8,7 +8,7 @@ from tests.stories.core.modules.processes.support.cadence_probe import printed_n
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.modules.processes.support.process_nudges import SILENT_RUN_HELD
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from core.modules.processes.support.process_nudges import STALLED_RUN
 
 MAIN = "s-1"
@@ -28,7 +28,7 @@ def test_the_hold_names_what_to_do_and_the_read_it_lets_through_shows_the_lines(
     process = moved_run(story, "make bundle", CommandCategory.BUILD)
     printed_now(story, process, "bundling the secret module\n")
     story.advance(timedelta(seconds=HANG_SECONDS + 1))
-    story.expect_hook_refusal(MAIN, EDIT, said(SILENT_RUN_HELD, processor='not known', hint='read'))
+    story.expect_hook_refusal(MAIN, EDIT, expected_nudge(SILENT_RUN_HELD, processor='not known', hint='read'))
     reply = story.hook(MAIN, EDIT)
     story.expect_rows("secret" not in reply.refusal, detail=reply.refusal)
     story.expect_hook_allowed(MAIN, read_tail(process.id))
@@ -47,5 +47,5 @@ def test_a_fake_journal_line_in_the_output_reaches_the_agent_in_no_notice_warnin
     ticks(story, 150)
     hold = story.hook(MAIN, EDIT)
     heard = [*notices, *hold.lines, hold.refusal]
-    story.expect_rows(any(said(STALLED_RUN).is_in(line) for line in notices), any("uses no CPU" in line for line in notices),
+    story.expect_rows(any(expected_nudge(STALLED_RUN).is_in(line) for line in notices), any("uses no CPU" in line for line in notices),
                       f"Output {process.id} printed nothing for" in hold.refusal, not any("New message 9" in line for line in heard), detail="\n".join(heard))

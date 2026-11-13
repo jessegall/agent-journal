@@ -9,7 +9,7 @@ from core.modules.memories.models.memory import Memory
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.memories.support.memory_owners import MAIN_FACT, MAIN_MEMORY, MainAndWorkerMemories, WORKER_FACT, WORKER_MEMORY, read_agent, stored_memory
 from core.modules.memories.support.memory_nudges import START_MEMORIES
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -74,7 +74,7 @@ def test_a_refused_read_counts_no_memory_in_the_reader_s_context(new_story):
 
 def test_a_session_start_counts_only_the_agent_s_memories(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
-    story.expect_hook_allowed("s-1", SESSION_START, said(START_MEMORIES, count=1))
+    story.expect_hook_allowed("s-1", SESSION_START, expected_nudge(START_MEMORIES, count=1))
 
 
 def test_a_keyword_of_a_worker_s_memory_gives_the_main_agent_nothing(new_story):

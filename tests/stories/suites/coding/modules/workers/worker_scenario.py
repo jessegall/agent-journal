@@ -14,7 +14,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import r
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.test_queue import ended, recording_launch
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_PASSED
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 
 
 def expect_states(story, **states) -> None:
@@ -157,7 +157,7 @@ def test_a_worker_commits_three_tasks_one_after_the_other_each_tested_and_is_mer
     expect_states(story, task1="completed", task2="completed", task3="completed")
 
     # all pass: the main agent is told to merge, and the merge keeps all three completed
-    story.expect_text(f"agent-line list --agent {story.agent.id}", said(WORKER_TESTS_PASSED), actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(WORKER_TESTS_PASSED), actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     asked_for_merge(story, worker)

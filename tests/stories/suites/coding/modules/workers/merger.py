@@ -47,7 +47,7 @@ from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.suites.coding.modules.workers.quiet_helpers import StartedMerger
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_PASSED
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from core.modules.agents.support.report_nudges import PARENT_REPORT
 from core.modules.helpers.support.helper_nudges import HELPER_PROGRAM_FAULT
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
@@ -160,7 +160,7 @@ def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_
         story.expect_text("merger next", agent_label(story, worker.id), actor=Actor(merger.id, ActorType.AGENT))
     else:
         story.expect_rows(merger_agent(story) is None)
-        story.expect_text(f"agent-line list --agent {story.agent.id}", said(WORKER_TESTS_PASSED), actor=story.agent)
+        story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(WORKER_TESTS_PASSED), actor=story.agent)
 
 
 def test_only_the_merger_runs_its_commands(new_story):
@@ -214,9 +214,9 @@ def test_the_merger_and_a_worker_message_each_other_but_two_workers_do_not(new_s
     merger = Actor(merger_agent(story).id, ActorType.AGENT)
     second_agent = Actor(story.new_row_id(f"agent start s-other claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
     story.expect_success(f'merger advise {agent_number(story, worker.id)} "Rebase on main first"', actor=merger)
-    story.expect_text(f"agent-line list --agent {worker.id}", said(PARENT_REPORT), actor=worker)
+    story.expect_text(f"agent-line list --agent {worker.id}", expected_nudge(PARENT_REPORT), actor=worker)
     story.expect_success(f'message send "Rebased" --to agent:{agent_number(story, merger.id)}', actor=worker)
-    story.expect_text(f"agent-line list --agent {merger.id}", said(PARENT_REPORT), actor=merger)
+    story.expect_text(f"agent-line list --agent {merger.id}", expected_nudge(PARENT_REPORT), actor=merger)
     story.expect_refusal(f'message send "Hello" --to agent:{agent_number(story, second_agent.id)}', "not yours to message", actor=worker)
 
 
@@ -350,7 +350,7 @@ def test_the_merger_ending_without_a_report_does_not_notify_the_main_agent(new_s
     story.run_listeners()
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "It ended without a report")
     lines = story.run(f"agent-line list --agent {story.agent.id}").output_text
-    story.expect_rows((said(HELPER_PROGRAM_FAULT).is_in(lines)) == fault)
+    story.expect_rows((expected_nudge(HELPER_PROGRAM_FAULT).is_in(lines)) == fault)
     story.expect_rows(story.container.get(HelperJobRows).open_job(merger.id) is None)
 
 
@@ -509,7 +509,7 @@ def test_a_worker_the_merger_passes_on_is_named_to_the_main_agent_with_its_merge
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.expect_success(f'merger pass {agent_number(story, worker.id)} "important differences need the main agent"', actor=merger)
     story.run_listeners()
-    story.expect_text(main_lines, said(MERGER_PASSED))
+    story.expect_text(main_lines, expected_nudge(MERGER_PASSED))
     story.tick("s-1")
     story.expect_text(main_lines, f"worker:{agent_number(story, worker.id)} committed")
     first = story.run(main_lines).output_text.count(f"worker:{agent_number(story, worker.id)} committed")

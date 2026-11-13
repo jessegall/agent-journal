@@ -6,7 +6,7 @@ from server.work.booting_work import BootingWork
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_count_output
 from core.modules.transcriptions.support.transcription_nudges import TRANSCRIPTION_IMPORT_REQUEST
-from engine.testing.expectations.said_nudge import said
+from engine.testing.expectations.expected_nudge import expected_nudge
 from core.modules.transcriptions.support.transcription_nudges import TRANSCRIPTION_CHANGED
 
 TRANSCRIPTION_LINE = 'transcription make "Cart meeting" --text "Ada: the cart rounds twice." --environment main'
@@ -30,7 +30,7 @@ def test_a_pasted_transcription_makes_a_task_linked_to_it_and_tells_the_agent(ne
     story = transcribed(new_story)
     story.expect_text("task list --environment main", "Summarize transcript 1: Cart meeting", actor=story.user)
     story.expect_text("link list --source transcription:1", "task", actor=story.user)
-    story.expect_text("agent-line list", said(TRANSCRIPTION_CHANGED), actor=story.user)
+    story.expect_text("agent-line list", expected_nudge(TRANSCRIPTION_CHANGED), actor=story.user)
 
 
 def test_a_persons_edit_tells_the_agent_again_and_keeps_the_unfinished_task(new_story):
@@ -99,7 +99,7 @@ def test_only_an_installed_server_with_transcripts_can_be_fetched_from(new_story
     story.expect_text("transcription sources", "wispr-flow", actor=story.user)
     story.expect_success("transcription fetch wispr-flow --environment main", actor=story.user)
     story.expect_text("task list --environment main", "Fetch transcriptions from Wispr Flow", actor=story.user)
-    story.expect_text("agent-line list", said(TRANSCRIPTION_IMPORT_REQUEST, task=1), actor=story.user)
+    story.expect_text("agent-line list", expected_nudge(TRANSCRIPTION_IMPORT_REQUEST, task=1), actor=story.user)
 
 
 def test_a_server_without_transcripts_is_refused(new_story):

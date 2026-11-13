@@ -1,12 +1,12 @@
-from engine.testing.expectations.said_nudge import SaidNudge
+from engine.testing.expectations.expected_nudge import ExpectedNudge
 
-ExpectedText = str | SaidNudge
+ExpectedText = str | ExpectedNudge
 
 
 # Whether a story's expected text appears in what the journal printed, in any case: a line's capitals are wording, not
 # behaviour. A nudge a story names by its declaration matches the declaration's own template.
 def holds_text(whole: str, part: ExpectedText) -> bool:
-    if isinstance(part, SaidNudge):
+    if isinstance(part, ExpectedNudge):
         return part.is_in(whole)
     return part.casefold() in whole.casefold()
 
