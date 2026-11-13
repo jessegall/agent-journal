@@ -24,8 +24,8 @@ class WorkerRoster(AgentRoster[Agent]):
     """Lists the workers available to hold work. A worker with unmerged or uncommitted work is held from retiring;
     retiring any other releases what it holds: its queued tasks, its waiting lines and its clean worktree."""
 
-    def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, queries: Queries, bus: Bus, repository: Repository, own_changes: WorktreeOwnChanges) -> None:
-        self.worktrees, self.git, self.queries, self.bus, self.repository, self.own_changes = worktrees, git, queries, bus, repository, own_changes
+    def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, queries: Queries, bus: Bus, repository: Repository, worker_changes: WorktreeOwnChanges) -> None:
+        self.worktrees, self.git, self.queries, self.bus, self.repository, self.own_changes = worktrees, git, queries, bus, repository, worker_changes
 
     def available(self, environment_id: int) -> tuple[Agent, ...]:
         return ()

@@ -13,8 +13,8 @@ class ReadAdviceRule(DriverRule):
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
 
-    def __init__(self, outputs: OutputQuery, advice: ReadAdvice) -> None:
-        self.outputs, self.advice = outputs, advice
+    def __init__(self, outputs: OutputQuery, hint: ReadAdvice) -> None:
+        self.outputs, self.advice = outputs, hint
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None

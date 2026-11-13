@@ -15,9 +15,9 @@ def part(text: str, category: CommandCategory = CommandCategory.TEST_RUN) -> Pro
     return ProcessPart(id=1, version=1, process_id=9, position=1, text=text, program=text.split()[0], category=category)
 
 
-@pytest.mark.parametrize("kind, declaration", [(NoticeKind.SILENT, SILENT_RUN), (NoticeKind.STOPPED_WRITING, STALLED_RUN), (NoticeKind.SPARSE, RUN_SPARSE)])
-def test_each_kind_has_its_declaration_with_the_output_the_seconds_and_the_tools_hint(kind, declaration):
-    notice = CadenceNudges.notice(kind, RUN, part("pytest -q"), 30, 300)
+@pytest.mark.parametrize("category, declaration", [(NoticeKind.SILENT, SILENT_RUN), (NoticeKind.STOPPED_WRITING, STALLED_RUN), (NoticeKind.SPARSE, RUN_SPARSE)])
+def test_each_kind_has_its_declaration_with_the_output_the_seconds_and_the_tools_hint(category, declaration):
+    notice = CadenceNudges.notice(category, RUN, part("pytest -q"), 30, 300)
     assert notice.declaration is declaration
     assert dict(notice.fields) == {"output": 9, "seconds": 30, "hint": StreamingHints.hint("pytest -q")}
 

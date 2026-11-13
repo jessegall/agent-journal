@@ -1,11 +1,11 @@
 from suites.coding.support.profile_commands import WORKER_COMMANDS
-from suites.coding.support.shipped_profiles import WORKER_RULES, WORKER_UNIT_RULES, WORKER_WRITE_RULES
+from suites.coding.support.shipped_profiles import WORKER_RULES, WORKER_UNIT_RULES, WORKER_EDIT_RULES
 from suites.coding.support.worker_test_rule import WORKER_TEST_RULE
 from suites.coding.modules.workers.support.worker_command import WORK_STEPS
 
 
 def test_worker_rules_are_the_write_rules_and_the_unit_rules():
-    assert WORKER_RULES == WORKER_WRITE_RULES + WORKER_UNIT_RULES
+    assert WORKER_RULES == WORKER_EDIT_RULES + WORKER_UNIT_RULES
 
 
 def test_the_worker_texts_say_commit_as_often_as_you_like():

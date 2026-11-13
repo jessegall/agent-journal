@@ -45,10 +45,10 @@ class HelperBesideWorker(StoryFixture):
 
 
 def cadence_tick(story: Story) -> None:
-    tick_named(story, CADENCE_TICK)
+    labelled_tick(story, CADENCE_TICK)
 
 
-def tick_named(story: Story, label: str) -> None:
+def labelled_tick(story: Story, label: str) -> None:
     handlers = [handler for module in ModuleFinder(story.home).modules() for handler in module.tick_handlers if handler.label == label]
     story.expect_rows(len(handlers) == 1)
     handlers[0].handler(story.container)
@@ -67,7 +67,7 @@ def ticks(story: Story, seconds: int, *processes: Process, every: int = 0, text:
 
 def agent_run(story: Story, agent: Agent, line: str, category: CommandCategory) -> Process:
     """A run of another agent than the main one, started and moved to the background by that agent."""
-    return started_by(story, Actor(agent.id, ActorType.AGENT), StartProcess.single_part(agent.id, line, "/work/main", category, 30))
+    return actor_started_process(story, Actor(agent.id, ActorType.AGENT), StartProcess.single_part(agent.id, line, "/work/main", category, 30))
 
 
 def waiting_run(story: Story, agent: Agent, line: str) -> Process:
@@ -75,7 +75,7 @@ def waiting_run(story: Story, agent: Agent, line: str) -> Process:
     return story.container.get(Bus).run(StartProcess.single_part(agent.id, line, "/work/main", CommandCategory.TEST_RUN, 30), Actor(agent.id, ActorType.AGENT), environment_id=1)
 
 
-def started_by(story: Story, actor: Actor, command: StartProcess, environment_id: int = 1) -> Process:
+def actor_started_process(story: Story, actor: Actor, command: StartProcess, environment_id: int = 1) -> Process:
     """A run started, its first part begun and moved to the background, all by the given actor."""
     bus = story.container.get(Bus)
     process = bus.run(command, actor, environment_id=environment_id)
@@ -88,12 +88,12 @@ def session_run(story: Story, owner: Agent, line: str) -> Process:
     """A build on the main agent's session that another agent owns."""
     command = StartProcess(story.agent.id, None, line, "/work/main", "zsh", CommandCategory.BUILD, 30, tuple([PartSpec(line, line.split()[0], False, CommandCategory.BUILD)]),
                            owner_agent_id=owner.id)
-    return started_by(story, story.agent, command)
+    return actor_started_process(story, story.agent, command)
 
 
 def side_run(story: Story, actor: Actor, line: str, category: CommandCategory, plugin: str = "") -> Process:
     """A run on the main agent's session, started by the given actor, of a plugin when one is named."""
-    return started_by(story, actor, StartProcess.single_part(story.agent.id, line, "/work/main", category, 30, plugin=plugin))
+    return actor_started_process(story, actor, StartProcess.single_part(story.agent.id, line, "/work/main", category, 30, plugin=plugin))
 
 
 def kept_lines(story: Story, agent_id: int = 0, actor: Actor | None = None) -> str:
@@ -103,7 +103,7 @@ def kept_lines(story: Story, agent_id: int = 0, actor: Actor | None = None) -> s
 
 def foreign_run(story: Story, actor: Actor) -> Process:
     """A silent build of the agent of the second environment, started and moved to the background there."""
-    return started_by(story, actor, StartProcess.single_part(actor.id, "make there", "/work/elsewhere", CommandCategory.BUILD, 30), environment_id=2)
+    return actor_started_process(story, actor, StartProcess.single_part(actor.id, "make there", "/work/elsewhere", CommandCategory.BUILD, 30), environment_id=2)
 
 
 def tree_of(story: Story, tree: GroupCpuTime, group: int, *processes: Process) -> None:
@@ -133,7 +133,7 @@ def record_text(story: Story, process: Process) -> str:
     return story.container.get(OutputFolder).text(process.id, CADENCE_FILE)
 
 
-def cut_to(story: Story, process: Process, kept: str, dropped: int) -> None:
+def truncate_output(story: Story, process: Process, kept: str, dropped: int) -> None:
     """The runner cuts the output to its limit: it keeps the given text and adds the dropped bytes to the cut count."""
     folder = story.container.get(OutputFolder)
     folder.write(process.id, "1.cut-bytes", str(folder.cut_bytes(process.id, 1) + dropped))

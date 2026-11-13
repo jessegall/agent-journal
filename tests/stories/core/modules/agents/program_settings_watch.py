@@ -8,7 +8,7 @@ from engine.provider.program_hooks import ProgramHooks
 from tests.stories.core.modules.chat.support.mark_samples import marks_text
 from tests.stories.core.support.fixtures import MainEnvironment
 
-PUT_BACK = "settings were changed outside the journal and were put back"
+RESTORED_NOTE = "settings were changed outside the journal and were put back"
 
 
 def programs(story) -> Path:
@@ -42,7 +42,7 @@ def test_a_change_from_outside_is_put_back_kept_as_a_rejected_copy_and_marked_on
     marks = marks_text(story)
     story.expect_rows(settings_file.read_text() == saved_text, mode_of(settings_file) == 0o444,
                       len(copies) == 1 and "curl evil" in copies[0].read_text() and mode_of(copies[0]) == 0o600,
-                      marks.count(f"Claude Code {PUT_BACK}") == 1, f"The changed copy is kept at {copies[0]}" in marks)
+                      marks.count(f"Claude Code {RESTORED_NOTE}") == 1, f"The changed copy is kept at {copies[0]}" in marks)
 
 
 def test_a_deleted_file_a_loosened_mode_and_broken_links_are_put_back(new_story):
@@ -74,7 +74,7 @@ def test_the_journal_s_own_rewrite_shows_no_mark(new_story):
     (story.home.folder / "worktrees" / "development" / "worker-1").mkdir(parents=True)
     story.expect_text(f'program manage claude "{story.home.project_folder}"', "managed hooks: 1")
     watch(story.container)
-    story.expect_rows(PUT_BACK not in marks_text(story))
+    story.expect_rows(RESTORED_NOTE not in marks_text(story))
 
 
 def test_a_codex_login_refreshed_by_a_new_file_is_kept_in_the_person_folder(new_story):

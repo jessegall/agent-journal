@@ -53,7 +53,7 @@ class ReadingFacts:
         flagged = self.resets.flagged_keys(keys)
         return [self.gathered_case(process, part, point, runs[key], (part.command or part.text) in waiting, key in flagged) for part, key in zip(parts, keys)]
 
-    def gathered_case(self, process: Process, part: ProcessPart, point: ReadingMoment, runs_without_change: int, request_is_waiting: bool, is_flagged: bool) -> ReadingCase:
+    def gathered_case(self, process: Process, part: ProcessPart, point: ReadingMoment, runs_without_change: int, waiting_request: bool, is_flagged: bool) -> ReadingCase:
         agent = self.rows.required(Agent, process.session_agent_id)
         command = part.command or part.text
         command_key = SilentStartRuns.name(part.text, part.program, part.category)
@@ -68,7 +68,7 @@ class ReadingFacts:
                            count_missing=self.counts.count_missing(process, part),
                            draft_fits=self.draft_fits(process, part, reader, point), output=self.output(process, part, point),
                            runs_without_change=runs_without_change,
-                           request_is_waiting=request_is_waiting, was_skipped=self.resets.skipped_after(command_key, process.creation_timestamp()),
+                           request_is_waiting=waiting_request, was_skipped=self.resets.skipped_after(command_key, process.creation_timestamp()),
                            has_unreadable_mark=is_flagged, role_must_have_reader=agent.role in policy.reader_request_roles,
                            role_may_write_readers=self.writers.allows(Actor(agent.id, ActorType.AGENT)), role_uses_saved_commands=agent.role in policy.saved_command_roles,
                            readers_forced=self.settings.flag(ProcessSetting.READERS_FORCED))

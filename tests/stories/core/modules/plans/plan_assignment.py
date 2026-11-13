@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from tests.stories.core.modules.assignments.support.assignment_reads import assigned, assignment_of, logged_events, row_actors
+from tests.stories.core.modules.assignments.support.assignment_reads import assigned, assignment_record, logged_events, row_actors
 from tests.stories.core.modules.plans.support.assigned_plans import PlanWithTwoPhases, phase_task_ids, plan_worker
 
 ALL_TASKS = [*phase_task_ids(1), *phase_task_ids(2)]
@@ -28,7 +28,7 @@ def test_assigning_a_plan_assigns_its_phases_and_its_open_and_blocked_tasks_not_
 
 def test_cascaded_rows_carry_via_id_and_hand_given_rows_do_not(plan):
     assigned(plan, "plan 1", worker_id(plan, 1))
-    plan_row, phase_row, task_row = assignment_of(plan, "plan", 1), assignment_of(plan, "phase", 1), assignment_of(plan, "task", 1)
+    plan_row, phase_row, task_row = assignment_record(plan, "plan", 1), assignment_record(plan, "phase", 1), assignment_record(plan, "task", 1)
     plan.expect_rows(plan_row["source_id"] is None, phase_row["source_id"] == plan_row["id"], task_row["source_id"] == phase_row["id"], detail=str([plan_row, phase_row, task_row]))
     plan.expect_text(f"assignment show {task_row['id']} --environment main", f"source_id: {phase_row['id']}", actor=plan.user)
 
@@ -55,8 +55,8 @@ def test_assigning_the_plan_to_x_moves_inherited_rows_and_keeps_the_task_given_t
 def test_override_takes_the_hand_given_task_too(plan):
     assigned(plan, f"task {HAND_GIVEN_TASK}", worker_id(plan, 2))
     summary = assigned(plan, "plan 1", worker_id(plan, 3), "--override")
-    claimed = assignment_of(plan, "task", HAND_GIVEN_TASK)
-    plan.expect_rows(claimed["actor_id"] == worker_id(plan, 3), claimed["source_id"] == assignment_of(plan, "phase", 1)["id"], "kept" not in summary, detail=summary)
+    claimed = assignment_record(plan, "task", HAND_GIVEN_TASK)
+    plan.expect_rows(claimed["actor_id"] == worker_id(plan, 3), claimed["source_id"] == assignment_record(plan, "phase", 1)["id"], "kept" not in summary, detail=summary)
     plan.expect_success(f"task show {HAND_GIVEN_TASK} --environment main", actor=plan.agent)
 
 
@@ -64,8 +64,8 @@ def test_from_parent_gives_a_task_back_to_its_phases_actor(plan):
     assigned(plan, "phase 1", worker_id(plan, 1))
     assigned(plan, f"task {HAND_GIVEN_TASK}", worker_id(plan, 2))
     plan.expect_success(f"assign task {HAND_GIVEN_TASK} --from-parent --environment main", actor=plan.user)
-    inherited = assignment_of(plan, "task", HAND_GIVEN_TASK)
-    plan.expect_rows(inherited["actor_id"] == worker_id(plan, 1), inherited["source_id"] == assignment_of(plan, "phase", 1)["id"], detail=str(inherited))
+    inherited = assignment_record(plan, "task", HAND_GIVEN_TASK)
+    plan.expect_rows(inherited["actor_id"] == worker_id(plan, 1), inherited["source_id"] == assignment_record(plan, "phase", 1)["id"], detail=str(inherited))
 
 
 def test_assigning_a_phase_assigns_only_its_tasks_and_never_changes_the_plans_assignee(plan):

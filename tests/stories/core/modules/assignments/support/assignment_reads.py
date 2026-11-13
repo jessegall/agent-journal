@@ -17,7 +17,7 @@ def row_actors(story: Story, model: str) -> dict[int, int]:
     return {row["subject_id"]: row["actor_id"] for row in assignment_rows(story) if row["subject_model"] == model}
 
 
-def assignment_of(story: Story, model: str, row_id: int) -> dict:
+def assignment_record(story: Story, model: str, row_id: int) -> dict:
     return next(row for row in assignment_rows(story) if row["subject_model"] == model and row["subject_id"] == row_id)
 
 

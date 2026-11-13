@@ -20,7 +20,7 @@ from engine.query.expressions.scalar_subselect import ScalarSubselect
 from engine.query.select import Select
 from engine.agent.agent_name import agent_name
 from core.modules.assignments.models.support.views import assigned_actor
-from core.modules.tasks.models.support.views import TASK_ACTOR, PURELY_AUTOMATIC, HELPER_COLUMNS, TASK_TAGS, is_main, json_rows, or_zero, task_helper_match
+from core.modules.tasks.models.support.views import TASK_ACTOR, PURELY_AUTOMATIC, HELPER_COLUMNS, TASK_TAGS, is_main, json_rows, zero_fallback, task_helper_match
 
 PLACE_TASK = ConditionJoin("tasks", condition=ColumnCompare("tasks.id", "=", "plan_tasks.task_id"))
 PLAN_ACTOR = assigned_actor("plan", "plans.id")
@@ -52,7 +52,7 @@ PLAN_PROGRESS_SELECT = Select("plans").selecting(
     Aliased(place_count(place_state(ComparisonOperator.UNEQUAL, "cancelled")), "task_count"),
     Aliased(place_count(place_state(ComparisonOperator.EQUAL, "completed")), "completed_count"),
     Aliased(place_count(place_state(ComparisonOperator.EQUAL, "testing")), "testing_count"),
-    Aliased(or_zero(ScalarSubselect(plan_places().selecting(FunctionCall(SqlFunction.MIN, [Column("plan_tasks.phase_position")]))
+    Aliased(zero_fallback(ScalarSubselect(plan_places().selecting(FunctionCall(SqlFunction.MIN, [Column("plan_tasks.phase_position")]))
                                     .matching(IsNull("plan_tasks.closed_at")))), "current_phase"),
     Aliased(ScalarSubselect(plan_places().selecting(FunctionCall(SqlFunction.ROUND, [FunctionCall(SqlFunction.AVG, [Column("tasks.complexity")]), Literal(1)]))
                             .joined(PLACE_TASK).matching(place_state(ComparisonOperator.UNEQUAL, "cancelled")).matching(HasValue("tasks.complexity"))),
@@ -99,6 +99,6 @@ PLAN_OUTLINE_TASKS_SELECT = Select("plan_tasks").selecting(
     *(Column(f"plan_tasks.{name}") for name in ("task_id", "plan_id", "phase_id", "phase_position", "priority", "state")),
     *(Column(f"tasks.{name}") for name in ("title", "complexity", "reason")), Aliased(TASK_ACTOR, "assignee_id"),
     TASK_TAGS, PURELY_AUTOMATIC,
-    Aliased(or_zero(ScalarSubselect(Select("agents").selecting(is_main("agents")).matching(Comparison(Column("agents.id"), ComparisonOperator.EQUAL, TASK_ACTOR)))), "main_delegate"),
+    Aliased(zero_fallback(ScalarSubselect(Select("agents").selecting(is_main("agents")).matching(Comparison(Column("agents.id"), ComparisonOperator.EQUAL, TASK_ACTOR)))), "main_delegate"),
     *HELPER_COLUMNS,
 ).joined(PLACE_TASK).joined(ConditionJoin("agents", left=True, condition=task_helper_match(), alias="helper")).view_sql()

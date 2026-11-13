@@ -11,6 +11,9 @@
         "reject": [
             {
                 "nameMatches": "^(tmp_path|tmp_path_factory|capsys|monkeypatch|request)$"
+            },
+            {
+                "name": "tmp_path"
             }
         ]
     },

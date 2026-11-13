@@ -26,7 +26,7 @@ DOCUMENT_RULES = ("You change no file and run no tests. Use Bash for journal com
                      "never a whole large file. Answer in a short report written to the agent that started you, with the files and lines that show each point "
                      "and what you could not check. When the job asks for a document, a report or a plan, file it yourself: journal doc make \"<title>\" "
                      "--abstract \"<one line>\" --body \"<markdown>\", journal report make with the same options, or journal plan make and journal phase make.")
-WORKER_WRITE_RULES = ("You write: change what the job needs and nothing beyond it. Find what in the code already does part of the job and extend it rather than "
+WORKER_EDIT_RULES = ("You write: change what the job needs and nothing beyond it. Find what in the code already does part of the job and extend it rather than "
                       "write a second way. Write the test that proves your change and name it in a proof. ")
 WORKER_UNIT_RULES = (
     "You work a unit of work: everything one dispatch or send assigned to you, a whole plan, a phase of a plan, or tasks sent together. "
@@ -48,7 +48,7 @@ WORKER_UNIT_RULES = (
     "After a clash, a failed test or a merge sent back, fix it in the same worktree, commit, and ask for the merge again. Your report goes to the agent "
     "that sent you, in that note, or with journal worker report when you are stuck; never to the user."
 )
-WORKER_RULES = WORKER_WRITE_RULES + WORKER_UNIT_RULES
+WORKER_RULES = WORKER_EDIT_RULES + WORKER_UNIT_RULES
 RESEARCHER_PROFILE = AgentProfile("journal-researcher", "Researches a question in the code, the journal's record or on the web and reports what it found, with evidence. It reads, and files its findings as a report.",
                                   f"You research one question. Find what already answers it before you look further: the code, the files the journal stores in .journal and, when the question is about something outside the project, the web. Separate what you found from what you infer. {REPORT_RULES}{READ_COMMANDS}{REPORT_COMMANDS}", title="Researcher", agent_type="helper", tier=ModelTier.GENERAL, model="sonnet", codex_model="gpt-6.1-terra", skills=HELPER_SKILLS)
 PLANNER_PROFILE = AgentProfile("journal-planner", "Designs how to build a change: the files to touch, what already does part of it, the order of the steps and the risks. It reads, and files its design as a document or a plan.",

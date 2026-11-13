@@ -18,7 +18,7 @@ def test_failed_paths_of_a_checkpoints_own_test_are_left_out_while_a_later_task_
     assert RULES.check(phase(), FAILED, FAILED, waiting_task_count=1, deferred_count=1).text() == "pytest tests/cart.py"
 
 
-@pytest.mark.parametrize("checked_phase, failed_paths, paths, waiting_task_count, deferred_count, words", [
+@pytest.mark.parametrize("checked_phase, failed_paths, paths, waiting_task_count, deferred_count, terms", [
     (phase(checkpoint=False), FAILED, FAILED, 1, 0, "phase 7 is not a checkpoint: it runs no test"),
     (phase(test_command=""), FAILED, FAILED, 1, 0, "phase 7 is not a checkpoint: it runs no test"),
     (phase(), FAILED, FAILED, 0, 0, "nothing after phase 7 is left to wait for: the failure is real, fix it"),
@@ -29,7 +29,7 @@ def test_failed_paths_of_a_checkpoints_own_test_are_left_out_while_a_later_task_
     (phase(test_command="pytest tests/cart.py tests/stories"), FAILED, FAILED, 1, 0, "is not a path of the test command"),
 ], ids=["a phase with no flag", "a checkpoint with no test", "no later task waits, the own task of the worker does not count", "the deferrals are used",
         "the own test passed", "a path that passed", "every path", "a path the command does not name as a whole word"])
-def test_each_reason_refuses_a_deferral_with_words_of_its_own(checked_phase, failed_paths, paths, waiting_task_count, deferred_count, words):
+def test_each_reason_refuses_a_deferral_with_words_of_its_own(checked_phase, failed_paths, paths, waiting_task_count, deferred_count, terms):
     with pytest.raises(Refusal) as refusal:
         RULES.check(checked_phase, failed_paths, paths, waiting_task_count, deferred_count)
-    assert words in refusal.value.reason
+    assert terms in refusal.value.reason

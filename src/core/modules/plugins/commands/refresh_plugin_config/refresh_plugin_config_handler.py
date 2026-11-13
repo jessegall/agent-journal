@@ -13,7 +13,7 @@ from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from engine.skill.skill_digest import SkillDigest
-from engine.types.type_guards import is_object_mapping
+from engine.types.type_guards import is_string_mapping
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.commands.refresh_plugin_config.refresh_plugin_config import RefreshPluginConfig
 from core.modules.plugins.models.plugin import Plugin
@@ -80,7 +80,7 @@ class RefreshPluginConfigHandler(Handler[RefreshPluginConfig, Plugin]):
 
     def schema(self, config: ManifestConfig) -> JsonSchema:
         schema = json.loads(FileAccess.shared().read(self.home.project_folder / config.schema))
-        if not is_object_mapping(schema):
+        if not is_string_mapping(schema):
             raise Refusal(f"the schema {config.schema} is not a JSON object", "fix the plugin's schema file")
         return JsonSchema(schema)
 

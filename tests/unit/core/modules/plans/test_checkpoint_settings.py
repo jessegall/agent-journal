@@ -1,9 +1,9 @@
 from engine.registry.setting_tree import SettingTree
 from core.modules.plan_reviews.support.plan_review_settings import PLAN_REVIEW_SETTINGS, QUICK_REVIEW_SETTING, REVIEW_MODEL_SETTING, REVIEW_MODELS
-from core.modules.plans.support.plan_settings import CHECKPOINT_COMMAND_SETTING, PLAN_SETTINGS, WAIT_FOR_PERSON_SETTING
+from core.modules.plans.support.plan_settings import CHECKPOINT_COMMAND_SETTING, PLAN_SETTINGS, PERSON_WAIT_SETTING
 
 ENTRIES = {entry.key: entry for entry in (*SettingTree().entries("journal.core.plans", PLAN_SETTINGS), *SettingTree().entries("journal.core.plan_reviews", PLAN_REVIEW_SETTINGS))}
-KEYS = (QUICK_REVIEW_SETTING, REVIEW_MODEL_SETTING, CHECKPOINT_COMMAND_SETTING, WAIT_FOR_PERSON_SETTING)
+KEYS = (QUICK_REVIEW_SETTING, REVIEW_MODEL_SETTING, CHECKPOINT_COMMAND_SETTING, PERSON_WAIT_SETTING)
 
 
 def test_the_four_checkpoint_settings_are_on_the_work_screen_in_the_checkpoints_section():
@@ -16,11 +16,11 @@ def test_the_review_model_needs_the_review_so_it_shows_only_while_the_review_is_
 
 
 def test_the_defaults_are_no_review_the_first_model_no_command_and_no_waiting():
-    assert (ENTRIES[QUICK_REVIEW_SETTING].default, ENTRIES[REVIEW_MODEL_SETTING].default, ENTRIES[CHECKPOINT_COMMAND_SETTING].default, ENTRIES[WAIT_FOR_PERSON_SETTING].default) == (False, REVIEW_MODELS[0], "", False)
+    assert (ENTRIES[QUICK_REVIEW_SETTING].default, ENTRIES[REVIEW_MODEL_SETTING].default, ENTRIES[CHECKPOINT_COMMAND_SETTING].default, ENTRIES[PERSON_WAIT_SETTING].default) == (False, REVIEW_MODELS[0], "", False)
 
 
 def test_waiting_for_the_person_is_set_by_a_person_and_says_what_it_does_in_its_description():
-    entry = ENTRIES[WAIT_FOR_PERSON_SETTING]
+    entry = ENTRIES[PERSON_WAIT_SETTING]
     assert entry.person_set is True and "plan card" in entry.description and "stops" in entry.description
 
 

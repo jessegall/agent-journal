@@ -26,13 +26,13 @@ class CadenceLine:
         return cls(int(size), float(checked_at), float(resumed), tuple(float(growth) for growth in growths))
 
     # This cadence after a look at size bytes now: after a break in the watching the times start again from now.
-    def looked(self, size: int, now: float) -> "CadenceLine":
+    def looked(self, size: int, current_time: float) -> "CadenceLine":
         growths, resumed = self.growths, self.resumed
-        if self.looked_at and now - self.looked_at > BREAK_SECONDS:
-            growths, resumed = (), now
+        if self.looked_at and current_time - self.looked_at > BREAK_SECONDS:
+            growths, resumed = (), current_time
         if size != self.size:
-            growths = (*growths, now)[-GROWTHS_KEPT:]
-        return CadenceLine(size, now, resumed, growths)
+            growths = (*growths, current_time)[-GROWTHS_KEPT:]
+        return CadenceLine(size, current_time, resumed, growths)
 
     def text(self) -> str:
         return " ".join(str(value) for value in (self.size, self.looked_at, self.resumed, *self.growths))

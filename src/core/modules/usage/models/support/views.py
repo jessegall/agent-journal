@@ -33,7 +33,7 @@ COMPACTION_PATH = f'$."{DRIVERS_MODULE}".{COMPACTION_ENDED_AT}'
 TASK_ACTOR = assigned_actor("task", "tasks.id")
 
 
-def or_empty(expression: Expression) -> FunctionCall:
+def empty_fallback(expression: Expression) -> FunctionCall:
     return FunctionCall(SqlFunction.COALESCE, [expression, Literal("")])
 
 
@@ -42,7 +42,7 @@ def agent_rows(table: str) -> Select:
     return Select(table).matching(ColumnCompare(f"{table}.session_agent_id", "=", "agents.id"))
 
 
-def count_of(select: Select) -> ScalarSubselect:
+def row_count(select: Select) -> ScalarSubselect:
     return ScalarSubselect(select.selecting(CountAll()))
 
 
@@ -52,12 +52,12 @@ def holder_started_tasks() -> Select:
 
 # One part of the tasks an agent card lists, with its closed time as text and the part it belongs to.
 def listed_tasks(part: int, condition: Condition) -> Select:
-    return Select("tasks").selecting(*(Column(f"tasks.{name}") for name in LISTED_COLUMNS), Aliased(or_empty(Column("tasks.closed_at")), "closed_at"),
+    return Select("tasks").selecting(*(Column(f"tasks.{name}") for name in LISTED_COLUMNS), Aliased(empty_fallback(Column("tasks.closed_at")), "closed_at"),
                                      Aliased(Literal(part), "part")).matching(condition)
 
 
-def while_running(expression: Expression) -> CaseWhen:
-    return CaseWhen([(IsNull("agents.ended_at"), or_empty(expression))], Literal(""))
+def running_window(expression: Expression) -> CaseWhen:
+    return CaseWhen([(IsNull("agents.ended_at"), empty_fallback(expression))], Literal(""))
 
 
 OPEN_BLOCKS = agent_rows("agent_blocks").matching(IsNull("agent_blocks.closed_at"))
@@ -88,19 +88,19 @@ CURRENT_JOB = ScalarSubselect(Select("helper_jobs").selecting(Column("id")).matc
 
 
 def job_text(table: str, column: str, name: str) -> Aliased:
-    return Aliased(or_empty(Column(f"{table}.{column}")), name)
+    return Aliased(empty_fallback(Column(f"{table}.{column}")), name)
 
 
 AGENT_CARDS_SELECT = Select("agents").selecting(
     *(Column(f"agents.{name}") for name in AGENT_COLUMNS),
     Aliased(ScalarSubselect(holder_started_tasks().selecting(Column("tasks.id"))), "started_task_id"),
-    Aliased(or_empty(ScalarSubselect(holder_started_tasks().selecting(Column("tasks.title")))), "started_task_title"),
+    Aliased(empty_fallback(ScalarSubselect(holder_started_tasks().selecting(Column("tasks.title")))), "started_task_title"),
     Aliased(CARD_TASKS, "tasks"),
-    Aliased(while_running(ScalarSubselect(OPEN_BLOCKS.selecting(FunctionCall(SqlFunction.MIN, [Column("agent_blocks.created_at")])))), "block_started_at"),
-    Aliased(while_running(ScalarSubselect(OPEN_BLOCKS.selecting(Column("agent_blocks.nudge_text")).ordered("agent_blocks.id", False).sliced(1, 0))), "block_reason"),
+    Aliased(running_window(ScalarSubselect(OPEN_BLOCKS.selecting(FunctionCall(SqlFunction.MIN, [Column("agent_blocks.created_at")])))), "block_started_at"),
+    Aliased(running_window(ScalarSubselect(OPEN_BLOCKS.selecting(Column("agent_blocks.nudge_text")).ordered("agent_blocks.id", False).sliced(1, 0))), "block_reason"),
     Aliased(Inlined(AllOf([IsNull("agents.ended_at"), Exists(Select("tasks").matching(ColumnCompare("tasks.holder_id", "=", "agents.id"))
                                                             .matching(Equal("tasks.state", "blocked")))])), "task_blocked"),
-    Aliased(or_empty(ScalarSubselect(agent_rows("hook_calls").selecting(Column("hook_calls.created_at")).ordered("hook_calls.id", True).sliced(1, 0))),
+    Aliased(empty_fallback(ScalarSubselect(agent_rows("hook_calls").selecting(Column("hook_calls.created_at")).ordered("hook_calls.id", True).sliced(1, 0))),
             "last_activity"),
     job_text("dispatch", "program_model", "job_model"), job_text("dispatch", "profile", "job_profile"),
     job_text("dispatch", "description", "job_description"), job_text("dispatch", "instruction", "job_instruction"),
@@ -111,14 +111,14 @@ AGENT_CARDS_SELECT = Select("agents").selecting(
     Aliased(Column("current_job.new_session"), "helper_job_new_session"),
     Aliased(Inlined(AllOf([HasValue("current_job.id"), HasValue("current_job.started_at"), IsNull("current_job.ended_at")])), "is_helper_job_open"),
     Aliased(FunctionCall(SqlFunction.JSON_EXTRACT, [Column("agents.metadata"), Literal(COMPACTION_PATH)]), "compaction_ended_at"),
-    Aliased(count_of(agent_rows("agent_sessions")), "session_count"),
+    Aliased(row_count(agent_rows("agent_sessions")), "session_count"),
     Aliased(ScalarSubselect(agent_rows("agent_sessions").selecting(Column("agent_sessions.end_reason"))
                             .matching(ColumnCompare("agent_sessions.session", "!=", "agents.session")).ordered("agent_sessions.id", True).sliced(1, 0)),
             "replaced_session_end_reason"),
-    Aliased(count_of(Select("memories").matching(ColumnCompare("memories.environment_id", "=", "agents.environment_id"))
+    Aliased(row_count(Select("memories").matching(ColumnCompare("memories.environment_id", "=", "agents.environment_id"))
                      .matching(ColumnCompare("memories.agent_id", "=", "agents.id")).matching(Equal("memories.state", "active"))
                      .matching(Greater("memories.weight", 0))), "memory_count"),
-    Aliased(count_of(AGENT_REPORTS), "report_count"),
+    Aliased(row_count(AGENT_REPORTS), "report_count"),
     Aliased(ScalarSubselect(Select("actors").selecting(Column("actors.name")).matching(ColumnCompare("actors.id", "=", "agents.retiring_actor_id"))),
             "retiring_actor_name"),
     Aliased(FunctionCall(SqlFunction.COALESCE, [LAST_REPORT, LAST_RETURN, Literal("")]), "job_returned"),

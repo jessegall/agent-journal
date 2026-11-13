@@ -32,9 +32,9 @@ LISTINGS_REASON = "the count of a test command comes from the newest kept output
 class WorkerTestListings(RunCounts):
     """Builds per-part listings and adds their counts for a queued worker run."""
 
-    def __init__(self, queries: Queries, settings: SettingValues, run: ReaderRun, folder: OutputFolder, outputs: OutputQuery, readers: ReaderRows, visibility: RunVisibility, rows: EventRows, bus: Bus, nudger: Nudger, own_runs: WorkerOwnRuns) -> None:
+    def __init__(self, queries: Queries, settings: SettingValues, run: ReaderRun, folder: OutputFolder, outputs: OutputQuery, readers: ReaderRows, visibility: RunVisibility, rows: EventRows, bus: Bus, nudger: Nudger, worker_runs: WorkerOwnRuns) -> None:
         self.queries, self.settings, self.run, self.folder, self.outputs, self.readers, self.visibility, self.rows = queries, settings, run, folder, outputs, readers, visibility, rows
-        self.bus, self.nudger, self.own_runs = bus, nudger, own_runs
+        self.bus, self.nudger, self.own_runs = bus, nudger, worker_runs
 
     def parts(self, process: Process) -> tuple[PartTestListing, ...]:
         agent = self.rows.required(Agent, process.session_agent_id)

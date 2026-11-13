@@ -36,7 +36,7 @@ def merged_branch(repository: SampleRepository, branch: str, commits: int) -> No
     repository.git("merge", "--no-ff", "-m", f"Merge {branch}", branch)
 
 
-def own_commits(worktree: Worktree, count: int) -> None:
+def worker_commits(worktree: Worktree, count: int) -> None:
     for number in range(count):
         SampleRepository(worktree_folder(worktree)).committed(f"own_{number}.py", f"OWN = {number}\n", f"Own commit {number}")
 
@@ -53,7 +53,7 @@ def test_a_no_ff_merge_of_a_four_commit_branch_counts_once(tmp_path):
 
 def test_five_own_commits_on_an_unmoved_base_count_nothing(tmp_path):
     _, worktree = cut_worktree(tmp_path)
-    own_commits(worktree, 5)
+    worker_commits(worktree, 5)
     assert git().behind(worktree) == 0
 
 
@@ -73,7 +73,7 @@ def test_two_worktrees_cut_from_different_bases_count_only_their_own_base(tmp_pa
 
 def test_a_merge_of_this_worktrees_own_earlier_commits_is_not_counted_but_another_workers_merge_is(tmp_path):
     repository, worktree = cut_worktree(tmp_path)
-    own_commits(worktree, 2)
+    worker_commits(worktree, 2)
     repository.git("merge", "--no-ff", "-m", "Merge the first part of this worker", WORKER_BRANCH)
     assert git().behind(worktree) == 0
     merged_branch(repository, DIFFERENT_BRANCH, 1)

@@ -30,8 +30,8 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
     command = ReadNextMerge
 
     def __init__(self, agents: AgentRows, queries: Queries, worktrees: WorktreeQuery, log_lines: WorkerLogLines, repository: Repository, log_read: WorkerLogRead, numbers: RowNumbers,
-                 merge_ask: MergeAskSection, work: MergerWork) -> None:
-        self.merge_ask, self.work = merge_ask, work
+                 merge_request: MergeAskSection, work: MergerWork) -> None:
+        self.merge_ask, self.work = merge_request, work
         self.numbers = numbers
         self.agents, self.queries, self.worktrees, self.log_lines, self.repository, self.log_read = agents, queries, worktrees, log_lines, repository, log_read
 

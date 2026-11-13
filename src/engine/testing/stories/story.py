@@ -72,7 +72,7 @@ from engine.testing.stories.story_state import StoryState
 from engine.testing.fakes.fixed_process_table import FixedProcessTable
 from engine.testing.expectations.line_outcome import LineOutcome
 from engine.testing.expectations.expected_nudge import ExpectedNudge
-from engine.testing.expectations.text_match import ExpectedText, holds_line, contains_text
+from engine.testing.expectations.text_match import ExpectedText, contains_line, contains_text
 
 STORY_ROWS_REASON = "the story kit lists every row of a table for an assertion"
 
@@ -242,7 +242,7 @@ class Story:
         self.checked(f"hook {sample.action}")
         reply = self.hook(session, sample)
         self.expected(reply.refusal == "", f"the hook was refused: {reply.refusal}")
-        missing = [line for line in expected_lines if not holds_line(reply.lines, line)]
+        missing = [line for line in expected_lines if not contains_line(reply.lines, line)]
         self.expected(not missing, f"the hook's lines {list(reply.lines)} hold none of {missing}")
 
     def expect_hook_nudges(self, session: str, sample: HookSample, *nudges: ExpectedNudge) -> HookReply:
@@ -274,7 +274,7 @@ class Story:
     def expect_absent_hook_line(self, session: str, sample: HookSample, line: ExpectedText) -> None:
         self.checked(f"hook {sample.action}")
         reply = self.hook(session, sample)
-        self.expected(not holds_line(reply.lines, line), f"the hook's lines {list(reply.lines)} hold {line!r}")
+        self.expected(not contains_line(reply.lines, line), f"the hook's lines {list(reply.lines)} hold {line!r}")
 
     def expect_hook_refusal(self, session: str, sample: HookSample, reason: ExpectedText) -> None:
         self.checked(f"hook {sample.action}")

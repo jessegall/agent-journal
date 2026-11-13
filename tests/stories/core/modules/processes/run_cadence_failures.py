@@ -4,7 +4,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.core.modules.processes.support.cadence_probe import (cadence_lines, cut_to, damaged_record, foreign_run, folder_made_a_file,
+from tests.stories.core.modules.processes.support.cadence_probe import (cadence_lines, truncate_output, damaged_record, foreign_run, folder_made_a_file,
                                                                        kept_lines, emitted, record_text, removed_output, ring, tick_cost, ticks)
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
@@ -31,7 +31,7 @@ def test_a_missing_output_file_a_damaged_record_and_a_cut_output_give_no_notice_
     removed_output(story, removed)
     damaged_record(story, damaged)
     for step in range(10):
-        cut_to(story, cut, f"line {step}\n", 4096)
+        truncate_output(story, cut, f"line {step}\n", 4096)
         ticks(story, 10, damaged, every=10, text="page\n")
     story.expect_rows(cadence_lines([kept_lines(story)]) == [], record_text(story, damaged).split()[0] == str(len("page\n" * 12)), len(ring(story, cut)) == 5,
                       detail=f"{kept_lines(story)}\n{record_text(story, damaged)}")

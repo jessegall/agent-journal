@@ -141,13 +141,13 @@ def started_waiting(story):
     story.advance(OVERLONG)
 
 
-@pytest.mark.parametrize("steps_between_stops, compaction_count", [(ended_immediately, 1), (ended_late, 1), (larger_waiting_context, 1), (delivered_waiting, 2), (started_waiting, 1)],
+@pytest.mark.parametrize("stop_interval_steps, compaction_count", [(ended_immediately, 1), (ended_late, 1), (larger_waiting_context, 1), (delivered_waiting, 2), (started_waiting, 1)],
                          ids=["b1-ended-at-once", "b5-c9-ended-after-601-seconds", "larger-context-while-the-line-waits", "sent-and-not-started-after-three-minutes-is-typed-once-more", "c9-started"])
-def test_a_later_stop_types_the_compaction_a_second_time_only_after_three_minutes_with_none_started(agent, steps_between_stops, compaction_count):
+def test_a_later_stop_types_the_compaction_a_second_time_only_after_three_minutes_with_none_started(agent, stop_interval_steps, compaction_count):
     has_context(agent, LIMIT_TOKENS)
     stops(agent)
     expect_compaction_count(agent, 1)
-    steps_between_stops(agent)
+    stop_interval_steps(agent)
     stops(agent)
     expect_compaction_count(agent, compaction_count)
 

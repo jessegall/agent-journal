@@ -38,7 +38,7 @@ def is_main(table: str) -> Comparison:
     return Comparison(Column(f"{table}.role"), ComparisonOperator.EQUAL, Literal("main"))
 
 
-def or_zero(expression: Expression) -> FunctionCall:
+def zero_fallback(expression: Expression) -> FunctionCall:
     return FunctionCall(SqlFunction.COALESCE, [expression, Literal(0)])
 
 
@@ -95,7 +95,7 @@ MAIN_ASSIGNEE = ScalarSubselect(Select("agents").selecting(is_main("agents")).ma
 TASK_CARDS_SELECT = Select("tasks").selecting(
     *(Column(f"tasks.{name}") for name in ("id", "environment_id", "title", "state", "priority", "complexity", "reason", "closed_at")),
     Aliased(TASK_ACTOR, "assigned_actor_id"), TASK_TAGS, PURELY_AUTOMATIC,
-    Aliased(ASSIGNED_NAME, "assigned_name"), Aliased(actor_value("actors.type"), "assigned_type"), Aliased(or_zero(MAIN_ASSIGNEE), "is_main_assignee"),
+    Aliased(ASSIGNED_NAME, "assigned_name"), Aliased(actor_value("actors.type"), "assigned_type"), Aliased(zero_fallback(MAIN_ASSIGNEE), "is_main_assignee"),
 ).view_sql()
 
 TASK_TAG_COUNTS_SELECT = Select("task_tags").selecting(Column("word"), Aliased(CountAll(), "count")).grouped("word").view_sql()
@@ -106,7 +106,7 @@ TASK_EDGES_SELECT = (
            .matching(IsNull("ended_at")).matching(Comparison(Column("target"), ComparisonOperator.LIKE, Literal("tasks:%"))), every=False)
 ).view_sql()
 
-HELPER_COLUMNS = (Aliased(Column("helper.id"), "helper_id"), Aliased(agent_name("helper"), "helper_name"), Aliased(or_zero(is_main("helper")), "helper_main"))
+HELPER_COLUMNS = (Aliased(Column("helper.id"), "helper_id"), Aliased(agent_name("helper"), "helper_name"), Aliased(zero_fallback(is_main("helper")), "helper_main"))
 
 TASK_INSPECTIONS_SELECT = Select("tasks").selecting(
     Aliased(Column("tasks.id"), "task_id"), TASK_TAGS,
@@ -134,7 +134,7 @@ LAST_REVIEW_NOTICE = ScalarSubselect(Select("nudge_records").selecting(FunctionC
 TASK_BLOCK_REVIEWS_SELECT = Select("tasks").selecting(
     Aliased(Column("tasks.id"), "task_id"), Aliased(Column("agents.id"), "session_agent_id"), Column("tasks.environment_id"), Column("tasks.state"),
     Aliased(Column("tasks.version"), "task_version"),
-    Aliased(or_zero(latest_renewal("task_version", SqlFunction.MAX)), "block_version"),
+    Aliased(zero_fallback(latest_renewal("task_version", SqlFunction.MAX)), "block_version"),
     Aliased(FunctionCall(SqlFunction.MAX, [FunctionCall(SqlFunction.COALESCE, [NEWEST_RENEWAL, Column("tasks.updated_at")]),
                                            FunctionCall(SqlFunction.COALESCE, [LAST_REVIEW_NOTICE, Literal("")])]), "reviewed_at"),
     Aliased(FunctionCall(SqlFunction.MAX, [Column("tasks.updated_at"), FunctionCall(SqlFunction.COALESCE, [NEWEST_RENEWAL, Literal("")])]), "moved_at"),

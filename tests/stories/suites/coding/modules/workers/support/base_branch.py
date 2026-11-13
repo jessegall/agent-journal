@@ -18,6 +18,6 @@ def committed_on(repository: GitRepository, folder: Path, name: str, text: str, 
     repository.git("commit", "-m", message, folder=folder)
 
 
-def own_commits(repository: GitRepository, worker_id: int, count: int) -> None:
+def worker_commits(repository: GitRepository, worker_id: int, count: int) -> None:
     for number in range(count):
         committed_on(repository, repository.worktree_folder(worker_id), f"own_{number}.py", f"OWN = {number}\n", f"Own commit {number}")

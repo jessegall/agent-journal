@@ -27,9 +27,9 @@ class WorkerTestCountListener(SaveListener[Changed[Output]]):
     name = WORKER_TEST_LIMIT_SOURCE
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, settings: SettingValues, bus: Bus, nudger: Nudger, rows: EventRows, own_runs: WorkerOwnRuns) -> None:
+    def __init__(self, queries: Queries, settings: SettingValues, bus: Bus, nudger: Nudger, rows: EventRows, worker_runs: WorkerOwnRuns) -> None:
         self.queries, self.settings, self.bus, self.nudger = queries, settings, bus, nudger
-        self.rows, self.own_runs = rows, own_runs
+        self.rows, self.own_runs = rows, worker_runs
 
     def handle(self, event: Changed[Output], context: Context) -> None:
         if isinstance(event, Deleted):

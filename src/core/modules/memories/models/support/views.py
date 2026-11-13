@@ -21,7 +21,7 @@ def state_count(state: str, name: str) -> Aliased:
     return Aliased(FunctionCall(SqlFunction.SUM, [Comparison(Column("state"), ComparisonOperator.EQUAL, Literal(state))]), name)
 
 
-def or_empty(select: Select) -> FunctionCall:
+def empty_fallback(select: Select) -> FunctionCall:
     return FunctionCall(SqlFunction.COALESCE, [ScalarSubselect(select), Literal("")])
 
 
@@ -41,9 +41,9 @@ MEMORY_HOLDERS_SELECT = Select("agents").selecting(
     Aliased(Column("agents.created_at"), "started_at"), Column("agents.ended_at"), Column("counts.active_memories"), Column("counts.removed_memories"),
 ).joined(ConditionJoin(ScalarSubselect(MEMORY_COUNTS), condition=ColumnCompare("counts.agent_id", "=", "agents.id"), alias="counts")).view_sql()
 
-LAST_COMPACTION = or_empty(delivered_agent_rows("hook_calls").selecting(FunctionCall(SqlFunction.MAX, [Column("hook_calls.created_at")]))
+LAST_COMPACTION = empty_fallback(delivered_agent_rows("hook_calls").selecting(FunctionCall(SqlFunction.MAX, [Column("hook_calls.created_at")]))
                            .matching(Equal("hook_calls.hook", "compact")))
-SESSION_START = or_empty(delivered_agent_rows("agent_sessions").selecting(
+SESSION_START = empty_fallback(delivered_agent_rows("agent_sessions").selecting(
     FunctionCall(SqlFunction.COALESCE, [Column("agent_sessions.started_at"), Column("agent_sessions.created_at")])).ordered("agent_sessions.id", True).sliced(1, 0))
 CONTEXT_MEMORIES_SELECT = Select("memory_deliveries").selecting(
     Aliased(Column("memory_deliveries.id"), "delivery_id"),

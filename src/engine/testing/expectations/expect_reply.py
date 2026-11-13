@@ -1,14 +1,14 @@
 from engine.driver.hook_reply import HookReply
-from engine.testing.expectations.text_match import ExpectedText, holds_line, contains_text
+from engine.testing.expectations.text_match import ExpectedText, contains_line, contains_text
 
 
 def expect_reply_line(reply: HookReply, *texts: ExpectedText) -> None:
-    missing = [text for text in texts if not holds_line(reply.lines, text)]
+    missing = [text for text in texts if not contains_line(reply.lines, text)]
     assert not missing, f"the hook's lines {list(reply.lines)} hold none of {missing}"
 
 
 def expect_absent_reply_line(reply: HookReply, *texts: ExpectedText) -> None:
-    matching = [text for text in texts if holds_line(reply.lines, text)]
+    matching = [text for text in texts if contains_line(reply.lines, text)]
     assert not matching, f"the hook's lines {list(reply.lines)} hold {matching}"
 
 

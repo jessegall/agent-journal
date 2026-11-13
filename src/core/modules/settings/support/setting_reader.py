@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from engine.scope.scopes import Scopes
 from core.modules.settings.support.setting_rows import SettingRows
 from engine.registry.setting_entry import SettingEntry
-from engine.types.type_guards import is_list, is_object_mapping
+from engine.types.type_guards import is_list, is_string_mapping
 from engine.setting.setting_value import SettingDefault
 from core.modules.settings.models.secret_setting import SecretSetting
 from core.modules.settings.models.setting import Setting
@@ -78,7 +78,7 @@ class SettingReader:
         if model is SecretSetting:
             return text
         loaded: object = json.loads(text)
-        return loaded if isinstance(loaded, str | int | float | bool) or is_list(loaded) or is_object_mapping(loaded) else None
+        return loaded if isinstance(loaded, str | int | float | bool) or is_list(loaded) or is_string_mapping(loaded) else None
 
     @staticmethod
     def default(entry: SettingEntry) -> SettingDefault:

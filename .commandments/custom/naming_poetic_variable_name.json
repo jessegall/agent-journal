@@ -86,6 +86,9 @@
                         "file": "tests/stories/**"
                     }
                 ]
+            },
+            {
+                "name": "tmp_path"
             }
         ]
     },

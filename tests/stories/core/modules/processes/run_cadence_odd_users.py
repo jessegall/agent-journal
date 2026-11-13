@@ -4,7 +4,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.hang_watch import MISSING_GROUP, FakeGroupCpuTime, watch_tick
 from tests.stories.core.modules.processes.support.cadence_probe import (TICK, HelperBesideWorker, agent_run, cadence_lines, cadence_tick, expect_informed,
-                                                                       emitted, tick_named, ticks, informed, tree_of, worker_agent)
+                                                                       emitted, labelled_tick, ticks, informed, tree_of, worker_agent)
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, started_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.modules.processes.support.process_nudges import SILENT_RUN
@@ -59,7 +59,7 @@ def test_a_workers_long_silent_build_is_told_and_warned_but_never_asked_the_five
         tree.used += 1 if step > 16 else 0
         watch_tick(story)
         cadence_tick(story)
-        tick_named(story, "output checks")
+        labelled_tick(story, "output checks")
     lines = informed(story, worker.session)
     story.expect_rows(any(f"Output {build.id} printed nothing for 30s" in line for line in lines),
                       any(f"Output {build.id} printed nothing for 150s and uses no CPU" in line for line in lines),

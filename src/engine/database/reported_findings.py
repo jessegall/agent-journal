@@ -27,8 +27,8 @@ class ReportedFindings:
             self.keys.update({finding.key: (finding.count, now) for finding in unreported_findings})
         return unreported_findings
 
-    def is_new(self, key: str, count: int, now: float) -> bool:
+    def is_new(self, key: str, count: int, current_time: float) -> bool:
         if key not in self.keys:
             return True
         reported_count, reported_at = self.keys[key]
-        return count != reported_count or now - reported_at >= REPEAT_AFTER_SECONDS
+        return count != reported_count or current_time - reported_at >= REPEAT_AFTER_SECONDS

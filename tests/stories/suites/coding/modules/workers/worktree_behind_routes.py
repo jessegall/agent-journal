@@ -8,7 +8,7 @@ from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.suites.coding.modules.workers.support.base_branch import own_commits
+from tests.stories.suites.coding.modules.workers.support.base_branch import worker_commits
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
@@ -22,7 +22,7 @@ SEVERAL_WORKERS = 5
 
 def b24_far_behind_goes_to_the_main_agent_without_the_merger(story, repository: GitRepository, worker: Actor) -> None:
     setting(story, "update-to-main-commits", 20)
-    own_commits(repository, worker.id, 1)
+    worker_commits(repository, worker.id, 1)
     base_commits(repository, 25)
     stale_check(story)
     story.expect_text(f"agent-line list --agent {story.agent.id}", "commits behind", "too far to leave to the merger")
@@ -30,7 +30,7 @@ def b24_far_behind_goes_to_the_main_agent_without_the_merger(story, repository: 
 
 
 def f53_a_commit_closes_the_open_check_as_updated(story, repository: GitRepository, worker: Actor) -> None:
-    own_commits(repository, worker.id, 1)
+    worker_commits(repository, worker.id, 1)
     base_commits(repository, 3)
     stale_check(story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
@@ -40,7 +40,7 @@ def f53_a_commit_closes_the_open_check_as_updated(story, repository: GitReposito
 
 
 def f54_abandoning_the_worktree_closes_its_check_as_gone(story, repository: GitRepository, worker: Actor) -> None:
-    own_commits(repository, worker.id, 1)
+    worker_commits(repository, worker.id, 1)
     base_commits(repository, 3)
     stale_check(story)
     story.expect_success(f'worker release {agent_number(story, worker.id)} --abandon "the worker left"', actor=story.agent)
@@ -54,7 +54,7 @@ def g57_five_worktrees_in_one_look_start_the_merger_once(story, repository: GitR
         task_id = story.new_row_id(f'task make "Work {number}" --brief "done when it is done"', actor=story.agent)
         workers.append(Actor(story.new_row_id(DISPATCH.replace(" 1", f" {task_id}"), actor=story.agent), ActorType.AGENT))
     for each in workers:
-        own_commits(repository, each.id, 1)
+        worker_commits(repository, each.id, 1)
     base_commits(repository, 3)
     stale_check(story)
     mergers = [agent for agent in story.container.get(Queries).query(Agent).every_row(TEST_ROWS_REASON) if agent.profile == f"{MERGER_PROFILE.name}"]

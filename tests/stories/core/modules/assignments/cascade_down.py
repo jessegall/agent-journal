@@ -2,7 +2,7 @@ import pytest
 
 from tests.stories.core.modules.assignments.support.assignable_chain import CHAIN
 from tests.stories.core.modules.assignments.support.assignment_fixtures import YardWithBays, chain_worker, parcel_ids
-from tests.stories.core.modules.assignments.support.assignment_reads import row_actors, assigned, assignment_of, logged_events
+from tests.stories.core.modules.assignments.support.assignment_reads import row_actors, assigned, assignment_record, logged_events
 
 ALL_PARCELS = [*parcel_ids(1), *parcel_ids(2)]
 
@@ -25,8 +25,8 @@ def test_assigning_a_yard_assigns_its_bays_and_parcels_in_one_command_prints_the
 
 def test_assigning_a_bay_assigns_only_its_parcels_which_carry_their_source_and_never_changes_the_yards_assignee(yard):
     assigned(yard, "bay 1", chain_worker(yard, 2).id)
-    bay_assignment = assignment_of(yard, "bay", 1)
-    shown = yard.run(f"assignment show {assignment_of(yard, 'parcel', 1)['id']}", actor=yard.user).output_text
+    bay_assignment = assignment_record(yard, "bay", 1)
+    shown = yard.run(f"assignment show {assignment_record(yard, 'parcel', 1)['id']}", actor=yard.user).output_text
     yard.expect_rows(bay_assignment["source_id"] is None, f"source_id: {bay_assignment['id']}" in shown, detail=shown)
     yard.expect_rows(row_actors(yard, "yard") == {}, row_actors(yard, "bay") == {1: chain_worker(yard, 2).id},
                      sorted(row_actors(yard, "parcel")) == parcel_ids(1), detail=str(row_actors(yard, "parcel")))

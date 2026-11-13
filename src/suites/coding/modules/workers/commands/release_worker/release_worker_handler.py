@@ -29,8 +29,8 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, ReleaseOutcome]):
     runs_once = True
     command = ReleaseWorker
 
-    def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, numbers: RowNumbers, units: WorkUnits, agents: AgentRows, own_changes: WorktreeOwnChanges) -> None:
-        self.numbers, self.units, self.agents, self.own_changes = numbers, units, agents, own_changes
+    def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, numbers: RowNumbers, units: WorkUnits, agents: AgentRows, worker_changes: WorktreeOwnChanges) -> None:
+        self.numbers, self.units, self.agents, self.own_changes = numbers, units, agents, worker_changes
         self.worktrees, self.git, self.environments, self.bus = worktrees, git, environments, bus
 
     def handle(self, command: ReleaseWorker, context: Context) -> ReleaseOutcome:

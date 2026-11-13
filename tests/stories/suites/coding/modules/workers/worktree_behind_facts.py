@@ -6,7 +6,7 @@ import pytest
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
-from tests.stories.suites.coding.modules.workers.support.base_branch import checkout_of, committed_on, own_commits
+from tests.stories.suites.coding.modules.workers.support.base_branch import checkout_of, committed_on, worker_commits
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
 
 LOGIN_BRANCH = "feature/login"
@@ -23,7 +23,7 @@ def login_base(story, repository: GitRepository) -> None:
 
 
 def a2_own_commits_and_an_unmoved_base(story, repository: GitRepository, worker_id: int) -> tuple[str, ...]:
-    own_commits(repository, worker_id, 5)
+    worker_commits(repository, worker_id, 5)
     return ("worker status", f"0 behind {ENVIRONMENT_BRANCH}")
 
 
@@ -47,7 +47,7 @@ def a5_a_worktree_cut_from_another_branch(story, repository: GitRepository, work
 
 
 def a13_part_of_the_own_unit_merged_into_the_base(story, repository: GitRepository, worker_id: int) -> tuple[str, ...]:
-    own_commits(repository, worker_id, 2)
+    worker_commits(repository, worker_id, 2)
     repository.git("merge", "--no-ff", "-m", "Merge part of the unit", repository.worker_branch(worker_id), folder=checkout_of(repository, ENVIRONMENT_BRANCH))
     return ("worker status", f"0 behind {ENVIRONMENT_BRANCH}")
 

@@ -1,4 +1,4 @@
-from engine.testing.expectations.text_match import holds_line
+from engine.testing.expectations.text_match import contains_line
 from datetime import timedelta
 
 from engine.enums.command_category import CommandCategory
@@ -37,7 +37,7 @@ def read_lines(story: Story, sample) -> list[str]:
 
 def expect_line(story: Story, sample, text: str) -> None:
     lines = read_lines(story, sample)
-    assert holds_line(lines, text), lines
+    assert contains_line(lines, text), lines
 
 
 def expect_line_absent(story: Story, sample, text: str) -> None:

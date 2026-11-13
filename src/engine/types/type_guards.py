@@ -38,5 +38,5 @@ def is_number(value: object) -> TypeIs[int | float]:
     return isinstance(value, (int, float)) and not isinstance(value, bool)
 
 
-def is_object_mapping(value: object) -> TypeIs[Mapping[str, object]]:
+def is_string_mapping(value: object) -> TypeIs[Mapping[str, object]]:
     return isinstance(value, Mapping)

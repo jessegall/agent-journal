@@ -40,9 +40,9 @@ class TemplateDatabases:
         self.working_journals: dict[Path, list[WorkingJournal]] = {}
 
     @staticmethod
-    def remove_stale_working_folders(now: float) -> None:
+    def remove_stale_working_folders(current_time: float) -> None:
         for folder in Path(tempfile.gettempdir()).glob(f"{WORKING_FOLDER_PREFIX}*"):
-            if now - folder.stat().st_mtime > STALE_WORKING_FOLDER_SECONDS:
+            if current_time - folder.stat().st_mtime > STALE_WORKING_FOLDER_SECONDS:
                 shutil.rmtree(folder, ignore_errors=True)
 
     def story(self, folder: Path, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Story:

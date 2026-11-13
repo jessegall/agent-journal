@@ -8,7 +8,7 @@ from engine.actor.actor import Actor
 from engine.query.queries import Queries
 from engine.scope.scopes import Scopes
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.suites.coding.modules.workers.support.base_branch import checkout_of, committed_on, own_commits
+from tests.stories.suites.coding.modules.workers.support.base_branch import checkout_of, committed_on, worker_commits
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
 from suites.coding.modules.workers.models.merger_line import MergerLine
@@ -79,48 +79,48 @@ def login_base(story, repository) -> None:
 
 
 def s1_three_merged_workers_open_one_check_and_start_the_merger(story, repository, worker: Actor) -> None:
-    own_commits(repository, worker.id, 1)
+    worker_commits(repository, worker.id, 1)
     merged_workers(repository, 3)
     stale_check(story)
     story.expect_rows([check.behind for check in checks(story)] == [3], len(behind_lines(story)) == 1, detail=f"{checks(story)} {behind_lines(story)}")
 
 
 def s2_own_commits_and_an_unmoved_base_open_none(story, repository, worker: Actor) -> None:
-    own_commits(repository, worker.id, 5)
+    worker_commits(repository, worker.id, 5)
     stale_check(story)
     story.expect_rows(checks(story) == [])
 
 
 def s3_a_merged_four_commit_worker_counts_once(story, repository, worker: Actor) -> None:
-    own_commits(repository, worker.id, 1)
+    worker_commits(repository, worker.id, 1)
     merged_workers(repository, 1, commits=4)
     stale_check(story)
     story.expect_rows([check.behind for check in checks(story)] == [1], detail=str(checks(story)))
 
 
 def s4_a_commit_straight_on_the_base_counts(story, repository, worker: Actor) -> None:
-    own_commits(repository, worker.id, 1)
+    worker_commits(repository, worker.id, 1)
     base_commits(repository, 1)
     stale_check(story)
     story.expect_rows([check.behind for check in checks(story)] == [1], detail=str(checks(story)))
 
 
 def s5_a_worktree_counts_against_its_own_base(story, repository, worker: Actor) -> None:
-    own_commits(repository, worker.id, 1)
+    worker_commits(repository, worker.id, 1)
     base_commits(repository, 2)
     stale_check(story)
     story.expect_rows(checks(story) == [], detail=str(checks(story)))
 
 
 def s6_two_behind_with_three_to_check_opens_none(story, repository, worker: Actor) -> None:
-    own_commits(repository, worker.id, 1)
+    worker_commits(repository, worker.id, 1)
     base_commits(repository, 2)
     stale_check(story)
     story.expect_rows(checks(story) == [])
 
 
 def s7_the_look_comes_once_per_ten_minutes(story, repository, worker: Actor) -> None:
-    own_commits(repository, worker.id, 1)
+    worker_commits(repository, worker.id, 1)
     base_commits(repository, 2)
     stale_check(story)
     base_commits(repository, 1, start=2)
@@ -134,7 +134,7 @@ def s7_the_look_comes_once_per_ten_minutes(story, repository, worker: Actor) -> 
 
 def s8_zero_to_check_looks_at_nothing(story, repository, worker: Actor) -> None:
     setting(story, "behind-commits-to-check", 0)
-    own_commits(repository, worker.id, 1)
+    worker_commits(repository, worker.id, 1)
     base_commits(repository, 4)
     stale_check(story)
     story.expect_rows(checks(story) == [], behind_lines(story) == [])
@@ -147,7 +147,7 @@ def s9_a_delivered_worktree_is_skipped(story, repository, worker: Actor) -> None
 
 
 def s10_an_open_check_is_not_doubled(story, repository, worker: Actor) -> None:
-    own_commits(repository, worker.id, 1)
+    worker_commits(repository, worker.id, 1)
     base_commits(repository, 3)
     stale_check(story)
     base_commits(repository, 5, start=3)
@@ -164,7 +164,7 @@ def s12_a_worktree_with_nothing_of_its_own_moves_with_no_merger(story, repositor
 
 
 def s13_a_partial_merge_of_its_own_unit_does_not_count(story, repository, worker: Actor) -> None:
-    own_commits(repository, worker.id, 2)
+    worker_commits(repository, worker.id, 2)
     repository.git("merge", "--no-ff", "-m", "Merge part of the unit", repository.worker_branch(worker.id), folder=checkout_of(repository, ENVIRONMENT_BRANCH))
     stale_check(story)
     story.expect_rows(checks(story) == [], detail=str(checks(story)))

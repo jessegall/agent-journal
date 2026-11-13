@@ -15,7 +15,7 @@ from engine.command.command import Command
 from engine.listener.commit.commit_listener import CommitListener
 from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
-from engine.types.type_guards import is_mapping, is_object_mapping
+from engine.types.type_guards import is_mapping, is_string_mapping
 from core.modules.environments.models.environment import Environment
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
@@ -60,7 +60,7 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         event_data = {str(key): value for key, value in data.items()} if is_mapping(data) else {}
         file_checkout = self.delivery_checkout(delivery, event_data)
         file_values = event_data.get(FILE_FIELD)
-        if file_checkout is not None and is_object_mapping(file_values):
+        if file_checkout is not None and is_string_mapping(file_values):
             event_data[FILE_FIELD] = self.with_file_state(file_checkout, file_values)
         location = f"at {delivery.event}{COMMIT_SUFFIX if delivery.script else ''}"
         request = PluginRunRequest(check.runnable, PluginEvent(delivery.event, event_data), EventForm.COMMIT, self.policy.commit_limit_ms if delivery.script else DELIVERY_LIMIT_MS,

@@ -6,7 +6,7 @@ import pytest
 from engine.actor.actor import Actor
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.suites.coding.modules.workers.support.base_branch import checkout_of, committed_on, own_commits
+from tests.stories.suites.coding.modules.workers.support.base_branch import checkout_of, committed_on, worker_commits
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
 
@@ -41,7 +41,7 @@ def s26_the_accepted_line_says_to_edit_nothing_until_it_ends(story, repository: 
 
 
 def s27_three_own_commits_sit_on_the_new_tip(story, repository: GitRepository, worker: Actor) -> None:
-    own_commits(repository, worker.id, 3)
+    worker_commits(repository, worker.id, 3)
     base_tax(repository)
     story.expect_text(UPDATE, ON_THE_BASE, actor=worker)
     folder = repository.worktree_folder(worker.id)

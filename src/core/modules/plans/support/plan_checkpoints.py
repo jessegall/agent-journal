@@ -16,7 +16,7 @@ from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.support.checkpoint_branch_moves import CheckpointBranchMoves
 from core.modules.plans.support.checkpoint_windows import CheckpointWindows
 from core.modules.plans.support.early_run import EarlyRun
-from core.modules.plans.support.plan_settings import WAIT_FOR_PERSON_SETTING
+from core.modules.plans.support.plan_settings import PERSON_WAIT_SETTING
 
 REACHES_REASON = "the checkpoint status shows the newest reach of every phase, read from every reach of the plan"
 
@@ -114,7 +114,7 @@ class PlanCheckpoints:
         return frozenset(reach.phase_id for reach in reaches if reach.state is CheckpointState.RUNNING)
 
     def save_pass(self, plan_id: int, phase_id: int, context: Context) -> bool:
-        if self.settings.flag(WAIT_FOR_PERSON_SETTING):
+        if self.settings.flag(PERSON_WAIT_SETTING):
             return False
         return self.saved_pass(plan_id, phase_id, context)
 

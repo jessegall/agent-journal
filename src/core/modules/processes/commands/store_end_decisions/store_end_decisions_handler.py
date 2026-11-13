@@ -13,8 +13,8 @@ class StoreEndDecisionsHandler(Handler[StoreEndDecisions, None]):
 
     command = StoreEndDecisions
 
-    def __init__(self, rows: EventRows, visibility: RunVisibility, shadow: ShadowDecisions) -> None:
-        self.rows, self.visibility, self.shadow = rows, visibility, shadow
+    def __init__(self, rows: EventRows, visibility: RunVisibility, trial: ShadowDecisions) -> None:
+        self.rows, self.visibility, self.shadow = rows, visibility, trial
 
     def handle(self, command: StoreEndDecisions, context: Context) -> None:
         process = self.rows.required(Process, command.process_id)

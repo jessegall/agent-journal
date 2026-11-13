@@ -87,8 +87,8 @@ class Process(EnvironmentScoped, Model):
         return self.is_queue_run or self.slot_assigned or self.queued_at is not None
 
     # The queue gave this run its place since the earlier row was saved.
-    def is_admitted_since(self, earlier: "Process") -> bool:
-        return earlier.queued_at is not None and self.queued_at is None and self.state in OPEN
+    def is_admitted_since(self, prior: "Process") -> bool:
+        return prior.queued_at is not None and self.queued_at is None and self.state in OPEN
 
     def has_expired_timeout(self, timestamp: Timestamp) -> bool:
         if self.timeout_seconds is None or self.started_at is None:

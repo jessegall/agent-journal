@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from engine.testing.expectations.text_match import ExpectedText, holds_line, contains_text
+from engine.testing.expectations.text_match import ExpectedText, contains_line, contains_text
 
 
 @dataclass(frozen=True)

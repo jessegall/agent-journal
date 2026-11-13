@@ -5,7 +5,7 @@ from engine.setting.setting_value import SettingValue
 MODULE_KEY = "journal.core.plans"
 CHECKPOINTS_GROUP = f"{MODULE_KEY}.checkpoints"
 CHECKPOINT_COMMAND_SETTING = f"{CHECKPOINTS_GROUP}.command"
-WAIT_FOR_PERSON_SETTING = f"{CHECKPOINTS_GROUP}.wait-for-person"
+PERSON_WAIT_SETTING = f"{CHECKPOINTS_GROUP}.wait-for-person"
 CHECKPOINTS_SECTION = "Checkpoints"
 
 PLAN_SETTINGS = [

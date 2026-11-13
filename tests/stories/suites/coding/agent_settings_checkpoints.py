@@ -5,7 +5,7 @@ from tests.stories.suites.coding.support.settings_modal import Modal
 from tests.stories.support.story_checks import expect_value, expect_value_4
 
 from core.modules.plan_reviews.support.plan_review_settings import QUICK_REVIEW_SETTING as REVIEW, REVIEW_MODEL_SETTING as MODEL
-from core.modules.plans.support.plan_settings import CHECKPOINT_COMMAND_SETTING as COMMAND, WAIT_FOR_PERSON_SETTING as WAIT
+from core.modules.plans.support.plan_settings import CHECKPOINT_COMMAND_SETTING as COMMAND, PERSON_WAIT_SETTING as WAIT
 
 
 @pytest.fixture

@@ -16,8 +16,8 @@ class MergerWork:
     question waits for the main agent, not the merger: the merger could neither tell nor wake it. Starting the
     merger and journal merger next ask the same."""
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, merge_ask: MergeAskSection, escalations: Escalations, agents: AgentRows) -> None:
-        self.queries, self.worktrees, self.merge_ask = queries, worktrees, merge_ask
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, merge_request: MergeAskSection, escalations: Escalations, agents: AgentRows) -> None:
+        self.queries, self.worktrees, self.merge_ask = queries, worktrees, merge_request
         self.escalations, self.agents = escalations, agents
 
     def unread_lines(self) -> tuple[MergerLine, ...]:

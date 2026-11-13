@@ -24,14 +24,14 @@ def next_task(selected=None, focused=None, ready=READY, waiting_ids=()):
     return WorkerNextTask(tasks, plan_order, choices, picker, queries, open_tasks)
 
 
-@pytest.mark.parametrize("chosen, focused, first_id", [
+@pytest.mark.parametrize("selected, focused, first_id", [
     (task(3), task(2), 3),
     (None, task(2), 2),
     (None, None, 1),
     (None, task(9), 1),
 ], ids=["the chosen task first", "then the task of the focus", "then the order of the plans", "a task of the focus that is not the worker's is never taken"])
-def test_the_guidance_and_the_next_task_name_the_same_task(chosen, focused, first_id):
-    picker = next_task(chosen, focused)
+def test_the_guidance_and_the_next_task_name_the_same_task(selected, focused, first_id):
+    picker = next_task(selected, focused)
     assert picker.following(WORKER_ID).id == first_id
     assert picker.first_ready(WORKER_ID, READY, ()).id == first_id
 

@@ -51,9 +51,9 @@ def test_a_run_with_no_runs_left_is_refused():
     assert rule(0, has_failure=False).answer(hook()).refusal
 
 
-@pytest.mark.parametrize("runs_left", [0, 3])
-def test_a_run_while_tests_of_the_work_have_failed_is_allowed_and_not_counted(runs_left):
-    answer = rule(runs_left, has_failure=True).answer(hook())
+@pytest.mark.parametrize("remaining_runs", [0, 3])
+def test_a_run_while_tests_of_the_work_have_failed_is_allowed_and_not_counted(remaining_runs):
+    answer = rule(remaining_runs, has_failure=True).answer(hook())
     assert not answer.refusal and not answer.commands_unrefused
 
 

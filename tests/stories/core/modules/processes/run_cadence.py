@@ -8,7 +8,7 @@ from tests.stories.core.modules.chat.support.mark_samples import expect_marks_te
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.core.modules.processes.support.cadence_probe import (TICK, HelperBesideWorker, agent_run, cadence_lines, cadence_tick,
                                                                        expect_informed, has_cadence_record, kept_lines, session_run, emitted, running_run, side_run,
-                                                                       tick_named, ticks, informed, waiting_run, worker_agent)
+                                                                       labelled_tick, ticks, informed, waiting_run, worker_agent)
 from tests.stories.core.modules.processes.background import SavedBuildMoved, SilentVitestRun, expect_streaming_line, expect_without_hint
 from tests.stories.core.modules.processes.hang_watch import HANG_SECONDS, ActiveBuild, expect_looks, started_tree, watch_tick
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process
@@ -249,6 +249,6 @@ def test_a_long_script_of_no_known_type_is_told_to_print_its_steps_and_its_card_
     expect_informed(story, MAIN, SILENT_RUN.nudge(output=process.id, seconds=30, hint='make it print its steps').text)
     story.expect_success('reader add move-files --commands "zsh tools/move.sh*" --lines "moved" --progress "\\[([0-9]+)/([0-9]+)\\]"', actor=story.agent)
     emitted(story, process, "[3/17] moved a.txt\n")
-    tick_named(story, "read running outputs")
+    labelled_tick(story, "read running outputs")
     story.expect_text(f"output show {process.id}", "progress: 17", actor=story.agent)
     expect_marks_text(story, "Moving the files")

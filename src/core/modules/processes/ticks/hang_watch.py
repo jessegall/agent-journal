@@ -64,18 +64,18 @@ class HangWatch:
         self.stop(container, process, seconds)
         return True
 
-    def checked(self, container: Container, process: Process, silent: int, now: float, limits: HangLimits) -> bool:
+    def checked(self, container: Container, process: Process, silent: int, current_time: float, limits: HangLimits) -> bool:
         asks = container.get(LookAsks)
         if process.category is not CommandCategory.TEST_RUN or silent < limits.look:
             asks.clear(process.id)
             return False
         state = asks.state(process.id)
-        if not state.waited_enough(now, limits.hang, limits.look):
+        if not state.waited_enough(current_time, limits.hang, limits.look):
             return False
         if state.unanswered >= STOP_AFTER_CHECKS:
             self.stop(container, process, silent)
             return True
-        asks.record_ask(process.id, now)
+        asks.record_ask(process.id, current_time)
         container.get(Bus).run(AskAgentToLook(process.id, silent), Actor.core(), environment_id=process.environment_id)
         return True
 

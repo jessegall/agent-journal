@@ -24,8 +24,8 @@ class CadenceLog:
     def resumed(self, process_id: int) -> float:
         return self.kept(process_id).resumed
 
-    def record(self, process_id: int, size: int, now: float) -> tuple[float, ...]:
-        line = self.kept(process_id).looked(size, now)
+    def record(self, process_id: int, size: int, current_time: float) -> tuple[float, ...]:
+        line = self.kept(process_id).looked(size, current_time)
         self.folder.write(process_id, CADENCE_FILE, line.text())
         return line.growths
 
