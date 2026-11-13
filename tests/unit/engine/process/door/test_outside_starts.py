@@ -2,7 +2,7 @@ import json
 import re
 from pathlib import Path
 
-from engine.process.door.outside_starts import OUTSIDE_STARTS
+from tests.unit.engine.process.door.outside_starts import OUTSIDE_STARTS
 
 SOURCE = Path(__file__).resolve().parents[5] / "src"
 DOOR_LISTS = SOURCE.parent / ".commandments" / "custom" / "lists.json"

@@ -1,4 +1,4 @@
-from engine.process.door.outside_start import OutsideStart
+from tests.unit.engine.process.door.outside_start import OutsideStart
 
 OUTSIDE_STARTS = (
     OutsideStart("src/engine/process/door/runner_program.py", "the door itself: the one place the executor starts a program"),

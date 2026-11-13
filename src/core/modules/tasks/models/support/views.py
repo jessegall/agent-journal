@@ -45,8 +45,8 @@ def or_zero(expression: Expression) -> FunctionCall:
 def task_helper_match() -> AllOf:
     """Matches the agent named helper that works a task: its assigned actor, else its holder, and a main agent only
     when it is assigned the task and nobody holds it."""
-    worker = FunctionCall(SqlFunction.COALESCE, [TASK_ACTOR, Column("tasks.holder_id")])
-    return AllOf([Comparison(Column("helper.id"), ComparisonOperator.EQUAL, worker),
+    task_agent = FunctionCall(SqlFunction.COALESCE, [TASK_ACTOR, Column("tasks.holder_id")])
+    return AllOf([Comparison(Column("helper.id"), ComparisonOperator.EQUAL, task_agent),
                   AnyOf([Comparison(Column("helper.role"), ComparisonOperator.NOT_EQUAL, Literal("main")),
                          AllOf([Comparison(Column("helper.id"), ComparisonOperator.EQUAL, TASK_ACTOR), IsNull("tasks.holder_id")])])])
 

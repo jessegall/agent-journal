@@ -3,7 +3,7 @@ from engine.errors.refusal import Refusal
 from engine.event.created import Created
 from engine.guard.guard import Guard
 from core.modules.aliases.models.alias import Alias
-from suites.coding.modules.workers.support.worktree_git import WORKTREES_FOLDER
+from suites.coding.support.worktree_checkouts import WORKTREES_FOLDER
 
 
 class AliasWorktreePathGuard(Guard[Created[Alias]]):

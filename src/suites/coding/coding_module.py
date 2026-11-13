@@ -61,9 +61,12 @@ from suites.coding.support.graphify_settings import GRAPHIFY_SETTING_VALUES
 from suites.coding.support.graphify_tool import GRAPHIFY
 from suites.coding.bindings.coding_tool_runners import CodingToolRunners
 from suites.coding.migrations.m010_graphify_setting_keys import GraphifySettingKeysMigration
+from suites.coding.migrations.m011_worker_profile_names import WorkerProfileNamesMigration
 from core.modules.tools.support.tool_runners import ToolRunners
 from suites.coding.support.full_run_nudges import TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN
 from suites.coding.support.skeletons import CODING_GIT_SKELETON, CODING_FILES_SKELETON, CODING_WORK_MODE_SKELETON, CODING_AGENT_SETTINGS_SKELETON, CODING_FILE_FEED_SKELETON, CODING_FILE_EDITS_SKELETON, CODING_TERMINAL_SKELETON
+from engine.checkout.project_checkouts import ProjectCheckouts
+from suites.coding.support.worktree_checkouts import WorktreeCheckouts
 
 FILE_EDIT_READS = ["file-edit list", "file-edit show", "project-file show"]
 
@@ -99,11 +102,11 @@ class CodingModule(Module):
               SkillDeclaration("journal-work-modes", "Work as the main agent of the coding suite from its work controls; read it when auto mode, the presets, read-only helpers or the worker limit come up", keywords=("builder", "orchestrator", "auto mode", "work mode"), types=["main"]),
               SkillDeclaration("journal-test-draining", "Drain the failed tests of a full run from one file, biggest cause first, with no full rerun until it is empty; read it when a full run has failures", keywords=("failed tests", "full run"))]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
-    migrations = [HelperRequestKeysMigration, HelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration, PruneFileEditsMigration, GraphifySettingKeysMigration]
+    migrations = [WorkerProfileNamesMigration, HelperRequestKeysMigration, HelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration, PruneFileEditsMigration, GraphifySettingKeysMigration]
     handlers = [RecordFileEditHandler, RecordFileChangesHandler, PruneFileEditsHandler]
     driver_rules = [WaitingItemsRule, IntroductionRule, FailedFullRunRule, GraphifySearchRule]
     listeners = [FullTestRunListener, GraphifyHookRemovalListener]
-    bindings = {ToolRunners: CodingToolRunners}
+    bindings = {ToolRunners: CodingToolRunners, ProjectCheckouts: WorktreeCheckouts}
     subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand, FileEditFileSubcommand, RecordFileChangesSubcommand]
     windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, skeleton=CODING_GIT_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"],
                                  keys=[WindowKey("branches", "git-overview branches", arguments=["skip", "limit"]),

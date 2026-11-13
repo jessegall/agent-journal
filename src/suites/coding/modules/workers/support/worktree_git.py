@@ -30,8 +30,8 @@ from suites.coding.modules.workers.support.worktree_file_change import WorktreeF
 from suites.coding.modules.workers.support.worktree_start import WorktreeStart
 from suites.coding.modules.workers.support.worker_folder_runs import WorkerFolderRuns
 from suites.coding.modules.workers.support.merge_builds import MergeBuilds
+from suites.coding.support.worktree_checkouts import WORKTREES_FOLDER
 
-WORKTREES_FOLDER = Path(".journal") / "worktrees"
 GIT_LIMIT_SECONDS = 60
 CHECKOUT_LIMIT_SECONDS = 300
 BUILD_LIMIT_SECONDS = 300

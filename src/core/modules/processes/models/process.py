@@ -110,7 +110,7 @@ class Process(EnvironmentScoped, Model):
 
     def end_journal_merge(self, timestamp: Timestamp, exit_code: int) -> "Process":
         """Ends a merge the journal ran itself with moves of its own, which the listeners of an agent's ended run never
-        hear: it has no reader, no watch and no worker waiting on it."""
+        hear: it has no reader, no watch and no agent waiting on it."""
         move = ProcessLifecycle.journal_merge_finish if exit_code == 0 else ProcessLifecycle.journal_merge_fail
         return self.moved(move, exit_code=exit_code, ended_at=timestamp, queued_at=None, slot_assigned=False, progress=FINISHED_PROGRESS if exit_code == 0 else self.progress)
 

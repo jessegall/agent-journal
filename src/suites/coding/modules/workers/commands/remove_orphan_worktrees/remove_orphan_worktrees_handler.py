@@ -7,7 +7,8 @@ from core.modules.environments.models.environment import Environment
 from engine.query.queries import Queries
 from suites.coding.modules.workers.commands.remove_orphan_worktrees.remove_orphan_worktrees import RemoveOrphanWorktrees
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.worktree_git import WORKTREES_FOLDER, WorktreeGit
+from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from suites.coding.support.worktree_checkouts import WORKTREES_FOLDER
 
 OCCUPIED_REASON = "a folder is an orphan only when no open worktree of any worker holds it"
 

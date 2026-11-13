@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from suites.coding.modules.workers.support.worktree_git import WORKTREES_FOLDER
+from suites.coding.support.worktree_checkouts import WORKTREES_FOLDER
 
 from engine.command.bus import Bus
 from engine.command.context import Context

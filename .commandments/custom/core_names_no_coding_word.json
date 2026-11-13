@@ -114,6 +114,9 @@
             },
             {
                 "fileMatches": "(^|/)src/engine/module/code_fingerprint\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/pins/support/project_repositories\\.py$"
             }
         ]
     },

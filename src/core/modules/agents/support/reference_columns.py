@@ -7,14 +7,14 @@ from engine.query.query import ROW_KEY
 
 AGENT_TABLES = ("agents", "actors")
 AGENT_COLUMN_NAMES = ("actor_id", "holder_id", "delegated_to", "creator_id", "parent_id", "session_agent_id", "agent_id", "survivor_id",
-                      "folded_agent_id", "lifter_id", "sender_id", "assignee_id", "owner_id", "worker_id", "test_agent_id")
+                      "folded_agent_id", "lifter_id", "sender_id", "assignee_id", "owner_id", "test_agent_id")
 AGENT_COLUMN_SUFFIX = "_agent_id"
 POLYMORPHIC_PAIRS = (("row_model", "row_id"), ("subject_model", "subject_id"), ("target_model", "target_id"), ("source_model", "source_id"),
                      ("row_table", "row_id"))
 AGENT_MODEL_NAMES = ("agent", "agents", "actor", "actors")
 FOLD_TABLES = ("agent_folds", "agent_fold_rows")
 NOT_AGENT_COLUMNS = (("agent_lines", "wakes_agent"), ("agents", "launch_agent_id"), ("aliases", "agent_access"), ("context_compaction_notices", "agent_number"),
-                     ("helper_jobs", "new_agent_reason"), ("trigger_action_runs", "notify_agent"), ("worker_worktrees", "new_agent_reason"))
+                     ("trigger_action_runs", "notify_agent"))
 
 
 @dataclass(frozen=True)
@@ -54,6 +54,6 @@ class ReferenceColumns:
     def check_placed(schema: Sequence[SchemaColumn], tables: set[str], plain: tuple[tuple[str, str], ...]) -> None:
         unplaced = [f"{column.table}.{column.column}" for column in schema
                     if column.table in tables and "agent" in column.column and (column.table, column.column) not in plain and (column.table, column.column) not in NOT_AGENT_COLUMNS
-                    and column.target is None and not column.column.endswith(("_at", "_count", "_name", "_text"))]
+                    and column.target is None and not column.column.endswith(("_at", "_count", "_name", "_text", "_reason"))]
         if unplaced:
             raise Refusal(f"the fold cannot place these agent-like columns: {', '.join(unplaced)}", "name each one in ReferenceColumns as an agent column or as not one")

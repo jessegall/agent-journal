@@ -17,8 +17,8 @@ from engine.provider.project_hook_cleanup import ProjectHookCleanup
 from engine.provider.providers import Providers
 from engine.time.clock import Clock
 from engine.time.timestamp import Timestamp
+from engine.checkout.project_checkouts import ProjectCheckouts
 
-WORKTREE_PATTERN = "*/*"
 SHELL_RUNNER_MARK = JOURNAL_MARKS[1]
 
 
@@ -29,9 +29,9 @@ class ProgramSettingsSync:
     started before the switch still runs."""
 
     def __init__(self, home: JournalHome, providers: Providers, managed: ManagedHooks, writer: ProgramSettingsWriter,
-                 backup: ProgramSettingsBackup, cleanup: ProjectHookCleanup, sessions: ProgramSessions, clock: Clock) -> None:
+                 backup: ProgramSettingsBackup, cleanup: ProjectHookCleanup, sessions: ProgramSessions, clock: Clock, checkouts: ProjectCheckouts) -> None:
         self.home, self.providers, self.managed, self.writer, self.backup = home, providers, managed, writer, backup
-        self.cleanup, self.sessions, self.clock = cleanup, sessions, clock
+        self.cleanup, self.sessions, self.clock, self.checkouts = cleanup, sessions, clock, checkouts
 
     def settings(self, program: str) -> ProgramSettings:
         provider = self.providers.provider(program)
@@ -48,9 +48,7 @@ class ProgramSettingsSync:
         return SHELL_RUNNER_MARK in self.runner()
 
     def folders(self) -> tuple[Path, ...]:
-        worktrees = self.home.worktrees_folder
-        found_worktrees = sorted(folder.resolve() for folder in worktrees.glob(WORKTREE_PATTERN) if folder.is_dir()) if worktrees.is_dir() else []
-        return (self.home.project_folder, *found_worktrees)
+        return (self.home.project_folder, *self.checkouts.folders())
 
     def prepare(self, program: str) -> tuple[Path, ...]:
         settings = self.settings(program)

@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from engine.checkout.project_checkouts import ProjectCheckouts
 from engine.dotted_path.dotted_path import DottedPath
 from engine.errors.refusal import Refusal
 from engine.journal.journal_home import JournalHome
@@ -31,6 +32,16 @@ class SecondProgram(SettingsProgram):
     title = "Second program"
 
 
+class SampleCheckouts(ProjectCheckouts):
+    """Two separate checkouts a suite would keep beside the project."""
+
+    def __init__(self, folders: tuple[Path, ...]) -> None:
+        self.kept = folders
+
+    def folders(self) -> tuple[Path, ...]:
+        return self.kept
+
+
 def person_file(home: JournalHome, program: str) -> Path:
     return home.project_folder / "person" / f"{program}.json"
 
@@ -47,7 +58,12 @@ def sync(home: JournalHome) -> ProgramSettingsSync:
     registry = replace(empty_registry(), providers=entries)
     home.folder.mkdir(parents=True)
     container = sample_container(home.folder, registry)
+    container.bind(ProjectCheckouts, SampleCheckouts(checkouts(home)))
     return container.get(ProgramSettingsSync)
+
+
+def checkouts(home: JournalHome) -> tuple[Path, ...]:
+    return (home.project_folder / "copies" / "copy-1", home.project_folder / "copies" / "copy-2")
 
 
 def stored_settings(home: JournalHome, program: str) -> dict[str, object]:
@@ -71,14 +87,9 @@ def test_a_write_failure_is_refused_naming_the_program(sync, home):
     assert refusal.value.suggestion == "free disk space or make .journal/programs writable, then launch again"
 
 
-def test_the_worktree_folders_are_passed_to_the_provider(sync, home):
-    worktrees = [home.worktrees_folder / "development" / "worker-2", home.worktrees_folder / "development-tests" / "run-1"]
-    for worktree in worktrees:
-        worktree.mkdir(parents=True)
-    (home.worktrees_folder / "development" / "notes.txt").write_text("not a worktree")
+def test_the_project_and_its_separate_checkouts_are_passed_to_the_provider(sync, home):
     sync.prepare("sample")
-    assert stored_settings(home, "sample") == {"runner": f'"{home.hook_runner}"',
-                                               "folders": [str(home.project_folder), *(str(worktree) for worktree in sorted(worktree.resolve() for worktree in worktrees))]}
+    assert stored_settings(home, "sample") == {"runner": f'"{home.hook_runner}"', "folders": [str(home.project_folder), *(str(folder) for folder in checkouts(home))]}
 
 
 def test_prepare_all_writes_both_programs(sync, home):

@@ -67,8 +67,9 @@ def profile_names() -> re.Pattern[str]:
 
 def raw_values(text: str, relative: str) -> list[str]:
     found = [f"nudge text {pattern.pattern[:40]}" for pattern in nudge_patterns() if pattern.search(text)]
-    if not any(word in relative for word in KEPT_AS_WRITTEN):
-        found += [f"setting key {key}" for key in SETTING_KEY.findall(text) if key.rstrip(".").rsplit(".", 1)[-1] in setting_keys()]
+    if any(word in relative for word in KEPT_AS_WRITTEN):
+        return found
+    found += [f"setting key {key}" for key in SETTING_KEY.findall(text) if key.rstrip(".").rsplit(".", 1)[-1] in setting_keys()]
     if not relative.startswith(CORE_UNIT_TESTS):
         found += [f"profile name {name}" for name in profile_names().findall(text)]
     return found

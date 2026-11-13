@@ -20,6 +20,7 @@ from engine.journal.journal_home import JournalHome
 from core.modules.tools.support.tool_definition import ToolDefinition
 from core.modules.tools.support.tool_runner import ToolRunner
 from core.modules.tools.support.tool_status import ToolStatus
+from suites.coding.support.worktree_checkouts import WorktreeCheckouts
 
 INSTALL_LIMIT_SECONDS = 600
 CLAIM_VARIABLE = "JOURNAL_GRAPH_CLAIM"
@@ -119,7 +120,7 @@ class GraphifyTool(ToolRunner):
     def tick(self, folder: Path) -> ToolStatus:
         self.checked_folder(folder)
         status = self.status(folder)
-        is_worktree = self.home.worktrees_folder.resolve() in folder.resolve().parents
+        is_worktree = WorktreeCheckouts(self.home).holds(folder)
         skips_refresh = is_worktree or not self.is_installed() or not status.commit or status.is_current or status.is_running or self.is_failed(folder)
         if skips_refresh or self.refreshed_lately(folder):
             return status

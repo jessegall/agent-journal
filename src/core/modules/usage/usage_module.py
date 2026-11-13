@@ -1,5 +1,4 @@
 from engine.module.model_declaration import ModelDeclaration
-from core.modules.usage.migrations.m002_worker_profile_names import WorkerProfileUseNamesMigration
 from core.modules.usage.models.agent_listing import AgentListing
 from core.modules.usage.models.agent_counts import AgentCounts
 from core.modules.usage.models.agent_filter_options_view import AgentFilterOptionsView
@@ -44,7 +43,7 @@ class UsageModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.agents", "journal.core.environments", "journal.core.tasks", "journal.core.questions", "journal.core.drivers", "journal.core.messages", "journal.core.waits", "journal.core.plans", "journal.core.processes", "journal.core.settings", "journal.core.actors", "journal.core.schedules", "journal.core.skills", "journal.core.profiles", "journal.core.assignments"]
     models = [ModelDeclaration(Statistic, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
-    migrations = [WorkerProfileUseNamesMigration, StatisticsTableMigration]
+    migrations = [StatisticsTableMigration]
     views = [AgentCard, AgentListing, AgentFilterOptionsView, AgentCounts]
     listeners = [EndedAgentStatusListener]
     moves = [StatisticsMove]

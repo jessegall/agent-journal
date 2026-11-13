@@ -57,6 +57,11 @@
                     ]
                 }
             }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/core/modules/[^/]+/migrations/"
+            }
         ]
     },
     "sin": {

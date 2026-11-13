@@ -138,10 +138,6 @@ class JournalHome:
         return self.folder / "hooks" / "managed.json"
 
     @property
-    def worktrees_folder(self) -> Path:
-        return self.folder / "worktrees"
-
-    @property
     def hook_runner(self) -> Path:
         return self.folder / "bin" / "journal-hook"
 
