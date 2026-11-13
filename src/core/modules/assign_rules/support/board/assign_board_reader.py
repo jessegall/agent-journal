@@ -31,8 +31,8 @@ class AssignBoardReader:
     retired, each program and model those agents run on, and the rules with their conditions in plain words
     and what each did in the last day."""
 
-    def __init__(self, queries: Queries, conditions: RuleConditions, revision: RuleRevision, tasks: TaskQuery, decisions: AssignDecisionQuery, clock: Clock) -> None:
-        self.queries, self.conditions, self.revision, self.tasks = queries, conditions, revision, tasks
+    def __init__(self, queries: Queries, conditions: RuleConditions, tasks: TaskQuery, decisions: AssignDecisionQuery, clock: Clock) -> None:
+        self.queries, self.conditions, self.tasks = queries, conditions, tasks
         self.decisions, self.clock = decisions, clock
 
     def read(self) -> AssignBoard:
@@ -43,11 +43,11 @@ class AssignBoardReader:
         retired = {agent.id for agent in agents if agent.retired_at is not None}
         rules = sorted(self.queries.query(AssignRule).every_row(RULES_REASON), key=lambda rule: rule.position)
         lines = self.conditions.lines_by_rule(rules)
-        given = self.decisions.given_since(Timestamp(self.clock.timestamp().value - ACTIVITY_WINDOW))
+        given = self.decisions.assigned_counts(Timestamp(self.clock.timestamp().value - ACTIVITY_WINDOW))
         matched = self.decisions.matched_rule_ids([rule.id for rule in rules])
         skips = self.decisions.last_skips()
         activities = {rule.id: RuleActivity(given.get(rule.id, 0), rule.id in matched, skips.get(rule.id, "")) for rule in rules}
-        return AssignBoard(self.revision.current(), targets, tuple(self.board_rule(rule, lines[rule.id], retired, activities[rule.id]) for rule in rules))
+        return AssignBoard(RuleRevision.rules_revision(rules, lines), targets, tuple(self.board_rule(rule, lines[rule.id], retired, activities[rule.id]) for rule in rules))
 
     @staticmethod
     def takes_tasks(agent: Agent) -> bool:

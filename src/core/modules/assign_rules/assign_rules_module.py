@@ -19,6 +19,7 @@ from core.modules.assign_rules.guards.assign_rule_target_guard import AssignRule
 from core.modules.assign_rules.commands.record_assign_decision.record_assign_decision_handler import RecordAssignDecisionHandler
 from core.modules.assign_rules.commands.record_assign_decision.record_assign_decision_subcommand import RecordAssignDecisionSubcommand
 from core.modules.assign_rules.migrations.m001_assign_rules import AssignRulesMigration
+from core.modules.assign_rules.migrations.m002_decision_indexes import DecisionIndexesMigration
 from core.modules.assign_rules.models.assign_decision import AssignDecision
 from core.modules.assign_rules.models.assign_rule import AssignRule
 from core.modules.assign_rules.models.assign_rule_condition import AssignRuleCondition
@@ -36,7 +37,7 @@ class AssignRulesModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.plans"]
     models = [ModelDeclaration(AssignRule, excluded_subcommands=EXCLUDED_WRITES), ModelDeclaration(AssignRuleCondition, excluded_subcommands=EXCLUDED_WRITES), ModelDeclaration(AssignDecision, excluded_subcommands=EXCLUDED_WRITES)]
-    migrations = [AssignRulesMigration]
+    migrations = [AssignRulesMigration, DecisionIndexesMigration]
     handlers = [RecordAssignDecisionHandler, MakeAssignRuleHandler, EditAssignRuleHandler, MoveAssignRuleHandler, SwitchAssignRuleHandler, DeleteAssignRuleHandler]
     subcommands = [MakeAssignRuleSubcommand, EditAssignRuleSubcommand, MoveAssignRuleSubcommand, EnableAssignRuleSubcommand, DisableAssignRuleSubcommand, DeleteAssignRuleSubcommand,
                    TryAssignRuleSubcommand, RecordAssignDecisionSubcommand, AssignRuleBoardSubcommand, CountAssignRuleSubcommand]
