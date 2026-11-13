@@ -7,8 +7,8 @@ HELPER_SKILLS = ("journal", "journal-messages", "journal-memory", "journal-shell
 PLANNER_SKILLS = (*HELPER_SKILLS, "journal-plans", "journal-planning", "journal-plan-review-applying", "journal-sequences")
 DESIGN_SKILLS = (*HELPER_SKILLS, "journal-functional-design", "journal-user-stories", "journal-sequences")
 PLAN_REVIEW_SKILLS = (*HELPER_SKILLS, "journal-plans", "journal-planning")
-MERGER_SKILLS = (*HELPER_SKILLS, "journal-workers", "journal-merger")
-WORKER_SKILLS = ("journal", "journal-messages", "journal-memory", "journal-shell", "journal-tasks", "journal-workers", "journal-documents", "journal-sequences")
+MERGER_SKILLS = (*HELPER_SKILLS, "journal-dispatching-workers", "journal-merger")
+WORKER_SKILLS = ("journal", "journal-messages", "journal-memory", "journal-shell", "journal-tasks", "journal-worker", "journal-documents", "journal-sequences")
 
 DESIGN_TOOLS = tuple(f"mcp__claude_design__{name}" for name in ("get_claude_design_prompt", "list_projects", "create_project", "get_project", "list_files", "read_file", "write_files", "copy_files", "delete_files", "render_preview",
                                                                   "list_design_systems", "read_design_skill", "finalize_plan", "list_comments", "ack_comments"))

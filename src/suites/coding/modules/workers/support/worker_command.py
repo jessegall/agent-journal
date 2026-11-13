@@ -20,7 +20,7 @@ from core.modules.agents.support.agent_label import AgentLabel
 from core.modules.agents.support.new_session_line import NewSessionLine
 from core.modules.skills.support.start_skills import StartSkills
 
-WORKER_SKILLS = ("journal-tasks", "journal-shell", "journal-workers")
+WORKER_SKILLS = ("journal-tasks", "journal-shell", "journal-worker")
 WORK_STEPS = ("Read journal worker status first: it says where you are and what to do now. Prove each point of a task you have started with "
               "journal proof make <point> --task <task> \"<file:line, and the test>\", naming the tests that cover your changes in its --test command; "
               "you may prove any started task at any time and nothing is judged then. Start another of your tasks with journal task start <task> or "

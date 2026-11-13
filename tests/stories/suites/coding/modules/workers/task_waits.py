@@ -160,7 +160,7 @@ def test_a_task_waits_for_both_the_worker_and_its_other_target(new_story):
 def test_the_command_help_and_task_skill_name_worker_waits(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_text("task block --help", "worker:<n>", actor=story.agent)
-    story.expect_text("skill show journal-workers", "--on worker:<number>", actor=story.agent)
+    story.expect_text("skill show journal-dispatching-workers", "--on worker:<number>", actor=story.agent)
 
 
 def test_a_worker_that_committed_and_queued_its_tests_keeps_the_task_waiting_through_a_restart_of_its_session(new_story, monkeypatch):

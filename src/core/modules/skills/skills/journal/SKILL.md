@@ -35,7 +35,8 @@ or ask the user again: `journal search find "<words>"`.
 | journal-etiquette, journal-messages | the chat, messages and questions | at every start; a message, a question | all |
 | journal-tasks, journal-sequences, journal-documents, journal-checks, journal-library | work in hand, blocks, waits; steps; documents and reports; checks; the team's library | their commands and words | all |
 | journal-shell, journal-memory, journal-rules, journal-secrets | commands, outputs, readers, aliases; memories; project rules; keys and logins | an output or alias; a memory or rule command; a key | all |
-| journal-workers | sending a worker, and working as one | a dispatch; a worker's task | all |
+| journal-dispatching-workers | sending, checking and merging workers | a dispatch; a merge | main agent, merger |
+| journal-worker | working as a worker: proofs, commits, the merge ask | a worker's task | worker |
 | journal-plans, journal-planning, journal-plan-dispatch, journal-plan-review-applying, journal-templates | ordered tasks; how thorough a plan is; getting a plan made; working a review into a plan; templates | a plan command; a review | main agent |
 | journal-helpers, journal-merger, journal-work-modes | read-only helpers; merging a worker's work; auto mode, presets and the worker limit | a helper command; a merge; a work control | main agent |
 | journal-dumps, journal-flowcharts, journal-plugins, journal-transcriptions | dropped material; flowcharts; plugins; transcripts | their commands and words | main agent |

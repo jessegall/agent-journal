@@ -337,7 +337,7 @@ def test_skills_name_tiers_tags_and_routes(split_story):
     story = split_story
     story.expect_success('skill write')
     texts = {
-        'journal-workers': ('--tier general', 'journal worker split --task', '--skip-guard workers.route-holds', 'log', 'first matching route'),
+        'journal-dispatching-workers': ('--tier general', 'journal worker split --task', '--skip-guard workers.route-holds', 'log', 'first matching route'),
         'journal-helpers': ('--tier general', "profile's program", "parent's program", 'separately from workers'),
         'journal-tasks': ('journal task tags', '--tag networking', '--complexity 3', '| 5 | Core paths, migrations, concurrency, or a design |'),
         'journal-plans': ('scores and tags each task as it writes it', '--complexity <1-5>', '--tag <word>'),

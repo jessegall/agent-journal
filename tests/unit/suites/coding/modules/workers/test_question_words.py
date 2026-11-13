@@ -17,4 +17,4 @@ def test_the_mergers_case_book_has_the_entries_for_a_question():
 
 
 def test_the_worker_skill_says_what_happens_after_asking():
-    assert "After you ask, the merger or the journal" in (WORKERS_SKILLS / "journal-workers" / "SKILL.md").read_text()
+    assert "After you ask, the merger or the journal" in (WORKERS_SKILLS / "journal-worker" / "SKILL.md").read_text()

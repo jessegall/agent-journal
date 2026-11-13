@@ -4,7 +4,7 @@ from suites.coding.modules.workers.commands.commit_worker_work.commit_worker_wor
 from suites.coding.modules.workers.commands.update_worker.update_worker_subcommand import UpdateWorkerSubcommand
 from suites.coding.support.shipped_profiles import WORKER_UNIT_RULES
 
-SKILL = Path("src/suites/coding/modules/workers/skills/journal-workers/SKILL.md")
+SKILL = Path("src/suites/coding/modules/workers/skills/journal-worker/SKILL.md")
 
 
 def test_the_worker_prompt_says_when_to_run_journal_worker_update_and_to_settle_its_clashes():

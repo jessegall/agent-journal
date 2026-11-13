@@ -10,7 +10,7 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST
 
 """Book I of doc 1252: what stays, and the standing rules."""
 
-SKILL = Path(__file__).resolve().parents[6] / "src/suites/coding/modules/workers/skills/journal-workers/SKILL.md"
+SKILL = Path(__file__).resolve().parents[6] / "src/suites/coding/modules/workers/skills/journal-worker/SKILL.md"
 
 
 def test_88_a_unit_of_one_merges_as_before(new_story, monkeypatch):

@@ -86,7 +86,7 @@ def test_agent_two_in_a_document_links_to_agent_two_of_the_documents_environment
 def test_every_skill_and_hook_text_that_shows_worker_send_or_helper_send_names_a_number(new_story):
     story = new_story(fixture=WorkingAgent)
     install_runner(story)
-    for skill in ("journal-workers", "journal-helpers"):
+    for skill in ("journal-dispatching-workers", "journal-helpers"):
         text = story.run(f"skill show {skill}", actor=story.user).output_text
         sends = [line for line in text.splitlines() if "worker send" in line or "helper send" in line]
         story.expect_rows(len(sends) > 0, all("send <number>" in line for line in sends), not any("send <n>" in line or "send <id>" in line for line in sends))

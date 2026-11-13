@@ -30,7 +30,7 @@ from suites.coding.support.shipped_profiles import WORKER_SENIOR_PROFILE
 
 SHIPPED_PROFILES = (*HELPER_PROFILES, *WORKER_PROFILES)
 PLANNING = "journal-planning"
-WORKERS = "journal-workers"
+WORKERS = "journal-dispatching-workers"
 DESIGN = "journal-functional-design"
 RESEARCHER_SESSION = "s-researcher"
 WORKER_SKILL = f"{WORKER_PROFILE.name}"
@@ -45,9 +45,9 @@ def given(story, name):
 
 
 @pytest.mark.parametrize("name, has, lacks", [
-    (f"{WORKER_PROFILE.name}", WORKERS, PLANNING), (f"{WORKER_MEDIOR_PROFILE.name}", WORKERS, PLANNING), (f"{WORKER_SENIOR_PROFILE.name}", WORKERS, PLANNING),
+    (f"{WORKER_PROFILE.name}", WORKER_SKILL, WORKERS), (f"{WORKER_MEDIOR_PROFILE.name}", WORKER_SKILL, WORKERS), (f"{WORKER_SENIOR_PROFILE.name}", WORKER_SKILL, WORKERS),
     (f"{PLANNER_PROFILE.name}", PLANNING, WORKERS), (f"{PLAN_REVIEWER_PROFILE.name}", PLANNING, WORKERS),
-    (f"{FUNCTIONAL_DESIGNER_PROFILE.name}", DESIGN, PLANNING), (f"{MERGER_PROFILE.name}", WORKERS, PLANNING),
+    (f"{FUNCTIONAL_DESIGNER_PROFILE.name}", DESIGN, PLANNING), (f"{MERGER_PROFILE.name}", WORKERS, WORKER_SKILL),
     (f"{RESEARCHER_PROFILE.name}", "journal-helpers", PLANNING), (f"{DEBUGGER_PROFILE.name}", "journal-helpers", WORKERS),
     (f"{DESIGNER_PROFILE.name}", "journal-helpers", WORKERS), (f"{CODE_REVIEWER_PROFILE.name}", "journal-helpers", PLANNING),
 ])
@@ -87,4 +87,4 @@ def test_a_command_of_a_skill_the_profile_leaves_out_does_not_wait_for_that_skil
 def test_the_skill_list_names_the_agent_groups_that_have_each_skill(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     rows = {row["folder"]: row["groups"] for row in json.loads(story.run("skill list --json").output_text)["rows"]}
-    story.expect_rows("Workers" in rows[WORKERS], "Merger" in rows[WORKERS], "Helpers" not in rows[WORKERS], "Helpers" in rows[PLANNING], "Workers" not in rows[PLANNING], rows["journal-dumps"] == [], detail=str(rows))
+    story.expect_rows("Workers" in rows[WORKER_SKILL], "Workers" not in rows[WORKERS], "Merger" in rows[WORKERS], "Merger" not in rows[WORKER_SKILL], "Helpers" not in rows[WORKERS], "Helpers" in rows[PLANNING], "Workers" not in rows[PLANNING], rows["journal-dumps"] == [], detail=str(rows))

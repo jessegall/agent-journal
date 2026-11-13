@@ -35,7 +35,7 @@ environment, not from a mode. Your first line of a session tells you to read the
   report, test and release. Send the work to a worker instead.
 - With Keep going on, a stop is refused while tasks of your environment are open, and names them. At the worker limit
   (`coding.workers.worker-run-limit`, 2 by default) you can send no more, so you may stop until a worker ends.
-- Send related tasks to the worker that knows them: see journal-workers.
+- Send related tasks to the worker that knows them: see journal-dispatching-workers.
 - It does not pause receiving tasks. Workers you already sent keep their work and may be resumed.
 
 ## Changing the controls
