@@ -36,7 +36,7 @@ class RunVisibility:
 
     def parts(self, process_id: int) -> tuple[ProcessPart, ...]:
         parts = self.queries.query(ProcessPart).filter(process_id=process_id).oldest()
-        return self.kept.read(parts, lambda: tuple(parts.get()), name="processes.visible_parts")
+        return self.kept.read(parts, lambda: tuple(parts.every_row(VISIBLE_PARTS_REASON)), name="processes.visible_parts")
 
     def processes_parts(self, process_ids: tuple[int, ...]) -> dict[int, tuple[ProcessPart, ...]]:
         parts: dict[int, list[ProcessPart]] = {process_id: [] for process_id in process_ids}

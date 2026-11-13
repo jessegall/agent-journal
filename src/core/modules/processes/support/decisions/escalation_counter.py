@@ -12,6 +12,7 @@ from core.modules.processes.support.decisions.escalation_resets import Escalatio
 from core.modules.processes.support.decisions.key_run import KeyRun
 
 RUNS_READ = 10
+KEYS_PER_READ = 100
 
 
 class EscalationCounter:
@@ -25,10 +26,13 @@ class EscalationCounter:
         """The count of each command, from one read of the newest ended runs of all of them: up to RUNS_READ runs
         a command, so a command that runs far less often than the others may count fewer runs than it had."""
         keys = tuple(dict.fromkeys(command_keys))
-        ended = self.decisions.matching(Among("command_key", keys)).filter(moment=ReadingMoment.END).descending("decided_at", "id").take(RUNS_READ * len(keys))
+        ended = [row for start in range(0, len(keys), KEYS_PER_READ) for row in self.ended_runs(keys[start:start + KEYS_PER_READ])]
         rows = {key: [row for row in ended if row.command_key == key][:RUNS_READ] for key in keys}
         marked = self.resets.last_marked_among(keys)
         return {key: self.counted_runs(key, rows[key], marked[key]) for key in keys}
+
+    def ended_runs(self, keys: Sequence[str]) -> list[ReadingDecisionRow]:
+        return self.decisions.matching(Among("command_key", tuple(keys))).filter(moment=ReadingMoment.END).descending("decided_at", "id").take(RUNS_READ * len(keys))
 
     def counted_runs(self, command_key: str, ended: Sequence[ReadingDecisionRow], marked_at: Timestamp | None) -> int:
         changed_at = self.reader_changed_at(command_key)

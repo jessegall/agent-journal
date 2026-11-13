@@ -34,7 +34,7 @@ class ProcessCardSubcommand(ReadSubcommand[ProcessCard]):
 
     def read(self, arguments: Namespace, caller: Caller) -> ProcessCard:
         kept = self.outputs.process(arguments.process_id).first()
-        parts = self.parts.process(arguments.process_id).get()
+        parts = self.parts.parts_of(arguments.process_id)
         process = self.processes.find(arguments.process_id)
         visible = RunVisibility.select_visible_part(process, tuple(parts)) or (parts[0] if parts else None)
         reader = self.readers.find(kept.reader_id) if kept is not None and kept.reader_id else None

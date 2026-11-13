@@ -20,9 +20,9 @@ BYPASS_LINES = {"src/engine/cli/read_limit_bypass.py": 'ALLOW_LARGE_READ_FLAG = 
 
 def test_a_huge_limit_to_get_past_the_default_is_refused(entries: Query[LogEntry]):
     with pytest.raises(QueryLimitError, match="a read names at most 1000 rows; walk the rows with every_row"):
-        entries.limit(10_000)
+        entries.limit(10_000, WALK_REASON)
     assert MOST_NAMED_LIMIT_ROWS == 1000
-    assert entries.limit(1000).select.limit == 1000
+    assert entries.limit(1000, WALK_REASON).select.limit == 1000
 
 
 def test_a_builder_read_never_needs_the_read_limit_switched_off(entries: Query[LogEntry]):
@@ -30,7 +30,7 @@ def test_a_builder_read_never_needs_the_read_limit_switched_off(entries: Query[L
     entries.database.read_limit_rows = READ_LIMIT_ROWS
     assert READ_LIMIT_ROWS == 50
     assert len(entries.get()) == 50
-    assert len(entries.limit(200).get()) == 200
+    assert len(entries.limit(200, WALK_REASON).get()) == 200
     assert len(entries.page(1, size=80).rows) == 80
     assert len(list(entries.every_row(WALK_REASON))) == 300
     assert [path for path, line in BYPASS_LINES.items() if line not in (ROOT / path).read_text()] == []
