@@ -49,7 +49,7 @@ def worker_with_background_run(new_story):
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     bus = story.container.get(Bus)
     part = PartSpec("make test", "make", False, CommandCategory.TEST_RUN)
-    run = bus.run(StartProcess(worker.id, None, "make test", "/work", "zsh", CommandCategory.TEST_RUN, 30, [part]), worker, environment_id=1)
+    run = bus.run(StartProcess(worker.id, None, "make test", "/work", CommandCategory.TEST_RUN, 30, [part]), worker, environment_id=1)
     story.expect_success(f"process background {run.id}", actor=worker)
     return story, worker, run, bus
 

@@ -114,7 +114,7 @@ def test_a_held_read_only_helper_may_stop_and_read_its_own_run(new_story):
     actor = Actor(helper.id, ActorType.AGENT)
     parts = tuple([PartSpec("grep cart a", "grep", False, CommandCategory.SEARCH)])
     bus = story.container.get(Bus)
-    process = bus.run(StartProcess(helper.id, None, "grep cart a", "/work/helper", "zsh", CommandCategory.SEARCH, 15, parts), actor, environment_id=1)
+    process = bus.run(StartProcess(helper.id, None, "grep cart a", "/work/helper", CommandCategory.SEARCH, 15, parts), actor, environment_id=1)
     bus.run(StartProcessPart(process.id, 1), actor, environment_id=1)
     bus.run(MoveProcess(process.id), actor, environment_id=1)
     story.advance(timedelta(seconds=HANG_SECONDS + 1))

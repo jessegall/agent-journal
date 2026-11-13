@@ -17,7 +17,7 @@ HIDDEN = [("cat notes", CommandCategory.READ), ("grep -n word notes", CommandCat
 
 
 def worker_run(story, worker: Actor, line: str, category: CommandCategory) -> int:
-    command = StartProcess(worker.id, None, line, "/work/main", "zsh", category, 30, [PartSpec(line, line.split()[0], False, category)])
+    command = StartProcess(worker.id, None, line, "/work/main", category, 30, [PartSpec(line, line.split()[0], False, category)])
     process = story.container.get(Bus).run(command, worker, environment_id=1)
     parts_started(story, process)
     story.container.get(Bus).run(MoveProcess(process.id), worker, environment_id=1)

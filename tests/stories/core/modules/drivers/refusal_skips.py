@@ -43,7 +43,7 @@ class FailedFullRun(StoryFixture):
 
     def steps(self, story: Story) -> None:
         part = PartSpec("pytest", "pytest", False, CommandCategory.TEST_RUN)
-        command = StartProcess(story.agent.id, None, "pytest", "/work/main", "zsh", CommandCategory.TEST_RUN, 30, [part], is_full_test_run=True)
+        command = StartProcess(story.agent.id, None, "pytest", "/work/main", CommandCategory.TEST_RUN, 30, [part], is_full_test_run=True)
         end_run(story, story.container.get(Bus).run(command, story.agent, environment_id=1), "1 failed\n", exit_code=1)
         story.advance(timedelta(seconds=1))
 
@@ -69,7 +69,7 @@ def test_a_full_run_after_a_failed_one_is_refused_and_says_how_to_pass_it(new_st
 def test_a_named_run_that_passes_lifts_the_refusal(new_story):
     story = failed_run_story(new_story)
     part = PartSpec("pytest tests/cart.py", "pytest", False, CommandCategory.TEST_RUN)
-    command = StartProcess(story.agent.id, None, "pytest tests/cart.py", "/work/main", "zsh", CommandCategory.TEST_RUN, 30, [part])
+    command = StartProcess(story.agent.id, None, "pytest tests/cart.py", "/work/main", CommandCategory.TEST_RUN, 30, [part])
     end_run(story, story.container.get(Bus).run(command, story.agent, environment_id=1), "1 passed\n")
     story.expect_hook_allowed("s-1", full_line())
 

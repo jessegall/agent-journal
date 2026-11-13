@@ -39,7 +39,7 @@ def start_process(story: Story, line: str = "make test && echo done", piped: boo
 def start_process_of(story: Story, owner: Actor, line: str, piped: bool = False, limit_seconds: int = 30, category: CommandCategory | None = None) -> Process:
     texts = [text.strip() for text in line.split("&&")]
     parts = tuple(PartSpec(text, text.split()[0], piped and index == 0, sample_category(text, category)) for index, text in enumerate(texts))
-    command = StartProcess(owner.id, None, line, "/work/main", "zsh", (category or (CommandCategory.JOURNAL if line.startswith("journal ") else CommandCategory.UNKNOWN)), limit_seconds, parts)
+    command = StartProcess(owner.id, None, line, "/work/main", (category or (CommandCategory.JOURNAL if line.startswith("journal ") else CommandCategory.UNKNOWN)), limit_seconds, parts)
     return story.container.get(Bus).run(command, owner, environment_id=1)
 
 

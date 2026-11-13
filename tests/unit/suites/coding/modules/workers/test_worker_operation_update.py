@@ -29,7 +29,7 @@ def operation(name: WorkerOperationName = WorkerOperationName.UPDATE, outcome: U
 
 
 def ended(exit_code: int) -> Process:
-    return Process(id=OUTPUT, session_agent_id=WORKER, creator_id=WORKER, line="journal worker-operation run 7", folder="/work", shell="sh",
+    return Process(id=OUTPUT, session_agent_id=WORKER, creator_id=WORKER, line="journal worker-operation run 7", folder="/work",
                    category=CommandCategory.BACKGROUND_JOB, limit_seconds=3600, state=ProcessState.FINISHED, exit_code=exit_code)
 
 

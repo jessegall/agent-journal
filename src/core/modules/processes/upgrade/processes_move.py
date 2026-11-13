@@ -22,7 +22,6 @@ from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLi
 TABLE = "command_outputs"
 READERS_FOLDER = "readers"
 READER_FILES = "reader files (removed from the project, kept in the backup)"
-SHELL = "sh"
 
 
 class ProcessesMove(VersionFourMove):
@@ -55,7 +54,7 @@ class ProcessesMove(VersionFourMove):
         created = row["created_at"] or context.timestamp
         ended = row["updated_at"] or created
         process_id = rows.insert("processes", {"id": row["id"], "environment_id": environment_id, "session_agent_id": agent_id, "creator_id": creator_id, "line": row["command"] or "",
-                                               "folder": row["ran_in"] or "", "shell": SHELL, "category": CommandCategory.UNKNOWN.value, "limit_seconds": 0,
+                                               "folder": row["ran_in"] or "", "category": CommandCategory.UNKNOWN.value, "limit_seconds": 0,
                                                "exit_code": row["status"] if row["ended"] else None, "created_at": created, "updated_at": ended,
                                                "moved_at": created if row["moved"] else None, "ended_at": ended if row["ended"] else None})
         for step in StateWalk(ProcessLifecycle).path(self.state(row)) or []:

@@ -25,7 +25,7 @@ def test_a_test_reader_is_not_judged_on_a_python_setup_command(new_story):
     parts = [PartSpec('python3 -c "update_sources()"', "python3", category=CommandCategory.EDIT),
              PartSpec("python3 -m pytest tests/cart -q", "python3", category=CommandCategory.TEST_RUN)]
     bus = story.container.get(Bus)
-    process = bus.run(StartProcess(worker.id, None, " && ".join(part.text for part in parts), "/work", "zsh", CommandCategory.TEST_RUN, 30, parts), worker, environment_id=1)
+    process = bus.run(StartProcess(worker.id, None, " && ".join(part.text for part in parts), "/work", CommandCategory.TEST_RUN, 30, parts), worker, environment_id=1)
     folder = story.container.get(OutputFolder)
     folder.write_output(process.id, 1, "updated source\n" * 6)
     folder.write_output(process.id, 2, "collected 73\n73 passed in 9.84s\n")
@@ -58,7 +58,7 @@ def test_a_shell_limit_before_pytest_needs_no_reader_of_its_own(new_story):
     worker = reader_worker(story)
     parts = [PartSpec("ulimit -n 8192", "ulimit", category=CommandCategory.READ),
              PartSpec("python3 -m pytest tests/cart -q", "python3", category=CommandCategory.TEST_RUN)]
-    story.container.get(Bus).run(StartProcess(worker.id, None, " && ".join(part.text for part in parts), "/work", "zsh", CommandCategory.TEST_RUN, 30, parts), worker, environment_id=1)
+    story.container.get(Bus).run(StartProcess(worker.id, None, " && ".join(part.text for part in parts), "/work", CommandCategory.TEST_RUN, 30, parts), worker, environment_id=1)
     story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
 
 

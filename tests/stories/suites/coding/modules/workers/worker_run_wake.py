@@ -26,7 +26,7 @@ def story_with_worker(new_story):
 def start_background_run(story, worker):
     bus = story.container.get(Bus)
     part = PartSpec("make test", "make", False, CommandCategory.TEST_RUN)
-    run = bus.run(StartProcess(worker.id, None, "make test", "/work", "zsh", CommandCategory.TEST_RUN, 30, [part]), worker, environment_id=1)
+    run = bus.run(StartProcess(worker.id, None, "make test", "/work", CommandCategory.TEST_RUN, 30, [part]), worker, environment_id=1)
     story.expect_success(f"process background {run.id}", actor=worker)
     return run, bus
 

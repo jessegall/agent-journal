@@ -105,7 +105,7 @@ def test_a_silent_go_test_over_several_packages_is_told_why_and_how_to_fix_it(ne
     story.expect_success('alias add gotest "go test ./..." --category "test run"', actor=story.agent)
     line = "journal gotest --tail 5"
     part = PartSpec(line, "journal", False, CommandCategory.TEST_RUN, "go test ./...")
-    process = story.container.get(Bus).run(StartProcess(story.agent.id, None, line, "/work/main", "zsh", CommandCategory.TEST_RUN, 30, tuple([part])), story.agent, environment_id=1)
+    process = story.container.get(Bus).run(StartProcess(story.agent.id, None, line, "/work/main", CommandCategory.TEST_RUN, 30, tuple([part])), story.agent, environment_id=1)
     parts_started(story, process)
     story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
     story.advance(timedelta(seconds=30))

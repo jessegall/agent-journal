@@ -10,7 +10,7 @@ from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.support.cadence.judged_runs import JudgedRuns
 
 STARTED = Timestamp(datetime(2026, 11, 11, 12, 0, tzinfo=timezone.utc))
-BUILD_RUN = Process(id=1, version=1, session_agent_id=7, creator_id=7, line="make build", folder="/work", shell="zsh",
+BUILD_RUN = Process(id=1, version=1, session_agent_id=7, creator_id=7, line="make build", folder="/work",
                     category=CommandCategory.BUILD, limit_seconds=30, started_at=STARTED)
 
 

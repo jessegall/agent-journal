@@ -81,7 +81,7 @@ def test_reading_running_worker_output_stays_within_the_tick_limit(four_workers)
     bus = story.container.get(Bus)
     for index, worker in enumerate(workers):
         for _ in range(3 if index == 0 else 2):
-            command = StartProcess(worker.id, None, "make build", "/work/main", "sh", CommandCategory.BUILD, 30, [PartSpec("make build", "make")])
+            command = StartProcess(worker.id, None, "make build", "/work/main", CommandCategory.BUILD, 30, [PartSpec("make build", "make")])
             process = bus.run(command, Actor(worker.id, ActorType.AGENT), environment_id=1)
             folder.write_output(process.id, 1, "building\n[ 40%]\n")
     tools = story.container.get(PerformanceTools)
@@ -102,7 +102,7 @@ def test_five_workers_read_their_running_outputs_within_the_tick_limit(four_work
     bus = story.container.get(Bus)
     for index, worker in enumerate(workers):
         for _ in range(3 if index < 2 else 2):
-            command = StartProcess(worker.id, None, "make build", "/work/main", "sh", CommandCategory.BUILD, 30, [PartSpec("make build", "make")])
+            command = StartProcess(worker.id, None, "make build", "/work/main", CommandCategory.BUILD, 30, [PartSpec("make build", "make")])
             process = bus.run(command, Actor(worker.id, ActorType.AGENT), environment_id=1)
             folder.write_output(process.id, 1, "building\n[ 40%]\n")
     tools = story.container.get(PerformanceTools)
@@ -117,7 +117,7 @@ def test_a_tick_reads_again_if_the_output_changes_after_its_batch_read(four_work
     story = four_workers
     worker = story.container.get(Queries).query(Agent).filter(parent_id=story.agent.id, role="worker").first()
     bus = story.container.get(Bus)
-    process = bus.run(StartProcess(worker.id, None, "make build", "/work/main", "sh", CommandCategory.BUILD, 30, [PartSpec("make build", "make")]), Actor(worker.id, ActorType.AGENT), environment_id=1)
+    process = bus.run(StartProcess(worker.id, None, "make build", "/work/main", CommandCategory.BUILD, 30, [PartSpec("make build", "make")]), Actor(worker.id, ActorType.AGENT), environment_id=1)
     folder = story.container.get(OutputFolder)
     folder.write_output(process.id, 1, "building\n[ 40%]\n")
     run = bus.run

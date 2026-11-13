@@ -22,7 +22,6 @@ class StartProcess(Command[Process]):
     hook_call_id: int | None
     line: str
     folder: str
-    shell: str
     category: CommandCategory
     limit_seconds: int
     parts: Sequence[PartSpec]
@@ -42,7 +41,7 @@ class StartProcess(Command[Process]):
 
     @classmethod
     def single_part(cls, agent_id: int, line: str, folder: str, category: CommandCategory, limit_seconds: int, plugin: str = "", part_category: str = "") -> "StartProcess":
-        return cls(agent_id, None, line, folder, "", category, limit_seconds, [PartSpec(line, line.split()[0], False, category)], plugin=plugin, run_name=part_category)
+        return cls(agent_id, None, line, folder, category, limit_seconds, [PartSpec(line, line.split()[0], False, category)], plugin=plugin, run_name=part_category)
 
     @classmethod
     def build(cls, hook: AgentHook, shell: ShellLine, run: ForegroundRun) -> "StartProcess":
@@ -50,4 +49,4 @@ class StartProcess(Command[Process]):
         parts = tuple(PartSpec(part.text, part.program, part.pipe_target is not None, command.category, command.command, command.named_reader_id,
                               part.arguments[0] if part.program == "journal" and part.arguments else " ".join(value for value in (Path(part.program).name, part.subcommand) if value))
                       for part, command in zip(shell.parts, run.part_commands, strict=True))
-        return cls(hook.agent_id, None, shell.runner_text, folder if isinstance(folder, str) else "", "", run.category or shell.watched_part_category, run.seconds, parts, run.reader_id, shell.has_full_test_run, timeout_durations=run.timeout_durations)
+        return cls(hook.agent_id, None, shell.runner_text, folder if isinstance(folder, str) else "", run.category or shell.watched_part_category, run.seconds, parts, run.reader_id, shell.has_full_test_run, timeout_durations=run.timeout_durations)

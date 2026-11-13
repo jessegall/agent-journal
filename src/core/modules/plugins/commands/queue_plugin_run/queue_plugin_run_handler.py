@@ -45,7 +45,7 @@ class QueuePluginRunHandler(Handler[QueuePluginRun, QueuedRunStart]):
                 process = processes[waiting.process_id]
                 if process.queued_at is not None and (process.folder, process.line) == (folder, command.line):
                     return QueuedRunStart(waiting, process, True, command.is_detached)
-        start = StartProcess(command.agent_id, None, command.line, folder, "", declared.category, RUN_LIMIT_SECONDS, [PartSpec(command.line, command.line.split()[0], False, declared.category)],
+        start = StartProcess(command.agent_id, None, command.line, folder, declared.category, RUN_LIMIT_SECONDS, [PartSpec(command.line, command.line.split()[0], False, declared.category)],
                              timeout_durations=command.timeout_durations, plugin=command.plugin, run_name=command.run_name, priority=command.priority)
         started = self.bus.dispatch(start, context)
         run = self.repository.save(QueuedRun(environment_id=started.environment_id, creator_id=context.actor.id, plugin=command.plugin, run_name=command.run_name,

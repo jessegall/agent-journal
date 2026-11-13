@@ -8,7 +8,7 @@ from core.modules.processes.support.cadence.cadence_nudges import CadenceNudges
 from core.modules.processes.support.process_nudges import RUN_FROZEN, RUN_SPARSE, SILENT_RUN, SILENT_SAVED_PACKAGES, SILENT_SAVED_RUN, STALLED_RUN
 from core.modules.processes.support.streaming_hints import StreamingHints
 
-RUN = Process(id=9, version=1, session_agent_id=7, creator_id=7, line="pytest -q", folder="/work", shell="zsh", category=CommandCategory.TEST_RUN, limit_seconds=30)
+RUN = Process(id=9, version=1, session_agent_id=7, creator_id=7, line="pytest -q", folder="/work", category=CommandCategory.TEST_RUN, limit_seconds=30)
 
 
 def part(text: str, category: CommandCategory = CommandCategory.TEST_RUN) -> ProcessPart:

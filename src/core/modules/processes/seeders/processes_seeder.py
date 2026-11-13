@@ -30,5 +30,5 @@ class ProcessesSeeder(Seeder):
         demo.run(f"dock add processes.output process {running} {demo.environment_flag}", demo.people["user"])
 
     def started(self, demo: Demo, line: str, program: str) -> int:
-        command = StartProcess(demo.people["main"].id, None, line, "/work/demo", "sh", CommandCategory.UNKNOWN, 30, [PartSpec(line, program)])
+        command = StartProcess(demo.people["main"].id, None, line, "/work/demo", CommandCategory.UNKNOWN, 30, [PartSpec(line, program)])
         return demo.bus.run(command, demo.people["main"], environment_id=None).id

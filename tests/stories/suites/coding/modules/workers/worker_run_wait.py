@@ -24,6 +24,7 @@ DISPATCH = "worker dispatch --model sonnet 1 --test-command python=pytest"
 TEST_RUN = "worker test python tests/cart.py"
 BUILD_LINE = "make build"
 BUILD_SHELL = HookSamples.shell(BUILD_LINE, ShellPart("make", CommandCategory.BUILD, ["build"]))
+TEST_SHELL = HookSamples.shell("pytest tests/cart.py", ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/cart.py"]))
 SEARCH_SHELL = HookSamples.shell("grep -r cart src", ShellPart("grep", CommandCategory.SEARCH, ["-r", "cart", "src"]))
 OUTPUT_NUMBER_LINE = "go on with task 1, you hear when it ends"
 SECONDS_SET = f"setting set {WORKER_RUN_WAIT} {{seconds}} --environment main"
@@ -104,6 +105,12 @@ def test_a_named_test_launches_and_holds_the_call_with_the_settings_queue_wait(w
     worker.story.run_listeners()
     expect_value_with(launches[1], f"{QUEUE_WAIT_VARIABLE}=90")
     expect_value(worker.story.clock.slept_seconds - start_seconds, 90)
+
+
+def test_a_workers_own_test_line_is_refused_and_starts_no_run(worker, launches):
+    answer = worker.story.hook(worker.session, TEST_SHELL)
+    worker.story.run_listeners()
+    expect_value((answer.refusal.startswith("A test runs only through your test commands"), newest_run(worker.story), launches), (True, None, []))
 
 
 def test_the_commands_card_in_the_workers_chat_shows_what_its_named_test_printed(worker):

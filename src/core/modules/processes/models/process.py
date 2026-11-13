@@ -18,7 +18,7 @@ ENDING_PHRASES = {ProcessState.RUNNING: "is running", ProcessState.BACKGROUND: "
 
 @dataclass(frozen=True, kw_only=True)
 class Process(EnvironmentScoped, Model):
-    """One shell line an agent ran through the runner: its line, folder and shell, the hook call that started
+    """One shell line an agent ran through the runner: its line and folder, the hook call that started
     it, its foreground limit, and how it ended; its id is the output number the agent reads."""
 
     model_name = "process"
@@ -35,7 +35,6 @@ class Process(EnvironmentScoped, Model):
     creator_id: int
     line: str
     folder: str
-    shell: str
     category: CommandCategory
     limit_seconds: int
     state: ProcessState = ProcessState.RUNNING

@@ -25,7 +25,7 @@ class WorkerTestRunListener(CommitListener[Created[Process]]):
 
     def handle(self, event: Created[Process], logged: LoggedEvent) -> None:
         process = event.row
-        if process.category is not CommandCategory.TEST_RUN or process.shell:
+        if process.category is not CommandCategory.TEST_RUN:
             return
         worktree = self.worktrees.worker_worktree(process.session_agent_id)
         if worktree is None or worktree.folder != process.folder or self.has_test_source(process):

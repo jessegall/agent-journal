@@ -35,7 +35,7 @@ def merger_texts(story) -> list[str]:
 def background_run(story) -> Process:
     story.run(f"setting set {WORKER_TEST_LIMIT} 0 --environment main")
     part = PartSpec("make test", "make", False, CommandCategory.TEST_RUN)
-    run = story.container.get(Bus).run(StartProcess(story.worker.id, None, "make test", "/work", "zsh", CommandCategory.TEST_RUN, 30, [part]), story.worker, environment_id=1)
+    run = story.container.get(Bus).run(StartProcess(story.worker.id, None, "make test", "/work", CommandCategory.TEST_RUN, 30, [part]), story.worker, environment_id=1)
     story.expect_success(f"process background {run.id}", actor=story.worker)
     return run
 

@@ -87,7 +87,7 @@ def test_a_worker_run_with_a_poor_reader_or_none_gets_only_the_ended_line(new_st
     worker = Actor(story.new_row_id("agent start s-8 claude worker --environment main"), ActorType.AGENT)
     bus = story.container.get(Bus)
     for line in ("poor-build run", "unread-build run"):
-        process = bus.run(StartProcess(worker.id, None, line, "/work/main", "zsh", CommandCategory.BUILD, 30,
+        process = bus.run(StartProcess(worker.id, None, line, "/work/main", CommandCategory.BUILD, 30,
                                        [PartSpec(line, line.split()[0], category=CommandCategory.BUILD)]), worker, environment_id=1)
         story.container.get(OutputFolder).write_output(process.id, 1, "compile\n" * 10)
         bus.run(EndProcessPart(process.id, 1, 0), worker, environment_id=1)

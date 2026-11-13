@@ -53,7 +53,7 @@ def test_a_stopped_worker_with_a_task_says_what_it_waits_on_and_never_for_a_job(
     story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main")
     database = story.container.get(Database)
     part = PartSpec("make test", "make", False, CommandCategory.TEST_RUN)
-    command = StartProcess(worker.id, None, "make test", "/work/main", "zsh", CommandCategory.TEST_RUN, 30, [part])
+    command = StartProcess(worker.id, None, "make test", "/work/main", CommandCategory.TEST_RUN, 30, [part])
     process = story.container.get(Bus).run(command, worker, environment_id=1)
     database.update(Statement("UPDATE agents SET ended_at = ? WHERE id = ?", [ENDED_AT, worker.id]))
     expect_reason(story, worker, "reader")

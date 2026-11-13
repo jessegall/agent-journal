@@ -9,7 +9,7 @@ from core.modules.processes.models.process import Process
 
 FIXED_TIME = Timestamp(datetime(2026, 11, 1, tzinfo=timezone.utc))
 ACTOR = Actor(2, ActorType.AGENT)
-RUNNING = Process(id=1, version=1, environment_id=1, session_agent_id=2, creator_id=2, line="make test", folder="/work", shell="zsh", category=CommandCategory.UNKNOWN, limit_seconds=30)
+RUNNING = Process(id=1, version=1, environment_id=1, session_agent_id=2, creator_id=2, line="make test", folder="/work", category=CommandCategory.UNKNOWN, limit_seconds=30)
 
 
 def test_moving_to_the_background_notes_when():
@@ -24,6 +24,6 @@ def test_each_end_keeps_its_state_and_when_and_a_finished_or_failed_one_its_exit
 
 
 def test_a_run_that_finishes_reads_100_percent_whatever_it_last_reported_and_a_failed_one_keeps_its_percent():
-    reported = Process(id=1, version=1, environment_id=1, session_agent_id=2, creator_id=2, line="make test", folder="/work", shell="zsh", category=CommandCategory.UNKNOWN, limit_seconds=30, progress=96)
+    reported = Process(id=1, version=1, environment_id=1, session_agent_id=2, creator_id=2, line="make test", folder="/work", category=CommandCategory.UNKNOWN, limit_seconds=30, progress=96)
     assert reported.finish(FIXED_TIME, ACTOR, 0).progress == 100
     assert reported.fail(FIXED_TIME, ACTOR, 2).progress == 96
