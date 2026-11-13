@@ -41,6 +41,9 @@ With the merger on, the merger helper reads the proofs and merges in your place,
 **L11 - After a failure, re-run only what proves the fix: the failed tests by name and the files you touched since.**
 A full re-run is for a change that reaches wide. A full run the user or a gate requires still runs.
 
+**L12 - Run the full test suite only for a whole unit of work that spans several domains and is therefore best tested by the full suite.**
+It takes about ten minutes: a finished single task or a wave of changes is no reason for it, and it never runs in a loop. Between such units run only the tests a change touches, or none.
+
 ## How you work with the journal
 
 Load the `journal` skill first in every session; the journal blocks writes until you have. Declare a task before you write.

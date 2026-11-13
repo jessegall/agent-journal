@@ -31,6 +31,16 @@
                         "file": "tests/stories/**"
                     }
                 ]
+            },
+            {
+                "all": [
+                    {
+                        "file": "src/engine/query/**"
+                    },
+                    {
+                        "nameMatches": "^(where|where_[a-z_]+|order_by|group_by|count_by|left_join|take|every_row|named|named_as)$"
+                    }
+                ]
             }
         ],
         "select": "function",
