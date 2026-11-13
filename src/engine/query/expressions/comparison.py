@@ -8,9 +8,9 @@ from engine.query.expressions.expression import Expression
 class Comparison(Expression):
     """Two expressions compared; as a value it is 1 when the comparison holds and 0 when it does not."""
 
-    left: Expression
+    first_operand: Expression
     operator: ComparisonOperator
-    right: Expression
+    second_operand: Expression
 
     def sql(self) -> str:
-        return f"({self.left.sql()} {self.operator} {self.right.sql()})"
+        return f"({self.first_operand.sql()} {self.operator} {self.second_operand.sql()})"

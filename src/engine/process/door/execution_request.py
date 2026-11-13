@@ -17,7 +17,7 @@ class ExecutionRequest:
     title: str = ""
     stdin: str | None = None
     variables: Mapping[str, str] | None = None
-    on_line: Callable[[str], None] | None = None
+    line_callback: Callable[[str], None] | None = None
 
     @property
     def text(self) -> str:

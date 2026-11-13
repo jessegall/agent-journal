@@ -327,11 +327,11 @@ test("the report menu asks for a better reader by one command and offers it no m
 
 test("the report menu marks the command of a run as unreadable, and a marked command as readable again", async () => {
     const runs = [];
-    const element = await emptyBox({markable: true, marked_words: ""}, runs);
+    const element = await emptyBox({markable: true, flagged_terms: ""}, runs);
     (await reportMenu(element)).querySelector("[data-output-mark-unreadable]").click();
     await vi.waitFor(() => expect(runs).toContainEqual(["output", "unreadable", "3"]));
     document.body.innerHTML = "";
-    const marked = await emptyBox({markable: true, marked_words: "make build"}, runs);
+    const marked = await emptyBox({markable: true, flagged_terms: "make build"}, runs);
     const menu = await reportMenu(marked);
     expect(menu.querySelector("[data-output-mark-unreadable]")).toBeNull();
     menu.querySelector("[data-output-mark-readable]").click();

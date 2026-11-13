@@ -43,5 +43,5 @@ class TextCommentsSubcommand(ReadSubcommand[TextComments]):
         if value.next_command is not None:
             text += f"\n{value.next_command}"
         output.write(text, {"rows": [output.values(comment) for comment in value.comments], "page": value.page,
-                           "page_size": value.page_size, "total": value.total, "has_more": value.next_command is not None,
+                           "page_size": value.page_size, "total": value.total, "has_next_page": value.next_command is not None,
                            "next_page": value.page + 1 if value.next_command is not None else None, "next_command": value.next_command})

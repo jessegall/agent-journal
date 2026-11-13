@@ -9,7 +9,7 @@ class LinkPageJsonRecord(TypedDict):
     page: int
     page_size: int
     total: int
-    has_more: bool
+    has_next_page: bool
     next_page: int | None
     next_command: str | None
     categories: dict[str, int]

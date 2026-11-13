@@ -12,7 +12,7 @@ class ConditionJoin:
     pair every row; its values are written into the text, as a view needs them."""
 
     source: str | Expression
-    left: bool = False
+    is_outer: bool = False
     condition: Condition | None = None
     alias: str | None = None
 
@@ -31,4 +31,4 @@ class ConditionJoin:
         source = self.source if isinstance(self.source, str) else self.source.sql()
         matching = source if self.alias is None else f"{source} AS {self.alias}"
         join_condition = f" ON {Inlined(self.condition).text()}" if self.condition is not None else ""
-        return f"{'LEFT JOIN' if self.left else 'JOIN'} {matching}{join_condition}"
+        return f"{'LEFT JOIN' if self.is_outer else 'JOIN'} {matching}{join_condition}"

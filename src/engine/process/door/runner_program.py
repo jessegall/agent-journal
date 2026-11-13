@@ -14,7 +14,7 @@ class RunnerProgram:
 
     def run(self, placed: PlacedRun) -> Execution:
         request = placed.request
-        if request.on_line is not None:
+        if request.line_callback is not None:
             return self.streamed(placed)
         child = subprocess.Popen(list(request.line), cwd=request.folder, stdin=subprocess.PIPE if request.stdin is not None else subprocess.DEVNULL,
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, errors="replace", start_new_session=True,
@@ -37,8 +37,8 @@ class RunnerProgram:
         try:
             for line in child.stdout or ():
                 lines.append(line)
-                if request.on_line is not None:
-                    request.on_line(line)
+                if request.line_callback is not None:
+                    request.line_callback(line)
             child.wait()
         except BaseException:
             group.stop()

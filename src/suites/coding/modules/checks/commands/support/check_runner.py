@@ -19,7 +19,7 @@ class CheckRunner:
 
     def run(self, command: str, read_line: Callable[[str], None]) -> CheckResult:
         try:
-            finished = self.executor.execute(ExecutionRequest(["sh", "-c", command], self.home.project_folder, ProcessType.PLUGIN, self.limit_seconds, on_line=read_line))
+            finished = self.executor.execute(ExecutionRequest(["sh", "-c", command], self.home.project_folder, ProcessType.PLUGIN, self.limit_seconds, line_callback=read_line))
         except RunTimeLimitError:
             return CheckResult(False, f"it did not end within {int(self.limit_seconds)} seconds")
         return CheckResult(finished.succeeded, finished.stdout.strip())

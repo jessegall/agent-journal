@@ -51,7 +51,7 @@ def test_a_background_build_with_no_reader_keeps_a_missing_reader_at_its_end_and
     story.run_listeners()
     story.expect_text("reading-decision show 2", "moment: end", "state: missing", "reason: reader missing", actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), f"Output {process.id} ended", "No reader reads custom-build yet")
-    story.expect_text(f"process card {process.id} --json", '"reading_text": "Reader: none"', actor=story.agent)
+    story.expect_text(f"process card {process.id} --json", '"read_text": "Reader: none"', actor=story.agent)
 
 
 def test_a_pytest_run_the_stock_reader_reads_is_suitable_and_a_read_command_needs_no_reader(new_story):
@@ -66,7 +66,7 @@ def test_a_pytest_run_the_stock_reader_reads_is_suitable_and_a_read_command_need
 def test_the_card_of_a_run_whose_reader_lacks_fields_says_the_reader_is_poor(new_story):
     story = new_story(fixture=TwoToxReaders)
     process = ended_after_a_while(story, start_process(story, "tox -e py", category=CommandCategory.BUILD), TOX_OUTPUT)
-    story.expect_text(f"process card {process.id} --json", '"reading_text": "Reader: poor, fields missing"', actor=story.agent)
+    story.expect_text(f"process card {process.id} --json", '"read_text": "Reader: poor, fields missing"', actor=story.agent)
 
 
 def test_one_test_output_under_three_commands_is_read_drafted_or_suggested_once_per_line(new_story):

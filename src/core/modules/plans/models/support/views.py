@@ -101,4 +101,4 @@ PLAN_OUTLINE_TASKS_SELECT = Select("plan_tasks").selecting(
     TASK_TAGS, PURELY_AUTOMATIC,
     Aliased(zero_fallback(ScalarSubselect(Select("agents").selecting(is_main("agents")).matching(Comparison(Column("agents.id"), ComparisonOperator.EQUAL, TASK_ACTOR)))), "main_delegate"),
     *HELPER_COLUMNS,
-).joined(PLACE_TASK).joined(ConditionJoin("agents", left=True, condition=task_helper_match(), alias="helper")).view_sql()
+).joined(PLACE_TASK).joined(ConditionJoin("agents", is_outer=True, condition=task_helper_match(), alias="helper")).view_sql()

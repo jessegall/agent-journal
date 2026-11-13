@@ -118,7 +118,7 @@ class LinkPages:
         rows = [{**output.values(row.link), "source_title": row.source.title, "target_title": row.target.title,
                  "source": asdict(row.source), "target": asdict(row.target)} for row in value.rows]
         return {"rows": rows, "counterparts": [asdict(counterpart) for counterpart in value.counterparts],
-                "page": value.page, "page_size": value.page_size, "total": value.total, "has_more": value.next_command is not None,
+                "page": value.page, "page_size": value.page_size, "total": value.total, "has_next_page": value.next_command is not None,
                 "next_page": value.page + 1 if value.next_command is not None else None, "next_command": value.next_command,
                 "categories": value.target_counts}
 

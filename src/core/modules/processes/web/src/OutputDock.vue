@@ -230,14 +230,14 @@ usePoll(load, isRunning, () =>
               data-output-terminal
               @scroll="pages.loadEarlier($event.target)"
               >{{ lines.length ? lines.join("\n") : "No output yet" }}</pre>
-            <template v-if="run?.reading_text"><p class="output-dock-reading" data-output-reading>{{ run.reading_text }}</p></template>
+            <template v-if="run?.read_text"><p class="output-dock-reading" data-output-reading>{{ run.read_text }}</p></template>
             <template v-if="canAskForReader || run?.markable">
               <button ref="reportAnchor" type="button" class="output-dock-report" data-output-report title="Report a problem with this output" aria-label="Report a problem with this output" :aria-expanded="reportOpen" @click="reportOpen = !reportOpen"><Icon name="dots" :size="14" /></button>
               <template v-if="reportOpen">
                 <MenuPanel :anchor="reportAnchor" :min-width="190" data-output-report-menu @close="reportOpen = false">
                   <template v-if="canAskForReader"><MenuItem data-output-reader-ask @click="reportWith(askForReader)">Ask for a better reader</MenuItem></template>
                   <template v-if="run?.markable">
-                    <template v-if="run.marked_words"><MenuItem data-output-mark-readable @click="reportWith(() => markRun('readable'))">Mark as readable</MenuItem></template>
+                    <template v-if="run.flagged_terms"><MenuItem data-output-mark-readable @click="reportWith(() => markRun('readable'))">Mark as readable</MenuItem></template>
                     <template v-else><MenuItem data-output-mark-unreadable @click="reportWith(() => markRun('unreadable'))">Mark as unreadable</MenuItem></template>
                   </template>
                 </MenuPanel>

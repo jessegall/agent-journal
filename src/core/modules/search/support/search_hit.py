@@ -20,7 +20,7 @@ class SearchHit:
     row_id: int
     created_at: Timestamp
     excerpt: str
-    matched_words: Sequence[str] = ()
+    matched_tokens: Sequence[str] = ()
     rank: int = 0
 
     @classmethod
@@ -34,17 +34,17 @@ class SearchHit:
 
     @classmethod
     def restored(cls, stored: dict[str, Any]) -> "SearchHit":
-        return cls(stored["cli_name"], stored["row_id"], Timestamp.parsed(stored["created_at"]), stored["excerpt"], stored["matched_words"], stored["rank"])
+        return cls(stored["cli_name"], stored["row_id"], Timestamp.parsed(stored["created_at"]), stored["excerpt"], stored["matched_tokens"], stored["rank"])
 
     def stored(self) -> dict[str, object]:
-        return {"cli_name": self.cli_name, "row_id": self.row_id, "created_at": self.created_at.text, "excerpt": self.excerpt, "matched_words": list(self.matched_words), "rank": self.rank}
+        return {"cli_name": self.cli_name, "row_id": self.row_id, "created_at": self.created_at.text, "excerpt": self.excerpt, "matched_tokens": list(self.matched_tokens), "rank": self.rank}
 
     @property
     def matched_terms(self) -> int:
-        return len(self.matched_words)
+        return len(self.matched_tokens)
 
     def line(self) -> str:
         return f"{self.cli_name} {self.row_id}: {self.excerpt}"
 
     def line_with_words(self) -> str:
-        return f"{self.line()} [holds: {', '.join(self.matched_words)}]"
+        return f"{self.line()} [holds: {', '.join(self.matched_tokens)}]"

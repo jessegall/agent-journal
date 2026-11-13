@@ -124,7 +124,7 @@ TASK_INSPECTIONS_SELECT = Select("tasks").selecting(
         .ordered("id", False))).named_as("renewal"),
         {"id": Column("renewal.id"), "reason": Column("renewal.reason"), "created_at": Column("renewal.created_at")}), "block_renewals"),
     *HELPER_COLUMNS,
-).joined(ConditionJoin("agents", left=True, condition=task_helper_match(), alias="helper")).view_sql()
+).joined(ConditionJoin("agents", is_outer=True, condition=task_helper_match(), alias="helper")).view_sql()
 
 NEWEST_RENEWAL = latest_renewal("created_at", SqlFunction.MAX)
 LAST_REVIEW_NOTICE = ScalarSubselect(Select("nudge_records").selecting(FunctionCall(SqlFunction.MAX, [Column("last_delivered_at")]))

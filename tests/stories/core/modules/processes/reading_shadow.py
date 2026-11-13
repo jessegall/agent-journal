@@ -32,7 +32,7 @@ def test_a_main_agents_test_run_with_no_reader_is_suggested_one_at_its_end(new_s
     process = ended_after_a_while(story, main_test_run_without_reader(story))
     decision = end_decision(story, process)
     story.expect_rows(decision == MAIN_TESTS_WITHOUT_READER[0], detail=f"{decision}: {MAIN_TESTS_WITHOUT_READER[1]}")
-    story.expect_text(f"process card {process.id} --json", '"reading_text": "Reader: none"', actor=story.agent)
+    story.expect_text(f"process card {process.id} --json", '"read_text": "Reader: none"', actor=story.agent)
     story.expect_text(f"process show {process.id}", "state:", actor=story.agent)
 
 

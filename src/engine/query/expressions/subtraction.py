@@ -7,8 +7,8 @@ from engine.query.expressions.expression import Expression
 class Subtraction(Expression):
     """One value less another."""
 
-    left: Expression
-    right: Expression
+    first_operand: Expression
+    second_operand: Expression
 
     def sql(self) -> str:
-        return f"({self.left.sql()} - {self.right.sql()})"
+        return f"({self.first_operand.sql()} - {self.second_operand.sql()})"

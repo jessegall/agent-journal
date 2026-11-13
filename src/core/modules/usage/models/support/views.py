@@ -73,9 +73,9 @@ CARD_TASKS = ScalarSubselect(
     .selecting(FunctionCall(SqlFunction.JSON_GROUP_ARRAY, [JsonObject({
         "id": Column("listed.id"), "title": Column("listed.title"), "state": Column("listed.state"), "closed_at": Column("listed.closed_at"),
         "plan_id": Column("task_plan.id"), "plan_title": Column("task_plan.title")})]))
-    .joined(ConditionJoin("phase_tasks", left=True, condition=ColumnCompare("phase_tasks.task_id", "=", "listed.id")))
-    .joined(ConditionJoin("phases", left=True, condition=ColumnCompare("phases.id", "=", "phase_tasks.phase_id")))
-    .joined(ConditionJoin("plans", left=True, condition=ColumnCompare("task_plan.id", "=", "phases.plan_id"), alias="task_plan")))
+    .joined(ConditionJoin("phase_tasks", is_outer=True, condition=ColumnCompare("phase_tasks.task_id", "=", "listed.id")))
+    .joined(ConditionJoin("phases", is_outer=True, condition=ColumnCompare("phases.id", "=", "phase_tasks.phase_id")))
+    .joined(ConditionJoin("plans", is_outer=True, condition=ColumnCompare("task_plan.id", "=", "phases.plan_id"), alias="task_plan")))
 AGENT_REPORTS = (agent_rows("messages").matching(Equal("messages.type", "agent")).matching(Equal("messages.is_chat_visible", 0)))
 LAST_REPORT = ScalarSubselect(AGENT_REPORTS.selecting(Column("messages.text")).matching(ColumnCompare("messages.creator_id", "=", "agents.id"))
                               .ordered("messages.id", True).sliced(1, 0))
@@ -122,8 +122,8 @@ AGENT_CARDS_SELECT = Select("agents").selecting(
     Aliased(ScalarSubselect(Select("actors").selecting(Column("actors.name")).matching(ColumnCompare("actors.id", "=", "agents.retiring_actor_id"))),
             "retiring_actor_name"),
     Aliased(FunctionCall(SqlFunction.COALESCE, [LAST_REPORT, LAST_RETURN, Literal("")]), "job_returned"),
-).joined(ConditionJoin("helper_jobs", left=True, condition=Comparison(Column("dispatch.id"), ComparisonOperator.EQUAL, FIRST_JOB), alias="dispatch")).joined(
-    ConditionJoin("helper_jobs", left=True, condition=Comparison(Column("current_job.id"), ComparisonOperator.EQUAL, CURRENT_JOB), alias="current_job")).view_sql()
+).joined(ConditionJoin("helper_jobs", is_outer=True, condition=Comparison(Column("dispatch.id"), ComparisonOperator.EQUAL, FIRST_JOB), alias="dispatch")).joined(
+    ConditionJoin("helper_jobs", is_outer=True, condition=Comparison(Column("current_job.id"), ComparisonOperator.EQUAL, CURRENT_JOB), alias="current_job")).view_sql()
 
 AGENT_LISTING_SELECT = Select("agent_cards").selecting(
     Column("agent_cards.*"), *(Column(f"agents.{name}") for name in ("parent_id", "created_at", "updated_at", "process_started_at")),

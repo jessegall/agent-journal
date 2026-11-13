@@ -65,4 +65,4 @@ def test_an_unknown_screen_has_no_nodes():
 def test_a_node_says_which_component_draws_it_and_that_a_person_alone_may_change_it():
     changed = tuple([replace(ENTRIES[0], person_set=True)])
     node = screen(entries=changed).read("work").nodes[0]
-    assert (node.component, node.read_only) == ("toggle", True)
+    assert (node.component, node.is_readonly) == ("toggle", True)

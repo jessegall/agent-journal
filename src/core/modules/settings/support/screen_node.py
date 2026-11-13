@@ -19,4 +19,4 @@ class ScreenNode:
     choices: tuple[str, ...]
     rule: str
     requires: tuple[str, ...]
-    read_only: bool
+    is_readonly: bool

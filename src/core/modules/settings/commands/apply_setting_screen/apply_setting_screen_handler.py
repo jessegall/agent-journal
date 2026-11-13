@@ -19,7 +19,7 @@ class ApplySettingScreenHandler(Handler[ApplySettingScreen, ScreenReading]):
         self.screens, self.declared, self.changes = screens, declared, changes
 
     def handle(self, command: ApplySettingScreen, context: Context) -> ScreenReading:
-        reads = [(self.screens.read(screen), revision) for screen, revision in ((command.screen, command.revision), *command.also)]
+        reads = [(self.screens.read(screen), revision) for screen, revision in ((command.screen, command.revision), *command.extra_values)]
         for read, revision in reads:
             if revision != read.revision:
                 raise Refusal(f"the settings of {read.screen} changed since you read them", f"run journal setting-screen show {read.screen} and apply again")

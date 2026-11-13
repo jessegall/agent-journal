@@ -41,9 +41,9 @@ def test_two_runs_that_redraw_one_line_mark_their_command_once_and_two_readable_
 def test_a_person_marks_a_runs_command_from_its_card_so_its_agent_is_asked_no_reader_and_lifts_it_so_the_asks_resume(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
     first = ended_after_a_while(story, moved_run(story, "make serve", CommandCategory.BUILD), STEPS)
-    story.expect_text(f"process card {first.id} --json", '"markable": true', '"marked_words": ""', actor=story.user)
+    story.expect_text(f"process card {first.id} --json", '"markable": true', '"flagged_terms": ""', actor=story.user)
     story.expect_success(f"output unreadable {first.id} --environment main", actor=story.user)
-    story.expect_text(f"process card {first.id} --json", '"marked_words": "make serve"', actor=story.user)
+    story.expect_text(f"process card {first.id} --json", '"flagged_terms": "make serve"', actor=story.user)
     flagged = received(story)
     silent = ended_after_a_while(story, moved_run(story, "make serve", CommandCategory.BUILD), STEPS)
     after_mark = received(story)

@@ -12,4 +12,4 @@ class ApplySettingScreen(Command[ScreenReading]):
     screen: str
     revision: str
     changes: tuple[tuple[str, str], ...]
-    also: tuple[tuple[str, str], ...] = ()
+    extra_values: tuple[tuple[str, str], ...] = ()

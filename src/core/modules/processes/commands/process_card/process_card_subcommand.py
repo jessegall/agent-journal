@@ -40,13 +40,13 @@ class ProcessCardSubcommand(ReadSubcommand[ProcessCard]):
         reader = self.readers.find(kept.reader_id) if kept is not None and kept.reader_id else None
         terms = RunCommandTerms.part_words(parts)
         return ProcessCard(process, kept, RunTitle.temporary(visible), reader, visible.category if visible else CommandCategory.UNKNOWN, any(part.reader_request_id is not None for part in parts),
-                           self.reading_text(process.id, visible), terms, self.flagged_terms(terms))
+                           self.read_text(process.id, visible), terms, self.flagged_terms(terms))
 
     def flagged_terms(self, terms: str) -> str:
         mark = self.marks.flagged(terms) if terms else None
         return mark.terms if mark is not None else ""
 
-    def reading_text(self, process_id: int, visible: ProcessPart | None) -> str | None:
+    def read_text(self, process_id: int, visible: ProcessPart | None) -> str | None:
         decision = self.decisions.part_end_decision(process_id, visible.position) if visible is not None else None
         return None if decision is None else ReadingCardText.text(decision)
 
