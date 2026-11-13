@@ -7,9 +7,9 @@ from core.modules.settings.support.context_reading import PERCENT_FULL, ContextR
 
 CONTEXT_LIMIT_ENABLED = "journal.core.helpers.context-limit-on"
 CONTEXT_LIMIT_TOKENS = "journal.core.helpers.context-limit-tokens"
-CONTEXT_LIMIT_KINDS = "journal.core.helpers.context-limit-kinds"
+CONTEXT_LIMIT_CATEGORIES = "journal.core.helpers.context-limit-kinds"
 CONTEXT_LIMIT_PROFILES = "journal.core.helpers.context-limit-profiles"
-NO_CAP = "none"
+UNCAPPED = "none"
 
 
 class ContextShare:
@@ -25,15 +25,15 @@ class ContextShare:
     def cap(self, role: str, profile: str) -> int | None:
         if not self.settings.flag(CONTEXT_LIMIT_ENABLED):
             return None
-        for key, name in ((CONTEXT_LIMIT_PROFILES, profile), (CONTEXT_LIMIT_KINDS, role)):
+        for key, name in ((CONTEXT_LIMIT_PROFILES, profile), (CONTEXT_LIMIT_CATEGORIES, role)):
             entry = self.entries(key).get(name) if name else None
             if entry is not None:
-                return None if entry == NO_CAP else int(entry)
+                return None if entry == UNCAPPED else int(entry)
         return self.settings.number(CONTEXT_LIMIT_TOKENS)
 
     def entries(self, key: str) -> dict[str, str]:
         pairs = (text.rsplit(":", 1) for text in self.settings.texts(key) if ":" in text)
-        return {name.strip(): value.strip() for name, value in pairs if value.strip() == NO_CAP or value.strip().isdigit()}
+        return {name.strip(): value.strip() for name, value in pairs if value.strip() == UNCAPPED or value.strip().isdigit()}
 
     def usage_of(self, agent: ContextOwner) -> ContextReading:
         return self.usage_within(agent.program, agent.session, self.cap(agent.role, agent.profile))

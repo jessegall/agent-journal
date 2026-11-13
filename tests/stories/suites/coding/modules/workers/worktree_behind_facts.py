@@ -10,7 +10,7 @@ from tests.stories.suites.coding.modules.workers.support.base_branch import chec
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
 
 LOGIN_BRANCH = "feature/login"
-OTHER_WORKER_BRANCH = "journal/main/worker-other"
+DIFFERENT_WORKER_BRANCH = "journal/main/worker-other"
 
 
 def no_base_change(story, repository: GitRepository) -> None:
@@ -28,11 +28,11 @@ def a2_own_commits_and_an_unmoved_base(story, repository: GitRepository, worker_
 
 
 def a3_one_merge_of_a_four_commit_worker(story, repository: GitRepository, worker_id: int) -> tuple[str, ...]:
-    repository.git("branch", OTHER_WORKER_BRANCH, ENVIRONMENT_BRANCH)
-    different = checkout_of(repository, OTHER_WORKER_BRANCH)
+    repository.git("branch", DIFFERENT_WORKER_BRANCH, ENVIRONMENT_BRANCH)
+    different = checkout_of(repository, DIFFERENT_WORKER_BRANCH)
     for number in range(4):
         committed_on(repository, different, f"other_{number}.py", f"N = {number}\n", f"Other worker commit {number}")
-    repository.git("merge", "--no-ff", "-m", "Merge the other worker", OTHER_WORKER_BRANCH, folder=checkout_of(repository, ENVIRONMENT_BRANCH))
+    repository.git("merge", "--no-ff", "-m", "Merge the other worker", DIFFERENT_WORKER_BRANCH, folder=checkout_of(repository, ENVIRONMENT_BRANCH))
     return ("worker status", f"1 behind {ENVIRONMENT_BRANCH}")
 
 

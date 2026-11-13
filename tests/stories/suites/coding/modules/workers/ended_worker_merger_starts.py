@@ -4,7 +4,7 @@ from suites.coding.modules.workers.support.escalations import Escalations
 from suites.coding.modules.workers.support.merger_work import MergerWork
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.free_commits import ASK_MERGE
+from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE
 from tests.stories.suites.coding.modules.workers.merge_asks import committed_list
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON
@@ -30,7 +30,7 @@ def test_an_ended_worker_whose_question_the_main_agent_holds_starts_no_merger_fo
     story = worker.story
     story.expect_success(MERGER_OFF, actor=story.user)
     story.expect_success(QUESTION, actor=worker.worker)
-    story.expect_success(ASK_MERGE, actor=worker.worker)
+    story.expect_success(REQUEST_MERGE, actor=worker.worker)
     worker.program_ended()
     story.expect_success(MERGER_ON, actor=story.user)
     asks = [ask.state.value for ask in story.story_rows(MergeAsk)]

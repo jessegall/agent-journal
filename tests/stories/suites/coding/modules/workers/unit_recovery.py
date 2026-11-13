@@ -1,6 +1,6 @@
 from tests.stories.suites.coding.modules.workers.free_commits import worktree_state
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.free_commits import ASK_MERGE, commit_each
+from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_each
 from tests.stories.suites.coding.modules.workers.merge_asks import committed_list, running_plan
 from tests.stories.suites.coding.modules.workers.support.phase_steps import start_planned_worker, unplanned_group_worker
 
@@ -30,7 +30,7 @@ def test_81_a_release_with_committed_work_is_refused(new_story, monkeypatch):
 
 def test_82_an_ask_that_waits_long_is_shown_as_unmerged_work(new_story, monkeypatch):
     worker = committed_list(new_story, monkeypatch)
-    worker.story.expect_success(ASK_MERGE, actor=worker.worker)
+    worker.story.expect_success(REQUEST_MERGE, actor=worker.worker)
     worker.story.expect_rows(worktree_state(worker) == "delivered", detail=worker.status())
 
 

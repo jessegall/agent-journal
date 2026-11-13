@@ -27,7 +27,7 @@ from core.modules.assignments.queries.conditions.unassigned import Unassigned
 FOLLOWED_PLAN_STATES = ("approved", "started")
 
 TASK_PAGE_ROWS = 50
-HELD_TASKS_REASON = "an agent's current tasks are every task it holds started, which its open-task setting bounds"
+BLOCKED_TASKS_REASON = "an agent's current tasks are every task it holds started, which its open-task setting bounds"
 ASSIGNED_TASKS_REASON = "the tasks assigned to an agent are its whole unit of work, which can hold more than fifty tasks"
 
 class TaskQuery(Query[Task], KeptRowChanges[Task]):
@@ -40,7 +40,7 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
 
     def started_tasks(self, agent_id: int) -> tuple[Task, ...]:
         tasks = self.held_started(agent_id)
-        return self.kept.read(tasks, lambda: self.newest_current(tuple(tasks.every_row(HELD_TASKS_REASON))), name="tasks.current_tasks")
+        return self.kept.read(tasks, lambda: self.newest_current(tuple(tasks.every_row(BLOCKED_TASKS_REASON))), name="tasks.current_tasks")
 
     def held_started(self, agent_id: int) -> Self:
         return self.holder(agent_id).started().oldest()

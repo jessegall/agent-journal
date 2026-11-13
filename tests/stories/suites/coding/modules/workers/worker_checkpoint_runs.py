@@ -14,7 +14,7 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import PLAN
 """Book C of doc 1252: the tests of a checkpoint run in the background on the worker's commit."""
 
 WORKER_RUN_NOTE = "The tests of checkpoint phase 1 now run on this commit in the background."
-PASSED_UNIT_WORDS = "checkpoint of phase 1 passed on your commit"
+PASSED_UNIT_TERMS = "checkpoint of phase 1 passed on your commit"
 PASSED_LINE = "the tests of checkpoint phase Build passed"
 
 
@@ -46,7 +46,7 @@ def test_31_a_pass_says_nothing_to_anyone(running_worker_run):
     worker = running_worker_run
     main_lines = worker.main_agent_lines()
     worker.end_all_tests()
-    worker.story.expect_rows(worker.main_agent_lines() == main_lines, worker_reaches(worker)[0]["state"] == "passed", PASSED_UNIT_WORDS in worker.status(),
+    worker.story.expect_rows(worker.main_agent_lines() == main_lines, worker_reaches(worker)[0]["state"] == "passed", PASSED_UNIT_TERMS in worker.status(),
                              detail=f"{worker.main_agent_lines()} / {worker.status()}")
 
 

@@ -25,9 +25,9 @@ class FakeFoldQuery:
         return iter(self.folds)
 
 
-def fold(folded_agent_id: int, number: int, session: str, past_session: str, environment_id: int = 1, survivor_id: int = 78) -> SimpleNamespace:
+def fold(folded_agent_id: int, number: int, session: str, prior_session: str, environment_id: int = 1, survivor_id: int = 78) -> SimpleNamespace:
     return SimpleNamespace(environment_id=environment_id, folded_agent_id=folded_agent_id, survivor_id=survivor_id, folded_number=number,
-                           agent_row=json.dumps({"id": folded_agent_id, "session": session}), sessions=json.dumps([{"session": past_session}]))
+                           agent_row=json.dumps({"id": folded_agent_id, "session": session}), sessions=json.dumps([{"session": prior_session}]))
 
 
 RECORD = FoldRecord(SimpleNamespace(query=lambda model: FakeFoldQuery([fold(894, 1, "s-894", "s-old"), fold(893, 29, "s-893", "s-older")])), KEPT)

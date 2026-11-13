@@ -17,7 +17,7 @@ from core.modules.messages.support.message_nudges import UNANSWERED_REFUSAL
 
 HELPER_SESSION = "s-2"
 WORKER_SESSION = "s-worker"
-HOLD = expected_nudge(UNANSWERED_REFUSAL, messages=1)
+BLOCK = expected_nudge(UNANSWERED_REFUSAL, messages=1)
 EDIT = HookSamples.edit("src/cart.py")
 
 
@@ -60,7 +60,7 @@ def test_a_worker_messaged_by_its_main_agent_is_held_after_the_countdown_and_fre
     story.expect_success("message read 1", actor=worker)
     story.expect_hook_allowed(WORKER_SESSION, VIEW_LINE, expected_nudge(UNANSWERED, messages=1))
     use_tools(story, WORKER_SESSION, 12)
-    story.expect_hook_refusal(WORKER_SESSION, EDIT, HOLD)
+    story.expect_hook_refusal(WORKER_SESSION, EDIT, BLOCK)
     story.expect_success(f'message send "On it" --to agent:{agent_number(story, story.agent.id)}', actor=worker)
     story.expect_absent_hook_line(WORKER_SESSION, EDIT, "answer message 1")
 
@@ -71,7 +71,7 @@ def test_a_main_agent_messaged_by_a_worker_is_held_after_the_countdown_and_freed
     story.expect_success("message read 1", actor=story.agent)
     story.expect_hook_allowed("s-1", VIEW_LINE, expected_nudge(UNANSWERED, messages=1))
     use_tools(story, "s-1", 12)
-    story.expect_hook_refusal("s-1", EDIT, HOLD)
+    story.expect_hook_refusal("s-1", EDIT, BLOCK)
     story.expect_success('message reply 1 "Fixing it"', actor=story.agent)
     story.expect_absent_hook_line("s-1", EDIT, "answer message 1")
 
@@ -82,7 +82,7 @@ def test_a_person_messaging_an_agent_holds_it_as_before(new_story):
     story.hook("s-1", HookSamples.stop())
     story.hook("s-1", READ_MESSAGE)
     use_tools(story, "s-1", 12)
-    story.expect_hook_refusal("s-1", EDIT, HOLD)
+    story.expect_hook_refusal("s-1", EDIT, BLOCK)
 
 
 def test_a_journal_line_holds_nobody(new_story):

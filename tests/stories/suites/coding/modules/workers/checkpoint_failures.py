@@ -9,7 +9,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
-from tests.stories.suites.coding.modules.workers.checkpoint_runs import branch_runs_only, BUILD_TEST, CART_COMMAND, OUTLINE, PASSES, PICKER, REACHES, TOTALS_COMMAND, WAITING_PHASE_WORDS, merge, proofs_by_task, rows, run_lines
+from tests.stories.suites.coding.modules.workers.checkpoint_runs import branch_runs_only, BUILD_TEST, CART_COMMAND, OUTLINE, PASSES, PICKER, REACHES, TOTALS_COMMAND, WAITING_PHASE_TERMS, merge, proofs_by_task, rows, run_lines
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import committed_window, running_checkpoint  # noqa: F401
 from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
@@ -84,7 +84,7 @@ def test_180_a_failed_proof_test_returns_its_task_to_the_worker_that_held_it_and
     story.expect_text("task show 3", "state: completed", actor=story.agent)
     story.expect_rows(proof["state"] == "short", str(failed_output_id) in proof["shortfall"], expected_nudge(WORKER_PHASE_TESTS_FAILED).is_in(' | '.join(failure_lines(worker))),
                       detail=f"{proof} | {worker.worker_lines()}")
-    story.expect_rows(reach["state"] == "failed", reach["failed_task_ids"] == "1", WAITING_PHASE_WORDS in story.run(OUTLINE, actor=story.user).output_text, detail=str(reach))
+    story.expect_rows(reach["state"] == "failed", reach["failed_task_ids"] == "1", WAITING_PHASE_TERMS in story.run(OUTLINE, actor=story.user).output_text, detail=str(reach))
 
 
 def test_180_a_worker_with_two_failed_proof_tests_gets_both_tasks_and_one_line_with_both_outputs(running_checkpoint):
@@ -153,7 +153,7 @@ def test_181_192_the_run_after_a_fix_runs_what_failed_and_the_own_test_and_its_p
     second_run = sorted(run_lines(worker)[FIRST_RUN_SIZE:])
     end_run(worker)
     passed_phase_ids, outline = [row["phase_id"] for row in rows(worker, PASSES)], story.run(OUTLINE, actor=story.user).output_text
-    story.expect_rows(passed_phase_ids == [1], WAITING_PHASE_WORDS not in outline, [row["state"] for row in rows(worker, REACHES)] == ["failed", "passed"], detail=str(rows(worker, REACHES)))
+    story.expect_rows(passed_phase_ids == [1], WAITING_PHASE_TERMS not in outline, [row["state"] for row in rows(worker, REACHES)] == ["failed", "passed"], detail=str(rows(worker, REACHES)))
     story.expect_rows(second_run == sorted([BUILD_TEST, CART_COMMAND]), proofs_by_task(worker)[3]["state"] == "checked", detail=str(run_lines(worker)))
 
 

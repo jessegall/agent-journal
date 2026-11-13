@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from engine.command.command import Command
 
-STUCK_RUN_NOTE = "stuck: the run went past {minutes} minutes and was ended: journal output read of process {process}"
+HUNG_RUN_NOTE = "stuck: the run went past {minutes} minutes and was ended: journal output read of process {process}"
 
 
 @dataclass(frozen=True)

@@ -11,7 +11,7 @@ from core.modules.drivers.support.agent_activities import AgentActivities
 from engine.setting.setting_values import SettingValues
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 from core.modules.tasks.support.task_nudges import INACTIVE_TASK
-from core.modules.tasks.support.task_settings import QUIET_TASK_MINUTES
+from core.modules.tasks.support.task_settings import SILENT_TASK_MINUTES
 
 
 class InactiveTaskReminderRule(DriverRule):
@@ -33,7 +33,7 @@ class InactiveTaskReminderRule(DriverRule):
         newest_at = self.activities.read(hook)[hook.agent_id].last_hook_at
         if newest_at is None or self.hook_history.has_answer_after(self.name, hook, newest_at):
             return RuleAnswer.allowed()
-        silent = Interval(self.settings.minutes(QUIET_TASK_MINUTES))
+        silent = Interval(self.settings.minutes(SILENT_TASK_MINUTES))
         if not silent.has_passed(self.spans, hook.agent_id, newest_at, hook.timestamp):
             return RuleAnswer.allowed()
         return RuleAnswer.with_nudges(INACTIVE_TASK.nudge(minutes=silent.seconds // MINUTE_SECONDS, task=current.task.id))

@@ -10,7 +10,7 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import PHAS
 THREE_TASKS = 3
 BLOCK_REASON = "the tax table is not there"
 NEXT_ANSWER = "started task 2; nothing was committed or tested: journal worker commit does that"
-MANY_TASKS = 55
+SEVERAL_TASKS = 55
 
 
 @pytest.fixture
@@ -110,7 +110,7 @@ def test_62_a_start_and_a_proof_of_a_task_one_worker_started_are_refused_to_anot
 def test_the_status_of_a_worker_reads_a_checkpoint_phase_of_many_tasks_without_loading_them_all(new_story, monkeypatch):
     story = planned_story(new_story, approve=False)
     story.run('phase edit 2 --checkpoint')
-    for number in range(MANY_TASKS):
+    for number in range(SEVERAL_TASKS):
         story.run(f'task make "Ship part {number}" --phase 2 --environment main')
     story.run('phase make --plan 1 "Later"')
     later_task = story.new_row_id('task make "Clean up" --phase 3 --environment main')

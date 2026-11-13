@@ -48,7 +48,7 @@ MERGER_ENABLED = f"{MODULE_KEY}.merger-on"
 MERGER_WAIT_MINUTES = f"{MODULE_KEY}.merger-wait-minutes"
 UNSTARTED_WORKER_SECONDS = f"{MODULE_KEY}.unstarted-worker-seconds"
 STOPPED_WORKER_RUN_MINUTES = f"{MODULE_KEY}.stopped-worker-run-minutes"
-STUCK_PROOF_RUN_MINUTES = f"{MODULE_KEY}.stuck-proof-run-minutes"
+HUNG_PROOF_RUN_MINUTES = f"{MODULE_KEY}.stuck-proof-run-minutes"
 MERGER_COMMANDS = f"{MODULE_KEY}.merger-commands"
 DELIVERY_FAILURE_LIMIT = f"{MODULE_KEY}.hand-in-failures-to-flag"
 WORKER_RUN_FAILURE_LIMIT = f"{MODULE_KEY}.own-test-failures-to-flag"
@@ -155,7 +155,7 @@ WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         MERGER_WAIT_MINUTES: NumberRule(1),
                         UNSTARTED_WORKER_SECONDS: NumberRule(1),
                         STOPPED_WORKER_RUN_MINUTES: NumberRule(1),
-                        STUCK_PROOF_RUN_MINUTES: NumberRule(1),
+                        HUNG_PROOF_RUN_MINUTES: NumberRule(1),
                         BEHIND_COMMITS_TO_CHECK: NumberRule(0),
                         BEHIND_CHECK_MINUTES: NumberRule(1),
                         BEHIND_RECHECK_COMMITS: NumberRule(0),

@@ -130,7 +130,7 @@ def agent_with_unusable_models(story) -> Actor:
 
 @pytest.mark.parametrize("refused_actor,line", [(agent_with_resume_disabled, ""), (agent_with_unusable_models, ""), (worker_actor, ""), (worker_actor, ROTATING_CONTINUE), (helper_actor, ROTATING_CONTINUE)])
 def test_after_each_refusal_the_agent_its_jobs_and_the_profile_files_are_what_they_were(rotating, refused_actor, line):
-    earlier_state = agent_jobs_and_files(rotating)
+    prior_state = agent_jobs_and_files(rotating)
     actor = refused_actor(rotating)
     outcome = rotating.run(line or f"{job_line(rotating)} --reason needed", actor=actor)
-    rotating.expect_rows(outcome.code == 1, agent_jobs_and_files(rotating) == earlier_state, detail=outcome.output_text)
+    rotating.expect_rows(outcome.code == 1, agent_jobs_and_files(rotating) == prior_state, detail=outcome.output_text)

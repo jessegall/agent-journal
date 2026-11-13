@@ -3,7 +3,7 @@ from tests.stories.core.modules.tasks.support.holder_assignee_check import asser
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.holder_fixtures import UpgradedTasks, worker_on_first_task, worker_on_two_tasks
 
-HELD_UNASSIGNED_TASK = 3
+BLOCKED_UNASSIGNED_TASK = 3
 
 
 def expect_assignee(story, task_id: int, actor_id: int) -> None:
@@ -53,8 +53,8 @@ def test_assigning_a_blocked_task_held_by_x_to_y_clears_the_hold_and_the_task_st
 def test_no_listener_or_backfill_assigns_a_task_because_it_holds_it(new_story):
     story = new_story(fixture=UpgradedTasks)
     story.run_listeners()
-    story.expect_text(f"task show {HELD_UNASSIGNED_TASK}", "state: started", actor=story.agent)
-    story.expect_rows(HELD_UNASSIGNED_TASK not in task_assignees(story), detail=str(task_assignees(story)))
+    story.expect_text(f"task show {BLOCKED_UNASSIGNED_TASK}", "state: started", actor=story.agent)
+    story.expect_rows(BLOCKED_UNASSIGNED_TASK not in task_assignees(story), detail=str(task_assignees(story)))
 
 
 def test_path_1_a_blocked_task_cannot_be_assigned_away_while_the_old_holder_stays(new_story):
@@ -78,5 +78,5 @@ def test_path_2_an_agent_cannot_start_a_task_queued_for_another_worker(new_story
 
 def test_path_3_a_migration_never_assigns_by_holder_id(new_story):
     story = new_story(fixture=UpgradedTasks)
-    story.expect_rows(HELD_UNASSIGNED_TASK not in task_assignees(story), detail=str(task_assignees(story)))
-    story.expect_text(f"task show {HELD_UNASSIGNED_TASK}", "state: started", actor=story.agent)
+    story.expect_rows(BLOCKED_UNASSIGNED_TASK not in task_assignees(story), detail=str(task_assignees(story)))
+    story.expect_text(f"task show {BLOCKED_UNASSIGNED_TASK}", "state: started", actor=story.agent)

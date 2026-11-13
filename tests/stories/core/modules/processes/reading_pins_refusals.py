@@ -3,12 +3,12 @@ from datetime import timedelta
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from tests.stories.core.modules.processes.hang_watch import HANG_SECONDS, LOOK_SECONDS, ActiveBuild, ActiveTestRun, busy_for, started_tree, watch_tick
+from tests.stories.core.modules.processes.hang_watch import HANG_SECONDS, CHECK_SECONDS, ActiveBuild, ActiveTestRun, busy_for, started_tree, watch_tick
 from tests.stories.core.modules.processes.support.process_samples import install_runner, monitor
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-HELD = "Output 1 printed nothing for 301s"
+BLOCKED = "Output 1 printed nothing for 301s"
 HUNG = "and was stopped: its output is kept"
 PEEK_OUTPUT = HookSamples.shell("journal output peek 1", ShellPart("journal", CommandCategory.JOURNAL, ["output", "peek", "1"], subcommand="output"))
 PAGE_OUTPUT = HookSamples.shell("journal output page 1", ShellPart("journal", CommandCategory.JOURNAL, ["output", "page", "1"], subcommand="output"))
@@ -28,7 +28,7 @@ def test_a_run_idle_and_silent_for_the_hang_time_is_stopped_and_its_agent_told_i
 def test_a_busy_silent_test_run_is_stopped_after_three_asks_to_look_go_unanswered(new_story):
     story = new_story(fixture=ActiveTestRun)
     tree = started_tree(story, 12.0)
-    busy_for(story, tree, LOOK_SECONDS + 5)
+    busy_for(story, tree, CHECK_SECONDS + 5)
     for _ in range(2):
         busy_for(story, tree, HANG_SECONDS + 1)
     story.expect_text("process show 1", "state: background", actor=story.agent)

@@ -44,18 +44,18 @@ class CadenceWatch:
         log, clock_seconds = container.get(CadenceLog), current.value.timestamp()
         part = self.running_part(parts)
         try:
-            earlier_growths = log.growths(process.id)
+            prior_growths = log.growths(process.id)
             growths = log.record(process.id, log.figure(process.id, part.position), clock_seconds)
         except OSError as error:
             container.get(SystemLogWriter).write(LogLevel.WARNING, f"cadence watch: output {process.id} could not be read: {error}")
             return False
-        if growths != earlier_growths:
+        if growths != prior_growths:
             container.get(RunNotices).clear_frozen(process.id)
         hang = HangWatch.limits(container, process.environment_id).hang
         cadence = container.get(RunCadences).for_process(process, current)
         self.judged(container, process, part, cadence, hang)
         self.frozen(container, process, part, current, hang)
-        return growths != earlier_growths
+        return growths != prior_growths
 
     def judged(self, container: Container, process: Process, part: ProcessPart, cadence: RunCadence, hang: int) -> None:
         notices = container.get(RunNotices)

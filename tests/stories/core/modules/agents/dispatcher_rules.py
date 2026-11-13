@@ -25,7 +25,7 @@ from tests.stories.core.support.agent_labels import agent_number
 PROGRAM_RUNS = b"running\n"
 STARTED = b"started 701\n"
 STOPPED = b"stopped\n"
-NO_PROGRAM = b"\n"
+WITHOUT_PROGRAM = b"\n"
 START_FAILED = "failed to start"
 PRIVATE_PARTS = ("launcher", "support.agent_program", "agent_dispatcher", "program_transport")
 RECORDED_PROCESS = "--pid 700 --process-started-at 2026-10-31T09:00:00+00:00"
@@ -95,7 +95,7 @@ def test_550_a_start_that_cannot_reach_the_launcher_reads_as_failed_and_leaves_o
 def test_557_the_standing_command_reads_running_and_after_a_stop_through_the_dispatcher_ended_with_who_stopped_it(new_story):
     story = new_story(fixture=StartedHelper)
     number = agent_number(story, helper_agent(story).id)
-    launcher(story, request_count=0, answers=(PROGRAM_RUNS, STOPPED, NO_PROGRAM))
+    launcher(story, request_count=0, answers=(PROGRAM_RUNS, STOPPED, WITHOUT_PROGRAM))
     story.expect_text(f"agent standing {number} --environment main", "standing: running", actor=story.user)
     story.expect_success(f"agent stop-program {number} --environment main", "stop: program_ended", actor=story.user)
     story.expect_text(f"agent standing {number} --environment main", "standing: ended", "reason: stopped by a user", actor=story.user)

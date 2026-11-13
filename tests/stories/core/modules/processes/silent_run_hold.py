@@ -19,17 +19,17 @@ from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story import Story
 from tests.stories.core.modules.processes.hang_watch import ActiveBuild, started_tree, watch_tick
 from tests.stories.core.modules.processes.support.process_samples import end_run
-from core.modules.processes.support.process_nudges import SILENT_RUN_HELD
+from core.modules.processes.support.process_nudges import SILENT_RUN_BLOCKED
 from engine.testing.expectations.expected_nudge import expected_nudge
 
 HANG_SECONDS = 300
 TASK_LIST = HookSamples.shell("journal task list", ShellPart("journal", CommandCategory.JOURNAL, ["task", "list"]))
 READ_OUTPUT = HookSamples.shell("journal output read 1 --tail 5", ShellPart("journal", CommandCategory.JOURNAL, ["output", "read", "1", "--tail", "5"]))
 EDIT = HookSamples.edit("src/shop.py")
-SKIP_HOLD = HookSamples.shell("journal refusal skip processes.silent-run-hold --reason 'it writes to a file'",
+SKIP_BLOCK = HookSamples.shell("journal refusal skip processes.silent-run-hold --reason 'it writes to a file'",
                               ShellPart("journal", CommandCategory.JOURNAL, ["refusal", "skip", "processes.silent-run-hold", "--reason", "it writes to a file"]))
 STOP_OUTPUT = HookSamples.shell("journal output stop 1", ShellPart("journal", CommandCategory.JOURNAL, ["output", "stop", "1"]))
-HELD = "Output 1 printed nothing for 301s"
+BLOCKED = "Output 1 printed nothing for 301s"
 
 
 def print_line(story: Story, text: str) -> None:
@@ -48,8 +48,8 @@ def silent_story(new_story, seconds: int = HANG_SECONDS + 1) -> Story:
 
 def test_a_run_silent_for_the_hang_time_holds_the_next_tool_use_and_names_what_to_read(new_story):
     story = silent_story(new_story)
-    story.expect_hook_refusal("s-1", EDIT, HELD)
-    story.expect_hook_refusal("s-1", EDIT, expected_nudge(SILENT_RUN_HELD, output=1, seconds=301, processor='not known', hint='read'))
+    story.expect_hook_refusal("s-1", EDIT, BLOCKED)
+    story.expect_hook_refusal("s-1", EDIT, expected_nudge(SILENT_RUN_BLOCKED, output=1, seconds=301, processor='not known', hint='read'))
 
 
 def test_the_hold_says_the_processor_time_is_rising_when_it_moved_since_the_run_went_silent(new_story):
@@ -65,15 +65,15 @@ def test_the_hold_says_the_processor_time_is_rising_when_it_moved_since_the_run_
 def test_a_held_agent_still_runs_journal_commands_and_the_skip_line_the_hold_names(new_story):
     story = silent_story(new_story)
     story.expect_hook_allowed("s-1", TASK_LIST)
-    story.expect_hook_allowed("s-1", SKIP_HOLD)
-    story.expect_hook_refusal("s-1", EDIT, HELD)
+    story.expect_hook_allowed("s-1", SKIP_BLOCK)
+    story.expect_hook_refusal("s-1", EDIT, BLOCKED)
 
 
 def test_a_run_read_before_it_went_silent_is_read_again_once_it_is_held(new_story):
     story = new_story(fixture=ActiveBuild)
     story.expect_success("output read 1 --tail 5", actor=story.agent)
     story.advance(timedelta(seconds=HANG_SECONDS + 1))
-    story.expect_hook_refusal("s-1", EDIT, HELD)
+    story.expect_hook_refusal("s-1", EDIT, BLOCKED)
     story.expect_success("output read 1 --tail 5", actor=story.agent)
     story.expect_hook_allowed("s-1", EDIT)
 

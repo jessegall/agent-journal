@@ -11,7 +11,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuild
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 MAIN = "s-1"
-NOT_STREAMING = "so it is not streaming"
+NON_STREAMING = "so it is not streaming"
 FIFTY_RUNS = 50
 MOST_STATEMENTS = 20 * FIFTY_RUNS
 MOST_SECONDS = 5.0

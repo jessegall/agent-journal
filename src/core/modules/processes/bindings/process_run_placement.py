@@ -39,7 +39,7 @@ class ProcessRunPlacement(RunPlacement):
         agent_id = owner.stored_agent_id if owner.stored_agent_id is not None else self.main_agent_id(owner.environment_id)
         if agent_id is None:
             return PlacedRun(request, None, True, None, owner.environment_id)
-        command = StartProcess.single_part(agent_id, request.text, str(request.folder), request.kind.category, int(request.limit_seconds), kind=request.kind.value)
+        command = StartProcess.single_part(agent_id, request.text, str(request.folder), request.kind.category, int(request.limit_seconds), part_category=request.kind.value)
         process = self.bus.run(command, Actor.core(), environment_id=owner.environment_id)
         return PlacedRun(request, process.id, True, agent_id, owner.environment_id)
 

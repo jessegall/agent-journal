@@ -14,11 +14,11 @@ def task(task_id):
 READY = (task(1), task(2), task(3))
 
 
-def next_task(chosen=None, focused=None, ready=READY, waiting_ids=()):
+def next_task(selected=None, focused=None, ready=READY, waiting_ids=()):
     tasks = SimpleNamespace(assigned_ready=lambda worker_id: ready, started_tasks=lambda worker_id: ())
     plan_order = SimpleNamespace(first_placed=lambda tasks: tasks[0] if tasks else None)
     open_tasks = SimpleNamespace(startable_tasks=lambda worker_id, ready, started_count: tuple(task for task in ready if task.id not in waiting_ids))
-    choices = SimpleNamespace(find=lambda worker_id: chosen)
+    choices = SimpleNamespace(find=lambda worker_id: selected)
     picker = SimpleNamespace(first=lambda agent: focused)
     queries = SimpleNamespace(query=lambda model: SimpleNamespace(find=lambda agent_id: SimpleNamespace(id=agent_id)))
     return WorkerNextTask(tasks, plan_order, choices, picker, queries, open_tasks)

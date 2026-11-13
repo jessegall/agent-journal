@@ -5,11 +5,11 @@ ROOT = Path(__file__).resolve().parents[3]
 SPECIFICATION = importlib.util.spec_from_file_location("wrong_owner_survey", ROOT / "scripts" / "wrong_owner_survey.py")
 wrong_owner_survey = importlib.util.module_from_spec(SPECIFICATION)
 SPECIFICATION.loader.exec_module(wrong_owner_survey)
-KNOWN_LINES = ROOT / "tests" / "snapshots" / "wrong_owner.txt"
+RECOGNIZED_LINES = ROOT / "tests" / "snapshots" / "wrong_owner.txt"
 
 
 def known_lines() -> list[str]:
-    return KNOWN_LINES.read_text().splitlines()
+    return RECOGNIZED_LINES.read_text().splitlines()
 
 
 def test_no_file_sits_with_the_wrong_owner_beyond_the_known_lines():

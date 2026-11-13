@@ -2,7 +2,7 @@ import pytest
 
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import BUILD_TEST
-from tests.stories.suites.coding.modules.workers.free_commits import ASK_MERGE, commit_each
+from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_each
 from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PLAN_DISPATCH, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story, unplanned_group_worker, single_task_worker
 
@@ -47,31 +47,31 @@ def test_47_a_stop_while_the_last_run_is_open_is_allowed_and_no_report(new_story
 
 def test_48_the_whole_ask(new_story, monkeypatch):
     worker = committed_list(new_story, monkeypatch)
-    worker.story.expect_text(ASK_MERGE, "Asked for the merge of tasks 1, 2, 3: 3 tasks in 3 commits", actor=worker.worker)
+    worker.story.expect_text(REQUEST_MERGE, "Asked for the merge of tasks 1, 2, 3: 3 tasks in 3 commits", actor=worker.worker)
 
 
 def test_49_refused_a_started_task(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
     commit_each(worker, tuple([1]))
     worker.story.run("task start 2", actor=worker.worker)
-    worker.story.expect_refusal(ASK_MERGE, "task 2 is started", actor=worker.worker)
+    worker.story.expect_refusal(REQUEST_MERGE, "task 2 is started", actor=worker.worker)
 
 
 def test_50_refused_a_run_of_the_asked_work_is_open(new_story, monkeypatch):
     worker = running_plan(new_story, monkeypatch)
-    worker.story.expect_refusal(ASK_MERGE, "the tests of checkpoint phase 1 run on your commit", actor=worker.worker)
+    worker.story.expect_refusal(REQUEST_MERGE, "the tests of checkpoint phase 1 run on your commit", actor=worker.worker)
 
 
 def test_51_refused_a_run_of_the_asked_work_failed(new_story, monkeypatch):
     worker = running_plan(new_story, monkeypatch)
     worker.end_tests(1, 0, 0, 0)
     worker.end_all_tests()
-    worker.story.expect_refusal(ASK_MERGE, "is started", actor=worker.worker)
+    worker.story.expect_refusal(REQUEST_MERGE, "is started", actor=worker.worker)
 
 
 def test_53_refused_nothing_committed_since_the_last_merge(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    worker.story.expect_refusal(ASK_MERGE, "nothing is committed since your last merge", actor=worker.worker)
+    worker.story.expect_refusal(REQUEST_MERGE, "nothing is committed since your last merge", actor=worker.worker)
 
 
 @pytest.mark.real_git
@@ -91,7 +91,7 @@ def test_55_refused_no_note_and_any_length_is_accepted(new_story, monkeypatch):
 
 def test_56_refused_in_a_unit_of_one(new_story, monkeypatch):
     worker = single_task_worker(new_story, monkeypatch)
-    worker.story.expect_refusal(ASK_MERGE, "your task asks for its merge by its commit", actor=worker.worker)
+    worker.story.expect_refusal(REQUEST_MERGE, "your task asks for its merge by its commit", actor=worker.worker)
 
 
 @pytest.mark.real_git

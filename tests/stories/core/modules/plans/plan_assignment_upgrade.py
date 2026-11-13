@@ -8,7 +8,7 @@ from tests.stories.core.modules.assignments.support.assignment_reads import assi
 from tests.stories.core.modules.plans.support.assigned_plans import (HAND_GIVEN_TASK, OLD_ASSIGNEE_PATH, PlanWithOldAssignee, plan_worker,
                                                                     run_plan_assignments_migration)
 
-GONE_ACTOR_ID = 999_999
+REMOVED_ACTOR_ID = 999_999
 
 
 @pytest.fixture
@@ -43,7 +43,7 @@ def test_plan_inspect_shows_the_same_assignee_after_the_upgrade_as_before(old_pl
 
 
 def test_a_plan_assigned_to_a_gone_actor_is_dropped_and_counted_in_the_report(old_plan):
-    old_plan.container.get(Database).update(Statement(f"UPDATE plans SET metadata = json_set(metadata, '{OLD_ASSIGNEE_PATH}', {GONE_ACTOR_ID}) WHERE id = 1"))
+    old_plan.container.get(Database).update(Statement(f"UPDATE plans SET metadata = json_set(metadata, '{OLD_ASSIGNEE_PATH}', {REMOVED_ACTOR_ID}) WHERE id = 1"))
     run_plan_assignments_migration(old_plan)
     old_plan.expect_success("plan board --json --environment main", actor=old_plan.user)
     old_plan.expect_rows(row_actors(old_plan, "plan") == {}, row_actors(old_plan, "phase") == {}, old_key(old_plan) is None, detail=str(row_actors(old_plan, "plan")))

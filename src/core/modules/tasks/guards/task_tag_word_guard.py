@@ -8,7 +8,7 @@ from core.modules.tasks.models.task_tag import TaskTag
 from core.modules.tasks.models.task_tag_word import TaskTagWord
 from core.modules.tasks.support.task_tag_confirmation import TaskTagConfirmation
 
-TAG_WORDS_REASON = "the refusal lists every tag word in use, in the order of the words"
+TAG_TERMS_REASON = "the refusal lists every tag word in use, in the order of the words"
 
 
 class TaskTagWordGuard(Guard[Created[TaskTag]]):
@@ -27,5 +27,5 @@ class TaskTagWordGuard(Guard[Created[TaskTag]]):
             return
         if context.actor.type is ActorType.USER or self.queries.query(TaskTag).filter(word=word).exists():
             return
-        listed_tags = ", ".join(row.word for row in self.queries.query(TaskTagWord).every_row(TAG_WORDS_REASON))
+        listed_tags = ", ".join(row.word for row in self.queries.query(TaskTagWord).every_row(TAG_TERMS_REASON))
         raise Refusal(f"{word} is a new tag; in use: {listed_tags}", "use one of them, or repeat with --confirm")

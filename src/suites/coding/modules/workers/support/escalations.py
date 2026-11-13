@@ -10,7 +10,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 WRITERS_REASON = "every message to the worker since its question was forwarded names who answered"
 
 
-SETTLED_OUTCOMES = (AskOutcome.ANSWERED, AskOutcome.FIXED, AskOutcome.MOOT)
+RESOLVED_OUTCOMES = (AskOutcome.ANSWERED, AskOutcome.FIXED, AskOutcome.MOOT)
 
 
 class Escalations:
@@ -31,7 +31,7 @@ class Escalations:
         line = self.forwarded_line(worker_id)
         if line is None or line.closed_at is None or self.worktrees.worker_worktree(worker_id) is None:
             return None
-        if self.queries.query(MergerLine).filter(worker_id=worker_id).matching(Greater("id", line.id)).matching(Among("outcome", SETTLED_OUTCOMES)).exists():
+        if self.queries.query(MergerLine).filter(worker_id=worker_id).matching(Greater("id", line.id)).matching(Among("outcome", RESOLVED_OUTCOMES)).exists():
             return None
         writer_ids = [message.creator_id for message in self.queries.query(Message).filter(target_agent_id=worker_id).matching(Greater("created_at", line.closed_at.text)).every_row(WRITERS_REASON)]
         if not writer_ids:

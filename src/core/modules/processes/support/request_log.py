@@ -6,7 +6,7 @@ from engine.journal.journal_home import JournalHome
 from core.modules.processes.support.request_log_entry import RequestLogEntry
 
 LOG_NAME = "request-runs.log"
-TAKEN_NAME = "request-runs.taken"
+CLAIMED_NAME = "request-runs.taken"
 
 
 class RequestLog:
@@ -20,7 +20,7 @@ class RequestLog:
 
     @property
     def lines(self) -> AppendLog:
-        return AppendLog(self.home.folder / LOG_NAME, self.home.folder / TAKEN_NAME, self.files)
+        return AppendLog(self.home.folder / LOG_NAME, self.home.folder / CLAIMED_NAME, self.files)
 
     def append(self, entry: RequestLogEntry) -> None:
         self.lines.append(entry.text())

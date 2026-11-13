@@ -10,7 +10,7 @@ from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.modules.messages.reply_teaching import ReplySession
 
 SAFEGUARDS_ERROR = "API Error: this request was stopped by the model safeguards (reasoning_extraction), request id req_011CabcDEF123"
-OTHER_ERROR = "API Error: the service is overloaded, try again"
+DIFFERENT_ERROR = "API Error: the service is overloaded, try again"
 
 
 def wake_lines(story) -> list[AgentLine]:
@@ -68,5 +68,5 @@ def test_a_turn_that_ended_on_its_own_between_two_stops_wakes_the_agent_again(ne
 
 def test_an_api_error_that_is_not_a_safeguards_stop_wakes_and_tells_nobody(new_story):
     story = new_story(SAMPLES, fixture=AgentRunning)
-    story.hook("s-1", HookSamples.stop_failure(OTHER_ERROR))
+    story.hook("s-1", HookSamples.stop_failure(DIFFERENT_ERROR))
     story.expect_rows(wake_lines(story) == [], chat_notes(story) == [])

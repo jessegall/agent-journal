@@ -16,7 +16,7 @@ CODE = re.compile(r"```.*?```|`[^`\n]*`", re.DOTALL)
 WORD = re.compile(r"[\w'-]+")
 POINTER = re.compile(r"references/([\w.-]+\.md)")
 AUDIENCES = ("main agent", "worker", "all")
-SHARED_WORDS = 12
+SHARED_TERMS = 12
 LONG_REFERENCE_LINES = 300
 
 
@@ -54,7 +54,7 @@ def hub_row_fault(folder: str, rows: list[list[str]]) -> str | None:
 def word_runs(path: Path) -> set[tuple[str, ...]]:
     text = CODE.sub(" ", FRONT_MATTER.sub("", path.read_text()))
     terms = WORD.findall(text.lower())
-    return {tuple(terms[start:start + SHARED_WORDS]) for start in range(len(terms) - SHARED_WORDS + 1)}
+    return {tuple(terms[start:start + SHARED_TERMS]) for start in range(len(terms) - SHARED_TERMS + 1)}
 
 
 def reference_faults(path: Path) -> list[str]:

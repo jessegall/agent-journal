@@ -23,7 +23,7 @@ from engine.testing.expectations.expected_nudge import expected_nudge
 
 MERGER_SESSION = "s-merger"
 HAIKU_DISPATCH = DISPATCH.replace("--model sonnet", "--model haiku")
-MANY_FILES = 40
+SEVERAL_FILES = 40
 
 
 class MergerBeside(StoryFixture):
@@ -70,7 +70,7 @@ def s17_a_sibling_file_is_same_folder_and_not_overlap(story, repository, worker:
 
 def s18_a_large_update_for_a_small_model_is_passed_and_the_main_agent_reads_its_reason_and_facts(story, repository, worker: Actor) -> None:
     base = checkout_of(repository, ENVIRONMENT_BRANCH)
-    for number in range(MANY_FILES):
+    for number in range(SEVERAL_FILES):
         (repository.worktree_folder(worker.id) / f"part_{number}.py").write_text("WORKER = 1\n")
         (base / f"part_{number}.py").write_text("BASE = 1\n")
     repository.git("add", "-A", folder=repository.worktree_folder(worker.id))
@@ -82,7 +82,7 @@ def s18_a_large_update_for_a_small_model_is_passed_and_the_main_agent_reads_its_
     check = checks(story)[0]
     story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(BEHIND_PASSED))
     story.expect_text(f"behind-check show {check.id}", "it is too large for a small model")
-    story.expect_text(f"merger behind {agent_number(story, worker.id)}", f"part_{MANY_FILES - 1}.py", "haiku")
+    story.expect_text(f"merger behind {agent_number(story, worker.id)}", f"part_{SEVERAL_FILES - 1}.py", "haiku")
     state = story.run(f"worker-worktree list --json").output_text
     story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.PASSED], WorktreeState.CUT.value in state, detail=state)
 

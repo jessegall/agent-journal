@@ -17,7 +17,7 @@ kit."""
 
 FINISHED_JOBS = 1200
 SAVED_BUILDS = 336
-OTHER_RULE_REFUSALS = 207
+DIFFERENT_RULE_REFUSALS = 207
 ENDED_CHILDREN = 120
 SKILL_ROWS = 128
 CONFLICTING_BUILD = 'alias add second-build "cd seeded/package_7 && make all" --category build'
@@ -32,7 +32,7 @@ class LargeJournal(StoryFixture):
     def steps(self, story):
         seeded_finished_jobs(story, story.agent.id, helper_agent(story).id, FINISHED_JOBS)
         story.seed(SavedBuildSeed, SAVED_BUILDS)
-        story.seed(RefusedHookCallSeed, OTHER_RULE_REFUSALS, session_agent_id=story.agent.id)
+        story.seed(RefusedHookCallSeed, DIFFERENT_RULE_REFUSALS, session_agent_id=story.agent.id)
         seeded_children(story, story.agent.id, ENDED_CHILDREN)
         story.seed(AgentSkillSeed, SKILL_ROWS, session_agent_id=story.agent.id)
 

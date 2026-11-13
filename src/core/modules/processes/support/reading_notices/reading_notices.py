@@ -27,7 +27,7 @@ from core.modules.processes.support.reader_judge import ReaderJudge
 from core.modules.processes.support.reader_writers import ReaderWriters
 from core.modules.processes.support.run_visibility import RunVisibility
 
-PICKED_NONE = "--lines picked none"
+SELECTED_NONE = "--lines picked none"
 WIDTH_FIELDS = ("reader", "kept", "lines", "output")
 NAMED_FIELDS = ("reader", "output")
 MISS_NUDGES: dict[str, tuple[NudgeDeclaration, tuple[str, ...]]] = {"--lines picked nearly all": (READER_WIDTH, WIDTH_FIELDS),
@@ -102,7 +102,7 @@ class ReadingNotices:
             return ()
         parts = [part for part in process_parts if not output.reader_position or part.position == output.reader_position]
         missed = tuple(dict.fromkeys(miss for part in parts for miss in self.judge.misses_read_output(reader, part.category, output)))
-        if PICKED_NONE in missed:
+        if SELECTED_NONE in missed:
             return tuple([READER_MISSED.nudge(reader=reader.name, lines=output.line_count, output=process.id)])
         values = {"reader": reader.name, "kept": output.reader_lines, "lines": output.line_count, "output": process.id}
         advice = [nudge for miss, nudge in MISS_NUDGES.items() if miss in missed and (nudge[0] is not READER_SUMMARY_MISSING or reader.summary_pattern)]

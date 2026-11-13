@@ -7,7 +7,7 @@ import pytest
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE as COMPACT
 from core.modules.overview.support.overview_first import OverviewFirst
-from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS, CONTEXT_LIMIT_KINDS
+from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS, CONTEXT_LIMIT_CATEGORIES
 from tests.stories.server.support.server_client import server_story
 from engine.testing.examples.shell_part import ShellPart
 from engine.enums.command_category import CommandCategory
@@ -301,11 +301,11 @@ def set_through_the_viewer(story, key, value):
 
 
 def test_a_cap_for_the_main_agents_kind_holds_it_in_place_of_the_size_for_all(limited):
-    set_through_the_viewer(limited, CONTEXT_LIMIT_KINDS, json.dumps(["main:none", "worker:200000"]))
+    set_through_the_viewer(limited, CONTEXT_LIMIT_CATEGORIES, json.dumps(["main:none", "worker:200000"]))
     has_context(limited, 900_000)
     stops(limited)
     limited.expect_rows(limited.typing.typed == [], detail=str(limited.typing.typed))
-    set_through_the_viewer(limited, CONTEXT_LIMIT_KINDS, json.dumps(["main:300000"]))
+    set_through_the_viewer(limited, CONTEXT_LIMIT_CATEGORIES, json.dumps(["main:300000"]))
     has_context(limited, 350_000)
     idle_turn(limited)
     stops(limited)

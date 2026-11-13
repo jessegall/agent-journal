@@ -2,7 +2,7 @@ import string
 
 import pytest
 
-from core.modules.processes.support.process_nudges import PROCESS_NUDGES, RUN_FROZEN, RUN_SPARSE, SILENT_RUN, SILENT_RUN_HELD, STALLED_RUN
+from core.modules.processes.support.process_nudges import PROCESS_NUDGES, RUN_FROZEN, RUN_SPARSE, SILENT_RUN, SILENT_RUN_BLOCKED, STALLED_RUN
 
 ALLOWED = {"output", "seconds", "limit", "hint", "name", "reader", "request", "count", "kept", "shape"}
 LINE_COUNTS = {"processes.reader_missed", "processes.reader_too_wide"}
@@ -37,7 +37,7 @@ def test_every_process_nudge_names_only_numbers_and_generic_words(declaration):
 
 
 def test_the_silent_run_hold_names_no_lines():
-    assert "lines" not in placeholders(SILENT_RUN_HELD)
+    assert "lines" not in placeholders(SILENT_RUN_BLOCKED)
 
 
 @pytest.mark.parametrize("declaration", [RUN_SPARSE, RUN_FROZEN, SILENT_RUN, STALLED_RUN], ids=["sparse", "frozen", "silent", "stalled"])

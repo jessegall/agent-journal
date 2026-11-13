@@ -3,7 +3,7 @@ from collections.abc import Mapping
 from engine.module.module import Module
 from core.modules.agents.support.program_transport import ProgramTransport
 
-OTHER_MACHINE = "tests.stories.core.modules.agents.support.other_machine_transport:OtherMachineModule"
+DIFFERENT_MACHINE = "tests.stories.core.modules.agents.support.other_machine_transport:OtherMachineModule"
 STARTED_ANSWER = b"started 9001\n"
 
 

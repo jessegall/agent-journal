@@ -16,8 +16,8 @@ SHORT_TOX_RUN = (("not needed", "nothing", 1), "the newest of two project reader
 WORKER_TESTS_WITHOUT_READER = (("missing", "require", 3), "a reader request was opened and the worker was held until a reader came")
 MAIN_TESTS_WITHOUT_READER = (("missing", "suggest", 1), "nothing was said: a main agent's foreground run asks for no reader (differs)")
 REJECTED_WORKER_COMMAND = (("not needed", "nothing", 1), "the request ended with the skip reason command rejected before it ran")
-MANY_PARTS = 12
-MANY_PARTS_LINE = " && ".join(f"tool{number} run" for number in range(1, MANY_PARTS + 1))
+SEVERAL_PARTS = 12
+SEVERAL_PARTS_LINE = " && ".join(f"tool{number} run" for number in range(1, SEVERAL_PARTS + 1))
 SHORT_BACKGROUND_OUTPUT = (("not needed", "nothing", 1), "the ended line said no reader reads make yet (differs)")
 
 
@@ -51,6 +51,6 @@ def test_a_short_background_run_with_a_large_output_needs_no_reader(new_story):
 def test_a_line_of_many_parts_reads_the_reading_facts_and_kept_decisions_of_its_parts_once(new_story):
     story = new_story(fixture=BuilderStarted)
     with story.repeated_work.request():
-        process = start_process(story, MANY_PARTS_LINE, category=CommandCategory.TEST_RUN)
+        process = start_process(story, SEVERAL_PARTS_LINE, category=CommandCategory.TEST_RUN)
     kept = tuple(story.container.get(Queries).query(ReadingDecisionRow).filter(process_id=process.id, moment=ReadingMoment.START).every_row(TEST_ROWS_REASON))
-    story.expect_rows(len(kept) == MANY_PARTS, detail=str(len(kept)))
+    story.expect_rows(len(kept) == SEVERAL_PARTS, detail=str(len(kept)))

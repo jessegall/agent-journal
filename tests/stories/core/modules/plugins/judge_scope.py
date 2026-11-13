@@ -12,7 +12,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from core.modules.plugins.support.plugin_event_entry import CEILING_SETTING
 
 PROGRAM = "commandments-release"
-HOLD_LIMIT_SETTING = f"{CEILING_SETTING}"
+BLOCK_LIMIT_SETTING = f"{CEILING_SETTING}"
 REASON ="a worker judges only its own work"
 
 
@@ -26,7 +26,7 @@ def judge_story(new_story):
     story = install_runner(new_story(fixture=OpenTaskOrchestrator))
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"plugin install {judge_scope_plugin_folder(story.home.folder.parent)} --yes", actor=story.user)
-    story.expect_success(f"setting set {HOLD_LIMIT_SETTING} 5000 --project", actor=story.user)
+    story.expect_success(f"setting set {BLOCK_LIMIT_SETTING} 5000 --project", actor=story.user)
     repository_environment(story)
     story.worker = dispatched_worker(story)
     story.worker_session = worker_session(story, story.worker)

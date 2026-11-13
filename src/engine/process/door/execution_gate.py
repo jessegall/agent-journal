@@ -7,7 +7,7 @@ from engine.serving.server_files import ServerFiles
 from engine.time.polled_wait import PolledWait
 
 PAUSE_LIMIT_SECONDS = 30
-PAUSE_LOOK_SECONDS = 0.5
+PAUSE_CHECK_SECONDS = 0.5
 PAUSED_AGENT_REFUSAL = "your agent is paused; it runs nothing until it is resumed"
 PAUSED_AGENT_HELP = "answer in the chat, and run it again once you are resumed"
 
@@ -30,4 +30,4 @@ class ExecutionGate:
             return True
         if self.database.has_transaction:
             raise Refusal("the journal is updating, so this run inside a write cannot wait for it", "run it again once the journal reports it started")
-        return PolledWait(PAUSE_LIMIT_SECONDS, PAUSE_LOOK_SECONDS).until(lambda: files.phase().runs_programs)
+        return PolledWait(PAUSE_LIMIT_SECONDS, PAUSE_CHECK_SECONDS).until(lambda: files.phase().runs_programs)

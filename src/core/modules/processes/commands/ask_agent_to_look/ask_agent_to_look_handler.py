@@ -5,7 +5,7 @@ from engine.driver.nudger import Nudger
 from core.modules.processes.commands.ask_agent_to_look.ask_agent_to_look import AskAgentToLook
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
-from core.modules.processes.support.process_nudges import LOOK_AT_RUN
+from core.modules.processes.support.process_nudges import RUN_CHECK
 
 
 class AskAgentToLookHandler(Handler[AskAgentToLook, Process]):
@@ -19,5 +19,5 @@ class AskAgentToLookHandler(Handler[AskAgentToLook, Process]):
     def handle(self, command: AskAgentToLook, context: Context) -> Process:
         process = self.queries.query(Process).find(command.process_id)
         if process.state in RUNNING_STATES:
-            self.nudger.send(process.session_agent_id, LOOK_AT_RUN, "processes.look", context, output=process.id, seconds=command.seconds)
+            self.nudger.send(process.session_agent_id, RUN_CHECK, "processes.look", context, output=process.id, seconds=command.seconds)
         return process

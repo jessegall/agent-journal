@@ -34,11 +34,11 @@ class UnreadableMarker:
         previous = self.previous_run(process, command_key)
         if previous is None:
             return ()
-        reason, earlier_reason = self.facts.measured_reason(process, part), self.facts.measured_reason(*previous)
+        reason, prior_reason = self.facts.measured_reason(process, part), self.facts.measured_reason(*previous)
         mark = self.marks.marked(command_key)
-        if mark is None and reason is not None and earlier_reason is reason:
+        if mark is None and reason is not None and prior_reason is reason:
             return tuple([self.marks.mark(CORE_ACTOR_ID, command_key, reason, "", context)])
-        if mark is not None and reason is None and earlier_reason is None and previous[0].creation_timestamp() >= mark.creation_timestamp():
+        if mark is not None and reason is None and prior_reason is None and previous[0].creation_timestamp() >= mark.creation_timestamp():
             return tuple([self.marks.lift(mark.words, CORE_ACTOR_ID, context)])
         return ()
 

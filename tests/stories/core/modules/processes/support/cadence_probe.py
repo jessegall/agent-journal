@@ -31,7 +31,7 @@ TEST_ROWS_REASON = "the test reads every row it checks"
 CADENCE_TICK = "cadence watch"
 TICK = timedelta(seconds=TICK_SECONDS)
 WORKER_SESSION = "s-worker"
-CADENCE_WORDS = ("printed nothing", "no reader can follow", "has written nothing", "uses no CPU time")
+CADENCE_TERMS = ("printed nothing", "no reader can follow", "has written nothing", "uses no CPU time")
 TOOL_USE = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))
 
 
@@ -190,4 +190,4 @@ def running_run(story: Story) -> Process:
 
 
 def cadence_lines(lines: list[str]) -> list[str]:
-    return [line for line in lines if any(terms in line for terms in CADENCE_WORDS)]
+    return [line for line in lines if any(terms in line for terms in CADENCE_TERMS)]

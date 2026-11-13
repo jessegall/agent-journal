@@ -2,13 +2,13 @@ import json
 from pathlib import Path
 
 PLUGIN_NAME = "queuing"
-KIND = "judge"
-PROCESSES = [{"kind": KIND, "title": "Judging the hand-in", "category": "check", "at_once": "judge_at_once"}]
+CATEGORY = "judge"
+PROCESSES = [{"kind": CATEGORY, "title": "Judging the hand-in", "category": "check", "at_once": "judge_at_once"}]
 SETTINGS = [{"key": "judge_at_once", "title": "Judges at once", "kind": "number", "default": 1, "help": "How many judges may run at once"}]
 
 
 def queue_answer(script: Path) -> str:
-    return json.dumps({"v": 1, "answer": "queue", "run": {"kind": KIND, "command": ["sh", str(script)]}})
+    return json.dumps({"v": 1, "answer": "queue", "run": {"kind": CATEGORY, "command": ["sh", str(script)]}})
 
 
 def judge_script(parent: Path, body: str, name: str = "judge.sh") -> Path:

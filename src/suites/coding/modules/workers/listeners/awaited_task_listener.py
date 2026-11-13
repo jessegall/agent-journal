@@ -11,11 +11,11 @@ from engine.listener.save_listener import SaveListener
 from engine.listener.rows.event_rows import EventRows
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
-from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_AWAITED
+from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_EXPECTED
 
-AWAITED_REASON = "every task that waited on the moved one may be taken now"
+EXPECTED_REASON = "every task that waited on the moved one may be taken now"
 
-AWAITED_SOURCE = "workers.committed-task-awaited"
+EXPECTED_SOURCE = "workers.committed-task-awaited"
 
 
 class AwaitedTaskListener(SaveListener[Moved[Task]]):
@@ -30,7 +30,7 @@ class AwaitedTaskListener(SaveListener[Moved[Task]]):
         self.queries, self.assignments, self.nudger, self.numbers, self.rows = queries, assignments, nudger, numbers, rows
 
     def handle(self, event: Moved[Task], context: Context) -> None:
-        waiting_ids = tuple(dependency.task_id for dependency in self.queries.query(OpenDependency).filter(dependency_id=event.row.id).every_row(AWAITED_REASON))
+        waiting_ids = tuple(dependency.task_id for dependency in self.queries.query(OpenDependency).filter(dependency_id=event.row.id).every_row(EXPECTED_REASON))
         if not waiting_ids:
             return
         holder_id = self.assignments.actor(event.row)
@@ -40,4 +40,4 @@ class AwaitedTaskListener(SaveListener[Moved[Task]]):
         waiting_tasks = self.rows.required_index(Task, waiting_ids).values()
         waiting_actors = {actor for actor in (self.assignments.actor(task) for task in waiting_tasks) if actor is not None and actor != holder_id}
         for waiting_id in sorted(waiting_actors):
-            self.nudger.send(holder_id, WORKER_TASK_AWAITED, AWAITED_SOURCE, context, worker=self.numbers.number(AGENT_MODEL_NAME, waiting_id), task=event.row.id)
+            self.nudger.send(holder_id, WORKER_TASK_EXPECTED, EXPECTED_SOURCE, context, worker=self.numbers.number(AGENT_MODEL_NAME, waiting_id), task=event.row.id)

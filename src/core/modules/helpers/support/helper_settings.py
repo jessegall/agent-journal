@@ -5,7 +5,7 @@ from engine.setting.setting_value import SettingValue
 from engine.setting.list_rule import ListRule
 from engine.setting.number_rule import NumberRule
 
-from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_KINDS, CONTEXT_LIMIT_PROFILES, CONTEXT_LIMIT_TOKENS
+from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_CATEGORIES, CONTEXT_LIMIT_PROFILES, CONTEXT_LIMIT_TOKENS
 
 MODULE_KEY = "journal.core.helpers"
 HELPER_RUN_LIMIT = f"{MODULE_KEY}.read-only-helper-run-limit"

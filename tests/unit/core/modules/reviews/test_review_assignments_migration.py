@@ -7,7 +7,7 @@ from core.modules.reviews.migrations.m006_review_assignments import ReviewAssign
 CORE_ID = 1
 REQUESTER_ID = 2
 REVIEWER_ID = 3
-GONE_REVIEWER_ID = 999
+REMOVED_REVIEWER_ID = 999
 OLD_TABLES = (
     "CREATE TABLE environments (id INTEGER PRIMARY KEY)",
     "CREATE TABLE actors (id INTEGER PRIMARY KEY, type TEXT NOT NULL)",
@@ -30,7 +30,7 @@ OLD_TABLES = (
     f"INSERT INTO reviews (id, environment_id, subject_model, subject_id, requester_id, point_count, created_at, updated_at)"
     f" VALUES (8, 1, 'task', 5, {REQUESTER_ID}, 1, 'then', 'then')",
     f"INSERT INTO reviews (id, environment_id, subject_model, subject_id, requester_id, reviewer_id, point_count, state, created_at, updated_at)"
-    f" VALUES (9, 1, 'task', 6, {REQUESTER_ID}, {GONE_REVIEWER_ID}, 1, 'reviewing', 'then', 'then')",
+    f" VALUES (9, 1, 'task', 6, {REQUESTER_ID}, {REMOVED_REVIEWER_ID}, 1, 'reviewing', 'then', 'then')",
     "INSERT INTO review_points VALUES (1, 7)",
 )
 

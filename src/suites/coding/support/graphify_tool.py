@@ -37,7 +37,7 @@ REFRESH_SCRIPT = (
     'rm -f graphify-out/.journal-running "$JOURNAL_GRAPH_CLAIM"'
 )
 CLUSTER = "cluster"
-NO_CLUSTER = "no-cluster"
+UNCLUSTERED = "no-cluster"
 
 
 SHORT_COMMIT = 7
@@ -133,7 +133,7 @@ class GraphifyTool(ToolRunner):
     def grouping(self, folder: Path) -> str:
         elapsed = GraphFiles(folder).seconds_since_clustering(self.clock)
         is_due = elapsed is None or elapsed >= self.settings.project.number(GRAPHIFY_CLUSTER_MINUTES) * MINUTE_SECONDS
-        return CLUSTER if is_due else NO_CLUSTER
+        return CLUSTER if is_due else UNCLUSTERED
 
     def after_start(self, folder: Path, status: ToolStatus) -> ToolStatus:
         if not self.started(folder, status.commit):

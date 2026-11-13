@@ -152,11 +152,11 @@ def test_a_stop_ends_the_row_only_once_the_launcher_has_no_program_of_the_agent(
 
 
 def test_the_exit_of_the_current_process_ends_the_row_and_the_exit_of_an_earlier_process_changes_nothing():
-    current, earlier = Parts(), Parts()
+    current, prior = Parts(), Parts()
     current.dispatcher.exited(replace(HELPER, pid=701), ProgramExit(0, pid=701), CONTEXT)
-    earlier.dispatcher.exited(replace(HELPER, pid=701), ProgramExit(0, pid=650), CONTEXT)
-    assert (current.repository.ended_ids, earlier.repository.ended_ids) == ([41], [])
-    assert "process 650" in earlier.log_lines[0]
+    prior.dispatcher.exited(replace(HELPER, pid=701), ProgramExit(0, pid=650), CONTEXT)
+    assert (current.repository.ended_ids, prior.repository.ended_ids) == ([41], [])
+    assert "process 650" in prior.log_lines[0]
 
 
 @pytest.mark.parametrize("agent, answer, stage, reason", [

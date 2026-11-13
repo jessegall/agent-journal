@@ -10,7 +10,7 @@ from tests.unit.support.plain_executor import plain_executor
 from tests.unit.suites.coding.modules.workers.test_worktree_git_own_files import BASE_BRANCH, SampleRepository
 
 WORKER_BRANCH = "workers/one"
-OTHER_BRANCH = "workers/other"
+DIFFERENT_BRANCH = "workers/other"
 
 
 def cut_worktree(tmp_path, base_branch: str = BASE_BRANCH, name: str = "worktree", branch: str = WORKER_BRANCH) -> tuple[SampleRepository, Worktree]:
@@ -47,7 +47,7 @@ def worktree_folder(worktree: Worktree) -> Path:
 
 def test_a_no_ff_merge_of_a_four_commit_branch_counts_once(tmp_path):
     repository, worktree = cut_worktree(tmp_path)
-    merged_branch(repository, OTHER_BRANCH, 4)
+    merged_branch(repository, DIFFERENT_BRANCH, 4)
     assert git().behind(worktree) == 1
 
 
@@ -76,7 +76,7 @@ def test_a_merge_of_this_worktrees_own_earlier_commits_is_not_counted_but_anothe
     own_commits(worktree, 2)
     repository.git("merge", "--no-ff", "-m", "Merge the first part of this worker", WORKER_BRANCH)
     assert git().behind(worktree) == 0
-    merged_branch(repository, OTHER_BRANCH, 1)
+    merged_branch(repository, DIFFERENT_BRANCH, 1)
     assert git().behind(worktree) == 1
 
 
@@ -91,10 +91,10 @@ def test_base_changes_lists_the_files_of_each_base_commit_merges_included(tmp_pa
     repository, worktree = cut_worktree(tmp_path)
     assert git().base_changes(worktree, repository.tip("base")) == ()
     repository.committed("tax.py", "TAX = 1\n", "Tax on the base")
-    merged_branch(repository, OTHER_BRANCH, 2)
+    merged_branch(repository, DIFFERENT_BRANCH, 2)
     changes = git().base_changes(worktree, repository.tip("base"))
     assert [(change.subject, change.files) for change in changes] == [
-        (f"Merge {OTHER_BRANCH}", ("workers_other_0.py", "workers_other_1.py")),
+        (f"Merge {DIFFERENT_BRANCH}", ("workers_other_0.py", "workers_other_1.py")),
         ("Tax on the base", tuple(["tax.py"])),
     ]
     assert all(len(change.short_id) >= 7 for change in changes)

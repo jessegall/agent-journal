@@ -10,11 +10,11 @@ from tests.stories.suites.coding.modules.workers.support.held_tasks import holdi
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker
 
 THREE_TASKS = 3
-CHECKPOINT_WORDS = "tests run at the checkpoint of phase 2"
-CHECKPOINT_TASKS_WORDS = f"{CHECKPOINT_WORDS}, when tasks 4 are in"
+CHECKPOINT_TERMS = "tests run at the checkpoint of phase 2"
+CHECKPOINT_TASKS_TERMS = f"{CHECKPOINT_TERMS}, when tasks 4 are in"
 LEFT_OUT_WORDS = "task 3 is not part of this commit: it has no proof"
-INTERIM_WORDS = "Interim: go on with task 3"
-FINAL_WORDS = "Final: your work is handed in, stop and wait"
+INTERIM_TERMS = "Interim: go on with task 3"
+FINAL_TERMS = "Final: your work is handed in, stop and wait"
 MERGED_REASON = "merged; its tests run at the checkpoint of phase 2"
 
 
@@ -64,7 +64,7 @@ def test_39_44_a_commit_of_two_of_three_tasks_outside_a_plan_is_named_interim_te
     outcome = two_of_three_proved.story.run(COMMIT, actor=two_of_three_proved.worker)
     two_of_three_proved.story.run_listeners()
     two_of_three_proved.story.expect_text("task show 3", "state: started", actor=two_of_three_proved.story.agent)
-    two_of_three_proved.story.expect_rows(outcome.code == 0, f"{INTERIM_WORDS}; tests run in the background" in outcome.output_text, worktree(two_of_three_proved)["state"] == "cut", len(two_of_three_proved.started) == 2,
+    two_of_three_proved.story.expect_rows(outcome.code == 0, f"{INTERIM_TERMS}; tests run in the background" in outcome.output_text, worktree(two_of_three_proved)["state"] == "cut", len(two_of_three_proved.started) == 2,
                                           detail=outcome.output_text)
 
 
@@ -73,7 +73,7 @@ def test_39_a_commit_of_two_of_three_tasks_in_a_started_plan_names_the_checkpoin
     outcome = worker.story.run(COMMIT, actor=worker.worker)
     worker.story.run_listeners()
     worker.story.expect_text("proof list", "committed", actor=worker.story.agent)
-    worker.story.expect_rows(outcome.code == 0, "go on with task 3" in outcome.output_text, CHECKPOINT_WORDS in outcome.output_text, LEFT_OUT_WORDS in outcome.output_text,
+    worker.story.expect_rows(outcome.code == 0, "go on with task 3" in outcome.output_text, CHECKPOINT_TERMS in outcome.output_text, LEFT_OUT_WORDS in outcome.output_text,
                              worktree(worker)["state"] == "cut", worker.started == [],
                              detail=outcome.output_text)
 

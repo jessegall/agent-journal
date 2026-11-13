@@ -8,7 +8,7 @@ from engine.query.queries import Queries
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.processes.commands.lift_hold.lift_hold import LiftHold
-from core.modules.processes.support.cadence.run_silences import LOOKED_MARK
+from core.modules.processes.support.cadence.run_silences import CHECKED_MARK
 from core.modules.processes.support.held_runs import HeldRuns
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_nudges import BLOCK_LIFTED, HOLD_LIFTED
@@ -32,7 +32,7 @@ class LiftHoldHandler(Handler[LiftHold, int]):
         lifted = 0
         blocked = self.held_runs.found(command.agent_id, context.timestamp)
         if blocked is not None:
-            self.folder.write_read_mark(blocked.process.id, LOOKED_MARK, context.timestamp.text)
+            self.folder.write_read_mark(blocked.process.id, CHECKED_MARK, context.timestamp.text)
             self.nudger.send(command.agent_id, HOLD_LIFTED, SOURCE, context, output=blocked.process.id)
             lifted += 1
         blocks = self.queries.query(AgentBlock).filter(session_agent_id=command.agent_id, closed_at=None).get()

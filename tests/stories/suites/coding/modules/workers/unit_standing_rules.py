@@ -4,7 +4,7 @@ from suites.coding.modules.workers.support.worker_command import WORK_STEPS
 from suites.coding.support.profile_commands import WORKER_COMMANDS
 from suites.coding.support.shipped_profiles import WORKER_RULES
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import merge
-from tests.stories.suites.coding.modules.workers.free_commits import ASK_MERGE
+from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE
 from tests.stories.suites.coding.modules.workers.merge_asks import committed_list
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, single_task_worker
 
@@ -23,7 +23,7 @@ def test_88_a_unit_of_one_merges_as_before(new_story, monkeypatch):
 
 def test_91_the_merges_of_a_list_are_its_asks(new_story, monkeypatch):
     worker = committed_list(new_story, monkeypatch)
-    worker.story.expect_success(ASK_MERGE, actor=worker.worker)
+    worker.story.expect_success(REQUEST_MERGE, actor=worker.worker)
     merge(worker)
     merged = [line for line in worker.main_agent_lines() if "merge-ask:" in line]
     worker.story.expect_rows(len(merged) == 1, detail=str(worker.main_agent_lines()))

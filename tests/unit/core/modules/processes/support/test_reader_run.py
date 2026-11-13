@@ -13,7 +13,7 @@ from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.reading.reader_layers import ReaderLayers
 from core.modules.processes.support.stock_reader import STOCK_READERS
 
-NO_EDITS = ReaderLayers(frozenset())
+WITHOUT_EDITS = ReaderLayers(frozenset())
 
 def reader(identifier: int = 1, **fields: object) -> Reader:
     return Reader(**{"id": identifier, "version": 1, "creator_id": 1, "name": f"reader{identifier}", "type": ReaderType.PATTERN, "commands": "pytest*", **fields})
@@ -32,30 +32,30 @@ def script(tmp_path, body: str) -> str:
 
 def test_the_default_reader_of_the_matching_ones_reads_a_line_and_else_the_newest():
     readers = [reader(1), reader(2, is_default=True), reader(3, commands="make*", is_default=True)]
-    assert ReaderSelection.choose(readers, [part()], NO_EDITS).reader.id == 2
-    assert ReaderSelection.choose(readers[:1] + readers[2:], [part()], NO_EDITS).reader.id == 1
-    assert ReaderSelection.choose([reader(1), reader(4)], [part()], NO_EDITS).reader.id == 4
-    assert ReaderSelection.choose([reader(1, commands="make*,pytest*")], [part()], NO_EDITS).reader.id == 1
-    assert ReaderSelection.choose(readers, [part("ls", CommandCategory.PROCESS)], NO_EDITS) is None
+    assert ReaderSelection.choose(readers, [part()], WITHOUT_EDITS).reader.id == 2
+    assert ReaderSelection.choose(readers[:1] + readers[2:], [part()], WITHOUT_EDITS).reader.id == 1
+    assert ReaderSelection.choose([reader(1), reader(4)], [part()], WITHOUT_EDITS).reader.id == 4
+    assert ReaderSelection.choose([reader(1, commands="make*,pytest*")], [part()], WITHOUT_EDITS).reader.id == 1
+    assert ReaderSelection.choose(readers, [part("ls", CommandCategory.PROCESS)], WITHOUT_EDITS) is None
 
 
 @pytest.mark.parametrize("line", ["CI=1 pytest -q", "CI=1 FOO='a b' pytest -q", 'PATH="/x y" pytest -q'])
 def test_a_reader_matches_a_command_behind_the_variables_a_line_sets(line):
-    assert ReaderSelection.choose([reader(1)], [part(line)], NO_EDITS).reader.id == 1
+    assert ReaderSelection.choose([reader(1)], [part(line)], WITHOUT_EDITS).reader.id == 1
 
 
 def test_a_journal_commands_own_output_is_read_by_no_reader():
-    assert ReaderSelection.choose([reader(1, commands="*")], [part("journal task show 1", CommandCategory.JOURNAL)], NO_EDITS) is None
+    assert ReaderSelection.choose([reader(1, commands="*")], [part("journal task show 1", CommandCategory.JOURNAL)], WITHOUT_EDITS) is None
 
 
 def test_a_search_that_names_a_command_is_read_by_no_reader():
-    assert ReaderSelection.choose([reader(1, commands="*vitest*")], [part("grep -n vitest notes", CommandCategory.SEARCH)], NO_EDITS) is None
+    assert ReaderSelection.choose([reader(1, commands="*vitest*")], [part("grep -n vitest notes", CommandCategory.SEARCH)], WITHOUT_EDITS) is None
 
 
 @pytest.mark.parametrize("category", [CommandCategory.EDIT, CommandCategory.SEARCH, CommandCategory.READ, CommandCategory.JOURNAL])
 def test_an_edit_a_search_a_read_and_a_journal_command_are_read_by_no_reader(category):
     assert not category.has_reader
-    assert ReaderSelection.choose([reader(1, commands="*")], [part("sed -i s/a/b/ notes", category)], NO_EDITS) is None
+    assert ReaderSelection.choose([reader(1, commands="*")], [part("sed -i s/a/b/ notes", category)], WITHOUT_EDITS) is None
 
 
 def test_a_test_run_a_build_and_a_check_have_a_reader():
@@ -64,7 +64,7 @@ def test_a_test_run_a_build_and_a_check_have_a_reader():
 
 def test_a_chain_is_read_by_the_reader_of_its_test_run_whatever_stands_before_it():
     parts = [part("grep -n word notes", CommandCategory.SEARCH), part("pytest -q -n 4", CommandCategory.TEST_RUN, 2)]
-    part_reader = ReaderSelection.choose([reader(1, commands="grep*"), reader(2)], parts, NO_EDITS)
+    part_reader = ReaderSelection.choose([reader(1, commands="grep*"), reader(2)], parts, WITHOUT_EDITS)
     assert (part_reader.reader.id, part_reader.part.position) == (2, 2)
 
 
@@ -124,6 +124,6 @@ JUDGE_OUTPUT = "reading 3/3\n138 sins across 8 skills.\n"
 
 def test_a_summary_pattern_with_a_group_keeps_only_the_group_and_one_without_keeps_the_whole_line():
     grouped = reader(summary_pattern=r"(No sins found|[0-9]+ sins? across).*")
-    whole = reader(summary_pattern=r"(?:No sins found|[0-9]+ sins? across).*")
+    full = reader(summary_pattern=r"(?:No sins found|[0-9]+ sins? across).*")
     assert ReaderRun().summary(grouped, JUDGE_OUTPUT) == "138 sins across"
-    assert ReaderRun().summary(whole, JUDGE_OUTPUT) == "138 sins across 8 skills."
+    assert ReaderRun().summary(full, JUDGE_OUTPUT) == "138 sins across 8 skills."

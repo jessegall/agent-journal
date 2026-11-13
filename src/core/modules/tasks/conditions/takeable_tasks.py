@@ -24,7 +24,7 @@ class TakeableTasks:
         assigned = Select("assignments").matching(Equal("subject_model", TASK_MODEL))
         if self.is_main:
             main_agents = Select("agents").matching(Equal("role", MAIN_ROLE)).column("id")
-            to_main = assigned.matching(SubqueryMatch("actor_id", main_agents)).column("subject_id")
+            target_main = assigned.matching(SubqueryMatch("actor_id", main_agents)).column("subject_id")
             unassigned = SubqueryMatch("id", assigned.column("subject_id"), negated=True)
-            return AllOf([Equal("state", OPEN_STATE), AnyOf([unassigned, SubqueryMatch("id", to_main)])]).statement()
+            return AllOf([Equal("state", OPEN_STATE), AnyOf([unassigned, SubqueryMatch("id", target_main)])]).statement()
         return AllOf([Equal("state", OPEN_STATE), SubqueryMatch("id", assigned.matching(Equal("actor_id", self.agent_id)).column("subject_id"))]).statement()

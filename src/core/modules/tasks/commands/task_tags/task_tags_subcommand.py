@@ -7,7 +7,7 @@ from engine.subcommand.row_list import RowList
 from core.modules.tasks.models.task_tag import TaskTag
 from core.modules.tasks.models.task_tag_word import TaskTagWord
 
-TAG_WORDS_REASON = "the tag list shows every tag word in use, in the order of the words"
+TAG_TERMS_REASON = "the tag list shows every tag word in use, in the order of the words"
 
 
 class TaskTagsSubcommand(ReadSubcommand[RowList]):
@@ -28,5 +28,5 @@ class TaskTagsSubcommand(ReadSubcommand[RowList]):
         if arguments.task_id is not None:
             tags = self.queries.query(TaskTag).filter(task_id=arguments.task_id).ordered("word").get()
             return RowList([{"word": tag.word, "count": 1} for tag in tags])
-        counts = self.queries.query(TaskTagWord).every_row(TAG_WORDS_REASON)
+        counts = self.queries.query(TaskTagWord).every_row(TAG_TERMS_REASON)
         return RowList([{"word": item.word, "count": item.count} for item in counts])

@@ -21,7 +21,7 @@ SEED_ROWS = 32
 NULL_EVERY = 3
 TABLES = Statement("SELECT name, sql FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name",
                    scan_reason="The test seeds every table of a fresh journal; sqlite_master has no index.")
-WORDS = {
+TERMS = {
     "state": ("open", "started", "cancelled", "completed", "testing", "blocked", "running", "background", "active", "removed", "delivered", "cut",
               "queued", "shown", "reviewing", "answered"),
     "role": ("main", "helper", "worker", "main"),
@@ -64,8 +64,8 @@ def seed_value(table_sql: str, column: dict, row: int) -> object:
         return terms[(row - 1) % len(terms)]
     if re.search(rf"json_valid\({name}\)", table_sql):
         return '["a", "b"]' if row % 2 else "{}"
-    if name in WORDS:
-        terms = WORDS[name]
+    if name in TERMS:
+        terms = TERMS[name]
         return terms[row % len(terms)]
     if name.endswith("_at"):
         return f"2026-11-0{row % 9 + 1}T{row % 10 + 10}:00:00+00:00"

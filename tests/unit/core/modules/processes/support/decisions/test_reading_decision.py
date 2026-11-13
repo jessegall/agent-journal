@@ -9,7 +9,7 @@ from core.modules.processes.models.enums.reason_code import ReasonCode
 from core.modules.processes.support.decisions.reading_decision import ReadingDecision
 
 PRESSING_LEVELS = [level for level in PressureLevel if level > PressureLevel.SUGGEST]
-OTHER_PARTY_EXITS = (ReadingExit.PERSON_RELEASES, ReadingExit.MAIN_AGENT_HELPS, ReadingExit.EXPIRES)
+DIFFERENT_PARTY_EXITS = (ReadingExit.PERSON_RELEASES, ReadingExit.MAIN_AGENT_HELPS, ReadingExit.EXPIRES)
 
 
 def pressing(level: PressureLevel, exits: tuple[ReadingExit, ...]) -> ReadingDecision:
@@ -23,7 +23,7 @@ def test_every_level_above_a_suggestion_is_one_of_three():
 @pytest.mark.parametrize("level", PRESSING_LEVELS)
 def test_a_decision_above_a_suggestion_with_exits_only_others_take_cannot_be_built(level):
     with pytest.raises(DecisionWithoutExitError):
-        pressing(level, OTHER_PARTY_EXITS)
+        pressing(level, DIFFERENT_PARTY_EXITS)
     with pytest.raises(DecisionWithoutExitError):
         pressing(level, ())
 
@@ -39,7 +39,7 @@ def test_a_suggestion_needs_no_exit():
 
 @pytest.mark.parametrize("exit_option", list(ReadingExit))
 def test_only_a_person_the_main_agent_and_the_expiry_are_other_parties(exit_option):
-    assert exit_option.needs_other_party is (exit_option in OTHER_PARTY_EXITS)
+    assert exit_option.needs_other_party is (exit_option in DIFFERENT_PARTY_EXITS)
 
 
 def test_nothing_builds_a_decision_that_asks_nothing():

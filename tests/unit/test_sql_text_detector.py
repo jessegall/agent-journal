@@ -17,7 +17,7 @@ CALL_RULE = "architecture_queries_statement_outside_the_builder"
 OLD_RULES = ("architecture_core_sql_outside_database_layer", "architecture_queries_sql_condition_outside_conditions")
 SKILL = "sql-in-the-database-layer"
 QUERY_FILE = "src/core/modules/aliases/queries/alias_query.py"
-KINDS = ["name = ?", "closed_at IS NULL", "holder_id IS NOT NULL", "id IN (1, 2)", "title LIKE ?", "id ORDER BY priority", "state GROUP BY state",
+CATEGORIES = ["name = ?", "closed_at IS NULL", "holder_id IS NOT NULL", "id IN (1, 2)", "title LIKE ?", "id ORDER BY priority", "state GROUP BY state",
          "id LIMIT 5", "tasks JOIN agents ON agents.id = tasks.holder_id", "EXISTS(SELECT 1 FROM task_waits)", "SELECT id FROM tasks"]
 DOCSTRING = "Selects the task to start and joins it to its plan, in order by priority, where it is in the plan."
 METHODS = ("where", "where_in", "where_exists", "join", "group_by", "order_by", "limit")
@@ -61,7 +61,7 @@ def test_a_where_text_in_a_module_query_class_is_flagged(tmp_path):
 '''})
 
 
-@pytest.mark.parametrize("text", KINDS)
+@pytest.mark.parametrize("text", CATEGORIES)
 def test_each_kind_of_sql_text_is_flagged(tmp_path, text):
     proved(tmp_path, TEXT_RULE, {"src/core/modules/tasks/queries/task_reads.py": flagged_text(text)})
 

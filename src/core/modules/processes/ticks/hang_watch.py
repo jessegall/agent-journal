@@ -17,7 +17,7 @@ from core.modules.processes.support.cadence.run_silences import RunSilences
 from core.modules.processes.support.process_settings import ProcessSettings
 
 RUNNING_REASON = "the tick looks at every run that is running"
-LOOKS_BEFORE_STOP = 3
+STOP_AFTER_CHECKS = 3
 
 
 class HangWatch:
@@ -72,7 +72,7 @@ class HangWatch:
         state = asks.state(process.id)
         if not state.waited_enough(now, limits.hang, limits.look):
             return False
-        if state.unanswered >= LOOKS_BEFORE_STOP:
+        if state.unanswered >= STOP_AFTER_CHECKS:
             self.stop(container, process, silent)
             return True
         asks.record_ask(process.id, now)

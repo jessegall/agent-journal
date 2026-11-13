@@ -32,5 +32,5 @@ class RunCadence:
         kept = self.growths[-GROWTHS_KEPT:]
         if len(kept) < 2:
             return self.age / (len(kept) + 1)
-        pauses = [max(0.0, later - earlier) for earlier, later in zip(kept, kept[1:])]
+        pauses = [max(0.0, later - prior) for prior, later in zip(kept, kept[1:])]
         return sum(pauses) / len(pauses)

@@ -160,7 +160,7 @@ def test_a_busy_agent_is_told_the_sparse_line_once_with_its_next_tool_use(new_st
     story.expect_rows(len(sparse) == 1, detail="\n".join(lines))
 
 
-NOT_STREAMING = "so it is not streaming"
+NON_STREAMING = "so it is not streaming"
 SPARSE_KEY = f"{ProcessSetting.SPARSE_SECONDS.key}"
 
 
@@ -169,11 +169,11 @@ def test_a_silent_run_is_told_again_only_after_ten_minutes_at_most_three_times_a
     process = moved_run(story, "make dist", CommandCategory.BUILD)
     titled(story, process, "Building the dist folder")
     ticks(story, 600)
-    first = kept_lines(story).count(NOT_STREAMING)
+    first = kept_lines(story).count(NON_STREAMING)
     ticks(story, 40)
-    second = kept_lines(story).count(NOT_STREAMING)
+    second = kept_lines(story).count(NON_STREAMING)
     ticks(story, 1260)
-    story.expect_rows((first, second, kept_lines(story).count(NOT_STREAMING)) == (1, 2, 3), detail=kept_lines(story))
+    story.expect_rows((first, second, kept_lines(story).count(NON_STREAMING)) == (1, 2, 3), detail=kept_lines(story))
     story.expect_hook_refusal(MAIN, HookSamples.edit("cart.py"), f"Output {process.id} printed nothing for")
     started_tree(story, 12.0)
     story.advance(timedelta(seconds=HANG_SECONDS + 10))
@@ -197,7 +197,7 @@ def test_a_run_that_ended_and_a_run_that_was_stopped_are_told_nothing(new_story)
     story.expect_success(f"output stop {stopped.id}", actor=story.agent)
     end_run(story, ended, "")
     ticks(story, 60)
-    story.expect_rows(NOT_STREAMING not in kept_lines(story), detail=kept_lines(story))
+    story.expect_rows(NON_STREAMING not in kept_lines(story), detail=kept_lines(story))
 
 
 def test_plugin_person_and_lookup_runs_are_never_judged_while_a_started_test_is(new_story):

@@ -17,7 +17,7 @@ from suites.coding.modules.workers.models.enums.behind_check_state import Behind
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
 TEST_ROWS_REASON = "the test reads every row it checks"
-MANY_WORKERS = 5
+SEVERAL_WORKERS = 5
 
 
 def b24_far_behind_goes_to_the_main_agent_without_the_merger(story, repository: GitRepository, worker: Actor) -> None:
@@ -48,9 +48,9 @@ def f54_abandoning_the_worktree_closes_its_check_as_gone(story, repository: GitR
 
 
 def g57_five_worktrees_in_one_look_start_the_merger_once(story, repository: GitRepository, worker: Actor) -> None:
-    setting(story, "worker-run-limit", MANY_WORKERS)
+    setting(story, "worker-run-limit", SEVERAL_WORKERS)
     workers = [worker]
-    for number in range(2, MANY_WORKERS + 1):
+    for number in range(2, SEVERAL_WORKERS + 1):
         task_id = story.new_row_id(f'task make "Work {number}" --brief "done when it is done"', actor=story.agent)
         workers.append(Actor(story.new_row_id(DISPATCH.replace(" 1", f" {task_id}"), actor=story.agent), ActorType.AGENT))
     for each in workers:
@@ -58,7 +58,7 @@ def g57_five_worktrees_in_one_look_start_the_merger_once(story, repository: GitR
     base_commits(repository, 3)
     look(story)
     mergers = [agent for agent in story.container.get(Queries).query(Agent).every_row(TEST_ROWS_REASON) if agent.profile == f"{MERGER_PROFILE.name}"]
-    story.expect_rows(len(checks(story)) == MANY_WORKERS, len(behind_lines(story)) == MANY_WORKERS, len(mergers) <= 1, detail=f"{len(checks(story))} {behind_lines(story)} {mergers}")
+    story.expect_rows(len(checks(story)) == SEVERAL_WORKERS, len(behind_lines(story)) == SEVERAL_WORKERS, len(mergers) <= 1, detail=f"{len(checks(story))} {behind_lines(story)} {mergers}")
 
 
 CASES: list[Callable[..., None]] = [b24_far_behind_goes_to_the_main_agent_without_the_merger, f53_a_commit_closes_the_open_check_as_updated,

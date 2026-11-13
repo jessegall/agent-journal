@@ -4,7 +4,7 @@ import pytest
 
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import merge
-from tests.stories.suites.coding.modules.workers.free_commits import ASK_MERGE, commit_each, worktree_state
+from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_each, worktree_state
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, StoryWorker, start_planned_worker, unplanned_group_worker, single_task_worker
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
@@ -18,7 +18,7 @@ def asked_list(new_story, monkeypatch) -> StoryWorker:
     worker = unplanned_group_worker(new_story, monkeypatch)
     commit_each(worker, (1, 2, 3))
     worker.end_all_tests()
-    worker.story.expect_success(ASK_MERGE, actor=worker.worker)
+    worker.story.expect_success(REQUEST_MERGE, actor=worker.worker)
     worker.story.run_listeners()
     return worker
 
@@ -28,7 +28,7 @@ def asked_plan(new_story, monkeypatch) -> StoryWorker:
     worker = start_planned_worker(new_story, monkeypatch)
     commit_each(worker, (1, 2, 3, 4))
     worker.end_all_tests()
-    worker.story.expect_success(ASK_MERGE, actor=worker.worker)
+    worker.story.expect_success(REQUEST_MERGE, actor=worker.worker)
     worker.story.run_listeners()
     return worker
 
@@ -63,7 +63,7 @@ def test_72_in_a_unit_of_one_the_commit_asks_again(new_story, monkeypatch):
     worker = single_task_worker(new_story, monkeypatch)
     worker.prove_commit(TEST_LINE)
     worker.story.run_listeners()
-    worker.story.expect_refusal(ASK_MERGE, "your task asks for its merge by its commit", actor=worker.worker)
+    worker.story.expect_refusal(REQUEST_MERGE, "your task asks for its merge by its commit", actor=worker.worker)
 
 
 def test_73_important_log_lines_still_need_the_answer_of_the_main_agent(new_story, monkeypatch):
@@ -71,7 +71,7 @@ def test_73_important_log_lines_still_need_the_answer_of_the_main_agent(new_stor
     worker.story.run('task log 1 "the brief named the wrong file" --important', actor=worker.worker)
     commit_each(worker, (1, 2, 3))
     worker.end_all_tests()
-    worker.story.expect_success(ASK_MERGE, actor=worker.worker)
+    worker.story.expect_success(REQUEST_MERGE, actor=worker.worker)
     number = agent_number(worker.story, worker.worker.id)
     worker.repository.checkout(ENVIRONMENT_BRANCH)
     worker.story.run(f"worker logs {number}", actor=worker.story.agent)
@@ -83,7 +83,7 @@ def test_an_ask_is_heard_by_the_main_agent_with_the_merger_off(new_story, monkey
     worker.story.run(f"setting set {MERGER_ENABLED} false --project", actor=worker.story.user)
     commit_each(worker, (1, 2, 3))
     worker.end_all_tests()
-    worker.story.expect_success(ASK_MERGE, actor=worker.worker)
+    worker.story.expect_success(REQUEST_MERGE, actor=worker.worker)
     worker.story.expect_rows(any("merge-ask:1" in line for line in worker.main_agent_lines()), detail=str(worker.main_agent_lines()))
 
 

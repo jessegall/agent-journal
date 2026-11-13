@@ -21,9 +21,9 @@ def keep_status_file(story, session: str) -> None:
 def rewrite_status_file(story, session: str, tokens: int) -> None:
     """The program rewrote the status file with a new reading, modified later than any earlier one."""
     path = story.home.status_folder / f"{session}.json"
-    earlier_ns = path.stat().st_mtime_ns if path.is_file() else 0
+    prior_ns = path.stat().st_mtime_ns if path.is_file() else 0
     save_status_file(story, session, {"context_window": {"total_input_tokens": tokens}})
-    os.utime(path, ns=(earlier_ns + REWRITE_STEP_NS, earlier_ns + REWRITE_STEP_NS))
+    os.utime(path, ns=(prior_ns + REWRITE_STEP_NS, prior_ns + REWRITE_STEP_NS))
 
 
 def full_status(story, session: str, percent: int, spent_usd: float) -> None:

@@ -8,10 +8,10 @@ from core.modules.processes.models.enums.unreadable_reason import UnreadableReas
 from core.modules.processes.models.unreadable_mark import UnreadableMark
 from core.modules.processes.queries.unreadable_mark_query import UnreadableMarkQuery
 
-MARKS_OF_WORDS_REASON = "Every mark of the leading words of the commands in hand, lifted or not, so the newest mark of each word is found."
+TERM_MARKS_REASON = "Every mark of the leading words of the commands in hand, lifted or not, so the newest mark of each word is found."
 
-FEWEST_NOTE_WORDS = 3
-MOST_LEADING_WORDS = 8
+FEWEST_NOTE_TERMS = 3
+MOST_LEADING_TERMS = 8
 
 
 class UnreadableMarks:
@@ -36,7 +36,7 @@ class UnreadableMarks:
     def last_marked_among(self, commands: Sequence[str]) -> dict[str, Timestamp | None]:
         covering, terms = UnreadableMarks.covered_by(commands)
         newest: dict[str, Timestamp] = {}
-        for mark in self.marks.of_words(terms).every_row(MARKS_OF_WORDS_REASON):
+        for mark in self.marks.of_words(terms).every_row(TERM_MARKS_REASON):
             made_at = mark.creation_timestamp()
             if mark.words not in newest or made_at > newest[mark.words]:
                 newest[mark.words] = made_at
@@ -60,14 +60,14 @@ class UnreadableMarks:
 
     @staticmethod
     def checked_note(note: str) -> str:
-        if len(note.split()) < FEWEST_NOTE_WORDS:
+        if len(note.split()) < FEWEST_NOTE_TERMS:
             raise Refusal("a command is marked unreadable only with a reason of at least three words",
                           'say why no reader can read it, such as --note "prints only a progress bar"')
         return note.strip()
 
     @staticmethod
     def covering_words(command: str) -> list[str]:
-        terms = command.split()[:MOST_LEADING_WORDS]
+        terms = command.split()[:MOST_LEADING_TERMS]
         return [" ".join(terms[:count]) for count in range(1, len(terms) + 1)]
 
     @staticmethod

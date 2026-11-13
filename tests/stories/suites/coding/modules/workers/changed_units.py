@@ -1,5 +1,5 @@
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.free_commits import ASK_MERGE, commit_each
+from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_each
 from tests.stories.suites.coding.modules.workers.support.phase_steps import start_planned_worker, unplanned_group_worker
 from tests.stories.suites.coding.modules.workers.work_units import plan_card, unit_of
 
@@ -26,7 +26,7 @@ def test_a_release_while_an_ask_waits_is_refused(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
     commit_each(worker, (1, 2, 3))
     worker.end_all_tests()
-    worker.story.expect_success(ASK_MERGE, actor=worker.worker)
+    worker.story.expect_success(REQUEST_MERGE, actor=worker.worker)
     number = agent_number(worker.story, worker.worker.id)
     outcome = worker.story.run(f'worker release {number} "not needed"', actor=worker.story.agent)
     worker.story.expect_text("merge-ask show 1 --environment main", "state:", actor=worker.story.agent)

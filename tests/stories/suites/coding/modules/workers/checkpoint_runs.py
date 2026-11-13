@@ -24,7 +24,7 @@ PICKER = "python3 pick.py"
 CART_COMMAND = "pytest tests/cart.py"
 TOTALS_COMMAND = "pytest tests/totals.py"
 OUTLINE = "plan outline 1 --environment main"
-WAITING_PHASE_WORDS = "waits for the tests of phase 1"
+WAITING_PHASE_TERMS = "waits for the tests of phase 1"
 PASSED_LOG = "tests passed at checkpoint phase 1"
 PASSED_LINE = "checkpoint phase Build tests passed"
 PLAN_FINISHED_LINE = "Plan 1 done"
@@ -167,7 +167,7 @@ def test_178_a_pass_saves_the_pass_of_the_checkpoint_and_the_next_phase_waits_fo
     waiting_outline = story.run(OUTLINE, actor=story.user).output_text
     worker.end_all_tests()
     passed_outline = story.run(OUTLINE, actor=story.user).output_text
-    story.expect_rows(WAITING_PHASE_WORDS in waiting_outline, WAITING_PHASE_WORDS not in passed_outline, [row["phase_id"] for row in rows(worker, PASSES)] == [1],
+    story.expect_rows(WAITING_PHASE_TERMS in waiting_outline, WAITING_PHASE_TERMS not in passed_outline, [row["phase_id"] for row in rows(worker, PASSES)] == [1],
                       detail=f"{waiting_outline} | {passed_outline}")
 
 

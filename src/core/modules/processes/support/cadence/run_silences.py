@@ -3,7 +3,7 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.support.output_folder import OutputFolder
 
-LOOKED_MARK = "looked"
+CHECKED_MARK = "looked"
 
 
 class RunSilences:
@@ -24,5 +24,5 @@ class RunSilences:
 
     def unread_seconds(self, process: Process, timestamp: Timestamp) -> int:
         emitted = self.seconds(process, timestamp)
-        looked = self.folder.read_mark(process.id, LOOKED_MARK)
-        return min(emitted, int(Timestamp.parsed(looked).elapsed_seconds(timestamp))) if looked else emitted
+        checked = self.folder.read_mark(process.id, CHECKED_MARK)
+        return min(emitted, int(Timestamp.parsed(checked).elapsed_seconds(timestamp))) if checked else emitted

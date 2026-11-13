@@ -15,8 +15,8 @@ from engine.testing.expectations.expected_nudge import expected_nudge
 
 COMMITTED = "committed"
 BUILD_TASKS = 3
-CHECKPOINT_WORDS = "tests run at the checkpoint of phase 2, when tasks 4 are in"
-MERGE_WAIT_WORDS = "committed: the merger merges; tests run at the checkpoint"
+CHECKPOINT_TERMS = "tests run at the checkpoint of phase 2, when tasks 4 are in"
+MERGE_WAIT_TERMS = "committed: the merger merges; tests run at the checkpoint"
 MERGED_REASON = "merged; its tests run at the checkpoint of phase 2"
 CHECK_UNTESTED_PROOF = "proof check 2"
 

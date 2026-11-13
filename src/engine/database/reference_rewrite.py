@@ -51,12 +51,12 @@ class ReferenceRewrite:
         found = self.database.rows(Statement(f'SELECT * FROM "{table}" WHERE "{column}" IN ({self.marks(ids)})', list(ids), scan_reason=SCHEMA_REASON))
         return [dict(row) for row in found]
 
-    def rewrite(self, table: str, column: str, ids: list[int], to_id: int) -> int:
-        return self.database.update(Statement(f'UPDATE "{table}" SET "{column}" = ? WHERE "{column}" IN ({self.marks(ids)})', [to_id, *ids]))
+    def rewrite(self, table: str, column: str, ids: list[int], target_id: int) -> int:
+        return self.database.update(Statement(f'UPDATE "{table}" SET "{column}" = ? WHERE "{column}" IN ({self.marks(ids)})', [target_id, *ids]))
 
-    def pair_rewrite(self, table: str, model_column: str, id_column: str, models: tuple[str, ...], ids: list[int], to_id: int) -> int:
+    def pair_rewrite(self, table: str, model_column: str, id_column: str, models: tuple[str, ...], ids: list[int], target_id: int) -> int:
         return self.database.update(Statement(f'UPDATE "{table}" SET "{id_column}" = ? WHERE "{model_column}" IN ({self.marks(list(models))}) AND "{id_column}" IN ({self.marks(ids)})',
-                                              [to_id, *models, *ids]))
+                                              [target_id, *models, *ids]))
 
     def delete(self, table: str, ids: list[int]) -> int:
         return self.database.update(Statement(f'DELETE FROM "{table}" WHERE id IN ({self.marks(ids)})', list(ids))) if ids else 0

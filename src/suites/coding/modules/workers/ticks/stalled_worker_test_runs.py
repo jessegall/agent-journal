@@ -8,13 +8,13 @@ from engine.time.clock import Clock
 from core.modules.processes.models.process import Process
 from suites.coding.modules.workers.commands.queue_worker_tests.end_stuck_proof_run import EndStuckProofRun
 from suites.coding.modules.workers.commands.queue_worker_tests.queue_stalled_tests import QueueStalledTests
-from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test import ENDED_RUN_NOTE, GONE_RUN_NOTE, RecordWorkerTest
+from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test import ENDED_RUN_NOTE, REMOVED_RUN_NOTE, RecordWorkerTest
 from suites.coding.modules.workers.commands.queue_worker_tests.start_worker_tests import StartWorkerTests
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.worker_settings import STUCK_PROOF_RUN_MINUTES
+from suites.coding.modules.workers.support.worker_settings import HUNG_PROOF_RUN_MINUTES
 
 STALLED_RUNS_REASON = "the run of every proof still shown as running is looked at"
 ENDED_GRACE_SECONDS = 60
@@ -41,13 +41,13 @@ class StalledWorkerTestRuns:
         if not running:
             return
         current = container.get(Clock).timestamp()
-        hung_minutes = int(container.get(SettingValues).number(STUCK_PROOF_RUN_MINUTES))
+        hung_minutes = int(container.get(SettingValues).number(HUNG_PROOF_RUN_MINUTES))
         hung_seconds = hung_minutes * 60
         processes = {process.id: process for process in container.get(Queries).query(Process).matching(Among("id", [proof.process_id for proof in running])).every_row(STALLED_RUNS_REASON)}
         for proof in running:
             process = processes.get(proof.process_id)
             if process is None:
-                record = RecordWorkerTest(proof.id, False, GONE_RUN_NOTE.format(process=proof.process_id))
+                record = RecordWorkerTest(proof.id, False, REMOVED_RUN_NOTE.format(process=proof.process_id))
             elif process.ended_at is not None and process.ended_at.elapsed_seconds(current) > ENDED_GRACE_SECONDS:
                 record = RecordWorkerTest(proof.id, process.succeeded, ENDED_RUN_NOTE.format(process=process.id))
             elif proof.update_timestamp().elapsed_seconds(current) >= hung_seconds:

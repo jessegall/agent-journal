@@ -12,7 +12,7 @@ from suites.coding.modules.workers.commands.merger.require_merger import require
 from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
-from suites.coding.modules.workers.support.behind_decisions import NO_OPEN_CHECK, BehindDecisions
+from suites.coding.modules.workers.support.behind_decisions import WITHOUT_OPEN_CHECK, BehindDecisions
 from suites.coding.modules.workers.support.behind_facts_reader import BehindFactsReader
 from suites.coding.modules.workers.support.behind_nudges import BEHIND_SOURCE, UPDATE_ORDERED
 from suites.coding.modules.workers.support.merger_visits import MergerVisits
@@ -33,7 +33,7 @@ class OrderWorkerUpdateHandler(Handler[OrderWorkerUpdate, None]):
 
     def opened(self, worktree: Worktree, deciding_id: int, context: Context) -> WorktreeBehindCheck:
         if not self.agents.is_main(deciding_id):
-            raise Refusal(NO_OPEN_CHECK, "journal merger behind <worker> shows how far it is behind")
+            raise Refusal(WITHOUT_OPEN_CHECK, "journal merger behind <worker> shows how far it is behind")
         return self.repository.save(WorktreeBehindCheck.opened(worktree.id, self.tip, self.behind), context)
 
     def prepare(self, command: OrderWorkerUpdate, actor: Actor) -> None:

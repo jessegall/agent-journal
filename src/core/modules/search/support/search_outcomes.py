@@ -19,10 +19,10 @@ class SearchOutcomes:
     def __init__(self, home: JournalHome, clock: Clock) -> None:
         self.home, self.clock = home, clock
 
-    def keep(self, agent_id: int, terms: Sequence[str], models: Sequence[str], search_result: SearchResult) -> None:
+    def keep(self, agent_id: int, terms: Sequence[str], models: Sequence[str], search_outcome: SearchResult) -> None:
         file = self.file(agent_id)
         file.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(file, json.dumps({**search_result.stored(), "kept_at": self.clock.timestamp().text, "terms": list(terms), "models": list(models)}))
+        FileAccess.shared().write(file, json.dumps({**search_outcome.stored(), "kept_at": self.clock.timestamp().text, "terms": list(terms), "models": list(models)}))
 
     def read_once(self, agent_id: int, terms: Sequence[str], models: Sequence[str]) -> SearchResult | None:
         file = self.file(agent_id)

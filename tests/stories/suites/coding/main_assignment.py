@@ -25,7 +25,7 @@ TEST_ROWS_REASON = "the test reads every row it checks"
 AUTO = f"{AUTO_MODE_SETTING}"
 DISPATCHES = f"{DISPATCHES_WORKERS_SETTING}"
 WORKER_LIMIT = f"{WORKER_RUN_LIMIT}"
-MANY_TASKS = READ_LIMIT_ROWS + 1
+SEVERAL_TASKS = READ_LIMIT_ROWS + 1
 
 
 def available(story):
@@ -128,7 +128,7 @@ def test_a_main_agent_that_waits_on_something_may_stop_with_an_unfinished_task(n
 
 def test_a_stop_of_a_main_agent_with_more_unfinished_tasks_than_one_read_may_load_is_held_and_records_no_fault(new_story):
     story = new_story(fixture=UnfinishedTaskMain)
-    for number in range(MANY_TASKS):
+    for number in range(SEVERAL_TASKS):
         task = story.new_row_id(f'task make "Step {number}" --brief "One more step"', actor=story.agent)
         story.run(f"task assign {task} --to {agent_number(story, story.agent.id)}", actor=story.agent)
     story.container.get(Database).read_limit_rows = READ_LIMIT_ROWS

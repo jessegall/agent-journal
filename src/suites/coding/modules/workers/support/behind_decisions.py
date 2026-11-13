@@ -9,7 +9,7 @@ from suites.coding.modules.workers.models.worktree_behind_check import WorktreeB
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.behind_checks import CHECKS_REASON
 
-NO_OPEN_CHECK = "no open check for this worker"
+WITHOUT_OPEN_CHECK = "no open check for this worker"
 
 
 class BehindDecisions:
@@ -29,7 +29,7 @@ class BehindDecisions:
         worktree = self.worktree(worker_id)
         check = self.check(worktree, wanted)
         if check is None:
-            raise Refusal(NO_OPEN_CHECK, "journal merger behind <worker> shows how far it is behind")
+            raise Refusal(WITHOUT_OPEN_CHECK, "journal merger behind <worker> shows how far it is behind")
         return worktree, check
 
     def worktree(self, worker_id: int) -> Worktree:

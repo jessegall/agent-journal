@@ -7,7 +7,7 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST
 
 """Book B of doc 1252: a commit is free and never a merge."""
 
-ASK_MERGE = 'worker ask-merge "the cart, all three tasks; nothing left out"'
+REQUEST_MERGE = 'worker ask-merge "the cart, all three tasks; nothing left out"'
 
 
 def worktree_state(worker: StoryWorker) -> str:
@@ -89,7 +89,7 @@ def test_26_a_list_of_three_tasks_is_merged_once(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
     commit_each(worker, (1, 2, 3))
     worker.end_all_tests()
-    worker.story.expect_success(ASK_MERGE, actor=worker.worker)
+    worker.story.expect_success(REQUEST_MERGE, actor=worker.worker)
     merge(worker)
     merged_lines = [line for line in worker.main_agent_lines() if "merge-ask:1" in line]
     worker.story.expect_rows(len(merged_lines) == 1, detail=str(worker.main_agent_lines()))
@@ -100,7 +100,7 @@ def test_27_a_plan_of_three_phases_is_merged_once(new_story, monkeypatch):
     commit_each(worker, (1, 2, 3, 4))
     worker.end_all_tests()
     worker.end_all_tests()
-    worker.story.expect_success(ASK_MERGE, actor=worker.worker)
+    worker.story.expect_success(REQUEST_MERGE, actor=worker.worker)
     merge(worker)
     merged_lines = [line for line in worker.main_agent_lines() if "merge-ask:1" in line]
     worker.story.expect_rows(len(merged_lines) == 1, detail=str(worker.main_agent_lines()))

@@ -41,8 +41,8 @@ class StartProcess(Command[Process]):
         return self.kind == ProcessKind.MERGE.value
 
     @classmethod
-    def single_part(cls, agent_id: int, line: str, folder: str, category: CommandCategory, limit_seconds: int, plugin: str = "", kind: str = "") -> "StartProcess":
-        return cls(agent_id, None, line, folder, "", category, limit_seconds, [PartSpec(line, line.split()[0], False, category)], plugin=plugin, kind=kind)
+    def single_part(cls, agent_id: int, line: str, folder: str, category: CommandCategory, limit_seconds: int, plugin: str = "", part_category: str = "") -> "StartProcess":
+        return cls(agent_id, None, line, folder, "", category, limit_seconds, [PartSpec(line, line.split()[0], False, category)], plugin=plugin, kind=part_category)
 
     @classmethod
     def build(cls, hook: AgentHook, shell: ShellLine, run: ForegroundRun) -> "StartProcess":

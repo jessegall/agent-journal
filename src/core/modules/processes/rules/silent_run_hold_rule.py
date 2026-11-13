@@ -4,7 +4,7 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.processes.support.held_runs import HeldRuns
 from core.modules.processes.models.enums.pressure_level import PressureLevel
-from core.modules.processes.support.process_nudges import SILENT_RUN_HELD
+from core.modules.processes.support.process_nudges import SILENT_RUN_BLOCKED
 from core.modules.processes.support.reading_notices.exit_texts import ExitTexts
 
 
@@ -29,5 +29,5 @@ class SilentRunHoldRule(DriverRule):
         silent_run = self.held_runs.found(hook.agent_id, hook.timestamp)
         if silent_run is None:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(SILENT_RUN_HELD.nudge(output=silent_run.process.id, seconds=silent_run.seconds, processor=silent_run.processor,
+        return RuleAnswer.refused(SILENT_RUN_BLOCKED.nudge(output=silent_run.process.id, seconds=silent_run.seconds, processor=silent_run.processor,
                                                     hint=ExitTexts.sentences(PressureLevel.HOLD.exits)))

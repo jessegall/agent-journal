@@ -8,7 +8,7 @@ from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_progress import PlanProgress
 from core.modules.plans.support.plan_checkpoints import PlanCheckpoints
 
-TASKS_DONE_GUARD = "plans.tasks-done"
+TASKS_FINISHED_GUARD = "plans.tasks-done"
 UNFINISHED_STATES = (PlanState.APPROVED, PlanState.STARTED, PlanState.BLOCKED)
 CANCEL_REASON = "every task of the plan was cancelled"
 
@@ -27,4 +27,4 @@ class FinishedPlans:
         if not progress.task_count:
             self.bus.run(CancelPlan(plan.id, CANCEL_REASON), Actor.core(), cause_id=cause_id)
         elif progress.completed_count == progress.task_count and self.checkpoints.is_end_passed(plan.id):
-            self.bus.run(ClosePlan(plan.id), Actor.core(), frozenset([TASKS_DONE_GUARD]), cause_id=cause_id)
+            self.bus.run(ClosePlan(plan.id), Actor.core(), frozenset([TASKS_FINISHED_GUARD]), cause_id=cause_id)

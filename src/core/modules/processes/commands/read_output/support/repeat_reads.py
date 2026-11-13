@@ -8,7 +8,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.context_resets import ContextResets
 from core.modules.processes.commands.read_output.read_output import ReadOutput
 from core.modules.processes.models.process import Process
-from core.modules.processes.support.cadence.run_silences import LOOKED_MARK
+from core.modules.processes.support.cadence.run_silences import CHECKED_MARK
 from core.modules.processes.support.held_runs import HeldRuns
 from core.modules.processes.support.output_folder import OutputFolder
 
@@ -46,7 +46,7 @@ class RepeatReads:
             self.folder.write_read_mark(command.process_id, self.mark(command, actor), read_at)
         else:
             self.folder.write_read_mark(command.process_id, self.running_mark(actor), read_at)
-            self.folder.write_read_mark(command.process_id, LOOKED_MARK, read_at)
+            self.folder.write_read_mark(command.process_id, CHECKED_MARK, read_at)
 
     def poll_advice(self, actor: Actor) -> str:
         if self.queries.query(Agent).find(actor.id).role == AgentRole.MAIN:
