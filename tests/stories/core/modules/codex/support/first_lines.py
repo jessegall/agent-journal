@@ -86,7 +86,7 @@ def expect_worker_commands(story) -> None:
     assert code == 0, text
     rows = story.container.get(Queries).query(AgentSkill).filter(session_agent_id=worker.id, skill="journal-memory")
     assert next(rows.every_row(TEST_ROWS_REASON)).state is AgentSkillState.DUE
-    instructions = story.container.get(SkillFiles).readable("journal-workers").read_text()
+    instructions = story.container.get(SkillFiles).readable("journal-worker").read_text()
     assert "skill write" in instructions and "module sync" in instructions and "same point" in instructions, instructions
     proof = story.new_row_id('proof make 1 --task 1 "Initial evidence"', actor=worker)
     story.expect_success('proof make 1 --task 1 "Corrected evidence"', actor=worker)

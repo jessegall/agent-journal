@@ -1,4 +1,6 @@
 import json
+import select
+import socket
 from collections.abc import Callable
 import traceback
 from time import perf_counter
@@ -216,7 +218,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             turn = queue.observing(queued) if context.viewer.routes.priorities.is_unqueued(request.argv) else queue.cli_turn(queued)
             with turn:
                 queued_ms = (perf_counter() - started_at) * 1000
-                code = CliEndpoint(context.home, ListenerWake(context.listener_thread), context.reported_findings, queue, context.request_trace.completed).answer(request, ChunkStream(self.send_chunk))
+                code = CliEndpoint(context.home, ListenerWake(context.listener_thread), context.reported_findings, queue, context.request_trace.completed).answer(request, ChunkStream(self.send_chunk, self.is_caller_gone))
         except Exception as error:
             self.journal_server().context.files.log_line("".join(traceback.format_exception(error)), LogLevel.ERROR)
             self.send_chunk(f"{type(error).__name__}: {error}\n".encode())
@@ -226,6 +228,11 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(f"0\r\n{EXIT_CODE_TRAILER}: {code}\r\n\r\n".encode())
         self.wfile.flush()
         context.request_trace.record(request.argv, "cli", (perf_counter() - started_at) * 1000, queued_ms, code)
+
+    # a caller that hung up leaves its end of the socket readable with nothing to read
+    def is_caller_gone(self) -> bool:
+        readable, _, _ = select.select([self.connection], [], [], 0)
+        return bool(readable) and self.connection.recv(1, socket.MSG_PEEK) == b""
 
     def send_chunk(self, data: bytes) -> None:
         self.wfile.write(f"{len(data):x}\r\n".encode() + data + b"\r\n")

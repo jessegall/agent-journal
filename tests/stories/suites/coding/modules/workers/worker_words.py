@@ -37,7 +37,7 @@ def test_76a_the_opening_text_of_a_worker_names_proof_start_and_commit_and_no_de
 
 
 def test_76b_the_workers_skill_names_proof_start_and_commit_and_no_deliver_group_or_batch_setting(new_story):
-    text = skill_text("journal-workers")
+    text = skill_text("journal-worker")
     expect_value_4(all(command in text for command in WORKER_COMMANDS))
     expect_value_4(not [word for word in ("deliver", "test-batch-size", "test-at-phase-end", "group") if word in text.lower()])
 
@@ -61,7 +61,7 @@ def test_76d_the_lines_a_worker_hears_at_a_failed_test_and_after_its_last_commit
 
 def test_76e_the_workers_skill_keeps_what_happens_after_an_ask_and_the_merger_keeps_its_three_commands(new_story):
     merger_profile = next(profile for profile in HELPER_PROFILES if profile.name == f"{MERGER_PROFILE.name}")
-    expect_value_with(skill_text("journal-workers").lower(), REQUEST_SENTENCE)
+    expect_value_with(skill_text("journal-worker").lower(), REQUEST_SENTENCE)
     expect_value_4(all(command in skill_text(f"{MERGER_PROFILE.name}") for command in MERGER_COMMANDS))
     expect_value_4(all(command in merger_profile.body for command in MERGER_COMMANDS))
 

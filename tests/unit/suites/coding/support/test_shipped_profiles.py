@@ -29,7 +29,7 @@ def test_the_plan_reviewer_gets_a_new_session_at_each_launch_and_is_told_to_writ
 
 
 def test_no_shipped_worker_text_names_a_program_of_one_project():
-    skill = (Path(__file__).resolve().parents[5] / "src/suites/coding/modules/workers/skills/journal-workers/SKILL.md").read_text()
+    skill = (Path(__file__).resolve().parents[5] / "src/suites/coding/modules/workers/skills/journal-worker/SKILL.md").read_text() + (Path(__file__).resolve().parents[5] / "src/suites/coding/modules/workers/skills/journal-dispatching-workers/SKILL.md").read_text()
     shipped = [*(profile.body for profile in (*HELPER_PROFILES, *WORKER_PROFILES)), *WorkerDriver.opening_lines, WORKER_COMMANDS, WORKER_RULES, skill]
     assert not [text for text in shipped if "python3" in text]
 
