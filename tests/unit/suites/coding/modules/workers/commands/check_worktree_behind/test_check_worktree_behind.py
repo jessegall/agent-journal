@@ -15,8 +15,8 @@ from suites.coding.modules.workers.models.enums.behind_check_state import Behind
 from suites.coding.modules.workers.models.enums.behind_route import BehindRoute
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.support.behind_nudges import BEHIND_FOR_MAIN_AGENT, FAST_FORWARDED
-from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED, UPDATE_TO_MAIN_COMMITS
+from suites.coding.modules.workers.support.behind_nudges import MAIN_AGENT_STALE_WORKTREE, FAST_FORWARDED
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED, MAIN_UPDATE_COMMITS
 from suites.coding.modules.workers.ticks.behind_worktrees import BehindWorktrees
 
 TIP = "0123456789abcdef"
@@ -74,7 +74,7 @@ class Repository:
 
 class Settings:
     def __init__(self, to_main: int = 0, merger: bool = True) -> None:
-        self.values = {UPDATE_TO_MAIN_COMMITS: to_main, MERGER_ENABLED: merger}
+        self.values = {MAIN_UPDATE_COMMITS: to_main, MERGER_ENABLED: merger}
 
     def number(self, key: str) -> int:
         return int(self.values[key])
@@ -135,7 +135,7 @@ def test_no_fast_forward_while_a_command_of_the_worker_runs_or_when_git_refuses_
 def test_at_twenty_to_the_main_agent_twenty_five_behind_goes_to_the_main_agent_and_nineteen_to_the_merger():
     far, _, main_line, _ = routed(Git(25, own_work=True), Settings(to_main=20))
     near = routed(Git(19, own_work=True), Settings(to_main=20))[0]
-    assert (far, near, main_line.sent[0].key) == (BehindRoute.MAIN_AGENT, BehindRoute.MERGER, BEHIND_FOR_MAIN_AGENT.key)
+    assert (far, near, main_line.sent[0].key) == (BehindRoute.MAIN_AGENT, BehindRoute.MERGER, MAIN_AGENT_STALE_WORKTREE.key)
 
 
 class Bus:

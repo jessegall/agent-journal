@@ -4,7 +4,7 @@ from engine.errors.refusal import Refusal
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.documents.support.document_filers import DocumentFilers
 
-REPORT_ONLY_PROFILES = ("journal-debugger", "journal-researcher", "journal-code-reviewer", "journal-plan-reviewer")
+REPORTING_PROFILES = ("journal-debugger", "journal-researcher", "journal-code-reviewer", "journal-plan-reviewer")
 
 
 class ReportOnlyDocumentFilers(DocumentFilers):
@@ -18,5 +18,5 @@ class ReportOnlyDocumentFilers(DocumentFilers):
         if actor.type is not ActorType.AGENT:
             return
         profile = self.agents.find_unscoped(actor.id).profile
-        if profile in REPORT_ONLY_PROFILES:
+        if profile in REPORTING_PROFILES:
             raise Refusal(f"{profile} files reports, not documents", 'journal report make "<title>" --abstract "<one line>" --body "<markdown>" files a report')

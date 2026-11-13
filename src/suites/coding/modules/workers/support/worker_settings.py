@@ -59,15 +59,15 @@ RESUME_SILENT_AGENTS = f"{MODULE_KEY}.resume-silent-agents"
 WORKERS_START_HELPERS = f"{MODULE_KEY}.workers-start-read-only-helpers"
 WORKER_SANDBOX = f"{MODULE_KEY}.worker-sandbox"
 PROTECTED_FOLDERS = f"{MODULE_KEY}.protected-folders"
-KEEP_UP_TO_DATE = f"{MODULE_KEY}.keep-worktrees-up-to-date"
-BEHIND_COMMITS_TO_CHECK = f"{MODULE_KEY}.behind-commits-to-check"
+WORKTREE_UPDATES = f"{MODULE_KEY}.keep-worktrees-up-to-date"
+STALE_CHECK_COMMITS = f"{MODULE_KEY}.behind-commits-to-check"
 BEHIND_CHECK_MINUTES = f"{MODULE_KEY}.behind-check-minutes"
 BEHIND_RECHECK_COMMITS = f"{MODULE_KEY}.behind-recheck-commits"
-UPDATE_TO_MAIN_COMMITS = f"{MODULE_KEY}.update-to-main-commits"
+MAIN_UPDATE_COMMITS = f"{MODULE_KEY}.update-to-main-commits"
 UPDATE_WAIT_MINUTES = f"{MODULE_KEY}.update-wait-minutes"
 UPDATE_REMINDERS = f"{MODULE_KEY}.update-reminders"
 CHECK_HISTORY_DAYS = f"{MODULE_KEY}.check-history-days"
-UP_TO_DATE_SECTION = "Keeping worktrees up to date"
+WORKTREE_UPDATES_SECTION = "Keeping worktrees up to date"
 WORKER_SETTING_VALUES = [
     SettingValue("idle-worker-minutes", "Worker idle warning", "Minutes without activity before a worker with work left is reported.", SettingType.NUMBER, default=15, person_set=True, required_settings=[MERGER_ENABLED], screen="helper-type.workers", section="How a worker works"),
     SettingValue("ask-answer-minutes", "Answer time for a worker's question", "Minutes the merger has to answer a worker's question before it is woken for it again.", SettingType.NUMBER, default=10, person_set=True, required_settings=[MERGER_ENABLED], screen="helper-type.merger", section="Questions"),
@@ -94,14 +94,14 @@ WORKER_SETTING_VALUES = [
     SettingValue("stopped-worker-run-minutes", "Minutes before a stopped worker's run", "Minutes after a worker stopped with tasks left, while a command it started still runs, before its main agent is told.", SettingType.NUMBER, default=30, person_set=True, screen="advanced", section="Silent agents"),
     SettingValue("merger-wait-minutes", "Merger wait minutes", "Minutes the merger has to take in a worker whose tests passed, before the main agent is told to merge it.", SettingType.NUMBER, default=15, person_set=True, screen="helper-type.merger", section="Waiting"),
     SettingValue("merger-commands", "Merger commands", "Lines the merger runs after each merge, sending what they find to the worker. {commit} is the commit before it.", SettingType.LIST, default=(), person_set=True, required_settings=[MERGER_ENABLED], screen="helper-type.merger", section="Commands"),
-    SettingValue("keep-worktrees-up-to-date", "Keep worktrees up to date", "Check whether a worker's working folder has fallen behind the branch it was cut from, and have it brought up to date.", SettingType.FLAG, default=True, person_set=True, screen="work", section=UP_TO_DATE_SECTION),
-    SettingValue("behind-commits-to-check", "Commits behind before a check", "New commits on the branch a worker was cut from before its folder is looked at. At 0 no folder is looked at.", SettingType.NUMBER, default=3, person_set=True, required_settings=[KEEP_UP_TO_DATE], screen="work", section=UP_TO_DATE_SECTION),
-    SettingValue("behind-check-minutes", "Minutes between checks", "Minutes between two looks at how far the workers' folders are behind their branch.", SettingType.NUMBER, default=10, person_set=True, required_settings=[KEEP_UP_TO_DATE], screen="work", section=UP_TO_DATE_SECTION),
-    SettingValue("behind-recheck-commits", "Commits before a folder is checked again", "How many more commits a folder left alone may fall behind before it is looked at again.", SettingType.NUMBER, default=3, person_set=True, required_settings=[KEEP_UP_TO_DATE], screen="work", section=UP_TO_DATE_SECTION),
-    SettingValue("update-to-main-commits", "Commits behind that go to the main agent", "A folder this many commits behind goes straight to the main agent. At 0 the merger always judges first.", SettingType.NUMBER, default=0, person_set=True, required_settings=[KEEP_UP_TO_DATE], screen="work", section=UP_TO_DATE_SECTION),
-    SettingValue("update-wait-minutes", "Minutes a worker has to update", "Minutes a worker told to update its folder has before it is reminded.", SettingType.NUMBER, default=30, person_set=True, required_settings=[KEEP_UP_TO_DATE], screen="work", section=UP_TO_DATE_SECTION),
-    SettingValue("update-reminders", "Reminders to update", "How many times a worker is reminded to update its folder before the main agent is told.", SettingType.NUMBER, default=2, person_set=True, required_settings=[KEEP_UP_TO_DATE], screen="work", section=UP_TO_DATE_SECTION),
-    SettingValue("check-history-days", "Days a closed check is kept", "Days a finished look at a folder behind its branch is kept before it is removed.", SettingType.NUMBER, default=30, person_set=True, screen="work", section=UP_TO_DATE_SECTION),
+    SettingValue("keep-worktrees-up-to-date", "Keep worktrees up to date", "Check whether a worker's working folder has fallen behind the branch it was cut from, and have it brought up to date.", SettingType.FLAG, default=True, person_set=True, screen="work", section=WORKTREE_UPDATES_SECTION),
+    SettingValue("behind-commits-to-check", "Commits behind before a check", "New commits on the branch a worker was cut from before its folder is looked at. At 0 no folder is looked at.", SettingType.NUMBER, default=3, person_set=True, required_settings=[WORKTREE_UPDATES], screen="work", section=WORKTREE_UPDATES_SECTION),
+    SettingValue("behind-check-minutes", "Minutes between checks", "Minutes between two looks at how far the workers' folders are behind their branch.", SettingType.NUMBER, default=10, person_set=True, required_settings=[WORKTREE_UPDATES], screen="work", section=WORKTREE_UPDATES_SECTION),
+    SettingValue("behind-recheck-commits", "Commits before a folder is checked again", "How many more commits a folder left alone may fall behind before it is looked at again.", SettingType.NUMBER, default=3, person_set=True, required_settings=[WORKTREE_UPDATES], screen="work", section=WORKTREE_UPDATES_SECTION),
+    SettingValue("update-to-main-commits", "Commits behind that go to the main agent", "A folder this many commits behind goes straight to the main agent. At 0 the merger always judges first.", SettingType.NUMBER, default=0, person_set=True, required_settings=[WORKTREE_UPDATES], screen="work", section=WORKTREE_UPDATES_SECTION),
+    SettingValue("update-wait-minutes", "Minutes a worker has to update", "Minutes a worker told to update its folder has before it is reminded.", SettingType.NUMBER, default=30, person_set=True, required_settings=[WORKTREE_UPDATES], screen="work", section=WORKTREE_UPDATES_SECTION),
+    SettingValue("update-reminders", "Reminders to update", "How many times a worker is reminded to update its folder before the main agent is told.", SettingType.NUMBER, default=2, person_set=True, required_settings=[WORKTREE_UPDATES], screen="work", section=WORKTREE_UPDATES_SECTION),
+    SettingValue("check-history-days", "Days a closed check is kept", "Days a finished look at a folder behind its branch is kept before it is removed.", SettingType.NUMBER, default=30, person_set=True, screen="work", section=WORKTREE_UPDATES_SECTION),
     SettingValue("main-dispatches-workers", "Main agent sends workers", "Whether the main agent may send workers to do tasks.", SettingType.FLAG, default=True, person_set=True, screen="work", section="Workers"),
     SettingValue("main-agent-may-merge", "Main agent may merge workers", "Whether the main agent may merge the work of a worker itself.", SettingType.FLAG, default=True, person_set=True, required_settings=[DISPATCHES_WORKERS_SETTING], screen="work", section="Workers"),
     SettingValue("resume-silent-agents", "Resume silent agents", "Whether a helper with unfinished work that has gone silent is resumed.", SettingType.FLAG, default=True, person_set=True, screen="advanced", section="Silent agents"),
@@ -156,10 +156,10 @@ WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         UNSTARTED_WORKER_SECONDS: NumberRule(1),
                         STOPPED_WORKER_RUN_MINUTES: NumberRule(1),
                         HUNG_PROOF_RUN_MINUTES: NumberRule(1),
-                        BEHIND_COMMITS_TO_CHECK: NumberRule(0),
+                        STALE_CHECK_COMMITS: NumberRule(0),
                         BEHIND_CHECK_MINUTES: NumberRule(1),
                         BEHIND_RECHECK_COMMITS: NumberRule(0),
-                        UPDATE_TO_MAIN_COMMITS: NumberRule(0),
+                        MAIN_UPDATE_COMMITS: NumberRule(0),
                         UPDATE_WAIT_MINUTES: NumberRule(1),
                         UPDATE_REMINDERS: NumberRule(0),
                         CHECK_HISTORY_DAYS: NumberRule(1),

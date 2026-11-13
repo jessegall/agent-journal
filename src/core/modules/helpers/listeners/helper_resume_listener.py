@@ -9,7 +9,7 @@ from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.helpers.support.helper_resume import HelperResume
 
 RESUME_JOB_TEXT = "You were paused and may go on: finish your job."
-EVERY_CHILD_REASON = "the resume reaches every ended child helper of the agent with an open job"
+CHILD_HELPERS_REASON = "the resume reaches every ended child helper of the agent with an open job"
 
 
 class HelperResumeListener(CommitListener[Changed[Agent]]):
@@ -25,5 +25,5 @@ class HelperResumeListener(CommitListener[Changed[Agent]]):
         if event.old_row is None or event.old_row.paused_at is None or event.row.paused_at is not None:
             return
         helpers = self.queries.query(Agent).where(parent_id=event.row.id, role=HelperRole.HELPER).where("ended_at", ">", "").where_in("id", self.jobs.open_job_helpers())
-        for helper in tuple(helpers.every_row(EVERY_CHILD_REASON)):
+        for helper in tuple(helpers.every_row(CHILD_HELPERS_REASON)):
             self.resume.resume(helper, RESUME_JOB_TEXT)

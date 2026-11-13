@@ -10,11 +10,11 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.models.worktree_behind_look import WorktreeBehindLook
 from suites.coding.modules.workers.support.behind_checks import BehindChecks
-from suites.coding.modules.workers.support.worker_settings import BEHIND_CHECK_MINUTES, BEHIND_COMMITS_TO_CHECK, BEHIND_RECHECK_COMMITS, KEEP_UP_TO_DATE
+from suites.coding.modules.workers.support.worker_settings import BEHIND_CHECK_MINUTES, STALE_CHECK_COMMITS, BEHIND_RECHECK_COMMITS, WORKTREE_UPDATES
 from suites.coding.modules.workers.ticks.behind_worktrees import BehindWorktrees
 
 NOW = Timestamp(datetime(2026, 11, 12, 9, 0, tzinfo=timezone.utc))
-SETTINGS = {KEEP_UP_TO_DATE: True, BEHIND_COMMITS_TO_CHECK: 3, BEHIND_CHECK_MINUTES: 10, BEHIND_RECHECK_COMMITS: 3}
+SETTINGS = {WORKTREE_UPDATES: True, STALE_CHECK_COMMITS: 3, BEHIND_CHECK_MINUTES: 10, BEHIND_RECHECK_COMMITS: 3}
 
 
 class Rows:
@@ -76,9 +76,9 @@ def test_a_worktree_three_behind_opens_a_check_and_two_behind_does_not():
 
 def test_zero_commits_to_check_or_the_switch_off_looks_at_no_worktree():
     off = BehindChecks(Queries(Worktree=[worktree()]), Settings())
-    off.settings.values[BEHIND_COMMITS_TO_CHECK] = 0
+    off.settings.values[STALE_CHECK_COMMITS] = 0
     switched = BehindChecks(Queries(Worktree=[worktree()]), Settings())
-    switched.settings.values[KEEP_UP_TO_DATE] = False
+    switched.settings.values[WORKTREE_UPDATES] = False
     assert (off.due_worktrees(NOW), switched.due_worktrees(NOW)) == ((), ())
 
 

@@ -14,7 +14,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import D
 from tests.stories.suites.coding.modules.workers.worktree_behind_check import checks, look, setting
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState
 from suites.coding.modules.workers.models.merger_line import MergerLine
-from suites.coding.modules.workers.support.behind_nudges import UPDATE_NOT_RUN
+from suites.coding.modules.workers.support.behind_nudges import UPDATE_SKIPPED
 from suites.coding.modules.workers.support.behind_nudges import UPDATE_ORDERED
 from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.modules.workers.support.behind_nudges import BEHIND_PASSED, UPDATE_REMINDER
@@ -98,7 +98,7 @@ def f52_an_ordered_update_not_run_is_reminded_twice_then_the_merger_hears(story,
     for _ in range(3):
         waited(story)
     reminders = len(expected_nudge(UPDATE_REMINDER).pattern().findall(worker_lines(story, worker)))
-    story.expect_rows(reminders == 2, sum(expected_nudge(UPDATE_NOT_RUN).is_in(text) for text in merger_texts(story)) == 1, detail=f"{reminders} {merger_texts(story)}")
+    story.expect_rows(reminders == 2, sum(expected_nudge(UPDATE_SKIPPED).is_in(text) for text in merger_texts(story)) == 1, detail=f"{reminders} {merger_texts(story)}")
 
 
 def g60_a_worker_naming_another_worker_is_refused(story, repository, worker: Actor) -> None:

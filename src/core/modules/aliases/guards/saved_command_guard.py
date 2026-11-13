@@ -17,7 +17,7 @@ from core.modules.aliases.support.saved_command_check import SavedCommandCheck
 
 
 CONFLICT_LIMIT_SECONDS = 10
-EVERY_SAVED_COMMAND_REASON = "the conflict check compares a saved command with every saved command of its category"
+SAVED_COMMANDS_REASON = "the conflict check compares a saved command with every saved command of its category"
 
 
 class SavedCommandGuard(Guard[Created[Alias] | Updated[Alias]]):
@@ -34,7 +34,7 @@ class SavedCommandGuard(Guard[Created[Alias] | Updated[Alias]]):
             return
         if event.old_row is not None and alias.line == event.old_row.line and alias.category is event.old_row.category:
             return
-        saved = {row.name: row.line for row in self.aliases.where(category=alias.category).every_row(EVERY_SAVED_COMMAND_REASON) if row.id != alias.id}
+        saved = {row.name: row.line for row in self.aliases.where(category=alias.category).every_row(SAVED_COMMANDS_REASON) if row.id != alias.id}
         if not saved:
             return
         check = SavedCommandCheck(alias.line, saved)

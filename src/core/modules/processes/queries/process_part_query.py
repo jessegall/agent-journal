@@ -10,7 +10,7 @@ from core.modules.processes.queries.conditions.reader_sample_queries import Read
 from core.modules.processes.queries.conditions.command_matches import CommandMatches
 from core.modules.processes.queries.conditions.kept_output_part import KeptOutputPart
 
-PARTS_OF_A_RUN_REASON = "a run is judged by all of its parts, and one shell line may have more than fifty"
+RUN_PARTS_REASON = "a run is judged by all of its parts, and one shell line may have more than fifty"
 
 
 class ProcessPartQuery(Query[ProcessPart]):
@@ -23,7 +23,7 @@ class ProcessPartQuery(Query[ProcessPart]):
         return self.filter(process_id=process_id).ordered("position")
 
     def parts_of(self, process_id: int) -> tuple[ProcessPart, ...]:
-        return tuple(self.process(process_id).every_row(PARTS_OF_A_RUN_REASON))
+        return tuple(self.process(process_id).every_row(RUN_PARTS_REASON))
 
     def kept_samples(self, patterns: Sequence[str]) -> Self:
         return self.matching(KeptOutputPart(self.database.scope_environment_id)).matching(CommandMatches(patterns)).newest()

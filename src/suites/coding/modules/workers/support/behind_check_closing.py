@@ -7,9 +7,9 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.support.behind_checks import CHECKS_REASON
 
-UPDATED_FROM = (BehindCheckState.OPEN, BehindCheckState.ORDERED, BehindCheckState.CONFLICTED)
-CONFLICTED_FROM = (BehindCheckState.OPEN, BehindCheckState.ORDERED)
-GONE_FROM = (BehindCheckState.OPEN, BehindCheckState.ORDERED, BehindCheckState.CONFLICTED, BehindCheckState.PASSED)
+UPDATABLE_STATES = (BehindCheckState.OPEN, BehindCheckState.ORDERED, BehindCheckState.CONFLICTED)
+CONFLICTABLE_STATES = (BehindCheckState.OPEN, BehindCheckState.ORDERED)
+REMOVABLE_STATES = (BehindCheckState.OPEN, BehindCheckState.ORDERED, BehindCheckState.CONFLICTED, BehindCheckState.PASSED)
 
 
 class BehindCheckClosing:
@@ -21,18 +21,18 @@ class BehindCheckClosing:
         self.queries, self.repository = queries, repository
 
     def close_updated(self, worktree: Worktree, context: Context) -> None:
-        for check in self.checks(worktree, UPDATED_FROM):
+        for check in self.checks(worktree, UPDATABLE_STATES):
             self.repository.save_change(check, check.updated(), context)
 
     def conflicted(self, worktree: Worktree, context: Context) -> None:
-        for check in self.checks(worktree, CONFLICTED_FROM):
+        for check in self.checks(worktree, CONFLICTABLE_STATES):
             self.repository.save_change(check, check.conflicted(), context)
 
     def failed(self, worktree: Worktree, reason: str, context: Context) -> tuple[WorktreeBehindCheck, ...]:
-        return tuple(self.repository.save_change(check, check.failed(reason), context) for check in self.checks(worktree, CONFLICTED_FROM))
+        return tuple(self.repository.save_change(check, check.failed(reason), context) for check in self.checks(worktree, CONFLICTABLE_STATES))
 
     def close_gone(self, worktree: Worktree, context: Context) -> None:
-        for check in self.checks(worktree, GONE_FROM):
+        for check in self.checks(worktree, REMOVABLE_STATES):
             self.repository.save_change(check, check.gone(), context)
 
     def checks(self, worktree: Worktree, states: tuple[BehindCheckState, ...]) -> tuple[WorktreeBehindCheck, ...]:

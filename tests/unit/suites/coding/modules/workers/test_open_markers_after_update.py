@@ -6,7 +6,7 @@ from engine.time.timestamp import Timestamp
 from suites.coding.modules.workers.commands.remind_behind_updates.remind_behind_updates import RemindBehindUpdates
 from suites.coding.modules.workers.commands.remind_behind_updates.remind_behind_updates_handler import RemindBehindUpdatesHandler
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState as State
-from suites.coding.modules.workers.support.behind_nudges import CLASH_OPEN, CLASH_STILL_OPEN
+from suites.coding.modules.workers.support.behind_nudges import CONFLICT_OPEN, CONFLICT_REPEATED
 from tests.unit.suites.coding.modules.workers.test_update_reminders import ORDERED_AT, Lines, Numbers, Rows, Settings, Store
 
 
@@ -29,11 +29,11 @@ def merger_lines(minutes: list[int], files: tuple[str, ...]) -> tuple[list[objec
 
 def test_markers_still_open_after_the_wait_reach_the_merger_once_to_advise_then_once_to_pass():
     sent, nudger = merger_lines([10, 30, 45, 60, 90, 120], ("cart.py",))
-    assert (sent, nudger.sent) == ([CLASH_OPEN.key, CLASH_STILL_OPEN.key], [])
+    assert (sent, nudger.sent) == ([CONFLICT_OPEN.key, CONFLICT_REPEATED.key], [])
 
 
 def test_the_lines_name_the_worker():
-    assert "worker:4" in CLASH_OPEN.nudge(worker=4).text and "worker:4" in CLASH_STILL_OPEN.nudge(worker=4).text
+    assert "worker:4" in CONFLICT_OPEN.nudge(worker=4).text and "worker:4" in CONFLICT_REPEATED.nudge(worker=4).text
 
 
 def test_settled_markers_tell_the_merger_nothing():

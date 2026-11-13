@@ -19,7 +19,7 @@ from core.modules.tasks.support.next_task_choices import NextTaskChoices
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 from suites.coding.support.context_limit_check import ContextLimitCheck
 
-OWN_TASKS_REASON = "the own tasks of an agent are every task it holds or is assigned"
+AGENT_TASKS_REASON = "the own tasks of an agent are every task it holds or is assigned"
 
 BLOCKED_TASK_PAGE_SIZE = 10
 
@@ -70,8 +70,8 @@ class NextTask(TaskAssigner[Task]):
 
     def own_tasks(self, agent_ids: Sequence[int]) -> dict[int, tuple[int, ...]]:
         tasks = self.queries.query(Task).matching(Among("state", [TaskState.OPEN, TaskState.STARTED])).ordered("id")
-        blocked = tuple(tasks.matching(Among("holder_id", agent_ids)).every_row(OWN_TASKS_REASON))
-        assigned = tuple(tasks.matching(AssigneeAmong(Task, tuple(agent_ids))).every_row(OWN_TASKS_REASON))
+        blocked = tuple(tasks.matching(Among("holder_id", agent_ids)).every_row(AGENT_TASKS_REASON))
+        assigned = tuple(tasks.matching(AssigneeAmong(Task, tuple(agent_ids))).every_row(AGENT_TASKS_REASON))
         actor_ids = self.assignments.row_actor_ids(Task, sorted({task.id for task in (*blocked, *assigned)}))
         own: dict[int, set[int]] = defaultdict(set)
         for task in blocked:

@@ -19,7 +19,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 UNIT_TASKS_REASON = "a worker's unit is every task assigned to it, which can hold more than fifty"
 
-CLOSED_NEVER = "9999"
+OPEN_SORT_KEY = "9999"
 
 
 class WorkUnits:
@@ -38,7 +38,7 @@ class WorkUnits:
 
     def unit(self, worker_id: int) -> WorkUnit:
         worktree = self.worktrees.worker_worktree(worker_id)
-        cut_text = worktree.cut_at.text if worktree is not None and worktree.cut_at is not None else CLOSED_NEVER
+        cut_text = worktree.cut_at.text if worktree is not None and worktree.cut_at is not None else OPEN_SORT_KEY
         task_ids, uncommitted_count = self.kept.read(self.tasks.assignee_tasks(worker_id), lambda: self.open_work(worker_id, cut_text), name=f"workers.work_unit_tasks:{cut_text}")
         self.plans.prepare(task_ids)
         plan = self.assigned_plan(worker_id, task_ids)

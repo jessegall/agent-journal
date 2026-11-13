@@ -15,8 +15,8 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery
 from suites.coding.modules.workers.support.behind_checks import BehindChecks
-from suites.coding.modules.workers.support.behind_nudges import BEHIND_FOR_MAIN_AGENT, FAST_FORWARDED, BEHIND_SOURCE
-from suites.coding.modules.workers.support.worker_settings import UPDATE_TO_MAIN_COMMITS
+from suites.coding.modules.workers.support.behind_nudges import MAIN_AGENT_STALE_WORKTREE, FAST_FORWARDED, BEHIND_SOURCE
+from suites.coding.modules.workers.support.worker_settings import MAIN_UPDATE_COMMITS
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
@@ -58,9 +58,9 @@ class CheckWorktreeBehindHandler(Handler[CheckWorktreeBehind, BehindRoute]):
             self.repository.save_change(worktree, worktree.updated(self.tip), context)
             self.nudger.send(worktree.session_agent_id, FAST_FORWARDED, BEHIND_SOURCE, context)
             return BehindRoute.FAST_FORWARDED
-        target_main = self.settings.number(UPDATE_TO_MAIN_COMMITS)
+        target_main = self.settings.number(MAIN_UPDATE_COMMITS)
         if target_main > 0 and self.behind >= target_main:
             self.repository.save_change(check, check.passed_to_main_agent(f"{self.behind} commits behind, at least {target_main}"), context)
-            self.main_line.send_nudge(BEHIND_FOR_MAIN_AGENT.nudge(worker=worker, count=self.behind), BEHIND_SOURCE, context)
+            self.main_line.send_nudge(MAIN_AGENT_STALE_WORKTREE.nudge(worker=worker, count=self.behind), BEHIND_SOURCE, context)
             return BehindRoute.MAIN_AGENT
         return BehindRoute.MERGER

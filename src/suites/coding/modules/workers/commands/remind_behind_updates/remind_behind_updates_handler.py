@@ -16,13 +16,13 @@ from suites.coding.modules.workers.commands.remind_behind_updates.remind_behind_
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
-from suites.coding.modules.workers.support.behind_nudges import BEHIND_SOURCE, CLASH_OPEN, CLASH_STILL_OPEN, UPDATE_NOT_RUN, UPDATE_REMINDER
+from suites.coding.modules.workers.support.behind_nudges import BEHIND_SOURCE, CONFLICT_OPEN, CONFLICT_REPEATED, UPDATE_SKIPPED, UPDATE_REMINDER
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_settings import UPDATE_REMINDERS, UPDATE_WAIT_MINUTES
 
 CHECKS_REASON = "every behind check in that state is reminded of"
-CLASH_LINES = (CLASH_OPEN, CLASH_STILL_OPEN)
+CLASH_LINES = (CONFLICT_OPEN, CONFLICT_REPEATED)
 
 
 class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
@@ -72,5 +72,5 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
         if check.reminders < limit:
             self.nudger.send(worktree.session_agent_id, UPDATE_REMINDER, BEHIND_SOURCE, context, count=check.behind)
         else:
-            self.inbox.send_nudge(UPDATE_NOT_RUN.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)), BEHIND_SOURCE, context)
+            self.inbox.send_nudge(UPDATE_SKIPPED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)), BEHIND_SOURCE, context)
         self.repository.save_change(check, check.reminded(), context)
