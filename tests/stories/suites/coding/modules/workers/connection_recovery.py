@@ -27,7 +27,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import story_repository
 from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.modules.workers.support.worker_settings import IDLE_WORKER_MINUTES
 from suites.coding.modules.workers.support.worker_settings import IDLE_WORKER_REPEAT_MINUTES
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT

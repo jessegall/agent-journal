@@ -7,7 +7,7 @@ from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON, ended, main_agent_lines, missing_program, running_worker, two_task_worker, worker_story  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RESTARTED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 HELP_REQUEST_LINE = 'wait stuck "the build tool is missing"'
 

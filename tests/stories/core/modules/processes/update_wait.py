@@ -1,5 +1,5 @@
 from core.modules.processes.support.process_nudges import UPDATE_WAITING
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 import json
 import os
 import subprocess

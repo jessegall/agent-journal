@@ -14,7 +14,7 @@ from engine.testing.expectations.expect_reply import expect_absent_reply_line
 from tests.stories.support.story_checks import expect_lines_3, expect_value_with, expect_value_without_line
 from tests.stories.core.support.plan_steps import ready_plan
 from core.modules.plans.support.plan_nudges import PLAN_CANCELLED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.plans.support.plan_nudges import CHECKPOINT_REACHED
 from core.modules.plans.support.plan_nudges import PLAN_FINISHED
 from core.modules.plans.support.plan_nudges import PLAN_STALLED

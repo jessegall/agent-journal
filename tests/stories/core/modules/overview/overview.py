@@ -19,7 +19,7 @@ from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value, expect_value_with, expect_value_without
 from core.modules.overview.support.overview_nudges import OVERVIEW_LINE
 from core.modules.overview.support.overview_nudges import OVERVIEW_REFUSAL
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.overview.support.overview_settings import COMMANDS_KEY
 
 

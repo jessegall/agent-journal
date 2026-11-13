@@ -20,7 +20,7 @@ from engine.testing.stories.story import Story
 from tests.stories.core.modules.processes.hang_watch import ActiveBuild, started_tree, watch_tick
 from tests.stories.core.modules.processes.support.process_samples import end_run
 from core.modules.processes.support.process_nudges import SILENT_RUN_HELD
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 HANG_SECONDS = 300
 TASK_LIST = HookSamples.shell("journal task list", ShellPart("journal", CommandCategory.JOURNAL, ["task", "list"]))

@@ -13,7 +13,8 @@ from engine.provider.launch import Launch
 from engine.provider.launch_command import LaunchCommand
 from engine.provider.managed_hook import ManagedHook
 from engine.provider.program_hooks import ProgramHooks
-from engine.provider.program_settings import ProgramSettings, SettingsFile
+from engine.provider.program_settings import ProgramSettings
+from engine.provider.settings_file import SettingsFile
 from engine.provider.provider import Provider
 from engine.enums.refusal_style import RefusalStyle
 from engine.provider.transcript_row import TranscriptRow

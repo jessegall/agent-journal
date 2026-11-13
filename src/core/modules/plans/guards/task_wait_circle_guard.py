@@ -2,7 +2,8 @@ from engine.command.context import Context
 from engine.event.created import Created
 from engine.guard.guard import Guard
 from core.modules.tasks.models.task_wait import TaskWait
-from core.modules.plans.support.wait_circle import TARGET_TYPES, TASK, WaitCircle, WaitNode
+from core.modules.plans.support.wait_circle import TARGET_TYPES, TASK, WaitCircle
+from core.modules.plans.support.wait_node import WaitNode
 
 class TaskWaitCircleGuard(Guard[Created[TaskWait]]):
     """Refuses a task's wait on a task or a plan that comes back, through other waits, to the task itself."""

@@ -4,7 +4,7 @@ from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment
 from suites.coding.modules.workers.support.worker_nudges import WORKER_PROOF_SHORT
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 SHORTFALL = "the rounding has no test"
 PROOF_SHORT = f'proof short 1 "{SHORTFALL}"'

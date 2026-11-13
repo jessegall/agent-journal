@@ -14,7 +14,7 @@ from engine.testing.stories.story import Story
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 from core.modules.approvals.support.approval_nudges import APPROVAL_REVIEW
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 

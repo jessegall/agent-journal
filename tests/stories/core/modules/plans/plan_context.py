@@ -10,7 +10,7 @@ from engine.enums.command_category import CommandCategory
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.documents.support.trail_fixtures import ApprovedTrailPlan, StartedTrailPlan, Scenario, feature, viewer_answer
 from core.modules.processes.support.process_nudges import READ_COMMAND_OUTPUT
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 
 @pytest.fixture

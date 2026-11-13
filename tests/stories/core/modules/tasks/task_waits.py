@@ -11,7 +11,7 @@ from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import AgentStarted
 from core.modules.tasks.support.task_nudges import TASK_NAME
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.drivers.support.line_typing import TERMINAL_PREFIX
 from core.modules.tasks.support.task_nudges import TASK_REOPENED
 from core.modules.waits.support.wait_nudges import WAIT_ENDED

@@ -7,8 +7,9 @@ from engine.database.database import Database
 from engine.journal.journal_home import JournalHome
 from core.modules.agents.commands.fold_mains_check.fold_mains_check import FoldMainsCheck
 from core.modules.agents.support.fold_copy import FoldCopy
-from core.modules.agents.support.main_fold import FoldCounts, MainFold
-from core.modules.agents.support.main_fold_plan import EnvironmentFold
+from core.modules.agents.support.main_fold import MainFold
+from core.modules.agents.support.fold_counts import FoldCounts
+from core.modules.agents.support.environment_fold import EnvironmentFold
 
 NOTHING_TO_FOLD = "Every environment has one main agent row: nothing to fold."
 

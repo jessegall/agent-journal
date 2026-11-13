@@ -16,7 +16,7 @@ from suites.coding.modules.workers.models.enums.behind_check_state import Behind
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.behind_nudges import UPDATE_NOT_RUN
 from suites.coding.modules.workers.support.behind_nudges import UPDATE_ORDERED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 WAIT = timedelta(minutes=30)

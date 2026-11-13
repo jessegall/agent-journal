@@ -12,7 +12,7 @@ from tests.stories.core.modules.processes.support.reader_block_fixtures import F
 from tests.stories.core.modules.processes.support.reading_scenarios import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from core.modules.processes.support.process_nudges import BLOCK_LIFTED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.processes.support.process_nudges import READER_BLOCK
 
 EDIT = HookSamples.edit("cart.py")

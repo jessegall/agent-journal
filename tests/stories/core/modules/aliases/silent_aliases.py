@@ -18,7 +18,7 @@ from tests.stories.core.modules.processes.support.cadence_probe import cadence_t
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, parts_started
 from tests.stories.support.story_checks import expect_value
 from core.modules.processes.support.process_nudges import SILENT_SAVED_RUN
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.aliases.support.alias_nudges import SAVED_COMMAND_SILENT
 
 READ_NOTES = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))

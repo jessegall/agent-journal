@@ -11,7 +11,7 @@ from engine.log.system_log_writer import SystemLogWriter
 from engine.time.clock import Clock
 from core.modules.agents.support.fold_copy import FoldCopy
 from core.modules.agents.support.main_fold import MainFold
-from core.modules.agents.support.main_fold_plan import EnvironmentFold
+from core.modules.agents.support.environment_fold import EnvironmentFold
 
 ONE_MAIN_INDEX = Statement("CREATE UNIQUE INDEX IF NOT EXISTS agents_one_main ON agents (environment_id) WHERE role = 'main'")
 

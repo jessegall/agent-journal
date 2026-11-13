@@ -19,7 +19,7 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.support.behind_nudges import BEHIND_CHOICES
 from suites.coding.modules.workers.support.behind_nudges import BEHIND_PASSED
 from suites.coding.modules.workers.support.behind_nudges import UPDATE_ORDERED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 MERGER_SESSION = "s-merger"
 HAIKU_DISPATCH = DISPATCH.replace("--model sonnet", "--model haiku")

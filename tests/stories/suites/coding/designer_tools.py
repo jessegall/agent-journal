@@ -6,7 +6,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from core.modules.drivers.support.access_nudges import LIMITED_TOOL
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.support.coding_settings import DESIGNER_ENABLED_SETTING
 from suites.coding.support.shipped_profiles import DESIGNER_PROFILE
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE

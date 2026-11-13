@@ -9,7 +9,7 @@ from core.modules.memories.models.memory import Memory
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.memories.support.memory_owners import MAIN_FACT, MAIN_MEMORY, MainAndWorkerMemories, WORKER_FACT, WORKER_MEMORY, read_agent, stored_memory
 from core.modules.memories.support.memory_nudges import START_MEMORIES
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 

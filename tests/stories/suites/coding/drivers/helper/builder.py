@@ -5,7 +5,7 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import BuilderStarted, OpenTaskBuilder, CodingEnvironment
 from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
 

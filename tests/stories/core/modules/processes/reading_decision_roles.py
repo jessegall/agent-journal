@@ -7,7 +7,7 @@ from tests.stories.core.modules.processes.support.reader_block_fixtures import F
 from tests.stories.core.modules.processes.support.reading_scenarios import (CRASHED_START, LONG_RUN, STEPS, end_decision, ended_after_a_while, heard,
                                                                              rejected_worker_command)
 from core.modules.processes.support.process_nudges import READ_ONLY_MISSING_NOTICE
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 ASKING = "collected 2 items\n<Module tests/cart.py>\n"
 LOOKUPS = (("cat big.log", CommandCategory.READ), ("grep -rn cart src", CommandCategory.SEARCH), ("sed -i s/a/b/ notes", CommandCategory.EDIT),

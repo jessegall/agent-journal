@@ -1,7 +1,7 @@
-from dataclasses import dataclass
 
 from engine.database.database import Database
 from engine.database.statement import Statement
+from engine.database.schema_column import SchemaColumn
 
 TABLE_COLUMNS = Statement("SELECT tables.name AS table_name, columns.name AS column_name FROM sqlite_master AS tables, pragma_table_info(tables.name) AS columns"
                           " WHERE tables.type = 'table' AND tables.name NOT LIKE 'sqlite_%' ORDER BY tables.name, columns.cid",
@@ -9,15 +9,6 @@ TABLE_COLUMNS = Statement("SELECT tables.name AS table_name, columns.name AS col
 FOREIGN_KEYS = Statement("SELECT tables.name AS table_name, keys.\"from\" AS column_name, keys.\"table\" AS target FROM sqlite_master AS tables,"
                          " pragma_foreign_key_list(tables.name) AS keys WHERE tables.type = 'table' ORDER BY tables.name, keys.\"from\"",
                          scan_reason="The fold reads the fixed schema catalogue to find every column that holds an agent, not stored journal rows.")
-
-
-@dataclass(frozen=True)
-class SchemaColumn:
-    """A column of a table in the live schema, and the table its foreign key points at, if it has one."""
-
-    table: str
-    column: str
-    target: str | None
 
 
 class SchemaColumns:

@@ -13,7 +13,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.tasks.task_lifecycle import started_story
 from core.modules.processes.support.process_nudges import READ_COMMAND_OUTPUT
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 
 def user_story(new_story):

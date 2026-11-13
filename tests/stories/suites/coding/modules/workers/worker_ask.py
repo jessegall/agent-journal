@@ -23,7 +23,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import G
 from tests.stories.suites.coding.modules.workers.support.judge_plugin import SINFUL_TEXT, judge_plugin_folder
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, merger_can_start, running_launcher
 from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 QUESTION = "The sandbox has no compiler"

@@ -4,7 +4,7 @@ from engine.caller.caller import Caller
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.helpers.support.helper_profile_screen import HelperProfileScreen
-from core.modules.settings.support.setting_screen import ScreenReading
+from core.modules.settings.support.screen_reading import ScreenReading
 
 
 class HelperProfileScreenSubcommand(ReadSubcommand[ScreenReading]):

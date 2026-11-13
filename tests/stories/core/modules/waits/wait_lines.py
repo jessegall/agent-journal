@@ -7,7 +7,7 @@ from tests.stories.engine.driver.support.fixtures import LeadWaiting
 from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.support import story_lines as lines
 from core.modules.waits.support.wait_nudges import WAIT_CHECK
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 
 def test_a_wait_of_ten_minutes_tells_the_agent_to_check_on_it(new_story):

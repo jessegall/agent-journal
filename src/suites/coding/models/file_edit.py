@@ -1,6 +1,6 @@
 from typing import Self
 
-from engine.query.prunable import Prunable
+from engine.query.rows.prunable import Prunable
 from dataclasses import dataclass
 
 from engine.model.environment_scoped import EnvironmentScoped

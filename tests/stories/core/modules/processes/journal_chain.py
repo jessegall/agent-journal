@@ -8,7 +8,7 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.modules.processes.support.process_nudges import MONITOR_NOTE
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 JOURNAL_PART = ShellPart("journal", CommandCategory.JOURNAL, ["task", "show", "1"], subcommand="task")
 LISTING_PART = ShellPart("ls", CommandCategory.SEARCH, ["build"])
 TESTS_PART = ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"])

@@ -20,7 +20,7 @@ from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGE
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting, set_resume_limit
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RESTARTED
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RUN_RUNS_AFTER_STOP
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 TEST_ROWS_REASON = "the test reads every row it checks"

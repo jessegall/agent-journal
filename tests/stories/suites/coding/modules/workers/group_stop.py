@@ -16,7 +16,7 @@ from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RESTARTED
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 

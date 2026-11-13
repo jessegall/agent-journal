@@ -9,7 +9,7 @@ from tests.stories.core.support import story_lines as lines
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from suites.coding.support.coding_nudges import WORKER_TASK_UNSTARTED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.upgrade.coding_settings_move import LISTED_KEY
 
 WORKER_SESSION = "s-2"

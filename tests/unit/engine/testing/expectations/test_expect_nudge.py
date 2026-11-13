@@ -1,6 +1,6 @@
 from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.enums.nudge_type import NudgeType
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 PLAN_WAITS = NudgeDeclaration("sample.plan_waits", NudgeType.STEERING, "plan:{plan} is approved and {count} places are free")
 

@@ -5,7 +5,7 @@ from datetime import timedelta
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from core.modules.tasks.support.task_nudges import INACTIVE_TASK
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 INACTIVE_MINUTES = 15
 

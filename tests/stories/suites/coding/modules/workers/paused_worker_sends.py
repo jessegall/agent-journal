@@ -8,7 +8,7 @@ from suites.coding.modules.workers.models.worker_operation import WorkerOperatio
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from suites.coding.modules.workers.models.enums.worker_operation_name import WORKER_OPERATION_PAUSED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 

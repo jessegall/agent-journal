@@ -19,7 +19,7 @@ from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.core.support.plan_steps import ready_plan
 from tests.stories.server.support.server_client import server_story
 from core.modules.plans.support.plan_nudges import CHECKPOINT_FINISHED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.plans.support.plan_settings import QUICK_REVIEW_SETTING
 from core.modules.plans.support.plan_settings import WAIT_FOR_PERSON_SETTING
 

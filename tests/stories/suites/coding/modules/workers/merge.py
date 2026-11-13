@@ -36,7 +36,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.web_build import BUILT_TEXT, build_repository
 from tests.stories.support.story_checks import expect_requests_launcher
 from core.modules.processes.support.process_nudges import READ_COMMAND_OUTPUT
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.modules.workers.support.worker_nudges import MERGE_WAITS
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 

@@ -71,7 +71,7 @@ from engine.testing.stories.story_path import StoryPath
 from engine.testing.stories.story_state import StoryState
 from engine.testing.fakes.fixed_process_table import FixedProcessTable
 from engine.testing.expectations.line_outcome import LineOutcome
-from engine.testing.expectations.expect_nudge import SaidNudge
+from engine.testing.expectations.said_nudge import SaidNudge
 from engine.testing.expectations.text_match import ExpectedText, holds_line, holds_text
 
 STORY_ROWS_REASON = "the story kit lists every row of a table for an assertion"

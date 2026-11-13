@@ -6,7 +6,7 @@ from core.modules.chat.models.journal_exception import JournalException
 from core.modules.processes.ticks.output_reading import OutputReading
 from tests.stories.core.modules.developer.support.performance_fixture import DevelopmentToolsEnabled
 from core.modules.developer.support.developer_nudges import EXCEPTION_LINE
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 

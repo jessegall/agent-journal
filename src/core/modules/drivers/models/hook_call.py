@@ -1,4 +1,4 @@
-from engine.query.prunable import Prunable
+from engine.query.rows.prunable import Prunable
 from engine.query.conditions.excluding import Excluding
 from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.subquery_match import SubqueryMatch

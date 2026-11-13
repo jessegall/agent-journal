@@ -20,7 +20,7 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.documents.support.trail_fixtures import viewer
 from tests.stories.core.support.agent_labels import agent_number
 from core.modules.agents.support.report_nudges import PARENT_REPORT
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 PROGRAMS = [StartedHelper, StartedCodexHelper]

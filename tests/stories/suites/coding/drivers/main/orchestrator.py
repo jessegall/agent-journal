@@ -10,7 +10,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.plan_steps import ready_plan
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from suites.coding.support.coding_nudges import OPEN_TASKS_WAIT
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 from suites.coding.support.coding_settings import WRITES_CODE_SETTING

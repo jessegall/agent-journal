@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 from core.modules.settings.commands.setting_screen_show.setting_screen_show_subcommand import SettingScreenShowSubcommand
-from core.modules.settings.support.setting_screen import ScreenReading
+from core.modules.settings.support.screen_reading import ScreenReading
 
 
 class RecordingScreens:

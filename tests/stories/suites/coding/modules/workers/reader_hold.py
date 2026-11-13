@@ -31,7 +31,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from engine.testing.expectations.expect_reply import expect_reply_line
 from suites.coding.modules.workers.support.worker_nudges import READER_SAMPLE_READY
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 

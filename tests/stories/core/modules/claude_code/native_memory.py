@@ -1,7 +1,7 @@
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.modules.claude_code.support.claude_code_nudges import NATIVE_MEMORY_BAN
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 MEMORY_FILE = "/Users/ada/.claude/projects/-Users-ada-shop/memory/cart.md"
 BAN = said(NATIVE_MEMORY_BAN)

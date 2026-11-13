@@ -26,7 +26,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.test_queue import PROOF, ended, recording_launch
 from tests.stories.core.support.agent_labels import agent_label
 from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 

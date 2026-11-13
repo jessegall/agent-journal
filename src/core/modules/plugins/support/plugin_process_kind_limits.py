@@ -8,7 +8,8 @@ from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.support.free_memory import FreeMemory
 from core.modules.plugins.support.machine_runs import MachineRuns
 from core.modules.plugins.support.plugin_folders import PluginFolders
-from core.modules.plugins.support.plugin_kind_pass import KindRule, PluginKindPass
+from core.modules.plugins.support.plugin_kind_pass import PluginKindPass
+from core.modules.plugins.support.kind_rule import KindRule
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_settings import PluginSettings
 from core.modules.processes.models.process import Process

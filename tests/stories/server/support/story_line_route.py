@@ -6,8 +6,8 @@ from engine.database.reported_findings import ReportedFindings
 from engine.journal.journal_home import JournalHome
 from engine.testing.stories.story_line_run import StoryLineRun
 from engine.database.repeated_work import RepeatedWork
-from server.work.listener_thread import ListenerThread
-from server.work.listener_wake import ListenerWake
+from server.work.listeners.listener_thread import ListenerThread
+from server.work.listeners.listener_wake import ListenerWake
 from server.viewer.line_answer import LineAnswer
 from server.viewer.line_route import LineRoute
 from server.viewer.shared_row import SharedRow

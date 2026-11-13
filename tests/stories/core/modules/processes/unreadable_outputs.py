@@ -7,7 +7,7 @@ from tests.stories.core.modules.processes.support.reading_scenarios import LONG_
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 from core.modules.processes.support.process_nudges import UNREADABLE_DECLARED
 from core.modules.processes.support.process_nudges import UNREADABLE_LIFTED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.processes.support.process_nudges import UNREADABLE_AUDIT
 
 SPINNER = "\r[###] working" * 1000

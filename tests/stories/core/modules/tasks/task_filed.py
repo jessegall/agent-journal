@@ -4,7 +4,7 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.modules.tasks.support.task_nudges import TASK_FILED
 from core.modules.tasks.support.task_nudges import TASK_FILED_KEEP_CURRENT
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 TASK_MADE = HookSamples.shell('journal task make "Fix the cart"', ShellPart("journal", CommandCategory.JOURNAL, ["task", "make", "Fix the cart"])).with_fields(event="post_tool_use")
 TASK_LISTED = HookSamples.shell("journal task list", ShellPart("journal", CommandCategory.JOURNAL, ["task", "list"])).with_fields(event="post_tool_use")

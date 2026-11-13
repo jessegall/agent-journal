@@ -14,7 +14,7 @@ from tests.stories.core.modules.processes.hang_watch import HANG_SECONDS, Active
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 from core.modules.processes.support.process_nudges import SILENT_RUN
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.processes.support.process_nudges import RUN_SPARSE
 from core.modules.processes.support.process_nudges import SILENT_SAVED_RUN
 from core.modules.processes.support.process_nudges import STALLED_RUN

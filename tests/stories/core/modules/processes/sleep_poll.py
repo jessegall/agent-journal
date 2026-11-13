@@ -5,7 +5,7 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.support.coding_fixtures import BuilderStarted, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from core.modules.processes.support.process_nudges import SLEEP_REFUSED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 BUILD = HookSamples.shell("make build", ShellPart("make", CommandCategory.BUILD, ["build"]))
 SLEEP_LOOP = HookSamples.shell("until pgrep -f build; do sleep 5; done", ShellPart("until", CommandCategory.PROCESS, ["pgrep"]))
 WAITING_SLEEP = HookSamples.shell("sleep 30", ShellPart("sleep", CommandCategory.READ, ["30"]))

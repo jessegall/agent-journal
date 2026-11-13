@@ -3,7 +3,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment
 from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.modules.workers.support.worker_settings import MOST_OPEN_TASKS
 
 MAIN_SESSION = "s-1"

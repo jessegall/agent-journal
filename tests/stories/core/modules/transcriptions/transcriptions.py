@@ -6,7 +6,7 @@ from server.work.booting_work import BootingWork
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_count_output
 from core.modules.transcriptions.support.transcription_nudges import TRANSCRIPTION_IMPORT_REQUEST
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.transcriptions.support.transcription_nudges import TRANSCRIPTION_CHANGED
 
 TRANSCRIPTION_LINE = 'transcription make "Cart meeting" --text "Ada: the cart rounds twice." --environment main'

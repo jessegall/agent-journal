@@ -1,26 +1,9 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from core.modules.plugins.support.service_retry import ServiceRetry
 
-FIRST_PAUSE = timedelta(seconds=30)
-LONGEST_PAUSE = timedelta(minutes=10)
 STEADY_RUN = timedelta(minutes=5)
 REPORTED_AFTER_FAILURES = 3
-IMMEDIATE_FAILURES = 1
-
-
-@dataclass
-class ServiceRetry:
-    """How often a service record_failure in a row, when it may be tried again, and whether the user was told."""
-
-    failures: int = 0
-    started_at: datetime | None = None
-    retry_at: datetime | None = None
-    is_reported: bool = False
-
-    def pause(self) -> timedelta:
-        if self.failures <= IMMEDIATE_FAILURES:
-            return timedelta()
-        return min(FIRST_PAUSE * 2 ** (self.failures - IMMEDIATE_FAILURES - 1), LONGEST_PAUSE)
 
 
 @dataclass

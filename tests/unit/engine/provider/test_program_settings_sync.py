@@ -10,7 +10,8 @@ from engine.dotted_path.dotted_path import DottedPath
 from engine.errors.refusal import Refusal
 from engine.journal.journal_home import JournalHome
 from engine.provider.managed_hook import ManagedHook
-from engine.provider.program_settings import ProgramSettings, SettingsFile
+from engine.provider.program_settings import ProgramSettings
+from engine.provider.settings_file import SettingsFile
 from engine.provider.program_settings_sync import ProgramSettingsSync
 from engine.registry.provider_entry import ProviderEntry
 from tests.unit.engine.samples.program_sample import SampleProgram

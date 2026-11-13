@@ -10,7 +10,8 @@ from unittest.mock import patch
 import pytest
 
 from engine.journal.journal_home import JournalHome
-from engine.provider.program_settings import ProgramSettings, SettingsFile
+from engine.provider.program_settings import ProgramSettings
+from engine.provider.settings_file import SettingsFile
 from engine.provider.program_settings_writer import ProgramSettingsWriter
 
 SETTINGS_TEXT = '{\n  "permissions": {"defaultMode": "bypassPermissions"}\n}\n'

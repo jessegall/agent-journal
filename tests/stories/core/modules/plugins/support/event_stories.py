@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import cast
 
 from engine.cli.console import Console
-from server.work.listener_thread import ListenerThread
-from server.work.listener_wake import ListenerWake
+from server.work.listeners.listener_thread import ListenerThread
+from server.work.listeners.listener_wake import ListenerWake
 
 import pytest
 
@@ -23,7 +23,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.plugins.support.plugin_samples import event_plugin_folder
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder, OpenTaskOrchestrator
 from tests.stories.server.support.story_line_route import StoryLineRoute
-from server.work.listener_thread import ListenerThread
+from server.work.listeners.listener_thread import ListenerThread
 
 TASK_CREATED = "core.tasks.task.created"
 PIN_CREATED = "core.pins.pin.created"

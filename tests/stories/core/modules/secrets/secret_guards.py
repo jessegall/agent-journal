@@ -3,7 +3,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.secrets.support.private_home import REPLACEMENT_VALUE, VALUE, filled_story, private_folder
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.modules.secrets.support.secret_nudges import SECRETS_FOLDER_BAN
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 __all__ = ["private_folder"]
 

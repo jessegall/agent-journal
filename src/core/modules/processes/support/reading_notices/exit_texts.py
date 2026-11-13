@@ -1,15 +1,7 @@
 from collections.abc import Sequence
-from dataclasses import dataclass
 
 from core.modules.processes.models.enums.reading_exit import ReadingExit
-
-
-@dataclass(frozen=True)
-class ExitText:
-    """How an exit is said to an agent: the sentence and the command that takes it, when one does."""
-
-    sentence: str
-    command: str = ""
+from core.modules.processes.support.reading_notices.exit_text import ExitText
 
 
 EXIT_TEXTS: dict[ReadingExit, ExitText] = {

@@ -1,62 +1,16 @@
 import hashlib
-from dataclasses import dataclass
 
 from engine.registry.setting_entry import SettingEntry
 from engine.setting.setting_declaration import REFERENCE_TYPE
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 from core.modules.settings.support.setting_reader import SettingReader
+from core.modules.settings.support.screen_node import ScreenNode
+from core.modules.settings.support.screen_reading import ScreenReading
+from core.modules.settings.support.screen_index_entry import ScreenIndexEntry
 
 
 HELPER_TYPE_SCREEN = "helper-type"
 HELPERS_TAB = "Helpers"
-
-
-@dataclass(frozen=True)
-class ScreenNode:
-    """One setting of a screen as a viewer draws it: what it is, which component draws it, where it sits, what
-    it holds now and where that came from, and the keys that must be on for it to show."""
-
-    key: str
-    kind: str
-    component: str
-    section: str
-    parent: str | None
-    title: str
-    description: str
-    value: object
-    default: object
-    source: str
-    choices: tuple[str, ...]
-    rule: str
-    requires: tuple[str, ...]
-    read_only: bool
-
-
-@dataclass(frozen=True)
-class ScreenReading:
-    """Every node of a screen in the order it is drawn, and a revision that changes when any value or where it
-    came from changes."""
-
-    screen: str
-    revision: str
-    nodes: tuple[ScreenNode, ...]
-
-    @staticmethod
-    def revision_of(nodes: tuple[ScreenNode, ...]) -> str:
-        return hashlib.sha256(repr([(node.key, node.value, node.source) for node in nodes]).encode()).hexdigest()[:12]
-
-
-@dataclass(frozen=True)
-class ScreenIndexEntry:
-    """One screened setting as Find a setting lists it: what it is called, where it lives in words, and the screen
-    and section that open to it."""
-
-    key: str
-    title: str
-    description: str
-    path: str
-    screen: str
-    section: str
 
 
 class SettingScreen:

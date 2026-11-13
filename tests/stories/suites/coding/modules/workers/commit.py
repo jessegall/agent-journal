@@ -14,7 +14,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, StoryWorker, dispatched_story_worker
 from suites.coding.modules.workers.support.worker_nudges import WORKER_REFUSED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND
 from suites.coding.modules.workers.support.worker_settings import PROJECT_TEST_COMMAND
 from suites.coding.modules.workers.support.worker_settings import PROTECTED_FOLDERS

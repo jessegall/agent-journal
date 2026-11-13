@@ -8,7 +8,7 @@ from tests.stories.core.modules.processes.support.cadence_probe import printed_n
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.modules.processes.support.process_nudges import SILENT_RUN_HELD
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.processes.support.process_nudges import STALLED_RUN
 
 MAIN = "s-1"

@@ -24,7 +24,7 @@ from tests.stories.suites.coding.modules.workers.support.merger_launcher import 
 from tests.stories.suites.coding.modules.workers.support.phase_steps import start_planned_worker
 from tests.stories.support.story_checks import expect_value, expect_value_with
 from core.modules.helpers.support.helper_nudges import HELPER_GRANTED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.modules.workers.support.worker_nudges import WORKER_LIBRARIES_LINKED
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 from suites.coding.support.shipped_profiles import MERGER_PROFILE

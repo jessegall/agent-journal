@@ -13,7 +13,7 @@ from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment, worker_session
 from core.modules.messages.support.message_nudges import UNANSWERED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.agents.support.report_nudges import PARENT_REPORT
 
 REPORT = "The cart total now adds the tax once; the tests pass."

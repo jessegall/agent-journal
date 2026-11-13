@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from core.modules.settings.support.setting_screen import ScreenReading
+from core.modules.settings.support.screen_reading import ScreenReading
 
 
 @dataclass(frozen=True)

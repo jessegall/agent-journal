@@ -10,7 +10,7 @@ from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ENABLED, 
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 from core.modules.memories.support.memory_nudges import WEIGH_MEMORIES
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 EDITED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")
 EDIT = HookSamples.edit("src/cart.py")

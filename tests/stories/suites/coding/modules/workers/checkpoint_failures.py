@@ -17,7 +17,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, TEST_LINE, StoryWorker, dispatched_story_worker, file_proof_line, planned_story
 from suites.coding.modules.workers.support.worker_nudges import WORKER_PHASE_TESTS_FAILED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND
 from suites.coding.modules.workers.support.worker_settings import PROJECT_TEST_COMMAND

@@ -14,7 +14,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value
 from core.modules.sequences.support.sequence_nudges import STEP_EDIT_BAN
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.sequences.support.sequence_nudges import STEP_WAITS
 
 

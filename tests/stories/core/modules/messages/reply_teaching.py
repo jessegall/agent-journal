@@ -16,7 +16,7 @@ from engine.testing.expectations.expect_reply import expect_reply_line
 from tests.stories.support.story_checks import expect_lines_reply_line
 from core.modules.messages.support.message_nudges import UNANSWERED
 from core.modules.messages.support.message_nudges import UNANSWERED_REFUSAL
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.messages.support.message_nudges import EM_DASH_NUDGE
 from core.modules.messages.support.message_nudges import PARAGRAPH_NUDGE
 from core.modules.messages.support.message_nudges import SHOP_TALK_NUDGE

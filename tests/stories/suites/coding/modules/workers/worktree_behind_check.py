@@ -15,7 +15,7 @@ from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.ticks.behind_worktrees import BehindWorktrees
 from suites.coding.modules.workers.support.behind_nudges import FAST_FORWARDED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 SETTING = "journal.suites.coding.workers"

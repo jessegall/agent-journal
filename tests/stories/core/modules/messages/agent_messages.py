@@ -9,7 +9,7 @@ from core.modules.messages.models.message import Message
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from core.modules.agents.support.report_nudges import PARENT_REPORT
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 LINES = "agent-line list --agent {agent}"
 

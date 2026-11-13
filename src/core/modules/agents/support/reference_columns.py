@@ -1,9 +1,9 @@
 from collections.abc import Sequence
-from dataclasses import dataclass
 
-from engine.database.schema_columns import SchemaColumn
+from engine.database.schema_column import SchemaColumn
 from engine.errors.refusal import Refusal
 from engine.query.query import ROW_KEY
+from core.modules.agents.support.agent_columns import AgentColumns
 
 AGENT_TABLES = ("agents", "actors")
 AGENT_COLUMN_NAMES = ("actor_id", "holder_id", "delegated_to", "creator_id", "parent_id", "session_agent_id", "agent_id", "survivor_id",
@@ -15,15 +15,6 @@ AGENT_MODEL_NAMES = ("agent", "agents", "actor", "actors")
 FOLD_TABLES = ("agent_folds", "agent_fold_rows")
 NOT_AGENT_COLUMNS = (("agent_lines", "wakes_agent"), ("agents", "launch_agent_id"), ("aliases", "agent_access"), ("context_compaction_notices", "agent_number"),
                      ("trigger_action_runs", "notify_agent"))
-
-
-@dataclass(frozen=True)
-class AgentColumns:
-    """The columns of the schema that hold an agent: plain id columns, and pairs of a model column and an id
-    column whose model names an agent or an actor."""
-
-    plain: tuple[tuple[str, str], ...]
-    pairs: tuple[tuple[str, str, str], ...]
 
 
 class ReferenceColumns:

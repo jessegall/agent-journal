@@ -14,7 +14,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import r
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.test_queue import ended, recording_launch
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_PASSED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 
 def expect_states(story, **states) -> None:

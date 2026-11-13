@@ -1,18 +1,10 @@
-from dataclasses import dataclass
 
 from engine.provider.providers import Providers
 from engine.setting.setting_values import SettingValues
 from core.modules.plans.support.plan_settings import REVIEW_MODEL_SETTING, REVIEW_MODELS
+from core.modules.plans.support.checkpoint_review_choice import CheckpointReviewChoice
 
 SONNET, EQUAL = REVIEW_MODELS
-
-
-@dataclass(frozen=True)
-class CheckpointReviewChoice:
-    """The program and the model a checkpoint review runs on."""
-
-    program: str
-    model: str
 
 
 class CheckpointReviewModel:

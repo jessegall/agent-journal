@@ -47,7 +47,7 @@ from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.suites.coding.modules.workers.quiet_helpers import StartedMerger
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_PASSED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.agents.support.report_nudges import PARENT_REPORT
 from core.modules.helpers.support.helper_nudges import HELPER_PROGRAM_FAULT
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED

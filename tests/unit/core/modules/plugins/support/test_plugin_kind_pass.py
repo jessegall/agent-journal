@@ -1,6 +1,7 @@
 from core.modules.plugins.models.enums.run_scope import RunScope
 from core.modules.plugins.support.manifest_process_kind import ManifestProcessKind
-from core.modules.plugins.support.plugin_kind_pass import KindRule, PluginKindPass
+from core.modules.plugins.support.plugin_kind_pass import PluginKindPass
+from core.modules.plugins.support.kind_rule import KindRule
 from core.modules.processes.models.process import Process
 from engine.enums.command_category import CommandCategory
 

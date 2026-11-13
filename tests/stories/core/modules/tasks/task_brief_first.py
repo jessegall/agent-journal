@@ -19,7 +19,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted, ReadTaskBuilder, UnreadTaskBuilder, BriefedTaskBuilder
 from core.modules.processes.support.process_nudges import READ_COMMAND_OUTPUT
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.tasks.support.task_nudges import TASK_BRIEF_FIRST
 
 EDIT = HookSamples.edit("src/cart.py")

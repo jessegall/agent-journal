@@ -1,7 +1,7 @@
 from core.modules.approvals.support.approval_nudges import APPROVAL_DECIDED
 from core.modules.tasks.support.task_nudges import TASK_REOPENED
 from core.modules.waits.support.wait_nudges import WAIT_ENDED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from datetime import timedelta
 
 from engine.command.bus import Bus

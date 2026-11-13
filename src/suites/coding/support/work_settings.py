@@ -2,16 +2,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass, field
 
 from suites.coding.support.work_field import WorkField
-
-
-@dataclass(frozen=True)
-class WorkPreset:
-    """One preset of the workflow controls: its name, a line about it, and the value it gives each control."""
-
-    key: str
-    name: str
-    line: str
-    values: tuple[tuple[str, bool], ...]
+from suites.coding.support.work_preset import WorkPreset
 
 
 @dataclass(frozen=True)

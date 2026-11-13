@@ -3,7 +3,7 @@ import pytest
 from tests.stories.suites.coding.modules.workers.support.held_tasks import BUILD_TASK_IDS, holding_worker
 from tests.stories.suites.coding.modules.workers.support.phase_steps import StoryWorker
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_COUNT
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.modules.workers.support.worker_settings import MOST_OPEN_TASKS
 
 LIMIT_SETTING = f"{MOST_OPEN_TASKS}"

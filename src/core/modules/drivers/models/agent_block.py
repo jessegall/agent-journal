@@ -1,4 +1,4 @@
-from engine.query.prunable import ClosedPrunable
+from engine.query.rows.prunable import ClosedPrunable
 from engine.container.container import Container
 from engine.driver.agent_hook import AgentHook
 from engine.driver.block_check import BlockCheck

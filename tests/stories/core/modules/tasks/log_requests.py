@@ -9,7 +9,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from core.modules.tasks.support.task_nudges import UNLOGGED_WRITES
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 CART_EDIT = HookSamples.edit("src/cart.py")
 CART_SEARCH = HookSamples.shell("grep -n total src/cart.py", ShellPart("grep", CommandCategory.SEARCH, ["-n", "total", "src/cart.py"]))

@@ -7,7 +7,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.documents.support.trail_fixtures import feature, scenario, viewer_answer, Scenario, TrailReady
 from tests.stories.core.support.agent_labels import agent_number
 from core.modules.messages.support.message_nudges import MESSAGE_UPDATED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.questions.support.question_nudges import QUESTION_ANSWERED
 
 

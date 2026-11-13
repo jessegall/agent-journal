@@ -1,32 +1,9 @@
-from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from collections.abc import Sequence
 
 from engine.enums.agent_role import AgentRole
 from core.modules.agents.models.agent import MAIN_NUMBER
-
-
-@dataclass(frozen=True)
-class MainRow:
-    """The fields of a main agent row that decide a fold."""
-
-    id: int
-    environment_id: int
-    number: int
-    role: str
-    ended_at: str | None
-
-    @classmethod
-    def from_row(cls, row: Mapping[str, object]) -> "MainRow":
-        return cls(int(row["id"]), int(row["environment_id"]), int(row["number"]), str(row["role"]), None if row["ended_at"] is None else str(row["ended_at"]))
-
-
-@dataclass(frozen=True)
-class EnvironmentFold:
-    """The main agent row of one environment that survives, and the main rows folded into it."""
-
-    environment_id: int
-    survivor: MainRow
-    folded: tuple[MainRow, ...]
+from core.modules.agents.support.main_row import MainRow
+from core.modules.agents.support.environment_fold import EnvironmentFold
 
 
 class MainFoldPlan:

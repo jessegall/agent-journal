@@ -18,7 +18,7 @@ from tests.stories.core.modules.processes.support.reading_scenarios import agent
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from core.modules.processes.support.process_nudges import BLOCK_LIFTED
 from core.modules.processes.support.process_nudges import HOLD_LIFTED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.processes.support.process_nudges import READER_BLOCK
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 

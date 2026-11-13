@@ -29,7 +29,7 @@ from tests.stories.core.support.agent_labels import agent_label
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 from suites.coding.modules.workers.support.worker_settings import STOPPED_WORKER_RUN_MINUTES, WORKER_RESUME_LIMIT
 from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RUN_RUNS_AFTER_STOP
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 

@@ -15,7 +15,7 @@ from server.work.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_handler, expect_poll_second, expect_value_4
 from core.modules.processes.support.process_nudges import PROCESS_MISSING
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 GROUP_END_SECONDS = 5
 

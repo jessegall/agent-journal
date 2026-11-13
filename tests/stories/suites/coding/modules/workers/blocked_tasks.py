@@ -6,7 +6,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from tests.stories.core.modules.tasks.support.holder_assignee_check import assert_holders_are_assignees
 from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_reply_line
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 

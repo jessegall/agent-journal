@@ -19,6 +19,10 @@ REASON = "Its reading is done"
 class StoredAgent(SimpleNamespace):
     """An agent row as the handler reads it, which answers a retirement with a changed copy of itself."""
 
+    @property
+    def is_main(self) -> bool:
+        return self.role == "main"
+
     def retired(self, timestamp, reason, actor_id) -> "StoredAgent":
         return StoredAgent(**{**vars(self), "retired_at": timestamp, "retirement_reason": reason, "retiring_actor_id": actor_id})
 

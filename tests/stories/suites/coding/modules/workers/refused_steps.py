@@ -9,7 +9,7 @@ from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestr
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.support.story_checks import expect_count_output_2
 from suites.coding.modules.workers.support.worker_nudges import WORKER_REFUSED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 REASON = "[plugin sample] the checks need a fix"
 

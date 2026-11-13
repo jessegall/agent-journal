@@ -6,7 +6,7 @@ from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story_fixture import StoryFixture
 from suites.coding.modules.workers.support.worker_nudges import WORKER_LIMIT_RAISED
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
-from engine.testing.expectations.expect_nudge import SaidNudge, said
+from engine.testing.expectations.said_nudge import SaidNudge, said
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from suites.coding.modules.workers.support.worker_settings import WORKER_BATCH_SIZE
 

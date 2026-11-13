@@ -24,7 +24,7 @@ from tests.stories.suites.coding.modules.workers.support.merger_launcher import 
 from tests.stories.suites.coding.modules.workers.support.phase_steps import StoryWorker, start_planned_worker
 from tests.stories.support.story_checks import expect_value, expect_value_without
 from core.modules.agents.support.report_nudges import PARENT_REPORT
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
 TEST_ROWS_REASON = "the test reads every row it checks"

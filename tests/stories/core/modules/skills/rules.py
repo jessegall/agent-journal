@@ -10,7 +10,7 @@ from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.modules.skills.due import DUE, JOURNAL_TASK_LIST, environment, expect_countdown, start, drain_countdown, start_countdown
 from tests.stories.support.story_checks import expect_value
 from core.modules.skills.support.skill_nudges import UNREAD_SKILLS
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.skills.support.start_skills import SESSION_START_KEY
 
 EDIT = HookSamples.edit("src/cart.py")

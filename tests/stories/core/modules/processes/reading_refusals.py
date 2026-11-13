@@ -5,7 +5,7 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from core.modules.processes.support.process_nudges import REDIRECTED_RUN
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 REDIRECTED_BUILD = HookSamples.shell("custom-build run > build.txt", ShellPart("custom-build", CommandCategory.BUILD, ["run"]), redirects=["> build.txt"])
 REDIRECT_EXIT = said(REDIRECTED_RUN, programs='custom-build')

@@ -1,7 +1,7 @@
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.modules.memories.support.memory_nudges import START_MEMORIES
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 SESSION_START = HookSamples.session_start()
 

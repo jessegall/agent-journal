@@ -4,7 +4,7 @@ from engine.log.exception_sink import ExceptionSink
 from core.modules.developer.support.developer_settings import TOOLS_SETTING
 from tests.stories.core.support.fixtures import UserJoined
 from core.modules.developer.support.developer_nudges import EXCEPTION_LINE
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 LINES = "agent-line list --agent {agent}"
 

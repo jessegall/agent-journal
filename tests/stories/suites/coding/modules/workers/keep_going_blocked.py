@@ -9,7 +9,7 @@ from tests.stories.suites.coding.modules.workers.gone_workers import RESUMED_PID
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.modules.workers.support.worker_nudges import BLOCKED_WORKER_TASK
 
 __all__ = ["missing_program", "running_worker", "worker_story"]

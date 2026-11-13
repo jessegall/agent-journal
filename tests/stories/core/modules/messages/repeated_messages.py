@@ -8,7 +8,7 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value
 from core.modules.messages.support.message_nudges import REPEATED_CLOSING
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 FIRST = "Merges are blocked until you accept approval card 15 or switch Auto on"
 REWORDED = "Merges stay blocked until you accept approval card 15 or turn Auto on"

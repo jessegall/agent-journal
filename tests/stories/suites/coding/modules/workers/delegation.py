@@ -26,7 +26,7 @@ from engine.testing.expectations.expect_reply import expect_absent_reply_refusal
 from tests.stories.support.story_checks import expect_value
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_AFTER_REASSIGNED
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_REASSIGNED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.modules.workers.support.worker_nudges import WORKER_COMMENT_COPY
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_COMMENT
 from suites.coding.support.shipped_profiles import WORKER_MEDIOR_PROFILE

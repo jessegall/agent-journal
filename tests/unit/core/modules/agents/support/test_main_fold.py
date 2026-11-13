@@ -4,7 +4,7 @@ from types import SimpleNamespace
 import pytest
 
 from core.modules.agents.support.main_fold import MainFold
-from core.modules.agents.support.main_fold_plan import EnvironmentFold
+from core.modules.agents.support.environment_fold import EnvironmentFold
 from engine.database.database import Database
 from engine.errors.refusal import Refusal
 

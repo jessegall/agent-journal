@@ -9,7 +9,7 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from suites.coding.support.full_run_nudges import TESTING_TASKS_FAILED_RUN
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 SUITE_SAMPLE = HookSamples.shell("pytest tests", ShellPart("pytest", CommandCategory.TEST_RUN, ["tests"], is_full_test_run=True))
 CART_SAMPLE = HookSamples.shell("pytest tests/cart.py", ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/cart.py"]))

@@ -12,7 +12,7 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.read_limit import READ_LIMIT_ROWS, limit_reads
 from tests.stories.core.modules.messages.reply_teaching import READ_MESSAGE, VIEW_LINE, ReplySession, journal_line, listeners_run_at_hook  # noqa: F401
 from core.modules.messages.support.message_nudges import UNANSWERED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.messages.support.message_nudges import UNANSWERED_REFUSAL
 
 HELPER_SESSION = "s-2"

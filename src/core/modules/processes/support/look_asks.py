@@ -1,20 +1,8 @@
-from dataclasses import dataclass
 
 from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.look_state import LookState
 
 LOOK_FILE = "look"
-
-
-@dataclass(frozen=True)
-class LookState:
-    """The asks of a run that its agent has not answered, and the moment of the last ask or, when none is
-    unanswered, of the last answer; zero for a run never asked."""
-
-    unanswered: int
-    ask_seconds: float
-
-    def waited_enough(self, clock_seconds: float, hang_seconds: int, look_seconds: int) -> bool:
-        return clock_seconds - self.ask_seconds >= (hang_seconds if self.unanswered else look_seconds)
 
 
 class LookAsks:

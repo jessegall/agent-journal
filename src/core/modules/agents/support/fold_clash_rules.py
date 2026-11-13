@@ -1,18 +1,9 @@
-from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from collections.abc import Callable, Sequence
 
 from engine.errors.refusal import Refusal
+from core.modules.agents.support.settled_clash import SettledClash
+from core.modules.agents.support.settled_clash import Row
 
-Row = Mapping[str, object]
-
-
-@dataclass(frozen=True)
-class SettledClash:
-    """The row a clash keeps and the rows it removes, with the name of the rule that chose."""
-
-    kept: Row
-    removed: tuple[Row, ...]
-    rule: str
 
 
 def newest(rows: Sequence[Row], survivor_id: int, agent_column: str) -> Row:

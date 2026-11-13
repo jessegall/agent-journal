@@ -9,7 +9,8 @@ from engine.setting.setting_rule_text import SettingRuleText
 from core.modules.settings.commands.apply_setting_screen.apply_setting_screen import ApplySettingScreen
 from core.modules.settings.commands.apply_setting_screen.apply_setting_screen_handler import ApplySettingScreenHandler
 from core.modules.settings.support.setting_changes import SettingChanges
-from core.modules.settings.support.setting_screen import ScreenNode, ScreenReading
+from core.modules.settings.support.screen_reading import ScreenReading
+from core.modules.settings.support.screen_node import ScreenNode
 
 CONTEXT = SimpleNamespace(environment_id=1)
 

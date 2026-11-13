@@ -43,9 +43,9 @@ from server.context.server_context import ServerContext
 from server.hook.hook_database import HookDatabase
 from server.enums.queue_priority import QueuePriority
 from server.work.journal_round import JournalRound
-from server.work.listener_thread import ListenerThread
-from server.work.listener_wake import ListenerWake
-from server.work.listener_work import ListenerWork
+from server.work.listeners.listener_thread import ListenerThread
+from server.work.listeners.listener_wake import ListenerWake
+from server.work.listeners.listener_work import ListenerWork
 from server.request.request_handler import EXIT_CODE_TRAILER, RequestHandler
 from engine.serving.server_files import ServerFiles
 from server.viewer.viewer_endpoint import ViewerEndpoint

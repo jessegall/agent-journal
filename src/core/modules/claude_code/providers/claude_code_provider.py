@@ -25,7 +25,8 @@ from engine.enums.model_tier import ModelTier
 from engine.provider.transcript_author import AGENT_AUTHOR, TRANSCRIPT_AUTHORS, USER_AUTHOR, TranscriptAuthor
 from engine.provider.program_hooks import ProgramHooks
 from engine.provider.managed_hook import ManagedHook
-from engine.provider.program_settings import ProgramSettings, SettingsFile
+from engine.provider.program_settings import ProgramSettings
+from engine.provider.settings_file import SettingsFile
 from engine.provider.program_folders import ProgramFolders
 from engine.provider.program_model import ProgramModel
 from engine.provider.control_choice import ControlChoice

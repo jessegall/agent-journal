@@ -11,7 +11,8 @@ from engine.file.file_lock import FileLock
 from engine.file.kept_bytes import KeptBytes
 from engine.file.private_folders import PrivateFolders
 from engine.journal.journal_home import JournalHome
-from engine.provider.program_settings import ProgramSettings, SettingsFile
+from engine.provider.program_settings import ProgramSettings
+from engine.provider.settings_file import SettingsFile
 from engine.types.type_guards import is_mapping
 
 DIGESTS_MODE = 0o600

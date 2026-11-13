@@ -4,7 +4,8 @@ from engine.errors.refusal import Refusal
 from core.modules.settings.commands.apply_setting_screen.apply_setting_screen import ApplySettingScreen
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 from core.modules.settings.support.setting_changes import SettingChanges
-from core.modules.settings.support.setting_screen import ScreenReading, SettingScreen
+from core.modules.settings.support.setting_screen import SettingScreen
+from core.modules.settings.support.screen_reading import ScreenReading
 
 
 class ApplySettingScreenHandler(Handler[ApplySettingScreen, ScreenReading]):

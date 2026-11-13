@@ -10,7 +10,7 @@ from tests.stories.suites.coding.modules.workers.merger_cases import case  # noq
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting
 from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.support.worker_settings import MERGER_GROUP_MESSAGE_LIMIT
 from suites.coding.modules.workers.support.worker_settings import QUESTION_ANSWER_MINUTES

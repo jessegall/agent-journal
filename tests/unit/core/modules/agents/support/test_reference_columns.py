@@ -1,6 +1,6 @@
 import pytest
 
-from engine.database.schema_columns import SchemaColumn
+from engine.database.schema_column import SchemaColumn
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.reference_columns import ReferenceColumns
 

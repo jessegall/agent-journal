@@ -11,7 +11,8 @@ from suites.coding.modules.workers.support.coding_main_options import CONTROL_KE
 from suites.coding.support.main_options import PRESET_LINES, PRESETS
 from suites.coding.modules.workers.support.work_catalogue import EDITABLE_KEYS, GROUPS, FIELD_BADGES, FIELD_CHOICES
 from suites.coding.support.work_field import WorkField
-from suites.coding.support.work_settings import WorkPreset, WorkSettings
+from suites.coding.support.work_settings import WorkSettings
+from suites.coding.support.work_preset import WorkPreset
 
 
 class WorkControls:

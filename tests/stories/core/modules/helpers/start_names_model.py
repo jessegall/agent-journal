@@ -5,7 +5,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.modules.helpers.support.helper_nudges import START_WITHOUT_MODEL
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 REFUSAL = said(START_WITHOUT_MODEL)

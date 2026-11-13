@@ -1,4 +1,4 @@
-from engine.testing.expectations.expect_nudge import SaidNudge
+from engine.testing.expectations.said_nudge import SaidNudge
 
 ExpectedText = str | SaidNudge
 

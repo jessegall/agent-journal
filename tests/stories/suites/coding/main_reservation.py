@@ -10,7 +10,7 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import plan
 from tests.stories.suites.coding.support.main_controls_fixture import scope_line
 from tests.stories.support.story_checks import expect_value
 from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.support.coding_settings import WRITES_CODE_SETTING
 
 WRITES_CODE = f"{WRITES_CODE_SETTING}"

@@ -11,7 +11,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, prove_task
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, start_planned_worker, unplanned_worker
 from suites.coding.modules.workers.support.worker_nudges import WORKER_COMMITTED_UNMERGED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 COMMITTED = "committed"
 BUILD_TASKS = 3

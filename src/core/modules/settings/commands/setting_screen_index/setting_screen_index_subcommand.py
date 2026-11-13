@@ -3,7 +3,8 @@ from argparse import Namespace
 from engine.caller.caller import Caller
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
-from core.modules.settings.support.setting_screen import ScreenIndexEntry, SettingScreen
+from core.modules.settings.support.setting_screen import SettingScreen
+from core.modules.settings.support.screen_index_entry import ScreenIndexEntry
 
 
 class SettingScreenIndexSubcommand(ReadSubcommand[tuple[ScreenIndexEntry, ...]]):

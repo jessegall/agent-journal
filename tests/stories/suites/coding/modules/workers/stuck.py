@@ -26,7 +26,7 @@ from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_ENDED_WITH_TASKS
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RESTARTED
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 

@@ -9,7 +9,7 @@ from tests.stories.engine.driver.support.fixtures import LeadStarted
 from tests.stories.engine.driver.support.samples import REMOVAL, SAMPLES
 from engine.testing.expectations.expect_reply import expect_absent_reply_line, expect_reply_line, expect_reply_refusal
 from core.modules.drivers.support.driver_nudges import MANAGED_HOOK_REFUSAL
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 LISTING = HookSamples.shell("ls build", ShellPart("ls", CommandCategory.SEARCH, ["build"], effects=[CommandEffect.READS_FILES]))
 
 

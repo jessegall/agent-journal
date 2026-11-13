@@ -29,7 +29,7 @@ from engine.driver.errors.hook_event_error import HookEventError
 from engine.provider.errors.unknown_program_error import UnknownProgramError
 from server.work.server_instance import server_instance
 from server.request.journal_server import JournalServer
-from server.work.listener_wake import ListenerWake
+from server.work.listeners.listener_wake import ListenerWake
 from server.door.socket_peer import socket_peer
 from server.handover.successor_start import SuccessorStart
 

@@ -43,7 +43,8 @@ from core.modules.codex.providers.support.codex_event import CodexEvent
 from core.modules.codex.providers.support.codex_trust import CodexTrust
 from core.modules.codex.providers.support.codex_journal_config import CodexJournalConfig
 from engine.provider.managed_hook import ManagedHook
-from engine.provider.program_settings import ProgramSettings, SettingsFile
+from engine.provider.program_settings import ProgramSettings
+from engine.provider.settings_file import SettingsFile
 from core.modules.codex.models.enums.codex_hook_event import CodexHookEvent
 from engine.journal.journal_home import JOURNAL_FOLDER
 

@@ -11,7 +11,7 @@ from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper
 from tests.stories.core.modules.helpers.helper_reports import stop_with_report
 from tests.stories.core.support.agent_labels import agent_number
 from core.modules.agents.support.report_nudges import PARENT_REPORT
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 PROGRAM_RUNS = b"running\n"
 ENDED = "ended_at: 20"

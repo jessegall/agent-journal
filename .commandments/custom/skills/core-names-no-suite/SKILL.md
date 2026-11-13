@@ -47,7 +47,8 @@ These files may name the words, each for its reason:
   `src/engine/instruction/instruction_imports.py`, `src/engine/checkout/checkout.py`, `src/engine/enums/checkout_type.py`,
   `src/engine/enums/window_icon.py`, `src/core/modules/plugins/` (a plugin is fetched and compared with git),
   `developer/support/private_data_pass.py`, `secrets/support/secret_programs.py` (git as a program that needs a
-  login), `src/core/modules/voices/` (the git user name).
+  login), `src/core/modules/voices/` (the git user name), `pins/support/project_repositories.py` (the remotes
+  in the git config name the repository whose pull requests are pinned).
 - Pytest of the journal's own stories: `src/engine/testing/`, `src/engine/journal/journal.py`,
   `src/engine/database/repeated_work.py`, `src/engine/module/code_fingerprint.py`.
 

@@ -9,7 +9,7 @@ from engine.testing.stories.helper_started import HelperStarted
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from engine.testing.expectations.expect_reply import expect_reply_line
 from core.modules.tasks.support.task_nudges import TASK_RETURN
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.tasks.support.task_nudges import CURRENT_TASK
 def posted(line):
     sample = HookSamples.shell(line, ShellPart("journal", CommandCategory.JOURNAL, line.split()[1:], subcommand=line.split()[1]))

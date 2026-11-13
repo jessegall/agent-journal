@@ -8,7 +8,7 @@ from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.fixtures import UserJoined
 from core.modules.developer.support.developer_nudges import EXCEPTION_LINE
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 from core.modules.developer.support.developer_settings import EXCEPTION_LINES_SETTING
 from core.modules.developer.support.developer_settings import SLOW_TICKS_SETTING
 

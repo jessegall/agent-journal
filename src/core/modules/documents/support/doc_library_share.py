@@ -1,16 +1,10 @@
-from typing import TypedDict
 
 from engine.command.context import Context
 from engine.library.library_share import Fields, LibraryShare
 from engine.repository.repository import Repository
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.support.doc_revisions import DocRevisions
-
-
-class DocText(TypedDict):
-    title: str
-    abstract: str
-    body: str
+from core.modules.documents.support.doc_text import DocText
 
 
 class DocLibraryShare(LibraryShare[Doc]):

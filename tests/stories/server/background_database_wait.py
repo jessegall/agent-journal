@@ -7,7 +7,7 @@ import pytest
 from engine.database.listener_cursor_table import ListenerCursorTable
 from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from server.work.journal_round import JournalRound
-from server.work.ordinary_listener_work import OrdinaryListenerWork
+from server.work.listeners.ordinary_listener_work import OrdinaryListenerWork
 from server.work.round_work import RoundWork
 from tests.stories.core.support.fixtures import UserJoined
 

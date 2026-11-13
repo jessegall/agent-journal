@@ -6,7 +6,7 @@ from tests.stories.core.modules.processes.support.process_samples import moved_r
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_value
 from core.modules.processes.support.process_nudges import OUTPUT_TIMEOUT
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 KEPT = "its output is kept"
 

@@ -5,7 +5,7 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_value
 from core.modules.aliases.support.alias_nudges import COMMAND_TYPE_UNKNOWN
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 UNKNOWN_RUN = HookSamples.shell("scripts/dev go test ./cli/judge/", ShellPart("scripts/dev", "unknown", ["go", "test", "./cli/judge/"]), has_saved_commands=True)
 

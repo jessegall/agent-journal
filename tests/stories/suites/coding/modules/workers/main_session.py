@@ -8,7 +8,7 @@ from tests.stories.suites.coding.modules.workers.report import REPORT, MergerOff
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, repository_environment, worker_session
 from core.modules.agents.support.report_nudges import PARENT_REPORT
 from suites.coding.modules.workers.support.worker_nudges import WORKER_COMMENT_COPY
-from engine.testing.expectations.expect_nudge import said
+from engine.testing.expectations.said_nudge import said
 
 
 @pytest.fixture

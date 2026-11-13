@@ -1,5 +1,4 @@
 from collections.abc import Iterable
-from dataclasses import dataclass
 
 from engine.errors.refusal import Refusal
 from engine.query.conditions.among import Among
@@ -12,23 +11,12 @@ from core.modules.plans.models.plan_wait import PlanWait
 from core.modules.tasks.models.enums.task_state import UNFINISHED_STATES
 from core.modules.tasks.models.task_dependency import TaskDependency
 from core.modules.tasks.models.task_wait import TaskWait
+from core.modules.plans.support.wait_node import WaitNode
 
 WAITS_REASON = "a circle is found only by following every wait of the tasks and plans reached"
 TASK = "task"
 PLAN = "plan"
 TARGET_TYPES = {"tasks": TASK, "plans": PLAN}
-
-
-@dataclass(frozen=True)
-class WaitNode:
-    """A task or a plan in the waits that hold work back."""
-
-    node_type: str
-    row_id: int
-
-    @property
-    def text(self) -> str:
-        return f"{self.node_type} {self.row_id}"
 
 
 class WaitCircle:
