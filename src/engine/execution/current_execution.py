@@ -11,15 +11,15 @@ class CurrentExecution:
     """Who asks for the write turn: the priority it waits with, the class of what runs and its line."""
 
     priority: ExecutionPriority
-    class_name: str
-    line: str
+    class_name: str | None = None
+    line: str | None = None
 
     @classmethod
     def read(cls) -> "CurrentExecution":
         return CURRENT_EXECUTION.get()
 
     @contextmanager
-    def held(self) -> Generator["CurrentExecution"]:
+    def applied(self) -> Generator["CurrentExecution"]:
         token = CURRENT_EXECUTION.set(self)
         try:
             yield self
@@ -27,5 +27,5 @@ class CurrentExecution:
             CURRENT_EXECUTION.reset(token)
 
 
-BACKGROUND_EXECUTION = CurrentExecution(ExecutionPriority.BACKGROUND, "", "")
+BACKGROUND_EXECUTION = CurrentExecution(ExecutionPriority.BACKGROUND)
 CURRENT_EXECUTION: ContextVar[CurrentExecution] = ContextVar("current_execution", default=BACKGROUND_EXECUTION)

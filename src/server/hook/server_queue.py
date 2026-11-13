@@ -68,7 +68,7 @@ class ServerQueue(RequestQueue):
                 del self.waiting_cli[number]
                 self.running_cli += 1
             try:
-                with self.observing(request), CurrentExecution(ExecutionPriority.NORMAL, "command", request.event).held():
+                with self.observing(request), CurrentExecution(ExecutionPriority.NORMAL, "command", request.event).applied():
                     yield
             finally:
                 with self.changed:
@@ -98,7 +98,7 @@ class ServerQueue(RequestQueue):
         place = (priority, next(self.arrivals), owner)
         self.start_hook(place, wait_seconds, request)
         try:
-            with CurrentExecution(priority.execution_priority, "hook", request.event).held():
+            with CurrentExecution(priority.execution_priority, "hook", request.event).applied():
                 yield
         finally:
             with self.changed:
@@ -147,7 +147,7 @@ class ServerQueue(RequestQueue):
                 self.running_requests[number] = request.entry()
                 self.running_viewers += 1
             try:
-                with CurrentExecution(priority.execution_priority, "viewer", line).held():
+                with CurrentExecution(priority.execution_priority, "viewer", line).applied():
                     yield
             finally:
                 with self.changed:

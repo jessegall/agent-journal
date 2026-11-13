@@ -70,7 +70,7 @@ from server.execution.write_turn_queue import WriteTurnQueue
 from server.work.journal_round import background_container
 
 # how long a write waits for the database's write turn before it is refused with the holder named
-WRITE_TURN_WAIT_SECONDS = 30.0
+WRITE_TURN_LIMIT_SECONDS = 30.0
 
 MAX_OPEN_FILES = 10240
 
@@ -141,7 +141,7 @@ def main(argv: list[str]) -> int:
     else:
         files.log_line("another server holds the lock; this one exits")
         return SECOND_SERVER_CODE
-    turns = WriteTurnQueue(clock, WRITE_TURN_WAIT_SECONDS, lambda line: files.log_line(line, LogLevel.WARNING))
+    turns = WriteTurnQueue(clock, WRITE_TURN_LIMIT_SECONDS, lambda slow_turn_text: files.log_line(slow_turn_text, LogLevel.WARNING))
     hook_database = HookDatabase(home, turns)
     round_container = partial(background_container, turns=turns)
     urgent_round = JournalRound(home, "urgent listener thread", UrgentListenerWork(), queue=hook_database.queue, container=round_container)
