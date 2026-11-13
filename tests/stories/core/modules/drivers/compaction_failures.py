@@ -12,7 +12,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.drivers.compaction_askers import SHELL_WINDOW, control
 from tests.stories.core.modules.drivers.context_compactions import compactions
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.compaction_never_twice import MissingLauncherTyping, compacted, expect_compaction_count, age_context_past_compaction
+from tests.stories.suites.coding.modules.workers.compaction_never_twice import MissingLauncherTyping, compacted, expect_compaction_count, backdate_context
 from tests.stories.suites.coding.modules.workers.context_limit import LIMIT_TOKENS, PRE_COMPACT, SESSION, LimitEnabled, has_context, stops, typing_recorded
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 from core.modules.drivers.support.driver_nudges import COMPACTION_NOTICE
@@ -92,7 +92,7 @@ def test_f2_a_missing_launcher_fails_the_request_with_its_cause_and_the_person_i
 
 def test_f3_a_compaction_whose_size_is_never_reported_is_told_once_and_asks_for_no_second_compaction(limited):
     compacted(limited, "manual")
-    age_context_past_compaction(limited, LIMIT_TOKENS)
+    backdate_context(limited, LIMIT_TOKENS)
     limited.advance(FAULT_WAIT)
     limited.hook(SESSION, HookSamples.prompt("go on"))
     faults_reported(limited)

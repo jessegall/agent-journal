@@ -8,7 +8,7 @@ from datetime import timedelta
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.drivers.context_compactions import compactions
-from tests.stories.suites.coding.modules.workers.compaction_never_twice import age_context_past_compaction
+from tests.stories.suites.coding.modules.workers.compaction_never_twice import backdate_context
 from tests.stories.suites.coding.modules.workers.context_limit import CLEAR_START, LIMIT_TOKENS, SESSION, LimitEnabled, has_context, set_value, stops, typing_recorded
 
 SMALL_CONTEXT = 20_000
@@ -41,7 +41,7 @@ def test_c5_a_clear_at_a_stop_is_one_row_that_ends_at_its_session_start_wakes_th
     requested = rows(clearing)
     clearing.hook(SESSION, CLEAR_START)
     clearing.run_listeners()
-    age_context_past_compaction(clearing, LIMIT_TOKENS)
+    backdate_context(clearing, LIMIT_TOKENS)
     stops(clearing)
     clearing.advance(WAKE_WAIT)
     clearing.tick(SESSION)

@@ -27,11 +27,10 @@ class UpdateWorkerHandler(Handler[UpdateWorker, UpdateOutcome]):
 
     command = UpdateWorker
     disabled_scopes = [ActorScope]
+    update: WorktreeUpdate
 
     def __init__(self, worktrees: WorktreeQuery, git: WorktreeGit, environments: EnvironmentRows, repository: Repository, queries: Queries, closing: BehindCheckClosing, bus: Bus) -> None:
         self.worktrees, self.git, self.environments, self.repository, self.queries, self.closing, self.bus = worktrees, git, environments, repository, queries, closing, bus
-        self.update = WorktreeUpdate("")
-        self.result = UpdateResult.CURRENT
 
     def prepare(self, command: UpdateWorker, actor: Actor) -> None:
         worktree = self.worktrees.required_worker_worktree(actor.id)
@@ -40,8 +39,7 @@ class UpdateWorkerHandler(Handler[UpdateWorker, UpdateOutcome]):
         except Refusal as refusal:
             self.bus.run(RecordFailedUpdate(actor.id, refusal.text), actor, environment_id=worktree.environment_id)
             raise
-        self.result = self.classified(self.update)
-        if self.result is UpdateResult.UPDATED:
+        if self.classified(self.update) is UpdateResult.UPDATED:
             self.git.rebuild(worktree, self.environments.find(worktree.environment_id).folder)
 
     @staticmethod
@@ -52,13 +50,14 @@ class UpdateWorkerHandler(Handler[UpdateWorker, UpdateOutcome]):
 
     def handle(self, command: UpdateWorker, context: Context) -> UpdateOutcome:
         worktree = self.worktrees.required_worker_worktree(context.actor.id)
+        result = self.classified(self.update)
         if self.update.base_commit and self.update.base_commit != worktree.base_commit:
             self.repository.save_change(worktree, worktree.updated(self.update.base_commit), context)
-        if self.result is UpdateResult.CONFLICTS:
+        if result is UpdateResult.CONFLICTS:
             self.closing.conflicted(worktree, context)
         else:
             self.closing.close_updated(worktree, context)
         operation = self.queries.query(WorkerOperation).filter(worker_id=context.actor.id, process_id=command.process_id).first() if command.process_id is not None else None
         if operation is not None:
-            self.repository.update(operation, context, update_outcome=self.result)
-        return UpdateOutcome(worktree.base_branch, self.update, self.result)
+            self.repository.update(operation, context, update_outcome=result)
+        return UpdateOutcome(worktree.base_branch, self.update, result)

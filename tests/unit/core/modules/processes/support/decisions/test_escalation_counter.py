@@ -26,14 +26,14 @@ class DecisionSample:
     command_key: str
     state: ReaderState
     decided_at: Timestamp
-    moment: ReadingPhase = ReadingPhase.END
+    phase: ReadingPhase = ReadingPhase.END
 
 
 @dataclass
 class DecisionsSample:
     rows: list[DecisionSample]
     keys: tuple[object, ...] = ()
-    moment: ReadingPhase | None = None
+    phase: ReadingPhase | None = None
 
     def matching(self, condition: Among) -> "DecisionsSample":
         return DecisionsSample(self.rows, tuple(condition.values))
@@ -45,7 +45,7 @@ class DecisionsSample:
         return self
 
     def take(self, size: int) -> list[DecisionSample]:
-        matching = [row for row in self.rows if row.command_key in self.keys and row.moment is self.moment]
+        matching = [row for row in self.rows if row.command_key in self.keys and row.phase is self.phase]
         return sorted(matching, key=lambda row: row.decided_at, reverse=True)[:size]
 
 
@@ -59,11 +59,11 @@ class ReadersSample:
 
 @dataclass
 class ResetsSample(EscalationResets):
-    marked_at: dict[str, Timestamp] = field(default_factory=dict)
+    flagged_at: dict[str, Timestamp] = field(default_factory=dict)
     skipped_at: dict[str, Timestamp] = field(default_factory=dict)
 
     def last_flagged_among(self, command_keys: Sequence[str]) -> dict[str, Timestamp | None]:
-        return {key: self.marked_at.get(key) for key in command_keys}
+        return {key: self.flagged_at.get(key) for key in command_keys}
 
     def skipped_after(self, command_key: str, timestamp: Timestamp) -> bool:
         return command_key in self.skipped_at and self.skipped_at[command_key] > timestamp
@@ -93,7 +93,7 @@ def test_a_reader_saved_after_a_run_resets_the_count():
 
 
 def test_a_mark_that_the_output_cannot_be_read_resets_the_count():
-    resets = ResetsSample(marked_at={"make build": Timestamp(START + timedelta(minutes=1, seconds=30))})
+    resets = ResetsSample(flagged_at={"make build": Timestamp(START + timedelta(minutes=1, seconds=30))})
     assert counter(missing_runs("make build", 3), resets=resets).runs_without_change(["make build"])["make build"] == 2
 
 

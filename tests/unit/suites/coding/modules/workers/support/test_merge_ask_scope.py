@@ -108,9 +108,9 @@ def run(state: CheckpointState) -> tuple[WorktreeReach, CheckpointReach]:
     return WorktreeReach(reach_id=4, worktree_id=5, phase_id=3, commit_id="9b1e0d2"), reach
 
 
-def refusal_of(checked_scope: MergeAskScope, note: str = "the cart", up_to: str = "") -> str:
+def refusal_of(checked_scope: MergeAskScope, note: str = "the cart", last_task: str = "") -> str:
     with pytest.raises(Refusal) as refused:
-        checked_scope.checked(1, note, up_to)
+        checked_scope.checked(1, note, last_task)
     return str(refused.value)
 
 
@@ -160,12 +160,12 @@ def test_an_ask_up_to_a_task_carries_every_earlier_commit():
 
 
 def test_an_ask_up_to_an_uncommitted_task_is_refused():
-    assert "task 9 is not committed in your worktree" in refusal_of(scope(), up_to="9")
+    assert "task 9 is not committed in your worktree" in refusal_of(scope(), last_task="9")
 
 
 def test_an_ask_up_to_a_commit_off_the_branch_is_refused():
-    assert "commit ffff123 is not on your branch" in refusal_of(scope(), up_to="ffff123")
+    assert "commit ffff123 is not on your branch" in refusal_of(scope(), last_task="ffff123")
 
 
 def test_an_ask_over_a_part_whose_run_is_open_is_refused():
-    assert "run on your commit" in refusal_of(scope(blocking=run(CheckpointState.RUNNING)), up_to="7")
+    assert "run on your commit" in refusal_of(scope(blocking=run(CheckpointState.RUNNING)), last_task="7")

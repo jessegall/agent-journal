@@ -6,11 +6,11 @@ class Join:
     """One table a read joins, on a comparison of two columns, kept by an inner join or by a left join."""
 
     table: str
-    left: bool
+    is_outer: bool
     first: str
     operator: str
     second: str
 
     @property
     def sql(self) -> str:
-        return f"{'LEFT JOIN' if self.left else 'JOIN'} {self.table} ON {self.first} {self.operator} {self.second}"
+        return f"{'LEFT JOIN' if self.is_outer else 'JOIN'} {self.table} ON {self.first} {self.operator} {self.second}"

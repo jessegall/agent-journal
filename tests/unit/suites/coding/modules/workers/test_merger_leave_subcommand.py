@@ -9,7 +9,7 @@ from suites.coding.modules.workers.commands.decide_behind_check.leave_worker_beh
 from suites.coding.modules.workers.commands.decide_behind_check.leave_worker_behind_handler import LeaveWorkerBehindHandler
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState as State
 from suites.coding.modules.workers.support.behind_decisions import BehindDecisions
-from tests.unit.suites.coding.modules.workers.test_merger_update_subcommand import MAIN, MERGER, OTHER, WORKER, Agents, Checks, Numbers, Repository, Visits, Worktrees
+from tests.unit.suites.coding.modules.workers.test_merger_update_subcommand import MAIN, MERGER, OUTSIDER_ID, WORKER, Agents, Checks, Numbers, Repository, Visits, Worktrees
 
 
 def ignoring_actor(actor_id: int, checks: Checks, worktrees: Worktrees | None = None) -> tuple[Repository, Visits]:
@@ -27,7 +27,7 @@ def test_leaving_closes_the_check_as_left_with_the_reason_and_closes_the_visit()
 def test_the_main_agent_may_leave_a_passed_check_and_another_agent_is_refused():
     assert ignoring_actor(MAIN, Checks(State.PASSED))[0].saved[0].state is State.IGNORED
     with pytest.raises(Refusal, match="only the merger or the main agent"):
-        ignoring_actor(OTHER, Checks(State.OPEN))
+        ignoring_actor(OUTSIDER_ID, Checks(State.OPEN))
 
 
 @pytest.mark.parametrize("checks, worktrees, refusal", [(Checks(State.ORDERED), None, "no open check for this worker"), (Checks(State.IGNORED), None, "no open check for this worker"),

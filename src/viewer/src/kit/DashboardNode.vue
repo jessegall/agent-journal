@@ -7,25 +7,23 @@ import DashboardGroup from "./DashboardGroup.vue";
 import DashboardList from "./DashboardList.vue";
 import DataTable from "./DataTable.vue";
 import StatTile from "./StatTile.vue";
+import {computed} from "vue";
 import SwitchCase from "./SwitchCase.vue";
 import TextDisplay from "./TextDisplay.vue";
 
 defineOptions({name: "DashboardNode"});
-defineProps({node: {type: Object, required: true}});
+const props = defineProps({node: {type: Object, required: true}});
+// A stack, a row and a grid are all laid out by DashboardGroup.
+const GROUP_TYPES = ["stack", "row", "grid"];
+const shown = computed(() => (GROUP_TYPES.includes(props.node.type) ? "group" : props.node.type));
 const emit = defineEmits(["open", "file"]);
 const open = (page) => emit("open", page);
 const file = (node) => emit("file", node);
 </script>
 
 <template>
-    <SwitchCase :value="node.type">
-        <template #stack>
-            <DashboardGroup :node="node" @open="open" @file="file" />
-        </template>
-        <template #row>
-            <DashboardGroup :node="node" @open="open" @file="file" />
-        </template>
-        <template #grid>
+    <SwitchCase :value="shown">
+        <template #group>
             <DashboardGroup :node="node" @open="open" @file="file" />
         </template>
         <template #card>

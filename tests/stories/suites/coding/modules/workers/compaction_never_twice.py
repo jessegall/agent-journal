@@ -16,7 +16,7 @@ OVERLONG = timedelta(seconds=601)
 EDITED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")
 STATUS_FILE_AGE = timedelta(seconds=60)
 GROWTH_TOKENS = LIMIT_TOKENS // 10
-TOKENS_OVER_LIMIT = LIMIT_TOKENS + 50_000
+EXCESS_TOKENS = LIMIT_TOKENS + 50_000
 STOPS_WITHOUT_LAUNCHER = 5
 WAITING_IN_THE_PROGRAM = timedelta(seconds=20)
 RETRY_DUE = timedelta(seconds=181)
@@ -107,7 +107,7 @@ def modified_at_story_time(story, point=None):
     os.utime(story.home.status_folder / f"{SESSION}.json", (seconds, seconds))
 
 
-def age_context_past_compaction(story, tokens):
+def backdate_context(story, tokens):
     """A reading the program wrote before the compaction ended, and has not rewritten since."""
     has_context(story, tokens)
     modified_at_story_time(story, story.clock.timestamp().value - STATUS_FILE_AGE)
@@ -155,7 +155,7 @@ def test_a_later_stop_types_the_compaction_a_second_time_only_after_three_minute
 @pytest.mark.parametrize("compaction", [AutoCompacted, ManualCompacted], ids=["b2-e4-by-the-program", "b3-by-a-person"])
 def test_a_stop_after_a_compaction_with_the_old_reading_types_nothing(new_story, compaction):
     agent = typing_recorded(new_story(fixture=compaction))
-    age_context_past_compaction(agent, LIMIT_TOKENS)
+    backdate_context(agent, LIMIT_TOKENS)
     agent.hook(SESSION, HookSamples.prompt("check the cart"))
     agent.hook(SESSION, HookSamples.stop())
     expect_compaction_count(agent, 0)
@@ -174,7 +174,7 @@ def test_b4_a_tool_past_the_second_limit_after_the_stops_compaction_is_allowed_a
 
 def test_b6_the_first_tool_after_the_wake_sees_the_old_number_and_is_allowed_with_nothing_typed(new_story):
     agent = typing_recorded(new_story(fixture=HardAutoCompacted))
-    age_context_past_compaction(agent, HARD)
+    backdate_context(agent, HARD)
     agent.advance(timedelta(seconds=40))
     agent.tick(SESSION)
     agent.expect_hook_allowed(SESSION, HookSamples.edit("src/cart.py"))
@@ -183,7 +183,7 @@ def test_b6_the_first_tool_after_the_wake_sees_the_old_number_and_is_allowed_wit
 
 def test_b7_the_stop_now_nudge_is_not_said_after_a_compaction_while_the_number_is_old(new_story):
     agent = typing_recorded(new_story(fixture=AutoCompacted))
-    age_context_past_compaction(agent, LIMIT_TOKENS)
+    backdate_context(agent, LIMIT_TOKENS)
     reply = agent.hook(SESSION, HookSamples.sample("post_tool_use"))
     agent.expect_rows(not any("stop now" in line for line in reply.lines), detail=str(reply.lines))
 
@@ -198,14 +198,14 @@ def test_b8_a_memory_mark_does_not_open_at_the_old_percent_after_a_compaction(ne
 
 def test_c8_a_post_tool_use_while_the_reading_is_unsettled_says_no_stop_now_and_opens_no_mark(new_story):
     story = typing_recorded(new_story(fixture=CompactedLimitedMemory))
-    age_context_past_compaction(story, LIMIT_TOKENS)
+    backdate_context(story, LIMIT_TOKENS)
     reply = story.hook(SESSION, EDITED)
     story.expect_rows(not any("stop now" in line or "tool uses to weigh" in line for line in reply.lines), detail=str(reply.lines))
 
 
 def test_a_reading_the_program_rewrote_after_the_compaction_ended_counts_and_the_limit_applies_to_that_number(new_story):
     agent = typing_recorded(new_story(fixture=AutoCompacted))
-    age_context_past_compaction(agent, TOKENS_OVER_LIMIT)
+    backdate_context(agent, EXCESS_TOKENS)
     agent.expect_hook_allowed(SESSION, HookSamples.edit("src/cart.py"))
     expect_compaction_count(agent, 0)
     agent.advance(STATUS_FILE_AGE)
@@ -213,7 +213,7 @@ def test_a_reading_the_program_rewrote_after_the_compaction_ended_counts_and_the
     modified_at_story_time(agent)
     agent.expect_hook_allowed(SESSION, HookSamples.edit("src/cart.py"))
     agent.advance(STATUS_FILE_AGE)
-    has_context(agent, TOKENS_OVER_LIMIT)
+    has_context(agent, EXCESS_TOKENS)
     modified_at_story_time(agent)
     stops(agent)
     expect_compaction_count(agent, 1)

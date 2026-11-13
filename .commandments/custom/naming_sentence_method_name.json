@@ -45,7 +45,14 @@
             {
                 "all": [
                     {
-                        "file": "src/engine/query/**"
+                        "any": [
+                            {
+                                "file": "src/engine/query/**"
+                            },
+                            {
+                                "file": "tests/**"
+                            }
+                        ]
                     },
                     {
                         "nameMatches": "^(where|where_[a-z_]+|order_by|group_by|count_by|left_join|take|every_row|named|named_as)$"

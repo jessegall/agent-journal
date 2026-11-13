@@ -112,10 +112,10 @@ class Query(Generic[M]):
     def compared(self, *comparison: object) -> Condition:
         if len(comparison) not in (2, 3):
             raise UnknownOperatorError(f"where takes a column and a value, or a column, an operator and a value; operators: {' '.join(OPERATORS)}")
-        column, written, value = (comparison[0], "=", comparison[1]) if len(comparison) == 2 else comparison
-        if written not in OPERATORS:
-            raise UnknownOperatorError(f"unknown operator {written}; use one of {' '.join(OPERATORS)}")
-        operator = ComparisonOperator(written)
+        column, given_operator, value = (comparison[0], "=", comparison[1]) if len(comparison) == 2 else comparison
+        if given_operator not in OPERATORS:
+            raise UnknownOperatorError(f"unknown operator {given_operator}; use one of {' '.join(OPERATORS)}")
+        operator = ComparisonOperator(given_operator)
         if operator.is_equality():
             return Equal(str(column), stored(value), negated=operator is ComparisonOperator.UNEQUAL)
         return COMPARISONS[operator](str(column), stored(value))

@@ -14,7 +14,7 @@ from suites.coding.modules.workers.support.behind_nudges import UPDATE_ORDERED
 from tests.unit.suites.coding.modules.workers.support.test_behind_check_closing import WORKTREE
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
-MERGER, MAIN, OTHER, WORKER = 12, 1, 30, 7
+MERGER, MAIN, OUTSIDER_ID, WORKER = 12, 1, 30, 7
 
 
 class Agents:
@@ -118,7 +118,7 @@ def test_the_merger_orders_the_update_with_who_and_why_and_the_worker_is_woken_w
 def test_the_main_agent_may_order_after_a_pass_and_another_agent_is_refused():
     assert ordering_actor(MAIN, Checks(State.PASSED))[0].saved[0].state is State.ORDERED
     with pytest.raises(Refusal, match="only the merger or the main agent"):
-        ordering_actor(OTHER, Checks(State.OPEN))
+        ordering_actor(OUTSIDER_ID, Checks(State.OPEN))
 
 
 @pytest.mark.parametrize("checks, worktrees, refusal", [(Checks(), None, "no open check for this worker"), (Checks(State.IGNORED, State.UPDATED), None, "no open check for this worker"),

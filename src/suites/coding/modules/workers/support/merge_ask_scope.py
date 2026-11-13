@@ -26,7 +26,7 @@ class MergeAskScope:
         self.units, self.worktrees, self.tasks, self.runs, self.steps, self.queries = units, worktrees, tasks, runs, steps, queries
         self.range = merge_range
 
-    def checked(self, worker_id: int, note: str, up_to: str) -> MergeAskPart:
+    def checked(self, worker_id: int, note: str, last_task: str) -> MergeAskPart:
         unit = self.units.unit(worker_id)
         worktree = self.worktrees.required_worker_worktree(worker_id)
         if not unit.has_several_tasks:
@@ -34,9 +34,9 @@ class MergeAskScope:
         if worktree.commit_count == 0:
             raise Refusal("nothing is committed since your last merge", "commit first")
         started = next(iter(self.tasks.started_tasks(worker_id)), None)
-        if started is not None and not up_to:
+        if started is not None and not last_task:
             raise Refusal(f"task {started.id} is started", "commit it, or ask up to an earlier task with --up-to and go on")
-        part = self.part(worktree, unit, up_to)
+        part = self.part(worktree, unit, last_task)
         self.check_runs(worktree, part.task_ids)
         if self.steps.round(worker_id).conflict is not None:
             raise Refusal(f"your worktree clashed with {worktree.base_branch}", "settle the conflict markers and commit first")
@@ -47,16 +47,16 @@ class MergeAskScope:
             raise Refusal("write what the merge contains", NOTE_HINT)
         return part
 
-    def part(self, worktree: Worktree, unit: WorkUnit, up_to: str) -> MergeAskPart:
-        if not up_to:
+    def part(self, worktree: Worktree, unit: WorkUnit, last_task: str) -> MergeAskPart:
+        if not last_task:
             return MergeAskPart(worktree, unit, worktree.commit_short_id, unit.task_ids, True)
-        commit = self.range.task_commit(worktree, int(up_to)) if self.range.is_task_number(up_to) else up_to
+        commit = self.range.task_commit(worktree, int(last_task)) if self.range.is_task_number(last_task) else last_task
         if commit is None:
             committed = self.range.leading_tasks(worktree, worktree.branch)
             last = committed[-1].id if committed else "none yet"
-            raise Refusal(f"task {up_to} is not committed in your worktree", f"name a committed task: the last is {last}")
+            raise Refusal(f"task {last_task} is not committed in your worktree", f"name a committed task: the last is {last}")
         if not self.range.is_branch_commit(worktree, commit):
-            raise Refusal(f"commit {up_to} is not on your branch", "journal worker logs lists your commits")
+            raise Refusal(f"commit {last_task} is not on your branch", "journal worker logs lists your commits")
         return MergeAskPart(worktree, unit, commit, tuple(task.id for task in self.range.leading_tasks(worktree, commit)), False)
 
     def check_runs(self, worktree: Worktree, task_ids: tuple[int, ...]) -> None:

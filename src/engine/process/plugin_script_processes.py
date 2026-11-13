@@ -118,8 +118,8 @@ class PluginScriptProcesses:
 
     def token_owner(self, plugin: str, token: str) -> str:
         with self.lock:
-            known = self.tokens.get(plugin)
-        return plugin if known is not None and secrets.compare_digest(known, token) else ""
+            stored_token = self.tokens.get(plugin)
+        return plugin if stored_token is not None and secrets.compare_digest(stored_token, token) else ""
 
     def owner(self, steps: Sequence[ProcessRow]) -> str:
         with self.lock:
