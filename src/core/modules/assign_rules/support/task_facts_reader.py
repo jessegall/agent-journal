@@ -42,10 +42,10 @@ class TaskFactsReader:
         actors = self.queries.query(ActorRecord).find_many(list(dict.fromkeys(creator_ids)))
         agent_ids = [actor.id for actor in actors if actor.type is ActorType.AGENT]
         main_ids = {agent.id for agent in self.queries.query(Agent).find_many(agent_ids) if agent.role == AgentRole.MAIN}
-        return {actor.id: self.creator_type_of(actor, main_ids) for actor in actors}
+        return {actor.id: self.actor_creator_type(actor, main_ids) for actor in actors}
 
     @staticmethod
-    def creator_type_of(actor: ActorRecord, main_ids: set[int]) -> CreatorType:
+    def actor_creator_type(actor: ActorRecord, main_ids: set[int]) -> CreatorType:
         if actor.type is ActorType.USER:
             return CreatorType.PERSON
         if actor.type is not ActorType.AGENT:

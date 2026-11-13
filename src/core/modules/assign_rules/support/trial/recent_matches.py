@@ -19,7 +19,7 @@ class RecentMatches:
         return f"The rule would have taken {self.matched} of the last {self.tried} tasks"
 
     def lines(self) -> Sequence[str]:
-        return (self.text,)
+        return [self.text]
 
     def json(self) -> Mapping[str, object]:
         return {"tried": self.tried, "matched": self.matched, "text": self.text}

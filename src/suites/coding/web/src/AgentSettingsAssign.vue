@@ -95,6 +95,10 @@ async function countRecent() {
                         <template v-if="rule.warning">
                             <span class="warning" data-assign-warning>{{ rule.warning }}</span>
                         </template>
+                        <span class="activity" data-assign-activity>{{ rule.activity.text }}</span>
+                        <template v-if="rule.activity.last_skip">
+                            <span class="activity" data-assign-last-skip>Last skipped: {{ rule.activity.last_skip }}</span>
+                        </template>
                         <template v-if="!readOnly">
                             <span class="actions">
                                 <button type="button" title="Move the rule up" :disabled="rule.position === 1" @click="move(rule, -1)">↑</button>
@@ -174,6 +178,7 @@ async function countRecent() {
 .place { min-width: 18px; color: var(--text-3); }
 .summary { flex: 1; }
 .warning { color: var(--warn); font-size: 12px; }
+.activity { color: var(--text-3); font-size: 11.5px; }
 .actions { display: flex; gap: 4px; }
 .editor { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
 .condition { display: flex; gap: 6px; }

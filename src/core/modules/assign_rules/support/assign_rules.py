@@ -21,22 +21,25 @@ RULES_REASON = "a task is judged against every enabled rule of its environment"
 class AssignRules:
     """Judges a task against the enabled rules of its environment in position order and records the one
     decision about it: the first matching rule whose target can take the task wins, and a rule whose target
-    cannot is skipped with the reason. While the mode does not assign, the winner is recorded as a dry run."""
+    cannot is skipped with the reason. While the mode does not assign, the winner is recorded as a dry run; a task
+    every matching rule skipped names the first of them."""
 
     def __init__(self, queries: Queries, facts_reader: TaskFactsReader, repository: Repository, mode: AssignRulesMode, targets: RuleTargets) -> None:
         self.queries, self.facts_reader, self.repository, self.mode, self.targets = queries, facts_reader, repository, mode, targets
 
     def decide(self, task: Task, batch: DecisionBatch, context: Context) -> AssignDecision:
+        skipped_rules: list[AssignRule] = []
         skipped: list[str] = []
         for rule in self.matching_rules(task):
             usable = self.targets.usable(rule, batch)
             if usable.actor_id is None:
+                skipped_rules.append(rule)
                 skipped.append(f"rule {rule.id} skipped: {usable.reason}")
                 continue
             batch.give(usable.actor_id)
             return self.matched(task, rule, usable, skipped, context)
-        if skipped:
-            return self.record(task, DecisionOutcome.SKIPPED, None, None, "; ".join(skipped), context)
+        if skipped_rules:
+            return self.record(task, DecisionOutcome.SKIPPED, skipped_rules[0], None, "; ".join(skipped), context)
         return self.record(task, DecisionOutcome.UNMATCHED, None, None, "no rule matches", context)
 
     def matched(self, task: Task, rule: AssignRule, usable: Usable, skipped: list[str], context: Context) -> AssignDecision:

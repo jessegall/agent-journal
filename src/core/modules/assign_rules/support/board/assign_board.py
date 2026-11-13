@@ -22,7 +22,8 @@ class AssignBoard:
 
     def lines(self) -> Sequence[str]:
         targets = [f"target {target.label}" for target in self.targets]
-        rules = [f"rule {rule.id} ({rule.position}, {'on' if rule.enabled else 'off'}) for {rule.target_name}: {rule.summary}{f' - {rule.warning}' if rule.warning else ''}" for rule in self.rules]
+        rules = [f"rule {rule.id} ({rule.position}, {'on' if rule.enabled else 'off'}) for {rule.target_name}: {rule.summary}{f' - {rule.warning}' if rule.warning else ''}"
+                 f" - {rule.activity.text}" for rule in self.rules]
         return (f"revision {self.revision}", *targets, *rules, "first match wins")
 
     def json(self) -> Mapping[str, object]:
