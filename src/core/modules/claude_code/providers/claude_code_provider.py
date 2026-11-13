@@ -110,7 +110,6 @@ class ClaudeCodeProvider(Provider):
     person_file_note = "Claude Code itself may save a /model or /config choice in this file; the journal does not."
     markers = ["CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SHELL_PREFIX"]
     compacts_headless = True
-    compacts_by_window = True
     controls = (ControlGroup("model", "Model", tuple(ControlChoice(value, label, f"/model {value}") for value, label in MODEL_CHOICES)),
                 ControlGroup("effort", "Reasoning effort", tuple(ControlChoice(value, label, f"/effort {value}") for value, label in EFFORT_CHOICES)),
                 ControlGroup("context", "Context window", (ControlChoice("compact", "Compact context", COMPACT_LINE), ControlChoice("clear", "Clear context", "/clear"))))
