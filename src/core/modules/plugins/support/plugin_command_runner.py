@@ -26,18 +26,21 @@ from core.modules.processes.support.runner_line import RunnerLine
 from core.modules.agents.support.agent_label import AgentLabel
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest
+from core.modules.plugins.support.plugin_program import PluginProgram
+from core.modules.environments.models.environment import Environment
 
 RUN_LIMIT_SECONDS = 3600
 RUN_KEY = "plugin run"
+PLUGIN_TOKEN_VARIABLE = "JOURNAL_PLUGIN_TOKEN"
 
 
 class PluginCommandRunner:
     """Runs a command in an agent's checkout without taking the agent's session; a run of a kind the plugin's
     manifest declares is queued under that kind and its category."""
 
-    def __init__(self, checkouts: AgentCheckouts, reads: ProjectReads, runner: RunnerBinary, scripts: PluginScriptProcesses, bus: Bus, queries: Queries, folders: PluginFolders) -> None:
+    def __init__(self, checkouts: AgentCheckouts, reads: ProjectReads, runner: RunnerBinary, scripts: PluginScriptProcesses, bus: Bus, queries: Queries, folders: PluginFolders, program: PluginProgram) -> None:
         self.checkouts, self.reads, self.runner, self.scripts, self.bus, self.queries = checkouts, reads, runner, scripts, bus, queries
-        self.folders = folders
+        self.folders, self.program = folders, program
 
     def run(self, agent_id: int, line: str, is_readonly: bool, plugin: str, actor: Actor, started_at: Timestamp, category: str = "") -> PluginCommandRun:
         checkout = self.checkouts.checkout(agent_id)
@@ -48,7 +51,7 @@ class PluginCommandRunner:
         start = StartProcess.single_part(agent_id, line, str(checkout.root), self.category(plugin, category), RUN_LIMIT_SECONDS, plugin, category)
         process = self.bus.run(start, actor, environment_id=self.queries.query(Agent).find(agent_id).environment_id)
         runner_line = RunnerLine.build(self.runner.path, process.id, self.foreground_run(checkout, is_readonly), line, "", checkout)
-        running = subprocess.Popen(["sh", "-c", runner_line], cwd=checkout.root, env={name: value for name, value in os.environ.items() if name != SESSION_VARIABLE}, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        running = subprocess.Popen(["sh", "-c", runner_line], cwd=checkout.root, env=self.run_environment(plugin, agent_id), stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                    text=True, start_new_session=True)
         self.scripts.start(running, plugin, RUN_KEY, EventForm.COMMIT, started_at)
         try:
@@ -59,6 +62,16 @@ class PluginCommandRunner:
         if stopped and self.queries.query(Process).find(process.id).ended_at is None:
             self.bus.run(StopProcess(process.id), actor)
         return PluginCommandRun(process.id, running.returncode, output)
+
+    # A plugin's run reads its data folder and settings from the variables a plugin script gets, less the token
+    # that names the plugin to the server.
+    def run_environment(self, plugin: str, agent_id: int) -> dict[str, str]:
+        inherited = {name: value for name, value in os.environ.items() if name != SESSION_VARIABLE}
+        if not plugin:
+            return inherited
+        environment = self.queries.query(Environment).find(self.queries.query(Agent).find(agent_id).environment_id).name
+        variables = {name: value for name, value in self.program.environment(plugin, environment).items() if name != PLUGIN_TOKEN_VARIABLE}
+        return {**inherited, **variables}
 
     def category(self, plugin: str, category: str) -> CommandCategory:
         if not category:
