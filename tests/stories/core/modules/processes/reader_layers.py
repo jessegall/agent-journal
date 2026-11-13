@@ -9,7 +9,7 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, worker_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 
-MAKE_OUTPUT = "project line\nplugin line\nmake: all done\n"
+BUILD_OUTPUT = "project line\nplugin line\nmake: all done\n"
 NOX_OUTPUT = "FAILED one\nerror two\n"
 TOX_OUTPUT = "ok first\nFAILED second\nok third\nFAILED fourth\n"
 UNRECOGNIZED_TEST_OUTPUT = "starting\n" * 10 + "3/3\nTests: 3 passed\n"
@@ -81,10 +81,10 @@ def test_a_draft_is_only_text_until_the_agent_saves_it(new_story):
 
 def test_a_project_reader_reads_before_a_stock_reader_published_after_it(new_story):
     story = new_story(fixture=ProjectMakeReader)
-    older_stock_read = read_lines(story, "make all", MAKE_OUTPUT)
+    older_stock_read = read_lines(story, "make all", BUILD_OUTPUT)
     story.run("reader remove make")
     republish_stock_readers(story)
-    newer_stock_read = read_lines(story, "make all", MAKE_OUTPUT)
+    newer_stock_read = read_lines(story, "make all", BUILD_OUTPUT)
     story.expect_rows("project line" in older_stock_read, "project line" in newer_stock_read, "plugin line" not in newer_stock_read,
                       detail=f"{older_stock_read}\n{newer_stock_read}")
 
@@ -93,9 +93,9 @@ def test_a_plugin_reader_reads_after_a_project_reader_and_before_a_newer_stock_r
     story = new_story(fixture=PluginMakeReader)
     story.run("reader remove make")
     republish_stock_readers(story)
-    project_read = read_lines(story, "make all", MAKE_OUTPUT)
+    project_read = read_lines(story, "make all", BUILD_OUTPUT)
     story.run("reader remove project-make", actor=story.agent)
-    plugin_read = read_lines(story, "make all", MAKE_OUTPUT)
+    plugin_read = read_lines(story, "make all", BUILD_OUTPUT)
     story.expect_rows("project line" in project_read, "plugin line" not in project_read,
                       "plugin line" in plugin_read, "project line" not in plugin_read, detail=f"{project_read}\n{plugin_read}")
 

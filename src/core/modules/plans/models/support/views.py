@@ -20,9 +20,9 @@ from engine.query.expressions.scalar_subselect import ScalarSubselect
 from engine.query.select import Select
 from engine.agent.agent_name import agent_name
 from core.modules.assignments.models.support.views import assigned_actor
-from core.modules.tasks.models.support.views import TASK_ACTOR, AUTOMATIC_ONLY, HELPER_COLUMNS, TASK_TAGS, is_main, json_rows, or_zero, task_helper_match
+from core.modules.tasks.models.support.views import TASK_ACTOR, PURELY_AUTOMATIC, HELPER_COLUMNS, TASK_TAGS, is_main, json_rows, or_zero, task_helper_match
 
-TASK_OF_PLACE = ConditionJoin("tasks", condition=ColumnCompare("tasks.id", "=", "plan_tasks.task_id"))
+PLACE_TASK = ConditionJoin("tasks", condition=ColumnCompare("tasks.id", "=", "plan_tasks.task_id"))
 PLAN_ACTOR = assigned_actor("plan", "plans.id")
 
 
@@ -55,22 +55,22 @@ PLAN_PROGRESS_SELECT = Select("plans").selecting(
     Aliased(or_zero(ScalarSubselect(plan_places().selecting(FunctionCall(SqlFunction.MIN, [Column("plan_tasks.phase_position")]))
                                     .matching(IsNull("plan_tasks.closed_at")))), "current_phase"),
     Aliased(ScalarSubselect(plan_places().selecting(FunctionCall(SqlFunction.ROUND, [FunctionCall(SqlFunction.AVG, [Column("tasks.complexity")]), Literal(1)]))
-                            .joined(TASK_OF_PLACE).matching(place_state(ComparisonOperator.UNEQUAL, "cancelled")).matching(HasValue("tasks.complexity"))),
+                            .joined(PLACE_TASK).matching(place_state(ComparisonOperator.UNEQUAL, "cancelled")).matching(HasValue("tasks.complexity"))),
             "complexity"),
 ).view_sql()
 
-NEWEST_TASK_CHANGE = ScalarSubselect(plan_places().selecting(FunctionCall(SqlFunction.MAX, [Column("tasks.updated_at")])).joined(TASK_OF_PLACE))
+NEWEST_TASK_CHANGE = ScalarSubselect(plan_places().selecting(FunctionCall(SqlFunction.MAX, [Column("tasks.updated_at")])).joined(PLACE_TASK))
 
 PLAN_CARDS_SELECT = Select("plans").selecting(
     *(Column(f"plans.{name}") for name in ("id", "environment_id", "title", "state")),
     *(Column(f"plan_progress.{name}") for name in ("task_count", "completed_count", "testing_count", "current_phase", "complexity")),
     Aliased(FunctionCall(SqlFunction.MAX, [Column("plans.updated_at"), FunctionCall(SqlFunction.COALESCE, [NEWEST_TASK_CHANGE, Column("plans.updated_at")])]),
             "changed_at"),
-    Aliased(json_rows(plan_places().joined(TASK_OF_PLACE).joined(ConditionJoin("agents", condition=task_helper_match(), alias="helper"))
+    Aliased(json_rows(plan_places().joined(PLACE_TASK).joined(ConditionJoin("agents", condition=task_helper_match(), alias="helper"))
                          .matching(IsNull("plan_tasks.closed_at")),
                          {"id": Column("helper.id"), "name": agent_name("helper"), "main": is_main("helper"), "task_id": Column("tasks.id"),
                           "task_title": Column("tasks.title")}), "agents"),
-    Aliased(json_rows(plan_places().joined(TASK_OF_PLACE).matching(place_state(ComparisonOperator.EQUAL, "started")),
+    Aliased(json_rows(plan_places().joined(PLACE_TASK).matching(place_state(ComparisonOperator.EQUAL, "started")),
                          {"id": Column("tasks.id"), "title": Column("tasks.title")}), "working"),
     Aliased(ScalarSubselect(Select("agents").named_as("assignee")
                             .selecting(JsonObject({"id": Column("assignee.id"), "name": agent_name("assignee"), "main": is_main("assignee")}))
@@ -82,12 +82,12 @@ PLAN_EVENT_ROWS_SELECT = (
     Select("plan_tasks").selecting(
         Column("plan_tasks.plan_id"), Aliased(Concat([Literal("made:"), Column("tasks.id")]), "event_key"), Aliased(Column("tasks.created_at"), "time"),
         Aliased(Literal("made"), "event_type"), Aliased(Column("tasks.id"), "task_id"), Column("tasks.title"), Aliased(Literal(None), "text"),
-    ).joined(TASK_OF_PLACE)
+    ).joined(PLACE_TASK)
     .union(Select("plan_tasks").selecting(
         Column("plan_tasks.plan_id"), Concat([Literal("ended:"), Column("tasks.id")]), Column("tasks.closed_at"),
         CaseWhen([(CANCELLED, Literal("cancelled"))], Literal("completed")), Column("tasks.id"), Column("tasks.title"),
         CaseWhen([(CANCELLED, Column("tasks.reason"))], Column("tasks.outcome")),
-    ).joined(TASK_OF_PLACE).matching(HasValue("tasks.closed_at")))
+    ).joined(PLACE_TASK).matching(HasValue("tasks.closed_at")))
     .union(Select("task_logs").selecting(
         Column("plan_tasks.plan_id"), Concat([Literal("logged:"), Column("task_logs.id")]), Column("task_logs.created_at"), Literal("logged"),
         Column("tasks.id"), Column("tasks.title"), Column("task_logs.line"),
@@ -98,7 +98,7 @@ PLAN_EVENT_ROWS_SELECT = (
 PLAN_OUTLINE_TASKS_SELECT = Select("plan_tasks").selecting(
     *(Column(f"plan_tasks.{name}") for name in ("task_id", "plan_id", "phase_id", "phase_position", "priority", "state")),
     *(Column(f"tasks.{name}") for name in ("title", "complexity", "reason")), Aliased(TASK_ACTOR, "assignee_id"),
-    TASK_TAGS, AUTOMATIC_ONLY,
+    TASK_TAGS, PURELY_AUTOMATIC,
     Aliased(or_zero(ScalarSubselect(Select("agents").selecting(is_main("agents")).matching(Comparison(Column("agents.id"), ComparisonOperator.EQUAL, TASK_ACTOR)))), "main_delegate"),
     *HELPER_COLUMNS,
-).joined(TASK_OF_PLACE).joined(ConditionJoin("agents", left=True, condition=task_helper_match(), alias="helper")).view_sql()
+).joined(PLACE_TASK).joined(ConditionJoin("agents", left=True, condition=task_helper_match(), alias="helper")).view_sql()

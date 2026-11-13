@@ -15,7 +15,7 @@ CODEX_KEYS = ["post_tool_use", "pre_compact", "pre_tool_use", "session_end", "se
 CODEX_CONTEXT_EVENTS = ("SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse")
 CODEX_STATE = ["auth.json", "sessions", "history.jsonl", "state_5.sqlite", "thread_history_1.sqlite", "session_index.jsonl", "rules", "skills", "plugins"]
 HEADER = "# Written by the journal at every start; changes are put back."
-CARRIED_CLAUDE_KEYS = {"env": {"ANTHROPIC_BASE_URL": "https://gateway.example.com"}, "apiKeyHelper": "/usr/local/bin/key", "awsAuthRefresh": "aws sso login",
+COPIED_CLAUDE_KEYS = {"env": {"ANTHROPIC_BASE_URL": "https://gateway.example.com"}, "apiKeyHelper": "/usr/local/bin/key", "awsAuthRefresh": "aws sso login",
                        "awsCredentialExport": "/usr/local/bin/aws-export", "forceLoginMethod": "claudeai", "forceLoginOrgUUID": "org-1",
                        "otelHeadersHelper": "/usr/local/bin/otel", "includeCoAuthoredBy": False, "skipDangerousModePermissionPrompt": True}
 PERSON_HOOK = {"matcher": "Bash", "hooks": [{"type": "command", "command": "person-linter", "timeout": 30}]}
@@ -56,7 +56,7 @@ def runner(story) -> str:
 
 
 def person_files_with_everything() -> None:
-    ProgramHooks.store(claude_person_file(), {**CARRIED_CLAUDE_KEYS, "hooks": {"PreToolUse": [PERSON_HOOK]}, "enabledPlugins": {"sample@market": True},
+    ProgramHooks.store(claude_person_file(), {**COPIED_CLAUDE_KEYS, "hooks": {"PreToolUse": [PERSON_HOOK]}, "enabledPlugins": {"sample@market": True},
                                               "permissions": {"allow": ["Bash(ls)"], "deny": ["Bash(rm:*)"]}, "cleanupPeriodDays": 7,
                                               "statusLine": {"type": "command", "command": "person-status"}})
     codex_person_folder().mkdir(parents=True, exist_ok=True)
@@ -75,8 +75,8 @@ def expect_claude_file(story, settings: dict[str, object]) -> None:
                       settings["statusLine"] == {"type": "command", "command": f'{runner(story)} --status "{root}"', "padding": 0},
                       list(settings["hooks"]) == CLAUDE_EVENTS, settings["hooks"]["PreToolUse"][0]["hooks"][0]["timeout"] == 150,
                       all(blocks == [{"matcher": "", "hooks": [entry]}] for event, blocks in settings["hooks"].items() if event != "PreToolUse"),
-                      set(settings) == {*CARRIED_CLAUDE_KEYS, "permissions", "autoMemoryEnabled", "statusLine", "hooks"},
-                      all(settings[key] == value for key, value in CARRIED_CLAUDE_KEYS.items()), "person-" not in json.dumps(settings))
+                      set(settings) == {*COPIED_CLAUDE_KEYS, "permissions", "autoMemoryEnabled", "statusLine", "hooks"},
+                      all(settings[key] == value for key, value in COPIED_CLAUDE_KEYS.items()), "person-" not in json.dumps(settings))
 
 
 def expect_codex_files(story) -> None:

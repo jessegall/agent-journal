@@ -12,7 +12,7 @@ from core.modules.processes.support.decisions.escalation_resets import Escalatio
 from core.modules.processes.support.decisions.key_run import KeyRun
 
 RUNS_READ = 10
-KEYS_PER_READ = 100
+READ_KEY_LIMIT = 100
 
 
 class EscalationCounter:
@@ -26,7 +26,7 @@ class EscalationCounter:
     # so a command that runs far less often than the others may count fewer runs than it had.
     def runs_without_change(self, command_keys: Sequence[str]) -> dict[str, int]:
         keys = tuple(dict.fromkeys(command_keys))
-        ended = [row for start in range(0, len(keys), KEYS_PER_READ) for row in self.ended_runs(keys[start:start + KEYS_PER_READ])]
+        ended = [row for start in range(0, len(keys), READ_KEY_LIMIT) for row in self.ended_runs(keys[start:start + READ_KEY_LIMIT])]
         rows = {key: [row for row in ended if row.command_key == key][:RUNS_READ] for key in keys}
         flagged = self.resets.last_flagged_among(keys)
         return {key: self.counted_runs(key, rows[key], flagged[key]) for key in keys}

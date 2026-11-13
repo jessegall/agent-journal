@@ -52,8 +52,8 @@ from engine.enums.agent_setting import AgentSetting
 from engine.journal.journal_home import JOURNAL_FOLDER
 
 CONFIG_VARIABLE = "CLAUDE_CONFIG_DIR"
-LIVE_SETTING_KEYS = {AgentSetting.COMPACT_WINDOW: "autoCompactWindow"}
-LIVE_SETTING_RANGES = {AgentSetting.COMPACT_WINDOW: (100_000, 1_000_000)}
+RUNTIME_SETTING_KEYS = {AgentSetting.COMPACT_WINDOW: "autoCompactWindow"}
+RUNTIME_SETTING_RANGES = {AgentSetting.COMPACT_WINDOW: (100_000, 1_000_000)}
 SYNTHETIC_MODEL = "<synthetic>"
 PROMPT_SOURCE = "promptSource"
 TEMPORARY_FILES_FOLDER = Path("/tmp")
@@ -240,8 +240,8 @@ class ClaudeCodeProvider(Provider):
         ClaudeTrust(self.state_file()).trusted(folder)
 
     def change_agent_setting(self, folder: Path, setting: AgentSetting, value: int) -> None:
-        lowest, highest = LIVE_SETTING_RANGES[setting]
-        ClaudeLiveSettings(folder).write(LIVE_SETTING_KEYS[setting], min(max(value, lowest), highest))
+        lowest, highest = RUNTIME_SETTING_RANGES[setting]
+        ClaudeLiveSettings(folder).write(RUNTIME_SETTING_KEYS[setting], min(max(value, lowest), highest))
 
     def user_hook_files(self) -> tuple[Path, ...]:
         return tuple([self.folders.folder(CONFIG_VARIABLE, ".claude") / "settings.json"])

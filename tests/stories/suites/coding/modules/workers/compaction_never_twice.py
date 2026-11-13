@@ -12,7 +12,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.suites.coding.modules.workers.context_limit import COMPACTION_START, HARD, LIMIT_TOKENS, PRE_COMPACT, SESSION, LimitEnabled, RecordedTyping, has_context, set_value, stops, typing_recorded
 
-TOO_LONG = timedelta(seconds=601)
+OVERLONG = timedelta(seconds=601)
 EDITED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")
 STATUS_FILE_AGE = timedelta(seconds=60)
 GROWTH_TOKENS = LIMIT_TOKENS // 10
@@ -123,7 +123,7 @@ def ended_immediately(story):
 
 
 def ended_late(story):
-    story.advance(TOO_LONG)
+    story.advance(OVERLONG)
     compacted(story, "manual")
 
 
@@ -138,7 +138,7 @@ def larger_waiting_context(story):
 
 def started_waiting(story):
     story.hook(SESSION, PRE_COMPACT.with_raw({"trigger": "manual"}))
-    story.advance(TOO_LONG)
+    story.advance(OVERLONG)
 
 
 @pytest.mark.parametrize("steps_between_stops, compaction_count", [(ended_immediately, 1), (ended_late, 1), (larger_waiting_context, 1), (delivered_waiting, 2), (started_waiting, 1)],
@@ -231,6 +231,6 @@ def test_f2_a_missing_launcher_is_tried_once_and_not_again_at_every_stop(new_sto
     story.container.bind(TerminalTyping, story.typing)
     has_context(story, LIMIT_TOKENS)
     for _ in range(STOPS_WITHOUT_LAUNCHER):
-        story.advance(TOO_LONG)
+        story.advance(OVERLONG)
         stops(story)
     story.expect_rows(len(story.typing.typed) <= 1, len(story.refusals()) <= 1, detail=f"{len(story.typing.typed)} attempts, {len(story.refusals())} refusals")

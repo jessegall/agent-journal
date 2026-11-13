@@ -61,8 +61,8 @@ WORKER_SANDBOX = f"{MODULE_KEY}.worker-sandbox"
 PROTECTED_FOLDERS = f"{MODULE_KEY}.protected-folders"
 WORKTREE_UPDATES = f"{MODULE_KEY}.keep-worktrees-up-to-date"
 STALE_CHECK_COMMITS = f"{MODULE_KEY}.behind-commits-to-check"
-BEHIND_CHECK_MINUTES = f"{MODULE_KEY}.behind-check-minutes"
-BEHIND_RECHECK_COMMITS = f"{MODULE_KEY}.behind-recheck-commits"
+STALE_CHECK_MINUTES = f"{MODULE_KEY}.behind-check-minutes"
+STALE_RECHECK_COMMITS = f"{MODULE_KEY}.behind-recheck-commits"
 MAIN_UPDATE_COMMITS = f"{MODULE_KEY}.update-to-main-commits"
 UPDATE_WAIT_MINUTES = f"{MODULE_KEY}.update-wait-minutes"
 UPDATE_REMINDERS = f"{MODULE_KEY}.update-reminders"
@@ -157,8 +157,8 @@ WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         STOPPED_WORKER_RUN_MINUTES: NumberRule(1),
                         HUNG_PROOF_RUN_MINUTES: NumberRule(1),
                         STALE_CHECK_COMMITS: NumberRule(0),
-                        BEHIND_CHECK_MINUTES: NumberRule(1),
-                        BEHIND_RECHECK_COMMITS: NumberRule(0),
+                        STALE_CHECK_MINUTES: NumberRule(1),
+                        STALE_RECHECK_COMMITS: NumberRule(0),
                         MAIN_UPDATE_COMMITS: NumberRule(0),
                         UPDATE_WAIT_MINUTES: NumberRule(1),
                         UPDATE_REMINDERS: NumberRule(0),

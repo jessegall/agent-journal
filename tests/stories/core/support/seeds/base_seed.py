@@ -10,7 +10,7 @@ from tests.stories.core.support.seeds.project_seeds import (PHASES_IN_A_PLAN, PL
                                                             MessageSeed, PersonSeed, PhaseSeed, PhaseTaskSeed, PlanSeed, TaskAssignmentSeed, TaskLogSeed, TaskSeed)
 
 SEEDED_AGENTS = 80
-SEEDED_DAYS_AGO = 30
+SEED_AGE_DAYS = 30
 SEEDED_TASKS = 800
 BASE_SEEDS: tuple[tuple[type[Seed], int], ...] = (
     (AgentActorSeed, SEEDED_AGENTS),
@@ -35,7 +35,7 @@ at the rows of another."""
 
 def fill_base_seed(story: Story, environment: str) -> None:
     environment_id = story.container.get(EnvironmentNames).environment_id(environment)
-    seeded_at = Timestamp(story.clock.timestamp().value - timedelta(days=SEEDED_DAYS_AGO))
+    seeded_at = Timestamp(story.clock.timestamp().value - timedelta(days=SEED_AGE_DAYS))
     seeder = Seeder(story.container.get(Database), seeded_at.text, environment_id)
     with seeder.filling():
         for seed, count in BASE_SEEDS:

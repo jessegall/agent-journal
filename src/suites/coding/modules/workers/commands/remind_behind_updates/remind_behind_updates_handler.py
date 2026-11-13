@@ -16,13 +16,13 @@ from suites.coding.modules.workers.commands.remind_behind_updates.remind_behind_
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
-from suites.coding.modules.workers.support.behind_nudges import BEHIND_SOURCE, CONFLICT_OPEN, CONFLICT_REPEATED, UPDATE_SKIPPED, UPDATE_REMINDER
+from suites.coding.modules.workers.support.behind_nudges import STALE_SOURCE, CONFLICT_OPEN, CONFLICT_REPEATED, UPDATE_SKIPPED, UPDATE_REMINDER
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_settings import UPDATE_REMINDERS, UPDATE_WAIT_MINUTES
 
 CHECKS_REASON = "every behind check in that state is reminded of"
-CLASH_LINES = (CONFLICT_OPEN, CONFLICT_REPEATED)
+CONFLICT_LINES = (CONFLICT_OPEN, CONFLICT_REPEATED)
 
 
 class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
@@ -57,7 +57,7 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
             elif context.timestamp.value - check.updated_at.value >= wait:
                 self.remind(check, worktree, limit, context)
         for check in self.queries.query(WorktreeBehindCheck).filter(state=BehindCheckState.CONFLICTED).every_row(CHECKS_REASON):
-            if check.reminders < len(CLASH_LINES) and context.timestamp.value - check.updated_at.value >= wait:
+            if check.reminders < len(CONFLICT_LINES) and context.timestamp.value - check.updated_at.value >= wait:
                 self.clash_still_open(check, context)
 
     def clash_still_open(self, check: WorktreeBehindCheck, context: Context) -> None:
@@ -65,12 +65,12 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
             return
         worktree = self.rows.required(Worktree, check.worktree_id)
         worker = self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)
-        self.inbox.send_nudge(CLASH_LINES[check.reminders].nudge(worker=worker), BEHIND_SOURCE, context)
+        self.inbox.send_nudge(CONFLICT_LINES[check.reminders].nudge(worker=worker), STALE_SOURCE, context)
         self.repository.save_change(check, check.reminded(), context)
 
     def remind(self, check: WorktreeBehindCheck, worktree: Worktree, limit: int, context: Context) -> None:
         if check.reminders < limit:
-            self.nudger.send(worktree.session_agent_id, UPDATE_REMINDER, BEHIND_SOURCE, context, count=check.behind)
+            self.nudger.send(worktree.session_agent_id, UPDATE_REMINDER, STALE_SOURCE, context, count=check.behind)
         else:
-            self.inbox.send_nudge(UPDATE_SKIPPED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)), BEHIND_SOURCE, context)
+            self.inbox.send_nudge(UPDATE_SKIPPED.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)), STALE_SOURCE, context)
         self.repository.save_change(check, check.reminded(), context)

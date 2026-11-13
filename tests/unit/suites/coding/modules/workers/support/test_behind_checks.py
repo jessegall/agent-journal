@@ -10,11 +10,11 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.models.worktree_behind_look import WorktreeBehindLook
 from suites.coding.modules.workers.support.behind_checks import BehindChecks
-from suites.coding.modules.workers.support.worker_settings import BEHIND_CHECK_MINUTES, STALE_CHECK_COMMITS, BEHIND_RECHECK_COMMITS, WORKTREE_UPDATES
+from suites.coding.modules.workers.support.worker_settings import STALE_CHECK_MINUTES, STALE_CHECK_COMMITS, STALE_RECHECK_COMMITS, WORKTREE_UPDATES
 from suites.coding.modules.workers.ticks.behind_worktrees import BehindWorktrees
 
-NOW = Timestamp(datetime(2026, 11, 12, 9, 0, tzinfo=timezone.utc))
-SETTINGS = {WORKTREE_UPDATES: True, STALE_CHECK_COMMITS: 3, BEHIND_CHECK_MINUTES: 10, BEHIND_RECHECK_COMMITS: 3}
+CURRENT_TIME = Timestamp(datetime(2026, 11, 12, 9, 0, tzinfo=timezone.utc))
+SETTINGS = {WORKTREE_UPDATES: True, STALE_CHECK_COMMITS: 3, STALE_CHECK_MINUTES: 10, STALE_RECHECK_COMMITS: 3}
 
 
 class Rows:
@@ -79,18 +79,18 @@ def test_zero_commits_to_check_or_the_switch_off_looks_at_no_worktree():
     off.settings.values[STALE_CHECK_COMMITS] = 0
     switched = BehindChecks(Queries(Worktree=[worktree()]), Settings())
     switched.settings.values[WORKTREE_UPDATES] = False
-    assert (off.due_worktrees(NOW), switched.due_worktrees(NOW)) == ((), ())
+    assert (off.due_worktrees(CURRENT_TIME), switched.due_worktrees(CURRENT_TIME)) == ((), ())
 
 
 def test_a_look_comes_once_per_ten_minutes_and_the_last_look_survives_a_restart():
-    check = WorktreeBehindLook(id=1, environment_id=1, looked_at=Timestamp(NOW.value - timedelta(minutes=5)))
-    assert checks(Worktree=[worktree()], WorktreeBehindLook=[check]).due_worktrees(NOW) == ()
-    later = Timestamp(NOW.value + timedelta(minutes=5))
+    check = WorktreeBehindLook(id=1, environment_id=1, looked_at=Timestamp(CURRENT_TIME.value - timedelta(minutes=5)))
+    assert checks(Worktree=[worktree()], WorktreeBehindLook=[check]).due_worktrees(CURRENT_TIME) == ()
+    later = Timestamp(CURRENT_TIME.value + timedelta(minutes=5))
     assert checks(Worktree=[worktree()], WorktreeBehindLook=[check]).due_worktrees(later) == tuple([worktree()])
 
 
 def test_a_delivered_worktree_is_not_looked_at():
-    assert checks(Worktree=[worktree(1), worktree(2, WorktreeState.DELIVERED)]).due_worktrees(NOW) == tuple([worktree(1)])
+    assert checks(Worktree=[worktree(1), worktree(2, WorktreeState.DELIVERED)]).due_worktrees(CURRENT_TIME) == tuple([worktree(1)])
 
 
 def test_no_second_check_opens_while_one_is_open_ordered_or_clashing():

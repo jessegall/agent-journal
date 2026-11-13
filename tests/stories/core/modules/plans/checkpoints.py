@@ -28,7 +28,7 @@ REACHES = "checkpoint-reach list --json --oldest --environment main"
 PASSES = "checkpoint-pass list --json --oldest --environment main"
 OUTLINE = "plan outline 1 --environment main"
 PHASE_TEST = "pytest tests/build.py"
-CHECKPOINT_ONLY_WORDS = "only a checkpoint phase has a test of its own: add --checkpoint"
+CHECKPOINT_TERMS = "only a checkpoint phase has a test of its own: add --checkpoint"
 UNRUN_WORDS = "not run: this phase is not a checkpoint"
 
 
@@ -283,9 +283,9 @@ def test_192_a_checkpoint_whose_run_failed_is_reached_again_when_its_returned_ta
 def test_197_a_test_command_on_a_phase_that_is_no_checkpoint_is_refused_and_a_checkpoint_phase_takes_one(new_story):
     story = new_story(fixture=UserJoined)
     story.run(lines.NEW_PLAN)
-    story.expect_refusal(f'phase make --plan 1 "Build" --test "{PHASE_TEST}"', CHECKPOINT_ONLY_WORDS)
+    story.expect_refusal(f'phase make --plan 1 "Build" --test "{PHASE_TEST}"', CHECKPOINT_TERMS)
     story.expect_success('phase make --plan 1 "Build"')
-    story.expect_refusal(f'phase edit 1 --test-command "{PHASE_TEST}"', CHECKPOINT_ONLY_WORDS)
+    story.expect_refusal(f'phase edit 1 --test-command "{PHASE_TEST}"', CHECKPOINT_TERMS)
     story.expect_success(f'phase make --plan 1 "Check" --checkpoint --test "{PHASE_TEST}"')
     story.expect_rows([phase.test_command for phase in story.story_rows(Phase)] == ["", PHASE_TEST])
 

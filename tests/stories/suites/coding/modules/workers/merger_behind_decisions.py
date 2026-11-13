@@ -16,8 +16,8 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.worktree_behind_check import checks, stale_check, setting
 from suites.coding.modules.workers.models.enums.behind_check_state import BehindCheckState
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
-from suites.coding.modules.workers.support.behind_nudges import BEHIND_CHOICES
-from suites.coding.modules.workers.support.behind_nudges import BEHIND_PASSED
+from suites.coding.modules.workers.support.behind_nudges import STALE_CHOICES
+from suites.coding.modules.workers.support.behind_nudges import STALE_PASSED
 from suites.coding.modules.workers.support.behind_nudges import UPDATE_ORDERED
 from engine.testing.expectations.expected_nudge import expected_nudge
 
@@ -80,7 +80,7 @@ def s18_a_large_update_for_a_small_model_is_passed_and_the_main_agent_reads_its_
     stale_check(story)
     story.expect_success(f'merger pass {agent_number(story, worker.id)} "it is too large for a small model"', actor=merger(story))
     check = checks(story)[0]
-    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(BEHIND_PASSED))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(STALE_PASSED))
     story.expect_text(f"behind-check show {check.id}", "it is too large for a small model")
     story.expect_text(f"merger behind {agent_number(story, worker.id)}", f"part_{SEVERAL_FILES - 1}.py", "haiku")
     state = story.run(f"worker-worktree list --json").output_text
@@ -113,7 +113,7 @@ def s23_with_the_merger_off_the_main_agent_gets_the_check_and_its_choices(story,
     diverge_file(repository, worker, "plan_checkpoints.py", "plan_checkpoints.py")
     stale_check(story)
     number = agent_number(story, worker.id)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(BEHIND_CHOICES))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", expected_nudge(STALE_CHOICES))
 
 
 CASES: list[tuple[str, Callable[..., None]]] = [(DISPATCH, s15_another_area_is_left_alone_and_the_worker_is_not_woken), (DISPATCH, s16_an_overlap_is_ordered_and_the_worker_is_woken_with_the_order),

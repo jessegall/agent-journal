@@ -12,7 +12,7 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
-TAKEN_IN_TEXT = "merged into {branch}: its branch had no commit ahead of {branch}, so its work was there already and no merger was sent"
+MERGED_TEXT = "merged into {branch}: its branch had no commit ahead of {branch}, so its work was there already and no merger was sent"
 
 
 class CloseTakenInWorktreeHandler(Handler[CloseTakenInWorktree, bool]):
@@ -33,7 +33,7 @@ class CloseTakenInWorktreeHandler(Handler[CloseTakenInWorktree, bool]):
         if worktree.state is not WorktreeState.DELIVERED or not self.git.is_merged(environment.folder, worktree.base_branch, worktree.branch):
             return False
         base_commit = self.git.tip(environment.folder, worktree.base_branch)
-        reason = TAKEN_IN_TEXT.format(branch=worktree.base_branch)
+        reason = MERGED_TEXT.format(branch=worktree.base_branch)
         merged = self.bus.run_with_context(RecordWorktreeMerge(worktree.id, (), base_commit, base_commit, reason), context).worktree
         self.git.remove(environment.folder, merged)
         self.bus.run_with_context(RecordWorktreeRemoval(merged.id), context)

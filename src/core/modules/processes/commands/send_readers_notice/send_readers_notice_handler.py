@@ -5,7 +5,7 @@ from engine.repository.repository import Repository
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from engine.driver.nudger import Nudger
 from core.modules.processes.commands.send_readers_notice.send_readers_notice import SendReadersNotice
-from core.modules.processes.support.process_nudges import READ_ONLY_MISSING_NOTICE, READERS_MISSING_FIELDS, READERS_NEED_REPAIR, STOCK_READER_BEHIND, UNREADABLE_AUDIT
+from core.modules.processes.support.process_nudges import READONLY_MISSING_NOTICE, READERS_MISSING_FIELDS, READERS_NEED_REPAIR, STOCK_READER_STALE, UNREADABLE_AUDIT
 from core.modules.processes.support.reading.catalogue_audit import AUDIT_SOURCE, REPAIR_AFTER_OUTPUTS, CatalogueAudit
 
 
@@ -37,8 +37,8 @@ class SendReadersNoticeHandler(Handler[SendReadersNotice, None]):
             if agent_marks:
                 self.nudger.send(agent.id, UNREADABLE_AUDIT, AUDIT_SOURCE, context, count=agent_marks)
             if missing_readers:
-                self.nudger.send(agent.id, READ_ONLY_MISSING_NOTICE, AUDIT_SOURCE, context, count=missing_readers)
+                self.nudger.send(agent.id, READONLY_MISSING_NOTICE, AUDIT_SOURCE, context, count=missing_readers)
             for reader, _ in behind:
-                self.nudger.send(agent.id, STOCK_READER_BEHIND, AUDIT_SOURCE, context, reader=reader.name)
+                self.nudger.send(agent.id, STOCK_READER_STALE, AUDIT_SOURCE, context, reader=reader.name)
         for reader, digest in behind:
             self.repository.update(reader, context, shipped_digest=digest)

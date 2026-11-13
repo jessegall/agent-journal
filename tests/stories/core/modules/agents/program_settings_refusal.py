@@ -8,7 +8,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-WRITE = [CommandEffect.WRITES_FILES]
+SETTINGS_EDIT = [CommandEffect.WRITES_FILES]
 SHELL_WRITES = [("sed", ["-i", "s/never/on-request/"]), ("chmod", ["u+w"]), ("rm", ["-f"]), ("mv", ["/tmp/mine.json"]), ("ln", ["-sf", "/tmp/mine.json"])]
 
 
@@ -25,7 +25,7 @@ def spelled_paths(story) -> list[str]:
 
 def shell_write(program: str, arguments: list[str], path: str):
     line = " ".join([program, *arguments, path])
-    return HookSamples.shell(line, ShellPart(program, CommandCategory.EDIT, [*arguments, path], effects=WRITE, output_paths=[path]))
+    return HookSamples.shell(line, ShellPart(program, CommandCategory.EDIT, [*arguments, path], effects=SETTINGS_EDIT, output_paths=[path]))
 
 
 def test_every_agent_write_of_the_journal_s_settings_is_refused_in_every_spelling_and_role(new_story):

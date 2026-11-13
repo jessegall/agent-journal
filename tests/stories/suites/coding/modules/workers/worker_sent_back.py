@@ -9,7 +9,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import w
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 from tests.stories.suites.coding.modules.workers.worker_ask import asking, asking_with_merger_running, merger_disabled_worker  # noqa: F401
 
-GO_ON_TEXT = WORKER_UNFINISHED_TASKS.text.split(",")[0]
+CONTINUE_TEXT = WORKER_UNFINISHED_TASKS.text.split(",")[0]
 
 
 def worker_lines(story, worker_id: int) -> str:
@@ -28,7 +28,7 @@ def test_a_worker_that_keeps_stopping_is_sent_back_with_its_tasks_as_often_as_it
         story.hook(session, HookSamples.session_start())
     lines = worker_lines(story, story.worker.id)
     worker = f"worker:{agent_number(story, story.worker.id)}"
-    story.expect_rows(lines.count(f"{GO_ON_TEXT}, task:1, task:2:") == 2, main_agent_lines(story).count(f"{worker} ended with") == 1, detail=f"{lines} | {main_agent_lines(story)}")
+    story.expect_rows(lines.count(f"{CONTINUE_TEXT}, task:1, task:2:") == 2, main_agent_lines(story).count(f"{worker} ended with") == 1, detail=f"{lines} | {main_agent_lines(story)}")
 
 
 def test_a_worker_that_asked_for_help_and_stops_is_answered_and_never_told_to_go_on(case):
@@ -36,6 +36,6 @@ def test_a_worker_that_asked_for_help_and_stops_is_answered_and_never_told_to_go
     story.expect_success(HELP_REQUEST_LINE, actor=case.worker)
     story.expect_hook_allowed(worker_session(story, case.worker), HookSamples.stop())
     story.run(f"agent end {case.worker.id}", actor=case.worker)
-    story.expect_rows(GO_ON_TEXT not in worker_lines(story, case.worker.id), detail=worker_lines(story, case.worker.id))
+    story.expect_rows(CONTINUE_TEXT not in worker_lines(story, case.worker.id), detail=worker_lines(story, case.worker.id))
     story.expect_success(f'merger answer {questions(story)[0].id} "{ANSWER}"', actor=case.merger)
-    story.expect_rows(ANSWER in case.worker_messages(), GO_ON_TEXT not in worker_lines(story, case.worker.id), detail=worker_lines(story, case.worker.id))
+    story.expect_rows(ANSWER in case.worker_messages(), CONTINUE_TEXT not in worker_lines(story, case.worker.id), detail=worker_lines(story, case.worker.id))

@@ -12,17 +12,17 @@ from tests.stories.engine.module.support.layer_project import LayerProject
 
 ROOT = Path(__file__).resolve().parents[4]
 CONFIG_FILE = ROOT / ".commandments" / "config.json"
-HAND_WRITTEN_LAYERS = "python/NamespaceDependencyDetector"
+MANUAL_LAYERS = "python/NamespaceDependencyDetector"
 
 
 def layers_in_configuration(config_file: Path) -> list[object]:
-    return json.loads(config_file.read_text())["configure"].get(HAND_WRITTEN_LAYERS, [])
+    return json.loads(config_file.read_text())["configure"].get(MANUAL_LAYERS, [])
 
 
 def test_523_a_layer_written_by_hand_in_the_configuration_is_found_and_the_real_one_holds_none(new_story, tmp_path):
     story = new_story(fixture=MainEnvironment)
     configuration = json.loads(CONFIG_FILE.read_text())
-    configuration["configure"][HAND_WRITTEN_LAYERS] = [{"layer": ["core.modules.orders"]}]
+    configuration["configure"][MANUAL_LAYERS] = [{"layer": ["core.modules.orders"]}]
     copy = tmp_path / "config.json"
     copy.write_text(json.dumps(configuration))
     story.expect_rows(layers_in_configuration(copy) == [{"layer": ["core.modules.orders"]}], layers_in_configuration(CONFIG_FILE) == [], detail=str(layers_in_configuration(CONFIG_FILE)))

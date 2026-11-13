@@ -7,7 +7,7 @@ from core.modules.processes.support.decisions.reading_case import ReadingCase
 from core.modules.processes.support.decisions.reading_decision import ReadingDecision
 
 PREVENT_AFTER_RUNS = 2
-REQUIRING_LEVELS = (PressureLevel.PREVENT, PressureLevel.BLOCK)
+ENFORCED_LEVELS = (PressureLevel.PREVENT, PressureLevel.BLOCK)
 
 
 class ReadingDecider:
@@ -50,7 +50,7 @@ class ReadingDecider:
 
     @staticmethod
     def action(case: ReadingCase, level: PressureLevel) -> ReaderAction:
-        if case.role_must_have_reader and level in REQUIRING_LEVELS:
+        if case.role_must_have_reader and level in ENFORCED_LEVELS:
             return ReaderAction.REQUIRE
         if case.moment is not ReadingMoment.END:
             return ReaderAction.NOTHING

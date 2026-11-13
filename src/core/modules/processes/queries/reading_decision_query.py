@@ -14,7 +14,7 @@ from core.modules.processes.models.enums.reading_moment import ReadingMoment
 from core.modules.processes.models.reading_decision_row import ReadingDecisionRow
 
 
-LACKING_STATES = (ReaderState.MISSING, ReaderState.POOR)
+READERLESS_STATES = (ReaderState.MISSING, ReaderState.POOR)
 
 
 class ReadingDecisionQuery(Query[ReadingDecisionRow]):
@@ -39,7 +39,7 @@ class ReadingDecisionQuery(Query[ReadingDecisionRow]):
         return self.matching(Greater("decided_at", timestamp.text))
 
     def readerless_endings(self) -> Self:
-        return self.filter(moment=ReadingMoment.END).matching(Among("state", LACKING_STATES))
+        return self.filter(moment=ReadingMoment.END).matching(Among("state", READERLESS_STATES))
 
     def excluding_agents(self, agent_ids: Sequence[int]) -> Self:
         runs = Select("processes").matching(Among("session_agent_id", agent_ids, negated=True)).column("id")

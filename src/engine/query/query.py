@@ -49,7 +49,7 @@ ROW_KEY = "id"
 VERSION_COLUMN = "version"
 ALL_COLUMNS = "*"
 DEFAULT_LIMIT_ROWS = 50
-MOST_NAMED_LIMIT_ROWS = 1000
+MOST_DECLARED_LIMIT_ROWS = 1000
 WALK_ROWS = 50
 COMPARISONS: dict[str, Callable[[str, object], Condition]] = {">": Greater, "<": Less, ">=": Minimum, "<=": Maximum}
 OPERATORS = ("=", "!=", "<", "<=", ">", ">=")
@@ -289,8 +289,8 @@ class Query(Generic[M]):
     def checked_limit(rows: int) -> int:
         if rows < 1:
             raise QueryLimitError("a limit is at least 1")
-        if rows > MOST_NAMED_LIMIT_ROWS:
-            raise QueryLimitError(f"a read names at most {MOST_NAMED_LIMIT_ROWS} rows; walk the rows with every_row(reason) if you need them all")
+        if rows > MOST_DECLARED_LIMIT_ROWS:
+            raise QueryLimitError(f"a read names at most {MOST_DECLARED_LIMIT_ROWS} rows; walk the rows with every_row(reason) if you need them all")
         return rows
 
     def first(self) -> M | None:

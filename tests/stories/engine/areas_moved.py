@@ -10,7 +10,7 @@ AREAS = (
     "scope", "seed", "setting", "skill", "subcommand", "template", "ticker", "tunnel", "upgrade", "viewer",
 )
 PREVIOUS_NAME = re.compile(r"core[./]base[./](" + "|".join(AREAS) + r")\b")
-RENAMED_SINCE = {"change": "event"}
+RENAMED_AFTER = {"change": "event"}
 SCANNED_FOLDERS = ("src/core", "src/engine", "src/suites", "src/server", "src/install", "src/tunnels", "tests", "scripts")
 STORIES_OF_THE_MOVES = {"tests/stories/engine/areas_moved.py", "tests/stories/engine/loose_files.py", "tests/stories/engine/errors/errors_moved.py"}
 
@@ -31,7 +31,7 @@ def files_naming_a_previous_area() -> list[str]:
 
 def test_337_every_area_folder_sits_in_the_engine_and_none_in_core_base(new_story):
     story = new_story()
-    missing = [area for area in AREAS if not python_files(ENGINE_FOLDER / RENAMED_SINCE.get(area, area))]
+    missing = [area for area in AREAS if not python_files(ENGINE_FOLDER / RENAMED_AFTER.get(area, area))]
     remaining = [str(folder.relative_to(ROOT) / area) for folder in PREVIOUS_FOLDERS for area in AREAS if (folder / area).exists()]
     story.expect_rows(missing == [], remaining == [], detail=f"missing {missing}, remaining {remaining}")
 

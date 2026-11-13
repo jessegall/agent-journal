@@ -12,7 +12,7 @@ from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_captions import MessageCaptions
 from core.modules.messages.support.message_nudges import IMAGE_TAG_REQUEST
 
-HOLD_BLOCKS_REASON = "every open block of the command is closed once its image is tagged"
+IMAGE_TAG_BLOCKS_REASON = "every open block of the command is closed once its image is tagged"
 
 
 class TaggedImageHoldListener(SaveListener[Updated[Message]]):
@@ -30,6 +30,6 @@ class TaggedImageHoldListener(SaveListener[Updated[Message]]):
         if message.captions == event.previous.captions or MessageCaptions.untagged_images(message):
             return
         command = IMAGE_TAG_REQUEST.nudge(message=message.id, name="").required_command
-        blocks = self.queries.query(AgentBlock).filter(nudge_key=f"{REQUIRED_COMMAND_REFUSAL.key}:{command}", condition_text=command).matching(IsNull("closed_at")).every_row(HOLD_BLOCKS_REASON)
+        blocks = self.queries.query(AgentBlock).filter(nudge_key=f"{REQUIRED_COMMAND_REFUSAL.key}:{command}", condition_text=command).matching(IsNull("closed_at")).every_row(IMAGE_TAG_BLOCKS_REASON)
         for block in blocks:
             self.bus.dispatch(CloseAgentBlock(block.id), context)

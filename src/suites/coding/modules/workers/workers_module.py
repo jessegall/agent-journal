@@ -185,7 +185,7 @@ from suites.coding.modules.workers.models.merger_visit import MergerVisit
 from suites.coding.modules.workers.models.worker_test_command import WorkerTestCommand
 from suites.coding.modules.workers.rules.worker_test_line_rule import WorkerTestLineRule
 from suites.coding.modules.workers.support.worker_nudges import WORKER_NUDGES
-from suites.coding.modules.workers.support.behind_nudges import BEHIND_NUDGES
+from suites.coding.modules.workers.support.behind_nudges import STALE_NUDGES
 from engine.skill.skill_declaration import SkillDeclaration
 from suites.coding.modules.workers.models.worker_progress import WorkerProgress
 from suites.coding.modules.workers.commands.worker_progress.worker_progress_subcommand import WorkerProgressSubcommand
@@ -502,7 +502,7 @@ class WorkersModule(Module):
                          WindowExtension("viewer.shell", reads=["worker-worktree points", "worker-worktree list", "proof list"],
                                          runs=["worker send", "worker merge", "worker release"], events=["proof.*", "worker_worktree.*"],
                                          key_events={"usage": ["proof.*", "worker_worktree.*"], "bars": ["proof.*", "worker_worktree.*"]})]
-    nudges = [MERGE_HOOK_FAILED, UNIT_MERGE_WAITS, UNIT_MERGED, MERGER_LINE_AVAILABLE, APPROVED_PLAN_WAIT, WORKER_MERGED, MERGER_PASSED, *WORKER_NUDGES, *BEHIND_NUDGES, TEST_COUNT_UNKNOWN, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL]
+    nudges = [MERGE_HOOK_FAILED, UNIT_MERGE_WAITS, UNIT_MERGED, MERGER_LINE_AVAILABLE, APPROVED_PLAN_WAIT, WORKER_MERGED, MERGER_PASSED, *WORKER_NUDGES, *STALE_NUDGES, TEST_COUNT_UNKNOWN, TEST_LIMIT_STOP, TEST_LIMIT_REFUSAL]
     seed_reason = "a worker needs a git worktree, which a scratch demo has none of"
     requires_core = ">=5,<6"
     settings = WORKER_SETTINGS

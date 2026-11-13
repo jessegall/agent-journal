@@ -4,7 +4,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.suites.coding.modules.workers.context_limit import HARD, LimitEnabled, set_value, typing_recorded
 
-TOKENS_OVER_BOTH_LIMITS = 900_000
+TOKENS_EXCEEDING_LIMITS = 900_000
 EDIT = HookSamples.edit("src/cart.py")
 
 
@@ -19,7 +19,7 @@ class HardLimitWithHelper(StoryFixture):
 
 
 def report_tokens_exceeding_limits(story, session: str) -> None:
-    save_status_file(story, session, {"context_window": {"total_input_tokens": TOKENS_OVER_BOTH_LIMITS}})
+    save_status_file(story, session, {"context_window": {"total_input_tokens": TOKENS_EXCEEDING_LIMITS}})
 
 
 def test_a_helper_past_both_context_limits_is_not_compacted_at_its_stop_and_its_tools_go_on(new_story):

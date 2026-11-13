@@ -29,11 +29,11 @@ from core.modules.processes.support.run_visibility import RunVisibility
 
 SELECTED_NONE = "--lines picked none"
 WIDTH_FIELDS = ("reader", "kept", "lines", "output")
-NAMED_FIELDS = ("reader", "output")
+LISTED_FIELDS = ("reader", "output")
 MISS_NUDGES: dict[str, tuple[NudgeDeclaration, tuple[str, ...]]] = {"--lines picked nearly all": (READER_WIDTH, WIDTH_FIELDS),
-                                                                    "--summary found nothing": (READER_SUMMARY_MISSING, NAMED_FIELDS),
-                                                                    "--progress found nothing": (READER_PROGRESS_MISSING, NAMED_FIELDS),
-                                                                    "--progress found only at the end": (READER_PROGRESS_MISSING, NAMED_FIELDS)}
+                                                                    "--summary found nothing": (READER_SUMMARY_MISSING, LISTED_FIELDS),
+                                                                    "--progress found nothing": (READER_PROGRESS_MISSING, LISTED_FIELDS),
+                                                                    "--progress found only at the end": (READER_PROGRESS_MISSING, LISTED_FIELDS)}
 MARK_NUDGES: dict[UnreadableReason, NudgeDeclaration] = {UnreadableReason.EMPTY: UNREADABLE_EMPTY, UnreadableReason.BINARY: UNREADABLE_BINARY,
                                                      UnreadableReason.SINGLE_LINE: UNREADABLE_SINGLE_LINE, UnreadableReason.INTERACTIVE: UNREADABLE_INTERACTIVE,
                                                      UnreadableReason.DECLARED: UNREADABLE_DECLARED}

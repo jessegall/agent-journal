@@ -14,9 +14,9 @@ __all__ = ["profile_story"]
 
 OCCUPANT_REFUSAL = "occupant must be continue, when-cold or each-launch"
 KEPT_REFUSAL = "agents are kept; a user retires them"
-CRITIC_SAVE_LINE = 'profile save critic --description "Reads a change and says what is wrong" --body "Read the diff." --reason needed'
+REVIEWER_SAVE_LINE = 'profile save critic --description "Reads a change and says what is wrong" --body "Read the diff." --reason needed'
 MERGER_PROFILE_TEXT = f"---\nname: {MERGER_PROFILE.name}\n{{field}}\n---\n"
-CRITIC_PROFILE_TEXT = "---\nname: critic\ndescription: Reads changes\nkind: helper\nmodel: inherit\n{field}\n---\nRead the diff.\n"
+REVIEWER_PROFILE_TEXT = "---\nname: critic\ndescription: Reads changes\nkind: helper\nmodel: inherit\n{field}\n---\nRead the diff.\n"
 
 
 @pytest.fixture
@@ -44,30 +44,30 @@ def test_profile_save_with_an_occupant_writes_the_file_and_the_list_shows_it(per
 
 
 def test_a_profile_with_no_occupant_field_is_when_cold(person):
-    person.expect_success(CRITIC_SAVE_LINE, actor=person.user)
+    person.expect_success(REVIEWER_SAVE_LINE, actor=person.user)
     person.expect_text("profile show critic", "occupant: when-cold", actor=person.user)
 
 
 def test_independent_reads_as_each_launch_and_is_never_written_again(person):
-    personal_file(person, "critic", CRITIC_PROFILE_TEXT.format(field="independent: true"))
+    personal_file(person, "critic", REVIEWER_PROFILE_TEXT.format(field="independent: true"))
     person.expect_text("profile show critic", "occupant: each-launch", actor=person.user)
-    person.expect_success(f"{CRITIC_SAVE_LINE} --independent", actor=person.user)
+    person.expect_success(f"{REVIEWER_SAVE_LINE} --independent", actor=person.user)
     text = profile_path(person).read_text()
     person.expect_rows('occupant: "each-launch"' in text, "independent" not in text, detail=text)
 
 
 def test_an_unknown_occupant_word_is_refused_and_the_file_stays_as_it_was(person):
-    person.expect_success(CRITIC_SAVE_LINE, actor=person.user)
+    person.expect_success(REVIEWER_SAVE_LINE, actor=person.user)
     original_bytes = profile_path(person).read_bytes()
-    person.expect_refusal(f"{CRITIC_SAVE_LINE} --occupant forever", OCCUPANT_REFUSAL, actor=person.user)
+    person.expect_refusal(f"{REVIEWER_SAVE_LINE} --occupant forever", OCCUPANT_REFUSAL, actor=person.user)
     person.expect_rows(profile_path(person).read_bytes() == original_bytes)
 
 
 @pytest.mark.parametrize("word", ["kept", "never"])
 def test_a_reuse_word_in_a_file_or_on_the_save_line_is_refused_and_the_file_stays_as_it_was(person, word):
-    path = save_profile_file(person, "critic", CRITIC_PROFILE_TEXT.format(field=f"reuse: {word}"))
+    path = save_profile_file(person, "critic", REVIEWER_PROFILE_TEXT.format(field=f"reuse: {word}"))
     original_bytes = path.read_bytes()
-    person.expect_refusal(f"{CRITIC_SAVE_LINE} --reuse never", KEPT_REFUSAL, actor=person.user)
+    person.expect_refusal(f"{REVIEWER_SAVE_LINE} --reuse never", KEPT_REFUSAL, actor=person.user)
     person.expect_rows(path.read_bytes() == original_bytes)
 
 

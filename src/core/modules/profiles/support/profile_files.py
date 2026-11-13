@@ -21,7 +21,7 @@ CLAUDE_FOLDER, CODEX_FOLDER = ".claude/agents", ".codex/agents"
 CODEX_HOME = ".codex"
 PROFILE_FOLDER = ".agents/profiles"
 SHIPPED_PREFIX = "journal-"
-COULD_WRITE_NOTE = "Could write before"
+WRITABLE_NOTE = "Could write before"
 
 
 class ProfileFiles:
@@ -128,7 +128,7 @@ class ProfileFiles:
     def notes(self, path: Path, fields: ProfileFields) -> tuple[str, ...]:
         notes: list[str] = []
         if fields.could_write:
-            notes.append(COULD_WRITE_NOTE)
+            notes.append(WRITABLE_NOTE)
         if path.with_name(f"{path.stem}.clash.md").is_file():
             notes.append(f"Changed original kept in {path.stem}.clash.md")
         return tuple(notes)
@@ -143,14 +143,14 @@ class ProfileFiles:
 
     def save(self, profile: AgentProfile) -> AgentProfile:
         settings = {name: getattr(profile, name) for name in OVERLAID_FIELDS}
-        self.save_fields(ProfileFields(settings, profile.name, profile.agent_type, source_digest=profile.source_digest, could_write=COULD_WRITE_NOTE in profile.notes))
+        self.save_fields(ProfileFields(settings, profile.name, profile.agent_type, source_digest=profile.source_digest, could_write=WRITABLE_NOTE in profile.notes))
         return self.stored(profile.name)
 
     def save_changes(self, registered: AgentProfile, profile: AgentProfile) -> AgentProfile:
         registered = self.checked_type(registered)
         settings = {name: getattr(profile, name) for name in OVERLAID_FIELDS if getattr(profile, name) != getattr(registered, name)}
         self.save_fields(ProfileFields(settings, profile.name, module=registered.module, module_text=self.digest.hex_digest(registered.body),
-                                                     source_digest=profile.source_digest, could_write=COULD_WRITE_NOTE in profile.notes))
+                                                     source_digest=profile.source_digest, could_write=WRITABLE_NOTE in profile.notes))
         return self.stored(profile.name)
 
     def stored(self, name: str) -> AgentProfile:

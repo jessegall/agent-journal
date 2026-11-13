@@ -17,7 +17,7 @@ from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.behind_nudges import UPDATE_SKIPPED
 from suites.coding.modules.workers.support.behind_nudges import UPDATE_ORDERED
 from engine.testing.expectations.expected_nudge import expected_nudge
-from suites.coding.modules.workers.support.behind_nudges import BEHIND_PASSED, UPDATE_REMINDER
+from suites.coding.modules.workers.support.behind_nudges import STALE_PASSED, UPDATE_REMINDER
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 WAIT = timedelta(minutes=30)
@@ -56,7 +56,7 @@ def s43_advice_that_did_not_help_is_passed_to_the_main_agent_with_the_reason(sto
     story.expect_rows(any("still has conflict markers after your advice" in text for text in merger_texts(story)), detail=str(merger_texts(story)))
     story.expect_success(f'merger pass {agent_number(story, worker.id)} "markers still open in {CLASHING_FILE} after one piece of advice"', actor=merger(story))
     check = checks(story)[0]
-    story.expect_text(f"agent-line list --agent {story.agent.id}", BEHIND_PASSED.nudge(worker=agent_number(story, worker.id), check=check.id).text)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", STALE_PASSED.nudge(worker=agent_number(story, worker.id), check=check.id).text)
     story.expect_text(f"behind-check show {check.id}", f"markers still open in {CLASHING_FILE} after one piece of advice")
     story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.PASSED], detail=str(checks(story)))
 

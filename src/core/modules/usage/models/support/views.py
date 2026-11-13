@@ -63,10 +63,10 @@ def while_running(expression: Expression) -> CaseWhen:
 OPEN_BLOCKS = agent_rows("agent_blocks").matching(IsNull("agent_blocks.closed_at"))
 BLOCKED_TASKS = AllOf([Comparison(Column("agents.role"), ComparisonOperator.UNEQUAL, Literal("main")), ColumnCompare("tasks.holder_id", "=", "agents.id"),
                     Comparison(FunctionCall(SqlFunction.COALESCE, [TASK_ACTOR, Literal(0)]), ComparisonOperator.UNEQUAL, Column("agents.id"))])
-STARTED_BY_MAIN = AllOf([Equal("agents.role", "main"), Comparison(Column("tasks.id"), ComparisonOperator.EQUAL, ScalarSubselect(
+MAIN_STARTED = AllOf([Equal("agents.role", "main"), Comparison(Column("tasks.id"), ComparisonOperator.EQUAL, ScalarSubselect(
     Select("tasks").named_as("started").selecting(Column("started.id")).matching(ColumnCompare("started.holder_id", "=", "agents.id"))
     .matching(Equal("started.state", "started")).ordered("started.id", True).sliced(1, 0)))])
-LISTED = (listed_tasks(0, BLOCKED_TASKS).union(listed_tasks(0, STARTED_BY_MAIN))
+LISTED = (listed_tasks(0, BLOCKED_TASKS).union(listed_tasks(0, MAIN_STARTED))
           .union(listed_tasks(1, SubqueryMatch("tasks.id", assigned_row_ids("task", "agents.id")))).ordered("part", False).ordered("id", False))
 CARD_TASKS = ScalarSubselect(
     Select("listed").reading(ScalarSubselect(LISTED)).named_as("listed")

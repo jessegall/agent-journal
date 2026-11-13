@@ -1,6 +1,6 @@
 from engine.query.queries import Queries
 from core.modules.tasks.models.task import Task
-from suites.coding.modules.workers.commands.close_taken_in_worktree.close_taken_in_worktree_handler import TAKEN_IN_TEXT
+from suites.coding.modules.workers.commands.close_taken_in_worktree.close_taken_in_worktree_handler import MERGED_TEXT
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
@@ -20,7 +20,7 @@ def merged_manually(story, repository: MemoryRepository) -> Worktree:
 def expect_closed_without_the_merger(story, repository: MemoryRepository, worktree: Worktree) -> None:
     task = story.container.get(Queries).query(Task).find(worktree.task_id)
     closed = story.container.get(Queries).query(Worktree).find(worktree.id)
-    story.expect_rows(task.state.value == "completed", task.outcome in ("its tests passed", TAKEN_IN_TEXT.format(branch=ENVIRONMENT_BRANCH)),
+    story.expect_rows(task.state.value == "completed", task.outcome in ("its tests passed", MERGED_TEXT.format(branch=ENVIRONMENT_BRANCH)),
                       closed.merged_at is not None, closed.commit_before_merge == closed.commit_after_merge, closed.removed_at is not None, merger_agent(story) is None,
                       detail=f"{task.state} {task.outcome!r} {closed}")
     story.expect_success("worker-worktree list", "nothing found")

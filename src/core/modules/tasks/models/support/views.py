@@ -58,7 +58,7 @@ def open_task_waits() -> Select:
 USER_TASK_WAIT = Exists(open_task_waits().matching(Equal("target", "user")))
 AUTOMATIC_TASK_WAIT = Exists(open_task_waits().matching(AnyOf([Comparison(Column("command"), ComparisonOperator.UNEQUAL, Literal("")),
                                                                 Comparison(Column("target"), ComparisonOperator.UNEQUAL, Literal("user"))])))
-AUTOMATIC_ONLY = Aliased(Inlined(AllOf([AUTOMATIC_TASK_WAIT, Excluding(USER_TASK_WAIT)])), "automatic")
+PURELY_AUTOMATIC = Aliased(Inlined(AllOf([AUTOMATIC_TASK_WAIT, Excluding(USER_TASK_WAIT)])), "automatic")
 TASK_TAGS = Aliased(ScalarSubselect(Select("words").reading(ScalarSubselect(
     Select("task_tags").selecting(Column("word")).matching(ColumnCompare("task_id", "=", "tasks.id")).ordered("word", False)))
     .selecting(JsonList(Column("word")))), "tags")
@@ -94,7 +94,7 @@ MAIN_ASSIGNEE = ScalarSubselect(Select("agents").selecting(is_main("agents")).ma
 
 TASK_CARDS_SELECT = Select("tasks").selecting(
     *(Column(f"tasks.{name}") for name in ("id", "environment_id", "title", "state", "priority", "complexity", "reason", "closed_at")),
-    Aliased(TASK_ACTOR, "assigned_actor_id"), TASK_TAGS, AUTOMATIC_ONLY,
+    Aliased(TASK_ACTOR, "assigned_actor_id"), TASK_TAGS, PURELY_AUTOMATIC,
     Aliased(ASSIGNED_NAME, "assigned_name"), Aliased(actor_value("actors.type"), "assigned_type"), Aliased(or_zero(MAIN_ASSIGNEE), "is_main_assignee"),
 ).view_sql()
 

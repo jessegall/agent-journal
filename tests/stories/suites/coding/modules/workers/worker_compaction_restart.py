@@ -14,7 +14,7 @@ CODEX_TOKENS = LIMIT + 50_000
 CODEX_WINDOW = 475_000
 STOPS = 3
 CODEX_COMPACT_LINE = "/compact"
-TOO_LONG = timedelta(seconds=601)
+OVERLONG = timedelta(seconds=601)
 
 
 def restarted(story):
@@ -53,5 +53,5 @@ def test_h6_a_codex_agent_over_the_limit_is_typed_its_own_line_once_and_once_mor
     nudge_lines = []
     for _ in range(STOPS):
         nudge_lines += story.hook(CODEX_SESSION, HookSamples.stop().with_fields(program="codex")).lines
-        story.advance(TOO_LONG)
+        story.advance(OVERLONG)
     story.expect_rows(story.typing.typed == [CODEX_COMPACT_LINE, CODEX_COMPACT_LINE], len(story.refusals()) == 0, any("passed the limit" in line for line in nudge_lines), detail=f"typed {story.typing.typed}, refusals {len(story.refusals())}, nudge_lines {nudge_lines}")

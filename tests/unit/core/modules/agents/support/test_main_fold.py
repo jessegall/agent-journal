@@ -68,7 +68,7 @@ def test_a_mismatch_rolls_everything_back(connection):
     assert connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
 
 
-CLASHES = """
+CONFLICTS = """
     CREATE TABLE task_reads (id INTEGER PRIMARY KEY, session_agent_id INTEGER REFERENCES agents (id), creator_id INTEGER REFERENCES actors (id), task_id INTEGER,
         read_at TEXT, UNIQUE (session_agent_id, task_id));
     CREATE TABLE links (id INTEGER PRIMARY KEY, source_model TEXT, source_id INTEGER, target_model TEXT, target_id INTEGER, link_type TEXT,
@@ -80,7 +80,7 @@ CLASHES = """
 
 @pytest.fixture
 def clashing(connection):
-    connection.executescript(CLASHES)
+    connection.executescript(CONFLICTS)
     return connection
 
 

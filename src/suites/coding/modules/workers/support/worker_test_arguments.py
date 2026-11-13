@@ -10,7 +10,7 @@ SHELL_OPERATORS = {"|", ";", "&", "&&", "||", ">", ">>", "<"}
 SHELL_MARKS = ("`", "$(")
 ROOT_OPTIONS = ("-C", "--rootdir", "--prefix", "--cwd", "--config")
 PARENT_FOLDER = ".."
-GO_PACKAGE = re.compile(r"\./(?!\.\.\.$)[\w-]+(?:/[\w.-]+)*(?:/\.\.\.)?")
+GOLANG_PACKAGE = re.compile(r"\./(?!\.\.\.$)[\w-]+(?:/[\w.-]+)*(?:/\.\.\.)?")
 RUN_PATTERN_OPTION = "-run"
 NAMING_PATTERN = re.compile(r"\w")
 FULL_SUITE_REFUSAL = "name each test file the run covers, never the whole suite"
@@ -32,7 +32,7 @@ class WorkerTestArguments:
 
     @classmethod
     def is_full_suite(cls, test_arguments: Sequence[str]) -> bool:
-        return not (any(cls.is_test_file(argument) or GO_PACKAGE.fullmatch(argument) for argument in test_arguments) or cls.has_run_pattern(test_arguments))
+        return not (any(cls.is_test_file(argument) or GOLANG_PACKAGE.fullmatch(argument) for argument in test_arguments) or cls.has_run_pattern(test_arguments))
 
     @classmethod
     def has_run_pattern(cls, test_arguments: Sequence[str]) -> bool:

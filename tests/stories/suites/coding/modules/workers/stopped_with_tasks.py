@@ -21,8 +21,8 @@ __all__ = ["missing_program", "running_worker", "worker_command", "worker_story"
 
 MAIN_SESSION = "s-1"
 MERGER_ON = f"setting set {MERGER_ENABLED} true --project"
-GO_ON_WITH_TASK_2 = "go on with task 2"
-STOP_AND_WAIT = "stop, you will be told when it ends"
+CONTINUE_TASK_2 = "go on with task 2"
+STOP_WAITING = "stop, you will be told when it ends"
 
 
 def ended(story) -> None:
@@ -117,13 +117,13 @@ def test_a_worker_handing_on_to_an_open_task_is_pointed_at_it(worker_command):
     story.expect_success('task make "Print the receipt" --brief "Print it" --environment main', actor=story.agent)
     story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task 2", actor=story.agent)
     outcome = story.run("worker commit --differences none", actor=worker)
-    story.expect_rows(GO_ON_WITH_TASK_2 in outcome.output_text, "stop or go on" not in outcome.output_text, detail=outcome.output_text)
+    story.expect_rows(CONTINUE_TASK_2 in outcome.output_text, "stop or go on" not in outcome.output_text, detail=outcome.output_text)
 
 
 def test_a_main_agent_merging_a_worker_keeps_its_own_line(worker_command):
     story, _, worker, _ = worker_command
     outcome = story.run(f'worker send {agent_number(story, worker.id)} "The receipt"', actor=story.agent)
-    story.expect_rows("command accepted" in outcome.output_text, GO_ON_WITH_TASK_2 not in outcome.output_text, STOP_AND_WAIT not in outcome.output_text, detail=outcome.output_text)
+    story.expect_rows("command accepted" in outcome.output_text, CONTINUE_TASK_2 not in outcome.output_text, STOP_WAITING not in outcome.output_text, detail=outcome.output_text)
 
 
 def test_a_worker_is_not_given_a_task_of_a_plan(worker_command):

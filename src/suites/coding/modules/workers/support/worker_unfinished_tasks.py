@@ -13,7 +13,7 @@ from suites.coding.modules.workers.support.work_units import UNIT_TASKS_REASON
 
 
 
-NAMED_TASKS = 3
+LISTED_TASKS = 3
 
 
 class WorkerUnfinishedTasks:
@@ -54,8 +54,8 @@ class WorkerUnfinishedTasks:
 
     @staticmethod
     def names(tasks: tuple[Task, ...]) -> str:
-        shown = ", ".join(f"task:{task.id}" for task in tasks[:NAMED_TASKS])
-        hidden = len(tasks) - NAMED_TASKS
+        shown = ", ".join(f"task:{task.id}" for task in tasks[:LISTED_TASKS])
+        hidden = len(tasks) - LISTED_TASKS
         if hidden <= 0:
             return shown
         return f"{shown} and {hidden} more {'task' if hidden == 1 else 'tasks'}"

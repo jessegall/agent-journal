@@ -19,7 +19,7 @@ from suites.coding.modules.workers.support.worker_settings import PHASE_TEST_DEF
 from tests.stories.server.support.server_client import server_story
 
 LATER_STORIES = "tests/stories/compaction_never_twice.py"
-OWN_TEST = f"pytest tests/build.py {LATER_STORIES}"
+WORKER_TEST = f"pytest tests/build.py {LATER_STORIES}"
 SHORTER_TEST = "pytest tests/build.py"
 DUE_TEST = f"pytest {LATER_STORIES}"
 LATER_FAILURE = f"FAILED {LATER_STORIES}::test_a_second_compaction_is_refused - assert 2 == 1\n"
@@ -51,12 +51,12 @@ def failed_checkpoint(new_story, monkeypatch, output: str, *failing_lines: str) 
     Its three tasks are merged and its run has ended with the given tests failed; the merger runs."""
     merger_can_start(monkeypatch)
     sole_branch_runs(monkeypatch)
-    worker = dispatched_story_worker(planned_story(new_story, build_test=OWN_TEST), PHASE_DISPATCH, monkeypatch)
+    worker = dispatched_story_worker(planned_story(new_story, build_test=WORKER_TEST), PHASE_DISPATCH, monkeypatch)
     worker.story.expect_success(MERGER_ON, actor=worker.story.user)
     commit_tasks(worker, TEST_LINE, "", SECOND_TEST_LINE)
     with running_launcher(worker.story):
         merge(worker)
-        produce_output(worker, OWN_TEST, output)
+        produce_output(worker, WORKER_TEST, output)
         end_run(worker, *failing_lines)
     merger = merger_agent(worker.story)
     if merger is None:
@@ -74,7 +74,7 @@ def repeat_merge(worker: StoryWorker) -> None:
 def later_stories_failed(new_story, monkeypatch) -> FailedOwnTest:
     """The own test of checkpoint phase 1 failed only on the stories of the later task; task 3, completed
     last, came back to its worker, who asked about it."""
-    case = failed_checkpoint(new_story, monkeypatch, LATER_FAILURE, OWN_TEST)
+    case = failed_checkpoint(new_story, monkeypatch, LATER_FAILURE, WORKER_TEST)
     case.story.run('worker ask "The checkpoint test fails on stories of task 4" --about tests', actor=case.worker.worker)
     return case
 
@@ -91,7 +91,7 @@ def test_214_a_merger_defers_the_stories_of_a_later_task_the_own_test_of_a_check
     main_agent_line_count = len(case.worker.main_agent_lines())
     story.expect_text(f'merger defer-test {agent_number(story, case.worker.worker.id)} "{LATER_STORIES}" --why "{WHY}"', "until the checkpoint of phase 2", actor=case.merger)
     deferral = rows(case.worker, DEFERRALS)[0]
-    story.expect_text("task-log list --task 3", OWN_TEST, SHORTER_TEST, WHY, actor=story.agent)
+    story.expect_text("task-log list --task 3", WORKER_TEST, SHORTER_TEST, WHY, actor=story.agent)
     expect_returned(case.worker, 3)
     story.expect_rows((deferral["phase_id"], deferral["due_phase_id"], deferral["paths"], deferral["closed_at"]) == (1, 2, LATER_STORIES, None),
                       any("wait for the checkpoint of phase 2" in message.text for message in story.story_rows(Message)),
@@ -136,7 +136,7 @@ def test_96_a_deferral_is_refused_when_no_task_of_a_later_phase_is_left_to_wait_
 
 
 def test_98_a_deferral_that_would_leave_the_own_test_no_path_is_refused(new_story, monkeypatch):
-    case = failed_checkpoint(new_story, monkeypatch, f"FAILED tests/build.py::test_build - assert 1 == 2\n{LATER_FAILURE}", OWN_TEST)
+    case = failed_checkpoint(new_story, monkeypatch, f"FAILED tests/build.py::test_build - assert 1 == 2\n{LATER_FAILURE}", WORKER_TEST)
     refused = case.defer(f"tests/build.py {LATER_STORIES}")
     case.story.expect_rows(refused.code != 0, "the test command would be left with no path" in refused.output_text, detail=refused.output_text)
 

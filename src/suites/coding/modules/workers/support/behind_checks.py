@@ -8,7 +8,7 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_behind_check import WorktreeBehindCheck
 from suites.coding.modules.workers.models.worktree_behind_look import WorktreeBehindLook
-from suites.coding.modules.workers.support.worker_settings import BEHIND_CHECK_MINUTES, STALE_CHECK_COMMITS, BEHIND_RECHECK_COMMITS, WORKTREE_UPDATES
+from suites.coding.modules.workers.support.worker_settings import STALE_CHECK_MINUTES, STALE_CHECK_COMMITS, STALE_RECHECK_COMMITS, WORKTREE_UPDATES
 
 CHECKS_REASON = "every behind check of the worktree is weighed"
 CUT_WORKTREES_REASON = "every worktree that is cut is checked for how far behind it is"
@@ -34,7 +34,7 @@ class BehindChecks:
 
     def is_check_due(self, now: Timestamp) -> bool:
         check = self.last_check()
-        return check is None or now.value - check.looked_at.value >= timedelta(minutes=self.settings.number(BEHIND_CHECK_MINUTES))
+        return check is None or now.value - check.looked_at.value >= timedelta(minutes=self.settings.number(STALE_CHECK_MINUTES))
 
     def last_check(self) -> WorktreeBehindLook | None:
         return self.queries.query(WorktreeBehindLook).first()
@@ -46,7 +46,7 @@ class BehindChecks:
         if any(check.state in ACTIVE_STATES for check in checks):
             return False
         remaining = next((check for check in checks if check.state is BehindCheckState.IGNORED), None)
-        return remaining is None or behind >= remaining.behind + self.settings.number(BEHIND_RECHECK_COMMITS)
+        return remaining is None or behind >= remaining.behind + self.settings.number(STALE_RECHECK_COMMITS)
 
     def is_passable(self, worktree: Worktree) -> bool:
         return any(check.is_passable() for check in self.queries.query(WorktreeBehindCheck).filter(worktree_id=worktree.id).every_row(CHECKS_REASON))

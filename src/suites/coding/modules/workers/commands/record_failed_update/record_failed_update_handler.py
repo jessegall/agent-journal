@@ -6,7 +6,7 @@ from engine.scope.actor_scope import ActorScope
 from suites.coding.modules.workers.commands.record_failed_update.record_failed_update import RecordFailedUpdate
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.behind_check_closing import BehindCheckClosing
-from suites.coding.modules.workers.support.behind_nudges import BEHIND_SOURCE, MERGER_UPDATE_FAILED
+from suites.coding.modules.workers.support.behind_nudges import STALE_SOURCE, MERGER_UPDATE_FAILED
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 
 
@@ -27,4 +27,4 @@ class RecordFailedUpdateHandler(Handler[RecordFailedUpdate, None]):
         if not failed:
             return
         worker = self.numbers.number(AGENT_MODEL_NAME, command.worker_id)
-        self.inbox.send_nudge(MERGER_UPDATE_FAILED.nudge(worker=worker, check=max(check.id for check in failed)), BEHIND_SOURCE, context)
+        self.inbox.send_nudge(MERGER_UPDATE_FAILED.nudge(worker=worker, check=max(check.id for check in failed)), STALE_SOURCE, context)

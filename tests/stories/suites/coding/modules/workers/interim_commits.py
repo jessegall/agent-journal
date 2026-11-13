@@ -12,7 +12,7 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import SECO
 THREE_TASKS = 3
 CHECKPOINT_TERMS = "tests run at the checkpoint of phase 2"
 CHECKPOINT_TASKS_TERMS = f"{CHECKPOINT_TERMS}, when tasks 4 are in"
-LEFT_OUT_WORDS = "task 3 is not part of this commit: it has no proof"
+OMITTED_TERMS = "task 3 is not part of this commit: it has no proof"
 INTERIM_TERMS = "Interim: go on with task 3"
 FINAL_TERMS = "Final: your work is handed in, stop and wait"
 MERGED_REASON = "merged; its tests run at the checkpoint of phase 2"
@@ -73,7 +73,7 @@ def test_39_a_commit_of_two_of_three_tasks_in_a_started_plan_names_the_checkpoin
     outcome = worker.story.run(COMMIT, actor=worker.worker)
     worker.story.run_listeners()
     worker.story.expect_text("proof list", "committed", actor=worker.story.agent)
-    worker.story.expect_rows(outcome.code == 0, "go on with task 3" in outcome.output_text, CHECKPOINT_TERMS in outcome.output_text, LEFT_OUT_WORDS in outcome.output_text,
+    worker.story.expect_rows(outcome.code == 0, "go on with task 3" in outcome.output_text, CHECKPOINT_TERMS in outcome.output_text, OMITTED_TERMS in outcome.output_text,
                              worktree(worker)["state"] == "cut", worker.started == [],
                              detail=outcome.output_text)
 

@@ -21,8 +21,8 @@ TEST_ROWS_REASON = "the test reads every row it checks"
 REAL_WORKER_TEST_START_WAITED = WorkerTestLaunch.start_waited
 PYTHON = "--test-command python=pytest"
 VITE = '--test-command "vite=npx vitest run"'
-GO = '--test-command "go-journal=go -C tools/journal test -count=1"'
-COMMANDS_DISPATCH = f"worker dispatch --model sonnet 1 {PYTHON} {VITE} {GO}"
+GOLANG = '--test-command "go-journal=go -C tools/journal test -count=1"'
+COMMANDS_DISPATCH = f"worker dispatch --model sonnet 1 {PYTHON} {VITE} {GOLANG}"
 BARE_DISPATCH = "worker dispatch --model sonnet 1"
 PERSON_DISPATCH = "worker dispatch --program claude --model sonnet 1"
 PYTHON_RUN = "worker test python tests/cart.py"
@@ -133,7 +133,7 @@ def test_only_a_worker_runs_worker_test(worker_with_commands):
     worker_with_commands.story.expect_refusal(PYTHON_RUN, "only a worker", actor=worker_with_commands.story.agent)
 
 
-GO_TEST_ARGUMENTS = ["./launch", "./event/...", "-run TestLaunch", "-run=TestLaunch ./launch"]
+GOLANG_TEST_ARGUMENTS = ["./launch", "./event/...", "-run TestLaunch", "-run=TestLaunch ./launch"]
 
 
 def test_a_run_with_no_test_file_is_refused_as_the_whole_suite_and_go_takes_packages_and_a_pattern_of_test_names(worker_with_commands):
@@ -141,9 +141,9 @@ def test_a_run_with_no_test_file_is_refused_as_the_whole_suite_and_go_takes_pack
     worker_with_commands.story.expect_refusal("worker test python -q", "name each test file", actor=worker_with_commands.worker)
     for test_arguments in ("./...", "-run", "-run -v", "-v", "-run .", "-run=.*", "-run '^'"):
         worker_with_commands.story.expect_refusal(f"worker test go-journal {test_arguments}", "name each test file", actor=worker_with_commands.worker)
-    for test_arguments in GO_TEST_ARGUMENTS:
+    for test_arguments in GOLANG_TEST_ARGUMENTS:
         worker_with_commands.story.expect_success(f"worker test go-journal {test_arguments}", actor=worker_with_commands.worker)
-    expect_value(started_lines(worker_with_commands), [f"go -C tools/journal test -count=1 {test_arguments}" for test_arguments in GO_TEST_ARGUMENTS])
+    expect_value(started_lines(worker_with_commands), [f"go -C tools/journal test -count=1 {test_arguments}" for test_arguments in GOLANG_TEST_ARGUMENTS])
 
 
 @pytest.mark.parametrize("test_arguments", ["tests/a.py '|' cat", "tests/a.py ';' ls", "tests/a.py '&&' ls", "tests/a.py '||' ls", "tests/a.py '>' out", "'`ls`.py'", "'$(ls).py'",

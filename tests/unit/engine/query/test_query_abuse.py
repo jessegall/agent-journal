@@ -4,7 +4,7 @@ import pytest
 
 from engine.database.database import READ_LIMIT_ROWS
 from engine.query.errors.query_limit_error import QueryLimitError
-from engine.query.query import MOST_NAMED_LIMIT_ROWS, Query
+from engine.query.query import MOST_DECLARED_LIMIT_ROWS, Query
 from tests.unit.engine.model.test_table import LogEntry
 from tests.unit.engine.query.test_query import entries  # noqa: F401  (the shared fixture)
 from tests.unit.engine.query.test_query_limits import filled
@@ -21,7 +21,7 @@ BYPASS_LINES = {"src/engine/cli/read_limit_bypass.py": 'ALLOW_LARGE_READ_FLAG = 
 def test_a_huge_limit_to_get_past_the_default_is_refused(entries: Query[LogEntry]):
     with pytest.raises(QueryLimitError, match="a read names at most 1000 rows; walk the rows with every_row"):
         entries.limit(10_000, WALK_REASON)
-    assert MOST_NAMED_LIMIT_ROWS == 1000
+    assert MOST_DECLARED_LIMIT_ROWS == 1000
     assert entries.limit(1000, WALK_REASON).select.limit == 1000
 
 

@@ -11,7 +11,7 @@ from tests.stories.support.story_checks import expect_value
 ROOT = Path(__file__).resolve().parents[4]
 SOURCE = ROOT / "src"
 PINNED_MAP = ROOT / "tests" / "snapshots" / "map.txt"
-HOW_TO_PIN = "the pinned map differs from the code: run journal map --write and commit tests/snapshots/map.txt"
+PIN_HINT = "the pinned map differs from the code: run journal map --write and commit tests/snapshots/map.txt"
 MARKER = "class {name}Area(EngineArea):\n    summary = \"{summary}\"\n    use = AreaUse.CONTRACT\n"
 
 
@@ -80,7 +80,7 @@ def test_447_a_new_folder_shows_as_a_new_line_and_the_pinned_map_is_the_map_of_t
     marker.write_text(MARKER.format(name="Ledger", summary="Counts what was spent."))
     second = CodeMap(source, FileAccess.shared()).lines()
     story.expect_rows(sorted(set(second) - set(first)) == ["    ledger  Counts what was spent."], detail=str(second))
-    story.expect_rows("\n".join(map_lines()) + "\n" == PINNED_MAP.read_text(), detail=HOW_TO_PIN)
+    story.expect_rows("\n".join(map_lines()) + "\n" == PINNED_MAP.read_text(), detail=PIN_HINT)
 
 
 def test_450_the_core_modules_are_one_line_for_every_module_and_no_tree_of_their_folders(new_story):
@@ -106,7 +106,7 @@ def test_452_a_pinned_map_edited_by_hand_differs_from_the_map_of_the_code(new_st
     story = new_story()
     generated = "\n".join(map_lines()) + "\n"
     edited = PINNED_MAP.read_text().replace("engine  ", "engine  By hand: ", 1)
-    story.expect_rows(edited != generated, PINNED_MAP.read_text() == generated, detail=HOW_TO_PIN)
+    story.expect_rows(edited != generated, PINNED_MAP.read_text() == generated, detail=PIN_HINT)
 
 
 def test_the_map_write_saves_the_map_of_the_checkout_the_journal_runs_for(new_story):
