@@ -94,7 +94,7 @@ func runSandbox(options Options, folder Folder) (shellSandbox, error) {
 	if err != nil {
 		return shellSandbox{}, err
 	}
-	writable := []string{folder.Path, temporary}
+	writable := append([]string{folder.Path, temporary}, options.WriteFolders...)
 	if options.WriteFolder == "" {
 		return checkedSandbox(program, writable, readLimit{})
 	}
@@ -102,7 +102,7 @@ func runSandbox(options Options, folder Folder) (shellSandbox, error) {
 	if err != nil {
 		return shellSandbox{}, err
 	}
-	limit, err := workerReadLimit(options.WriteFolder, options.Home, options.ReadFolders)
+	limit, err := workerReadLimit(options.WriteFolder, options.Home, append(append([]string{}, options.ReadFolders...), options.WriteFolders...))
 	if err != nil {
 		return shellSandbox{}, err
 	}

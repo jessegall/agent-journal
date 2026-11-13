@@ -43,8 +43,19 @@ const readFoldersVariable = "JOURNAL_RUN_READ_FOLDERS"
 
 // readFolders reads the folders of the project a worker's line may read, and clears them.
 func readFolders() []string {
-	folders := filepath.SplitList(os.Getenv(readFoldersVariable))
-	_ = os.Unsetenv(readFoldersVariable)
+	return folderList(readFoldersVariable)
+}
+
+// writeFolders are the folders the journal lets this run write beside its own, such as a plugin's data folder.
+const writeFoldersVariable = "JOURNAL_RUN_WRITE_FOLDERS"
+
+func writeFolders() []string {
+	return folderList(writeFoldersVariable)
+}
+
+func folderList(variable string) []string {
+	folders := filepath.SplitList(os.Getenv(variable))
+	_ = os.Unsetenv(variable)
 	return folders
 }
 

@@ -36,7 +36,7 @@ const line = computed(() => (props.inHand ? taskLine({tasks: props.tasks, inHand
   <span>{{ line.paceTip }}</span>
 </template></template></HoverTip>
         </span>
-        <TaskBar class="bar" data-agent-bar aria-hidden="true" :total="line.bar.total" :done="line.bar.done" :testing="line.bar.testing" />
+        <TaskBar class="bar" data-agent-bar aria-hidden="true" :total="line.bar.total" :done="line.bar.done" :testing="line.bar.testing" :started="line.bar.started" />
     </template>
 </template>
 
@@ -47,7 +47,7 @@ const line = computed(() => (props.inHand ? taskLine({tasks: props.tasks, inHand
 .tasks { flex: none; color: var(--text-2); font-size: 12.5px; }
 .plan { flex: none; margin-left: -6px; color: var(--text-4); font-size: 11px; }
 .plan::before { content: "·"; margin-right: 6px; }
-.count { position: relative; flex: none; margin-left: auto; color: var(--text-3); font-size: 12px; font-variant-numeric: tabular-nums; cursor: default; }
+.count { position: relative; flex: none; margin-left: auto; color: var(--text-2); font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; cursor: default; }
 .rate { flex: none; margin-left: auto; color: var(--text-4); font-size: 11px; font-variant-numeric: tabular-nums; }
 .rate + .count { margin-left: 0; }
 .listed { display: block; }
