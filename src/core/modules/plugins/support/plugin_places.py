@@ -17,11 +17,9 @@ from core.modules.processes.commands.start_process.start_process import StartPro
 from core.modules.processes.commands.stop_process.stop_process import StopProcess
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
-from engine.time.polled_wait import PolledWait
 
 PLUGIN_RUNS_REASON = "every running run of a plugin no longer wanted is stopped"
 
-PLACE_POLL_SECONDS = 0.05
 
 
 class PluginPlaces:
@@ -49,15 +47,6 @@ class PluginPlaces:
             return MainAgentFinder.rows(self.queries)
         with self.scopes.opened(None, environments[0].id):
             return MainAgentFinder.rows(self.queries)
-
-    def wait(self, process_id: int, limit_seconds: float) -> bool:
-        PolledWait(limit_seconds, PLACE_POLL_SECONDS).poll(lambda: self.has_exited_queue(process_id))
-        process = self.queries.query(Process).find(process_id)
-        return process.ended_at is None and process.queued_at is None
-
-    def has_exited_queue(self, process_id: int) -> bool:
-        process = self.queries.query(Process).find(process_id)
-        return process.ended_at is not None or process.queued_at is None
 
     def leave(self, process_id: int, exit_code: int) -> None:
         if self.queries.query(Process).find(process_id).ended_at is None:

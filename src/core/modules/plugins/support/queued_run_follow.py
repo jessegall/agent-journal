@@ -4,7 +4,6 @@ from engine.query.conditions.among import Among
 from engine.query.conditions.has_value import HasValue
 from engine.query.queries import Queries
 from engine.subcommand.output import Output
-from engine.database.database import Database
 from engine.time.clock import Clock
 from core.modules.plugins.support.plugins_module_name import MODULE_NAME
 from core.modules.processes.commands.stop_process.stop_process import StopProcess
@@ -23,11 +22,10 @@ class QueuedRunFollow:
     hangs up, such as a terminal stopped with Ctrl+C, takes its run with it: a waiting run leaves the queue and a
     running one is stopped with its whole tree."""
 
-    def __init__(self, folder: OutputFolder, queries: Queries, clock: Clock, bus: Bus, actors: ModuleActors, database: Database) -> None:
-        self.folder, self.queries, self.clock, self.bus, self.actors, self.database = folder, queries, clock, bus, actors, database
+    def __init__(self, folder: OutputFolder, queries: Queries, clock: Clock, bus: Bus, actors: ModuleActors) -> None:
+        self.folder, self.queries, self.clock, self.bus, self.actors = folder, queries, clock, bus, actors
 
     def exit_code(self, process_id: int, output: Output) -> int:
-        self.database.turns.refuse_wait(f"the follow of queued run {process_id}")
         stated, offset = -1, 0
         while True:
             process = self.queries.query(Process).find(process_id)

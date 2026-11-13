@@ -1,3 +1,4 @@
+from engine.time.clock import Clock
 import os
 import subprocess
 import math
@@ -84,7 +85,7 @@ class ScriptPipes:
     def join(threads: list[threading.Thread]) -> None:
         deadline = time.monotonic() + OUTPUT_JOIN_SECONDS
         for thread in threads:
-            thread.join(max(0.0, deadline - time.monotonic()))
+            Clock().join(thread, max(0.0, deadline - time.monotonic()))
 
     def write_line(self, line: str) -> None:
         stdin = self.process.stdin

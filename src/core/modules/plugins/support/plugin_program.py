@@ -1,3 +1,4 @@
+from engine.process.child_process import ChildProcess
 from engine.file.file_access import FileAccess
 from pathlib import Path
 import json
@@ -153,7 +154,7 @@ class PluginProgram:
             return
         finally:
             try:
-                process.communicate(timeout=STOP_LIMIT_SECONDS)
+                ChildProcess(process).communicate(limit_seconds=STOP_LIMIT_SECONDS)
             except (subprocess.TimeoutExpired, ValueError):
                 for pipe in (process.stdin, process.stdout):
                     if pipe is not None:

@@ -1,0 +1,107 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/(core|engine|suites|server|install|tunnels)/"
+            },
+            {
+                "any": [
+                    {
+                        "nameIn": [
+                            "sleep",
+                            "wait",
+                            "wait_for",
+                            "waitpid",
+                            "wait3",
+                            "wait4",
+                            "communicate"
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "name": "join"
+                            },
+                            {
+                                "any": [
+                                    {
+                                        "of": "receiver",
+                                        "typeLike": "*Thread*"
+                                    },
+                                    {
+                                        "of": "receiver",
+                                        "typeLike": "*Process*"
+                                    },
+                                    {
+                                        "of": "receiver",
+                                        "typeLike": "*Queue*"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "of": "receiver",
+                "typeLike": "*ChildProcess"
+            },
+            {
+                "of": "receiver",
+                "constructs": "*ChildProcess"
+            },
+            {
+                "all": [
+                    {
+                        "name": "waitpid"
+                    },
+                    {
+                        "descendant": {
+                            "name": "WNOHANG"
+                        }
+                    }
+                ]
+            },
+            {
+                "of": "receiver",
+                "nameLike": "*clock"
+            },
+            {
+                "of": "receiver",
+                "typeLike": "*Clock"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/time/(clock|polled_wait)\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/process/child_process\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/server/hook/server_queue\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/server/execution/write_turn_queue\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/server/work/listeners/listener_thread\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/(engine/testing|core/modules/[^/]+/testing)/"
+            },
+            {
+                "fileMatches": "(^|/)src/viewer/"
+            }
+        ]
+    },
+    "sin": {
+        "name": "wait-outside-the-wait-doors",
+        "description": "Code waits by itself, with time.sleep, a condition or event wait, a process wait or a thread join, so nothing checks that it does not hold the database's write turn while every other write waits on it.",
+        "rule": "Wait only through the doors that refuse a wait inside a held write turn: Clock.sleep and Clock.poll for a pause or a poll, PolledWait for a condition, ChildProcess for a program's end. The server's own queues wait on their conditions in server_queue.py, write_turn_queue.py and listener_thread.py, before a turn is held.",
+        "skill": "plain-code-words"
+    }
+}

@@ -177,7 +177,7 @@ class PluginServices:
     def poll_socket(self, path: Path, process: ChildProcess | AdoptedProcess) -> None:
         deadline = time.monotonic() + SOCKET_LIMIT_SECONDS
         while self.is_starting(path, process, deadline):
-            time.sleep(SOCKET_POLL_SECONDS)
+            self.clock.sleep(SOCKET_POLL_SECONDS)
 
     @staticmethod
     def is_starting(path: Path, process: ChildProcess | AdoptedProcess, deadline: float) -> bool:

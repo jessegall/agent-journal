@@ -1,0 +1,82 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/(core|engine|suites|server|install|tunnels)/"
+            },
+            {
+                "any": [
+                    {
+                        "nameIn": ["is_dir", "is_file", "is_symlink", "is_mount", "is_junction", "mkdir", "rglob", "iterdir", "unlink", "rmdir", "symlink_to", "hardlink_to", "readlink", "read_text", "read_bytes", "write_text", "write_bytes", "touch", "lstat", "samefile", "rmtree", "copytree", "copyfile", "copy2", "makedirs", "listdir", "scandir", "mkstemp", "mkdtemp", "NamedTemporaryFile", "TemporaryFile", "TemporaryDirectory", "SpooledTemporaryFile", "iglob", "fwalk", "removedirs", "renames"]
+                    },
+                    {
+                        "all": [
+                            {
+                                "name": "open"
+                            },
+                            {
+                                "of": "child:func",
+                                "is": "identifier"
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "nameIn": ["exists", "stat", "rename", "replace", "glob", "walk", "open", "chmod", "copy", "move"]
+                            },
+                            {
+                                "any": [
+                                    {
+                                        "of": "receiver",
+                                        "typeLike": "*Path"
+                                    },
+                                    {
+                                        "of": "receiver",
+                                        "nameIn": ["os", "path", "shutil", "glob", "io", "tempfile"]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "nameIn": ["remove", "getsize", "getmtime", "isfile", "isdir", "islink", "lexists", "symlink", "link", "truncate", "utime", "chown"]
+                            },
+                            {
+                                "of": "receiver",
+                                "nameIn": ["os", "path"]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "of": "receiver",
+                "name": "FileAccess"
+            },
+            {
+                "of": "receiver",
+                "typeLike": "*FileAccess"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/file/file_access\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/viewer/"
+            }
+        ]
+    },
+    "sin": {
+        "name": "file-system-outside-file-access",
+        "description": "Code reaches the file system by itself, through a Path method, open, os, shutil, glob or tempfile, so a read can repeat outside FileAccess's cache, a walk can follow a symbolic link, and nothing sees what it touched.",
+        "rule": "Read, write, open, list, glob, walk, check, stat, create, copy, move and delete files and folders only through FileAccess, called on the class: FileAccess.is_dir(path). A missing operation is added to FileAccess, never written beside it.",
+        "skill": "file-access"
+    }
+}

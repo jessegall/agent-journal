@@ -1,3 +1,4 @@
+from engine.time.clock import Clock
 import threading
 import time
 from collections.abc import Callable, Sequence
@@ -56,4 +57,4 @@ class Ticker:
         deadline = time.monotonic() + limit_seconds
         for thread in tuple(self.threads.values()):
             if thread.is_alive():
-                thread.join(max(0.0, deadline - time.monotonic()))
+                Clock().join(thread, max(0.0, deadline - time.monotonic()))

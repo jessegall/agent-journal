@@ -1,4 +1,3 @@
-from engine.database.database import Database
 from engine.time.clock import Clock
 from core.modules.processes.support.output_folder import END_POLL_SECONDS, OutputFolder
 from engine.setting.setting_values import SettingValues
@@ -10,11 +9,10 @@ class WorkerTestWait:
     """Keeps a worker's named test on its call until the run ended or the wait is over, then asks a run still
     going to move to the background."""
 
-    def __init__(self, folder: OutputFolder, clock: Clock, settings: SettingValues, database: Database) -> None:
-        self.folder, self.clock, self.settings, self.database = folder, clock, settings, database
+    def __init__(self, folder: OutputFolder, clock: Clock, settings: SettingValues) -> None:
+        self.folder, self.clock, self.settings = folder, clock, settings
 
     def exit_code(self, process_id: int) -> int | None:
-        self.database.turns.refuse_wait(f"the wait for test run {process_id}")
         waited, wait = 0.0, self.settings.number(WORKER_RUN_WAIT)
         while (code := self.folder.end(process_id)) is None and waited < wait:
             self.clock.sleep(END_POLL_SECONDS)

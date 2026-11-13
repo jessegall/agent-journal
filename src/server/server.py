@@ -237,7 +237,7 @@ def main(argv: list[str]) -> int:
         viewer.stop()
         deadline = time.monotonic() + STOP_LIMIT_SECONDS
         for thread in threads:
-            thread.join(deadline - time.monotonic())
+            Clock().join(thread, deadline - time.monotonic())
         ticker.join(deadline - time.monotonic())
         server.context.request_trace.close()
         hook_database.close()

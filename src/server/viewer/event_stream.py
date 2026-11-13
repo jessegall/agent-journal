@@ -1,3 +1,4 @@
+from engine.time.clock import Clock
 from engine.database.write_turns import WriteTurns
 import json
 import time
@@ -49,7 +50,7 @@ class EventStream:
                     if not output(HEARTBEAT):
                         return
                     idle_seconds = 0.0
-                time.sleep(POLL_SECONDS)
+                Clock().sleep(POLL_SECONDS)
                 idle_seconds += POLL_SECONDS
         finally:
             container.get(Database).close()

@@ -2,6 +2,8 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from engine.execution.held_write_turn import HELD_WRITE_TURN
+
 
 @dataclass(frozen=True)
 class PolledWait:
@@ -11,6 +13,7 @@ class PolledWait:
     pause_seconds: float
 
     def poll(self, condition: Callable[[], bool]) -> bool:
+        HELD_WRITE_TURN.refuse_wait("a polled wait")
         deadline = time.monotonic() + self.limit_seconds
         while not condition():
             if time.monotonic() >= deadline:
