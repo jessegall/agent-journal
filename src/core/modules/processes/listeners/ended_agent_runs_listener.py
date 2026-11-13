@@ -23,7 +23,7 @@ class EndedAgentRunsListener(CommitListener[AgentEnded]):
 
     def handle(self, event: AgentEnded, logged: LoggedEvent) -> None:
         agent = event.row
-        if self.types.behaviours(agent.role).keeps_runs_after_end:
+        if self.types.behaviours(agent.role).continues_runs:
             return
         for process in tuple(self.processes.agent(logged.row_id).running().every_row(ORPHANED_RUNS_REASON)):
             self.bus.run(OrphanProcess(process.id), self.actors.actor(MODULE_NAME), cause_id=logged.id)

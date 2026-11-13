@@ -1,6 +1,6 @@
 import json
 import os
-from dataclasses import fields
+from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 
 from engine.helper_type.helper_behaviours import HelperBehaviours
@@ -17,11 +17,11 @@ TABLE_FILE = Path(__file__).resolve().parents[4] / "tests" / "snapshots" / "help
 UPDATE_FLAG = "JOURNAL_UPDATE_HELPER_TYPE_BEHAVIOURS"
 SUITE_NAME = "coding"
 AGENT_PAGE = "agent"
-TABLE_ROW_BEHAVIOURS = {"job": "takes_jobs", "active_task_unblocked": "unblocked_by_started_task", "task": "takes_tasks", "prompt": "takes_prompts",
-                        "mark": "takes_marks", "plugin": "runs_plugins", "dispatch": "dispatches", "stop_required": "stops_are_checked",
+TABLE_ROW_BEHAVIOURS = {"job": "takes_jobs", "active_task_unblocked": "started_task_clears_block", "task": "takes_tasks", "prompt": "takes_prompts",
+                        "mark": "takes_marks", "plugin": "runs_plugins", "dispatch": "dispatches", "stop_required": "checked_stops",
                         "private_output": "has_private_outputs", "reader_request": "needs_readers", "queued_run": "queues_runs",
-                        "automatic_watch": "watches_runs_automatically", "continuing_run": "keeps_runs_after_end", "project_skill": "reads_project_skills",
-                        "pause_retention": "keeps_pause_after_end", "restricted_alias": "has_restricted_aliases", "saved_command": "runs_saved_commands"}
+                        "automatic_watch": "watches_runs_automatically", "continuing_run": "continues_runs", "project_skill": "reads_project_skills",
+                        "pause_retention": "retains_pause", "restricted_alias": "has_restricted_aliases", "saved_command": "runs_saved_commands"}
 
 
 def coding_suite(finder: ModuleFinder) -> SuiteEntry:
@@ -40,11 +40,19 @@ def behaviour_answers(behaviours: HelperBehaviours, queue_limit_key: str) -> dic
     return answers
 
 
-def suite_behaviours(registry: Registry, suite: SuiteEntry, key: str) -> dict[str, object]:
+@dataclass(frozen=True)
+class SuiteAnswers:
+    """The driver a suite gives one type and the layout page its agents open on."""
+
+    driver: str
+    layout: str
+
+
+def suite_behaviours(registry: Registry, suite: SuiteEntry, key: str) -> SuiteAnswers:
     driver_entry = registry.type_driver(suite, key)
     driver = driver_entry.name if driver_entry is not None else ""
     driver_page = f"{AGENT_PAGE}@{driver}"
-    return {"driver": driver, "layout": driver_page if driver_page in suite.layouts else AGENT_PAGE}
+    return SuiteAnswers(driver, driver_page if driver_page in suite.layouts else AGENT_PAGE)
 
 
 def type_behaviours(entry: HelperTypeEntry) -> dict[str, object]:
@@ -57,9 +65,9 @@ def current_table(tmp_path: Path) -> dict[str, dict[str, object]]:
     finder = ModuleFinder(JournalHome(tmp_path))
     suite, types = coding_suite(finder), helper_types(finder)
     registry = Registry("", {}, {}, {}, (), (), suites=tuple([suite]), drivers=DriverEntries().drivers(finder.default_modules()), helper_types=tuple(types.values()))
-    table = {MAIN_KEY: {**behaviour_answers(MainAgent.behaviours, ""), **suite_behaviours(registry, suite, MAIN_KEY)}}
+    table = {MAIN_KEY: {**behaviour_answers(MainAgent.behaviours, ""), **asdict(suite_behaviours(registry, suite, MAIN_KEY))}}
     for key, entry in sorted(types.items()):
-        table[key] = {**behaviour_answers(entry.behaviours, entry.queue_limit_key), **suite_behaviours(registry, suite, key), **type_behaviours(entry)}
+        table[key] = {**behaviour_answers(entry.behaviours, entry.queue_limit_key), **asdict(suite_behaviours(registry, suite, key)), **type_behaviours(entry)}
     return table
 
 

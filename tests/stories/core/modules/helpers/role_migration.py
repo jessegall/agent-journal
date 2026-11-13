@@ -1,4 +1,5 @@
 import json
+from dataclasses import dataclass
 
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.support.old_role_seeds import OldRoleAgentSeed
@@ -11,8 +12,19 @@ WORKERS_MODULE = "journal.suites.coding.workers"
 ROLE_KEYS_MIGRATION = 81
 
 
-def agent_row(story, number: int) -> dict:
-    return json.loads(story.run(f"agent show {number} --json --environment main", actor=story.user).output_text)
+@dataclass(frozen=True)
+class StoredAgent:
+    """The stored fields of one agent row a migration story checks."""
+
+    role: str
+    profile: str
+    session: str
+    ended_at: str | None
+
+
+def agent_row(story, number: int) -> StoredAgent:
+    row = json.loads(story.run(f"agent show {number} --json --environment main", actor=story.user).output_text)
+    return StoredAgent(row["role"], row["profile"], row["session"], row["ended_at"])
 
 
 def role_numbers(story, role: str) -> list[int]:
@@ -52,50 +64,50 @@ class OldRoleKeys(StoryFixture):
 def test_a_verifier_and_a_reviewer_become_helpers_keeping_their_number_and_end(new_story):
     story = new_story(fixture=OldRoleKeys)
     verifiers, reviewers = role_numbers(story, "verifier"), role_numbers(story, "reviewer")
-    story.run_migration_again(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
+    story.rerun_migration(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
     moved = [agent_row(story, number) for number in (*verifiers, *reviewers)]
     story.expect_rows(role_numbers(story, "verifier") == [], role_numbers(story, "reviewer") == [],
-                      all(row["role"] == "helper" and row["ended_at"] for row in moved))
+                      all(row.role == "helper" and row.ended_at for row in moved))
 
 
 def test_a_helper_with_the_merger_profile_becomes_a_merger_in_the_same_group(new_story):
     story = new_story(fixture=OldRoleKeys)
-    story.run_migration_again(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
+    story.rerun_migration(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
     story.expect_rows(merger_group(story, "merger") == "merger",
-                      all(agent_row(story, number)["profile"] == "journal-merger" for number in role_numbers(story, "merger")),
+                      all(agent_row(story, number).profile == "journal-merger" for number in role_numbers(story, "merger")),
                       len(role_numbers(story, "merger")) == 1)
 
 
 def test_the_migration_runs_again_without_writing_a_row_twice(new_story):
     story = new_story(fixture=OldRoleKeys)
-    story.run_migration_again(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
+    story.rerun_migration(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
     helpers, mergers = role_numbers(story, "helper"), role_numbers(story, "merger")
-    story.run_migration_again(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
+    story.rerun_migration(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
     story.expect_rows(role_numbers(story, "helper") == helpers, role_numbers(story, "merger") == mergers)
 
 
 def test_an_interrupted_migration_leaves_both_keys_readable_until_it_runs_again(new_story):
     story = new_story(fixture=OldRoleKeys)
-    story.run_migration_again(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
+    story.rerun_migration(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
     story.use_fixture_environment("main")
     story.seed(AgentActorSeed, 1, name="late verifier")
     story.seed(OldRoleAgentSeed, 1, session="late-verifier", number=904)
-    story.expect_rows(agent_row(story, role_numbers(story, "verifier")[0])["role"] == "verifier",
-                      agent_row(story, role_numbers(story, "merger")[0])["role"] == "merger")
-    story.run_migration_again(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
+    story.expect_rows(agent_row(story, role_numbers(story, "verifier")[0]).role == "verifier",
+                      agent_row(story, role_numbers(story, "merger")[0]).role == "merger")
+    story.rerun_migration(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
     story.expect_rows(role_numbers(story, "verifier") == [])
 
 
 def test_a_plugin_that_reaches_helpers_stays_on_after_the_migration(new_story):
     story = new_story(fixture=OldRoleKeys)
     plugin_reaching(story, {"command_starting": ["helpers"]})
-    story.run_migration_again(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
+    story.rerun_migration(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
     story.expect_text("plugin list", "sample", "on", actor=story.user)
 
 
 def test_a_running_merger_keeps_running_when_its_row_moves_at_the_update(new_story):
     story = new_story(fixture=OldRoleKeys)
-    merger = next(number for number in role_numbers(story, "helper") if agent_row(story, number)["profile"] == "journal-merger")
-    story.run_migration_again(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
+    merger = next(number for number in role_numbers(story, "helper") if agent_row(story, number).profile == "journal-merger")
+    story.rerun_migration(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
     row = agent_row(story, merger)
-    story.expect_rows(row["role"] == "merger", not row["ended_at"], row["session"] != "")
+    story.expect_rows(row.role == "merger", not row.ended_at, row.session != "")

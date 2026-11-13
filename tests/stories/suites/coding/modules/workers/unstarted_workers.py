@@ -1,7 +1,6 @@
 from suites.coding.modules.workers.types.worker import Worker
 import pytest
 
-from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from tests.stories.suites.coding.modules.workers.gone_workers import RESUMED_PID, start_launcher, worker_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH
@@ -13,7 +12,7 @@ BLOCK = 'task block 1 --reason "the build tool is missing"'
 
 
 def newest_worker(story) -> Agent:
-    return story.container.get(Queries).query(Agent).filter(role=Worker.key).newest().first()
+    return max(story.story_rows(Agent, role=Worker.key), key=lambda agent: agent.id)
 
 
 @pytest.fixture

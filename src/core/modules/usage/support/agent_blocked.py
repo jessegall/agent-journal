@@ -15,7 +15,7 @@ class AgentBlocked:
         self.seconds = seconds
 
     def reason(self, card: AgentCard, current_time: Timestamp, behaviours: HelperBehaviours) -> str:
-        if behaviours.unblocked_by_started_task and card.started_task_id:
+        if behaviours.started_task_clears_block and card.started_task_id:
             return ""
         if card.task_blocked:
             return TASK_BLOCKED_REASON

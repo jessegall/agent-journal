@@ -8,7 +8,6 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.command.bus import Bus
 from engine.enums.tool_type import ToolType
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from engine.testing.examples.hook_samples import HookSamples
@@ -210,7 +209,7 @@ def test_a_person_cannot_ask(asking):
 
 
 def test_a_helper_cannot_ask(asking):
-    helper = asking.story.container.get(Bus).run(StartAgent("s-helper", "claude", Helper.key, asking.story.agent.id, profile=f"{RESEARCHER_PROFILE.name}"), Actor.core(), environment_id=1)
+    helper = asking.story.run_command(StartAgent("s-helper", "claude", Helper.key, asking.story.agent.id, profile=f"{RESEARCHER_PROFILE.name}"), Actor.core(), 1)
     asking.story.expect_refusal(f'worker ask "{QUESTION}"', "journal worker ask is for workers", actor=Actor(helper.id, ActorType.AGENT))
 
 

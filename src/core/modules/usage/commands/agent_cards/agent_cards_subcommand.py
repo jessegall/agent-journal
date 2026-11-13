@@ -66,12 +66,13 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         arguments.role += [value for value in arguments.roles.split(",") if value]
         arguments.profile += [value for value in arguments.profiles.split(",") if value]
         arguments.program += [value for value in arguments.programs.split(",") if value]
+        registered = list(self.registry.helper_type_book().entries)
         titles = {profile.name: profile.display_title for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
         if arguments.options:
             options = self.queries.query(AgentFilterOptionsView).first()
             if options is None:
                 return AgentFilterOptions((), ())
-            upgrade_retired = self.queries.query(Agent).matching(EndedAgents()).filter(retirement_reason=UPGRADE_RETIREMENT_REASON).count()
+            upgrade_retired = self.queries.query(Agent).matching(EndedAgents(registered)).filter(retirement_reason=UPGRADE_RETIREMENT_REASON).count()
             roles: list[str] = json.loads(options.roles)
             profile_names: list[str] = json.loads(options.profiles)
             return AgentFilterOptions(tuple(sorted(role for role in roles if role != AgentRole.MAIN)), tuple((name, titles.get(name, name)) for name in sorted(profile for profile in profile_names if profile)), upgrade_retired)
@@ -91,9 +92,9 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
             case AgentListState.RUNNING:
                 rows = rows.matching(activity)
             case AgentListState.IDLE:
-                rows = rows.matching(AvailableAgents(activity))
+                rows = rows.matching(AvailableAgents(activity)).matching(Among("role", registered))
             case AgentListState.RETIRED:
-                rows = rows.matching(EndedAgents())
+                rows = rows.matching(EndedAgents(registered))
             case _:
                 pass
         if arguments.search.strip():
@@ -101,7 +102,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         page = rows.ordered("created_at", "id").page(arguments.page, arguments.limit)
         selected = self.queries.query(AgentListing).matching(Among("id", tuple(row.id for row in page.rows)))
         running = {row.id for row in selected.matching(activity).every_row(CARD_STATES_REASON)}
-        idle = {row.id for row in selected.matching(AvailableAgents(activity)).every_row(CARD_STATES_REASON)}
+        idle = {row.id for row in selected.matching(AvailableAgents(activity)).matching(Among("role", registered)).every_row(CARD_STATES_REASON)}
         states = {**dict.fromkeys(running, AgentListState.RUNNING), **dict.fromkeys(idle, AgentListState.IDLE)}
         agents = {agent.id: agent for agent in self.queries.query(Agent).find_many(tuple(row.id for row in page.rows))}
         locations = self.folders.resume_locations(tuple(agents[row.id] for row in page.rows if row.id in idle))

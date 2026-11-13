@@ -4,7 +4,6 @@ import json
 import pytest
 
 from engine.actor.actor import Actor
-from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.enums.command_category import CommandCategory
 from engine.registry.registry import Registry
@@ -80,7 +79,7 @@ def test_a_group_no_longer_holds_the_skill_of_the_agent_that_sends_it(owner, sen
 
 def test_a_command_of_a_skill_the_profile_leaves_out_does_not_wait_for_that_skill(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    story.container.get(Bus).run(StartAgent(RESEARCHER_SESSION, "claude", Helper.key, story.agent.id, profile=f"{RESEARCHER_PROFILE.name}"), Actor.core(), environment_id=1)
+    story.run_command(StartAgent(RESEARCHER_SESSION, "claude", Helper.key, story.agent.id, profile=f"{RESEARCHER_PROFILE.name}"), Actor.core(), 1)
     story.expect_hook_allowed(RESEARCHER_SESSION, PLAN_LIST)
 
 

@@ -41,7 +41,7 @@ def test_a_suite_that_adds_one_helper_type_as_one_class_can_start_it_with_its_ow
 
 def test_a_helper_type_without_a_label_stops_the_boot_naming_the_type_and_the_field(new_story):
     story = new_story(fixture=MainEnvironment)
-    story.expect_sync_refusal(f"{SAMPLES}:NamelessScribeSuite", "helper type scribe has no label")
+    story.expect_sync_refusal(f"{SAMPLES}:UnlabelledScribeSuite", "helper type scribe has no label")
 
 
 def test_the_suites_list_no_roles_per_behaviour_and_a_worker_still_takes_its_work(new_story):
@@ -56,6 +56,8 @@ def test_two_suites_that_register_the_same_helper_type_stop_the_boot_naming_both
     story = new_story(fixture=MainEnvironment)
     story.expect_sync_success(f"{SAMPLES}:ScribeSuite")
     story.expect_sync_refusal(f"{SAMPLES}:CopyScribeSuite", "suite copy-scribe and suite scribe both register helper type scribe")
+    story.expect_sync_success(f"{SAMPLES}:ScribeSuite")
+    story.expect_text("suite show scribe", "scribe: scribe.scribe", actor=story.user)
 
 
 def test_the_cores_own_helper_type_is_written_the_same_way_as_the_worker(new_story):
@@ -71,6 +73,5 @@ def test_an_ended_agent_of_a_type_no_module_registers_any_more_is_shown_retired_
     scribe = story.new_row_id("agent start scribe-session claude scribe --environment main")
     story.expect_success(f"agent end {scribe}", actor=story.user)
     story.expect_sync_without(f"{SAMPLES}:RetiringModule")
-    story.run_listeners()
-    story.expect_text(f"agent show {agent_number(story, scribe)}", "role: scribe", "retirement_reason: no installed module registers its type scribe any more", actor=story.user)
-    story.expect_text("agent list --environment main", "scribe", actor=story.user)
+    story.expect_text(f"agent show {agent_number(story, scribe)}", "role: scribe", actor=story.user)
+    story.expect_text("agent cards --show retired", "role: scribe", "state: retired", actor=story.user)

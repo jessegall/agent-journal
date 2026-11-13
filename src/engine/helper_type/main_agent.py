@@ -10,6 +10,6 @@ class MainAgent:
     key: ClassVar[str] = "main"
     label: ClassVar[str] = "Main agent"
     behaviours: ClassVar[HelperBehaviours] = HelperBehaviours(
-        takes_jobs=False, unblocked_by_started_task=False, takes_tasks=True, takes_prompts=True, takes_marks=True, runs_plugins=True, dispatches=True,
-        stops_are_checked=True, has_private_outputs=False, needs_readers=False, queues_runs=False, watches_runs_automatically=False,
-        keeps_runs_after_end=False, reads_project_skills=False, keeps_pause_after_end=False, has_restricted_aliases=False, runs_saved_commands=True)
+        takes_jobs=False, started_task_clears_block=False, takes_tasks=True, takes_prompts=True, takes_marks=True, runs_plugins=True, dispatches=True,
+        checked_stops=True, has_private_outputs=False, needs_readers=False, queues_runs=False, watches_runs_automatically=False,
+        continues_runs=False, reads_project_skills=False, retains_pause=False, has_restricted_aliases=False, runs_saved_commands=True)

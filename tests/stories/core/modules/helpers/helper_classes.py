@@ -11,13 +11,13 @@ HELPER_LINE = "Reads the project and reports; it changes no code."
 def test_a_worker_is_a_helper_and_the_main_agent_is_not(new_story):
     story = new_story(fixture=CodingEnvironment)
     story.expect_helper_type_extends("worker", "helper")
-    story.expect_helper_type_apart_from("main", "helper")
+    story.expect_unrelated_helper_types("main", "helper")
 
 
 def test_a_merger_is_a_helper(new_story):
     story = new_story(fixture=CodingEnvironment)
     story.expect_helper_type_extends("merger", "helper")
-    story.expect_helper_type_apart_from("merger", "worker")
+    story.expect_unrelated_helper_types("merger", "worker")
 
 
 def test_a_merger_takes_the_fields_of_the_helper_it_does_not_set(new_story):

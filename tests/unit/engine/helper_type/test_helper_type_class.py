@@ -1,3 +1,4 @@
+from engine.helper_type.command_allow_list import CommandAllowList
 from dataclasses import MISSING, fields, replace
 
 from engine.helper_type.helper_behaviours import HelperBehaviours
@@ -9,27 +10,30 @@ from engine.module.module import Module
 from engine.module.suite import Suite
 from engine.module.suite_list import SuiteList
 
-NO_BEHAVIOURS = HelperBehaviours.retired()
+RETIRED_BEHAVIOURS = HelperBehaviours.retired()
 
 
 class Scribe(HelperType):
     key = "scribe"
     label = "Scribe"
-    behaviours = replace(NO_BEHAVIOURS, takes_tasks=True)
+    behaviours = replace(RETIRED_BEHAVIOURS, takes_tasks=True)
+    commands = CommandAllowList()
 
 
 class CopyScribe(Scribe):
     label = "Copy scribe"
 
 
-class NamelessScribe(HelperType):
+class UnlabelledScribe(HelperType):
     key = "scribe"
-    behaviours = NO_BEHAVIOURS
+    behaviours = RETIRED_BEHAVIOURS
+    commands = CommandAllowList()
 
 
 class SilentScribe(HelperType):
     key = "scribe"
     label = "Scribe"
+    commands = CommandAllowList()
 
 
 class ScribeModule(Module):
@@ -59,7 +63,7 @@ def problems(*suites: type[Suite]) -> tuple[str, ...]:
     return HelperTypeCheck().problems(listed.modules(), (), listed)
 
 
-def problems_of(declaration: type[HelperType]) -> tuple[str, ...]:
+def declaration_problems(declaration: type[HelperType]) -> tuple[str, ...]:
     suite = type("OneSuite", tuple([Suite]), {"name": "one", "modules": [ScribeModule], "helper_types": [declaration]})
     return problems(suite)
 
@@ -77,11 +81,11 @@ def test_every_behaviour_is_a_field_with_no_default():
 
 
 def test_a_type_without_a_label_stops_the_boot_naming_the_type_and_the_field():
-    assert problems_of(NamelessScribe) == tuple(["sample.scribe's helper type scribe has no label"])
+    assert declaration_problems(UnlabelledScribe) == tuple(["sample.scribe's helper type scribe has no label"])
 
 
 def test_a_type_without_behaviours_stops_the_boot_naming_the_type_and_the_field():
-    assert problems_of(SilentScribe) == tuple(["sample.scribe's helper type scribe has no behaviours"])
+    assert declaration_problems(SilentScribe) == tuple(["sample.scribe's helper type scribe has no behaviours"])
 
 
 def test_two_suites_that_register_one_key_stop_the_boot_naming_both_suites():
@@ -90,5 +94,5 @@ def test_two_suites_that_register_one_key_stop_the_boot_naming_both_suites():
 
 def test_a_stored_key_no_module_registers_answers_no_to_every_behaviour():
     book = HelperTypeBook(tuple([HelperTypeEntry.declared("sample.scribe", Scribe)]))
-    assert book.behaviours("clerk") == NO_BEHAVIOURS
+    assert book.behaviours("clerk") == RETIRED_BEHAVIOURS
     assert not any(getattr(book.behaviours("clerk"), field.name) for field in fields(HelperBehaviours))

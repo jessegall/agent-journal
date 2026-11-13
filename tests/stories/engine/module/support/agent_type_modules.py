@@ -1,3 +1,4 @@
+from engine.helper_type.command_allow_list import CommandAllowList
 from engine.enums.access import Access
 from engine.enums.agent_role import AgentRole
 from engine.agent.agent_roster import AgentRoster
@@ -27,28 +28,33 @@ class ClerkHelper(Helper):
 class DuplicateMainType(HelperType):
     key = "main"
     label = "Duplicate main"
+    commands = CommandAllowList()
 
 
 class InvalidKeyType(HelperType):
     key = "Clerk_1"
     label = "Clerk"
+    commands = CommandAllowList()
 
 
 class UnlabelledClerk(HelperType):
     key = "clerk"
     label = " "
+    commands = CommandAllowList()
 
 
 class StringRosterClerk(HelperType):
     key = "clerk"
     label = "Clerk"
     roster = str
+    commands = CommandAllowList()
 
 
 class MissingBaseType(HelperType):
     key = "missing-base"
     label = "Missing base"
     behaviours = Helper.behaviours
+    commands = CommandAllowList()
 
 
 class MissingBaseClerk(MissingBaseType):
@@ -72,6 +78,7 @@ class SuiteClerk(HelperType):
     key = "suite-clerk"
     label = "Suite clerk"
     behaviours = Helper.behaviours
+    commands = CommandAllowList()
 
 
 class Clerk(Module):

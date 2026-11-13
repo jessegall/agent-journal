@@ -1,3 +1,4 @@
+from engine.helper_type.command_allow_list import CommandAllowList
 from core.modules.helpers.types.helper import Helper
 from engine.driver.driver import Driver
 from engine.helper_type.helper_type import HelperType
@@ -35,22 +36,23 @@ class ScribeSuite(Suite):
     helper_types = [Scribe]
 
 
-class NamelessScribe(HelperType):
+class UnlabelledScribe(HelperType):
     key = "scribe"
+    commands = CommandAllowList()
 
 
-class NamelessScribeModule(Module):
-    name = "sample.nameless-scribe"
+class UnlabelledScribeModule(Module):
+    name = "sample.unlabelled-scribe"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.agents"]
 
 
-class NamelessScribeSuite(Suite):
+class UnlabelledScribeSuite(Suite):
     """A made-up suite whose helper type has no label."""
 
-    name = "nameless-scribe"
-    modules = [NamelessScribeModule]
-    helper_types = [NamelessScribe]
+    name = "unlabelled-scribe"
+    modules = [UnlabelledScribeModule]
+    helper_types = [UnlabelledScribe]
 
 
 class CopyScribe(Helper):

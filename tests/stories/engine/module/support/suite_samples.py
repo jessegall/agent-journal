@@ -1,3 +1,4 @@
+from engine.helper_type.command_allow_list import CommandAllowList
 from dataclasses import fields
 
 from engine.module.suite import Suite
@@ -10,12 +11,14 @@ class Scout(HelperType):
     key = "scout"
     label = "Scout"
     behaviours = HelperBehaviours(**{field.name: False for field in fields(HelperBehaviours)})
+    commands = CommandAllowList()
 
 
 class DepotScout(HelperType):
     key = "scout"
     label = "Depot scout"
     behaviours = Scout.behaviours
+    commands = CommandAllowList()
 
 
 class ShopModule(Module):

@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from engine.enums.access import Access
+from engine.helper_type.command_allow_list import CommandAllowList
 from engine.helper_type.helper_behaviours import HelperBehaviours
 from engine.helper_type.helper_type import HelperType
 from engine.dotted_path.dotted_path import DottedPath
@@ -10,8 +11,8 @@ from engine.dotted_path.dotted_path import DottedPath
 
 @dataclass(frozen=True)
 class HelperTypeEntry:
-    """A helper type and the module that registered it, with its behaviours, its roster stored by class path and the
-    keys of the helper types its class extends."""
+    """A helper type and the module that registered it, with its behaviours, the commands it may run, its roster
+    stored by class path and the keys of the helper types its class extends."""
 
     module: str
     key: str
@@ -30,22 +31,26 @@ class HelperTypeEntry:
     job_command: tuple[str, ...] = ()
     job_task_flag: str = ""
     line: str = ""
+    commands: CommandAllowList = CommandAllowList()
+    command_types_setting: str = ""
 
     @classmethod
     def declared(cls, module: str, declaration: type[HelperType]) -> "HelperTypeEntry":
         roster = DottedPath.class_path(declaration.roster) if declaration.roster is not None else None
         return cls(module, declaration.key, declaration.label, declaration.access, declaration.separate_folder, declaration.behaviours, declaration.bases(), declaration.default_profile,
                    declaration.start_line, roster, declaration.run_limit_key, declaration.kept_limit_key, declaration.profile_limits_key, declaration.queue_limit_key,
-                   declaration.job_command, declaration.job_task_flag, declaration.line)
+                   declaration.job_command, declaration.job_task_flag, declaration.line, declaration.commands,
+                   declaration.command_types_setting)
 
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "HelperTypeEntry":
         roster = DottedPath(stored["roster"]["text"]) if stored["roster"] is not None else None
         return cls(stored["module"], stored["key"], stored["label"], Access(stored["access"]), stored["separate_folder"], HelperBehaviours(**stored["behaviours"]), tuple(stored.get("bases", ())), stored["default_profile"],
                    stored["start_line"], roster, stored.get("run_limit_key", ""), stored.get("kept_limit_key", ""), stored.get("profile_limits_key", ""), stored.get("queue_limit_key", ""),
-                   tuple(stored.get("job_command", ())), stored.get("job_task_flag", ""), stored.get("line", ""))
+                   tuple(stored.get("job_command", ())), stored.get("job_task_flag", ""), stored.get("line", ""),
+                   CommandAllowList.restored(stored["commands"]), stored["command_types_setting"])
 
-    def is_a(self, helper_type: type[HelperType]) -> bool:
+    def matches(self, helper_type: type[HelperType]) -> bool:
         return helper_type.key in self.type_keys()
 
     def extends(self, base: str) -> bool:

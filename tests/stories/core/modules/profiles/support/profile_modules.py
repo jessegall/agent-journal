@@ -1,3 +1,4 @@
+from engine.helper_type.command_allow_list import CommandAllowList
 from engine.enums.access import Access
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver import Driver
@@ -24,6 +25,7 @@ class ReaderProfileClerk(HelperType):
     label = "Clerk"
     default_profile = "module-reader"
     behaviours = Helper.behaviours
+    commands = CommandAllowList()
 
 
 class SampleProfileClerk(Helper):

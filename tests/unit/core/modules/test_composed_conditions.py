@@ -81,7 +81,7 @@ def test_agent_and_usage_conditions_write_the_statements_they_wrote_by_hand():
     assert stated(ActiveAgentRows("creator_id")) == ("creator_id IN (SELECT id FROM agents WHERE ended_at IS NULL AND retired_at IS NULL)", [])
     assert stated(AgentRoleProfileCondition(["worker"], ["planner"])) == ("(role IN (?) OR coalesce(nullif(profile, ''), job_profile) IN (?))", ["worker", "planner"])
     assert stated(AgentActivityCondition({3: "testing"})) == ("((ended_at IS NULL OR id IN (?)) AND retired_at IS NULL)", [3])
-    assert stated(EndedAgents()) == ("retired_at IS NOT NULL", [])
+    assert stated(EndedAgents(["worker"])) == ("(retired_at IS NOT NULL OR role NOT IN (?))", ["worker"])
 
 
 def test_process_driver_and_suite_conditions_write_the_statements_they_wrote_by_hand():

@@ -26,7 +26,7 @@ CODING_SETTING_VALUES = [
                  SettingType.FLAG, default=False, person_set=True, screen="work", section="Other helpers"),
     SettingValue("plain-code-words", "Plain code words", "Every agent loads the skill on naming code in plain words at its start and after a compaction.",
                  SettingType.FLAG, default=True, scope=SettingScope.PROJECT, person_set=True, screen="work", section="Other helpers"),
-    SettingValue("worker-command-types", "Worker command types", "The types of shell command a worker may run.", SettingType.LIST,
+    SettingValue("worker-command-types", "Worker command types", "The types of shell command a worker may run; journal commands are judged by the worker's command list, so journal here changes nothing.", SettingType.LIST,
                  default=(CommandCategory.READ.value, CommandCategory.SEARCH.value, CommandCategory.EDIT.value, CommandCategory.CHECK.value, CommandCategory.TEST_RUN.value,
                           CommandCategory.BUILD.value), person_set=True),
 ]
@@ -34,3 +34,5 @@ PLAIN_CODE_WORDS = f"{MODULE_KEY}.plain-code-words"
 CODING_SETTING_RULES = {COMMAND_TYPES: ListRule(choices=tuple(category.value for category in CommandCategory))}
 CODING_SETTINGS = ruled_settings(MODULE_KEY, CODING_SETTING_VALUES, CODING_SETTING_RULES)
 WORKER_TEST_LIMIT = "journal.suites.coding.workers.worker-run-most-tests"
+WORKER_RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit"
+WORKER_KEPT_LIMIT = "journal.suites.coding.workers.worker-kept-limit"

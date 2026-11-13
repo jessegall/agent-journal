@@ -101,7 +101,7 @@ class Agent(EnvironmentScoped, Model):
         return self.parent_id
 
     def ended(self, timestamp: Timestamp, behaviours: HelperBehaviours) -> "Agent":
-        return self.changed(ended_at=timestamp, paused_at=self.paused_at if behaviours.keeps_pause_after_end else None)
+        return self.changed(ended_at=timestamp, paused_at=self.paused_at if behaviours.retains_pause else None)
 
     def is_foreign_helper(self, actor: Actor) -> bool:
         return actor.type is ActorType.AGENT and self.parent_id != actor.id

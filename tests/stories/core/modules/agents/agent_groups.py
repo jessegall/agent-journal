@@ -3,7 +3,6 @@ import json
 from engine.agent.groups.agent_group import AgentGroup
 from engine.agent.groups.agent_group_book import AgentGroupBook
 from engine.agent.groups.agent_group_entry import AgentGroupEntry
-from engine.registry.registry import Registry
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_value
 from suites.coding.support.shipped_profiles import DESIGNER_PROFILE
@@ -25,9 +24,10 @@ def test_s49_the_coding_suite_shows_each_special_helper_profile_in_its_own_group
 
 def test_s49_every_profile_is_in_exactly_one_group(new_story):
     story = new_story(fixture=UserBuilder)
-    book, types = story.container.get(Registry).agent_group_book(), story.container.get(Registry).helper_type_book()
-    expect_value([book.group(types.find("worker"), f"{WORKER_PROFILE.name}").key, book.group(types.find("helper"), f"{MERGER_PROFILE.name}").key,
-                  book.group(types.find("merger"), f"{MERGER_PROFILE.name}").key, book.group(types.find("helper"), "anything").key], ["workers", "merger", "merger", "helpers"])
+    story.expect_agent_group("worker", f"{WORKER_PROFILE.name}", "workers")
+    story.expect_agent_group("helper", f"{MERGER_PROFILE.name}", "merger")
+    story.expect_agent_group("merger", f"{MERGER_PROFILE.name}", "merger")
+    story.expect_agent_group("helper", "anything", "helpers")
 
 
 def entries(*groups: AgentGroup) -> tuple[AgentGroupEntry, ...]:

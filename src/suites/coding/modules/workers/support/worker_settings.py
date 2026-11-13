@@ -6,7 +6,7 @@ from engine.setting.setting_value import SettingValue
 from core.modules.helpers.support.command_pair_rule import CommandPairRule
 from engine.setting.list_rule import ListRule
 from engine.setting.number_rule import NumberRule
-from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
+from suites.coding.support.coding_settings import WORKER_KEPT_LIMIT, WORKER_RUN_LIMIT, WORKER_TEST_LIMIT
 
 MODULE_KEY = "journal.suites.coding.workers"
 DISPATCHES_WORKERS_SETTING = f"{MODULE_KEY}.main-dispatches-workers"
@@ -21,8 +21,6 @@ MERGE_BUILT_PATHS = f"{MODULE_KEY}.merge-built-paths"
 MERGE_BUILD_COMMAND = f"{MODULE_KEY}.merge-build-command"
 MERGE_HOOKS_NAME = "merge-hooks"
 MERGE_HOOKS = f"{MODULE_KEY}.{MERGE_HOOKS_NAME}"
-WORKER_RUN_LIMIT = f"{MODULE_KEY}.worker-run-limit"
-WORKER_KEPT_LIMIT = f"{MODULE_KEY}.worker-kept-limit"
 WORKER_INSTRUCTION_FILES_SETTING = f"{MODULE_KEY}.worker-instruction-files"
 DEFAULT_WORKER_COUNT = 2
 SILENT_AGENT_MINUTES = f"{MODULE_KEY}.silent-agent-minutes"

@@ -1,10 +1,14 @@
 import re
-from collections.abc import Iterator, Mapping, Sequence
+from collections import Counter
+from collections.abc import Iterator, Mapping, Sequence, Set
 
 from engine.enums.access import Access
 from engine.agent.agent_roster import AgentRoster
 from engine.agent.groups.agent_group_book import AgentGroupBook
+from engine.helper_type.command_allow_list import CommandAllowList
 from engine.helper_type.helper_type import HelperType
+from engine.helper_type.enums.journal_line_class import JournalLineClass
+from engine.module.journal_lines import JournalLines
 from engine.profile.agent_profile import AgentProfile
 from engine.agent.groups.agent_group_entry import AgentGroupEntry
 from engine.helper_type.helper_type_book import MAIN_KEY, HelperTypeBook
@@ -15,7 +19,7 @@ from engine.registry.driver_rule_entry import DriverRuleEntry
 
 HELPER_TYPE_WORD = re.compile(r"[a-z]+(-[a-z]+)*")
 AGENTS_MODULE = "journal.core.agents"
-REQUIRED_FIELDS = ("key", "label", "behaviours")
+REQUIRED_FIELDS = ("key", "label", "behaviours", "commands")
 
 
 class HelperTypeCheck:
@@ -33,6 +37,9 @@ class HelperTypeCheck:
         book = HelperTypeBook(entries)
         problems.extend(problem for module in modules for declaration in suites.helper_types(module)
                         for problem in self.inheritance_problems(module.name, declaration, book))
+        lines = JournalLines().classes(modules)
+        problems.extend(problem for module in modules for declaration in suites.helper_types(module)
+                        for problem in self.list_problems(f"{module.name}'s helper type {declaration.key}", declaration.commands, lines))
         profiles = {profile.name: profile for module in modules for profile in module.profiles}
         for declaration in (declaration for module in modules for declaration in suites.helper_types(module) if declaration.default_profile):
             if declaration.default_profile not in profiles:
@@ -86,6 +93,16 @@ class HelperTypeCheck:
         if roster is not None and not issubclass(roster, AgentRoster):
             problems.append(f"{name}: its roster does not implement AgentRoster")
         return problems
+
+    @staticmethod
+    def list_problems(name: str, commands: CommandAllowList, lines: Mapping[str, Set[JournalLineClass]]) -> Iterator[str]:
+        groups = {line.partition(" ")[0] for line in lines}
+        yield from (f"{name} lists the group {group}, which no module serves" for group in commands.groups if group not in groups)
+        yield from (f"{name} lists the line {line}, which no module serves" for line in commands.lines if line not in lines)
+        yield from (f"{name} names {entry} twice" for entry, count in Counter(commands.entries()).items() if count > 1)
+        yield from (f"{name} lists the line {line} and its whole group" for line in commands.lines if line.partition(" ")[0] in commands.groups)
+        yield from (f"{name} lists the class {line_class}, which no line has" for line_class in commands.classes
+                    if not any(line_class in classes for classes in lines.values()))
 
     def inheritance_problems(self, module: str, declaration: type[HelperType], book: HelperTypeBook) -> list[str]:
         name = f"{module}'s helper type {declaration.key}"

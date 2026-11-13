@@ -7,10 +7,8 @@ OLD_ROWS = (("verifier", "", "writing", True), ("reviewer", "", "read-only", Tru
 
 
 class OldRoleAgentSeed(Seed):
-    """Agent rows as an older journal stored them, each on a seeded agent actor.
-
-    An ended verifier, an ended reviewer and a running helper with the merger profile; no command makes such a
-    row any more."""
+    """Agent rows as an older journal stored them: an ended verifier, an ended reviewer and a running helper with
+    the merger profile, each on a seeded agent actor."""
 
     table = "agents"
 

@@ -1,4 +1,3 @@
-from core.modules.agents.listeners.retired_type_listener import RetiredTypeListener
 from core.modules.agents.migrations.m021_menu_answer_agent_index import MenuAnswerAgentIndexMigration
 from engine.agent.agent_role_reader import AgentRoleReader
 from core.modules.agents.guards.agent_chat_guard import AgentChatGuard
@@ -179,6 +178,6 @@ class AgentsModule(Module):
                WindowDeclaration("agents.agent-detail", "Agent", "agent-detail.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.AGENT, skeleton=[SkeletonPart.line()],
                                  reads=["usage inspector", "agent list", "agent-skill list"], events=["agent.*"])]
     inspectors = [AGENT_INSPECTOR]
-    listeners = [SessionEndListener, SessionLaunchListener, MenuAnswerMarkListener, EndedAgentProgramListener, BootInstructionImportsListener, RetiredTypeListener]
+    listeners = [SessionEndListener, SessionLaunchListener, MenuAnswerMarkListener, EndedAgentProgramListener, BootInstructionImportsListener]
     marks = AGENT_MARKS
     seeders = [AgentsSeeder]

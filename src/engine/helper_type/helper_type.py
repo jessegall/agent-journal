@@ -2,13 +2,15 @@ from typing import ClassVar
 
 from engine.agent.agent_roster import AgentRoster
 from engine.enums.access import Access
+from engine.helper_type.command_allow_list import CommandAllowList
 from engine.helper_type.helper_behaviours import HelperBehaviours
 
 
 class HelperType:
-    """A kind of helper a module or a suite registers, as a class with plain fields: its file access and how it
-    starts and holds work. A subclass extends its base and takes every field it does not set from it. Every agent
-    outside the main agents is a helper of one of these kinds; whether it reads or writes is the kind's access."""
+    """A kind of helper a module or a suite registers, as a class with plain fields: its file access and how
+    it starts and holds work. A subclass extends its base and takes every field it does not set from it. Every
+    agent outside the main agents is a helper of one of these kinds; whether it reads or writes is the kind's
+    access."""
 
     key: ClassVar[str]
     label: ClassVar[str]
@@ -24,7 +26,9 @@ class HelperType:
     job_command: ClassVar[tuple[str, ...]] = ()
     job_task_flag: ClassVar[str] = ""
     line: ClassVar[str] = ""
+    command_types_setting: ClassVar[str] = ""
     behaviours: ClassVar[HelperBehaviours]
+    commands: ClassVar[CommandAllowList]
 
     @classmethod
     def bases(cls) -> tuple[str, ...]:

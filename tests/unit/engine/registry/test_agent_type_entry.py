@@ -1,3 +1,4 @@
+from engine.helper_type.command_allow_list import CommandAllowList
 import json
 from dataclasses import asdict, fields
 
@@ -10,6 +11,7 @@ class SampleType(HelperType):
     key = "sample"
     label = "Sample"
     behaviours = HelperBehaviours(**{field.name: False for field in fields(HelperBehaviours)})
+    commands = CommandAllowList()
 
 
 class SendingSample(SampleType):
