@@ -21,7 +21,7 @@ class ServiceRetries:
     def record_start(self, key: tuple[str, str], current_time: datetime) -> None:
         self.retries.setdefault(key, ServiceRetry()).started_at = current_time
 
-    def forget_steady(self, key: tuple[str, str], current_time: datetime) -> None:
+    def drop_steady(self, key: tuple[str, str], current_time: datetime) -> None:
         retry = self.retries.get(key)
         if retry is not None and retry.started_at is not None and current_time - retry.started_at >= STEADY_RUN:
             del self.retries[key]

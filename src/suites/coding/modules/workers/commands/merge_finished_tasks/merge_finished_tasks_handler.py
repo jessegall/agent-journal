@@ -66,12 +66,12 @@ class MergeFinishedTasksHandler(Handler[MergeFinishedTasks, MergeOutcome]):
             if commit is None:
                 raise Refusal(f"task {target} has no commit on the branch of {AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text}", "name a task the worker has handed in")
             return commit
-        if not self.range.is_on_branch(worktree, target):
+        if not self.range.is_branch_commit(worktree, target):
             raise Refusal(f"commit {target} is not on the branch of {AgentLabel.from_row_id(worktree.session_agent_id, self.numbers, "worker").text}", "journal worker logs lists its tasks: give one of them or one of its commits")
         return target
 
     def finished_tasks(self, worktree: Worktree, commit: str) -> list[Task]:
-        tasks = self.range.tasks_up_to(worktree, commit)
+        tasks = self.range.leading_tasks(worktree, commit)
         unfinished = [str(task.id) for task in tasks if task.state not in COMMITTED_TASK_STATES]
         if unfinished or not tasks:
             raise Refusal(f"task {', '.join(unfinished) or commit} is not committed", "take in only work the worker has committed")

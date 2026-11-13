@@ -53,14 +53,14 @@ def s15_another_area_is_left_alone_and_the_worker_is_not_woken(story, repository
     diverge_file(repository, worker, "src/core/modules/plans/plan_rows.py", "src/viewer/board.ts")
     stale_check(story)
     story.expect_success(f'merger leave {agent_number(story, worker.id)} --why "only the viewer moved"', actor=merger(story))
-    story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.IGNORED], not expected_nudge(UPDATE_ORDERED).is_in(worker_lines(story, worker)), detail=str(checks(story)))
+    story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.IGNORED], not expected_nudge(UPDATE_ORDERED).matches_text(worker_lines(story, worker)), detail=str(checks(story)))
 
 
 def s16_an_overlap_is_ordered_and_the_worker_is_woken_with_the_order(story, repository, worker: Actor) -> None:
     diverge_file(repository, worker, "plan_checkpoints.py", "plan_checkpoints.py")
     stale_check(story)
     story.expect_success(f'merger update {agent_number(story, worker.id)} --why "plan_checkpoints.py moved on both sides"', actor=merger(story))
-    story.expect_rows(expected_nudge(UPDATE_ORDERED).is_in(worker_lines(story, worker)), detail=worker_lines(story, worker))
+    story.expect_rows(expected_nudge(UPDATE_ORDERED).matches_text(worker_lines(story, worker)), detail=worker_lines(story, worker))
 
 
 def s17_a_sibling_file_is_same_folder_and_not_overlap(story, repository, worker: Actor) -> None:

@@ -37,7 +37,7 @@ def started_ids(worker: StoryWorker) -> list[int]:
 
 def test_12_a_worker_starts_a_second_task_and_hears_how_many_it_holds_of_the_most_it_may(task_worker):
     outcome = task_worker.story.run("task start 2", actor=task_worker.worker)
-    task_worker.story.expect_rows(outcome.code == 0, started_ids(task_worker) == [1, 2], expected_nudge(WORKER_TASK_COUNT, count=2, limit=5).is_in_any(task_worker.worker_lines()), detail=f"{outcome.output_text} | {task_worker.worker_lines()}")
+    task_worker.story.expect_rows(outcome.code == 0, started_ids(task_worker) == [1, 2], expected_nudge(WORKER_TASK_COUNT, count=2, limit=5).matches_lines(task_worker.worker_lines()), detail=f"{outcome.output_text} | {task_worker.worker_lines()}")
 
 
 def test_13_a_worker_holds_five_started_tasks_and_its_status_lists_them(five_tasks):

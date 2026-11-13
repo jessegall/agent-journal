@@ -82,7 +82,7 @@ class PluginServices:
     def keep(self, processes: ServiceProcesses, key: tuple[str, str], folder: Path, service: ManifestService, manifest: PluginManifest, digest: str) -> list[str]:
         process = processes.running.get(key)
         if process is not None and process.running():
-            processes.retries.forget_steady(key, self.clock.timestamp().value)
+            processes.retries.drop_steady(key, self.clock.timestamp().value)
             return []
         if process is not None and (service.restart is ServiceRestart.STOPPED_END or (service.restart is ServiceRestart.FAILED_END and process.exit_code() == 0)):
             return []

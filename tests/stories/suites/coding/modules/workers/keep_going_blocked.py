@@ -51,7 +51,7 @@ def worker_blocked_its_task(worker_on_a_task):
 def test_a_blocked_task_is_not_left_to_the_merger(worker_blocked_its_task):
     story = worker_blocked_its_task
     texts = merger_line_texts(story)
-    story.expect_rows(not any(expected_nudge(WORKER_TASK_BLOCKED).is_in(text) for text in texts), detail=str(texts))
+    story.expect_rows(not any(expected_nudge(WORKER_TASK_BLOCKED).matches_text(text) for text in texts), detail=str(texts))
 
 
 def test_the_line_about_a_blocked_task_wakes_the_main_agent():

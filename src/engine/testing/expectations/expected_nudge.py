@@ -28,11 +28,11 @@ class ExpectedNudge:
             parts.append(re.escape(str(self.values[name])) if name in self.values else ANY_VALUE)
         return re.compile("".join(parts), re.IGNORECASE | re.DOTALL)
 
-    def is_in(self, text: str) -> bool:
+    def matches_text(self, text: str) -> bool:
         return self.pattern().search(text) is not None
 
-    def is_in_any(self, lines: Iterable[str]) -> bool:
-        return any(self.is_in(line) for line in lines)
+    def matches_lines(self, lines: Iterable[str]) -> bool:
+        return any(self.matches_text(line) for line in lines)
 
     def is_kept_as(self, nudge: Nudge) -> bool:
         fields = dict(nudge.fields)

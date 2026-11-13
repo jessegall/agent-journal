@@ -189,7 +189,7 @@ def test_the_main_agent_hears_nothing_of_an_ask_and_sees_no_stuck_mark(asking_wi
 def test_with_the_merger_off_an_ask_reaches_the_main_agent_and_the_worker_may_stop(merger_disabled_worker):
     outcome = merger_disabled_worker.post_question(topic=AskTopic.BUILT)
     line = merger_disabled_worker.merger_lines()[0]
-    merger_disabled_worker.story.expect_rows(AskTopic.BUILT.waiting_work() in outcome.output_text, expected_nudge(MERGER_LINE_AVAILABLE).is_in(merger_disabled_worker.main_lines()), detail=merger_disabled_worker.main_lines())
+    merger_disabled_worker.story.expect_rows(AskTopic.BUILT.waiting_work() in outcome.output_text, expected_nudge(MERGER_LINE_AVAILABLE).matches_text(merger_disabled_worker.main_lines()), detail=merger_disabled_worker.main_lines())
     merger_disabled_worker.story.expect_text(f"merger-line show {line.id}", QUESTION, "point build", actor=merger_disabled_worker.story.agent)
     merger_disabled_worker.story.expect_hook_allowed(merger_disabled_worker.session(), HookSamples.stop())
 

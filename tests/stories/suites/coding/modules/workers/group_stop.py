@@ -33,7 +33,7 @@ def unfinished_lines(worker) -> tuple[AgentLine, ...]:
 
 def expect_silent_stop(worker) -> None:
     lines = worker.main_agent_lines()
-    worker.story.expect_rows(not unfinished_lines(worker), not any(expected_nudge(WORKER_RESTARTED).is_in(line) or "ended with" in line for line in lines),
+    worker.story.expect_rows(not unfinished_lines(worker), not any(expected_nudge(WORKER_RESTARTED).matches_text(line) or "ended with" in line for line in lines),
                              not any("tasks left" in line for line in worker.worker_lines()), detail=str(lines))
 
 
@@ -117,7 +117,7 @@ def test_a_worker_with_failed_tests_that_stops_is_refused_with_the_status_line(f
 
 
 def test_a_worker_whose_program_crashed_while_building_is_started_again(crashed_building):
-    crashed_building.story.expect_rows(any(expected_nudge(WORKER_RESTARTED).is_in(line) and "started again" in line for line in crashed_building.main_agent_lines()), len(unfinished_lines(crashed_building)) == 1)
+    crashed_building.story.expect_rows(any(expected_nudge(WORKER_RESTARTED).matches_text(line) and "started again" in line for line in crashed_building.main_agent_lines()), len(unfinished_lines(crashed_building)) == 1)
 
 
 def test_a_worker_with_an_open_ask_still_reaches_its_parent_when_it_ends(new_story, monkeypatch):
@@ -150,4 +150,4 @@ def test_a_worker_with_only_blocked_tasks_may_stop_and_tells_who_blocked_them(ne
     worker = dispatched_worker(story)
     story.expect_success('task block 1 --reason "waits on a user"', actor=worker)
     reply = story.expect_hook_allowed(worker_session(story, worker), HookSamples.stop())
-    story.expect_rows(reply is None or expected_nudge(WORKER_TASK_BLOCKED).is_in(' '.join(reply.lines)))
+    story.expect_rows(reply is None or expected_nudge(WORKER_TASK_BLOCKED).matches_text(' '.join(reply.lines)))

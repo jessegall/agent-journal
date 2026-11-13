@@ -22,7 +22,7 @@ class ReferenceRewrite:
     def __init__(self, database: Database) -> None:
         self.database = database
 
-    def rows_where(self, table: str, column: str, value: object) -> list[dict[str, object]]:
+    def matching_rows(self, table: str, column: str, value: object) -> list[dict[str, object]]:
         matched = self.database.rows(Statement(f'SELECT * FROM "{table}" WHERE "{column}" = ?', [value], scan_reason=SCHEMA_REASON))
         return [dict(row) for row in matched]
 

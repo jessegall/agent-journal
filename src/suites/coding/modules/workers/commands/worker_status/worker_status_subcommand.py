@@ -72,7 +72,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
         point = self.guidance.point(worker_id)
         waiting_tasks = tuple(self.tasks.assignee_tasks(worker_id).filter(state=TaskState.TESTING).every_row(UNIT_TASKS_REASON))
         return WorkerStatus(worker_id, worker.number, worktree, current_task, self.tasks.started_tasks(worker_id), point.round.required_staging(), waiting_tasks, self.open_tasks.startable(point.round), tests, assignments, skills, worker.program, self.resume.program_state(worker) if worker.ended_at is not None else None, point, worker.paused_at is not None, self.questions.status_lines(worker_id), worker.standing,
-                            self.unit_line(worker_id, worktree.id), self.stale_line(worktree), self.held_by_others(worker_id))
+                            self.unit_line(worker_id, worktree.id), self.stale_line(worktree), self.foreign_holder_lines(worker_id))
 
     def stale_line(self, worktree: Worktree) -> str:
         try:
@@ -90,7 +90,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | KeptWorkerStatus | Re
         return "the merger" if agent.profile == MERGER_PROFILE else AgentLabel.from_agent(agent).text
 
     # The worker's assigned tasks another agent has started, which it can neither prove nor commit.
-    def held_by_others(self, worker_id: int) -> tuple[Task, ...]:
+    def foreign_holder_lines(self, worker_id: int) -> tuple[Task, ...]:
         return tuple(task for task in self.tasks.assignee_tasks(worker_id).filter(state=TaskState.STARTED).every_row(UNIT_TASKS_REASON) if task.holder_id not in (None, worker_id))
 
     def unit_line(self, worker_id: int, worktree_id: int) -> str:

@@ -22,7 +22,7 @@ def test_a_read_only_helpers_run_with_no_reader_is_not_told_but_counted_for_the_
     story.hook("s-1", HookSamples.session_start())
     story.run_listeners()
     story.expect_rows(end_decision(story, process)[0] == "missing", "no reader reads" not in helper_lines, detail=helper_lines)
-    story.expect_rows(expected_nudge(READONLY_MISSING_NOTICE, count=1).is_in(kept_lines(story)), detail=kept_lines(story))
+    story.expect_rows(expected_nudge(READONLY_MISSING_NOTICE, count=1).matches_text(kept_lines(story)), detail=kept_lines(story))
 
 
 def test_one_command_without_a_reader_is_missing_for_a_worker_and_the_main_agent_alike_while_rejected_crashed_asking_and_lookup_runs_need_none(new_story):

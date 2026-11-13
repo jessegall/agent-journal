@@ -253,10 +253,10 @@ def test_a_read_across_tables_is_read_again_after_a_write_to_any_of_them_in_the_
     def loaded():
         return tuple(row[0] for row in database.rows(Statement("SELECT note_id FROM places ORDER BY id")))
 
-    first = kept.read_across(tables, loaded, name="note-places")
+    first = kept.read_spanning(tables, loaded, name="note-places")
     with database.transaction():
         database.update(Statement("UPDATE places SET note_id = 2, version = 2 WHERE id = 1"))
-        moved = kept.read_across(tables, loaded, name="note-places")
+        moved = kept.read_spanning(tables, loaded, name="note-places")
     assert (first, moved) == (tuple([1]), tuple([2]))
 
 

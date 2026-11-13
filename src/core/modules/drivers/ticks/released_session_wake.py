@@ -21,9 +21,9 @@ class ReleasedSessionWake:
         files = ServerFiles(container.get(JournalHome))
         if not files.phase().runs_programs:
             return
-        blocked = files.held_sessions()
-        sessions = tuple(dict.fromkeys(blocked.taken_lines()))
+        blocked = files.blocked_sessions()
+        sessions = tuple(dict.fromkeys(blocked.claimed_lines()))
         if sessions:
             for agent in container.get(Queries).query(Agent).matching(Among("session", sessions)).matching(IsNull("retired_at")).every_row(RELEASED_SESSIONS_REASON):
                 container.get(Bus).run(SendJournalStartedLine(agent.id), Actor.core(), environment_id=agent.environment_id)
-        blocked.move_aside()
+        blocked.archive()

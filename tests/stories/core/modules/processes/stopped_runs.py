@@ -41,4 +41,4 @@ def test_the_journal_stopping_a_run_for_its_timeout_tells_the_agent_its_output_i
     story.expect_success(f"output timeout {process.id} 2m", actor=story.agent)
     story.advance(timedelta(seconds=121))
     timeout_tick(story)
-    expect_value(expected_nudge(OUTPUT_TIMEOUT).is_in(agent_lines(story)), True)
+    expect_value(expected_nudge(OUTPUT_TIMEOUT).matches_text(agent_lines(story)), True)

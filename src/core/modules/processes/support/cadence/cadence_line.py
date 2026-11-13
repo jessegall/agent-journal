@@ -26,7 +26,7 @@ class CadenceLine:
         return cls(int(size), float(checked_at), float(resumed), tuple(float(growth) for growth in growths))
 
     # This cadence after a look at size bytes now: after a break in the watching the times start again from now.
-    def looked(self, size: int, current_time: float) -> "CadenceLine":
+    def checked(self, size: int, current_time: float) -> "CadenceLine":
         growths, resumed = self.growths, self.resumed
         if self.checked_at and current_time - self.checked_at > BREAK_SECONDS:
             growths, resumed = (), current_time

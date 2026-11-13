@@ -15,4 +15,4 @@ class GrantRunSlotsHandler(Handler[GrantRunSlots, None]):
 
     def handle(self, command: GrantRunSlots, context: Context) -> None:
         self.slots.grant_all_environments(context)
-        self.slots.take_counts(context)
+        self.slots.claim_counts(context)

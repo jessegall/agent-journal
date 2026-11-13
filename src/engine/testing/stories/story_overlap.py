@@ -71,13 +71,13 @@ class StoryOverlap:
         lines: list[str] = []
         for first, second in sorted(self.candidate_pairs(paths)):
             share = len(paths[first] & paths[second]) / len(paths[first] | paths[second])
-            if share > OVERLAP_LIMIT_SHARE and self.check_the_same_thing(first, second):
+            if share > OVERLAP_LIMIT_SHARE and self.check_identical_reach(first, second):
                 lines.append(f"stories share {round(share * 100)}% of their steps and check the same thing, merge their checks into one story: {first} and {second}")
         return lines
 
     # Two stories check the same thing unless each records what it checks and nothing of the one is in the other:
     # stories that check wholly different things are different tests.
-    def check_the_same_thing(self, first: str, second: str) -> bool:
+    def check_identical_reach(self, first: str, second: str) -> bool:
         first_checks, second_checks = self.story_checks[first], self.story_checks[second]
         return not first_checks or not second_checks or bool(first_checks & second_checks)
 

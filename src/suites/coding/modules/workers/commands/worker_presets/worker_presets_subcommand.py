@@ -30,7 +30,7 @@ class WorkerPresetsSubcommand(ReadSubcommand[RowList]):
         folder = self.environments.find(caller.environment_id).folder
         matched = self.manifests.found(Path(folder))
         manifests = [{"id": manifest.path, "kind": "manifest", "language": manifest.language} for manifest in matched]
-        commands = [{"id": entry.name, "kind": "test command", "command": entry.command} for entry in self.presets.presets_of(matched)]
+        commands = [{"id": entry.name, "kind": "test command", "command": entry.command} for entry in self.presets.project_presets(matched)]
         return RowList([*manifests, *commands])
 
     def write_output(self, value: object, output: Output) -> None:

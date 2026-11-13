@@ -89,11 +89,11 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
     def skip_count(self, actor: Actor, last: RefusalSkip | None, name: str, skipped_at: str) -> int:
         if last is None or last.restored_at is not None:
             return 1
-        return 1 if self.another_rule_refused(actor, skipped_at, name) else last.streak + 1
+        return 1 if self.different_rule_refused(actor, skipped_at, name) else last.streak + 1
 
     # Whether a rule or guard other than the named one refused the agent after the time; a refused call that names no
     # rule counts as another.
-    def another_rule_refused(self, actor: Actor, skipped_at: str, name: str) -> bool:
+    def different_rule_refused(self, actor: Actor, skipped_at: str, name: str) -> bool:
         calls = self.queries.query(HookCall).where(session_agent_id=actor.id, answer=HookAnswer.REFUSED).where("created_at", ">", skipped_at)
         if calls.matching(MetadataListDiffers(DRIVERS_MODULE, "rules", "outcome", "refused", "rule", name)).exists():
             return True

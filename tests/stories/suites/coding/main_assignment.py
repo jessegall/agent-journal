@@ -91,7 +91,7 @@ def test_turning_keep_going_on_wakes_the_idle_main_agent_once_for_a_free_place_a
     first, repeated = waking_lines(story), waking_lines(story)
     story.expect_success(f"setting set {WORKER_LIMIT} 0 --environment main")
     last = waking_lines(story)
-    story.expect_rows(len(first) == 1, "can go to a worker" in first[0], repeated == first, len(last) == 2, expected_nudge(TASK_ASSIGNMENT).is_in(last[-1]), detail=str(last))
+    story.expect_rows(len(first) == 1, "can go to a worker" in first[0], repeated == first, len(last) == 2, expected_nudge(TASK_ASSIGNMENT).matches_text(last[-1]), detail=str(last))
 
 
 def test_the_free_place_notice_comes_back_when_another_task_can_go_to_a_worker(new_story):

@@ -49,8 +49,8 @@ def test_a_person_marks_a_runs_command_from_its_card_so_its_agent_is_asked_no_re
     after_mark = received(story)
     story.expect_success(f"output readable {silent.id} --environment main", actor=story.user)
     resumed = received(story)
-    story.expect_rows(expected_nudge(UNREADABLE_DECLARED, name='make serve').is_in(flagged), f"Output {silent.id} ended" in after_mark, "No reader reads" not in after_mark,
-                      expected_nudge(UNREADABLE_LIFTED, name='make serve').is_in(resumed), detail=f"{flagged}\n{after_mark}\n{resumed}")
+    story.expect_rows(expected_nudge(UNREADABLE_DECLARED, name='make serve').matches_text(flagged), f"Output {silent.id} ended" in after_mark, "No reader reads" not in after_mark,
+                      expected_nudge(UNREADABLE_LIFTED, name='make serve').matches_text(resumed), detail=f"{flagged}\n{after_mark}\n{resumed}")
     story.expect_text("unreadable-mark show 1", f"creator_id: {story.user.id}", f"lifter_id: {story.user.id}", actor=story.user)
 
 

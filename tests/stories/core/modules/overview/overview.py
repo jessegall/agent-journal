@@ -81,7 +81,7 @@ def test_after_a_session_start_nothing_passes_before_the_overview_but_reading_a_
     story.expect_hook_refusal("s-1", LISTING, expected_nudge(OVERVIEW_REFUSAL))
     story.expect_hook_refusal("s-1", JOURNAL_LINE, expected_nudge(OVERVIEW_REFUSAL))
     repeated = story.hook("s-1", EDIT).refusal
-    story.expect_rows(expected_nudge(OVERVIEW_REFUSAL).is_in(repeated), "refusal skip" not in repeated, detail=repeated)
+    story.expect_rows(expected_nudge(OVERVIEW_REFUSAL).matches_text(repeated), "refusal skip" not in repeated, detail=repeated)
     story.expect_hook_allowed("s-1", SKILL_READ)
     story.expect_hook_allowed("s-1", OVERVIEW_HOOK)
     story.expect_hook_allowed("s-1", EDIT)

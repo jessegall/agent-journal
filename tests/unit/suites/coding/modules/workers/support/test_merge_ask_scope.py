@@ -92,10 +92,10 @@ class SampleRange(WorkerMergeRange):
     def task_commit(self, worktree, task_id):
         return self.commits.get(task_id)
 
-    def is_on_branch(self, worktree, commit):
+    def is_branch_commit(self, worktree, commit):
         return commit in self.commits.values()
 
-    def tasks_up_to(self, worktree, commit):
+    def leading_tasks(self, worktree, commit):
         return [SampleTask(task_id) for task_id, task_commit in self.commits.items() if task_id <= {"a1": 7, "b2": 8}.get(commit, 8)]
 
 

@@ -24,10 +24,10 @@ class WorkerMergeRange:
         commits = self.git.task_commits(worktree, task_id)
         return commits[0].short_id if commits else None
 
-    def is_on_branch(self, worktree: Worktree, commit: str) -> bool:
+    def is_branch_commit(self, worktree: Worktree, commit: str) -> bool:
         return self.git.branch_contains(worktree, commit)
 
-    def tasks_up_to(self, worktree: Worktree, commit: str) -> list[Task]:
+    def leading_tasks(self, worktree: Worktree, commit: str) -> list[Task]:
         commits = self.git.branch_commits(worktree.folder, f"{worktree.base_commit}..{commit}")
         assigned = tuple(self.queries.query(Task).matching(TaskQuery.assignee(worktree.session_agent_id)).every_row(UNIT_TASKS_REASON))
         return [task for task in assigned if any(row.has_task_subject([task.id]) for row in commits)]

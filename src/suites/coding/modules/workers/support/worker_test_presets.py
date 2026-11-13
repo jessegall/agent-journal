@@ -17,9 +17,9 @@ class WorkerTestPresets:
         self.manifests, self.settings = manifests, settings
 
     def presets(self, folder: str) -> tuple[WorkerTestCommandEntry, ...]:
-        return self.presets_of(self.manifests.found(Path(folder)))
+        return self.project_presets(self.manifests.found(Path(folder)))
 
-    def presets_of(self, manifests: Sequence[ProjectManifest]) -> tuple[WorkerTestCommandEntry, ...]:
+    def project_presets(self, manifests: Sequence[ProjectManifest]) -> tuple[WorkerTestCommandEntry, ...]:
         entries = {manifest.test_command.name: manifest.test_command for manifest in manifests if manifest.test_command is not None}
         for value in self.settings.texts(PRESET_TEST_COMMANDS):
             try:

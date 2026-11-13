@@ -13,5 +13,5 @@ class AutoVacuumUpgrade:
 
     def run(self, inform: Callable[[str], None]) -> None:
         started = time.monotonic()
-        if self.database.turn_on_auto_vacuum():
+        if self.database.enable_auto_vacuum():
             inform(f"turned on incremental auto vacuum and vacuumed the database once in {time.monotonic() - started:.1f} seconds")

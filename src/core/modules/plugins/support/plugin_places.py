@@ -51,11 +51,11 @@ class PluginPlaces:
             return MainAgentFinder.rows(self.queries)
 
     def wait(self, process_id: int, limit_seconds: float) -> bool:
-        PolledWait(limit_seconds, PLACE_POLL_SECONDS).poll(lambda: self.has_left_the_queue(process_id))
+        PolledWait(limit_seconds, PLACE_POLL_SECONDS).poll(lambda: self.has_exited_queue(process_id))
         process = self.queries.query(Process).find(process_id)
         return process.ended_at is None and process.queued_at is None
 
-    def has_left_the_queue(self, process_id: int) -> bool:
+    def has_exited_queue(self, process_id: int) -> bool:
         process = self.queries.query(Process).find(process_id)
         return process.ended_at is not None or process.queued_at is None
 

@@ -178,7 +178,7 @@ def test_a_queued_run_takes_its_spot_at_once_while_its_listing_is_still_counting
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
     story.expect_rows(folder.has_slot(process.id), folder.count_status(process.id) is None, story.container.get(Queries).query(Process).find(process.id).state is ProcessState.RUNNING)
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
-    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.RUNNING, not folder.is_count_taken(process.id))
+    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.RUNNING, not folder.is_count_claimed(process.id))
 
 
 def test_a_run_over_the_limit_by_its_listing_is_stopped_when_its_count_arrives(limited_run):
@@ -210,7 +210,7 @@ def test_a_run_under_the_limit_by_its_listing_goes_on_with_its_count(limited_run
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
     folder.write_count(process.id, "\nJOURNAL_COUNT_PART_1\ncollected 4 items\n", 0)
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
-    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.RUNNING, folder.is_count_taken(process.id))
+    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.RUNNING, folder.is_count_claimed(process.id))
     story.expect_text(f"output show {process.id}", "test_count: 4", actor=story.agent)
 
 
@@ -256,7 +256,7 @@ def test_a_worker_stopped_for_an_unknown_count_adds_a_counting_reader_and_its_ne
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
     folder.write_count(started.id, "\nJOURNAL_COUNT_PART_1\n3 tests\n", 0)
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
-    story.expect_rows(story.container.get(Queries).query(Process).find(started.id).state is ProcessState.RUNNING, folder.is_count_taken(started.id))
+    story.expect_rows(story.container.get(Queries).query(Process).find(started.id).state is ProcessState.RUNNING, folder.is_count_claimed(started.id))
 
 
 def test_a_worker_test_tool_with_no_reader_runs_once_so_a_reader_can_be_drawn_from_its_output(new_story):

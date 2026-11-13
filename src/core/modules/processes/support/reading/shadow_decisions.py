@@ -29,7 +29,7 @@ class ShadowDecisions:
 
     # Keeps the decisions of a run that has just started, which has none kept yet, so nothing is read; a merge the
     # journal runs itself has no reader to judge, so it keeps none, as at its end.
-    def store_at_start(self, process: Process, parts: Sequence[ProcessPart], context: Context) -> None:
+    def store_initial(self, process: Process, parts: Sequence[ProcessPart], context: Context) -> None:
         if not parts or process.is_journal_merge:
             return
         self.store_parts(process, parts, ReadingMoment.START, {}, context)

@@ -66,7 +66,7 @@ class HookEndpoint:
         sender = HookSender.parsed(data, self.context.hook_limit_seconds, self.context.agent_hook_limit_seconds, self.context.stop_limit_seconds)
         files = ServerFiles(self.context.home)
         if not files.phase().runs_programs:
-            files.hold_session(sender.session)
+            files.block_session(sender.session)
             self.kept_row(sender, program)
             return self.held(sender)
         try:

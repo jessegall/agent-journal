@@ -7,7 +7,7 @@ ExpectedText = str | ExpectedNudge
 # behaviour. A nudge a story names by its declaration matches the declaration's own template.
 def contains_text(full: str, part: ExpectedText) -> bool:
     if isinstance(part, ExpectedNudge):
-        return part.is_in(full)
+        return part.matches_text(full)
     return part.casefold() in full.casefold()
 
 

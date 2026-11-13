@@ -16,15 +16,15 @@ class AppendLog:
         with self.files.writer(self.path, "a") as log:
             log.write(line + "\n")
 
-    def taken_lines(self) -> tuple[str, ...]:
+    def claimed_lines(self) -> tuple[str, ...]:
         if not self.taken_path.exists():
             return ()
         return tuple(line for line in self.files.read(self.taken_path).splitlines() if line)
 
-    def replace_taken(self, lines: tuple[str, ...]) -> None:
+    def replace_claimed(self, lines: tuple[str, ...]) -> None:
         self.files.write(self.taken_path, "".join(line + "\n" for line in lines))
 
-    def move_aside(self, unfinished: tuple[str, ...] = ()) -> None:
+    def archive(self, unfinished: tuple[str, ...] = ()) -> None:
         self.taken_path.unlink(missing_ok=True)
         if self.path.exists():
             self.files.replace(self.path, self.taken_path)

@@ -383,10 +383,10 @@ class OutputFolder:
             return []
         return self.count_text(process_id).splitlines()[-20:]
 
-    def is_count_taken(self, process_id: int) -> bool:
+    def is_count_claimed(self, process_id: int) -> bool:
         return (self.home.folder / FOLDER_NAME / str(process_id) / "count-taken").exists()
 
-    def mark_count_taken(self, process_id: int) -> None:
+    def mark_count_claimed(self, process_id: int) -> None:
         self.write(process_id, "count-taken", "1")
 
     def write_count(self, process_id: int, text: str, status: int) -> None:

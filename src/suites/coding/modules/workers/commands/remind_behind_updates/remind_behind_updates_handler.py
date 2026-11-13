@@ -58,9 +58,9 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
                 self.remind(check, worktree, limit, context)
         for check in self.queries.query(WorktreeBehindCheck).filter(state=BehindCheckState.CONFLICTED).every_row(CHECKS_REASON):
             if check.reminders < len(CONFLICT_LINES) and context.timestamp.value - check.updated_at.value >= wait:
-                self.clash_still_open(check, context)
+                self.conflict_remains(check, context)
 
-    def clash_still_open(self, check: WorktreeBehindCheck, context: Context) -> None:
+    def conflict_remains(self, check: WorktreeBehindCheck, context: Context) -> None:
         if check.worktree_id not in self.clashing:
             return
         worktree = self.rows.required(Worktree, check.worktree_id)

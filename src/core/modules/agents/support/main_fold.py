@@ -35,7 +35,7 @@ class MainFold:
         self.inserts = RowInsert(database)
 
     def plan(self) -> tuple[EnvironmentFold, ...]:
-        return MainFoldPlan.folds([MainRow.from_row(row) for row in self.rewrite.rows_where(AGENTS_TABLE, "role", AgentRole.MAIN.value)])
+        return MainFoldPlan.folds([MainRow.from_row(row) for row in self.rewrite.matching_rows(AGENTS_TABLE, "role", AgentRole.MAIN.value)])
 
     def run(self, folds: tuple[EnvironmentFold, ...], folded_at: str) -> FoldCounts:
         counts = FoldCounts()
@@ -64,7 +64,7 @@ class MainFold:
         folded_ids = [agent.id for agent in fold.folded]
         initial_counts = self.reference_counts(columns, [*folded_ids, fold.survivor.id])
         fold_ids = [self.record(fold, agent, folded_at) for agent in fold.folded]
-        self.settle_clashes(fold, columns, counts, fold_ids[0], folded_at)
+        self.resolve_conflicts(fold, columns, counts, fold_ids[0], folded_at)
         self.rewrite.rewrite(*SESSIONS, folded_ids, fold.survivor.id)
         for table, column in columns.plain:
             self.rewrite.rewrite(table, column, folded_ids, fold.survivor.id)
@@ -92,7 +92,7 @@ class MainFold:
                                                     "sessions": json.dumps(sessions, default=str), "folded_at": folded_at,
                                                     "created_at": folded_at, "updated_at": folded_at})
 
-    def settle_clashes(self, fold: EnvironmentFold, columns: AgentColumns, counts: FoldCounts, fold_id: int, folded_at: str) -> None:
+    def resolve_conflicts(self, fold: EnvironmentFold, columns: AgentColumns, counts: FoldCounts, fold_id: int, folded_at: str) -> None:
         for unique in self.rewrite.unique_keys():
             table = unique.table
             if table in FOLD_TABLES:

@@ -64,7 +64,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
             part_reader = ReaderSelection.choose(readers, [part for part in parts if part.reader_request_id is None], layers)
             self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=self.folder.relative(process.id), reader_id=part_reader.reader.id if part_reader else None,
                                         reader_position=part_reader.part.position if part_reader else 0, title=RunTitle.title(part_reader.reader, part_reader.part.text) if part_reader else ""), context)
-        self.shadow.store_at_start(process, parts, context)
+        self.shadow.store_initial(process, parts, context)
         self.folder.write_start(process.id, command.line, [part.text for part in command.parts])
         self.slots.remember(process)
         if command.is_journal_merge:

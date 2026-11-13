@@ -82,7 +82,7 @@ def test_180_a_failed_proof_test_returns_its_task_to_the_worker_that_held_it_and
     proof, failed_output_id, reach = task_proofs(worker)[1], output_id(worker, CART_COMMAND), rows(worker, REACHES)[0]
     expect_returned(worker, 1)
     story.expect_text("task show 3", "state: completed", actor=story.agent)
-    story.expect_rows(proof["state"] == "short", str(failed_output_id) in proof["shortfall"], expected_nudge(WORKER_PHASE_TESTS_FAILED).is_in(' | '.join(failure_lines(worker))),
+    story.expect_rows(proof["state"] == "short", str(failed_output_id) in proof["shortfall"], expected_nudge(WORKER_PHASE_TESTS_FAILED).matches_text(' | '.join(failure_lines(worker))),
                       detail=f"{proof} | {worker.worker_lines()}")
     story.expect_rows(reach["state"] == "failed", reach["failed_task_ids"] == "1", WAITING_PHASE_TERMS in story.run(OUTLINE, actor=story.user).output_text, detail=str(reach))
 

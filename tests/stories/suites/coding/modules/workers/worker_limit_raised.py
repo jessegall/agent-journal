@@ -20,7 +20,7 @@ def story_with_person(new_story):
 
 
 def limit_lines(story) -> list[str]:
-    return [line for line in story.hook("s-1", LISTING).lines if expected_nudge(WORKER_LIMIT_RAISED).is_in(line)]
+    return [line for line in story.hook("s-1", LISTING).lines if expected_nudge(WORKER_LIMIT_RAISED).matches_text(line)]
 
 
 def set_limit(story, limit: int, scope: str = "--environment main") -> None:
@@ -81,7 +81,7 @@ def test_another_setting_changing_tells_nothing(new_story):
 
 def expect_limit_lines(story, expected: list[ExpectedNudge]) -> None:
     actual = limit_lines(story)
-    assert len(actual) == len(expected) and all(nudge.is_in(line) for nudge, line in zip(expected, actual)), actual
+    assert len(actual) == len(expected) and all(nudge.matches_text(line) for nudge, line in zip(expected, actual)), actual
 
 
 def expect_limit_lines_2(story, expected) -> None:

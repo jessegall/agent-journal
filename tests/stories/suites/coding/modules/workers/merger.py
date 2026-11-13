@@ -350,7 +350,7 @@ def test_the_merger_ending_without_a_report_does_not_notify_the_main_agent(new_s
     story.run_listeners()
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "It ended without a report")
     lines = story.run(f"agent-line list --agent {story.agent.id}").output_text
-    story.expect_rows((expected_nudge(HELPER_PROGRAM_FAULT).is_in(lines)) == fault)
+    story.expect_rows((expected_nudge(HELPER_PROGRAM_FAULT).matches_text(lines)) == fault)
     story.expect_rows(story.container.get(HelperJobRows).open_job(merger.id) is None)
 
 

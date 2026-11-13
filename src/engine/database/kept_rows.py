@@ -35,7 +35,7 @@ class KeptRows:
         return self.read(source, loader, name=f"{name}:{self.database.row_owner}")
 
     # Keeps what the loader read from the rows of several queries until any of them changes.
-    def read_across(self, sources: Sequence[KeptSource], loader: Callable[[], T], *, name: str) -> T:
+    def read_spanning(self, sources: Sequence[KeptSource], loader: Callable[[], T], *, name: str) -> T:
         signatures = tuple(source.kept_select().signature_statement() for source in sources)
         key = "|".join(self.query_key(source, name) for source in sources)
         return self.kept_value(key, lambda _signature: loader(), Statement.all_joined(signatures, " UNION ALL "))

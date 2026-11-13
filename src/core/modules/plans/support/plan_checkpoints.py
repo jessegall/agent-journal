@@ -37,7 +37,7 @@ class PlanCheckpoints:
         self.queries, self.repository, self.moves, self.kept, self.settings = queries, repository, moves, kept, settings
 
     def windows(self, plan_id: int) -> CheckpointWindows:
-        return self.kept.read_across(self.window_sources(plan_id), lambda: self.loaded_windows(plan_id), name="plans.checkpoint_windows")
+        return self.kept.read_spanning(self.window_sources(plan_id), lambda: self.loaded_windows(plan_id), name="plans.checkpoint_windows")
 
     # The rows the checkpoint windows of a plan are worked out from: its tasks, its phases and the places of its tasks.
     def window_sources(self, plan_id: int) -> tuple[Query[Task] | Query[Phase] | Query[PhaseTask], ...]:

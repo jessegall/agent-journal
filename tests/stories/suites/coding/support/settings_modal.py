@@ -46,7 +46,7 @@ class Modal:
         body = {"window": WINDOW, "environment": self.environment, "line": self.save_line(changes, screens)}
         self.server.expect_viewer_line(self.cookie, body, 200, text)
 
-    def first_of_kind(self, name: str, category: str) -> dict[str, object]:
+    def category_first(self, name: str, category: str) -> dict[str, object]:
         return next(node for node in self.screen(name)["nodes"] if node["kind"] == category and not node["requires"])
 
     def window_keys(self, keys: str, window: str = WINDOW, query: str = "environment=main") -> dict[str, object]:

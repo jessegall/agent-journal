@@ -128,10 +128,10 @@ class ServerFiles:
         except FileNotFoundError:
             return False
 
-    def hold_session(self, session: str) -> None:
-        self.held_sessions().append(session)
+    def block_session(self, session: str) -> None:
+        self.blocked_sessions().append(session)
 
-    def held_sessions(self) -> AppendLog:
+    def blocked_sessions(self) -> AppendLog:
         return AppendLog(self.held_sessions_file, self.held_sessions_file.with_suffix(".released"), FileAccess.shared())
 
     def mark_maintenance(self) -> None:

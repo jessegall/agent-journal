@@ -274,7 +274,7 @@ def test_the_main_agent_still_needs_a_delivery_to_review(case):
 
 def test_the_merger_grants_a_run_that_names_its_test_file(spent_case):
     spent_case.story.expect_success(f"helper grant {agent_number(spent_case.story, spent_case.worker.id)} pytest tests/cart.py", actor=spent_case.merger)
-    spent_case.story.expect_rows(expected_nudge(HELPER_GRANTED).is_in(spent_case.worker_lines()), detail=spent_case.worker_lines())
+    spent_case.story.expect_rows(expected_nudge(HELPER_GRANTED).matches_text(spent_case.worker_lines()), detail=spent_case.worker_lines())
 
 
 def test_the_merger_may_not_grant_a_run_with_no_test_file(spent_case):

@@ -64,7 +64,7 @@ def s43_advice_that_did_not_help_is_passed_to_the_main_agent_with_the_reason(sto
 def s45_the_main_agent_orders_the_update_as_the_merger_would(story, repository, worker: Actor) -> None:
     diverge_file(repository, worker, CLASHING_FILE, CLASHING_FILE)
     story.expect_success(f"worker update {agent_number(story, worker.id)}", actor=story.agent)
-    story.expect_rows(expected_nudge(UPDATE_ORDERED).is_in(worker_lines(story, worker)), [check.state for check in checks(story)] == [BehindCheckState.ORDERED],
+    story.expect_rows(expected_nudge(UPDATE_ORDERED).matches_text(worker_lines(story, worker)), [check.state for check in checks(story)] == [BehindCheckState.ORDERED],
                       detail=worker_lines(story, worker))
 
 
@@ -98,7 +98,7 @@ def f52_an_ordered_update_not_run_is_reminded_twice_then_the_merger_hears(story,
     for _ in range(3):
         waited(story)
     reminders = len(expected_nudge(UPDATE_REMINDER).pattern().findall(worker_lines(story, worker)))
-    story.expect_rows(reminders == 2, sum(expected_nudge(UPDATE_SKIPPED).is_in(text) for text in merger_texts(story)) == 1, detail=f"{reminders} {merger_texts(story)}")
+    story.expect_rows(reminders == 2, sum(expected_nudge(UPDATE_SKIPPED).matches_text(text) for text in merger_texts(story)) == 1, detail=f"{reminders} {merger_texts(story)}")
 
 
 def g60_a_worker_naming_another_worker_is_refused(story, repository, worker: Actor) -> None:

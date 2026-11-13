@@ -17,7 +17,7 @@ class QueuedRunAdmissionListener(SaveListener[Updated[Process]]):
 
     def handle(self, event: Updated[Process], context: Context) -> None:
         process = event.row
-        if not process.plugin or not process.is_admitted_since(event.previous):
+        if not process.plugin or not process.is_admitted_after(event.previous):
             return
         run = self.queries.query(QueuedRun).filter(process_id=process.id).first()
         if run is not None:

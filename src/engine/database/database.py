@@ -82,7 +82,7 @@ class Database:
 
     # Turns on incremental auto vacuum for a database made before it, which SQLite applies only with one full VACUUM,
     # and says whether it did; a database that has it already is left alone.
-    def turn_on_auto_vacuum(self) -> bool:
+    def enable_auto_vacuum(self) -> bool:
         if self.connection.execute("PRAGMA auto_vacuum").fetchone()[0] != AUTO_VACUUM_OFF:
             return False
         self.connection.execute("PRAGMA auto_vacuum = INCREMENTAL")

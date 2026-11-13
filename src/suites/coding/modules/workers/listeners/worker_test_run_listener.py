@@ -28,9 +28,9 @@ class WorkerTestRunListener(CommitListener[Created[Process]]):
         if process.category is not CommandCategory.TEST_RUN or process.shell:
             return
         worktree = self.worktrees.worker_worktree(process.session_agent_id)
-        if worktree is None or worktree.folder != process.folder or self.has_proof_or_affected_test(process):
+        if worktree is None or worktree.folder != process.folder or self.has_test_source(process):
             return
         self.launch.start_waited(process, process.line, self.rows.required(Agent, process.session_agent_id).session)
 
-    def has_proof_or_affected_test(self, process: Process) -> bool:
+    def has_test_source(self, process: Process) -> bool:
         return any(self.queries.query(model).filter(process_id=process.id).exists() for model in (Proof, AffectedTest, CheckpointTest))

@@ -52,12 +52,12 @@ class MergeAskScope:
             return MergeAskPart(worktree, unit, worktree.commit_short_id, unit.task_ids, True)
         commit = self.range.task_commit(worktree, int(up_to)) if self.range.is_task_number(up_to) else up_to
         if commit is None:
-            committed = self.range.tasks_up_to(worktree, worktree.branch)
+            committed = self.range.leading_tasks(worktree, worktree.branch)
             last = committed[-1].id if committed else "none yet"
             raise Refusal(f"task {up_to} is not committed in your worktree", f"name a committed task: the last is {last}")
-        if not self.range.is_on_branch(worktree, commit):
+        if not self.range.is_branch_commit(worktree, commit):
             raise Refusal(f"commit {up_to} is not on your branch", "journal worker logs lists your commits")
-        return MergeAskPart(worktree, unit, commit, tuple(task.id for task in self.range.tasks_up_to(worktree, commit)), False)
+        return MergeAskPart(worktree, unit, commit, tuple(task.id for task in self.range.leading_tasks(worktree, commit)), False)
 
     def check_runs(self, worktree: Worktree, task_ids: tuple[int, ...]) -> None:
         blocking = self.runs.blocking_run(worktree.id)

@@ -107,7 +107,7 @@ def test_the_main_agent_is_told_an_update_waits_and_for_which_runs(new_story):
     running = queued(story, "make one")
     (story.home.folder / "processes" / str(running.id) / "pid").write_text(str(os.getpid()))
     (story.home.folder / "processes" / str(running.id) / "1.started").write_text("")
-    lines = [line for line in ended_hook_lines(story, VIEW_LINE) if expected_nudge(UPDATE_WAITING).is_in(line)]
+    lines = [line for line in ended_hook_lines(story, VIEW_LINE) if expected_nudge(UPDATE_WAITING).matches_text(line)]
     story.expect_rows(len(lines) == 1, f"{running.id}" in lines[0], detail=str(lines))
 
 
@@ -115,7 +115,7 @@ def test_the_reminder_that_an_update_waits_comes_again_after_five_minutes_and_no
     story = update_waiting_story(new_story)
     ended_hook_lines(story, VIEW_LINE)
     story.advance(timedelta(seconds=REMINDER_SECONDS + 1))
-    story.expect_rows(len([line for line in ended_hook_lines(story, VIEW_LINE) if expected_nudge(UPDATE_WAITING).is_in(line)]) == 1)
+    story.expect_rows(len([line for line in ended_hook_lines(story, VIEW_LINE) if expected_nudge(UPDATE_WAITING).matches_text(line)]) == 1)
     story.home.run_lock.unlink()
     story.advance(timedelta(seconds=REMINDER_SECONDS + 1))
-    story.expect_rows(not [line for line in ended_hook_lines(story, VIEW_LINE) if expected_nudge(UPDATE_WAITING).is_in(line)])
+    story.expect_rows(not [line for line in ended_hook_lines(story, VIEW_LINE) if expected_nudge(UPDATE_WAITING).matches_text(line)])

@@ -121,7 +121,7 @@ def test_only_a_silent_go_test_over_several_packages_is_told_and_runs_printing_l
         emitted(story, progress_line, progress_text)
         ticks(story, 10, lines, every=10, text="compiled one more file\n" * 10)
         received += cadence_lines(informed(story, MAIN))
-    story.expect_rows(len(received) == 1, expected_nudge(SILENT_RUN, seconds=30, hint='run').is_in(received[0]),
+    story.expect_rows(len(received) == 1, expected_nudge(SILENT_RUN, seconds=30, hint='run').matches_text(received[0]),
                       detail="\n".join(received))
 
 
