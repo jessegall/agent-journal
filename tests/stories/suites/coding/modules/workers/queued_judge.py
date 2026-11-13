@@ -81,3 +81,13 @@ def test_a_judge_run_a_guard_on_a_merge_queued_sends_the_merge_back_when_it_exit
     target_tip = repository.tip(ENVIRONMENT_BRANCH)
     story.expect_text(f"worker merge --wait {agent_number(story, worker.id)}", "was refused before anything was merged", "cart.py line 3: the total is wrong", actor=story.agent)
     story.expect_rows(repository.tip(ENVIRONMENT_BRANCH) == target_tip)
+
+
+def test_a_judge_run_the_journal_s_restart_cut_off_ends_the_commit_with_run_it_again_not_a_refusal(new_story):
+    from engine.process.plugin_script_processes import PluginScriptProcesses
+    story = queuing_story(new_story, FAILING)
+    worker = handed_in_worker(story)
+    story.container.get(PluginScriptProcesses).stop_all()
+    outcome = story.run(COMMIT, actor=worker)
+    story.container.get(PluginScriptProcesses).server_started()
+    story.expect_rows("nothing was written" in outcome.output_text, "cart.py line 3" not in outcome.output_text, detail=outcome.output_text)

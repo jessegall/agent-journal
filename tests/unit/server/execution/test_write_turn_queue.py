@@ -34,7 +34,7 @@ class TurnThreads:
         asked = threading.Event()
 
         def run() -> None:
-            with CurrentExecution(priority, name, name).held():
+            with CurrentExecution(priority, name, name).applied():
                 asked.set()
                 with self.queue.write_turn():
                     self.order.append(name)
@@ -109,12 +109,12 @@ def test_wait_past_limit_names_the_holder(turn_threads):
 
     def ask() -> None:
         try:
-            with CurrentExecution(ExecutionPriority.NORMAL, "late", "late").held(), turn_threads.queue.write_turn():
+            with CurrentExecution(ExecutionPriority.NORMAL, "late", "late").applied(), turn_threads.queue.write_turn():
                 pass
         except WriteTurnBusyError as error:
             failures.append(error)
 
-    with CurrentExecution(ExecutionPriority.AGENT, "hook", "task close 4").held(), turn_threads.queue.write_turn():
+    with CurrentExecution(ExecutionPriority.AGENT, "hook", "task close 4").applied(), turn_threads.queue.write_turn():
         waiter = threading.Thread(target=ask)
         waiter.start()
         turn_threads.threads.append(waiter)
@@ -126,7 +126,7 @@ def test_wait_past_limit_names_the_holder(turn_threads):
 
 
 def test_slow_holder_is_logged_with_class_priority_line(turn_threads):
-    with CurrentExecution(ExecutionPriority.BACKGROUND, "tick", "prune events").held(), turn_threads.queue.write_turn():
+    with CurrentExecution(ExecutionPriority.BACKGROUND, "tick", "prune events").applied(), turn_threads.queue.write_turn():
         turn_threads.clock.seconds += 2
     assert turn_threads.logged == ["the database write turn was held 2.0 seconds by tick at background priority: prune events"]
 

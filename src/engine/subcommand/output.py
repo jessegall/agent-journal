@@ -25,7 +25,7 @@ class Output:
         self.confirmation = ""
 
     # the reader of a streamed answer that hung up, such as a terminal stopped with Ctrl+C
-    def is_reader_gone(self) -> bool:
+    def has_reader_disconnected(self) -> bool:
         return self.stream.closed
 
     def line(self, text: str) -> None:

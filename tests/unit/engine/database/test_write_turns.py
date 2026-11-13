@@ -4,7 +4,8 @@ import pytest
 
 from engine.database.database import Database
 from engine.database.statement import Statement
-from engine.database.write_turns import NeverWaitingWriteTurns, WriteTurns
+from engine.database.never_waiting_write_turns import NeverWaitingWriteTurns
+from engine.database.write_turns import WriteTurns
 from engine.journal.journal_home import JournalHome
 
 

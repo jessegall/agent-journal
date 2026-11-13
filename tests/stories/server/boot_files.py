@@ -10,7 +10,7 @@ READER = "cart-test"
 PLUGIN_SKILL = "sample-rules"
 JOURNAL_SKILL = "journal-notes"
 SKILLS_MODULE = f"{PATH}:GoodSkillsModule"
-SKILL_FOLDERS = (".claude/skills",)
+SKILLS_FOLDER = ".claude/skills"
 
 
 def booted(story):
@@ -36,7 +36,7 @@ def installed_plugin(new_story):
 
 
 def skill_files(story, name):
-    return [story.home.project_folder / skills / name / "SKILL.md" for skills in SKILL_FOLDERS]
+    return [story.home.project_folder / SKILLS_FOLDER / name / "SKILL.md"]
 
 
 def test_a_boot_puts_back_the_journals_skills_for_every_program(new_story):
