@@ -14,6 +14,25 @@
         "reject": [
             {
                 "testCode": true
+            },
+            {
+                "next": {
+                    "textMatches": "^--(ours|theirs)$"
+                }
+            },
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "assignment"
+                        },
+                        {
+                            "child": {
+                                "name": "BRANCH_CHANGES"
+                            }
+                        }
+                    ]
+                }
             }
         ]
     },

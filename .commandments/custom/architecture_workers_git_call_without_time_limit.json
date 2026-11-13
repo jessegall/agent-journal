@@ -9,6 +9,15 @@
                     {
                         "all": [
                             {
+                                "nameIn": [
+                                    "run",
+                                    "Popen",
+                                    "call",
+                                    "check_call",
+                                    "check_output"
+                                ]
+                            },
+                            {
                                 "descendant": {
                                     "all": [
                                         {
