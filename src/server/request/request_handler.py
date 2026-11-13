@@ -5,7 +5,7 @@ from collections.abc import Callable
 import traceback
 from time import perf_counter
 from urllib.parse import parse_qs
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from http.server import BaseHTTPRequestHandler
 
 from engine.caller.errors.caller_request_error import CallerRequestError
@@ -155,6 +155,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             return
         try:
             request = CliRequest.parsed(json.loads(body or b"{}"), self.sender_pid, self.timing)
+            request = replace(request, caller=replace(request.caller, trusts_variables=self.journal_server().context.door.trusts_variables(self.peer)))
         except (CliRequestError, CallerRequestError, json.JSONDecodeError) as error:
             self.answer_json(400, {"error": str(error)})
             return
@@ -174,6 +175,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             data = json.loads(body or b"{}")
             request = CallerRequest.parsed({"variables": data.get("variables", {}), "folder": data.get("folder", ""), "pid": self.sender_pid}
                                            if is_mapping(data) else data)
+            request = replace(request, trusts_variables=self.journal_server().context.door.trusts_variables(self.peer))
         except (CallerRequestError, json.JSONDecodeError) as error:
             self.answer_json(400, {"error": str(error)})
             return

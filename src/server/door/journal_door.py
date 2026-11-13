@@ -7,3 +7,7 @@ class JournalDoor:
 
     def refusal(self, route: str, peer: SocketPeer) -> DoorRefusal | None:
         raise NotImplementedError
+
+    # whether the variables a command line sends may name its caller, or only its chain of processes may
+    def trusts_variables(self, peer: SocketPeer) -> bool:
+        raise NotImplementedError
