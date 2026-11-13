@@ -25,7 +25,8 @@ class RequiredCommands:
     @staticmethod
     def block(agent_id: int, nudge: Nudge) -> BlockUntil:
         parts = nudge.required_command.split()
-        subject = " ".join(dict.fromkeys((*parts[2:3], parts[1], parts[-1])))
+        # the verb, the noun and the row it names, such as read output 4120: a flag after the row (--tail 5) is no row
+        subject = " ".join(dict.fromkeys((*parts[2:3], parts[1], *parts[3:4])))
         refusal = REQUIRED_COMMAND_REFUSAL.nudge(subject=subject, block="{block}")
         countdown = REQUIRED_COMMAND_COUNTDOWN.nudge("{left}", subject=subject)
         return BlockUntil(agent_id, replace(refusal, key=f"{refusal.key}:{nudge.required_command}"), RanCommand(nudge.required_command), Interval(REQUIRED_COMMAND_SPAN), countdown)
