@@ -1,7 +1,6 @@
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 
 from engine.enums.hook_event_name import HookEventName
-from engine.module.suite import Suite
 from engine.module.module import Module
 from engine.module.name_groups import NameGroups
 from engine.module.suite_list import SuiteList
@@ -16,7 +15,7 @@ class SuiteCheck:
 
     def problems(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry], suites: SuiteList) -> tuple[str, ...]:
         return (suites.problems() + self.duplicates(modules, suites) + self.unknown_requirements(modules, suites) + self.requirement_loops(modules, suites)
-                + self.driver_suites(modules, suites) + self.wrong_suite_drivers(modules) + self.wrong_defaults(modules, suites) + self.preset_problems(modules, suites)
+                + self.driver_suites(modules, suites) + self.wrong_suite_drivers(modules) + self.preset_problems(modules, suites)
                 + self.rule_owners(modules, rules) + self.unknown_hooks(rules) + self.module_memberships(modules, suites))
 
     def module_memberships(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
@@ -75,19 +74,6 @@ class SuiteCheck:
     def wrong_suite_drivers(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         return tuple(f"driver {driver.name} belongs to suite {driver.suite_name}, so its name starts {driver.suite_name}."
                      for module in modules for driver in module.drivers if driver.name.partition(".")[0] != driver.suite_name)
-
-    def wrong_defaults(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
-        roles = {driver.name: driver.role for module in modules for driver in module.drivers}
-        bases = {declaration.key: declaration.bases() for module in modules for declaration in suites.helper_types(module)}
-        return tuple(problem for module in modules for suite in suites.module_suites(module) for role, driver in suite.defaults.items()
-                     for problem in self.default_problems(suite, (role, *bases.get(role, ())), driver, roles))
-
-    def default_problems(self, suite: type[Suite], type_keys: tuple[str, ...], driver: str, roles: Mapping[str, str]) -> Iterator[str]:
-        role = type_keys[0]
-        if driver.partition(".")[0] not in (suite.name, *suite.requires):
-            yield f"suite {suite.name} gives role {role} driver {driver}, of a suite it does not require"
-        elif driver in roles and roles[driver] not in type_keys:
-            yield f"suite {suite.name} gives role {role} driver {driver}, which drives role {roles[driver]}"
 
     def preset_problems(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]:
         loaded_suites = {suite.name: suite for module in modules for suite in suites.module_suites(module)}

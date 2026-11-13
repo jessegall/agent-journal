@@ -1,5 +1,4 @@
 from engine.enums.access import Access
-from engine.agent.agent_policy import AgentPolicy
 from engine.enums.agent_role import AgentRole
 from engine.agent.agent_roster import AgentRoster
 from engine.driver.agent_hook import AgentHook
@@ -129,22 +128,6 @@ class DriverRole(Clerk):
     drivers = [UnknownDriver]
 
 
-class DefaultSuite(SampleSuite):
-    defaults = {"missing-default-role": "sample.unknown"}
-
-
-class DefaultRole(DriverRole):
-    """Ships the suite that lists it."""
-
-
-class PolicySuite(SampleSuite):
-    agent_policy = AgentPolicy(job_roles=tuple(["missing-policy-role"]))
-
-
-class PolicyRole(Clerk):
-    """Ships the suite that lists it."""
-
-
 class UnknownRule(DriverRule):
     name = "sample.rule"
     hook = HookEventName.PRE_TOOL_USE
@@ -197,12 +180,6 @@ class SampleSuiteOfDriverRole(SampleSuite):
     modules = [DriverRole]
 
 
-class DefaultSuiteOfDefaultRole(DefaultSuite):
-    modules = [DefaultRole]
-
-
-class PolicySuiteOfPolicyRole(PolicySuite):
-    modules = [PolicyRole]
 
 
 class HelperTypeSuiteOfSuiteRegistersHelperType(HelperTypeSuite):

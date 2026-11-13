@@ -13,9 +13,10 @@ HELPER_RUN_LIMIT = "journal.core.helpers.read-only-helper-run-limit"
 HELPER_KEPT_LIMIT = "journal.core.helpers.read-only-helper-kept-limit"
 
 
-def test_opening_the_worker_class_shows_its_key_access_driver_layout_roster_and_limits(new_story):
+def test_opening_the_worker_class_shows_its_key_access_driver_roster_and_limits(new_story):
     story = new_story(fixture=CodingEnvironment)
-    story.expect_registered_helper_type("worker", access="writing", driver="coding.worker", layout="agent@coding.worker",
+    story.expect_text("suite show coding", "worker: coding.worker", actor=story.user)
+    story.expect_registered_helper_type("worker", access="writing",
                                         roster={"text": "suites.coding.modules.workers.bindings.worker_roster:WorkerRoster"},
                                         run_limit_key="journal.suites.coding.workers.worker-run-limit",
                                         kept_limit_key="journal.suites.coding.workers.worker-kept-limit")
@@ -32,7 +33,8 @@ def test_no_file_but_the_worker_class_names_the_worker_as_a_role_string(new_stor
 def test_a_suite_that_adds_one_helper_type_as_one_class_can_start_it_with_its_own_driver(new_story):
     story = new_story(fixture=MainEnvironment)
     story.expect_sync_success(f"{SAMPLES}:ScribeSuite")
-    story.expect_registered_helper_type("scribe", label="Scribe", access="read-only", driver="scribe.scribe", bases=["helper"])
+    story.expect_registered_helper_type("scribe", label="Scribe", access="read-only", bases=["helper"])
+    story.expect_text("suite show scribe", "scribe: scribe.scribe", actor=story.user)
     story.expect_helper_type_behaviours("scribe", takes_marks=True, takes_tasks=False)
     story.expect_success("agent start scribe-session claude scribe --environment main", "role: scribe")
 
@@ -58,15 +60,17 @@ def test_two_suites_that_register_the_same_helper_type_stop_the_boot_naming_both
 
 def test_the_cores_own_helper_type_is_written_the_same_way_as_the_worker(new_story):
     story = new_story(fixture=CodingEnvironment)
-    story.expect_registered_helper_type("helper", access="read-only", driver="coding.helper", layout="agent",
-                                        run_limit_key=HELPER_RUN_LIMIT, kept_limit_key=HELPER_KEPT_LIMIT)
+    story.expect_text("suite show coding", "helper: coding.helper", "merger: coding.helper", actor=story.user)
+    story.expect_registered_helper_type("helper", access="read-only", run_limit_key=HELPER_RUN_LIMIT, kept_limit_key=HELPER_KEPT_LIMIT)
     story.expect_helper_type_behaviours("helper", takes_marks=True, runs_saved_commands=True)
 
 
-def test_an_agent_of_a_type_no_module_registers_any_more_is_shown_retired_with_its_stored_key(new_story):
+def test_an_ended_agent_of_a_type_no_module_registers_any_more_is_shown_retired_with_its_stored_key(new_story):
     story = new_story(fixture=MainEnvironment)
     story.expect_sync_success(f"{SAMPLES}:RetiringModule")
     scribe = story.new_row_id("agent start scribe-session claude scribe --environment main")
+    story.expect_success(f"agent end {scribe}", actor=story.user)
     story.expect_sync_without(f"{SAMPLES}:RetiringModule")
-    story.expect_text(f"agent show {agent_number(story, scribe)}", "role: scribe", "retired", actor=story.user)
+    story.run_listeners()
+    story.expect_text(f"agent show {agent_number(story, scribe)}", "role: scribe", "retirement_reason: no installed module registers its type scribe any more", actor=story.user)
     story.expect_text("agent list --environment main", "scribe", actor=story.user)

@@ -6,10 +6,10 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 NOTES_MODULE = "tests.stories.core.modules.profiles.support.notes_module:NotesSuiteOfNotesModule"
 
 
-def test_output_access_follows_the_chosen_suites_role_policy(new_story):
+def test_output_access_follows_the_type_of_the_agent_that_reads(new_story):
     story = new_story(NOTES_MODULE, fixture=BuilderStarted)
     process = ended_run(story, "show notes", "notes\n")
-    reader = Actor(story.new_row_id("agent start notes-reader claude helper --environment main"), ActorType.AGENT)
-    story.expect_text(f"output status {process.id}", "finished", actor=reader)
-    story.expect_success("suite choose notes --environment main")
+    helper = Actor(story.new_row_id("agent start notes-helper claude helper --environment main"), ActorType.AGENT)
+    reader = Actor(story.new_row_id("agent start notes-reader claude reader --environment main"), ActorType.AGENT)
+    story.expect_text(f"output status {process.id}", "finished", actor=helper)
     story.expect_refusal(f"output status {process.id}", "is not yours", actor=reader)

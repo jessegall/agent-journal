@@ -3,7 +3,6 @@ import os
 from dataclasses import fields
 from pathlib import Path
 
-from engine.agent.agent_policy import AgentPolicy
 from engine.helper_type.helper_behaviours import HelperBehaviours
 from engine.helper_type.helper_type_book import MAIN_KEY
 from engine.helper_type.helper_type_entry import HelperTypeEntry
@@ -11,14 +10,14 @@ from engine.helper_type.main_agent import MainAgent
 from engine.journal.journal_home import JournalHome
 from engine.module.driver_entries import DriverEntries
 from engine.module.module_finder import ModuleFinder
+from engine.registry.registry import Registry
 from engine.registry.suite_entry import SuiteEntry
 
 TABLE_FILE = Path(__file__).resolve().parents[4] / "tests" / "snapshots" / "helper_type_behaviours.json"
 UPDATE_FLAG = "JOURNAL_UPDATE_HELPER_TYPE_BEHAVIOURS"
 SUITE_NAME = "coding"
-ROLES_SUFFIX = "_roles"
 AGENT_PAGE = "agent"
-ROLE_LIST_BEHAVIOURS = {"job": "takes_jobs", "active_task_unblocked": "unblocked_by_started_task", "task": "takes_tasks", "prompt": "takes_prompts",
+TABLE_ROW_BEHAVIOURS = {"job": "takes_jobs", "active_task_unblocked": "unblocked_by_started_task", "task": "takes_tasks", "prompt": "takes_prompts",
                         "mark": "takes_marks", "plugin": "runs_plugins", "dispatch": "dispatches", "stop_required": "stops_are_checked",
                         "private_output": "has_private_outputs", "reader_request": "needs_readers", "queued_run": "queues_runs",
                         "automatic_watch": "watches_runs_automatically", "continuing_run": "keeps_runs_after_end", "project_skill": "reads_project_skills",
@@ -35,14 +34,15 @@ def helper_types(finder: ModuleFinder) -> dict[str, HelperTypeEntry]:
     return {declaration.key: HelperTypeEntry.declared(module.name, declaration) for module in finder.default_modules() for declaration in suites.helper_types(module)}
 
 
-def policy_behaviours(policy: AgentPolicy, key: str) -> dict[str, object]:
-    behaviours: dict[str, object] = {field.name.removesuffix(ROLES_SUFFIX): key in getattr(policy, field.name) for field in fields(AgentPolicy) if field.name.endswith(ROLES_SUFFIX)}
-    behaviours["queue_limit_settings"] = list(policy.queue_limit_settings) if key in policy.queued_run_roles else []
-    return behaviours
+def behaviour_answers(behaviours: HelperBehaviours, queue_limit_key: str) -> dict[str, object]:
+    answers: dict[str, object] = {row: getattr(behaviours, behaviour) for row, behaviour in TABLE_ROW_BEHAVIOURS.items()}
+    answers["queue_limit_settings"] = [queue_limit_key] if queue_limit_key and behaviours.queues_runs else []
+    return answers
 
 
-def suite_behaviours(suite: SuiteEntry, key: str) -> dict[str, object]:
-    driver = suite.defaults.get(key, "")
+def suite_behaviours(registry: Registry, suite: SuiteEntry, key: str) -> dict[str, object]:
+    driver_entry = registry.type_driver(suite, key)
+    driver = driver_entry.name if driver_entry is not None else ""
     driver_page = f"{AGENT_PAGE}@{driver}"
     return {"driver": driver, "layout": driver_page if driver_page in suite.layouts else AGENT_PAGE}
 
@@ -56,9 +56,10 @@ def type_behaviours(entry: HelperTypeEntry) -> dict[str, object]:
 def current_table(tmp_path: Path) -> dict[str, dict[str, object]]:
     finder = ModuleFinder(JournalHome(tmp_path))
     suite, types = coding_suite(finder), helper_types(finder)
-    table = {MAIN_KEY: {**policy_behaviours(suite.agent_policy, MAIN_KEY), **suite_behaviours(suite, MAIN_KEY)}}
+    registry = Registry("", {}, {}, {}, (), (), suites=tuple([suite]), drivers=DriverEntries().drivers(finder.default_modules()), helper_types=tuple(types.values()))
+    table = {MAIN_KEY: {**behaviour_answers(MainAgent.behaviours, ""), **suite_behaviours(registry, suite, MAIN_KEY)}}
     for key, entry in sorted(types.items()):
-        table[key] = {**policy_behaviours(suite.agent_policy, key), **suite_behaviours(suite, key), **type_behaviours(entry)}
+        table[key] = {**behaviour_answers(entry.behaviours, entry.queue_limit_key), **suite_behaviours(registry, suite, key), **type_behaviours(entry)}
     return table
 
 
@@ -94,18 +95,5 @@ def test_a_type_that_appears_or_goes_is_named_with_each_of_its_behaviours():
     assert changed_answers({"verifier": {"job": False}}, {}) == ["verifier job: before False, after None"]
 
 
-def class_behaviours(finder: ModuleFinder) -> dict[str, HelperBehaviours]:
-    return {MAIN_KEY: MainAgent.behaviours, **{key: entry.behaviours for key, entry in helper_types(finder).items()}}
-
-
-def test_every_role_list_of_the_suite_has_one_behaviour_of_the_class():
-    assert sorted(ROLE_LIST_BEHAVIOURS.values()) == sorted(field.name for field in fields(HelperBehaviours))
-
-
-def test_every_type_answers_each_behaviour_as_the_role_lists_of_the_suite_do(tmp_path):
-    finder = ModuleFinder(JournalHome(tmp_path))
-    policy = coding_suite(finder).agent_policy
-    differences = [f"{key} {behaviour}: the role list says {policy_behaviours(policy, key)[role_list]}, the class says {getattr(behaviours, behaviour)}"
-                   for key, behaviours in class_behaviours(finder).items() for role_list, behaviour in ROLE_LIST_BEHAVIOURS.items()
-                   if policy_behaviours(policy, key)[role_list] != getattr(behaviours, behaviour)]
-    assert not differences, "\n".join(differences)
+def test_every_behaviour_of_the_class_has_its_row_in_the_table():
+    assert sorted(TABLE_ROW_BEHAVIOURS.values()) == sorted(field.name for field in fields(HelperBehaviours))

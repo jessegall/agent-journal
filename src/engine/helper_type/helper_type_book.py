@@ -40,7 +40,7 @@ class HelperTypeBook:
         return tuple(entry.queue_limit_key for entry in self.startable() if entry.queue_limit_key)
 
     def type_keys(self, key: str) -> tuple[str, ...]:
-        return self.entries[key].type_keys() if key in self.entries else (key,)
+        return self.entries[key].type_keys() if key in self.entries else tuple([key])
 
     def label(self, key: str) -> str:
         return self.entries[key].label if key in self.entries else key.capitalize()

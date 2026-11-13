@@ -394,5 +394,5 @@ class Registry:
         return next((driver for type_key in self.helper_type_book().type_keys(key) for driver in drivers if driver.role == type_key), None)
 
     def type_drivers(self, suite: SuiteEntry) -> dict[str, DriverEntry]:
-        return {key: driver for key in self.helper_type_book().entries if (driver := self.type_driver(suite, key)) is not None}
+        return {key: driver for key in sorted(self.helper_type_book().entries) if (driver := self.type_driver(suite, key)) is not None}
 

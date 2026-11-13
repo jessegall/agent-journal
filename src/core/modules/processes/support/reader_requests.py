@@ -42,7 +42,7 @@ class ReaderRequests:
         self.judge = judge
 
     def needed(self, process: Process, agent: Agent) -> bool:
-        return self.types.behaviours((agent.role).needs_readers and process.creator_id == agent.id
+        return (self.types.behaviours(agent.role).needs_readers and process.creator_id == agent.id
                 and self.settings.flag(ProcessSetting.READERS_FORCED))
 
     def request(self, process: Process, spec: PartSpec, reader: Reader | None, context: Context) -> int | None:

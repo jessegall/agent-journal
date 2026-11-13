@@ -28,7 +28,6 @@ from engine.template.template_declaration import TemplateDeclaration
 from engine.registry.template_entry import TemplateEntry
 from engine.registry.button_entry import ButtonEntry
 from engine.viewer.button_declaration import AgentField, ButtonCondition, ButtonDeclaration, ButtonMenuItem, Choice, ChoiceField, TemplateField, TextField
-from engine.agent.agent_policy import AgentPolicy
 from engine.registry.window_entry import WindowEntry
 from dataclasses import replace
 from tests.unit.engine.command.test_commands import MakeItem
@@ -186,7 +185,7 @@ def test_a_window_and_a_suite_saved_before_icons_options_counts_and_presets_read
     Schema(opened, Tables(), Clock()).migrate([CORE_MIGRATIONS])
     window = {"name": "notes.board", "module": "notes", "title": "Board", "entry": "board.html", "loading": "frame", "place": "environment", "roles": [],
               "reads": [], "runs": [], "events": [], "shipped": False, "unavailable_reason": ""}
-    suite = {"name": "notes", "module": "notes", "requires": [], "defaults": {}, "complete_control": False, "included_overlays": [], "windows": ["notes.board"]}
+    suite = {"name": "notes", "module": "notes", "requires": [], "complete_control": False, "included_overlays": [], "windows": ["notes.board"]}
     entries = {**ENTRIES, "windows": [window], "suites": [suite]}
     opened.insert(Statement("INSERT INTO registry (id, fingerprint, entries, synced_at) VALUES (1, 'abc', ?, '2026-10-31')", [json.dumps(entries)]))
     registry = Registry.read(opened)
@@ -212,15 +211,13 @@ def test_registered_profiles_restore(database):
     profile = AgentProfile("notes-reader", "Reads notes", "Read the notes.", agent_type="reader", model="small", codex_model="small",
                            access=Access.READ, program="codex", occupant=Occupant.LAUNCH_ROTATION, mcp_tools=tuple(["mcp__notes__read"]),
                            changed=tuple(["model"]), module_text_changed=True)
-    policy = AgentPolicy(private_output_roles=tuple(["reader"]), queued_run_roles=tuple(["reader"]))
-    suite = SuiteEntry("notes", "notes", (), {}, False, (), (), {}, {}, policy, shipped=True)
+    suite = SuiteEntry("notes", "notes", (), False, (), (), {}, {}, shipped=True)
     entry = ProfileEntry.declared("notes", profile)
     registry = replace(Registry.read(database), suites=tuple([suite]), profiles=tuple([entry]))
     restored = Registry.parsed("profiles", registry.entries_text())
     assert restored.profile("notes-reader") == entry
     assert restored.profile("notes-reader").profile.access is Access.READ
     assert restored.profile("notes-reader").profile.is_builtin
-    assert restored.suites[0].agent_policy == policy
     assert restored.suites[0].shipped is True
 
 

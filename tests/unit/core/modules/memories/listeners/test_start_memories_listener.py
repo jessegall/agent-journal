@@ -25,7 +25,7 @@ def commands_at_a_session_start(role: str, retired_at: datetime | None) -> list[
     commands: list[object] = []
     listener = StartMemoriesListener(ActiveMemories(), SimpleNamespace(find=lambda agent_id: SimpleNamespace(id=agent_id, role=role, retired_at=retired_at)),
                                      SimpleNamespace(run=lambda command, actor, cause_id: commands.append(command)), SimpleNamespace(actor=lambda module: SimpleNamespace()),
-                                     SimpleNamespace(agent_policy=lambda: SimpleNamespace(prompt_roles=("main", "helper"))), SimpleNamespace(opened=lambda agent_id: nullcontext()))
+                                     SimpleNamespace(behaviours=lambda key: SimpleNamespace(takes_prompts=key in ("main", "helper"))), SimpleNamespace(opened=lambda agent_id: nullcontext()))
     listener.handle(SimpleNamespace(row=SimpleNamespace(session_agent_id=AGENT_ID)), SimpleNamespace(id=90))
     return commands
 

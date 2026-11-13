@@ -45,7 +45,7 @@ def test_530_a_module_belongs_to_the_one_suite_that_lists_it_so_an_environment_o
 def test_539_two_suites_that_register_one_helper_type_are_refused_naming_both(new_story):
     story = new_story(fixture=MainEnvironment)
     story.expect_sync_success(f"{SAMPLES}:ShopSuite")
-    story.expect_sync_refusal(f"{SAMPLES}:DepotScoutSuite", "folder.depot's helper type scout: folder.shop registers that helper type too")
+    story.expect_sync_refusal(f"{SAMPLES}:DepotScoutSuite", "suite depot and suite shop both register helper type scout")
 
 
 def test_542_the_coding_suite_listing_is_a_module_list_its_module_is_in_the_suite_layer_and_a_suite_folder_under_the_core_is_in_no_layer(new_story, tmp_path):

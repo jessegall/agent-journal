@@ -23,7 +23,6 @@ ACCESS_MODULE = "tests.stories.core.modules.drivers.support.access_rules:AccessS
 
 class AccessSuite(Suite):
     name = "access"
-    defaults = {AgentRole.MAIN: "access.reader"}
     complete_control = True
 
 
