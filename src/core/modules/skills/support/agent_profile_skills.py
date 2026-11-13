@@ -19,7 +19,7 @@ class AgentProfileSkills:
     # the kind of agent a skill is written for: its profile's type, or main for a main agent without a profile
     def agent_type(self, agent_id: int) -> str:
         profile = self.readable_profile(agent_id)
-        return self.agents.find(agent_id).role.value if profile is None else profile.agent_type
+        return str(self.agents.find(agent_id).role) if profile is None else profile.agent_type
 
     def required(self, agent_id: int) -> tuple[str, ...]:
         profile = self.readable_profile(agent_id)
