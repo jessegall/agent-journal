@@ -7,7 +7,8 @@ from core.modules.skills.support.skill_requirement import SkillRequirement
 
 
 class MissingCommandSkill:
-    """The first skill covering a journal command that an agent does not hold loaded and its profile gives it."""
+    """The first skill covering a journal command that an agent does not hold loaded, that is written for its kind
+    of agent and that its profile gives it."""
 
     def __init__(self, catalogue: SkillCatalogue, loaded: LoadedSkills, requirement: SkillRequirement, profile_skills: AgentProfileSkills) -> None:
         self.catalogue, self.loaded, self.requirement, self.profile_skills = catalogue, loaded, requirement, profile_skills
@@ -17,5 +18,6 @@ class MissingCommandSkill:
             return None
         covered = set(commands)
         loaded = self.loaded.names(agent_id)
+        agent_type = self.profile_skills.agent_type(agent_id)
         return next((skill.folder for skill in self.catalogue.skills() if covered.intersection(skill.commands) and skill.folder not in loaded
-                     and not self.profile_skills.refuses(agent_id, skill.folder)), None)
+                     and (not skill.types or agent_type in skill.types) and not self.profile_skills.refuses(agent_id, skill.folder)), None)
