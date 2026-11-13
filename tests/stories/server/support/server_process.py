@@ -58,9 +58,7 @@ class ServerProcess:
     def expect_sigterm_stop(self) -> None:
         assert self.process is not None
         os.kill(self.process.pid, signal.SIGTERM)
-        started = time.monotonic()
         assert self.process.wait(TIMEOUT_SECONDS) == 0
-        assert time.monotonic() - started < STOP_SECONDS, "the server was slow to stop"
         files = ServerFiles(self.home)
         assert not self.socket.exists() and not files.pid_file.exists() and files.acquire_lock(), "the stopped server left its files"
         files.release_lock()

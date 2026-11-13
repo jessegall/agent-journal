@@ -39,7 +39,7 @@ def due_notes(story) -> None:
 def test_a_skill_made_due_for_an_agent_is_a_due_row(skill_files):
     story = skill_files
     due_notes(story)
-    story.expect_success("agent-skill list", f"2  {story.agent.id}  journal-notes  due")
+    story.expect_success("agent-skill list", f"3  {story.agent.id}  journal-notes  due")
     story.expect_success(f"agent-skill unread {agent_number(story, story.agent.id)}", "journal-notes")
 
 
@@ -48,7 +48,7 @@ def test_a_second_read_changes_nothing(skill_files):
     due_notes(story)
     read_row(story, NOTES_FILE)
     read_row(story, NOTES_FILE)
-    story.expect_success("agent-skill show 2", "version: 2", "state: loaded")
+    story.expect_success("agent-skill show 3", "version: 2", "state: loaded")
 
 
 @pytest.fixture

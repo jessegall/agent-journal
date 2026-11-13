@@ -16,8 +16,8 @@ from tests.stories.support.story_checks import expect_value
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 PROFILE = "note-taker"
-LISTED = "journal,journal-tasks,journal-memory"
-REQUIRED = "journal-memory"
+LISTED = "journal,journal-tasks,journal-rules"
+REQUIRED = "journal-rules"
 UNLISTED_SKILL = "journal-dumps"
 SAVE = f'profile save {PROFILE} --type helper --access read-only --description "Takes notes" --body "Take notes."'
 SESSION = "s-notes"

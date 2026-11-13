@@ -19,8 +19,8 @@ from core.modules.skills.support.start_skills import SESSION_START_KEY
 
 DUE = f"{PATH}:DueSkillsModule"
 JOURNAL_TASK_LIST = HookSamples.shell("journal task list", ShellPart("journal", CommandCategory.JOURNAL, ["task", "list"]))
-MEMORY_LIST = HookSamples.shell("journal memory list", ShellPart("journal", CommandCategory.JOURNAL, ["memory", "list"], subcommand="memory"))
-DEFAULTS = ("journal", "journal-etiquette")
+RULE_LIST = HookSamples.shell("journal rule list", ShellPart("journal", CommandCategory.JOURNAL, ["rule", "list"], subcommand="rule"))
+DEFAULTS = ("journal", "journal-memory", "journal-etiquette")
 
 
 def environment(new_story):
@@ -110,30 +110,30 @@ def test_a_journal_command_of_a_noun_a_skill_covers_names_the_skill_for_three_to
 
 def test_a_phrase_trigger_names_its_skill_for_three_tool_uses_and_then_holds_until_it_is_loaded(defaults_loaded):
     story = defaults_loaded
-    story.expect_success('trigger make "deploy" "read it" --do skill --skill journal-memory', actor=story.user)
-    drain_countdown(story, HookSamples.edit("deploy/cart.py"), "journal-memory")
-    story.expect_hook_refusal("s-1", HookSamples.edit("deploy/cart.py"), "load this first with the Skill tool: journal-memory")
+    story.expect_success('trigger make "deploy" "read it" --do skill --skill journal-rules', actor=story.user)
+    drain_countdown(story, HookSamples.edit("deploy/cart.py"), "journal-rules")
+    story.expect_hook_refusal("s-1", HookSamples.edit("deploy/cart.py"), "load this first with the Skill tool: journal-rules")
 
 
 def test_loading_the_skill_during_the_countdown_ends_it(defaults_loaded):
     story = defaults_loaded
-    start_countdown(story, MEMORY_LIST)
-    expect_countdown(story, MEMORY_LIST, "journal-memory", 2)
-    expect_countdown(story, MEMORY_LIST, "journal-memory", 1)
-    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-memory", read_digest(story, "journal-memory")), story.agent)
+    start_countdown(story, RULE_LIST)
+    expect_countdown(story, RULE_LIST, "journal-rules", 2)
+    expect_countdown(story, RULE_LIST, "journal-rules", 1)
+    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-rules", read_digest(story, "journal-rules")), story.agent)
     for _ in range(4):
-        story.expect_hook_allowed("s-1", MEMORY_LIST)
-    expect_value("load skill" not in story.hook("s-1", MEMORY_LIST).lines, True)
+        story.expect_hook_allowed("s-1", RULE_LIST)
+    expect_value("load skill" not in story.hook("s-1", RULE_LIST).lines, True)
 
 
 def test_a_block_raised_again_for_another_skill_waits_for_the_skill_its_text_names(started_tasks):
     story = started_tasks
     story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "load this first with the Skill tool: journal-tasks")
-    story.expect_hook_refusal("s-1", MEMORY_LIST, "load this first with the Skill tool: journal-tasks")
+    story.expect_hook_refusal("s-1", RULE_LIST, "load this first with the Skill tool: journal-tasks")
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-tasks", read_digest(story, "journal-tasks")), story.agent)
-    drain_countdown(story, MEMORY_LIST, "journal-memory")
-    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "load this first with the Skill tool: journal-memory")
-    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-memory", read_digest(story, "journal-memory")), story.agent)
+    drain_countdown(story, RULE_LIST, "journal-rules")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "load this first with the Skill tool: journal-rules")
+    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-rules", read_digest(story, "journal-rules")), story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
 
 

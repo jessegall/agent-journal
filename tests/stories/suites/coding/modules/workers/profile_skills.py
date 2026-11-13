@@ -24,7 +24,7 @@ def test_a_worker_s_worktree_holds_only_the_skills_of_its_profile(new_story):
     repository = repository_environment(story)
     story.expect_success(f'profile save notes-worker --type worker --description "Works through notes" --body "Work through the notes." --skills {LISTED}', actor=story.user)
     worker = dispatched_worker(story, DISPATCH.replace("--model sonnet", "--model sonnet --profile notes-worker"))
-    story.expect_rows(stored(repository, worker, "journal-tasks"), not stored(repository, worker, "journal-memory"), not stored(repository, worker, MAIN_SKILL), not stored(repository, worker, "journal-etiquette"))
+    story.expect_rows(stored(repository, worker, "journal-tasks"), not stored(repository, worker, "journal-rules"), not stored(repository, worker, MAIN_SKILL), not stored(repository, worker, "journal-etiquette"))
 
 
 def test_the_skills_of_a_profile_are_listed_with_the_ones_made_for_its_type_and_a_saved_list_changes_them(new_story):
@@ -32,7 +32,7 @@ def test_the_skills_of_a_profile_are_listed_with_the_ones_made_for_its_type_and_
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_text(f"profile skills --profile {RESEARCHER_PROFILE.name}", "journal-tasks: on", f"{MAIN_SKILL}: off", actor=story.user)
     story.expect_success(f"profile save {RESEARCHER_PROFILE.name} --description 'Researches a question' --skills {LISTED},{MAIN_SKILL}", actor=story.user)
-    story.expect_text(f"profile skills --profile {RESEARCHER_PROFILE.name}", f"{MAIN_SKILL}: on", "journal-memory: off", actor=story.user)
+    story.expect_text(f"profile skills --profile {RESEARCHER_PROFILE.name}", f"{MAIN_SKILL}: on", "journal-rules: off", actor=story.user)
 
 
 def test_the_etiquette_skill_is_required_of_the_main_agent_only_and_no_helper_profile_lists_it(new_story):

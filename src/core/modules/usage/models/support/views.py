@@ -109,7 +109,7 @@ AGENT_CARDS_SELECT = Select("agents").selecting(
     Aliased(FunctionCall(SqlFunction.COALESCE, [FunctionCall(SqlFunction.NULLIF, [Column("current_job.program"), Literal("")]), Column("agents.program")]),
             "helper_job_program"),
     Aliased(Column("current_job.new_session"), "helper_job_new_session"),
-    Aliased(Inlined(Conjunction([HasValue("current_job.id"), HasValue("current_job.started_at"), IsNull("current_job.ended_at")])), "is_helper_job_open"),
+    Aliased(Inlined(Exists(Select("helper_jobs").matching(ColumnCompare("helper_jobs.helper_id", "=", "agents.id")).matching(HasValue("helper_jobs.started_at")).matching(IsNull("helper_jobs.ended_at")))), "is_helper_job_open"),
     Aliased(FunctionCall(SqlFunction.JSON_EXTRACT, [Column("agents.metadata"), Literal(COMPACTION_PATH)]), "compaction_ended_at"),
     Aliased(row_count(agent_rows("agent_sessions")), "session_count"),
     Aliased(ScalarSubselect(agent_rows("agent_sessions").selecting(Column("agent_sessions.end_reason"))
