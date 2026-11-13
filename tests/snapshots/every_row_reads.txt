@@ -166,6 +166,8 @@ src/core/modules/processes/support/block_conditions/output_monitored.py:every mo
 src/core/modules/processes/support/cadence/judged_runs.py:the cadence tick judges every running run with its agent and parts
 src/core/modules/processes/support/cadence/judged_runs.py:the cadence tick judges every running run with its agent and parts
 src/core/modules/processes/support/cadence/judged_runs.py:the cadence tick judges every running run with its agent and parts
+src/core/modules/processes/support/decisions/command_run_counts.py:Every command still counting runs without a reader is checked against the new reader.
+src/core/modules/processes/support/decisions/command_run_counts.py:The counts of the commands one run names, one row per command.
 src/core/modules/processes/support/held_runs.py:every old running run of the agent is checked for the silence that holds it
 src/core/modules/processes/support/reader_rows.py:A command is matched against every reader's patterns, and the readers are a catalogue of shipped and saved readers.
 src/core/modules/processes/support/reading/catalogue_audit.py:every creator of a recent mark is checked for an agent
@@ -202,6 +204,7 @@ src/core/modules/tasks/commands/task_board/task_board_subcommand.py:The board sh
 src/core/modules/tasks/commands/task_graph/task_graph_subcommand.py:The graph draws every wait between unfinished tasks of one environment, and only the tasks that have one.
 src/core/modules/tasks/commands/task_graph/task_graph_subcommand.py:The graph draws every wait between unfinished tasks of one environment, and only the tasks that have one.
 src/core/modules/tasks/commands/task_tags/task_tags_subcommand.py:the tag list shows every tag word in use, in the order of the words
+src/core/modules/tasks/commands/unassign_agent_tasks/unassign_agent_tasks_handler.py:Every open or started task of the stopped agent is left without an assignee.
 src/core/modules/tasks/guards/task_tag_word_guard.py:the refusal lists every tag word in use, in the order of the words
 src/core/modules/tasks/listeners/dependency_remover_listener.py:a removed task takes every dependency it is part of with it
 src/core/modules/tasks/listeners/dependency_remover_listener.py:a removed task takes every dependency it is part of with it
