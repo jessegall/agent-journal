@@ -12,23 +12,26 @@ from engine.time.clock import Clock
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
-from core.modules.processes.support.merge_run_lock import MergeRunLock
+from core.modules.processes.models.process import Process
+from engine.query.queries import Queries
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.request_log import RequestLog
 from core.modules.processes.support.request_log_entry import RequestLogEntry
 
 FIRST_PART = 0
+MERGE_WAIT_SECONDS = 3600
+MERGE_POLL_SECONDS = 0.5
 
 
 class ProcessRunPlacement(RunPlacement):
-    """Admits a run of the journal's own through the one door. A merge takes the one merge place, so
-    two merges never run at once, and keeps a process row with its output, of the agent it works for
+    """Admits a run of the journal's own through the one door. A merge waits in the long lane on its class,
+    which lets one run at a time, and keeps a process row with its output, of the agent it works for
     or of the environment's main agent. Any other run is appended to the request log at its end, so
     it costs no read and no write; a tick writes the log's rows. With no environment to own it a run
     keeps no row."""
 
-    def __init__(self, database: Database, log: RequestLog, clock: Clock, bus: Bus, agents: AgentRows, outputs: OutputFolder, merges: MergeRunLock) -> None:
-        self.database, self.log, self.clock, self.bus, self.agents, self.outputs, self.merges = database, log, clock, bus, agents, outputs, merges
+    def __init__(self, database: Database, log: RequestLog, clock: Clock, bus: Bus, agents: AgentRows, outputs: OutputFolder, queries: Queries) -> None:
+        self.database, self.log, self.clock, self.bus, self.agents, self.outputs, self.queries = database, log, clock, bus, agents, outputs, queries
 
     def placed(self, request: ExecutionRequest) -> PlacedRun:
         owner = self.database.row_owner
@@ -47,8 +50,14 @@ class ProcessRunPlacement(RunPlacement):
         main = self.agents.environment_main_agent(environment_id)
         return None if main is None else main.id
 
+    # a merge waits until the grant has started its row, which happens when no other merge runs
     def admitted(self, run: PlacedRun) -> AbstractContextManager[None]:
-        return self.merges.locked() if run.has_place else nullcontext()
+        if run.process_id is not None:
+            self.clock.poll(lambda: self.is_started(run.process_id), MERGE_WAIT_SECONDS, MERGE_POLL_SECONDS)
+        return nullcontext()
+
+    def is_started(self, process_id: int) -> bool:
+        return self.queries.query(Process).find(process_id).queued_at is None
 
     def ended(self, run: PlacedRun, execution: Execution) -> int | None:
         if run.environment_id is None:

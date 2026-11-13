@@ -45,7 +45,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
         execution_class = self.process_classes.chosen(command, agent)
         # a plugin asks for its own priority; any other run starts at its class's
         priority = command.priority if command.plugin else execution_class.priority
-        waits = not command.is_journal_merge and not priority.is_unlimited
+        waits = not priority.is_unlimited
         process = self.repository.save(Process(session_agent_id=agent.id, hook_call_id=command.hook_call_id, creator_id=context.actor.id,
                                                line=command.line, folder=command.folder, category=command.category,
                                                limit_seconds=command.limit_seconds, is_full_test_run=command.is_full_test_run,
