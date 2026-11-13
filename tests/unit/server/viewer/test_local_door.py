@@ -1,7 +1,7 @@
 import pytest
 
 from server.viewer.door_request import DoorRequest
-from server.viewer.local_door import OTHER_SITE_REASON, WRONG_HOST_REASON, LocalDoor
+from server.viewer.local_door import FOREIGN_SITE_REASON, WRONG_HOST_REASON, LocalDoor
 
 OWN_HOST = "127.0.0.1:8420"
 TUNNEL_ADDRESS = "https://shop.tunnel.example"
@@ -39,7 +39,7 @@ def change(host: str, origin: str, site_relation: str) -> DoorRequest:
                          ids=["another port of this machine", "another site", "its own origin named as only the same site"])
 def test_a_change_from_another_origin_is_refused_though_it_names_this_address(origin, site_relation):
     refusal = door(TUNNEL_ADDRESS).refusal(change(OWN_HOST, origin, site_relation))
-    assert (refusal.status, refusal.reason) == (403, OTHER_SITE_REASON)
+    assert (refusal.status, refusal.reason) == (403, FOREIGN_SITE_REASON)
 
 
 @pytest.mark.parametrize("host, origin, site_relation", [(OWN_HOST, f"http://{OWN_HOST}", "same-origin"), ("shop.tunnel.example", TUNNEL_ADDRESS, "same-origin"), (OWN_HOST, "", "")],
