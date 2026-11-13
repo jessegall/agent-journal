@@ -8,6 +8,7 @@ from suites.coding.modules.workers.commands.record_worker_test_run.record_worker
 from engine.driver.agent_hook import AgentHook
 from engine.enums.command_category import CommandCategory
 from engine.driver.driver_rule import DriverRule
+from engine.enums.rule_priority import RulePriority
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.part import Part
 from engine.driver.rule_answer import RuleAnswer
@@ -28,7 +29,7 @@ class PhaseTestRule(DriverRule):
     while tests of its work have failed its runs are free until its next commit."""
 
     name = "workers.phase-tests"
-    priority = -2
+    priority = RulePriority.COMMAND_PHASE_CHECK
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [CodingHelperRole.WORKER]

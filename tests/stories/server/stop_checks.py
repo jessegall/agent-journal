@@ -2,6 +2,8 @@ import pytest
 
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from suites.coding.modules.workers.rules.approved_plan_stop_rule import ApprovedPlanStopRule
+from suites.coding.modules.workers.support.worker_settings import DISPATCHES_WORKERS_SETTING
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.drivers.main.orchestrator import ReadyPlanTaskOrchestrator
 
@@ -46,20 +48,21 @@ def test_a_refused_stop_keeps_later_checks_without_applying_their_commands(stop_
     story.expect_rows(len(lines) == 1, len(lines[0]) < 300, "tasks.carry-on-at-stop" in lines[0], "coding.main-stop" in lines[0], detail=str(lines))
 
 
-@pytest.mark.parametrize("places,answer", [(0, "allowed"), (1, "refused")])
-def test_an_approved_plan_waiting_to_start_checks_worker_capacity(new_story, places, answer):
+@pytest.mark.parametrize("places,dispatches,answer", [(0, "true", "allowed"), (1, "true", "refused"), (1, "false", "allowed")])
+def test_an_approved_plan_waiting_to_start_checks_worker_capacity_and_whether_the_main_agent_dispatches(new_story, places, dispatches, answer):
     story = new_story(fixture=ReadyPlanTaskOrchestrator)
     story.expect_success(f"setting set journal.suites.coding.workers.worker-run-limit {places} --environment main")
+    story.expect_success(f"setting set {DISPATCHES_WORKERS_SETTING} {dispatches} --environment main")
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         server.viewer_line_value(cookie, {"line": ["plan", "approve", "1"], "environment": "main", "window": "messages.chat"})
         record = stop_record(server)
-        check = next(check for check in record["stop_checks"] if check["rule"] == "workers.approved-plan-at-stop")
+        check = next(check for check in record["stop_checks"] if check["rule"] == ApprovedPlanStopRule.name)
         story.expect_rows(record["answer"] == answer, check["outcome"] == answer, detail=f"{record['answer']}: {check}")
-        if places:
+        if answer == "refused":
             story.expect_rows("plan:1 is approved" in record["refusal"], "start a worker, then assign its work" in check["reason"])
         else:
-            story.expect_rows(check["reason"] == "no new worker can start")
+            story.expect_rows(check["reason"] in ("no new worker can start", "the main agent dispatches no workers"), detail=check["reason"])
 
 
 def test_a_diagnostic_check_does_not_start_a_task_after_a_plan_refuses_stop(new_story):

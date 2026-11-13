@@ -5,6 +5,7 @@ from datetime import timedelta
 import pytest
 
 from core.modules.agents.support.terminal_typing import TerminalTyping
+from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE as COMPACT
 from core.modules.overview.support.overview_first import OverviewFirst
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS, CONTEXT_LIMIT_KINDS
 from tests.stories.server.support.server_client import server_story
@@ -135,7 +136,7 @@ def test_a_tick_never_compacts_an_agent(agent):
     agent.expect_rows(agent.typing.typed == [])
 
 
-def test_an_agent_finishes_its_task_first_and_nothing_is_typed_when_it_ends(task_worker):
+def test_an_agent_finishes_its_task_first_and_is_compacted_when_it_ends(task_worker):
     agent = task_worker
     enabled_time(agent, LIMIT_TOKENS)
     has_context(agent, LIMIT_TOKENS + 1)
@@ -143,25 +144,28 @@ def test_an_agent_finishes_its_task_first_and_nothing_is_typed_when_it_ends(task
     agent.expect_rows(agent.typing.typed == [])
     agent.expect_success('task close 1 --outcome "Done"', actor=agent.agent)
     idle_turn(agent)
-    agent.expect_rows(agent.typing.typed == [], detail=str(agent.typing.typed))
+    agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
 
 
-def test_past_the_second_limit_an_agent_is_typed_nothing_even_with_a_task_in_hand(agent):
+def test_past_the_second_limit_an_agent_is_compacted_even_with_a_task_in_hand(agent):
     has_context(agent, HARD)
     set_value(agent, CONTEXT_LIMIT_HARD_TOKENS, HARD)
     enabled_time(agent, LIMIT_TOKENS)
     started_task(agent)
     idle_turn(agent)
-    agent.expect_rows(agent.typing.typed == [], detail=str(agent.typing.typed))
+    agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
 
 
-def test_past_the_second_limit_a_tool_is_refused_and_nothing_is_typed_with_a_task_in_hand(hard_limited_worker):
+def test_past_the_second_limit_a_tool_is_refused_and_the_compaction_is_typed_at_once_with_a_task_in_hand(hard_limited_worker):
     agent = hard_limited_worker
     has_context(agent, HARD)
-    for _ in range(2):
-        agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
-        agent.advance(timedelta(minutes=10))
-    agent.expect_rows(agent.typing.typed == [], detail=str(agent.typing.typed))
+    agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
+    agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
+    agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
+    agent.expect_rows(agent.typing.typed == [COMPACT], detail="typed once while the last one runs")
+    agent.advance(timedelta(minutes=10))
+    agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
+    agent.expect_rows(agent.typing.typed == [COMPACT], detail="a tool use shows the typed line still waits in the program")
 
 
 def journal_line(line):
@@ -196,17 +200,22 @@ def test_past_the_second_limit_an_agent_with_an_unread_message_reads_it_and_its_
     agent.expect_rows("unread" not in stop.refusal and "new message" not in stop.refusal, detail=stop.refusal)
 
 
-def test_past_the_second_limit_the_watch_of_a_run_still_going_passes_so_the_stop_it_blocks_can_end(hard_limited_worker):
+def test_past_the_second_limit_a_stop_with_a_task_in_hand_and_an_unread_message_is_allowed_and_no_other_stop_rule_is_asked(hard_limited_worker):
+    agent = hard_limited_worker
+    agent.expect_success("message send 'look at the cart'", actor=agent.user)
+    has_context(agent, HARD)
+    agent.expect_hook_allowed(SESSION, HookSamples.stop())
+
+
+def test_past_the_second_limit_a_stop_with_a_run_still_going_is_allowed_and_the_watch_of_the_run_still_passes(hard_limited_worker):
     agent = hard_limited_worker
     process = moved_run(agent, "make build")
     agent.run_listeners()
     has_context(agent, HARD)
-    stop_unwatched = agent.hook(SESSION, HookSamples.stop())
+    agent.expect_hook_allowed(SESSION, HookSamples.stop())
     monitor = HookSamples.tool_use("Monitor", ToolType.MONITOR, [], None)
     agent.expect_hook_refusal(SESSION, monitor.with_raw({"tool_input": {"command": "tail -f build.log"}}), "no more tools, stop now")
     agent.expect_hook_allowed(SESSION, monitor.with_raw({"tool_input": {"command": f"journal output monitor {process.id}"}}))
-    stop_watched = agent.hook(SESSION, HookSamples.stop())
-    agent.expect_rows(f"Output {process.id}" in stop_unwatched.refusal, f"Output {process.id}" not in stop_watched.refusal, detail=f"{stop_unwatched.refusal} | {stop_watched.refusal}")
 
 
 def test_between_the_limits_a_tool_with_a_task_in_hand_is_not_refused(hard_limited_worker):
@@ -272,7 +281,7 @@ def test_an_agent_past_the_limit_that_finishes_its_task_is_told_to_stop_and_give
     agent.expect_hook_allowed(SESSION, HookSamples.sample("post_tool_use"), "stop now")
     agent.expect_success('memory skip "nothing to keep"', actor=agent.agent)
     agent.hook(SESSION, HookSamples.stop())
-    agent.expect_rows(agent.typing.typed == [], detail=str(agent.typing.typed))
+    agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
 
 
 @pytest.fixture
@@ -299,7 +308,7 @@ def test_a_cap_for_the_main_agents_kind_holds_it_in_place_of_the_size_for_all(li
     has_context(limited, 350_000)
     idle_turn(limited)
     stops(limited)
-    limited.expect_rows(limited.typing.typed == [], detail=str(limited.typing.typed))
+    limited.expect_rows(limited.typing.typed == [COMPACT], detail=str(limited.typing.typed))
 
 
 def compact_window(story):
@@ -307,22 +316,13 @@ def compact_window(story):
     return json.loads(settings.read_text()).get("autoCompactWindow") if settings.is_file() else None
 
 
-def test_the_main_agents_folder_holds_the_hard_size_while_it_holds_a_task_and_its_own_size_after(new_story):
-    story = new_story(fixture=LimitEnabled)
-    story.expect_success(f"environment edit 1 --folder {story.home.project_folder}", actor=story.user)
-    started_task(story)
-    story.run_listeners()
-    story.expect_rows(compact_window(story) == 600_000, detail=str(compact_window(story)))
-    story.expect_success('task close 1 --outcome "Tax added once"', actor=story.agent)
-    story.run_listeners()
-    story.expect_rows(compact_window(story) == LIMIT_TOKENS, detail=str(compact_window(story)))
-
-
-def test_an_agent_past_its_window_stops_with_nothing_typed_and_its_folder_holds_the_window_that_compacts_it(limited):
+def test_the_main_agents_folder_holds_the_hard_size_while_it_holds_a_task_and_its_own_size_after_and_its_stop_past_it_is_compacted(limited):
     limited.expect_success(f"environment edit 1 --folder {limited.home.project_folder}", actor=limited.user)
     started_task(limited)
+    limited.run_listeners()
+    limited.expect_rows(compact_window(limited) == HARD, detail=str(compact_window(limited)))
     limited.expect_success('task close 1 --outcome "Tax added once"', actor=limited.agent)
     limited.run_listeners()
     has_context(limited, LIMIT_TOKENS + 1)
     idle_turn(limited)
-    limited.expect_rows(limited.typing.typed == [], compact_window(limited) == LIMIT_TOKENS, detail=f"{limited.typing.typed} {compact_window(limited)}")
+    limited.expect_rows(limited.typing.typed == [COMPACT], compact_window(limited) == LIMIT_TOKENS, detail=f"{limited.typing.typed} {compact_window(limited)}")

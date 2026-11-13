@@ -3,6 +3,7 @@ from typing import ClassVar
 
 from engine.driver.agent_hook import AgentHook
 from engine.enums.hook_wildcard import HookWildcard
+from engine.enums.rule_priority import RulePriority
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.enums.tool_type import ToolType
@@ -21,7 +22,7 @@ class DriverRule:
     drivers: ClassVar[Sequence[str]] = []
     roles: ClassVar[Sequence[str]] = []
     role_group: ClassVar[RoleGroup] = RoleGroup.ANY
-    priority: ClassVar[int] = 0
+    priority: ClassVar[RulePriority] = RulePriority.NORMAL
     essential: ClassVar[bool] = False
     exempt: ClassVar[bool] = False
     history: ClassVar[bool] = False

@@ -3,6 +3,7 @@ from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.driver.agent_hook import AgentHook
 from engine.enums.command_category import CommandCategory
 from engine.driver.driver_rule import DriverRule
+from engine.enums.rule_priority import RulePriority
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.nudge import Nudge
 from engine.driver.rule_answer import RuleAnswer
@@ -18,7 +19,7 @@ class WorkerTestLineRule(DriverRule):
     """A worker runs a test only through its named test commands; any other test line is refused."""
 
     name = "workers.named-tests-only"
-    priority = -3
+    priority = RulePriority.COMMAND_KIND_CHECK
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [CodingHelperRole.WORKER]

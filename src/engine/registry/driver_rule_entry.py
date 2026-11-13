@@ -1,3 +1,4 @@
+from engine.enums.rule_priority import RulePriority
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -27,7 +28,7 @@ class DriverRuleEntry:
     history: bool = False
     claims_essential: bool = False
     role_group: RoleGroup = RoleGroup.ANY
-    priority: int = 0
+    priority: int = RulePriority.NORMAL
 
     @property
     def is_standing(self) -> bool:

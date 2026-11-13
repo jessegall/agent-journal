@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from engine.testing import pytest_plugin
+from engine.testing.pytest_wiring import pytest_plugin
 from engine.testing.pytest_wiring.pytest_plugin import TEMPLATE_FOLDER_VARIABLE, chooses_template_folder, run_template_folder
 from engine.testing.runs.run_size import RunSize
 from engine.testing.cache.template_cache import TemplateCache

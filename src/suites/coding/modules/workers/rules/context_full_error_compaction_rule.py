@@ -12,7 +12,7 @@ ERROR_FIELDS = ("error", "error_details")
 FULL_CONTEXT_TEXTS = ("prompt is too long", "context window", "context length")
 
 
-class ContextFullStopRule(DriverRule):
+class ContextFullErrorCompactionRule(DriverRule):
     """A turn the program ended with an error because the context is full asks for one compaction of that agent,
     whatever the context limit is set to; while a compaction of it is open, nothing more is asked."""
 

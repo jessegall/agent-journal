@@ -2,6 +2,7 @@ from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.driver.agent_hook import AgentHook
 from engine.enums.command_category import CommandCategory
 from engine.driver.driver_rule import DriverRule
+from engine.enums.rule_priority import RulePriority
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from suites.coding.modules.workers.bindings.worker_test_listings import WorkerTestListings
@@ -15,7 +16,7 @@ class WorkerTestCountRule(DriverRule):
     """Refuses a worker's command when its latest counted output exceeds the test limit."""
 
     name = "processes.worker-test-limit-refusal"
-    priority = -1
+    priority = RulePriority.COMMAND_COUNT_CHECK
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [CodingHelperRole.WORKER]

@@ -216,6 +216,7 @@ from core.modules.drivers.rules.continued_session_rule import ContinuedSessionRu
 from core.modules.drivers.rules.takeover_rule import TakeoverRule
 from core.modules.drivers.rules.block_stop_rule import BlockStopRule
 from core.modules.drivers.rules.repeated_stop_release_rule import RepeatedStopReleaseRule
+from core.modules.drivers.rules.compaction_due_stop_rule import CompactionDueStopRule
 from core.modules.drivers.models.rule_history import RuleHistory
 from core.modules.drivers.rules.session_end_rule import SessionEndRule
 from core.modules.drivers.bindings.setting_essential_allowances import SettingEssentialAllowances
@@ -265,7 +266,7 @@ class DriversModule(Module):
                      TickHandler(TickInterval(seconds=60 * 60), HookPruning(), "hook pruning"), TickHandler(TickInterval(seconds=60), RowPruning(), "row pruning"),
                      TickHandler(TickInterval(seconds=5), EventPruning(), "event pruning")]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed]
-    driver_rules = [RepeatedFileReadRule, SafeguardsStopRule, PanicFileRule, BlockStopRule, LongOutputRule, ForeignHooksRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, ContinuedSessionRule, AgentBlockRule, TakeoverRule, AccessRule, NativeSubagentRule, PrivateCorpusRule]
+    driver_rules = [RepeatedFileReadRule, SafeguardsStopRule, PanicFileRule, BlockStopRule, LongOutputRule, ForeignHooksRule, CompactionDueStopRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, ContinuedSessionRule, AgentBlockRule, TakeoverRule, AccessRule, NativeSubagentRule, PrivateCorpusRule]
     bindings = {ContextChangeRequests: RecordedContextChangeRequests, Nudger: AgentLineNudger, CurrentAgentPolicy: SuiteAgentPolicy, OverviewReads: TableOverviewReads, RefusalSkips: TableRefusalSkips, ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, HookHistory: TableHookHistory,HookRoute: AgentHookRoute, ChangeFilter: DriverChangeFilter,
                 EssentialAllowances: SettingEssentialAllowances}
     windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, skeleton=DRIVERS_NUDGES_SKELETON, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"], keys=[WindowKey("nudges", "nudge list", events=["nudge_record.*"]) ]),

@@ -1,5 +1,6 @@
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
+from engine.enums.rule_priority import RulePriority
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.sequences.support.sequence_nudges import SEQUENCE_UNFINISHED
@@ -13,7 +14,7 @@ class SequenceStopRule(DriverRule):
     hook = HookEventName.STOP
     drivers = ["*"]
     exempt = True
-    priority = -5
+    priority = RulePriority.STOP_OPEN_WORK
     single_action_refusal = "An agent with a running sequence may not stop, however often it asks, unless it is waiting"
 
     def __init__(self, work: SequenceStopBlockers) -> None:

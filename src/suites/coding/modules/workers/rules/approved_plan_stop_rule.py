@@ -1,6 +1,7 @@
 from engine.enums.agent_role import AgentRole
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
+from engine.enums.rule_priority import RulePriority
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from core.modules.plans.models.enums.plan_state import PlanState
@@ -9,16 +10,18 @@ from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_nudges import APPROVED_PLAN_WAIT
+from suites.coding.modules.workers.support.worker_settings import DISPATCHES_WORKERS_SETTING
 
 
 class ApprovedPlanStopRule(DriverRule):
-    """An approved plan waiting to start holds the main agent while a worker place is free."""
+    """An approved plan waiting to start holds the main agent while a worker place is free and the main agent
+    may dispatch workers."""
 
     name = "workers.approved-plan-at-stop"
     hook = HookEventName.STOP
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
-    priority = -10
+    priority = RulePriority.STOP_PLAN_CHECK
     single_action_refusal = "An approved plan waiting to start holds the main agent while a worker place is free"
 
     def __init__(self, plans: PlanQuery, worktrees: WorktreeQuery, settings: SettingValues, places: WorkerPlaces) -> None:
@@ -26,6 +29,8 @@ class ApprovedPlanStopRule(DriverRule):
         self.plans, self.worktrees, self.settings = plans, worktrees, settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
+        if self.settings.value(DISPATCHES_WORKERS_SETTING) is False:
+            return RuleAnswer.allowed("the main agent dispatches no workers")
         if not self.places.can_start_new():
             return RuleAnswer.allowed("no new worker can start")
         plan = self.plans.filter(state=PlanState.APPROVED).oldest().first()

@@ -1,6 +1,7 @@
 from engine.driver.agent_hook import AgentHook
 from engine.enums.command_category import CommandCategory
 from engine.driver.driver_rule import DriverRule
+from engine.enums.rule_priority import RulePriority
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.tool import Tool
@@ -17,7 +18,7 @@ class OpenDocumentRule(DriverRule):
     drivers = ["*"]
     exempt = True
     overlay_proof = True
-    priority = 100
+    priority = RulePriority.LAST
     single_action_refusal = "An open document refuses file edits and commands that edit, and lets reads through"
 
     def __init__(self, queries: Queries) -> None:
