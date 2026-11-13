@@ -22,6 +22,9 @@ export const settingComponents = Object.freeze({
     "per-type-override": SettingPerTypeOverrideRow,
 });
 
+// the components that need the whole width of their row, under the name and the help, instead of the narrow column beside them
+export const wideSettingComponents = Object.freeze(["keyed-cap-table"]);
+
 export function resolveSettingComponent(name) {
     if (!Object.hasOwn(settingComponents, name)) throw new Error(`no setting component is named "${name}"`);
     return settingComponents[name];

@@ -66,9 +66,9 @@ function change(key, mode, size) {
 
 <style scoped>
 .setting-caps { display: flex; flex-direction: column; width: 100%; }
-.cap-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 8px 0; border-top: 1px solid var(--border); }
+.cap-row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 8px 0; border-top: 1px solid var(--border); }
 .cap-row:first-child { border-top: 0; }
-.who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.who { display: flex; flex: 1 1 220px; flex-direction: column; gap: 2px; min-width: 0; }
 .name { color: var(--text); font-size: 12.8px; }
 .where { color: var(--text-3); font-size: 11.5px; }
 </style>

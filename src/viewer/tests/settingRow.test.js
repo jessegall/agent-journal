@@ -37,3 +37,8 @@ test("the control is the slot", () => {
     const row = drawnSettingComponent(SettingRow, {label: "Auto mode"}, {default: () => h("button", {id: "control"}, "Switch")});
     expect(row.element.querySelector(".control #control")).not.toBeNull();
 });
+
+test("a wide row puts its control under the name instead of in the narrow column", () => {
+    expect(drawnSettingComponent(SettingRow, {label: "Context size", wide: true}).element.querySelector(".setting-row").classList.contains("wide")).toBe(true);
+    expect(drawnSettingComponent(SettingRow, {label: "Context size"}).element.querySelector(".setting-row").classList.contains("wide")).toBe(false);
+});

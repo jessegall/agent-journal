@@ -2,7 +2,7 @@
 import {computed} from "vue";
 import {componentNameOf, hasComponent, isDrawn} from "./sections.js";
 import {ruleOf} from "./numberRule.js";
-import {settingComponents} from "./registry.js";
+import {settingComponents, wideSettingComponents} from "./registry.js";
 import SettingNestedGroup from "./SettingNestedGroup.vue";
 import SettingRow from "./SettingRow.vue";
 
@@ -20,6 +20,7 @@ const props = defineProps({
 
 const name = computed(() => componentNameOf(props.node));
 const known = computed(() => hasComponent(name.value));
+const isWide = computed(() => wideSettingComponents.includes(name.value));
 const children = computed(() => props.nodes.filter((child) => child.parent === props.node.key && isDrawn(child) && props.draft.visible(child.key)));
 // what a component needs beyond the value, read from the node: the choices of a choice, the least of a number
 const given = computed(() => ({
@@ -31,7 +32,7 @@ const given = computed(() => ({
 
 <template>
     <template v-if="known">
-        <SettingRow :label="node.title" :help="node.description" :source="node.source" :changed="draft.isChanged(node.key)" :error="draft.errors(node.key)" :found="found === node.key" :data-setting="node.key">
+        <SettingRow :label="node.title" :help="node.description" :source="node.source" :changed="draft.isChanged(node.key)" :error="draft.errors(node.key)" :found="found === node.key" :wide="isWide" :data-setting="node.key">
             <component :is="settingComponents[name]" v-bind="given" :model-value="draft.value(node.key)" :disabled="readOnly" @update:model-value="draft.set(node.key, $event)" />
         </SettingRow>
     </template>
