@@ -56,6 +56,9 @@ class Process(EnvironmentScoped, Model):
     expired_at: Timestamp | None = None
     sandbox_level: SandboxLevel = SandboxLevel.NONE
     priority: ExecutionPriority = ExecutionPriority.NORMAL
+    execution_class: str = ""
+    first_priority: ExecutionPriority = ExecutionPriority.AGENT
+    raised_at: Timestamp | None = None
 
     def ending_phrase(self) -> str:
         if self.expired_at is not None:

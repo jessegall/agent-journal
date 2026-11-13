@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.view_model import ViewModel
 from engine.enums.command_category import CommandCategory
+from engine.enums.execution_priority import ExecutionPriority
 from engine.time.timestamp import Timestamp
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.enums.queue_section import QueueSection
@@ -33,6 +34,10 @@ class ProcessQueueRow(EnvironmentScoped, ViewModel):
     is_queue_run: bool
     slot_assigned: bool
     plugin: str
+    execution_class: str
+    priority: ExecutionPriority
+    first_priority: ExecutionPriority
+    raised_at: Timestamp | None
     is_main: bool
     owner_agent_id: int | None
     task_id: int | None
