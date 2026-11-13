@@ -7,11 +7,16 @@ from suites.coding.modules.workers.support.work_catalogue import EDITABLE_KEYS
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import apply_work_setting
 from tests.stories.suites.coding.work_settings import shown_fields
+from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PERCENT
+from core.modules.helpers.support.helper_settings import COLD_SESSION_MINUTES
+from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_KINDS
+from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_PROFILES
+from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_TOKENS
 
 
-BADGES = {"journal.core.helpers.context-limit-tokens": "Capped amount"}
-FIRST_VALUES = {"journal.core.helpers.cold-session-minutes": 55, "journal.core.helpers.cold-session-context-percent": 20}
-ADDED_ENTRIES = {"journal.core.helpers.context-limit-kinds": "worker:200000", "journal.core.helpers.context-limit-profiles": "journal-worker:200000",
+BADGES = {f"{CONTEXT_LIMIT_TOKENS}": "Capped amount"}
+FIRST_VALUES = {f"{COLD_SESSION_MINUTES}": 55, f"{COLD_SESSION_CONTEXT_PERCENT}": 20}
+ADDED_ENTRIES = {f"{CONTEXT_LIMIT_KINDS}": "worker:200000", f"{CONTEXT_LIMIT_PROFILES}": "journal-worker:200000",
                  "journal.suites.coding.workers.merge-hooks": "journal-worker: echo merged"}
 
 

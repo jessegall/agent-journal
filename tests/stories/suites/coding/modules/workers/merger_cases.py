@@ -26,6 +26,7 @@ from tests.stories.support.story_checks import expect_value, expect_value_with
 from core.modules.helpers.support.helper_nudges import HELPER_GRANTED
 from engine.testing.expectations.expect_nudge import said
 from suites.coding.modules.workers.support.worker_nudges import WORKER_LIBRARIES_LINKED
+from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -126,7 +127,7 @@ def copied(new_story, monkeypatch):
 def spent_case(new_story, monkeypatch):
     merger_can_start(monkeypatch)
     worker = start_planned_worker(new_story, monkeypatch)
-    worker.story.expect_success("setting set journal.suites.coding.workers.worker-phase-test-runs 0 --environment main", actor=worker.story.user)
+    worker.story.expect_success(f"setting set {WORKER_PHASE_TEST_RUNS} 0 --environment main", actor=worker.story.user)
     return MergerCase(worker.story, worker.repository, worker.worker, running_merger(worker.story, worker.worker))
 
 

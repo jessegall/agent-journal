@@ -10,6 +10,7 @@ from core.modules.processes.support.part_spec import PartSpec
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import parts_started, install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 MARKS = "chat-mark list --environment 1 --oldest"
 HIDDEN = [("cat notes", CommandCategory.READ), ("grep -n word notes", CommandCategory.SEARCH), ("sed -i s/a/b/ notes", CommandCategory.EDIT), ("cat > notes", CommandCategory.EDIT), ("./deploy.sh", CommandCategory.UNKNOWN)]
@@ -45,7 +46,7 @@ def test_a_command_that_is_no_test_run_or_build_makes_no_chat_mark_and_no_docked
 def test_a_test_run_and_a_build_make_a_chat_mark_and_a_docked_card_for_the_main_agent_and_for_a_worker(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     worker = new_worker(story)
-    story.run("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
+    story.run(f"setting set {WORKER_TEST_LIMIT} 0 --environment main")
     for line, category in [("make test", CommandCategory.TEST_RUN), ("make build", CommandCategory.BUILD)]:
         worker_run(story, worker, line, category)
         main_run = moved_run(story, line, category=category)

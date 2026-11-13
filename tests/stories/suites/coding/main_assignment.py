@@ -16,11 +16,15 @@ from tests.stories.suites.coding.support.main_controls_fixture import scope_line
 from tests.stories.support.story_checks import expect_value
 from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.modules.workers.support.worker_settings import DISPATCHES_WORKERS_SETTING
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
+from suites.coding.support.coding_settings import KEEP_RUNNING_SETTING
 
 TEST_ROWS_REASON = "the test reads every row it checks"
-AUTO = "journal.suites.coding.auto-mode"
-DISPATCHES = "journal.suites.coding.workers.main-dispatches-workers"
-WORKER_LIMIT = "journal.suites.coding.workers.worker-run-limit"
+AUTO = f"{AUTO_MODE_SETTING}"
+DISPATCHES = f"{DISPATCHES_WORKERS_SETTING}"
+WORKER_LIMIT = f"{WORKER_RUN_LIMIT}"
 MANY_TASKS = READ_LIMIT_ROWS + 1
 
 
@@ -35,7 +39,7 @@ def test_s03_auto_on_hands_the_open_task_to_the_main_agent_and_it_may_not_stop(n
     expect_value((answer.assigned_task.id, answer.may_stop), (1, False))
 
 
-CONTINUE_SETTING = "journal.suites.coding.continue-while-delegatable"
+CONTINUE_SETTING = f"{KEEP_RUNNING_SETTING}"
 
 
 class KeepGoingOffMain(StoryFixture):

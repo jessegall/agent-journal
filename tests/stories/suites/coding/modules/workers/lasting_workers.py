@@ -28,10 +28,12 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.program_split import outage
 from tests.stories.suites.coding.modules.workers.usage_lockdown_held_starts import launches
 from tests.stories.support.program_states import real_program_states
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
+from suites.coding.modules.workers.support.worker_settings import WORKER_KEPT_LIMIT
 
 __all__ = ["ended_worker", "launches", "missing_program", "running_worker", "stopped_worker"]
 
-KEPT_LIMIT = "setting set journal.suites.coding.workers.worker-kept-limit 1 --environment main"
+KEPT_LIMIT = f"setting set {WORKER_KEPT_LIMIT} 1 --environment main"
 MEMORY_TEXT = "The cart rounds each line before it adds them"
 JOB = "Fix the rounding of the tax"
 UNCOMMITTED_TEXT = "tax = 0.21\n"
@@ -44,7 +46,7 @@ TICKS = 3
 def worker_story(new_story):
     """A main agent with one open task in a repository, reading the real state of each program and its usage limit."""
     story = new_story(fixture=OpenTaskOrchestrator)
-    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+    story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
     repository_environment(story)
     real_program_states(story)
     story.container.bind(ProgramLockdown, story.container.constructed(UsageLockdown))

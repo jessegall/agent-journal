@@ -4,12 +4,13 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import r
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 
 @pytest.mark.real_git
 def test_a_plan_workers_card_names_its_plan_in_place_of_its_tasks_and_opens_it(new_story, tmp_path):
     story = new_story(fixture=UserBuilder)
-    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     story.expect_success('plan make "Release work" --environment main', actor=story.user)
     story.expect_success('phase make --plan 1 "Build" --goal "Finish"', actor=story.user)
     task = story.new_row_id('task make "Build it" --brief "Build the release" --phase 1 --environment main')

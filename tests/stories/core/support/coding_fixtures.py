@@ -8,6 +8,8 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.fixtures import MainEnvironment, expect_person, person_joined
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
+from suites.coding.support.coding_settings import KEEP_RUNNING_SETTING
 
 
 class CodingEnvironment(StoryFixture):
@@ -53,11 +55,11 @@ class OpenTaskOrchestrator(StoryFixture):
     parent = OpenTaskBuilder
 
     def steps(self, story: Story) -> None:
-        story.run("setting set journal.suites.coding.auto-mode off --environment main")
-        story.run("setting set journal.suites.coding.continue-while-delegatable on --environment main")
+        story.run(f"setting set {AUTO_MODE_SETTING} off --environment main")
+        story.run(f"setting set {KEEP_RUNNING_SETTING} on --environment main")
 
     def expect(self, story: Story) -> None:
-        story.expect_text("setting show journal.suites.coding.auto-mode --environment main", "value: False")
+        story.expect_text(f"setting show {AUTO_MODE_SETTING} --environment main", "value: False")
 
 class OrchestratorWithPerson(StoryFixture):
     """The orchestrator with task 1 open, and a user, Ada, beside it: story.user."""

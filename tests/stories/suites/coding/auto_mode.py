@@ -5,6 +5,7 @@ import pytest
 
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
 
 def task_pair(story):
@@ -47,7 +48,7 @@ def test_closing_the_last_open_task_starts_nothing(closed_last_task):
 
 def test_with_auto_mode_off_no_task_follows_the_one_that_left_the_hands(new_story):
     story = new_story(fixture=PrioritizedTasks)
-    story.run("setting make journal.suites.coding.auto-mode false")
+    story.run(f"setting make {AUTO_MODE_SETTING} false")
     story.run('task close 1 --outcome "done"', actor=story.agent)
     story.run_listeners()
     expect_started_holder(story, 3, "state: open")

@@ -8,6 +8,7 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.drivers.support.confirmed_skips import TRIED
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
+from suites.coding.upgrade.coding_settings_move import LISTED_KEY
 
 RULE = "workers.allowed-command-types"
 REASON = "it is wrong here"
@@ -21,7 +22,7 @@ def refused_worker(new_story):
     story = new_story(fixture=OpenTaskBuilder)
     worker = Actor(story.new_row_id(f"agent start {WORKER_SESSION} claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
     story.expect_success(lines.TASK_START, actor=worker)
-    story.expect_success("""setting make journal.suites.coding.worker-command-types '["read", "search"]' --environment main""")
+    story.expect_success(f"""setting make {LISTED_KEY} '["read", "search"]' --environment main""")
     story.expect_hook_refusal(WORKER_SESSION, REMOVAL, REFUSED_LINE)
     skip = story.new_row_id(f'refusal skip {RULE} --reason "{REASON}" --environment main', actor=worker)
     return story, worker, skip

@@ -5,11 +5,13 @@ from engine.enums.actor_type import ActorType
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import ThreeTasks
+from core.modules.reviews.support.review_settings import REVIEWERS_MOST_SETTING
+from core.modules.reviews.support.review_settings import REVIEWER_SETTING
 
 REVIEW_REQUEST = "review request task 1 --points 2 --environment main"
 REVIEWER_START = "agent start s-2 claude reviewer --environment main"
-REVIEWERS_ENABLED = "setting set journal.core.reviews.reviewer true --project"
-EMPTY_REVIEWERS = "setting set journal.core.reviews.reviewers-most 0 --project"
+REVIEWERS_ENABLED = f"setting set {REVIEWER_SETTING} true --project"
+EMPTY_REVIEWERS = f"setting set {REVIEWERS_MOST_SETTING} 0 --project"
 REVIEW_DETAILS = "review show 1"
 REVIEW_POINTS = "review-point list --review 1"
 REVIEW_ASSIGNMENTS = "assignment list --subject-model review --subject 1 --json"
@@ -55,7 +57,7 @@ class OneReviewerAllowed(StoryFixture):
     parent = ReviewersEnabled
 
     def steps(self, story: Story) -> None:
-        story.run("setting set journal.core.reviews.reviewers-most 1 --project")
+        story.run(f"setting set {REVIEWERS_MOST_SETTING} 1 --project")
 
     def expect(self, story: Story) -> None:
         story.expect_text("setting list", "reviews.reviewers-most  1")

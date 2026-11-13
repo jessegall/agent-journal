@@ -6,6 +6,7 @@ from suites.coding.modules.workers.rules.approved_plan_stop_rule import Approved
 from suites.coding.modules.workers.support.worker_settings import DISPATCHES_WORKERS_SETTING
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.drivers.main.orchestrator import ReadyPlanTaskOrchestrator
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
 
 @pytest.fixture
@@ -67,7 +68,7 @@ def test_an_approved_plan_waiting_to_start_checks_worker_capacity_and_whether_th
 
 def test_a_diagnostic_check_does_not_start_a_task_after_a_plan_refuses_stop(new_story):
     story = new_story(fixture=ReadyPlanTaskOrchestrator)
-    story.expect_success("setting set journal.suites.coding.auto-mode on --environment main")
+    story.expect_success(f"setting set {AUTO_MODE_SETTING} on --environment main")
     story.expect_success("plan approve 1 --environment main", actor=story.user)
     story.expect_success('task make "Loose task" --brief "Do this after the plan starts" --environment main', actor=story.agent)
     with server_story(story) as server:

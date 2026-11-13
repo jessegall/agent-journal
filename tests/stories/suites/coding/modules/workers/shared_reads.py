@@ -18,6 +18,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import (
 )
 from tests.stories.suites.coding.modules.workers.support.program_split import SplitViewer
 from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
 
 class WorkerReadsStory(NamedTuple):
@@ -30,7 +31,7 @@ def pending_workers(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_success('actor make user "Ada"')
     repository = repository_environment(story)
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 3 --environment main")
+    story.expect_success(f"setting set {WORKER_RUN_LIMIT} 3 --environment main")
     workers = []
     for number in range(3):
         task_id = 1 if number == 0 else story.new_row_id(

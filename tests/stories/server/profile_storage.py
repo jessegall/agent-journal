@@ -13,6 +13,8 @@ from server.work.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from tests.stories.support.story_checks import expect_value
+from core.modules.profiles.support.profile_settings import CLAUDE_MODEL_SETTING
+from core.modules.profiles.support.profile_settings import CODEX_MODEL_SETTING
 
 MODULE = "tests.stories.core.modules.profiles.support.profile_updates:"
 SAVE = ["profile", "save", "critic", "--description", "Reads a change", "--body", "Read the diff.", "--reason", "needed"]
@@ -271,8 +273,8 @@ def test_a_read_only_profile_folder_leaves_copy_undone_and_start_continues(profi
 def test_default_models_are_effective_and_native_profiles_still_publish(profile_story):
     story = profile_story
     profile_line(story, SAVE)
-    story.expect_success("setting set journal.core.profiles.model-claude haiku --project", actor=story.user)
-    story.expect_success("setting set journal.core.profiles.model-codex gpt-6.1-sol --project", actor=story.user)
+    story.expect_success(f"setting set {CLAUDE_MODEL_SETTING} haiku --project", actor=story.user)
+    story.expect_success(f"setting set {CODEX_MODEL_SETTING} gpt-6.1-sol --project", actor=story.user)
     row = profile_row(story, "critic")
     expect_value((row["model"], row["codex_model"]), ("haiku", "gpt-6.1-sol"))
     story.container.get(ProfileFiles).publish()

@@ -15,6 +15,7 @@ from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGE
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting
+from suites.coding.modules.workers.support.worker_settings import PHASE_TEST_DEFERRAL_LIMIT
 
 LATER_STORIES = "tests/stories/compaction_never_twice.py"
 OWN_TEST = f"pytest tests/build.py {LATER_STORIES}"
@@ -23,7 +24,7 @@ DUE_TEST = f"pytest {LATER_STORIES}"
 LATER_FAILURE = f"FAILED {LATER_STORIES}::test_a_second_compaction_is_refused - assert 2 == 1\n"
 WHY = "its stories belong to task 4 of phase Ship"
 DEFERRALS = "phase-test-deferral list --json --oldest --environment main"
-LIMIT_SETTING = "journal.suites.coding.workers.most-phase-test-deferrals"
+LIMIT_SETTING = f"{PHASE_TEST_DEFERRAL_LIMIT}"
 FIRST_RUN_SIZE = 3
 REPEATED_HAND_IN = 'worker commit --wait --differences "nothing to fix: its failing test paths are deferred"'
 

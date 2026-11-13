@@ -11,8 +11,9 @@ from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import FIRST_PROOF, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
+from suites.coding.modules.workers.support.worker_settings import PROTECTED_FOLDERS
 
-SETTING = "journal.suites.coding.workers.protected-folders"
+SETTING = f"{PROTECTED_FOLDERS}"
 
 
 @pytest.fixture

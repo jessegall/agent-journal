@@ -2,10 +2,13 @@ import json
 
 from suites.coding.support.main_options import BUILDER, ORCHESTRATOR
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
+from suites.coding.support.coding_settings import KEEP_RUNNING_SETTING
 
-AUTO = "journal.suites.coding.auto-mode"
-CONTINUE_SETTING = "journal.suites.coding.continue-while-delegatable"
-MERGER = "journal.suites.coding.workers.merger-on"
+AUTO = f"{AUTO_MODE_SETTING}"
+CONTINUE_SETTING = f"{KEEP_RUNNING_SETTING}"
+MERGER = f"{MERGER_ENABLED}"
 REVISION_PREFIX = "revision: "
 
 

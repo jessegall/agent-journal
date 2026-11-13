@@ -6,10 +6,13 @@ from tests.stories.suites.coding.modules.workers.support.commit_command import C
 from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task, unplanned_holding_worker
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import apply_work_setting
+from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND
+from suites.coding.modules.workers.support.worker_settings import PROJECT_TEST_COMMAND
+from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 
 THREE_TASKS = 3
 TWO_POINT_BRIEF = 'task edit 1 --brief "- the total adds the tax\n- the total rounds to cents"'
-RUNS_SETTING = "journal.suites.coding.workers.worker-phase-test-runs"
+RUNS_SETTING = f"{WORKER_PHASE_TEST_RUNS}"
 OUT_OF_RUNS = "No test runs left"
 PICKED_TESTS = "tests/other.py\n"
 
@@ -83,8 +86,8 @@ def test_47_48_only_the_failed_proof_is_tested_at_the_commit_after_it_is_shown_a
 def test_50_a_failed_run_of_the_selected_tests_returns_the_tasks_of_the_commit_and_names_the_output(new_story, monkeypatch):
     worker = unplanned_holding_worker(new_story, monkeypatch)
     story = worker.story
-    story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main')
-    story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 -m pytest -q" --environment main')
+    story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "python3 pick.py" --environment main')
+    story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "python3 -m pytest -q" --environment main')
     prove_task(worker, 1, 1, TEST_LINE)
     prove_task(worker, 2, 1, SECOND_TEST_LINE)
     commit(worker)

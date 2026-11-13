@@ -7,6 +7,7 @@ from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from core.modules.drivers.support.access_nudges import LIMITED_TOOL
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.support.coding_settings import DESIGNER_ENABLED_SETTING
 
 CLAUDE_DESIGN_TOOL = "mcp__claude_design__write_files"
 
@@ -17,7 +18,7 @@ class StartedDesigner(StoryFixture):
     parent = UserBuilder
 
     def steps(self, story):
-        story.expect_success("setting set journal.suites.coding.designer-enabled true --project", actor=story.user)
+        story.expect_success(f"setting set {DESIGNER_ENABLED_SETTING} true --project", actor=story.user)
         launcher = FakeLauncher.listening(story.home.socket("launcher"))
         story.expect_success('helper start journal-designer --brief "Design the settings page" --environment main', actor=story.agent)
         story.run_listeners()

@@ -13,13 +13,17 @@ from tests.stories.suites.coding.modules.workers.checkpoint_runs import CART_COM
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting
+from suites.coding.modules.workers.support.worker_settings import DELIVERY_FAILURE_LIMIT
+from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_FAILURE_LIMIT
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 PHASE_END_SETTING = "journal.suites.coding.workers.test-at-phase-end"
 BATCH_SETTING = "journal.suites.coding.workers.test-batch-size"
-RUNS_SETTING = "journal.suites.coding.workers.worker-phase-test-runs"
+RUNS_SETTING = f"{WORKER_PHASE_TEST_RUNS}"
 RUNS_TITLE = "A worker's test runs between two commits"
-REMAINING_NUMBERS = (RUNS_SETTING, "journal.suites.coding.workers.worker-run-most-tests", "journal.suites.coding.workers.own-test-failures-to-flag",
-                     "journal.suites.coding.workers.hand-in-failures-to-flag")
+REMAINING_NUMBERS = (RUNS_SETTING, f"{WORKER_TEST_LIMIT}", f"{WORKER_RUN_FAILURE_LIMIT}",
+                     f"{DELIVERY_FAILURE_LIMIT}")
 PHASE_TEST_POINT = 0
 OLD_PHASE_TEST = "python tests/build.py"
 

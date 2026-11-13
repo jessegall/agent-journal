@@ -4,8 +4,9 @@ from tests.stories.suites.coding.modules.workers.support.held_tasks import BUILD
 from tests.stories.suites.coding.modules.workers.support.phase_steps import StoryWorker
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_COUNT
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.modules.workers.support.worker_settings import MOST_OPEN_TASKS
 
-LIMIT_SETTING = "journal.suites.coding.workers.most-open-tasks"
+LIMIT_SETTING = f"{MOST_OPEN_TASKS}"
 LIMIT_REFUSAL = "you hold {count} tasks, the most allowed"
 LIMIT_HINT = "commit some of them, then start another"
 SIX_BUILD_TASKS = 6

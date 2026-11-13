@@ -16,6 +16,7 @@ from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResume
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 MAIN_SESSION = "s-1"
 WORKER_PID = 700
@@ -43,7 +44,7 @@ def missing_program(monkeypatch):
 @pytest.fixture
 def worker_story(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+    story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
     repository_environment(story)
     return story
 

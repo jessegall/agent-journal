@@ -42,6 +42,8 @@ from tests.stories.suites.coding.modules.workers.support.program_split import (
 )
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.suites.coding.modules.workers.support.route_expectations import expect_model_route_refusal, expect_unmatched_route
+from core.modules.helpers.support.helper_settings import ALLOWED_MODELS
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -422,7 +424,7 @@ def test_profile_tier_alone_beats_default_models_bad_file_is_a_problem(split_sto
 @pytest.mark.parametrize('program,model', [('claude', 'fable'), ('codex', 'gpt-6-astra')])
 def test_rare_model_is_never_automatic(split_story, split_viewer, program, model):
     story = split_story
-    split_viewer.value('settings.settings', ['setting', 'set', 'journal.core.helpers.allowed-models', f'{program} {model}', '--project'])
+    split_viewer.value('settings.settings', ['setting', 'set', f'{ALLOWED_MODELS}', f'{program} {model}', '--project'])
     story.expect_refusal(f'worker dispatch --test-command python=pytest 1 --program {program} --tier strongest', 'name', actor=story.agent)
     expect_program(story, dispatch(story, flags=f'--program {program} --model {model}'), program, model)
 
@@ -549,7 +551,7 @@ def test_third_provider_in_every_list(new_story, case):
 
     story = new_story(fixture=UserBuilder)
     story.expect_sync_success("tests.stories.suites.coding.modules.workers.support.third_program:ThirdProgramModule")
-    story.expect_success("setting set journal.core.viewer.tour-completed true --project", actor=story.user)
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project", actor=story.user)
     programs = json.loads(story.run("agent programs --json", actor=story.user).output_text)["rows"]
     sample = next(program for program in programs if program["name"] == "sample")
     story.expect_rows(sample["model_option"] == "--sample-model", [model["name"] for model in sample["models"]] == ["sample-fast", "sample-general"])

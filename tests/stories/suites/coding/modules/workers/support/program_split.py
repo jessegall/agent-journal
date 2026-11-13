@@ -21,8 +21,9 @@ from tests.stories.server.support.server_client import server_story, viewer_answ
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.unit.engine.samples.program_sample import SampleProgram
 from tests.stories.support.program_states import real_program_states
+from core.modules.helpers.support.helper_settings import PROGRAM_SPLIT
 
-SPLIT = 'journal.core.helpers.program-split'
+SPLIT = f'{PROGRAM_SPLIT}'
 SAMPLE_MODULE = 'tests.stories.suites.coding.modules.workers.support.program_split:SplitProgramModule'
 
 

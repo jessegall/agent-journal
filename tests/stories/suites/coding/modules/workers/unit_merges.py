@@ -6,6 +6,7 @@ from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import merge
 from tests.stories.suites.coding.modules.workers.free_commits import ASK_MERGE, commit_each, worktree_state
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, StoryWorker, start_planned_worker, unplanned_group_worker, single_task_worker
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 """Book E of doc 1252: the merge of an asked unit, and every way it comes back."""
 
@@ -79,7 +80,7 @@ def test_73_important_log_lines_still_need_the_answer_of_the_main_agent(new_stor
 
 def test_an_ask_is_heard_by_the_main_agent_with_the_merger_off(new_story, monkeypatch):
     worker = unplanned_group_worker(new_story, monkeypatch)
-    worker.story.run("setting set journal.suites.coding.workers.merger-on false --project", actor=worker.story.user)
+    worker.story.run(f"setting set {MERGER_ENABLED} false --project", actor=worker.story.user)
     commit_each(worker, (1, 2, 3))
     worker.end_all_tests()
     worker.story.expect_success(ASK_MERGE, actor=worker.worker)

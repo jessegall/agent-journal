@@ -14,12 +14,15 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from tests.stories.suites.coding.modules.workers.test_queue import PROOF, recording_launch
 from tests.stories.support.story_checks import expect_value
 from tests.stories.core.support.agent_labels import agent_label
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
+from suites.coding.support.coding_settings import DESIGNER_ENABLED_SETTING
+from suites.coding.support.coding_settings import STARTS_HELPERS_SETTING
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
-DESIGNER = "journal.suites.coding.designer-enabled"
-HELPERS = "journal.suites.coding.main-starts-read-only-helpers"
-MERGER = "journal.suites.coding.workers.merger-on"
+DESIGNER = f"{DESIGNER_ENABLED_SETTING}"
+HELPERS = f"{STARTS_HELPERS_SETTING}"
+MERGER = f"{MERGER_ENABLED}"
 START_DESIGNER = 'helper start journal-designer --brief "Design the cart page" --environment main'
 
 

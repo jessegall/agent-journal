@@ -14,6 +14,7 @@ from suites.coding.modules.workers.rules.workers_out_rule import WorkersOutRule
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, UserBuilder
 from tests.stories.suites.coding.assigner_plans import StartedPlanTasks
 from tests.stories.support.story_checks import expect_absent_value
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
 TICK_AND_STOP_RULES = [SmallBatchRule, UnstartedWorkerRule, ApprovedPlanStopRule, DeliveredWorkStopRule, WorkerFileRule, MergeCheckoutRule,
                 OrphanWorktreeRule, WorkersOutRule, UnmergedWorkerRule, InactiveWorkerStopRule]
@@ -51,7 +52,7 @@ def test_plan_delivery_uses_current_main_policy(new_story):
 
 def test_plan_delivery_stops_when_auto_is_turned_off_under_the_main_driver(new_story):
     story = new_story(fixture=StartedPlanTasks)
-    story.expect_success("setting set journal.suites.coding.auto-mode off --environment main")
+    story.expect_success(f"setting set {AUTO_MODE_SETTING} off --environment main")
     story.expect_success("driver choose coding.main --environment main")
     story.expect_success('task close 1 --outcome "done"', actor=story.agent)
     story.run_listeners()

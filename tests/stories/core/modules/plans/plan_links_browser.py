@@ -4,6 +4,7 @@ from core.modules.documents.references.row_ref import RowRef
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 TASKS = 70
 MESSAGES = 30
@@ -11,7 +12,7 @@ MESSAGES = 30
 
 def test_a_plan_with_a_hundred_links_shows_a_compact_linked_section(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     story.run('plan make "Rebuild the cart" --brief "The cart must keep its totals." --environment main')
     for number in range(1, TASKS + 1):
         story.run(f'task make "Linked task {number}" --brief "Sample" --environment main')

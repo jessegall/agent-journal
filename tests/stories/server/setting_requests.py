@@ -9,8 +9,10 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.driver.support.fixtures import SampleSuiteChoice
 from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.server.support.server_client import server_story
+from core.modules.drivers.support.driver_settings import SUITE_SETTING
+from core.modules.settings.support.settings_tree import BACKUP_COUNT_SETTING
 
-SUITE_KEY = "journal.core.drivers.suite"
+SUITE_KEY = f"{SUITE_SETTING}"
 APPROVE = "accept"
 REQUEST_LINE = f"setting request {SUITE_KEY} samples --reason 'it fits the work' --environment main"
 
@@ -65,7 +67,7 @@ def test_a_worker_also_requests_a_persons_approval(plain_story):
 
 
 def test_a_setting_an_agent_may_set_needs_no_request(plain_story):
-    plain_story.expect_refusal("setting request journal.core.settings.backup-count 3 --reason 'more' --project", "may set", actor=plain_story.agent)
+    plain_story.expect_refusal(f"setting request {BACKUP_COUNT_SETTING} 3 --reason 'more' --project", "may set", actor=plain_story.agent)
 
 
 def test_only_a_person_answers_the_question(requested):

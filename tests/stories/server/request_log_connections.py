@@ -10,6 +10,7 @@ from core.modules.developer.support.hook_request_log import HookRequestLog
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from server.viewer.read_attribution import ReadAttribution
+from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING
 
 
 @pytest.fixture
@@ -120,11 +121,11 @@ def test_a_viewer_setting_change_refreshes_recording_before_the_next_request(log
             completed.set()
 
     monkeypatch.setattr(log, "save_many", saved)
-    server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", "journal.core.developer.tools.hooks.request-log", "false", "--project"]})
+    server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", f"{HOOK_REQUEST_LOG_SETTING}", "false", "--project"]})
     server.story.expect_rows(completed.wait(3))
     server.story.expect_rows(not log.configuration.enabled, log.container is None)
     completed.clear()
-    server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", "journal.core.developer.tools.hooks.request-log", "true", "--project"]})
+    server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", f"{HOOK_REQUEST_LOG_SETTING}", "true", "--project"]})
     server.story.expect_rows(completed.wait(3))
     server.story.expect_rows(log.configuration.enabled, log.counts["recorded"] == 1)
 

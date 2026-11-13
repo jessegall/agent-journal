@@ -7,8 +7,9 @@ from core.modules.helpers.support.helper_programs import HelperPrograms
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, repository_environment
+from core.modules.helpers.support.helper_settings import ALLOWED_MODELS
 
-ALLOWED_MODELS = "journal.core.helpers.allowed-models"
+ALLOWED_MODELS = f"{ALLOWED_MODELS}"
 
 
 def allow_opus(story) -> None:

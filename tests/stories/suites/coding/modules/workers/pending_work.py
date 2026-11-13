@@ -27,6 +27,8 @@ from tests.stories.suites.coding.modules.workers.test_queue import PROOF, ended,
 from tests.stories.core.support.agent_labels import agent_label
 from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
 
 class PersonOrchestrator(StoryFixture):
@@ -62,7 +64,7 @@ def waiting_place(new_story, monkeypatch, request):
     second = Actor(story.new_row_id(f"worker dispatch --test-command python=pytest --model sonnet {task}", actor=story.agent), ActorType.AGENT)
     story.expect_success(f"agent end {first.id}", actor=story.agent)
     story.expect_success(f"agent end {second.id}", actor=story.agent)
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 1 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_RUN_LIMIT} 1 --environment main", actor=story.user)
     story.advance(timedelta(seconds=1))
     story.expect_success(f'worker send --wait {agent_number(story, second.id)} "Continue the job"', actor=story.agent)
     story.run_listeners()
@@ -120,11 +122,11 @@ def test_delivery_holds_the_place_while_tests_and_the_merger_run_then_merge_free
 
 def test_unchecked_work_keeps_its_status_and_place_when_sent_back(new_story, monkeypatch):
     story = new_story(fixture=PersonOrchestrator)
-    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+    story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 1 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_RUN_LIMIT} 1 --environment main", actor=story.user)
     launches = []
     story.advance(timedelta(seconds=1))
     monkeypatch.setattr(AgentLauncher, "hand", lambda _launcher, agent, _environment, _command: launches.append(agent.id) or LaunchAnswer.STARTED)

@@ -2,9 +2,11 @@ from engine.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
+from suites.coding.modules.workers.support.worker_settings import WORKER_KEPT_LIMIT
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
-RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit"
-KEPT_LIMIT = "journal.suites.coding.workers.worker-kept-limit"
+RUN_LIMIT = f"{WORKER_RUN_LIMIT}"
+KEPT_LIMIT = f"{WORKER_KEPT_LIMIT}"
 STALE = "approval 1 is closed, so it cannot begin"
 
 

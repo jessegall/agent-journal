@@ -11,10 +11,15 @@ from tests.stories.suites.coding.modules.workers.support.merger_launcher import 
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting
 from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
+from suites.coding.modules.workers.support.worker_settings import MERGER_GROUP_MESSAGE_LIMIT
+from suites.coding.modules.workers.support.worker_settings import QUESTION_ANSWER_MINUTES
+from suites.coding.modules.workers.support.worker_settings import QUESTION_FORWARD_MINUTES
+from suites.coding.modules.workers.support.worker_settings import QUESTION_VISITS_LIMIT
 
 MERGER_QUESTION_LINE = 'merger tell "The worker cannot build" --tried "I read its facts" --option "answer the worker" --option "release the worker" --recommend "answer the worker"'
-FORWARD_MINUTES = "journal.suites.coding.workers.ask-pass-on-minutes"
-ANSWER_MINUTES = "journal.suites.coding.workers.ask-answer-minutes"
+FORWARD_MINUTES = f"{QUESTION_FORWARD_MINUTES}"
+ANSWER_MINUTES = f"{QUESTION_ANSWER_MINUTES}"
 FORWARDED_LINE = "Your question went to the main agent"
 MESSAGES = "message list --json --limit 20 --environment main"
 
@@ -88,9 +93,9 @@ def test_the_forward_time_cannot_be_set_below_the_answer_time(case):
     case.story.expect_success(f"setting set {ANSWER_MINUTES} 45 --project", actor=case.story.user)
 
 
-VISITS_LIMIT = "journal.suites.coding.workers.ask-visits-limit"
-GROUP_LIMIT = "journal.suites.coding.workers.most-merger-messages-per-group"
-MERGER_ON = "journal.suites.coding.workers.merger-on"
+VISITS_LIMIT = f"{QUESTION_VISITS_LIMIT}"
+GROUP_LIMIT = f"{MERGER_GROUP_MESSAGE_LIMIT}"
+MERGER_ON = f"{MERGER_ENABLED}"
 
 
 def test_a_worker_cannot_answer_or_pass_on_a_question_itself(case):

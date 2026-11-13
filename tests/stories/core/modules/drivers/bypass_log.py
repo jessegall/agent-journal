@@ -45,7 +45,7 @@ def test_the_hook_wait_a_person_sets_reaches_the_file_the_go_hook_reads(new_stor
     story = new_story(fixture=UserJoined)
     home = story.container.get(JournalHome)
     home.hook_wait_file.parent.mkdir(parents=True, exist_ok=True)
-    story.expect_success("setting set journal.core.drivers.hook-wait-seconds 12 --project", actor=story.user)
+    story.expect_success(f"setting set {HOOK_WAIT_SECONDS} 12 --project", actor=story.user)
     story.run_listeners()
     story.expect_rows(home.hook_wait_file.read_text().strip() == "12")
     setting = next(row for row in story.container.get(SettingRows).kept_table(Setting).values() if row.key == HOOK_WAIT_SECONDS)

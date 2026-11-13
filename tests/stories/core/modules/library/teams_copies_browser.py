@@ -19,6 +19,7 @@ from tests.stories.core.modules.secrets.support.private_home import private_fold
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.shared_server_binary import SharedServerBinary
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 __all__ = ["private_folder"]
 
@@ -40,7 +41,7 @@ def team(tmp_path, monkeypatch):
 
 def journal(new_story, server: SharedServerBinary, token: str) -> Story:
     story = connected(new_story, server, token)
-    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     return story
 
 

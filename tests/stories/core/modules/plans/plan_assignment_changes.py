@@ -3,8 +3,9 @@ import pytest
 from tests.stories.core.modules.assignments.support.assignment_reads import assigned, row_actors
 from tests.stories.core.modules.plans.support.assigned_plans import PlanWithTwoPhases, phase_task_ids, plan_worker
 from tests.stories.core.support.agent_labels import agent_number
+from suites.coding.support.coding_settings import WRITES_CODE_SETTING
 
-WRITES_CODE = "journal.suites.coding.main-writes-code"
+WRITES_CODE = f"{WRITES_CODE_SETTING}"
 NEW_TASK = 7
 
 

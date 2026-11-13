@@ -5,13 +5,14 @@ from engine.registry.registry import Registry
 from tests.stories.core.modules.chat.support.mark_samples import mark_count, marks_text, expect_mark_count, expect_marks_text
 from tests.stories.core.modules.skills.agent_skills import read_row
 from tests.stories.core.modules.skills.due import environment, start
+from core.modules.skills.support.start_skills import SESSION_START_KEY
 
 SKILLS = ("journal", "journal-etiquette", "journal-messages", "journal-notes")
 
 
 def empty_due(new_story):
     story = environment(new_story)
-    story.run("setting make journal.core.skills.session-start '[]'")
+    story.run(f"setting make {SESSION_START_KEY} '[]'")
     start(story)
     return story
 

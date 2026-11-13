@@ -11,6 +11,7 @@ from tests.stories.core.modules.skills.due import DUE, JOURNAL_TASK_LIST, enviro
 from tests.stories.support.story_checks import expect_value
 from core.modules.skills.support.skill_nudges import UNREAD_SKILLS
 from engine.testing.expectations.expect_nudge import said
+from core.modules.skills.support.start_skills import SESSION_START_KEY
 
 EDIT = HookSamples.edit("src/cart.py")
 JOURNAL_AGENT_LIST = HookSamples.shell("journal agent list", ShellPart("journal", CommandCategory.JOURNAL, ["agent", "list"]))
@@ -70,7 +71,7 @@ def test_a_journal_command_of_a_noun_whose_skill_is_unread_is_refused_until_it_i
 
 def test_with_nothing_due_nothing_is_refused(new_story):
     story = environment(new_story)
-    story.run("setting make journal.core.skills.session-start '[]'")
+    story.run(f"setting make {SESSION_START_KEY} '[]'")
     start(story)
     story.expect_hook_allowed("s-1", EDIT)
     story.expect_hook_allowed("s-1", HookSamples.stop())

@@ -35,6 +35,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.modules.documents.support.trail_fixtures import SelectedTrail, Scenario
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, FIRST_PROOF, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -283,7 +284,7 @@ def test_a_launcher_failure_is_kept_in_the_output_and_releases_the_reservation(w
 def test_a_queued_send_keeps_the_request_selected_when_it_was_accepted(new_story, monkeypatch, requester_ends):
     story = new_story(fixture=SelectedTrail)
     scenario = Scenario(story)
-    story.expect_success("setting set journal.suites.coding.auto-mode off --environment main")
+    story.expect_success(f"setting set {AUTO_MODE_SETTING} off --environment main")
     repository_environment(story)
     worker = dispatched_worker(story)
     scenario.switch(1)

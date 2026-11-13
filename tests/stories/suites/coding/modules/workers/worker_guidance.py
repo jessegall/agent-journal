@@ -10,10 +10,11 @@ from tests.stories.suites.coding.modules.workers.support.commit_command import C
 from tests.stories.suites.coding.modules.workers.support.held_tasks import holding_worker, prove_task, unplanned_holding_worker
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, PLAN_DISPATCH, SECOND_TEST_LINE, TEST_LINE, start_planned_worker, unplanned_worker
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
+from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
-RUNS_SETTING = "setting set journal.suites.coding.workers.worker-phase-test-runs 5 --environment main"
+RUNS_SETTING = f"setting set {WORKER_PHASE_TEST_RUNS} 5 --environment main"
 BUILD_TASKS = 3
 
 

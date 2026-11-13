@@ -3,10 +3,12 @@ import subprocess
 from pathlib import Path
 
 from tests.stories.server.support.file_changes import FileChanges
+from suites.coding.support.graphify_settings import GRAPHIFY_COMMAND
+from suites.coding.support.graphify_settings import GRAPHIFY_INSTALL_COMMAND
 
 WAIT_SECONDS = 10
-COMMAND_SETTING = "journal.suites.coding.graphify-command"
-INSTALL_SETTING = "journal.suites.coding.graphify-install-command"
+COMMAND_SETTING = f"{GRAPHIFY_COMMAND}"
+INSTALL_SETTING = f"{GRAPHIFY_INSTALL_COMMAND}"
 
 
 class GraphifyRepo:

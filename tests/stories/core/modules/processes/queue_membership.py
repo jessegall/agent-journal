@@ -6,6 +6,7 @@ from tests.stories.core.modules.processes.process_queue_read import queue_page
 from tests.stories.core.modules.processes.support.process_samples import end_run, start_process
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_value
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 
 class QueuedWorker(StoryFixture):
@@ -15,7 +16,7 @@ class QueuedWorker(StoryFixture):
 
     def steps(self, story) -> None:
         story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
-        story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main", actor=story.user)
+        story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=story.user)
         story.expect_success("setting set journal.core.processes.readers-forced false --environment main", actor=story.user)
         story.agent = Actor(story.new_row_id("agent start queued-tester claude worker --environment main"), ActorType.AGENT)
 

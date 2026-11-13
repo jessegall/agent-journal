@@ -14,6 +14,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.server_client import server_story, started_server
 from tests.stories.server.support.file_changes import FileChanges
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 RUNNER_SOURCE = Path(__file__).resolve().parents[6] / "tools" / "journal-run"
 WAIT_SECONDS = 40
@@ -62,7 +63,7 @@ def test_a_queued_proof_is_started_by_the_new_server_and_counts(new_story, monke
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "go on" --test-command "probe=python3 -c"', actor=story.agent)
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story" --test "probe pass tests/cart.py"', actor=worker)
-    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+    story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
     with server_story(story):
         story.expect_success("worker commit --wait --differences none", actor=worker)
         story.run_listeners()

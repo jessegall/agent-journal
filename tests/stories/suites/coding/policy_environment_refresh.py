@@ -3,9 +3,11 @@ import json
 from engine.event.event_log import EventLog
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
+from suites.coding.support.coding_settings import STARTS_HELPERS_SETTING
 
-HELPERS = "journal.suites.coding.main-starts-read-only-helpers"
-MERGER = "journal.suites.coding.workers.merger-on"
+HELPERS = f"{STARTS_HELPERS_SETTING}"
+MERGER = f"{MERGER_ENABLED}"
 REFERENCE_KEYS = {"id", "event", "environment", "row_table", "row_id", "actor_id"}
 
 

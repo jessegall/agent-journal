@@ -7,6 +7,7 @@ from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, expect_clean_environment, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import CHECKOUT_BRANCH, ENVIRONMENT_BRANCH
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 WORKER_START = "agent start s-2 claude worker --environment main"
 
 
@@ -68,7 +69,7 @@ def test_a_persons_dispatch_without_a_program_is_refused_naming_the_flag(new_sto
 def test_a_zero_worker_run_limit_refuses_dispatch_without_creating_a_worker(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    story.expect_success("setting make journal.suites.coding.workers.worker-run-limit 0 --environment main", "key: journal.suites.coding.workers.worker-run-limit")
+    story.expect_success(f"setting make {WORKER_RUN_LIMIT} 0 --environment main", f"key: {WORKER_RUN_LIMIT}")
     story.expect_refusal(DISPATCH, "0 workers are running", actor=story.agent)
     story.expect_rows(story.story_rows(Agent, role="worker") == ())
     story.expect_success("worker-worktree list", "nothing found")

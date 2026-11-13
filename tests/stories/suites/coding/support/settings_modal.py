@@ -1,9 +1,11 @@
 from tests.stories.server.window_data_route import window_data
 from tests.stories.suites.coding.support.main_controls_fixture import PersonViewer
+from suites.coding.modules.workers.support.worker_settings import DISPATCHES_WORKERS_SETTING
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
 WINDOW = "coding.work-mode"
-AUTO = "journal.suites.coding.auto-mode"
-SENDS = "journal.suites.coding.workers.main-dispatches-workers"
+AUTO = f"{AUTO_MODE_SETTING}"
+SENDS = f"{DISPATCHES_WORKERS_SETTING}"
 LONG_TABS = ("work", "tests", "advanced")
 TYPE_SCREENS = ("helper-type.workers", "helper-type.merger", "helper-type.read-only")
 

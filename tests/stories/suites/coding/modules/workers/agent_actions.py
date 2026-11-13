@@ -9,12 +9,14 @@ from tests.stories.core.modules.helpers.helper_jobs import resumable_session
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
 
 @pytest.fixture
 def agent_task_server(new_story, monkeypatch):
     story = new_story(fixture=UserBuilder)
-    story.expect_success("setting set journal.suites.coding.auto-mode off --environment main", actor=story.user)
+    story.expect_success(f"setting set {AUTO_MODE_SETTING} off --environment main", actor=story.user)
     repository_environment(story)
     first = story.new_row_id('task make "First calculation" --brief "Check the cart calculation"', actor=story.agent)
     worker_id = story.new_row_id(f"worker dispatch --test-command python=pytest --model sonnet {first}", actor=story.agent)
@@ -22,7 +24,7 @@ def agent_task_server(new_story, monkeypatch):
     task_id = story.new_row_id('task make "Check rounding" --brief "Check the rounding calculation"', actor=story.agent)
     worker = story.container.get(Queries).query(Agent).find(worker_id)
     resumable_session(story, worker, monkeypatch)
-    story.expect_success("setting set journal.core.viewer.tour-completed true --project", actor=story.user)
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project", actor=story.user)
     with server_story(story, listener_thread_started=False) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         yield server, cookie, worker_id, task_id

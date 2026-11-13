@@ -11,6 +11,7 @@ from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.test_queue import ended, recording_launch
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 ENDED_AT = "2026-01-01T00:00:00+00:00"
 
@@ -49,7 +50,7 @@ def test_a_stopped_worker_with_a_task_says_what_it_waits_on_and_never_for_a_job(
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
+    story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main")
     database = story.container.get(Database)
     part = PartSpec("make test", "make", False, CommandCategory.TEST_RUN)
     command = StartProcess(worker.id, None, "make test", "/work/main", "zsh", CommandCategory.TEST_RUN, 30, [part])

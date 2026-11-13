@@ -12,13 +12,15 @@ from tests.stories.support.story_checks import expect_value
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from engine.enums.hook_answer import HookAnswer
 from server.request.request_trace import SETTINGS_REFRESH_SECONDS
+from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING
+from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SIZE_SETTING
 
 
 @pytest.fixture
 def attributed_server(new_story):
     story = new_story(fixture=HookRecordingEnabled)
     story.expect_success("environment make elsewhere /work/elsewhere")
-    story.expect_success("setting set journal.core.developer.tools.hooks.request-log-size 10000 --project", actor=story.user)
+    story.expect_success(f"setting set {HOOK_REQUEST_LOG_SIZE_SETTING} 10000 --project", actor=story.user)
     with server_story(story, listener_thread_started=False) as server:
         yield server, server.expect_viewer_login(server.viewer_key("Ada"))
 
@@ -114,7 +116,7 @@ def test_contention_is_counted_as_a_drop_without_waiting_or_retrying(attributed_
 
 def test_retention_loss_and_receipts_for_evicted_rows_are_visible(attributed_server, monkeypatch):
     server, cookie = attributed_server
-    server.story.expect_success("setting set journal.core.developer.tools.hooks.request-log-size 1 --project", actor=server.story.user)
+    server.story.expect_success(f"setting set {HOOK_REQUEST_LOG_SIZE_SETTING} 1 --project", actor=server.story.user)
     monkeypatch.setattr("server.request.request_trace.perf_counter", lambda: perf_counter() + SETTINGS_REFRESH_SECONDS)
     for number in range(3):
         request(server, cookie, "/api/line", line(command_id=f"read-{number}"))
@@ -129,7 +131,7 @@ def test_retention_loss_and_receipts_for_evicted_rows_are_visible(attributed_ser
 
 def test_logging_off_keeps_no_rows_or_receipt_writes(attributed_server, monkeypatch):
     server, cookie = attributed_server
-    server.story.expect_success("setting set journal.core.developer.tools.hooks.request-log false --project", actor=server.story.user)
+    server.story.expect_success(f"setting set {HOOK_REQUEST_LOG_SETTING} false --project", actor=server.story.user)
     monkeypatch.setattr("server.request.request_trace.perf_counter", lambda: perf_counter() + SETTINGS_REFRESH_SECONDS)
     request(server, cookie, "/api/line", line())
     _, status = request(server, cookie, "/api/request-log-status")

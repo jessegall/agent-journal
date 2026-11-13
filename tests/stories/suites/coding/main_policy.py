@@ -5,11 +5,15 @@ from suites.coding.support.main_options import BUILDER, ORCHESTRATOR
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.support.main_controls_fixture import scope_line
 from tests.stories.support.story_checks import expect_value
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
+from suites.coding.support.coding_settings import KEEP_RUNNING_SETTING
 
-AUTO = "journal.suites.coding.auto-mode"
-CONTINUE_SETTING = "journal.suites.coding.continue-while-delegatable"
-MERGER = "journal.suites.coding.workers.merger-on"
-WORKER_LIMIT = "journal.suites.coding.workers.worker-run-limit"
+AUTO = f"{AUTO_MODE_SETTING}"
+CONTINUE_SETTING = f"{KEEP_RUNNING_SETTING}"
+MERGER = f"{MERGER_ENABLED}"
+WORKER_LIMIT = f"{WORKER_RUN_LIMIT}"
 
 
 def main_options(story):

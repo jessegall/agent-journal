@@ -1,7 +1,9 @@
 from tests.stories.suites.coding.support.main_controls_fixture import MainControlsActors, agent_actors
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
-AUTO = "journal.suites.coding.auto-mode"
-WORKER_LIMIT = "journal.suites.coding.workers.worker-run-limit"
+AUTO = f"{AUTO_MODE_SETTING}"
+WORKER_LIMIT = f"{WORKER_RUN_LIMIT}"
 
 
 def test_s45_direct_row_writes_are_refused_to_every_agent_role_and_the_person_value_is_read_by_all(new_story):

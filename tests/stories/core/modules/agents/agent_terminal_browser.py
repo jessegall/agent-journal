@@ -6,11 +6,12 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 
 def test_worker_and_helper_cards_show_their_own_terminal(new_story, tmp_path):
     story = new_story(fixture=UserJoined)
-    story.expect_success('setting set journal.core.viewer.tour-completed true --project')
+    story.expect_success(f'setting set {TOUR_COMPLETED} true --project')
     worker = story.new_row_id(f'agent start terminal-worker claude worker --parent {story.agent.id} --environment main')
     helper = story.new_row_id(f'agent start terminal-helper claude helper --parent {story.agent.id} --environment main')
     story.expect_hook_allowed('terminal-worker', HookSamples.shell('ls worker-files', ShellPart('ls', CommandCategory.READ, ['worker-files'])))

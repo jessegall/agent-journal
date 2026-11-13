@@ -5,13 +5,17 @@ import pytest
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.suites.coding.support.main_controls_fixture import MainControlsActors, person_viewer
 from tests.stories.suites.coding.support.settings_modal import Modal
+from core.modules.helpers.support.helper_settings import HELPER_PROFILE_LIMITS
+from core.modules.helpers.support.helper_settings import HELPER_RUN_LIMIT
+from suites.coding.modules.workers.support.worker_settings import WORKER_KEPT_LIMIT
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
 CONTEXT = "journal.core.helpers.context-limit"
 CONTEXT_ON, CONTEXT_TOKENS, CONTEXT_KINDS, CONTEXT_PROFILES = (f"{CONTEXT}-{name}" for name in ("on", "tokens", "kinds", "profiles"))
-WORKER_RUN = "journal.suites.coding.workers.worker-run-limit"
-WORKER_KEPT = "journal.suites.coding.workers.worker-kept-limit"
-READ_ONLY_RUN = "journal.core.helpers.read-only-helper-run-limit"
-PROFILE_LIMITS = "journal.core.helpers.read-only-helper-profile-limits"
+WORKER_RUN = f"{WORKER_RUN_LIMIT}"
+WORKER_KEPT = f"{WORKER_KEPT_LIMIT}"
+READ_ONLY_RUN = f"{HELPER_RUN_LIMIT}"
+PROFILE_LIMITS = f"{HELPER_PROFILE_LIMITS}"
 HELPER_TYPES = "helper-type"
 READING = {"context_window": {"used_percentage": 20, "total_input_tokens": 60000}}
 

@@ -14,9 +14,13 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.support.main_controls_fixture import scope_line
 from tests.stories.suites.coding.modules.workers.support.program_split import dispatch, exit_program, expect_program, new_task, split_story, split_viewer
 from tests.stories.support.story_checks import expect_absent_value, expect_value
+from core.modules.helpers.support.helper_settings import AGENT_OPTIONS
+from core.modules.helpers.support.helper_settings import ALLOWED_MODELS
+from core.modules.helpers.support.helper_settings import HELPER_PROFILE_LIMITS
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
-OPTIONS = "journal.core.helpers.agent-options"
-ALLOWED_MODELS = "journal.core.helpers.allowed-models"
+OPTIONS = f"{AGENT_OPTIONS}"
+ALLOWED_MODELS = f"{ALLOWED_MODELS}"
 
 
 def set_options(story, *lines: str, scope: str = "--environment main") -> None:
@@ -65,7 +69,7 @@ def test_s61_invalid_legacy_policy_is_readable_and_repairable_inheritance(new_st
         resolved = story.container.get(AgentOptions).resolved("worker", "journal-worker")
         resume = story.container.get(AgentAdmission).resume_reasons("helper", "journal-researcher")
     expect_value((len(resolved.problems), resolved.options.allow_new, len(resume)), (1, False, 2))
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 3 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_RUN_LIMIT} 3 --environment main", actor=story.user)
     set_options(story, "worker allow_new=on")
     expect_absent_value(new_reasons(story, "worker", "journal-worker"))
 
@@ -125,8 +129,8 @@ def test_s12_lifecycle_resume_off_or_a_forbidden_program_refuses_a_job_for_a_sto
     split_story.expect_refusal(f'worker send {agent_number(split_story, worker.id)} "go on"', "worker may not use claude", actor=split_story.agent)
 
 
-RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit"
-PROFILE_LIMITS = "journal.core.helpers.read-only-helper-profile-limits"
+RUN_LIMIT = f"{WORKER_RUN_LIMIT}"
+PROFILE_LIMITS = f"{HELPER_PROFILE_LIMITS}"
 
 
 def helper_profiles(story) -> dict[str, dict]:

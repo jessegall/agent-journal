@@ -4,6 +4,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment
 from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.modules.workers.support.worker_settings import MOST_OPEN_TASKS
 
 MAIN_SESSION = "s-1"
 
@@ -22,7 +23,7 @@ def test_a_worker_is_refused_a_second_started_task_when_the_most_it_may_hold_is_
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
-    story.expect_success("setting set journal.suites.coding.workers.most-open-tasks 1 --environment main", actor=story.user)
+    story.expect_success(f"setting set {MOST_OPEN_TASKS} 1 --environment main", actor=story.user)
     story.expect_success('task make "Fix the till" --environment main', "state: open")
     story.expect_refusal("task start 2", "you hold 1 task, the most allowed", actor=worker)
 

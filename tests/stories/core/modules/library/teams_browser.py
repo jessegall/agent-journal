@@ -12,6 +12,7 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.shared_server_binary import SharedServerBinary
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 __all__ = ["private_folder"]
 
@@ -30,7 +31,7 @@ def test_a_person_connects_reads_searches_and_shares_from_the_teams_page(new_sto
         shared.send(token, "POST", "/items/doc", {"fields": {"title": f"Release {WORD}", "abstract": "What to do before a release", "body": "Tag first."}})
         shared.send(token, "POST", "/items/doc", {"fields": {"title": "Other notes", "abstract": "Not the same", "body": "Nothing here."}})
         story = new_story(fixture=UserBuilder)
-        story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+        story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
         made = story.run('doc make "Local notes" --abstract "Notes to share" --body "Build then tag."', story.user)
         row_number = made.output_text.split(":")[0].split()[1]
         with server_story(story) as server:

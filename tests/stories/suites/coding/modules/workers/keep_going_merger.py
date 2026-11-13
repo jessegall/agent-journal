@@ -18,6 +18,7 @@ from tests.stories.support.story_checks import expect_value_with
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
 from tests.stories.suites.coding.modules.workers.worker_ask import asking_worker
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -80,7 +81,7 @@ def test_nothing_starts_a_merger_when_no_line_waits(waiting_worker):
 
 def test_with_the_merger_off_an_unread_line_starts_nothing(unread_line):
     story = unread_line.story
-    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+    story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
     with running_launcher(story):
         MergerRetry()(story.container)
     story.expect_rows(merger_agent(story) is None)

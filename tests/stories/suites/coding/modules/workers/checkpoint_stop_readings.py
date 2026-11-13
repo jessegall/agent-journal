@@ -21,6 +21,7 @@ from tests.stories.suites.coding.modules.workers.support.work_setting_stories im
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RESTARTED
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RUN_RUNS_AFTER_STOP
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -32,7 +33,7 @@ def merger_texts(story) -> list[str]:
 
 
 def background_run(story) -> Process:
-    story.run("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
+    story.run(f"setting set {WORKER_TEST_LIMIT} 0 --environment main")
     part = PartSpec("make test", "make", False, CommandCategory.TEST_RUN)
     run = story.container.get(Bus).run(StartProcess(story.worker.id, None, "make test", "/work", "zsh", CommandCategory.TEST_RUN, 30, [part]), story.worker, environment_id=1)
     story.expect_success(f"process background {run.id}", actor=story.worker)

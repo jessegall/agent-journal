@@ -9,8 +9,12 @@ from engine.registry.registry import Registry
 from engine.enums.window_place import WindowPlace
 from suites.coding.coding_suite import CodingSuite
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ACTION, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
+from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_FAILURE_LIMIT
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
-AUTO_MODE = "journal.suites.coding.auto-mode"
+AUTO_MODE = f"{AUTO_MODE_SETTING}"
 
 
 @pytest.fixture
@@ -93,9 +97,9 @@ def test_s44_the_window_applies_a_preset_in_one_step_and_reads_the_workflow_back
         expect_value((after["workflow"], after["controls"][AUTO_MODE]), ("orchestrator", False))
 
 
-OWN_RUNS = "journal.suites.coding.workers.worker-phase-test-runs"
-FAILURES = "journal.suites.coding.workers.own-test-failures-to-flag"
-RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit"
+OWN_RUNS = f"{WORKER_PHASE_TEST_RUNS}"
+FAILURES = f"{WORKER_RUN_FAILURE_LIMIT}"
+RUN_LIMIT = f"{WORKER_RUN_LIMIT}"
 
 
 def field_values(settings: dict, group: str) -> dict:

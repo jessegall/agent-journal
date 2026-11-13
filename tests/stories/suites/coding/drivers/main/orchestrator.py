@@ -12,20 +12,22 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from suites.coding.support.coding_nudges import OPEN_TASKS_WAIT
 from engine.testing.expectations.expect_nudge import said
 from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
+from suites.coding.support.coding_settings import WRITES_CODE_SETTING
 
 READ_MESSAGE_HOOK = HookSamples.shell("journal message read 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")).with_fields(event="post_tool_use")
 
 
 def test_a_main_agent_that_writes_no_code_starts_no_task_of_its_own(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    story.run("setting set journal.suites.coding.main-writes-code off --environment main")
+    story.run(f"setting set {WRITES_CODE_SETTING} off --environment main")
     story.expect_refusal(lines.TASK_START, "refused by coding.main-starts-no-task-without-code: task 1 goes to a worker", actor=story.agent)
 
 
 def test_the_agent_starts_its_task_again_once_it_may_write_code(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    story.run("setting set journal.suites.coding.main-writes-code off --environment main")
-    story.run("setting set journal.suites.coding.main-writes-code on --environment main")
+    story.run(f"setting set {WRITES_CODE_SETTING} off --environment main")
+    story.run(f"setting set {WRITES_CODE_SETTING} on --environment main")
     story.expect_success(lines.TASK_START, "state: started", f"holder_id: {story.agent.id}", actor=story.agent)
 
 
@@ -37,7 +39,7 @@ def test_a_main_agent_with_auto_off_with_nothing_open_stops(new_story):
 
 def test_a_main_agent_that_keeps_going_at_the_worker_limit_takes_the_open_task_itself(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    story.run("setting make journal.suites.coding.workers.worker-run-limit 0")
+    story.run(f"setting make {WORKER_RUN_LIMIT} 0")
     story.expect_hook_refusal("s-1", HookSamples.stop(), said(TASK_ASSIGNMENT))
 
 

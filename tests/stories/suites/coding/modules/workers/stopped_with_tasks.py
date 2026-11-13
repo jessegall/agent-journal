@@ -13,13 +13,14 @@ from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResume
 from tests.stories.suites.coding.modules.workers.gone_workers import RESUMED_PID, missing_program, running_worker, start_launcher, worker_story
 from tests.stories.suites.coding.modules.workers.queued_commands import worker_command
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
 __all__ = ["missing_program", "running_worker", "worker_command", "worker_story"]
 
 MAIN_SESSION = "s-1"
-MERGER_ON = "setting set journal.suites.coding.workers.merger-on true --project"
+MERGER_ON = f"setting set {MERGER_ENABLED} true --project"
 GO_ON_WITH_TASK_2 = "go on with task 2"
 STOP_AND_WAIT = "stop, you will be told when it ends"
 

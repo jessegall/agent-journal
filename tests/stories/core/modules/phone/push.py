@@ -14,11 +14,13 @@ from tests.stories.core.modules.phone.phone_rows import TOKEN_DIGEST, paired_sto
 from tests.stories.core.support.fixtures import UserJoined
 from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_endswith_authorization, expect_value
+from core.modules.phone.commands.ensure_push_keys.ensure_push_keys_handler import PRIVATE_KEY
+from core.modules.phone.commands.ensure_push_keys.ensure_push_keys_handler import PUBLIC_KEY
 
 ENDPOINT = "https://fcm.googleapis.com/fcm/send/abc"
 SUBSCRIPTION = json.dumps({"endpoint": ENDPOINT, "keys": {"p256dh": "x", "auth": "y"}})
-PUBLIC = "journal.core.phone.push-public-key"
-PRIVATE = "journal.core.phone.push-private-key"
+PUBLIC = f"{PUBLIC_KEY}"
+PRIVATE = f"{PRIVATE_KEY}"
 
 
 class FakePush(PushService):

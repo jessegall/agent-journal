@@ -31,6 +31,7 @@ from suites.coding.modules.workers.support.worker_settings import STOPPED_WORKER
 from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
 from engine.testing.expectations.expect_nudge import said
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RUN_RUNS_AFTER_STOP
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -44,7 +45,7 @@ def stopped_run_texts(story) -> list[str]:
 def worker_with_background_run(new_story):
     story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
-    story.run("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
+    story.run(f"setting set {WORKER_TEST_LIMIT} 0 --environment main")
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     bus = story.container.get(Bus)
     part = PartSpec("make test", "make", False, CommandCategory.TEST_RUN)

@@ -6,10 +6,13 @@ from core.modules.settings.models.setting import Setting
 from tests.stories.core.modules.usage.agent_rows import StatesAgents
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.browser_story import expect_browser
+from core.modules.helpers.support.helper_settings import HELPER_PROFILE_LIMITS
+from suites.coding.modules.workers.support.worker_settings import WORKER_KEPT_LIMIT
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
-RUN = "journal.suites.coding.workers.worker-run-limit"
-KEPT = "journal.suites.coding.workers.worker-kept-limit"
-PROFILES = "journal.core.helpers.read-only-helper-profile-limits"
+RUN = f"{WORKER_RUN_LIMIT}"
+KEPT = f"{WORKER_KEPT_LIMIT}"
+PROFILES = f"{HELPER_PROFILE_LIMITS}"
 
 
 @pytest.fixture

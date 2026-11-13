@@ -7,12 +7,13 @@ from tests.stories.core.modules.tasks.support.holder_assignee_check import asser
 from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_reply_line
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 
 def test_a_worker_blocking_its_task_tells_the_main_agent_with_the_reason(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+    story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
     story.expect_success('task block 1 --reason "the build tool is missing"', actor=worker)

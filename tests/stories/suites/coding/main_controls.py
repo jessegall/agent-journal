@@ -13,6 +13,9 @@ from tests.stories.suites.coding.support.main_controls_contract import (AGENT_TY
                                                                          malformed_value_problems, matrix_cases, option_problems, owner_problems, saved_text)
 from tests.stories.suites.coding.modules.workers.support.program_split import dispatch, split_story, split_viewer
 from tests.stories.support.story_checks import expect_absent_value, expect_value
+from suites.coding.modules.workers.support.worker_settings import DISPATCHES_WORKERS_SETTING
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
+from suites.coding.support.coding_settings import STARTS_HELPERS_SETTING
 
 NEW_KEYS = ["continue-while-delegatable", "designer-enabled", "main-agent-may-merge", "resume-silent-agents", "workers-start-read-only-helpers", "agent-options"]
 REMOVED_CONTROLS = ["C04", "C08", "C15", "C19", "C32", "C33"]
@@ -39,9 +42,9 @@ def test_s01_s43_defaults_of_the_agent_options_are_declared_once_and_person_only
 
 
 def test_s01_s43_defaults_keep_the_existing_keys_and_scopes_with_neutral_labels():
-    auto = DECLARED["journal.suites.coding.auto-mode"][1]
-    helpers = DECLARED["journal.suites.coding.main-starts-read-only-helpers"][1]
-    dispatches = DECLARED["journal.suites.coding.workers.main-dispatches-workers"][1]
+    auto = DECLARED[f"{AUTO_MODE_SETTING}"][1]
+    helpers = DECLARED[f"{STARTS_HELPERS_SETTING}"][1]
+    dispatches = DECLARED[f"{DISPATCHES_WORKERS_SETTING}"][1]
     expect_value((auto.description, auto.scope, auto.default), (MAIN_AUTO_DESCRIPTION, SettingScope.ENVIRONMENT, True))
     expect_value((helpers.title, helpers.scope), ("Use read-only helpers", SettingScope.PROJECT))
     expect_value((dispatches.title, dispatches.scope), ("Main agent sends workers", SettingScope.LAYERED))
@@ -100,8 +103,8 @@ def test_s45_fixture_actors_are_distinct_agents_that_are_all_refused_a_person_on
     story.expect_text(f"agent show {agent_number(story, actors['merger'].id)}", "journal-merger", actor=story.user)
     story.expect_text(f"agent show {agent_number(story, actors['designer'].id)}", "journal-designer", actor=story.user)
     for actor in actors.values():
-        story.expect_refusal("setting set journal.suites.coding.auto-mode off --environment main --reason 'a story asks'", "A user was asked", actor=actor)
-    story.expect_success("setting show journal.suites.coding.auto-mode --environment main", "value: True", actor=story.user)
+        story.expect_refusal(f"setting set {AUTO_MODE_SETTING} off --environment main --reason 'a story asks'", "A user was asked", actor=actor)
+    story.expect_success(f"setting show {AUTO_MODE_SETTING} --environment main", "value: True", actor=story.user)
 
 
 def test_s48_defaults_a_running_worker_keeps_reporting_after_new_sessions_and_providers_are_switched_off(split_story, split_viewer):

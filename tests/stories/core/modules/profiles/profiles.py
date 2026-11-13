@@ -16,6 +16,7 @@ from engine.query.queries import Queries
 from engine.registry.registry import Registry
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
+from core.modules.profiles.support.profile_settings import CLAUDE_MODEL_SETTING
 
 SHIPPED_PROFILES = (*HELPER_PROFILES, *WORKER_PROFILES, REVIEWER_PROFILE)
 
@@ -55,7 +56,7 @@ def test_a_saved_profile_that_names_no_model_uses_the_settings_without_freezing_
     story = saved_profile_story(new_story)
     path = story.home.project_folder / ".agents/profiles/critic.md"
     story.expect_rows('model: ""' in path.read_text())
-    story.expect_success("setting set journal.core.profiles.model-claude haiku --project", actor=story.user)
+    story.expect_success(f"setting set {CLAUDE_MODEL_SETTING} haiku --project", actor=story.user)
     story.expect_text("profile list", "critic  helper  haiku  used 0", actor=story.user)
 
 
@@ -76,7 +77,7 @@ def test_the_journals_start_writes_its_own_profiles(profiles_missing):
 
 def test_a_shipped_profile_names_its_own_model_for_each_program_whatever_the_setting_says(new_story):
     story = new_story(fixture=UserBuilder)
-    story.expect_success("setting set journal.core.profiles.model-claude haiku --project", actor=story.user)
+    story.expect_success(f"setting set {CLAUDE_MODEL_SETTING} haiku --project", actor=story.user)
     story.container.get(ProfileFiles).publish()
     expect_agents_folder_journal_with(story, "journal-researcher.md", "model: sonnet")
     expect_agents_folder_journal_with(story, "journal-worker-senior.md", "model: opus")

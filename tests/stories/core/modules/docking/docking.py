@@ -15,6 +15,7 @@ from core.modules.docking.commands.keep_dock_item.keep_dock_item import KeepDock
 from tests.stories.core.modules.docking.support.dock_samples import SAMPLE, TIMEOUT_SECONDS, SampleDockType, docked, docked_state, ended_task, running_task, expect_docked_state, leave_tick
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_events_window_with, expect_value_2
+from core.modules.docking.support.dock_limits import MOST_ITEMS_SETTING
 
 
 def test_items_are_added_within_the_types_limit(ended_pair):
@@ -70,7 +71,7 @@ def test_an_item_leaves_on_a_tick_after_a_change_in_another_environment(leaving_
 
 def test_a_dock_holds_no_more_items_than_its_setting_allows(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
-    story.expect_success("setting make journal.core.docking.most-items 1 --environment main")
+    story.expect_success(f"setting make {MOST_ITEMS_SETTING} 1 --environment main")
     docked(story, running_task(story, "First"))
     with pytest.raises(Refusal, match="the dock allows at most 1 items"):
         docked(story, running_task(story, "Second"))

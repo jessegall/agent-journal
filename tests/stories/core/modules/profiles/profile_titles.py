@@ -1,6 +1,7 @@
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, UserBuilder
 from tests.stories.server.support.server_client import server_story
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 
 def test_a_person_saves_and_reads_a_profile_title_through_the_viewer(new_story):
@@ -42,7 +43,7 @@ def test_agents_window_picture(new_story):
     from tests.stories.server.support.browser_story import expect_browser
 
     story = new_story(fixture=UserBuilder)
-    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     worker = story.new_row_id(f"agent start filter-worker codex worker --parent {story.agent.id} --environment main")
     story.new_row_id(f"agent start filter-helper claude helper --parent {story.agent.id} --environment main")
     story.expect_hook_allowed("filter-worker", HookSamples.shell("ls worker", ShellPart("ls", CommandCategory.READ, ["worker"])))

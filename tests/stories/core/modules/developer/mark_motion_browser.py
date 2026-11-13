@@ -4,11 +4,12 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 
 def test_clicking_a_chat_mark_in_the_viewer_records_its_frames(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
-    story.expect_success("setting set journal.core.viewer.tour-completed true --project", actor=story.user)
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project", actor=story.user)
     story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)
     story.expect_success("setting set journal.core.developer.tools.mark-motion true --project", actor=story.user)
     process = start_process(story, "make build", category=CommandCategory.BUILD)

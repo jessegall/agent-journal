@@ -1,11 +1,12 @@
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 
 def test_the_rules_page_shows_what_holds_and_marks_what_is_proposed(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     story.expect_success('rule make "Name things plainly"', "state: active")
     story.expect_success('rule make "Skip the tests"', "state: proposed", actor=story.agent)
     story.run_listeners()

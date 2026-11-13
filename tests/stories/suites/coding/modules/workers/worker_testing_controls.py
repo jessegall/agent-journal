@@ -29,8 +29,11 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, start_planned_worker as plan_worker, unplanned_worker as solo_worker
 from tests.stories.suites.coding.modules.workers.test_queue import affected_test_story, ended, queued_story
 from tests.stories.core.support.agent_labels import agent_label
-RUNS = "journal.suites.coding.workers.worker-phase-test-runs"
-COMMAND_TYPES = "journal.suites.coding.worker-command-types"
+from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_FAILURE_LIMIT
+from suites.coding.upgrade.coding_settings_move import LISTED_KEY
+RUNS = f"{WORKER_PHASE_TEST_RUNS}"
+COMMAND_TYPES = f"{LISTED_KEY}"
 
 
 def configure(worker, key, value):
@@ -132,6 +135,6 @@ def test_s42_the_own_test_failure_limit_is_a_setting_and_counts_failures_already
     bus = story.container.get(Bus)
     for _ in range(3):
         bus.run(RecordOwnTestFailure(worker.id, 1, WORKER_RUN_LINE), Actor.core(), environment_id=1)
-    story.expect_success("setting set journal.suites.coding.workers.own-test-failures-to-flag 3 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_RUN_FAILURE_LIMIT} 3 --environment main", actor=story.user)
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.expect_text(f"worker logs {agent_number(story, worker.id)}", "! its own runs failed 3 times: tests/stories/cart.py", actor=story.agent)

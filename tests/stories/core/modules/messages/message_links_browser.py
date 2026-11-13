@@ -3,13 +3,14 @@ from core.modules.documents.commands.record_subject_link.record_subject_link imp
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 LONG_TEXT = "This message runs over several lines of the chat, so its words are spread out evenly and the bubble stays as wide as its longest line and no wider than that, with some more words after them."
 
 
 def test_one_link_shows_below_the_time_and_four_group_into_a_chip_that_opens_a_list(new_story, tmp_path):
     story = new_story(fixture=UserJoined)
-    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     for number in range(1, 5):
         story.expect_success(f'task make "Task number {number}" --brief "Sample" --environment main')
     single_message = story.new_row_id('message send "One link here" --environment main', actor=story.user)

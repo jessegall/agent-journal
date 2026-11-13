@@ -11,8 +11,9 @@ from engine.testing.stories.story import Story
 from tests.stories.core.modules.processes.support.process_samples import expect_rewritten, install_runner, runner_line
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
+from suites.coding.modules.workers.support.worker_settings import WORKER_SANDBOX
 
-SANDBOX_SETTING = "journal.suites.coding.workers.worker-sandbox"
+SANDBOX_SETTING = f"{WORKER_SANDBOX}"
 READ = HookSamples.shell("cat cart.py", ShellPart("cat", CommandCategory.READ, ["cart.py"]))
 
 

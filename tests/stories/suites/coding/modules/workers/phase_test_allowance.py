@@ -3,8 +3,9 @@ import pytest
 from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_reply_line, expect_reply_refusal
 from suites.coding.modules.workers.support.worker_nudges import PHASE_TEST_RUN_ALLOWED
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_ALIAS, TEST_LINE, start_planned_worker
+from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 
-SETTING = "journal.suites.coding.workers.worker-phase-test-runs"
+SETTING = f"{WORKER_PHASE_TEST_RUNS}"
 
 
 @pytest.fixture

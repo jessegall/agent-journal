@@ -12,6 +12,8 @@ from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.browser_story import expect_browser
 
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 
 def cards(story, state: str) -> list[dict[str, object]]:
@@ -110,8 +112,8 @@ class StatesAgents(StoryFixture):
     parent = EndedHelper
 
     def steps(self, story):
-        story.expect_success("setting set journal.core.viewer.tour-completed true --project", actor=story.user)
-        story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+        story.expect_success(f"setting set {TOUR_COMPLETED} true --project", actor=story.user)
+        story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
         worker = story.new_row_id(f"agent start idle-worker codex worker --parent {story.agent.id} --environment main")
         story.expect_success('worker report "The worker found a repeated calculation."', actor=Actor(worker, ActorType.AGENT))
         story.expect_success(f"agent end {worker}", actor=story.user)

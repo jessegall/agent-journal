@@ -17,6 +17,7 @@ from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_GRACE_MINUTES
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator, BuilderHelper
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -89,7 +90,7 @@ def test_the_inactive_line_of_a_worker_with_a_queued_run_says_so(new_story):
     story, worker = idle_worker(new_story)
     main = story.agent
     story.expect_success("setting set journal.core.processes.readers-forced off --environment main")
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
+    story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main")
     start_process(story, "make first", category=CommandCategory.TEST_RUN)
     start_process(story, "make second", category=CommandCategory.TEST_RUN)
     story.expect_success("setting set journal.core.processes.main-runs-take-slots on --environment main", actor=main)

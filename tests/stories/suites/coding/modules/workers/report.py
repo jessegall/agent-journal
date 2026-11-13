@@ -30,7 +30,7 @@ class MergerOffOrchestrator(StoryFixture):
     parent = OpenTaskOrchestrator
 
     def steps(self, story: Story) -> None:
-        story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+        story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
 
     def expect(self, story: Story) -> None:
         story.expect_rows(not story.container.get(SettingValues).flag(MERGER_ENABLED))

@@ -56,6 +56,8 @@ from server.tick.server_tunnel import ServerTunnel
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_routes import ViewerRoutes
 from scripts.timing_report import logged_timings, report
+from core.modules.skills.support.start_skills import SESSION_START_KEY
+from core.modules.voices.support.voices_settings import AVATAR_KEY
 
 SYSTEM_CLOCK = Clock()
 TIMEOUT_SECONDS = 10
@@ -333,7 +335,7 @@ def expect_timing_lines(home: JournalHome, lines: list[tuple[str, list[str]]]) -
 
 
 def without_start_skills(story: Story) -> None:
-    story.run("setting make journal.core.skills.session-start '[]'")
+    story.run(f"setting make {SESSION_START_KEY} '[]'")
     story.run_listeners()
     for row in tuple(story.story_rows(AgentSkill)):
         story.expect_success(f"agent-skill delete {row.id}")
@@ -349,7 +351,7 @@ def local_viewer(login: ViewerLogin, routes: ViewerRoutes) -> ViewerEndpoint:
 @contextmanager
 def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), real_time: bool = False):
     without_start_skills(story)
-    story.run("setting make journal.core.voices.avatar false")
+    story.run(f"setting make {AVATAR_KEY} false")
     with started_server(story.home, code_folders, listener_thread_started, viewer_factory, journal_door, SYSTEM_CLOCK if real_time else story.clock) as (socket_path, context):
         yield ServerStory(story, socket_path, context)
 

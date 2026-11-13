@@ -5,6 +5,7 @@ from tests.stories.server.support.server_client import started_server, ServerSto
 from engine.file.file_access import FileAccess
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import UserJoined
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 
 class SkillsPageReady(StoryFixture):
@@ -15,7 +16,7 @@ class SkillsPageReady(StoryFixture):
     def steps(self, story):
         for key in ("session-start", "after-compaction", "main-agent"):
             story.expect_success(f"setting set journal.core.skills.{key} '[]' --project")
-        story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+        story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
         story.expect_success("skill write")
 
 

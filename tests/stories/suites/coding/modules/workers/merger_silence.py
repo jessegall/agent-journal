@@ -17,6 +17,7 @@ from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
+from suites.coding.modules.workers.support.worker_settings import DELIVERY_FAILURE_LIMIT
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -74,6 +75,6 @@ def test_sending_a_merge_back_stays_silent_until_the_third_time_and_then_the_cou
 
 
 def test_the_limit_is_the_setting_a_person_chose(worker_with_merger):
-    worker_with_merger.story.expect_success("setting set journal.suites.coding.workers.hand-in-failures-to-flag 2 --project", actor=worker_with_merger.story.user)
+    worker_with_merger.story.expect_success(f"setting set {DELIVERY_FAILURE_LIMIT} 2 --project", actor=worker_with_merger.story.user)
     worker_with_merger.return_merge(2)
     worker_with_merger.story.expect_rows(any("sent back 2 times" in text for text in worker_with_merger.texts()), detail=str(worker_with_merger.texts()))

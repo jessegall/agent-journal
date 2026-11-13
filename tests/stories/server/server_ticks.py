@@ -9,6 +9,8 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.fixtures import UserJoined
 from core.modules.developer.support.developer_nudges import EXCEPTION_LINE
 from engine.testing.expectations.expect_nudge import said
+from core.modules.developer.support.developer_settings import EXCEPTION_LINES_SETTING
+from core.modules.developer.support.developer_settings import SLOW_TICKS_SETTING
 
 
 def test_the_agent_ticks_of_the_ticker_reach_each_open_agents_rules_and_a_silenced_history_rule_keeps_its_history(new_story):
@@ -37,7 +39,7 @@ def test_a_slow_tick_shows_a_warning_mark_and_tells_the_main_agent_when_the_deve
     story.run_listeners()
     story.expect_no_text("chat-mark main --environment main --json", "over its limit")
     story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)
-    story.expect_success("setting set journal.core.developer.tools.slow-clock-ticks true --project", actor=story.user)
+    story.expect_success(f"setting set {SLOW_TICKS_SETTING} true --project", actor=story.user)
     tools.run(SlowTickTool, 51)
     story.run_listeners()
     story.expect_text("chat-mark main --environment main --json", "A tick of the journal's clock cost 51 points", "tick costly")
@@ -50,12 +52,12 @@ def test_a_slow_tick_shows_no_mark_with_its_option_off_and_no_line_with_errors_t
     story = new_story(fixture=UserBuilder)
     tools = story.container.get(PerformanceTools)
     story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)
-    story.expect_success("setting set journal.core.developer.tools.slow-clock-ticks false --project", actor=story.user)
+    story.expect_success(f"setting set {SLOW_TICKS_SETTING} false --project", actor=story.user)
     tools.run(SlowTickTool, 52)
     story.run_listeners()
     story.expect_no_text("chat-mark main --environment main --json", "52 points")
-    story.expect_success("setting set journal.core.developer.tools.slow-clock-ticks true --project", actor=story.user)
-    story.expect_success("setting set journal.core.developer.tools.exception-lines false --project", actor=story.user)
+    story.expect_success(f"setting set {SLOW_TICKS_SETTING} true --project", actor=story.user)
+    story.expect_success(f"setting set {EXCEPTION_LINES_SETTING} false --project", actor=story.user)
     tools.run(SlowTickTool, 53)
     story.run_listeners()
     story.expect_text("chat-mark main --environment main --json", "53 points")

@@ -14,6 +14,7 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from tests.stories.support.story_checks import expect_value
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 RAW_TEST = HookSamples.shell("pytest tests/one.py", ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/one.py"]))
 WORKER = "s-reader"
@@ -53,7 +54,7 @@ def limited(forced):
 
 @pytest.fixture
 def unlimited_runs(forced):
-    forced.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main", actor=forced.user)
+    forced.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=forced.user)
     return forced
 
 

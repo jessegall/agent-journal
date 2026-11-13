@@ -3,8 +3,9 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.helpers.usage_limits import report
 from tests.stories.core.modules.helpers.usage_lockdown import STOP_LINE, hook_call_count, lockdown_story
+from core.modules.developer.support.developer_settings import READ_LIMIT_SETTING
 
-SETTING_LINE = HookSamples.shell("journal setting set journal.core.developer.tools.read-limit false --project", ShellPart("journal", CommandCategory.EDIT, ["setting", "set"]))
+SETTING_LINE = HookSamples.shell(f"journal setting set {READ_LIMIT_SETTING} false --project", ShellPart("journal", CommandCategory.EDIT, ["setting", "set"]))
 
 
 def test_an_agent_cannot_delete_the_limit_and_a_second_delete_by_the_person_is_refused_as_missing(new_story):

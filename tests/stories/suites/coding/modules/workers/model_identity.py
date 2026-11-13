@@ -12,6 +12,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment, worker_session
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 
 def expect_identity(story, worker, model):
@@ -26,7 +27,7 @@ def identity_story(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     with viewer_client(story) as viewer:
-        viewer.value('settings.settings', ['setting', 'set', 'journal.suites.coding.workers.merger-on', 'false', '--project'])
+        viewer.value('settings.settings', ['setting', 'set', f'{MERGER_ENABLED}', 'false', '--project'])
     return story
 
 

@@ -9,6 +9,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import c
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.support.story_checks import expect_count_shown, expect_requests_launcher
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 
 @pytest.mark.parametrize("answer", [None, b"failed\n"])
@@ -26,7 +27,7 @@ def test_a_failed_launch_tells_the_main_agent(new_story, answer):
 def test_a_failed_resume_tells_the_main_agent_once_while_the_retries_go_on(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
-    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project")
+    story.expect_success(f"setting set {MERGER_ENABLED} false --project")
     launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answers=(b"started\n", b"failed\n"), request_count=5)
     worker = checked_worker(story, repository)
     story.run_listeners()

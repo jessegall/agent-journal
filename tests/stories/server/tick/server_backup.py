@@ -7,13 +7,14 @@ import sqlite3
 from server.tick.server_backup import ServerBackup
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_answers, expect_exists_version_four, expect_lines_2
+from core.modules.settings.support.settings_tree import BACKUP_MINUTES_SETTING
 
 HOUR_SECONDS = 3600
 
 
 def journal(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_success("setting set journal.core.settings.backup-minutes 15 --project", actor=story.user)
+    story.expect_success(f"setting set {BACKUP_MINUTES_SETTING} 15 --project", actor=story.user)
     return story, ServerBackup(story.home, story.clock)
 
 

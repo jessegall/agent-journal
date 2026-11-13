@@ -5,6 +5,9 @@ from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_answers, expect_lines_with, expect_value, expect_value_with, expect_value_without
+from core.modules.voices.support.voices_settings import AVATAR_KEY
+from core.modules.voices.support.voices_settings import AVATAR_SHOWN_KEY
+from core.modules.voices.support.voices_settings import VOICE_SWITCH_KEY
 
 RESUME = HookSamples.session_start().with_raw({"source": "resume"})
 SECOND_START = HookSamples.session_start().with_fields(session="s-2")
@@ -73,7 +76,7 @@ def test_show_prints_the_instruction_the_agent_is_given(new_story):
 
 def enabled_story(new_story):
     story = new_story(fixture=UserBuilder)
-    story.expect_success("setting set journal.core.voices.talk-in-voice on --project", actor=story.user)
+    story.expect_success(f"setting set {VOICE_SWITCH_KEY} on --project", actor=story.user)
     return story
 
 
@@ -129,8 +132,8 @@ def test_the_figure_settings_start_as_version_four_had_them_and_the_list_carries
     expect_row(answer, avatar=True)
     expect_row(answer, avatar_shown="always")
     expect_voice_voices_answer(answer, ["butler", "homie", "colleague", "coach", "squire"])
-    story.expect_success("setting set journal.core.voices.avatar-shown working --project", actor=story.user)
-    story.expect_success("setting set journal.core.voices.avatar off --project", actor=story.user)
+    story.expect_success(f"setting set {AVATAR_SHOWN_KEY} working --project", actor=story.user)
+    story.expect_success(f"setting set {AVATAR_KEY} off --project", actor=story.user)
     answer = json.loads(story.run("voice list --json", actor=story.user).output_text)
     expect_row(answer, avatar=False)
     expect_row(answer, avatar_shown="working")

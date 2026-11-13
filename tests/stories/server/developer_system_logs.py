@@ -14,6 +14,7 @@ from server.request.request_trace_settings import RequestTraceSettings
 from engine.serving.server_files import ServerFiles
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from tests.stories.server.support.server_client import server_story
+from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING
 
 FINISHED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")
 
@@ -115,7 +116,7 @@ def test_system_logs_navigation_depends_on_developer_tools_and_not_request_recor
     cookie = logs_server.expect_viewer_login(logs_server.viewer_key("Ada"))
     for tools, recording, visible in (("on", "false", True), ("off", "true", False)):
         for line in (["setting", "switch", "journal.core.developer.tools", tools, "--project"],
-                     ["setting", "set", "journal.core.developer.tools.hooks.request-log", recording, "--project"]):
+                     ["setting", "set", f"{HOOK_REQUEST_LOG_SETTING}", recording, "--project"]):
             logs_server.viewer_line_value(cookie, {"line": line, "environment": "main", "window": "settings.settings"})
         status, body, _ = logs_server.viewer_download("/api/windows?environment=main", cookie)
         windows = json.loads(body)["windows"]

@@ -22,6 +22,11 @@ from tests.stories.core.modules.processes.support.process_samples import ended_r
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from tests.stories.support.story_checks import expect_greater, expect_value
+from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING
+from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SIZE_SETTING
+from core.modules.developer.support.developer_settings import REPEATED_WORK_SETTING
+from core.modules.docking.support.dock_limits import MOST_ITEMS_SETTING
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 
 @dataclass(frozen=True)
@@ -94,10 +99,10 @@ def viewer_workload() -> ViewerWorkload:
          ReadLine("tasks.tasks", ("task", "list", "--page", "2", "--limit", "5")),
          ReadLine("processes.outputs", ("process", "feed", "--limit", "5")),
          ReadLine("processes.output", ("output", "page", "4", "--limit", "5"))),
-        {"journal.core.developer.tools": True, "journal.core.developer.tools.repeated-work": True,
-         "journal.core.developer.tools.hooks.request-log": True,
-         "journal.core.developer.tools.hooks.request-log-size": 10000,
-         "journal.core.docking.most-items": 10, "journal.core.processes.orphan-seconds": 600})
+        {"journal.core.developer.tools": True, f"{REPEATED_WORK_SETTING}": True,
+         f"{HOOK_REQUEST_LOG_SETTING}": True,
+         f"{HOOK_REQUEST_LOG_SIZE_SETTING}": 10000,
+         f"{MOST_ITEMS_SETTING}": 10, "journal.core.processes.orphan-seconds": 600})
 
 
 class ViewerReadDataset(StoryFixture):
@@ -106,7 +111,7 @@ class ViewerReadDataset(StoryFixture):
     def steps(self, story):
         backing = viewer_workload().backing
         story.expect_success("environment make elsewhere /work/elsewhere")
-        story.expect_success("setting set journal.core.viewer.tour-completed true --project", actor=story.user)
+        story.expect_success(f"setting set {TOUR_COMPLETED} true --project", actor=story.user)
         for number in range(1, backing.main_messages + 1):
             story.expect_success(f'message send "Displayed message {number:03d}" --environment main', actor=story.user)
         for number in range(1, backing.tasks + 1):
@@ -448,7 +453,7 @@ def test_workload_pins_dataset_pages_docks_settings_and_schedule():
     expect_value(workload.visible_seconds, 60)
     expect_value(workload.hidden_seconds, 30)
     expect_value(workload.loaded_ranges, ((51, 75), (76, 100)))
-    expect_value(workload.settings["journal.core.developer.tools.repeated-work"], True)
+    expect_value(workload.settings[f"{REPEATED_WORK_SETTING}"], True)
 
 
 def test_workload_records_and_restores_prior_setting_values(new_story):
@@ -456,7 +461,7 @@ def test_workload_records_and_restores_prior_setting_values(new_story):
         previous = sample.prior_settings
         story = sample.server.story
         expect_value(previous["journal.core.developer.tools"]["value"], False)
-        expect_value(previous["journal.core.developer.tools.hooks.request-log-size"]["value"], 50)
+        expect_value(previous[f"{HOOK_REQUEST_LOG_SIZE_SETTING}"]["value"], 50)
         expect_value(sample.manifest()["settings_before"], previous)
     restored = json.loads(story.run("setting show journal.core.developer.tools --json", actor=story.user).output_text)
     expect_value(restored["value"], False)

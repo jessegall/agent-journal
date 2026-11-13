@@ -7,6 +7,7 @@ from tests.stories.server.support.browser_story import VIEWER_FOLDER
 from tests.stories.server.support.server_client import server_story
 from tests.stories.support.story_checks import expect_value
 from tests.stories.server.support.file_changes import FileChanges
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 WAIT_SECONDS = 60
 BROWSER_SECONDS = 90
@@ -14,7 +15,7 @@ BROWSER_SECONDS = 90
 
 def test_the_chat_scroll_position_only_grows_after_a_send_and_after_an_arrival(new_story, tmp_path):
     story = new_story(fixture=UserBuilder)
-    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     for number in range(1, 31):
         story.expect_success(f'message send "Backlog message {number}" --environment main', actor=story.user)
     image = tmp_path / "chat-scroll.png"

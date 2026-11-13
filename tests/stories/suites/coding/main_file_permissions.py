@@ -11,14 +11,21 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import D
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.support.main_controls_fixture import MainControlsActors, agent_actors, scope_line
 from tests.stories.support.story_checks import expect_value
+from suites.coding.modules.workers.support.worker_settings import DISPATCHES_WORKERS_SETTING
+from suites.coding.modules.workers.support.worker_settings import MAIN_MERGES_WORKERS
+from suites.coding.modules.workers.support.worker_settings import WORKERS_START_HELPERS
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
+from suites.coding.support.coding_settings import DESIGNER_ENABLED_SETTING
+from suites.coding.support.coding_settings import STARTS_HELPERS_SETTING
+from suites.coding.support.coding_settings import WRITES_CODE_SETTING
 
-AUTO = "journal.suites.coding.auto-mode"
-WRITES_CODE = "journal.suites.coding.main-writes-code"
-DISPATCHES = "journal.suites.coding.workers.main-dispatches-workers"
-HELPERS = "journal.suites.coding.main-starts-read-only-helpers"
-DESIGNER = "journal.suites.coding.designer-enabled"
-MERGE = "journal.suites.coding.workers.main-agent-may-merge"
-WORKER_HELPERS = "journal.suites.coding.workers.workers-start-read-only-helpers"
+AUTO = f"{AUTO_MODE_SETTING}"
+WRITES_CODE = f"{WRITES_CODE_SETTING}"
+DISPATCHES = f"{DISPATCHES_WORKERS_SETTING}"
+HELPERS = f"{STARTS_HELPERS_SETTING}"
+DESIGNER = f"{DESIGNER_ENABLED_SETTING}"
+MERGE = f"{MAIN_MERGES_WORKERS}"
+WORKER_HELPERS = f"{WORKERS_START_HELPERS}"
 PROJECT_FILE = "/work/journal/cart.py"
 EXTERNAL_FILE = "/home/ada/.claude/memory/notes.md"
 WORKTREE_FILE = "/work/journal/.journal/worktrees/development/worker-1/cart.py"

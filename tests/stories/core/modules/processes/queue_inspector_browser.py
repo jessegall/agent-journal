@@ -10,11 +10,12 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 
 def test_the_process_queue_runs_live_in_the_viewer_with_saved_controls_and_inline_output(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
-    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     story.expect_success("setting set journal.core.processes.readers-forced false --environment main")
     story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start browser-worker claude worker --environment main"), ActorType.AGENT)
@@ -34,7 +35,7 @@ def test_the_process_queue_runs_live_in_the_viewer_with_saved_controls_and_inlin
 
 def test_the_process_queue_says_in_the_viewer_that_an_update_waits_and_the_commands_keep_their_order(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
-    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     story.expect_success("setting set journal.core.processes.readers-forced false --environment main", actor=story.user)
     story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start browser-worker claude worker --environment main"), ActorType.AGENT)
@@ -49,7 +50,7 @@ def test_the_process_queue_says_in_the_viewer_that_an_update_waits_and_the_comma
 
 def test_the_queue_reads_output_from_the_end_and_loads_earlier_pages(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
-    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     finished = start_process(story, "make long-output", category=CommandCategory.BUILD)
     end_run(story, finished, "".join(f"line {number} of the run\n" for number in range(250)))
     with server_story(story) as server:

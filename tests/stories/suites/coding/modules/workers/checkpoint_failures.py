@@ -18,6 +18,7 @@ from tests.stories.suites.coding.modules.workers.support.merger_launcher import 
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, TEST_LINE, StoryWorker, dispatched_story_worker, file_proof_line, planned_story
 from suites.coding.modules.workers.support.worker_nudges import WORKER_PHASE_TESTS_FAILED
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 
 SELECTED_TEST = "python3 run_tests.py"
 FIXED_CART = "TOTAL = 2\n"
@@ -185,6 +186,6 @@ def test_a_short_proof_left_on_a_released_worktree_fails_no_later_run_once_a_new
 
 def test_a_worker_whose_checkpoint_tests_failed_runs_a_test_without_spending_its_count(failed_cart_proof):
     worker, story = failed_cart_proof, failed_cart_proof.story
-    story.expect_success("setting set journal.suites.coding.workers.worker-phase-test-runs 0 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_PHASE_TEST_RUNS} 0 --environment main", actor=story.user)
     story.expect_rows("Point: fix" in worker.status(), detail=worker.status())
     expect_reply_allowed(worker.run_test())

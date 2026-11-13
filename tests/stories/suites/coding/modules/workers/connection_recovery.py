@@ -28,6 +28,11 @@ from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestr
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import story_repository
 from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.modules.workers.support.worker_settings import IDLE_WORKER_MINUTES
+from suites.coding.modules.workers.support.worker_settings import IDLE_WORKER_REPEAT_MINUTES
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -117,7 +122,7 @@ def offline_recovery(recovery):
 @pytest.fixture
 def running_command_recovery(recovery):
     recovery.story.expect_success("setting set journal.core.processes.readers-forced off --environment main")
-    recovery.story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
+    recovery.story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main")
     return recovery
 
 
@@ -214,7 +219,7 @@ def test_worker_send_does_not_resume_a_session_whose_process_is_still_active(rec
 
 
 def test_a_terminal_agent_with_its_own_task_gets_a_typed_waking_line(recovery):
-    recovery.story.expect_success("setting set journal.suites.coding.auto-mode on --environment main", actor=recovery.story.user)
+    recovery.story.expect_success(f"setting set {AUTO_MODE_SETTING} on --environment main", actor=recovery.story.user)
     recovery.story.expect_success('task make "Main work" --brief "Finish the main task" --environment main')
     recovery.story.expect_success("task start 2", actor=recovery.story.agent)
     recovery.advance(SILENT_SECONDS)
@@ -224,9 +229,9 @@ def test_a_terminal_agent_with_its_own_task_gets_a_typed_waking_line(recovery):
 
 def test_a_silent_main_agent_with_its_own_task_is_woken_with_auto_off_too(recovery):
     recovery.story.expect_success('task make "Main work" --brief "Finish the main task" --environment main')
-    recovery.story.expect_success("setting set journal.suites.coding.auto-mode on --environment main", actor=recovery.story.user)
+    recovery.story.expect_success(f"setting set {AUTO_MODE_SETTING} on --environment main", actor=recovery.story.user)
     recovery.story.expect_success("task start 2", actor=recovery.story.agent)
-    recovery.story.expect_success("setting set journal.suites.coding.auto-mode off --environment main", actor=recovery.story.user)
+    recovery.story.expect_success(f"setting set {AUTO_MODE_SETTING} off --environment main", actor=recovery.story.user)
     recovery.advance(SILENT_SECONDS)
     recovery.tick()
     recovery.story.expect_rows(any(agent_id == recovery.story.agent.id for agent_id, line in recovery.terminal_lines))
@@ -294,7 +299,7 @@ def test_a_silent_main_agent_is_not_woken_for_the_open_tasks_of_a_plan_waiting_f
 
 def test_a_silent_main_agent_is_not_woken_for_open_tasks_with_auto_mode_off(recovery):
     story = recovery.story
-    story.expect_success("setting set journal.suites.coding.auto-mode off --environment main")
+    story.expect_success(f"setting set {AUTO_MODE_SETTING} off --environment main")
     story.expect_success('task make "For later" --environment main', actor=story.agent)
     recovery.advance(SILENT_SECONDS + 1)
     recovery.tick()
@@ -344,8 +349,8 @@ def test_a_delivery_without_tests_passed_is_reported_as_stopped(recovery):
 def test_the_stopped_worker_warning_intervals_are_settings(recovery, monkeypatch):
     story, worker = recovery.story, recovery.worker
     monkeypatch.setattr(recovery, "request", lambda *_args: b"failed\n")
-    story.expect_success("setting set journal.suites.coding.workers.idle-worker-minutes 2 --environment main", actor=story.user)
-    story.expect_success("setting set journal.suites.coding.workers.idle-worker-repeat-minutes 1 --environment main", actor=story.user)
+    story.expect_success(f"setting set {IDLE_WORKER_MINUTES} 2 --environment main", actor=story.user)
+    story.expect_success(f"setting set {IDLE_WORKER_REPEAT_MINUTES} 1 --environment main", actor=story.user)
     story.expect_success(f"agent end {worker.id}", actor=worker)
     recovery.advance(2 * 60)
     story.tick("s-1")
@@ -371,13 +376,13 @@ def test_a_stopped_worker_with_a_running_command_is_not_reported(running_command
 def test_a_worker_waiting_for_a_place_is_not_reported_and_starts_when_a_place_frees(recovery):
     story, worker = recovery.story, recovery.worker
     story.expect_success(f"agent end {worker.id}", actor=worker)
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 0 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_RUN_LIMIT} 0 --environment main", actor=story.user)
     recovery.advance(1)
     story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Continue the task"', actor=story.agent)
     recovery.advance(20 * 60)
     story.tick("s-1")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 2 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_RUN_LIMIT} 2 --environment main", actor=story.user)
     WorkerResumeRetry()(story.container)
     story.expect_rows(len(recovery.launches) > 0)
 
@@ -406,14 +411,14 @@ def test_a_message_to_a_stopped_worker_starts_it(person_stopped_worker):
 def test_a_message_to_a_stopped_worker_waits_for_a_place_and_starts_when_one_frees(person_stopped_worker):
     recovery = person_stopped_worker
     story, worker = recovery.story, recovery.worker
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 0 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_RUN_LIMIT} 0 --environment main", actor=story.user)
     recovery.launches.clear()
     recovery.advance(1)
     story.expect_success(f'message send "Look again" --to agent:{agent_number(story, worker.id)}', actor=story.agent)
     story.run_listeners()
     story.tick("s-1")
     story.expect_rows(not recovery.launches)
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 2 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_RUN_LIMIT} 2 --environment main", actor=story.user)
     WorkerResumeRetry()(story.container)
     story.expect_rows(len(recovery.launches) > 0)
 

@@ -18,6 +18,8 @@ from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from engine.testing.expectations.expect_row import expect_row
 from tests.stories.support.story_checks import expect_value
+from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING
+from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SIZE_SETTING
 
 
 @pytest.fixture
@@ -31,7 +33,7 @@ def test_hook_navigation_requires_both_developer_tools_and_recording(recording_s
     server = recording_server
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
     for line in (["setting", "switch", "journal.core.developer.tools", tools, "--project"],
-                 ["setting", "set", "journal.core.developer.tools.hooks.request-log", recording, "--project"]):
+                 ["setting", "set", f"{HOOK_REQUEST_LOG_SETTING}", recording, "--project"]):
         server.viewer_line_value(cookie, {"line": line, "environment": "main", "window": "settings.settings"})
     status, body, _ = server.viewer_download("/api/windows?environment=main", cookie)
     expect_value(status, 200)
@@ -60,7 +62,7 @@ def test_completed_hook_requests_record_the_real_duration_and_decision(recording
 
 def test_a_disabled_hook_log_loads_no_agent_rows(recording_server, monkeypatch):
     server = recording_server
-    server.story.expect_success("setting set journal.core.developer.tools.hooks.request-log false --project", actor=server.story.user)
+    server.story.expect_success(f"setting set {HOOK_REQUEST_LOG_SETTING} false --project", actor=server.story.user)
     costs = []
     record_hook = HookRequestLog.record_hook
 
@@ -114,7 +116,7 @@ def test_a_hook_request_counts_the_parts_of_its_command_chain(recording_server):
 
 def test_the_hook_requests_page_scrolls_and_shows_each_part_in_a_browser(recording_server):
     story = recording_server.story
-    story.expect_success("setting set journal.core.developer.tools.hooks.request-log-size 100 --project", actor=story.user)
+    story.expect_success(f"setting set {HOOK_REQUEST_LOG_SIZE_SETTING} 100 --project", actor=story.user)
     log = story.container.get(HookRequestLog)
     for number in range(70):
         shell = {"parts": [{"text": "ls"}] * 3} if number == 69 else {}
@@ -261,7 +263,7 @@ def test_queue_inspector_shows_a_waiting_viewer_without_waiting_for_the_hook(rec
         answer.result()
 
 
-@pytest.mark.parametrize("line", ["setting switch journal.core.developer.tools off --project", "setting set journal.core.developer.tools.hooks.request-log false --project"])
+@pytest.mark.parametrize("line", ["setting switch journal.core.developer.tools off --project", f"setting set {HOOK_REQUEST_LOG_SETTING} false --project"])
 def test_queue_inspector_obeys_the_request_log_settings(recording_server, line):
     server = recording_server
     server.story.expect_success(line, actor=server.story.user)

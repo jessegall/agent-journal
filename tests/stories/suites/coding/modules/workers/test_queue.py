@@ -25,6 +25,9 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.support.story_checks import expect_absent_value, expect_answers, expect_value, expect_value_with
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_PASSED
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
+from suites.coding.modules.workers.support.worker_settings import PROJECT_TEST_COMMAND
 
 PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "python tests/cart.py"'
 PIPED_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "python tests/cart.py | tail -3"'
@@ -80,7 +83,7 @@ def test_the_last_delivery_queues_the_tests_and_the_journal_starts_them(new_stor
 
 def test_all_tests_passing_checks_the_proofs_and_tells_the_main_agent_and_the_merge_goes_through(new_story, monkeypatch):
     story, repository, worker, started = queued_story(new_story, monkeypatch)
-    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+    story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
     ended(story, started[0], 0)
     story.expect_text("proof show 1", "state: checked", actor=story.agent)
     expect_marks_text(story, "passed")
@@ -179,8 +182,8 @@ def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(new_story, m
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("pick.py", "import sys\nfrom pathlib import Path\nassert 'cart.py' in sys.argv\nassert Path('base.txt').read_text() == 'rebased\\n'\nprint('tests/other test.py')\n", "Picker")
     repository.committed("run_tests.py", "import sys\nfrom pathlib import Path\nassert sys.argv[1:] == ['tests/other test.py']\nassert Path('base.txt').read_text() == 'rebased\\n'\n", "Tests")
-    story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main')
-    story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 run_tests.py" --environment main')
+    story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "python3 pick.py" --environment main')
+    story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "python3 run_tests.py" --environment main')
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     repository.checkout(ENVIRONMENT_BRANCH)
@@ -211,8 +214,8 @@ def affected_test_story(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
-    story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main')
-    story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 -m pytest -q" --environment main')
+    story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "python3 pick.py" --environment main')
+    story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "python3 -m pytest -q" --environment main')
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=worker)
@@ -264,8 +267,8 @@ def test_picked_tests_run_when_the_proof_has_no_test_command(new_story, monkeypa
     story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
-    story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main')
-    story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 -m pytest" --environment main')
+    story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "python3 pick.py" --environment main')
+    story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "python3 -m pytest" --environment main')
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart.py:1, checked the cart"', actor=worker)
@@ -339,7 +342,7 @@ def test_a_worker_waiting_for_tests_or_merge_is_not_reported_as_stopped(new_stor
     from datetime import timedelta
 
     story, repository, worker, started = queued_story(new_story, monkeypatch)
-    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+    story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
     story.expect_success(f"agent end {worker.id}", actor=worker)
     story.advance(timedelta(minutes=20))
     story.tick("s-1")

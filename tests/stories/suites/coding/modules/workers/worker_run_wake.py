@@ -10,6 +10,7 @@ from core.modules.processes.commands.start_process.start_process import StartPro
 from core.modules.processes.support.part_spec import PartSpec
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 ASK = "worker ask 'the build tool is missing' --about tool"
 
@@ -17,7 +18,7 @@ ASK = "worker ask 'the build tool is missing' --about tool"
 def story_with_worker(new_story):
     story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
-    story.run("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
+    story.run(f"setting set {WORKER_TEST_LIMIT} 0 --environment main")
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     return story, worker
 

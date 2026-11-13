@@ -5,11 +5,12 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, StartedHelper, helper_agent, resumable_session
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 
 def test_running_helper_job_is_in_the_agents_window(new_story, tmp_path):
     story = new_story(fixture=StartedHelper)
-    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     helper = helper_agent(story)
     rows = json.loads(story.run("usage agents --environment main --json", actor=story.user).output_text)["rows"]
     story.expect_rows(next(row for row in rows if row["id"] == helper.id)["helper_job"] == "Read src/cart.py")

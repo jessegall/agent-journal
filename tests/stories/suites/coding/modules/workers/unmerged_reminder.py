@@ -13,6 +13,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.support.story_checks import expect_value
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -24,7 +25,7 @@ class MainAgentMerges(StoryFixture):
     parent = OpenTaskOrchestrator
 
     def steps(self, story):
-        story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+        story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
 
 
 @pytest.fixture
@@ -110,7 +111,7 @@ def test_a_reason_passes_only_that_hold_and_the_next_reminder_holds_again(new_st
 def test_a_merged_worker_with_a_new_worktree_has_no_merge_due_block(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
-    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+    story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
     worker = checked_worker(story, repository)
     remind(story, 3)
     expect_value(len(merge_block_rows(story, worker.id)), 1)
@@ -129,7 +130,7 @@ def test_a_merged_worker_with_a_new_worktree_has_no_merge_due_block(new_story):
 def test_a_merge_block_left_by_an_older_server_is_closed_on_the_next_tick(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
-    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+    story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
     worker = checked_worker(story, repository)
     remind(story, 3)
     expect_value(len(merge_block_rows(story, worker.id)), 1)

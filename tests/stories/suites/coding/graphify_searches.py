@@ -8,10 +8,12 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value
+from suites.coding.support.graphify_settings import GRAPHIFY_BLOCK_AFTER
+from suites.coding.support.graphify_settings import GRAPHIFY_NUDGE_AFTER
 
 SESSION = "s-1"
-BLOCK_AFTER = "journal.suites.coding.graphify.block-after"
-NUDGE_AFTER = "journal.suites.coding.graphify.nudge-after"
+BLOCK_AFTER = f"{GRAPHIFY_BLOCK_AFTER}"
+NUDGE_AFTER = f"{GRAPHIFY_NUDGE_AFTER}"
 SEARCH = HookSamples.tool_use("Grep", ToolType.SEARCH, [], None)
 LOG_SEARCH = HookSamples.tool_use("Grep", ToolType.SEARCH, ["/var/log/system.log"], None)
 SHELL_SEARCH = HookSamples.shell("grep -rn cart src", ShellPart("grep", CommandCategory.SEARCH, ["-rn", "cart", "src"]))

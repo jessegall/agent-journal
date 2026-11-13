@@ -13,6 +13,7 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 
 class DocumentReady(StoryFixture):
@@ -238,7 +239,7 @@ def test_a_server_restart_keeps_the_open_document(new_story):
 
 def test_the_inspector_shows_revision_authors_in_light_and_dark(new_story):
     story = new_story(fixture=DocumentOpen)
-    story.run('setting set journal.core.viewer.tour-completed true --project')
+    story.run(f'setting set {TOUR_COMPLETED} true --project')
     story.run('doc edit 1 --body "Ready for review"', actor=story.agent)
     with server_story(story) as server:
         expect_browser(server, 'documentRevisionAuthors.browser.mjs', ['/tmp/document-revision-authors'])

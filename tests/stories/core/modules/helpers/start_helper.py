@@ -18,6 +18,7 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from core.modules.helpers.support.helper_settings import HELPER_RUN_LIMIT
 
 START = 'helper start journal-researcher --brief "How does the queue hold a run?" --environment main'
 CODEX_START = f"{START} --program codex --model gpt-6.1-sol"
@@ -39,7 +40,7 @@ class OneHelperAllowed(StoryFixture):
     parent = LauncherRuns
 
     def steps(self, story):
-        story.run("setting set journal.core.helpers.read-only-helper-run-limit 1 --environment main", actor=story.user)
+        story.run(f"setting set {HELPER_RUN_LIMIT} 1 --environment main", actor=story.user)
 
 
 def fake_launcher(story, requests=1):
@@ -149,7 +150,7 @@ def test_each_environment_counts_its_own_helpers(new_story):
     story = new_story(fixture=OneHelperAllowed)
     story.run("environment make staging /work/staging")
     staging_main = Actor(story.new_row_id("agent start s-20 claude main --environment staging"), ActorType.AGENT)
-    story.run("setting set journal.core.helpers.read-only-helper-run-limit 1 --environment staging", actor=story.user)
+    story.run(f"setting set {HELPER_RUN_LIMIT} 1 --environment staging", actor=story.user)
     started(story)
     started(story, START.replace("main", "staging"), staging_main)
     story.expect_rows(len(helpers(story)) == 2)

@@ -18,6 +18,7 @@ from engine.testing.expectations.expect_nudge import said
 from core.modules.processes.support.process_nudges import RUN_SPARSE
 from core.modules.processes.support.process_nudges import SILENT_SAVED_RUN
 from core.modules.processes.support.process_nudges import STALLED_RUN
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 MAIN = "s-1"
 SLOW_TESTS = "pytest tests/slow -q"
@@ -212,7 +213,7 @@ def test_plugin_person_and_lookup_runs_are_never_judged_while_a_started_test_is(
 
 def test_a_workers_queued_run_is_told_nothing_while_its_running_one_is(new_story):
     story = new_story(fixture=HelperBesideWorker)
-    for setting in ("journal.core.processes.run-batch-size 1", "journal.suites.coding.workers.worker-run-most-tests 0", "journal.core.processes.readers-forced false"):
+    for setting in ("journal.core.processes.run-batch-size 1", f"{WORKER_TEST_LIMIT} 0", "journal.core.processes.readers-forced false"):
         story.expect_success(f"setting set {setting} --environment main", actor=story.user)
     worker = worker_agent(story)
     running = agent_run(story, worker, "pytest tests/api -q", CommandCategory.TEST_RUN)

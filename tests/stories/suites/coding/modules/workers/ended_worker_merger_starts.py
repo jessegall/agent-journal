@@ -9,8 +9,9 @@ from tests.stories.suites.coding.modules.workers.merge_asks import committed_lis
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
-MERGER_OFF = "setting set journal.suites.coding.workers.merger-on false --project"
+MERGER_OFF = f"setting set {MERGER_ENABLED} false --project"
 QUESTION = 'worker ask "the build tool is missing" --about tool'
 
 

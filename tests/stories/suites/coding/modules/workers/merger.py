@@ -50,6 +50,7 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_PAS
 from engine.testing.expectations.expect_nudge import said
 from core.modules.agents.support.report_nudges import PARENT_REPORT
 from core.modules.helpers.support.helper_nudges import HELPER_PROGRAM_FAULT
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -450,7 +451,7 @@ def test_explaining_a_merge_runs_the_merge_inside_the_explanation_without_the_tr
 
 def test_a_planner_helper_ending_starts_no_merger(new_story):
     story = new_story(fixture=UserBuilder)
-    story.expect_success("setting set journal.suites.coding.workers.merger-on true --project", actor=story.user)
+    story.expect_success(f"setting set {MERGER_ENABLED} true --project", actor=story.user)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
     story.run('helper start journal-planner --brief "Plan the change" --environment main', actor=story.agent)
     story.run_listeners()

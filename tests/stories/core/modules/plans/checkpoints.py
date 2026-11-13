@@ -20,6 +20,8 @@ from tests.stories.core.support.plan_steps import ready_plan
 from tests.stories.server.support.server_client import server_story
 from core.modules.plans.support.plan_nudges import CHECKPOINT_FINISHED
 from engine.testing.expectations.expect_nudge import said
+from core.modules.plans.support.plan_settings import QUICK_REVIEW_SETTING
+from core.modules.plans.support.plan_settings import WAIT_FOR_PERSON_SETTING
 
 REACHES = "checkpoint-reach list --json --oldest --environment main"
 PASSES = "checkpoint-pass list --json --oldest --environment main"
@@ -304,7 +306,7 @@ def test_190_the_plan_view_gets_a_line_on_how_each_checkpoint_stands_and_on_a_te
     story.expect_rows("checkpoint of phase 3: running" in lines, "checkpoint of phase 5: waits for tasks 4, 5" in lines, "test of phase 1 not run: this phase is not a checkpoint" in lines, detail=str(lines))
 
 
-WAIT_FOR_PERSON = "setting set journal.core.plans.checkpoints.wait-for-person true --environment main"
+WAIT_FOR_PERSON = f"setting set {WAIT_FOR_PERSON_SETTING} true --environment main"
 APPROVE = "plan approve-checkpoint 1 3 --environment main"
 
 
@@ -323,7 +325,7 @@ def test_a_passed_checkpoint_keeps_the_later_phase_closed_until_a_person_approve
     story.expect_refusal(APPROVE, "waits for no approval", actor=story.user)
 
 
-QUICK_REVIEW = "setting set journal.core.plans.checkpoints.quick-review true --environment main"
+QUICK_REVIEW = f"setting set {QUICK_REVIEW_SETTING} true --environment main"
 REVIEWS = "checkpoint-review list --json --oldest --environment main"
 
 

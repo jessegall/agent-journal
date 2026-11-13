@@ -10,6 +10,7 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from suites.coding.support.coding_nudges import WORKER_TASK_UNSTARTED
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.upgrade.coding_settings_move import LISTED_KEY
 
 WORKER_SESSION = "s-2"
 CART_SEARCH = HookSamples.shell("grep -n total src/cart.py", ShellPart("grep", "search", ["-n", "total", "src/cart.py"]))
@@ -38,7 +39,7 @@ def test_a_worker_whose_task_has_not_started_runs_journal_commands_only(new_stor
 
 def test_a_worker_runs_no_command_of_a_type_its_setting_leaves_out(new_story):
     story = new_story(fixture=WorkingAgent)
-    story.expect_success("""setting make journal.suites.coding.worker-command-types '["read", "search"]' --environment main""", "key: journal.suites.coding.worker-command-types")
+    story.expect_success(f"""setting make {LISTED_KEY} '["read", "search"]' --environment main""", f"key: {LISTED_KEY}")
     story.expect_hook_allowed(WORKER_SESSION, CART_SEARCH)
     story.expect_hook_refusal(WORKER_SESSION, CART_REMOVAL, "a worker here runs no edit command")
 

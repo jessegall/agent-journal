@@ -25,6 +25,7 @@ from tests.stories.core.support.fixtures import ThreeTasks, UserJoined
 from tests.stories.server.support.server_client import STORY_HOOK_LIMIT_SECONDS, STORY_STOP_LIMIT_SECONDS, expect_timing_lines, server_story
 from engine.testing.expectations.expect_row import expect_row
 from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
+from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING
 
 RAW_HEADERS = {"X-Journal-Request-At": "1793395000123", "X-Journal-Hook-Id": "7731-1793395000123", "X-Journal-Actor": "agent", "X-Journal-Env": "main"}
 SCHEMA_EXAMPLES = Path(__file__).resolve().parents[3] / "tools" / "journal-hook" / "event" / "testdata" / "schema"
@@ -44,7 +45,7 @@ def test_a_prepared_hook_object_is_read_and_let_through_until_the_drivers_decide
 def test_a_hook_is_recorded_as_it_was_sent_while_the_developer_option_is_on(new_story):
     started = new_story(fixture=UserJoined)
     started.expect_success("setting switch journal.core.developer.tools on --project", actor=started.user)
-    started.expect_success("setting set journal.core.developer.tools.hooks.request-log true --project", actor=started.user)
+    started.expect_success(f"setting set {HOOK_REQUEST_LOG_SETTING} true --project", actor=started.user)
     with server_story(started) as story:
         story.expect_hook_answer("/hook", example("edit"), 200, '"refusal": ""')
     expect_row(started.container.get(HookRequestLog).read()[0], body=example("edit"))

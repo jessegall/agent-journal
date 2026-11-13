@@ -1,11 +1,12 @@
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 
 def test_every_seeded_row_opens_in_the_shared_inspector_with_its_declared_head_and_actions(new_story):
     story = new_story(fixture=UserJoined)
-    story.run("setting set journal.core.viewer.tour-completed true --project")
+    story.run(f"setting set {TOUR_COMPLETED} true --project")
     story.run('plan make "Rebuild the cart" --brief "The cart must keep its totals." --environment main')
     story.run('phase make --plan 1 "Build the cart" --goal "Totals stay correct"')
     story.run('task make "Fix the totals" --brief "Check the cart totals" --phase 1 --environment main')

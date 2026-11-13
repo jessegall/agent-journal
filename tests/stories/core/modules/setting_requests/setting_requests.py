@@ -6,9 +6,11 @@ from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.settings.models.setting import Setting
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
+from core.modules.project_rules.support.rule_settings import RULE_APPROVAL_SETTING
+from core.modules.settings.support.settings_tree import BACKUP_MINUTES_SETTING
 
-SETTING = "journal.core.project-rules.agents-make-rules"
-AGENT_SETTING = "journal.core.settings.backup-minutes"
+SETTING = f"{RULE_APPROVAL_SETTING}"
+AGENT_SETTING = f"{BACKUP_MINUTES_SETTING}"
 REQUEST = f'setting request {SETTING} on --reason "Rules need no card" --environment main'
 
 

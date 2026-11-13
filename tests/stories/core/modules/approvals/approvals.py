@@ -11,10 +11,11 @@ from engine.testing.stories.story import Story
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
+from core.modules.project_rules.support.rule_settings import RULE_APPROVAL_SETTING
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
-SETTING = "journal.core.project-rules.agents-make-rules"
+SETTING = f"{RULE_APPROVAL_SETTING}"
 CHANGE_SETTING = f"setting set {SETTING} true --project --reason needed"
 
 

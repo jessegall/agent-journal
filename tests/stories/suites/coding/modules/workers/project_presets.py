@@ -6,6 +6,7 @@ from engine.file.file_access import FileAccess
 from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.suites.coding.modules.workers.support.phase_steps import dispatched_story_worker
+from suites.coding.modules.workers.support.worker_settings import PRESET_TEST_COMMANDS
 
 VIEWER_PACKAGE = json.dumps({"name": "viewer", "devDependencies": {"vitest": "^3.0.0"}})
 PLAIN_PACKAGE = json.dumps({"name": "viewer", "scripts": {"test": "echo \"Error: no test specified\" && exit 1"}})
@@ -43,7 +44,7 @@ def test_both_manifests_are_found_a_library_folder_is_not_read_and_a_changed_man
 def test_a_person_preset_takes_the_place_of_the_found_command_of_its_name(project):
     story, folder = project
     written(folder, "pyproject.toml", PYPROJECT)
-    story.expect_success("""setting make journal.suites.coding.workers.preset-test-commands '["python=py.test -q"]' --environment main""", actor=story.user)
+    story.expect_success(f"""setting make {PRESET_TEST_COMMANDS} '["python=py.test -q"]' --environment main""", actor=story.user)
     output = story.run(PRESETS, actor=story.agent).output_text
     story.expect_rows("test command python=py.test -q" in output, "python3 -m pytest" not in output, detail=output)
 

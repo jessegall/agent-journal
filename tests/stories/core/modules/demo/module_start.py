@@ -9,6 +9,7 @@ from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.browser_story import expect_browser_at
 from tests.stories.server.support.server_client import request_answer
 from tests.stories.support.story_checks import expect_value_with
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 
 @pytest.mark.parametrize("page_type", ["home", "popout", "phone"])
@@ -23,7 +24,7 @@ def test_a_demo_installs_a_module_and_draws_its_button_on_a_ready_plan(new_story
     try:
         demo_folder = Path(re.search(r"the demo runs in (.+) \(server pid", lines[0])[1])
         socket = demo_folder / ".journal" / "server.sock"
-        request_answer(socket, "POST", "/cli", {"argv": ["setting", "set", "journal.core.viewer.tour-completed", "true", "--project"],
+        request_answer(socket, "POST", "/cli", {"argv": ["setting", "set", f"{TOUR_COMPLETED}", "true", "--project"],
                                                "variables": {"USER": "Demo"}, "folder": str(demo_folder)})
         share = request_answer(socket, "POST", "/cli", {"argv": ["share", "make", "plans:6", "--json"],
                                                        "variables": {"USER": "Demo"}, "folder": str(demo_folder)})

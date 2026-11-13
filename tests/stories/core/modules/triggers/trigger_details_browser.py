@@ -5,6 +5,7 @@ from tests.stories.core.modules.triggers.trigger_details import AgentsEnableTrig
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 from tests.stories.support.story_checks import expect_command_file
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 
 def test_command_folder_and_printed_output_save_in_the_live_viewer(new_story, tmp_path):
@@ -14,7 +15,7 @@ def test_command_folder_and_printed_output_save_in_the_live_viewer(new_story, tm
     command_folder.mkdir()
     actions = json.dumps([{"type": "run", "target": f"pwd > chosen.txt && {marker.command}"}])
     story.expect_success(f'trigger make cart "Mind the cart" --name "Cart check" --extra-actions {shlex.quote(actions)}', actor=story.agent)
-    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     story.expect_success('actor make user "Ada"')
     with server_story(story) as server:
         expect_browser(server, "triggerDetails.browser.mjs", [str(command_folder), "/tmp/journal-worker-464-trigger-details.png"])

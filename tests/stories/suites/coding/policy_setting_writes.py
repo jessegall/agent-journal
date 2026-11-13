@@ -1,10 +1,15 @@
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from core.modules.helpers.support.helper_settings import HELPER_MAX_COST
+from core.modules.helpers.support.helper_settings import PROGRAM_SPLIT
+from core.modules.helpers.support.helper_settings import PROGRAM_WINDOW_PERCENT
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
+from suites.coding.upgrade.coding_settings_move import LISTED_KEY
 
-RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit"
-MAX_COST = "journal.core.helpers.read-only-helper-max-cost"
-SPLIT = "journal.core.helpers.program-split"
-COMMAND_TYPES = "journal.suites.coding.worker-command-types"
-WINDOW = "journal.core.helpers.program-window-percent"
+RUN_LIMIT = f"{WORKER_RUN_LIMIT}"
+MAX_COST = f"{HELPER_MAX_COST}"
+SPLIT = f"{PROGRAM_SPLIT}"
+COMMAND_TYPES = f"{LISTED_KEY}"
+WINDOW = f"{PROGRAM_WINDOW_PERCENT}"
 
 
 def test_s54_ordinary_set_cannot_bypass_policy_validation(new_story):

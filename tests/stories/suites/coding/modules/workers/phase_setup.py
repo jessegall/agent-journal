@@ -4,6 +4,8 @@ from suites.coding.modules.workers.support.worker_steps import WorkerSteps
 from tests.stories.support.story_checks import expect_value
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, start_planned_worker, unplanned_worker
+from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND
+from suites.coding.modules.workers.support.worker_settings import PROJECT_TEST_COMMAND
 
 
 def read_steps(worker) -> WorkerSteps:
@@ -32,8 +34,8 @@ def test_a_short_proof_is_a_failure(new_story, monkeypatch):
 def test_a_failed_selected_test_is_a_failure(new_story, monkeypatch):
     external = unplanned_worker(new_story, monkeypatch)
     steps = read_steps(external)
-    external.story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main')
-    external.story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 -m pytest -q" --environment main')
+    external.story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "python3 pick.py" --environment main')
+    external.story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "python3 -m pytest -q" --environment main')
     external.edit_prove(TEST_LINE)
     external.story.expect_success(COMMIT, actor=external.worker)
     external.end_test(external.started[0])

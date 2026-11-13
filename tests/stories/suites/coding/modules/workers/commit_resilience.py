@@ -11,6 +11,7 @@ from tests.stories.suites.coding.modules.workers.queued_commands import operatio
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.held_tasks import proofs, prove_task, unplanned_holding_worker
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
 THREE_TASKS = 3
 LATE_PROOF = 'proof make 1 --task 3 "cart.py:1, the cart total"'
@@ -131,7 +132,7 @@ def test_a_commit_of_a_worker_whose_row_a_restart_ended_while_its_program_runs_g
 def test_while_more_workers_run_than_the_limit_a_finished_worker_gets_no_free_task_and_a_send_of_tasks_is_refused(two_proved):
     worker, story = two_proved, two_proved.story
     free_task = story.new_row_id('task make "Free job" --brief "A small job" --complexity 1 --environment main', actor=story.agent)
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 0 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_RUN_LIMIT} 0 --environment main", actor=story.user)
     outcome = story.run(COMMIT, actor=worker.worker)
     story.expect_rows(outcome.code == 0, detail=outcome.output_text)
     expect_open_undelegated(worker, free_task)

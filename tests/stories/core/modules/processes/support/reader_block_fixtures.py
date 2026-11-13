@@ -9,6 +9,7 @@ from core.modules.processes.models.process import Process
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 
 class ForcedReaders(StoryFixture):
@@ -18,7 +19,7 @@ class ForcedReaders(StoryFixture):
 
     def steps(self, story: Story) -> None:
         story.run("setting set journal.core.processes.readers-forced on --environment main")
-        story.run("setting set journal.suites.coding.workers.worker-run-most-tests 25 --environment main", actor=story.user)
+        story.run(f"setting set {WORKER_TEST_LIMIT} 25 --environment main", actor=story.user)
         story.run("agent start s-reader claude worker --environment main")
 
 

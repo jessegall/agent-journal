@@ -12,6 +12,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DISPATCH, FIRST_PROOF, checked_worker, dispatched_worker, repository_environment
 from tests.stories.support.story_checks import expect_value
+from suites.coding.modules.workers.support.worker_settings import WORKER_INSTRUCTION_FILES_SETTING
 
 PROJECT_TEXT = "The project's own briefing.\n"
 NEWER_PROJECT_TEXT = "The project's newer briefing.\n"
@@ -56,7 +57,7 @@ def test_a_profile_keeps_the_project_s_files_beside_its_own_when_it_says_so(new_
 def test_a_person_turns_the_instruction_files_off_and_the_worktree_keeps_the_project_s(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = project_with_instructions(story)
-    story.expect_success("setting set journal.suites.coding.workers.worker-instruction-files false --project", actor=story.user)
+    story.expect_success(f"setting set {WORKER_INSTRUCTION_FILES_SETTING} false --project", actor=story.user)
     worker = dispatched_worker(story)
     expect_value(worktree_file_text(repository, worker, "CLAUDE.md"), PROJECT_TEXT)
 

@@ -33,6 +33,7 @@ from suites.coding.modules.workers.bindings.worker_test_listings import WorkerTe
 from suites.coding.modules.workers.models.proof import Proof
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from engine.testing.expectations.expect_reply import expect_reply_refusal
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -43,7 +44,7 @@ class TestLimitSetup(StoryFixture):
     parent = ForcedReaders
 
     def steps(self, story: Story) -> None:
-        story.run("setting set journal.suites.coding.workers.worker-run-most-tests 5 --environment main")
+        story.run(f"setting set {WORKER_TEST_LIMIT} 5 --environment main")
         story.run("setting set journal.core.processes.readers-forced off --environment main")
 
 
@@ -57,9 +58,9 @@ def limited_run(new_story):
 
 def test_the_limit_defaults_to_25_and_an_environments_value_wins(new_story):
     story = new_story(fixture=ForcedReaders)
-    story.expect_success("setting show journal.suites.coding.workers.worker-run-most-tests", "value: 25")
-    story.run("setting set journal.suites.coding.workers.worker-run-most-tests 10 --environment main")
-    story.expect_success("setting show journal.suites.coding.workers.worker-run-most-tests --environment main", "value: 10")
+    story.expect_success(f"setting show {WORKER_TEST_LIMIT}", "value: 25")
+    story.run(f"setting set {WORKER_TEST_LIMIT} 10 --environment main")
+    story.expect_success(f"setting show {WORKER_TEST_LIMIT} --environment main", "value: 10")
 
 
 def test_a_run_over_the_limit_is_stopped_when_its_collected_line_is_read(limited_run):
@@ -101,7 +102,7 @@ class ProofLimitSetup(StoryFixture):
     parent = OpenTaskOrchestrator
 
     def steps(self, story: Story) -> None:
-        story.run("setting set journal.suites.coding.workers.worker-run-most-tests 5 --environment main")
+        story.run(f"setting set {WORKER_TEST_LIMIT} 5 --environment main")
         story.run("setting set journal.core.processes.readers-forced off --environment main")
 
 
@@ -154,7 +155,7 @@ def test_a_stopped_worker_is_started_again_with_the_count_and_limit(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
-    story.run("setting set journal.suites.coding.workers.worker-run-most-tests 5 --environment main")
+    story.run(f"setting set {WORKER_TEST_LIMIT} 5 --environment main")
     story.run("setting set journal.core.processes.readers-forced off --environment main")
     process = story.container.get(Bus).run(StartProcess.single_part(worker.id, "pytest tests/restart.py", "/work", CommandCategory.TEST_RUN, 30), worker, environment_id=1)
     story.run(f"process background {process.id}", actor=worker)

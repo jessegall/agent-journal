@@ -7,6 +7,7 @@ from suites.coding.modules.workers.support.worker_settings import MERGER_WAIT_MI
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.worker_ask import asking_worker
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
 MAIN_SESSION = "s-1"
 INTERVAL = timedelta(seconds=WORKER_ASKING_STOPPED.interval.seconds)
@@ -69,7 +70,7 @@ def test_a_worker_whose_process_ended_with_no_task_left_is_not_named(ended_with_
 
 def test_a_stopped_worker_is_not_named_while_workers_are_switched_off(ended_with_work):
     story = ended_with_work.story
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 0 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_RUN_LIMIT} 0 --environment main", actor=story.user)
     story.tick(MAIN_SESSION)
     story.expect_rows(stopped_lines(story) == [], detail=str(stopped_lines(story)))
 

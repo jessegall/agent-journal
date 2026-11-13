@@ -3,8 +3,9 @@ import shlex
 
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_absent_value, expect_value_5
+from core.modules.drivers.support.driver_settings import SUITE_SETTING
 
-FIXTURE_KEYS = ["journal.core.drivers.suite"]
+FIXTURE_KEYS = [f"{SUITE_SETTING}"]
 OPTIONAL_GROUP = "journal.core.developer.tools"
 
 

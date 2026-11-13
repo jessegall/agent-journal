@@ -26,6 +26,8 @@ from engine.provider.context_window import ContextWindow
 from core.modules.helpers.support.profile_model import ProfileModel
 import json
 from tests.stories.core.support.agent_labels import agent_label
+from core.modules.helpers.support.helper_settings import HELPER_PROFILE_LIMITS
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -46,7 +48,7 @@ class EndedHelper(StoryFixture):
 @pytest.fixture
 def helper_form_server(new_story, monkeypatch):
     story = new_story(fixture=ReportedHelper)
-    story.expect_success("setting set journal.core.viewer.tour-completed true --project", actor=story.user)
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project", actor=story.user)
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
     monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
@@ -91,7 +93,7 @@ def test_helper_form_offers_send_and_records_the_reason_for_another_helper(helpe
 def test_helper_form_offers_send_at_the_kept_limit_and_preserves_the_command_refusal(helper_form_server):
     server, helper = helper_form_server
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-    server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", "journal.core.helpers.read-only-helper-profile-limits", '["journal-researcher:4:1"]', "--project"]})
+    server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", f"{HELPER_PROFILE_LIMITS}", '["journal-researcher:4:1"]', "--project"]})
     availability = profile_line(server, cookie, ["helper", "availability", "--profile", "journal-researcher"])
     server.story.expect_rows([row["id"] for row in availability["idle_helpers"]] == [helper.id])
     server.story.expect_rows(not availability["can_start_fresh"])

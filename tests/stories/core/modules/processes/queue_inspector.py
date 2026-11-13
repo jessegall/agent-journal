@@ -7,11 +7,12 @@ from engine.enums.command_category import CommandCategory
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.agent_labels import agent_number
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 
 def test_the_inspector_reads_live_spots_wait_order_start_times_and_recent_output(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=story.user)
     story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start inspector-worker claude worker --environment main"), ActorType.AGENT)
     first = start_process(story, "make package", category=CommandCategory.BUILD)
@@ -68,7 +69,7 @@ def test_an_agents_processes_tab_lists_only_that_agents_running_waiting_and_fini
     story = install_runner(new_story(fixture=UserBuilder))
     worker = story.new_row_id("agent start processes-worker claude worker --environment main")
     other = story.new_row_id("agent start other-worker claude worker --environment main")
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=story.user)
     story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
     story.agent = Actor(worker, ActorType.AGENT)
     finished = start_process(story, "make previous", category=CommandCategory.BUILD)

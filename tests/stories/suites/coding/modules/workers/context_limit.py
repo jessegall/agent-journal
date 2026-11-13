@@ -17,6 +17,7 @@ from engine.enums.tool_type import ToolType
 from tests.stories.core.modules.processes.support.process_samples import moved_run
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
 LIMIT_TOKENS = 400_000
 HARD = 600_000
@@ -272,7 +273,7 @@ def test_a_paused_agent_held_for_its_overview_is_not_woken(overview_block):
 def test_an_agent_past_the_limit_that_finishes_its_task_is_told_to_stop_and_given_no_next_task(task_worker):
     agent = task_worker
     agent.expect_success('task make "Fix the basket" --brief "It drops items"', actor=agent.agent)
-    agent.expect_success("setting set journal.suites.coding.auto-mode true --environment main", actor=agent.user)
+    agent.expect_success(f"setting set {AUTO_MODE_SETTING} true --environment main", actor=agent.user)
     enabled_time(agent, LIMIT_TOKENS)
     has_context(agent, LIMIT_TOKENS)
     agent.expect_success('task close 1 --outcome "Done"', actor=agent.agent)

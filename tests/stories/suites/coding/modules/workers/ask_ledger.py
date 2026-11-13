@@ -23,14 +23,17 @@ from suites.coding.modules.workers.ticks.ask_watch import AskWatch
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from tests.stories.suites.coding.modules.workers.worker_ask import asking, asking_with_merger_running, merger_disabled_worker  # noqa: F401
 from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
+from suites.coding.modules.workers.support.worker_settings import QUESTION_ANSWER_MINUTES
+from suites.coding.modules.workers.support.worker_settings import QUESTION_VISITS_LIMIT
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
 QUESTION = "The sandbox has no compiler"
 SECOND_QUESTION = "The fixture file is empty"
 ANSWER = "Use the compiler in tools/bin"
-ANSWER_MINUTES = "journal.suites.coding.workers.ask-answer-minutes"
-VISITS_LIMIT = "journal.suites.coding.workers.ask-visits-limit"
+ANSWER_MINUTES = f"{QUESTION_ANSWER_MINUTES}"
+VISITS_LIMIT = f"{QUESTION_VISITS_LIMIT}"
 HELP_REQUEST_LINE = 'wait stuck "the build tool is missing"'
 READ_OF_A_FILE = HookSamples.tool_use("Read", ToolType.READ, ["cart.py"], None)
 
@@ -183,7 +186,7 @@ def test_an_ask_made_with_the_merger_off_starts_no_merger_when_the_merger_is_swi
     merger_can_start(monkeypatch)
     story = merger_disabled_worker.story
     merger_disabled_worker.post_question()
-    story.expect_success("setting set journal.suites.coding.workers.merger-on true --project", actor=story.user)
+    story.expect_success(f"setting set {MERGER_ENABLED} true --project", actor=story.user)
     with running_launcher(story):
         MergerRetry()(story.container)
         AskWatch()(story.container)

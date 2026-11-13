@@ -17,10 +17,12 @@ from core.modules.drivers.models.agent_line import AgentLine
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RESTARTED
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
-MERGER_OFF = "setting set journal.suites.coding.workers.merger-on false --project"
+MERGER_OFF = f"setting set {MERGER_ENABLED} false --project"
 BUILD_TASKS = 3
 
 
@@ -128,7 +130,7 @@ def test_a_worker_with_an_open_ask_still_reaches_its_parent_when_it_ends(new_sto
 
 def test_a_worker_with_a_run_going_may_stop(phase_worker):
     phase_worker.story.agent, main = phase_worker.worker, phase_worker.story.agent
-    phase_worker.story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main", actor=phase_worker.story.user)
+    phase_worker.story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=phase_worker.story.user)
     start_process(phase_worker.story, "make check", category=CommandCategory.TEST_RUN)
     phase_worker.story.agent = main
     phase_worker.story.expect_hook_allowed(phase_worker.session, HookSamples.stop())

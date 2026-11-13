@@ -12,6 +12,7 @@ from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_value
+from core.modules.drivers.support.driver_settings import EVENT_COUNT_SETTING
 
 HOOK_CALLS = "hook_calls"
 TASKS = "tasks"
@@ -59,7 +60,7 @@ def test_a_listener_that_has_not_passed_an_event_keeps_it(new_story):
 def test_one_run_deletes_within_one_window_of_ids(new_story, monkeypatch):
     story = new_story(fixture=HookAndTaskLogged)
     event_total = total_events(story)
-    story.expect_success("setting set journal.core.drivers.event-count 1 --project")
+    story.expect_success(f"setting set {EVENT_COUNT_SETTING} 1 --project")
     monkeypatch.setattr(prune_events_handler, "WINDOW_IDS", 1)
     story.container.get(Bus).run(PruneEvents(), Actor.core())
     expect_value(total_events(story) >= event_total - 1, True)

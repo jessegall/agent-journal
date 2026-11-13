@@ -1,7 +1,9 @@
 from tests.stories.core.support.fixtures import UserJoined
+from suites.coding.support.graphify_settings import GRAPHIFY_COMMAND
+from suites.coding.support.graphify_settings import GRAPHIFY_INSTALL_COMMAND
 
-GRAPHIFY_COMMAND = "journal.suites.coding.graphify-command"
-GRAPHIFY_INSTALL_COMMAND = "journal.suites.coding.graphify-install-command"
+GRAPHIFY_COMMAND = f"{GRAPHIFY_COMMAND}"
+GRAPHIFY_INSTALL_COMMAND = f"{GRAPHIFY_INSTALL_COMMAND}"
 
 
 def test_install_runs_the_install_command_and_the_card_shows_installed(new_story, tmp_path):

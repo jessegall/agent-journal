@@ -32,6 +32,9 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.worktree_samples import worktree_commit
 from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
 from tests.stories.core.support.agent_labels import agent_label
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
+from suites.coding.modules.workers.support.worker_settings import WORKER_KEPT_LIMIT
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
 REASON = '--reason "Its work is finished"'
 
@@ -85,7 +88,7 @@ def test_a_retire_runs_git_outside_the_transaction(new_story):
 def test_at_the_kept_maximum_a_dispatch_is_refused_naming_the_kept_workers(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    story.expect_success("setting set journal.suites.coding.workers.worker-kept-limit 1 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_KEPT_LIMIT} 1 --environment main", actor=story.user)
     worker = dispatched_worker(story)
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
     story.expect_refusal(f"worker dispatch --test-command python=pytest --model sonnet {task_id}", f"the limit of 1 workers is reached: agent:{agent_number(story, worker.id)}", actor=story.agent)
@@ -94,19 +97,19 @@ def test_at_the_kept_maximum_a_dispatch_is_refused_naming_the_kept_workers(new_s
 def test_a_worker_resume_at_the_run_limit_is_held_and_starts_when_a_place_frees(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
-    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+    story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
     launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=b"started\n", request_count=3)
     worker = delivered_worker(story, repository)
     story.run_listeners()
     stopped(story, worker)
     story.run_listeners()
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 0 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_RUN_LIMIT} 0 --environment main", actor=story.user)
     story.advance(timedelta(seconds=1))
     story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Add the tax"', actor=story.agent)
     story.run_listeners()
     WorkerResumeRetry()(story.container)
     limit_start_count = len(launcher.starts)
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 2 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_RUN_LIMIT} 2 --environment main", actor=story.user)
     WorkerResumeRetry()(story.container)
     story.expect_rows(limit_start_count == 1, len(launcher.starts) == 2)
 
@@ -247,7 +250,7 @@ def test_a_nearly_full_worker_is_not_offered(new_story, monkeypatch):
 def test_an_approved_plan_does_not_hold_a_stop_when_no_new_worker_can_start(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    story.expect_success("setting set journal.suites.coding.workers.worker-kept-limit 1 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_KEPT_LIMIT} 1 --environment main", actor=story.user)
     dispatched_worker(story)
     plan_id = story.new_row_id('plan make "A plan" --brief "A goal"', actor=story.agent)
     phase_id = story.new_row_id(f'phase make --plan {plan_id} "One" --goal "It is done"', actor=story.agent)

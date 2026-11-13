@@ -8,6 +8,7 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_LIMIT_RAI
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 from engine.testing.expectations.expect_nudge import SaidNudge, said
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
+from suites.coding.modules.workers.support.worker_settings import WORKER_BATCH_SIZE
 
 LISTING = HookSamples.shell("ls build", ShellPart("ls", CommandCategory.SEARCH, ["build"])).with_fields(event="post_tool_use")
 
@@ -74,7 +75,7 @@ def test_a_task_a_worker_holds_is_not_counted_as_open_and_not_delegated(new_stor
 
 def test_another_setting_changing_tells_nothing(new_story):
     story = story_with_person(new_story)
-    story.expect_success("setting set journal.suites.coding.workers.worker-batch-size 5 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_BATCH_SIZE} 5 --environment main", actor=story.user)
     expect_limit_lines(story, [])
 
 

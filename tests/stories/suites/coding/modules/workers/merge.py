@@ -38,6 +38,7 @@ from tests.stories.support.story_checks import expect_requests_launcher
 from core.modules.processes.support.process_nudges import READ_COMMAND_OUTPUT
 from engine.testing.expectations.expect_nudge import said
 from suites.coding.modules.workers.support.worker_nudges import MERGE_WAITS
+from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 
 pytestmark = pytest.mark.real_git
@@ -198,7 +199,7 @@ def test_a_resumed_worker_comes_back_as_a_worker_with_its_number(new_story):
 
 def test_a_worker_the_main_agent_stops_stays_stopped_with_its_job_waiting(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+    story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     story.run(f'worker send --wait {agent_number(story, worker.id)} "Add the tax as well"', actor=story.agent)
@@ -214,7 +215,7 @@ def test_a_worker_the_main_agent_stops_stays_stopped_with_its_job_waiting(new_st
 
 def test_a_worker_a_person_stops_stays_stopped_with_its_job_waiting(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+    story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     story.run(f'worker send --wait {agent_number(story, worker.id)} "Add the tax as well"', actor=story.agent)

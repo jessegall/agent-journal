@@ -7,6 +7,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.support.fixtures import UserJoined
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
 TODO_LIST_HOOK = HookSamples.sample("post_tool_use", {"name": "TodoWrite", "category": ToolType.UNCATEGORISED, "files": [], "diff": None}).with_fields(
     raw={"tool_name": "TodoWrite", "tool_input": {"todos": [{"content": "Add the tax", "status": "completed"},
@@ -54,7 +55,7 @@ def test_split_tab_saves_shares_that_add_to_100(split_story, split_viewer):
 
 def test_split_tab_saves_shares_that_add_to_100_worker_limit_matches_settings(split_story, split_viewer):
     story = split_story
-    key = 'journal.suites.coding.workers.worker-run-limit'
+    key = f'{WORKER_RUN_LIMIT}'
     split_viewer.value('workers.workers', ['setting', 'set', key, '4', '--project'])
     dropdown = split_viewer.value('workers.workers', ['setting', 'show', key])
     settings = split_viewer.value('settings.settings', ['setting', 'tree'])['rows']

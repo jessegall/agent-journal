@@ -6,13 +6,14 @@ from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 ROWS = 60
 
 
 def test_the_terminal_and_the_file_feed_open_at_their_bottom(new_story):
     story = new_story(fixture=UserBuilder)
-    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     repository = repository_environment(story)
     worker = story.new_row_id(f"agent start terminal-worker claude worker --parent {story.agent.id} --environment main")
     for number in range(ROWS):

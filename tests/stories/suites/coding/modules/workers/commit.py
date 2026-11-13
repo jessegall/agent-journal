@@ -15,6 +15,8 @@ from tests.stories.suites.coding.modules.workers.support.merger_launcher import 
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, StoryWorker, dispatched_story_worker
 from suites.coding.modules.workers.support.worker_nudges import WORKER_REFUSED
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND
+from suites.coding.modules.workers.support.worker_settings import PROJECT_TEST_COMMAND
 
 LEFT_OUT = "the rounding is left out"
 FIXED_CART = "TOTAL = 3\n"
@@ -65,8 +67,8 @@ def test_29_a_commit_asks_for_the_differences_and_what_differs_becomes_an_import
 
 def test_37_a_commit_of_a_task_in_no_plan_queues_one_selected_run_when_its_two_commands_are_set(proved):
     story = proved.story
-    story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main')
-    story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 run_tests.py" --environment main')
+    story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "python3 pick.py" --environment main')
+    story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "python3 run_tests.py" --environment main')
     story.expect_success(COMMIT, actor=proved.worker)
     story.run_listeners()
     selected = story.run("affected-test list --json", actor=story.agent).output_text

@@ -16,6 +16,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import r
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from engine.enums.tool_type import ToolType
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
 
 @dataclass(frozen=True)
@@ -32,7 +33,7 @@ class AssignedWorker:
 @pytest.fixture
 def worker_scenario(new_story):
     story = new_story(fixture=SelectedTrail)
-    story.expect_success("setting set journal.suites.coding.auto-mode off --environment main")
+    story.expect_success(f"setting set {AUTO_MODE_SETTING} off --environment main")
     repository = repository_environment(story)
     return WorkerTrail(story, repository)
 

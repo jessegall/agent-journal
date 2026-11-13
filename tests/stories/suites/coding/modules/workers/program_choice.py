@@ -20,6 +20,8 @@ from tests.stories.suites.coding.modules.workers.support.program_split import (
     set_split, split_story, split_viewer,
 )
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
+from core.modules.helpers.support.helper_settings import ALLOWED_MODELS
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
 
 @pytest.fixture
@@ -64,7 +66,7 @@ def test_profile_tier_fits_any_program(split_story, program, model):
 
 def test_allowed_models_narrow_a_tier(split_story, split_viewer):
     story = split_story
-    split_viewer.value('settings.settings', ['setting', 'set', 'journal.core.helpers.allowed-models', 'claude sonnet', '--project'])
+    split_viewer.value('settings.settings', ['setting', 'set', f'{ALLOWED_MODELS}', 'claude sonnet', '--project'])
     worker = dispatch(story, flags='--program claude --tier strongest')
     expect_program(story, worker, 'claude', 'sonnet')
     story.run_listeners()
@@ -73,7 +75,7 @@ def test_allowed_models_narrow_a_tier(split_story, split_viewer):
 
 def test_allowed_models_narrow_a_tier_named_model_is_refused(split_story, split_viewer):
     story = split_story
-    split_viewer.value('settings.settings', ['setting', 'set', 'journal.core.helpers.allowed-models', 'claude sonnet', '--project'])
+    split_viewer.value('settings.settings', ['setting', 'set', f'{ALLOWED_MODELS}', 'claude sonnet', '--project'])
     story.expect_refusal('worker dispatch --test-command python=pytest 1 --model opus --program claude', 'sonnet', actor=story.agent)
 
 
@@ -181,7 +183,7 @@ def test_split_counts_tasks_not_workers(split_story, split_viewer):
 
 def test_out_program_share_goes_to_the_others(split_story, split_viewer):
     story = split_story
-    split_viewer.value('settings.settings', ['setting', 'set', 'journal.suites.coding.workers.worker-run-limit', '3', '--environment', 'main'])
+    split_viewer.value('settings.settings', ['setting', 'set', f'{WORKER_RUN_LIMIT}', '3', '--environment', 'main'])
     set_split(story, 'claude 50,codex 50', viewer=split_viewer)
     outage(story)
     expect_program(story, dispatch(story), 'claude')

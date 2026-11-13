@@ -8,6 +8,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.skills.support.skill_samples import PATH
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
+from core.modules.skills.support.start_skills import SESSION_START_KEY
 
 
 @pytest.mark.parametrize("program,skills_folder", [("claude", ".claude/skills"), ("codex", ".agents/skills")])
@@ -16,7 +17,7 @@ def test_a_workers_skill_refusal_names_the_whole_long_folder(new_story, program,
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
-    story.expect_success("setting make journal.core.skills.session-start '[]'")
+    story.expect_success(f"setting make {SESSION_START_KEY} '[]'")
     story.container.get(SkillRequirement).is_required = True
     story.hook(session, HookSamples.session_start().with_fields(program=program, launch=session))
     folder = "journal-commandments-plain-code-words-and-the-architecture-of-process-reader-requests"

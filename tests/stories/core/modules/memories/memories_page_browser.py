@@ -1,13 +1,14 @@
 from tests.stories.core.modules.memories.support.memory_owners import MainAndWorkerMemories, read_agent, started_agent
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 CAPTURE = "/tmp/memories-page"
 
 
 def seed(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
-    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     for index in range(30):
         story.expect_success(f'memory make "Main agent memory {index}" --weight {1 + index % 9} --environment main', actor=story.user)
     for index in range(10, 14):

@@ -4,11 +4,12 @@ from engine.file.file_access import FileAccess
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
+from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 
 def test_system_logs_page_in_a_real_browser(new_story):
     story = new_story(fixture=HookRecordingEnabled)
-    story.expect_success("setting set journal.core.viewer.tour-completed true --project")
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     with server_story(story) as server:
         path = story.home.system_log
         path.parent.mkdir(parents=True, exist_ok=True)

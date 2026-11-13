@@ -32,6 +32,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 from engine.testing.expectations.expect_reply import expect_reply_line
 from suites.coding.modules.workers.support.worker_nudges import READER_SAMPLE_READY
 from engine.testing.expectations.expect_nudge import said
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -278,7 +279,7 @@ def test_reader_sample_changes_make_no_chat_mark(requested_reader_story):
 def test_a_run_with_no_test_results_does_not_fail_the_reader_or_hold_the_next_worker_run(new_story, text):
     story = new_story(fixture=ForcedReaders)
     install_runner(story)
-    story.run("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
+    story.run(f"setting set {WORKER_TEST_LIMIT} 0 --environment main")
     process = worker_run(story, "python3 -m pytest tests/empty.py", CommandCategory.TEST_RUN)
     end_run(story, process, text, exit_code=5)
     following = worker_run(story, "python3 -m pytest tests/next.py", CommandCategory.TEST_RUN)
