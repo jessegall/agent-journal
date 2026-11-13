@@ -507,16 +507,20 @@ class WorktreeGit:
         if clashed:
             self.checked(folder, GIT_LIMIT_SECONDS, "checkout", "--ours", "--", *clashed)
             self.checked(folder, GIT_LIMIT_SECONDS, "add", "--", *clashed)
+            self.rebuild_clashed(folder, built.folders(clashed))
         self.checked(folder, GIT_LIMIT_SECONDS, "commit", "-m", message)
-        if clashed:
-            self.rebuilt_after_merge(folder, built.folders(clashed))
 
-    # Builds the built files whose copies clashed again from the merged sources, once, and commits them.
-    def rebuilt_after_merge(self, folder: str, folders: Sequence[str]) -> None:
-        self.build(folder, folder, folders)
+    # Builds the built files whose copies clashed again from the merged sources and stages them in the merge; a
+    # failed build aborts the merge and puts the built folders back as they were, so the checkout is left clean.
+    def rebuild_clashed(self, folder: str, folders: Sequence[str]) -> None:
+        try:
+            self.build(folder, folder, folders)
+        except Refusal:
+            self.git(folder, GIT_LIMIT_SECONDS, "merge", "--abort")
+            self.checked(folder, CHECKOUT_LIMIT_SECONDS, "restore", "--source=HEAD", "--staged", "--worktree", "--", *folders)
+            self.checked(folder, GIT_LIMIT_SECONDS, "clean", "-fdq", "--", *folders)
+            raise
         self.checked(folder, GIT_LIMIT_SECONDS, "add", "-A", "--", *folders)
-        if self.git(folder, GIT_LIMIT_SECONDS, "diff", "--cached", "--quiet").returncode != 0:
-            self.checked(folder, GIT_LIMIT_SECONDS, "commit", "-m", REBUILD_MESSAGE)
 
     def keep_instruction_files(self, folder: str) -> None:
         kept = self.checked(folder, GIT_LIMIT_SECONDS, "ls-tree", "--name-only", "HEAD", "--", *INSTRUCTION_FILES).stdout.split()

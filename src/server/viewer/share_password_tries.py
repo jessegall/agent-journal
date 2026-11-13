@@ -1,21 +1,27 @@
+import threading
 import time
+from collections.abc import Callable
+
+from server.viewer.wrong_code_limit import WrongCodeLimit
 
 TRY_COUNT = 5
 WINDOW_SECONDS = 15 * 60
 
 
 class SharePasswordTries:
-    """Wrong passwords sent to a link, counted per link, since a tunnel gives every visitor the same address,
-    so a link's password cannot be guessed without limit."""
+    """Wrong passwords sent to a link, counted per link under one lock before the password is compared, since a
+    tunnel gives every visitor the same address, so a link's password cannot be guessed without limit, also by
+    guesses sent at the same moment."""
 
-    def __init__(self) -> None:
-        self.wrong_times: dict[str, list[float]] = {}
+    def __init__(self, seconds: Callable[[], float] = time.monotonic) -> None:
+        self.seconds, self.lock, self.limits = seconds, threading.Lock(), dict[str, WrongCodeLimit]()
 
-    def is_blocked(self, token: str) -> bool:
-        return len(self.recent(token)) >= TRY_COUNT
+    def admits(self, token: str) -> bool:
+        return self.limit(token).admits()
 
-    def count(self, token: str) -> None:
-        self.wrong_times[token] = [*self.recent(token), time.monotonic()]
+    def remove_newest_attempt(self, token: str) -> None:
+        self.limit(token).remove_newest_attempt()
 
-    def recent(self, token: str) -> list[float]:
-        return [event for event in self.wrong_times.get(token, []) if time.monotonic() - event < WINDOW_SECONDS]
+    def limit(self, token: str) -> WrongCodeLimit:
+        with self.lock:
+            return self.limits.setdefault(token, WrongCodeLimit(self.seconds, TRY_COUNT, WINDOW_SECONDS))

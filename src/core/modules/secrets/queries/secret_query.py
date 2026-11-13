@@ -7,7 +7,7 @@ from core.modules.secrets.models.secret import Secret
 
 
 class SecretQuery(Query[Secret]):
-    """Reads secrets, and one by its number or its title."""
+    """Reads secrets, one by its number or its title, and the variables their fields use."""
 
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, Secret)
@@ -17,3 +17,6 @@ class SecretQuery(Query[Secret]):
         if secret is None:
             raise Refusal(f"no secret is numbered or titled {text!r}", "journal secret list shows them")
         return secret
+
+    def used_variables(self) -> frozenset[str]:
+        return frozenset(field.variable for secret in self.oldest().get() for field in secret.secret_fields())
