@@ -24,7 +24,9 @@ class EditSecretHandler(Handler[EditSecret, Secret]):
         secret = self.secrets.find(command.secret_id)
         title = command.title or secret.title
         kept = tuple(field for field in secret.fields if field["name"] not in command.removed_fields)
-        added = tuple(SecretField.made(title, name, True).stored() for name in command.added_fields if name not in {field["name"] for field in kept})
+        added_names = tuple(name for name in command.added_fields if name not in {field["name"] for field in kept})
+        stem = SecretField.free_stem(title, added_names, self.secrets.used_variables())
+        added = tuple(SecretField.made(stem, name, True).stored() for name in added_names)
         filled = tuple(name for name in secret.filled if name not in command.removed_fields)
         saved = self.repository.save(secret.changed(title=title, brief=command.brief or secret.brief, fields=(*kept, *added), filled=filled), context)
         for field in (field for field in secret.fields if field["name"] in command.removed_fields):

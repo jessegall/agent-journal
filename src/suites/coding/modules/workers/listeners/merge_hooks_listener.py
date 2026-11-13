@@ -3,6 +3,7 @@ from engine.command.bus import Bus
 from engine.event.logged_event import LoggedEvent
 from engine.event.moved import Moved
 from engine.listener.commit.commit_listener import CommitListener
+from engine.listener.commit.commit_listener_runner import PROGRAM_STOP_RUN_ORDER
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.environments.models.environment import Environment
@@ -21,6 +22,7 @@ class MergeHooksListener(CommitListener[Moved[Worktree]]):
 
     name = "workers.merge-hooks"
     moves = [WorktreeLifecycle.merge]
+    run_order = PROGRAM_STOP_RUN_ORDER
 
     def __init__(self, bus: Bus, queries: Queries, hooks: MergeHooks, commands: WorktreeCommands) -> None:
         self.bus, self.queries, self.hooks, self.commands = bus, queries, hooks, commands
