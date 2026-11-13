@@ -1,13 +1,13 @@
 import ast
 import importlib
 from pathlib import Path
-from tests.unit.source_tree import imported_names, imported_object, source_tree
+from tests.unit.source_tree import imported_names, imported_value, source_tree
 
 """Every attribute a test patches by its name exists, so a rename that misses a patch fails here and not at run time."""
 
 ROOT = Path(__file__).resolve().parents[2]
 TESTS = ROOT / "tests"
-NAMED_PATCHES = ("setattr", "delattr", "object")
+ATTRIBUTE_PATCHES = ("setattr", "delattr", "object")
 PATH_PATCHES = ("setattr", "delattr", "patch")
 CREATING_KEYWORDS = {"raising": False, "create": True}
 
@@ -25,11 +25,11 @@ def text_argument(call: ast.Call, position: int) -> str | None:
 
 def patch_calls(tree: ast.Module) -> list[ast.Call]:
     return [node for node in ast.walk(tree) if isinstance(node, ast.Call) and not creates_the_attribute(node)
-            and (isinstance(node.func, ast.Attribute) and node.func.attr in NAMED_PATCHES + PATH_PATCHES
+            and (isinstance(node.func, ast.Attribute) and node.func.attr in ATTRIBUTE_PATCHES + PATH_PATCHES
                  or isinstance(node.func, ast.Name) and node.func.id == "patch")]
 
 
-def object_at_path(path: str) -> object:
+def value_at_path(path: str) -> object:
     parts = path.split(".")
     for cut in range(len(parts) - 1, 0, -1):
         try:
@@ -47,7 +47,7 @@ def missing_attribute_target(call: ast.Call, names: dict[str, tuple[str, str | N
     target = call.args[0] if call.args else None
     if attribute is None or not isinstance(target, ast.Name) or target.id not in names:
         return None
-    patched = imported_object(*names[target.id])
+    patched = imported_value(*names[target.id])
     return None if hasattr(patched, attribute) else f"{target.id}.{attribute}"
 
 
@@ -56,7 +56,7 @@ def missing_path_target(call: ast.Call) -> str | None:
     if path is None or "." not in path or " " in path:
         return None
     try:
-        object_at_path(path)
+        value_at_path(path)
     except AttributeError:
         return path
     return None

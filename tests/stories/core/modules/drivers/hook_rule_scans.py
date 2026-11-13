@@ -58,8 +58,8 @@ def long_chat(new_story):
                        "CASE WHEN n % 3 = 0 OR n % 60 = 1 THEN NULL ELSE '2026-10-29T09:00:00.000000+00:00' END, '2026-10-30T09:00:00.000000+00:00', '2026-10-30T09:00:00.000000+00:00', "
                        "CASE WHEN n % 2 = 0 THEN 9999 END, '', CASE WHEN n % 60 = 1 THEN '2026-10-30T09:00:00.000000+00:00' END FROM c")
     connection.execute(f"INSERT INTO messages (environment_id, creator_id, type, text, created_at, updated_at, peer_key) VALUES (1, {story.agent.id}, 'agent', 'a recent reply', '2026-10-31T08:59:00.000000+00:00', '2026-10-31T08:59:00.000000+00:00', '')")
-    connection.execute(COUNTING.format(count=PROCESSES) + "INSERT INTO processes (environment_id, session_agent_id, creator_id, line, folder, shell, category, limit_seconds, created_at, updated_at, started_at) "
-                       f"SELECT 1, CASE WHEN n % 2 = 0 THEN {story.agent.id} ELSE 9999 END, 59, 'run ' || n, '/', 'zsh', 'read', 0, '2026-10-30T09:00:00.000000+00:00', '2026-10-30T09:00:00.000000+00:00', '2026-10-30T09:00:00.000000+00:00' FROM c")
+    connection.execute(COUNTING.format(count=PROCESSES) + "INSERT INTO processes (environment_id, session_agent_id, creator_id, line, folder, category, limit_seconds, created_at, updated_at, started_at) "
+                       f"SELECT 1, CASE WHEN n % 2 = 0 THEN {story.agent.id} ELSE 9999 END, 59, 'run ' || n, '/', 'read', 0, '2026-10-30T09:00:00.000000+00:00', '2026-10-30T09:00:00.000000+00:00', '2026-10-30T09:00:00.000000+00:00' FROM c")
     connection.execute("UPDATE processes SET state = 'finished', ended_at = '2026-10-30T09:00:01.000000+00:00' WHERE line LIKE 'run %'")
     connection.execute("PRAGMA foreign_keys = ON")
     return story, database

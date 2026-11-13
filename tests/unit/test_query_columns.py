@@ -1,7 +1,7 @@
 import ast
 from pathlib import Path
 from engine.model.table import Table
-from tests.unit.source_tree import imported_names, imported_object, source_tree
+from tests.unit.source_tree import imported_names, imported_value, source_tree
 
 """Every column a read of src names in its text exists on the model it reads, so a renamed column that a read misses
 fails here and not on the first run of that read."""
@@ -46,7 +46,7 @@ def unknown_columns(tree: ast.Module) -> list[str]:
         columns = column_arguments(call)
         if not columns or model_name not in names or model_name is None:
             continue
-        table = Table.build(imported_object(*names[model_name]))
+        table = Table.build(imported_value(*names[model_name]))
         misses += [f"{call.lineno} {model_name} has no column {column}" for column in columns if not table.has_column(column)]
     return misses
 

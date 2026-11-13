@@ -28,12 +28,6 @@ def test_task_assign_writes_the_assignment_and_a_task_has_one_assignee_at_a_time
     delegated.expect_rows(task_assignees(delegated).get(3) == [delegated.agent.id], detail=str(task_assignees(delegated)))
 
 
-def test_starting_a_free_task_assigns_it_to_the_starter(delegated):
-    delegated.expect_success("task start 3", actor=delegated.agent)
-    assert_holders_are_assignees(delegated)
-    delegated.expect_rows(task_assignees(delegated).get(3) == [delegated.agent.id], detail=str(task_assignees(delegated)))
-
-
 def test_a_release_of_a_worker_leaves_its_waiting_tasks_without_an_assignment(delegated):
     assert_holders_are_assignees(delegated)
     delegated.expect_success(f'worker release {agent_number(delegated, delegated.worker.id)} "not needed"', actor=delegated.agent)

@@ -10,6 +10,7 @@ try {
     await window.getByRole('radio', {name: 'Idle', exact: true}).click();
     const card = window.locator(`[data-agent-open="${worker}"]`);
     await card.click();
+    await card.locator('[data-agent-menu]').click();
     await card.locator('[data-agent-send-job]').click();
     await card.locator('[data-agent-job-task]').selectOption(task);
     assert.equal(await card.locator('[data-agent-job-text]').count(), 0);

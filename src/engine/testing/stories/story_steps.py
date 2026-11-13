@@ -1,5 +1,4 @@
 from engine.testing.stories.story import Story
-from engine.testing.stories.story_budget import StoryBudget
 
 
 class StorySteps:
@@ -18,23 +17,19 @@ class StorySteps:
         self.first_check = 0
         self.last_check = 0
         self.first_points = story.repeated_work.points().total
-        self.first_cpu = StoryBudget.clock()
         self.points = 0
-        self.cpu_seconds = 0.0
 
     def begin_test(self) -> None:
         self.first_step = len(self.story.steps)
         self.first_path_step = len(self.story.path)
         self.first_check = len(self.story.checks)
         self.first_points = self.story.repeated_work.points().total
-        self.first_cpu = StoryBudget.clock()
 
     def finish_test(self) -> None:
         self.last_step = len(self.story.steps)
         self.last_path_step = len(self.story.path)
         self.last_check = len(self.story.checks)
         self.points = self.story.repeated_work.points().total - self.first_points
-        self.cpu_seconds = StoryBudget.clock() - self.first_cpu
 
     def lines(self) -> list[str]:
         return self.story.steps[self.first_step:self.last_step]

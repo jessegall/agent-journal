@@ -21,7 +21,7 @@ from engine.testing.stories.story_fixture import StoryFixture
 from engine.testing.stories.story_body import StoryBody
 from engine.testing.stories.story_overlap import StoryOverlap
 from engine.testing.stories.story_steps import StorySteps
-from engine.testing.stories.story_budget import BUDGET_MARKER, CPU_SECONDS_BUDGET, POINTS_BUDGET, StoryBudget
+from engine.testing.stories.story_budget import BUDGET_MARKER, POINTS_BUDGET, StoryBudget
 from engine.testing.cache.template_cache import TemplateCache
 from engine.testing.templates.temp_folders import TempFolders
 from engine.testing.templates.template_databases import TemplateDatabases
@@ -94,7 +94,7 @@ def pytest_configure(config: pytest.Config) -> None:
     LazyLoading.disabled = True
     config.stash[RUN_START] = time.monotonic()
     config.stash[RUN_CPU] = RunCpu()
-    config.addinivalue_line("markers", f"{BUDGET_MARKER}(points, cpu_seconds, reason): a story that may cost more than the default budget, and why")
+    config.addinivalue_line("markers", f"{BUDGET_MARKER}(points, reason): a story that may cost more than the default budget, and why")
     config.stash[STORY_OVERLAP] = StoryOverlap()
     if config.option.basetemp is None and not hasattr(config, "workerinput"):
         config.stash[RUN_FOLDER] = config.option.basetemp = TempFolders().start()
@@ -144,11 +144,11 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo[None]) ->
 
 @pytest.hookimpl(wrapper=True)
 def pytest_runtest_protocol(item: pytest.Item, nextitem: pytest.Item | None) -> Generator[None, object, object]:
-    started = StoryBudget.clock()
+    started = time.thread_time()
     try:
         return (yield)
     finally:
-        item.config.stash[RUN_CPU].add(StoryBudget.clock() - started)
+        item.config.stash[RUN_CPU].add(time.thread_time() - started)
 
 
 @pytest.hookimpl(wrapper=True, tryfirst=True)
@@ -165,7 +165,7 @@ def pytest_runtest_call(item: pytest.Item) -> Generator[None]:
         pytest.fail("\n\n".join([f"{len(failed_expectations)} expectations failed:", *failed_expectations]), pytrace=False)
     budget = story_budget(item)
     for steps in item.stash[STORY_RUNS]:
-        overrun = budget.overrun(steps.points, steps.cpu_seconds)
+        overrun = budget.overrun(steps.points)
         if overrun:
             pytest.fail(overrun, pytrace=False)
 
@@ -174,7 +174,7 @@ def story_budget(item: pytest.Item) -> StoryBudget:
     marker = item.get_closest_marker(BUDGET_MARKER)
     if marker is None:
         return StoryBudget()
-    return StoryBudget(points=marker.kwargs.get("points", POINTS_BUDGET), cpu_seconds=marker.kwargs.get("cpu_seconds", CPU_SECONDS_BUDGET))
+    return StoryBudget(points=marker.kwargs.get("points", POINTS_BUDGET))
 
 
 @pytest.hookimpl(optionalhook=True)

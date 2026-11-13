@@ -26,7 +26,7 @@ def imported_names(tree: ast.Module) -> dict[str, tuple[str, str | None]]:
     return names
 
 
-def imported_object(module: str, attribute: str | None) -> object:
+def imported_value(module: str, attribute: str | None) -> object:
     imported = importlib.import_module(module)
     if attribute is None:
         return imported

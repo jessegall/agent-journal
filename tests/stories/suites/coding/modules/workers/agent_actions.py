@@ -37,7 +37,7 @@ def test_an_idle_worker_takes_an_open_task_through_the_agents_window(agent_task_
     row = line(["agent", "cards", "--show", "idle"])["rows"][0]
     server.story.expect_rows(row["id"] == worker and row["job_command"] == ["worker", "send"])
     server.story.expect_rows(row["job_task_flag"] == "--task" and row["resume_reason"] is None)
-    line(["worker", "send", str(worker), "--task", str(task)])
+    line(["worker", "send", str(row["number"]), "--task", str(task)])
     assigned = server.story.container.get(Queries).query(Task).find(task)
     server.story.expect_rows(assignee_of(server.story, assigned) == worker)
 

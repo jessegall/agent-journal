@@ -6,7 +6,6 @@ import os
 import sqlite3
 from server.tick.server_backup import ServerBackup
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.support.story_checks import expect_answers, expect_exists_version_four, expect_lines_2
 from core.modules.settings.support.settings_tree import BACKUP_MINUTES_SETTING
 
 HOUR_SECONDS = 3600
@@ -57,14 +56,12 @@ def test_only_the_newest_copies_stay_the_newest_holds_the_rows_and_version_4s_ar
     age(backup)
     backup.follow()
     names = [copy.name for copy in backup.copies()]
-    expect_answers(names, 3)
-    expect_lines_2(names, "version-5-20260103-000000.db")
-    expect_exists_version_four(kept)
     connection = sqlite3.connect(backup.copies()[0])
-    expect_query_count_greater(connection, "select count(*) from actors", 0)
+    actor_rows = connection.execute("select count(*) from actors").fetchone()[0]
     connection.close()
+    story.expect_rows(len(names) == 3, names[1] == "version-5-20260103-000000.db", kept.exists(), actor_rows > 0, detail=str(names))
     backup.follow()
-    expect_copies_backup(backup, 3)
+    story.expect_rows(len(backup.copies()) == 3, detail=str(backup.copies()))
 def expect_copies_backup(backup, expected) -> None:
     actual = len(backup.copies())
     assert actual == expected, actual
@@ -78,8 +75,3 @@ def expect_copies_backup_2(backup, expected) -> None:
 def expect_iterdir_folder_backup(backup, expected) -> None:
     actual = list(backup.folder().iterdir())
     assert actual == expected, actual
-
-
-def expect_query_count_greater(connection, text, expected) -> None:
-    actual = connection.execute(text).fetchone()[0]
-    assert actual > expected, actual

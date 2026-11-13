@@ -51,10 +51,10 @@ def test_a_line_run_often_teaches_an_alias_and_a_rare_one_does_not(new_story):
 
 def test_reading_all_of_an_output_a_reader_reads_names_the_shorter_read(new_story):
     story = runner_story(new_story)
-    story.run('reader add tally --commands "make*" --lines "passed"')
+    reader_id = story.new_row_id('reader add tally --commands "make*" --lines "passed"')
     process = moved_run(story, "make test")
     end_run(story, process, "3 passed in 1s\n" + "x\n" * 300)
-    story.expect_hook_allowed("s-1", posted(f"journal output read {process.id} --all"), expected_nudge(READER_HINT, reader='tally'))
+    story.expect_hook_allowed("s-1", posted(f"journal output read {process.id} --all"), expected_nudge(READER_HINT, reader=reader_id))
     story.expect_absent_hook_line("s-1", posted(f"journal output read {process.id} --tail 5"), expected_nudge(READER_HINT))
 
 
