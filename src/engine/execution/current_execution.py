@@ -1,4 +1,6 @@
-from collections.abc import Generator
+import contextvars
+import threading
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
@@ -25,6 +27,13 @@ class CurrentExecution:
             yield self
         finally:
             CURRENT_EXECUTION.reset(token)
+
+
+    # a thread a request starts waits with the request's own priority, which a plain thread would lose
+    @staticmethod
+    def thread(target: Callable[..., object], args: tuple[object, ...] = (), name: str | None = None) -> threading.Thread:
+        context = contextvars.copy_context()
+        return threading.Thread(target=context.run, args=(target, *args), name=name, daemon=True)
 
 
 BACKGROUND_EXECUTION = CurrentExecution(ExecutionPriority.BACKGROUND)

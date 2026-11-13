@@ -1,8 +1,5 @@
-<<<<<<< HEAD
-from engine.file.file_access import FileAccess
-=======
 from engine.database.write_turns import WriteTurns
->>>>>>> 79f9b35780 (task 9369: Callers that write outside a transaction, and the server binds the turn)
+from engine.file.file_access import FileAccess
 import sqlite3
 from pathlib import Path
 

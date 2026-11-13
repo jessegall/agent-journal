@@ -200,13 +200,8 @@ def main(argv: list[str]) -> int:
     files.log_line(f"listening on {files.socket}")
     if threading.current_thread() is threading.main_thread():
         signal.signal(signal.SIGTERM, lambda signal_number, frame: server.request_stop())
-<<<<<<< HEAD
         faulthandler.register(signal.SIGUSR1, file=FileAccess.lifetime_writer(home.stacks_file), all_threads=True)
-    for starting_round in (JournalRound(home, "code sync", CodeSyncWork(), opened_container),JournalRound(home, "booting", BootingWork())):
-=======
-        faulthandler.register(signal.SIGUSR1, file=FileAccess.shared().lifetime_writer(home.stacks_file), all_threads=True)
     for starting_round in (JournalRound(home, "code sync", CodeSyncWork(), partial(opened_container, turns=turns)), JournalRound(home, "booting", BootingWork(), round_container)):
->>>>>>> 79f9b35780 (task 9369: Callers that write outside a transaction, and the server binds the turn)
         try:
             starting_round.run()
         except Exception as error:

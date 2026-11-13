@@ -1,3 +1,4 @@
+from engine.enums.execution_priority import ExecutionPriority
 from concurrent.futures import ThreadPoolExecutor
 from threading import Event
 
@@ -124,7 +125,7 @@ def test_a_slow_round_is_listed_in_the_inspector_and_a_cli_line_is_not_queued_be
         running = pool.submit(JournalRound(server.story.home, "plugin listener thread", work, queue=queue).run)
         try:
             server.story.expect_rows(work.entered.wait(ROUND_START_LIMIT_SECONDS))
-            with queue.cli_turn(QueueRequest.started("CLI", "task list")):
+            with queue.cli_turn(QueueRequest.started("CLI", "task list"), ExecutionPriority.AGENT):
                 server.story.expect_rows(work.entered.is_set(), not work.release.is_set())
             server.story.expect_rows(any(row["sender"] == "Background" and row["event"] == "plugin listener thread" for row in inspection(server, cookie)["running"]))
         finally:

@@ -45,7 +45,7 @@ class RequestTrace:
 
     def __init__(self, home: JournalHome, clock: Clock) -> None:
         self.home, self.clock = home, clock
-        self.trace_file = RequestTraceFile(home, FileAccess.shared())
+        self.trace_file = RequestTraceFile(home, FileAccess())
         self.system_log = SystemLogWriter(home, clock)
         self.priorities = WindowPriorities(home)
         self.epoch = str(uuid4())

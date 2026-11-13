@@ -217,7 +217,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         try:
             queued = QueueRequest.started("CLI", " ".join(request.argv), request.caller.variables.get(SESSION_VARIABLE, ""), "cli")
             queue = context.hook_database.queue
-            turn = queue.observing(queued) if context.viewer.routes.priorities.is_unqueued(request.argv) else queue.cli_turn(queued)
+            turn = queue.observing(queued) if context.viewer.routes.priorities.is_unqueued(request.argv) else queue.cli_turn(queued, request.caller.execution_priority)
             with turn:
                 queued_ms = (perf_counter() - started_at) * 1000
                 code = CliEndpoint(context.home, ListenerWake(context.listener_thread), context.reported_findings, queue, context.request_trace.completed, context.hook_database.turns).answer(request, ChunkStream(self.send_chunk, self.has_caller_disconnected))

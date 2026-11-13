@@ -6,6 +6,9 @@ from server.errors.hook_database_busy_error import HookDatabaseBusyError
 from engine.enums.window_priority import WindowPriority
 from server.enums.queue_priority import QueuePriority
 from server.hook.server_queue import ServerQueue
+from server.hook.queue_request import QueueRequest
+from engine.enums.execution_priority import ExecutionPriority
+from engine.execution.current_execution import CurrentExecution
 
 WAIT_SECONDS = 5.0
 
@@ -221,3 +224,22 @@ def test_a_waiting_viewer_request_names_its_priority():
         poll_waiting_viewers(queue, 1)
         assert [entry.priority for entry in queue.read().waiting] == ["normal"]
     thread.join(WAIT_SECONDS)
+
+
+def test_a_hook_writes_with_its_agents_priority():
+    with ServerQueue().hook_turn(QueuePriority.AGENT_HOOK, WAIT_SECONDS):
+        assert CurrentExecution.read().priority is ExecutionPriority.RESERVED
+
+
+def test_a_command_writes_with_its_askers_priority():
+    with ServerQueue().cli_turn(QueueRequest.started("CLI", "task list"), ExecutionPriority.IMMEDIATE):
+        assert CurrentExecution.read().priority is ExecutionPriority.IMMEDIATE
+
+
+def test_a_viewer_request_writes_with_its_windows_priority():
+    with ServerQueue().viewer_turn("/viewer/tasks", priority=WindowPriority.FIRST):
+        assert CurrentExecution.read().priority is WindowPriority.FIRST.execution_priority
+
+
+def test_a_tick_round_outside_any_request_writes_as_background():
+    assert CurrentExecution.read().priority is ExecutionPriority.BACKGROUND

@@ -57,7 +57,7 @@ class ServerQueue(RequestQueue):
                 self.changed.notify_all()
 
     @contextmanager
-    def cli_turn(self, request: QueueRequest) -> Generator[None]:
+    def cli_turn(self, request: QueueRequest, priority: ExecutionPriority) -> Generator[None]:
         number = next(self.arrivals)
         with self.changed:
             self.waiting_cli[number] = request
@@ -68,7 +68,7 @@ class ServerQueue(RequestQueue):
                 del self.waiting_cli[number]
                 self.running_cli += 1
             try:
-                with self.observing(request), CurrentExecution(ExecutionPriority.NORMAL, "command", request.event).applied():
+                with self.observing(request), CurrentExecution(priority, "command", request.event).applied():
                     yield
             finally:
                 with self.changed:
