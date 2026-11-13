@@ -30,7 +30,7 @@ const KEYS = {
 };
 const RULE = JSON.stringify({rule: "number", minimum: 0, integer: true, maximum: null, exclusive: false});
 
-export const node = (key, kind, value, extra = {}) => ({key, kind, component: kind === "flag" ? "toggle" : kind, section: "A section", parent: null, title: `Title of ${key}`, description: "", value, default: value, source: "default", choices: [], rule: "", requires: [], read_only: true, ...extra});
+export const node = (key, nodeType, value, extra = {}) => ({key, node_type: nodeType, component: nodeType === "flag" ? "toggle" : nodeType, section: "A section", parent: null, title: `Title of ${key}`, description: "", value, default: value, source: "default", choices: [], rule: "", requires: [], is_readonly: true, ...extra});
 
 export const SCREENS = () => ({
     work: {screen: "work", revision: "w1", nodes: [node(AUTO, "flag", true), node(SENDS, "flag", true), node(WRITES, "flag", true)]},
