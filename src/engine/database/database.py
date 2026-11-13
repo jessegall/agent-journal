@@ -237,6 +237,7 @@ class Database:
     def insert(self, statement: Statement) -> int:
         self.repeated_work.count_write(statement.sql)
         with self.statement_turn(statement):
+            self.turns.count_statement()
             row_id = statement.result(self.connection).lastrowid
         if row_id is None:
             raise sqlite3.InterfaceError(f"the insert gave no row id: {statement.sql}")
@@ -245,6 +246,7 @@ class Database:
     def update(self, statement: Statement) -> int:
         self.repeated_work.count_write(statement.sql)
         with self.statement_turn(statement):
+            self.turns.count_statement()
             return statement.result(self.connection).rowcount
 
     def close(self) -> None:

@@ -40,8 +40,6 @@ class ProcessSetting(Enum):
                                   rule=NumberRule(1))
     RUN_BATCH_SIZE =SettingValue("run-batch-size", "Runs at once", "How many queued runs go at once on this machine; the others wait for a spot. Reads and edits never wait.",
                                   SettingType.NUMBER, default=2)
-    MAIN_RUNS_USE_SLOTS = SettingValue("main-runs-take-slots", "Main agent runs take spots", "When on, the main agent's runs count against the runs at once, so fewer queued runs start; none is ever stopped.",
-                                        SettingType.FLAG, default=False)
     PROCESSES_KEPT = SettingValue("processes-kept", "Ended commands kept",
                                  "How many ended commands each environment keeps, with at least one. Running commands stay.", SettingType.NUMBER, default=1000)
     REQUEST_RUN_DAYS = SettingValue("request-run-days", "Days requests are kept", "Days each environment stores records of agent program events, journal commands and viewer requests; at least one.",

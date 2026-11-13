@@ -45,13 +45,12 @@ def test_the_finished_list_reads_as_many_as_asked_and_counts_them_all(new_story)
     story.expect_rows(len(queue["recent"]) == 2, queue["recent_total"] == 3)
 
 
-def test_the_inspector_reads_main_agent_spots_and_the_queue_halt_reason(new_story):
+def test_the_inspector_counts_the_main_agents_run_and_reads_the_queue_halt_reason(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
-    story.expect_success(f"setting set {ProcessSetting.MAIN_RUNS_USE_SLOTS.key} on --environment main", actor=story.user)
     main = start_process(story, "make main", category=CommandCategory.BUILD)
     story.expect_success('queue halt "Machine maintenance"', actor=story.user)
     queue = json.loads(story.run("queue inspect --environment 1 --json", actor=story.user).output_text)
-    story.expect_rows(queue["count_main_runs"], queue["used_slots"] == 1,
+    story.expect_rows(queue["used_slots"] == 1,
                       queue["running"][0]["id"] == main.id, queue["running"][0]["uses_slot"],
                       queue["halted"], queue["halt_reason"] == "Machine maintenance")
     story.expect_success("queue resume", actor=story.user)

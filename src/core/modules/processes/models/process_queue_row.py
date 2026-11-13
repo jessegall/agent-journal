@@ -42,6 +42,6 @@ class ProcessQueueRow(EnvironmentScoped, ViewModel):
     def queue_label(self) -> str:
         return f"plugin {self.plugin}" if self.plugin else self.category.value
 
-    def inspector_json(self, count_main_runs: bool) -> dict[str, object]:
-        return {**self.json(), "output_id": self.id, "uses_slot": self.section is QueueSection.RUNNING and
-                (self.slot_assigned or (self.is_main and count_main_runs))}
+    # a running main agent's run always counts against the runs at once, though it never waits for a place
+    def inspector_json(self) -> dict[str, object]:
+        return {**self.json(), "output_id": self.id, "uses_slot": self.section is QueueSection.RUNNING and (self.slot_assigned or self.is_main)}

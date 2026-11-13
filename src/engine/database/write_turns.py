@@ -17,6 +17,7 @@ class WriteTurns(ABC):
         depth = self.depth.count
         if depth == 0:
             self.acquire()
+            self.depth.statements = 0
         self.depth.count = depth + 1
         try:
             yield
@@ -24,6 +25,10 @@ class WriteTurns(ABC):
             self.depth.count = depth
             if depth == 0:
                 self.release()
+
+    def count_statement(self) -> None:
+        if self.depth.count > 0:
+            self.depth.statements += 1
 
     @abstractmethod
     def acquire(self) -> None: ...

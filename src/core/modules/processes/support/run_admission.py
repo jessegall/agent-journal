@@ -6,8 +6,6 @@ from engine.enums.agent_role import AgentRole
 from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.suite_choice import SuiteChoice
-from core.modules.processes.models.enums.process_setting import ProcessSetting
-from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader_request import ReaderRequest
@@ -18,8 +16,8 @@ class RunAdmission:
     """Decides which runs wait for capacity and readers, and which start immediately; a run is never held for its
     count, which it takes while it runs."""
 
-    def __init__(self, queries: Queries, suites: SuiteChoice, settings: ProcessSettings, visibility: RunVisibility) -> None:
-        self.queries, self.suites, self.settings, self.visibility = queries, suites, settings, visibility
+    def __init__(self, queries: Queries, suites: SuiteChoice, visibility: RunVisibility) -> None:
+        self.queries, self.suites, self.visibility = queries, suites, visibility
 
     def needs_slot(self, process: Process, agent: Agent) -> bool:
         if process.plugin:
@@ -29,8 +27,7 @@ class RunAdmission:
     def uses_slot(self, process: Process) -> bool:
         if process.slot_assigned:
             return True
-        return (process.is_queue_run and self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS)
-                and self.queries.query(Agent).find(process.session_agent_id).role == AgentRole.MAIN)
+        return process.is_queue_run and self.queries.query(Agent).find(process.session_agent_id).role == AgentRole.MAIN
 
     def waiting_parts(self, waiting: Sequence[Process]) -> dict[int, tuple[ProcessPart, ...]]:
         return self.visibility.processes_parts(tuple(process.id for process in waiting))

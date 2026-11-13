@@ -54,18 +54,16 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         environment_id = self.queries.database.scope_environment_id
         if environment_id is None:
             raise Refusal(self.environment_refusal)
-        main_spots = self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS)
         query = self.agent_rows(self.queries.query(ProcessQueueRow), arguments.agent)
         active = tuple(query.matching(IsNull("ended_at")).every_row(QUEUE_REASON))
-        running = [row.inspector_json(main_spots) for row in active if row.section is QueueSection.RUNNING]
-        waiting = [row.inspector_json(main_spots) for row in active if row.section is QueueSection.WAITING]
-        recent = [row.inspector_json(main_spots) for row in self.recent_rows(query, max(1, arguments.recent))]
+        running = [row.inspector_json() for row in active if row.section is QueueSection.RUNNING]
+        waiting = [row.inspector_json() for row in active if row.section is QueueSection.WAITING]
+        recent = [row.inspector_json() for row in self.recent_rows(query, max(1, arguments.recent))]
         inspector: QueueInspectorJson = {
             "environment_id": environment_id,
             "environment_name": self.queries.query(Environment).find(environment_id).name,
             "parallel_limit": self.settings.integer(ProcessSetting.RUN_BATCH_SIZE),
             "limit_setting": ProcessSetting.RUN_BATCH_SIZE.key, "suite_limits": self.suite_limits(),
-            "count_main_runs": main_spots, "main_spots_setting": ProcessSetting.MAIN_RUNS_USE_SLOTS.key,
             "used_slots": sum(bool(row["uses_slot"]) for row in running), "waiting_count": len(waiting),
             "halted": self.halt.is_halted, "halt_state": "halted" if self.halt.is_halted else "running", "halt_reason": self.halt.reason, "halt_cause": self.halt.halt_type,
             "running": running, "waiting": waiting, "recent": recent, "recent_total": query.filter(section=QueueSection.RECENT).count()}

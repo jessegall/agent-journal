@@ -97,7 +97,6 @@ def test_the_inactive_line_of_a_worker_with_a_queued_run_says_so(new_story):
     story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main")
     start_process(story, "make first", category=CommandCategory.TEST_RUN)
     start_process(story, "make second", category=CommandCategory.TEST_RUN)
-    story.expect_success(f"setting set {ProcessSetting.MAIN_RUNS_USE_SLOTS.key} on --environment main", actor=main)
     story.agent = worker
     process = start_process(story, "make third", category=CommandCategory.TEST_RUN)
     story.advance(minutes(grace(story)))
