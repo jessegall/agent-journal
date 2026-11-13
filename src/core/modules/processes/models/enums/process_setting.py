@@ -40,6 +40,14 @@ class ProcessSetting(Enum):
                                   rule=NumberRule(1))
     RUN_BATCH_SIZE =SettingValue("run-batch-size", "Runs at once", "How many queued runs go at once on this machine; the others wait for a spot. Reads and edits never wait.",
                                   SettingType.NUMBER, default=2)
+    LANE_CAPACITY_INSTANT = SettingValue("lane-capacity-instant", "Instant lane capacity", "Slot units of hooks, journal commands and viewer requests that run at once.",
+                                         SettingType.NUMBER, default=24, rule=NumberRule(1))
+    LANE_CAPACITY_SHORT = SettingValue("lane-capacity-short", "Short lane capacity", "Slot units of short shell lines, such as reads, searches and edits, that run at once.",
+                                       SettingType.NUMBER, default=12, rule=NumberRule(1))
+    LANE_CAPACITY_LONG = SettingValue("lane-capacity-long", "Long lane capacity", "Slot units of long runs that go at once; a test run costs 4, so 8 runs two tests.",
+                                      SettingType.NUMBER, default=8, rule=NumberRule(1))
+    STARTER_CAP_PERCENT = SettingValue("starter-cap-percent", "Share of a lane one starter may hold", "Percent of a lane's slot units the runs of one agent may hold at once.",
+                                       SettingType.NUMBER, default=50, rule=NumberRule(1))
     PROCESSES_KEPT = SettingValue("processes-kept", "Ended commands kept",
                                  "How many ended commands each environment keeps, with at least one. Running commands stay.", SettingType.NUMBER, default=1000)
     REQUEST_RUN_DAYS = SettingValue("request-run-days", "Days requests are kept", "Days each environment stores records of agent program events, journal commands and viewer requests; at least one.",
