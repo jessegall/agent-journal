@@ -226,9 +226,11 @@ class CommitListenerRunner:
             return failures >= FAILURE_LIMIT_ATTEMPTS
         return True
 
-    # a developer setting, 0 when off: a listener over the limit runs no more events until the server restarts, and its
+    # a developer setting, 0 when off: a listener of the ordinary rounds over the limit runs no more events until the server restarts, and its
     # error reaches the main agent at once; its cursor stays, so the held events run after the restart
     def hold_when_over_time_limit(self, entry: ListenerEntry, event: LoggedEvent, elapsed: float) -> None:
+        if self.has_slow_round(entry):
+            return
         limit_ms = self.container.get(SettingValues).number(LISTENER_TIME_LIMIT_SETTING)
         if limit_ms <= 0 or elapsed * 1000 <= limit_ms:
             return

@@ -326,3 +326,22 @@ def test_with_no_time_limit_a_slow_listener_runs_every_event(tmp_path, monkeypat
     container.get(Bus).run(MakeItem(title="Emma"), AGENT)
     container.get(CommitListenerRunner).run()
     assert HANDLED == ["pause 1", "pause 2"]
+
+
+class SlowRoundPause(NewItemPause):
+    """Pauses every new item in the round of program stops, where a launch may take a minute."""
+
+    name = "items.slow-round-pause"
+    run_order = runner_module.PROGRAM_STOP_RUN_ORDER
+
+
+def test_a_listener_of_a_slow_round_is_never_held_by_the_time_limit(tmp_path, monkeypatch):
+    container = container_with(tmp_path, SlowRoundPause)
+    container.get(SettingSource).values[LISTENER_TIME_LIMIT_SETTING] = 100
+    readings = iter(float(second) for second in range(100))
+    monkeypatch.setattr(runner_module, "perf_counter", lambda: next(readings))
+    container.get(Bus).run(MakeItem(title="Dune"), AGENT)
+    container.get(Bus).run(MakeItem(title="Emma"), AGENT)
+    runner = container.get(CommitListenerRunner)
+    runner.run_program_stops()
+    assert (HANDLED, runner.held_listeners) == (["pause 1", "pause 2"], set())
