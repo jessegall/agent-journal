@@ -32,7 +32,7 @@ class RequestTraceFile:
         with self.files.writer(self.lines.path, "a") as trace:
             trace.write("".join(entry.text() + "\n" for entry in entries))
 
-    def write_rows(self, database: Database, table: HookRequestsTable, size: int) -> None:
+    def import_rows(self, database: Database, table: HookRequestsTable, size: int) -> None:
         entries = tuple(entry for entry in (self.entry(line) for line in self.lines.claimed_lines()) if entry is not None)
         if entries:
             try:

@@ -160,6 +160,8 @@ def test_requests_show_the_sender_and_queue_time(recording_server):
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
     server.viewer_line_value(cookie, {"line": ["task", "list"], "environment": "main", "window": "tasks.tasks"})
     server.expect_cli_exit("task list", "/", 0, "")
+    server.story.run_tick("request trace import")
+    server.story.run_tick("request trace import")
     value = server.viewer_line_value(cookie, {"line": ["developer", "hook-requests"], "environment": "main", "window": "developer.hook-requests"})
     rows = value["rows"]
     server.story.expect_rows([row["sender"] for row in rows[:4]] == ["Command line", "Viewer", f"Worker {worker}", "Main agent"])
