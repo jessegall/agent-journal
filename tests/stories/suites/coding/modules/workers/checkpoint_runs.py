@@ -6,7 +6,7 @@ import pytest
 from engine.database.database import Database
 from engine.database.statement import Statement
 from core.modules.processes.models.enums.process_state import ProcessState
-from suites.coding.modules.workers.support.worker_test_starts import WorkerTestStarts
+from suites.coding.modules.workers.commands.queue_worker_tests.worker_test_starts import WorkerTestStarts
 from suites.coding.modules.workers.support.worker_run_windows import WorkerRunWindows
 from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
 from tests.stories.core.support.agent_labels import agent_number

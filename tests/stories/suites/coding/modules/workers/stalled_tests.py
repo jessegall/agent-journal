@@ -4,7 +4,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from suites.coding.modules.workers.support.worker_test_starts import WorkerTestStarts
+from suites.coding.modules.workers.commands.queue_worker_tests.worker_test_starts import WorkerTestStarts
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
 from suites.coding.modules.workers.ticks.unlaunched_worker_test_runs import UnlaunchedWorkerTestRuns

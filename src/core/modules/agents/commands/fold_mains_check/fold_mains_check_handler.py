@@ -12,6 +12,27 @@ from core.modules.agents.support.fold_counts import FoldCounts
 from core.modules.agents.support.environment_fold import EnvironmentFold
 
 SINGLE_MAIN_TEXT = "Every environment has one main agent row: nothing to fold."
+FOLD_REPORT = """## Survivors
+
+{environments}
+
+## References moved
+
+| Column | Before | After |
+| --- | --- | --- |
+{references}
+
+## Tables that changed
+
+| Table | Before | After |
+| --- | --- | --- |
+{tables}
+
+## Clash rules used
+
+{rules}
+
+The fold took {seconds:.1f} seconds on the copy; the live database was not touched."""
 
 
 class FoldMainsCheckHandler(Handler[FoldMainsCheck, str]):
@@ -46,6 +67,5 @@ class FoldMainsCheckHandler(Handler[FoldMainsCheck, str]):
         tables = [f"| {table} | {count} | {counts.tables_after.get(table)} |" for table, count in sorted(counts.tables_prior.items())
                   if counts.tables_after.get(table) != count]
         rules = [f"- {rule}: {count} rows" for rule, count in sorted(counts.rules.items())] or ["- none"]
-        return "\n".join(["## Survivors", "", *environments, "", "## References moved", "", "| Column | Before | After |", "| --- | --- | --- |",
-                          *references, "", "## Tables that changed", "", "| Table | Before | After |", "| --- | --- | --- |", *tables, "",
-                          "## Clash rules used", "", *rules, "", f"The fold took {seconds:.1f} seconds on the copy; the live database was not touched."])
+        return FOLD_REPORT.format(environments="\n".join(environments), references="\n".join(references), tables="\n".join(tables),
+                                  rules="\n".join(rules), seconds=seconds)

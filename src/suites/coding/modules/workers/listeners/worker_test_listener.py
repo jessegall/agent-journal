@@ -7,7 +7,7 @@ from core.modules.processes.models.process import Process
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
-from suites.coding.modules.workers.support.worker_test_starts import WorkerTestStarts
+from suites.coding.modules.workers.commands.queue_worker_tests.worker_test_starts import WorkerTestStarts
 
 QUEUED_EVENT = "proof.queue"
 

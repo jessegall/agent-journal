@@ -42,8 +42,8 @@ class UnreadableMarks:
                 newest[mark.words] = made_at
         return {command: max((newest[word] for word in leading if word in newest), default=None) for command, leading in covering.items()}
 
-    def declare(self, creator_id: int, terms: str, note: str, context: Context) -> UnreadableMark:
-        return self.mark(creator_id, terms, UnreadableReason.DECLARED, UnreadableMarks.checked_note(note), context)
+    def declare(self, terms: str, note: str, context: Context) -> UnreadableMark:
+        return self.mark(context.actor.id, terms, UnreadableReason.DECLARED, UnreadableMarks.checked_note(note), context)
 
     def mark(self, creator_id: int, terms: str, reason: UnreadableReason, note: str, context: Context) -> UnreadableMark:
         return self.repository.save(UnreadableMark(creator_id=creator_id, words=UnreadableMarks.leading_words(terms), reason=reason, note=note), context)

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from engine.process.door.execution import Execution
 from engine.process.door.execution_request import ExecutionRequest
 
 
@@ -15,3 +16,6 @@ class PlacedRun:
     agent_id: int | None = None
     environment_id: int | None = None
     is_main_agent: bool = False
+
+    def failed(self, exit_code: int, reason: str) -> Execution:
+        return Execution.failed(self.process_id, exit_code, reason)

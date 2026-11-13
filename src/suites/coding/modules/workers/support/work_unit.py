@@ -65,7 +65,7 @@ class WorkUnit:
 
     @property
     def card_name(self) -> str:
-        if self.is_committed and self.has_several_tasks:
+        if self.is_committed_unit:
             return f"Waiting for the merge of {self.merge_name}"
         if self.plan is not None:
             return f"Plan {self.plan.id} · {self.plan.title}"

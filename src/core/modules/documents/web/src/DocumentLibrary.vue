@@ -174,14 +174,16 @@ onUnmounted(() => stopFollowing?.());
                     <button type="button" class="library-more" @click="more">Show more</button>
                 </template>
             </div>
-            <div v-if="reader" class="library-reader" data-library-reader>
-                <template v-if="chosen">
-                    <DocumentBody :key="`${term}:${chosen}`" :term="term" :id="chosen" :read="read" />
-                </template>
-                <template v-else>
-                    <p class="reader-empty-title">Choose a {{ label.toLowerCase() }} to read it here</p>
-                </template>
-            </div>
+            <template v-if="reader">
+                <div class="library-reader" data-library-reader>
+                    <template v-if="chosen">
+                        <DocumentBody :key="`${term}:${chosen}`" :term="term" :id="chosen" :read="read" />
+                    </template>
+                    <template v-else>
+                        <p class="reader-empty-title">Choose a {{ label.toLowerCase() }} to read it here</p>
+                    </template>
+                </div>
+            </template>
         </div>
     </div>
 </template>
