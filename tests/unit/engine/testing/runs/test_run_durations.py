@@ -27,3 +27,19 @@ def test_durations_written_to_a_file_read_back(tmp_path):
 
 def test_reading_a_missing_file_gives_no_durations(tmp_path):
     assert RunDurations.read(tmp_path / "none.json").seconds == {}
+
+
+def test_orders_longest_first():
+    assert RunDurations({"a": 1.0, "b": 5.0, "c": 3.0}).run_order(["a", "b", "c"]) == ["b", "c", "a"]
+
+
+def test_unknown_tests_go_first():
+    assert RunDurations({"a": 1.0, "b": 5.0}).run_order(["a", "b", "new"]) == ["new", "b", "a"]
+
+
+def test_equal_durations_keep_collection_order():
+    assert RunDurations({"a": 2.0, "b": 2.0, "c": 2.0}).run_order(["c", "a", "b"]) == ["c", "a", "b"]
+
+
+def test_missing_file_keeps_collection_order(tmp_path):
+    assert RunDurations.read(tmp_path / "none.json").run_order(["c", "a", "b"]) == ["c", "a", "b"]

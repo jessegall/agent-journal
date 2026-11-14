@@ -8,6 +8,7 @@ import pytest
 
 from engine.listener.commit.listener_set import ListenerSet
 from core.modules.plugins.support.machine_runs import MACHINE_FOLDER_VARIABLE
+from engine.testing.runs.run_durations import RunDurations
 
 pytest_plugins = ["engine.testing.pytest_wiring.pytest_plugin"]
 STORY_SUPPORT_FOLDER = "support"
@@ -58,7 +59,8 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
             item.add_marker(BROWSER_MARK)
     kept = [item for item in items if (item.get_closest_marker(REAL_PROGRAM_MARK) is not None) == wanted and belongs_job(item, config)]
     config.hook.pytest_deselected(items=[item for item in items if item not in kept])
-    items[:] = kept
+    by_id = {item.nodeid: item for item in kept}
+    items[:] = [by_id[test_id] for test_id in RunDurations.read().run_order(list(by_id))]
 
 
 def stories_waiting_for_a_plan() -> dict[str, str]:

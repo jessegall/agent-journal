@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import sys
 from pathlib import Path, PurePosixPath
@@ -31,6 +32,11 @@ class RunDurations:
     def write(self, file: Path = DURATIONS_FILE) -> None:
         if FileAccess.is_dir(file.parent):
             FileAccess.write(file, json.dumps(self.seconds, sort_keys=True))
+
+    # the tests in the order a run takes them: a test with no record first, so a new test fails early, then the
+    # longest first, so no slow file ends the run late; equal seconds keep the order they were collected in
+    def run_order(self, test_ids: list[str]) -> list[str]:
+        return sorted(test_ids, key=lambda test_id: -self.seconds.get(test_id, math.inf))
 
     def slowest_lines(self, count: int = SLOWEST_TESTS) -> list[str]:
         slowest = sorted(self.seconds.items(), key=lambda item: item[1], reverse=True)[:count]
