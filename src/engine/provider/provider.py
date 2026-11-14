@@ -89,6 +89,10 @@ class Provider(ABC):
     def __init__(self, folders: ProgramFolders) -> None:
         self.folders = folders
 
+    def reads_hook_text(self, event: HookEventName) -> bool:
+        """Whether the program reads a hook's text on this event: as lines for the agent, or as plain instructions."""
+        return event in self.line_events or event in self.plain_output_events
+
     def readable_folders(self) -> tuple[Path, ...]:
         return ()
 

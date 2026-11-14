@@ -9,6 +9,7 @@
     "session_start",
     "session_end",
     "compact",
+    "compact_end",
     "message_display"
   ],
   "programs": {
@@ -17,6 +18,7 @@
       "default_hook_seconds": 600,
       "events": {
         "MessageDisplay": "message_display",
+        "PostCompact": "compact_end",
         "PostToolUse": "post_tool_use",
         "PostToolUseFailure": "post_tool_use_failure",
         "PreCompact": "compact",
@@ -38,6 +40,7 @@
       ],
       "matcher_style": "names_or_regex",
       "matchers": {
+        "PostCompact": "trigger",
         "PostToolUse": "tool_name",
         "PostToolUseFailure": "tool_name",
         "PreCompact": "trigger",
@@ -47,7 +50,8 @@
       },
       "plain_output_events": [
         "session_start",
-        "prompt"
+        "prompt",
+        "compact"
       ],
       "refusals": {
         "pre_tool_use": "deny",

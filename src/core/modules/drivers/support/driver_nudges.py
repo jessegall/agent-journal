@@ -12,6 +12,7 @@ from engine.driver.rule_outcome import RULE_FAILED
 REPEATED_STOP = NudgeDeclaration("drivers.repeated_stop", NudgeType.STEERING, "Your stop was refused 5 times in a row: report what is holding it")
 OPENING_LINE = NudgeDeclaration("drivers.opening_line", NudgeType.NOTICE, '{text}', turn_limited=False)
 MANAGED_HOOK_LINE = NudgeDeclaration("drivers.managed_hook_line", NudgeType.NOTICE, "{line}", turn_limited=False)
+COMPACTION_INSTRUCTIONS_LINE = NudgeDeclaration("drivers.compaction_instructions", NudgeType.NOTICE, "{instructions}", turn_limited=False)
 MANAGED_HOOK_REFUSAL = NudgeDeclaration("drivers.managed_hook_refusal", NudgeType.REFUSAL, "Project hooks refused for agent:{agent}", turn_limited=False)
 HOOKS_UNCHECKED = NudgeDeclaration("drivers.hooks_unchecked", NudgeType.STEERING, "{count} of your hooks ran unchecked while the journal was not answering: review what you ran then")
 
@@ -39,4 +40,4 @@ COMPACTION_NOTICE = NudgeDeclaration("drivers.compaction_notice", NudgeType.STEE
 JOURNAL_STARTED = NudgeDeclaration("drivers.journal_started", NudgeType.STEERING, "The journal started: continue your work", turn_limited=False, wakes_agent=True)
 AGENT_NOTICE = NudgeDeclaration("drivers.agent_notice", NudgeType.STEERING, "{text}", turn_limited=False, path_fields=tuple(["text"]), full_text=True)
 FILE_LOADED = NudgeDeclaration("drivers.file-in-context", NudgeType.NOTICE, "{path} is unchanged since you read it: use what is in your context", path_fields=tuple(["path"]))
-DRIVER_NUDGES = [HOOK_TIMEOUTS, PERMISSION_REQUESTED, AGENT_INTERRUPTED, SAFEGUARDS_STOPPED, AGENT_COMPACTED, COMPACTION_NOTICE, CACHE_KEEPALIVE, CONTINUED_SESSION, AGENT_LINE_AVAILABLE, JOURNAL_STARTED, *ACCESS_NUDGES, MANAGED_HOOK_LINE, MANAGED_HOOK_REFUSAL, AGENT_RESUMED, HOOKS_UNCHECKED, REQUIRED_COMMAND_COUNTDOWN.declaration, REQUIRED_COMMAND_REFUSAL, REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL, MISSING_MODEL, UNBOUND_DISPATCH, LONG_OUTPUT, FILE_LOADED, AGENT_NOTICE]
+DRIVER_NUDGES = [HOOK_TIMEOUTS, PERMISSION_REQUESTED, AGENT_INTERRUPTED, SAFEGUARDS_STOPPED, AGENT_COMPACTED, COMPACTION_NOTICE, CACHE_KEEPALIVE, CONTINUED_SESSION, AGENT_LINE_AVAILABLE, JOURNAL_STARTED, *ACCESS_NUDGES, MANAGED_HOOK_LINE, COMPACTION_INSTRUCTIONS_LINE, MANAGED_HOOK_REFUSAL, AGENT_RESUMED, HOOKS_UNCHECKED, REQUIRED_COMMAND_COUNTDOWN.declaration, REQUIRED_COMMAND_REFUSAL, REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL, MISSING_MODEL, UNBOUND_DISPATCH, LONG_OUTPUT, FILE_LOADED, AGENT_NOTICE]

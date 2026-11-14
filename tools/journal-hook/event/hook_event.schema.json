@@ -41,6 +41,7 @@
         "session_start",
         "session_end",
         "compact",
+        "compact_end",
         "message_display"
       ]
     },

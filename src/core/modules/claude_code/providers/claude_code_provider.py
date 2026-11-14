@@ -90,12 +90,12 @@ class ClaudeCodeProvider(Provider):
     executable = "claude"
     hook_events = {"SessionStart": HookEventName.SESSION_START, "UserPromptSubmit": HookEventName.PROMPT,
                    "PreToolUse": HookEventName.PRE_TOOL_USE, "PostToolUse": HookEventName.POST_TOOL_USE,
-                   "PostToolUseFailure": HookEventName.POST_TOOL_USE_FAILURE, "PreCompact": HookEventName.COMPACT,
+                   "PostToolUseFailure": HookEventName.POST_TOOL_USE_FAILURE, "PreCompact": HookEventName.COMPACT, "PostCompact": HookEventName.COMPACT_END,
                    "Stop": HookEventName.STOP, "StopFailure": HookEventName.STOP_FAILURE,
                    
                    "SessionEnd": HookEventName.SESSION_END, "MessageDisplay": HookEventName.MESSAGE_DISPLAY}
     line_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE]
-    plain_output_events = [HookEventName.SESSION_START, HookEventName.PROMPT]
+    plain_output_events = [HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.COMPACT]
     matcher_style = MatcherStyle.NAMES_OR_REGEX
     session_end_limit_seconds = 60
     refusals = {HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.PROMPT: RefusalStyle.BLOCK, HookEventName.STOP: RefusalStyle.BLOCK}
@@ -113,7 +113,7 @@ class ClaudeCodeProvider(Provider):
     safe_tools = ("WebFetch", "WebSearch", "TodoWrite")
     web_reader_agents = tuple(["web-fetch"])
     matchers = {"PreToolUse": "tool_name", "PostToolUse": "tool_name", "PostToolUseFailure": "tool_name",
-                "SessionStart": "source", "SessionEnd": "reason", "PreCompact": "trigger"}
+                "SessionStart": "source", "SessionEnd": "reason", "PreCompact": "trigger", "PostCompact": "trigger"}
     hook_file = HookFile(Path(".claude/settings.local.json"), {})
     hook_files = (Path(".claude/settings.json"), Path(".claude/settings.local.json"))
     session_variable = "CLAUDE_CODE_SESSION_ID"

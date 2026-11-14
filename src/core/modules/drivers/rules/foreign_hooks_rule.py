@@ -17,7 +17,8 @@ from core.modules.drivers.support.driver_nudges import MANAGED_HOOK_LINE, MANAGE
 
 class ForeignHooksRule(DriverRule):
     """Project hooks contribute refusals, replacement input and lines alongside the journal's rules. The agent gets a
-    hook's own words, and gets them again only once they change from what that hook last said to it."""
+    hook's own words, and on an event that takes lines gets them again only once they change from what that hook last
+    said to it; on an event whose text the program reads as instructions, such as a compaction, they go every time."""
 
     name = "drivers.managed-hooks"
     hook = HookWildcard.ALL_HOOKS
@@ -33,11 +34,11 @@ class ForeignHooksRule(DriverRule):
         answers = [ForeignAnswer.read(run) for run in hook.event.foreign]
         refusal = next((answer.reason() for answer in answers if answer.refusal), "")
         rewritten = next((answer for answer in answers if answer.updated_input), None)
-        lines = [line for answer in answers for line in self.new_lines(hook, answer.name, answer.lines)]
-        commands = [RecordAgentNotice(hook.agent_id, line, self.name) for line in lines]
-        nudges = [MANAGED_HOOK_LINE.nudge(line=line) for line in lines] if hook.event.event in provider.line_events else []
-        if hook.event.event not in provider.line_events:
-            commands = []
+        reads_text = provider.reads_hook_text(hook.event.event)
+        takes_instructions = reads_text and hook.event.event not in provider.line_events
+        lines = [line for answer in answers for line in (self.named_lines(answer.name, answer.lines) if takes_instructions else self.new_lines(hook, answer.name, answer.lines))]
+        commands = [RecordAgentNotice(hook.agent_id, line, self.name) for line in lines] if reads_text else []
+        nudges = [MANAGED_HOOK_LINE.nudge(line=line) for line in lines] if reads_text else []
         if refusal:
             commands.append(RecordAgentNotice(hook.agent_id, refusal, self.name))
             nudge = MANAGED_HOOK_REFUSAL.nudge(agent=self.numbers.number(AGENT_MODEL_NAME, hook.agent_id))
@@ -45,8 +46,12 @@ class ForeignHooksRule(DriverRule):
             nudges = [*nudges, nudge]
         return RuleAnswer(refusal=refusal, nudges=nudges, commands=tuple(commands), updated_input=rewritten.updated_input if rewritten is not None else {},
                           source_name=rewritten.name if rewritten is not None else "", refusal_priority=-1,
-                          dropped_lines=len(lines) if hook.event.event not in provider.line_events else 0,
+                          dropped_lines=0 if reads_text else len(lines),
                           terminal="\n".join(answer.terminal for answer in answers if answer.terminal))
+
+    @staticmethod
+    def named_lines(name: str, reported: Sequence[str]) -> list[str]:
+        return [f"{name}: {text}" for text in reported]
 
     def new_lines(self, hook: AgentHook, name: str, reported: Sequence[str]) -> list[str]:
         if not reported:

@@ -129,7 +129,7 @@ class HookCallQuery(Query[HookCall]):
         return compaction is not None and compaction.is_manual_compaction
 
     def is_compacting(self, agent_id: int, checked_at: Timestamp) -> bool:
-        calls = self.agent(agent_id).matching(Among("hook", (*TURN_HOOKS, HookEventName.COMPACT))).newest()
+        calls = self.agent(agent_id).matching(Among("hook", (*TURN_HOOKS, HookEventName.COMPACT, HookEventName.COMPACT_END))).newest()
         call = self.kept.read_newest(calls, calls.first, name="drivers.latest_compaction_turn")
         return call is not None and call.is_compaction and call.creation_timestamp().elapsed_seconds(checked_at) < COMPACTION_LIMIT_SECONDS
 
