@@ -4,15 +4,14 @@ from engine.module.layer_check import LayerCheck
 from engine.module.layer_table import LayerTable
 from engine.module.layer_table_printer import LayerTablePrinter
 from engine.module.module import Module
-from engine.testing.stories.story import Story
 
 
 class LayerProject:
     """A made-up project folder with a src folder and no configuration, which the layer check judges the way it
-    judges the real one; each check is a step of the story."""
+    judges the real one."""
 
-    def __init__(self, story: Story, folder: Path) -> None:
-        self.story, self.folder = story, folder
+    def __init__(self, folder: Path) -> None:
+        self.folder = folder
 
     def add_module_folder(self, dotted_folder: str, name: str) -> None:
         self.add_file(f"src/{dotted_folder.replace('.', '/')}/{name}_module.py")
@@ -33,18 +32,13 @@ class LayerProject:
         return SampleModule
 
     def check(self, *declarations: type[Module]) -> list[str]:
-        failures = LayerCheck(self.folder, LayerTable(), declarations).failures()
-        reasons = "; ".join(failures)
-        self.story.steps.append(f"layer check of {self.folder.name}")
-        self.story.path.append(f"layer check fails: {reasons}" if failures else f"layer check passes for {', '.join(declaration.name for declaration in declarations)}")
-        return failures
+        return LayerCheck(self.folder, LayerTable(), declarations).failures()
 
     @staticmethod
     def layer_of(relative_path: str) -> str:
         layer = LayerTable().file_layer(relative_path)
         return "no layer" if layer is None else layer.label
 
-    def emitted_layers(self) -> list[str]:
-        self.story.steps.append("print the layers")
-        self.story.path.append("print the layers")
+    @staticmethod
+    def emitted_layers() -> list[str]:
         return LayerTablePrinter.lines()

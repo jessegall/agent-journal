@@ -14,6 +14,7 @@ from engine.container.container import Container
 from engine.database.database import Database
 from engine.journal.journal_home import JournalHome
 from engine.module.journal_container import synced_database_container
+from engine.registry.registry import Registry
 from engine.time.clock import Clock
 
 MAIN_ENVIRONMENT = 1
@@ -68,6 +69,17 @@ class IntegrationJournal:
             self.database = Database.opened(self.home)
             self.container = synced_database_container(self.home, self.database)
         return LineAnswer(code, stream.getvalue())
+
+    # a sync with the module is refused with the text, and the registry stays as it was
+    def expect_sync_refusal(self, module: str, text: str) -> None:
+        registry_text = Registry.read(self.database).entries_text()
+        answer = self.synced_with(module)
+        assert answer.code != 0 and text in answer.text, f"module sync with {module} gave {answer.code}: {answer.text}"
+        assert Registry.read(self.database).entries_text() == registry_text, "a refused sync changed the registry"
+
+    def expect_sync_success(self, module: str) -> None:
+        answer = self.synced_with(module)
+        assert answer.code == 0, f"module sync with {module} gave {answer.code}: {answer.text}"
 
     def close(self) -> None:
         self.database.close()
