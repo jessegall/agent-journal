@@ -2114,6 +2114,7 @@
         "ask(self, hook: AgentHook) -> RuleAnswers",
         "closed_gate(self, entry: DriverRuleEntry, board: StateBoard) -> str",
         "complete_checks(self, walk: Walk, hook: AgentHook, calls: list[RuleCall], board: StateBoard | None) -> RuleAnswers",
+        "critical_checks(self, answers: RuleAnswers, hook: AgentHook, board: StateBoard) -> list[StopCheck]",
         "skippable(self, answer: RuleAnswer, entry: DriverRuleEntry, hook: AgentHook) -> RuleAnswer",
         "outcome(self, entry: DriverRuleEntry, hook: AgentHook) -> RuleOutcome",
         "rule_outcome(self, entry: DriverRuleEntry, hook: AgentHook) -> RuleOutcome"
