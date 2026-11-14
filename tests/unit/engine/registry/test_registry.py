@@ -24,6 +24,8 @@ from engine.profile.agent_profile import AgentProfile
 from engine.enums.access import Access
 from engine.registry.profile_entry import ProfileEntry
 from engine.registry.suite_entry import SuiteEntry
+from engine.registry.default_state_entry import DefaultStateEntry
+from engine.enums.agent_kind import AgentKind
 from engine.template.template_declaration import TemplateDeclaration
 from engine.registry.template_entry import TemplateEntry
 from engine.registry.button_entry import ButtonEntry
@@ -282,3 +284,12 @@ def test_a_registry_saved_before_declared_buttons_has_none(database):
     registry = Registry.read(database)
     assert registry.buttons == ()
     assert registry.button_slots == ()
+
+
+def test_a_suites_default_states_survive_registry_storage_and_are_found_by_agent(database):
+    defaults = (DefaultStateEntry("samples.loading", AgentKind.ROLE, "helper"), DefaultStateEntry("samples.review", AgentKind.HELPER_TYPE, "notes.reviewer", "samples.done"))
+    suite = SuiteEntry("notes", "notes", (), False, (), (), {}, {}, default_states=defaults)
+    restored = Registry.parsed("defaults", replace(Registry.read(database), suites=tuple([suite])).entries_text())
+    assert restored.suites[0].default_states == defaults
+    assert restored.default_states("notes", "helper", "notes.helper", "notes.reviewer") == defaults
+    assert restored.default_states("notes", "main", "notes.main", "") == ()
