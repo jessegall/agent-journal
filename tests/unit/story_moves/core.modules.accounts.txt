@@ -1,0 +1,1 @@
+tests/stories/core/modules/accounts/accounts_tables.py::test_every_accounts_model_reads_its_own_table -> repeat tests/integration/core/modules/accounts/test_accounts_tables.py::test_a_new_journal_has_every_accounts_table_with_every_column

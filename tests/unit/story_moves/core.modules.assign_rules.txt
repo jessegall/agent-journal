@@ -1,0 +1,2 @@
+tests/stories/core/modules/assign_rules/foundations.py::test_the_assign_rules_module_creates_its_three_tables -> integration tests/integration/core/modules/assign_rules/test_assign_rule_tables.py::test_the_assign_rules_module_creates_its_three_tables
+tests/stories/core/modules/assign_rules/foundations.py::test_a_task_has_one_decision_which_can_be_updated -> integration tests/integration/core/modules/assign_rules/test_assign_rule_tables.py::test_a_task_has_one_decision_which_can_be_updated

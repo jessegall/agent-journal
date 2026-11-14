@@ -1,6 +1,5 @@
 # story files that still import engine (outside the story kit), server, install or tunnels: plan 1138 empties this list; never add a line
 tests/stories/core/modules/accounts/account_rows.py
-tests/stories/core/modules/accounts/accounts_tables.py
 tests/stories/core/modules/agents/agent_actions.py
 tests/stories/core/modules/agents/agent_bar.py
 tests/stories/core/modules/agents/agent_callers.py
@@ -71,7 +70,6 @@ tests/stories/core/modules/approvals/standing_approvals.py
 tests/stories/core/modules/approvals/support/legacy_setting_requests.py
 tests/stories/core/modules/approvals/user_waits.py
 tests/stories/core/modules/assign_rules/auto_assign.py
-tests/stories/core/modules/assign_rules/foundations.py
 tests/stories/core/modules/assign_rules/matching.py
 tests/stories/core/modules/assign_rules/rule_edits.py
 tests/stories/core/modules/assign_rules/spreading.py
