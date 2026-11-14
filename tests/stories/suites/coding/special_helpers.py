@@ -31,9 +31,6 @@ def read_merger(story):
 
 
 def merger_delivery(story, monkeypatch):
-    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
-    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
-    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     repository = repository_environment(story)
     recording_launch(monkeypatch)

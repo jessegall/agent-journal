@@ -1,7 +1,10 @@
 from engine.file.file_access import FileAccess
 import hashlib
-from dataclasses import dataclass
+from collections.abc import Callable
+from dataclasses import dataclass, field
 from pathlib import Path
+
+from engine.container.container import Container
 
 HOME_VARIABLE = "JOURNAL_HOME"
 JOURNAL_FOLDER = ".journal"
@@ -15,9 +18,11 @@ ENDED_STATUS_FOLDER = "ended"
 
 @dataclass(frozen=True)
 class JournalHome:
-    """The folder where the journal keeps its files, and the paths inside it."""
+    """The folder where the journal keeps its files, and the paths inside it; a journal whose parts are stood in for,
+    as a story's is, names the step that binds them in every container built from it."""
 
     folder: Path
+    container_setup: Callable[[Container], None] | None = field(default=None, compare=False, repr=False)
 
     @property
     def project_folder(self) -> Path:

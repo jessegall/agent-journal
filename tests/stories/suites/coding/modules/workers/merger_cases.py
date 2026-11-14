@@ -18,7 +18,7 @@ from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DISPATCH, FIRST_PROOF, delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 from tests.stories.suites.coding.modules.workers.support.judge_plugin import SINFUL_TEXT, judge_plugin_folder
-from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, merger_can_start, running_launcher
+from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, running_launcher
 from tests.stories.suites.coding.modules.workers.support.phase_steps import start_planned_worker
 from tests.stories.support.story_checks import expect_value, expect_value_with
 from core.modules.helpers.support.helper_nudges import HELPER_GRANTED
@@ -92,7 +92,6 @@ def merger_case(story: Story, repository: GitRepository, dispatch: str = DISPATC
 
 @pytest.fixture
 def case(new_story, monkeypatch):
-    merger_can_start(monkeypatch)
     story = new_story(fixture=OpenTaskOrchestrator)
     return merger_case(story, repository_environment(story))
 
@@ -106,7 +105,6 @@ def own_files(case):
 
 @pytest.fixture
 def linked(new_story, monkeypatch):
-    merger_can_start(monkeypatch)
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     repository.library("node_modules", LIBRARY_FILE, LIBRARY_TEXT)
@@ -115,7 +113,6 @@ def linked(new_story, monkeypatch):
 
 @pytest.fixture
 def copied(new_story, monkeypatch):
-    merger_can_start(monkeypatch)
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     repository.library("vendor", LIBRARY_FILE, LIBRARY_TEXT)
@@ -124,7 +121,6 @@ def copied(new_story, monkeypatch):
 
 @pytest.fixture
 def spent_case(new_story, monkeypatch):
-    merger_can_start(monkeypatch)
     worker = start_planned_worker(new_story, monkeypatch)
     worker.story.expect_success(f"setting set {WORKER_PHASE_TEST_RUNS} 0 --environment main", actor=worker.story.user)
     return MergerCase(worker.story, worker.repository, worker.worker, running_merger(worker.story, worker.worker))
@@ -146,7 +142,6 @@ def test_only_the_merger_runs_merger_scope(case):
 
 @pytest.mark.real_git
 def test_merger_scope_reads_a_real_judge_refusal(new_story, monkeypatch):
-    merger_can_start(monkeypatch)
     story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"plugin install {judge_plugin_folder(story.home.folder.parent)} --yes", actor=story.user)
@@ -238,7 +233,6 @@ def logs_read_at(story: Story, worker: Actor) -> str | None:
 
 
 def test_the_merger_reads_the_logs_of_a_worker_that_delivered_and_they_count_as_read(new_story, monkeypatch):
-    merger_can_start(monkeypatch)
     story = new_story(fixture=OpenTaskOrchestrator)
     worker = delivered_worker(story, repository_environment(story))
     story.expect_success(f'task log 1 "{LOG_LINE}"', actor=worker)

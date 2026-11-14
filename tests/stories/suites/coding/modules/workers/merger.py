@@ -134,9 +134,6 @@ def test_a_retry_that_fails_again_does_not_repeat_the_line_once_the_main_agent_h
 
 @pytest.mark.parametrize("merger_enabled", [True, False])
 def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_story, monkeypatch, merger_enabled):
-    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
-    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
-    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"setting set {MERGER_ENABLED} {str(merger_enabled).lower()} --project", actor=story.user)
@@ -170,9 +167,6 @@ def test_only_the_merger_runs_its_commands(new_story):
 
 
 def test_the_mergers_merge_waits_its_turn_in_the_queue_as_a_worker_operation(new_story, monkeypatch):
-    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
-    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
-    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
@@ -187,9 +181,6 @@ def test_the_mergers_merge_waits_its_turn_in_the_queue_as_a_worker_operation(new
 
 
 def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent_is_nudged_once(new_story, monkeypatch):
-    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
-    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
-    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
@@ -217,9 +208,6 @@ def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent
 
 
 def test_the_merger_and_a_worker_message_each_other_but_two_workers_do_not(new_story, monkeypatch):
-    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
-    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
-    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
@@ -237,9 +225,6 @@ def test_the_merger_and_a_worker_message_each_other_but_two_workers_do_not(new_s
 
 
 def test_a_workers_report_goes_to_the_merger_and_the_merger_tells_the_main_agent_what_it_must_act_on(new_story, monkeypatch):
-    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
-    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
-    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
@@ -282,9 +267,6 @@ def expect_merger_lines(notices, expected):
 @pytest.mark.real_git
 def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkeypatch):
     monkeypatch.setattr(ClaudeCodeProvider, "session_matches_folder", lambda _provider, _folder, _session: True)
-    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
-    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
-    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
@@ -325,9 +307,6 @@ def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkey
 
 
 def test_the_merger_pass_shows_the_reason_on_the_worker_mark(new_story, monkeypatch):
-    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
-    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
-    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
@@ -345,9 +324,6 @@ def test_the_merger_pass_shows_the_reason_on_the_worker_mark(new_story, monkeypa
 
 
 def ended_merger_lines(new_story, monkeypatch, end) -> tuple[object, str]:
-    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
-    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
-    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
@@ -375,9 +351,6 @@ def test_the_merger_whose_session_ends_without_a_report_does_not_notify_the_main
 
 
 def test_a_worker_left_to_the_main_agent_is_not_reported_as_stopped(new_story, monkeypatch):
-    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
-    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
-    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
@@ -394,9 +367,6 @@ def test_a_worker_left_to_the_main_agent_is_not_reported_as_stopped(new_story, m
 
 
 def test_long_merger_lines_wait_until_the_output_is_read_whole(new_story, monkeypatch):
-    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
-    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
-    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
@@ -430,9 +400,6 @@ def test_the_merger_is_told_to_read_a_merge_that_moved_to_the_background_before_
 
 
 def test_a_merge_the_merger_starts_runs_in_the_foreground_and_is_reported_once_and_confirmed_by_next(new_story, monkeypatch):
-    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
-    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
-    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
@@ -455,9 +422,6 @@ def test_a_merge_the_merger_starts_runs_in_the_foreground_and_is_reported_once_a
 
 
 def test_explaining_a_merge_runs_the_merge_inside_the_explanation_without_the_transaction_error(new_story, monkeypatch):
-    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
-    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
-    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
@@ -490,9 +454,6 @@ def test_a_planner_helper_ending_starts_no_merger(new_story):
 
 
 def test_a_worker_the_merger_ended_without_taking_in_is_named_to_the_main_agent_after_the_wait(new_story, monkeypatch):
-    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
-    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
-    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
     repository.checkout(ENVIRONMENT_BRANCH)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
@@ -514,9 +475,6 @@ def test_a_worker_the_merger_ended_without_taking_in_is_named_to_the_main_agent_
 
 
 def test_a_worker_the_merger_passes_on_is_named_to_the_main_agent_with_its_merge_waiting_and_named_again_after_the_wait(new_story, monkeypatch):
-    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
-    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
-    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
     repository.checkout(ENVIRONMENT_BRANCH)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))

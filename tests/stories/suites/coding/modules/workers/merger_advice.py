@@ -20,7 +20,7 @@ from tests.stories.suites.coding.modules.workers.merger_cases import MergerCase,
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, FIRST_PROOF, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, merger_can_start
+from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with
 from tests.stories.suites.coding.modules.workers.support.phase_steps import StoryWorker, start_planned_worker
 from tests.stories.support.story_checks import expect_value, expect_value_without
 from core.modules.agents.support.report_nudges import PARENT_REPORT
@@ -134,14 +134,12 @@ class AdvisedWorker:
 
 @pytest.fixture
 def advising(new_story, monkeypatch):
-    merger_can_start(monkeypatch)
     story = new_story(fixture=OpenTaskOrchestrator)
     return AdvisedWorker(merger_case(story, repository_environment(story)))
 
 
 @pytest.fixture
 def planned(new_story, monkeypatch):
-    merger_can_start(monkeypatch)
     worker: StoryWorker = start_planned_worker(new_story, monkeypatch)
     return worker, AdvisedWorker(MergerCase(worker.story, worker.repository, worker.worker, running_merger(worker.story, worker.worker)))
 

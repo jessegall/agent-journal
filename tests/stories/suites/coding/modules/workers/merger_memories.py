@@ -12,7 +12,6 @@ from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.merger_cases import MERGER_QUESTION, merger_case
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
-from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
 TIMEOUT_TEXT = "Raise the timeout of the cart test"
@@ -24,7 +23,6 @@ SESSION_START = HookSamples.session_start()
 
 @pytest.fixture
 def visiting(new_story, monkeypatch):
-    merger_can_start(monkeypatch)
     story = new_story(fixture=OpenTaskOrchestrator)
     return merger_case(story, repository_environment(story))
 

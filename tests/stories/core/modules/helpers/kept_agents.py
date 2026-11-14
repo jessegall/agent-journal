@@ -56,9 +56,6 @@ def helper_form_server(new_story, monkeypatch):
     story.expect_success(f"setting set {TOUR_COMPLETED} true --project", actor=story.user)
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
-    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
-    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
-    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
         with server_story(story, listener_thread_started=False) as server:

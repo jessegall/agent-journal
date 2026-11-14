@@ -120,6 +120,7 @@ class Story:
 
     @classmethod
     def opened(cls, home: JournalHome, state: StoryState) -> "Story":
+        home = replace(home, container_setup=story_stand_ins(home))
         clock, process_table = ManualClock(), FixedProcessTable([])
         story = cls(home, story_container(home, clock, process_table), clock, process_table, state)
         story.container.get(Database).cuts_raise = True
@@ -571,13 +572,21 @@ def story_container(home: JournalHome, clock: ManualClock, process_table: "Fixed
     container.bind(Clock, clock)
     container.bind(ProcessTable, process_table)
     container.bind(Hosting, Hosting.local())
-    container.bind(ShellSandbox, StoryShellSandbox(home))
-    container.bind(OverviewFirst, StoryOverviewFirst())
-    container.bind(HelperPrograms, StoryHelperPrograms())
-    container.bind(SkillRequirement, StorySkillRequirement())
-    container.bind(MainAgentSkills, StoryMainAgentSkills())
-    container.bind(LoginPath, StoryLoginPath(home))
     database = container.get(Database)
     database.repeated_work = RepeatedWork(database)
-    container.bind(TaskBriefRequirement, StoryTaskBriefRequirement())
     return container
+
+
+# the parts a story stands in for, so it is not about them: the sandbox, the overview and skills an agent must read
+# first, the helper programs installed, the login path and the task brief requirement; a story's home names this step,
+# so every container built from it during the story, a server's among them, gets the same
+def story_stand_ins(home: JournalHome) -> Callable[[Container], None]:
+    def bind(container: Container) -> None:
+        container.bind(ShellSandbox, StoryShellSandbox(home))
+        container.bind(OverviewFirst, StoryOverviewFirst())
+        container.bind(HelperPrograms, StoryHelperPrograms())
+        container.bind(SkillRequirement, StorySkillRequirement())
+        container.bind(MainAgentSkills, StoryMainAgentSkills())
+        container.bind(LoginPath, StoryLoginPath(home))
+        container.bind(TaskBriefRequirement, StoryTaskBriefRequirement())
+    return bind

@@ -14,7 +14,6 @@ from tests.stories.core.modules.helpers.helper_jobs import resumable_session
 from tests.stories.core.modules.helpers.support.rotating_helper import real_program_states
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
 TEST_ROWS_REASON = "the test reads every row it checks"
@@ -28,7 +27,6 @@ TWO_PROGRAM_SAVE = f"profile save {MERGER_PROFILE.name} --program claude --fallb
 
 @pytest.fixture
 def merging(new_story, monkeypatch):
-    merger_can_start(monkeypatch)
     monkeypatch.setattr(MergerWork, "has_waiting_work", lambda work: True)
     story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)

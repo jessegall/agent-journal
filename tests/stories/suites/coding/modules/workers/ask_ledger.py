@@ -16,7 +16,7 @@ from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.merger_cases import MergerCase, case  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
-from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, merger_can_start, running_launcher
+from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, running_launcher
 from suites.coding.modules.workers.ticks.ask_watch import AskWatch
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from tests.stories.suites.coding.modules.workers.worker_ask import asking, asking_with_merger_running, merger_disabled_worker  # noqa: F401
@@ -180,7 +180,6 @@ def test_worker_status_names_the_open_ask_with_its_due_time_and_then_how_it_ende
 
 
 def test_an_ask_made_with_the_merger_off_starts_no_merger_when_the_merger_is_switched_on_later(merger_disabled_worker, monkeypatch):
-    merger_can_start(monkeypatch)
     story = merger_disabled_worker.story
     merger_disabled_worker.post_question()
     story.expect_success(f"setting set {MERGER_ENABLED} true --project", actor=story.user)

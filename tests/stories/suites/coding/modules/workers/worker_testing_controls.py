@@ -90,9 +90,6 @@ class MergedWork:
 
 @pytest.fixture
 def merged_work(new_story, monkeypatch):
-    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
-    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
-    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:

@@ -16,7 +16,7 @@ from tests.stories.suites.coding.modules.workers.merger_cases import merger_case
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.support.story_checks import expect_value_with
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
-from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
+from tests.stories.suites.coding.modules.workers.support.merger_launcher import running_launcher
 from tests.stories.suites.coding.modules.workers.worker_ask import asking_worker
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
@@ -26,7 +26,6 @@ TEST_ROWS_REASON = "the test reads every row it checks"
 @pytest.fixture
 def waiting_worker(new_story, monkeypatch):
     worker = asking_worker(new_story(fixture=OpenTaskOrchestrator))
-    merger_can_start(monkeypatch)
     return worker
 
 
@@ -116,7 +115,6 @@ def test_a_line_the_merger_read_and_did_nothing_about_comes_back(merger_that_rea
 
 @pytest.fixture
 def merger_with_ended_main(new_story, monkeypatch):
-    merger_can_start(monkeypatch)
     story = new_story(fixture=OpenTaskOrchestrator)
     case = merger_case(story, repository_environment(story))
     story.expect_success(f"agent end {story.agent.id}", actor=story.agent)

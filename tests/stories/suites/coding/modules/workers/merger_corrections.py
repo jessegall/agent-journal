@@ -12,7 +12,7 @@ from tests.stories.suites.coding.modules.workers.checkpoint_runs import sole_bra
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.merger_cases import running_merger
 from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON
-from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
+from tests.stories.suites.coding.modules.workers.support.merger_launcher import running_launcher
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting
 from suites.coding.modules.workers.support.worker_settings import PHASE_TEST_DEFERRAL_LIMIT
@@ -49,7 +49,6 @@ class FailedOwnTest:
 def failed_checkpoint(new_story, monkeypatch, output: str, *failing_lines: str) -> FailedOwnTest:
     """Phase Build is a checkpoint whose own test also names stories written ahead for task 4 of phase Ship.
     Its three tasks are merged and its run has ended with the given tests failed; the merger runs."""
-    merger_can_start(monkeypatch)
     sole_branch_runs(monkeypatch)
     worker = dispatched_story_worker(planned_story(new_story, build_test=WORKER_TEST), PHASE_DISPATCH, monkeypatch)
     worker.story.expect_success(MERGER_ON, actor=worker.story.user)

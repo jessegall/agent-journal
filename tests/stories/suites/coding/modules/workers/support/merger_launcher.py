@@ -9,12 +9,6 @@ from core.modules.helpers.testing.story_helper_programs import StoryHelperProgra
 from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 
 
-def merger_can_start(monkeypatch) -> None:
-    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
-    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
-    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
-
-
 @contextmanager
 def running_launcher(story: Story) -> Iterator[None]:
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))

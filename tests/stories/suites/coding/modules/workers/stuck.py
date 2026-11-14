@@ -18,7 +18,7 @@ from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestr
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
+from tests.stories.suites.coding.modules.workers.support.merger_launcher import running_launcher
 from tests.stories.core.support.agent_labels import agent_label
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
@@ -258,7 +258,6 @@ def test_two_environments_of_one_checkout_dispatch_side_by_side_on_branches_of_t
 
 
 def test_a_stuck_worker_reaches_the_merger_and_not_the_main_agent(new_story, monkeypatch):
-    merger_can_start(monkeypatch)
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)

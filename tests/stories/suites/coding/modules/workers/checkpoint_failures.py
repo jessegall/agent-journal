@@ -14,7 +14,7 @@ from tests.stories.suites.coding.modules.workers.checkpoint_runs import committe
 from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
+from tests.stories.suites.coding.modules.workers.support.merger_launcher import running_launcher
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, TEST_LINE, StoryWorker, dispatched_story_worker, file_proof_line, planned_story
 from suites.coding.modules.workers.support.worker_nudges import WORKER_PHASE_TESTS_FAILED
 from engine.testing.expectations.expected_nudge import expected_nudge
@@ -110,7 +110,6 @@ def test_182_a_failed_own_test_goes_to_the_task_whose_proof_names_the_failing_pa
 
 def test_183_a_failure_that_names_no_task_goes_to_the_task_completed_last_and_the_merger_gets_a_line(running_checkpoint, monkeypatch):
     worker, story = running_checkpoint, running_checkpoint.story
-    merger_can_start(monkeypatch)
     story.expect_success(MERGER_ON, actor=story.user)
     produce_output(worker, BUILD_TEST, "FAILED tests/receipts.py::test_print - assert 3 == 4\n")
     with running_launcher(story):

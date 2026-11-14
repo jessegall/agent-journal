@@ -51,4 +51,6 @@ def synced_database_container(home: JournalHome, database: Database) -> Containe
     container.bind(StateBook, registry.state_book())
     container.bind(HelperTypeBook, registry.helper_type_book())
     registry.bind(container)
+    if home.container_setup is not None:
+        home.container_setup(container)
     return container

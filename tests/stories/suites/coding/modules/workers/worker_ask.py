@@ -20,7 +20,7 @@ from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestr
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, FIRST_PROOF, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 from tests.stories.suites.coding.modules.workers.support.judge_plugin import SINFUL_TEXT, judge_plugin_folder
-from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, merger_can_start, running_launcher
+from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, running_launcher
 from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
 from engine.testing.expectations.expected_nudge import expected_nudge
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
@@ -93,7 +93,6 @@ def merger_disabled_worker(new_story):
 
 @pytest.fixture
 def asking_with_merger_running(new_story, monkeypatch):
-    merger_can_start(monkeypatch)
     questioning_worker = asking_worker(new_story(fixture=OpenTaskOrchestrator))
     with running_launcher(questioning_worker.story):
         yield questioning_worker

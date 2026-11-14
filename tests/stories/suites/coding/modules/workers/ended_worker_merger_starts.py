@@ -8,7 +8,7 @@ from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MER
 from tests.stories.suites.coding.modules.workers.merge_asks import committed_list
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON
-from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
+from tests.stories.suites.coding.modules.workers.support.merger_launcher import running_launcher
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 MERGER_OFF = f"setting set {MERGER_ENABLED} false --project"
@@ -35,7 +35,6 @@ def test_an_ended_worker_whose_question_the_main_agent_holds_starts_no_merger_fo
     story.expect_success(MERGER_ON, actor=story.user)
     asks = [request.state.value for request in story.story_rows(MergeAsk)]
     story.expect_rows(asks == ["waiting"], is_with_main_agent(story, worker.worker.id), detail=f"asks {asks}")
-    merger_can_start(monkeypatch)
     with running_launcher(story):
         for _ in range(3):
             MergerRetry()(story.container)
