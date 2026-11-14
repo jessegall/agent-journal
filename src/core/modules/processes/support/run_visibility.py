@@ -26,7 +26,7 @@ class RunVisibility:
 
     @staticmethod
     def select_visible_part(process: Process, parts: tuple[ProcessPart, ...]) -> ProcessPart | None:
-        if process.plugin:
+        if process.plugin or process.is_merge_hook:
             return None
         categorized = next((part for part in parts if part.is_visible), None)
         if categorized is not None:
