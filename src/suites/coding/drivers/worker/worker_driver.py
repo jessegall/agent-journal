@@ -1,4 +1,3 @@
-from suites.coding.modules.workers.types.worker import Worker
 from suites.coding.support.worker_test_rule import WORKER_TEST_RULE
 from engine.driver.driver import Driver
 from suites.coding.support.coding_suite_name import CODING_SUITE_NAME
@@ -14,6 +13,6 @@ class WorkerDriver(Driver):
 
     name = "coding.worker"
     suite_name = CODING_SUITE_NAME
-    role = Worker.key
+    role = "worker"
     rules = [WorkerFullTestRunRule, WorkerGitRule, WorkerTaskStartRule]
     opening_lines = ["You are a worker: you do your tasks in your worktree, prove each point with journal proof make, start another task with journal task start and commit your work with journal worker commit; journal handles git.", WORKER_TEST_RULE, CONTEXT_LINE]

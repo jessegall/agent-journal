@@ -1,4 +1,4 @@
-from core.modules.helpers.types.reviewer_commands import ReviewerCommands
+from core.modules.drivers.support.reviewer_commands import ReviewerCommands
 from uuid import uuid4
 
 from engine.command.bus import Bus
