@@ -15512,7 +15512,7 @@ const gM = /* @__PURE__ */ hM(vM), yM = ["width", "height", "viewBox"], bM = ["w
       ])
     ]));
   }
-}, nI = /* @__PURE__ */ z(AM, [["__scopeId", "data-v-957c8008"]]), EM = {
+}, nI = /* @__PURE__ */ z(AM, [["__scopeId", "data-v-c756787d"]]), EM = {
   class: "reader",
   "data-reader": ""
 }, OM = {
@@ -16572,7 +16572,7 @@ const OC = {
       ])
     ]));
   }
-}, vI = /* @__PURE__ */ z(dA, [["__scopeId", "data-v-b494c444"]]), gI = zu(() => import("./VoiceFigure-CcbIw4iE.js").then((e) => e.V)), yI = "1.2.0", bI = "3.5";
+}, vI = /* @__PURE__ */ z(dA, [["__scopeId", "data-v-b494c444"]]), gI = zu(() => import("./VoiceFigure-BHrvq_4Y.js").then((e) => e.V)), yI = "1.2.0", bI = "3.5";
 export {
   Dm as $,
   Ie as A,

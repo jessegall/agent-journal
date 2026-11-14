@@ -97,7 +97,7 @@ watch(() => props.items.length, () => {
     display: flex;
     flex: 1;
     min-width: 0;
-    min-height: 0;
+    min-height: 160px;
 }
 
 .list-reader-list {
