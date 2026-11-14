@@ -93,7 +93,6 @@ tests/stories/core/modules/drivers/context_compactions.py
 tests/stories/core/modules/drivers/countdowns.py
 tests/stories/core/modules/drivers/deferred_queue.py
 tests/stories/core/modules/drivers/foreign_runs.py
-tests/stories/core/modules/drivers/hook_call_indexes.py
 tests/stories/core/modules/drivers/hook_durations.py
 tests/stories/core/modules/drivers/hook_points.py
 tests/stories/core/modules/drivers/hook_timeouts.py
@@ -115,7 +114,6 @@ tests/stories/core/modules/drivers/repeated_file_reads.py
 tests/stories/core/modules/drivers/required_commands.py
 tests/stories/core/modules/drivers/resumed_start.py
 tests/stories/core/modules/drivers/row_pruning.py
-tests/stories/core/modules/drivers/rule_times.py
 tests/stories/core/modules/drivers/temp_folders.py
 tests/stories/core/modules/helpers/cold_replacement.py
 tests/stories/core/modules/helpers/cold_sessions.py

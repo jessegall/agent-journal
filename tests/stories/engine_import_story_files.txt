@@ -148,7 +148,6 @@ tests/stories/core/modules/drivers/context_compactions.py
 tests/stories/core/modules/drivers/countdowns.py
 tests/stories/core/modules/drivers/deferred_queue.py
 tests/stories/core/modules/drivers/foreign_runs.py
-tests/stories/core/modules/drivers/hook_call_indexes.py
 tests/stories/core/modules/drivers/hook_durations.py
 tests/stories/core/modules/drivers/hook_points.py
 tests/stories/core/modules/drivers/hook_rule_scans.py
@@ -177,7 +176,6 @@ tests/stories/core/modules/drivers/resumed_start.py
 tests/stories/core/modules/drivers/reusable_rules.py
 tests/stories/core/modules/drivers/rewritten_input.py
 tests/stories/core/modules/drivers/row_pruning.py
-tests/stories/core/modules/drivers/rule_times.py
 tests/stories/core/modules/drivers/skip_approval.py
 tests/stories/core/modules/drivers/suite_choice.py
 tests/stories/core/modules/drivers/support/access_rules.py
