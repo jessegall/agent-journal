@@ -724,7 +724,6 @@ tests/stories/server/support/viewer_events.py
 tests/stories/server/tick_warnings.py
 tests/stories/server/viewer/login_link.py
 tests/stories/server/viewer/request_funnel_routes.py
-tests/stories/server/viewer_batch_reads.py
 tests/stories/server/viewer_chat_declarations.py
 tests/stories/server/viewer_events.py
 tests/stories/server/viewer_hook_events.py

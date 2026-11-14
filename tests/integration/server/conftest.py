@@ -48,3 +48,11 @@ def tasks_journal(journal):
 def task_server(tasks_journal):
     with integration_server(tasks_journal) as server:
         yield server
+
+
+# a user, Ada, logged in to the viewer: the server, her cookie and her actor
+@pytest.fixture
+def person_server(journal):
+    user = journal.make_user()
+    with integration_server(journal) as server:
+        yield server, server.expect_viewer_login(server.viewer_key("Ada")), user
