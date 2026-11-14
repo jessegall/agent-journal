@@ -1,4 +1,4 @@
-from engine.module.model_declaration import ModelDeclaration
+from core.modules.assignments.models.declarations.assignment_model_declaration import AssignmentModelDeclaration
 from engine.module.module import Module
 from core.modules.assignments.commands.assign_row.assign_row_handler import AssignRowHandler
 from core.modules.assignments.commands.assign_row.assign_row_subcommand import AssignRowSubcommand
@@ -12,7 +12,6 @@ from core.modules.assignments.listeners.row_deleted_listener import RowDeletedLi
 from core.modules.assignments.migrations.m001_assignments import AssignmentsTableMigration
 from core.modules.assignments.migrations.m002_assignments_actor_subject_index import AssignmentsActorSubjectIndexMigration
 from core.modules.assignments.migrations.m003_assignment_ids_never_reused import AssignmentIdsNeverReusedMigration
-from core.modules.assignments.models.assignment import Assignment
 
 
 class AssignmentsModule(Module):
@@ -23,7 +22,7 @@ class AssignmentsModule(Module):
     move_reason = "version 4 has no assignments table: it kept who works on a task in a column of the task"
     seed_reason = "an assignment shows on the row it is about, which the module of that row seeds"
     dependencies = ["journal.core.actors", "journal.core.agents"]
-    models = [ModelDeclaration(Assignment, excluded_subcommands=["make", "edit"])]
+    models = [AssignmentModelDeclaration]
     migrations = [AssignmentsTableMigration, AssignmentsActorSubjectIndexMigration, AssignmentIdsNeverReusedMigration]
     subcommands = [AssignRowSubcommand, UnassignRowSubcommand]
     handlers = [AssignRowHandler, UnassignRowHandler]

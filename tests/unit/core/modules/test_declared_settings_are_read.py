@@ -81,7 +81,7 @@ def source_index() -> CodeIndex:
 
 def declared_settings() -> dict[str, str]:
     modules = (*DEFAULT_MODULES, *SuiteList(DEFAULT_SUITES).modules(), *DEFAULT_TUNNELS)
-    return {entry.key: entry.key.removeprefix(f"{module.name}.") for module in modules for entry in SettingTree().entries(module.name, module.settings)
+    return {entry.key: entry.key.removeprefix(f"{module.name}.") for module in modules for entry in SettingTree().entries(module.name, module.setting_nodes())
             if entry.type not in (GROUP_TYPE, REFERENCE_TYPE) and "*" not in entry.key}
 
 

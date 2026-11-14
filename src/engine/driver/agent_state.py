@@ -31,3 +31,7 @@ class AgentState:
 
     def opener_key(self) -> str:
         return type(self).__qualname__
+
+    @classmethod
+    def has_flag(cls) -> bool:
+        return cls.exclusive or cls.allows_wakes or cls.delays_lines or cls.delays_notices or cls.pauses_agent

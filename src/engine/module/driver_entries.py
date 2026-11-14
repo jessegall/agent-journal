@@ -13,6 +13,7 @@ from engine.driver.agent_state import AgentState
 from engine.registry.suite_entry import SuiteEntry
 from engine.module.errors.module_error import ModuleError
 from engine.module.suite import Suite
+from engine.module.suite_funnel import SuiteFunnel
 from engine.module.task_assigner import TaskAssigner
 
 DRIVERS_MODULE = "journal.core.drivers"
@@ -23,9 +24,11 @@ class DriverEntries:
     module, each driver's rules, each overlay's rules, then the rules the module adds."""
 
     def suites(self, modules: Sequence[type[Module]], shipped_modules: Sequence[type[Module]], suites: SuiteList) -> tuple[SuiteEntry, ...]:
+        funnel = SuiteFunnel(suites, [state.name for state in self.agent_states(modules)], [driver.name for module in modules for driver in module.drivers],
+                             [helper_type.key for module in modules for helper_type in suites.helper_types(module)])
         return tuple(SuiteEntry(suite.name, module.name, tuple(suite.requires), suite.complete_control, tuple(suite.included_overlays),
-                                      tuple(suite.windows), dict(suite.layouts), {page: tuple(presets) for page, presets in suite.presets.items()},
-                                      self.task_assigner_path(suite), shipped=module in shipped_modules)
+                                      suite.offered_windows(), suite.default_layouts(), suite.offered_presets(),
+                                      self.task_assigner_path(suite), shipped=module in shipped_modules, entrances=suite.entrance_windows(), default_states=funnel.entries(suite))
                      for module in modules for suite in suites.module_suites(module))
 
     @staticmethod
@@ -51,11 +54,24 @@ class DriverEntries:
         declared = [(module.name, state, "") for module in modules for state in module.agent_states]
         declared += [(driver.name, state, "") for module in modules for driver in module.drivers for state in driver.agent_states]
         declared = [entry for owner, state, parent in declared for entry in self.with_substates(owner, state, parent)]
+        self.check_substates(declared)
         entries = tuple(AgentStateEntry(state.name, DottedPath.class_path(state), owner, position, int(state.tier), tuple(state.drivers), parent,
                                         tuple(rule.name for rule in state.rules), tuple(rule.name for rule in state.deferred))
                         for position, (owner, state, parent) in enumerate(declared, 1))
         self.check_states(entries, {rule.name for module in modules for rule in module.driver_rules})
         return entries
+
+    # a substate lives inside one parent only: named by a second parent, or listed as a state of its own too, it is refused
+    @staticmethod
+    def check_substates(declared: Sequence[tuple[str, type[AgentState], str]]) -> None:
+        for _, state, parent in declared:
+            if not parent:
+                continue
+            parents = {other_parent for _, other, other_parent in declared if other is state}
+            if len(parents) > 1 and "" in parents:
+                raise ModuleError(f"the substate {state.name} of {parent} is also listed as an agent state of its own")
+            if len(parents) > 1:
+                raise ModuleError(f"the substate {state.name} is named by two parents: {', '.join(sorted(parents))}")
 
     def with_substates(self, owner: str, state: type[AgentState], parent: str) -> list[tuple[str, type[AgentState], str]]:
         if not getattr(state, "name", ""):

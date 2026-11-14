@@ -26,6 +26,9 @@ from suites.coding.modules.workers.support.worker_test_names import WorkerTestNa
 from core.modules.agents.support.agent_label import AgentLabel
 
 
+TAKE_RULE = "only the main agent takes a task from the worker that holds it"
+
+
 class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
     """`journal worker send <n> ["<job>"] [--task <task> ...]`: a worker that reported takes its next job or
     tasks, with its memory of the last, and the answer says whether it runs, is started again or cannot be
@@ -51,6 +54,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
         parser.add_argument("--task", type=int, nargs="+", default=[], help="tasks the worker takes next")
         parser.add_argument("--plan", type=int, default=None, help="hand the worker a plan in phase order")
         parser.add_argument("--phase", type=int, default=None, help="with --plan, only this phase")
+        parser.add_argument("--take", action="store_true", help="the main agent takes a started task from the worker that holds it and gives it to this worker")
         parser.add_argument("--no-sandbox", action="store_true", help="the worker runs its shell lines outside the sandbox")
         parser.add_argument("--library-link", action="append", default=[], help="a folder of the environment to link into a new worktree")
         parser.add_argument("--library-copy", action="append", default=[], help="a folder of the environment to copy into a new worktree")
@@ -61,16 +65,18 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
             raise Refusal("--phase needs --plan", "add --plan <plan>")
         if arguments.plan is not None and arguments.task:
             raise Refusal("a send takes tasks or a plan, not both", "drop the task numbers or drop --plan")
+        if arguments.take and not self.agents.is_main(caller.actor.id):
+            raise Refusal(TAKE_RULE, "ask the main agent to move the task")
         commands = WorkerTestCommandEntry.parsed(arguments.test_command)
         with self.scopes.opened(caller.read_actor_id, caller.environment_id):
             task_ids = self.plan_tasks.task_ids(arguments.plan, arguments.phase) if arguments.plan is not None else tuple(arguments.task)
             if task_ids:
                 worker = self.agents.find(arguments.worker_id)
                 self.check_test_commands(worker, commands, caller)
-                self.policy.check_tasks(self.tasks.check_tasks(task_ids, caller.actor.id, worker.id),
+                self.policy.check_tasks(self.tasks.check_tasks(task_ids, caller.actor.id, worker.id, arguments.take),
                                         WorkerRouteRequest(worker.program, caller.actor.type, self.flags.skipped_guards(arguments)))
         job = arguments.job or arguments.job_flag
-        command = SendWorker(arguments.worker_id, job, task_ids, tuple(arguments.library_link), tuple(arguments.library_copy), not arguments.no_sandbox, commands, arguments.plan, arguments.phase)
+        command = SendWorker(arguments.worker_id, job, task_ids, tuple(arguments.library_link), tuple(arguments.library_copy), not arguments.no_sandbox, commands, arguments.plan, arguments.phase, arguments.take)
         argv = ["worker", "send", str(arguments.worker_id.number), job]
         if arguments.plan is not None:
             argv.extend(("--plan", str(arguments.plan)))
@@ -78,6 +84,8 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
                 argv.extend(("--phase", str(arguments.phase)))
         elif arguments.task:
             argv.extend(("--task", *(str(task) for task in arguments.task)))
+        if arguments.take:
+            argv.append("--take")
         if arguments.no_sandbox:
             argv.append("--no-sandbox")
         for link in arguments.library_link:

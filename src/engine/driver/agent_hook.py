@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from engine.driver.hook_event import HookEvent
@@ -10,8 +11,8 @@ from engine.time.timestamp import Timestamp
 
 @dataclass(frozen=True)
 class AgentHook:
-    """A hook event with its agent, the agent's driver, the time it was taken, and the layer it is asked for.
-    """
+    """A hook event with its agent, the agent's driver, the time it was taken, the layer it is asked for, and the row the
+    agent's default states stand on with the defaults it carries."""
 
     event: HookEvent
     agent_id: int
@@ -23,10 +24,13 @@ class AgentHook:
     suite: str = ""
     control_return: bool = False
     access: str = ""
+    anchor: OpenRow | None = None
+    defaults: Sequence[str] = ()
 
     @classmethod
     def of_actor(cls, event: HookEvent, actor: LoadedActor, timestamp: Timestamp) -> "AgentHook":
-        return cls(event, actor.agent_id, actor.environment_id, actor.role, actor.driver, timestamp, suite=actor.suite, access=actor.access)
+        return cls(event, actor.agent_id, actor.environment_id, actor.role, actor.driver, timestamp, suite=actor.suite, access=actor.access, anchor=actor.anchor,
+                   defaults=tuple(actor.defaults))
 
     @property
     def hook_name(self) -> str:

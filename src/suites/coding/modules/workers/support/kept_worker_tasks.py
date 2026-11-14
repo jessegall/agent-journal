@@ -50,12 +50,13 @@ class KeptWorkerTasks:
         return self.kept.scoped_current(lambda: self.queries.query(Task).find_many(task_ids),
                                         name=f"workers.sent_tasks:{task_ids}")
 
-    def check_tasks(self, task_ids: tuple[int, ...], sender_id: int | None = None, worker_id: int | None = None) -> list[Task]:
+    def check_tasks(self, task_ids: tuple[int, ...], sender_id: int | None = None, worker_id: int | None = None, takes: bool = False) -> list[Task]:
         self.reservations.check(task_ids)
         read = self.read_tasks(task_ids)
-        self.assigned_worker_tasks.check(read, worker_id)
+        if not takes:
+            self.assigned_worker_tasks.check(read, worker_id)
         self.outside_waits.check(read)
-        return AssignableTasks.checked(read, sender_id)
+        return AssignableTasks.checked(read, sender_id, takes)
 
     def checked_cut(self, worker: Agent, task_ids: tuple[int, ...], read: list[Task] | None = None) -> list[Task]:
         tasks = self.check_tasks(task_ids, worker_id=worker.id) if read is None else AssignableTasks.checked(read)

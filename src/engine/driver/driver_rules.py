@@ -28,6 +28,7 @@ from engine.registry.driver_rule_entry import DriverRuleEntry
 from engine.registry.registry import Registry
 from engine.driver.state_board import StateBoard
 from engine.driver.state_boards import StateBoards
+from engine.enums.state_tier import StateTier
 from engine.scope.scopes import Scopes
 
 
@@ -50,7 +51,9 @@ class DriverRules:
         active = [layer for layer in self.layers.active(hook.agent_id, hook.driver) if suite is None or suite.is_overlay_included(layer.overlay.name)]
         patterned = self.registry.driver_rules(hook.driver, hook.role, hook.hook_name)
         allowed = [entry for entry in patterned if entry.claims_essential and self.allowances.allowed(entry.name)]
-        added = [entry for entry in patterned if entry not in allowed and (suite is None or suite.is_rule_included(entry.owner, entry.drivers, hook.driver))]
+        critical = self.registry.tier_states(hook.driver, int(StateTier.CRITICAL))
+        critical_rules = {rule for state in critical for rule in state.rules}
+        added = [entry for entry in patterned if entry not in allowed and entry.name not in critical_rules and (suite is None or suite.is_rule_included(entry.owner, entry.drivers, hook.driver))]
         walk = Walk([layer.row.ref for layer in active])
         calls: list[RuleCall] = []
         if hook.is_main_stop:
@@ -60,6 +63,14 @@ class DriverRules:
         for entry in [*self.registry.essential_rules(hook.driver, hook.hook_name), *allowed]:
             if self.switches.enabled(entry.name) and walk.record(entry, "", self.outcome(entry, hook)):
                 return self.complete_checks(walk, hook, calls)
+        board = self.boards.for_hook(hook)
+        # a critical state's rules come right after the essential ones, and no exclusive layer silences them
+        for state in critical:
+            if not self.switches.enabled(state.name) or not board.is_open(state):
+                continue
+            for entry in self.registry.state_rules(state.name, hook.hook_name):
+                if self.switches.enabled(entry.name) and walk.record(entry, state.name, self.outcome(entry, hook)):
+                    return self.complete_checks(walk, hook, calls, board)
         for layer in active:
             layer_hook = replace(hook, layer=layer.row)
             for entry in self.registry.overlay_rules(layer.overlay.name, hook.hook_name):
@@ -70,7 +81,6 @@ class DriverRules:
                 elif walk.record(entry, layer.row.ref, self.outcome(entry, layer_hook)):
                     return self.complete_checks(walk, hook, calls)
             walk.leave_layer(layer, layer.overlay.path.checked_class(Overlay))
-        board = self.boards.for_hook(hook)
         for entry in added:
             if not self.switches.enabled(entry.name):
                 continue
@@ -120,7 +130,19 @@ class DriverRules:
                 continue
             checks.extend(StopCheck(entry.name, "allowed", f"no active {overlay.name} layer", False)
                           for entry in self.registry.overlay_rules(overlay.name, hook.hook_name) if entry.hook == HookEventName.STOP)
+        if board is not None:
+            checks.extend(self.critical_checks(answers, hook, board))
         return replace(answers, stop_checks=tuple(checks))
+
+    # the stop rules of each critical state: as recorded when the state was open, allowed when it was not
+    def critical_checks(self, answers: RuleAnswers, hook: AgentHook, board: StateBoard) -> list[StopCheck]:
+        checks: list[StopCheck] = []
+        for state in self.registry.tier_states(hook.driver, int(StateTier.CRITICAL)):
+            if self.switches.enabled(state.name) and board.is_open(state):
+                checks.extend(record.stop_check for record in answers.rules if record.layer == state.name)
+                continue
+            checks.extend(StopCheck(entry.name, "allowed", f"{state.name} is not open", False) for entry in self.registry.state_rules(state.name, hook.hook_name))
+        return checks
 
     def skippable(self, answer: RuleAnswer, entry: DriverRuleEntry, hook: AgentHook) -> RuleAnswer:
         if not answer.refusal or answer.is_safety_refusal:

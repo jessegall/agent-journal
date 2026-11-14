@@ -29,6 +29,7 @@ from engine.provider.provider import Provider
 from engine.skill.skill_declaration import SkillDeclaration
 from engine.upgrade.version_four_move import VersionFourMove
 from engine.viewer.window_declaration import WindowDeclaration
+from engine.viewer.window import Window
 from engine.viewer.window_extension import WindowExtension
 from engine.subcommand.subcommand import Subcommand
 from engine.seed.seeder import Seeder
@@ -36,6 +37,7 @@ from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.library.library_share_class import LibraryShareClass
 from engine.query.rows.shared_rows import SharedRows
 from engine.setting.setting_node import SettingNode
+from engine.setting.setting_list import SettingList
 from engine.ticker.tick_handler import TickHandler
 from engine.tunnel.tunnel import Tunnel
 from engine.driver.block_condition import BlockCondition
@@ -60,7 +62,7 @@ class Module:
     requires_engine: ClassVar[str]
     dependencies: ClassVar[list[str]] = []
     step_conditions: ClassVar[list[type[StepCondition]]] = []
-    models: ClassVar[list[ModelDeclaration]] = []
+    models: ClassVar[list[ModelDeclaration | type[ModelDeclaration]]] = []
     migrations: ClassVar[list[type[Migration]]] = []
     views: ClassVar[list[type[ViewModel]]] = []
     handlers: ClassVar[list[HandlerClass]] = []
@@ -76,29 +78,29 @@ class Module:
     overlays: ClassVar[list[type[Overlay]]] = []
     driver_rules: ClassVar[list[type[DriverRule]]] = []
     agent_states: ClassVar[list[type[AgentState]]] = []
-    windows: ClassVar[list[WindowDeclaration]] = []
-    window_extensions: ClassVar[list[WindowExtension]] = []
+    windows: ClassVar[list[WindowDeclaration | type[Window]]] = []
+    window_extensions: ClassVar[list[WindowExtension | type[WindowExtension]]] = []
     marks: ClassVar[list[MarkDeclaration]] = []
     block_conditions: ClassVar[list[type[BlockCondition]]] = []
     performance_tools: ClassVar[list[type[PerformanceTool]]] = []
     nudges: ClassVar[list[NudgeDeclaration]] = []
     tick_handlers: ClassVar[list[TickHandler]] = []
     ask_topics: ClassVar[list[AskTopic]] = []
-    docks: ClassVar[list[DockDeclaration]] = []
-    templates: ClassVar[list[TemplateDeclaration]] = []
+    docks: ClassVar[list[DockDeclaration | type[DockDeclaration]]] = []
+    templates: ClassVar[list[TemplateDeclaration | type[TemplateDeclaration]]] = []
     buttons: ClassVar[list[ButtonDeclaration]] = []
     button_slots: ClassVar[list[str]] = []
     inspectors: ClassVar[list[InspectorDeclaration]] = []
     added_states: ClassVar[Sequence[StateAddition]] = ()
     helper_types: ClassVar[list[type[HelperType]]] = []
-    agent_groups: ClassVar[list[AgentGroup]] = []
+    agent_groups: ClassVar[list[AgentGroup | type[AgentGroup]]] = []
     profiles: ClassVar[list[AgentProfile]] = []
     providers: ClassVar[list[type[Provider]]] = []
-    settings: ClassVar[Sequence[SettingNode]] = []
+    settings: ClassVar[Sequence[SettingNode | type[SettingList]]] = []
     tunnels: ClassVar[list[type[Tunnel]]] = []
     shared_rows: ClassVar[list[type[SharedRows]]] = []
     library_shares: ClassVar[list[type[LibraryShareClass]]] = []
-    skills: ClassVar[list[SkillDeclaration]] = []
+    skills: ClassVar[list[SkillDeclaration | type[SkillDeclaration]]] = []
     seeders: ClassVar[list[type[Seeder]]] = []
     moves: ClassVar[list[type[VersionFourMove]]] = []
     move_reason: ClassVar[str] = ""
@@ -109,6 +111,46 @@ class Module:
         if "named_plugin_events" in cls.__dict__:
             return cls.declared_plugin_events
         return getattr(cls, "plugin_moments", cls.declared_plugin_events)
+
+    # a window written as a class gives its declaration; an inline declaration is its own
+    @classmethod
+    def window_declarations(cls) -> list[WindowDeclaration]:
+        return [window.declaration() if isinstance(window, type) and issubclass(window, Window) else window for window in cls.windows]
+
+    # an extension written as a class gives its declaration; an inline extension is its own
+    @classmethod
+    def extension_declarations(cls) -> list[WindowExtension]:
+        return [extension.declared() if isinstance(extension, type) else extension for extension in cls.window_extensions]
+
+    # a skill written as a class gives its declaration; an inline declaration is its own
+    @classmethod
+    def skill_declarations(cls) -> list[SkillDeclaration]:
+        return [skill.declared() if isinstance(skill, type) else skill for skill in cls.skills]
+
+    # a group written as a class gives its declaration; an inline group is its own
+    @classmethod
+    def group_declarations(cls) -> list[AgentGroup]:
+        return [group.declared() if isinstance(group, type) else group for group in cls.agent_groups]
+
+    # a template written as a class gives its declaration; an inline declaration is its own
+    @classmethod
+    def template_declarations(cls) -> list[TemplateDeclaration]:
+        return [template.declared() if isinstance(template, type) else template for template in cls.templates]
+
+    # a setting list written as a class gives its values and groups; a value or group listed inline is its own
+    @classmethod
+    def setting_nodes(cls) -> list[SettingNode]:
+        return [node for entry in cls.settings for node in (entry.nodes() if isinstance(entry, type) else [entry])]
+
+    # a dock written as a class gives its declaration; an inline dock is its own
+    @classmethod
+    def dock_declarations(cls) -> list[DockDeclaration]:
+        return [dock.declared() if isinstance(dock, type) else dock for dock in cls.docks]
+
+    # a model declared as a class gives its declaration; a short inline declaration is its own
+    @classmethod
+    def model_declarations(cls) -> list[ModelDeclaration]:
+        return [model.declared() if isinstance(model, type) else model for model in cls.models]
 
     @classmethod
     def declared_buttons(cls) -> list[ButtonDeclaration]:

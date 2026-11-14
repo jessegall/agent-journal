@@ -16,7 +16,7 @@ class JournalLines:
     def classes(self, modules: Sequence[type[Module]]) -> Mapping[str, Set[JournalLineClass]]:
         lines: dict[str, Set[JournalLineClass]] = {line: JournalLineClass.subcommand_classes(subcommand) for line, subcommand in BOOKKEEPING_SUBCOMMANDS.items()}
         for module in modules:
-            for declaration in module.models:
+            for declaration in module.model_declarations():
                 lifecycle = declaration.model.lifecycle
                 subcommand_names = (*ALL_SUBCOMMANDS, *(move.name for move in lifecycle.moves())) if lifecycle is not None else ALL_SUBCOMMANDS
                 lines.update({f"{declaration.model.cli_name} {subcommand_name}": frozenset([JournalLineClass.READS if subcommand_name in READ_MODEL_SUBCOMMANDS else JournalLineClass.CHANGES])

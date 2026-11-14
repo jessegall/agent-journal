@@ -63,7 +63,7 @@ class ModuleCheck:
     @staticmethod
     def module_events(module: type[Module], book: StateBook) -> dict[str, tuple[EventForm, ...]]:
         events = dict.fromkeys(module.file_events, COMMIT_FORM)
-        for declaration in module.models:
+        for declaration in module.model_declarations():
             model = declaration.model
             lifecycle = book.lifecycle(model)
             moves = tuple(move.name for move in lifecycle.moves()) if lifecycle else ()
@@ -91,7 +91,7 @@ class ModuleCheck:
         return self.buttons.declared_warnings(modules, frozenset(module.name for module in self.finder.default_modules()))
 
     def models(self, modules: Sequence[type[Module]]) -> tuple[type[Model], ...]:
-        return tuple(declaration.model for module in modules for declaration in module.models)
+        return tuple(declaration.model for module in modules for declaration in module.model_declarations())
 
     def duplicate_names(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]:
         models = self.models(modules)

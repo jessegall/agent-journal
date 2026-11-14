@@ -1,24 +1,17 @@
+from core.modules.settings.windows.settings_windows import SETTINGS_WINDOWS
+from core.modules.settings.models.declarations.setting_model_declaration import SettingModelDeclaration
+from core.modules.settings.models.declarations.secret_setting_model_declaration import SecretSettingModelDeclaration
 from core.modules.settings.migrations.m003_helper_driver_key import HelperDriverKeyMigration
-from engine.viewer.window_read_search import WindowReadSearch
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.viewer.window_key import WindowKey
-from engine.enums.key_loading import KeyLoading
-from engine.enums.window_place import WindowPlace
 from engine.guard.guard_switches import GuardSwitches
 from core.modules.settings.migrations.m001_settings import SettingsTableMigration
 from core.modules.settings.bindings.reader_setting_source import ReaderSettingSource
 from core.modules.settings.bindings.setting_guard_switches import SettingGuardSwitches
 from engine.setting.setting_source import SettingSource
 from engine.module.module import Module
-from engine.module.model_declaration import ModelDeclaration
 from engine.module.sync_notes import SyncNotes
-from core.modules.settings.models.setting import Setting
 from core.modules.settings.guards.person_set_setting_guard import PersonSetSettingGuard
 from core.modules.settings.listeners.setting_rows_listener import SettingRowsListener
 from core.modules.settings.support.undeclared_setting_notes import UndeclaredSettingNotes
-from core.modules.settings.models.secret_setting import SecretSetting
 from core.modules.settings.migrations.m002_secret_settings import SecretSettingsTableMigration
 from core.modules.settings.commands.set_setting.set_setting_handler import SetSettingHandler
 from core.modules.settings.commands.set_setting.set_setting_subcommand import SetSettingSubcommand
@@ -41,7 +34,6 @@ from core.modules.settings.commands.setting_show.setting_show_subcommand import 
 from core.modules.settings.commands.setting_tree.setting_tree_subcommand import SettingTreeSubcommand
 from core.modules.settings.support.settings_tree import SETTINGS_SETTINGS
 from core.modules.settings.upgrade.settings_move import SettingsMove
-from core.modules.settings.support.skeletons import PROJECT_HOOKS_SKELETON, SETTINGS_SETTINGS_SKELETON
 
 
 class SettingsModule(Module):
@@ -54,13 +46,10 @@ class SettingsModule(Module):
     file_events = ["managed-hook.changed", "managed-hook.scanned", "managed-hook.restored"]
     settings = SETTINGS_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments"]
-    models = [ModelDeclaration(Setting, excluded_subcommands=["show"]), ModelDeclaration(SecretSetting, excluded_subcommands=["make", "list", "show"])]
+    models = [SettingModelDeclaration, SecretSettingModelDeclaration]
     migrations = [HelperDriverKeyMigration, SettingsTableMigration, SecretSettingsTableMigration]
     handlers = [SetSettingHandler, ApplySettingScreenHandler, SwitchSettingGroupHandler, SetManagedHookHandler, RemoveManagedHooksHandler, ScanManagedHooksHandler, RestoreManagedHooksHandler]
-    windows = [WindowDeclaration("settings.settings", "Settings", "settings.js", WindowLoading.COMPONENT, skeleton=SETTINGS_SETTINGS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU, search=WindowReadSearch("setting tree", "Find a setting", ("title", "description", "key")),
-                                 reads=["setting tree", "environment list", "environment cards", "alias saved"], keys=[WindowKey("settings", "setting tree", tab="settings", events=["setting.*"]), WindowKey("environments", "environment cards", tab="environments", events=["environment.*"]), WindowKey("commands", "alias saved --limit 1000", events=["alias.*"], loading=KeyLoading.REQUESTED)], runs=["setting set", "setting switch", "environment delete"], events=["setting.*", "environment.*", "alias.*"]),
-               WindowDeclaration("settings.project-hooks", "Hooks", "project_hooks.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU, skeleton=PROJECT_HOOKS_SKELETON,
-                                 reads=["managed-hook list", "hook-call feed"], keys=[WindowKey("hooks", "managed-hook list", events=["managed-hook.*"])], runs=["managed-hook set", "managed-hook scan", "managed-hook give-back"], events=["managed-hook.*", "hook_call.*"])]
+    windows = SETTINGS_WINDOWS
     subcommands = [SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingScreenShowSubcommand, SettingScreenIndexSubcommand, ApplySettingScreenSubcommand, SettingTreeSubcommand, ListManagedHooksSubcommand, SetManagedHookSubcommand, RemoveManagedHooksSubcommand, ScanManagedHooksSubcommand, RestoreManagedHooksSubcommand]
     bindings = {GuardSwitches: SettingGuardSwitches, SyncNotes: UndeclaredSettingNotes, SettingSource: ReaderSettingSource}
     guards = [PersonSetSettingGuard]

@@ -44,3 +44,33 @@ def test_old_scan_states_and_ended_agents_old_terminal_logs_go_while_the_rest_st
     assert removed == 2
     assert sorted(path.name for path in scans.iterdir()) == ["fresh"]
     assert sorted(path.name for path in terminals.iterdir()) == [f"{RUNNING_AGENT_ID}.log"]
+
+
+def launch_socket(folder, name: str, answering: bool):
+    import socket
+
+    path = folder / name
+    listener = socket.socket(socket.AF_UNIX)
+    listener.bind(str(path))
+    listener.listen(1)
+    if not answering:
+        listener.close()
+    return path, listener
+
+
+def test_an_old_launch_socket_nobody_answers_on_goes_while_a_live_one_and_a_young_one_stay():
+    import tempfile
+    from pathlib import Path
+
+    with tempfile.TemporaryDirectory(dir="/tmp") as short:
+        home, clock = JournalHome(Path(short) / "j"), Clock()
+        home.folder.mkdir()
+        dead, _ = launch_socket(home.folder, "l-dead", False)
+        young, _ = launch_socket(home.folder, "l-young", False)
+        alive, listener = launch_socket(home.folder, "l-alive", True)
+        for path in (dead, alive):
+            aged(path, clock, 2 * 3600)
+        removed = PruneRuntimeFoldersHandler(AgentRows(set()), home, clock).handle(PruneRuntimeFolders(), None)
+        listener.close()
+        assert removed == 1
+        assert sorted(path.name for path in home.folder.iterdir()) == ["l-alive", "l-young"]

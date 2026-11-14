@@ -68,8 +68,7 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
             return status
         return replace(status, context=ContextWindow(usage.percent, usage.used_tokens, status.context.read_at, usage.window_tokens), context_limit_tokens=usage.limit_tokens)
 
-    @staticmethod
-    def ended_helpers(agents: Query[Agent], opened: tuple[Agent, ...]) -> tuple[Agent, ...]:
+    def ended_helpers(self, agents: Query[Agent], opened: tuple[Agent, ...]) -> tuple[Agent, ...]:
         helpers = agents.matching(Among("role", self.types.read_access_keys())).matching(Greater("ended_at", "")).matching(Among("parent_id", tuple(agent.id for agent in opened))).matching(Excluding(Among("id", tuple(agent.id for agent in opened))))
         return tuple(helpers.newest().take(ENDED_HELPERS_COUNTED)[::-1])
 

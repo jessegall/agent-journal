@@ -1,9 +1,11 @@
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, ClassVar
 
+from engine.viewer.entrance import Entrance
 from engine.viewer.layout_preset import LayoutPreset
 from engine.viewer.layout_shape import LayoutShape
 from engine.helper_type.helper_type import HelperType
+from engine.module.default_state import DefaultState
 from engine.module.task_assigner import TaskAssigner
 
 if TYPE_CHECKING:
@@ -13,9 +15,9 @@ if TYPE_CHECKING:
 class Suite:
     """The base of every suite: a swappable set of drivers above the core, each driving the helper type it
     names, with the modules it lists (its own module first), the suites it requires, whether it takes complete
-    control, the other modules' overlays it then includes, the viewer windows its environments show, the
-    default layout of each viewer page, per driver where one is named, the layouts it offers per page in the
-    picker, and the kinds of helper it registers. A suite that joins another is no suite to pick: a plugin
+    control, the other modules' overlays it then includes, its entrances (each the viewer windows its
+    environments show, the default layout of each viewer page, per driver where one is named, and the layouts it
+    offers per page in the picker), the kinds of helper it registers and the states it gives agents by default. A suite that joins another is no suite to pick: a plugin
     ships one to add its modules to that suite, whose environments alone run them, so no module names a suite
     itself."""
 
@@ -25,8 +27,25 @@ class Suite:
     requires: ClassVar[Sequence[str]] = []
     complete_control: ClassVar[bool] = False
     included_overlays: ClassVar[Sequence[str]] = []
-    windows: ClassVar[Sequence[str]] = []
-    layouts: ClassVar[Mapping[str, LayoutShape]] = {}
-    presets: ClassVar[Mapping[str, Sequence[LayoutPreset]]] = {}
+    entrances: ClassVar[Sequence[type[Entrance]]] = []
     task_assigner: ClassVar[type[TaskAssigner] | None] = None
     helper_types: ClassVar[Sequence[type[HelperType]]] = []
+    default_states: ClassVar[Sequence[DefaultState]] = []
+
+    @classmethod
+    def offered_windows(cls) -> tuple[str, ...]:
+        return tuple(dict.fromkeys(window for entrance in cls.entrances for window in entrance.window_names()))
+
+    # an earlier entrance's layout of a page comes first
+    @classmethod
+    def default_layouts(cls) -> dict[str, LayoutShape]:
+        return {page: layout.shape for entrance in reversed(cls.entrances) for page, layout in entrance.layouts.items()}
+
+    @classmethod
+    def offered_presets(cls) -> dict[str, tuple[LayoutPreset, ...]]:
+        pages = dict.fromkeys(page for entrance in cls.entrances for page in entrance.presets)
+        return {page: tuple(preset for entrance in cls.entrances if page in entrance.presets for preset in entrance.presets[page].layout_presets()) for page in pages}
+
+    @classmethod
+    def entrance_windows(cls) -> dict[str, tuple[str, ...]]:
+        return {entrance.key: entrance.window_names() for entrance in cls.entrances}

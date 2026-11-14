@@ -51,8 +51,26 @@ class StateBoard:
         return rows
 
     def stack(self, driver: str) -> list[Layer]:
-        layers = [Layer(entry, row) for entry in self.registry.tier_states(driver, int(StateTier.STACK)) for row in self.open_rows(entry)]
-        return sorted(layers, key=lambda layer: (layer.row.opened_at, layer.overlay.position, layer.row.row_id), reverse=True)
+        entries = [entry for entry in self.registry.tier_states(driver, int(StateTier.STACK)) if self.is_asked_on_this_hook(entry)]
+        layers = [Layer(entry, row) for entry in entries if self.is_open(entry) for row in self.open_rows(entry)]
+        ordered = sorted(layers, key=lambda layer: (layer.row.opened_at, layer.overlay.position, layer.row.row_id), reverse=True)
+        return self.substates_above_parents(ordered)
+
+    # a substate's layer sits directly above its parent's, whatever their times; the other layers keep their order
+    @staticmethod
+    def substates_above_parents(layers: list[Layer]) -> list[Layer]:
+        placed = [layer for layer in layers if not layer.overlay.parent]
+        for substate in [layer for layer in layers if layer.overlay.parent]:
+            parent_index = next((index for index, layer in enumerate(placed) if layer.overlay.name == substate.overlay.parent), len(placed))
+            placed.insert(parent_index, substate)
+        return placed
+
+    # a flag reaches the rules beneath the state on any hook, so a flagged state is opened on every one; a state with
+    # every flag off is opened only on a hook its own rules hear, and counts as closed on the others
+    def is_asked_on_this_hook(self, entry: AgentStateEntry) -> bool:
+        if entry.path.checked_class(AgentState).has_flag():
+            return True
+        return bool(self.registry.state_rules(entry.name, self.hook.hook_name))
 
     # the role check rules use (Registry.driver_rules): the facts of the hook agent's helper type
     def applies_to_role(self, state: AgentState) -> bool:

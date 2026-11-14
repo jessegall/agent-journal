@@ -19,13 +19,13 @@ def helper_groups(story) -> dict[str, str]:
 def test_s49_the_coding_suite_shows_each_special_helper_profile_in_its_own_group(new_story):
     story = new_story(fixture=UserBuilder)
     groups = helper_groups(story)
-    expect_value((groups[f"{MERGER_PROFILE.name}"], groups[f"{DESIGNER_PROFILE.name}"], groups[f"{RESEARCHER_PROFILE.name}"]), ("merger", "designer", "helpers"))
+    expect_value((groups[f"{DESIGNER_PROFILE.name}"], groups[f"{RESEARCHER_PROFILE.name}"]), ("designer", "helpers"))
+    story.expect_agent_group("merger", f"{MERGER_PROFILE.name}", "merger")
 
 
 def test_s49_every_profile_is_in_exactly_one_group(new_story):
     story = new_story(fixture=UserBuilder)
     story.expect_agent_group("worker", f"{WORKER_PROFILE.name}", "workers")
-    story.expect_agent_group("helper", f"{MERGER_PROFILE.name}", "merger")
     story.expect_agent_group("merger", f"{MERGER_PROFILE.name}", "merger")
     story.expect_agent_group("helper", "anything", "helpers")
 

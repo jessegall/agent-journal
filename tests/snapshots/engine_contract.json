@@ -1911,7 +1911,9 @@
         "layer: OpenRow | None",
         "suite: str",
         "control_return: bool",
-        "access: str"
+        "access: str",
+        "anchor: OpenRow | None",
+        "defaults: Sequence[str]"
       ],
       "methods": [
         "of_actor(cls, event: HookEvent, actor: LoadedActor, timestamp: Timestamp) -> 'AgentHook'",
@@ -1939,7 +1941,8 @@
       ],
       "methods": [
         "open_rows(self, hook: AgentHook) -> Sequence[OpenRow]",
-        "opener_key(self) -> str"
+        "opener_key(self) -> str",
+        "has_flag(cls) -> bool"
       ]
     },
     "driver.block_check.BlockCheck": {
@@ -2114,6 +2117,7 @@
         "ask(self, hook: AgentHook) -> RuleAnswers",
         "closed_gate(self, entry: DriverRuleEntry, board: StateBoard) -> str",
         "complete_checks(self, walk: Walk, hook: AgentHook, calls: list[RuleCall], board: StateBoard | None) -> RuleAnswers",
+        "critical_checks(self, answers: RuleAnswers, hook: AgentHook, board: StateBoard) -> list[StopCheck]",
         "skippable(self, answer: RuleAnswer, entry: DriverRuleEntry, hook: AgentHook) -> RuleAnswer",
         "outcome(self, entry: DriverRuleEntry, hook: AgentHook) -> RuleOutcome",
         "rule_outcome(self, entry: DriverRuleEntry, hook: AgentHook) -> RuleOutcome"
@@ -2737,6 +2741,8 @@
         "is_open(self, entry: AgentStateEntry) -> bool",
         "open_rows(self, entry: AgentStateEntry) -> Sequence[OpenRow]",
         "stack(self, driver: str) -> list[Layer]",
+        "substates_above_parents(layers: list[Layer]) -> list[Layer]",
+        "is_asked_on_this_hook(self, entry: AgentStateEntry) -> bool",
         "applies_to_role(self, state: AgentState) -> bool",
         "timed_rows(self, entry: AgentStateEntry, state: AgentState, key: str) -> Sequence[OpenRow]",
         "outcome(rows: Sequence[OpenRow]) -> str",
@@ -2760,6 +2766,15 @@
         "milliseconds: int"
       ],
       "methods": []
+    },
+    "driver.states.agent_row_state.AgentRowState": {
+      "bases": [
+        "AgentState"
+      ],
+      "fields": [],
+      "methods": [
+        "open_rows(self, hook: AgentHook) -> Sequence[OpenRow]"
+      ]
     },
     "driver.states.block_state.BlockState": {
       "bases": [
@@ -2918,6 +2933,13 @@
       "methods": [
         "can_receive_work(self) -> bool"
       ]
+    },
+    "enums.agent_kind.AgentKind": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
     },
     "enums.agent_role.AgentRole": {
       "bases": [
@@ -5184,7 +5206,8 @@
       "fields": [
         "name: str",
         "sources: Sequence[StateValue]",
-        "target: StateValue"
+        "target: StateValue",
+        "has_command: bool"
       ],
       "methods": []
     },
@@ -5382,6 +5405,16 @@
         "files_text(self, files: Sequence[Path]) -> str"
       ]
     },
+    "module.default_state.DefaultState": {
+      "bases": [],
+      "fields": [
+        "state: type[AgentState]",
+        "kind: AgentKind",
+        "value: str",
+        "removed_while: str"
+      ],
+      "methods": []
+    },
     "module.dock_check.DockCheck": {
       "bases": [],
       "fields": [],
@@ -5398,6 +5431,7 @@
         "drivers(self, modules: Sequence[type[Module]]) -> tuple[DriverEntry, ...]",
         "overlays(self, modules: Sequence[type[Module]]) -> tuple[OverlayEntry, ...]",
         "agent_states(self, modules: Sequence[type[Module]]) -> tuple[AgentStateEntry, ...]",
+        "check_substates(declared: Sequence[tuple[str, type[AgentState], str]]) -> None",
         "with_substates(self, owner: str, state: type[AgentState], parent: str) -> list[tuple[str, type[AgentState], str]]",
         "state_tree(self, states: Sequence[type[AgentState]]) -> list[type[AgentState]]",
         "check_states(entries: Sequence[AgentStateEntry], module_rules: set[str]) -> None",
@@ -5827,7 +5861,8 @@
         "layouts: ClassVar[Mapping[str, LayoutShape]]",
         "presets: ClassVar[Mapping[str, Sequence[LayoutPreset]]]",
         "task_assigner: ClassVar[type[TaskAssigner] | None]",
-        "helper_types: ClassVar[Sequence[type[HelperType]]]"
+        "helper_types: ClassVar[Sequence[type[HelperType]]]",
+        "default_states: ClassVar[Sequence[DefaultState]]"
       ],
       "methods": []
     },
@@ -5847,6 +5882,14 @@
         "preset_problems(self, modules: Sequence[type[Module]], suites: SuiteList) -> tuple[str, ...]",
         "rule_owners(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]",
         "unknown_hooks(self, rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]"
+      ]
+    },
+    "module.suite_funnel.SuiteFunnel": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "entries(self, suite: type[Suite]) -> tuple[DefaultStateEntry, ...]",
+        "entry(self, suite: type[Suite], default: DefaultState) -> DefaultStateEntry"
       ]
     },
     "module.suite_import_check.SuiteImportCheck": {
@@ -7811,6 +7854,18 @@
         "fits(self, part: str, word: str) -> bool"
       ]
     },
+    "registry.default_state_entry.DefaultStateEntry": {
+      "bases": [],
+      "fields": [
+        "state: str",
+        "kind: AgentKind",
+        "value: str",
+        "removed_while: str"
+      ],
+      "methods": [
+        "matches(self, role: str, driver: str, helper_type: str) -> bool"
+      ]
+    },
     "registry.dock_entry.DockEntry": {
       "bases": [],
       "fields": [
@@ -8184,6 +8239,7 @@
         "gates(self) -> dict[str, AgentStateEntry]",
         "rule_gate(self, rule_name: str) -> AgentStateEntry | None",
         "tier_states(self, driver: str, tier: int) -> list[AgentStateEntry]",
+        "default_states(self, suite_name: str, role: str, driver: str, helper_type: str) -> tuple[DefaultStateEntry, ...]",
         "agent_state(self, name: str) -> AgentStateEntry | None",
         "state_rules(self, state_name: str, hook_name: str) -> list[DriverRuleEntry]",
         "driver_overlays(self, driver: str) -> list[OverlayEntry]",
@@ -8334,7 +8390,8 @@
         "layouts: Mapping[str, LayoutShape]",
         "presets: Mapping[str, Sequence[LayoutPreset]]",
         "task_assigner: str",
-        "shipped: bool"
+        "shipped: bool",
+        "default_states: Sequence[DefaultStateEntry]"
       ],
       "methods": [
         "is_overlay_included(self, overlay: str) -> bool",

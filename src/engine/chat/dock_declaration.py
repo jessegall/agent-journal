@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from engine.chat.mark_button import MarkButton
+from engine.types.class_fields import class_fields
 
 
 @dataclass(frozen=True)
@@ -25,3 +26,8 @@ class DockDeclaration:
     word: str = ""
     draws_head: bool = False
     reads_target: bool = True
+
+    # a dock written as a class in its own file sets the fields as class attributes
+    @classmethod
+    def declared(cls) -> "DockDeclaration":
+        return DockDeclaration(**class_fields(cls, DockDeclaration))

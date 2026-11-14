@@ -22,9 +22,3 @@ GRAPHIFY_SETTINGS = SettingGroup("graphify", "Graphify", "The settings of Graphi
                  SettingType.NUMBER, default=10, scope=SettingScope.PROJECT, rule=NumberRule(1), required_settings=[GRAPHIFY_GROUP]),
     SettingValue("cluster-minutes", "Minutes between groupings", "The code is grouped into communities, the slow part of a refresh, at most once in this many minutes.",
                  SettingType.NUMBER, default=120, scope=SettingScope.PROJECT, rule=NumberRule(1), required_settings=[GRAPHIFY_GROUP])])
-GRAPHIFY_SETTING_VALUES = [
-    SettingValue("graphify-command", "Graphify command", "The command that runs Graphify, with any arguments it needs first.",
-                 SettingType.TEXT, default="graphify", scope=SettingScope.PROJECT, person_set=True),
-    SettingValue("graphify-install-command", "Graphify install command", "The command the Tools page runs to install Graphify.",
-                 SettingType.TEXT, default="uv tool install graphifyy", scope=SettingScope.PROJECT, person_set=True),
-    GRAPHIFY_SETTINGS]

@@ -4,7 +4,7 @@ from core.modules.messages.messages_module import MessagesModule
 
 
 def chat_options():
-    chat = next(window for window in MessagesModule.windows if window.name == "messages.chat")
+    chat = next(window for window in MessagesModule.window_declarations() if window.name == "messages.chat")
     return {option.key: option for option in chat.options}
 
 

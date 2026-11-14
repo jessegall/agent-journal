@@ -28,13 +28,13 @@ def worker_memory(story, session, text, actor):
     story.expect_success(f'memory make "{text}" --environment main', actor=actor)
 
 
-def test_the_page_reads_the_agents_holding_memories_and_follows_agent_events(new_story):
+def test_the_page_reads_the_memories_it_lists_and_follows_memory_events(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
     window = WindowStory(story)
-    window.expect_window_allowed(WINDOW, "memory agents --json --page 2 --limit 30 --role worker --name lovelace --working")
+    window.expect_window_allowed(WINDOW, "memory page --json --state active --order weight --limit 50")
     window.expect_window_allowed(WINDOW, "memory list --json --main-agent --order weight --search queue --state removed")
     registered = Registry.read(story.container.get(Database)).window(WINDOW)
-    story.expect_rows("agent.*" in registered.events and "memory agents" in registered.reads)
+    story.expect_rows("memory.*" in registered.events and "memory page" in registered.reads)
 
 
 def test_one_read_names_each_agent_that_holds_a_memory_with_its_counts(new_story):

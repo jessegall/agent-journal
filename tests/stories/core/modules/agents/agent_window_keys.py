@@ -3,7 +3,7 @@ from tests.stories.support.story_checks import expect_value
 
 
 def agents_keys() -> dict:
-    window = next(window for window in AgentsModule.windows if window.name == "agents.agents")
+    window = next(window for window in AgentsModule.window_declarations() if window.name == "agents.agents")
     return {key.name: key for key in window.keys}
 
 

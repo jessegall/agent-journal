@@ -1,4 +1,5 @@
 from engine.module.suite import Suite
+from engine.viewer.entrance import Entrance
 from engine.module.module import Module
 from engine.viewer.button_declaration import ButtonDeclaration
 from engine.viewer.skeleton_part import SkeletonPart
@@ -46,9 +47,14 @@ class SlotsModulePane(Module):
     windows = [section("pane_slots.notes", "inspector.plan", place=WindowPlace.PANE)]
 
 
+class SectionEntrance(Entrance):
+    key = "sections"
+    windows = ["section_suite.notes"]
+
+
 class SectionSuite(Suite):
     name = "sections"
-    windows = ["section_suite.notes"]
+    entrances = [SectionEntrance]
 
 
 class SuiteNamesSectionModule(Module):
