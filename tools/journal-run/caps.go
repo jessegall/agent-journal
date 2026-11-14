@@ -5,8 +5,9 @@ import (
 	"strings"
 )
 
-// DefaultCapCharacters is how much of a part's output the agent sees uncapped, as version 4's command output cap.
-const DefaultCapCharacters = 400
+// DefaultCapCharacters is how much of a part's output the agent sees uncapped: a short output stays whole, and a long
+// one is cut to its tail with a pointer to the rest.
+const DefaultCapCharacters = 4000
 
 // ReadCapCharacters bounds the output returned directly by commands that only read.
 const ReadCapCharacters = 16000

@@ -16,7 +16,7 @@ func TestReadOutputAllowance(t *testing.T) {
 		{"ordinary read", true, 2400, 0, true},
 		{"read boundary", true, 16000, 0, true},
 		{"large read", true, 16001, 0, false},
-		{"other command", false, 2400, 0, false},
+		{"other command", false, 4001, 0, false},
 		{"explicit cap", true, 2400, 1000, false},
 	} {
 		t.Run(check.name, func(t *testing.T) {
