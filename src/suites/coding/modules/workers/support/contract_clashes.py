@@ -1,10 +1,9 @@
 import re
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Protocol
+from typing import TYPE_CHECKING
 
 from engine.enums.process_type import ProcessType
-from engine.process.door.process_executor import ProcessExecutor
 from engine.process.door.execution_request import ExecutionRequest
 
 SNAPSHOT_FILE = "tests/snapshots/engine_contract.json"
@@ -15,15 +14,8 @@ VERSION_LINE = re.compile(r"ENGINE_VERSION = \((\d+), (\d+), (\d+)\)")
 SCRIPT_LIMIT_SECONDS = 120
 GIT_LIMIT_SECONDS = 60
 
-
-class GitFolder(Protocol):
-    """What the settling asks of the worktree's git: a checked git call and the text of a file at a revision."""
-
-    executor: ProcessExecutor
-
-    def checked(self, folder: str, limit_seconds: int, *arguments: str) -> object: ...
-
-    def file_text(self, folder: str, revision: str, relative: str) -> str: ...
+if TYPE_CHECKING:
+    from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
 class ContractClashes:
@@ -31,7 +23,7 @@ class ContractClashes:
     higher version stands and the snapshot is written again by the contract script on the merged tree, so such a clash
     is never sent back to the worker. A clash on any other file is left as it is."""
 
-    def __init__(self, git: GitFolder) -> None:
+    def __init__(self, git: "WorktreeGit") -> None:
         self.git = git
 
     def settled(self, folder: str, base_branch: str, conflicts: Sequence[str]) -> tuple[str, ...]:
