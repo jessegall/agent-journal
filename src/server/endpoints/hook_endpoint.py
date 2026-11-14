@@ -3,6 +3,7 @@ import sqlite3
 import traceback
 from engine.serving.server_files import ServerFiles
 from time import perf_counter
+from collections import Counter
 from collections.abc import Mapping
 
 from engine.database.database import Database
@@ -11,6 +12,7 @@ from engine.database.request_watch import RequestWatch
 from engine.enums.log_level import LogLevel
 from engine.enums.process_type import ProcessType
 from engine.file.file_access import FileAccess
+from engine.file.file_tally import FileTally
 from engine.process.door.request_records import REFUSED_HOOK_EXIT_CODE
 from core.modules.processes.support.request_log import RequestLog
 from core.modules.processes.support.request_log_entry import RequestLogEntry
@@ -48,6 +50,8 @@ UNCHECKED_TOOL = "the journal could not check this, so it is held: {reason}. A w
 
 SERVER_UPDATING = "the journal is updating: your line is held; try it again once the journal says it started"
 
+
+HOOK_FILE_CALL_LIMIT = 200
 
 class HookEndpoint:
     """Answers POST /hook: reads a hook's object, prepared or raw, and runs it through the hook
@@ -122,6 +126,16 @@ class HookEndpoint:
         event = self.event(data, program, headers, container.get(Providers))
         tools = container.get(PerformanceTools)
         start_points = tools.begin()
+        with FileTally.counting() as file_calls:
+            try:
+                return self.routed_reply(event, database, container, deadline, sender)
+            finally:
+                self.log_file_calls(event, file_calls)
+                cost = tools.cost(start_points)
+                if cost is not None:
+                    tools.run(RouteCostTool, "/hook", cost)
+
+    def routed_reply(self, event: HookEvent, database: Database, container: Container, deadline: float, sender: HookSender) -> HookReply:
         try:
             database.set_busy_timeout(LEAST_BUSY_SECONDS)
             HookDeliveryRetries(self.context.home).retry(container)
@@ -135,10 +149,14 @@ class HookEndpoint:
             return self.failure(sender, error)
         except Exception as error:
             return self.failure(sender, error)
-        finally:
-            cost = tools.cost(start_points)
-            if cost is not None:
-                tools.run(RouteCostTool, "/hook", cost)
+
+    # a hook that touches more files than a hook may is logged with its counts, as its database points are
+    def log_file_calls(self, event: HookEvent, file_calls: Counter[str]) -> None:
+        total = sum(file_calls.values())
+        if total <= HOOK_FILE_CALL_LIMIT:
+            return
+        counts = ", ".join(f"{count} {kind}" for kind, count in file_calls.most_common())
+        self.context.files.log_line(f"hook {event.event.value} made {total} file system calls ({counts}), over the {HOOK_FILE_CALL_LIMIT} a hook may make", LogLevel.WARNING)
 
     def event(self, data: object, program: str, headers: Mapping[str, str], providers: Providers) -> HookEvent:
         if is_raw_body(data):

@@ -12,6 +12,7 @@ from threading import RLock
 from typing import IO, Any, ClassVar
 from weakref import WeakValueDictionary
 
+from engine.file.file_tally import FileTally
 from engine.file.versions.file_contents import FileContents
 from engine.file.versions.file_version import FileVersion
 from engine.file.versions.file_changes import FileChanges
@@ -69,6 +70,7 @@ class FileAccess:
             if kept is not None and kept.version == version:
                 cls.contents.move_to_end(path)
                 return kept.data
+            FileTally.note("read")
             data = path.read_bytes()
             cls.contents[path] = FileContents(version, data)
             cls.contents.move_to_end(path)
@@ -79,6 +81,7 @@ class FileAccess:
     @classmethod
     def version(cls, file: Path | str) -> FileVersion:
         path = resolved_path(str(file))
+        FileTally.note("check")
         with cls.lock:
             status = path.stat()
             changes = cls.versions.get(path)
@@ -190,14 +193,17 @@ class FileAccess:
 
     @classmethod
     def exists(cls, path: Path | str) -> bool:
+        FileTally.note("check")
         return Path(path).exists()
 
     @classmethod
     def is_file(cls, path: Path | str) -> bool:
+        FileTally.note("check")
         return Path(path).is_file()
 
     @classmethod
     def is_dir(cls, path: Path | str) -> bool:
+        FileTally.note("check")
         return Path(path).is_dir()
 
     @classmethod
@@ -210,6 +216,7 @@ class FileAccess:
 
     @classmethod
     def stat(cls, path: Path | str, follow_symlinks: bool = True) -> os.stat_result:
+        FileTally.note("check")
         return Path(path).stat(follow_symlinks=follow_symlinks)
 
     @classmethod
@@ -222,10 +229,12 @@ class FileAccess:
 
     @classmethod
     def iterdir(cls, folder: Path | str) -> Iterator[Path]:
+        FileTally.note("list")
         return Path(folder).iterdir()
 
     @classmethod
     def glob(cls, folder: Path | str, pattern: str) -> Iterator[Path]:
+        FileTally.note("list")
         return Path(folder).glob(pattern, recurse_symlinks=False)
 
     # every path under a folder whose path below it matches the pattern at any depth, as Path.rglob matches, walked as
@@ -258,6 +267,7 @@ class FileAccess:
                 continue
             entered.add((status.st_dev, status.st_ino))
             # the listing carries each entry's type, so telling folders from files reads nothing more from disk
+            FileTally.note("listed entry", len(children))
             folder_names = [child.name for child in children if child.is_dir(follow_symlinks=False)]
             file_names = [child.name for child in children if not child.is_dir(follow_symlinks=False)]
             yield current, folder_names, file_names
