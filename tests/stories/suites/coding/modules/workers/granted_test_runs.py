@@ -1,5 +1,6 @@
 from tests.stories.core.support.agent_labels import agent_number
 import subprocess
+from types import SimpleNamespace
 
 import pytest
 
@@ -20,7 +21,7 @@ def spent(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch)
     worker.story.expect_success(f"setting set {WORKER_PHASE_TEST_RUNS} 0 --environment main", actor=worker.story.user)
     monkeypatch.setattr(RunnerBinary, "is_installed", lambda _runner: True)
-    monkeypatch.setattr(subprocess, "Popen", lambda command, **options: None)
+    monkeypatch.setattr(subprocess, "Popen", lambda command, **options: SimpleNamespace(pid=1))
     return worker
 
 
