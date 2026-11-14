@@ -531,7 +531,6 @@ tests/stories/suites/coding/modules/workers/worker_words.py
 tests/stories/suites/coding/modules/workers/worktree_cleanup.py
 tests/stories/suites/coding/modules/workers/worktree_takeover.py
 tests/stories/suites/coding/policy_environment_refresh.py
-tests/stories/suites/coding/researcher_access.py
 tests/stories/suites/coding/shipped_profile_skills.py
 tests/stories/suites/coding/special_helpers.py
 tests/stories/suites/coding/task_assigners.py

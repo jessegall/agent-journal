@@ -6,6 +6,7 @@ from suites.coding.support.profile_commands import WORKER_COMMANDS
 from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_PROFILES, WORKER_RULES
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 from suites.coding.support.shipped_profiles import PLAN_REVIEWER_PROFILE
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 
 MERGER = next(profile for profile in HELPER_PROFILES if profile.name == f"{MERGER_PROFILE.name}")
 PLAN_REVIEWER = next(profile for profile in HELPER_PROFILES if profile.name == f"{PLAN_REVIEWER_PROFILE.name}")
@@ -40,3 +41,7 @@ def test_the_rules_every_worker_reads_name_journal_worker_update():
 
 def test_the_merger_prompt_names_the_commands_for_a_worktree_behind_its_base():
     assert all(command in MERGER.body for command in ("journal merger behind <worker>", "journal merger leave <worker> --why", "journal merger update <worker> --why", "journal merger pass <worker>"))
+
+
+def test_the_researcher_is_told_it_may_run_commands_that_only_read():
+    assert "commands that only read" in RESEARCHER_PROFILE.body and "use Bash only for journal commands" not in RESEARCHER_PROFILE.body
