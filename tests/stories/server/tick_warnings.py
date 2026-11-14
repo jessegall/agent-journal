@@ -1,3 +1,4 @@
+from tests.stories.core.modules.processes.support.process_samples import started_run
 from engine.database.points import Points
 from engine.log.exception_sink import CLOCK_TICK_SOURCE
 from engine.module.performance_tools import PerformanceTools
@@ -13,6 +14,7 @@ TEST_ROWS_REASON = "the test reads every row it checks"
 
 def test_tick_warnings_repeat_after_five_rise_at_once_and_reset_below_the_limit(new_story, monkeypatch):
     story = new_story(fixture=DevelopmentToolsEnabled)
+    started_run(story, "make test")
     tools = story.container.get(PerformanceTools)
     costs = iter([51, 51, 51, 51, 51, 51, 52, 51, 51, 51, 51, 51, 52, 50, 51])
     monkeypatch.setattr(tools, "cost", lambda start: Points(rows=next(costs)))

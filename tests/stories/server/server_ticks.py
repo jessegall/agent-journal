@@ -42,6 +42,7 @@ def test_a_slow_tick_shows_a_warning_mark_and_tells_the_main_agent_when_the_deve
     story.expect_no_text("chat-mark main --environment main --json", "over its limit")
     story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)
     story.expect_success(f"setting set {SLOW_TICKS_SETTING} true --project", actor=story.user)
+    story.expect_success(f"setting set {EXCEPTION_LINES_SETTING} true --project", actor=story.user)
     tools.run(SlowTickTool, 51)
     story.run_listeners()
     story.expect_text("chat-mark main --environment main --json", "A tick of the journal's clock cost 51 points", "tick costly")

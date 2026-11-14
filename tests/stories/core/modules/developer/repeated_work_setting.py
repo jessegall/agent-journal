@@ -1,3 +1,4 @@
+from core.modules.developer.support.developer_settings import EXCEPTION_LINES_SETTING
 import io
 from contextlib import suppress
 import os
@@ -111,6 +112,7 @@ def test_a_read_after_a_rolled_back_write_is_not_a_repeated_read(new_story, monk
 
 def test_the_report_reaches_the_main_agent_through_its_error_line(new_story, monkeypatch):
     story = new_story(fixture=RepeatedWorkEnabled)
+    story.expect_success(f"setting set {EXCEPTION_LINES_SETTING} true --project", actor=story.user)
     replace_console_run(monkeypatch, duplicate_read)
     run_as_core(story)
     monkeypatch.undo()

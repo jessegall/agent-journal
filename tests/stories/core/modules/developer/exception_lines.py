@@ -1,3 +1,4 @@
+from core.modules.developer.support.developer_settings import EXCEPTION_LINES_SETTING
 from datetime import timedelta
 
 from engine.log.exception_sink import ExceptionSink
@@ -17,6 +18,7 @@ def failed_read(story, message):
 def test_an_error_in_the_chat_reaches_the_main_agent_once(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success(f"setting switch {TOOLS_SETTING} on --project", actor=story.user)
+    story.expect_success(f"setting set {EXCEPTION_LINES_SETTING} true --project", actor=story.user)
     failed_read(story, "TypeError: an unexpected argument")
     failed_read(story, "TypeError: an unexpected argument")
     story.advance(timedelta(minutes=5))
