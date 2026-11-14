@@ -1,5 +1,5 @@
-from tests.stories.core.support.agent_labels import agent_number
 import pytest
+from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 from pathlib import Path
 
@@ -10,6 +10,7 @@ from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
+
 pytestmark = pytest.mark.real_git
 
 COPY = "vendor"

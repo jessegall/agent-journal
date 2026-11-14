@@ -65,7 +65,6 @@ def test_a_later_tick_reads_fresh_activity_after_a_worker_acts(four_workers):
         story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} used no tool")
 
 
-@pytest.mark.real_git
 def test_a_worker_dispatch_reads_its_whole_task_batch_once_per_transaction(four_tasks):
     story = four_tasks
     with patch.object(Database, "rows", autospec=True, side_effect=Database.rows) as reads:
