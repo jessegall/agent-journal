@@ -708,8 +708,6 @@ tests/stories/real_programs.py
 tests/stories/server/boot_files.py
 tests/stories/server/developer_hook_requests.py
 tests/stories/server/developer_system_logs.py
-tests/stories/server/hosted_journal_socket.py
-tests/stories/server/hosted_route_walk.py
 tests/stories/server/launch_stop.py
 tests/stories/server/library_client.py
 tests/stories/server/message_targets.py
@@ -740,7 +738,6 @@ tests/stories/server/viewer_line_rows.py
 tests/stories/server/viewer_read_counts.py
 tests/stories/server/viewer_request_attribution.py
 tests/stories/server/viewer_session.py
-tests/stories/server/viewer_socket.py
 tests/stories/server/window_data_route.py
 tests/stories/suites/coding/agent_settings_window.py
 tests/stories/suites/coding/assigned_tasks.py
