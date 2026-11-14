@@ -695,7 +695,6 @@ tests/stories/suites/coding/drivers/main/orchestrator.py
 tests/stories/suites/coding/drivers/worker/worker_driver.py
 tests/stories/suites/coding/file_edits.py
 tests/stories/suites/coding/file_edits_prune_links.py
-tests/stories/suites/coding/file_edits_prune_migration.py
 tests/stories/suites/coding/file_feed_window.py
 tests/stories/suites/coding/full_test_run.py
 tests/stories/suites/coding/graphify_searches.py
