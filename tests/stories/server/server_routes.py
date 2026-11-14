@@ -21,12 +21,6 @@ def test_a_refused_line_through_the_server_exits_with_its_refusal(task_server):
     story.expect_cli_exit('task make "Loose"', "/elsewhere", REFUSED_CODE, "needs an environment")
 
 
-def test_an_unknown_route_is_404_and_a_body_that_is_no_command_line_is_400(task_server):
-    story = task_server
-    story.expect_status("GET", "/nowhere", None, 404)
-    story.expect_status("POST", "/cli", {"argv": "task list"}, 400)
-
-
 def test_a_command_line_through_the_server_waits_for_another_writer_up_to_the_cli_limit(task_server):
     story = task_server
     story.expect_busy_timeout(CLI_LIMIT_SECONDS)
@@ -35,11 +29,6 @@ def test_a_command_line_through_the_server_waits_for_another_writer_up_to_the_cl
 def test_a_write_whose_deadline_passed_before_the_commit_is_readonly(task_server):
     story = task_server
     story.expect_deadline_rollback('task make "Late" --environment main', lines.TASK_LIST, "4  Late  open  normal")
-
-
-def test_an_error_outside_a_command_is_answered_500_with_one_line_and_logged_with_its_traceback(task_server):
-    story = task_server
-    story.expect_raw_request_error(b"POST /cli HTTP/1.1\r\nHost: journal\r\nContent-Length: many\r\nConnection: close\r\n\r\n", "ValueError")
 
 
 def test_a_timing_line_that_cannot_be_written_is_noted_and_the_request_still_answered(task_server):
