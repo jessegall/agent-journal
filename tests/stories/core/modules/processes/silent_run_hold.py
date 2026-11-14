@@ -78,6 +78,16 @@ def test_a_run_read_before_it_went_silent_is_read_again_once_it_is_held(new_stor
     story.expect_hook_allowed("s-1", EDIT)
 
 
+def test_any_read_of_an_output_read_before_lifts_the_hold(new_story):
+    story = new_story(fixture=ActiveBuild)
+    story.expect_success("output read 1 --summary", actor=story.agent)
+    for flags in ("--all", "--summary", "--lines 1-2", "--tail 3"):
+        story.advance(timedelta(seconds=HANG_SECONDS + 1))
+        story.expect_hook_refusal("s-1", EDIT, BLOCKED)
+        story.expect_success(f"output read 1 {flags}", actor=story.agent)
+        story.expect_hook_allowed("s-1", EDIT)
+
+
 def test_reading_the_output_lets_the_next_tool_use_through_and_starts_the_silent_time_anew(new_story):
     story = silent_story(new_story, HANG_SECONDS + 6)
     story.expect_hook_allowed("s-1", READ_OUTPUT)

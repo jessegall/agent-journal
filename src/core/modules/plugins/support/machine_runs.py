@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 from engine.file.file_access import FileAccess
+from engine.file.file_lock import FileLock
 from engine.journal.journal_home import JOURNAL_FOLDER, JournalHome
 from engine.process.process_ids import ProcessIds
 from engine.time.clock import Clock
@@ -19,7 +20,7 @@ class MachineRuns:
     """The runs of a plugin's kind that hold a place anywhere on this machine: one file for each, in the user's
     own journal folder or the folder JOURNAL_MACHINE_FOLDER names, holding the path of the pid file its runner
     writes. A run counts while that runner lives, or for a minute after its place was given while its runner
-    starts; a file of a run that counts no more is removed."""
+    starts; a file of a run that counts no more is removed. Counting and claiming a place go together under one lock."""
 
     def __init__(self, home: JournalHome, outputs: OutputFolder, clock: Clock) -> None:
         self.home, self.outputs, self.clock = home, outputs, clock
@@ -33,10 +34,16 @@ class MachineRuns:
         project = hashlib.sha256(str(self.home.folder.resolve()).encode()).hexdigest()[:PROJECT_MARK_CHARACTERS]
         return self.category_folder(process.plugin, process.run_name) / f"{project}-{process.id}"
 
-    def claim(self, process: Process) -> None:
+    # Counts the runs that hold a place and takes one for this run under one lock on the kind, so two projects claiming
+    # at once cannot both pass the limit; false, with nothing taken, when the limit is reached.
+    def claim(self, process: Process, limit: int | None) -> bool:
         path = self.run_file(process)
         FileAccess.mkdir(path.parent, parents=True, exist_ok=True)
-        FileAccess.write(path, str(self.outputs.pid_path(process.id)))
+        with FileLock.locked(path.parent.with_name(f"{path.parent.name}.lock")):
+            if limit is not None and self.count(process.plugin, process.run_name) >= limit:
+                return False
+            FileAccess.write(path, str(self.outputs.pid_path(process.id)))
+        return True
 
     def release(self, process: Process) -> None:
         FileAccess.unlink(self.run_file(process), missing_ok=True)

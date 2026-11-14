@@ -103,9 +103,13 @@ def test_g2_the_hard_stop_rule_after_the_stop_rule_in_the_same_second_makes_no_s
     exceeding_hard_limit.expect_rows(compactions(exceeding_hard_limit)[0].reason is CompactionReason.STOP_LIMIT)
 
 
-def test_g3_a_typed_compaction_is_woken_by_the_listener_and_a_tick_after_600_seconds_types_no_second_wake(agent):
+def test_g3_a_typed_compaction_is_woken_by_the_tick_after_ten_seconds_and_a_tick_after_600_seconds_types_no_second_wake(agent):
     agent.hook(SESSION, PRE_COMPACT.with_raw({"trigger": "manual"}))
     agent.hook(SESSION, COMPACTION_START)
+    agent.run_listeners()
+    agent.expect_rows(len(agent.typing.typed) == 0, detail=str(agent.typing.typed))
+    agent.advance(timedelta(seconds=11))
+    agent.tick(SESSION)
     agent.run_listeners()
     agent.expect_rows(len(agent.typing.typed) == 1, "compacted" in agent.typing.typed[0], detail=str(agent.typing.typed))
     rows = compactions(agent)
