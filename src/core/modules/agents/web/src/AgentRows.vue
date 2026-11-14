@@ -42,6 +42,8 @@ watch([show, words, filters], () => {
 });
 setState();
 const factsOf = (row) => row.facts ?? null;
+// a working agent whose process has stopped waits on its tests, a merge or an answer: it stays listed, dimmed
+const isWaiting = (row) => row.state === "running" && Boolean(row.ended_at);
 const shown = rows;
 // an agent that ends leaves the Working tab, so it stays at the bottom of that list, faded, for five minutes first
 const LINGER_MILLISECONDS = 5 * 60 * 1000;
@@ -174,7 +176,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
         </EmptyState></template>
         <template v-else><RowList moves :leaves-at-once="changing" :rows="visible" :failure="failure" :loaded="loaded" :more="!openRow && more" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
             <template #default="{row}">
-                <div :class="['agent-row', {lingering: lingerIds.has(row.id) && row.id !== openId}]" :data-agent-row="row.id" :data-agent-lingering="lingerIds.has(row.id) ? '' : null">
+                <div :class="['agent-row', {lingering: lingerIds.has(row.id) && row.id !== openId, waiting: isWaiting(row) && row.id !== openId}]" :data-agent-row="row.id" :data-agent-lingering="lingerIds.has(row.id) ? '' : null" :data-agent-waiting="isWaiting(row) ? '' : null">
                     <AgentCard :row="row" :facts="factsOf(row)" :progress="progressOf(row)" :wait-reason="waitReasonOf(row)" :open="row.id === openId" @toggle="toggle(row)" />
                 </div>
             </template>
@@ -235,7 +237,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     min-height: 0;
 }
 
-.agent-row.lingering { opacity: 0.5; }
+.agent-row.lingering, .agent-row.waiting { opacity: 0.5; }
 
 .agent-row {
     position: relative;
