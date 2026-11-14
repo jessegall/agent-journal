@@ -1,5 +1,6 @@
 import pytest
 
+from suites.coding.support.shipped_profiles import WORKER_PROFILE
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.journal.journal_home import LAUNCHER_SOCKET
@@ -18,7 +19,7 @@ def test_a_dispatch_with_the_launcher_running_hands_it_the_worker_to_start_in_it
     launcher.expect_started(worker_id, worker_session(story, Actor(worker_id, ActorType.AGENT)), repository.worktree_folder(worker_id))
     command = launcher.requests[0]["command"]
     brief = " ".join(command)
-    for skill in ("journal", "journal-tasks", "journal-shell", "journal-worker"):
+    for skill in ("journal", "journal-tasks", "journal-shell", WORKER_PROFILE.name):
         expected = f"load this first with the Skill tool: {skill}" if program == "claude" else f"read this first: {repository.worktree_folder(worker_id) / skills_folder / skill / 'SKILL.md'}"
         story.expect_rows(expected in brief)
     story.expect_rows("journal-etiquette" not in brief, "Load these skills before your first write" in brief, "journal overview" in brief,

@@ -1,6 +1,7 @@
 import json
 import subprocess
 
+from suites.coding.support.shipped_profiles import WORKER_PROFILE
 from engine.enums.tool_type import ToolType
 from engine.query.queries import Queries
 from core.modules.skills.models.agent_skill import AgentSkill
@@ -86,7 +87,7 @@ def expect_worker_commands(story) -> None:
     assert code == 0, text
     rows = story.container.get(Queries).query(AgentSkill).filter(session_agent_id=worker.id, skill="journal-memory")
     assert next(rows.every_row(TEST_ROWS_REASON)).state is AgentSkillState.DUE
-    instructions = story.container.get(SkillFiles).readable("journal-worker").read_text()
+    instructions = story.container.get(SkillFiles).readable(WORKER_PROFILE.name).read_text()
     assert "skill write" in instructions and "module sync" in instructions and "same point" in instructions, instructions
     proof = story.new_row_id('proof make 1 --task 1 "Initial evidence"', actor=worker)
     story.expect_success('proof make 1 --task 1 "Corrected evidence"', actor=worker)
