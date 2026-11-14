@@ -80,4 +80,5 @@ class ExecutionOrder:
         held: Counter[ExecutionStarter] = Counter()
         for other in running:
             held[other.starter] += other.execution_class.slot_cost
-        return held[ticket.starter] + ticket.execution_class.slot_cost <= self.limits.starter_cap(ticket.execution_class.lane)
+        # the cap limits what one starter piles up; a starter with nothing running may always start one run
+        return held[ticket.starter] == 0 or held[ticket.starter] + ticket.execution_class.slot_cost <= self.limits.starter_cap(ticket.execution_class.lane)

@@ -171,3 +171,9 @@ def test_nothing_waits_forever_under_a_steady_stream():
             break
         running = [*running[1:], ticket(AGENT, starter=starter(200 + second), entered_second=second)]
     assert second <= 10 + 5 + 2 + 1
+
+
+def test_a_starter_with_nothing_running_starts_a_run_costing_more_than_its_cap():
+    small_lane = replace(DEFAULT_LANE_LIMITS, capacities={**DEFAULT_LANE_LIMITS.capacities, ExecutionLane.LONG: 4}, starter_caps={**DEFAULT_LANE_LIMITS.starter_caps, ExecutionLane.LONG: 2})
+    test_run = ticket(ExecutionPriority.AGENT, ExecutionLane.LONG, slot_cost=4)
+    assert ExecutionOrder(small_lane).starting([test_run], [], seconds_after_start(0), False) == (test_run,)

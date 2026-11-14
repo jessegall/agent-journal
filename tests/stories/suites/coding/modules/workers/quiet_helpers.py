@@ -95,6 +95,7 @@ def test_the_inactive_line_of_a_worker_with_a_queued_run_says_so(new_story):
     main = story.agent
     story.expect_success(f"setting set {ProcessSetting.READERS_FORCED.key} off --environment main")
     story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main")
+    story.expect_success(f"setting set {ProcessSetting.STARTER_CAP_PERCENT.key} 100 --environment main")
     start_process(story, "make first", category=CommandCategory.TEST_RUN)
     start_process(story, "make second", category=CommandCategory.TEST_RUN)
     story.agent = worker
