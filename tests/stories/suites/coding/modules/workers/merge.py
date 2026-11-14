@@ -87,6 +87,7 @@ def test_a_worker_settles_a_clash_and_its_next_merge_goes_through(new_story):
     story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.expect_success("worker-worktree show 1", "state: delivered")
+    story.expect_success("proof check 1", "state: checked", actor=story.agent)
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     request_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
