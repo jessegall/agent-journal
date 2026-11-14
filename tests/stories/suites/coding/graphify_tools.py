@@ -1,3 +1,13 @@
+from core.modules.processes.models.process import Process
+from core.modules.processes.models.enums.process_state import RUNNING_STATES
+from core.modules.processes.commands.end_process.end_process import EndProcess
+from engine.query.queries import Queries
+from engine.query.conditions.among import Among
+from engine.enums.process_type import ProcessType
+from engine.command.bus import Bus
+from engine.actor.actor import Actor
+from engine.file.file_access import FileAccess
+from core.modules.processes.support.runner_binary import RunnerBinary
 import json
 
 from engine.provider.managed_hooks import ManagedHooks
@@ -8,10 +18,27 @@ from tests.stories.core.support.fixtures import UserJoined
 
 TICK = "tool tick graphify --folder"
 HOUR_SECONDS = 3600
+TEST_ROWS_REASON = "the test reads every row it checks"
+
+
+# stands in for the journal's runner: it runs the line after its flags at once, as a granted run starts
+LINE_RUNNER = ('#!/bin/sh\nslot="$JOURNAL_STORY_HOME/processes/$2/slot"\nwhile [ ! -e "$slot" ]; do sleep 0.05; done\n'
+               'while [ "$#" -gt 0 ] && [ "$1" != "--" ]; do shift; done\nshift\nexec sh -c "$1"\n')
+
+
+def ended_updates(story) -> None:
+    """Ends the process rows of the updates whose line has finished, as the journal's runner reports a finished line."""
+    updates = story.container.get(Queries).query(Process).filter(run_name=ProcessType.GRAPHIFY.value).matching(Among("state", RUNNING_STATES)).every_row(TEST_ROWS_REASON)
+    for update in updates:
+        story.container.get(Bus).run(EndProcess(update.id, 0, 0, 0), Actor.core(), environment_id=update.environment_id)
 
 
 def story_with_graphify(new_story, tmp_path):
     story = new_story(fixture=UserJoined)
+    runner = story.container.get(RunnerBinary).path
+    FileAccess.mkdir(runner.parent, parents=True, exist_ok=True)
+    FileAccess.write(runner, LINE_RUNNER.replace("$JOURNAL_STORY_HOME", str(story.home.folder.resolve())))
+    FileAccess.chmod(runner, 0o755)
     repo = GraphifyRepo(tmp_path)
     story.expect_success(f"setting set {COMMAND_SETTING} {repo.script} --project", actor=story.user)
     return story, repo
@@ -42,9 +69,11 @@ def test_one_update_at_a_time_at_most_every_few_minutes_and_grouping_on_its_own_
     story.expect_rows(repo.call_count() == 1, not (different.folder / "graphify-out/.journal-running").exists())
     repo.release_graphify()
     repo.wait(repo.folder / "graphify-out", lambda: not (repo.folder / "graphify-out/.journal-running").exists())
+    ended_updates(story)
     repo.age_graph(story.clock.epoch_seconds(), HOUR_SECONDS)
     story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
     repo.poll_refresh()
+    ended_updates(story)
     story.expect_rows(repo.call_count() == 2)
     for message in ("third", "fourth", "fifth", "sixth", "seventh"):
         repo.commit(message)

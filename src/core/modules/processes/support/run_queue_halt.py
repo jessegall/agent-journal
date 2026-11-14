@@ -15,7 +15,7 @@ class RunQueueHalt:
 
     @property
     def command_halted(self) -> bool:
-        return self.home.run_queue_halt_file.is_file()
+        return FileAccess.is_file(self.home.run_queue_halt_file)
 
     @property
     def is_restarting(self) -> bool:
@@ -40,7 +40,7 @@ class RunQueueHalt:
     @property
     def reason(self) -> str:
         if self.command_halted:
-            return FileAccess.shared().read(self.home.run_queue_halt_file).strip()
+            return FileAccess.read(self.home.run_queue_halt_file).strip()
         if self.is_update_waiting:
             return "An update waits for the running commands to end"
         return "Server restart" if self.is_restarting else ""
@@ -49,7 +49,7 @@ class RunQueueHalt:
         return OutputFolder(self.home).running_ids()
 
     def halt(self, reason: str) -> None:
-        FileAccess.shared().write(self.home.run_queue_halt_file, reason)
+        FileAccess.write(self.home.run_queue_halt_file, reason)
 
     def resume(self) -> None:
-        self.home.run_queue_halt_file.unlink(missing_ok=True)
+        FileAccess.unlink(self.home.run_queue_halt_file, missing_ok=True)

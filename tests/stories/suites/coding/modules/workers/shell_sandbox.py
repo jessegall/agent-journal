@@ -1,3 +1,4 @@
+from tests.stories.core.modules.processes.support.process_samples import DEFAULT_QUEUE_WAIT_SECONDS
 import shlex
 
 from engine.enums.command_category import CommandCategory
@@ -11,12 +12,12 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 
 def test_a_workers_shell_uses_its_registered_worktree(new_story):
     story = install_runner(new_story(fixture=OpenTaskOrchestrator))
-    story.container.bind(ShellSandbox, ShellSandbox(story.home))
+    story.replace(ShellSandbox, ShellSandbox(story.home))
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
     story.run("task overview 1", actor=worker)
     reply = story.hook(session, HookSamples.shell("cat cart.py", ShellPart("cat", CommandCategory.READ, ["cart.py"])))
-    expected = runner_line(story, 1, "cat cart.py", limit=0, session=session, read_command=True, sandbox=True, checkout_folder=repository.worktree_folder(worker.id))
+    expected = runner_line(story, 1, "cat cart.py", limit=0, session=session, read_command=True, sandbox=True, checkout_folder=repository.worktree_folder(worker.id), queue_wait=DEFAULT_QUEUE_WAIT_SECONDS)
     expected = expected.replace(" --read-only-shell", f" --read-only-shell --write-folder {shlex.quote(str(repository.worktree_folder(worker.id)))}")
     expect_rewritten(reply, expected)

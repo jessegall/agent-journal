@@ -1,6 +1,5 @@
 from engine.file.file_access import FileAccess
 import codecs
-import shutil
 import os
 from collections.abc import Iterator
 from pathlib import Path
@@ -46,9 +45,9 @@ class OutputFolder:
 
     def write_start(self, process_id: int, line: str, part_texts: list[str]) -> None:
         folder = self.home.folder / FOLDER_NAME / str(process_id)
-        folder.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(folder / LINE_FILE, line)
-        FileAccess.shared().write(folder / PARTS_FILE, "\n".join(part_texts))
+        FileAccess.mkdir(folder, parents=True, exist_ok=True)
+        FileAccess.write(folder / LINE_FILE, line)
+        FileAccess.write(folder / PARTS_FILE, "\n".join(part_texts))
 
     def line(self, process_id: int) -> str:
         return self.text(process_id, LINE_FILE)
@@ -59,17 +58,17 @@ class OutputFolder:
 
     def write_slot(self, process_id: int) -> None:
         folder = self.home.folder / FOLDER_NAME / str(process_id)
-        folder.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().update_timestamp(folder / SLOT_FILE)
+        FileAccess.mkdir(folder, parents=True, exist_ok=True)
+        FileAccess.update_timestamp(folder / SLOT_FILE)
 
     def has_slot(self, process_id: int) -> bool:
-        return (self.home.folder / FOLDER_NAME / str(process_id) / SLOT_FILE).exists()
+        return FileAccess.exists(self.home.folder / FOLDER_NAME / str(process_id) / SLOT_FILE)
 
     def ask_move(self, process_id: int) -> None:
         self.write(process_id, MOVE_FILE, "1")
 
     def has_move_request(self, process_id: int) -> bool:
-        return (self.home.folder / FOLDER_NAME / str(process_id) / MOVE_FILE).exists()
+        return FileAccess.exists(self.home.folder / FOLDER_NAME / str(process_id) / MOVE_FILE)
 
     def write_pid(self, process_id: int, pid: int) -> None:
         self.write_number(process_id, PID_FILE, pid)
@@ -103,9 +102,9 @@ class OutputFolder:
 
     def tick_interval_seconds(self, agent_id: int, timestamp: Timestamp) -> float:
         path = self.home.folder / FOLDER_NAME / f"tick-{agent_id}"
-        previous = path.read_text() if path.exists() else timestamp.text
-        path.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(path, timestamp.text)
+        previous = FileAccess.current(path) if FileAccess.exists(path) else timestamp.text
+        FileAccess.mkdir(path.parent, parents=True, exist_ok=True)
+        FileAccess.write(path, timestamp.text)
         return Timestamp.parsed(previous).elapsed_seconds(timestamp)
 
     def heartbeat(self, process_id: int) -> Timestamp | None:
@@ -113,36 +112,36 @@ class OutputFolder:
         return Timestamp.parsed(text) if text else None
 
     def total_bytes(self, process_id: int) -> int:
-        return sum(path.stat().st_size for path in self.output_paths(process_id) if path.exists())
+        return sum(FileAccess.stat(path).st_size for path in self.output_paths(process_id) if FileAccess.exists(path))
 
     def part_bytes(self, process_id: int, position: int) -> int:
         path = self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out"
-        return path.stat().st_size if path.exists() else 0
+        return FileAccess.stat(path).st_size if FileAccess.exists(path) else 0
 
     def part_head(self, process_id: int, position: int, size: int) -> bytes:
         path = self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out"
-        if not path.exists():
+        if not FileAccess.exists(path):
             return b""
-        with path.open("rb") as handle:
+        with FileAccess.reader(path, "rb") as handle:
             return handle.read(size)
 
     def run_silent_seconds(self, process_id: int, timestamp: Timestamp) -> int:
-        return int(timestamp.value.timestamp() - max(path.stat().st_mtime for path in self.output_paths(process_id) if path.exists()))
+        return int(timestamp.value.timestamp() - max(FileAccess.stat(path).st_mtime for path in self.output_paths(process_id) if FileAccess.exists(path)))
 
     def silent_seconds(self, process_id: int, position: int, timestamp: Timestamp) -> int:
         path = self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out"
-        return int(timestamp.value.timestamp() - path.stat().st_mtime)
+        return int(timestamp.value.timestamp() - FileAccess.stat(path).st_mtime)
 
     def output_paths(self, process_id: int) -> list[Path]:
         return [self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out" for position in range(1, len(self.part_texts(process_id)) + 1)]
 
     def running_ids(self) -> tuple[int, ...]:
         folder = self.home.folder / FOLDER_NAME
-        names = [path.name for path in folder.iterdir() if path.name.isdigit()] if folder.is_dir() else []
+        names = [path.name for path in FileAccess.iterdir(folder) if path.name.isdigit()] if FileAccess.is_dir(folder) else []
         return tuple(int(name) for name in names if self.is_running(int(name)))
 
     def is_running(self, process_id: int) -> bool:
-        is_started = (self.home.folder / FOLDER_NAME / str(process_id) / FIRST_STARTED_FILE).exists()
+        is_started = FileAccess.exists(self.home.folder / FOLDER_NAME / str(process_id) / FIRST_STARTED_FILE)
         return is_started and self.end(process_id) is None and self.has_leader_process(process_id)
 
     def has_leader_process(self, process_id: int) -> bool:
@@ -159,9 +158,9 @@ class OutputFolder:
     def bytes_after(self, process_id: int, offset: int) -> bytes:
         passed, collected = 0, b""
         for path in self.output_paths(process_id):
-            size = path.stat().st_size if path.exists() else 0
+            size = FileAccess.stat(path).st_size if FileAccess.exists(path) else 0
             if size and passed + size > offset:
-                with path.open("rb") as handle:
+                with FileAccess.reader(path, "rb") as handle:
                     handle.seek(max(0, offset - passed))
                     collected += handle.read()
             passed += size
@@ -171,9 +170,9 @@ class OutputFolder:
     def byte_range(self, process_id: int, first: int, last: int) -> bytes:
         passed, collected = 0, b""
         for path in self.output_paths(process_id):
-            size = path.stat().st_size if path.exists() else 0
+            size = FileAccess.stat(path).st_size if FileAccess.exists(path) else 0
             if size and passed + size > first and passed < last:
-                with path.open("rb") as handle:
+                with FileAccess.reader(path, "rb") as handle:
                     handle.seek(max(0, first - passed))
                     collected += handle.read(last - max(first, passed))
             passed += size
@@ -218,13 +217,13 @@ class OutputFolder:
     def cut_bytes(self, process_id: int, position: int = 0) -> int:
         positions = [position] if position else range(1, len(self.part_texts(process_id)) + 1)
         files = [self.home.folder / FOLDER_NAME / str(process_id) / f"{number}.cut-bytes" for number in positions]
-        return sum(int(path.read_text()) for path in files if path.exists())
+        return sum(int(FileAccess.current(path)) for path in files if FileAccess.exists(path))
 
     # Where in the file a reader goes on. Its offset counts every byte ever written, so a cut moves the place
     # by the bytes dropped; a place that was dropped or lies past the file starts again at the top.
     def reader_offset(self, process_id: int, position: int, offset: int) -> int:
         paths = [self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out"] if position else self.output_paths(process_id)
-        size = sum(path.stat().st_size for path in paths if path.exists())
+        size = sum(FileAccess.stat(path).st_size for path in paths if FileAccess.exists(path))
         place = offset - self.cut_bytes(process_id, position)
         return place if 0 <= place <= size else 0
 
@@ -232,9 +231,9 @@ class OutputFolder:
         if not position:
             return self.bytes_after(process_id, offset)
         path = self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out"
-        if not path.exists():
+        if not FileAccess.exists(path):
             return b""
-        with path.open("rb") as handle:
+        with FileAccess.reader(path, "rb") as handle:
             handle.seek(offset)
             return handle.read()
 
@@ -242,12 +241,12 @@ class OutputFolder:
     # lines, so a run that printed many megabytes is never read whole inside a write.
     def sample_text(self, process_id: int, position: int) -> str:
         paths = [self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out"] if position else self.output_paths(process_id)
-        return ColourCodes.removed(b"".join(self.edges(path) for path in paths if path.exists()).decode("utf-8", errors="replace"))
+        return ColourCodes.removed(b"".join(self.edges(path) for path in paths if FileAccess.exists(path)).decode("utf-8", errors="replace"))
 
     @staticmethod
     def edges(path: Path) -> bytes:
-        size = path.stat().st_size
-        with path.open("rb") as handle:
+        size = FileAccess.stat(path).st_size
+        with FileAccess.reader(path, "rb") as handle:
             if size <= 2 * PAGE_BYTES:
                 return handle.read()
             head = handle.read(PAGE_BYTES)
@@ -286,9 +285,9 @@ class OutputFolder:
         decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
         pending = ""
         for path in self.output_paths(process_id):
-            if not path.exists():
+            if not FileAccess.exists(path):
                 continue
-            with path.open("rb") as handle:
+            with FileAccess.reader(path, "rb") as handle:
                 while block := handle.read(BLOCK_BYTES):
                     complete, pending = self.split_complete(pending + decoder.decode(block))
                     yield from (ColourCodes.removed(line) for line in complete)
@@ -329,43 +328,43 @@ class OutputFolder:
     def sizes(self, process_id: int) -> tuple[int, int]:
         size = lines = 0
         for path in self.output_paths(process_id):
-            if not path.exists():
+            if not FileAccess.exists(path):
                 continue
             last = b""
-            with path.open("rb") as handle:
+            with FileAccess.reader(path, "rb") as handle:
                 while block := handle.read(BLOCK_BYTES):
                     size, lines, last = size + len(block), lines + block.count(b"\n"), block[-1:]
             lines += 1 if last and last != b"\n" else 0
         return size, lines
 
     def remove(self, process_id: int) -> None:
-        shutil.rmtree(self.home.folder / FOLDER_NAME / str(process_id), ignore_errors=True)
+        FileAccess.rmtree(self.home.folder / FOLDER_NAME / str(process_id), ignore_errors=True)
 
     def read_mark(self, process_id: int, mark: str) -> str:
         path = self.home.folder / FOLDER_NAME / str(process_id) / READS_FILE
-        marks = dict(line.rsplit(" ", 1) for line in path.read_text().splitlines()) if path.is_file() else {}
+        marks = dict(line.rsplit(" ", 1) for line in FileAccess.current(path).splitlines()) if FileAccess.is_file(path) else {}
         return marks.get(mark, "")
 
     def write_read_mark(self, process_id: int, mark: str, read_at: str) -> None:
-        (self.home.folder / FOLDER_NAME / str(process_id)).mkdir(parents=True, exist_ok=True)
-        with FileAccess.shared().writer(self.home.folder / FOLDER_NAME / str(process_id) / READS_FILE, "a") as marks:
+        FileAccess.mkdir(self.home.folder / FOLDER_NAME / str(process_id), parents=True, exist_ok=True)
+        with FileAccess.writer(self.home.folder / FOLDER_NAME / str(process_id) / READS_FILE, "a") as marks:
             marks.write(f"{mark} {read_at}\n")
 
     def process_ids(self) -> list[int]:
         root = self.home.folder / FOLDER_NAME
-        return sorted(int(path.name) for path in root.iterdir() if path.name.isdigit()) if root.is_dir() else []
+        return sorted(int(path.name) for path in FileAccess.iterdir(root) if path.name.isdigit()) if FileAccess.is_dir(root) else []
 
     def write_number(self, process_id: int, name: str, number: int) -> None:
         self.write(process_id, name, f"{number}")
 
     def write(self, process_id: int, name: str, text: str) -> None:
         folder = self.home.folder / FOLDER_NAME / str(process_id)
-        folder.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(folder / name, text)
+        FileAccess.mkdir(folder, parents=True, exist_ok=True)
+        FileAccess.write(folder / name, text)
 
     def text(self, process_id: int, name: str) -> str:
         path = self.home.folder / FOLDER_NAME / str(process_id) / name
-        return path.read_text(errors="replace") if path.exists() else ""
+        return FileAccess.current(path, errors="replace") if FileAccess.exists(path) else ""
 
     def number(self, process_id: int, name: str) -> int | None:
         text = self.text(process_id, name).strip()
@@ -384,7 +383,7 @@ class OutputFolder:
         return self.count_text(process_id).splitlines()[-20:]
 
     def is_count_claimed(self, process_id: int) -> bool:
-        return (self.home.folder / FOLDER_NAME / str(process_id) / "count-taken").exists()
+        return FileAccess.exists(self.home.folder / FOLDER_NAME / str(process_id) / "count-taken")
 
     def mark_count_claimed(self, process_id: int) -> None:
         self.write(process_id, "count-taken", "1")
@@ -400,19 +399,19 @@ class OutputFolder:
         return self.text(process_id, "progress-count/count.out")
 
     def has_progress_count(self, process_id: int) -> bool:
-        return (self.home.folder / FOLDER_NAME / str(process_id) / "count-known").exists()
+        return FileAccess.exists(self.home.folder / FOLDER_NAME / str(process_id) / "count-known")
 
     def mark_progress_count(self, process_id: int) -> None:
         self.write(process_id, "count-known", "1")
 
     def progress_count_read(self, process_id: int) -> bool:
-        return (self.home.folder / FOLDER_NAME / str(process_id) / "progress-count-read").exists()
+        return FileAccess.exists(self.home.folder / FOLDER_NAME / str(process_id) / "progress-count-read")
 
     def mark_progress_count_read(self, process_id: int) -> None:
         self.write(process_id, "progress-count-read", "1")
 
     def write_progress_count(self, process_id: int, text: str, status: int) -> None:
         folder = self.home.folder / FOLDER_NAME / str(process_id) / "progress-count"
-        folder.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(folder / COUNT_OUTPUT, text)
-        FileAccess.shared().write(folder / COUNT_STATUS, str(status))
+        FileAccess.mkdir(folder, parents=True, exist_ok=True)
+        FileAccess.write(folder / COUNT_OUTPUT, text)
+        FileAccess.write(folder / COUNT_STATUS, str(status))

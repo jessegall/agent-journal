@@ -25,31 +25,31 @@ class ModuleAddition:
 
     def add(self, folder: Path) -> SyncReport:
         source = folder.resolve()
-        if not source.is_dir() or not (source / "module.py").is_file():
+        if not FileAccess.is_dir(source) or not FileAccess.is_file(source / "module.py"):
             raise ModuleError(f"{source} must be a Python package folder with module.py")
         if not source.name.isidentifier() or keyword.iskeyword(source.name):
             raise ModuleError(f"{source.name} is not a Python package name")
         target = self.home.modules_folder / source.name
-        if target.exists():
+        if FileAccess.exists(target):
             raise ModuleError(f"module folder {target} is already installed")
         if source.name in sys.modules:
             raise ModuleError(f"Python package {source.name} is already imported; choose another folder name")
-        saved_list = FileAccess.shared().read(self.home.module_list) if self.home.module_list.exists() else None
+        saved_list = FileAccess.read(self.home.module_list) if FileAccess.exists(self.home.module_list) else None
         listed = self.finder.plugin_paths()
-        self.home.modules_folder.mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(self.home.modules_folder, parents=True, exist_ok=True)
         try:
-            shutil.copytree(source, target, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+            FileAccess.copytree(source, target, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
             importlib.invalidate_caches()
             path = self.module_path(source.name)
-            FileAccess.shared().write(self.home.module_list, json.dumps([*listed, path]))
+            FileAccess.write(self.home.module_list, json.dumps([*listed, path]))
             return self.sync.run()
         except (ModuleError, SchemaMismatchError, OSError) as error:
             if saved_list is None:
-                self.home.module_list.unlink(missing_ok=True)
+                FileAccess.unlink(self.home.module_list, missing_ok=True)
             else:
-                FileAccess.shared().write(self.home.module_list, saved_list)
-            if target.exists():
-                shutil.rmtree(target)
+                FileAccess.write(self.home.module_list, saved_list)
+            if FileAccess.exists(target):
+                FileAccess.rmtree(target)
             for name in tuple(sys.modules):
                 if name == source.name or name.startswith(source.name + "."):
                     del sys.modules[name]

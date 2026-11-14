@@ -7,12 +7,14 @@ from engine.event.changed import Changed
 from engine.event.event_type import EventType
 from engine.event.logged_event import LoggedEvent
 from engine.container.container import Container
+from engine.container.round_state import RoundState
 from engine.log.error_log import ErrorLog
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
 from engine.log.exception_sink import ExceptionSink
 from engine.listener.round_yield import RoundYield
 from engine.listener.commit.commit_listener import is_commit_listener_class
+from engine.listener.commit.listener_set import ListenerSet
 from engine.database.listener_cursor_table import ListenerCursorTable
 from engine.registry.listener_entry import ListenerEntry
 from engine.enums.listener_timing import ListenerTiming
@@ -23,6 +25,9 @@ from engine.listener.event_builder import EventBuilder
 from engine.database.performance_costs import PerformanceCosts
 from engine.performance.performance_state import PerformanceState
 from engine.errors.refusal import Refusal
+from engine.listener.errors.listener_time_limit_error import ListenerTimeLimitError
+from engine.setting.setting_values import SettingValues
+from engine.request.request_values import RequestValues
 
 
 FAILURE_LIMIT_ATTEMPTS = 3
@@ -31,9 +36,11 @@ COSTLY_LISTENER_POINTS = 500
 SLOW_LISTENER_SECONDS = 0.5
 PROGRAM_STOP_RUN_ORDER = 500
 PLUGIN_RUN_ORDER = 1000
+LISTENER_TIME_LIMIT_SETTING = "journal.core.developer.tools.listener-time-limit"
+LISTENER_TIME_LIMIT_ON_SETTING = "journal.core.developer.tools.listener-time-limit-on"
 
 
-class CommitListenerRunner:
+class CommitListenerRunner(RoundState):
     """Runs commit listeners with at most once delivery across a server stop; reported failures are retried."""
 
     def __init__(self, registry: Registry, log: EventLog, container: Container, errors: ErrorLog, cursors: ListenerCursorTable,
@@ -41,6 +48,12 @@ class CommitListenerRunner:
         self.system_log, self.turns = system_log, turns
         self.registry, self.log, self.container, self.errors, self.cursors, self.exceptions, self.scopes = registry, log, container, errors, cursors, exceptions, scopes
         self.positions: dict[str, int] = {}
+        self.positions_stale = False
+        self.held_listeners: set[str] = set()
+        self.heard_names: dict[tuple[str, str], bool] = {}
+
+    def reset(self) -> None:
+        self.positions = {}
         self.positions_stale = False
 
     def run(self) -> None:
@@ -69,11 +82,18 @@ class CommitListenerRunner:
             self.system_log.write(LogLevel.ERROR, f"waiting exceptions could not be recorded: {type(failure).__name__}: {failure}")
 
     def commit_entries(self) -> list[ListenerEntry]:
-        return self.sorted_entries
+        return list(self.listener_set.entries)
 
+    # built once for the runner's container: no round builds a listener
     @cached_property
-    def sorted_entries(self) -> list[ListenerEntry]:
-        return sorted((entry for entry in self.registry.listeners if entry.timing is ListenerTiming.COMMIT), key=self.run_order)
+    def listener_set(self) -> ListenerSet:
+        return ListenerSet(ListenerSet.thread_name(self.container), self.registry, self.container, sorted((entry for entry in self.registry.listeners if entry.timing is ListenerTiming.COMMIT), key=self.run_order))
+
+    # the next round builds the listeners again, from the container as it is then
+    def close(self) -> None:
+        if "listener_set" in self.__dict__:
+            self.listener_set.close()
+            del self.__dict__["listener_set"]
 
     def is_urgent(self, entry: ListenerEntry) -> bool:
         return self.run_order(entry) < 0
@@ -99,16 +119,26 @@ class CommitListenerRunner:
 
     def run_round(self, entries: list[ListenerEntry], urgent_entries: list[ListenerEntry]) -> bool:
         positions = self.known_positions(entries)
-        entries = [entry for entry in entries if entry.name in positions]
+        entries = [entry for entry in entries if entry.name in positions and entry.name not in self.held_listeners]
         events = self.log.events_after(min(positions[entry.name] for entry in entries)) if entries else []
         if not events:
             return False
-        due_entries = [entry for entry in entries if any(event.id > positions[entry.name] and entry.event.matches(event.event) for event in events)]
+        # a lagging cursor asks each distinct event name once, not each event
+        newest_ids: dict[str, int] = {}
+        for event in events:
+            newest_ids[event.event] = event.id
+        due_entries = [entry for entry in entries if any(newest_id > positions[entry.name] and self.hears(entry, name) for name, newest_id in newest_ids.items())]
         due_names = {entry.name for entry in due_entries}
         moved_count = self.cursors.advance_all([entry.name for entry in entries if entry.name not in due_names], events[-1].id)
         positions.update({entry.name: events[-1].id for entry in entries if entry.name not in due_names})
         progress = [self.run_entry(entry, urgent_entries, events) for entry in due_entries]
         return bool(moved_count) or any(progress)
+
+    def hears(self, entry: ListenerEntry, event_name: str) -> bool:
+        key = (entry.name, event_name)
+        if key not in self.heard_names:
+            self.heard_names[key] = entry.event.matches(event_name)
+        return self.heard_names[key]
 
     def known_positions(self, entries: list[ListenerEntry]) -> dict[str, int]:
         if any(entry.name not in self.positions for entry in entries):
@@ -137,19 +167,22 @@ class CommitListenerRunner:
         position = self.positions[entry.name]
         events = [event for event in round_events if event.id > position]
         progress = False
-        matching = [event for event in events if entry.event.matches(event.event)]
+        matching = [event for event in events if self.hears(entry, event.event)]
         if not self.is_prepared(entry, matching, position):
             return progress
         for event in matching:
             if not self.cursors.claimed(entry.name, position, event.id):
                 self.positions_stale = True
                 return progress
-            self.turns.pause()
-            if not self.handle_event(entry, event):
+            with self.turns.event_turn(event.event):
+                handled = self.handle_event(entry, event)
+            if not handled:
                 self.cursors.claimed(entry.name, event.id, position)
                 return progress
             position, progress = event.id, True
             self.positions[entry.name] = position
+            if entry.name in self.held_listeners:
+                return progress
         if events and events[-1].id != position:
             advanced = self.cursors.claimed(entry.name, position, events[-1].id)
             if advanced:
@@ -186,7 +219,7 @@ class CommitListenerRunner:
         for (event_type, _, _), grouped in groups.items():
             with self.scopes.event_scope(listener_class.disabled_scopes, grouped[0]):
                 self.container.get(EventBuilder).prepare(event_type, grouped)
-                self.container.get(listener_class).prepare(grouped)
+                self.listener_set.instance(entry).prepare(grouped)
 
     def handle_event(self, entry: ListenerEntry, event: LoggedEvent) -> bool:
         listener_class = entry.path.loaded()
@@ -196,11 +229,13 @@ class CommitListenerRunner:
         start_points = tools.begin()
         started_at = perf_counter()
         try:
-            with self.scopes.event_scope(listener_class.disabled_scopes, event):
+            # one event is one request, so the reads a listener repeats are loaded once
+            with self.container.get(RequestValues).opened(), self.scopes.event_scope(listener_class.disabled_scopes, event):
                 built_event = self.container.get(EventBuilder).built(listener_class.event_type(event.event), event)
                 if built_event is not None:
-                    self.container.get(listener_class).handle(built_event, event)
+                    self.listener_set.instance(entry).handle(built_event, event)
             elapsed = perf_counter() - started_at
+            self.hold_when_over_time_limit(entry, event, elapsed)
             if elapsed >= SLOW_LISTENER_SECONDS:
                 self.system_log.write(LogLevel.INFORMATION, f"listener {entry.name} took {elapsed * 1000:.0f} ms on event {event.id} {event.event}")
             cost = tools.cost(start_points)
@@ -216,3 +251,18 @@ class CommitListenerRunner:
             self.errors.reported(["listener", entry.name, "event", str(event.id)], error, event.environment_id)
             return failures >= FAILURE_LIMIT_ATTEMPTS
         return True
+
+    # a developer setting, off by default: a listener of the ordinary rounds over the limit runs no more events until the server restarts, and its
+    # error reaches the main agent at once; its cursor stays, so the held events run after the restart
+    def hold_when_over_time_limit(self, entry: ListenerEntry, event: LoggedEvent, elapsed: float) -> None:
+        if self.has_slow_round(entry):
+            return
+        settings = self.container.get(SettingValues)
+        if not settings.flag(LISTENER_TIME_LIMIT_ON_SETTING):
+            return
+        limit_ms = settings.number(LISTENER_TIME_LIMIT_SETTING)
+        if elapsed * 1000 <= limit_ms:
+            return
+        self.held_listeners.add(entry.name)
+        error = ListenerTimeLimitError(entry.name, round(elapsed * 1000), limit_ms, event.id, event.event)
+        self.errors.reported(["listener", entry.name, "event", str(event.id)], error, event.environment_id)

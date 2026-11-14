@@ -1,3 +1,4 @@
+from tests.stories.core.modules.processes.support.roomy_fixtures import RoomyBuilderStarted, RoomyUserBuilder
 from datetime import timedelta
 
 from engine.actor.actor import Actor
@@ -7,7 +8,6 @@ from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.cadence_probe import (cadence_lines, truncate_output, damaged_record, foreign_run, folder_made_a_file,
                                                                        kept_lines, emitted, record_text, removed_output, ring, tick_statements, ticks)
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
-from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 MAIN = "s-1"
@@ -21,7 +21,7 @@ def titled(story, process, title: str) -> None:
 
 
 def test_a_missing_output_file_a_damaged_record_and_a_cut_output_give_no_notice_and_the_cut_output_still_reads(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+    story = install_runner(new_story(fixture=RoomyBuilderStarted))
     removed = moved_run(story, "make site", CommandCategory.BUILD)
     damaged = moved_run(story, "make docs", CommandCategory.BUILD)
     cut = moved_run(story, "make logs", CommandCategory.BUILD)
@@ -38,7 +38,7 @@ def test_a_missing_output_file_a_damaged_record_and_a_cut_output_give_no_notice_
 
 
 def test_a_restart_of_the_server_and_a_clock_moving_back_are_not_read_as_pauses(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+    story = install_runner(new_story(fixture=RoomyBuilderStarted))
     process = moved_run(story, "pytest tests/long -q", CommandCategory.TEST_RUN)
     titled(story, process, "Running the long tests")
     ticks(story, 150, process, every=10)
@@ -52,7 +52,7 @@ def test_a_restart_of_the_server_and_a_clock_moving_back_are_not_read_as_pauses(
 
 
 def test_a_run_whose_session_ended_has_no_line_written(new_story):
-    story = install_runner(new_story(fixture=UserBuilder))
+    story = install_runner(new_story(fixture=RoomyUserBuilder))
     process = moved_run(story, "make archive", CommandCategory.BUILD)
     story.hook(MAIN, HookSamples.sample("session_end"))
     ticks(story, 40)
@@ -60,7 +60,7 @@ def test_a_run_whose_session_ended_has_no_line_written(new_story):
 
 
 def test_a_run_that_cannot_be_read_is_logged_by_the_tick_and_the_others_are_still_told(new_story):
-    story = install_runner(new_story(fixture=UserBuilder))
+    story = install_runner(new_story(fixture=RoomyUserBuilder))
     broken = moved_run(story, "make broken", CommandCategory.BUILD)
     sound = moved_run(story, "make sound", CommandCategory.BUILD)
     titled(story, sound, "Building the sound files")
@@ -71,7 +71,7 @@ def test_a_run_that_cannot_be_read_is_logged_by_the_tick_and_the_others_are_stil
 
 
 def test_fifty_runs_at_once_are_judged_in_one_tick_within_its_limits(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+    story = install_runner(new_story(fixture=RoomyBuilderStarted))
     processes = [moved_run(story, f"make part-{number}", CommandCategory.BUILD) for number in range(FIFTY_RUNS)]
     for process in processes:
         emitted(story, process, "started\n")
@@ -83,7 +83,7 @@ def test_fifty_runs_at_once_are_judged_in_one_tick_within_its_limits(new_story):
 
 
 def test_two_environments_judge_their_runs_by_their_own_thresholds(new_story):
-    story = install_runner(new_story(fixture=UserBuilder))
+    story = install_runner(new_story(fixture=RoomyUserBuilder))
     story.expect_success("environment make elsewhere /work/elsewhere", actor=story.user)
     different = Actor(story.new_row_id("agent start s-elsewhere claude main --environment elsewhere"), ActorType.AGENT)
     story.expect_success(f"setting set {ProcessSetting.FIRST_OUTPUT_SECONDS.key} 60 --environment elsewhere", actor=story.user)

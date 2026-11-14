@@ -30,5 +30,8 @@ class Proof(Model):
         move = ProofLifecycle.return_short if self.state is ProofState.SHORT else ProofLifecycle.return_checked
         return self.moved(move, worktree_id=worktree_id)
 
+    def ended_with_worktree(self, note: str) -> "Proof":
+        return self.moved(ProofLifecycle.end_with_worktree, shortfall=note)
+
     def revise(self, timestamp: Timestamp, actor: Actor, text: str, test_command: str = "") -> "Proof":
         return self.moved(ProofLifecycle.revise, text=text, shortfall="", test_command=test_command or self.test_command, process_id=None)

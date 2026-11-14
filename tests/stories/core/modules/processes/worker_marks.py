@@ -1,3 +1,4 @@
+from tests.stories.core.modules.processes.support.roomy_fixtures import RoomyBuilderStarted
 from datetime import timedelta
 
 from engine.actor.actor import Actor
@@ -9,7 +10,6 @@ from core.modules.processes.commands.start_process.start_process import StartPro
 from core.modules.processes.support.part_spec import PartSpec
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import parts_started, install_runner, moved_run
-from tests.stories.core.support.coding_fixtures import BuilderStarted
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 MARKS = "chat-mark list --environment 1 --oldest"
@@ -30,7 +30,7 @@ def new_worker(story) -> Actor:
 
 
 def test_a_command_that_is_no_test_run_or_build_makes_no_chat_mark_and_no_docked_card_for_any_agent_also_past_the_seconds_that_dock_a_run(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+    story = install_runner(new_story(fixture=RoomyBuilderStarted))
     worker = new_worker(story)
     for line, category in HIDDEN:
         main_run = moved_run(story, line, category=category)
@@ -44,7 +44,7 @@ def test_a_command_that_is_no_test_run_or_build_makes_no_chat_mark_and_no_docked
 
 
 def test_a_test_run_and_a_build_make_a_chat_mark_and_a_docked_card_for_the_main_agent_and_for_a_worker(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+    story = install_runner(new_story(fixture=RoomyBuilderStarted))
     worker = new_worker(story)
     story.run(f"setting set {WORKER_TEST_LIMIT} 0 --environment main")
     for line, category in [("make test", CommandCategory.TEST_RUN), ("make build", CommandCategory.BUILD)]:

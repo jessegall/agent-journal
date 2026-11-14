@@ -31,15 +31,15 @@ class LogFileLines:
             yield from (self.output_line(line_position, line_text, recorded_at) for line_position, line_text in waiting)
             waiting = []
             yield self.stamped_line(position, text, recorded_at, match[2])
-        modified_at = datetime.fromtimestamp(self.path.stat().st_mtime, timezone.utc).isoformat() if waiting else ""
+        modified_at = datetime.fromtimestamp(FileAccess.stat(self.path).st_mtime, timezone.utc).isoformat() if waiting else ""
         yield from (self.output_line(line_position, line_text, modified_at) for line_position, line_text in waiting)
 
     def raw_lines(self) -> Iterator[tuple[int, str]]:
-        end = self.path.stat().st_size
+        end = FileAccess.stat(self.path).st_size
         tail = b""
         while end > 0:
             start = max(0, end - BLOCK_BYTES)
-            block = FileAccess.shared().bytes_range(self.path, start, end - start)
+            block = FileAccess.bytes_range(self.path, start, end - start)
             self.bytes_read += len(block)
             parts = (block + tail).split(b"\n")
             tail = parts[0] if start > 0 else b""

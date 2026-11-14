@@ -26,7 +26,7 @@ class KeptTyping(TerminalTyping):
 def typing_story(new_story) -> tuple[Story, KeptTyping]:
     story = lockdown_story(new_story)
     typing = KeptTyping(story.container.get(ProgramLockdown))
-    story.container.bind(TerminalTyping, typing)
+    story.replace(TerminalTyping, typing)
     story.hook("s-1", HookSamples.stop())
     report(story, 55)
     UsageLimitMarker()(story.container)

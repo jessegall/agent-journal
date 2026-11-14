@@ -1,3 +1,4 @@
+from engine.database.write_turns import WriteTurns
 import mimetypes
 
 from engine.database.database import Database
@@ -18,8 +19,8 @@ class ModuleFiles:
     """Answers GET /modules/<module>/<path>: a file from that module's web/dist and nothing outside it, with
     its exact content type, marked when it is a frame window's entry."""
 
-    def __init__(self, home: JournalHome) -> None:
-        self.home = home
+    def __init__(self, home: JournalHome, turns: WriteTurns | None = None) -> None:
+        self.home, self.turns = home, turns
 
     def file(self, module_name: str, path: str) -> ModuleFile:
         modules = [module for module in ModuleFinder(self.home).modules() if module.name == module_name]
@@ -27,12 +28,12 @@ class ModuleFiles:
             raise MissingModuleFileError(f"no installed module is named {module_name}")
         folder = modules[0].web_folder()
         target = (folder / path).resolve()
-        if not target.is_relative_to(folder) or not target.is_file():
+        if not target.is_relative_to(folder) or not FileAccess.is_file(target):
             raise MissingModuleFileError(f"{module_name} has no file {path} in its web/dist")
-        return ModuleFile(FileAccess.shared().binary(target), SUFFIX_CONTENT_TYPES.get(target.suffix) or mimetypes.guess_type(target.name)[0] or UNKNOWN_TYPE, self.is_frame_entry(module_name, path))
+        return ModuleFile(FileAccess.binary(target), SUFFIX_CONTENT_TYPES.get(target.suffix) or mimetypes.guess_type(target.name)[0] or UNKNOWN_TYPE, self.is_frame_entry(module_name, path))
 
     def is_frame_entry(self, module_name: str, path: str) -> bool:
-        container = synced_container(self.home)
+        container = synced_container(self.home, self.turns)
         try:
             windows = container.get(Registry).windows
         finally:

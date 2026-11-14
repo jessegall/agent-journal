@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 
@@ -8,7 +9,7 @@ class RotatedFile:
         self.path, self.limit_bytes = path, limit_bytes
 
     def rotate(self) -> bool:
-        if not self.path.exists() or self.path.stat().st_size <= self.limit_bytes:
+        if not FileAccess.exists(self.path) or FileAccess.stat(self.path).st_size <= self.limit_bytes:
             return False
-        self.path.replace(self.path.with_name(self.path.name + ".1"))
+        FileAccess.replace(self.path, self.path.with_name(self.path.name + ".1"))
         return True

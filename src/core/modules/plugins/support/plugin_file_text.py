@@ -47,6 +47,6 @@ class PluginFileText:
 
     @staticmethod
     def file_text(real: Path, name: str) -> str:
-        if not real.is_file():
+        if not FileAccess.is_file(real):
             raise MissingFileRefusal(f"{name} is not there, at {real}", "it may be new in the checkout: read it with --from checkout")
-        return FileAccess.shared().read(real, errors="replace")
+        return FileAccess.read(real, errors="replace")

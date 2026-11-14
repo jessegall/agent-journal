@@ -24,3 +24,5 @@ class RequestRun(Prunable, EnvironmentScoped, Model):
     line: str
     exit_code: int
     ended_at: Timestamp
+    entered_at: Timestamp | None = None
+    started_at: Timestamp | None = None

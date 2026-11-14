@@ -46,7 +46,8 @@ def test_the_phases_own_test_runs_in_the_background_on_the_commit_of_its_last_ta
     worker = proved_phase(worker_with_tasks(new_story, monkeypatch, BUILD_TASKS, build_test=PHASE_TEST))
     worker.story.expect_text(COMMIT, "committed tasks 1, 2, 3", actor=worker.worker)
     worker.story.expect_absent("proof list --task 3", PHASE_TEST, actor=worker.story.agent)
-    worker.story.expect_rows(PHASE_TEST in [process.line for process in worker.started_processes()], detail=str(worker.started))
+    lines = [process.line for process in worker.started_processes()]
+    worker.story.expect_rows(any(line.startswith(PHASE_TEST) for line in lines), detail=str(lines))
 
 
 def test_no_selected_test_is_queued_at_the_commit_of_a_phase_of_a_started_plan(declared_tests):

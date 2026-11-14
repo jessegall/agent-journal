@@ -17,11 +17,11 @@ class KeptLibraryFailure:
 
     def is_kept(self) -> bool:
         try:
-            age = (self.clock.timestamp().value - Timestamp.parsed(str(json.loads(FileAccess.shared().read(self.home.library_failure_file))["at"])).value).total_seconds()
+            age = (self.clock.timestamp().value - Timestamp.parsed(str(json.loads(FileAccess.read(self.home.library_failure_file))["at"])).value).total_seconds()
         except (OSError, ValueError, KeyError):
             return False
         return 0 <= age < KEPT_SECONDS
 
     def keep(self, reason: str) -> None:
-        self.home.library_failure_file.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(self.home.library_failure_file, json.dumps({"reason": reason, "at": self.clock.timestamp().text}))
+        FileAccess.mkdir(self.home.library_failure_file.parent, parents=True, exist_ok=True)
+        FileAccess.write(self.home.library_failure_file, json.dumps({"reason": reason, "at": self.clock.timestamp().text}))

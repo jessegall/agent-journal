@@ -43,13 +43,13 @@ class ProgramSettingsBackup:
 
     def copies(self, program: str, name: str) -> list[Path]:
         folder = self.home.program_settings_backups / program
-        if not folder.is_dir():
+        if not FileAccess.is_dir(folder):
             return []
-        matching = [(match, copy) for copy in folder.iterdir() if (match := COPY_NAME.match(copy.name)) is not None and match["name"] == name]
+        matching = [(match, copy) for copy in FileAccess.iterdir(folder) if (match := COPY_NAME.match(copy.name)) is not None and match["name"] == name]
         return [copy for match, copy in sorted(matching, key=lambda pair: (pair[0]["stamp"], int(pair[0]["number"] or 0)))]
 
     def _copied(self, program: str, path: Path, name: str) -> Path | None:
-        if not path.is_file():
+        if not FileAccess.is_file(path):
             return None
         try:
             data = KeptBytes.read(path)
@@ -65,7 +65,7 @@ class ProgramSettingsBackup:
             if newest is not None and KeptBytes.read(newest) == data:
                 return None
             copy = self.free_name(folder, name)
-            FileAccess.shared().write_whole(copy, data, COPY_MODE)
+            FileAccess.write_whole(copy, data, COPY_MODE)
             self.prune(program, name)
             return copy
 
@@ -74,20 +74,20 @@ class ProgramSettingsBackup:
         folder = PrivateFolders.made(self.home.program_settings_backups / program)
         with FileLock.locked(folder / LOCK_NAME):
             copy = self.free_name(folder, name)
-            FileAccess.shared().write_whole(copy, data, COPY_MODE)
+            FileAccess.write_whole(copy, data, COPY_MODE)
             for stale in self.copies(program, name)[:-NEWEST_COPIES]:
-                stale.unlink(missing_ok=True)
+                FileAccess.unlink(stale, missing_ok=True)
             return copy
 
     def free_name(self, folder: Path, name: str) -> Path:
         stamp = self.clock.timestamp().value.strftime(STAMP_FORMAT)
-        candidates = (folder / (f"{stamp}-{name}" if number == 0 else f"{stamp}-{number}-{name}") for number in range(len(list(folder.iterdir())) + 1))
-        return next(candidate for candidate in candidates if not candidate.exists())
+        candidates = (folder / (f"{stamp}-{name}" if number == 0 else f"{stamp}-{number}-{name}") for number in range(len(list(FileAccess.iterdir(folder))) + 1))
+        return next(candidate for candidate in candidates if not FileAccess.exists(candidate))
 
     def prune(self, program: str, name: str) -> None:
         copies = self.copies(program, name)
         for stale in copies[1:-NEWEST_COPIES]:
-            stale.unlink(missing_ok=True)
+            FileAccess.unlink(stale, missing_ok=True)
 
     @staticmethod
     def shown(path: Path) -> str:

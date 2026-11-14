@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from engine.checkout.project_checkouts import ProjectCheckouts
@@ -19,7 +20,7 @@ class WorktreeCheckouts(ProjectCheckouts):
 
     def folders(self) -> tuple[Path, ...]:
         root = self.root
-        return tuple(sorted(folder.resolve() for folder in root.glob(WORKTREE_PATTERN) if folder.is_dir())) if root.is_dir() else ()
+        return tuple(sorted(folder.resolve() for folder in FileAccess.glob(root, WORKTREE_PATTERN) if FileAccess.is_dir(folder))) if FileAccess.is_dir(root) else ()
 
     def contains(self, folder: Path) -> bool:
         return self.root.resolve() in folder.resolve().parents

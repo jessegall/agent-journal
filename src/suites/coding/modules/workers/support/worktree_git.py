@@ -7,7 +7,6 @@ from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from functools import lru_cache
 from engine.file.versions.file_version import FileVersion
-import shutil
 from pathlib import Path, PurePosixPath
 
 from engine.file.conflict_files import ConflictFiles
@@ -83,13 +82,13 @@ class WorktreeGit:
 
     def cut(self, folder: str, worktree: Worktree, start: str) -> None:
         path = Path(worktree.folder)
-        if path.exists() or path.is_symlink():
+        if FileAccess.exists(path) or FileAccess.is_symlink(path):
             self.runs.check_owner(worktree)
             registered = any(Path(registered_folder).resolve() == path.resolve() for registered_folder, _ in self.folders(folder))
-            if registered or (path / ".git").is_dir():
+            if registered or FileAccess.is_dir(path / ".git"):
                 raise Refusal(f"a git worktree still exists at {path}", "merge or release its worktree before reusing the folder")
             self.runs.stop(worktree)
-            shutil.rmtree(path)
+            FileAccess.rmtree(path)
         try:
             self.checked(folder, CHECKOUT_LIMIT_SECONDS, "worktree", "add", "-b", worktree.branch, worktree.folder, start)
         except Exception:
@@ -127,7 +126,7 @@ class WorktreeGit:
     # Whether the worktree's test checkout stands at the worktree's own last commit.
     def is_test_checkout_current(self, worktree: Worktree) -> bool:
         folder = self.test_folder(worktree)
-        return Path(folder, ".git").exists() and self.head_commit(folder) == self.head_commit(worktree.folder)
+        return FileAccess.exists(Path(folder, ".git")) and self.head_commit(folder) == self.head_commit(worktree.folder)
 
     def commit_checkout(self, worktree: Worktree, commit: str) -> str:
         return self.detached_checkout(worktree.folder, self.test_folder(worktree), commit, self.library_names(worktree))
@@ -141,16 +140,16 @@ class WorktreeGit:
         return str(Path(environment.folder) / WORKTREES_FOLDER / f"{environment.name}-tests" / name)
 
     def detached_checkout(self, source: str, folder: str, commit: str, libraries: tuple[str, ...]) -> str:
-        if not Path(folder, ".git").exists():
-            Path(folder).parent.mkdir(parents=True, exist_ok=True)
+        if not FileAccess.exists(Path(folder, ".git")):
+            FileAccess.mkdir(Path(folder).parent, parents=True, exist_ok=True)
             self.checked(source, CHECKOUT_LIMIT_SECONDS, "worktree", "add", "--detach", folder, commit)
         else:
             self.checked(folder, CHECKOUT_LIMIT_SECONDS, "reset", "--hard", commit)
             self.checked(folder, GIT_LIMIT_SECONDS, "clean", "-fd", *(flag for name in libraries for flag in ("-e", name)))
         self.restore_skipped_files(folder)
         for name in libraries:
-            if not Path(folder, name).exists():
-                Path(folder, name).symlink_to(Path(source, name).resolve(), target_is_directory=True)
+            if not FileAccess.exists(Path(folder, name)):
+                FileAccess.symlink_to(Path(folder, name), Path(source, name).resolve(), target_is_directory=True)
         return folder
 
     def restore_skipped_files(self, folder: str) -> None:
@@ -169,7 +168,7 @@ class WorktreeGit:
         return str(folder.parent.with_name(f"{folder.parent.name}-tests") / folder.name)
 
     def library_names(self, worktree: Worktree) -> tuple[str, ...]:
-        linked = {path.name for path in Path(worktree.folder).iterdir() if path.is_symlink()}
+        linked = {path.name for path in FileAccess.iterdir(Path(worktree.folder)) if FileAccess.is_symlink(path)}
         return tuple(sorted(linked | set(self.dependency_folders(worktree.folder)) | set(json.loads(worktree.library_links)) | set(json.loads(worktree.library_copies))))
 
     def dependency_folders(self, folder: str) -> tuple[str, ...]:
@@ -188,7 +187,7 @@ class WorktreeGit:
         return True
 
     def commit_folders(self, folder: str, folders: tuple[str, ...], message: str) -> bool:
-        existing = tuple(name for name in folders if Path(folder, name).exists())
+        existing = tuple(name for name in folders if FileAccess.exists(Path(folder, name)))
         if not existing:
             return False
         self.checked(folder, GIT_LIMIT_SECONDS, "add", "-A", "--", *existing)
@@ -198,7 +197,7 @@ class WorktreeGit:
         return True
 
     def changed_names(self, folder: str, folders: tuple[str, ...]) -> tuple[str, ...]:
-        existing = tuple(name for name in folders if Path(folder, name).exists())
+        existing = tuple(name for name in folders if FileAccess.exists(Path(folder, name)))
         if not existing:
             return ()
         listing = self.checked(folder, GIT_LIMIT_SECONDS, "status", "--porcelain", "--untracked-files=all", "--", *existing).stdout
@@ -302,14 +301,14 @@ class WorktreeGit:
     def build(self, folder: str, base_folder: str, folders: Sequence[str]) -> None:
         for built in folders:
             path = Path(folder, built)
-            if path.exists():
-                shutil.rmtree(path)
+            if FileAccess.exists(path):
+                FileAccess.rmtree(path)
         viewer = Path(folder, "src/viewer")
         modules = viewer / "node_modules"
         base_modules = Path(base_folder, "src/viewer/node_modules")
-        linked = viewer.is_dir() and not modules.exists() and base_modules.is_dir()
+        linked = FileAccess.is_dir(viewer) and not FileAccess.exists(modules) and FileAccess.is_dir(base_modules)
         if linked:
-            modules.symlink_to(base_modules.resolve(), target_is_directory=True)
+            FileAccess.symlink_to(modules, base_modules.resolve(), target_is_directory=True)
         try:
             finished = self.executor.execute(ExecutionRequest(self.builds.command(), Path(folder), ProcessType.SHELL, BUILD_LIMIT_SECONDS))
             if not finished.succeeded:
@@ -318,8 +317,8 @@ class WorktreeGit:
             raise Refusal("the build of the built files exceeded its time limit", "fix the build, then merge again") from timeout
         finally:
             if linked:
-                modules.unlink()
-        missing = [built for built in folders if not any(path.is_file() for path in Path(folder, built).rglob("*"))]
+                FileAccess.unlink(modules)
+        missing = [built for built in folders if not any(FileAccess.is_file(path) for path in FileAccess.rglob(Path(folder, built), "*"))]
         if missing:
             raise Refusal(f"the build produced no files in {', '.join(missing)}", "fix the build before merging")
 
@@ -328,14 +327,14 @@ class WorktreeGit:
         skipped_names = self.skipped_files(folder, *INSTRUCTION_FILES)
         kept = {name: self.git_folder(folder) / f"{name}.kept" for name in skipped_names}
         for name in skipped_names:
-            FileAccess.shared().replace(Path(folder) / name, kept[name])
+            FileAccess.replace(Path(folder) / name, kept[name])
             self.checked(folder, GIT_LIMIT_SECONDS, "update-index", "--no-skip-worktree", "--", name)
             self.checked(folder, GIT_LIMIT_SECONDS, "restore", "--", name)
         try:
             yield
         finally:
             for name in skipped_names:
-                FileAccess.shared().replace(kept[name], Path(folder) / name)
+                FileAccess.replace(kept[name], Path(folder) / name)
                 self.git(folder, GIT_LIMIT_SECONDS, "update-index", "--skip-worktree", "--", name)
 
     def lag_count(self, worktree: Worktree) -> int:
@@ -438,7 +437,7 @@ class WorktreeGit:
     @contextmanager
     def stash_stack_lock(self, worktree: Worktree) -> Generator[None]:
         common_folder = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "--git-common-dir").stdout.strip()
-        with FileAccess.shared().writer(Path(worktree.folder, common_folder, STASH_LOCK_FILE), "a") as lock:
+        with FileAccess.writer(Path(worktree.folder, common_folder, STASH_LOCK_FILE), "a") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
             try:
                 yield
@@ -540,7 +539,7 @@ class WorktreeGit:
         git_folder = self.git_folder(folder)
         exclude_file = git_folder / WORKTREE_EXCLUDE_FILE
         worktree_config = git_folder / WORKTREE_CONFIG_FILE
-        if worktree_config.exists() and self.has_exclusion(worktree_config, FileAccess.shared().version(worktree_config), exclude_file):
+        if FileAccess.exists(worktree_config) and self.has_exclusion(worktree_config, FileAccess.version(worktree_config), exclude_file):
             return exclude_file
         self.checked(folder, GIT_LIMIT_SECONDS, "config", "extensions.worktreeConfig", "true")
         self.checked(folder, GIT_LIMIT_SECONDS, "config", "--worktree", "core.excludesFile", str(exclude_file))
@@ -549,18 +548,18 @@ class WorktreeGit:
     @staticmethod
     @lru_cache(maxsize=128)
     def has_exclusion(path: Path, version: FileVersion, excluded: Path) -> bool:
-        return str(excluded) in FileAccess.shared().read(path)
+        return str(excluded) in FileAccess.read(path)
 
     def git_folder(self, folder: str) -> Path:
         link = Path(folder) / ".git"
-        if link.is_file():
-            return (Path(folder) / self.linked_folder(link, FileAccess.shared().version(link))).resolve()
+        if FileAccess.is_file(link):
+            return (Path(folder) / self.linked_folder(link, FileAccess.version(link))).resolve()
         return Path(self.checked(folder, GIT_LIMIT_SECONDS, "rev-parse", "--absolute-git-dir").stdout.strip())
 
     @staticmethod
     @lru_cache(maxsize=128)
     def linked_folder(path: Path, version: FileVersion) -> str:
-        return FileAccess.shared().read(path).removeprefix(GIT_FOLDER_PREFIX).strip()
+        return FileAccess.read(path).removeprefix(GIT_FOLDER_PREFIX).strip()
 
     def remove(self, folder: str, worktree: Worktree) -> bool:
         self.runs.check_owner(worktree)
@@ -569,13 +568,13 @@ class WorktreeGit:
             raise Refusal(f"another git worktree owns {worktree.folder}", "keep its folder and remove the stale worker row")
         self.runs.stop(worktree)
         tests_folder = self.test_folder(worktree)
-        if Path(tests_folder).exists():
+        if FileAccess.exists(Path(tests_folder)):
             self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", "--force", tests_folder)
-            shutil.rmtree(tests_folder, ignore_errors=True)
-        if Path(worktree.folder).exists():
+            FileAccess.rmtree(tests_folder, ignore_errors=True)
+        if FileAccess.exists(Path(worktree.folder)):
             self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", "--force", worktree.folder)
-        if Path(worktree.folder).exists():
-            shutil.rmtree(worktree.folder)
+        if FileAccess.exists(Path(worktree.folder)):
+            FileAccess.rmtree(worktree.folder)
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
         if not self.is_merged(folder, worktree.base_branch, worktree.branch):
             return True
@@ -602,7 +601,7 @@ class WorktreeGit:
         force = tuple(["--force"]) if self.is_published_folder(path) else ()
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", *force, path)
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
-        return not Path(path).exists()
+        return not FileAccess.exists(Path(path))
 
     def is_published_folder(self, path: str) -> bool:
         lines = self.git(path, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.splitlines()
@@ -618,7 +617,7 @@ class WorktreeGit:
         return lines[0].removeprefix("worktree "), branch
 
     def remove_folder(self, folder: str, path: str) -> None:
-        if Path(path).exists():
+        if FileAccess.exists(Path(path)):
             self.checked(folder, GIT_LIMIT_SECONDS, "worktree", "remove", path)
         else:
             self.checked(folder, GIT_LIMIT_SECONDS, "worktree", "prune")

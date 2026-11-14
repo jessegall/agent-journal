@@ -15,6 +15,8 @@ def request_log_server(new_story):
     with server_story(story, listener_thread_started=False) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         request(server, cookie, "/api/line", {"window": "tasks.tasks", "environment": "main", "line": ["task", "list"]})
+        for _ in range(2):
+            story.run_tick("request trace import")
         yield server, cookie
 
 

@@ -1,3 +1,4 @@
+from engine.process.child_process import ChildProcess
 import os
 import subprocess
 from pathlib import Path
@@ -54,7 +55,7 @@ class PluginCommandRunner:
                                    text=True, start_new_session=True)
         self.scripts.start(running, plugin, RUN_KEY, EventForm.COMMIT, started_at)
         try:
-            output, _ = running.communicate()
+            output, _ = ChildProcess(running).communicate()
             stopped = self.scripts.stop_reason(running) is not ScriptStop.STOP_FAILED
         finally:
             self.scripts.finish(running)

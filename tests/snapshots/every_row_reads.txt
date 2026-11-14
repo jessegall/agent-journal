@@ -109,7 +109,9 @@ src/core/modules/plans/support/unblockers/plan_unblockers.py:the unblockers read
 src/core/modules/plans/support/wait_circle.py:a circle is found only by following every wait of the tasks and plans reached
 src/core/modules/plugins/commands/prune_plugin_deliveries/prune_plugin_deliveries_handler.py:pruning keeps the newest deliveries of a plugin and removes every older one
 src/core/modules/plugins/commands/queue_plugin_run/queue_plugin_run_handler.py:every waiting run of the kind is weighed against the new one
+src/core/modules/plugins/support/plugin_installed_names.py:the plugins installed are few, and every class of a plugin asks after them
 src/core/modules/plugins/support/plugin_places.py:every running run of a plugin no longer wanted is stopped
+src/core/modules/plugins/support/plugin_readers.py:a plugin ships a handful of readers, each read by its name
 src/core/modules/plugins/support/plugin_readers.py:a removed plugin takes every reader it brought with it
 src/core/modules/plugins/support/plugin_run_limits.py:the limits of every plugin that has a run kind are read
 src/core/modules/plugins/support/queued_run_follow.py:every queued run that is still waiting is followed
@@ -133,16 +135,16 @@ src/core/modules/processes/support/block_conditions/output_monitored.py:every mo
 src/core/modules/processes/support/blocked_runs.py:every old running run of the agent is checked for the silence that holds it
 src/core/modules/processes/support/cadence/judged_runs.py:the cadence tick judges every running run with its agent and parts
 src/core/modules/processes/support/decisions/command_run_counts.py:one count row for each command a run names
+src/core/modules/processes/support/execution_class_lines.py:The person's classes are few, and a match reads every one of them.
 src/core/modules/processes/support/reader_rows.py:A command is matched against every reader's patterns, and the readers are a catalogue of shipped and saved readers.
 src/core/modules/processes/support/reading/catalogue_audit.py:every creator of a recent mark is checked for an agent
 src/core/modules/processes/support/run_slots.py:the run slots are shared out over every running and queued run
 src/core/modules/processes/support/run_visibility.py:every part of the runs asked about decides how each run shows
+src/core/modules/processes/support/stored_execution_classes.py:The person's classes are few, and a match reads every one of them.
 src/core/modules/processes/support/unreadable/unreadable_mark_registry.py:Every mark of the leading words of the commands in hand, lifted or not, so the newest mark of each word is found.
 src/core/modules/processes/ticks/hang_watch.py:the tick looks at every run that is running
 src/core/modules/processes/ticks/output_checks.py:the tick checks every open watch of every running run
-src/core/modules/processes/ticks/output_reading.py:the tick reads the new output of every running run
 src/core/modules/processes/ticks/run_end_recovery.py:the tick recovers the end of every run still marked running
-src/core/modules/processes/ticks/run_timeouts.py:the tick stops every running run whose time limit passed
 src/core/modules/questions/listeners/open_questions_dock_listener.py:The questions of the main agent that a user has not answered yet; the dock shows every one of them.
 src/core/modules/questions/rules/support/question_changes.py:every question of the agent that changed since the last answer is told, with what waits on it
 src/core/modules/reviews/commands/review_board/review_board_subcommand.py:the reviewer board shows every review with its steps
@@ -227,6 +229,7 @@ src/suites/coding/modules/workers/support/behind_checks.py:every behind check of
 src/suites/coding/modules/workers/support/behind_checks.py:every worktree that is cut is checked for how far behind it is
 src/suites/coding/modules/workers/support/behind_decisions.py:every behind check of the worktree is weighed
 src/suites/coding/modules/workers/support/behind_facts_reader.py:every behind check of the worktree is weighed
+src/suites/coding/modules/workers/support/checkpoint_listing.py:a checkpoint looks for the reader that lists the tests of its own test
 src/suites/coding/modules/workers/support/checkpoint_results.py:a checkpoint result counts every test of its reach
 src/suites/coding/modules/workers/support/checkpoint_runner.py:a checkpoint runs the tests of every committed proof of its tasks
 src/suites/coding/modules/workers/support/escalations.py:every message to the worker since its question was forwarded names who answered

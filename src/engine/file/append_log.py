@@ -17,7 +17,7 @@ class AppendLog:
             log.write(line + "\n")
 
     def claimed_lines(self) -> tuple[str, ...]:
-        if not self.taken_path.exists():
+        if not FileAccess.exists(self.taken_path):
             return ()
         return tuple(line for line in self.files.read(self.taken_path).splitlines() if line)
 
@@ -25,8 +25,8 @@ class AppendLog:
         self.files.write(self.taken_path, "".join(line + "\n" for line in lines))
 
     def archive(self, unfinished: tuple[str, ...] = ()) -> None:
-        self.taken_path.unlink(missing_ok=True)
-        if self.path.exists():
+        FileAccess.unlink(self.taken_path, missing_ok=True)
+        if FileAccess.exists(self.path):
             self.files.replace(self.path, self.taken_path)
         if unfinished:
             with self.files.writer(self.taken_path, "a") as claimed:

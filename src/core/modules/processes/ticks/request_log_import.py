@@ -1,3 +1,4 @@
+from engine.database.database_busy import DatabaseBusy
 import sqlite3
 from dataclasses import replace
 from itertools import groupby
@@ -11,7 +12,6 @@ from core.modules.processes.commands.record_request_runs.record_request_runs imp
 from core.modules.processes.support.request_log import RequestLog
 from core.modules.processes.support.request_log_entry import RequestLogEntry
 
-BUSY_CODES = (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED)
 
 
 class RequestLogImport:
@@ -48,7 +48,7 @@ class RequestLogImport:
         try:
             container.get(Bus).run(RecordRequestRuns(group), Actor.core(), environment_id=group[0].environment_id)
         except sqlite3.OperationalError as failure:
-            if failure.sqlite_errorcode not in BUSY_CODES:
+            if not DatabaseBusy.is_busy(failure):
                 return cls.single_record(container, group, failure)
             return group
         except Exception as failure:

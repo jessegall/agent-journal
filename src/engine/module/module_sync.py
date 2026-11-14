@@ -122,7 +122,7 @@ class ModuleSync:
             self.cursors.remove_absent(listeners)
             for listener in listeners:
                 self.cursors.start(listener)
-        FileAccess.shared().write(self.home.program_table, ProgramTable([provider for module in modules for provider in module.providers]).text())
+        FileAccess.write(self.home.program_table, ProgramTable([provider for module in modules for provider in module.providers]).text())
         return SyncReport(tuple(module.name for module in modules), migrations, registry_changed, (*retired, *self.notes.lines(modules), *(f"warning: {text}" for text in self.check.button_warnings(modules).values())))
 
     def migrations(self, module: type[Module]) -> tuple[Migration, ...]:

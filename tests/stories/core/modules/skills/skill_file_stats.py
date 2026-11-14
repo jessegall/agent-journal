@@ -22,13 +22,13 @@ class SkillFileCounts:
 
         def counted_version(files, file):
             self.stats += str(file).endswith(SKILL_FILE_NAME)
-            return version(files, file)
+            return version(file)
 
         def counted_read_skills(catalogue):
             self.passes += 1
             return read_skills(catalogue)
 
-        monkeypatch.setattr(FileAccess, "version", counted_version)
+        monkeypatch.setattr(FileAccess, "version", classmethod(counted_version))
         monkeypatch.setattr(SkillCatalogue, "read_skills", counted_read_skills)
 
 

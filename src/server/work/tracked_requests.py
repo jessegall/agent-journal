@@ -1,3 +1,4 @@
+from engine.time.clock import Clock
 import socket
 import sys
 import threading
@@ -76,4 +77,4 @@ class TrackedRequests(ThreadingMixIn, TCPServer):
                     connection.shutdown(socket.SHUT_RD)
                 except OSError:
                     continue
-            threads[0].join(DRAIN_POLL_SECONDS)
+            Clock().join(threads[0], DRAIN_POLL_SECONDS)

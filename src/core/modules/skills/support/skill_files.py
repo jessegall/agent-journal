@@ -1,7 +1,6 @@
 from engine.skill.skill_contents import SkillContents
 from engine.file.file_access import FileAccess
-import shutil
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from core.modules.agents.models.agent import Agent
@@ -46,36 +45,44 @@ class SkillFiles:
         return {folder: self.first_present([project / program_folder / folder / SKILL_FILE for project in projects for program_folder in program_folders]) for folder in folders}
 
     def first_present(self, paths: Sequence[Path]) -> Path:
-        return next((path for path in paths if path.exists()), paths[0])
+        return next((path for path in paths if FileAccess.exists(path)), paths[0])
 
     def write_all(self, skills: Sequence[SkillEntry]) -> dict[str, bool]:
         projects = self.projects.projects()
+        permitted = {project: self.projects.permitted(project) for project in projects}
         published: dict[str, bool] = {}
+        handled: set[Path] = set()
         for skill in skills:
             source = Path(skill.path)
             # a skill whose file the registry still names but that is gone is left out; the others are written all the same
-            if not source.is_file():
+            if not FileAccess.is_file(source):
                 published[skill.folder] = False
                 continue
             text = SkillContents.read(source).text
-            published[skill.folder] = any(tuple(self.publish(project, skill, text) for project in projects))
+            published[skill.folder] = any(tuple(self.publish(project, skill, text, permitted[project](skill.folder), handled) for project in projects))
         return published
 
     def write(self, project: Path, skill: SkillEntry) -> bool:
-        return self.publish(project, skill, SkillContents.read(Path(skill.path)).text)
+        return self.publish(project, skill, SkillContents.read(Path(skill.path)).text, self.projects.permitted(project)(skill.folder))
 
-    def publish(self, project: Path, skill: SkillEntry, text: str) -> bool:
-        if not self.projects.permits(project, skill.folder):
+    # a target reached again through a linked folder, as a worktree's links to the project's folders are, is the same
+    # file and is handled once
+    def publish(self, project: Path, skill: SkillEntry, text: str, is_permitted: bool, handled: set[Path] | None = None) -> bool:
+        if not is_permitted:
             return False
         changed = False
+        source = Path(skill.path).resolve()
         for program_folder in self.providers.skill_folders():
             target = project / program_folder / skill.folder / SKILL_FILE
-            if target.resolve() == Path(skill.path).resolve():
+            resolved = target.resolve()
+            if resolved == source or (handled is not None and resolved in handled):
                 continue
-            if target.exists() and SkillContents.read(target).digest == SkillDigest.digest(text):
+            if handled is not None:
+                handled.add(resolved)
+            if FileAccess.exists(target) and SkillContents.read(target).digest == SkillDigest.digest(text):
                 continue
-            target.parent.mkdir(parents=True, exist_ok=True)
-            FileAccess.shared().write(target, text)
+            FileAccess.mkdir(target.parent, parents=True, exist_ok=True)
+            FileAccess.write(target, text)
             changed = True
         return changed
 
@@ -87,9 +94,11 @@ class SkillFiles:
     def clear(self, declared: Sequence[SkillEntry]) -> list[str]:
         names, cleared = {skill.folder for skill in declared}, list[str]()
         legacy_roots = set(self.projects.roots([".codex/skills"]))
+        permitted: dict[Path, Callable[[str], bool]] = {}
         for root in (*self.projects.roots(self.providers.skill_folders()), *legacy_roots):
-            stale = [folder for folder in root.glob(f"{FOLDER_PREFIX}*") if folder.is_dir() and (root in legacy_roots or folder.name not in names or not self.projects.permits(root.parents[1], folder.name))]
+            is_permitted = permitted.setdefault(root.parents[1], self.projects.permitted(root.parents[1]))
+            stale = [folder for folder in FileAccess.glob(root, f"{FOLDER_PREFIX}*") if FileAccess.is_dir(folder) and (root in legacy_roots or folder.name not in names or not is_permitted(folder.name))]
             for folder in stale:
-                shutil.rmtree(folder)
+                FileAccess.rmtree(folder)
                 cleared.append(folder.name)
         return list(dict.fromkeys(cleared))

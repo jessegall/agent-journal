@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import shutil
 from pathlib import Path
 
@@ -22,4 +23,4 @@ class CodeCopy:
 
     def write(self, folder: Path) -> None:
         ConflictFiles(self.source).check()
-        shutil.copytree(self.source, folder, ignore=shutil.ignore_patterns(*IGNORED), dirs_exist_ok=True)
+        FileAccess.copytree(self.source, folder, ignore=shutil.ignore_patterns(*IGNORED), dirs_exist_ok=True)

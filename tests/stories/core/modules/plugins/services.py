@@ -113,7 +113,7 @@ def counted_calls(monkeypatch) -> dict[str, int]:
 
     def counted_write(self, file, *arguments, **options):
         call_counts["settings"] += 1 if Path(file).name == SETTINGS_FILE else 0
-        return file_writer(self, file, *arguments, **options)
+        return file_writer(file, *arguments, **options)
 
     def counted_find(self, agent_id):
         call_counts["agent"] += 1
@@ -123,7 +123,7 @@ def counted_calls(monkeypatch) -> dict[str, int]:
         call_counts["skills"] += 1
         return names(self, agent_id)
 
-    monkeypatch.setattr(FileAccess, "write", counted_write)
+    monkeypatch.setattr(FileAccess, "write", classmethod(counted_write))
     monkeypatch.setattr(AgentRows, "find", counted_find)
     monkeypatch.setattr(LoadedSkills, "names", counted_names)
     return call_counts
@@ -314,11 +314,11 @@ def test_a_service_started_by_an_exec_script_lists_by_health_and_keeps_stderr(ne
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     folder = service_plugin_folder(story.home.folder.parent)
     manifest_path = folder / "journal-plugin.json"
-    manifest = json.loads(FileAccess.shared().read(manifest_path))
+    manifest = json.loads(FileAccess.read(manifest_path))
     manifest["services"][0]["command"] = ["start.sh"]
-    FileAccess.shared().write(manifest_path, json.dumps(manifest))
+    FileAccess.write(manifest_path, json.dumps(manifest))
     script = folder / "start.sh"
-    FileAccess.shared().write(script, '#!/bin/sh\necho "service diagnostic" >&2\nexec ./serve.py\n')
+    FileAccess.write(script, '#!/bin/sh\necho "service diagnostic" >&2\nexec ./serve.py\n')
     script.chmod(0o755)
     story.expect_success(f"plugin install {folder} --yes", actor=story.user)
     services, processes = story.container.get(PluginServices), ServiceProcesses()
@@ -326,16 +326,16 @@ def test_a_service_started_by_an_exec_script_lists_by_health_and_keeps_stderr(ne
         services.follow(processes)
         story.expect_text("plugin services", "served answers: running")
         story.expect_text("plugin service-log served answers --lines 1", "service diagnostic")
-        FileAccess.shared().write(story.home.folder / "plugin-data" / "served" / "unwell", "")
+        FileAccess.write(story.home.folder / "plugin-data" / "served" / "unwell", "")
         story.expect_text("plugin services", "served answers: stopped")
         services.check_health(processes)
-        story.expect_rows("plugin served service answers restarted after a missed health check" in FileAccess.shared().read(story.home.system_log))
+        story.expect_rows("plugin served service answers restarted after a missed health check" in FileAccess.read(story.home.system_log))
         process = processes.running[("served", "answers")]
         os.kill(process.pid, signal.SIGKILL)
         process.wait(5)
         story.expect_text("plugin services", "served answers: stopped")
         services.follow(processes)
-        story.expect_rows("plugin served service answers restarted after exit" in FileAccess.shared().read(story.home.system_log))
+        story.expect_rows("plugin served service answers restarted after exit" in FileAccess.read(story.home.system_log))
     finally:
         processes.close()
 
@@ -345,9 +345,9 @@ def test_a_plugin_an_agent_installs_through_the_persons_approval_has_its_service
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     folder = service_plugin_folder(story.home.folder.parent)
     manifest_path = folder / "journal-plugin.json"
-    manifest = json.loads(FileAccess.shared().read(manifest_path))
+    manifest = json.loads(FileAccess.read(manifest_path))
     manifest["installed"] = "touch run.sh; echo '{}'"
-    FileAccess.shared().write(manifest_path, json.dumps(manifest))
+    FileAccess.write(manifest_path, json.dumps(manifest))
     story.expect_refusal(f"plugin install {folder} --yes --reason needed", "A user was asked in the dock", actor=story.agent)
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(story.container.get(Queries).query(ApprovalRequest).first().id)])

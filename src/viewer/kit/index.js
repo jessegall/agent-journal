@@ -112,6 +112,7 @@ export {default as DropList} from "../src/kit/DropList.vue";
 export {default as MenuLabel} from "../src/kit/MenuLabel.vue";
 export {default as MenuPanel} from "../src/kit/MenuPanel.vue";
 export {default as ProcessQueueBody} from "../src/resource/ProcessQueueBody.vue";
+export {default as ExecutionLanes} from "../src/resource/ExecutionLanes.vue";
 export {default as HostedInspector} from "../src/resource/HostedInspector.vue";
 export {default as TaskDetails} from "../src/tasks/TaskDetails.vue";
 export {default as TaskChain} from "../src/tasks/TaskChain.vue";

@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from core.modules.agents.models.agent import Agent
@@ -13,6 +14,6 @@ class WorktreeOwnChanges:
         self.git, self.managed_files = git, managed_files
 
     def has_worker_changes(self, agent: Agent, worktree: Worktree) -> bool:
-        if worktree.removed_at is not None or not Path(worktree.folder).exists():
+        if worktree.removed_at is not None or not FileAccess.exists(Path(worktree.folder)):
             return False
         return any(not self.managed_files.has(agent, path) for path in self.git.uncommitted_files(worktree.folder))

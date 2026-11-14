@@ -28,7 +28,7 @@ class ServerLock:
         self.held = ExitStack()
 
     def __enter__(self) -> "ServerLock":
-        RunDrain(self.home).wait()
+        RunDrain(self.home).drain()
         self.files.mark_maintenance()
         self.files.mark_restart()
         try:

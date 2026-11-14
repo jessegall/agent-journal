@@ -30,15 +30,12 @@ const RUN = {
     created_at: "2026-11-03T10:00:00Z",
     started_at: "2026-11-03T10:00:05Z",
     ended_at: null,
-    uses_slot: true,
 };
 const SNAPSHOT = {
     environment_id: 1,
     environment_name: "main",
     parallel_limit: 2,
-    limit_setting: "journal.core.processes.run-batch-size",
-    count_main_runs: false,
-    main_spots_setting: "journal.core.processes.main-runs-take-slots",
+    limit_setting: "journal.core.processes.lane-capacity-long",
     used_slots: 1,
     waiting_count: 2,
     halted: false,
@@ -55,9 +52,9 @@ const SNAPSHOT = {
             line: "make checks",
             category: "check",
             started_at: null,
-            uses_slot: false,
+           
         },
-        {...RUN, id: 72, task_id: 13, owner_agent_id: 23, section: "waiting", line: "make site", started_at: null, uses_slot: false},
+        {...RUN, id: 72, task_id: 13, owner_agent_id: 23, section: "waiting", line: "make site", started_at: null},
     ],
     recent: [
         {
@@ -68,7 +65,7 @@ const SNAPSHOT = {
             state: "finished",
             line: "make previous",
             ended_at: "2026-11-03T10:01:10Z",
-            uses_slot: false,
+           
         },
     ],
 };
@@ -127,7 +124,7 @@ test("queue motion styles include reordering and respect reduced motion", () => 
 test("the process queue reads its counts and ordered lists together", async () => {
     const read = vi.fn(reader);
     await panel(read);
-    expect(read).toHaveBeenCalledExactlyOnceWith(["queue", "list"]);
+    expect(read.mock.calls.filter(([line]) => line[0] === "queue")).toEqual([[["queue", "list"]]]);
     expect(document.body.querySelector("[data-queue-spots]").textContent).toBe("1 of 2");
     expect(document.body.querySelector("[data-queue-waiting]").textContent).toBe("2");
     expect([...document.body.querySelectorAll("[data-queue-heading]")].map((item) => item.textContent)).toEqual([
@@ -190,37 +187,30 @@ test("a limit a suite names shows beside the commands at once and saves its sett
     expect(read).toHaveBeenCalledWith(["setting", "set", limit.key, "500"]);
 });
 
-test("the stepper and switch save their declared settings and refresh the queue", async () => {
+test("the stepper saves its declared setting and refreshes the queue", async () => {
     let queue = {...SNAPSHOT};
     const read = vi.fn(async (line) => {
         if (line[0] === "setting") {
-            queue =
-                line[2] === SNAPSHOT.limit_setting
-                    ? {...queue, parallel_limit: Number(line[3])}
-                    : {...queue, count_main_runs: line[3] === "on"};
+            queue = {...queue, parallel_limit: Number(line[3])};
         }
         return {ok: true, value: queue};
     });
     await panel(read);
-    document.body.querySelector('[aria-label="One more command at once"]').click();
+    document.body.querySelector('[aria-label="One slot unit more"]').click();
     await settle();
     expect(read).toHaveBeenCalledWith(["setting", "set", SNAPSHOT.limit_setting, "3"]);
     expect(document.body.querySelector("[data-queue-limit]").textContent).toBe("3");
-    document.body.querySelector('[aria-label="One fewer command at once"]').click();
+    document.body.querySelector('[aria-label="One slot unit fewer"]').click();
     await settle();
     expect(document.body.querySelector("[data-queue-limit]").textContent).toBe("2");
-    document.body.querySelector("[data-queue-main-spots]").click();
-    await settle();
-    expect(read).toHaveBeenCalledWith(["setting", "set", SNAPSHOT.main_spots_setting, "on"]);
-    expect(document.body.querySelector("[data-queue-main-spots]").getAttribute("aria-checked")).toBe("true");
 });
 
 test("the minimum limit disables decrease and a refused setting stays unchanged", async () => {
     await panel(async (line) =>
         line[0] === "setting" ? {ok: false, error: "Read only"} : {ok: true, value: {...SNAPSHOT, parallel_limit: 1}}
     );
-    expect(document.body.querySelector('[aria-label="One fewer command at once"]').disabled).toBe(true);
-    document.body.querySelector('[aria-label="One more command at once"]').click();
+    expect(document.body.querySelector('[aria-label="One slot unit fewer"]').disabled).toBe(true);
+    document.body.querySelector('[aria-label="One slot unit more"]').click();
     await settle();
     expect(document.body.querySelector('[role="alert"]').textContent).toBe("Read only");
     expect(document.body.querySelector("[data-queue-limit]").textContent).toBe("1");
@@ -268,11 +258,11 @@ test("process events refresh the queue and output events refresh only an open ou
     await panel(read);
     subscriptions.dispatch({event: "task.update", row_id: 11});
     await settle();
-    expect(read).toHaveBeenCalledTimes(1);
+    expect(read.mock.calls.filter(([line]) => line[0] === "queue")).toHaveLength(1);
     queue = {...SNAPSHOT, waiting: [], waiting_count: 0};
     subscriptions.dispatch({event: "process.update", row_id: 71});
     await settle();
-    expect(read).toHaveBeenCalledTimes(2);
+    expect(read.mock.calls.filter(([line]) => line[0] === "queue")).toHaveLength(2);
     await vi.waitFor(() => expect(rowsOf("waiting")).toHaveLength(0));
     const row = rowsOf("running")[0];
     subscriptions.dispatch({event: "output.update", row_id: 70});
@@ -304,7 +294,7 @@ test("the queue window declares the output events it follows, so an open output 
 test("the queue is named Process queue in its window and its inspector, and its window may read the pages of an output it opens", () => {
     const module = readFileSync(resolve(__dirname, "../../core/modules/processes/processes_module.py"), "utf8");
     const inspector = readFileSync(resolve(__dirname, "../../core/modules/processes/support/queue_inspector.py"), "utf8");
-    expect(module).toMatch(/WindowDeclaration\("processes\.queue-body", "Process queue",[\s\S]*?reads=\["queue list", "output page"\]/);
+    expect(module).toMatch(/WindowDeclaration\("processes\.queue-body", "Process queue",[\s\S]*?reads=\["queue list", "output page", "queue-class list", "queue-class preview"\]/);
     expect(inspector).toContain('label="Process queue"');
     expect(`${module}${inspector}`).not.toContain("Test queue");
 });

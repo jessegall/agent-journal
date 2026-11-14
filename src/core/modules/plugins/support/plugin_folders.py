@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from engine.time.clock import Clock
@@ -21,7 +22,7 @@ class PluginFolders:
 
     def is_upgrading(self, name: str) -> bool:
         mark = self.upgrade_mark(name)
-        return mark.exists() and self.clock.epoch_seconds() - mark.stat().st_mtime < UPGRADE_MARK_SECONDS
+        return FileAccess.exists(mark) and self.clock.epoch_seconds() - FileAccess.stat(mark).st_mtime < UPGRADE_MARK_SECONDS
 
     def service_log(self, name: str, service: str) -> Path:
         return self.data(name) / f"service-{service}.log"

@@ -28,7 +28,7 @@ VIEWER_PORT = 8000
 def account_story(new_story, client: FakeTunlerClient | None = None):
     story = new_story(MODULE, fixture=UserJoined)
     fake = client or FakeTunlerClient()
-    story.container.bind(TunlerClient, fake)
+    story.replace(TunlerClient, fake)
     return story, fake
 
 

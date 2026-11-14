@@ -26,7 +26,7 @@ class RemoveInstructionImportHandler(Handler[RemoveInstructionImport, str]):
             raise UserApprovalRefusal(InstructionImportQuestion.text(command.file, command.imported), command=command)
         project = self.home.project_folder.resolve()
         file = (project / command.file).resolve()
-        if file.name not in INSTRUCTION_FILES or not file.is_relative_to(project) or not file.is_file():
+        if file.name not in INSTRUCTION_FILES or not file.is_relative_to(project) or not FileAccess.is_file(file):
             raise Refusal(f"{command.file} is not a CLAUDE.md or AGENTS.md file of this project", "name the file as the approval card does")
-        FileAccess.shared().write(file, InstructionImports.without_import(FileAccess.shared().read(file), command.imported))
+        FileAccess.write(file, InstructionImports.without_import(FileAccess.read(file), command.imported))
         return f"{command.file} imports {command.imported} once less"

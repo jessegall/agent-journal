@@ -16,6 +16,6 @@ class PluginCardClaim:
     def remove_cards(self) -> None:
         if self.remaining is not None:
             draft = self.path.with_suffix(".tmp")
-            FileAccess.shared().write(draft, self.remaining)
-            draft.replace(self.path.with_suffix(".json"))
-        self.path.unlink(missing_ok=True)
+            FileAccess.write(draft, self.remaining)
+            FileAccess.replace(draft, self.path.with_suffix(".json"))
+        FileAccess.unlink(self.path, missing_ok=True)

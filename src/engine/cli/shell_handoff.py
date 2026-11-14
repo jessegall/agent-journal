@@ -1,6 +1,7 @@
+from engine.process.child_process import ChildProcess
+from engine.file.file_access import FileAccess
 import os
 import subprocess
-import tempfile
 from collections import deque
 from typing import TextIO
 
@@ -26,19 +27,20 @@ class ShellHandoff:
             for line in process.stdout or ():
                 stream.write(line)
                 stream.flush()
-            return process.wait()
+            return ChildProcess(process).wait()
 
     def unwatched(self, shell_run: ShellRun, stream: TextIO) -> int:
-        with tempfile.NamedTemporaryFile("w", prefix="journal-run-", suffix=".txt", delete=False) as output:
+        output_file = FileAccess.make_temporary_file(prefix="journal-run-", suffix=".txt")
+        with FileAccess.writer(output_file) as output:
             process = subprocess.Popen(["sh", "-c", shell_run.line], cwd=shell_run.folder if shell_run.folder else None, env={**os.environ, **shell_run.variables},
                                        stdin=subprocess.DEVNULL, stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
         try:
-            code = process.wait(timeout=UNWATCHED_LIMIT_SECONDS)
+            code = ChildProcess(process).wait(UNWATCHED_LIMIT_SECONDS)
         except subprocess.TimeoutExpired:
-            stream.write(f"moved to the background with no journal watching it: its output goes to {output.name}\n")
+            stream.write(f"moved to the background with no journal watching it: its output goes to {output_file}\n")
             return 0
-        with open(output.name, encoding="utf-8", errors="replace") as output_lines:
+        with FileAccess.reader(output_file, encoding="utf-8", errors="replace") as output_lines:
             for line in deque(output_lines, UNWATCHED_LINES_SHOWN):
                 stream.write(line)
-        os.unlink(output.name)
+        FileAccess.unlink(output_file)
         return code

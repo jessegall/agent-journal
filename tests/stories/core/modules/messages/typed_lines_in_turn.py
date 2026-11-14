@@ -11,7 +11,7 @@ SILENT_IN_TURN = timedelta(minutes=10)
 def test_a_message_for_an_agent_in_a_turn_is_never_typed_however_silent_it_is_but_rides_on_its_next_tool_call(new_story):
     story = new_story(SAMPLES, fixture=StoppedMessagingTurn)
     typing = KeptTyping()
-    story.container.bind(TerminalTyping, typing)
+    story.replace(TerminalTyping, typing)
     story.hook("s-1", HookSamples.prompt("go on"))
     story.advance(SILENT_IN_TURN)
     post_message(story, "Are you there")

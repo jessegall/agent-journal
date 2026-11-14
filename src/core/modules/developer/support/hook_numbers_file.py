@@ -15,17 +15,17 @@ class HookNumbersFile:
         self.path = home.system_log.parent / NUMBERS_FILE
 
     def read(self) -> list[HookNumber]:
-        if not self.path.exists():
+        if not FileAccess.exists(self.path):
             return []
-        rows = json.loads(FileAccess.shared().read(self.path))
+        rows = json.loads(FileAccess.read(self.path))
         return [HookNumber(**row) for row in rows if "most_points" in row]
 
     def add(self, hook: str, points: int) -> None:
         rows = {row.hook: row for row in self.read()}
         kept = rows.get(hook, HookNumber(hook, 0, 0, 0))
         rows[hook] = HookNumber(hook, kept.count + 1, kept.total_points + points, max(kept.most_points, points))
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(self.path, json.dumps([vars(row) for row in rows.values()]))
+        FileAccess.mkdir(self.path.parent, parents=True, exist_ok=True)
+        FileAccess.write(self.path, json.dumps([vars(row) for row in rows.values()]))
 
     def reset(self) -> None:
-        self.path.unlink(missing_ok=True)
+        FileAccess.unlink(self.path, missing_ok=True)

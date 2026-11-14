@@ -1,3 +1,4 @@
+from engine.database.write_turns import WriteTurns
 from engine.database.database import Database
 from engine.module.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
@@ -14,13 +15,13 @@ class ServerTunnel:
     from
     here when a link is shown."""
 
-    def __init__(self, home: JournalHome) -> None:
-        self.home = home
+    def __init__(self, home: JournalHome, turns: WriteTurns | None = None) -> None:
+        self.home, self.turns = home, turns
         self.current: Tunnel | None = None
         self.place = ""
 
     def follow(self, port: int) -> None:
-        container = synced_container(self.home)
+        container = synced_container(self.home, self.turns)
         try:
             name = container.get(SettingValues).project.text(SERVICE_SETTING)
             tunnel = container.get(Tunnels).tunnel(name)

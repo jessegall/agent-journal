@@ -1,3 +1,5 @@
+from core.modules.plugins.support.heard_event import HeardEvent
+from core.modules.plugins.models.plugin_delivery import PluginDelivery
 from core.modules.plugins.support.plugin_nudges import PLUGIN_REFUSAL
 from core.modules.drivers.commands.record_agent_notice.record_agent_notice import RecordAgentNotice
 import json
@@ -61,7 +63,7 @@ class PluginRule(DriverRule):
             plugin, manifest = runnable.plugin, runnable.manifest
             if hook.event.accepts_lines:
                 self.queued(hook, plugin, lines, commands)
-            reached = [event for event in events if event.name in manifest.event_names and self.reaches(hook, manifest, event.name)]
+            reached = [event for event in events if event.name in manifest.event_names and self.reaches(hook, manifest, event.name) and self.is_wanted(plugin, manifest.heard(event.name), event)]
             for event in reached:
                 commit = manifest.declared_event(event.name, EventForm.COMMIT)
                 if event.name not in manifest.window_names() or commit is not None:
@@ -94,6 +96,15 @@ class PluginRule(DriverRule):
             commands.extend([AddPluginOutput(plugin.id, hook.agent_id, answer.output)] if answer.has_output() else [])
             commands.append(ClearPluginQueueFile(plugin.id, name))
         commands.extend(RecordPluginFault(plugin.id, f"its queue file {name} is not JSON") for name in read.unreadable)
+
+    # an event for a tool its hears entry leaves out, or within its interval since the last delivery, starts nothing
+    def is_wanted(self, plugin: Plugin, heard: HeardEvent, event: PluginEvent) -> bool:
+        if heard.tools and not heard.accepts_tool(event.data["tool"] if "tool" in event.data else None):
+            return False
+        if not heard.every_minutes:
+            return True
+        last = self.queries.query(PluginDelivery).filter(plugin_id=plugin.id, event=event.name).newest().first()
+        return last is None or last.creation_timestamp().elapsed_minutes(self.clock.timestamp()) >= heard.every_minutes
 
     @staticmethod
     def reaches(hook: AgentHook, manifest: PluginManifest, event: str) -> bool:

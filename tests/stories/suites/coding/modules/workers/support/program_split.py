@@ -87,7 +87,7 @@ def exit_program(story, worker, code=1, text='API Error: 429 rate limit reached'
 def real_program_checks(story):
     for provider in story.container.get(Providers).all():
         provider.__dict__.pop('journal_trust', None)
-    story.container.bind(HelperPrograms, story.container.constructed(HelperPrograms))
+    story.rebuild(HelperPrograms)
     real_program_states(story)
 
 

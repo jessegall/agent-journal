@@ -130,9 +130,9 @@ class CodexProvider(Provider):
     @staticmethod
     def journal_instructions(folder: Path) -> list[str]:
         path = folder / JOURNAL_FILE
-        if not path.is_file():
+        if not FileAccess.is_file(path):
             return []
-        return ["-c", f"developer_instructions={json.dumps(FileAccess.shared().read(path), ensure_ascii=False)}"]
+        return ["-c", f"developer_instructions={json.dumps(FileAccess.read(path), ensure_ascii=False)}"]
 
     def helper_command(self, launch: HelperLaunch) -> LaunchCommand:
         arguments = [self.executable, "exec", *launch.session.arguments(self), "--json", "--dangerously-bypass-approvals-and-sandbox",
@@ -158,10 +158,10 @@ class CodexProvider(Provider):
 
     def transcript(self, project: Path, session: str) -> Path | None:
         cached = self.rollouts.get(session)
-        if cached is not None and cached.is_file():
+        if cached is not None and FileAccess.is_file(cached):
             return cached
         sessions = self.person_folder() / "sessions"
-        located = next(sessions.glob(f"**/rollout-*-{session}.jsonl"), None) if sessions.is_dir() else None
+        located = next(FileAccess.glob(sessions, f"**/rollout-*-{session}.jsonl"), None) if FileAccess.is_dir(sessions) else None
         if located is not None:
             self.rollouts[session] = located
         return located
@@ -236,7 +236,7 @@ class CodexProvider(Provider):
         person_data = self.person_data()
         config = CodexJournalConfig(person_data.get(person / "config.toml", b""), folders, hooks_file.resolve(), blocks)
         files = (SettingsFile(folder / "config.toml", config.text()), SettingsFile(hooks_file, json.dumps({"hooks": blocks}, indent=2, sort_keys=True) + "\n"))
-        present = tuple(name for name in PERSON_STATE if (person / name).exists())
+        present = tuple(name for name in PERSON_STATE if FileAccess.exists(person / name))
         links = {folder / name: person / name for name in (*PERSON_LINKS, *present)}
         return ProgramSettings(self.name, files, links, self.user_hook_files(), person_data)
 

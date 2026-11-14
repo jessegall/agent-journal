@@ -37,13 +37,13 @@ class AliasFileListener(CommitListener[FilePublishing | Touched[Alias] | Touched
         commands = self.names.command_names()
         aliases = self.kept.read(self.aliases, lambda: tuple(self.aliases.every_row(ALIAS_FILE_REASON)), name="aliases.file_rows")
         lines = {alias.name: self.line(alias) for alias in aliases if alias.name not in commands}
-        self.home.alias_file.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(self.home.alias_file, json.dumps(lines))
-        FileAccess.shared().write(self.home.saved_command_file, json.dumps([alias.name for alias in aliases if alias.name in lines and alias.category and alias.category.is_long_running]))
-        FileAccess.shared().write(self.home.alias_category_file, json.dumps({alias.name: alias.category.value for alias in aliases if alias.name in lines and alias.category}))
+        FileAccess.mkdir(self.home.alias_file.parent, parents=True, exist_ok=True)
+        FileAccess.write(self.home.alias_file, json.dumps(lines))
+        FileAccess.write(self.home.saved_command_file, json.dumps([alias.name for alias in aliases if alias.name in lines and alias.category and alias.category.is_long_running]))
+        FileAccess.write(self.home.alias_category_file, json.dumps({alias.name: alias.category.value for alias in aliases if alias.name in lines and alias.category}))
         command_types = self.queries.query(CommandType)
         types = self.kept.read(command_types, lambda: tuple(command_types.every_row(COMMAND_TYPES_REASON)), name="aliases.command_types")
-        FileAccess.shared().write(self.home.command_type_file, json.dumps({command_type.words: command_type.category.value for command_type in types}))
+        FileAccess.write(self.home.command_type_file, json.dumps({command_type.words: command_type.category.value for command_type in types}))
 
     def line(self, alias: Alias) -> str:
         line = self.shell_aliases.resolved_line(alias.line)

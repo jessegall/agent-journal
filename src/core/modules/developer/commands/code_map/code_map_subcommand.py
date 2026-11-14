@@ -29,10 +29,10 @@ class CodeMapSubcommand(ReadSubcommand[str]):
     def read(self, arguments: Namespace, caller: Caller) -> str:
         checkout = self.home.project_folder
         source = checkout / "src"
-        if not source.is_dir():
+        if not FileAccess.is_dir(source):
             raise Refusal(f"{checkout} has no src folder to map", "run journal map in a checkout of the journal's code")
         pinned = checkout / PINNED_MAP
-        if arguments.write and not pinned.parent.is_dir():
+        if arguments.write and not FileAccess.is_dir(pinned.parent):
             raise Refusal(f"{checkout} has no {pinned.parent.relative_to(checkout)} folder to save the map in", "run journal map --write in a checkout of the journal's code")
         text = CodeMap(source, self.files).text()
         if arguments.write:

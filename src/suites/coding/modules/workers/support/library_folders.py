@@ -3,7 +3,6 @@ from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.process_executor import ProcessExecutor
 from engine.file.file_access import FileAccess
-import shutil
 import sys
 from collections.abc import Sequence
 from pathlib import Path
@@ -27,24 +26,24 @@ class LibraryFolders:
         root = Path(folder).resolve()
         for name in names:
             library = (root / name).resolve()
-            if not library.is_dir() or library == root or not library.is_relative_to(root):
+            if not FileAccess.is_dir(library) or library == root or not library.is_relative_to(root):
                 raise Refusal(f"{name} is no folder in {folder}", "name a library folder inside the environment's folder")
 
     def place(self, folder: str, target: str, links: Sequence[str], copies: Sequence[str]) -> None:
         for name in dict.fromkeys(links):
-            (Path(target) / name).parent.mkdir(parents=True, exist_ok=True)
-            (Path(target) / name).symlink_to(Path(folder).resolve() / name, target_is_directory=True)
+            FileAccess.mkdir((Path(target) / name).parent, parents=True, exist_ok=True)
+            FileAccess.symlink_to(Path(target) / name, Path(folder).resolve() / name, target_is_directory=True)
         for name in copies:
             self.copy(Path(folder) / name, Path(target) / name)
         self.exclude(target, (*links, *copies))
 
     def drop(self, target: str, copies: Sequence[str]) -> None:
         for name in copies:
-            shutil.rmtree(Path(target) / name, ignore_errors=True)
+            FileAccess.rmtree(Path(target) / name, ignore_errors=True)
 
     def restore(self, folder: str, target: str, copies: Sequence[str]) -> None:
         for name in copies:
-            if not (Path(target) / name).exists():
+            if not FileAccess.exists(Path(target) / name):
                 self.copy(Path(folder) / name, Path(target) / name)
 
     def copy(self, source: Path, target: Path) -> None:
@@ -60,7 +59,7 @@ class LibraryFolders:
         if not names:
             return
         exclude_file = self.git.exclude_file(target)
-        lines = FileAccess.shared().read(exclude_file).splitlines() if exclude_file.exists() else []
+        lines = FileAccess.read(exclude_file).splitlines() if FileAccess.exists(exclude_file) else []
         added = [f"/{name}" for name in names if f"/{name}" not in lines]
-        exclude_file.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(exclude_file, "\n".join([*lines, *added]) + "\n")
+        FileAccess.mkdir(exclude_file.parent, parents=True, exist_ok=True)
+        FileAccess.write(exclude_file, "\n".join([*lines, *added]) + "\n")

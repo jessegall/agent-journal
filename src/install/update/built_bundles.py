@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import sys
 from pathlib import Path
 
@@ -28,7 +29,7 @@ class BuiltBundles:
         return BuiltBundle(web / "dist", (web / "src", config, self.source / WINDOW_BUILD_SCRIPT))
 
     def window_configs(self) -> list[Path]:
-        return sorted(config for root in MODULE_ROOTS for config in (self.source / root).rglob("web/vite.config.js")
+        return sorted(config for root in MODULE_ROOTS for config in FileAccess.rglob(self.source / root, "web/vite.config.js")
                       if not SKIPPED_FOLDERS.intersection(config.relative_to(self.source / root).parts))
 
     def stale(self) -> list[BuiltBundle]:

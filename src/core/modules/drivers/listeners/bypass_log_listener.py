@@ -31,15 +31,15 @@ class BypassLogListener(CommitListener[Changed[HookCall]]):
 
     def handle(self, event: Changed[HookCall], logged: LoggedEvent) -> None:
         log = self.home.bypass_log
-        if not log.is_file():
+        if not FileAccess.is_file(log):
             return
         agent = self.queries.query(Agent).find(event.row.session_agent_id)
         if agent.role != AgentRole.MAIN:
             return
         claimed = log.with_suffix(".taken")
-        log.replace(claimed)
-        lines = [line for line in FileAccess.shared().read(claimed, errors="replace").splitlines() if line.strip()]
-        claimed.unlink()
+        FileAccess.replace(log, claimed)
+        lines = [line for line in FileAccess.read(claimed, errors="replace").splitlines() if line.strip()]
+        FileAccess.unlink(claimed)
         if not lines:
             return
         self.system_log.write(LogLevel.WARNING, "\n".join(lines), LogSource.BYPASS)

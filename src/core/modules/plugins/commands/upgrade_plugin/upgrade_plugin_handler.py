@@ -1,4 +1,3 @@
-import shutil
 from pathlib import Path
 
 from engine.process.plugin_script_processes import PluginScriptProcesses
@@ -51,33 +50,33 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
             return
         self.steps.check_requirements(manifest, source)
         mark = self.folders.upgrade_mark(plugin.name)
-        FileAccess.shared().update_timestamp(mark)
+        FileAccess.update_timestamp(mark)
         self.scripts.stop(plugin.name)
         try:
             self.replaced(manifest, source, self.folders.code(plugin.name))
         except Exception:
-            mark.unlink(missing_ok=True)
+            FileAccess.unlink(mark, missing_ok=True)
             raise
 
     @staticmethod
     def origin(source: str, command: UpgradePlugin) -> str:
-        if command.folder and not Path(command.folder).is_dir():
+        if command.folder and not FileAccess.is_dir(Path(command.folder)):
             raise Refusal(f"{command.folder} is not a folder", "name the folder of the plugin")
         return command.folder or source
 
     def replaced(self, manifest: PluginManifest, source: Path, code: Path) -> None:
         new_code, old_code = code.with_name(code.name + NEW_SUFFIX), code.with_name(code.name + OLD_SUFFIX)
-        shutil.rmtree(new_code, ignore_errors=True)
+        FileAccess.rmtree(new_code, ignore_errors=True)
         try:
-            shutil.copytree(source, new_code, ignore=EXCLUDED_NAMES)
+            FileAccess.copytree(source, new_code, ignore=EXCLUDED_NAMES)
             self.steps.run_setup(manifest, new_code)
         except Exception:
-            shutil.rmtree(new_code, ignore_errors=True)
+            FileAccess.rmtree(new_code, ignore_errors=True)
             raise
-        shutil.rmtree(old_code, ignore_errors=True)
-        code.rename(old_code)
-        new_code.rename(code)
-        shutil.rmtree(old_code, ignore_errors=True)
+        FileAccess.rmtree(old_code, ignore_errors=True)
+        FileAccess.rename(code, old_code)
+        FileAccess.rename(new_code, code)
+        FileAccess.rmtree(old_code, ignore_errors=True)
 
     def handle(self, command: UpgradePlugin, context: Context) -> PluginUpgrade:
         plugin = self.plugins.find_name(command.name)
@@ -93,7 +92,7 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
         manifest = PluginManifest.read(code)
         self.skill_files.publish(code, manifest)
         self.repository.save(plugin.changed(release=manifest.version, files_digest=PluginDigest.digest(code, manifest)), context)
-        self.folders.upgrade_mark(plugin.name).unlink(missing_ok=True)
+        FileAccess.unlink(self.folders.upgrade_mark(plugin.name), missing_ok=True)
         return PluginUpgrade(plugin.name, plugin.release, manifest.version, [], True)
 
     @staticmethod

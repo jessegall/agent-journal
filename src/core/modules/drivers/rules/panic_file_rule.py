@@ -43,4 +43,4 @@ class PanicFileRule(DriverRule):
 
     def server_unreachable(self) -> bool:
         log = self.home.bypass_log
-        return log.is_file() and bool(FileAccess.shared().read(log, errors="replace").strip())
+        return FileAccess.is_file(log) and bool(FileAccess.read(log, errors="replace").strip())

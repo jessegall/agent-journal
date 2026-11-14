@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from engine.time.clock import Clock
 import json
 import os
@@ -40,5 +41,5 @@ def test_a_session_that_ends_while_the_folder_is_read_is_left_out_and_the_others
     files = StatusFiles(JournalHome(tmp_path), Clock())
     save_status(files.folder, 'open', 30, CHECKED_AT.value.timestamp())
     listed = [files.folder / 'ended.json', files.folder / 'open.json']
-    monkeypatch.setattr(type(files.folder), 'glob', lambda folder, pattern: iter(listed))
+    monkeypatch.setattr(FileAccess, 'glob', classmethod(lambda access, folder, pattern: iter(listed)))
     assert files.plan_windows({})[0].used_percent == 30

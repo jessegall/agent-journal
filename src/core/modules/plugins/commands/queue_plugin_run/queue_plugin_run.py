@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from engine.command.command import Command
 from core.modules.plugins.support.queued_run_start import QueuedRunStart
-from core.modules.processes.models.enums.queue_priority import QueuePriority
+from engine.enums.execution_priority import ExecutionPriority
 
 
 @dataclass(frozen=True)
@@ -17,5 +17,5 @@ class QueuePluginRun(Command[QueuedRunStart]):
     folder: str
     line: str
     timeout_durations: tuple[str, ...]
-    priority: QueuePriority
+    priority: ExecutionPriority
     is_detached: bool

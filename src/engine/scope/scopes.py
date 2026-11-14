@@ -4,6 +4,7 @@ from dataclasses import replace
 from typing import ContextManager, TypeVar
 
 from engine.actor.actor import Actor
+from engine.container.round_state import RoundState
 from engine.enums.actor_type import ActorType
 from engine.event.change import Change
 from engine.event.event_log import EventLog
@@ -28,7 +29,7 @@ WholeScopes = Sequence[type[Scope]]
 DisabledScopes = Sequence[type[Scope] | ScopeOpening]
 
 
-class Scopes:
+class Scopes(RoundState):
     """The agent and environment the work in hand is scoped on, set once where the work enters: the agent running
     a command, the environment a request names, or the agent and environment of the event a listener hears. A
     class passes a scope by naming it in disabled_scopes, and a job with no scope reads every row."""
@@ -38,6 +39,9 @@ class Scopes:
         self.actor_id: int | None = None
         self.decided = False
         self.causing_agents: dict[int, int | None] = {}
+
+    def reset(self) -> None:
+        self.causing_agents = {}
 
     @property
     def environment_id(self) -> int | None:

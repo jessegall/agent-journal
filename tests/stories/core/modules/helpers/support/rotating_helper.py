@@ -67,7 +67,7 @@ class StartedEachLaunchHelper(StoryFixture):
 
 def real_program_states(story) -> None:
     """Makes the story read program outages from its rows, where a story otherwise finds every program ready."""
-    story.container.bind(ProgramStates, story.container.constructed(ProgramStates))
+    story.rebuild(ProgramStates)
 
 
 class InstalledProgramChecks(HelperPrograms):
@@ -80,7 +80,7 @@ class InstalledProgramChecks(HelperPrograms):
 
 def installed_program_checks(story) -> None:
     """Makes the story ask whether a program is installed, where a story otherwise passes every program."""
-    story.container.bind(HelperPrograms, InstalledProgramChecks(story.container.get(JournalHome), story.container.get(Providers), story.container.get(ManagedHooks)))
+    story.replace(HelperPrograms, InstalledProgramChecks(story.container.get(JournalHome), story.container.get(Providers), story.container.get(ManagedHooks)))
 
 
 def story_with_profile_file(new_story, fixture: type[EndedEachLaunchHelper] | type[StartedEachLaunchHelper]):

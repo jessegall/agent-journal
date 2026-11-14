@@ -3,6 +3,7 @@ import {SPINNER_AFTER_MS, holdPressed} from "../platform/pressed.js";
 import {covered, serverGone} from "../state/updating.js";
 import {JoinedRead} from "./joinedRead.js";
 import {SHELL_WINDOW} from "../windows/shellWindow.js";
+import {isViewerHidden} from "../windows/windowVisibility.js";
 
 const WAIT_MS = 20000;
 const READS_AT_ONCE = 4;
@@ -14,6 +15,8 @@ const REPEATED_LINES = 10;
 const REPEATED_LINES_WITHIN_MS = 2000;
 const UPLOAD_WAIT_MS = 300000;
 export const LONG_WAIT_MS = 600000;
+// tells the server the asking windows are hidden, so their polls wait at background
+export const HIDDEN_WINDOW_HEADER = "X-Journal-Window-Hidden";
 const RELOAD_TRIES = 6;
 const RELOAD_PAUSE_MS = 500;
 const UPDATE_STATUS = "/journal/summary";
@@ -153,7 +156,8 @@ class Transport {
     // the one place a request leaves
     async out(url, init, requests, limit = 0) {
         const landed = this.took(requests, url);
-        const leaving = limit ? {...init, signal: limited(init.signal, limit)} : init;
+        const told = {...init, headers: {...(init.headers || {}), [HIDDEN_WINDOW_HEADER]: isViewerHidden() ? "1" : "0"}};
+        const leaving = limit ? {...told, signal: limited(init.signal, limit)} : told;
         try {
             return await fetch(url, requests[0].kind === WRITE ? {...leaving, priority: "high"} : leaving);
         } finally {
@@ -161,12 +165,22 @@ class Transport {
         }
     }
 
-    // a request that fails to reach the server puts the cover up
+    // a request that fails to reach the server puts the cover up; a read is tried once more at once first, since the
+    // server closes a connection left idle and the read may have gone out on it; a write is never sent twice
     async sent(url, init, requests, limit = WAIT_MS) {
         try {
             return await this.out(url, init, requests, limit);
         } catch (error) {
-            if (error instanceof TypeError) serverGone();
+            if (!(error instanceof TypeError)) throw error;
+            if ((init.method || "GET") === "GET") {
+                try {
+                    return await this.out(url, init, requests, limit);
+                } catch (retried) {
+                    if (retried instanceof TypeError) serverGone();
+                    throw retried;
+                }
+            }
+            serverGone();
             throw error;
         }
     }

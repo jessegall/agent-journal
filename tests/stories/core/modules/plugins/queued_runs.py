@@ -1,3 +1,6 @@
+from core.modules.processes.commands.end_process.end_process import EndProcess
+from engine.command.bus import Bus
+from engine.actor.actor import Actor
 import json
 import os
 from datetime import timedelta
@@ -28,7 +31,7 @@ def queues_plugin(new_story):
     story.expect_success(f"plugin install {folder} --yes", actor=story.user)
     story.run_listeners()
     recording_runner_at(story.home)
-    story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 5 --project", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} 20 --project", actor=story.user)
     return story
 
 
@@ -47,10 +50,10 @@ def ended(story, run: int, exit_code: int = 0) -> None:
     story.expect_success(f"process end {shown(story, run)['process_id']} --exit-code {exit_code} --bytes 0 --lines 0", actor=story.worker)
 
 
-def test_a_kind_limited_to_one_gives_the_free_place_to_the_high_priority_run_and_tells_each_end(new_story):
+def test_a_kind_limited_to_one_gives_the_free_place_to_the_run_at_agent_priority_and_tells_each_end(new_story):
     story = queues_plugin(new_story)
     first, normal, cancelled = queued(story, "judge"), queued(story, "judge"), queued(story, "judge")
-    high = queued(story, "judge", "--priority", "high")
+    high = queued(story, "judge", "--priority", "agent")
     story.expect_rows(shown(story, first)["state"] == "running", shown(story, normal)["state"] == "waiting")
     story.expect_text(f"plugin queue-cancel {cancelled}", "cancelled", actor=story.user)
     story.expect_refusal(f"plugin queue-cancel {cancelled}", "is over already", actor=story.user)
@@ -74,8 +77,11 @@ def test_runs_wait_for_a_machine_wide_count_and_free_memory_join_a_waiting_twin_
     shared, big = queued(story, "shared"), queued(story, "big")
     story.expect_rows(shown(story, shared)["state"] == "waiting", shown(story, big)["state"] == "waiting")
     different.unlink()
-    timed = queued(story, "judge", "--timeout", "60")
+    story.run_tick("run slots")
     story.expect_rows(shown(story, shared)["state"] == "running")
+    story.container.get(Bus).run(EndProcess(shown(story, shared)["process_id"], 0, 0, 0), Actor.core(), environment_id=1)
+    timed = queued(story, "judge", "--timeout", "60")
+    story.expect_rows(shown(story, timed)["state"] == "running")
     story.expect_success("queue halt 'a deploy is going'", actor=story.user)
     index, repeated, different_line = queued(story, "index", line="make index"), queued(story, "index", line="make index"), queued(story, "index", line="make other")
     story.expect_rows(index == repeated, different_line != index)

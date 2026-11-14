@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from collections.abc import Sequence
 
 from engine.viewer.declaration_names import DeclarationNames
@@ -25,7 +26,7 @@ class DockCheck:
                 if dock.most < 1:
                     problems.append(f"{name} allows at most {dock.most} items, and it holds at least 1")
                 problems += DeclarationNames.icon_problems(name, dock.icon)
-                if not (module.web_folder() / dock.body).exists():
+                if not FileAccess.exists(module.web_folder() / dock.body):
                     problems.append(f"{name} loads {dock.body}, which is not in its module's web/dist")
                 problems += [f"{name} reads {line}, which is no read subcommand" for line in dock.reads if line not in reads]
                 problems += self.buttons.problems(name, dock.buttons, frozenset(runs))

@@ -128,7 +128,7 @@ def test_wait_past_limit_names_the_holder(turn_threads):
 def test_slow_holder_is_logged_with_class_priority_line(turn_threads):
     with CurrentExecution(ExecutionPriority.BACKGROUND, "tick", "prune events").applied(), turn_threads.queue.write_turn():
         turn_threads.clock.seconds += 2
-    assert turn_threads.logged == ["the database write turn was held 2.0 seconds by tick at background priority: prune events"]
+    assert turn_threads.logged == ["the database write turn was held 2.0 seconds by tick at background priority: prune events, 0 statements"]
 
 
 def test_nested_ask_in_same_thread_passes(turn_threads):

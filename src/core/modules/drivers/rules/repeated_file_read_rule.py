@@ -40,7 +40,7 @@ class RepeatedFileReadRule(DriverRule):
         project = self.home.project_folder
         file = (project / path).resolve()
         main_file = project / "CLAUDE.md"
-        return file == main_file.resolve() or main_file.is_file() and any((project / name).resolve() == file for name in InstructionImports.imported_names(main_file))
+        return file == main_file.resolve() or FileAccess.is_file(main_file) and any((project / name).resolve() == file for name in InstructionImports.imported_names(main_file))
 
     def is_read_unchanged(self, agent_id: int, path: str) -> bool:
         compaction = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.COMPACT).descending("id").first()
@@ -49,4 +49,4 @@ class RepeatedFileReadRule(DriverRule):
         if read is None or read.created_at is None or compaction is not None and compaction.id > read.id:
             return False
         file = self.home.project_folder / path
-        return file.is_file() and FileAccess.shared().version(file).modified_at < read.created_at.value.timestamp() * NANOSECONDS
+        return FileAccess.is_file(file) and FileAccess.version(file).modified_at < read.created_at.value.timestamp() * NANOSECONDS

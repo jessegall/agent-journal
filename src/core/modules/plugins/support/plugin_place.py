@@ -10,9 +10,6 @@ class PluginPlace:
     def __init__(self, process_id: int, places: PluginPlaceRows) -> None:
         self.process_id, self.places = process_id, places
 
-    def wait(self, limit_seconds: float) -> bool:
-        return self.places.wait(self.process_id, limit_seconds)
-
     def leave(self, exit_code: int) -> None:
         self.places.leave(self.process_id, exit_code)
 

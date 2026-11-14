@@ -1,3 +1,8 @@
+from engine.process.door.placed_run import PlacedRun
+from engine.process.door.execution_request import ExecutionRequest
+from engine.process.door.execution_admission import ExecutionAdmission
+from engine.enums.process_type import ProcessType
+from engine.process.child_process import ChildProcess
 from engine.file.file_access import FileAccess
 from pathlib import Path
 import json
@@ -35,6 +40,9 @@ from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 from core.modules.plugins.errors.plugin_stopped_error import PluginStoppedError
 from core.modules.plugins.support.script_pipes import ScriptPipes
 
+# the time a script without a window of its own is shown with on its ticket
+SCRIPT_TICKET_LIMIT_MS = 60_000
+
 PASSED_VARIABLES = ("HOME", "LANG", "LC_ALL", "TMPDIR", "USER")
 SETTINGS_FILE = ".journal-settings.json"
 STOP_LIMIT_SECONDS = 1
@@ -52,7 +60,6 @@ class PluginProgram:
 
     def run(self, call: PluginCall, limit_ms: int | None, wait_callback: Callable[[], None] | None = None) -> PluginAnswer:
         manifest = call.manifest
-        folder = self.folders.code(manifest.name)
         self.write_settings(manifest.name, call.settings, call.environment)
         checkout, facts = self.checkout_facts(call)
         line = self.script_line(call, limit_ms, checkout, facts)
@@ -72,7 +79,14 @@ class PluginProgram:
             raise PluginStoppedError(ScriptStop.SERVER)
         return self.program_answer(call, program, line, limit_ms, wait_callback, checkout)
 
+    # the script takes its ticket like any execution: a waited child of the hook or event that runs it
     def program_answer(self, call: PluginCall, program: str, line: str, limit_ms: int | None, wait_callback: Callable[[], None] | None, checkout: Checkout | None) -> PluginAnswer:
+        folder = self.folders.code(call.manifest.name)
+        request = ExecutionRequest([str(folder / program)], folder, ProcessType.PLUGIN, (limit_ms or SCRIPT_TICKET_LIMIT_MS) / 1000)
+        with ExecutionAdmission(self.home).admitted(PlacedRun(request, None, False)):
+            return self.admitted_answer(call, program, line, limit_ms, wait_callback, checkout)
+
+    def admitted_answer(self, call: PluginCall, program: str, line: str, limit_ms: int | None, wait_callback: Callable[[], None] | None, checkout: Checkout | None) -> PluginAnswer:
         manifest = call.manifest
         folder = self.folders.code(manifest.name)
         try:
@@ -153,7 +167,7 @@ class PluginProgram:
             return
         finally:
             try:
-                process.communicate(timeout=STOP_LIMIT_SECONDS)
+                ChildProcess(process).communicate(limit_seconds=STOP_LIMIT_SECONDS)
             except (subprocess.TimeoutExpired, ValueError):
                 for pipe in (process.stdin, process.stdout):
                     if pipe is not None:
@@ -167,10 +181,10 @@ class PluginProgram:
 
     def write_settings(self, plugin_name: str, settings: Mapping[str, object], environment: str = "") -> None:
         file, text = self.settings_path(plugin_name, environment), json.dumps(dict(settings))
-        if self.written_settings.get(file) == text and file.is_file():
+        if self.written_settings.get(file) == text and FileAccess.is_file(file):
             return
-        file.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(file, text)
+        FileAccess.mkdir(file.parent, parents=True, exist_ok=True)
+        FileAccess.write(file, text)
         self.written_settings[file] = text
 
     def environment(self, plugin_name: str, environment: str) -> dict[str, str]:

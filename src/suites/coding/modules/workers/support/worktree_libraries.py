@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import json
 from pathlib import Path
 
@@ -23,15 +24,15 @@ class WorktreeLibraries:
         copies = self.copied_names(worktree)
         names = self.absent(worktree, source, copies)
         for name in names:
-            if (Path(worktree.folder) / name).is_symlink():
-                (Path(worktree.folder) / name).unlink()
+            if FileAccess.is_symlink(Path(worktree.folder) / name):
+                FileAccess.unlink(Path(worktree.folder) / name)
         self.libraries.place(source, worktree.folder, [name for name in names if name not in copies], ())
         self.libraries.restore(source, worktree.folder, [name for name in names if name in copies])
         return names
 
     def absent(self, worktree: Worktree, source: str, copies: tuple[str, ...]) -> tuple[str, ...]:
         links = (*self.settings.texts(LIBRARY_LINKS), *json.loads(worktree.library_links), *self.git.dependency_folders(source))
-        return tuple(name for name in dict.fromkeys((*links, *copies)) if (Path(source) / name).is_dir() and not (Path(worktree.folder) / name).exists())
+        return tuple(name for name in dict.fromkeys((*links, *copies)) if FileAccess.is_dir(Path(source) / name) and not (Path(worktree.folder) / name).exists())
 
     def copied_names(self, worktree: Worktree) -> tuple[str, ...]:
         return (*self.settings.texts(LIBRARY_COPIES), *json.loads(worktree.library_copies))

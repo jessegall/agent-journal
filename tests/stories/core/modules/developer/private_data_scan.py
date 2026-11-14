@@ -1,3 +1,4 @@
+from core.modules.developer.support.developer_settings import PRIVATE_DATA_SETTING
 import subprocess
 
 from core.modules.developer.ticks.private_data_tick import PrivateDataTick
@@ -15,6 +16,7 @@ class ToolsEnabled(StoryFixture):
 
     def steps(self, story) -> None:
         story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.agent)
+        story.expect_success(f"setting set {PRIVATE_DATA_SETTING} true --project", actor=story.agent)
 
 
 def planted_project(story, name: str = "notes.txt") -> None:

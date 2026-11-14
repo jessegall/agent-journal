@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from engine.enums.helper_role import HelperRole
 from engine.event.logged_event import LoggedEvent
 from engine.actor.actor import Actor
@@ -37,7 +38,7 @@ class HelperEndedListener(CommitListener[AgentEnded]):
             return
         job = self.jobs.open_job(helper.id)
         if job is None:
-            self.home.terminal_file(helper.id).unlink(missing_ok=True)
+            FileAccess.unlink(self.home.terminal_file(helper.id), missing_ok=True)
             return
         if self.is_paused(helper):
             return
@@ -46,7 +47,7 @@ class HelperEndedListener(CommitListener[AgentEnded]):
             self.resume.resume(helper, waiting.text)
             return
         self.end_job(helper, job, STOPPED if logged.actor_id != helper.id else "", logged)
-        self.home.terminal_file(helper.id).unlink(missing_ok=True)
+        FileAccess.unlink(self.home.terminal_file(helper.id), missing_ok=True)
 
     def is_paused(self, helper: Agent) -> bool:
         parent = self.queries.query(Agent).find(helper.parent_id) if helper.parent_id is not None else None

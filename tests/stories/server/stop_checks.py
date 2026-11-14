@@ -51,21 +51,25 @@ def test_a_refused_stop_keeps_later_checks_without_applying_their_commands(stop_
     story.expect_rows(len(lines) == 1, len(lines[0]) < 300, "tasks.carry-on-at-stop" in lines[0], "coding.main-stop" in lines[0], detail=str(lines))
 
 
-@pytest.mark.parametrize("places,dispatches,answer", [(0, "true", "allowed"), (1, "true", "refused"), (1, "false", "allowed")])
-def test_an_approved_plan_waiting_to_start_checks_worker_capacity_and_whether_the_main_agent_dispatches(new_story, places, dispatches, answer):
+@pytest.mark.parametrize("places,dispatches,given,answer", [(0, "true", False, "allowed"), (1, "true", False, "refused"), (1, "false", False, "allowed"),
+                                                           (1, "true", True, "allowed")])
+def test_an_approved_plan_waiting_to_start_checks_worker_capacity_and_whether_the_main_agent_dispatches(new_story, places, dispatches, given, answer):
     story = new_story(fixture=ReadyPlanTaskOrchestrator)
     story.expect_success(f"setting set {WORKER_RUN_LIMIT} {places} --environment main")
     story.expect_success(f"setting set {DISPATCHES_WORKERS_SETTING} {dispatches} --environment main")
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         server.viewer_line_value(cookie, {"line": ["plan", "approve", "1"], "environment": "main", "window": "messages.chat"})
+        if given:
+            story.expect_success(f"plan assign 1 --to row:{story.agent.id}", actor=story.agent)
         record = stop_record(server)
         check = next(check for check in record["stop_checks"] if check["rule"] == ApprovedPlanStopRule.name)
-        story.expect_rows(record["answer"] == answer, check["outcome"] == answer, detail=f"{record['answer']}: {check}")
+        # a plan given to the main agent lets this check pass and leaves the stop to the checks of the main agent's own tasks
+        story.expect_rows(given or record["answer"] == answer, check["outcome"] == answer, detail=f"{record['answer']}: {check}")
         if answer == "refused":
             story.expect_rows("plan:1 is approved" in record["refusal"], "start a worker, then assign its work" in check["reason"])
         else:
-            story.expect_rows(check["reason"] in ("no new worker can start", "the main agent dispatches no workers"), detail=check["reason"])
+            story.expect_rows(check["reason"] in ("no new worker can start", "the main agent dispatches no workers", "no approved plan has a task no agent is given"), detail=check["reason"])
 
 
 def test_a_diagnostic_check_does_not_start_a_task_after_a_plan_refuses_stop(new_story):

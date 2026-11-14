@@ -1,3 +1,4 @@
+from tests.stories.core.modules.processes.support.roomy_fixtures import RoomyBuilderStarted, RoomyUserBuilder
 from datetime import timedelta
 
 from engine.enums.command_category import CommandCategory
@@ -37,7 +38,7 @@ STOPPED_WRITING = timedelta(seconds=120)
 
 
 def test_a_python_run_that_prints_nothing_for_30_seconds_is_told_it_is_not_streaming(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+    story = install_runner(new_story(fixture=RoomyBuilderStarted))
     process = moved_run(story, "python3 tools/deploy.py staging", category=CommandCategory.BUILD)
     expect_without_hint(story)
     story.advance(FIRST_OUTPUT)
@@ -75,7 +76,7 @@ def titled(story, process, title: str, actor=None) -> None:
 
 
 def test_a_sparse_pytest_run_keeps_running_and_after_printing_often_is_told_only_once_it_stops_writing(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+    story = install_runner(new_story(fixture=RoomyBuilderStarted))
     process = moved_run(story, SLOW_TESTS, CommandCategory.TEST_RUN)
     titled(story, process, "Running the slow tests")
     ticks(story, 120, process, every=50)
@@ -109,7 +110,7 @@ def test_a_helpers_and_a_workers_runs_that_print_nothing_for_30_seconds_are_told
 
 
 def test_only_a_silent_go_test_over_several_packages_is_told_and_runs_printing_lines_or_a_progress_bar_never_are(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+    story = install_runner(new_story(fixture=RoomyBuilderStarted))
     silent = moved_run(story, "go test ./cart/... ./orders/...", CommandCategory.TEST_RUN)
     lines = moved_run(story, "make release", CommandCategory.BUILD)
     progress_line = moved_run(story, "make images", CommandCategory.BUILD)
@@ -140,7 +141,7 @@ def test_a_busy_silent_build_is_told_it_does_not_stream_and_is_never_asked_to_be
 
 
 def test_a_waiting_agent_has_the_sparse_line_kept_without_a_wake_until_its_next_hook(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+    story = install_runner(new_story(fixture=RoomyBuilderStarted))
     process = moved_run(story, "pytest tests/nightly -q", CommandCategory.TEST_RUN)
     story.hook(MAIN, HookSamples.stop())
     ticks(story, 120, process, every=60)
@@ -149,7 +150,7 @@ def test_a_waiting_agent_has_the_sparse_line_kept_without_a_wake_until_its_next_
 
 
 def test_a_busy_agent_is_told_the_sparse_line_once_with_its_next_tool_use(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+    story = install_runner(new_story(fixture=RoomyBuilderStarted))
     process = moved_run(story, "pytest tests/e2e -q", CommandCategory.TEST_RUN)
     lines: list[str] = []
     for step in range(1, 15):
@@ -165,7 +166,7 @@ SPARSE_KEY = f"{ProcessSetting.SPARSE_SECONDS.key}"
 
 
 def test_a_silent_run_is_told_again_only_after_ten_minutes_at_most_three_times_and_is_still_held_and_stopped(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+    story = install_runner(new_story(fixture=RoomyBuilderStarted))
     process = moved_run(story, "make dist", CommandCategory.BUILD)
     titled(story, process, "Building the dist folder")
     ticks(story, 600)
@@ -182,7 +183,7 @@ def test_a_silent_run_is_told_again_only_after_ten_minutes_at_most_three_times_a
 
 
 def test_two_sparse_runs_are_told_in_one_line_right_after_their_silence_was_told(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+    story = install_runner(new_story(fixture=RoomyBuilderStarted))
     first = moved_run(story, "pytest tests/a -q", CommandCategory.TEST_RUN)
     second = moved_run(story, "pytest tests/b -q", CommandCategory.TEST_RUN)
     titled(story, first, "Running the first tests")
@@ -191,7 +192,7 @@ def test_two_sparse_runs_are_told_in_one_line_right_after_their_silence_was_told
 
 
 def test_a_run_that_ended_and_a_run_that_was_stopped_are_told_nothing(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+    story = install_runner(new_story(fixture=RoomyBuilderStarted))
     ended = moved_run(story, "make assets", CommandCategory.BUILD)
     stopped = moved_run(story, "make fonts", CommandCategory.BUILD)
     story.expect_success(f"output stop {stopped.id}", actor=story.agent)
@@ -201,7 +202,7 @@ def test_a_run_that_ended_and_a_run_that_was_stopped_are_told_nothing(new_story)
 
 
 def test_plugin_person_and_lookup_runs_are_never_judged_while_a_started_test_is(new_story):
-    story = install_runner(new_story(fixture=UserBuilder))
+    story = install_runner(new_story(fixture=RoomyUserBuilder))
     skipped = [side_run(story, story.user, "make deploy", CommandCategory.BUILD), side_run(story, story.agent, "make lint", CommandCategory.CHECK, plugin="sample"),
                *(side_run(story, story.agent, line, category) for line, category in (("grep -rn cart src", CommandCategory.SEARCH), ("cat notes", CommandCategory.READ),
                                                                                       ("sed -i s/a/b/ notes", CommandCategory.EDIT), ("journal task list", CommandCategory.JOURNAL)))]
@@ -214,7 +215,7 @@ def test_plugin_person_and_lookup_runs_are_never_judged_while_a_started_test_is(
 
 def test_a_workers_queued_run_is_told_nothing_while_its_running_one_is(new_story):
     story = new_story(fixture=HelperBesideWorker)
-    for setting in (f"{ProcessSetting.RUN_BATCH_SIZE.key} 1", f"{WORKER_TEST_LIMIT} 0", f"{ProcessSetting.READERS_FORCED.key} false"):
+    for setting in (f"{ProcessSetting.LANE_CAPACITY_LONG.key} 4", f"{WORKER_TEST_LIMIT} 0", f"{ProcessSetting.READERS_FORCED.key} false"):
         story.expect_success(f"setting set {setting} --environment main", actor=story.user)
     worker = worker_agent(story)
     running = agent_run(story, worker, "pytest tests/api -q", CommandCategory.TEST_RUN)
@@ -242,7 +243,7 @@ def test_a_run_another_agent_owns_tells_the_agent_of_its_session(new_story):
 
 
 def test_a_long_script_of_no_known_type_is_told_to_print_its_steps_and_its_card_shows_the_progress_of_its_new_reader(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
+    story = install_runner(new_story(fixture=RoomyBuilderStarted))
     process = moved_run(story, "zsh tools/move.sh")
     titled(story, process, "Moving the files")
     ticks(story, 30)

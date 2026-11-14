@@ -45,6 +45,7 @@ from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
 from tests.stories.core.support.agent_labels import agent_label
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.suites.coding.modules.workers.quiet_helpers import StartedMerger
+from tests.stories.suites.coding.modules.workers.support.merger_launcher import running_launcher
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_PASSED
 from engine.testing.expectations.expected_nudge import expected_nudge
@@ -95,7 +96,7 @@ def test_when_the_merger_cannot_start_the_main_agent_hears_what_waits(new_story,
     notice = WORKER_TESTS_PASSED.nudge(worker=agent_number(story, worker.id)).text
     story.expect_rows(lines.count(notice) == 1, "agent:0" not in lines, detail=lines)
     log = story.home.system_log
-    story.expect_rows(not log.exists() or "merger start failed" not in FileAccess.shared().read(log))
+    story.expect_rows(not log.exists() or "merger start failed" not in FileAccess.read(log))
 
 
 def test_a_merge_waits_until_a_main_agent_returns(new_story, monkeypatch):
@@ -546,3 +547,24 @@ def test_the_merger_started_by_an_ended_main_session_tells_the_main_agent_that_r
     line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=running_main.id).newest().first()
     story.expect_rows(message is not None, line is not None and f"in message:{message.id}" in line.text, detail=str(line))
     story.expect_text(f"message read {message.id}", "Worker 4 asks which reader to keep", actor=running_main)
+
+
+OVERSIGHT_SETTING = "journal.suites.coding.workers.oversight-profiles"
+OVERSEEING_PROFILE = "journal-researcher"
+
+
+def test_a_profile_set_to_oversee_reads_worker_logs_and_the_merges_waiting_without_marking_them_read(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    repository = repository_environment(story)
+    worker = delivered_worker(story, repository)
+    with running_launcher(story):
+        overseer = Actor(story.new_row_id(f'helper start {OVERSEEING_PROFILE} --brief "Oversee the workers" --environment main', actor=story.agent), ActorType.AGENT)
+    worker_logs = f"worker logs {agent_number(story, worker.id)}"
+    story.expect_refusal(worker_logs, "your role reviews no worker's logs", actor=overseer)
+    story.expect_refusal("merger next", "only the merger runs this", actor=overseer)
+    story.expect_success(f"setting set {OVERSIGHT_SETTING} '[\"{OVERSEEING_PROFILE}\"]' --project", actor=user)
+    story.expect_text(worker_logs, "task 1", actor=overseer)
+    story.expect_success("merger next", actor=overseer)
+    story.expect_success("proof check 1", "state: checked", actor=story.agent)
+    story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", "logs", actor=story.agent)

@@ -35,26 +35,26 @@ class MachineRuns:
 
     def claim(self, process: Process) -> None:
         path = self.run_file(process)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(path, str(self.outputs.pid_path(process.id)))
+        FileAccess.mkdir(path.parent, parents=True, exist_ok=True)
+        FileAccess.write(path, str(self.outputs.pid_path(process.id)))
 
     def release(self, process: Process) -> None:
-        self.run_file(process).unlink(missing_ok=True)
+        FileAccess.unlink(self.run_file(process), missing_ok=True)
 
     def count(self, plugin: str, category: str) -> int:
         folder = self.category_folder(plugin, category)
-        if not folder.is_dir():
+        if not FileAccess.is_dir(folder):
             return 0
         counted = 0
-        for path in folder.iterdir():
+        for path in FileAccess.iterdir(folder):
             if self.is_blocked(path):
                 counted += 1
             else:
-                path.unlink(missing_ok=True)
+                FileAccess.unlink(path, missing_ok=True)
         return counted
 
     def is_blocked(self, run_file: Path) -> bool:
-        pid_file = Path(FileAccess.shared().read(run_file).strip())
-        if pid_file.is_file():
-            return ProcessIds.text_exists(FileAccess.shared().read(pid_file).strip())
-        return self.clock.epoch_seconds() - run_file.stat().st_mtime < START_GRACE_SECONDS
+        pid_file = Path(FileAccess.read(run_file).strip())
+        if FileAccess.is_file(pid_file):
+            return ProcessIds.text_exists(FileAccess.read(pid_file).strip())
+        return self.clock.epoch_seconds() - FileAccess.stat(run_file).st_mtime < START_GRACE_SECONDS

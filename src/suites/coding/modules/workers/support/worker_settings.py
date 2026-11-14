@@ -21,6 +21,8 @@ MERGE_BUILT_PATHS = f"{MODULE_KEY}.merge-built-paths"
 MERGE_BUILD_COMMAND = f"{MODULE_KEY}.merge-build-command"
 MERGE_HOOKS_NAME = "merge-hooks"
 MERGE_HOOKS = f"{MODULE_KEY}.{MERGE_HOOKS_NAME}"
+OVERSIGHT_PROFILES_NAME = "oversight-profiles"
+OVERSIGHT_PROFILES = f"{MODULE_KEY}.{OVERSIGHT_PROFILES_NAME}"
 WORKER_RUN_LIMIT = f"{MODULE_KEY}.worker-run-limit"
 WORKER_KEPT_LIMIT = f"{MODULE_KEY}.worker-kept-limit"
 WORKER_INSTRUCTION_FILES_SETTING = f"{MODULE_KEY}.worker-instruction-files"
@@ -129,6 +131,8 @@ WORKER_SETTING_VALUES = [
                  SettingType.TEXT, default="npm --prefix src/viewer run build", person_set=True, screen="helper-type.workers", section="Merging"),
     SettingValue(MERGE_HOOKS_NAME, "Commands after a merge, per profile", "Entries of profile: command, run in the main checkout after a worker of that profile is merged.",
                  SettingType.LIST, default=(), person_set=True, screen=HELPER_TYPES_SCREEN, section="When merged"),
+    SettingValue(OVERSIGHT_PROFILES_NAME, "Profiles that oversee workers", "Helper profiles whose agents may read any worker's logs and the merges waiting, without marking them read.",
+                 SettingType.LIST, default=(), person_set=True),
 ]
 WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         WORKER_KEPT_LIMIT: NumberRule(0),
@@ -165,7 +169,7 @@ WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         CHECK_HISTORY_DAYS: NumberRule(1),
                         MERGER_COMMANDS: ListRule(),
                         PROTECTED_FOLDERS: ListRule(),
-                        MERGE_COMMANDS: ListRule(), MERGE_HOOKS: ListRule()}
+                        MERGE_COMMANDS: ListRule(), MERGE_HOOKS: ListRule(), OVERSIGHT_PROFILES: ListRule()}
 WORKER_SETTINGS = ruled_settings(MODULE_KEY, WORKER_SETTING_VALUES, WORKER_SETTING_RULES)
 TEST_COMMAND_PAIR = CommandPairRule(AFFECTED_TESTS_COMMAND, PROJECT_TEST_COMMAND)
 TEST_LIMIT_SECONDS = 3600

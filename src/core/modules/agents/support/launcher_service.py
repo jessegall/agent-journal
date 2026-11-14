@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import os
 import socket
 import subprocess
@@ -20,7 +21,7 @@ class LauncherService:
 
     def start(self) -> bool:
         binary = self.home.folder / "bin" / "journal"
-        if not binary.is_file():
+        if not FileAccess.is_file(binary):
             return False
         subprocess.Popen([str(binary), SERVICE_ARGUMENT, STANDALONE_ARGUMENT], env={**os.environ, "JOURNAL_HOME": str(self.home.folder)},
                          stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)

@@ -30,23 +30,13 @@ def test_a_wake_runs_a_round_and_an_error_in_a_round_is_reported_and_the_next_ro
     assert [str(error) for error in errors] == ["the first round fails"] and len(rounds) == 2
 
 
-def test_a_wake_reaches_every_linked_thread():
-    rounds = threading.Barrier(3)
-
-    def round_runner() -> None:
-        rounds.wait(TIMEOUT_SECONDS)
-
-    def error_reporter(error: Exception) -> None:
-        raise error
-
-    linked = [ListenerThread(round_runner, error_reporter, period_seconds=TIMEOUT_SECONDS) for _ in range(2)]
-    thread = ListenerThread(lambda: None, error_reporter, period_seconds=TIMEOUT_SECONDS, linked_threads=linked)
-    for started in linked:
-        started.start()
+def test_a_round_ends_by_routing_what_its_listeners_wrote():
+    routed = threading.Event()
+    thread = ListenerThread(lambda: None, lambda error: None, period_seconds=TIMEOUT_SECONDS, after_round=routed.set)
+    thread.start()
     thread.wake()
-    rounds.wait(TIMEOUT_SECONDS)
-    for started in linked:
-        started.stop()
+    assert routed.wait(TIMEOUT_SECONDS)
+    thread.stop()
 
 
 def test_the_thread_runs_a_round_once_a_period_without_a_wake():
@@ -74,3 +64,12 @@ def test_a_stop_while_a_round_runs_returns_within_the_stop_limit_and_starts_no_f
     release.set()
     thread.wake()
     assert rounds == ["round"]
+
+
+def test_listener_thread_calls_stop_callback_when_it_stops():
+    ended = threading.Event()
+    thread = ListenerThread(lambda: None, lambda error: None, period_seconds=TIMEOUT_SECONDS, stop_callback=ended.set)
+    thread.start()
+    thread.wake()
+    thread.stop()
+    assert ended.wait(TIMEOUT_SECONDS)

@@ -1,5 +1,5 @@
+from engine.file.file_access import FileAccess
 import os
-import shutil
 from datetime import timedelta
 
 from engine.actor.actor import Actor
@@ -107,7 +107,7 @@ def foreign_run(story: Story, actor: Actor) -> Process:
 
 def tree_of(story: Story, tree: GroupCpuTime, group: int, *processes: Process) -> None:
     """The given CPU time stands for the process trees of the runs, each under the given group."""
-    story.container.bind(GroupCpuTime, tree)
+    story.replace(GroupCpuTime, tree)
     for process in processes:
         story.container.get(OutputFolder).write_pid(process.id, group)
 
@@ -142,8 +142,8 @@ def truncate_output(story: Story, process: Process, kept: str, dropped: int) -> 
 def folder_made_a_file(story: Story, process: Process) -> None:
     """The run's folder is replaced by a plain file, so nothing in it can be read or written."""
     path = story.home.folder / "processes" / str(process.id)
-    shutil.rmtree(path)
-    path.write_text("not a folder")
+    FileAccess.rmtree(path)
+    FileAccess.write(path, "not a folder")
 
 
 def tick_statements(story: Story) -> int:

@@ -1,3 +1,5 @@
+from engine.file.file_access import FileAccess
+from collections.abc import Callable
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
@@ -19,19 +21,23 @@ class WorkerSkillProjects(SkillProjects):
 
     def projects(self) -> tuple[Path, ...]:
         projects = super().projects()
-        worktrees = (folder for project in projects if (project / ".git").exists() for folder in self.worktree_folders(project) if folder.is_dir())
+        worktrees = (folder for project in projects if FileAccess.exists(project / ".git") for folder in self.worktree_folders(project) if FileAccess.is_dir(folder))
         return tuple(dict.fromkeys((*projects, *worktrees)))
 
     def worktree_folders(self, project: Path) -> tuple[Path, ...]:
         listing = project / ".git" / "worktrees"
-        mark = listing.stat().st_mtime_ns if listing.exists() else 0
+        mark = FileAccess.stat(listing).st_mtime_ns if FileAccess.exists(listing) else 0
         if project not in self.kept_folders or self.kept_folders[project][0] != mark:
             self.kept_folders[project] = (mark, tuple(Path(folder) for folder, _ in self.git.folders(str(project))))
         return self.kept_folders[project][1]
 
-    def permits(self, project: Path, folder: str) -> bool:
-        worktree = next((row for row in self.worktrees.open_worktrees() if Path(row.folder).resolve() == project.resolve()), None)
-        return worktree is None or not self.skills.refuses(worktree.session_agent_id, folder)
+    def permitted(self, project: Path) -> Callable[[str], bool]:
+        folder = project.resolve()
+        worktree = next((row for row in self.worktrees.open_worktrees() if Path(row.folder).resolve() == folder), None)
+        if worktree is None:
+            return super().permitted(project)
+        refused = self.skills.refused(worktree.session_agent_id)
+        return lambda skill_folder: not refused(skill_folder)
 
     def agent_folder(self, agent_id: int, environment_id: int) -> Path:
         worktree = self.worktrees.worker_worktree(agent_id)

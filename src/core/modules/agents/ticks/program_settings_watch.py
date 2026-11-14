@@ -70,7 +70,7 @@ class ProgramSettingsWatch:
                                           outcome=MarkOutcome.FAILED))
 
     def is_link_restored(self, path: Path) -> bool:
-        return path.is_symlink() or (self.has_prepared and not path.exists())
+        return FileAccess.is_symlink(path) or (self.has_prepared and not FileAccess.exists(path))
 
     def external_changes(self, container: Container, settings: ProgramSettings, title: str) -> list[OutsideChange]:
         writer, backup = container.get(ProgramSettingsWriter), container.get(ProgramSettingsBackup)
@@ -83,7 +83,7 @@ class ProgramSettingsWatch:
                 if self.is_link_restored(path):
                     changes.append(OutsideChange(f"put-back:{path}:link", f"{restored_notice}: the link {path} was made again."))
                 continue
-            if not path.is_file():
+            if not FileAccess.is_file(path):
                 if str(path) not in recorded:
                     continue
                 changes.append(OutsideChange(f"put-back:{path}:deleted", f"{restored_notice}: {path} was deleted and is written again."))
@@ -91,7 +91,7 @@ class ProgramSettingsWatch:
             data = KeptBytes.read(path)
             digest = hashlib.sha256(data).hexdigest()
             if recorded.get(str(path)) == digest:
-                if stat.S_IMODE(path.stat().st_mode) != files[path].mode:
+                if stat.S_IMODE(FileAccess.stat(path).st_mode) != files[path].mode:
                     changes.append(OutsideChange(f"put-back:{path}:mode:{digest}", f"{restored_notice}: {path} was made writable and is read-only again."))
                 continue
             copy = backup.rejected(settings.program, path, data)
@@ -101,11 +101,11 @@ class ProgramSettingsWatch:
     @staticmethod
     def keep_replaced_links(settings: ProgramSettings) -> None:
         for link, target in settings.links.items():
-            if link.is_symlink() or not link.is_file():
+            if FileAccess.is_symlink(link) or not FileAccess.is_file(link):
                 continue
-            if target.exists() and target.stat().st_mtime_ns > link.stat().st_mtime_ns:
+            if FileAccess.exists(target) and FileAccess.stat(target).st_mtime_ns > FileAccess.stat(link).st_mtime_ns:
                 continue
-            FileAccess.shared().replace(link, target)
+            FileAccess.replace(link, target)
 
     def show_person_files(self, container: Container, sync: ProgramSettingsSync) -> None:
         unreadable = sync.unreadable_person_files()
@@ -113,7 +113,7 @@ class ProgramSettingsWatch:
             self.shown_unreadable = unreadable
             for path in unreadable:
                 self.show(container, ShowMark(ProgramSettingsMarkType.PROGRAM_SETTINGS, ProgramSettingsMarkVariant.UNREADABLE_PERSON_FILE,
-                                              f"unreadable-person-file:{path}:{path.stat().st_mtime_ns}",
+                                              f"unreadable-person-file:{path}:{FileAccess.stat(path).st_mtime_ns}",
                                               f"Your settings file {path} could not be read, so the journal carries none of its settings into its own",
                                               outcome=MarkOutcome.FAILED))
         waiting_cleanups = sync.blocked_cleanups()

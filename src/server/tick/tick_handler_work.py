@@ -6,11 +6,11 @@ from server.work.round_work import RoundWork
 
 
 class TickHandlerWork(RoundWork):
-    """One run of a tick handler on a fresh container; the listeners are woken when the handler answers True."""
+    """One run of a tick handler; what it wrote then wakes the listener threads that hear it, whatever it answers."""
 
     def __init__(self, handler: TickHandler, wake_listeners: Callable[[], None]) -> None:
         self.handler, self.wake_listeners = handler, wake_listeners
 
     def run(self, container: Container) -> None:
-        if self.handler.handler(container):
-            self.wake_listeners()
+        self.handler.handler(container)
+        self.wake_listeners()

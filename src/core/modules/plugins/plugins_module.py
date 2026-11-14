@@ -1,3 +1,5 @@
+from core.modules.plugins.support.plugin_installed_names import PluginInstalledNames
+from core.modules.processes.support.installed_plugins import InstalledPlugins
 from core.modules.plugins.migrations.m012_queued_run_names import QueuedRunNamesMigration
 from core.modules.plugins.models.queued_run import QueuedRun
 from core.modules.plugins.migrations.m011_queued_runs import QueuedRunsMigration
@@ -157,7 +159,7 @@ class PluginsModule(Module):
                 SettingValue("condition_limit_seconds", "Service condition limit", "The most seconds a plugin service's condition may take before it counts as failed.",
                              SettingType.NUMBER, default=10, scope=SettingScope.PROJECT)]
     driver_rules = [PluginRule, PluginProgramRule]
-    bindings = {ProjectReads: PluginProjectReads, ProcessTypeLimits: PluginRunLimits}
+    bindings = {ProjectReads: PluginProjectReads, ProcessTypeLimits: PluginRunLimits, InstalledPlugins: PluginInstalledNames}
     declared_plugin_events = [*PLAIN_EVENTS.values(), "tool_starting", "command_starting", "file_edited"]
     marks = PLUGIN_MARKS
     tick_handlers = [TickHandler(TickInterval(seconds=1), PluginCardReading(), "plugin card reading"),

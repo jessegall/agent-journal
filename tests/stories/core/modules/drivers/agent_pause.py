@@ -12,10 +12,9 @@ from engine.testing.examples.shell_part import ShellPart
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.database.database import Database
+from tests.stories.core.modules.agents.support.numbered_agents import MainWithOneWorker
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.drivers.overlays.paused_overlay import PausedOverlay
 from tests.stories.core.support import story_lines as lines
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
@@ -34,6 +33,7 @@ NESTED_JOURNAL_SAMPLE = HookSamples.shell('bash -c "journal task close 1"', Shel
 BUILD_SAMPLE = HookSamples.shell("make", ShellPart("make", CommandCategory.BUILD, [])).with_fields(event="pre_tool_use")
 WRITING_LISTING_SAMPLE = HookSamples.shell("cp a b", ShellPart("cp", CommandCategory.EDIT, ["a", "b"], effects=[CommandEffect.WRITES_FILES])).with_fields(event="pre_tool_use")
 EDIT_SAMPLE = HookSamples.sample("pre_tool_use", {"name": "Write", "category": ToolType.NEW_FILE, "files": ["a.py"], "shell": None, "diff": None})
+WORKER_SESSION = "s-2"
 
 
 class FakeTyping(TerminalTyping):
@@ -48,7 +48,7 @@ class FakeTyping(TerminalTyping):
 
 def test_a_paused_agents_tool_calls_are_refused_until_it_is_resumed(new_story):
     story = new_story(fixture=UserJoined)
-    story.container.bind(TerminalTyping, FakeTyping())
+    story.replace(TerminalTyping, FakeTyping())
     story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", f"paused {agent_label(story, story.agent.id)}", actor=story.user)
     story.expect_hook_refusal("s-1", EDIT_SAMPLE, "The user paused you")
     story.expect_success(f"agent resume {agent_number(story, story.agent.id)}", f"resumed {agent_label(story, story.agent.id)}", actor=story.user)
@@ -57,7 +57,7 @@ def test_a_paused_agents_tool_calls_are_refused_until_it_is_resumed(new_story):
 
 def test_a_paused_agent_may_read_and_run_message_commands_and_is_not_told_of_the_pause_on_what_it_may_do(new_story):
     story = new_story(fixture=UserJoined)
-    story.container.bind(TerminalTyping, FakeTyping())
+    story.replace(TerminalTyping, FakeTyping())
     story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
     story.expect_hook_refusal("s-1", JOURNAL_SAMPLE, "The user paused you")
     story.expect_hook_refusal("s-1", NESTED_JOURNAL_SAMPLE, "The user paused you")
@@ -106,7 +106,7 @@ def test_a_paused_agent_cannot_resume_itself_and_the_user_resumes_it(new_story):
 
 def paused_story(new_story, fixture):
     story = new_story(fixture=fixture)
-    story.container.bind(TerminalTyping, FakeTyping())
+    story.replace(TerminalTyping, FakeTyping())
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     return story
 
@@ -146,14 +146,15 @@ def test_the_pause_ends_with_the_agent(paused_task_holder):
     story.expect_rows(story.container.get(Queries).query(Agent).find(story.agent.id).paused_at is None)
 
 
-def test_a_worker_pauses_on_its_own_and_not_with_the_agent_that_sent_it(new_story):
-    story = paused_story(new_story, BuilderHelper)
-    worker = next(agent for agent in story.story_rows(Agent) if agent.parent_id == story.agent.id)
-    story.container.get(Database).connection.execute("UPDATE agents SET role = 'worker' WHERE id = ?", [worker.id])
-    overlay = PausedOverlay(story.container.get(AgentRows))
-    story.expect_rows(overlay.open_rows(worker.id) == [])
-    story.expect_success(f"agent pause {agent_number(story, worker.id)}", f"paused {agent_label(story, worker.id)}", actor=story.user)
-    story.expect_rows(overlay.open_rows(worker.id) != [])
+def test_a_worker_of_a_paused_agent_may_only_read_and_goes_on_after_the_resume(new_story):
+    story = new_story(fixture=MainWithOneWorker)
+    story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
+    story.expect_hook_refusal(WORKER_SESSION, EDIT_SAMPLE, "The user paused you")
+    story.expect_hook_refusal(WORKER_SESSION, WRITING_LISTING_SAMPLE, "The user paused you")
+    for allowed in (READ_SAMPLE, LISTING_SAMPLE):
+        story.expect_absent_hook_line(WORKER_SESSION, allowed, "The user paused you")
+    story.expect_success(f"agent resume {agent_number(story, story.agent.id)}", actor=story.user)
+    story.expect_absent_hook_line(WORKER_SESSION, EDIT_SAMPLE, "The user paused you")
 
 
 @pytest.fixture
@@ -174,7 +175,7 @@ def watched_paused_agent(new_story):
             transaction_flags.append(database.has_transaction)
             super().send_line(agent_id, line)
 
-    story.container.bind(TerminalTyping, WatchedTyping())
+    story.replace(TerminalTyping, WatchedTyping())
     story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
     return story, database, transaction_flags
 

@@ -1,0 +1,22 @@
+/* Round ten (message 121150): the number of a list row sits at the page's one edge, not after an empty margin.
+   Before: 2 px marker + 16 px padding + a fixed 4ch number cell, right-aligned, so "4" stood about 40 px in.
+   Now: the row starts at --inset (16 px, the edge of the filter bar and search field above it), and the number column
+   is as wide as the widest number on the list. Numbers stay right-aligned, so 9 and 12 line up on their last digit.
+   It holds for every page on ListReaderLayout: Templates, Sequences, Rules, Reminders, Skills, Memories, Teams, Git, Plugins,
+   Integrations, Secrets, Documents and Search. */
+
+/* the list is one grid; each row takes its columns from it, so the number column is shared by every row */
+.lr-items { display: grid; grid-template-columns: max-content minmax(0, 1fr) auto; align-content: start; }
+.lr:not(.has-ref) .lr-items { grid-template-columns: minmax(0, 1fr) auto; }
+.lr-items > * { grid-column: 1 / -1; }
+.lrow.r6 { grid-template-columns: subgrid; padding-left: calc(var(--inset) - 2px); padding-right: var(--inset); }
+.lrow.r6 .r7-n, .lrow.r6 .r7-n.hash { min-width: 0; }
+.lr-group { padding-left: var(--inset); padding-right: var(--inset); }
+
+/* a browser without subgrid keeps one row grid: the number cell hugs two digits instead of four */
+@supports not (grid-template-columns: subgrid) {
+  .lr-items { display: block; }
+  .lrow.r6 { grid-template-columns: max-content minmax(0, 1fr) auto; }
+  .lrow.r6 .r7-n { min-width: 2ch; }
+  .lrow.r6 .r7-n.hash { min-width: 7ch; }
+}

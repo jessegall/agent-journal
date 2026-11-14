@@ -34,8 +34,8 @@ class HookWriter:
 
     def record_runner(self, runner: str) -> None:
         choice = JournalHome(self.root / ".journal").hook_runner_choice
-        choice.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(choice, f"{runner}\n")
+        FileAccess.mkdir(choice.parent, parents=True, exist_ok=True)
+        FileAccess.write(choice, f"{runner}\n")
 
     def managed(self) -> list[ManagedHook]:
         return ManagedHooks(JournalHome(self.root / ".journal")).all()

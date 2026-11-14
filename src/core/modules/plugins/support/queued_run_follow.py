@@ -39,7 +39,7 @@ class QueuedRunFollow:
             offset = page.last_byte
             if has_ended and offset >= page.total:
                 return process.exit_code if process.exit_code is not None else STOPPED_EXIT_CODE
-            if not has_ended and output.is_reader_gone():
+            if not has_ended and output.has_reader_disconnected():
                 self.bus.run(StopProcess(process_id), self.actors.actor(MODULE_NAME), environment_id=process.environment_id)
                 return INTERRUPTED_EXIT_CODE
             self.clock.sleep(END_POLL_SECONDS)

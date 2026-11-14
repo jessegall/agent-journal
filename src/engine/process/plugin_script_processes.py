@@ -50,9 +50,9 @@ class PluginScriptProcesses:
         if stopped:
             self.killed([script], ScriptStop.SERVER)
         if self.pid_folder is not None:
-            self.pid_folder.mkdir(parents=True, exist_ok=True)
+            FileAccess.mkdir(self.pid_folder, parents=True, exist_ok=True)
             program = process.args[0] if isinstance(process.args, (list, tuple)) else process.args
-            FileAccess.shared().write(self.pid_folder / f"script-{plugin}-{process.pid}.pid", f"{process.pid}\n{program}")
+            FileAccess.write(self.pid_folder / f"script-{plugin}-{process.pid}.pid", f"{process.pid}\n{program}")
 
     def finish(self, process: "subprocess.Popen[str]") -> None:
         with self.lock:
@@ -60,15 +60,15 @@ class PluginScriptProcesses:
             self.scripts.pop(process.pid, None)
             self.stop_reasons.pop(process.pid, None)
         if self.pid_folder is not None and script is not None:
-            (self.pid_folder / f"script-{script.plugin}-{process.pid}.pid").unlink(missing_ok=True)
+            FileAccess.unlink(self.pid_folder / f"script-{script.plugin}-{process.pid}.pid", missing_ok=True)
 
     def stop_stale_processes(self) -> None:
-        if self.pid_folder is None or not self.pid_folder.is_dir():
+        if self.pid_folder is None or not FileAccess.is_dir(self.pid_folder):
             return
-        for pid_file in self.pid_folder.glob("script-*.pid"):
-            pid, _, program = FileAccess.shared().read(pid_file).partition("\n")
+        for pid_file in FileAccess.glob(self.pid_folder, "script-*.pid"):
+            pid, _, program = FileAccess.read(pid_file).partition("\n")
             LeftoverProcess.stop(int(pid), program)
-            pid_file.unlink(missing_ok=True)
+            FileAccess.unlink(pid_file, missing_ok=True)
 
     def stop_reason(self, process: "subprocess.Popen[str]") -> ScriptStop:
         with self.lock:

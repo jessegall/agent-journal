@@ -17,12 +17,12 @@ def report(story: Story, five_hours: float, seven_days: float = 0) -> None:
     now = story.clock.timestamp().value.timestamp()
     limits = {"five_hour": {"used_percentage": five_hours, "resets_at": now + WINDOW_SECONDS}, "seven_day": {"used_percentage": seven_days, "resets_at": now + WEEK_SECONDS}}
     story.home.status_folder.mkdir(parents=True, exist_ok=True)
-    FileAccess.shared().write(story.home.status_folder / "s-1.json", json.dumps({"session_id": "s-1", "model": {"display_name": "Opus"}, "context_window": {"used_percentage": 10}, "rate_limits": limits}))
+    FileAccess.write(story.home.status_folder / "s-1.json", json.dumps({"session_id": "s-1", "model": {"display_name": "Opus"}, "context_window": {"used_percentage": 10}, "rate_limits": limits}))
 
 
 def limited_story(new_story) -> Story:
     story = new_story(fixture=UserBuilder)
-    story.container.bind(ProgramStates, story.container.constructed(ProgramStates))
+    story.rebuild(ProgramStates)
     return story
 
 

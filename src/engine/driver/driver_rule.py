@@ -9,9 +9,10 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.enums.tool_type import ToolType
 from engine.agent.enums.role_group import RoleGroup
 from engine.scope.scopes import WholeScopes
+from engine.container.single_instance import SingleInstance
 
 
-class DriverRule:
+class DriverRule(SingleInstance):
     """The base of every driver rule: one rule about what an agent may do or reads, asked on the hooks it
     covers while a driver its patterns name drives the agent; its class docstring says the rule in plain
     words; a rule that refuses one action outright says why in single_action_refusal, since every other hold

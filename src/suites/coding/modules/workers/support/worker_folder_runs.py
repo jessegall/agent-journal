@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from engine.actor.actor import Actor
@@ -28,7 +29,7 @@ class WorkerFolderRuns:
 
     def check_owner(self, worktree: Worktree) -> None:
         folder = Path(worktree.folder)
-        if folder.is_symlink():
+        if FileAccess.is_symlink(folder):
             raise Refusal(f"worker folder {folder} is a symlink", "remove the link before preparing or removing this worktree")
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
             owners = self.worktrees.open_worktrees()

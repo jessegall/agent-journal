@@ -3,8 +3,8 @@ import fcntl
 import hashlib
 import json
 import pickle
-import shutil
 import tempfile
+import weakref
 from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
@@ -36,19 +36,20 @@ class TemplateDatabases:
         self.folder = folder
         self.adaptation = TemplateAdaptation(CORE_FOLDER.parent.parent.resolve())
         self.templates: dict[tuple[tuple[str, ...], type[StoryFixture] | None], Template] = {}
-        self.working_folder = tempfile.TemporaryDirectory(prefix=WORKING_FOLDER_PREFIX)
+        self.working_folder = FileAccess.make_temporary_folder(prefix=WORKING_FOLDER_PREFIX)
+        weakref.finalize(self, FileAccess.rmtree, self.working_folder, True)
         self.working_journals: dict[Path, list[WorkingJournal]] = {}
 
     @staticmethod
     def remove_stale_working_folders(current_time: float) -> None:
-        for folder in Path(tempfile.gettempdir()).glob(f"{WORKING_FOLDER_PREFIX}*"):
+        for folder in FileAccess.glob(Path(tempfile.gettempdir()), f"{WORKING_FOLDER_PREFIX}*"):
             try:
-                modified = folder.stat().st_mtime
+                modified = FileAccess.stat(folder).st_mtime
             except FileNotFoundError:
                 # another test run removed it between the listing and this read: nothing is left to remove
                 continue
             if current_time - modified > STALE_WORKING_FOLDER_SECONDS:
-                shutil.rmtree(folder, ignore_errors=True)
+                FileAccess.rmtree(folder, ignore_errors=True)
 
     def story(self, folder: Path, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Story:
         template = self.template(modules, fixture)
@@ -63,15 +64,15 @@ class TemplateDatabases:
         free = next((journal for journal in journals if not journal.is_taken), None)
         if free is not None:
             return free
-        journal = WorkingJournal(template.home.database, Path(self.working_folder.name) / f"{template.home.folder.name}-{len(journals)}.db")
+        journal = WorkingJournal(template.home.database, self.working_folder / f"{template.home.folder.name}-{len(journals)}.db")
         journals.append(journal)
         return journal
 
     def linked_home(self, template: Template, journal: WorkingJournal, folder: Path) -> JournalHome:
         home = JournalHome(folder)
-        home.folder.mkdir(parents=True, exist_ok=True)
-        home.database.unlink(missing_ok=True)
-        home.database.symlink_to(journal.file)
+        FileAccess.mkdir(home.folder, parents=True, exist_ok=True)
+        FileAccess.unlink(home.database, missing_ok=True)
+        FileAccess.symlink_to(home.database, journal.file)
         self.copy_lists(template, home)
         return home
 
@@ -86,21 +87,21 @@ class TemplateDatabases:
         name = hashlib.sha1(repr(self.template_key(modules, fixture)).encode()).hexdigest()[:16]
         folder = self.folder / name
         with self.locked(self.folder / f"{name}.lock"):
-            if not (folder / STATE_FILE).is_file():
-                shutil.rmtree(folder, ignore_errors=True)
+            if not FileAccess.is_file(folder / STATE_FILE):
+                FileAccess.rmtree(folder, ignore_errors=True)
                 built = self.fixture_template(folder, modules, fixture) if fixture else self.synced_template(folder, modules)
                 state = folder / (STATE_FILE + ".new")
-                FileAccess.shared().write_binary(state, pickle.dumps(built.state))
-                FileAccess.shared().replace(state, folder / STATE_FILE)
+                FileAccess.write_binary(state, pickle.dumps(built.state))
+                FileAccess.replace(state, folder / STATE_FILE)
                 self.adaptation.mark(folder)
             usable = self.usable_folder(folder, name)
-            return Template(JournalHome(usable), pickle.loads(FileAccess.shared().binary(usable / STATE_FILE)))
+            return Template(JournalHome(usable), pickle.loads(FileAccess.binary(usable / STATE_FILE)))
 
     def usable_folder(self, folder: Path, name: str) -> Path:
         if self.adaptation.builder_name(folder) == self.adaptation.checkout:
             return folder
         adapted = self.folder / f"{name}-{hashlib.sha1(self.adaptation.checkout.encode()).hexdigest()[:16]}"
-        if not (adapted / STATE_FILE).is_file() or self.adaptation.builder_name(adapted) != self.adaptation.checkout:
+        if not FileAccess.is_file(adapted / STATE_FILE) or self.adaptation.builder_name(adapted) != self.adaptation.checkout:
             self.adaptation.adapted(folder, adapted)
         return adapted
 
@@ -116,14 +117,14 @@ class TemplateDatabases:
     @staticmethod
     @contextmanager
     def locked(path: Path) -> Generator[None]:
-        with FileAccess.shared().writer(path) as lock_file:
+        with FileAccess.writer(path) as lock_file:
             fcntl.flock(lock_file, fcntl.LOCK_EX)
             yield
 
     def synced_template(self, folder: Path, modules: tuple[str, ...]) -> Template:
         home = JournalHome(folder)
-        home.folder.mkdir(parents=True)
-        FileAccess.shared().write(home.module_list, json.dumps(list(modules)))
+        FileAccess.mkdir(home.folder, parents=True)
+        FileAccess.write(home.module_list, json.dumps(list(modules)))
         container = opened_container(home)
         container.bind(Clock, ManualClock())
         container.get(ModuleSync).run()
@@ -142,12 +143,12 @@ class TemplateDatabases:
 
     def copy(self, template: Template, folder: Path) -> JournalHome:
         home = JournalHome(folder)
-        home.folder.mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(home.folder, parents=True, exist_ok=True)
         FileClone.copy(template.home.database, home.database)
         self.copy_lists(template, home)
         return home
 
     @staticmethod
     def copy_lists(template: Template, home: JournalHome) -> None:
-        shutil.copyfile(template.home.module_list, home.module_list)
-        shutil.copyfile(template.home.program_table, home.program_table)
+        FileAccess.copyfile(template.home.module_list, home.module_list)
+        FileAccess.copyfile(template.home.program_table, home.program_table)

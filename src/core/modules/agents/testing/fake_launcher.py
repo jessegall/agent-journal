@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import json
 import socket
 import threading
@@ -28,7 +29,7 @@ class FakeLauncher:
         return launcher
 
     def listen(self) -> None:
-        self.path.unlink(missing_ok=True)
+        FileAccess.unlink(self.path, missing_ok=True)
         self.server.bind(str(self.path))
         self.server.listen(1)
         self.server.settimeout(ACCEPT_TIMEOUT_SECONDS)

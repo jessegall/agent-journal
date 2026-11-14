@@ -29,7 +29,7 @@ class JournalInstructionFile:
             self.append_import(project / name)
 
     def text(self) -> str:
-        parts = [FileAccess.shared().read(JOURNAL_TEXT).strip()]
+        parts = [FileAccess.read(JOURNAL_TEXT).strip()]
         parts.extend(text for plugin in self.runnable.enabled_rows() for text in self.plugin_texts(plugin))
         return "\n\n".join(parts) + "\n"
 
@@ -38,8 +38,8 @@ class JournalInstructionFile:
         if manifest is None:
             return []
         folder = self.folders.code(plugin.name)
-        files = [name for name in manifest.injected_instructions if ManifestListener.is_contained_path(name, folder) and (folder / name).is_file()]
-        return [FileAccess.shared().read(folder / name).strip() for name in files]
+        files = [name for name in manifest.injected_instructions if ManifestListener.is_contained_path(name, folder) and FileAccess.is_file(folder / name)]
+        return [FileAccess.read(folder / name).strip() for name in files]
 
     def append_import(self, file: Path) -> None:
         current_text = self.current_text(file)
@@ -57,9 +57,9 @@ class JournalInstructionFile:
 
     @staticmethod
     def current_text(file: Path) -> str | None:
-        return FileAccess.shared().read(file) if file.is_file() else None
+        return FileAccess.read(file) if FileAccess.is_file(file) else None
 
     @staticmethod
     def save(file: Path, current_text: str | None, text: str) -> None:
         if current_text != text:
-            FileAccess.shared().write(file, text)
+            FileAccess.write(file, text)

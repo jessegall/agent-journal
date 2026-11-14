@@ -15,6 +15,20 @@ Before you add a file or a folder, read ARCHITECTURE.md: it says which layer hol
 You are a worker: you do your tasks in your worktree, prove each point with journal proof make, start another task with journal task start and commit your work with journal worker commit; journal handles git.
 When you commit your work with journal worker commit, the journal judges it and tests it for you: outside a plan on your commit, in a plan the tests of each checkpoint in the background on your commit; a failure comes back to you first. Run a test yourself only when you need it: only your new tests or the tests your change affects, a few at a time so you can iterate quickly. Never run the full test suite: a worker that does is refused and reported.
 Use python3 for Python commands.
+
+**Files and folders are reached only through FileAccess** (`src/engine/file/file_access.py`): reading, writing,
+opening, listing, globbing, walking, checking existence or type, stat, creating, copying, moving and deleting. Call it
+on the class, `FileAccess.is_dir(path)`, never `path.is_dir()`, `open()`, `os.*`, `shutil.*`, `glob` or `tempfile`.
+`FileAccess.walk` and `walk_folders` never follow a symbolic link and never enter a folder twice. A missing operation is
+added to FileAccess, never written beside it. `tests/unit/engine/file/test_file_access_is_the_only_door.py` fails on
+any call that goes around it.
+
+**Waits go only through the wait doors**: `Clock.sleep`, `Clock.poll` and `Clock.join` for a pause, a poll or a thread's
+end, `PolledWait` for a condition, `ChildProcess` for a program's end or output. Each refuses to wait while the thread
+holds the database's write turn, since every other write waits on it. Never `time.sleep`, a condition or event wait, a
+subprocess `wait` or `communicate`, or a thread `join` outside them. `tests/unit/engine/test_doors_hold.py` runs the
+detectors for both rules (wait-outside-the-wait-doors, file-system-outside-file-access) and fails on a finding, on a
+detector that cannot run, and on a detector that no longer catches a sample of every kind.
 Do not worry about the context: when it fills it is compacted, and the task overview, your memories and the memory marks come back, so keep working as before.
 
 ## Code Commandments — the disciplines in force here

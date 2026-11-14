@@ -212,7 +212,7 @@ def test_registered_profiles_restore(database):
     profile = AgentProfile("notes-reader", "Reads notes", "Read the notes.", agent_type="reader", model="small", codex_model="small",
                            access=Access.READ, program="codex", occupant=Occupant.LAUNCH_ROTATION, mcp_tools=tuple(["mcp__notes__read"]),
                            changed=tuple(["model"]), module_text_changed=True)
-    policy = AgentPolicy(private_output_roles=tuple(["reader"]), queued_run_roles=tuple(["reader"]))
+    policy = AgentPolicy(private_output_roles=tuple(["reader"]), reader_request_roles=tuple(["reader"]))
     suite = SuiteEntry("notes", "notes", (), {}, False, (), (), {}, {}, policy, shipped=True)
     entry = ProfileEntry.declared("notes", profile)
     registry = replace(Registry.read(database), suites=tuple([suite]), profiles=tuple([entry]))

@@ -26,6 +26,10 @@ class Statement:
         return self.sql.lstrip().upper().startswith(("SELECT", "WITH", "EXPLAIN", "PRAGMA"))
 
     @property
+    def is_pragma(self) -> bool:
+        return self.sql.lstrip().upper().startswith("PRAGMA")
+
+    @property
     def is_schema_read(self) -> bool:
         return "FROM sqlite_master" in self.sql
 

@@ -31,9 +31,9 @@ class ProfileFolderMove:
             self.system_log.write(LogLevel.WARNING, f"Profiles left unchanged: the profile folder is read-only ({error})")
 
     def run(self) -> tuple[Path, ...]:
-        claude = tuple(self.files.folder(CLAUDE_FOLDER).glob("*.md"))
+        claude = tuple(FileAccess.glob(self.files.folder(CLAUDE_FOLDER), "*.md"))
         names = {path.stem for path in claude}
-        codex = tuple(path for path in self.files.folder(CODEX_FOLDER).glob("*.toml") if path.stem not in names)
+        codex = tuple(path for path in FileAccess.glob(self.files.folder(CODEX_FOLDER), "*.toml") if path.stem not in names)
         preserved: list[Path] = []
         for path in (*claude, *codex):
             if path.name.startswith(SHIPPED_PREFIX):
@@ -45,7 +45,7 @@ class ProfileFolderMove:
                 preserved.append(path)
                 self.system_log.write(LogLevel.WARNING, f"Cannot copy profile {path.name}: {error}")
         paired = [self.files.folder(CODEX_FOLDER) / f"{path.stem}.toml" for path in preserved if path.suffix == ".md"]
-        return (*preserved, *(path for path in paired if path.is_file()))
+        return (*preserved, *(path for path in paired if FileAccess.is_file(path)))
 
     def is_published(self, path: Path, text: str) -> bool:
         registered = self.files.registered(path.stem)
@@ -56,10 +56,10 @@ class ProfileFolderMove:
         return text == published
 
     def copy(self, path: Path) -> bool:
-        text = FileAccess.shared().read(path)
+        text = FileAccess.read(path)
         digest = self.digest.hex_digest(text)
         target = self.files.path(path.stem)
-        if target.is_file():
+        if FileAccess.is_file(target):
             return self.copy_existing(path, target, text, digest)
         if self.is_published(path, text):
             return False
@@ -84,9 +84,9 @@ class ProfileFolderMove:
         if not fields.source_digest and self.is_published(source, text):
             return False
         changed_file = target.with_name(f"{source.stem}.clash.md")
-        if changed_file.is_file() and FileAccess.shared().read(changed_file) == text:
+        if FileAccess.is_file(changed_file) and FileAccess.read(changed_file) == text:
             return True
-        FileAccess.shared().write(changed_file, text)
+        FileAccess.write(changed_file, text)
         return True
 
     @staticmethod

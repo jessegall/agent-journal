@@ -27,7 +27,7 @@ class SkillListSubcommand(ReadSubcommand[tuple[SkillEntry, ...]]):
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[SkillEntry, ...]:
         groups = self.groups.labels()
-        dated = (skill if skill.modified_at is not None else replace(skill, modified_at=FileAccess.shared().version(Path(skill.path)).modified_at) for skill in self.catalogue.skills())
+        dated = (skill if skill.modified_at is not None else replace(skill, modified_at=FileAccess.version(Path(skill.path)).modified_at) for skill in self.catalogue.skills())
         return tuple(replace(skill, groups=groups.get(skill.folder, ())) for skill in dated)
 
     def write_output(self, value: object, output: Output) -> None:

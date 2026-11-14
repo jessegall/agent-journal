@@ -1,6 +1,5 @@
-class WriteTurnBusyError(TimeoutError):
-    """A write waited past its limit for the database's write turn."""
+from server.errors.execution_wait_error import ExecutionWaitError
 
-    @classmethod
-    def blocked(cls, holder: str, seconds: float) -> "WriteTurnBusyError":
-        return cls(f"a write waited {seconds:g} seconds for the database while {holder} held it")
+
+class WriteTurnBusyError(ExecutionWaitError, TimeoutError):
+    """A write waited past its limit for the database's write turn."""

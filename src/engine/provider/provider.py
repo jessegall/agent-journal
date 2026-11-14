@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import os
 from engine.provider.context_window import ContextWindow
 from abc import ABC, abstractmethod
@@ -231,5 +232,5 @@ class Provider(ABC):
         raise NotImplementedError
 
     def person_data(self) -> dict[Path, bytes]:
-        return {path: KeptBytes.read(path) for path in self.user_hook_files() if path.is_file() and os.access(path, os.R_OK)}
+        return {path: KeptBytes.read(path) for path in self.user_hook_files() if FileAccess.is_file(path) and os.access(path, os.R_OK)}
 

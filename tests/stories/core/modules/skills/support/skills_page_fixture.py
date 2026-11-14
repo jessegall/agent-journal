@@ -42,5 +42,5 @@ def skills_page_story(new_story):
     for folder, plugin in (("sample-plugin", "plugin: sample\n"), ("project-notes", "")):
         path = story.home.project_folder / ".agents/skills" / folder / "SKILL.md"
         path.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(path, f"---\n{plugin}name: {folder}\ndescription: Take clear notes\n---\nRead before taking notes.\n")
+        FileAccess.write(path, f"---\n{plugin}name: {folder}\ndescription: Take clear notes\n---\nRead before taking notes.\n")
     return story

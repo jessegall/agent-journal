@@ -173,9 +173,9 @@ class ClaudeCodeProvider(Provider):
 
     @staticmethod
     def status_text(path: Path, group: str, name: str) -> str:
-        if not path.is_file():
+        if not FileAccess.is_file(path):
             return ""
-        fields = StatusFileFields.read(path, FileAccess.shared().version(path)).get(group)
+        fields = StatusFileFields.read(path, FileAccess.version(path)).get(group)
         value = fields.get(name) if is_mapping(fields) else None
         return value if isinstance(value, str) else ""
 
@@ -197,15 +197,15 @@ class ClaudeCodeProvider(Provider):
     def transcript(self, project: Path, session: str) -> Path | None:
         projects = self.folders.folder(CONFIG_VARIABLE, ".claude") / "projects"
         path = projects / ClaudeFolderName.folder_name(project) / f"{session}.jsonl"
-        if path.is_file():
+        if FileAccess.is_file(path):
             return path
-        return next(projects.glob(f"*/{session}.jsonl"), None) if projects.is_dir() else None
+        return next(FileAccess.glob(projects, f"*/{session}.jsonl"), None) if FileAccess.is_dir(projects) else None
 
     def skills_kept_after_compaction(self, transcript: Path | None) -> Mapping[str, str]:
         return ClaudeKeptSkills(transcript).digests() if transcript is not None else {}
 
     def session_matches_folder(self, project: Path, session: str) -> bool:
-        return (self.folders.folder(CONFIG_VARIABLE, ".claude") / "projects" / ClaudeFolderName.folder_name(project) / f"{session}.jsonl").is_file()
+        return FileAccess.is_file(self.folders.folder(CONFIG_VARIABLE, ".claude") / "projects" / ClaudeFolderName.folder_name(project) / f"{session}.jsonl")
 
     def transcript_row(self, line: str, position: int) -> TranscriptRow | None:
         fields: object = json.loads(line) if line.strip() else {}
@@ -252,12 +252,12 @@ class ClaudeCodeProvider(Provider):
         person_data = self.person_data()
         person_file = self.user_hook_files()[0]
         person_settings = self.person_settings(person_data.get(person_file, b""))
-        unreadable = tuple(path for path in [person_file] if path.is_file() and (path not in person_data or person_settings is None))
+        unreadable = tuple(path for path in [person_file] if FileAccess.is_file(path) and (path not in person_data or person_settings is None))
         person_values = {key: value for key, value in (person_settings or {}).items() if key in COPIED_SETTINGS}
         settings = {**person_values, "permissions": BYPASS_PERMISSIONS, **self.hook_settings(runner, root),
                     "hooks": ProgramHooks.journal(type(self), path).journal_blocks(runner, root, managed)}
         state = self.state_file()
-        person_state = self.person_settings(KeptBytes.read(state)) if state.is_file() and os.access(state, os.R_OK) else {}
+        person_state = self.person_settings(KeptBytes.read(state)) if FileAccess.is_file(state) and os.access(state, os.R_OK) else {}
         servers = person_state.get(SERVERS_KEY, {}) if person_state is not None else {}
         if person_state is None:
             unreadable = (*unreadable, state)
@@ -291,8 +291,8 @@ class ClaudeCodeProvider(Provider):
     def session_temp_folders(self, project: Path) -> Mapping[str, Path]:
         prefix = re.sub(r"[/.]", "-", str(project.resolve()))
         program_folder = TEMPORARY_FILES_FOLDER / f"claude-{os.getuid()}"
-        project_folders = [folder for folder in program_folder.iterdir() if folder.name == prefix or folder.name.startswith(f"{prefix}--")] if program_folder.is_dir() else []
-        return {session.name: session for folder in project_folders for session in folder.iterdir() if session.is_dir()}
+        project_folders = [folder for folder in FileAccess.iterdir(program_folder) if folder.name == prefix or folder.name.startswith(f"{prefix}--")] if FileAccess.is_dir(program_folder) else []
+        return {session.name: session for folder in project_folders for session in FileAccess.iterdir(folder) if FileAccess.is_dir(session)}
 
     @classmethod
     def hook_settings(cls, runner: str, root: Path) -> Mapping[str, object]:

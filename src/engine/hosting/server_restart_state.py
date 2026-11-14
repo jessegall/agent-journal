@@ -21,20 +21,20 @@ class ServerRestartState:
     @property
     def is_restarting(self) -> bool:
         restart_file = self.home.restart_mark
-        return restart_file.is_file() and self.clock.epoch_seconds() - restart_file.stat().st_mtime < RESTART_LIMIT_SECONDS
+        return FileAccess.is_file(restart_file) and self.clock.epoch_seconds() - FileAccess.stat(restart_file).st_mtime < RESTART_LIMIT_SECONDS
 
     @property
     def is_updating(self) -> bool:
         maintenance_file = self.home.folder / MAINTENANCE_FILE
-        if not maintenance_file.is_file() or self.clock.epoch_seconds() - maintenance_file.stat().st_mtime >= MAINTENANCE_LIMIT_SECONDS:
+        if not FileAccess.is_file(maintenance_file) or self.clock.epoch_seconds() - FileAccess.stat(maintenance_file).st_mtime >= MAINTENANCE_LIMIT_SECONDS:
             return False
-        text = FileAccess.shared().read(maintenance_file).strip()
+        text = FileAccess.read(maintenance_file).strip()
         return not text.isdigit() or self.is_running(text)
 
     @property
     def has_run_lock(self) -> bool:
         run_lock = self.home.run_lock
-        return run_lock.is_file() and self.clock.epoch_seconds() - run_lock.stat().st_mtime < RUN_LOCK_LIMIT_SECONDS
+        return FileAccess.is_file(run_lock) and self.clock.epoch_seconds() - FileAccess.stat(run_lock).st_mtime < RUN_LOCK_LIMIT_SECONDS
 
     @staticmethod
     def is_running(pid: str) -> bool:

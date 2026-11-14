@@ -13,9 +13,9 @@ class KeptBytes:
 
     @staticmethod
     def read(path: Path) -> bytes:
-        return KeptBytes.kept(path, FileAccess.shared().version(path))
+        return KeptBytes.kept(path, FileAccess.version(path))
 
     @staticmethod
     @lru_cache(maxsize=KEPT_FILES)
     def kept(path: Path, version: FileVersion) -> bytes:
-        return FileAccess.shared().binary(path)
+        return FileAccess.binary(path)

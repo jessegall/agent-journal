@@ -1,5 +1,5 @@
+from engine.file.file_access import FileAccess
 import os
-import shutil
 from collections.abc import Callable, Generator
 import time
 from pathlib import Path
@@ -109,7 +109,7 @@ def templates() -> Generator[TemplateDatabases]:
     TemplateDatabases.remove_stale_working_folders(time.time())
     databases = TemplateDatabases(run_template_folder())
     yield databases
-    databases.working_folder.cleanup()
+    FileAccess.rmtree(databases.working_folder, True)
 
 
 @pytest.fixture
@@ -131,7 +131,7 @@ def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.Fixt
     created.clear()
     SharedTables.shared.cache_clear()
     if item.stash.get(CALL_PASSED, False):
-        shutil.rmtree(tmp_path, ignore_errors=True)
+        FileAccess.rmtree(tmp_path, ignore_errors=True)
 
 
 @pytest.hookimpl(wrapper=True)

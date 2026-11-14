@@ -20,22 +20,19 @@ async function save(key, value) {
         <ProcessQueueBand icon="gauge">Now</ProcessQueueBand>
         <div class="counts">
             <div><strong data-queue-spots>{{ queue.used_slots }} <span>of {{ queue.parallel_limit }}</span></strong>
-                <p>Commands running. {{ queue.used_slots >= queue.parallel_limit ? 'Every place is taken.' : `${queue.parallel_limit - queue.used_slots} ${queue.parallel_limit - queue.used_slots === 1 ? 'place' : 'places'} free.` }}</p>
-                <div class="spots" aria-label="Places in use"><template v-for="spot in queue.parallel_limit" :key="spot"><span :class="{used: spot <= queue.used_slots}" /></template></div>
+                <p>Slot units of long runs in use. {{ queue.used_slots >= queue.parallel_limit ? 'Every unit is taken.' : `${queue.parallel_limit - queue.used_slots} ${queue.parallel_limit - queue.used_slots === 1 ? 'unit' : 'units'} free.` }}</p>
+                <div class="spots" aria-label="Slot units in use"><template v-for="spot in queue.parallel_limit" :key="spot"><span :class="{used: spot <= queue.used_slots}" /></template></div>
             </div>
             <div><strong data-queue-waiting>{{ queue.waiting_count }}</strong><p>Commands waiting</p><template v-if="queue.waiting_count"><p>The oldest goes first.</p></template></div>
         </div>
-        <div class="control"><div><label id="queue-limit-label">Commands at once</label><p>How many of the workers' commands may run at the same time. The rest wait. Lowering it stops none that are running.</p></div>
-            <div class="stepper"><button type="button" aria-label="One fewer command at once" :disabled="saving || queue.parallel_limit <= 1" @click="save(queue.limit_setting, queue.parallel_limit - 1)">−</button><output aria-labelledby="queue-limit-label" data-queue-limit>{{ queue.parallel_limit }}</output><button type="button" aria-label="One more command at once" :disabled="saving" @click="save(queue.limit_setting, queue.parallel_limit + 1)">+</button></div>
+        <div class="control"><div><label id="queue-limit-label">Long lane capacity</label><p>Slot units of long runs that may run at the same time; a test or a build costs 4. The rest wait. Lowering it stops none that are running.</p></div>
+            <div class="stepper"><button type="button" aria-label="One slot unit fewer" :disabled="saving || queue.parallel_limit <= 1" @click="save(queue.limit_setting, queue.parallel_limit - 1)">−</button><output aria-labelledby="queue-limit-label" data-queue-limit>{{ queue.parallel_limit }}</output><button type="button" aria-label="One slot unit more" :disabled="saving" @click="save(queue.limit_setting, queue.parallel_limit + 1)">+</button></div>
         </div>
         <template v-for="limit in queue.suite_limits" :key="limit.key">
             <div class="control"><div><label :for="limit.key">{{ limit.title }}</label><p>{{ limit.description }}</p></div>
                 <input :id="limit.key" class="limit" type="number" min="0" :value="limit.value" :disabled="saving" data-queue-suite-limit @change="save(limit.key, $event.target.value)" />
             </div>
         </template>
-        <div class="control"><div><label id="main-spots-label">Count the main agent</label><p>Its commands always start right away, but each one takes a place, so fewer workers run at once.</p></div>
-            <button type="button" role="switch" aria-labelledby="main-spots-label" :aria-checked="queue.count_main_runs" :disabled="saving" data-queue-main-spots @click="save(queue.main_spots_setting, queue.count_main_runs ? 'off' : 'on')"><span /></button>
-        </div>
         <template v-if="queue.halt_cause === 'update'"><p class="note halted" role="status" data-queue-update-waits><Icon name="pause" :size="13" />An update waits for the running commands to end. Every command that waits stays in the queue, in order, and gets its place once the update is done.</p></template>
         <template v-else-if="queue.halted"><p class="note halted" role="status" data-queue-held><Icon name="pause" :size="13" />The queue is paused. No waiting command gets a place until it is resumed. {{ queue.halt_reason }}</p></template>
         <template v-if="failure"><p class="note failure" role="alert">{{ failure }}</p></template>

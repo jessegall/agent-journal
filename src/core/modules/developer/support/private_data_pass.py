@@ -27,8 +27,8 @@ class PrivateDataPass:
 
     @staticmethod
     def is_text(file: Path) -> bool:
-        return b"\0" not in FileAccess.shared().binary(file)
+        return b"\0" not in FileAccess.binary(file)
 
     @staticmethod
     def text(file: Path) -> str:
-        return FileAccess.shared().binary(file).decode(errors="replace")
+        return FileAccess.binary(file).decode(errors="replace")

@@ -43,4 +43,4 @@ class ExitReasons:
 
     def terminal_tail(self, agent: Agent) -> str:
         path = self.home.terminal_file(agent.id)
-        return "" if not path.is_file() else FileAccess.shared().read(path)[-TAIL_BYTES:]
+        return "" if not FileAccess.is_file(path) else FileAccess.read(path)[-TAIL_BYTES:]

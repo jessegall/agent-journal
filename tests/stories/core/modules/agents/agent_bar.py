@@ -33,7 +33,7 @@ class FakeTyping(TerminalTyping):
 def typing_story(new_story):
     story = new_story(fixture=UserJoined)
     typing = FakeTyping()
-    story.container.bind(TerminalTyping, typing)
+    story.replace(TerminalTyping, typing)
     return story, typing
 
 

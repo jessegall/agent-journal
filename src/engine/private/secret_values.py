@@ -23,14 +23,14 @@ class SecretValues:
 
     def values(self) -> dict[str, str]:
         path = self.folder.file(VALUES_SUFFIX)
-        if path is None or not path.is_file():
+        if path is None or not FileAccess.is_file(path):
             return {}
-        return dict(self.loaded_values(path, FileAccess.shared().version(path)))
+        return dict(self.loaded_values(path, FileAccess.version(path)))
 
     @staticmethod
     @lru_cache(maxsize=128)
     def loaded_values(path: Path, version: FileVersion) -> tuple[tuple[str, str], ...]:
-        return tuple(pair for pair in map(SecretValues.parsed, FileAccess.shared().read(path).splitlines()) if pair is not None)
+        return tuple(pair for pair in map(SecretValues.parsed, FileAccess.read(path).splitlines()) if pair is not None)
 
     def hidden_values(self) -> dict[str, str]:
         shown = self.shown()
@@ -66,14 +66,14 @@ class SecretValues:
 
     def shown(self) -> set[str]:
         path = self.folder.file(SHOWN_SUFFIX)
-        if path is None or not path.is_file():
+        if path is None or not FileAccess.is_file(path):
             return set()
-        return set(self.loaded_shown(path, FileAccess.shared().version(path)))
+        return set(self.loaded_shown(path, FileAccess.version(path)))
 
     @staticmethod
     @lru_cache(maxsize=128)
     def loaded_shown(path: Path, version: FileVersion) -> frozenset[str]:
-        return frozenset(FileAccess.shared().read(path).split())
+        return frozenset(FileAccess.read(path).split())
 
     def write(self, values: dict[str, str]) -> None:
         self.write_file(self.folder.made_file(VALUES_SUFFIX), HEADER + "".join(f"{name}={json.dumps(value)}\n" for name, value in values.items()))
@@ -84,9 +84,9 @@ class SecretValues:
     @staticmethod
     def write_file(path: Path, text: str) -> None:
         writing = path.with_name(f"{path.name}.writing")
-        with FileAccess.shared().private_writer(writing) as output:
+        with FileAccess.private_writer(writing) as output:
             output.write(text)
-        FileAccess.shared().replace(writing, path)
+        FileAccess.replace(writing, path)
 
     @staticmethod
     def parsed(line: str) -> tuple[str, str] | None:

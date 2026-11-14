@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from engine.driver.driver_rule import DriverRule
@@ -49,7 +50,7 @@ class ProjectHooks:
 
     def excluded(self, provider: Provider) -> list[UnmanagedHook]:
         native = [entry for name in provider.hook_files for entry in self.excluded_file(provider.name, name)]
-        user_files = [UnmanagedHook(provider.name, str(path), None, self.person_file_reason(provider, path)) for path in provider.user_hook_files() if path.is_file()]
+        user_files = [UnmanagedHook(provider.name, str(path), None, self.person_file_reason(provider, path)) for path in provider.user_hook_files() if FileAccess.is_file(path)]
         return [*native, *user_files]
 
     def person_file_reason(self, provider: Provider, path: Path) -> str:
