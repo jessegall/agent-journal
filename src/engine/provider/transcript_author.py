@@ -10,6 +10,9 @@ USER_AUTHOR = "user"
 JOURNAL_OPENINGS = ("[journal]", "Stop hook feedback", "<system-reminder", "[SYSTEM NOTIFICATION")
 MONITOR_OPENINGS = ("<task-notification", "<monitor")
 PEER_OPENINGS = ("<cross-session-message", "[Cross-session idle notice")
+# the prompt Claude Code makes of a wake hook's line, a task notification about stop hook feedback (report 1427, P2)
+WAKE_NOTIFICATION_OPENING = "<task-notification"
+WAKE_NOTIFICATION_SUMMARY = "<summary>Stop hook feedback</summary>"
 
 
 class TranscriptAuthor:
@@ -25,8 +28,16 @@ class TranscriptAuthor:
         if row_type != USER_AUTHOR:
             return row_type
         opening = text.lstrip()
+        if TranscriptAuthor.is_wake_notification(opening):
+            return JOURNAL_AUTHOR
         if opening.startswith(MONITOR_OPENINGS):
             return MONITOR_AUTHOR
         if opening.startswith(PEER_OPENINGS):
             return PEER_AUTHOR
         return JOURNAL_AUTHOR if opening.startswith(JOURNAL_OPENINGS) else USER_AUTHOR
+
+    @staticmethod
+    def is_wake_notification(text: str) -> bool:
+        """Whether a prompt is the notification an agent program files for the journal's line its wake hook gave."""
+        opening = text.lstrip()
+        return opening.startswith(WAKE_NOTIFICATION_OPENING) and WAKE_NOTIFICATION_SUMMARY in opening
