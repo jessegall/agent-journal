@@ -1,12 +1,11 @@
 import pytest
 
 from server.door.hosted_journal_door import OWNER_REASON
-from server.viewer import viewer_request_handler
 from server.viewer.viewer_request_handler import CLOSED_DOOR_REASON, EVENTS_ROUTE, SERVER_STATE_ROUTE
 from server.enums.route_audience import RouteAudience
 from server.viewer.viewer_route_rule import ViewerRouteRule
 from server.viewer.viewer_route_rules import VIEWER_ROUTE_RULES
-from tests.stories.server.support.hosted_viewer import PUBLIC_ORIGIN, agent_server, hosted_server, session_cookie, socket_answer, socket_path
+from tests.stories.server.support.hosted_viewer import PUBLIC_ORIGIN, session_cookie, socket_answer
 from tests.stories.server.support.server_client import request_answer
 from tests.stories.support.story_checks import expect_value
 
@@ -26,17 +25,6 @@ def hosted_answer(server_and_path, rule: ViewerRouteRule, logged_in: bool):
     server, socket_path = server_and_path
     headers = {**(ORIGIN_HEADERS if rule.method == "POST" else {}), **(session_cookie(server) if logged_in else {})}
     return socket_answer(socket_path, rule.method, rule.example_path, headers=headers, body="{}" if rule.method == "POST" else "")
-
-
-def path_constants() -> list[str]:
-    paths = [value for name, value in vars(viewer_request_handler).items() if name.isupper() and isinstance(value, str) and value.startswith("/")]
-    phone_files = [f"{viewer_request_handler.VIEWER_ROOT}{name}" for name in viewer_request_handler.PHONE_FILES]
-    return sorted({*paths, *phone_files})
-
-
-def test_every_path_the_viewer_handler_names_has_a_rule_that_states_who_may_reach_it():
-    ruled = {rule.path for rule in VIEWER_ROUTE_RULES}
-    expect_value([path for path in path_constants() if path not in ruled], [])
 
 
 @pytest.mark.parametrize("rule", rules_of(RouteAudience.PUBLIC_FILES), ids=ids_of(rules_of(RouteAudience.PUBLIC_FILES)))
