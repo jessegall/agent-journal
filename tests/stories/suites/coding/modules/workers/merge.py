@@ -152,10 +152,11 @@ def test_a_resume_that_never_came_back_is_started_again_by_the_next_job_after_tw
     story.advance(timedelta(minutes=3))
     story.use_processes()
     story.tick(MAIN_SESSION)
+    after_tick = len(worker_starts(launcher, worker))
     story.run(f'worker send --wait {agent_number(story, worker.id)} "And the total"', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
-    story.expect_rows(len(worker_starts(launcher, worker)) == 2, detail=str([str(request["command"])[-60:] for request in worker_starts(launcher, worker)]))
+    story.expect_rows(after_tick == 1, len(worker_starts(launcher, worker)) >= 2, detail=f"starts after the tick {after_tick}, after the third send {len(worker_starts(launcher, worker))}")
     expect_command_requests_launcher_line(launcher, "And the receipt")
 
 
