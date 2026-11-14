@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {ActionsMenu, Btn, CardPage, Dashboard, Dialog, Icon, Skeleton, Switch, TextInput, copying, runChanged, useWindow} from "@journal/window-kit";
+import {ActionsMenu, Btn, CardPage, Dashboard, Dialog, Skeleton, Switch, TextInput, copying, runChanged, useWindow} from "@journal/window-kit";
 import {fileAddress} from "./fileAddress.js";
 import PluginGuide from "./PluginGuide.vue";
 import PluginInstallPreview from "./PluginInstallPreview.vue";
@@ -11,8 +11,8 @@ import PluginServices from "./PluginServices.vue";
 import PluginSettingsDialog from "./PluginSettingsDialog.vue";
 import PluginUpgradeDialog from "./PluginUpgradeDialog.vue";
 
-// the plugins of this project on a card page: a bar to install one from a source, a line on what installing means, a card for each plugin with its switch in the corner,
-// Settings in the foot and the rest in its Actions, and a button in the header to ask the agent to make one; the services read again while the page is open
+// the plugins of this project on a card page: one Install a plugin menu in the header, to install one from a source or ask the agent to make one, and a card for
+// each plugin with its switch in the corner, Settings in the foot and the rest in its Actions; the services read again while the page is open
 const context = useWindow();
 context.state.tab = "list";
 const {rows, failure, loaded, load} = context.props.plugins;
@@ -46,6 +46,12 @@ async function run(line, change = null) {
 const preview = ref(null);
 const guide = ref(false);
 const checking = ref(false);
+const installing = ref(false);
+// the header's one menu: install from a source, or ask the agent to make a plugin
+const installMenu = [
+    {label: "From a repository or folder", group: "open", run: () => (installing.value = true)},
+    {label: "Create a plugin", group: "open", run: () => ((making.value = true), (asked.value = false))},
+];
 
 // an install shows everything the plugin would run first, and goes ahead only from there
 async function showPreview() {
@@ -61,6 +67,7 @@ async function showPreview() {
     const prop = context.props[key];
     refusal.value = prop.failure.value;
     preview.value = prop.failure.value ? null : prop.data.value;
+    if (preview.value) installing.value = false;
 }
 
 async function install() {
@@ -188,20 +195,12 @@ const place = (item) => ({head: item.title, items: menuOf(item)});
 
 <template>
     <section class="plugins" data-plugins>
-        <form class="install" data-plugin-install-form @submit.prevent="showPreview">
-            <TextInput v-model="source" icon="download" placeholder="Install a plugin from owner/repo, a GitHub link or a folder" aria-label="Install a plugin from">
-                <template #end>
-                    <Btn variant="primary" small type="submit" :busy="checking" :disabled="!source.trim()" data-plugin-check>Check</Btn>
-                </template>
-            </TextInput>
-        </form>
-        <p class="lead">A plugin runs as you, with your files and your network. Check shows every command it would run before anything runs, and it installs at that exact commit.</p>
         <template v-if="refusal"><p class="plugin-fault" role="alert" data-plugin-refusal>{{ refusal }}</p></template>
         <template v-if="recordFailure"><p class="plugin-fault" role="alert" data-plugin-record-failure>{{ recordFailure }}</p></template>
         <template v-if="asked"><p class="asked" data-plugin-asked>Sent to the agent; its answer comes in the chat.</p></template>
         <CardPage title="Plugins" :items="items" :fields="fields" :place="place" empty-title="No plugin is installed" data-plugin-cards>
             <template #primary>
-                <Btn small variant="primary" data-plugin-make @click="(making = true), (asked = false)"><Icon name="plus" :size="12" />Create a plugin</Btn>
+                <span data-plugin-install-menu><ActionsMenu :items="installMenu" head="Install a plugin" label="Install a plugin" /></span>
             </template>
             <template #empty>
                 <template v-if="!loaded">
@@ -211,7 +210,7 @@ const place = (item) => ({head: item.title, items: menuOf(item)});
                   <p class="plugin-fault">{{ failure }}</p>
                 </template>
                 <template v-else>
-                  <p class="none" data-plugin-none><strong>No plugin is installed</strong> Paste a repository above to see what it would run.</p>
+                  <p class="none" data-plugin-none>Install a plugin shows every command one would run before anything runs.</p>
                 </template>
             </template>
             <template #corner="{item}">
@@ -233,6 +232,18 @@ const place = (item) => ({head: item.title, items: menuOf(item)});
                 <ActionsMenu :items="menuOf(item)" :head="item.title" />
             </template>
         </CardPage>
+        <template v-if="installing">
+            <Dialog padded small title="Install a plugin" data-plugin-install-dialog @close="installing = false">
+                <form class="install" data-plugin-install-form @submit.prevent="showPreview">
+                    <TextInput v-model="source" icon="download" placeholder="owner/repo, a GitHub link or a folder" aria-label="Install a plugin from">
+                        <template #end>
+                            <Btn variant="primary" small type="submit" :busy="checking" :disabled="!source.trim()" data-plugin-check>Check</Btn>
+                        </template>
+                    </TextInput>
+                </form>
+                <p class="lead">A plugin runs as you, with your files and your network. Check shows every command it would run before anything runs, and it installs at that exact commit.</p>
+            </Dialog>
+        </template>
         <template v-if="openedPlugin">
             <PluginSettingsDialog :plugin="openedPlugin" :description="descriptionOf(openedPlugin)" :settings="settings" @close="settingsOf = ''" :save="saveSettings" @toggle="switchOver(openedPlugin)" />
         </template>
@@ -271,17 +282,9 @@ const place = (item) => ({head: item.title, items: menuOf(item)});
     min-height: 0;
 }
 
-.install {
-    flex: none;
-    max-width: 640px;
-    padding: 8px var(--inset) 0;
-}
-
 .lead {
-    flex: none;
-    max-width: 640px;
     margin: 0;
-    padding: 6px var(--inset);
+    padding-top: 8px;
     color: var(--text-3);
     font-size: 12.5px;
     line-height: 1.55;
@@ -298,14 +301,6 @@ const place = (item) => ({head: item.title, items: menuOf(item)});
     margin: 0;
     color: var(--text-3);
     font-size: 12.5px;
-}
-
-.none strong {
-    display: block;
-    margin-bottom: 4px;
-    color: var(--text-2);
-    font-size: 14px;
-    font-weight: 500;
 }
 
 .plugin-note {
