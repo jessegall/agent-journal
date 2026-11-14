@@ -105,7 +105,7 @@ from core.modules.plugins.migrations.m009_plain_column_names import PlainColumnN
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from core.modules.plugins.ticks.plugin_card_reading import PluginCardReading
-from core.modules.plugins.rules.plugin_rule import PluginRule
+from core.modules.plugins.states.plugins_enabled import PluginsEnabled
 from core.modules.plugins.rules.plugin_program_rule import PluginProgramRule
 from core.modules.plugins.support.plugin_marks import PLUGIN_MARKS
 from core.modules.plugins.upgrade.plugins_move import PluginsMove
@@ -130,7 +130,8 @@ class PluginsModule(Module):
                 RecordPluginFaultHandler, ClearPluginFaultsHandler, AddPluginOutputHandler,
                 ClearPluginQueueFileHandler]
     settings = [PluginsSettingValues]
-    driver_rules = [PluginRule, PluginProgramRule]
+    driver_rules = [PluginProgramRule]
+    agent_states = [PluginsEnabled]
     bindings = {ProjectReads: PluginProjectReads, ProcessTypeLimits: PluginRunLimits, InstalledPlugins: PluginInstalledNames}
     declared_plugin_events = [*PLAIN_EVENTS.values(), "tool_starting", "command_starting", "file_edited"]
     marks = PLUGIN_MARKS
