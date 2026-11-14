@@ -41,7 +41,7 @@ def test_a_login_redirect_keeps_the_query_the_person_opened_and_drops_the_key(pe
 def test_the_cookie_opens_the_viewer_shell_with_its_import_map(person_server):
     story = person_server
     cookie = story.expect_viewer_login(story.viewer_key("Ada"))
-    story.expect_viewer_status("/viewer/", 200, cookie, text='"@journal/window-kit": "/viewer/kit/window-kit.js"')
+    story.expect_viewer_status("/viewer/", 200, cookie, text='"@journal/window-kit": "/viewer/kit/window-kit.js?v=')
     story.expect_viewer_headers("/viewer/kit/window-kit.js", cookie, {"Content-Type": "text/javascript"})
 
 

@@ -28,6 +28,7 @@ from server.viewer.viewer_lines_request import ViewerLinesRequest
 from server.viewer.pair_request import PairRequest
 from server.enums.session_type import SessionType
 from server.viewer.module_file_caching import ModuleFileCaching
+from server.viewer.versioned_import_map import VersionedImportMap
 from server.viewer.share_sessions import ShareSessions
 from server.viewer.cookie_session import CookieSession
 from server.viewer.viewer_session import ViewerSession
@@ -449,6 +450,8 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(404, {"error": str(error)})
             return
         content = module_file.content.replace(b"</head>", head_mark + b"</head>", 1) if head_mark else module_file.content
+        if path == SHELL_PAGE:
+            content = VersionedImportMap(VIEWER_MODULE, lambda module, file: viewer.routes.module_files.file(module, file).content).versioned(content)
         caching = ModuleFileCaching.built(self.path, content)
         client_copy_current = status == 200 and not headers and caching.is_unchanged(self.headers.get("If-None-Match"))
         if client_copy_current:
