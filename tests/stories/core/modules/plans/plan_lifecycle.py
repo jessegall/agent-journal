@@ -62,7 +62,7 @@ def test_a_plan_is_cancelled_with_its_reason(new_story):
     story.expect_success(lines.PLAN_CANCEL, "state: cancelled", "reason: replaced")
 
 
-def test_a_move_out_of_a_wrong_state_is_refused_with_the_moves_that_go_on(new_story):
+def test_a_plan_move_out_of_a_wrong_state_is_refused_with_the_moves_that_go_on(new_story):
     story = new_story(fixture=UserJoined)
     story.run(lines.NEW_PLAN)
     story.expect_refusal("plan start 1", "from draft it can only go on with journal plan ready 1, journal plan cancel 1")

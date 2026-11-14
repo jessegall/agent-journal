@@ -1,0 +1,1 @@
+tests/stories/suites/coding/modules/workers/group_stop.py::test_a_worker_with_a_run_going_may_stop -> repeat tests/stories/suites/coding/modules/workers/worker_runs.py::test_a_worker_with_a_run_going_may_stop
