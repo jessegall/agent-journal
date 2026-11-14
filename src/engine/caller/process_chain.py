@@ -1,4 +1,5 @@
 from engine.caller.process_row import ProcessRow
+from engine.caller.kept_process_rows import KeptProcessRows
 from engine.caller.process_table import ProcessTable
 from engine.time.timestamp import Timestamp
 
@@ -18,7 +19,7 @@ class ProcessChain:
         return steps[0].started_at if steps else None
 
     def steps(self, pid: int) -> list[ProcessRow]:
-        rows = {row.pid: row for row in self.table.rows()}
+        rows = KeptProcessRows.shared().rows(self.table, pid)
         chain: list[ProcessRow] = []
         while pid in rows and len(chain) < CHAIN_LIMIT_STEPS and all(step.pid != pid for step in chain):
             chain.append(rows[pid])
