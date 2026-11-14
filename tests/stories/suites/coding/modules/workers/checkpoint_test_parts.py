@@ -33,8 +33,9 @@ def test_a_phase_test_of_sixty_tests_runs_as_three_parts_of_at_most_twenty_five(
                                         detail=str(run_lines(listed_phase_test)))
 
 
-def test_a_failure_in_the_second_part_fails_the_checkpoint_naming_its_output(listed_phase_test):
+def test_a_failure_in_the_second_part_fails_the_checkpoint_naming_its_output_and_files(listed_phase_test):
     failing_part = part_lines(listed_phase_test)[1]
     end_run(listed_phase_test, failing_part)
     lines = failure_lines(listed_phase_test)
-    listed_phase_test.story.expect_rows(bool(lines) and f"output {output_id(listed_phase_test, failing_part)}:" in " ".join(lines), detail=str(lines))
+    failing_file = next(file for file in PHASE_FILES if file in failing_part)
+    listed_phase_test.story.expect_rows(bool(lines) and f"output {output_id(listed_phase_test, failing_part)}:" in " ".join(lines), failing_file in " ".join(lines), detail=str(lines))

@@ -44,7 +44,7 @@ WORKER_TESTS_PASSED = NudgeDeclaration("workers.tests_passed", NudgeType.STEERIN
 WORKER_COMMITTED = NudgeDeclaration("workers.committed", NudgeType.STEERING, "The work of worker:{worker} is committed and ready to merge", turn_limited=False,
                                   plural_text='the work of workers {worker} is committed and can be merged', id_field="worker")
 WORKER_TESTS_FAILED = NudgeDeclaration("workers.tests_failed", NudgeType.STEERING, "Your tests failed, output {outputs}: {line}", turn_limited=False, path_fields=["line"])
-WORKER_PHASE_TESTS_FAILED = NudgeDeclaration("workers.phase_tests_failed", NudgeType.STEERING, 'phase:{phase} tests failed, output {outputs}: {line}', turn_limited=False, id_field="outputs", path_fields=["line"])
+WORKER_PHASE_TESTS_FAILED = NudgeDeclaration("workers.phase_tests_failed", NudgeType.STEERING, 'phase:{phase} tests failed, output {outputs}: {line} Failed: {failed}', turn_limited=False, id_field="outputs", path_fields=["line"])
 WORKER_LIBRARIES_LINKED = NudgeDeclaration("workers.libraries_linked", NudgeType.STEERING, "Your worktree's libraries are linked: rerun your tests", turn_limited=False, wakes_agent=True)
 PHASE_TEST_RUN_ALLOWED = NudgeDeclaration("workers.phase_test_run_allowed", NudgeType.STEERING, "The journal tests your commit itself. Test runs left before your next commit: {remaining}", turn_limited=False)
 WORKER_TEST_LINE_REFUSED = NudgeDeclaration("workers.named_tests_only", NudgeType.SAFETY_REFUSAL, "A test runs only through your test commands. Yours: {names}. " + AskTopic.TESTS.question_line(), turn_limited=False, full_text=True)
