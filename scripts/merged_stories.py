@@ -1,6 +1,7 @@
 """Prints the test folders a merge reaches, one per line, from the files it changed between two commits: a module's
 own stories and unit tests, everything that leans on the coding suite's shared support, and the engine's tests for an
-engine change. A merge hook runs them on the merged code: python3 scripts/merged_stories.py BEFORE AFTER."""
+engine change. A merge hook runs them on the merged code: python3 scripts/merged_stories.py BEFORE AFTER; a test picker
+hands the changed files themselves: python3 scripts/merged_stories.py --files FILE..."""
 
 import subprocess
 import sys
@@ -36,11 +37,11 @@ def reached_folders(path: str) -> tuple[str, ...]:
     return (*module_folders(path), *wide)
 
 
-def main(before: str, after: str) -> None:
-    folders = sorted({folder for path in changed_files(before, after) for folder in reached_folders(path) if Path(folder).is_dir()})
+def main(paths: list[str]) -> None:
+    folders = sorted({folder for path in paths for folder in reached_folders(path) if Path(folder).is_dir()})
     outermost = [folder for folder in folders if not any(folder.startswith(f"{other}/") for other in folders)]
     print("\n".join(outermost))
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[2:] if sys.argv[1:2] == ["--files"] else changed_files(sys.argv[1], sys.argv[2]))
