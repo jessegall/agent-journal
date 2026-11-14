@@ -165,6 +165,8 @@ A plugin's own alias or command run by an agent gets `JOURNAL_CHECKOUT_TYPE`, `J
 
 The same alias also gets `JOURNAL_ENV`, the name of the environment the agent runs in, and `JOURNAL_SETTINGS`, the path of a JSON file with the plugin's settings for that environment: the environment's own values over the project's, over each setting's default. The settings object of an event's input line holds the same values.
 
+Every program of a plugin, and every alias or command of its own, gets `JOURNAL_PYTHON`: the path of the Python the journal itself runs under. Run a plugin's Python script with it, never with `python3` from the login PATH, which on a Mac without the command line tools is only an installer stub.
+
 ## Queued runs
 
 A plugin that starts heavy work, such as a judge of the whole project, queues it. A queued run waits in the journal's long lane like a test run: it is a run of its kind's own class, which costs 4 of the lane's slot units and starts at normal priority, and it starts when the lane has room for it, its priority has share left and its class has a place. `journal queue list` shows it waiting or running beside every other run. Each kind it queues is an entry of `processes` in the manifest:

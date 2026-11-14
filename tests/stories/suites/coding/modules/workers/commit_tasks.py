@@ -106,7 +106,7 @@ def test_30_a_rule_of_a_plugin_refuses_a_file_of_a_commit_of_two_tasks_and_both_
 def test_31_a_change_in_a_protected_folder_refuses_a_commit_of_two_tasks(two_proved):
     story = two_proved.story
     story.expect_success(f'setting set {PROTECTED_FOLDERS} \'["task_2.txt"]\' --project', actor=story.user)
-    expect_refused_with(story, COMMIT, "task_2.txt is protected", "undo the change in that folder", actor=two_proved.worker)
+    expect_refused_with(story, COMMIT, "task_2.txt lie in protected folders, so their changes were undone", "report the change to the main agent", actor=two_proved.worker)
     story.expect_rows(states(two_proved) == [ProofState.SHOWN] * 2, detail=str(states(two_proved)))
 
 

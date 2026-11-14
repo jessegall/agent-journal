@@ -1,3 +1,7 @@
+import io
+
+from engine.model.tables import Tables
+from engine.subcommand.output import Output
 from engine.journal.journal_home import JournalHome
 from core.modules.processes.support.output_folder import PAGE_BYTES, TAIL_BYTES, OutputFolder
 
@@ -92,3 +96,10 @@ def test_a_chunk_reads_across_the_parts_of_a_chain(tmp_path):
     processes.write_output(4, 2, "two\n")
     assert processes.older_page(4, -1, 5).lines == ["one", "two"]
     assert processes.page_after(4, 4, False).lines == ["two"]
+
+
+def test_a_terminal_reader_is_shown_the_runs_colour_codes_and_every_other_reader_plain_lines(tmp_path):
+    page = folder(tmp_path, "\x1b[31mred\x1b[0m\n").page_after(4, 0, True)
+    assert page.shown_lines(Output(Tables(), False, io.StringIO(), True)) == ["\x1b[31mred\x1b[0m"]
+    assert page.shown_lines(Output(Tables(), False, io.StringIO())) == ["red"]
+    assert page.lines == ["red"]

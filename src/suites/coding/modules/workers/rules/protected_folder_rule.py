@@ -4,6 +4,7 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.protected_folders import ProtectedFolders
+from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.modules.workers.support.worker_nudges import PROTECTED_FOLDER
 from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
@@ -17,8 +18,8 @@ class ProtectedFolderRule(DriverRule):
     roles = [CodingHelperRole.WORKER]
     single_action_refusal = "Stops worker edits to the project's protected folders"
 
-    def __init__(self, worktrees: WorktreeQuery, protected: ProtectedFolders) -> None:
-        self.worktrees, self.protected = worktrees, protected
+    def __init__(self, worktrees: WorktreeQuery, protected: ProtectedFolders, agents: AgentRows) -> None:
+        self.worktrees, self.protected, self.agents = worktrees, protected, agents
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
@@ -27,11 +28,12 @@ class ProtectedFolderRule(DriverRule):
         worktree = self.worktrees.worker_worktree(hook.agent_id)
         if worktree is None:
             return RuleAnswer.allowed()
+        profile = self.agents.find(hook.agent_id).profile
         paths = list(tool.files)
         if tool.shell is not None:
             paths.extend(path for part in tool.shell.parts for path in part.output_paths)
         for path in paths:
-            folder = self.protected.match(worktree.folder, path)
+            folder = self.protected.match(worktree.folder, path, profile)
             if folder:
                 return RuleAnswer.refused(PROTECTED_FOLDER.nudge(folder=folder))
         return RuleAnswer.allowed()

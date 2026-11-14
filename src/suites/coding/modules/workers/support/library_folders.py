@@ -37,11 +37,19 @@ class LibraryFolders:
             self.copy(Path(folder) / name, Path(target) / name)
         self.exclude(target, (*links, *copies))
 
-    def drop(self, target: str, copies: Sequence[str]) -> None:
+    # a link is removed as a link, never followed, so the environment's own folder is untouched
+    def drop(self, target: str, links: Sequence[str], copies: Sequence[str]) -> None:
+        for name in links:
+            if FileAccess.is_symlink(Path(target) / name):
+                FileAccess.unlink(Path(target) / name, missing_ok=True)
         for name in copies:
             FileAccess.rmtree(Path(target) / name, ignore_errors=True)
 
-    def restore(self, folder: str, target: str, copies: Sequence[str]) -> None:
+    def restore(self, folder: str, target: str, links: Sequence[str], copies: Sequence[str]) -> None:
+        for name in links:
+            if not FileAccess.is_symlink(Path(target) / name) and not FileAccess.exists(Path(target) / name):
+                FileAccess.mkdir((Path(target) / name).parent, parents=True, exist_ok=True)
+                FileAccess.symlink_to(Path(target) / name, Path(folder).resolve() / name, target_is_directory=True)
         for name in copies:
             if not FileAccess.exists(Path(target) / name):
                 self.copy(Path(folder) / name, Path(target) / name)

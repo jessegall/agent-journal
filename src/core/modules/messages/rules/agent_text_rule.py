@@ -33,7 +33,7 @@ class AgentTextRule(DriverRule):
             return RuleAnswer.allowed()
         if after_reply and self.texts.is_single_line(text):
             return RuleAnswer.with_nudges(CLOSING_LINE_HIDDEN.nudge())
-        repeated = self.repeats.repeated(hook.agent_id, text)
+        repeated = self.repeats.repeated(hook.agent_id, None, text)
         if repeated is not None:
             return RuleAnswer.with_nudges(REPEATED_CLOSING.nudge(message=repeated.id))
         shown = RuleAnswer.with_nudges(CLOSING_CHOICE.nudge()) if QuestionMessage.is_choice(text) else RuleAnswer.allowed()

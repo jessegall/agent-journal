@@ -211,7 +211,7 @@ class OutputFolder:
 
     @staticmethod
     def page_text(lines: list[bytes]) -> list[str]:
-        return [ColourCodes.removed(line.decode(errors="replace")) for line in lines]
+        return [line.decode(errors="replace") for line in lines]
 
     # The bytes the runner dropped from a part, or from every part with no position.
     def cut_bytes(self, process_id: int, position: int = 0) -> int:

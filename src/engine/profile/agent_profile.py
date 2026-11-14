@@ -6,7 +6,7 @@ from engine.enums.model_tier import ModelTier
 from engine.enums.occupant import INDEPENDENT_OCCUPANTS, Occupant
 
 KEPT_AGENTS_TEXT = "agents are kept; a user retires them"
-SEQUENCE_FIELDS = ("fallback_programs", "mcp_tools", "writable_folders", "changed", "notes", "skills", "required_skills", "default_fields")
+SEQUENCE_FIELDS = ("fallback_programs", "mcp_tools", "writable_folders", "protected_folders", "changed", "notes", "skills", "required_skills", "default_fields")
 
 
 @dataclass(frozen=True)
@@ -31,6 +31,7 @@ class AgentProfile:
     occupant: Occupant = Occupant.COLD_ROTATION
     mcp_tools: tuple[str, ...] = ()
     writable_folders: tuple[str, ...] = ()
+    protected_folders: tuple[str, ...] = ()
     module: str = ""
     changed: tuple[str, ...] = ()
     module_text_changed: bool = False

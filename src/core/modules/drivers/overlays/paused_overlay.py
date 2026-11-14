@@ -20,6 +20,6 @@ class PausedOverlay(Overlay):
     def __init__(self, agents: AgentRows) -> None:
         self.agents = agents
 
-    def open_rows(self, agent_id: int) -> Sequence[OpenRow]:
+    def open_agent_rows(self, agent_id: int) -> Sequence[OpenRow]:
         holder = self.agents.pause_holder(agent_id)
         return [OpenRow("agent", holder.id, holder.paused_at)] if holder.paused_at is not None else []

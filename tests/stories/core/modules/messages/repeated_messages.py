@@ -4,6 +4,8 @@ from datetime import timedelta
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
+from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value
@@ -41,6 +43,15 @@ def test_a_reworded_repeat_of_one_of_the_last_five_messages_is_held(new_story):
     confirmed_skip(story, "messages.repeated-message", story.agent, "the card number changed")
     story.advance(timedelta(seconds=1))
     story.expect_success(f'message send "{REWORDED}" --confirm --skip-reason "the card number changed"', "type: agent", actor=story.agent)
+
+
+def test_a_relay_to_a_helper_does_not_hold_a_similar_reply_to_the_user_but_a_second_relay_is_held(new_story):
+    story = new_story(fixture=StartedHelper, environment="main")
+    relay = f'message send "{FIRST}" --to agent:{agent_number(story, helper_agent(story).id)} --environment main'
+    story.expect_success(relay, actor=story.agent)
+    delivered(story, REWORDED)
+    story.advance(timedelta(seconds=1))
+    story.expect_refusal(relay.replace(FIRST, REWORDED), "refused by messages.repeated-message", actor=story.agent)
 
 
 def test_a_different_message_and_a_short_one_pass(new_story):

@@ -22,7 +22,7 @@ class SampleWaits(Overlay):
 
     name = "samples.wait"
 
-    def open_rows(self, agent_id: int) -> Sequence[OpenRow]:
+    def open_agent_rows(self, agent_id: int) -> Sequence[OpenRow]:
         return [OpenRow("wait", 1, at(30)), OpenRow("wait", 2, at(20))]
 
 
@@ -32,7 +32,7 @@ class SampleRuns(Overlay):
     name = "samples.run"
     drivers = ["coding.*"]
 
-    def open_rows(self, agent_id: int) -> Sequence[OpenRow]:
+    def open_agent_rows(self, agent_id: int) -> Sequence[OpenRow]:
         return [OpenRow("sequence_run", 5, at(25))]
 
 

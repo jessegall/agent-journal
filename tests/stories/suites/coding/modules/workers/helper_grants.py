@@ -1,5 +1,6 @@
 from tests.stories.core.support.agent_labels import agent_number
 import subprocess
+from types import SimpleNamespace
 
 import pytest
 
@@ -17,7 +18,7 @@ def worker(new_story, monkeypatch):
     story = new_story(fixture=OrchestratorWithPerson)
     repository_environment(story)
     monkeypatch.setattr(RunnerBinary, "is_installed", lambda _runner: True)
-    monkeypatch.setattr(subprocess, "Popen", lambda command, **options: None)
+    monkeypatch.setattr(subprocess, "Popen", lambda command, **options: SimpleNamespace(pid=1))
     return dispatched_story_worker(story, DISPATCH, monkeypatch)
 
 

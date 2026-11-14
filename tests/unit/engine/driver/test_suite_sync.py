@@ -70,7 +70,7 @@ class Wait(Overlay):
     name = "waits.wait"
     rules = [StopThrough]
 
-    def open_rows(self, agent_id: int) -> Sequence[OpenRow]:
+    def open_agent_rows(self, agent_id: int) -> Sequence[OpenRow]:
         return []
 
 

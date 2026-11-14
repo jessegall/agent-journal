@@ -118,9 +118,10 @@ builds_programs() {
 
 build_programs() {
   mkdir -p "$BIN"
+  # each program is built beside its old file and renamed over it, so a command started during the build always finds one
   for program in journal journal-hook journal-run journal-shared; do
-    rm -f "$BIN/$program"
-    go -C "$HERE/tools/$program" build -o "$BIN/$program" . || fail "go could not build $program from $HERE/tools/$program"
+    go -C "$HERE/tools/$program" build -o "$BIN/$program.building" . || fail "go could not build $program from $HERE/tools/$program"
+    mv -f "$BIN/$program.building" "$BIN/$program"
   done
 }
 
