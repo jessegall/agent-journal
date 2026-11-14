@@ -803,6 +803,7 @@
       "continued_arguments",
       "creator_id",
       "environment_id",
+      "failure",
       "recipient_agent_id",
       "refused_arguments",
       "relayer_id",
@@ -830,6 +831,7 @@
       "continued_arguments",
       "creator_id",
       "environment_id",
+      "failure",
       "recipient_agent_id",
       "refused_arguments",
       "relayer_id",
@@ -857,6 +859,7 @@
       "continued_arguments",
       "creator_id",
       "environment_id",
+      "failure",
       "recipient_agent_id",
       "refused_arguments",
       "relayer_id",
@@ -884,6 +887,7 @@
       "continued_arguments",
       "creator_id",
       "environment_id",
+      "failure",
       "recipient_agent_id",
       "refused_arguments",
       "relayer_id",
@@ -911,6 +915,35 @@
       "continued_arguments",
       "creator_id",
       "environment_id",
+      "failure",
+      "recipient_agent_id",
+      "refused_arguments",
+      "relayer_id",
+      "requester_id",
+      "required_person_id",
+      "responder_id",
+      "returns_output",
+      "review_answer",
+      "source_version",
+      "standing_id",
+      "state",
+      "text",
+      "why"
+    ]
+  },
+  "core.approvals.approval.fail": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "arguments",
+      "command_json",
+      "continued_arguments",
+      "creator_id",
+      "environment_id",
+      "failure",
       "recipient_agent_id",
       "refused_arguments",
       "relayer_id",
@@ -938,6 +971,7 @@
       "continued_arguments",
       "creator_id",
       "environment_id",
+      "failure",
       "recipient_agent_id",
       "refused_arguments",
       "relayer_id",
@@ -965,6 +999,7 @@
       "continued_arguments",
       "creator_id",
       "environment_id",
+      "failure",
       "recipient_agent_id",
       "refused_arguments",
       "relayer_id",
@@ -992,6 +1027,7 @@
       "continued_arguments",
       "creator_id",
       "environment_id",
+      "failure",
       "recipient_agent_id",
       "refused_arguments",
       "relayer_id",
@@ -1019,6 +1055,7 @@
       "continued_arguments",
       "creator_id",
       "environment_id",
+      "failure",
       "recipient_agent_id",
       "refused_arguments",
       "relayer_id",
@@ -1082,6 +1119,195 @@
       "text"
     ]
   },
+  "core.asks.ask.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "asker_id",
+      "closed_at",
+      "creator_id",
+      "environment_id",
+      "facts_json",
+      "group_key",
+      "level_index",
+      "outcome",
+      "parent_ask_id",
+      "parent_id",
+      "stack_json",
+      "task_id",
+      "text",
+      "topic",
+      "wait_id"
+    ]
+  },
+  "core.asks.ask.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "asker_id",
+      "closed_at",
+      "creator_id",
+      "environment_id",
+      "facts_json",
+      "group_key",
+      "level_index",
+      "outcome",
+      "parent_ask_id",
+      "parent_id",
+      "stack_json",
+      "task_id",
+      "text",
+      "topic",
+      "wait_id"
+    ]
+  },
+  "core.asks.ask.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "asker_id",
+      "closed_at",
+      "creator_id",
+      "environment_id",
+      "facts_json",
+      "group_key",
+      "level_index",
+      "outcome",
+      "parent_ask_id",
+      "parent_id",
+      "stack_json",
+      "task_id",
+      "text",
+      "topic",
+      "wait_id"
+    ]
+  },
+  "core.asks.ask_stack.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "levels_json",
+      "needs_approval",
+      "topic"
+    ]
+  },
+  "core.asks.ask_stack.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "levels_json",
+      "needs_approval",
+      "topic"
+    ]
+  },
+  "core.asks.ask_stack.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "ended_at",
+      "environment_id",
+      "levels_json",
+      "needs_approval",
+      "topic"
+    ]
+  },
+  "core.asks.ask_step.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "ask_id",
+      "due_at",
+      "environment_id",
+      "forward_at",
+      "helper_id",
+      "job_id",
+      "options_json",
+      "passed_by_journal",
+      "profile",
+      "reason",
+      "received_at",
+      "recommendation",
+      "state",
+      "tried",
+      "visit_count"
+    ]
+  },
+  "core.asks.ask_step.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "ask_id",
+      "due_at",
+      "environment_id",
+      "forward_at",
+      "helper_id",
+      "job_id",
+      "options_json",
+      "passed_by_journal",
+      "profile",
+      "reason",
+      "received_at",
+      "recommendation",
+      "state",
+      "tried",
+      "visit_count"
+    ]
+  },
+  "core.asks.ask_step.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "ask_id",
+      "due_at",
+      "environment_id",
+      "forward_at",
+      "helper_id",
+      "job_id",
+      "options_json",
+      "passed_by_journal",
+      "profile",
+      "reason",
+      "received_at",
+      "recommendation",
+      "state",
+      "tried",
+      "visit_count"
+    ]
+  },
   "core.assign_rules.assign_decision.created": {
     "forms": [
       "commit",
@@ -1131,7 +1357,6 @@
       "listen"
     ],
     "fields": [
-      "agent_id",
       "creator_id",
       "enabled",
       "environment_id",
@@ -1139,7 +1364,8 @@
       "program",
       "program_model",
       "queue_limit",
-      "target"
+      "target",
+      "target_agent_id"
     ]
   },
   "core.assign_rules.assign_rule.deleted": {
@@ -1149,7 +1375,6 @@
       "listen"
     ],
     "fields": [
-      "agent_id",
       "creator_id",
       "enabled",
       "environment_id",
@@ -1157,7 +1382,8 @@
       "program",
       "program_model",
       "queue_limit",
-      "target"
+      "target",
+      "target_agent_id"
     ]
   },
   "core.assign_rules.assign_rule.updated": {
@@ -1167,7 +1393,6 @@
       "listen"
     ],
     "fields": [
-      "agent_id",
       "creator_id",
       "enabled",
       "environment_id",
@@ -1175,7 +1400,8 @@
       "program",
       "program_model",
       "queue_limit",
-      "target"
+      "target",
+      "target_agent_id"
     ]
   },
   "core.assign_rules.assign_rule_condition.created": {
@@ -4759,6 +4985,57 @@
       "runs_without_reader"
     ]
   },
+  "core.processes.execution_class.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "class_limit",
+      "is_override",
+      "lane",
+      "line_pattern",
+      "name",
+      "plugin",
+      "priority",
+      "slot_cost"
+    ]
+  },
+  "core.processes.execution_class.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "class_limit",
+      "is_override",
+      "lane",
+      "line_pattern",
+      "name",
+      "plugin",
+      "priority",
+      "slot_cost"
+    ]
+  },
+  "core.processes.execution_class.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "class_limit",
+      "is_override",
+      "lane",
+      "line_pattern",
+      "name",
+      "plugin",
+      "priority",
+      "slot_cost"
+    ]
+  },
   "core.processes.output.created": {
     "forms": [
       "commit",
@@ -4930,8 +5207,10 @@
       "creator_id",
       "ended_at",
       "environment_id",
+      "execution_class",
       "exit_code",
       "expired_at",
+      "first_priority",
       "folder",
       "hook_call_id",
       "is_full_test_run",
@@ -4945,6 +5224,7 @@
       "priority",
       "progress",
       "queued_at",
+      "raised_at",
       "run_name",
       "sandbox_level",
       "session_agent_id",
@@ -4966,8 +5246,10 @@
       "creator_id",
       "ended_at",
       "environment_id",
+      "execution_class",
       "exit_code",
       "expired_at",
+      "first_priority",
       "folder",
       "hook_call_id",
       "is_full_test_run",
@@ -4981,6 +5263,7 @@
       "priority",
       "progress",
       "queued_at",
+      "raised_at",
       "run_name",
       "sandbox_level",
       "session_agent_id",
@@ -5002,8 +5285,10 @@
       "creator_id",
       "ended_at",
       "environment_id",
+      "execution_class",
       "exit_code",
       "expired_at",
+      "first_priority",
       "folder",
       "hook_call_id",
       "is_full_test_run",
@@ -5017,6 +5302,7 @@
       "priority",
       "progress",
       "queued_at",
+      "raised_at",
       "run_name",
       "sandbox_level",
       "session_agent_id",
@@ -5038,8 +5324,10 @@
       "creator_id",
       "ended_at",
       "environment_id",
+      "execution_class",
       "exit_code",
       "expired_at",
+      "first_priority",
       "folder",
       "hook_call_id",
       "is_full_test_run",
@@ -5053,6 +5341,7 @@
       "priority",
       "progress",
       "queued_at",
+      "raised_at",
       "run_name",
       "sandbox_level",
       "session_agent_id",
@@ -5074,8 +5363,10 @@
       "creator_id",
       "ended_at",
       "environment_id",
+      "execution_class",
       "exit_code",
       "expired_at",
+      "first_priority",
       "folder",
       "hook_call_id",
       "is_full_test_run",
@@ -5089,6 +5380,7 @@
       "priority",
       "progress",
       "queued_at",
+      "raised_at",
       "run_name",
       "sandbox_level",
       "session_agent_id",
@@ -5110,8 +5402,10 @@
       "creator_id",
       "ended_at",
       "environment_id",
+      "execution_class",
       "exit_code",
       "expired_at",
+      "first_priority",
       "folder",
       "hook_call_id",
       "is_full_test_run",
@@ -5125,6 +5419,7 @@
       "priority",
       "progress",
       "queued_at",
+      "raised_at",
       "run_name",
       "sandbox_level",
       "session_agent_id",
@@ -5146,8 +5441,10 @@
       "creator_id",
       "ended_at",
       "environment_id",
+      "execution_class",
       "exit_code",
       "expired_at",
+      "first_priority",
       "folder",
       "hook_call_id",
       "is_full_test_run",
@@ -5161,6 +5458,7 @@
       "priority",
       "progress",
       "queued_at",
+      "raised_at",
       "run_name",
       "sandbox_level",
       "session_agent_id",
@@ -5182,8 +5480,10 @@
       "creator_id",
       "ended_at",
       "environment_id",
+      "execution_class",
       "exit_code",
       "expired_at",
+      "first_priority",
       "folder",
       "hook_call_id",
       "is_full_test_run",
@@ -5197,6 +5497,7 @@
       "priority",
       "progress",
       "queued_at",
+      "raised_at",
       "run_name",
       "sandbox_level",
       "session_agent_id",
@@ -5218,8 +5519,10 @@
       "creator_id",
       "ended_at",
       "environment_id",
+      "execution_class",
       "exit_code",
       "expired_at",
+      "first_priority",
       "folder",
       "hook_call_id",
       "is_full_test_run",
@@ -5233,6 +5536,7 @@
       "priority",
       "progress",
       "queued_at",
+      "raised_at",
       "run_name",
       "sandbox_level",
       "session_agent_id",
@@ -5254,8 +5558,10 @@
       "creator_id",
       "ended_at",
       "environment_id",
+      "execution_class",
       "exit_code",
       "expired_at",
+      "first_priority",
       "folder",
       "hook_call_id",
       "is_full_test_run",
@@ -5269,6 +5575,7 @@
       "priority",
       "progress",
       "queued_at",
+      "raised_at",
       "run_name",
       "sandbox_level",
       "session_agent_id",
@@ -5558,11 +5865,13 @@
     "fields": [
       "creator_id",
       "ended_at",
+      "entered_at",
       "environment_id",
       "exit_code",
       "line",
       "process_type",
-      "session_agent_id"
+      "session_agent_id",
+      "started_at"
     ]
   },
   "core.processes.request_run.deleted": {
@@ -5574,11 +5883,13 @@
     "fields": [
       "creator_id",
       "ended_at",
+      "entered_at",
       "environment_id",
       "exit_code",
       "line",
       "process_type",
-      "session_agent_id"
+      "session_agent_id",
+      "started_at"
     ]
   },
   "core.processes.request_run.updated": {
@@ -5590,11 +5901,13 @@
     "fields": [
       "creator_id",
       "ended_at",
+      "entered_at",
       "environment_id",
       "exit_code",
       "line",
       "process_type",
-      "session_agent_id"
+      "session_agent_id",
+      "started_at"
     ]
   },
   "core.processes.unreadable_mark.created": {
@@ -8168,6 +8481,7 @@
       "creator_id",
       "edit_type",
       "environment_id",
+      "old_path",
       "path",
       "removed",
       "rows",
@@ -8185,6 +8499,7 @@
       "creator_id",
       "edit_type",
       "environment_id",
+      "old_path",
       "path",
       "removed",
       "rows",
@@ -8202,6 +8517,7 @@
       "creator_id",
       "edit_type",
       "environment_id",
+      "old_path",
       "path",
       "removed",
       "rows",
@@ -8680,6 +8996,24 @@
     ]
   },
   "suites.coding.workers.proof.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "point",
+      "process_id",
+      "shortfall",
+      "state",
+      "task_id",
+      "test_command",
+      "text",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.proof.end_with_worktree": {
     "forms": [
       "commit",
       "guard",
@@ -9378,6 +9712,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -9419,6 +9754,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -9460,6 +9796,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -9501,6 +9838,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -9542,6 +9880,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -9583,6 +9922,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -9624,6 +9964,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -9665,6 +10006,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -9706,6 +10048,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -9747,6 +10090,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -9788,6 +10132,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -9829,6 +10174,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -9870,6 +10216,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -9911,6 +10258,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -9952,6 +10300,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -9993,6 +10342,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -10034,6 +10384,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -10075,6 +10426,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -10116,6 +10468,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -10157,6 +10510,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
@@ -10198,6 +10552,7 @@
       "session_agent_id",
       "starts_program",
       "state",
+      "stop_requested_at",
       "task_count",
       "task_id",
       "tests_passed_at"
