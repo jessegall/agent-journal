@@ -30,6 +30,15 @@ class PushedBlock(StoryFixture):
         story.container.get(Bus).run(BlockUntil(story.agent.id, Nudge("samples.wait", NudgeType.REFUSAL, LINE), RanCommand("journal overview")), Actor.core())
 
 
+class SkippableBlock(StoryFixture):
+    """The lead is held by a block a command pushed that its user may skip."""
+
+    parent = LeadStarted
+
+    def steps(self, story):
+        story.container.get(Bus).run(BlockUntil(story.agent.id, Nudge("samples.wait", NudgeType.REFUSAL, LINE), RanCommand("journal overview"), is_skippable=True), Actor.core())
+
+
 def open_blocks(story) -> list[AgentBlock]:
     return [block for block in story.story_rows(AgentBlock) if block.closed_at is None]
 
@@ -68,3 +77,11 @@ def test_no_command_opens_or_closes_a_state_and_the_agent_leaves_only_by_the_blo
     story = new_story(SAMPLES, fixture=PushedBlock)
     listed = story.run("agent-block --help", actor=story.agent).output_text
     story.expect_rows("list" in listed and "skip" in listed, "push" not in listed and "pop" not in listed, detail=listed)
+
+
+def test_the_user_ends_a_stuck_block_by_skipping_its_row_with_a_reason(new_story):
+    story = new_story(SAMPLES, fixture=SkippableBlock)
+    block = open_blocks(story)[0]
+    story.expect_success(f'agent-block skip {block.id} --reason "the block no longer applies"', f"agent_block {block.id} skipped: the block no longer applies", actor=story.user)
+    story.expect_hook_allowed("s-1", EDIT)
+    story.expect_rows(open_blocks(story) == [])
