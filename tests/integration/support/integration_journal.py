@@ -14,6 +14,7 @@ from engine.container.container import Container
 from engine.database.database import Database
 from engine.journal.journal_home import JournalHome
 from engine.module.journal_container import synced_database_container
+from engine.time.clock import Clock
 
 MAIN_ENVIRONMENT = 1
 
@@ -37,6 +38,11 @@ class IntegrationJournal:
         stream = io.StringIO()
         code = self.container.get(Console).run(shlex.split(line), Caller(actor or Actor.core(), environment_id), stream)
         return LineAnswer(code, stream.getvalue())
+
+    # lines run from now on read this clock, as a test that needs rows written at one moment asks
+    def with_clock(self, clock: Clock) -> None:
+        self.container = synced_database_container(self.home, self.database)
+        self.container.bind(Clock, clock)
 
     def new_row_id(self, line: str, actor: Actor | None = None) -> int:
         answer = self.run(f"{line} --json", actor)
