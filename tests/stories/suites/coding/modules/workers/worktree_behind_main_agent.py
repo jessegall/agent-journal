@@ -34,7 +34,7 @@ def clashed(story, repository, worker: Actor) -> None:
     diverge_file(repository, worker, CLASHING_FILE, CLASHING_FILE)
     stale_check(story)
     story.expect_success(f'merger update {agent_number(story, worker.id)} --why "{CLASHING_FILE} moved on both sides"', actor=merger(story))
-    story.expect_text("worker update --wait", "The update clashes", actor=worker)
+    story.expect_refusal("worker update --wait", "The update clashes", actor=worker)
 
 
 def waited(story) -> None:

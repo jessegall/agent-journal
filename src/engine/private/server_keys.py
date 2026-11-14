@@ -16,6 +16,7 @@ class ServerKeys:
     def __init__(self, folder: PrivateFolder) -> None:
         self.folder = folder
         self.kept = KeptFileText()
+        self.writes = 0
 
     def all(self) -> dict[str, str]:
         path = self.folder.file(KEYS_SUFFIX)
@@ -31,4 +32,5 @@ class ServerKeys:
         self.write({name: value for name, value in self.all().items() if name != variable})
 
     def write(self, keys: dict[str, str]) -> None:
+        self.writes += 1
         SecretValues.write_file(self.folder.made_file(KEYS_SUFFIX), json.dumps(keys, indent=2) + "\n")

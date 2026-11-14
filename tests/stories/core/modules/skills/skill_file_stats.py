@@ -46,7 +46,9 @@ def test_a_tool_use_with_no_journal_line_and_no_due_skill_reads_no_skill_file(st
     started_story.expect_rows(counts.stats == 0, counts.passes == 0)
 
 
-def test_a_journal_line_makes_one_pass_over_the_skill_files(started_story, monkeypatch):
+def test_a_journal_line_makes_one_pass_over_the_skill_files_and_checks_each_at_most_once(started_story, monkeypatch):
     counts = SkillFileCounts(monkeypatch)
     started_story.hook("s-1", JOURNAL_LINE)
-    started_story.expect_rows(counts.passes == 1, counts.stats > 0)
+    skill_files = len(started_story.container.get(SkillCatalogue).plugin_skills())
+    # the skills of the program folders are kept for a few seconds, so a pass reads each skill file once at most
+    started_story.expect_rows(counts.passes == 1, counts.stats <= skill_files)

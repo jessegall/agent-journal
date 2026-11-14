@@ -20,5 +20,5 @@ def test_a_twin_update_says_already_up_to_date():
 
 def test_a_clash_names_its_files_and_the_stash_the_next_commit_puts_back():
     outcome = UpdateOutcome("version-5", WorktreeUpdate("0123456789", ("cart.py", "tax.py"), "s1"), UpdateResult.CONFLICTS)
-    assert outcome.lines() == ["The update clashes with version-5 in cart.py, tax.py: settle the markers, then go on. Your next commit carries the settled files.",
+    assert outcome.lines() == ["The update clashes with version-5 in 2 files, cart.py, tax.py: settle the markers, then go on. Your next commit carries the settled files.",
                                "Your uncommitted changes stay in stash s1 until your next commit puts them back on the settled merge."]

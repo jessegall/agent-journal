@@ -1,6 +1,9 @@
 from enum import StrEnum
 
 
+SEARCH_TIMEOUT_SECONDS = 60
+
+
 class CommandCategory(StrEnum):
     """What a shell command is, as the command table names it, and the groups of categories rules ask about."""
 
@@ -24,6 +27,12 @@ class CommandCategory(StrEnum):
 
     # Reading, writing, searching and journal commands stay in the foreground to their end; a journal command is the
     # journal answering the agent, never a run of its own.
+    # The time a run of this kind may take when its command names no timeout: a search ends there, since it never moves to
+    # the background and holds its slot until it does.
+    @property
+    def default_timeout_seconds(self) -> int | None:
+        return SEARCH_TIMEOUT_SECONDS if self is CommandCategory.SEARCH else None
+
     @property
     def is_backgroundable(self) -> bool:
         return not (self.is_priority_zero or self is CommandCategory.JOURNAL)

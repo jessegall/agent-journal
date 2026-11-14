@@ -4,6 +4,7 @@ from engine.file.versions.file_version import FileVersion
 from functools import lru_cache
 from pathlib import Path
 from engine.journal.journal_home import JournalHome
+from engine.time.clock import Clock
 from engine.provider.providers import Providers
 from engine.registry.registry import Registry
 from engine.registry.skill_entry import SkillEntry
@@ -13,14 +14,16 @@ from engine.skill.skill_digest import SkillDigest
 from engine.skill.skill_contents import FRONT_MATTER_MARK
 
 PLUGIN_KEY = "plugin"
+KEPT_SECONDS = 5
 
 
 class SkillCatalogue:
     """Lists module skills and skills installed in the project's program folders. One request reads the skill files
-    once, and again only when a program folder changes."""
+    once, and again only when a program folder changes. The skills of the program folders are kept across requests for
+    a few seconds, so a hook checks each skill file at most once in that time; a file edited in place shows after it."""
 
-    def __init__(self, registry: Registry, home: JournalHome, providers: Providers, request_values: RequestValues) -> None:
-        self.registry, self.home, self.providers, self.request_values = registry, home, providers, request_values
+    def __init__(self, registry: Registry, home: JournalHome, providers: Providers, request_values: RequestValues, clock: Clock) -> None:
+        self.registry, self.home, self.providers, self.request_values, self.clock = registry, home, providers, request_values, clock
 
     def skills(self) -> tuple[SkillEntry, ...]:
         return self.request_values.read("skills.catalogue", self.folder_versions, self.read_skills)
@@ -43,14 +46,21 @@ class SkillCatalogue:
         return (*self.registry.skills, *(skill for skill in self.plugin_skills() if skill.folder not in declared))
 
     def plugin_skills(self) -> list[SkillEntry]:
+        folders = tuple(self.home.project_folder / program_folder for program_folder in reversed(self.providers.skill_folders()))
+        period = int(self.clock.timestamp().value.timestamp() // KEPT_SECONDS)
+        return list(SkillCatalogue.kept_plugin_skills(folders, tuple(self.folder_version(folder) for folder in folders), period))
+
+    @staticmethod
+    @lru_cache(maxsize=8)
+    def kept_plugin_skills(folders: tuple[Path, ...], versions: tuple[FileVersion | None, ...], period: int) -> tuple[SkillEntry, ...]:
+        paths = {path.parent.name: path for folder in folders for path in SkillCatalogue.skill_files(folder)}
         entries: list[SkillEntry] = []
-        paths = {path.parent.name: path for program_folder in reversed(self.providers.skill_folders()) for path in self.skill_files(self.home.project_folder / program_folder)}
         for path in [paths[name] for name in sorted(paths)]:
             try:
-                entries.extend(self.loaded_skill(path, FileAccess.version(path)))
+                entries.extend(SkillCatalogue.loaded_skill(path, FileAccess.version(path)))
             except FileNotFoundError:
                 continue
-        return entries
+        return tuple(entries)
 
     @staticmethod
     def skill_files(folder: Path) -> tuple[Path, ...]:
