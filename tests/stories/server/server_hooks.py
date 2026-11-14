@@ -75,6 +75,14 @@ def test_a_hook_sent_with_a_timing_leaves_one_log_line_with_the_hook_route_steps
     expect_timing_lines(story.home, [(f"{os.getpid()}-1", ["go_start", "go_sent", "server_accepted", "server_received", "body_read", "stale_checked", "hook_body", "hook_json", "hook_locked", "hook_synced", "hook_read", "route_ready", "hook_answered", "answered"])])
 
 
+def started_agent(server, role: str) -> str:
+    """Starts a worker or a helper under the lead and gives its session, since the server takes a hook's role from
+    the agent row of its session and never from what the hook says."""
+    session = f"{role}-1"
+    server.story.expect_success(f"agent start {session} claude {role} --parent {server.story.agent.id} --environment main", actor=server.story.user)
+    return session
+
+
 def lead_stop(firing: str) -> dict[str, object]:
     return dict(HookSamples.stop().with_fields(session="s-1", environment="main", firing=firing).body)
 
@@ -110,7 +118,7 @@ def test_a_claude_stop_posted_as_a_prepared_object_is_refused_as_the_builder_dec
 
 def test_a_stop_that_waits_past_its_own_longer_limit_for_another_hook_is_held(lead_server):
     story = lead_server
-    story.expect_locked_hook_answer(lead_stop("server-4"), "the journal could not check this stop and holds it", STORY_STOP_LIMIT_SECONDS + 1)
+    story.expect_locked_hook_answer(lead_stop("server-4"), "the journal could not check this stop and holds it")
 
 
 def test_a_stop_waits_past_the_hook_limit_for_another_hook_and_is_checked(lead_server):
@@ -119,10 +127,11 @@ def test_a_stop_waits_past_the_hook_limit_for_another_hook_and_is_checked(lead_s
 
 
 @pytest.mark.parametrize("role", ["worker", "helper"])
-def test_a_workers_or_helpers_tool_that_waits_past_its_limit_is_refused_and_told_what_to_do(lead_server, role):
-    body = dict(HookSamples.edit("a.py").with_fields(session="s-1", environment="main", firing=f"held-{role}", role=role).body)
-    lead_server.expect_locked_hook_answer(body, "so it is held")
-    lead_server.expect_locked_hook_answer(body, "stop and write in your report")
+def test_a_workers_or_helpers_tool_the_journal_could_not_check_is_refused_and_told_what_to_do(lead_server, role):
+    session = started_agent(lead_server, role)
+    lead_server.expect_locked_hook_answer(dict(HookSamples.edit("a.py").with_fields(session=session, environment="main", firing=f"held-{role}").body), "so it is held")
+    old_runner = dict(HookSamples.edit("a.py").with_fields(session=session, environment="main", firing=f"old-runner-{role}", foreign=[{}]).body)
+    lead_server.expect_hook_answer("/hook", old_runner, 200, "stop and write in your report")
 
 
 def test_a_main_agents_tool_that_waits_past_its_limit_goes_through_with_one_line(lead_server):
@@ -130,24 +139,19 @@ def test_a_main_agents_tool_that_waits_past_its_limit_goes_through_with_one_line
     lead_server.expect_locked_hook_answer(body, "the journal let this through unchecked")
 
 
-def test_a_workers_tool_from_an_old_hook_runner_is_refused(lead_server):
-    body = dict(HookSamples.edit("a.py").with_fields(session="s-1", environment="main", firing="old-runner", role="worker", foreign=[{}]).body)
-    lead_server.expect_hook_answer("/hook", body, 200, "so it is held")
-
-
 def test_a_workers_tool_after_the_journal_fails_on_it_is_refused(lead_server, monkeypatch):
     def broken(route, event):
         raise ValueError("broken")
 
     monkeypatch.setattr(AgentHookRoute, "answer", broken)
-    body = dict(HookSamples.edit("a.py").with_fields(session="s-1", environment="main", firing="failed", role="helper").body)
+    body = dict(HookSamples.edit("a.py").with_fields(session=started_agent(lead_server, "helper"), environment="main", firing="failed").body)
     lead_server.expect_hook_answer("/hook", body, 200, "so it is held")
 
 
 def test_a_tool_hook_that_waits_past_its_limit_for_another_hook_is_let_through_with_one_line(lead_server):
     story = lead_server
     body = dict(HookSamples.sample("post_tool_use").with_fields(session="s-1", environment="main", firing="server-6").body)
-    story.expect_locked_hook_answer(body, "another hook held the journal")
+    story.expect_locked_hook_answer(body, "the journal let this through unchecked")
 
 
 

@@ -1,3 +1,5 @@
+import threading
+import sqlite3
 from server.execution.session_starters import SessionStarters
 from engine.time.polled_wait import PolledWait
 from collections.abc import Callable
@@ -90,10 +92,22 @@ class ServerStory:
     def __init__(self, story: Story, socket_path: Path, context: ServerContext) -> None:
         self.story, self.socket_path, self.context = story, socket_path, context
 
-    # a main agent's hook never waits for a place, so the hook is held by another writer holding the database
-    def expect_locked_hook_answer(self, body: object, text: str) -> None:
-        with self.story.busy_database():
+    # a main agent's hook never waits for a place, so the hook is held by another writer holding the database, for
+    # the whole hook or, with locked seconds, until the writer lets go part-way
+    def expect_locked_hook_answer(self, body: object, text: str, locked_seconds: float | None = None) -> None:
+        if locked_seconds is None:
+            with self.story.busy_database():
+                self.expect_hook_answer("/hook", body, 200, text)
+            return
+        writer = sqlite3.connect(self.story.home.database, timeout=0, autocommit=True, check_same_thread=False)
+        writer.execute("BEGIN IMMEDIATE")
+        release = threading.Timer(locked_seconds, writer.execute, ["ROLLBACK"])
+        release.start()
+        try:
             self.expect_hook_answer("/hook", body, 200, text)
+        finally:
+            release.join(TIMEOUT_SECONDS)
+            writer.close()
 
     def post_hook_disconnect(self, body: dict[str, object]) -> None:
         """Holds the hook in the queue until its client has closed, after the server took the connection, as a
