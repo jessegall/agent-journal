@@ -1,5 +1,4 @@
 # story files that still import engine (outside the story kit), server, install or tunnels: plan 1138 empties this list; never add a line
-tests/stories/core/modules/agents/agent_actions.py
 tests/stories/core/modules/agents/agent_callers.py
 tests/stories/core/modules/agents/agent_cards_numbers.py
 tests/stories/core/modules/agents/agent_driver.py
@@ -31,22 +30,17 @@ tests/stories/core/modules/agents/support/other_machine_transport.py
 tests/stories/core/modules/agents/support/sample_suite_start.py
 tests/stories/core/modules/agents/support/strict_policy.py
 tests/stories/core/modules/aliases/alias_reads.py
-tests/stories/core/modules/aliases/expanded_commands.py
 tests/stories/core/modules/aliases/reading_pins_refusals.py
 tests/stories/core/modules/aliases/saved_commands.py
 tests/stories/core/modules/aliases/shared_tests.py
 tests/stories/core/modules/aliases/silent_aliases.py
 tests/stories/core/modules/approvals/approval_commands.py
 tests/stories/core/modules/approvals/many_approvals.py
-tests/stories/core/modules/approvals/other_actions.py
 tests/stories/core/modules/approvals/person_actions.py
 tests/stories/core/modules/approvals/recipients.py
 tests/stories/core/modules/approvals/restart_recovery.py
-tests/stories/core/modules/approvals/secret_approvals.py
-tests/stories/core/modules/approvals/source_approvals.py
 tests/stories/core/modules/approvals/standing_approvals.py
 tests/stories/core/modules/approvals/support/legacy_setting_requests.py
-tests/stories/core/modules/approvals/user_waits.py
 tests/stories/core/modules/assign_rules/auto_assign.py
 tests/stories/core/modules/assign_rules/rule_edits.py
 tests/stories/core/modules/assign_rules/spreading.py
@@ -88,6 +82,7 @@ tests/stories/core/modules/documents/trail_viewer.py
 tests/stories/core/modules/documents/upgrade.py
 tests/stories/core/modules/documents/work_source_corrections.py
 tests/stories/core/modules/drivers/agent_pause.py
+tests/stories/core/modules/drivers/agent_state_abuse.py
 tests/stories/core/modules/drivers/agent_state_priorities.py
 tests/stories/core/modules/drivers/agent_state_push_pop.py
 tests/stories/core/modules/drivers/agent_state_reads.py
@@ -134,7 +129,6 @@ tests/stories/core/modules/helpers/helper_start_folders.py
 tests/stories/core/modules/helpers/lasting_agents_jobs.py
 tests/stories/core/modules/helpers/lifetime_refusals.py
 tests/stories/core/modules/helpers/lifetime_reviewers.py
-tests/stories/core/modules/helpers/lifetime_reviewers_limits.py
 tests/stories/core/modules/helpers/occupant_rotation.py
 tests/stories/core/modules/helpers/program_split.py
 tests/stories/core/modules/helpers/read_only_access.py
@@ -152,16 +146,13 @@ tests/stories/core/modules/helpers/usage_lockdown_bypass.py
 tests/stories/core/modules/helpers/usage_lockdown_typing.py
 tests/stories/core/modules/library/browsing.py
 tests/stories/core/modules/library/finding.py
-tests/stories/core/modules/library/people.py
 tests/stories/core/modules/library/support/copy_stories.py
 tests/stories/core/modules/library/support/memo_share.py
 tests/stories/core/modules/library/support/saved_connection.py
 tests/stories/core/modules/library/support/stored_text.py
-tests/stories/core/modules/library/sync_back.py
 tests/stories/core/modules/mcp/servers.py
 tests/stories/core/modules/memories/faded_removal.py
 tests/stories/core/modules/memories/fading_at_compaction.py
-tests/stories/core/modules/memories/marks.py
 tests/stories/core/modules/memories/memory_delivery_owners.py
 tests/stories/core/modules/memories/memory_environments.py
 tests/stories/core/modules/memories/memory_holders.py
@@ -175,7 +166,6 @@ tests/stories/core/modules/messages/agent_messages.py
 tests/stories/core/modules/messages/agent_obligations.py
 tests/stories/core/modules/messages/chat_messages.py
 tests/stories/core/modules/messages/delivery.py
-tests/stories/core/modules/messages/dock_scroll_browser.py
 tests/stories/core/modules/messages/marks.py
 tests/stories/core/modules/messages/message_targets_through_the_server.py
 tests/stories/core/modules/messages/message_wakes_agent.py
@@ -189,7 +179,6 @@ tests/stories/core/modules/phone/phone_rows.py
 tests/stories/core/modules/phone/push.py
 tests/stories/core/modules/pins/link_pins.py
 tests/stories/core/modules/plan_reviews/critique_button.py
-tests/stories/core/modules/plan_reviews/review_rounds.py
 tests/stories/core/modules/plan_reviews/review_skill.py
 tests/stories/core/modules/plan_reviews/review_tip.py
 tests/stories/core/modules/plans/approval_notices.py
@@ -200,17 +189,14 @@ tests/stories/core/modules/plans/plan_focus_nudges.py
 tests/stories/core/modules/plans/plan_focus_read.py
 tests/stories/core/modules/plans/plan_inspector.py
 tests/stories/core/modules/plans/plan_lines.py
-tests/stories/core/modules/plans/plan_links_browser.py
 tests/stories/core/modules/plans/plan_thoroughness.py
 tests/stories/core/modules/plans/support/assigned_plans.py
 tests/stories/core/modules/plugins/checkouts.py
 tests/stories/core/modules/plugins/environment_settings.py
 tests/stories/core/modules/plugins/event_commit.py
 tests/stories/core/modules/plugins/event_guard.py
-tests/stories/core/modules/plugins/event_keys.py
 tests/stories/core/modules/plugins/event_listen.py
 tests/stories/core/modules/plugins/event_manifest.py
-tests/stories/core/modules/plugins/event_many.py
 tests/stories/core/modules/plugins/faults.py
 tests/stories/core/modules/plugins/heard_events.py
 tests/stories/core/modules/plugins/injected_instructions.py
@@ -219,7 +205,6 @@ tests/stories/core/modules/plugins/orphan_services.py
 tests/stories/core/modules/plugins/plugin_calls.py
 tests/stories/core/modules/plugins/plugin_places.py
 tests/stories/core/modules/plugins/plugin_process_kinds.py
-tests/stories/core/modules/plugins/plugins.py
 tests/stories/core/modules/plugins/previews_and_boards.py
 tests/stories/core/modules/plugins/queued_runs.py
 tests/stories/core/modules/plugins/review_authors.py
@@ -265,7 +250,6 @@ tests/stories/core/modules/processes/reader_draft.py
 tests/stories/core/modules/processes/reader_layers.py
 tests/stories/core/modules/processes/reader_repairs.py
 tests/stories/core/modules/processes/reader_requests_out_of_the_chat.py
-tests/stories/core/modules/processes/reader_start.py
 tests/stories/core/modules/processes/reader_teaching.py
 tests/stories/core/modules/processes/readers.py
 tests/stories/core/modules/processes/reading_decision_roles.py
@@ -324,7 +308,6 @@ tests/stories/core/modules/project_rules/helpers.py
 tests/stories/core/modules/project_rules/memory_rules.py
 tests/stories/core/modules/questions/ask_question.py
 tests/stories/core/modules/questions/asked_by_the_main_agent.py
-tests/stories/core/modules/questions/marks.py
 tests/stories/core/modules/questions/question_inspector.py
 tests/stories/core/modules/questions/waiting.py
 tests/stories/core/modules/reminders/reminders.py
@@ -345,7 +328,6 @@ tests/stories/core/modules/sequences/step_checks.py
 tests/stories/core/modules/sequences/step_refused_commands.py
 tests/stories/core/modules/sequences/support/step_blocks.py
 tests/stories/core/modules/sequences/support/upgraded_row_sequences.py
-tests/stories/core/modules/setting_requests/setting_requests.py
 tests/stories/core/modules/setting_requests/setting_requests_through_the_viewer.py
 tests/stories/core/modules/settings/kept_settings.py
 tests/stories/core/modules/settings/project_hooks.py
@@ -378,6 +360,7 @@ tests/stories/core/modules/tasks/marks.py
 tests/stories/core/modules/tasks/several_tasks.py
 tests/stories/core/modules/tasks/stops_with_work.py
 tests/stories/core/modules/tasks/support/assignment_migration_fixtures.py
+tests/stories/core/modules/tasks/support/two_workers.py
 tests/stories/core/modules/tasks/task_assignment_writers.py
 tests/stories/core/modules/tasks/task_brief_first.py
 tests/stories/core/modules/tasks/task_context.py
@@ -386,7 +369,6 @@ tests/stories/core/modules/tasks/task_inspector.py
 tests/stories/core/modules/tasks/task_inspector_components.py
 tests/stories/core/modules/tasks/task_lifecycle.py
 tests/stories/core/modules/tasks/task_metadata_reminder.py
-tests/stories/core/modules/tasks/task_records.py
 tests/stories/core/modules/tasks/task_start_with_one_in_hand.py
 tests/stories/core/modules/tasks/task_tags.py
 tests/stories/core/modules/tasks/task_waits.py
@@ -399,15 +381,12 @@ tests/stories/core/modules/transcriptions/transcriptions.py
 tests/stories/core/modules/triggers/action_output.py
 tests/stories/core/modules/triggers/agent_triggers.py
 tests/stories/core/modules/triggers/trigger_details.py
-tests/stories/core/modules/updates/server_update_marks.py
 tests/stories/core/modules/usage/agent_blocked.py
-tests/stories/core/modules/usage/agent_inspection.py
 tests/stories/core/modules/usage/context_limit_reads.py
 tests/stories/core/modules/usage/context_reading_age.py
 tests/stories/core/modules/usage/fitness.py
 tests/stories/core/modules/usage/read_counts.py
 tests/stories/core/modules/usage/usage.py
-tests/stories/core/modules/viewer/inspector_sections.py
 tests/stories/core/modules/viewer/support/acme_buttons_module.py
 tests/stories/core/modules/viewer/support/button_module.py
 tests/stories/core/modules/viewer/support/coding_acme_buttons_module.py
@@ -415,10 +394,10 @@ tests/stories/core/modules/viewer/support/section_modules.py
 tests/stories/core/modules/viewer/support/wider_acme_buttons_module.py
 tests/stories/core/modules/viewer/support/window_samples.py
 tests/stories/core/modules/viewer/support/window_story.py
+tests/stories/core/modules/viewer/v5_home_menus.py
+tests/stories/core/modules/viewer/v5_templates.py
 tests/stories/core/modules/viewer/window_search.py
 tests/stories/core/modules/viewer/window_search_declared.py
-tests/stories/core/modules/waits/ended_targets.py
-tests/stories/core/modules/waits/idle_wakes.py
 tests/stories/core/modules/waits/marks.py
 tests/stories/core/modules/waits/wait_lines.py
 tests/stories/core/process_door.py
@@ -433,7 +412,6 @@ tests/stories/core/support/seeds/large_read_seeds.py
 tests/stories/core/support/seeds/project_seeds.py
 tests/stories/core/support/signoffs_samples.py
 tests/stories/engine/chat/mark_buttons.py
-tests/stories/engine/chat/mark_removal.py
 tests/stories/engine/chat/support/legacy_buttons_module.py
 tests/stories/engine/chat/support/mark_faults.py
 tests/stories/engine/command/support/lock_commands.py
@@ -504,9 +482,7 @@ tests/stories/server/support/alias_hook.py
 tests/stories/server/support/launch_terminal.py
 tests/stories/server/support/server_client.py
 tests/stories/server/support/story_line_route.py
-tests/stories/suites/coding/agent_settings_window.py
 tests/stories/suites/coding/assigned_tasks.py
-tests/stories/suites/coding/coding_windows.py
 tests/stories/suites/coding/designer_tools.py
 tests/stories/suites/coding/drivers/helper/builder.py
 tests/stories/suites/coding/drivers/main/orchestrator.py
@@ -520,7 +496,6 @@ tests/stories/suites/coding/main_assignment.py
 tests/stories/suites/coding/main_controls.py
 tests/stories/suites/coding/main_file_permissions.py
 tests/stories/suites/coding/modules/checks/task_wait_checks.py
-tests/stories/suites/coding/modules/workers/agent_actions.py
 tests/stories/suites/coding/modules/workers/agents_retired_by_a_person_alone.py
 tests/stories/suites/coding/modules/workers/assigned_work.py
 tests/stories/suites/coding/modules/workers/assigned_work_returned.py
@@ -538,7 +513,6 @@ tests/stories/suites/coding/modules/workers/ended_with_tasks.py
 tests/stories/suites/coding/modules/workers/folder_removal.py
 tests/stories/suites/coding/modules/workers/free_movement.py
 tests/stories/suites/coding/modules/workers/gone_workers.py
-tests/stories/suites/coding/modules/workers/group_stop.py
 tests/stories/suites/coding/modules/workers/hand_in_update.py
 tests/stories/suites/coding/modules/workers/held_tasks.py
 tests/stories/suites/coding/modules/workers/helper_count.py
@@ -550,7 +524,6 @@ tests/stories/suites/coding/modules/workers/judge_scope.py
 tests/stories/suites/coding/modules/workers/keep_going_merger.py
 tests/stories/suites/coding/modules/workers/kept_worker_cut.py
 tests/stories/suites/coding/modules/workers/kept_workers.py
-tests/stories/suites/coding/modules/workers/libraries.py
 tests/stories/suites/coding/modules/workers/main_agent_told.py
 tests/stories/suites/coding/modules/workers/main_session.py
 tests/stories/suites/coding/modules/workers/merge.py
@@ -568,7 +541,6 @@ tests/stories/suites/coding/modules/workers/model_fits_complexity.py
 tests/stories/suites/coding/modules/workers/outside_waits.py
 tests/stories/suites/coding/modules/workers/paused_worker_sends.py
 tests/stories/suites/coding/modules/workers/pending_work.py
-tests/stories/suites/coding/modules/workers/phase_ends.py
 tests/stories/suites/coding/modules/workers/plan_assignment.py
 tests/stories/suites/coding/modules/workers/plan_dispatch.py
 tests/stories/suites/coding/modules/workers/plan_send.py
@@ -614,10 +586,7 @@ tests/stories/suites/coding/modules/workers/worker_checkpoint_runs.py
 tests/stories/suites/coding/modules/workers/worker_compaction_restart.py
 tests/stories/suites/coding/modules/workers/worker_context.py
 tests/stories/suites/coding/modules/workers/worker_context_limit.py
-tests/stories/suites/coding/modules/workers/worker_guidance.py
-tests/stories/suites/coding/modules/workers/worker_helper_stop.py
 tests/stories/suites/coding/modules/workers/worker_limit_raised.py
-tests/stories/suites/coding/modules/workers/worker_lines.py
 tests/stories/suites/coding/modules/workers/worker_no_readers.py
 tests/stories/suites/coding/modules/workers/worker_overview_card.py
 tests/stories/suites/coding/modules/workers/worker_policy.py

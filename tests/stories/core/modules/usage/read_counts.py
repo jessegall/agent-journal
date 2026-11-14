@@ -5,7 +5,8 @@ from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from tests.stories.support.story_checks import expect_visited_limit
 
 READ_STARTS = ("SELECT", "WITH")
-READS_ALLOWED = 9
+# the waiting agents the list shows dimmed add their questions, their waits and the signature that keeps them (task 10207)
+READS_ALLOWED = 12
 
 
 def read_selects(story, line: str) -> list[str]:
