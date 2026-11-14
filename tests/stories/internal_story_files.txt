@@ -63,7 +63,6 @@ tests/stories/core/modules/developer/repeated_work_setting.py
 tests/stories/core/modules/developer/system_logs_browser.py
 tests/stories/core/modules/developer/tick_warnings.py
 tests/stories/core/modules/developer/ticks_through_the_ticker.py
-tests/stories/core/modules/docking/dock_models.py
 tests/stories/core/modules/docking/dock_reads.py
 tests/stories/core/modules/docking/docking.py
 tests/stories/core/modules/docking/leave_ticks.py
@@ -199,7 +198,6 @@ tests/stories/core/modules/plugins/checkout_reads.py
 tests/stories/core/modules/plugins/delivery_event_reads.py
 tests/stories/core/modules/plugins/event_commit.py
 tests/stories/core/modules/plugins/event_guard.py
-tests/stories/core/modules/plugins/event_keys.py
 tests/stories/core/modules/plugins/event_listen.py
 tests/stories/core/modules/plugins/event_manifest.py
 tests/stories/core/modules/plugins/event_many.py
