@@ -34,7 +34,7 @@ DEVELOPER_SETTINGS = [
                                         SettingType.FLAG, default=False, scope=SettingScope.PROJECT),
                            SettingValue("repeated-work", "Errors for repeated work", "Shows an error in the chat when a request or agent call repeats a query, queries per list item or repeats a file read.",
                                         SettingType.FLAG, default=False, scope=SettingScope.PROJECT),
-                           SettingValue("prevent-lazy-loading", "Prevent lazy loading", "Stops with an error when the journal loads its modules or events a second time instead of sharing them.",
+                           SettingValue("prevent-lazy-loading", "Prevent lazy loading", "Stops with an error when modules, events or a server handler, listener or guard load again after the journal started.",
                                         SettingType.FLAG, default=False, scope=SettingScope.PROJECT),
                            SettingValue("read-limit", "Refuse large loads", "Stops with an error when the journal loads more than 50 items of one type at once.",
                                         SettingType.FLAG, default=False, scope=SettingScope.PROJECT),

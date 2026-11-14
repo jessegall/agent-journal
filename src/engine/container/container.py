@@ -7,6 +7,7 @@ from functools import cache
 
 from engine.container.single_instance import SingleInstance
 from engine.errors.built_twice_error import BuiltTwiceError
+from engine.errors.late_resolve_error import LateResolveError
 from engine.errors.missing_hint_error import MissingHintError
 from engine.errors.unbound_value_error import UnboundValueError
 from engine.errors.wrong_instance_error import WrongInstanceError
@@ -39,12 +40,14 @@ def depends_on(class_type: type, checked: dict[type, bool]) -> bool:
 
 class Container:
     """Creates the objects the journal needs and hands each one out, creating it only once; a module may name
-    the class that stands in for an interface of the core."""
+    the class that stands in for an interface of the core. A sealed container builds no handler, listener, guard
+    or rule it did not build before it was sealed."""
 
     def __init__(self) -> None:
         self.instances: dict[type, object] = {Container: self}
         self.substitutes: dict[type, type[object]] = {}
         self.build_places: dict[type, str] = {}
+        self.is_sealed = False
 
     def bind(self, class_type: type[T], instance: T) -> None:
         self.instances[class_type] = instance
@@ -62,6 +65,9 @@ class Container:
                 del self.instances[built_type]
                 self.build_places.pop(type(built), None)
         self.instances[class_type] = instance
+
+    def seal(self) -> None:
+        self.is_sealed = True
 
     def substitute(self, class_type: type, implementation: type) -> None:
         if not issubclass(implementation, class_type):
@@ -87,6 +93,8 @@ class Container:
 
     def record_build(self, class_type: type) -> None:
         place = "".join(traceback.format_stack(limit=BUILD_PLACE_FRAMES)[:-2])
+        if self.is_sealed:
+            raise LateResolveError(class_type, place)
         if class_type in self.build_places:
             raise BuiltTwiceError(class_type, self.build_places[class_type], place)
         self.build_places[class_type] = place

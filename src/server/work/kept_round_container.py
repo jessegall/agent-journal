@@ -16,6 +16,7 @@ from engine.journal.journal_home import JournalHome
 from engine.log.system_log_writer import SystemLogWriter
 from engine.module.journal_container import synced_database_container
 from engine.time.clock import Clock
+from server.work.boot_resolve import BootResolve
 from server.work.round_container import RoundContainer
 
 
@@ -54,6 +55,7 @@ class KeptRoundContainer(RoundContainer):
         database = self.container.get(Database)
         self.registry_version = RegistryTable(database).version()
         self.database_file = FileAccess.stat(self.home.database)
+        BootResolve.sealed(self.container)
         return self.container
 
     def registry_changed(self) -> bool:

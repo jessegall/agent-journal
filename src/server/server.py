@@ -37,6 +37,7 @@ from engine.process.door.lane_door import LaneDoor
 from server.execution.execution_priorities import ExecutionPriorities
 from server.execution.round_tickets import RoundTickets
 from server.work.booting_work import BootingWork
+from server.work.boot_mark import BootMark
 from server.work.code_sync_work import CodeSyncWork
 from server.handover.code_version import CodeVersion
 from server.handover.code_folders import CodeFolders
@@ -111,7 +112,9 @@ def refused_start_code(files: ServerFiles, refusal: Refusal) -> int:
     return UNSAFE_HOST_CODE
 
 
+# a mark a crashed boot left behind goes before this start boots
 def begin_files(home: JournalHome, files: ServerFiles) -> None:
+    BootMark.shared(home).end()
     PerformanceState(home).begin_start()
     TimingLog(home).rotate()
     files.rotate_log()
@@ -217,6 +220,8 @@ def main(argv: list[str]) -> int:
     if threading.current_thread() is threading.main_thread():
         signal.signal(signal.SIGTERM, lambda signal_number, frame: server.request_stop())
         faulthandler.register(signal.SIGUSR1, file=FileAccess.lifetime_writer(home.stacks_file), all_threads=True)
+    boot_mark = BootMark.shared(home)
+    boot_mark.begin()
     for starting_round in (JournalRound(home, "code sync", CodeSyncWork(), PerRoundContainer(home, partial(opened_container, turns=turns))),
                            JournalRound(home, "booting", BootingWork(), PerRoundContainer(home, partial(background_container, turns=turns)))):
         try:
@@ -240,6 +245,7 @@ def main(argv: list[str]) -> int:
     ticker.start(Ticker.worker_count(settings_container))
     ticker_thread.start()
     viewer.start()
+    boot_mark.end()
     files.clear_restart()
     files.clear_dead_run_lock()
     try:

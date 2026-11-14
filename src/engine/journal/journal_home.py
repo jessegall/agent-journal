@@ -92,6 +92,10 @@ class JournalHome:
         return self.folder / "server-restarting"
 
     @property
+    def booting_mark(self) -> Path:
+        return self.folder / ".booting"
+
+    @property
     def run_lock(self) -> Path:
         return self.folder / "run-lock"
 
