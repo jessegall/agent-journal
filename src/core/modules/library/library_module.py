@@ -1,3 +1,4 @@
+from core.modules.library.settings.library_setting_values import LibrarySettingValues
 from core.modules.library.skills.declarations.library_skills import LIBRARY_SKILLS
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.enums.window_icon import WindowIcon
@@ -10,9 +11,6 @@ from engine.library.library_lookup import LibraryLookup
 from core.modules.library.support.server_library_lookup import ServerLibraryLookup
 from engine.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from engine.module.module import Module
-from engine.enums.setting_scope import SettingScope
-from engine.enums.setting_type import SettingType
-from engine.setting.setting_value import SettingValue
 from core.modules.library.commands.pair_library.pair_library_handler import PairLibraryHandler
 from core.modules.library.commands.pair_library.pair_library_subcommand import PairLibrarySubcommand
 from core.modules.library.commands.unpair_library.unpair_library_handler import UnpairLibraryHandler
@@ -75,10 +73,7 @@ class LibraryModule(Module):
     seed_reason = "it keeps only what a connected server gave it"
     move_reason = "version 4's team rows are not carried over"
     dependencies = ["journal.core.actors", "journal.core.settings", "journal.core.documents", "journal.core.secrets", "journal.core.agents"]
-    settings = [SettingValue("address", "Shared server address", "The IP address or URL of your team's shared server, such as 10.0.0.5 or https://library.example.com.",
-                             SettingType.TEXT, default="", scope=SettingScope.PROJECT),
-                SettingValue("agent-edits-wait", "Agent edits wait for a user", "An agent's edit of an item that follows the library stays on this journal until a user sends it.",
-                             SettingType.FLAG, default=True, scope=SettingScope.PROJECT)]
+    settings = [LibrarySettingValues]
     models = [ModelDeclaration(LibraryConnection, query=LibraryConnectionQuery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(LibraryCopy, excluded_subcommands=ALL_SUBCOMMANDS)]
     migrations = [LibraryTablesMigration, ConnectionSignatureIndexMigration]
     listeners = [ConnectionRowsListener]

@@ -1,7 +1,5 @@
+from tunnels.tunler.settings.tunler_setting_values import TunlerSettingValues
 from engine.module.module import Module
-from engine.enums.setting_scope import SettingScope
-from engine.enums.setting_type import SettingType
-from engine.setting.setting_value import SettingValue
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.enums.window_icon import WindowIcon
 from engine.viewer.window_key import WindowKey
@@ -31,8 +29,7 @@ class TunlerModule(Module):
     name = "journal.tunnels.tunler"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.tunnel", "journal.core.settings", "journal.core.agents"]
-    settings = [SettingValue("subdomain", "Subdomain", "The name in front of the tunler server's address that reaches this journal.",
-                             SettingType.TEXT, default="", scope=SettingScope.PROJECT)]
+    settings = [TunlerSettingValues]
     tunnels = [TunlerTunnel]
     subcommands = [TunlerStatusSubcommand, TunlerDomainsSubcommand, TunlerVersionSubcommand, LoginTunlerSubcommand, LogoutTunlerSubcommand,
                    UpdateTunlerSubcommand, InstallTunlerSubcommand, ReleaseTunlerDomainSubcommand]

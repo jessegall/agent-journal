@@ -37,6 +37,7 @@ from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.library.library_share_class import LibraryShareClass
 from engine.query.rows.shared_rows import SharedRows
 from engine.setting.setting_node import SettingNode
+from engine.setting.setting_list import SettingList
 from engine.ticker.tick_handler import TickHandler
 from engine.tunnel.tunnel import Tunnel
 from engine.driver.block_condition import BlockCondition
@@ -95,7 +96,7 @@ class Module:
     agent_groups: ClassVar[list[AgentGroup | type[AgentGroup]]] = []
     profiles: ClassVar[list[AgentProfile]] = []
     providers: ClassVar[list[type[Provider]]] = []
-    settings: ClassVar[Sequence[SettingNode]] = []
+    settings: ClassVar[Sequence[SettingNode | type[SettingList]]] = []
     tunnels: ClassVar[list[type[Tunnel]]] = []
     shared_rows: ClassVar[list[type[SharedRows]]] = []
     library_shares: ClassVar[list[type[LibraryShareClass]]] = []
@@ -135,6 +136,11 @@ class Module:
     @classmethod
     def template_declarations(cls) -> list[TemplateDeclaration]:
         return [template.declared() if isinstance(template, type) else template for template in cls.templates]
+
+    # a setting list written as a class gives its values and groups; a value or group listed inline is its own
+    @classmethod
+    def setting_nodes(cls) -> list[SettingNode]:
+        return [node for entry in cls.settings for node in (entry.nodes() if isinstance(entry, type) else [entry])]
 
     @classmethod
     def declared_buttons(cls) -> list[ButtonDeclaration]:

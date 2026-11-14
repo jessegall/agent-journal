@@ -173,7 +173,7 @@ class ModuleSync:
             agent_groups=tuple(AgentGroupEntry.declared(module.name, group) for module in modules for group in module.group_declarations()),
             profiles=self.profile_entries(modules),
             providers=self.providers.providers(modules),
-            settings=tuple(entry for module in modules for entry in SettingTree().entries(module.name, module.settings)),
+            settings=tuple(entry for module in modules for entry in SettingTree().entries(module.name, module.setting_nodes())),
             shared_rows={shared.row.model_name: DottedPath.class_path(shared) for module in modules for shared in module.shared_rows},
             library_shares={share.name: DottedPath.class_path(share) for module in modules for share in module.library_shares},
             tunnels=tuple(TunnelEntry(tunnel.name, DottedPath.class_path(tunnel), module.name, tunnel.title) for module in modules for tunnel in module.tunnels),

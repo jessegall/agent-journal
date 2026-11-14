@@ -1,3 +1,4 @@
+from core.modules.phone.settings.phone_setting_values import PhoneSettingValues
 from core.modules.phone.migrations.m004_phone_notice_index import PhoneNoticeIndexMigration
 from engine.module.model_declaration import ModelDeclaration
 from engine.ticker.tick_handler import TickHandler
@@ -23,9 +24,6 @@ from core.modules.phone.guards.phone_row_guard import PhoneRowGuard
 from core.modules.phone.guards.phone_code_row_guard import PhoneCodeRowGuard
 from core.modules.phone.upgrade.phone_move import PhoneMove
 from core.modules.phone.seeders.phone_seeder import PhoneSeeder
-from engine.enums.setting_scope import SettingScope
-from engine.enums.setting_type import SettingType
-from engine.setting.setting_value import SettingValue
 from core.modules.phone.commands.ensure_push_keys.ensure_push_keys_handler import EnsurePushKeysHandler
 from core.modules.phone.commands.ensure_push_keys.ensure_push_keys_subcommand import EnsurePushKeysSubcommand
 from core.modules.phone.commands.subscribe_phone.subscribe_phone_handler import SubscribePhoneHandler
@@ -57,10 +55,7 @@ class PhoneModule(Module):
     handlers = [PairPhoneHandler, RedeemPhoneCodeHandler, EnsurePushKeysHandler, SubscribePhoneHandler, NotePhoneNoticeHandler, SendPhoneNoticesHandler]
     listeners = [QuestionNoticeListener, PlanNoticeListener]
     bindings = {PushService: WebPush, PushTransport: PushTransport}
-    settings = [SettingValue("push-private-key", "Push signing key", "The secret half of the key pair the journal signs phone notices with.", SettingType.TEXT,
-                             secret=True, scope=SettingScope.PROJECT),
-                SettingValue("push-public-key", "Push public key", "The public half of the key pair, which a phone subscribes to notices with.", SettingType.TEXT,
-                             secret=True, scope=SettingScope.PROJECT)]
+    settings = [PhoneSettingValues]
     windows = [WindowDeclaration("phone.phones", "Phones", "phones.js", WindowLoading.COMPONENT, skeleton=PHONE_PHONES_SKELETON, search=WindowSearch(PhoneSearcher, "Search the phones"), group="project", icon=WindowIcon.PHONE,
                                  reads=["phone list", "tunnel status"], keys=[WindowKey("phones", "phone list", events=["phone.*"]),
                                        WindowKey("tunnel", "tunnel status")], runs=["phone pair", "phone unpair"], events=["phone.*"])]

@@ -1,3 +1,4 @@
+from core.modules.plugins.settings.plugins_setting_values import PluginsSettingValues
 from core.modules.plugins.skills.declarations.plugins_skills import PLUGINS_SKILLS
 from core.modules.plugins.support.plugin_installed_names import PluginInstalledNames
 from core.modules.processes.support.installed_plugins import InstalledPlugins
@@ -51,9 +52,6 @@ from engine.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from engine.module.module import Module
 from engine.viewer.window_search import WindowSearch
 from core.modules.plugins.support.plugin_searcher import PluginSearcher
-from engine.enums.setting_scope import SettingScope
-from engine.enums.setting_type import SettingType
-from engine.setting.setting_value import SettingValue
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
 from engine.enums.key_loading import KeyLoading
@@ -154,10 +152,7 @@ class PluginsModule(Module):
     handlers = [QueuePluginRunHandler, CancelQueuedRunHandler, ChangePluginServiceHandler, LogPluginLineHandler, RefreshPluginConfigHandler, PrunePluginDeliveriesHandler, RunPluginCommandHandler, SendPluginStepLineHandler, DeliverFileEditHandler, UpgradePluginHandler, InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler, PublishPluginReadersHandler,
                 RecordPluginFaultHandler, ClearPluginFaultsHandler, AddPluginOutputHandler,
                 ClearPluginQueueFileHandler]
-    settings = [SettingValue("hold_window_ms", "Plugin answer limit", "The most milliseconds a plugin may take to answer an event it holds before the agent goes on.",
-                             SettingType.NUMBER, default=50, scope=SettingScope.PROJECT),
-                SettingValue("condition_limit_seconds", "Service condition limit", "The most seconds a plugin service's condition may take before it counts as failed.",
-                             SettingType.NUMBER, default=10, scope=SettingScope.PROJECT)]
+    settings = [PluginsSettingValues]
     driver_rules = [PluginRule, PluginProgramRule]
     bindings = {ProjectReads: PluginProjectReads, ProcessTypeLimits: PluginRunLimits, InstalledPlugins: PluginInstalledNames}
     declared_plugin_events = [*PLAIN_EVENTS.values(), "tool_starting", "command_starting", "file_edited"]
