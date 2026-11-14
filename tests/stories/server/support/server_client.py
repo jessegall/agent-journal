@@ -1,10 +1,10 @@
+from engine.time.polled_wait import PolledWait
 from collections.abc import Callable
 from engine.database.reported_findings import ReportedFindings
 import http.client
 import json
 import os
 import shlex
-import subprocess
 import socket
 import time
 from unittest.mock import patch
@@ -29,7 +29,6 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story import Story
 from tests.stories.server.support.story_line_route import StoryLineRoute
 from engine.testing.expectations.line_outcome import LineOutcome
-from core.modules.drivers.models.hook_call import HookCall
 from core.modules.skills.models.agent_skill import AgentSkill
 from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.module_finder import ModuleFinder
@@ -41,7 +40,6 @@ from server.request.journal_server import JournalServer
 from engine.serving.server_limits import DRAIN_LIMIT_SECONDS
 from server.context.server_context import ServerContext
 from server.hook.hook_database import HookDatabase
-from engine.testing.stories.hook_priorities import MAIN_AGENT_HOOK_PRIORITY
 from server.work.journal_round import JournalRound
 from server.work.kept_round_container import KeptRoundContainer
 from server.work.listeners.listener_thread import ListenerThread
@@ -68,7 +66,7 @@ STORY_HOOK_LIMIT_SECONDS = 0.5
 # Longer than the hook limit, as the twenty seconds of a real stop are longer than its three and a half.
 STORY_STOP_LIMIT_SECONDS = 2.0
 STORY_RUNNING_HOOKS_COUNT = 1
-LOCKED_HOOK_WAIT_SECONDS = 1.0
+HOOK_POLL_SECONDS = 0.01
 
 
 @dataclass(frozen=True)
@@ -91,8 +89,9 @@ class ServerStory:
     def __init__(self, story: Story, socket_path: Path, context: ServerContext) -> None:
         self.story, self.socket_path, self.context = story, socket_path, context
 
-    def expect_locked_hook_answer(self, body: object, text: str, locked_seconds: float = LOCKED_HOOK_WAIT_SECONDS) -> None:
-        with self.context.hook_database.used(MAIN_AGENT_HOOK_PRIORITY, locked_seconds):
+    # a main agent's hook never waits for a place, so the hook is held by another writer holding the database
+    def expect_locked_hook_answer(self, body: object, text: str) -> None:
+        with self.story.busy_database():
             self.expect_hook_answer("/hook", body, 200, text)
 
     def post_hook_disconnect(self, body: dict[str, object]) -> None:
@@ -109,12 +108,11 @@ class ServerStory:
                 finished.set()
 
         with patch.object(HookEndpoint, "answer_lost", drop_record):
-            with self.context.hook_database.used(MAIN_AGENT_HOOK_PRIORITY, LOCKED_HOOK_WAIT_SECONDS), socket.socket(socket.AF_UNIX) as connection:
+            with self.story.busy_database(), socket.socket(socket.AF_UNIX) as connection:
                 connection.connect(str(self.socket_path))
                 connection.sendall(f"POST /hook HTTP/1.1\r\nHost: journal\r\nContent-Length: {len(data)}\r\nConnection: close\r\n\r\n".encode() + data)
-                queue = self.context.hook_database.queue
-                with queue.changed:
-                    assert queue.changed.wait_for(lambda: bool(queue.waiting_hooks), TIMEOUT_SECONDS)
+                executions = self.context.hook_database.executions
+                assert PolledWait(TIMEOUT_SECONDS, HOOK_POLL_SECONDS).poll(lambda: any(entry.is_running for entry in executions.read())), "the server never took the hook"
             assert finished.wait(TIMEOUT_SECONDS), f"the server never completed the lost hook {body['firing']}"
 
     def expect_hook_line_soon(self, text: str, firing: str) -> None:
