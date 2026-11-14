@@ -84,9 +84,10 @@ class Output:
             return {str(key): self.json_value(item) for key, item in value.items()}
         if is_tuple(value) or is_list(value):
             return [self.json_value(item) for item in value]
-        if is_dataclass(value) and not isinstance(value, type):
+        kept = stored(value)
+        if kept is value and is_dataclass(value) and not isinstance(value, type):
             return self.dataclass_values(value)
-        return stored(value)
+        return kept
 
     def write(self, text: str, data: object) -> None:
         self.stream.write((json.dumps(data, sort_keys=True) if self.json_output else text) + "\n")
