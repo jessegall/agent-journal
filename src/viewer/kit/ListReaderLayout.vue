@@ -3,15 +3,18 @@ import {computed, onMounted} from "vue";
 import EmptyState from "../src/kit/EmptyState.vue";
 import ListRow from "../src/kit/ListRow.vue";
 import {chooseRow, route} from "../src/route.js";
+import {vContext} from "./vContext.js";
 
 // many rows read one at a time: the list on the left at a width the page names, the reader on the right. The page's own header and filter bar
 // go in the top slot. Up and down step the chosen row, and the chosen row is in the address so a reload keeps it.
-// A row is built on ListRow: its title and one line of facts are cut with an ellipsis, and the whole title shows on hover.
+// A row is built on ListRow: its title and one line of facts are cut with an ellipsis, and the whole title shows on hover. A page that wants more than words in the
+// second line (a mark, a chip) fills the line slot, and one that has a right-click menu for its rows gives place(item).
 const props = defineProps({
     items: {type: Array, required: true},
     listWidth: {type: Number, default: 360},
     emptyTitle: {type: String, default: "Nothing here yet"},
     pickLine: {type: String, default: "No row chosen"},
+    place: {type: Function, default: null},
 });
 const chosen = defineModel("chosen", {type: [String, Number], default: null});
 const current = computed(() => props.items.find((item) => item.id === chosen.value) ?? null);
@@ -53,9 +56,10 @@ onMounted(() => {
                 <template v-for="group in groups" :key="group">
                     <p v-if="group" class="list-reader-group">{{ group }}</p>
                     <template v-for="item in inGroup(group)" :key="item.id">
-                        <button type="button" :class="['list-reader-row', {on: item.id === chosen}]" :title="item.title" :aria-current="item.id === chosen" data-reader-row :data-row="item.id" @click="choose(item)">
+                        <button v-context="place ? () => place(item) : null" type="button" :class="['list-reader-row', {on: item.id === chosen}]" :title="item.title" :aria-current="item.id === chosen" data-reader-row :data-row="item.id" @click="choose(item)">
                             <ListRow :title="item.title" :text="item.desc || ''">
                                 <template v-if="$slots.meta" #end><slot name="meta" :item="item" /></template>
+                                <template v-if="$slots.line" #text><slot name="line" :item="item" /></template>
                             </ListRow>
                         </button>
                     </template>
