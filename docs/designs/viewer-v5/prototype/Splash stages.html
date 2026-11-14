@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Viewer v5 — the opening splash</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root { --page: #0b0c0e; --panel: #131416; --line: #25272b; --text: #e6e7ea; --muted: #83868e; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--text); font: 13px/1.5 Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1400px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+  h1 { margin: 0; font: 600 20px/1.2 Inter, sans-serif; }
+  h2 { margin: 0 0 4px; font: 600 15px Inter, sans-serif; }
+  p { margin: 4px 0 14px; color: var(--muted); max-width: 940px; }
+  .top { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+  .seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 9px; background: #0d0e10; border: 1px solid var(--line); }
+  .seg button { border: 0; background: none; color: var(--muted); padding: 5px 10px; border-radius: 6px; font: 500 12px Inter, sans-serif; cursor: pointer; }
+  .seg button.on { background: #24262b; color: var(--text); }
+  .btn { border: 1px solid var(--line); background: #1d1e22; color: var(--text); border-radius: 7px; padding: 5px 12px; font: 500 12px Inter, sans-serif; cursor: pointer; }
+  .controls { display: flex; gap: 12px; align-items: center; color: var(--muted); font-size: 12px; flex-wrap: wrap; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  figure { margin: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #0d0e10; }
+  figcaption { padding: 8px 10px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+  figcaption b { color: var(--text); font-weight: 500; }
+  .screen { position: relative; aspect-ratio: 16 / 10; overflow: hidden; }
+  .screen iframe { position: absolute; left: 0; top: 0; width: 1280px; height: 800px; border: 0; transform-origin: 0 0; }
+  .screen.small iframe { pointer-events: none; }
+  .row-label { color: var(--muted); font: 12px 'JetBrains Mono', monospace; margin: 14px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 500; }
+  td.n { font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="panel">
+    <div class="top">
+      <div><h1>Opening the journal: the splash</h1></div>
+      <div class="controls">First request
+        <div class="seg" id="load"><button data-v="0">At once</button><button data-v="2500" class="on">2.5 s</button><button data-v="9000">9 s</button><button data-v="hand">By hand</button></div>
+        Demo hold
+        <div class="seg" id="hold"><button data-v="4000" class="on">On, 4 s</button><button data-v="0">Off</button></div>
+        <button class="btn" id="replay">Replay</button>
+      </div>
+    </div>
+    <p>The splash waits until the tab is in view, then holds a blank screen for half a second. The ring appears with the dot in its centre and stays; the dot pulses, a double beat every second, for about 2 s. Then the gap opens and the ring spins: at least two full turns, longer while the first request is still loading. Only then does the end play, always whole, and Home shows. Demo hold keeps the spin going for at least 4 s, so you can feel what loading looks like; it is on by default in the prototype.</p>
+    <div class="grid">
+      <figure><div class="screen" id="live-light"></div><figcaption><b>Light</b> · the prototype opened with theme=light. Home under it is the prototype's dark theme; the app's light theme would match the white cover.</figcaption></figure>
+      <figure><div class="screen" id="live-dark"></div><figcaption><b>Dark</b> · the prototype opened with theme=dark</figcaption></figure>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>The stages</h2>
+    <p>Blank, entrance, loading, end and reveal, light and dark.</p>
+    <div class="row-label">light</div>
+    <div class="grid5" id="light"></div>
+    <div class="row-label">dark</div>
+    <div class="grid5" id="dark"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Timeline</h2>
+    <table>
+      <tr><th>From</th><th>Length</th><th>Stage</th><th>What happens</th></tr>
+      <tr><td class="n">tab in view</td><td class="n">500</td><td>0 · Blank</td><td>The cover in the theme's background, nothing drawn</td></tr>
+      <tr><td class="n">0</td><td class="n">720 / 1220</td><td>1 · Entrance</td><td>The dot pops in at the centre with a ripple; from 170 the full ring grows round it. Both stay.</td></tr>
+      <tr><td class="n">760</td><td class="n">about 2000</td><td>1 · Entrance</td><td>The dot pulses: a double beat (250 apart), repeated every 1000. Each beat swells the dot 30% over 380 and sends out a faint ring.</td></tr>
+      <tr><td class="n">2800</td><td class="n">860</td><td>1 · Entrance</td><td>The gap opens at 1:30 and the dot moves out to the ring</td></tr>
+      <tr><td class="n">3040</td><td class="n">at least 2 turns</td><td>2 · Loading</td><td>The ring speeds up to 620°/s and spins until all three hold: two full turns, the demo hold (4000 in the prototype, 0 in the app), the first request loaded. After 9 s from the open, 'Starting the journal…' fades in.</td></tr>
+      <tr><td class="n">then</td><td class="n">about 3500</td><td>3 · End</td><td>The spin eases upright, the mark slides left, 'ajournal' comes out. Never cut short.</td></tr>
+      <tr><td class="n">then</td><td class="n">450 + 280</td><td>4 · Reveal</td><td>The lockup holds, then the cover fades and Home shows</td></tr>
+    </table>
+  </div>
+</div>
+<script src="splash.js" data-autoplay="false"></script>
+<script>
+  const STAGES = [
+    ["blank", "0 · Blank", "Half a second of the empty background, once the tab is in view."],
+    ["entrance", "1 · Entrance", "The ring with the dot in its centre, always visible; the dot pulses for about 2 s."],
+    ["loading", "2 · Loading", "The ring spins: two turns at least, longer while loading (4 s with the demo hold)."],
+    ["ending", "3 · End", "Loaded: the spin eases upright, the mark slides left, the letters come out. Played whole."],
+    ["reveal", "4 · Reveal", "The lockup holds 450 ms, then the cover fades over Home."],
+  ];
+  let load = "2500", hold = "4000";
+  const scale = (box) => { const f = box.querySelector("iframe"); if (f) f.style.transform = `scale(${box.clientWidth / 1280})`; };
+  const frameOf = (box, src) => { box.querySelector("iframe")?.remove(); const f = document.createElement("iframe"); f.src = src; f.title = "Viewer v5"; box.prepend(f); scale(box); };
+  function live() { for (const t of ["light", "dark"]) frameOf(document.getElementById("live-" + t), `Viewer v5.html?theme=${t}&load=${load}&hold=${hold}&t=${Date.now()}`); }
+  for (const t of ["light", "dark"]) {
+    const host = document.getElementById(t);
+    for (const [stage, title, line] of STAGES) {
+      const fig = document.createElement("figure");
+      const box = document.createElement("div"); box.className = "screen small";
+      fig.appendChild(box);
+      const cap = document.createElement("figcaption"); cap.innerHTML = `<b>${title}</b> · ${line}`; fig.appendChild(cap);
+      host.appendChild(fig);
+      if (stage === "reveal") frameOf(box, "Viewer v5.html?splash=off");
+      AJSplash.frame(box, t, stage);
+    }
+  }
+  const seg = (id, set) => document.getElementById(id).addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; document.querySelectorAll(`#${id} button`).forEach((x) => x.classList.toggle("on", x === b)); set(b.dataset.v); live(); });
+  seg("load", (v) => { load = v; });
+  seg("hold", (v) => { hold = v; });
+  document.getElementById("replay").onclick = live;
+  addEventListener("resize", () => document.querySelectorAll(".screen").forEach(scale));
+  live();
+</script>
+</body>
+</html>
