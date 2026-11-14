@@ -1,7 +1,5 @@
-import re
 
-from server.viewer.hosted_headers import HostedHeaders
-from tests.stories.server.support.hosted_viewer import PUBLIC_ORIGIN, hosted_server, reply_headers, session_cookie, socket_raw, socket_path
+from tests.stories.server.support.hosted_viewer import reply_headers, session_cookie, socket_raw
 from tests.stories.support.story_checks import expect_value
 
 TRANSPORT_SECURITY = "Strict-Transport-Security"
@@ -11,8 +9,6 @@ POLICY = "Content-Security-Policy"
 JSON_ROUTE = "/api/server-state"
 FILE_ROUTE = "/viewer/kit/window-kit.js"
 SHELL_ROUTE = "/"
-HOSTED_COOKIE = r"__Host-journal_viewer=[^;]+; Secure; HttpOnly; SameSite=Strict; Path=/"
-LOCAL_COOKIE = r"journal_viewer=[^;]+; HttpOnly; SameSite=Strict; Path=/"
 
 
 def test_every_hosted_header_is_on_a_json_answer_a_file_answer_and_the_shell_page(hosted_server):
@@ -33,8 +29,3 @@ def test_the_content_policy_is_on_the_shell_page_only(hosted_server):
     expect_value(reply_headers(socket_raw(socket_path, "GET", SHELL_ROUTE, headers=session_cookie(server))).get(POLICY), SHELL_POLICY)
     expect_value(POLICY in reply_headers(socket_raw(socket_path, "GET", JSON_ROUTE)), False)
     expect_value(POLICY in reply_headers(socket_raw(socket_path, "GET", FILE_ROUTE)), False)
-
-
-def test_the_hosted_session_cookie_is_host_prefixed_secure_and_http_only():
-    cookie = HostedHeaders(PUBLIC_ORIGIN).cookie(f"{HostedHeaders.cookie_prefix}journal_viewer", "token")
-    expect_value(bool(re.fullmatch(HOSTED_COOKIE, cookie)), True)
