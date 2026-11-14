@@ -11,6 +11,8 @@ from engine.database.never_waiting_write_turns import NeverWaitingWriteTurns
 from engine.database.write_turns import WriteTurns
 from engine.errors.read_cut_error import ReadCutError
 from engine.errors.read_limit_error import ReadLimitError
+from engine.errors.unscoped_read_error import UnscopedReadError
+from engine.scope.unscoped_reads import UnscopedReads
 from engine.journal.journal_home import JournalHome
 from engine.row.row_owner import RowOwner
 
@@ -39,6 +41,8 @@ class Database:
         self.read_actor_id: int | None = None
         self.write_rollback_count = 0
         self.row_owner: RowOwner | None = None
+        self.environment_scope_passed = False
+        self.unscoped_reads_raise = False
         self.kept_rows: "KeptRows | None" = None
         self.read_limit_rows: int | None = None
         self.collected_large_reads: list[ReadLimitError | ReadCutError] | None = None
@@ -198,6 +202,11 @@ class Database:
         for reports in (self.read_cuts, self.collected_large_reads):
             if reports is not None and all(str(recognized) != str(report) for recognized in reports):
                 reports.append(report)
+
+    def report_unscoped_read(self, model_name: str) -> None:
+        if self.unscoped_reads_raise:
+            raise UnscopedReadError.read(model_name)
+        UnscopedReads.record(model_name)
 
     def query_plan(self, statement: Statement) -> tuple[str, ...]:
         return tuple(row[3] for row in self.connection.execute(f"EXPLAIN QUERY PLAN {statement.sql}", statement.parameters))
