@@ -120,7 +120,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
         if worktree is None:
             return
         if worktree.libraries_dropped_at is not None:
-            self.libraries.restore(self.environments.find(worker.environment_id).folder, worktree.folder, json.loads(worktree.library_copies))
+            self.libraries.restore(self.environments.find(worker.environment_id).folder, worktree.folder, json.loads(worktree.library_links), json.loads(worktree.library_copies))
             self.bus.run(RecordWorktreeLibraries(worktree.id, False), actor, environment_id=worker.environment_id)
         task = self.rows.required(Task, worktree.task_id)
         if not self.git.conflict_files(worktree):
