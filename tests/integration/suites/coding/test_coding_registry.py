@@ -1,7 +1,10 @@
 from engine.registry.registry import Registry
 from suites.coding.coding_module import CodingModule
+from suites.coding.coding_suite import CodingSuite
+from suites.coding.entrances.admin_entrance import AdminEntrance
 from suites.coding.windows.coding_windows import CODING_WINDOWS
 
+ENTRANCE_SAMPLE_SUITE = "tests.stories.suites.coding.support.entrance_samples:FrontDeskSuite"
 SHAPE_SAMPLE_SUITE = "tests.stories.suites.coding.support.shape_samples:ShopSuite"
 
 
@@ -31,3 +34,14 @@ def test_a_new_suite_written_in_the_coding_modules_shape_loads_and_registers(jou
     kept = Registry.read(journal.database)
     assert "sample-shop.stock" in {window.name for window in kept.windows}
     assert kept.suite("sample-shop").entrances["shop"] == ("sample-shop.stock", "messages.chat")
+
+
+def test_the_coding_suite_lists_its_windows_in_the_admin_entrance(journal):
+    entrances = dict(Registry.read(journal.database).suite(CodingSuite.name).entrances)
+    assert list(entrances) == [AdminEntrance.key] and entrances[AdminEntrance.key] == CodingSuite.offered_windows()
+
+
+def test_a_second_entrance_is_a_second_class_the_registry_reads_beside_the_admin_entrance(journal):
+    journal.expect_sync_success(ENTRANCE_SAMPLE_SUITE)
+    entrances = dict(Registry.read(journal.database).suite("front-desk").entrances)
+    assert list(entrances) == [AdminEntrance.key, "review"] and entrances["review"] == ("messages.chat", "tasks.tasks")

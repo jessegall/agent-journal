@@ -693,7 +693,6 @@ tests/stories/suites/coding/designer_tools.py
 tests/stories/suites/coding/drivers/helper/builder.py
 tests/stories/suites/coding/drivers/main/orchestrator.py
 tests/stories/suites/coding/drivers/worker/worker_driver.py
-tests/stories/suites/coding/entrances.py
 tests/stories/suites/coding/file_edits.py
 tests/stories/suites/coding/file_edits_prune_links.py
 tests/stories/suites/coding/file_edits_prune_migration.py
