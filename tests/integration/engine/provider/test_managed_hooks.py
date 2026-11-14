@@ -19,6 +19,16 @@ def test_a_hook_without_timeout_gets_600_seconds():
     assert ManagedHook.found("sample", "BeforeTool", "Shell", {"command": "check"}, "settings.json", True, 600).timeout == 600
 
 
+def test_an_entry_with_args_and_no_command_is_loaded():
+    hook = ManagedHook.found("claude", "PreToolUse", "Bash", {"type": "command", "args": ["node", "check.js"]}, "settings.json", True, 600)
+    assert hook.command == "node check.js" and hook.fields == {"args": ["node", "check.js"]}
+
+
+def test_the_extra_fields_args_and_shell_are_kept():
+    hook = ManagedHook.found("claude", "PreToolUse", "Bash", {"type": "command", "command": "node", "args": ["check.js"], "shell": "bash"}, "settings.json", True, 600)
+    assert (hook.command, hook.fields) == ("node", {"args": ["check.js"], "shell": "bash"})
+
+
 def test_the_same_hook_has_the_same_id_and_keeps_extra_fields():
     hook = sample_hook()
     assert hook.id == sample_hook().id

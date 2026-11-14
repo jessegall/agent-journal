@@ -30,7 +30,9 @@ class ManagedHook:
     @classmethod
     def found(cls, program: str, event: str, matcher: str, entry: Mapping[str, object], source: str, tracked: bool,
               default_timeout: int) -> "ManagedHook":
-        command = str(entry["command"])
+        arguments = entry.get("args")
+        # an exec-form entry names its program in command; one that gives only args is shown by them
+        command = str(entry.get("command", " ".join(str(argument) for argument in arguments) if isinstance(arguments, list) else ""))
         digest = hashlib.sha1(f"{program}{event}{matcher}{command}".encode()).hexdigest()[:8]
         extra = {key: value for key, value in entry.items() if key not in ("type", "command", "timeout")}
         return cls(f"{program}:{event}:{matcher or '*'}:{digest}", program, event, matcher, command,

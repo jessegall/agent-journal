@@ -132,3 +132,50 @@ func TestSessionEndHookIsStoppedBeforeTheProgramsLimit(t *testing.T) {
 		t.Fatalf("a SessionEnd hook of 600 s was not stopped at the program's limit: %+v after %s", runs[0], time.Since(started))
 	}
 }
+
+func runAs(t *testing.T, program string, hook ManagedHook, body []byte) ForeignRun {
+	t.Helper()
+	hook.Timeout = 5
+	return runManaged([]ManagedHook{hook}, body, program, programs.LoadTable("").Programs[program], "/checkout")[0]
+}
+
+func TestArgsRunWithoutAShell(t *testing.T) {
+	run := runAs(t, "claude", ManagedHook{ID: "exec", Command: "echo", Fields: map[string]any{"args": []any{"$HOME", "a b"}}}, nil)
+	if run.ExitCode != 0 || run.Stdout != "$HOME a b\n" {
+		t.Fatalf("an exec-form hook ran through a shell: %+v", run)
+	}
+}
+
+func TestArgsPassTheBodyOnStdin(t *testing.T) {
+	run := runAs(t, "claude", ManagedHook{ID: "exec", Command: "cat", Fields: map[string]any{"args": []any{}}}, []byte(`{"hook_event_name":"Stop"}`))
+	if run.Stdout != `{"hook_event_name":"Stop"}` {
+		t.Fatalf("the exec-form hook read %q", run.Stdout)
+	}
+}
+
+func TestShellNamesTheShell(t *testing.T) {
+	run := runAs(t, "claude", ManagedHook{ID: "bash", Command: `[[ "a" == a ]] && printf bash`, Fields: map[string]any{"shell": "bash"}}, nil)
+	if run.ExitCode != 0 || run.Stdout != "bash" {
+		t.Fatalf("the hook did not run in bash: %+v", run)
+	}
+}
+
+func TestNoFieldsRunsShDashC(t *testing.T) {
+	if name, arguments := commandFor(ManagedHook{Command: "printf plain"}, programs.LoadTable("").Programs["claude"]); name != "sh" || strings.Join(arguments, " ") != "-c printf plain" {
+		t.Fatalf("a hook with no fields runs as %s %v", name, arguments)
+	}
+}
+
+func TestAnUnknownShellIsAHookFailure(t *testing.T) {
+	run := runAs(t, "claude", ManagedHook{ID: "odd", Command: "true", Fields: map[string]any{"shell": "no-such-shell-here"}}, nil)
+	if run.ExitCode != -1 || run.Stderr == "" {
+		t.Fatalf("a hook with an unknown shell gave %+v", run)
+	}
+}
+
+func TestACodexHookWithArgsStillRunsThroughSh(t *testing.T) {
+	run := runAs(t, "codex", ManagedHook{ID: "exec", Command: "printf codex", Fields: map[string]any{"args": []any{"ignored"}}}, nil)
+	if run.Stdout != "codex" {
+		t.Fatalf("codex honoured args it does not read: %+v", run)
+	}
+}

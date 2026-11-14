@@ -87,9 +87,10 @@ func runManaged(hooks []ManagedHook, body []byte, program string, row programs.P
 	for index, hook := range hooks {
 		group.Add(1)
 		hook.Timeout = runLimit(hook, row)
+		name, arguments := commandFor(hook, row)
 		go func() {
 			defer group.Done()
-			runs[index] = runOne(hook, body, variables...)
+			runs[index] = runCommand(hook, name, arguments, body, variables...)
 		}()
 	}
 	group.Wait()
@@ -105,11 +106,17 @@ func runLimit(hook ManagedHook, row programs.Program) int {
 	return min(hook.Timeout, max(1, row.SessionEndLimitSeconds-sessionEndAnswerSeconds))
 }
 
+// runOne runs a project hook with sh -c, as a program that honours no field of the entry runs it.
 func runOne(hook ManagedHook, body []byte, variables ...string) ForeignRun {
+	name, arguments := commandFor(hook, programs.Program{})
+	return runCommand(hook, name, arguments, body, variables...)
+}
+
+func runCommand(hook ManagedHook, name string, arguments []string, body []byte, variables ...string) ForeignRun {
 	started := time.Now()
 	deadline, cancel := context.WithTimeout(context.Background(), time.Duration(hook.Timeout)*time.Second)
 	defer cancel()
-	command := exec.CommandContext(deadline, "sh", "-c", hook.Command)
+	command := exec.CommandContext(deadline, name, arguments...)
 	prepareManaged(command)
 	if len(variables) > 0 {
 		command.Env = append(os.Environ(), variables...)
