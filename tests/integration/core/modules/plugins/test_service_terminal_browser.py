@@ -5,8 +5,8 @@ from tests.stories.server.support.server_client import server_story
 from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 
-def test_a_running_service_shows_its_label_above_its_text_and_opens_its_terminal_on_a_click(new_story):
-    story = server_kept_story(new_story)
+def test_a_running_service_shows_its_label_above_its_text_and_opens_its_terminal_on_a_click(played):
+    story = server_kept_story(played)
     story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     log = story.container.get(PluginFolders).service_log("served", "answers")
     log.parent.mkdir(parents=True, exist_ok=True)

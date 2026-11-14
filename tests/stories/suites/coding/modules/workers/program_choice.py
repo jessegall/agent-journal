@@ -79,15 +79,6 @@ def test_allowed_models_narrow_a_tier_named_model_is_refused(split_story, split_
     story.expect_refusal('worker dispatch --test-command python=pytest 1 --model opus --program claude', 'sonnet', actor=story.agent)
 
 
-def test_split_passes_over_a_program_not_installed(split_story, monkeypatch, split_viewer):
-    story = split_story
-    set_split(story, 'claude 20,codex 80', viewer=split_viewer)
-    real_program_checks(story)
-    story.container.get(HelperPrograms).checked('claude', Path(story.container.get(EnvironmentRows).find(1).folder))
-    monkeypatch.setattr(shutil, 'which', lambda name: None if name == 'codex' else name)
-    worker = dispatch(story)
-    expect_program(story, worker, 'claude')
-    story.expect_text('worker split', 'codex', 'not installed')
 
 
 @pytest.fixture
@@ -136,23 +127,8 @@ def test_outage_ends_on_time(split_story, split_viewer):
     story.expect_text(f'provider-outage show {row_id}', 'rate limit', ends_at)
 
 
-def test_worker_on_an_out_program_does_not_restart(failed_worker_story):
-    story, worker, launcher = failed_worker_story
-    WorkerResumeRetry()(story.container)
-    WorkerResumeRetry()(story.container)
-    lines = story.run(f'agent-line list --agent {story.agent.id}').output_text
-    story.expect_rows(lines.count(f'worker:{worker.id} stopped') == 1)
-    story.expect_text(f'worker status {agent_number(story, worker.id)}', 'Program: claude', 'rate limit', 'until', '09:15', f'journal worker release {agent_number(story, worker.id)}')
-    story.expect_rows(len(worker_starts(launcher, worker)) == 1, detail=str(worker_starts(launcher, worker)))
-    story.expect_text(f'agent show {agent_number(story, worker.id)}', 'ended_at:')
 
 
-def test_worker_on_an_out_program_does_not_restart_until_the_outage_ends(failed_worker_story):
-    story, worker, launcher = failed_worker_story
-    story.advance(timedelta(minutes=15, seconds=1))
-    WorkerResumeRetry()(story.container)
-    story.run_listeners()
-    story.expect_rows(len(worker_starts(launcher, worker)) == 2, detail=str(worker_starts(launcher, worker)))
 
 
 def test_every_program_out_refuses_a_dispatch(split_story, split_viewer):

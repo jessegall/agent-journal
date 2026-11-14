@@ -12,8 +12,8 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import D
 from tests.stories.suites.coding.modules.workers.support.memory_git.memory_worktree_git import MemoryWorktreeGit
 
 
-def test_a_restart_in_the_middle_of_a_cut_undoes_it_and_the_task_is_dispatched_again(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
+def test_a_restart_in_the_middle_of_a_cut_undoes_it_and_the_task_is_dispatched_again(played):
+    story = played(OpenTaskOrchestrator)
     repository = repository_environment(story)
     with patch.object(MemoryWorktreeGit, "cut", side_effect=KeyboardInterrupt), pytest.raises(KeyboardInterrupt):
         story.run(DISPATCH, actor=story.agent)

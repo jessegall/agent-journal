@@ -11,8 +11,8 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 
 
-def worker_story(new_story, reaches: dict[str, list[str]]):
-    story = install_runner(new_story(fixture=OpenTaskOrchestrator))
+def worker_story(played, reaches: dict[str, list[str]]):
+    story = install_runner(played(OpenTaskOrchestrator))
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     folder = sample_plugin_folder(story.home.folder.parent)
     manifest = json.loads((folder / "journal-plugin.json").read_text())
@@ -28,8 +28,8 @@ def deliveries(story) -> int:
     return len(story.story_rows(PluginDelivery))
 
 
-def test_a_plugin_whose_files_changed_gets_no_file_edit(new_story):
-    story = worker_story(new_story, {"file_edited": ["workers"]})
+def test_a_plugin_whose_files_changed_gets_no_file_edit(played):
+    story = worker_story(played, {"file_edited": ["workers"]})
     scanned_edit(story, story.worker_session, "a.py")
     story.expect_rows(deliveries(story) == 1)
     manifest = story.container.get(PluginFolders).code("sample") / "journal-plugin.json"

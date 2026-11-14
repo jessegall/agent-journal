@@ -8,8 +8,8 @@ from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLE
 LONG_TEXT = "This message runs over several lines of the chat, so its words are spread out evenly and the bubble stays as wide as its longest line and no wider than that, with some more words after them."
 
 
-def test_one_link_shows_below_the_time_and_four_group_into_a_chip_that_opens_a_list(new_story, tmp_path):
-    story = new_story(fixture=UserJoined)
+def test_one_link_shows_below_the_time_and_four_group_into_a_chip_that_opens_a_list(played, tmp_path):
+    story = played(UserJoined)
     story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     for number in range(1, 5):
         story.expect_success(f'task make "Task number {number}" --brief "Sample" --environment main')

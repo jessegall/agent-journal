@@ -10,8 +10,8 @@ from tests.stories.support.story_checks import expect_total_cost_less, expect_va
 SAMPLE_MODULE = "tests.stories.engine.module.support.folder_sample.module:FolderNotesModule"
 
 
-def test_another_container_reads_one_short_row_without_entries(new_story):
-    story = new_story(fixture=UserBuilder)
+def test_another_container_reads_one_short_row_without_entries(played):
+    story = played(UserBuilder)
     database = Database.opened(story.home)
     statements = []
     database.connection.set_trace_callback(statements.append)
@@ -27,8 +27,8 @@ def test_another_container_reads_one_short_row_without_entries(new_story):
         database.close()
 
 
-def test_a_sync_with_changed_entries_is_seen_by_the_next_container(new_story):
-    story = new_story(fixture=UserBuilder)
+def test_a_sync_with_changed_entries_is_seen_by_the_next_container(played):
+    story = played(UserBuilder)
     saved_registry = story.container.get(Registry)
     story.expect_sync_success(SAMPLE_MODULE)
     container = synced_database_container(story.home, story.container.get(Database))
@@ -37,8 +37,8 @@ def test_a_sync_with_changed_entries_is_seen_by_the_next_container(new_story):
     expect_value(any(template.module == "folder.notes" for template in synced_registry.templates), True)
 
 
-def test_two_homes_keep_their_own_registry_in_one_process(new_story, templates, tmp_path):
-    first = new_story(fixture=UserBuilder)
+def test_two_homes_keep_their_own_registry_in_one_process(played, templates, tmp_path):
+    first = played(UserBuilder)
     second = templates.story(tmp_path / "second", (), UserBuilder)
     try:
         second.expect_sync_success(SAMPLE_MODULE)
@@ -52,8 +52,8 @@ def test_two_homes_keep_their_own_registry_in_one_process(new_story, templates, 
         second.close()
 
 
-def test_a_hook_round_counts_the_container_build_and_loads_no_registry_text(new_story):
-    story = new_story(fixture=UserBuilder)
+def test_a_hook_round_counts_the_container_build_and_loads_no_registry_text(played):
+    story = played(UserBuilder)
     story.hook("s-1", HookSamples.prompt("Carry on"))
     database = story.container.get(Database)
     start = database.repeated_work.points()

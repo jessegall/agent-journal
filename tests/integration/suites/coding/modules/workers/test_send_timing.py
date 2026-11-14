@@ -14,8 +14,8 @@ DELIVERY_STEPS = ["send_worktree_opened", "send_branch_start_found", "send_workt
 PREPARE_STEPS = ["prepare_dependency_folders", "prepare_libraries", "prepare_hooks", "prepare_skills", "prepare_tool_graph", "prepare_instruction_files", "prepare_worktree_commands"]
 
 
-def test_a_send_to_a_merged_worker_stamps_each_step_of_its_cut_and_preparation_in_order(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
+def test_a_send_to_a_merged_worker_stamps_each_step_of_its_cut_and_preparation_in_order(played):
+    story = played(OpenTaskOrchestrator)
     repository = repository_environment(story)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(SECOND_JOB, actor=story.agent)

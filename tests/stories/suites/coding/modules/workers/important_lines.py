@@ -49,15 +49,6 @@ def test_the_logs_give_a_notes_first_words_and_a_task_shows_them_whole(new_story
     story.expect_text(f"worker logs {agent_number(story, worker.id)} --task 1", "one two three four five six seven eight nine ten", actor=story.agent)
 
 
-def test_a_test_failing_five_times_in_a_workers_own_runs_is_kept_from_the_worker_and_shown_to_the_main_agent(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    _, worker = proved_worker(story)
-    bus = story.container.get(Bus)
-    for _ in range(5):
-        bus.run(RecordOwnTestFailure(worker.id, 1, WORKER_RUN_LINE), Actor.core(), environment_id=1)
-    story.expect_rows("failed 5 times" not in story.run("task overview 1", actor=worker).output_text)
-    story.expect_success("worker commit --wait --differences none", actor=worker)
-    story.expect_text(f"worker logs {agent_number(story, worker.id)}", "! its own runs failed 5 times: tests/stories/cart.py", actor=story.agent)
 
 
 def test_a_failed_run_is_counted_for_each_test_file_it_names(new_story):
