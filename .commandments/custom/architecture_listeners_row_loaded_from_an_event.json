@@ -1,0 +1,39 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": ["find", "filter"]
+            },
+            {
+                "fileMatches": "(^|/)src/(core/modules|suites)/.+/(listeners|guards)/[^/]+\\.py$"
+            },
+            {
+                "any": [{"all": [{"name": "find"}, {"any": [
+                    {"argument": {"at": 0, "all": [{"is": "member-access"}, {"name": "row_id"}]}},
+                    {"argument": {"at": 1, "all": [{"is": "member-access"}, {"name": "row_id"}]}}
+                ]}]}, {"all": [
+                    {"name": "filter"},
+                    {"descendant": {"all": [
+                        {"kind": "keyword"},
+                        {"name": "id"},
+                        {"of": "child:value", "all": [{"is": "member-access"}, {"name": "row_id"}]}
+                    ]}}
+                ]}]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "row-loaded-from-an-event",
+        "description": "A listener loads the row its event names, which the runner has already loaded.",
+        "rule": "Declare the row's event as the type parameter and read event.row. The find takes the row id as its first argument (a query) or its second (EventRows.find after the model), and both are read.",
+        "skill": "plain-code-words"
+    }
+}

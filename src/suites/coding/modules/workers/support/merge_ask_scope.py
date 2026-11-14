@@ -1,0 +1,77 @@
+from engine.errors.refusal import Refusal
+from engine.query.queries import Queries
+from core.modules.plans.models.enums.checkpoint_state import CheckpointState
+from core.modules.tasks.queries.task_query import TaskQuery
+from suites.coding.modules.workers.models.enums.merge_ask_state import MergeAskState
+from suites.coding.modules.workers.models.merge_ask import MergeAsk
+from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.work_unit import WorkUnit
+from suites.coding.modules.workers.support.work_units import WorkUnits
+from suites.coding.modules.workers.support.worker_steps import WorkerSteps
+from suites.coding.modules.workers.support.worktree_runs import WorktreeRuns
+from suites.coding.modules.workers.support.merge_ask_part import MergeAskPart
+from suites.coding.modules.workers.support.worker_merge_range import WorkerMergeRange
+
+NOTE_HINT = 'journal worker ask-merge "<what it holds, what you changed from the briefs, what you could not check>"'
+
+
+class MergeAskScope:
+    """Checks that a worker may ask for the merge of its unit, whole or up to one task or commit: a unit of more
+    tasks, no run of the asked work open or failed, no clash waiting, something committed and no ask waiting
+    already; a whole ask also needs nothing started. An ask is never refused for coming early in a plan."""
+
+    def __init__(self, units: WorkUnits, worktrees: WorktreeQuery, tasks: TaskQuery, runs: WorktreeRuns, steps: WorkerSteps, queries: Queries,
+                 merge_range: WorkerMergeRange) -> None:
+        self.units, self.worktrees, self.tasks, self.runs, self.steps, self.queries = units, worktrees, tasks, runs, steps, queries
+        self.range = merge_range
+
+    def checked(self, worker_id: int, note: str, last_task: str) -> MergeAskPart:
+        unit = self.units.unit(worker_id)
+        worktree = self.worktrees.required_worker_worktree(worker_id)
+        if not unit.has_several_tasks:
+            raise Refusal("your task asks for its merge by its commit", "run journal worker commit")
+        if worktree.commit_count == 0:
+            raise Refusal("nothing is committed since your last merge", "commit first")
+        started = next(iter(self.tasks.started_tasks(worker_id)), None)
+        if started is not None and not last_task:
+            raise Refusal(f"task {started.id} is started", "commit it, or ask up to an earlier task with --up-to and go on")
+        part = self.part(worktree, unit, last_task)
+        self.check_base(worktree, part)
+        self.check_runs(worktree, part.task_ids)
+        if self.steps.round(worker_id).conflict is not None:
+            raise Refusal(f"your worktree clashed with {worktree.base_branch}", "settle the conflict markers and commit first")
+        waiting = self.queries.query(MergeAsk).filter(worktree_id=worktree.id, state=MergeAskState.WAITING).first()
+        if waiting is not None:
+            raise Refusal(f"your ask {waiting.id} waits for the merge", "wait; you are informed when it is merged")
+        if not note.strip():
+            raise Refusal("write what the merge contains", NOTE_HINT)
+        return part
+
+    def part(self, worktree: Worktree, unit: WorkUnit, last_task: str) -> MergeAskPart:
+        if not last_task:
+            return MergeAskPart(worktree, unit, worktree.commit_short_id, unit.task_ids, True)
+        commit = self.range.task_commit(worktree, int(last_task)) if self.range.is_task_number(last_task) else last_task
+        if commit is None:
+            committed = self.range.leading_tasks(worktree, worktree.branch)
+            last = committed[-1].id if committed else "none yet"
+            raise Refusal(f"task {last_task} is not committed in your worktree", f"name a committed task: the last is {last}")
+        if not self.range.is_branch_commit(worktree, commit):
+            raise Refusal(f"commit {last_task} is not on your branch", "journal worker logs lists your commits")
+        return MergeAskPart(worktree, unit, commit, tuple(task.id for task in self.range.leading_tasks(worktree, commit)), False)
+
+    # the asked work holds the newest base commit, so its checkpoint tests ran on the code the merge makes; otherwise
+    # a story that passes on the branch can fail only once merged
+    def check_base(self, worktree: Worktree, part: MergeAskPart) -> None:
+        if self.range.git.is_ancestor(worktree.folder, worktree.base_branch, part.commit_id):
+            return
+        raise Refusal(f"your work lacks the newest commits of {worktree.base_branch}", "run journal worker update, commit, let the checkpoint tests run on it, and ask again")
+
+    def check_runs(self, worktree: Worktree, task_ids: tuple[int, ...]) -> None:
+        blocking = self.runs.blocking_run(worktree.id)
+        if blocking is None or not set(blocking[1].tasks()).intersection(task_ids):
+            return
+        link, reach = blocking
+        if reach.state is CheckpointState.RUNNING:
+            raise Refusal(f"the tests of checkpoint phase {reach.phase_id} run on your commit {link.commit_id}", "wait: you are woken when they end")
+        raise Refusal(f"the tests of checkpoint phase {reach.phase_id} failed on your commit {link.commit_id}", "fix them and commit first")

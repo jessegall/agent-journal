@@ -1,0 +1,27 @@
+from engine.command.context import Context
+from engine.command.handler import Handler
+from engine.query.queries import Queries
+from engine.errors.refusal import Refusal
+from engine.enums.actor_type import ActorType
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
+from engine.repository.repository import Repository
+from core.modules.viewer.commands.remove_person_preset.remove_person_preset import RemovePersonPreset
+from core.modules.viewer.models.person_preset import PersonPreset
+
+
+class RemovePersonPresetHandler(Handler[RemovePersonPreset, PersonPreset]):
+    """Deletes the row when it is the caller's own, since the owner guard passes deletes by."""
+
+    command = RemovePersonPreset
+
+    def __init__(self, queries: Queries, repository: Repository) -> None:
+        self.queries, self.repository = queries, repository
+
+    def handle(self, command: RemovePersonPreset, context: Context) -> PersonPreset:
+        layout = self.queries.query(PersonPreset).find(command.row_id)
+        if context.actor.is_agent():
+            raise UserApprovalRefusal(f"Remove the layout preset {layout.name}?", required_person_id=layout.person_id, command=command)
+        if layout.person_id != context.actor.id:
+            raise Refusal(f"preset {layout.id} is another user's", "journal person-preset list lists yours")
+        self.repository.delete(layout, context)
+        return layout

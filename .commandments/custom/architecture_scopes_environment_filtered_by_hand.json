@@ -1,0 +1,71 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "any": [
+                    {
+                        "all": [
+                            {
+                                "name": "filter"
+                            },
+                            {
+                                "descendant": {
+                                    "all": [
+                                        {
+                                            "kind": "keyword"
+                                        },
+                                        {
+                                            "name": "environment_id"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "name": "Equal"
+                            },
+                            {
+                                "argument": {
+                                    "at": 0,
+                                    "text": "environment_id"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "file": "**/migrations/**"
+            },
+            {
+                "file": "**/upgrade/**"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/(query|scope|database)/"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/plugins/commands/(add_plugin_output/add_plugin_output_handler|configure_plugin/configure_plugin_handler|deliver_plugin_event/deliver_plugin_event_handler)\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/messages/(support/work_sources|listeners/deleted_agent_work_source_listener|models/message_work_source)\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "environment-filtered-by-hand",
+        "description": "A query filters on environment_id by hand, so the environment scope has a second answer that can drift from the door's.",
+        "rule": "Declare the scope on the model; the scope set once at the door of each request or hook filters the rows. A class that must cross a scope declares disabled_scopes.",
+        "skill": "plain-code-words"
+    }
+}

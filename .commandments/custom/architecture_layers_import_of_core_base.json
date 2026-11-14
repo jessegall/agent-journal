@@ -1,0 +1,28 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "any": [
+                    {
+                        "nameMatches": "^core\\.base(\\.|$)"
+                    },
+                    {
+                        "descendant": {
+                            "nameMatches": "^core\\.base(\\.|$)"
+                        }
+                    }
+                ]
+            }
+        ],
+        "reject": []
+    },
+    "sin": {
+        "name": "import-of-core-base",
+        "description": "An import names core.base, the folder the engine replaced.",
+        "rule": "Import the class from src/engine: journal map prints every area of the engine with one line on what it holds.",
+        "skill": "python/fix-at-the-source"
+    }
+}

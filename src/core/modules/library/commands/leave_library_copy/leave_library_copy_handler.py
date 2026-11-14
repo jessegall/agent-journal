@@ -1,0 +1,22 @@
+from engine.command.context import Context
+from engine.command.handler import Handler
+from engine.query.queries import Queries
+from engine.repository.repository import Repository
+from core.modules.library.commands.leave_library_copy.leave_library_copy import LeaveLibraryCopy
+from core.modules.library.models.library_copy import LibraryCopy
+from core.modules.library.support.library_person import LibraryPerson
+
+
+class LeaveLibraryCopyHandler(Handler[LeaveLibraryCopy, LibraryCopy]):
+    """Deletes a copy and nothing else; it asks nothing of the server. Only a user stops following."""
+
+    command = LeaveLibraryCopy
+
+    def __init__(self, queries: Queries, repository: Repository) -> None:
+        self.queries, self.repository = queries, repository
+
+    def handle(self, command: LeaveLibraryCopy, context: Context) -> LibraryCopy:
+        LibraryPerson.require(context, "an agent cannot stop following for the team")
+        copy = self.queries.query(LibraryCopy).find(command.copy_id)
+        self.repository.delete(copy, context)
+        return copy

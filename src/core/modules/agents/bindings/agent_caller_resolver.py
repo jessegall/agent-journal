@@ -1,0 +1,81 @@
+from collections.abc import Sequence
+
+from engine.actor.actor import Actor
+from engine.enums.actor_type import ActorType
+from engine.caller.caller_request import CallerRequest, SESSION_VARIABLE
+from engine.caller.caller_resolver import CallerResolver
+from engine.caller.process_chain import ProcessChain
+from engine.caller.process_row import ProcessRow
+from engine.cli.shell_handoff import RUNNER_VARIABLE
+from engine.cli.errors.usage_error import UsageError
+from engine.provider.providers import Providers
+from engine.query.conditions.among import Among
+from engine.command.script_policy import ScriptPolicy
+from engine.process.plugin_script_processes import PluginScriptProcesses, PLUGIN_TOKEN_VARIABLE
+from engine.caller.caller import Caller
+from core.modules.actors.queries.actor_query import ActorQuery
+from core.modules.agents.models.agent import Agent
+from core.modules.environments.queries.environment_query import EnvironmentQuery
+from core.modules.agents.queries.agent_query import AgentQuery
+
+LOGIN_VARIABLE = "USER"
+
+
+PLUGIN_VARIABLE = "JOURNAL_PLUGIN"
+CHAIN_ONLY_REFUSAL = "a hosted journal knows its caller by its chain of processes, and no agent of the journal started this command"
+
+
+class AgentCallerResolver(CallerResolver):
+    """Resolves the agent in the chain of processes first, matching PID and start time, then an explicit session
+    or an open program session, then the login. A request that does not trust its variables (an agent of a
+    hosted journal) is never named by them: with no agent in its chain it is refused. Runner sessions may name
+    ended agents."""
+
+    def __init__(self, agents: AgentQuery, chain: ProcessChain, environments: EnvironmentQuery, actors: ActorQuery, providers: Providers, scripts: PluginScriptProcesses, policy: ScriptPolicy) -> None:
+        self.agents, self.chain, self.environments, self.actors, self.providers, self.scripts, self.policy = agents, chain, environments, actors, providers, scripts, policy
+
+    def caller(self, request: CallerRequest) -> Caller:
+        steps = self.chain.steps(request.pid)
+        chain_agent = self.ancestor_agent(steps)
+        if chain_agent is not None:
+            return Caller(Actor(chain_agent.id, ActorType.AGENT), chain_agent.environment_id, self.plugin_script(request, steps))
+        if not request.trusts_variables:
+            raise UsageError(CHAIN_ONLY_REFUSAL)
+        session_agent = self.session_agent(request)
+        if session_agent is not None:
+            return Caller(Actor(session_agent.id, ActorType.AGENT), session_agent.environment_id)
+        plugin_script = self.plugin_script(request, steps)
+        environment = self.environments.folder_environment(request.folder)
+        environment_id = environment.id if environment else None
+        program_sessions = tuple(request.variables[provider.session_variable] for provider in self.providers.all() if provider.session_variable in request.variables)
+        agent = self.program_agent(program_sessions)
+        if agent is not None:
+            return Caller(Actor(agent.id, ActorType.AGENT), agent.environment_id, plugin_script)
+        person = None if program_sessions else self.actors.person(request.variables.get(LOGIN_VARIABLE, ""))
+        return Caller(Actor(person.id, ActorType.USER) if person else Actor.core(), environment_id, plugin_script)
+
+    # A variable proves nothing in a server, where the chain of processes decides. In a direct run the server's list
+    # of scripts cannot be reached, and an agent setting it only skips the commit scripts of that plugin there.
+    def plugin_script(self, request: CallerRequest, steps: Sequence[ProcessRow]) -> str:
+        return self.scripts.owner(steps) or self.token_plugin(request) or ("" if self.policy.guards_run else request.variables.get(PLUGIN_VARIABLE, ""))
+
+    def token_plugin(self, request: CallerRequest) -> str:
+        return self.scripts.token_owner(request.variables.get(PLUGIN_VARIABLE, ""), request.variables.get(PLUGIN_TOKEN_VARIABLE, ""))
+
+    def program_agent(self, sessions: tuple[str, ...]) -> Agent | None:
+        return self.agents.running().matching(Among("session", sessions)).first() if sessions else None
+
+    def session_agent(self, request: CallerRequest) -> Agent | None:
+        session = request.variables.get(SESSION_VARIABLE)
+        if not session:
+            return None
+        session_agents = self.agents.filter(session=session)
+        agent = (session_agents if RUNNER_VARIABLE in request.variables else session_agents.running()).first()
+        if agent is None:
+            raise UsageError(f"{SESSION_VARIABLE} is session {session}, which is no open agent: start it with journal agent start")
+        return agent
+
+    def ancestor_agent(self, steps: Sequence[ProcessRow]) -> Agent | None:
+        agents = self.agents.running().matching(Among("pid", [step.pid for step in steps])).get()
+        started = {(agent.pid, agent.process_started_at): agent for agent in agents}
+        return next((started[step.pid, step.started_at] for step in steps if (step.pid, step.started_at) in started), None)

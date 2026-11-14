@@ -1,0 +1,10 @@
+from dataclasses import dataclass
+
+from engine.command.move_command import MoveCommand
+from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
+from core.modules.processes.models.process import Process
+
+
+@dataclass(frozen=True)
+class OrphanProcess(MoveCommand[Process]):
+    move = ProcessLifecycle.orphan

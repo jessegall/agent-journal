@@ -1,0 +1,24 @@
+from argparse import ArgumentParser, Namespace
+
+from engine.caller.caller import Caller
+from engine.subcommand.subcommand import Subcommand
+from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
+
+
+class PrepareWorktreeSubcommand(Subcommand[PrepareWorktree, None]):
+    """`journal worktree prepare <folder> <source> <environment>`: the launcher's order for a new launch
+    worktree."""
+
+    cli_name = "worktree"
+    name = "prepare"
+    outward = True
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("folder")
+        parser.add_argument("source")
+        parser.add_argument("environment")
+        parser.add_argument("--library-link", action="append", default=[], help="a folder of the source to link into the worktree as well")
+        parser.add_argument("--library-copy", action="append", default=[], help="a folder of the source to copy into the worktree as well")
+
+    def command(self, arguments: Namespace, caller: Caller) -> PrepareWorktree:
+        return PrepareWorktree(arguments.folder, arguments.source, arguments.environment, tuple(arguments.library_link), tuple(arguments.library_copy))

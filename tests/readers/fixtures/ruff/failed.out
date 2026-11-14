@@ -1,0 +1,2 @@
+src/cart.py:1:7: F821 Undefined name `missing`
+Found 1 error.

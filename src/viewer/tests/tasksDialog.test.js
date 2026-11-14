@@ -1,0 +1,159 @@
+import {afterEach, expect, test} from "vitest";
+import {mounted, settle} from "./support/windowContext.js";
+import {taskWindowContext} from "./support/taskWindowContext.js";
+import TasksWindow from "../../core/modules/tasks/web/src/TasksWindow.vue";
+
+const BOARD = {ok: true, value: {groups: [
+    {state: "started", total: 1, rows: [{id: 7, title: "Fix the cart", state: "started", priority: "high"}]},
+    {state: "open", total: 1, rows: [{id: 8, title: "Fix the totals", state: "open", priority: "normal"}]},
+    {state: "completed", total: 3, rows: []},
+]}};
+const inspection = (id) => ({ok: true, value: {id, title: id === 7 ? "Fix the cart" : "Fix the totals", brief: "What done looks like", state: id === 7 ? "started" : "open", priority: "normal", reason: "", outcome: "", holder_id: 2, created_at: "2026-11-01T10:00:00Z", updated_at: "2026-11-01T10:00:00Z", waits: [{id: 9, title: "Order the parts", state: "open"}], logs: [{id: 1, line: "Found the rounding"}]}});
+const TASK_LISTING = {reads: "task inspect {row_id}", label: "Task {id} · {state}", title: "{title}", description: "", width: "medium", components: [], comments: false, events: ["task.*"],
+    links: {categories: [], open: false, excludes_plan: false, page_size: 10}, shareable: false, lists_fields: true, draws_text: false};
+
+globalThis.ResizeObserver ??= class {
+    observe() {}
+    disconnect() {}
+};
+Element.prototype.scrollIntoView ??= () => {};
+afterEach(() => (document.body.innerHTML = ""));
+
+async function dialog() {
+    const ran = [];
+    const window = taskWindowContext({"task board": BOARD});
+    window.inspectorHost = {catalogue: {inspector: () => TASK_LISTING, window: () => null, sectionsAt: () => []}, subscriptions: window.subscriptions, environment: "main", prompts: null, shellRead: null};
+    const subscriptions = [];
+    window.follow = (events, callback) => {
+        subscriptions.push({events, callback});
+        return () => {};
+    };
+    window.run = async (line) => {
+        ran.push(line);
+        if (line[1] === "graph") return {ok: true, value: {tasks: [], edges: []}};
+        if (line[0] === "task-log") return {ok: true, value: {rows: [{id: 1, line: "Found the rounding", created_at: "2026-11-03T12:00:00Z"}], is_last_page: true}};
+        if (line[1] === "inspect") return inspection(Number(line[2]));
+        if (line[1] === "make") return {ok: true, value: {id: 8}};
+        return {ok: true, value: {}};
+    };
+    const element = await mounted(TasksWindow, window);
+    document.body.append(element);
+    element.querySelector("[data-manage-tasks]").click();
+    await settle();
+    return {ran, subscriptions, shown: document.querySelector("[data-tasks-dialog]")};
+}
+
+const press = async (key) => {
+    document.body.dispatchEvent(new KeyboardEvent("keydown", {key, bubbles: true}));
+    await settle();
+};
+
+test("the tasks window opens the dialog, with what is not done counted and each group listed", async () => {
+    const {shown} = await dialog();
+    expect(shown.querySelector("[data-tasks-standing]").textContent).toBe("2 not done");
+    expect(shown.textContent).toContain("Fix the cart");
+    expect(shown.textContent).toContain("Fix the totals");
+});
+
+test("clicking a task opens the inspector with its title and brief", async () => {
+    const {shown} = await dialog();
+    shown.querySelector("[data-row='7']").click();
+    await settle();
+    expect(shown.querySelector("[data-inspector] [data-resource-title]").textContent).toBe("Fix the cart");
+    expect(shown.querySelector("[data-inspector]").textContent).toContain("What done looks like");
+});
+
+test("the keys walk the list, open the inspector and step it", async () => {
+    const {shown} = await dialog();
+    await press("j");
+    expect(shown.querySelector(".task.selected").dataset.row).toBe("7");
+    await press("Enter");
+    expect(shown.querySelector("[data-inspector] [data-resource-title]").textContent).toBe("Fix the cart");
+    await press("j");
+    expect(shown.querySelector("[data-inspector] [data-resource-title]").textContent).toBe("Fix the totals");
+    await press("Escape");
+    expect(shown.querySelector("[data-inspector]")).toBeNull();
+});
+
+test("a new task is filed with its brief, and opens in the inspector", async () => {
+    const {shown, ran} = await dialog();
+    shown.querySelector("[data-new-task]").click();
+    await settle();
+    const draft = shown.querySelector("[data-task-draft]");
+    const title = draft.querySelector("input");
+    title.value = "Fix the totals";
+    title.dispatchEvent(new Event("input"));
+    const brief = draft.querySelector("textarea");
+    brief.value = "They add up";
+    brief.dispatchEvent(new Event("input"));
+    await settle();
+    draft.querySelector("[data-file-task]").click();
+    await settle();
+    expect(ran).toContainEqual(["task", "make", "Fix the totals", "--brief", "They add up"]);
+    expect(shown.querySelector("[data-task-draft]")).toBeNull();
+    expect(shown.querySelector("[data-inspector] [data-resource-title]").textContent).toBe("Fix the totals");
+});
+
+async function menuItem(selector, trigger) {
+    document.querySelector(trigger).click();
+    await settle();
+    return document.querySelector(selector);
+}
+
+test("the filter menu narrows the list by status, shows a chip and clears", async () => {
+    const {shown} = await dialog();
+    (await menuItem('[data-filter-state="blocked"]', "[data-menu-filter]")).click();
+    await settle();
+    expect(document.querySelector("[data-task-filters]").textContent).toContain("Status: Blocked");
+    expect(shown.querySelector('section[data-state="open"]')).toBeNull();
+    document.querySelector("[data-clear-filters]").click();
+    await settle();
+    expect(document.querySelector("[data-task-filters]")).toBeNull();
+});
+
+test("the display menu hides the numbers, flattens the groups and shows completed tasks", async () => {
+    const {shown} = await dialog();
+    expect(shown.querySelector('section[data-state="completed"]')).toBeNull();
+    (await menuItem("[data-show-done]", "[data-menu-display]")).click();
+    await settle();
+    expect(shown.querySelector('section[data-state="completed"]')).not.toBeNull();
+    document.querySelector('[data-shown="number"]').click();
+    await settle();
+    expect(shown.querySelector(".task-id")).toBeNull();
+    document.querySelector('[data-grouping="none"]').click();
+    await settle();
+    expect(shown.querySelector(".tasks-group-head")).toBeNull();
+});
+
+test("the keys menu lists the keys", async () => {
+    await dialog();
+    document.querySelector("[data-menu-keys]").click();
+    await settle();
+    expect(document.body.textContent).toContain("List or graph");
+});
+
+test("the standing counts every task not done, whatever the filter shows", async () => {
+    const {shown} = await dialog();
+    const before = shown.querySelector("[data-tasks-standing]").textContent;
+    (await menuItem('[data-filter-state="blocked"]', "[data-menu-filter]")).click();
+    await settle();
+    expect(shown.querySelector("[data-tasks-standing]").textContent).toBe(before);
+});
+
+test("grouping by nothing keeps show more and the finished groups", async () => {
+    const {shown} = await dialog();
+    (await menuItem("[data-show-done]", "[data-menu-display]")).click();
+    await settle();
+    document.querySelector('[data-grouping="none"]').click();
+    await settle();
+    expect(shown.querySelector(".tasks-group-head")).toBeNull();
+    expect(shown.querySelector('[data-more="completed"]')).not.toBeNull();
+});
+
+test("the plan places are read through one window key", async () => {
+    const {readPlanPlaces} = await import("../../core/modules/tasks/web/src/planPlaces.js");
+    const calls = [];
+    const window = {reload: async (key) => calls.push(key), props: {places: {failure: {value: ""}, rows: {value: [{id: 7, label: "Plan 3: Checkout › Payment", task_ids: [40]}]}}}};
+    expect(await readPlanPlaces(window)).toEqual([{phaseId: 7, label: "Plan 3: Checkout › Payment", taskIds: [40]}]);
+    expect(calls).toEqual(["places"]);
+});

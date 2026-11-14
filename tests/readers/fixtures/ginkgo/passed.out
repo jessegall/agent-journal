@@ -1,0 +1,13 @@
+Running Suite: Books Suite - path/to/books
+==========================================================
+Random Seed: 1634748172
+
+Will run 2 of 2 specs
+••
+
+Ran 2 of 2 Specs in 0.000 seconds
+SUCCESS! -- 2 Passed | 0 Failed | 0 Pending | 0 Skipped
+PASS
+
+Ginkgo ran 1 suite in Xs
+Test Suite Passed

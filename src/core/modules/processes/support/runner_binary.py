@@ -1,0 +1,20 @@
+from engine.file.file_access import FileAccess
+from pathlib import Path
+
+from engine.journal.journal_home import JournalHome
+
+RUNNER = "journal-run"
+
+
+class RunnerBinary:
+    """The runner the installer places in .journal/bin: where it is and whether it is there."""
+
+    def __init__(self, home: JournalHome) -> None:
+        self.home = home
+
+    @property
+    def path(self) -> Path:
+        return self.home.folder.resolve() / "bin" / RUNNER
+
+    def is_installed(self) -> bool:
+        return FileAccess.is_file(self.path)

@@ -1,0 +1,29 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "constructs": "ContextCompactionNotice"
+            }
+        ],
+        "reject": [
+            {
+                "of": "enclosingType",
+                "nameIn": [
+                    "CompactionNotices"
+                ]
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "compaction-notice-built-outside-the-notices",
+        "description": "Code builds a ContextCompactionNotice row itself, so a person can be told twice about one compaction that went wrong and the main agent not at all.",
+        "rule": "Call CompactionNotices.report with the compaction, its agent and the notice: it saves one row for each notice of a compaction and sends the main agent its line.",
+        "skill": "drivers-architecture"
+    }
+}

@@ -1,0 +1,12 @@
+from engine.enums.mark_click import MarkClick
+from engine.enums.mark_colouring import MarkColouring
+from engine.chat.mark_declaration import MarkDeclaration
+from engine.chat.mark_family import MarkFamily
+from engine.enums.mark_group import MarkGroup
+from suites.coding.modules.workers.models.enums.worker_mark_type import WorkerMarkType
+from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
+
+WORKERS_FAMILY = MarkFamily("workers.workers", "Workers", "agent", MarkGroup.AGENT, MarkColouring.OUTCOME)
+
+WORKER_MARKS = [MarkDeclaration(WorkerMarkType.SPLIT, WorkerMarkVariant, WORKERS_FAMILY, "Program split and routes", "agent", click=MarkClick.OPEN_ROW), MarkDeclaration(WorkerMarkType.TESTS, WorkerMarkVariant, WORKERS_FAMILY, "Worker tests", "agent", process=True),
+                MarkDeclaration(WorkerMarkType.WORKER, WorkerMarkVariant, WORKERS_FAMILY, "Workers", "agent", click=MarkClick.OPEN_ROW, group_label="Workers: {count} updates")]

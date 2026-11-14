@@ -1,0 +1,90 @@
+from engine.process.child_process import ChildProcess
+import os
+import subprocess
+from pathlib import Path
+
+from engine.agent.agent_checkouts import AgentCheckouts
+from engine.caller.caller_request import SESSION_VARIABLE
+from engine.checkout.checkout import Checkout
+from engine.command.bus import Bus
+from engine.actor.actor import Actor
+from engine.time.timestamp import Timestamp
+from engine.enums.command_category import CommandCategory
+from engine.enums.event_form import EventForm
+from engine.file.project_reads import ProjectReads
+from engine.query.queries import Queries
+from engine.errors.refusal import Refusal
+from engine.process.plugin_script_processes import PluginScriptProcesses, PLUGIN_TOKEN_VARIABLE
+from engine.enums.script_stop import ScriptStop
+from core.modules.agents.models.agent import Agent
+from core.modules.plugins.support.plugin_command_run import PluginCommandRun
+from core.modules.processes.models.process import Process
+from core.modules.processes.commands.stop_process.stop_process import StopProcess
+from core.modules.processes.commands.start_process.start_process import StartProcess
+from core.modules.processes.support.foreground_run import ForegroundRun
+from core.modules.processes.support.runner_binary import RunnerBinary
+from core.modules.processes.support.runner_line import RunnerLine
+from core.modules.agents.support.agent_label import AgentLabel
+from core.modules.plugins.support.plugin_folders import PluginFolders
+from core.modules.plugins.support.plugin_manifest import PluginManifest
+from core.modules.plugins.support.plugin_program import PluginProgram
+from core.modules.environments.models.environment import Environment
+
+RUN_LIMIT_SECONDS = 3600
+RUN_KEY = "plugin run"
+
+
+class PluginCommandRunner:
+    """Runs a command in an agent's checkout without taking the agent's session; a run of a kind the plugin's
+    manifest declares is queued under that kind and its category."""
+
+    def __init__(self, checkouts: AgentCheckouts, reads: ProjectReads, runner: RunnerBinary, scripts: PluginScriptProcesses, bus: Bus, queries: Queries, folders: PluginFolders, program: PluginProgram) -> None:
+        self.checkouts, self.reads, self.runner, self.scripts, self.bus, self.queries = checkouts, reads, runner, scripts, bus, queries
+        self.folders, self.program = folders, program
+
+    def run(self, agent_id: int, line: str, is_readonly: bool, plugin: str, actor: Actor, started_at: Timestamp, category: str = "") -> PluginCommandRun:
+        checkout = self.checkouts.checkout(agent_id)
+        if not checkout.exists:
+            raise Refusal(f"the checkout of {AgentLabel.labelled(self.queries.query(Agent).find(agent_id)).text} was removed, so nothing can run in it", "read its files with journal plugin file --from base")
+        if not self.runner.is_installed():
+            raise Refusal(f"the journal has no runner at {self.runner.path}", "install it again")
+        start = StartProcess.single_part(agent_id, line, str(checkout.root), self.category(plugin, category), RUN_LIMIT_SECONDS, plugin, category)
+        process = self.bus.run(start, actor, environment_id=self.queries.query(Agent).find(agent_id).environment_id)
+        runner_line = RunnerLine.build(self.runner.path, process.id, self.foreground_run(checkout, is_readonly, plugin), line, "", checkout)
+        running = subprocess.Popen(["sh", "-c", runner_line], cwd=checkout.root, env=self.run_environment(plugin, agent_id), stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                   text=True, start_new_session=True)
+        self.scripts.start(running, plugin, RUN_KEY, EventForm.COMMIT, started_at)
+        try:
+            output, _ = ChildProcess(running).communicate()
+            stopped = self.scripts.stop_reason(running) is not ScriptStop.STOP_FAILED
+        finally:
+            self.scripts.finish(running)
+        if stopped and self.queries.query(Process).find(process.id).ended_at is None:
+            self.bus.run(StopProcess(process.id), actor)
+        return PluginCommandRun(process.id, running.returncode, output)
+
+    # A plugin's run reads its data folder and settings from the variables a plugin script gets, less the token
+    # that names the plugin to the server.
+    def run_environment(self, plugin: str, agent_id: int) -> dict[str, str]:
+        inherited = {name: value for name, value in os.environ.items() if name != SESSION_VARIABLE}
+        if not plugin:
+            return inherited
+        environment = self.queries.query(Environment).find(self.queries.query(Agent).find(agent_id).environment_id).name
+        variables = {name: value for name, value in self.program.environment(plugin, environment).items() if name != PLUGIN_TOKEN_VARIABLE}
+        return {**inherited, **variables}
+
+    def category(self, plugin: str, category: str) -> CommandCategory:
+        if not category:
+            return CommandCategory.UNKNOWN
+        declared = PluginManifest.read(self.folders.code(plugin)).process_category(category)
+        if declared is None:
+            raise Refusal(f"plugin {plugin} declares no kind of run named {category}", "name a kind its manifest lists under processes")
+        return declared.category
+
+    # A plugin's run writes its own data folder in every sandbox: the plugin keeps its events and caches there.
+    def foreground_run(self, checkout: Checkout, is_readonly: bool, plugin: str) -> ForegroundRun:
+        folder: Path | None = checkout.root if checkout.checkout_type.is_separate_copy and not is_readonly else None
+        reads = self.reads.folders(checkout.project_root) if checkout.checkout_type.is_separate_copy else ()
+        writes = tuple([self.folders.data(plugin).resolve()]) if plugin else ()
+        return ForegroundRun(RUN_LIMIT_SECONDS, False, queued=True, queue_wait_seconds=RUN_LIMIT_SECONDS, shell_sandbox=is_readonly or folder is not None, folder=folder,
+                             read_folders=reads, writable_folders=writes)

@@ -1,0 +1,81 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/"
+            },
+            {
+                "any": [
+                    {
+                        "extendsAny": "DriverRule"
+                    },
+                    {
+                        "extendsAny": "Guard"
+                    },
+                    {
+                        "extendsAny": "Handler"
+                    },
+                    {
+                        "extendsAny": "Subcommand"
+                    },
+                    {
+                        "extendsAny": "ReadSubcommand"
+                    },
+                    {
+                        "extendsAny": "SaveListener"
+                    },
+                    {
+                        "extendsAny": "CommitListener"
+                    },
+                    {
+                        "extendsAny": "DeletionListener"
+                    },
+                    {
+                        "extendsAny": "Driver"
+                    },
+                    {
+                        "extendsAny": "Overlay"
+                    },
+                    {
+                        "extendsAny": "Suite"
+                    },
+                    {
+                        "extendsAny": "Module"
+                    },
+                    {
+                        "extendsAny": "Migration"
+                    },
+                    {
+                        "extendsAny": "Provider"
+                    }
+                ]
+            },
+            {
+                "nameMatches": "(Limit|Refusal)[A-Z]"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "extendsAny": "Subcommand"
+            },
+            {
+                "extendsAny": "ReadSubcommand"
+            },
+            {
+                "extendsAny": "Handler"
+            }
+        ]
+    },
+    "sin": {
+        "name": "type-word-inside-a-name",
+        "description": "A class carries another kind's name before its own suffix, so it reads as two things: a rule called a Limit or a Refusal.",
+        "rule": "Name the class for what it does, ending with the one block it extends and no other: OpenTaskStopRule, not OpenTaskStopRefusalRule.",
+        "skill": "plain-code-words"
+    }
+}

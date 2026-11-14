@@ -1,0 +1,33 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/"
+            },
+            {
+                "any": [
+                    {
+                        "extendsAny": "Migration"
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/[^/]+/(modules/[^/]+/)?migrations/[^/]+\\.py$"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "suite-migration-outside-migrations",
+        "description": "A suite's or module's migration sits outside a migrations folder.",
+        "rule": "A suite's or module's migrations live in its migrations folder: src/suites/<suite>/migrations/ or src/suites/<suite>/modules/<module>/migrations/.",
+        "skill": "plain-code-words"
+    }
+}

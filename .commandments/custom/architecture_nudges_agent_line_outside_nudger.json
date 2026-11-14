@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "AgentLine"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/drivers/bindings/agent_line_nudger\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "agent-line-outside-nudger",
+        "description": "A line for an agent is built by hand, so its words, its limits and its source have a second place to grow apart.",
+        "rule": "Give an agent a line through Nudger.say with a declared nudge, or Nudger.say_text for text from a person or a plugin.",
+        "skill": "plain-code-words"
+    }
+}

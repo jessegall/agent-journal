@@ -1,0 +1,53 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "UserApprovalRefusal"
+            },
+            {
+                "not": {
+                    "any": [
+                        {
+                            "child": {
+                                "all": [
+                                    {
+                                        "kind": "keyword"
+                                    },
+                                    {
+                                        "nameIn": [
+                                            "command",
+                                            "arguments",
+                                            "returns_output"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "argument": {
+                                "at": 1,
+                                "not": {
+                                    "name": "no_argument_has_this_name"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "approval-without-its-command",
+        "description": "A UserApprovalRefusal names neither a command nor the words Accept runs, so Accept re-runs the line the agent ran, with the flags the agent gave it, and the handler or guard has to ask the actor again.",
+        "rule": "Name what Accept runs: a typed command, UserApprovalRefusal(question, command=ResumeAgent(agent.id)), or its words, UserApprovalRefusal(question, (\"agent\", \"resume\", str(agent.id))). A read that hands its output back says returns_output=True.",
+        "skill": "drivers-architecture"
+    }
+}

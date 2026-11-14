@@ -1,0 +1,76 @@
+from collections.abc import Sequence
+from engine.agent.enums.role_group import RoleGroup
+from engine.container.container import Container
+from engine.driver.agent_hook import AgentHook
+from engine.module.block_conditions import BlockConditions
+from engine.driver.driver_rule import DriverRule
+from engine.enums.hook_event_name import HookEventName
+from engine.driver.nudge import Nudge
+from engine.enums.nudge_type import NudgeType
+from engine.driver.rule_answer import RuleAnswer
+from engine.driver.tool import Tool
+from engine.query.conditions.is_null import IsNull
+from engine.query.queries import Queries
+from core.modules.drivers.commands.close_agent_blocks.close_agent_blocks import CloseAgentBlocks
+from core.modules.drivers.models.agent_block import AgentBlock, OPEN_BLOCKS_REASON
+from engine.enums.tool_type import ToolType
+from core.modules.drivers.queries.hook_call_query import HookCallQuery
+
+
+class AgentBlockRule(DriverRule):
+    """A blocked agent's tools are refused but for reading and journal commands; a block ends as soon as its
+    condition is true. A block with a grace holds only once the grace has passed, and in its last tool uses
+    says how many are remaining."""
+
+    name = "drivers.agent-block"
+    exempt = True
+    overlay_proof = True
+    hook = HookEventName.PRE_TOOL_USE
+    drivers = ["*"]
+    role_group = RoleGroup.PROMPT
+    tools = tuple(ToolType)
+    single_action_refusal = "A blocked agent's tools are refused but for reading and journal commands"
+
+    def __init__(self, queries: Queries, conditions: BlockConditions, container: Container, calls: HookCallQuery) -> None:
+        self.queries, self.conditions, self.container = queries, conditions, container
+        self.calls = calls
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        blocks = tuple(self.queries.query(AgentBlock).filter(session_agent_id=hook.agent_id).matching(IsNull("closed_at")).every_row(OPEN_BLOCKS_REASON))
+        if not blocks:
+            return RuleAnswer.allowed()
+        finished_blocks = self.finished(blocks, hook)
+        waiting_blocks = [block for block in blocks if block not in finished_blocks]
+        counted_blocks = [block for block in waiting_blocks if block.grace_tool_uses]
+        counts = self.calls.tool_use_counts(hook.agent_id, [block.creation_timestamp() for block in counted_blocks]) if counted_blocks else []
+        tool_uses = dict(zip([block.id for block in counted_blocks], counts))
+        active_blocks = [block for block in waiting_blocks if block.is_active(tool_uses.get(block.id, 0), hook.timestamp)]
+        tool = hook.event.tool
+        closing = [CloseAgentBlocks(tuple(block.id for block in finished_blocks))] if finished_blocks else []
+        refused_blocks = [block for block in active_blocks if tool is not None and self.refuses(block, tool)]
+        if refused_blocks:
+            first = refused_blocks[0]
+            return RuleAnswer.refused(Nudge(first.nudge_key, first.refusal_type, first.nudge_text.replace("{block}", str(first.id)))).running_unrefused(*closing)
+        countdowns = [self.countdown(block, tool_uses.get(block.id, 0)) for block in waiting_blocks if block not in active_blocks]
+        return RuleAnswer.with_nudges(*[nudge for nudge in countdowns if nudge is not None]).running_unrefused(*closing)
+
+    def finished(self, blocks: Sequence[AgentBlock], hook: AgentHook) -> list[AgentBlock]:
+        answers: dict[tuple[str, str, str], bool] = {}
+        finished_blocks: list[AgentBlock] = []
+        self.conditions.prepare([(block.condition_name, block.condition_text) for block in blocks], self.container)
+        for block in blocks:
+            condition = (block.condition_name, block.condition_text, block.creation_timestamp().text)
+            if condition not in answers:
+                answers[condition] = block.is_finished(self.conditions, hook, self.container)
+            if answers[condition]:
+                finished_blocks.append(block)
+        return finished_blocks
+
+    def refuses(self, block: AgentBlock, tool: Tool) -> bool:
+        return not tool.is_skill_read if block.strict else not tool.block_exempt
+
+    def countdown(self, block: AgentBlock, tool_uses: int) -> Nudge | None:
+        if not block.countdown_text or not block.grace_tool_uses:
+            return None
+        remaining = block.grace_tool_uses - tool_uses - 1
+        return Nudge(block.countdown_key, NudgeType.STEERING, block.countdown_text.replace("{left}", str(remaining)), turn_limited=False) if 0 <= remaining < block.countdown_limit else None

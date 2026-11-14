@@ -1,0 +1,104 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/(core|engine|suites|server|install)/"
+            },
+            {
+                "any": [
+                    {
+                        "nameIn": [
+                            "write_text",
+                            "write_bytes",
+                            "touch"
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "name": "open"
+                            },
+                            {
+                                "any": [
+                                    {
+                                        "any": [
+                                            {
+                                                "all": [
+                                                    {
+                                                        "of": "child:func",
+                                                        "is": "identifier"
+                                                    },
+                                                    {
+                                                        "argument": {
+                                                            "at": 1,
+                                                            "textMatches": "^[rwaxbt]*[wax+][rwaxbt+]*$"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "all": [
+                                                    {
+                                                        "of": "child:func",
+                                                        "is": "member-access"
+                                                    },
+                                                    {
+                                                        "argument": {
+                                                            "at": 0,
+                                                            "textMatches": "^[rwaxbt]*[wax+][rwaxbt+]*$"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "child": {
+                                                    "field": "keywords",
+                                                    "all": [
+                                                        {
+                                                            "name": "mode"
+                                                        },
+                                                        {
+                                                            "child": {
+                                                                "field": "value",
+                                                                "textMatches": "^[rwaxbt]*[wax+][rwaxbt+]*$"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "descendant": {
+                                            "nameIn": [
+                                                "O_WRONLY",
+                                                "O_RDWR",
+                                                "O_APPEND",
+                                                "O_CREAT",
+                                                "O_TRUNC"
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/engine/file/file_access\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "description": "A native file write bypasses FileAccess and cannot invalidate its cache.",
+        "name": "file-writes",
+        "rule": "Write every file through FileAccess; only engine/file/file_access.py may use native file writers.",
+        "skill": "file-access"
+    }
+}

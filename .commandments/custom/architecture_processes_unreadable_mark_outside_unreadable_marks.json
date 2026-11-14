@@ -1,0 +1,52 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "any": [
+                    {
+                        "name": "UnreadableMark"
+                    },
+                    {
+                        "all": [
+                            {
+                                "nameIn": [
+                                    "save",
+                                    "delete",
+                                    "update"
+                                ]
+                            },
+                            {
+                                "argument": {
+                                    "typeLike": "*UnreadableMark"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "fileMatches": "(^|/)(core|suites)/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)core/modules/processes/(support/unreadable/unreadable_mark_registry\\.py|models/unreadable_mark\\.py|migrations/m064_unreadable_marks\\.py)$"
+            },
+            {
+                "fileMatches": "(^|/)core/modules/processes/commands/(mark_unreadable|lift_unreadable)/"
+            }
+        ]
+    },
+    "sin": {
+        "name": "unreadable-mark-outside-unreadable-marks",
+        "description": "An unreadable mark is made or removed outside the class and the commands that own it.",
+        "rule": "Make and lift marks through UnreadableMarkRegistry, from the mark and lift commands or the engine marker, so the reason and the actor are always recorded.",
+        "skill": "processes-architecture"
+    }
+}

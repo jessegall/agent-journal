@@ -1,0 +1,37 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "request_launcher"
+            },
+            {
+                "of": "receiver",
+                "typeLike": "*LauncherLink"
+            }
+        ],
+        "reject": [
+            {
+                "of": "enclosingType",
+                "nameIn": [
+                    "AgentLauncher",
+                    "TerminalTyping",
+                    "LaunchAgentHandler",
+                    "LauncherLink",
+                    "LocalLauncherTransport"
+                ]
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "launcher-asked-outside-the-launch-door",
+        "description": "Code asks the launcher to start a program or type a line itself, so a program at its usage limit is started or typed into without the lockdown being asked.",
+        "rule": "Start a program with AgentLauncher.hand and type a line with TerminalTyping.type_line: both ask ProgramLockdown first.",
+        "skill": "drivers-architecture"
+    }
+}

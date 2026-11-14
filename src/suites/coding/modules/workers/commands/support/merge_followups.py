@@ -1,0 +1,55 @@
+from engine.command.bus import Bus
+from engine.command.context import Context
+from engine.query.queries import Queries
+from engine.errors.refusal import Refusal
+from engine.setting.setting_values import SettingValues
+from core.modules.settings.support.setting_revision import SettingRevision
+from suites.coding.modules.workers.commands.record_followup_step.record_followup_step import RecordFollowupStep
+from suites.coding.modules.workers.commands.record_merge_followup.record_merge_followup import RecordMergeFollowup
+from suites.coding.modules.workers.support.worktree_commands import WorktreeCommands
+from suites.coding.modules.workers.models.merge_followup import STEP_FINISHED, UNCERTAIN_STEP, MergeFollowup
+from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.support.worker_settings import MERGE_COMMANDS, MERGE_COMMANDS_NAME
+
+FOLLOWUPS_REASON = "a merge waits on every unfinished followup of another worktree"
+
+
+class MergeFollowups:
+    """The required commands after a merge as a durable plan: saved as they stand when git merges, run one
+    step at a time with each result saved at once, resumed from the saved plan and never from the setting,
+    and a merge into the same checkout waits until the plan is finished. A step that ran out of time is
+    uncertain: it is not run again unless the main agent says what it checked."""
+
+    def __init__(self, queries: Queries, bus: Bus, commands: WorktreeCommands, settings: SettingValues, revision: SettingRevision) -> None:
+        self.queries, self.bus, self.commands, self.settings, self.revision = queries, bus, commands, settings, revision
+
+    def planned(self, worktree_id: int) -> MergeFollowup | None:
+        return self.queries.query(MergeFollowup).filter(worktree_id=worktree_id).newest().first()
+
+    def blocked_followup(self, worktree: Worktree) -> MergeFollowup | None:
+        pending = (followup for followup in self.queries.query(MergeFollowup).every_row(FOLLOWUPS_REASON)
+                   if followup.worktree_id != worktree.id and not followup.finished)
+        return next(pending, None)
+
+    def record_followup(self, worktree: Worktree, folder: str, starting_commit: str, commit_after: str, context: Context) -> MergeFollowup | None:
+        commands = tuple(self.settings.texts(MERGE_COMMANDS))
+        if not commands:
+            return None
+        return self.bus.run_with_context(RecordMergeFollowup(worktree.id, folder, starting_commit, commit_after, self.revision.current(MERGE_COMMANDS), commands), context)
+
+    def run(self, followup: MergeFollowup, reconciled: str, context: Context) -> MergeFollowup:
+        for index, line in enumerate(followup.commands):
+            outcome = followup.results[index]
+            if outcome == STEP_FINISHED:
+                continue
+            if outcome == UNCERTAIN_STEP and not reconciled:
+                raise Refusal(f"step {index + 1} of the required commands, {line!r}, ended uncertain and may have done part of its work",
+                              "check what it did, then merge again with --reconcile '<what you checked>'")
+            if outcome == UNCERTAIN_STEP:
+                followup = self.bus.run_with_context(RecordFollowupStep(followup.id, index, STEP_FINISHED), context)
+                continue
+            outcome = self.commands.step(followup.folder, followup.target_branch, line, (), MERGE_COMMANDS_NAME)
+            followup = self.bus.run_with_context(RecordFollowupStep(followup.id, index, outcome.state), context)
+            if outcome.state != STEP_FINISHED:
+                raise Refusal(outcome.reason, outcome.suggestion)
+        return followup

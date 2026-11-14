@@ -1,0 +1,86 @@
+from engine.actor.actor import Actor
+from engine.enums.actor_type import ActorType
+from core.modules.triggers.support.trigger_settings import AGENTS_ENABLE_SETTING
+from core.modules.triggers.support.trigger_nudges import TRIGGER_LINE as TRIGGER_FIRED
+from engine.testing.examples.hook_samples import HookSamples
+from engine.testing.stories.story_fixture import StoryFixture
+from tests.stories.core.support.coding_fixtures import UserBuilder
+
+class AgentTriggerMade(StoryFixture):
+    """The main agent made a trigger, so its enabling waits on a docked card."""
+
+    parent = UserBuilder
+
+    def steps(self, story):
+        story.run(TRIGGER_LINE, actor=story.agent)
+        story.run_listeners()
+
+
+TRIGGER_LINE = 'trigger make "deploy" "Check the release notes" --environment main'
+PROMPT = HookSamples.prompt("We deploy now")
+TRIGGER_TEXT = TRIGGER_FIRED.nudge(trigger=1).text
+
+
+def prompt_lines(story) -> list[str]:
+    return list(story.hook("s-1", PROMPT).lines)
+
+
+def test_an_agents_trigger_stays_quiet_until_the_user_enables_it(new_story):
+    story = new_story(fixture=UserBuilder)
+    story.expect_success(TRIGGER_LINE, actor=story.agent)
+    expect_absent_prompt_lines(story, TRIGGER_TEXT)
+    story.expect_success("trigger enable 1", actor=story.user)
+    expect_prompt_lines(story, TRIGGER_TEXT)
+
+
+def test_a_trigger_the_user_makes_is_on_at_once(new_story):
+    story = new_story(fixture=UserBuilder)
+    story.expect_success(TRIGGER_LINE, actor=story.user)
+    expect_prompt_lines(story, TRIGGER_TEXT)
+
+
+def test_an_agent_cannot_enable_a_trigger(new_story):
+    story = new_story(fixture=UserBuilder)
+    story.run(TRIGGER_LINE, actor=story.agent)
+    story.expect_refusal("trigger enable 1 --reason needed", "A user was asked in the dock", actor=story.agent)
+
+
+def test_an_agent_cannot_change_what_an_enabled_trigger_does(new_story):
+    story = new_story(fixture=UserBuilder)
+    story.run(TRIGGER_LINE, actor=story.user)
+    story.expect_refusal('trigger edit 1 --text "Do something else" --reason needed', "A user was asked in the dock", actor=story.agent)
+
+
+def test_the_setting_lets_an_agents_trigger_act_at_once(new_story):
+    story = new_story(fixture=UserBuilder)
+    story.expect_success(f"setting set {AGENTS_ENABLE_SETTING} true --project", actor=story.user)
+    story.expect_success(TRIGGER_LINE, actor=story.agent)
+    expect_prompt_lines(story, TRIGGER_TEXT)
+
+
+def test_an_agents_trigger_shows_in_the_main_chat_until_it_is_removed(new_story):
+    story = new_story(fixture=UserBuilder)
+    story.run(TRIGGER_LINE, actor=story.agent)
+    story.run_listeners()
+    story.expect_text("chat-mark main --environment main", "waits for you")
+    story.expect_success("trigger strike 1 --environment main", actor=story.agent)
+    story.run_listeners()
+    story.expect_text("chat-mark main --environment main", "Trigger removed")
+    story.expect_absent("chat-mark main --environment main", "waits for you")
+
+
+def expect_absent_prompt_lines(story, expected) -> None:
+    actual = prompt_lines(story)
+    assert expected not in actual, actual
+
+
+def expect_prompt_lines(story, expected) -> None:
+    actual = prompt_lines(story)
+    assert expected in actual, actual
+
+
+def test_another_agent_that_runs_the_command_of_a_docked_card_is_refused_and_makes_no_second_approval(new_story):
+    story = new_story(fixture=AgentTriggerMade)
+    helper = Actor(story.new_row_id(f"agent start helper-1 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
+    story.expect_refusal("trigger enable 1 --reason needed", "approval 1 already asks a user for this on its docked card", actor=helper)
+    story.expect_absent("approval list", "approval 2", actor=story.user)

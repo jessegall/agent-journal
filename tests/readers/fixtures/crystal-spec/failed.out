@@ -1,0 +1,24 @@
+E
+
+Failures:
+
+  1) test doesn't crash
+
+       this is an exception
+       0x44cc30: ~procProc(Nil) at /usr/lib/crystal/kernel.cr 49:3
+       0x44c804: *it<String, String, Int32, Int32, &Proc(Nil)>:(Array(Spec::Result) | Nil) at /usr/lib/crystal/spec/methods.cr 17:7
+       0x44c625: ~procProc(Nil) at /usr/lib/crystal/spec/methods.cr 4:5
+       0x488943: *Spec::RootContext::describe<String, String, Int32, &Proc(Nil)>:Spec::Context+ at /usr/lib/crystal/spec/context.cr 152:30
+       0x44c576: *describe<String, String, Int32, &Proc(Nil)>:Spec::Context+ at /usr/lib/crystal/spec/methods.cr 4:5
+       0x43de59: ??? at /tmp/test.cr 3:1
+       0x44aae9: main at /home/user/.cache/crystal/macro47605296.cr 12:15
+       0x7fd38ab31511: __libc_start_main at ??
+       0x43cdfa: _start at ??
+       0x0: ??? at ??
+
+Finished in 88 microseconds
+1 examples, 0 failures, 1 errors, 0 pending
+
+Failed examples:
+
+crystal spec test.cr:4 # test doesn't crash

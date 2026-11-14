@@ -1,0 +1,55 @@
+from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
+from core.modules.project_rules.support.rule_settings import RULE_APPROVAL_SETTING
+
+
+def test_an_agents_rule_waits_on_a_card_until_a_person_approves_it(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success('rule make "Name things plainly"', "state: proposed", actor=story.agent)
+    story.expect_no_text("rule list --state active", "Name things plainly")
+    story.run_listeners()
+    story.expect_text("dock-item main --environment main", "approvals.request", actor=story.user)
+    with viewer_client(story) as viewer:
+        viewer.value("messages.chat", ["approval", "accept", "1"])
+    story.run_listeners()
+    story.expect_text("rule list --state active", "Name things plainly", actor=story.agent)
+    story.expect_text("dock-item main --environment main", "undocked", actor=story.user)
+
+
+def test_a_denied_rule_never_holds(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success('rule make "Skip the tests"', "state: proposed", actor=story.agent)
+    with viewer_client(story) as viewer:
+        viewer.value("messages.chat", ["approval", "refuse", "1"])
+    story.expect_no_text("rule list --state active", "Skip the tests")
+
+
+def test_the_setting_lets_agents_make_rules_at_once(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success(f"setting set {RULE_APPROVAL_SETTING} true --project")
+    story.expect_success('rule make "Name things plainly"', "state: active", actor=story.agent)
+
+
+def test_an_agent_that_runs_the_command_of_a_docked_card_makes_no_second_approval(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success('rule make "Name things plainly"', "state: proposed", actor=story.agent)
+    story.expect_refusal("rule approve 1 --reason needed", "a user was asked to decide this rule in the dock", actor=story.agent)
+    story.expect_absent("approval list", "approval 2", actor=story.user)
+
+
+def test_a_person_who_accepts_an_agents_removal_of_a_rule_removes_it(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success('rule make "Name things plainly"', "state: active")
+    story.run('rule remove 1 --reason "replaced"', actor=story.agent)
+    with viewer_client(story) as viewer:
+        viewer.value("messages.chat", ["approval", "accept", "1"])
+    story.expect_no_text("rule list --state active", "Name things plainly", actor=story.agent)
+
+
+def test_a_person_who_accepts_an_agents_edit_of_a_rule_changes_its_text(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success('rule make "Name things plainly"', "state: active")
+    story.run('rule edit 1 --text "Name every thing plainly" --reason "clearer"', actor=story.agent)
+    with viewer_client(story) as viewer:
+        viewer.value("messages.chat", ["approval", "accept", "1"])
+    story.expect_text("rule show 1", "text: Name every thing plainly", actor=story.agent)

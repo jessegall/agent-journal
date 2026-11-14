@@ -1,0 +1,15 @@
+/* Home columns that fit any width.
+   The right column (.pane-split) had no column template, so its one implicit auto column grew to the min-content width
+   of its rows: nowrap task titles, badges and the New task button. It overflowed the 1fr track the outer grid gave it,
+   and the right edge was cut off. Every track here now has a minimum of 0, and every pane may shrink below its content. */
+.home { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.pane-split { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+.home > *, .pane, .pane-split, .pbody, .count-tile, .trow { min-width: 0; }
+.trow .badge, .trow .faint { flex: none; }
+.counts { grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr)); }
+
+/* below 860 px the panes stack: the chat pane first, then counts and the tabbed pane, and the page scrolls */
+@media (max-width: 860px) {
+  .home { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(360px, 60vh) auto; overflow-y: auto; }
+  .pane-split { grid-template-rows: auto minmax(360px, auto); }
+}

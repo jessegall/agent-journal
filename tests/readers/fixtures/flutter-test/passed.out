@@ -1,0 +1,5 @@
+00:04 +0: loading /path/to/counter_app/integration_test/app_test.dart
+00:15 +0: loading /path/to/counter_app/integration_test/app_test.dart
+00:18 +0: loading /path/to/counter_app/integration_test/app_test.dart   2,387ms
+Installing build/app/outputs/flutter-apk/app.apk...  612ms
+00:21 +1: All tests passed!

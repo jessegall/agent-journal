@@ -1,0 +1,8 @@
+[
+  {
+    "key": "refused_word",
+    "title": "Word a task title may not hold",
+    "type": "text",
+    "default": "someday"
+  }
+]

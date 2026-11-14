@@ -1,0 +1,39 @@
+import re
+from collections.abc import Sequence
+from fnmatch import fnmatchcase
+
+from core.modules.processes.models.process_part import ProcessPart
+from core.modules.processes.models.reader import Reader
+from core.modules.processes.support.part_reader import PartReader
+from core.modules.processes.support.reading.reader_layers import ReaderLayers
+from engine.enums.command_category import CommandCategory
+
+ENVIRONMENT_PREFIX = re.compile(r"""^(?:[A-Za-z_]\w*=(?:'[^']*'|"[^"]*"|\S*)\s+)+""")
+
+
+class ReaderSelection:
+    """The reader of a run, judged part by part, a test run, a build or a check first and then the parts in
+    order: among the readers whose commands match the part the first in the order of their layers; a journal
+    command's own output, and that of a read, a search or an edit, is read by none. A reader's commands are
+    patterns of a command, separated by commas, matched without the variables a line sets in front of it."""
+
+    @staticmethod
+    def choose(readers: Sequence[Reader], parts: Sequence[ProcessPart], layers: ReaderLayers) -> PartReader | None:
+        for part in sorted(parts, key=lambda part: (not part.category.is_watched, part.position)):
+            matching = layers.ordered(reader for reader in readers if ReaderSelection.reads(reader, part))
+            if matching:
+                return PartReader(matching[0], part)
+        return None
+
+    @staticmethod
+    def reads(reader: Reader, part: ProcessPart) -> bool:
+        return ReaderSelection.reads_command(reader, part.command or part.text, part.category)
+
+    @staticmethod
+    def reads_command(reader: Reader, command: str, category: CommandCategory) -> bool:
+        return category.has_reader and ReaderSelection.matches(reader.commands, command)
+
+    @staticmethod
+    def matches(patterns: str, command: str) -> bool:
+        bare_command = ENVIRONMENT_PREFIX.sub("", command)
+        return any(fnmatchcase(bare_command, pattern.strip()) for pattern in patterns.split(","))

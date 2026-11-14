@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": ["run", "dispatch", "save", "delete", "running", "ending_layer"]
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/skills/rules/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "skill-rule-acts",
+        "description": "A rule in the skills module runs a command or writes a row, when a rule only reads the skills due and refuses.",
+        "rule": "A rule answers with a refusal or lines; what it saw is made due or loaded by a listener.",
+        "skill": "plain-code-words"
+    }
+}

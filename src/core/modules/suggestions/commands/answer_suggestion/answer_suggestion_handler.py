@@ -1,0 +1,22 @@
+from engine.command.context import Context
+from engine.command.handler import Handler
+from engine.query.queries import Queries
+from engine.errors.refusal import Refusal
+from engine.repository.repository import Repository
+from core.modules.suggestions.commands.answer_suggestion.answer_suggestion import AnswerSuggestion
+from core.modules.suggestions.models.suggestion import Suggestion
+
+
+class AnswerSuggestionHandler(Handler[AnswerSuggestion, Suggestion]):
+    """Keeps the user's answer to a suggestion; a second answer is refused."""
+
+    command = AnswerSuggestion
+
+    def __init__(self, queries: Queries, repository: Repository) -> None:
+        self.queries, self.repository = queries, repository
+
+    def handle(self, command: AnswerSuggestion, context: Context) -> Suggestion:
+        suggestion = self.queries.query(Suggestion).find(command.suggestion_id)
+        if suggestion.answer is not None:
+            raise Refusal(f"suggestion {suggestion.id} was answered already: {suggestion.answer}", "the user answers a suggestion once")
+        return self.repository.save(suggestion.changed(answer=command.answer), context)

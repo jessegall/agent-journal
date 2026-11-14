@@ -1,0 +1,35 @@
+from engine.database.database import Database
+from engine.registry.button_line import ButtonLine
+from engine.enums.button_window import ButtonWindow
+from engine.registry.registry import Registry
+from tests.stories.engine.chat.support.mark_faults import PATH
+from tests.stories.core.support.fixtures import MainEnvironment
+
+
+def test_a_mark_button_is_an_allowed_line_of_the_chat_window_kept_with_its_module(new_story):
+    story = new_story(fixture=MainEnvironment)
+    story.expect_sync_success(f"{PATH}:GoodModule")
+    registry = Registry.read(story.container.get(Database))
+    expect_button_lines_registry_3(registry, "good", [ButtonLine("good", "task edit {row_id}", False, label="Edit the task")])
+    expect_button_lines_registry_2(registry, "good", [])
+
+
+def test_a_button_line_is_allowed_for_no_other_window(new_story):
+    story = new_story(fixture=MainEnvironment)
+    story.expect_sync_success(f"{PATH}:GoodModule")
+    expect_button_lines_registry(story, "messages.board", ())
+
+
+def expect_button_lines_registry(story, text, expected) -> None:
+    actual = Registry.read(story.container.get(Database)).button_lines(text)
+    assert actual == expected, actual
+
+
+def expect_button_lines_registry_2(registry, text, expected) -> None:
+    actual = [line for line in registry.button_lines(ButtonWindow.DOCK) if line.module == text]
+    assert actual == expected, actual
+
+
+def expect_button_lines_registry_3(registry, text, expected) -> None:
+    actual = [line for line in registry.button_lines(ButtonWindow.MARKS) if line.module == text]
+    assert actual == expected, actual

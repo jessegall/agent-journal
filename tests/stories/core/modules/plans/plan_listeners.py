@@ -1,0 +1,61 @@
+from tests.stories.core.support import story_lines as lines
+from tests.stories.core.support.fixtures import PlanTasksPlaced
+from tests.stories.core.support.plan_steps import ready_plan
+from tests.stories.core.support.plans_samples import FailingWorkerNotice
+
+PROTECTED_TASKS = "tests.stories.core.support.plans_samples:ProtectedTasksModule"
+
+
+def plan_with_placed_tasks(new_story, *modules: str):
+    return new_story(*modules, fixture=PlanTasksPlaced)
+
+
+def test_cancelling_a_plan_cancels_its_open_tasks_in_the_same_transaction(new_story):
+    story = plan_with_placed_tasks(new_story)
+    story.expect_success(lines.PLAN_CANCEL, "state: cancelled")
+    story.expect_success(lines.TASK_DETAILS, "state: cancelled", "reason: plan 1 was cancelled")
+    story.expect_success(lines.SECOND_TASK_DETAILS, "state: cancelled")
+
+
+def test_a_refused_task_cancel_undoes_the_whole_plan_cancel(new_story):
+    story = plan_with_placed_tasks(new_story, PROTECTED_TASKS)
+    story.run('task make "Keep" --environment main')
+    story.run("phase place 3 --phase 1")
+    story.expect_refusal(lines.PLAN_CANCEL, "refused by samples.protected-task: a task titled Keep is never cancelled")
+    story.expect_success("plan show 1", "state: draft")
+    story.expect_success(lines.TASK_DETAILS, "state: open")
+
+
+def test_closing_a_task_of_a_started_plan_starts_the_next_for_the_same_agent(new_story):
+    story = plan_with_placed_tasks(new_story)
+    ready_plan(story, actor=story.user)
+    for move in ("approve", "start"):
+        story.run(f"plan {move} 1 --environment main", actor=story.user)
+    story.run(lines.TASK_START, actor=story.agent)
+    story.run(lines.TASK_CLOSE, actor=story.agent)
+    story.expect_success(lines.SECOND_TASK_DETAILS, "state: started", f"holder_id: {story.agent.id}")
+
+
+def test_a_commit_listener_that_fails_three_times_is_skipped_and_the_cancel_stands(new_story):
+    story = plan_with_placed_tasks(new_story, "tests.stories.core.support.plans_samples:FailingNoticeModule")
+    story.expect_success(lines.PLAN_CANCEL, "state: cancelled")
+    for line_number in range(3):
+        story.run(f'task log 1 "checked {line_number}"')
+    story.expect_success(lines.TASK_DETAILS, "state: cancelled")
+    story.expect_rows(story.system_log_text().count("listener samples.failing-worker-notice") == 3 * 2)
+
+
+def test_a_failed_listener_receives_the_same_event_in_the_next_round(new_story, monkeypatch):
+    story = plan_with_placed_tasks(new_story, "tests.stories.core.support.plans_samples:FailingNoticeModule")
+    events = []
+
+    def handle(listener, event, logged):
+        events.append(logged.id)
+        if len(events) == 1:
+            raise ConnectionError("temporarily unavailable")
+
+    monkeypatch.setattr(FailingWorkerNotice, "handle", handle)
+    story.expect_success(lines.PLAN_CANCEL, "state: cancelled")
+    story.run_listeners()
+    story.run_listeners()
+    story.expect_rows(len(events) >= 2, events[0] == events[1])

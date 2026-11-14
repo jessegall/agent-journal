@@ -1,0 +1,120 @@
+from engine.enums.access import Access
+from engine.driver.agent_hook import AgentHook
+from engine.driver.driver import Driver
+from engine.driver.driver_rule import DriverRule
+from engine.enums.hook_event_name import HookEventName
+from engine.driver.rule_answer import RuleAnswer
+from engine.helper_type.helper_type import HelperType
+from engine.module.suite import Suite
+from engine.module.module import Module
+from engine.profile.agent_profile import AgentProfile
+from suites.coding.coding_suite import CodingSuite
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
+
+
+class ProfileModule(Module):
+    name = "sample.profiles"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.core.agents"]
+    profiles = [AgentProfile("module-reader", "Reads one question", "Read the files.", agent_type="helper")]
+
+
+class DuplicateProfile(ProfileModule):
+    profiles = [AgentProfile(f"{RESEARCHER_PROFILE.name}", "Another researcher", "Read.")]
+
+
+class UnknownType(ProfileModule):
+    profiles = [AgentProfile("module-reader", "Reads", "Read.", agent_type="missing-type")]
+
+
+class WritingProfile(ProfileModule):
+    profiles = [AgentProfile("module-reader", "Writes", "Write.", access=Access.WRITING)]
+
+
+class MissingDescription(ProfileModule):
+    profiles = [AgentProfile("module-reader", " ", "Read.")]
+
+
+class MissingBody(ProfileModule):
+    profiles = [AgentProfile("module-reader", "Reads", " ")]
+
+
+class InvalidName(ProfileModule):
+    profiles = [AgentProfile("bad name", "Reads", "Read.")]
+
+
+class MissingDefault(ProfileModule):
+    helper_types = [HelperType("clerk", "Clerk", extends="helper", default_profile="missing-profile")]
+
+
+class WrongDefaultType(ProfileModule):
+    helper_types = [HelperType("clerk", "Clerk", extends="helper", default_profile="module-reader")]
+
+
+class LegacySuite(Suite):
+    name = "legacy-profiles"
+    profiles = [AgentProfile("legacy-reader", "Reads", "Read.")]
+
+
+class LegacyProfiles(ProfileModule):
+    """Ships the legacy suite, which lists it."""
+
+
+class ClerkRule(DriverRule):
+    """A clerk reads and edits nothing else: the sample's rule on its own agent type."""
+
+    name = "sample.clerk-rule"
+    hook = HookEventName.PRE_TOOL_USE
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        return RuleAnswer.allowed()
+
+
+class ClerkDriver(Driver):
+    """Drives the sample's clerk."""
+
+    name = "coding.clerk"
+    suite_name = CodingSuite.name
+    role = "clerk"
+    rules = [ClerkRule]
+
+
+class ClerkModule(Module):
+    name = "sample.clerks"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.core.agents", "journal.suites.coding"]
+    helper_types = [HelperType("clerk", "Clerk", extends="helper", default_profile="sample-clerk")]
+    profiles = [AgentProfile("sample-clerk", "Reads contracts", "Read the contracts.", agent_type="clerk", model="sonnet", codex_model="gpt-6.1-terra")]
+    drivers = [ClerkDriver]
+
+
+class LegacySuiteOfLegacyProfiles(LegacySuite):
+    modules = [LegacyProfiles]
+
+
+class ClerkModuleJoining(Suite):
+    name = "sample.clerks"
+    joins = "coding"
+    modules = [ClerkModule]
+
+
+class BasedProfiles(ProfileModule):
+    """A base profile and one built on it, which adds its own lines and its own model."""
+
+    profiles = [AgentProfile("sample-base", "The shared body", "Read the files.", agent_type="helper", model="sonnet", skills=tuple(["journal"])),
+                AgentProfile("sample-based", "Reads and answers", "Answer in one line.", base="sample-base", agent_type="helper", model="opus")]
+
+
+class ChangedBase(BasedProfiles):
+    """The same two profiles after the text of the base changed."""
+
+    profiles = [AgentProfile("sample-base", "The shared body", "Read the files twice.", agent_type="helper", model="sonnet", skills=tuple(["journal"])),
+                AgentProfile("sample-based", "Reads and answers", "Answer in one line.", base="sample-base", agent_type="helper", model="opus")]
+
+
+class MissingBase(ProfileModule):
+    profiles = [AgentProfile("module-reader", "Reads", "Read.", base="no-such-base")]
+
+
+class LoopingBases(ProfileModule):
+    profiles = [AgentProfile("module-reader", "Reads", "Read.", base="module-writer"), AgentProfile("module-writer", "Writes", "Write.", base="module-reader")]

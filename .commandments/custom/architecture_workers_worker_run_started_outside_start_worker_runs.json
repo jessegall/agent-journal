@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "reach_worker"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/suites/coding/modules/workers/commands/start_worker_runs/"
+            }
+        ]
+    },
+    "sin": {
+        "name": "worker-run-started-outside-start-worker-runs",
+        "description": "A worker run of a checkpoint is started outside StartWorkerRuns, so it has no worktree reach and nobody knows which commit it tests.",
+        "rule": "Start a worker run with the StartWorkerRuns command, which links the reach to the worktree and its commit.",
+        "skill": "workers-architecture"
+    }
+}

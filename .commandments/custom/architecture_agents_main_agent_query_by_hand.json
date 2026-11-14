@@ -1,0 +1,31 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "filter"
+            },
+            {
+                "descendant": {
+                    "name": "MAIN"
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/(agents/support/main_agent_finder|drivers/rules/takeover_rule)\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "main-agent-query-by-hand",
+        "description": "Agents are filtered for the main role by hand, so the question of which agent is the running main agent has more than one answer.",
+        "rule": "Ask MainAgentFinder.rows or MainAgentFinder.newest.",
+        "skill": "plain-code-words"
+    }
+}

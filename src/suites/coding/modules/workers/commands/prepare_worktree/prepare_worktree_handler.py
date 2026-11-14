@@ -1,0 +1,78 @@
+from engine.file.file_access import FileAccess
+from pathlib import Path
+
+from engine.provider.program_hooks import ProgramHooks
+from engine.command.context import Context
+from engine.command.handler import Handler
+from engine.environment.environment_names import EnvironmentNames
+from engine.journal.journal_home import JournalHome
+from engine.provider.hook_manager import HookManager
+from engine.driver.driver_rule import DriverRule
+from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.providers import Providers
+from engine.provider.program_settings_sync import ProgramSettingsSync
+from engine.setting.setting_values import SettingValues
+from engine.performance.timing import Timing
+from core.modules.skills.support.skill_files import SkillFiles
+from core.modules.tools.support.tools import Tools
+from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
+from suites.coding.modules.workers.support.library_folders import LibraryFolders
+from suites.coding.modules.workers.support.worktree_commands import WorktreeCommands
+from suites.coding.modules.workers.support.worker_settings import LIBRARY_COPIES, LIBRARY_LINKS, WORKTREE_COMMANDS, WORKTREE_COMMANDS_NAME
+from suites.coding.modules.workers.support.worker_instruction_files import WorkerInstructionFiles
+from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+
+
+
+class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
+    """Prepares a worktree's libraries, hooks and skills before running its setup commands. It saves no row, so
+    its setup commands hold no write lock."""
+
+    runs_once = True
+    command = PrepareWorktree
+
+    def __init__(self, environment_names: EnvironmentNames, settings: SettingValues, git: WorktreeGit, libraries: LibraryFolders, commands: WorktreeCommands,
+                 skills: SkillFiles, home: JournalHome, managed: ManagedHooks, providers: Providers, instruction_files: WorkerInstructionFiles, tools: Tools,
+                 timing: Timing, sync: ProgramSettingsSync) -> None:
+        self.instruction_files, self.tools, self.timing = instruction_files, tools, timing
+        self.environment_names, self.settings, self.git, self.libraries, self.commands = environment_names, settings, git, libraries, commands
+        self.skills = skills
+        self.home, self.managed, self.providers, self.sync = home, managed, providers, sync
+
+    def place_program_hooks(self, command: PrepareWorktree) -> None:
+        for provider in self.providers.all():
+            for file in provider.worktree_hook_files:
+                source = Path(command.source) / file
+                if not FileAccess.is_file(source):
+                    continue
+                target = Path(command.folder) / file
+                FileAccess.mkdir(target.parent, parents=True, exist_ok=True)
+                ProgramHooks.store(target, ProgramHooks.read(source))
+                self.libraries.exclude(command.folder, [str(file)])
+
+    def handle(self, command: PrepareWorktree, context: Context) -> None:
+        self.environment_names.environment_id(command.environment)
+        links = (*self.settings.texts(LIBRARY_LINKS), *command.library_links)
+        copies = (*self.settings.texts(LIBRARY_COPIES), *command.library_copies)
+        links = (*links, *(name for name in self.git.dependency_folders(command.source) if name not in (*links, *copies) and not FileAccess.exists(Path(command.folder) / name)))
+        self.timing.stamp("prepare_dependency_folders")
+        self.libraries.check(command.source, (*links, *copies))
+        self.libraries.place(command.source, command.folder, links, copies)
+        self.timing.stamp("prepare_libraries")
+        self.place_program_hooks(command)
+        rules = [entry.path.checked_class(DriverRule) for entry in self.providers.registry.rules]
+        manager = HookManager(self.home.project_folder, self.managed, rules)
+        for provider in self.providers.all():
+            manager.import_hooks(type(provider), Path(command.folder))
+        for provider in self.providers.all():
+            self.sync.prepare(provider.name)
+        self.timing.stamp("prepare_hooks")
+        skill_files = self.skills.place(Path(command.folder))
+        self.timing.stamp("prepare_skills")
+        graph_files = self.tools.worktree_outputs(command.source, command.folder)
+        self.timing.stamp("prepare_tool_graph")
+        self.libraries.exclude(command.folder, [*skill_files, *graph_files])
+        self.instruction_files.write(command.folder, command.profile)
+        self.timing.stamp("prepare_instruction_files")
+        self.commands.run(command.folder, self.git.head(command.folder), self.settings.texts(WORKTREE_COMMANDS), (*links, *copies), WORKTREE_COMMANDS_NAME)
+        self.timing.stamp("prepare_worktree_commands")

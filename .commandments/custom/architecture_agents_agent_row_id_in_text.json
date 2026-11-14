@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/"
+            },
+            {
+                "textMatches": "(?i)\\b(agent|worker|helper|reviewer|merger) \\{[^}]*(\\.id|_id)\\}"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "agent-row-id-in-text",
+        "description": "A text names an agent by its row id, such as worker {worker.id}, where a person knows the agent by its number in its environment.",
+        "rule": "A text names an agent through AgentLabel: AgentLabel.from_agent(agent).text, or AgentLabel.from_row_id(agent_id, numbers).text where only the row id is known.",
+        "skill": "plain-code-words"
+    }
+}

@@ -1,0 +1,20 @@
+from collections.abc import Sequence
+
+from engine.driver.open_row import OpenRow
+from engine.driver.overlay import Overlay
+from core.modules.memories.support.mark_tracker import MarkTracker
+from core.modules.memories.rules.weigh_first_stop_rule import WeighFirstStopRule
+
+
+class WeighingOverlay(Overlay):
+    """While an agent has an open memory mark, its stops wait until it weighs, makes, corrects or removes a
+    memory, or skips with a reason."""
+
+    name = "memories.weighing"
+    rules = [WeighFirstStopRule]
+
+    def __init__(self, marks: MarkTracker) -> None:
+        self.marks = marks
+
+    def open_agent_rows(self, agent_id: int) -> Sequence[OpenRow]:
+        return [OpenRow("memory_mark", mark.id, mark.opened_at) for mark in self.marks.open_marks(agent_id)]

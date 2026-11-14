@@ -1,0 +1,12 @@
+from dataclasses import dataclass
+
+from engine.command.command import Command
+from core.modules.plugins.models.plugin import Plugin
+
+
+@dataclass(frozen=True)
+class SwitchPlugin(Command[Plugin]):
+    """The user switches a plugin on or off."""
+
+    name: str
+    enabled: bool

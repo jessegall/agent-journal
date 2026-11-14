@@ -1,0 +1,38 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "branch",
+        "where": [
+            {
+                "of": "enclosingType",
+                "fileMatches": "listeners/"
+            },
+            {
+                "of": "condition",
+                "repeated": {
+                    "atLeast": 2,
+                    "files": 2,
+                    "eitherWay": true
+                }
+            },
+            {
+                "of": "condition",
+                "descendant": {
+                    "name": "HookEventName"
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "listener-repeats-a-decision",
+        "description": "Two listeners ask which kind of hook this is in the same words, so one decision lives in two places and grows apart.",
+        "rule": "Move the decision into one method both listeners call, as HookCall.is_compaction.",
+        "skill": "plain-code-words"
+    }
+}

@@ -1,0 +1,13 @@
+MyTests:
+  + sum of two integers 0.008s
+==> X MyTests.failing test  0.015s munit.ComparisonFailException: ./MyTests.test.scala:13
+12:    val expected = 4
+13:    assertEquals(obtained, expected)
+14:  }
+values are not the same
+=> Obtained
+5
+=> Diff (- obtained, + expected)
+-5
++4
+    at munit.Assertions.failComparison(Assertions.scala:274)

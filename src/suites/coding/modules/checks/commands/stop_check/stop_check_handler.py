@@ -1,0 +1,20 @@
+from dataclasses import replace
+
+from engine.command.context import Context
+from engine.command.handler import Handler
+from engine.repository.repository import Repository
+from suites.coding.modules.checks.commands.stop_check.stop_check import StopCheck
+from suites.coding.modules.checks.commands.support.kept_checks import KeptChecks
+from suites.coding.modules.checks.models.check import Check
+
+
+class StopCheckHandler(Handler[StopCheck, Check]):
+    """Marks a check that is not removed as stopped."""
+
+    command = StopCheck
+
+    def __init__(self, checks: KeptChecks, repository: Repository) -> None:
+        self.checks, self.repository = checks, repository
+
+    def handle(self, command: StopCheck, context: Context) -> Check:
+        return self.repository.save(replace(self.checks.find(command.check_id), stopped=True), context)

@@ -1,0 +1,26 @@
+from engine.database.write_turns import WriteTurns
+from engine.database.database import Database
+from engine.module.journal_container import synced_container
+from engine.journal.journal_home import JournalHome
+from engine.query.queries import Queries
+from core.modules.questions.models.enums.question_state import QuestionState
+from core.modules.questions.models.question import Question
+from server.viewer.waiting_thing import WaitingThing
+
+WAITING_PAGE_ROWS = 50
+
+
+class WaitingRoute:
+    """Answers GET /api/waiting for the phone's worker: each open question in every environment, newest first,
+    by its reference alone, so a notice can count them and open the newest without saying what they are."""
+
+    def __init__(self, home: JournalHome, turns: WriteTurns | None = None) -> None:
+        self.home, self.turns = home, turns
+
+    def waiting(self) -> list[WaitingThing]:
+        container = synced_container(self.home, self.turns)
+        try:
+            questions = container.get(Queries).query(Question).filter(state=QuestionState.OPEN).newest().page(1, WAITING_PAGE_ROWS).rows
+            return [WaitingThing(f"questions:{question.id}") for question in questions]
+        finally:
+            container.get(Database).close()

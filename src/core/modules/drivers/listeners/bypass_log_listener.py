@@ -1,0 +1,52 @@
+from engine.file.file_access import FileAccess
+from engine.enums.agent_role import AgentRole
+from engine.event.logged_event import LoggedEvent
+from engine.enums.mark_outcome import MarkOutcome
+from engine.command.bus import Bus
+from engine.journal.journal_home import JournalHome
+from engine.listener.commit.commit_listener import CommitListener
+from engine.enums.log_level import LogLevel
+from engine.enums.log_source import LogSource
+from engine.module.module_actors import ModuleActors
+from engine.query.queries import Queries
+from engine.log.system_log_writer import SystemLogWriter
+from core.modules.agents.models.agent import Agent
+from core.modules.chat.commands.show_mark.show_mark import ShowMark
+from core.modules.drivers.commands.record_bypass_line.record_bypass_line import RecordBypassLine
+from core.modules.drivers.models.enums.bypass_mark_type import BypassMarkType
+from core.modules.drivers.models.enums.bypass_mark_variant import BypassMarkVariant
+from core.modules.drivers.models.hook_call import HookCall
+from core.modules.drivers.support.driver_settings import MODULE_KEY
+from engine.event.changed import Changed
+
+
+
+class BypassLogListener(CommitListener[Changed[HookCall]]):
+    """Reports hooks that passed while the journal did not answer."""
+
+    name = "drivers.bypass-log"
+
+    def __init__(self, home: JournalHome, queries: Queries, bus: Bus, actors: ModuleActors, system_log: SystemLogWriter) -> None:
+        self.home, self.queries, self.bus, self.actors, self.system_log = home, queries, bus, actors, system_log
+
+    def handle(self, event: Changed[HookCall], logged: LoggedEvent) -> None:
+        log = self.home.bypass_log
+        if not FileAccess.is_file(log):
+            return
+        agent = self.queries.query(Agent).find(event.row.session_agent_id)
+        if agent.role != AgentRole.MAIN:
+            return
+        claimed = log.with_suffix(".taken")
+        FileAccess.replace(log, claimed)
+        lines = [line for line in FileAccess.read(claimed, errors="replace").splitlines() if line.strip()]
+        FileAccess.unlink(claimed)
+        if not lines:
+            return
+        self.system_log.write(LogLevel.WARNING, "\n".join(lines), LogSource.BYPASS)
+        count = len(lines)
+        actor = self.actors.actor(MODULE_KEY)
+        text = f"{count} hook{'s' if count != 1 else ''} went through unchecked while the journal did not answer"
+        key = f"bypass:{logged.id}"
+        self.bus.run(ShowMark(BypassMarkType.BYPASS, BypassMarkVariant.UNCHECKED, key, text, agent_id=agent.id, outcome=MarkOutcome.FAILED, ended=True),
+                     actor, cause_id=logged.id)
+        self.bus.run(RecordBypassLine(agent.id, count), actor, cause_id=logged.id)

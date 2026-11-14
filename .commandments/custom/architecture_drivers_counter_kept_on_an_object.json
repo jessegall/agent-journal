@@ -1,0 +1,44 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "kind:AugAssign",
+        "where": [
+            {
+                "of": "child:target",
+                "kind": "Attribute"
+            },
+            {
+                "of": "child:target",
+                "nameMatches": "(count|reads|tries|attempts|uses|failures)"
+            },
+            {
+                "of": "child:value",
+                "value": 1
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "file": "**/ticks/**"
+            },
+            {
+                "file": "**/engine/database/**"
+            },
+            {
+                "file": "**/src/server/**"
+            },
+            {
+                "file": "**/plugins/support/service_retries.py"
+            }
+        ]
+    },
+    "sin": {
+        "name": "counter-kept-on-an-object",
+        "description": "An object counts how often something happened in a field of its own. Each command line builds new objects, so the count is lost and the limit never comes.",
+        "rule": "Count with Countdowns.tick and a CountDown declaration: the count is kept in a row for the actor, and it can be silent, reset, or ended on a condition. Ticks, the database, the server's queue and the retries of plugin services live in one long process and count no actor, so they are left out.",
+        "skill": "plain-code-words"
+    }
+}

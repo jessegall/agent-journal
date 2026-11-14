@@ -1,0 +1,27 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "go",
+    "judges": ["tools"],
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textMatches": "whole_corpus|runner-differing|JOURNAL_CORPUS"
+            }
+        ],
+        "reject": [
+            {
+                "file": "**/corpus_test.go"
+            },
+            {
+                "file": "**/cut_fixture_test.go"
+            }
+        ]
+    },
+    "sin": {
+        "name": "go-corpus-read-outside-its-tests",
+        "description": "Go code reads the private command corpus outside the tests built for it, and a line of it could then run outside the sandbox.",
+        "rule": "Lines of the corpus run only through the sandboxed test in tools/journal-run/corpus_test.go; to reproduce one, add it to that test.",
+        "skill": "plain-code-words"
+    }
+}

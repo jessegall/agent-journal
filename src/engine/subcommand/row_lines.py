@@ -1,0 +1,17 @@
+from collections.abc import Callable
+from typing import TypeVar
+
+from engine.model.model import Model
+from engine.subcommand.output import Output
+from engine.types.type_guards import is_tuple
+
+M = TypeVar("M", bound=Model)
+
+
+class RowLines:
+    """Writes the rows of one model that a list subcommand read, a line each, and all of them as JSON."""
+
+    @staticmethod
+    def write(output: Output, value: object, model: type[M], line: Callable[[M], str]) -> None:
+        rows = [row for row in value if isinstance(row, model)] if is_tuple(value) else []
+        output.write("\n".join(line(row) for row in rows), {"rows": [output.values(row) for row in rows]})

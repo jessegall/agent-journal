@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "first_task_id"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/plans/support/focus/focused_plan_tasks\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "focus-task-ranked-outside-the-picker",
+        "description": "The next task of a plan focus is ranked outside FocusedPlanTasks, so a caller hands out a task without the scope and the order every hand-out shares.",
+        "rule": "Ask FocusedPlanTasks.first or first_started for the task an agent takes next.",
+        "skill": "plain-code-words"
+    }
+}

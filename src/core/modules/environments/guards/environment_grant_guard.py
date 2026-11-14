@@ -1,0 +1,36 @@
+from engine.enums.actor_type import ActorType
+from engine.event.changed import Changed
+from engine.command.context import Context
+from engine.guard.guard import Guard
+from engine.errors.refusal import Refusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
+from core.modules.environments.models.environment import Environment
+from engine.cli.agent_number import AGENT_MODEL_NAME
+from engine.cli.row_numbers import RowNumbers
+
+PERSONS = (ActorType.USER, ActorType.CORE)
+
+
+class EnvironmentGrantGuard(Guard[Changed[Environment]]):
+    """Only a user, in the viewer or at the terminal, marks an environment as a test one or grants an agent
+    the right to work in it, and only a test environment takes a grant; an agent's change of either becomes
+    a card for the user."""
+
+    name = "environments.test-grant-by-person"
+    is_safety = True
+
+    def __init__(self, numbers: RowNumbers) -> None:
+        self.numbers = numbers
+
+    def check(self, event: Changed[Environment], context: Context) -> None:
+        environment, old = event.row, event.old_row
+        if environment.test_agent_id is not None and not environment.test:
+            raise Refusal(f"environment {environment.name} is not a test environment, so it takes no grant", "mark it as a test environment first")
+        changed = old is None or (old.test, old.test_agent_id) != (environment.test, environment.test_agent_id)
+        if not changed or (environment.test, environment.test_agent_id) == (False, None) or context.actor.type in PERSONS:
+            return
+        if environment.test_agent_id is None:
+            raise UserApprovalRefusal(f"Mark {environment.name} as a test environment?", ("environment", "edit", str(environment.id), "--test"))
+        agent_number = self.numbers.number(AGENT_MODEL_NAME, environment.test_agent_id)
+        raise UserApprovalRefusal(f"Let agent {agent_number} work in test environment {environment.name}?",
+                                  ("environment", "edit", str(environment.id), "--test", "--test-agent-id", str(environment.test_agent_id)))

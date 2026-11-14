@@ -1,0 +1,25 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "any": [
+                    {"all": [{"nameIn": ["take", "limit"]}, {"argument": {"at": 0, "textMatches": "^1$"}}]},
+                    {"all": [{"name": "page"}, {"argument": {"at": 0, "textMatches": "^1$"}}, {"argument": {"at": 1, "textMatches": "^1$"}}]}
+                ]
+            }
+        ],
+        "reject": [
+            {"testCode": true},
+            {"fileMatches": "(^|/)src/engine/query/query\\.py$"}
+        ]
+    },
+    "sin": {
+        "name": "one-row-page",
+        "description": "A single-row read asks for a page, a take(1) or a limit(1) and then takes its first row.",
+        "rule": "Use first() for one row so the read does not count the whole result and the caller does not index a list. Query.first itself is the one place that reads a list of one row.",
+        "skill": "plain-code-words"
+    }
+}

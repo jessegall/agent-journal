@@ -1,0 +1,12 @@
+from dataclasses import dataclass
+
+from engine.command.command import Command
+from core.modules.settings.models.setting import Setting
+
+
+
+@dataclass(frozen=True)
+class AllowEssentialRule(Command[Setting]):
+    """Allows a rule its module marks essential to be asked as essential, for the whole project."""
+
+    rule: str

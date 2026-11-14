@@ -1,0 +1,46 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "comparison",
+        "where": [
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "literal"
+                        },
+                        {
+                            "textMatches": "^['\"]?(worker|merger|helper|reviewer|verifier)['\"]?$"
+                        },
+                        {
+                            "not": {
+                                "field": "slice"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)(helper_type|types)/"
+            },
+            {
+                "fileMatches": "(^|/)migrations/"
+            },
+            {
+                "fileMatches": "(^|/)engine/testing/"
+            }
+        ]
+    },
+    "sin": {
+        "name": "role-key-compared-as-text",
+        "description": "Code compares an agent's role with a role key written as text, such as role == 'worker' or role in ('helper', 'merger'), outside the helper type classes.",
+        "rule": "Ask the class: is_a(Worker), Merger.key, or a fact the helper type declares; only the helper type classes and the migrations that move old rows name a role key as text.",
+        "skill": "plain-code-words"
+    }
+}

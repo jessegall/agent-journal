@@ -1,0 +1,6 @@
+...
+1/2 m:basic        OK              0.01s
+2/2 m:buggy        FAIL            0.00s ...
+
+Ok:                1
+Fail:              1

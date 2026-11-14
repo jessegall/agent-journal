@@ -1,0 +1,35 @@
+import json
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass, field
+
+from engine.driver.hook_call_like import HookCallLike
+
+
+@dataclass(frozen=True)
+class HookReply:
+    """What the journal answers a hook: its refusal, if any, the lines the agent reads, the new input a rule
+    gave the tool, the hook call row and a line for the terminal. A halt is the one line of a program stopped
+    at a usage limit: it stops the program and nothing else of the reply is given."""
+
+    refusal: str = ""
+    lines: Sequence[str] = ()
+    hook_call_id: int | None = None
+    updated_input: Mapping[str, object] = field(default_factory=dict[str, object])
+    terminal: str = ""
+    labelled_lines: Sequence[str] = field(default=(), compare=False)
+    halt: str = ""
+
+    @classmethod
+    def allowed(cls, *lines: str) -> "HookReply":
+        return cls(lines=lines)
+
+    @classmethod
+    def stored(cls, call: HookCallLike) -> "HookReply":
+        return cls(call.refusal, call.lines.splitlines(), call.id, json.loads(call.updated_input), terminal=call.terminal)
+
+    @classmethod
+    def halted(cls, stop_line: str) -> "HookReply":
+        return cls(halt=stop_line)
+
+    def json(self) -> dict[str, object]:
+        return {"refusal": self.refusal, "lines": list(self.lines), "hook_call_id": self.hook_call_id, "updated_input": dict(self.updated_input), "terminal": self.terminal, "halt": self.halt}

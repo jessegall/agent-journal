@@ -1,0 +1,47 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": [
+                    "total_bytes",
+                    "part_bytes",
+                    "run_silent_seconds",
+                    "silent_seconds",
+                    "output",
+                    "all_output",
+                    "last_text",
+                    "last_lines"
+                ]
+            },
+            {
+                "declaredBy": "*OutputFolder"
+            },
+            {
+                "fileMatches": "(^|/)core/modules/processes/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)core/modules/processes/support/(output_folder\\.py$|reading/|cadence/|blocked_runs\\.py$|reader_run\\.py$|reader_judge\\.py$|grown_outputs\\.py$|reader_drafting\\.py$)"
+            },
+            {
+                "fileMatches": "(^|/)core/modules/processes/commands/(read_output|page_output|peek_output)/"
+            },
+            {
+                "fileMatches": "(^|/)core/modules/processes/listeners/process_mark_listener\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "output-measured-outside-output-facts",
+        "description": "Code outside OutputFacts and the cadence funnel measures an output: its size, its silence or its text.",
+        "rule": "Measure an output in OutputFacts (what it is) or RunCadence/RunSilences (how it prints); everything else asks them.",
+        "skill": "processes-architecture"
+    }
+}

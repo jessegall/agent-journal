@@ -1,0 +1,13 @@
+from engine.model.lifecycle import Lifecycle
+from engine.model.move import Move
+from core.modules.memories.models.enums.mark_state import MarkState
+
+
+class MarkLifecycle(Lifecycle):
+    states = MarkState
+    initial = [MarkState.OPEN]
+    editable = ()
+    deletable = ()
+
+    weigh = Move("weigh", [MarkState.OPEN], MarkState.WEIGHED)
+    skip = Move("skip", [MarkState.OPEN], MarkState.SKIPPED)

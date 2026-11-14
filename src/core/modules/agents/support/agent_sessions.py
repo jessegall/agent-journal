@@ -1,0 +1,94 @@
+
+from engine.command.context import Context
+from engine.database.kept_rows import KeptRows
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
+from engine.repository.repository import Repository
+from engine.scope.environment_scope import EnvironmentScope
+from engine.scope.scopes import Scopes
+from engine.time.clock import Clock
+from core.modules.agents.models.agent import Agent
+from core.modules.agents.models.agent_session import AgentSession
+from core.modules.agents.models.enums.end_reason import EndReason
+from core.modules.agents.models.enums.stop_reason import StopReason
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
+
+NEWEST_ROWS = 50
+
+
+class AgentSessions:
+    """Writes and reads the history of the sessions an agent ran under. An agent has one row for each time a
+    session started; the newest row is its current session, and every older row has an end and the reason it
+    ended. A session a user resumes later gets a new row. A session that replaces another has no start
+    until the launcher starts its program, and its reason is written over the finished end of the session it
+    replaced: until then it is unstarted, and a retry launches it instead of replacing it. An unstarted
+    session that is replaced ends as never started. A session that is in the history of an agent and is not
+    its current one was replaced."""
+
+    def __init__(self, queries: Queries, repository: Repository, scopes: Scopes, clock: Clock, kept: KeptRows) -> None:
+        self.queries, self.repository, self.scopes, self.clock, self.kept = queries, repository, scopes, clock, kept
+
+    def started(self, agent: Agent, context: Context) -> AgentSession:
+        return self.repository.save(AgentSession(session_agent_id=agent.id, session=agent.session, program=agent.program,
+                                                 program_model=agent.program_model, started_at=self.clock.timestamp()), context)
+
+    def replaced(self, agent: Agent, reason: EndReason, context: Context) -> AgentSession:
+        current = self.current(agent.id)
+        if current is not None and current.end_reason == EndReason.FINISHED:
+            self.repository.update(current, context, end_reason=reason.value)
+        elif current is not None and current.started_at is None:
+            self.ended(agent.id, EndReason.UNSTARTED, context)
+        else:
+            self.ended(agent.id, reason, context)
+        return self.repository.save(AgentSession(session_agent_id=agent.id, session=agent.session, program=agent.program, program_model=agent.program_model), context)
+
+    def launched(self, session_agent_id: int, context: Context) -> None:
+        current = self.current(session_agent_id)
+        if current is not None and current.started_at is None:
+            self.repository.update(current, context, started_at=self.clock.timestamp())
+
+    def unstarted(self, agent: Agent) -> bool:
+        current = self.current(agent.id)
+        return current is not None and current.started_at is None
+
+    def ended(self, session_agent_id: int, reason: EndReason | StopReason, context: Context) -> None:
+        current = self.current(session_agent_id)
+        if current is not None and current.ended_at is None:
+            self.repository.update(current, context, ended_at=self.clock.timestamp(), end_reason=reason.value)
+
+    def reopened(self, session_agent_id: int, context: Context) -> None:
+        current = self.current(session_agent_id)
+        if current is not None and current.ended_at is not None:
+            self.repository.update(current, context, ended_at=None, end_reason="")
+
+    def bound(self, placeholder_session: str, real_session: str, context: Context) -> None:
+        with self.scopes.opened(None, disabled=[EnvironmentScope]):
+            row = self.queries.query(AgentSession).filter(session=placeholder_session).descending("id").first()
+        if row is not None:
+            self.repository.update(row, context, session=real_session)
+
+    def current(self, session_agent_id: int) -> AgentSession | None:
+        with self.scopes.opened(None, disabled=[EnvironmentScope]):
+            sessions = self.queries.query(AgentSession).filter(session_agent_id=session_agent_id).descending("id")
+            return self.kept.read_newest(sessions, sessions.first, name="agent_sessions.current")
+
+    def earlier_session_count(self, session_agent_id: int) -> int:
+        with self.scopes.opened(None, disabled=[EnvironmentScope]):
+            return len(self.queries.query(AgentSession).filter(session_agent_id=session_agent_id).descending("id").page(1, 2).rows) - 1
+
+    def newest_sessions(self, session_agent_id: int, limit: int) -> list[AgentSession]:
+        with self.scopes.opened(None, disabled=[EnvironmentScope]):
+            return list(self.queries.query(AgentSession).filter(session_agent_id=session_agent_id).descending("id").page(1, limit).rows)
+
+    def main_sessions(self, program: str) -> tuple[str, ...]:
+        main_ids = MainAgentFinder.newest_ids(self.queries, NEWEST_ROWS)
+        rows = self.queries.query(AgentSession).filter(program=program).matching(Among("session_agent_id", main_ids)).descending("id").page(1, NEWEST_ROWS).rows
+        return tuple(dict.fromkeys(row.session for row in rows))
+
+    def replaced_agent_id(self, session: str) -> int | None:
+        with self.scopes.opened(None, disabled=[EnvironmentScope]):
+            row = self.queries.query(AgentSession).filter(session=session).descending("id").first()
+        if row is None:
+            return None
+        current = self.current(row.session_agent_id)
+        return row.session_agent_id if current is not None and current.id != row.id else None

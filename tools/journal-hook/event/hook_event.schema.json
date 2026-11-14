@@ -1,0 +1,528 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jessegall/agent-journal/tools/journal-hook/hook_event.schema.json",
+  "title": "HookEvent",
+  "description": "One hook as journal-hook prepared it for the Python server: what happened, to which tool, with the shell line split and classified and the edit's diff counted.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "program",
+    "event",
+    "session",
+    "firing",
+    "fired_at_ms",
+    "actor",
+    "environment",
+    "child_agent",
+    "tool",
+    "prompt",
+    "raw",
+    "accepts_lines",
+    "launch",
+    "foreign"
+  ],
+  "properties": {
+    "version": {
+      "const": 3
+    },
+    "program": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*$"
+    },
+    "event": {
+      "enum": [
+        "pre_tool_use",
+        "post_tool_use",
+        "post_tool_use_failure",
+        "prompt",
+        "stop",
+        "stop_failure",
+        "session_start",
+        "session_end",
+        "compact",
+        "message_display"
+      ]
+    },
+    "session": {
+      "type": "string"
+    },
+    "firing": {
+      "type": "string"
+    },
+    "fired_at_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "actor": {
+      "type": "string"
+    },
+    "environment": {
+      "type": "string"
+    },
+    "child_agent": {
+      "type": "string"
+    },
+    "accepts_lines": {
+      "type": "boolean",
+      "description": "whether the agent program reads lines in its answer to this hook"
+    },
+    "role": {
+      "type": "string",
+      "description": "the role the journal started the program under, empty for a program it did not start with one"
+    },
+    "launch": {
+      "type": "string",
+      "description": "the launch name the journal started the program under, or empty"
+    },
+    "tool": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/tool"
+        }
+      ]
+    },
+    "prompt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "raw": {
+      "type": "object"
+    },
+    "foreign": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/foreign_run"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "enum": [
+              "pre_tool_use",
+              "post_tool_use",
+              "post_tool_use_failure"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "tool": {
+            "$ref": "#/$defs/tool"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "tool": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "prompt"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "prompt": {
+            "type": "string"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "prompt": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "category": {
+      "enum": [
+        "search",
+        "read",
+        "edit",
+        "version control",
+        "test run",
+        "build",
+        "check",
+        "package",
+        "network",
+        "process",
+        "journal",
+        "unknown"
+      ]
+    },
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "category",
+        "files",
+        "diff"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "enum": [
+            "shell",
+            "edit",
+            "write",
+            "read",
+            "search",
+            "agent",
+            "other"
+          ]
+        },
+        "shell": {
+          "$ref": "#/$defs/shell_line"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "diff": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/diff"
+            }
+          ]
+        },
+        "diff_rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/diff_row"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "category": {
+                "const": "shell"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "shell"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "shell"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "category": {
+                "enum": [
+                  "edit",
+                  "write"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "files": {
+                "minItems": 1
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "diff": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "shell_line": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "line",
+        "parts",
+        "redirects",
+        "is_journal_only",
+        "parse_error"
+      ],
+      "properties": {
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "line": {
+          "type": "string"
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/part"
+          }
+        },
+        "redirects": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "is_journal_only": {
+          "type": "boolean"
+        },
+        "parse_error": {
+          "type": "string"
+        },
+        "saved_commands_known": {
+          "type": "boolean"
+        },
+        "retry_loop": {
+          "type": "boolean"
+        }
+      }
+    },
+    "part": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text",
+        "program",
+        "arguments",
+        "classification"
+      ],
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "program": {
+          "type": "string"
+        },
+        "subcommand": {
+          "type": "string"
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "classification": {
+          "$ref": "#/$defs/classification"
+        },
+        "read_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "write_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "joined_by": {
+          "enum": [
+            "&&",
+            "||",
+            ";",
+            "&"
+          ]
+        },
+        "piped_into": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "effects",
+        "uncertain"
+      ],
+      "properties": {
+        "category": {
+          "$ref": "#/$defs/category"
+        },
+        "effects": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "reads_files",
+              "prints_files",
+              "writes_files",
+              "makes_files",
+              "deletes_files",
+              "reaches_network",
+              "writes_network",
+              "changes_version_control",
+              "runs_long",
+              "changes_folder"
+            ]
+          }
+        },
+        "uncertain": {
+          "type": "boolean"
+        }
+      }
+    },
+    "diff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "existed",
+        "lines_added",
+        "lines_removed"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "existed": {
+          "type": "boolean"
+        },
+        "lines_added": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lines_removed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "diff_row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "line_type",
+        "line",
+        "text"
+      ],
+      "properties": {
+        "line_type": {
+          "enum": [
+            "add",
+            "del",
+            "ctx",
+            "fold"
+          ]
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "text": {
+          "type": "string"
+        },
+        "hidden": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "foreign_run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "exit_code",
+        "stdout",
+        "stderr",
+        "milliseconds",
+        "timed_out",
+        "answer"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "exit_code": {
+          "type": "integer"
+        },
+        "stdout": {
+          "type": "string"
+        },
+        "stderr": {
+          "type": "string"
+        },
+        "milliseconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "timed_out": {
+          "type": "boolean"
+        },
+        "answer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "refusal",
+            "lines",
+            "updated_input",
+            "terminal"
+          ],
+          "properties": {
+            "refusal": {
+              "type": "string"
+            },
+            "lines": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "updated_input": {
+              "type": "object"
+            },
+            "terminal": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

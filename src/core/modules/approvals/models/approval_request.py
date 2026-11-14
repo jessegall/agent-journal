@@ -1,0 +1,41 @@
+from dataclasses import dataclass
+
+from engine.model.environment_scoped import EnvironmentScoped
+from engine.model.model import Model
+from engine.model.move import Move
+from core.modules.approvals.models.enums.approval_state import ApprovalState
+from core.modules.approvals.models.lifecycles.approval_lifecycle import ApprovalLifecycle
+
+
+@dataclass(frozen=True, kw_only=True)
+class ApprovalRequest(EnvironmentScoped, Model):
+    """An action waiting for a user's decision in an environment's dock; command_json is the command
+    Accept runs as the user, when the approval names one; an accepted action that failed ends failed and
+    keeps why in failure."""
+
+    model_name = "approval"
+    cli_name = "approval"
+    lifecycle = ApprovalLifecycle
+
+    environment_id: int = 0
+    creator_id: int
+    requester_id: int
+    required_person_id: int | None = None
+    recipient_agent_id: int | None = None
+    relayer_id: int | None = None
+    responder_id: int | None = None
+    review_answer: str = ""
+    failure: str = ""
+    source_version: int | None = None
+    returns_output: bool = False
+    text: str
+    why: str = ""
+    arguments: tuple[str, ...]
+    refused_arguments: tuple[str, ...] = ()
+    continued_arguments: tuple[str, ...] = ()
+    command_json: str = ""
+    standing_id: int | None = None
+    state: ApprovalState = ApprovalState.OPEN
+
+    def move_result(self, move: Move, failure: str | None) -> "ApprovalRequest":
+        return self.moved(move) if failure is None else self.moved(move, failure=failure)

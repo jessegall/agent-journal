@@ -1,0 +1,19 @@
+import {expect, test} from "vitest";
+import {pageRoute} from "../src/pageRoute.js";
+
+test("the address picks the page: a float's window, an agent's page, a fixed row of windows, else the home page", () => {
+    expect(pageRoute("?view=notes.board&float=3&environment=work")).toEqual({page: "view", props: {environment: "work", view: "notes.board", float: 3}});
+    expect(pageRoute("?agent=12&environment=main")).toEqual({page: "agent", props: {environment: "main", agent: 12}});
+    expect(pageRoute("?windows=a.one,a.two&environment=main")).toEqual({page: "shell", props: {environment: "main", layout: ["a.one", "a.two"]}});
+    expect(pageRoute("?environment=main")).toEqual({page: "home", props: {environment: "main"}});
+    expect(pageRoute("?agent=12")).toEqual({page: "environment", props: {search: "?agent=12"}});
+    expect(pageRoute("")).toEqual({page: "environment", props: {search: ""}});
+    expect(pageRoute("?view=a.b&agent=1&environment=main").page).toBe("view");
+});
+
+// task 5476: every window has an address of its own, as version 4 had a page per feature
+test("?page= names one window as a page of its own, with the environment it is read in", () => {
+    expect(pageRoute("?page=settings.settings&environment=main")).toEqual({page: "view", props: {environment: "main", view: "settings.settings", float: 0, standalone: true}});
+    expect(pageRoute("?page=documents.documents")).toEqual({page: "environment", props: {search: "?page=documents.documents"}});
+    expect(pageRoute("?view=a.b&page=c.d&environment=main").props.standalone).toBeUndefined();
+});

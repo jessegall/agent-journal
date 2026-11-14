@@ -1,0 +1,25 @@
+from engine.guard.guard import Guard
+from engine.query.queries import Queries
+from engine.errors.refusal import Refusal
+from core.modules.plans.models.plan_progress import PlanProgress
+from engine.event.moved import Moved
+from engine.command.context import Context
+from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
+from core.modules.plans.models.plan import Plan
+from core.modules.plans.support.finished_plans import TASKS_FINISHED_GUARD
+
+
+class PlanCloseGuard(Guard[Moved[Plan]]):
+    """Refuses to close a plan while a task in it is neither completed nor cancelled."""
+
+    name = TASKS_FINISHED_GUARD
+    moves = tuple([PlanLifecycle.close])
+
+    def __init__(self, queries: Queries) -> None:
+        self.queries = queries
+
+    def check(self, event: Moved[Plan], context: Context) -> None:
+        progress = self.queries.query(PlanProgress).find(event.row.id)
+        if progress.completed_count < progress.task_count:
+            raise Refusal(f"plan {event.row.id} has {progress.task_count - progress.completed_count} tasks still open",
+                          f"see them with journal plan progress {event.row.id}, and close or cancel each first")

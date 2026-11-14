@@ -1,0 +1,57 @@
+from engine.file.file_access import FileAccess
+import os
+import subprocess
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from engine.time.timestamp import Timestamp
+from engine.caller.process_command import ProcessCommand
+from engine.caller.process_row import ProcessRow
+
+
+PS_TIMEOUT_SECONDS = 5
+PS_ENVIRONMENT = {"LC_ALL": "C", "PATH": "/bin:/usr/bin"}
+PS_LINE = ["ps", "-A", "-o", "pid=,ppid=,lstart="]
+COMMANDS_LINE = ["ps", "-A", "-ww", "-o", "pid=,ppid=,command="]
+LSTART_FORMAT = "%a %b %d %H:%M:%S %Y"
+PROC_FOLDER = Path("/proc")
+START_FIELD_INDEX = 19
+def ps_rows(text: str) -> list[ProcessRow]:
+    rows: list[ProcessRow] = []
+    for line in text.splitlines():
+        columns = line.split()
+        if len(columns) < 7:
+            continue
+        started = datetime.strptime(" ".join(columns[2:7]), LSTART_FORMAT).astimezone(timezone.utc)
+        rows.append(ProcessRow(int(columns[0]), int(columns[1]), Timestamp(started)))
+    return rows
+def proc_row(stat_text: str, boot_seconds: float, tick_rate_hertz: int) -> ProcessRow:
+    pid_text, stat_tail = stat_text.split(" (", 1)
+    fields = stat_tail.rsplit(") ", 1)[1].split()
+    started_seconds = int(boot_seconds + int(fields[START_FIELD_INDEX]) / tick_rate_hertz)
+    return ProcessRow(int(pid_text), int(fields[1]), Timestamp(datetime.fromtimestamp(started_seconds, timezone.utc)))
+class ProcessTable:
+    """The machine's running processes, read once: from ps on macOS, from /proc on Linux; with their command
+    lines, from ps on both."""
+
+    def rows(self) -> list[ProcessRow]:
+        if sys.platform.startswith("linux"):
+            return self.proc_rows()
+        finished = subprocess.run(PS_LINE, capture_output=True, text=True, timeout=PS_TIMEOUT_SECONDS, env=PS_ENVIRONMENT)
+        return ps_rows(finished.stdout)
+
+    def commands(self) -> list[ProcessCommand]:
+        listing = subprocess.run(COMMANDS_LINE, capture_output=True, text=True, check=False, timeout=PS_TIMEOUT_SECONDS, env=PS_ENVIRONMENT).stdout
+        lines = [line.split() for line in listing.splitlines()]
+        return [ProcessCommand(int(columns[0]), int(columns[1]), tuple(columns[2:])) for columns in lines if len(columns) > 2]
+
+    def proc_rows(self) -> list[ProcessRow]:
+        boot_line = next(line for line in FileAccess.read(PROC_FOLDER / "stat").splitlines() if line.startswith("btime "))
+        boot_seconds, tick_rate_hertz = float(boot_line.split()[1]), os.sysconf("SC_CLK_TCK")
+        rows: list[ProcessRow] = []
+        for stat_file in FileAccess.glob(PROC_FOLDER, "[0-9]*/stat"):
+            try:
+                rows.append(proc_row(FileAccess.read(stat_file), boot_seconds, tick_rate_hertz))
+            except OSError:
+                continue
+        return rows

@@ -1,0 +1,45 @@
+from engine.enums.actor_type import ActorType
+from engine.command.bus import Bus
+from engine.command.context import Context
+from engine.command.handler import Handler
+from engine.errors.refusal import Refusal
+from engine.command.request_user_approval import RequestUserApproval
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
+from core.modules.approvals.models.approval_request import ApprovalRequest
+from core.modules.setting_requests.commands.request_setting.request_setting import RequestSetting
+from core.modules.settings.support.setting_catalogue import SettingCatalogue
+from core.modules.settings.support.setting_reader import SettingReader
+from core.modules.settings.support.setting_store import SettingStore
+from core.modules.settings.support.setting_revision import SettingRevision
+from core.modules.settings.support.setting_text import SettingText
+
+APPROVE_OPTION = "Yes, approve"
+REFUSE_OPTION = "No"
+
+
+class RequestSettingHandler(Handler[RequestSetting, ApprovalRequest]):
+    """Checks a proposed setting change and sends it through the shared approval dock."""
+
+    command = RequestSetting
+
+    def __init__(self, declared: SettingCatalogue, values: SettingReader, bus: Bus, revision: SettingRevision) -> None:
+        self.declared, self.values, self.bus, self.revision = declared, values, bus, revision
+
+    def handle(self, command: RequestSetting, context: Context) -> ApprovalRequest:
+        if not context.actor.is_agent():
+            raise Refusal("only an agent asks for a setting", "change the setting on the Settings page")
+        entry = self.declared.value(command.key)
+        if not entry.person_set:
+            raise Refusal(f"an agent may set {command.key} itself", "journal setting set")
+        if not command.reason.strip():
+            raise Refusal("say why the setting should change", "--reason '<why>'")
+        value = SettingText().value(entry, command.text)
+        SettingStore.environment(entry, command.project, context.environment_id)
+        details = f"{entry.title} ({entry.key}) would change from {self.values.current(entry.key).value} to {value}."
+        arguments = ("setting", "set", entry.key, command.text)
+        if command.project:
+            arguments = (*arguments, "--project")
+        arguments = (*arguments, "--expected-revision", self.revision.current(entry.key))
+        approval = self.bus.dispatch(RequestUserApproval(UserApprovalRefusal(f"Change {entry.title}?\n{details}", arguments, request_reason=command.reason.strip()), arguments), context)
+        assert isinstance(approval, ApprovalRequest)
+        return approval

@@ -1,0 +1,31 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {"fileMatches": "(^|/)src/(core/modules|suites)/"},
+            {"of": "child:func", "is": "member-access"},
+            {"any": [
+                {"nameIn": ["find", "first", "required"]},
+                {"all": [
+                    {"nameIn": ["exists", "count"]},
+                    {"descendant": {"all": [{"is": "member-access"}, {"nameIn": ["filter", "matching", "query"]}]}}
+                ]}
+            ]},
+            {"inside": {"any": [{"kind": "For"}, {"kind": "AsyncFor"}, {"kind": "ListComp"}, {"kind": "SetComp"}, {"kind": "DictComp"}, {"kind": "GeneratorExp"}]}}
+        ],
+        "reject": [
+            {"testCode": true},
+            {"fileMatches": "/core/modules/plugins/ticks/plugin_card_reading\\.py$"},
+            {"fileMatches": "/core/modules/(search/support/search_hit|usage/commands/usage_agents/usage_agents_subcommand)\\.py$"},
+            {"fileMatches": "/(core/modules/assignments/support/assignable_rows|suites/coding/modules/workers/listeners/worker_test_run_listener)\\.py$"}
+        ]
+    },
+    "sin": {
+        "name": "read-in-a-loop",
+        "description": "A loop reads one row, or asks one question of the rows, on each turn.",
+        "rule": "Read the rows together before the loop, with find_many, EventRows.required_by_id or one Among condition, then work on the held rows or a set of their keys. PluginCardReading is left out: it claims one queued card file at a time and the claim holds the file's lock until the next turn, so the agent ids of the cards are not known before the loop. SearchHit and UsageAgentsSubcommand are left out: their find is str.find and a find in an in-memory registry, not a row read. AssignableRows and WorkerTestRunListener are left out: they loop over the models a link or a test source can belong to, a fixed handful of tables with one read each, never over rows.",
+        "skill": "plain-code-words"
+    }
+}

@@ -1,0 +1,90 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "kind:BoolOp",
+        "where": [
+            {
+                "operator": "or"
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "call"
+                        },
+                        {
+                            "position": "first"
+                        },
+                        {
+                            "of": "parent",
+                            "kind": "BoolOp"
+                        },
+                        {
+                            "descendant": {
+                                "all": [
+                                    {
+                                        "is": "member-access"
+                                    },
+                                    {
+                                        "nameIn": [
+                                            "text",
+                                            "texts",
+                                            "number",
+                                            "numbers",
+                                            "flag",
+                                            "value",
+                                            "project_value"
+                                        ]
+                                    },
+                                    {
+                                        "any": [
+                                            {
+                                                "typeLike": "*SettingValues",
+                                                "of": "child:value"
+                                            },
+                                            {
+                                                "nameIn": [
+                                                    "settings",
+                                                    "setting_values"
+                                                ],
+                                                "of": "child:value"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "literal"
+                        },
+                        {
+                            "position": "last"
+                        },
+                        {
+                            "of": "parent",
+                            "kind": "BoolOp"
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "setting-read-with-own-default",
+        "description": "A setting read through SettingValues is followed by a literal default of the reader's own, so the declared default is not the one in use.",
+        "rule": "Put the default in the SettingValue declaration; SettingValues already answers it when nothing is set.",
+        "skill": "settings-architecture"
+    }
+}

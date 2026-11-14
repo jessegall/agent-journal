@@ -1,226 +1,203 @@
 #!/bin/sh
-# agent-journal, version 4: install into the project in the current directory, or upgrade it.
-#
-#   curl -fsSL https://raw.githubusercontent.com/jessegall/agent-journal/main/install.sh | sh
-#
-# From a checkout on this machine, the same, run from the project root:
+# agent-journal, version 5: install the journal into the project in the current directory.
 #
 #   sh /path/to/agent-journal/install.sh
 #
-# The package is copied into ./.journal/src, apart from the project's own record; then journal setup
-# wires the hooks of every agent present, writes the skills and the law, and puts the journal
-# dispatcher in ~/.local/bin, which runs whichever version each project holds. Running it again upgrades.
-set -e
-# The journal runs on Python 3.14 and nothing older; the interpreter found is written to .journal/python, which every
-# start of the journal runs, so an older python3 first on the PATH is never the one that runs it.
+# Python 3.14 or newer is found first; the code, from the src beside this script or else the release's
+# agent-journal.tar.gz, is copied into .journal/src, its own database .journal/version-5.db
+# synced from the core modules, by src/install/update/install_journal.py; a project that holds a version 4 journal is left as it
+# is and told to run journal upgrade (sh install.sh upgrade, with --dry-run to see the counts and --yes to go on without
+# asking; sh install.sh restore [--yes] puts version 4 back from .journal/version-4), and an install already made says so and changes nothing;
+# sh install.sh update puts this script's newer code into a project already on version 5, rebuilds its programs when
+# this is a checkout, and has its server take over the new code. An upgrade
+# goes on to place the programs and write the hooks as an install does. Nothing is started.
+#
+# The hook program built for this machine is downloaded from the release into .journal/bin/journal-hook, its
+# checksum is checked against the release's checksums.txt, and it is run once to see that it starts. The install
+# records it in .journal/hooks/runner, and the journal's own settings of Claude Code and Codex in .journal/programs
+# call it by its full path; no project file gets a hook of the journal. When no binary is built for this machine, the
+# release has none, or it does not start, the hooks call .journal/hooks/hook.sh instead, which hands the server the
+# raw hook body, and the install says so.
+# A checksum that does not match stops the install: that file is not the release's.
+#
+# The install leaves .journal/journal, which runs .journal/bin/journal, and writes the journal command of the person's
+# machine to ~/.local/bin (JOURNAL_SHIM_FOLDER names another folder): it runs the command of the project in the folder
+# it is called from or above, version 5's or version 4's.
+#
+# JOURNAL_RELEASE_URL names another place to download from, a file:// folder among them; JOURNAL_PLATFORM names the
+# platform as os/arch instead of the one uname reports.
+#
+# The release's journal-run, the program that runs every shell line of an agent, is downloaded beside it into
+# .journal/bin/journal-run and checked the same way; without it the shell lines run as the agent wrote them.
+set -eu
+
+HERE="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$(pwd)"
+RELEASE="${JOURNAL_RELEASE_URL:-https://github.com/jessegall/agent-journal/releases/latest/download}"
+BIN="$ROOT/.journal/bin"
+
+fail() {
+  echo "$1" >&2
+  exit 1
+}
+
+platform() {
+  if [ -n "${JOURNAL_PLATFORM:-}" ]; then
+    echo "$JOURNAL_PLATFORM"
+    return
+  fi
+  os=$(uname -s | tr '[:upper:]' '[:lower:]')
+  case "$(uname -m)" in
+    x86_64 | amd64) arch=amd64 ;;
+    arm64 | aarch64) arch=arm64 ;;
+    *) arch=$(uname -m) ;;
+  esac
+  echo "$os/$arch"
+}
+
+checksum() {
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$1" | cut -d' ' -f1
+  else
+    shasum -a 256 "$1" | cut -d' ' -f1
+  fi
+}
+
+fall_back() {
+  # an upgrade has already moved the hooks of the programs the project has
+  if [ "$upgraded" = 1 ]; then
+    echo "$1, so the hooks stay as the upgrade wrote them"
+    exit 0
+  fi
+  mkdir -p "$ROOT/.journal/hooks"
+  cp "$SOURCE/install/hook/hook.sh" "$ROOT/.journal/hooks/hook.sh"
+  PYTHONPATH="$SOURCE" "$python" -m install.hook.hook_writer "$ROOT" "sh \"$ROOT/.journal/hooks/hook.sh\""
+  echo "$1, so the hooks of Claude Code and Codex call $ROOT/.journal/hooks/hook.sh, which the server answers more slowly"
+  exit 0
+}
+
+# the project's .journal/journal runs its .journal/bin/journal, and the journal command on the person's PATH
+# (JOURNAL_SHIM_FOLDER, else ~/.local/bin) finds the command of a version 5 project as well as a version 4 one
+link_command() {
+  printf '#!/bin/sh\nexec "$(dirname "$0")/bin/journal" "$@"\n' > "$ROOT/.journal/journal"
+  chmod +x "$ROOT/.journal/journal"
+  shim_folder="${JOURNAL_SHIM_FOLDER:-$HOME/.local/bin}"
+  mkdir -p "$shim_folder"
+  cp "$SOURCE/install/hook/shim.sh" "$shim_folder/journal"
+  chmod +x "$shim_folder/journal"
+}
+
 find_python() {
-  PY=""
-  for candidate in python3.14 python3 /Library/Frameworks/Python.framework/Versions/3.14/bin/python3.14 "$(command -v uv >/dev/null 2>&1 && uv python find 3.14 2>/dev/null)"; do
-    [ -n "$candidate" ] && command -v "$candidate" >/dev/null 2>&1 || continue
-    "$candidate" -c 'import sys; sys.exit(sys.version_info < (3, 14))' 2>/dev/null && { PY="$(command -v "$candidate")"; return 0; }
+  for candidate in python3.14 python3.15 python3 python; do
+    if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import sys; sys.exit(sys.version_info < (3, 14))' >/dev/null 2>&1; then
+      echo "$candidate"
+      return 0
+    fi
   done
   return 1
 }
-# Python 3.14 from python.org's installer for the Mac, the newest release of 3.14 that has one: it needs no Xcode, where
-# Homebrew builds Python from source on a macOS it no longer has packages for, and fails on an old Xcode.
-python_org() {
-  for version in $(curl -fsSL https://www.python.org/ftp/python/ | grep -o '3\.14\.[0-9]*/' | tr -d / | sort -u -t. -k3,3nr | head -3); do
-    package="${TMPDIR:-/tmp}/python-$version-macos11.pkg"
-    curl -fsSL -o "$package" "https://www.python.org/ftp/python/$version/python-$version-macos11.pkg" || continue
-    sudo installer -pkg "$package" -target / && rm -f "$package" && return 0
+
+# the code is the src beside this script, or else the release's agent-journal.tar.gz, checked against checksums.txt
+SOURCE="$HERE/src"
+if [ ! -f "$SOURCE/engine/cli/journal.py" ]; then
+  archive=$(mktemp -d)
+  trap 'rm -rf "$archive"' EXIT
+  curl -fsSL "$RELEASE/agent-journal.tar.gz" -o "$archive/agent-journal.tar.gz" || fail "the release has no agent-journal.tar.gz"
+  curl -fsSL "$RELEASE/checksums.txt" -o "$archive/checksums.txt" || fail "the release has no checksums.txt"
+  expected=$(awk '$2 == "agent-journal.tar.gz" {print $1}' "$archive/checksums.txt")
+  [ -n "$expected" ] && [ "$(checksum "$archive/agent-journal.tar.gz")" = "$expected" ] || fail "the checksum of agent-journal.tar.gz does not match the release's, so it is not installed"
+  tar -xzf "$archive/agent-journal.tar.gz" -C "$archive"
+  SOURCE="$archive/src"
+fi
+
+# a checkout of agent-journal has its tools beside this script and go on the PATH: it builds the programs itself unless
+# JOURNAL_RELEASE_URL names a release to download them from
+builds_programs() {
+  [ -z "${JOURNAL_RELEASE_URL:-}" ] && [ -f "$HERE/tools/go.work" ] && command -v go >/dev/null 2>&1
+}
+
+build_programs() {
+  mkdir -p "$BIN"
+  # each program is built beside its old file and renamed over it, so a command started during the build always finds one
+  for program in journal journal-hook journal-run journal-shared; do
+    go -C "$HERE/tools/$program" build -o "$BIN/$program.building" . || fail "go could not build $program from $HERE/tools/$program"
+    mv -f "$BIN/$program.building" "$BIN/$program"
   done
-  echo "Python 3.14 could not be installed from python.org: install it from https://www.python.org/downloads/, then run this again." >&2
-  exit 1
 }
-# What the journal needs and is missing is offered and, on a yes, installed: Python 3.14 with uv, python.org's installer
-# on a Mac or Homebrew elsewhere; git with Homebrew or, on a Mac without it, the command line tools.
-offer() {
-  what="$1"; way="$2"; said="${3:-$2}"
-  [ -n "$way" ] || { echo "agent-journal needs $what, and nothing here can install it: install $what, then run this again." >&2; exit 1; }
-  echo "agent-journal needs $what, and none is installed here."
-  answer="${AGENT_JOURNAL_YES:+y}"
-  if [ -z "$answer" ]; then
-    printf 'Install %s now, with: %s? [y/N] ' "$what" "$said"
-    { read -r answer < /dev/tty; } 2>/dev/null || true
+
+python=$(find_python) || fail "journal needs Python 3.14 or newer, and none is on the PATH: get it from https://www.python.org/downloads/ (or brew install python@3.14, or your system's package for python 3.14)"
+upgraded=0
+if [ "${1:-}" = "update" ]; then
+  [ -f "$ROOT/.journal/version-5.db" ] || fail "no version 5 journal is installed in $ROOT to update: run sh install.sh"
+  if builds_programs; then
+    build_programs
   fi
-  case "$answer" in y|Y|yes|Yes) $way ;; *) echo "Nothing changed. Install $what, then run this again."; exit 0 ;; esac
-}
-if ! find_python; then
-  if command -v uv >/dev/null 2>&1; then offer "Python 3.14" "uv python install 3.14"
-  elif [ "$(uname)" = Darwin ]; then offer "Python 3.14" python_org "python.org's installer, which asks for your password"
-  elif command -v brew >/dev/null 2>&1; then offer "Python 3.14" "brew install python@3.14"
-  else offer "Python 3.14" ""; fi
-  find_python || { echo "Python 3.14 is still not found after its install" >&2; exit 1; }
+  exec env PYTHONPATH="$SOURCE" "$python" -m install.working_tree_install "$ROOT" "$SOURCE"
 fi
-if ! command -v git >/dev/null 2>&1; then
-  if command -v brew >/dev/null 2>&1; then offer git "brew install git"
-  elif [ "$(uname)" = Darwin ]; then offer git "xcode-select --install"
-  else offer git ""; fi
-  command -v git >/dev/null 2>&1 || { echo "git is not found yet: once its install has finished, run this again." >&2; exit 1; }
+if [ "${1:-}" = "upgrade" ]; then
+  shift
+  env PYTHONPATH="$SOURCE" "$python" -m install.version_four.upgrade_journal "$ROOT" "$@" || exit $?
+  case " $* " in *" --dry-run "*) exit 0 ;; esac
+  [ -f "$ROOT/.journal/version-5.db" ] || exit 0
+  upgraded=1
 fi
-HERE="$(cd "$(dirname "$0")" 2>/dev/null && pwd)"
-TMP=""
-REPO="${AGENT_JOURNAL_REPO:-https://github.com/jessegall/agent-journal}"
-if [ -d "$HERE/src/journal" ]; then
-  SRC="$HERE/src"
+if [ "${1:-}" = "restore" ]; then
+  shift
+  exec env PYTHONPATH="$SOURCE" "$python" -m install.version_four.upgrade_journal "$ROOT" --restore "$@"
+fi
+status=0
+PYTHONPATH="$SOURCE" "$python" -m install.update.install_journal "$ROOT" "$SOURCE" || status=$?
+case "$status" in
+  0) ;;
+  3) [ "$upgraded" = 1 ] || exit 0 ;;
+  *) exit "$status" ;;
+esac
+link_command
+
+# the journal command replaces version 4's script
+if builds_programs; then
+  build_programs
+  PYTHONPATH="$SOURCE" "$python" -m install.hook.hook_writer "$ROOT" "\"$BIN/journal-hook\"" "$upgraded"
+  echo "built journal, journal-hook, journal-run and journal-shared from $HERE/tools into $BIN; the hooks call $BIN/journal-hook"
+  exit 0
+fi
+
+target=$(platform)
+case "$target" in
+  darwin/arm64 | darwin/amd64 | linux/arm64 | linux/amd64) ;;
+  *) fall_back "no journal-hook is built for $target (build one with go build ./tools/journal-hook)" ;;
+esac
+name="journal-hook-${target%/*}-${target#*/}"
+
+download=$(mktemp -d)
+trap 'rm -rf "$download" "${archive:-}"' EXIT
+curl -fsSL "$RELEASE/$name" -o "$download/$name" || fall_back "the release has no $name"
+curl -fsSL "$RELEASE/checksums.txt" -o "$download/checksums.txt" || fall_back "the release has no checksums.txt"
+expected=$(awk -v name="$name" '$2 == name {print $1}' "$download/checksums.txt")
+[ -n "$expected" ] || fall_back "the release's checksums.txt names no $name"
+[ "$(checksum "$download/$name")" = "$expected" ] || fail "the checksum of $name does not match the release's, so it is not installed"
+
+mkdir -p "$BIN"
+chmod +x "$download/$name"
+mv "$download/$name" "$BIN/journal-hook"
+"$BIN/journal-hook" --version >/dev/null 2>&1 || fall_back "$BIN/journal-hook does not start on this machine"
+
+runner="journal-run-${target%/*}-${target#*/}"
+if curl -fsSL "$RELEASE/$runner" -o "$download/$runner" 2>/dev/null; then
+  expected=$(awk -v name="$runner" '$2 == name {print $1}' "$download/checksums.txt")
+  [ -n "$expected" ] || fail "the release's checksums.txt names no $runner"
+  [ "$(checksum "$download/$runner")" = "$expected" ] || fail "the checksum of $runner does not match the release's, so it is not installed"
+  chmod +x "$download/$runner"
+  mv "$download/$runner" "$BIN/journal-run"
+  if "$BIN/journal-run" --version >/dev/null 2>&1; then
+    echo "shell lines run through $BIN/journal-run"
+  else
+    rm -f "$BIN/journal-run"
+    echo "$BIN/journal-run does not start on this machine, so shell lines run as the agent wrote them"
+  fi
 else
-  REF="${AGENT_JOURNAL_REF:-main}"
-  TMP="$(mktemp -d)"
-  git clone --quiet --depth 1 --branch "$REF" "$REPO" "$TMP/pkg"
-  SRC="$TMP/pkg/src"
+  echo "the release has no $runner, so shell lines run as the agent wrote them"
 fi
-# Run from a linked worktree whose .journal links to the project's, the install goes to the project itself, so the hooks and
-# the journal command name the project's root and never the worktree's.
-common=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)
-if [ -L .journal ] && [ -n "$common" ] && [ "$common" != "$(git rev-parse --path-format=absolute --git-dir 2>/dev/null)" ]; then
-  cd "$(dirname "$common")"
-  # The source is the project checkout's own, never the worktree's, which stands at whatever commit it was cut from.
-  [ -n "$TMP" ] || [ ! -d "$PWD/src/journal" ] || SRC="$PWD/src"
-fi
-# A journal from before version 4 is moved whole into .journal/version-3 before anything is written, and is never changed after;
-# should the install fail before the new journal is up, it is put back where it was.
-BACKED=""
-restore() {
-  [ -n "$BACKED" ] || return 0
-  mv .journal/version-3 .journal-version-3 && rm -rf .journal && mv .journal-version-3 .journal
-  echo "the install failed: the version 3 journal is back where it was" >&2
-}
-# One install runs in a project at a time, however many journals of it ask for one: the first takes the lock folder, which
-# holds its process number, and an install that finds it held by a live process leaves at once. A step of an update path
-# runs inside the install that holds it.
-LOCK=.journal/runtime/install.lock
-OWN_LOCK=""
-if [ -z "${AGENT_JOURNAL_INSTALL_LOCK:-}" ]; then
-  mkdir -p .journal/runtime
-  if ! mkdir "$LOCK" 2>/dev/null; then
-    holder=$(cat "$LOCK/pid" 2>/dev/null || true)
-    if [ -n "$holder" ] && kill -0 "$holder" 2>/dev/null; then
-      echo "another install of this journal is running (process $holder): this one stops and leaves the update to it"
-      exit 0
-    fi
-    rm -rf "$LOCK"
-    mkdir "$LOCK"
-  fi
-  echo $$ > "$LOCK/pid"
-  OWN_LOCK=1
-  export AGENT_JOURNAL_INSTALL_LOCK="$LOCK"
-fi
-trap 'code=$?; [ -z "$OWN_LOCK" ] || { rm -f .journal/runtime/journal.starting; rm -rf "$LOCK"; }; [ "$code" -eq 0 ] || restore' EXIT
-# Whether the journal listening on a port runs from this project, by its command line or its working folder; with no
-# lsof to ask, it is taken as this project's, as the port file says.
-this_projects() {
-  command -v lsof >/dev/null 2>&1 || return 0
-  pid=$(lsof -t -nP -iTCP:"$1" -sTCP:LISTEN 2>/dev/null | head -n 1)
-  [ -n "$pid" ] || return 1
-  ps -o command= -p "$pid" | grep -qF "$PWD/" && return 0
-  [ "$(lsof -a -p "$pid" -d cwd -Fn 2>/dev/null | sed -n 's/^n//p')" = "$PWD" ]
-}
-# Every journal from before version 4 writes its version in src/VERSION, 2.x as much as 3.x; version 4 writes none.
-old_major=$(cut -d. -f1 .journal/src/VERSION 2>/dev/null | tr -cd '0-9')
-if [ -n "$old_major" ] && [ "$old_major" -lt 4 ]; then
-  echo "This project has a journal from before version 4 ($(cat .journal/src/VERSION)). It will be stopped and kept whole in .journal/version-3, then version 4 is"
-  echo "installed, and the viewer offers to bring everything across. Nothing is lost."
-  if [ "${AGENT_JOURNAL_YES:-}" != 1 ]; then
-    printf 'Go ahead? [y/N] '
-    answer=""
-    { read -r answer < /dev/tty; } 2>/dev/null || true
-    case "$answer" in y|Y|yes|Yes) ;; *) echo "Nothing changed."; exit 0 ;; esac
-  fi
-  port=$(cat .journal/port 2>/dev/null || true)
-  if [ -n "$port" ] && ! this_projects "$port"; then
-    echo "the journal on port $port is another project's: left running"
-    port=""
-  fi
-  if [ -n "$port" ]; then
-    curl -fsS -m 5 -X POST -H 'Content-Type: application/json' -d '{}' "http://127.0.0.1:$port/api/stop" >/dev/null 2>&1 || true
-    for _ in 1 2 3 4 5 6 7 8 9 10; do
-      curl -fs -m 1 "http://127.0.0.1:$port/" >/dev/null 2>&1 || break
-      sleep 1
-    done
-  fi
-  mv .journal .journal-version-3
-  mkdir .journal
-  mv .journal-version-3 .journal/version-3
-  BACKED=1
-  echo "the version 3 journal is kept whole in .journal/version-3"
-fi
-# Going back a version: the record was written by the newer code, whose models the older code may not read.
-installed=$(sed -n 's/^VERSION = "\(.*\)"$/\1/p' .journal/src/journal/version.py 2>/dev/null || true)
-bringing=$(sed -n 's/^VERSION = "\(.*\)"$/\1/p' "$SRC/journal/version.py" 2>/dev/null || true)
-if [ -n "$installed" ] && [ -n "$bringing" ] && "$PY" -c 'import sys; v = lambda s: tuple(int(n) for n in s.split(".")); sys.exit(0 if v(sys.argv[1]) < v(sys.argv[2]) else 1)' "$bringing" "$installed"; then
-  echo "This installs $bringing over $installed: an earlier version. The journal's record was written by $installed, and"
-  echo "$bringing's models may not read it, so the journal may fail to start or lose what it cannot read. Staying on"
-  echo "$installed or later is advised."
-  if [ "${AGENT_JOURNAL_YES:-}" != 1 ]; then
-    printf 'Install the earlier version anyway? [y/N] '
-    answer=""
-    { read -r answer < /dev/tty; } 2>/dev/null || true
-    case "$answer" in y|Y|yes|Yes) ;; *) echo "Nothing changed: $installed stays."; exit 0 ;; esac
-  fi
-fi
-# A journal further behind than one update reaches goes through the steps the update matrix proved, planned from
-# update_steps.json beside this script by the journal's own planner: each step is cloned and installed by its own
-# install.sh, so its own code runs its migrations, and this release is installed last. Where the walk stands is kept in
-# .journal/runtime/update-path.json; a step that fails stops it there, on the last good step. No path installs directly.
-PLAN='import sys
-from pathlib import Path
-from journal.features.updates.support.no_update_path import NoUpdatePath
-from journal.features.updates.support.update_path import UpdatePath
-installed, bringing, steps = sys.argv[1:]
-try:
-    print(*(version for version in UpdatePath.planned(installed, bringing, Path(steps).read_text()).versions if version != bringing))
-except NoUpdatePath as reason:
-    sys.exit(f"no path of steps leads from {installed} to {bringing} ({reason}), so {bringing} is installed directly")'
-path_written() {
-  printf '{"from": "%s", "to": "%s", "steps": [%s], "reached": "%s", "failed": "%s"}\n' "$installed" "$bringing" "$(printf '"%s", ' $path | sed 's/, $//')" "$1" "$2" > .journal/runtime/update-path.json
-}
-path=""
-if [ -n "$installed" ] && [ -n "$bringing" ] && [ -f "$SRC/../update_steps.json" ]; then
-  path=$(PYTHONPATH="$SRC" "$PY" -c "$PLAN" "$installed" "$bringing" "$SRC/../update_steps.json") || path=""
-fi
-if [ -n "$path" ]; then
-  mkdir -p .journal/runtime
-  reached="$installed"
-  echo "updating from $installed to $bringing through $path"
-  for step in $path; do
-    path_written "$reached" ""
-    step_tmp="$(mktemp -d)"
-    if ! { git clone --quiet --depth 1 --branch "v$step" "$REPO" "$step_tmp/pkg" && sh "$step_tmp/pkg/install.sh"; }; then
-      rm -rf "$step_tmp"
-      path_written "$reached" "$step"
-      echo "the update stopped at $reached: the step to $step failed, and $reached stays installed" >&2
-      exit 1
-    fi
-    rm -rf "$step_tmp"
-    reached="$step"
-  done
-  path_written "$reached" ""
-fi
-mkdir -p .journal/src
-printf '%s\n' "$PY" > .journal/python
-# While the code is copied and set up, the running journal is told it is starting, so it does not take the copying
-# for a slow request of its own; the exit trap above takes the mark away.
-mkdir -p .journal/runtime
-touch .journal/runtime/journal.starting
-# Each part is copied beside the one in use and renamed into place, so the running hooks and shell runner never find it gone.
-swap() {
-  rm -rf "$2.new" "$2.old"
-  cp -R "$1" "$2.new"
-  find "$2.new" -name __pycache__ -type d -prune -exec rm -rf {} + 2>/dev/null || true
-  [ -e "$2" ] && mv "$2" "$2.old"
-  mv "$2.new" "$2"
-  rm -rf "$2.old"
-}
-for name in journal supervisor sync_server journal.py journal.sh; do
-  swap "$SRC/$name" ".journal/src/$name"
-done
-mkdir -p .journal/src/web && swap "$SRC/web/dist" .journal/src/web/dist
-# The commit installed, so a journal that follows a branch knows whether the branch has moved on: the checkout's, or for a
-# copy with no .git, as the team server's image is, the commit its build wrote beside it.
-commit=$(git -C "$SRC/.." rev-parse HEAD 2>/dev/null || cat "$SRC/commit" 2>/dev/null)
-[ -n "$commit" ] || { echo "the install failed: $SRC is not a git checkout and names no commit, so the commit installed cannot be known" >&2; exit 1; }
-printf '%s\n' "$commit" > .journal/src/commit
-echo "installed commit $commit from $SRC"
-[ -z "$TMP" ] || rm -rf "$TMP"
-JOURNAL_ROOT="$PWD" "$PY" .journal/src/journal.py setup
-[ -z "$path" ] || path_written "$bringing" ""
+
+PYTHONPATH="$SOURCE" "$python" -m install.hook.hook_writer "$ROOT" "\"$BIN/journal-hook\"" "$upgraded"
+echo "the hooks call $BIN/journal-hook"

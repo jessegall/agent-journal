@@ -1,0 +1,27 @@
+from engine.command.context import Context
+from engine.command.handler import Handler
+from engine.errors.refusal import Refusal
+from engine.setting.setting_declaration import GROUP_TYPE
+from core.modules.settings.commands.switch_setting_group.switch_setting_group import SwitchSettingGroup
+from core.modules.settings.support.setting_store import SettingStore
+from core.modules.settings.support.setting_catalogue import SettingCatalogue
+from core.modules.settings.support.setting_reader import SettingReader
+from core.modules.settings.support.current_setting import CurrentSetting
+
+
+class SwitchSettingGroupHandler(Handler[SwitchSettingGroup, CurrentSetting]):
+    """Keeps whether a toggleable group is on as a setting of the group's own key."""
+
+    command = SwitchSettingGroup
+
+    def __init__(self, declared: SettingCatalogue, values: SettingReader, store: SettingStore) -> None:
+        self.declared, self.values, self.store = declared, values, store
+
+    def handle(self, command: SwitchSettingGroup, context: Context) -> CurrentSetting:
+        entry = self.declared.entry(command.key)
+        if entry.type != GROUP_TYPE or not entry.toggleable:
+            raise Refusal(f"{entry.key} cannot be switched off", "only a group declared toggleable can be switched off")
+        if not command.project and context.environment_id is None:
+            raise Refusal(f"{entry.key} needs an environment or the whole project", "name --environment, or add --project")
+        self.store.write(entry.key, command.enabled, None if command.project else context.environment_id, context)
+        return self.values.current(entry.key)

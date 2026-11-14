@@ -1,15 +1,6 @@
-# code-commandments generated state; the lines below stay tracked.
-# Add your own exceptions underneath — they are preserved across a sync.
+# code-commandments generated state; only the detectors in custom/ stay tracked.
+# The config, the reports and the sessions live at the project root and are served through the journal.
 *
 !.gitignore
-!config.php
-!config.json
 !custom/
 !custom/**
-
-# A session's TASKS are tracked; everything else in its folder is this run's own state.
-# Un-ignoring something nested takes a line per level, so these four are one rule.
-!sessions/
-!sessions/*/
-!sessions/*/tasks/
-!sessions/*/tasks/**

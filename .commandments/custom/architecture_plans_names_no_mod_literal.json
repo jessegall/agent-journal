@@ -1,0 +1,32 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textMatches": "(?i)(^|[^p])review|critique"
+            },
+            {
+                "file": "src/core/modules/plans/**"
+            }
+        ],
+        "reject": [
+            {
+                "file": "src/core/modules/plans/upgrade/**"
+            },
+            {
+                "testCode": true
+            },
+            {
+                "file": "src/core/modules/plans/migrations/**"
+            }
+        ]
+    },
+    "sin": {
+        "name": "plan-module-names-a-mod-in-text",
+        "description": "A string in the plan module names reviews or critiques, which another module adds to it from outside.",
+        "rule": "The plan module knows nothing of its mods. Declare a button or an inspector section from the module that owns the feature.",
+        "skill": "plain-code-words"
+    }
+}

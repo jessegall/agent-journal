@@ -1,0 +1,39 @@
+from engine.file.file_access import FileAccess
+
+from engine.actor.actor import Actor
+from engine.process.plugin_script_processes import PluginScriptProcesses
+from engine.command.context import Context
+from engine.command.handler import Handler
+from engine.repository.repository import Repository
+from core.modules.plugins.commands.remove_plugin.remove_plugin import RemovePlugin
+from core.modules.plugins.queries.plugin_query import PluginQuery
+from core.modules.plugins.support.plugin_folders import PluginFolders
+from core.modules.plugins.support.plugin_places import PluginPlaces
+from core.modules.plugins.support.plugin_readers import PluginReaders
+from core.modules.skills.support.plugin_skill_removal import PluginSkillRemoval
+
+
+class RemovePluginHandler(Handler[RemovePlugin, str]):
+    """Deletes a plugin's row with its aliases, then its readers and its code folder, and its data folder only with
+    --purge; only the user removes."""
+
+    command = RemovePlugin
+    runs_once = True
+
+    def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_removal: PluginSkillRemoval, repository: Repository, readers: PluginReaders, scripts: PluginScriptProcesses, places: PluginPlaces) -> None:
+        self.plugins, self.folders, self.skill_removal, self.repository, self.readers, self.scripts, self.places = plugins, folders, skill_removal, repository, readers, scripts, places
+
+    def prepare(self, command: RemovePlugin, actor: Actor) -> None:
+        self.scripts.stop(command.name)
+        self.places.stop(command.name)
+
+    def handle(self, command: RemovePlugin, context: Context) -> str:
+        plugin = self.plugins.find_name(command.name)
+        self.repository.delete(plugin, context)
+        self.readers.remove(plugin.name, context)
+        self.skill_removal.remove(plugin.name)
+        FileAccess.rmtree(self.folders.code(plugin.name), ignore_errors=True)
+        if command.purge:
+            FileAccess.rmtree(self.folders.data(plugin.name), ignore_errors=True)
+            return f"removed {plugin.name} and its data"
+        return f"removed {plugin.name}; its data folder stays in .journal/plugin-data/{plugin.name}"

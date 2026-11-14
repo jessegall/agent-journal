@@ -1,0 +1,14 @@
+==> amazon-ebs: Provisioning with shell script: /tmp/packer-shell144910435
+    amazon-ebs: PolicyKit daemon disconnected from the bus.
+    amazon-ebs: We are no longer a registered authentication agent.
+==> amazon-ebs: Terminating the source AWS instance...
+==> amazon-ebs: Cleaning up any extra volumes...
+==> amazon-ebs: No volumes to clean up, skipping
+==> amazon-ebs: Deleting temporary security group...
+==> amazon-ebs: Deleting temporary keypair...
+Build 'amazon-ebs' errored: Script disconnected unexpectedly.
+
+==> Some builds didn't complete successfully and had errors:
+--> amazon-ebs: Script disconnected unexpectedly.
+
+==> Builds finished but no artifacts were created.

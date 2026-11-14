@@ -1,0 +1,53 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "module_part"
+            },
+            {
+                "argument": {
+                    "at": 0,
+                    "name": "DRIVERS_MODULE"
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)core/modules/drivers/models/hook_call\\.py$"
+            },
+            {
+                "child": {
+                    "all": [
+                        {
+                            "field": "func"
+                        },
+                        {
+                            "descendant": {
+                                "all": [
+                                    {
+                                        "is": "identifier"
+                                    },
+                                    {
+                                        "name": "agent"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "sin": {
+        "name": "raw-hook-metadata-read",
+        "description": "A file reads the drivers part of a hook call's metadata by its keys, so the keys the driver writes are known in two places.",
+        "rule": "Ask the hook call: HookCall keeps the drivers part of its metadata and gives it out through named members such as its foreign runs, its rules and whether it resumed.",
+        "skill": "drivers-architecture"
+    }
+}

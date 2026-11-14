@@ -1,0 +1,8 @@
+▮▮▮▮ config:typecheck (3s 446ms, 64afa622)
+▮▮▮▮ db:typecheck (3s 580ms, 1969c43e)
+▮▮▮▮ web-api:typecheck (3s 710ms, 371ccfb2)
+▮▮▮▮ web-ui:typecheck (4s 294ms, 4563caad)
+▮▮▮▮ agent-core:typecheck (6s 166ms, 169e5c4e)
+
+Tasks: 7 completed
+ Time: 6s 418ms

@@ -1,0 +1,38 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "identifier",
+        "where": [
+            {
+                "nameMatches": "(?i)(^|[^p])review|critique"
+            },
+            {
+                "file": "src/core/modules/plans/**"
+            }
+        ],
+        "reject": [
+            {
+                "file": "src/core/modules/plans/upgrade/**"
+            },
+            {
+                "testCode": true
+            },
+            {
+                "file": "src/core/modules/plans/migrations/**"
+            },
+            {
+                "nameMatches": "BlockReview"
+            },
+            {
+                "nameMatches": "Migration$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "plan-module-names-a-mod",
+        "description": "The plan module names reviews or critiques, which another module adds to it from outside.",
+        "rule": "The plan module knows nothing of its mods. Declare a button or an inspector section from the module that owns the feature. A recorded migration keeps the class name it ran with, so the module still lists it.",
+        "skill": "plain-code-words"
+    }
+}

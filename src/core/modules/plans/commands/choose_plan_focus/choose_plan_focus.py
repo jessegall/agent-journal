@@ -1,0 +1,12 @@
+from dataclasses import dataclass
+
+from engine.command.command import Command
+
+
+@dataclass(frozen=True)
+class ChoosePlanFocus(Command[tuple[str, ...]]):
+    """Reads the plan focus of the asking agent, and first names a plan as its focus or clears the plan it
+    named. A user does this for the running main agent."""
+
+    plan_id: int | None = None
+    clears: bool = False

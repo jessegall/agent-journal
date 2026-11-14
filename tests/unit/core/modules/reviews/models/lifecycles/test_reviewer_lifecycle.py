@@ -1,0 +1,28 @@
+from datetime import datetime, timezone
+
+from engine.actor.actor import Actor
+from engine.enums.actor_type import ActorType
+from engine.time.timestamp import Timestamp
+from core.modules.reviews.models.enums.reviewer_state import ReviewerState
+from core.modules.reviews.models.lifecycles.reviewer_lifecycle import ReviewerLifecycle
+from core.modules.reviews.models.reviewer import Reviewer
+
+FIXED_TIME = Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc))
+ACTOR = Actor(2, ActorType.AGENT)
+IDLE = Reviewer(id=5, version=1, environment_id=1, creator_id=1, program="claude")
+
+
+def test_a_reviewer_starts_idle_takes_a_review_and_goes_idle_again():
+    reviewing = IDLE.start(FIXED_TIME, ACTOR)
+    assert reviewing.state == ReviewerState.REVIEWING
+    assert reviewing.finish(FIXED_TIME, ACTOR).state == ReviewerState.IDLE
+
+
+def test_only_an_idle_reviewer_retires():
+    assert IDLE.retire(FIXED_TIME, ACTOR).state == ReviewerState.RETIRED
+    assert list(ReviewerLifecycle.retire.sources) == [ReviewerState.IDLE]
+
+
+def test_a_reviewer_ends_idle_or_reviewing():
+    assert IDLE.end(FIXED_TIME, ACTOR).state == ReviewerState.ENDED
+    assert IDLE.start(FIXED_TIME, ACTOR).end(FIXED_TIME, ACTOR).state == ReviewerState.ENDED

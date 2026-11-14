@@ -1,0 +1,93 @@
+import json
+import sqlite3
+
+from engine.database.actor_table import ActorTable
+from engine.database.database import Database
+from engine.database.row_insert import RowInsert
+from engine.upgrade.creator_resolver import CreatorResolver
+from engine.upgrade.move_context import MoveContext
+from engine.upgrade.move_map import MoveMap
+from engine.upgrade.move_report import MoveReport
+from engine.upgrade.version_four_move import VersionFourMove
+from engine.upgrade.version_four_source import VersionFourSource
+from core.modules.messages.models.enums.message_type import MessageType
+
+TABLE = "messages"
+REACTIONS = "reactions"
+LINKS = "links"
+REACTS_LINK = "reacts"
+REACTION_PREFIX = "reactions:"
+MESSAGE_PREFIX = "messages:"
+TYPES = {"user": MessageType.USER, "agent": MessageType.AGENT}
+CARD_MARKS = {"task_card": "tasks.task", "plan_card": "plans.plan", "memory_card": "memories.memory", "skill_card": "skills.skill",
+              "question_card": "questions.question", "wait_card": "waits.impasse"}
+ENDED = "ended"
+
+
+class MessagesMove(VersionFourMove):
+    """Carries what the user and the agents wrote in version 4 with its number, type, text, environment,
+    reading moment, the message it answers and the agent that wrote it. Version 4 also kept chat cards,
+    marks, reports and notices as messages with a card type in their data: they are not messages, they are
+    dropped and counted by card type, since version 5 makes its chat marks from events. Reactions go onto
+    their message."""
+
+    name = "messages"
+    reads = ["messages", "reactions"]
+    id_modules = ["journal.core.actors", "journal.core.environments", "journal.core.agents"]
+
+    def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
+        report, creators, rows, sessions = MoveReport(), CreatorResolver(target, map), RowInsert(target), ActorTable(target)
+        message_ids = {row["id"] for row in source.rows(TABLE) if not self.card_type(row["data"]) and row["author"] in TYPES}
+        for row in source.rows(TABLE):
+            card_type = self.card_type(row["data"])
+            if map.new_id("environments", row["environment_id"]) is None:
+                report.skip(TABLE, row["id"], f"its environment {row['environment_id']} did not move")
+            elif card_type and CARD_MARKS.get(card_type) in context.mark_variants:
+                report.count("chat_marks", map.transfer(TABLE, row["id"], "chat_marks", lambda: self.mark(rows, row, creators, card_type, context)))
+            elif card_type:
+                report.drop(f"chat card {card_type}", 1)
+            elif row["author"] not in TYPES:
+                report.skip(TABLE, row["id"], f"author {row['author']} is none of {', '.join(TYPES)}")
+            else:
+                report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.insert(rows, row, creators, sessions, self.parent_id(row, message_ids, map), context)))
+        self.move_reactions(source, rows, map, creators)
+        return report
+
+    # A version 4 reaction is its own row, tied to its message by a link.
+    def move_reactions(self, source: VersionFourSource, rows: RowInsert, map: MoveMap, creators: CreatorResolver) -> None:
+        reactions = {row["id"]: row for row in source.rows(REACTIONS)}
+        emoji: dict[int, list[dict[str, object]]] = {}
+        for link in source.rows(LINKS):
+            is_reaction = link["link_type"] == REACTS_LINK and link["source"].startswith(REACTION_PREFIX) and link["target"].startswith(MESSAGE_PREFIX)
+            reaction = reactions.get(int(link["source"].removeprefix(REACTION_PREFIX))) if is_reaction else None
+            message_id = map.new_id(TABLE, int(link["target"].removeprefix(MESSAGE_PREFIX))) if is_reaction else None
+            if reaction is not None and message_id is not None:
+                emoji.setdefault(message_id, []).append({"emoji": reaction["emoji"], "actor_id": creators.actor_id(reaction["creator"]), "actor_type": reaction["author"]})
+        for message_id, message_reactions in emoji.items():
+            rows.set_value(TABLE, message_id, "reactions", json.dumps(message_reactions))
+
+    def card_type(self, data: str | None) -> str:
+        if not data:
+            return ""
+        try:
+            return str(json.loads(data).get("kind", ""))
+        except (ValueError, AttributeError):
+            return ""
+
+    def parent_id(self, row: sqlite3.Row, message_ids: set[int], map: MoveMap) -> int | None:
+        return map.new_id(TABLE, row["reply_target"]) if row["reply_target"] in message_ids else None
+
+    def insert(self, rows: RowInsert, row: sqlite3.Row, creators: CreatorResolver, sessions: ActorTable, parent: int | None, context: MoveContext) -> int:
+        created = row["created_at"] or context.timestamp
+        agent = sessions.agent_actor_id(row["session"]) if row["author"] == MessageType.AGENT.value and row["session"] else None
+        return rows.insert(TABLE, {"id": row["id"], "environment_id": row["environment_id"], "session_agent_id": agent, "parent_id": parent,
+                                   "creator_id": creators.actor_id(row["creator"]), "type": TYPES[row["author"]].value, "text": row["text"] or "",
+                                   "read_at": row["read_at"], "created_at": created, "updated_at": row["updated_at"] or created})
+
+    def mark(self, rows: RowInsert, row: sqlite3.Row, creators: CreatorResolver, card_type: str, context: MoveContext) -> int:
+        mark_type, created = CARD_MARKS[card_type], row["created_at"] or context.timestamp
+        mark_id = rows.insert("chat_marks", {"environment_id": row["environment_id"], "creator_id": creators.actor_id(row["creator"]), "type": mark_type,
+                                             "variant": context.mark_variants[mark_type], "key": f"version-4:{row['id']}", "text": row["text"] or "",
+                                             "ended_at": row["updated_at"] or created, "created_at": created, "updated_at": row["updated_at"] or created})
+        rows.set_state("chat_marks", mark_id, ENDED)
+        return mark_id

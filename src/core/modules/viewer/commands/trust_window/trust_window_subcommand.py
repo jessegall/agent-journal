@@ -1,0 +1,21 @@
+from argparse import ArgumentParser, Namespace
+
+from engine.caller.caller import Caller
+from engine.subcommand.subcommand import Subcommand
+from core.modules.viewer.models.window_permission import WindowPermission
+from core.modules.viewer.commands.trust_window.trust_window import TrustWindow
+
+
+class TrustWindowSubcommand(Subcommand[TrustWindow, WindowPermission]):
+    """`journal window trust <module>`: lets the module's windows run in the viewer's page, with the page's
+    rights, until its code changes."""
+
+    cli_name = "window"
+    name = "trust"
+    outward = True
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("module")
+
+    def command(self, arguments: Namespace, caller: Caller) -> TrustWindow:
+        return TrustWindow(arguments.module)

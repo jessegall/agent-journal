@@ -1,0 +1,74 @@
+from dataclasses import dataclass
+
+import pytest
+
+from engine.database.database import Database
+from engine.database.statement import Statement
+from engine.journal.journal_home import JournalHome
+from engine.listener.rows.event_rows import EventRows
+from engine.errors.missing_rows_error import MissingRowsError
+from engine.model.tables import Tables
+from engine.model.view_model import ViewModel
+from engine.query.queries import Queries
+
+
+
+@dataclass(frozen=True, kw_only=True)
+class ShelfCount(ViewModel):
+    cli_name = "shelf"
+    view = "shelf_counts"
+    key = "shelf_id"
+
+    shelf_id: int
+    book_count: int
+
+
+@pytest.fixture
+def queries(tmp_path):
+    database = Database.opened(JournalHome(tmp_path))
+    for sql in ("CREATE TABLE shelves (id INTEGER PRIMARY KEY) STRICT",
+                "CREATE TABLE books (id INTEGER PRIMARY KEY, shelf_id INTEGER NOT NULL) STRICT",
+                "CREATE VIEW shelf_counts AS SELECT shelves.id AS shelf_id, count(books.id) AS book_count FROM shelves LEFT JOIN books ON books.shelf_id = shelves.id GROUP BY shelves.id",
+                "INSERT INTO shelves (id) VALUES (1), (2)", "INSERT INTO books (shelf_id) VALUES (1), (1)"):
+        database.update(Statement(sql))
+    yield Queries(database, Tables())
+    database.close()
+
+
+def test_a_views_row_is_found_by_its_key(queries: Queries):
+    counts = queries.query(ShelfCount)
+    assert counts.find(1) == ShelfCount(shelf_id=1, book_count=2)
+    assert counts.find(2) == ShelfCount(shelf_id=2, book_count=0)
+
+
+def test_a_key_with_no_row_is_refused(queries: Queries):
+    with pytest.raises(MissingRowsError, match="no shelf 9"):
+        queries.query(ShelfCount).find(9)
+
+
+def test_a_view_is_filtered_and_read_in_the_order_of_its_columns(queries: Queries):
+    counts = queries.query(ShelfCount)
+    assert [row.shelf_id for row in counts.ordered("book_count").get()] == [2, 1]
+    assert counts.filter(book_count=2).count() == 1
+
+
+@dataclass(frozen=True, kw_only=True)
+class ShelfSize(ViewModel):
+    cli_name = "shelf-size"
+    view = "shelf_sizes"
+    key = "id"
+
+    id: int
+    book_count: int
+
+
+def test_shared_event_rows_read_a_view_again_after_an_outside_commit_since_it_has_no_version(queries: Queries, tmp_path):
+    queries.database.update(Statement("CREATE VIEW shelf_sizes AS SELECT shelves.id AS id, count(books.id) AS book_count FROM shelves LEFT JOIN books ON books.shelf_id = shelves.id GROUP BY shelves.id"))
+    rows = EventRows(queries)
+    assert rows.required(ShelfSize, 1).book_count == 2
+    external = Database.opened(JournalHome(tmp_path))
+    try:
+        external.update(Statement("INSERT INTO books (shelf_id) VALUES (1)"))
+    finally:
+        external.close()
+    assert rows.required(ShelfSize, 1).book_count == 3

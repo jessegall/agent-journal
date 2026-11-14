@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent settings, redesign (task 9159)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#e7e7ea;color:#1a1b1f;font-family:"Geist",system-ui,sans-serif;font-size:13px;-webkit-font-smoothing:antialiased}
+a{color:#4a50b5}a:hover{color:#2f3490}
+.page{max-width:1240px;margin:0 auto;padding:40px 30px 80px}
+.page>h1{font-size:26px;font-weight:600;margin:0 0 8px;letter-spacing:-.01em}
+.lead{max-width:860px;color:#474a52;font-size:14px;line-height:1.55;margin:0 0 10px;text-wrap:pretty}
+.chapter{margin-top:56px}
+.chapter h2{font-size:18px;font-weight:600;margin:0 0 6px}
+.chapter>p{max-width:860px;color:#474a52;line-height:1.55;margin:0 0 6px;text-wrap:pretty}
+.stage{margin-top:16px;padding:30px;border-radius:14px;display:flex;justify-content:center}
+.stage.dark{background:#060708}
+.stage.light{background:#c9cad0}
+
+/* tokens */
+.dark{--bg:#131416;--bg-2:#101216;--raised:#18191c;--side:#0d0e10;--hover:#1d1e22;--sel:#212329;--chip:#24262b;--border:#25272b;--border-2:#2f3136;--border-3:#3a3d44;--text:#e6e7ea;--text-2:#a9acb3;--text-3:#83868e;--accent:#5e64c9;--accent-dim:#2a2d5a;--accent-text:#a3a8f0;--warn:#d8a94a;--danger:#df8b7e;--good:#63b37c;--sw-off:#3a3d44}
+.light{--bg:#ffffff;--bg-2:#fafafb;--raised:#f6f6f8;--side:#f5f5f7;--hover:#efeff2;--sel:#e8e9ee;--chip:#ececf0;--border:#e5e6ea;--border-2:#d9dbe0;--border-3:#c9ccd3;--text:#1a1b1f;--text-2:#474a52;--text-3:#6b6e77;--accent:#5e64c9;--accent-dim:#e5e6fa;--accent-text:#4a50b5;--warn:#a4731a;--danger:#bf4f3d;--good:#2e8a4e;--sw-off:#c9ccd3}
+
+/* modal */
+.modal{width:1120px;height:820px;display:flex;flex-direction:column;border:1px solid var(--border-2);border-radius:12px;background:var(--raised);color:var(--text);overflow:hidden;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+.mhead{display:flex;align-items:center;gap:12px;height:46px;padding:0 10px 0 18px;flex:none}
+.mt{font-size:14px;font-weight:600}
+.env{font-size:11.5px;color:var(--text-3);padding:2px 8px;border:1px solid var(--border-2);border-radius:999px}
+.grow{flex:1}
+.x{width:28px;height:28px;border:0;border-radius:6px;background:none;color:var(--text-2);font-size:18px;line-height:1;display:grid;place-items:center}
+.band{display:flex;align-items:center;gap:10px;padding:0 18px 12px;flex:none}
+.bl{font-size:12px;color:var(--text-3)}
+.seg{display:inline-flex;padding:2px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);gap:2px}
+.seg span{padding:4px 12px;border-radius:6px;font-size:12px;color:var(--text-2)}
+.seg span.on{background:var(--accent-dim);color:var(--accent-text);font-weight:500}
+.linkbtn{border:0;background:none;color:var(--accent-text);font:inherit;font-size:12px;padding:4px 2px}
+.find{display:flex;align-items:center;gap:8px;width:280px;height:30px;padding:0 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);color:var(--text-3);font-size:12px}
+.find.typed{color:var(--text);border-color:var(--accent)}
+.find .ring{width:10px;height:10px;border:1.5px solid var(--text-3);border-radius:50%;flex:none}
+.find kbd{margin-left:auto;font-family:"Geist Mono",monospace;font-size:10.5px;color:var(--text-3);border:1px solid var(--border-2);border-radius:4px;padding:0 4px}
+.tabs{position:relative;display:flex;gap:2px;height:34px;padding:0 10px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg-2);flex:none}
+.tab{display:flex;align-items:center;gap:7px;padding:0 10px;font-size:12.5px;color:var(--text-3);position:relative}
+.tab.on{color:var(--text);font-weight:500}
+.tab.on:after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:2px;background:var(--accent);border-radius:2px}
+.count{min-width:18px;height:16px;padding:0 6px;border-radius:9px;background:var(--chip);font-size:10.5px;display:inline-grid;place-items:center;color:var(--text-2)}
+.count.warn{background:color-mix(in oklch,var(--warn) 22%,transparent);color:var(--warn)}
+.body{flex:1;min-height:0;display:grid;grid-template-columns:200px minmax(0,1fr);overflow:hidden}
+.body.one{grid-template-columns:minmax(0,1fr)}
+.rail{border-right:1px solid var(--border);padding:16px 10px;display:flex;flex-direction:column;gap:2px;background:var(--bg-2)}
+.rail a{display:block;padding:6px 10px;border-radius:6px;color:var(--text-2);text-decoration:none;font-size:12.5px}
+.rail a.on{background:var(--sel);color:var(--text)}
+.rail .rh{font-size:11px;color:var(--text-3);padding:2px 10px 6px}
+.content{overflow:hidden;padding:4px 28px 24px}
+.sec{padding-top:18px}
+.sec+.sec{margin-top:6px}
+.sec h4{margin:0;font-size:13px;font-weight:600}
+.sh{margin:3px 0 8px;color:var(--text-3);font-size:12px;line-height:1.5;max-width:680px;text-wrap:pretty}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 230px 140px;gap:18px;align-items:center;padding:11px 0;border-top:1px solid var(--border)}
+.row.dep{padding-left:22px;position:relative}
+.row.dep:before{content:"";position:absolute;left:6px;top:0;bottom:50%;width:10px;border-left:1px solid var(--border-3);border-bottom:1px solid var(--border-3);border-bottom-left-radius:6px}
+.lab{font-size:12.8px;color:var(--text);display:flex;align-items:center;gap:7px}
+.help{font-size:12px;color:var(--text-3);margin-top:3px;line-height:1.45;text-wrap:pretty}
+.cdot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none}
+.rc{display:flex;align-items:center;gap:8px}
+.src{font-size:11.5px;color:var(--text-3);text-align:right}
+.src.set{color:var(--text-2)}
+.src.ch{color:var(--accent-text)}
+.sw{width:30px;height:18px;border-radius:9px;background:var(--sw-off);position:relative;flex:none}
+.sw i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff}
+.sw.on{background:var(--accent)}.sw.on i{left:14px}
+.sww{font-size:12px;color:var(--text-2)}
+.step{display:inline-flex;height:28px;border:1px solid var(--border-2);border-radius:7px;overflow:hidden;background:var(--bg)}
+.step b{width:26px;display:grid;place-items:center;font-weight:400;color:var(--text-2)}
+.step .v{min-width:46px;display:grid;place-items:center;border-left:1px solid var(--border-2);border-right:1px solid var(--border-2);font-family:"Geist Mono",monospace;font-size:12px}
+.step.bad{border-color:var(--danger)}
+.unit{font-size:12px;color:var(--text-3)}
+.sel{display:inline-flex;align-items:center;gap:10px;height:28px;padding:0 10px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);font-size:12px}
+.sel i{font-style:normal;color:var(--text-3);font-size:9px}
+.txt{width:100%;height:28px;padding:0 10px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);font-family:"Geist Mono",monospace;font-size:11.5px;display:flex;align-items:center;color:var(--text-3)}
+.txt.has{color:var(--text)}
+.err{grid-column:1/-1;color:var(--danger);font-size:12px;margin-top:-4px}
+.note{margin:0 18px 12px;padding:9px 12px;border:1px solid var(--accent);border-radius:8px;background:var(--accent-dim);font-size:12.5px;color:var(--text)}
+.foot{display:flex;align-items:center;gap:12px;height:56px;padding:0 18px;border-top:1px solid var(--border);background:var(--raised);flex:none}
+.fl{flex:1;font-size:12px;color:var(--text-3);min-width:0}
+.fl b{color:var(--text);font-weight:500}
+.fl.bad{color:var(--danger)}
+.btn{height:30px;padding:0 14px;border:1px solid var(--border-2);border-radius:7px;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.off{opacity:.45}
+.btn.small{height:26px;padding:0 10px;font-size:12px}
+.dim{opacity:.55}
+
+/* helpers table */
+.htable{overflow:hidden}
+.hcols,.hrow{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,2.2fr) 130px 130px 150px 16px;gap:16px;align-items:center;padding:0 22px}
+.hcols{height:34px;color:var(--text-3);font-size:11.5px;border-bottom:1px solid var(--border);background:var(--raised)}
+.hrow{padding-top:11px;padding-bottom:11px;border-bottom:1px solid var(--border)}
+.hname{font-weight:500;font-size:12.8px}
+.hdesc{font-size:12px;color:var(--text-3);line-height:1.4}
+.cell{font-size:12px;font-family:"Geist Mono",monospace}
+.cell.full{color:var(--warn);font-weight:500}
+.bar{display:block;height:4px;border-radius:2px;background:var(--border-2);margin-top:5px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--text-3)}
+.full .bar span{background:var(--warn)}
+.cap{font-size:12px}
+.cap small{display:block;font-size:11px;color:var(--text-3);margin-top:2px}
+.cap.own{color:var(--accent-text)}
+.chev{color:var(--text-3);font-size:14px}
+.hgroup{display:flex;align-items:center;gap:12px;padding:16px 22px 8px;border-bottom:1px solid var(--border)}
+.hgroup strong{font-size:12.5px}
+.hgroup span{font-size:12px;color:var(--text-3)}
+.hgroup .linkbtn{margin-left:auto}
+.indent .hname{padding-left:14px}
+
+/* type screen */
+.crumb{display:flex;align-items:center;gap:8px;height:42px;padding:0 22px;border-bottom:1px solid var(--border);font-size:12.5px;color:var(--text-3);flex:none}
+.crumb a{color:var(--accent-text);text-decoration:none}
+.crumb b{color:var(--text);font-weight:500}
+.typebody{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 340px;overflow:hidden}
+.typemain{padding:6px 28px 24px;overflow:hidden}
+.typemain .row{grid-template-columns:minmax(0,1fr) 200px 130px}
+.typeside{border-left:1px solid var(--border);background:var(--bg-2);padding:18px 18px;overflow:hidden}
+.typehead{padding-top:16px}
+.typehead h3{margin:0;font-size:16px;font-weight:600}
+.typehead p{margin:4px 0 0;color:var(--text-3);font-size:12.5px;line-height:1.5;max-width:560px}
+.side-h{font-size:12.5px;font-weight:600;margin:0 0 4px}
+.side-s{font-size:12px;color:var(--text-3);margin:0 0 12px}
+.person{display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--border)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--text-3)}
+.dot.run{background:var(--good)}
+.pn{font-size:12.5px;min-width:0}
+.pn small{display:block;color:var(--text-3);font-size:11.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pbtns{display:flex;gap:6px}
+.choice{display:flex;flex-direction:column;gap:6px}
+.opt{display:flex;align-items:center;gap:10px;min-height:38px;padding:5px 12px;border:1px solid var(--border-2);border-radius:8px;font-size:12.5px;background:var(--bg)}
+.opt.on{border-color:var(--accent);background:var(--accent-dim)}
+.radio{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--border-3);flex:none;position:relative}
+.opt.on .radio{border-color:var(--accent)}
+.opt.on .radio:after{content:"";position:absolute;inset:2px;border-radius:50%;background:var(--accent)}
+.opt small{color:var(--text-3);font-size:11.5px;margin-left:auto}
+
+/* preset page */
+.ptable{margin-top:14px;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--bg)}
+.prow{display:grid;grid-template-columns:minmax(0,1fr) 150px 150px 150px;align-items:center;padding:9px 16px;border-top:1px solid var(--border);font-size:12.5px}
+.prow:first-child{border-top:0}
+.prow.ph{background:var(--bg-2);color:var(--text-3);font-size:11.5px;padding-top:10px;padding-bottom:10px}
+.prow.ph b{color:var(--text);font-weight:600;font-size:12.5px;display:block}
+.prow.diff{background:color-mix(in oklch,var(--accent) 10%,transparent)}
+.yes{color:var(--text)}.no{color:var(--text-3)}
+.pbtnrow{display:grid;grid-template-columns:minmax(0,1fr) 150px 150px 150px;padding:12px 16px;border-top:1px solid var(--border);background:var(--bg-2)}
+.explain{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px}
+.card{border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:var(--bg)}
+.card h5{margin:0 0 4px;font-size:12.8px;font-weight:600}
+.card p{margin:0;font-size:12px;color:var(--text-3);line-height:1.5}
+.card.on{border-color:var(--accent)}
+
+/* find popover */
+.pop{position:absolute;top:84px;right:18px;width:440px;border:1px solid var(--border-2);border-radius:10px;background:var(--raised);box-shadow:0 18px 40px rgba(0,0,0,.45);z-index:5;overflow:hidden}
+.pop .ph2{padding:8px 12px;font-size:11.5px;color:var(--text-3);border-bottom:1px solid var(--border)}
+.hit{padding:9px 12px;border-bottom:1px solid var(--border)}
+.hit:last-child{border-bottom:0}
+.hit.on{background:var(--sel)}
+.hit b{font-weight:500;font-size:12.5px}
+.hit b mark{background:color-mix(in oklch,var(--accent) 35%,transparent);color:inherit;border-radius:2px}
+.hit small{display:block;color:var(--text-3);font-size:11.5px;margin-top:2px}
+.flash{background:color-mix(in oklch,var(--accent) 14%,transparent);box-shadow:inset 3px 0 0 var(--accent);padding-left:12px;padding-right:12px}
+.kinds{margin-top:4px;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--bg)}
+.krow{display:grid;grid-template-columns:minmax(0,1fr) 210px minmax(0,1fr);gap:14px;align-items:center;padding:8px 14px;border-top:1px solid var(--border);font-size:12.5px}
+.krow:first-child{border-top:0}
+.krow.kh{background:var(--bg-2);color:var(--text-3);font-size:11.5px}
+.krow small{color:var(--text-3);font-size:11.5px}
+</style>
+</head>
+<body>
+<div class="page" id="page"></div>
+<script>
+const sw=(on)=>`<span class="sw ${on?'on':''}"><i></i></span><span class="sww">${on?'On':'Off'}</span>`;
+const num=(v,unit,bad)=>`<span class="step ${bad?'bad':''}"><b>−</b><span class="v">${v}</span><b>+</b></span>${unit?`<span class="unit">${unit}</span>`:''}`;
+const sel=(v)=>`<span class="sel">${v}<i>▼</i></span>`;
+const seg=(opts,active)=>`<span class="seg">${opts.map(o=>`<span class="${o===active?'on':''}">${o}</span>`).join('')}</span>`;
+const txt=(v,ph)=>`<span class="txt ${v?'has':''}">${v||ph}</span>`;
+const srcClass=(s)=>!s||s==='Default'?'':(s==='Changed'?'ch':'set');
+function row(s){return `<div class="row ${s.dep?'dep':''} ${s.cls||''}"><div><div class="lab">${s.changed?'<i class="cdot"></i>':''}${s.label}</div><div class="help">${s.help}</div></div><div class="rc">${s.c}</div><div class="src ${srcClass(s.src)}">${s.src||'Default'}</div>${s.err?`<div class="err">${s.err}</div>`:''}</div>`}
+function sec(t,h,rows,extra){return `<section class="sec">${t?`<h4>${t}</h4>`:''}${h?`<p class="sh">${h}</p>`:''}${rows.map(row).join('')}${extra||''}</section>`}
+const head=()=>`<div class="mhead"><span class="mt">Agent settings</span><span class="env">Environment: main</span><span class="grow"></span><button class="x">×</button></div>`;
+function band(active,find){return `<div class="band"><span class="bl">Preset</span>${seg(['Builder','Orchestrator','Custom'],active)}<button class="linkbtn">What is a preset? ›</button><span class="grow"></span><span class="find ${find?'typed':''}"><i class="ring"></i>${find||'Find a setting'}<kbd>/</kbd></span></div>`}
+function tabs(on){const t=[['work','Work',''],['helpers','Helpers','<span class="count warn">1 full</span>'],['tests','Tests',''],['advanced','Advanced','']];return `<div class="tabs">${t.map(([k,l,c])=>`<span class="tab ${k===on?'on':''}">${l}${c}</span>`).join('')}</div>`}
+function rail(items,on){return `<nav class="rail"><div class="rh">On this tab</div>${items.map(i=>`<a class="${i===on?'on':''}">${i}</a>`).join('')}</nav>`}
+function foot(msg,opts={}){return `<div class="foot"><div class="fl ${opts.bad?'bad':''}">${msg}</div>${opts.readonly?'':`<button class="btn">Cancel</button><button class="btn pri ${opts.off?'off':''}">Save</button>`}</div>`}
+function modal(inner){return `<div class="modal">${inner}</div>`}
+function stage(theme,html){return `<div class="stage ${theme}">${html}</div>`}
+
+// WORK
+function workRows(o){o=Object.assign({auto:true,writes:true,keep:false,sends:true,merger:true,merge:true,helpers:true,designer:false,accept:false,skips:true},o||{});
+const ch=o.changed||{};
+return sec('Taking on work','Whether the main agent picks up the next task by itself, and whether it writes code.',[
+{label:'Auto mode',help:'The journal hands the main agent its next task, and it keeps going while tasks are left.',c:sw(o.auto),src:ch.auto?'Changed':'Default',changed:ch.auto},
+{label:'Main agent writes code',help:'The main agent may change project files itself. Off, it plans, sends workers and merges.',c:sw(o.writes)}])
++sec('Workers','Workers take tasks and write code, each in its own copy of the project. How many run, and how they work, is on the Helpers tab.',[
+{label:'Main agent sends workers',help:'The main agent may send workers to do tasks.',c:sw(o.sends)},
+{dep:1,label:'Keep going while work can be delegated',help:'The main agent keeps working while open tasks can still be sent to workers.',c:sw(o.keep)},
+{dep:1,label:'Merger takes in workers',help:'A helper merges workers whose tests passed, and passes on what the main agent must judge.',c:sw(o.merger)},
+{dep:1,label:'Main agent may merge workers',help:'The main agent may merge the work of a worker itself.',c:sw(o.merge)}])
++sec('Other helpers',null,[
+{label:'Use read-only helpers',help:'The main agent may start helpers that read and report, and change no file.',c:sw(o.helpers)},
+{label:'Use a designer',help:'The main agent may start a designer, which writes a design document and changes no code.',c:sw(o.designer)}])
++sec('Approvals',null,[
+{label:'Accept every approval',help:'Every approval an agent asks for is accepted at once, as you. The chat still shows each one.',c:sw(o.accept)},
+{label:'Main agent approves skips',help:'A helper\'s skip of a refusal passes only once its main agent approves it.',c:sw(o.skips),src:'Set for this project'}])}
+const WORK_RAIL=['Taking on work','Workers','Other helpers','Approvals'];
+
+function fWork(){return modal(head()+band('Builder')+tabs('work')+`<div class="body">${rail(WORK_RAIL,'Taking on work')}<div class="content">${workRows()}</div></div>`+foot('No changes. Your settings match the Builder preset.',{off:1}))}
+function fWorkChanged(){return modal(head()+band('Custom')+tabs('work')+`<div class="body">${rail(WORK_RAIL,'Taking on work')}<div class="content">${workRows({auto:false,changed:{auto:1}})}</div></div>`+foot('<b>1 change</b>: Auto mode off. This mix matches no preset, so the preset shows Custom.'))}
+function fReadOnly(){return modal(head()+band('Builder')+`<div class="note">Only a person can change these settings. You can read every value, and ask a person for a change.</div>`+tabs('work')+`<div class="body">${rail(WORK_RAIL,'Taking on work')}<div class="content dim">${workRows()}</div></div>`+foot('Read only.',{readonly:1}))}
+
+// PRESET PAGE
+function fPreset(){const R=[['Auto mode',1,0,1],['Main agent writes code',1,0,1],['Main agent sends workers',1,1,1],['Keep going while work can be delegated',0,1,0],['Merger takes in workers',1,1,1],['Main agent may merge workers',1,1,1],['Use read-only helpers',1,1,1],['Use a designer',0,0,0]];
+const yn=(v)=>`<span class="${v?'yes':'no'}">${v?'On':'Off'}</span>`;
+const rows=R.map(r=>`<div class="prow ${r[1]!==r[2]?'diff':''}"><span>${r[0]}</span>${yn(r[1])}${yn(r[2])}${yn(r[3])}</div>`).join('');
+return modal(head()+band('Builder')+`<div class="crumb"><a>‹ Settings</a><span>/</span><b>Presets</b></div><div class="body one"><div class="content" style="padding-top:18px">
+<h3 style="margin:0;font-size:16px;font-weight:600">A preset is a set of settings, nothing more</h3>
+<p class="sh" style="font-size:12.5px;max-width:820px;margin-top:6px">Picking a preset turns the eight switches below on or off in this form. It changes no other setting, it is not a kind of agent, and the main agent is the same program under every preset. Nothing is saved until you press Save, so you can pick one, look at what changed, and Cancel.</p>
+<div class="explain"><div class="card on"><h5>Builder</h5><p>The main agent writes code itself, and takes the next task by itself while tasks are left.</p></div><div class="card"><h5>Orchestrator</h5><p>The main agent writes no code. It plans, sends workers and merges, and keeps going while work can be sent.</p></div><div class="card"><h5>Custom</h5><p>Any other mix. It is chosen for you when your switches match neither preset, and it is not stored anywhere.</p></div></div>
+<div class="ptable"><div class="prow ph"><span>Setting</span><span><b>Builder</b></span><span><b>Orchestrator</b></span><span><b>Your settings</b>now in this form</span></div>${rows}<div class="pbtnrow"><span style="font-size:12px;color:var(--text-3);align-self:center">Highlighted rows are where the presets differ.</span><span><button class="btn small">Fill in Builder</button></span><span><button class="btn small">Fill in Orchestrator</button></span><span></span></div></div>
+</div></div>`+foot('No changes. Your settings match the Builder preset.',{off:1}))}
+
+// HELPERS TABLE
+const H=[
+{n:'Workers',d:'Take tasks and write code in their own copy of the project.',r:[2,2],k:[5,8],cap:'200k',cs:'Cap for workers'},
+{n:'Merger',d:'Merges workers whose tests passed, and answers their questions.',r:[1,1],k:[1,1],cap:'400k',cs:'Default cap'},
+{n:'Designer',d:'Writes a design document and changes no code.',r:[0,1],k:[1,2],cap:'400k',cs:'Default cap'}];
+const RO=[
+{n:'Researcher',d:'Reads the code and the web, and reports.',r:[1,4],k:[3,8],cap:'150k',cs:'Own cap',own:1},
+{n:'Planner',d:'Writes a plan with phases and tasks.',r:[0,4],k:[2,8],cap:'400k',cs:'Default cap'},
+{n:'Code reviewer',d:'Reviews a commit and reports findings.',r:[2,4],k:[4,8],cap:'400k',cs:'Default cap'},
+{n:'Plan reviewer',d:'Reviews a plan before work starts. Own limits.',r:[0,2],k:[1,4],cap:'400k',cs:'Default cap'},
+{n:'Debugger',d:'Finds the cause of a failure, and changes nothing.',r:[0,4],k:[0,8],cap:'No cap',cs:'Own cap',own:1},
+{n:'Functional designer',d:'Describes a feature as a person uses it.',r:[0,4],k:[1,8],cap:'400k',cs:'Default cap'}];
+function cell(c,l){const full=c>=l&&l>0;return `<div class="cell ${full?'full':''}">${c} of ${l}${full?' · full':''}<span class="bar"><span style="width:${l?Math.min(c/l*100,100):0}%"></span></span></div>`}
+function hrow(h,cls){return `<div class="hrow ${cls||''}"><div class="hname">${h.n}</div><div class="hdesc">${h.d}</div>${cell(h.r[0],h.r[1])}${cell(h.k[0],h.k[1])}<div class="cap ${h.own?'own':''}">${h.cap}<small>${h.cs}</small></div><span class="chev">›</span></div>`}
+function fHelpers(){return modal(head()+band('Builder')+tabs('helpers')+`<div class="body one"><div class="htable"><div class="hcols"><span>Helper type</span><span>What it does</span><span>Running</span><span>Kept</span><span>Context cap</span><span></span></div>${H.map(h=>hrow(h)).join('')}
+<div class="hgroup"><strong>Read-only helpers</strong><span>Every profile: 4 running, 8 kept, unless its own screen says otherwise. 3 running now.</span><button class="linkbtn">Change for every profile ›</button></div>${RO.map(h=>hrow(h,'indent')).join('')}</div></div>`+foot('Click a helper type to see its agents and change its limits and cap. <b>Workers are full</b>: a new worker waits until one ends, or until you raise the limit.',{off:1}))}
+
+// TYPE SCREENS
+function people(list){return list.map(p=>`<div class="person"><span class="dot ${p.run?'run':''}"></span><div class="pn">${p.n} · ${p.run?'Running':'Idle'}, ${p.t}<small>${p.s}</small></div><div class="pbtns"><button class="btn small">Open</button>${p.run?'':'<button class="btn small">Retire</button>'}</div></div>`).join('')}
+function capChoice(own,kindLabel,kindVal){return `<div class="choice"><div class="opt ${own?'':'on'}"><i class="radio"></i>Use the cap for ${kindLabel}<small>${kindVal}, set in Advanced</small></div><div class="opt ${own==='num'?'on':''}"><i class="radio"></i>Its own cap ${own==='num'?sel('150k'):''}<small>only for this type</small></div><div class="opt ${own==='none'?'on':''}"><i class="radio"></i>No cap<small>never compacted for its size</small></div></div>`}
+function fWorker(){return modal(head()+band('Builder')+tabs('helpers')+`<div class="crumb"><a>‹ Helpers</a><span>/</span><b>Workers</b></div><div class="typebody"><div class="typemain">
+<div class="typehead"><h3>Workers</h3><p>Workers take tasks from the main agent and write code, each in its own copy of the project. Everything here holds for workers only.</p></div>
+${sec('How many','',[{label:'Most running',help:'Workers that run at once. At 0 none start.',c:num(3),src:'Changed',changed:1},{label:'Most kept',help:'Workers kept, running or idle, until retired. At 0 there is no limit.',c:num(8)}])}
+<section class="sec"><h4>Context cap</h4><p class="sh">When a worker's context reaches its cap, it is compacted between turns.</p>${capChoice(false,'workers','200k')}</section>
+${sec('How a worker works','',[{label:'Tasks handed to a worker at once',help:'Tasks per assignment. The main agent is asked to add more when it sends fewer.',c:num(3)},{label:'Tasks a worker may hold started at once',help:'Most tasks a worker may have started before it commits some of them.',c:num(5)},{label:'Workers may use read-only helpers',help:'A worker may start read-only helpers for the task it works on.',c:sw(true)},{label:'Worker idle warning',help:'Minutes without activity before a worker with work left is reported.',c:num(15,'min')},{label:'Worker idle hours',help:'Hours without tool use before an unfinished worker stops. Its task and folder stay.',c:num(6,'h')}])}
+</div><aside class="typeside"><p class="side-h">Agents of this type</p><p class="side-s">2 running, 3 idle. Retire an idle one to free a kept place.</p>${people([{n:'Ada',run:1,t:'14 min',s:'Task 9152: Processes tab for each agent'},{n:'Bram',run:1,t:'3 min',s:'Task 9158: Context cap per kind of agent'},{n:'Cleo',t:'22 min',s:'claude, opus, high'},{n:'Dirk',t:'2 h',s:'claude, sonnet'},{n:'Eva',t:'5 h',s:'codex, gpt-5'}])}</aside></div>`+foot('<b>1 change</b>: Workers, most running 2 to 3.'))}
+
+function fResearcher(){return modal(head()+band('Builder')+tabs('helpers')+`<div class="crumb"><a>‹ Helpers</a><span>/</span><span>Read-only helpers</span><span>/</span><b>Researcher</b></div><div class="typebody"><div class="typemain">
+<div class="typehead"><h3>Researcher</h3><p>A read-only helper that reads the code and the web, and reports. It changes no file. A value marked Every profile comes from the Read-only helpers line on the Helpers tab; change it here and it holds for researchers only.</p></div>
+${sec('How many','',[{label:'Most running',help:'Researchers that run at once.',c:num(4),src:'Every profile'},{label:'Most kept',help:'Researchers kept, running or idle, until retired.',c:num(8),src:'Every profile'}])}
+<section class="sec"><h4>Context cap</h4><p class="sh">Researchers read a lot, so this type has its own smaller cap.</p>${capChoice('num','read-only helpers','400k')}</section>
+${sec('Limits on one job','',[{label:'Longest job',help:'Minutes a researcher may work on one job before it is stopped.',c:num(60,'min'),src:'Every profile'},{label:'Largest cost',help:'Dollars a researcher may cost on one job before it is stopped. 0 sets no limit.',c:num('2.00','dollars'),src:'Own value'}])}
+</div><aside class="typeside"><p class="side-h">Agents of this type</p><p class="side-s">1 running, 2 idle.</p>${people([{n:'Helper 836',run:1,t:'6 min',s:'Designing the Agent settings modal'},{n:'Helper 812',t:'40 min',s:'claude, sonnet'},{n:'Helper 790',t:'3 h',s:'claude, haiku'}])}</aside></div>`+foot('No changes.',{off:1}))}
+
+// TESTS
+const TESTS_RAIL=['Test commands','A worker\'s own runs','Telling the main agent'];
+const TELL=[{label:'Failed own tests to flag',help:'Failures of one test file in a worker\'s own runs before the main agent reads a line about it.',c:num(5)},{label:'Failed commits to flag',help:'Failed commits of a task before the main agent reads a line about it.',c:num(3)},{label:'Deferrals of one checkpoint test',help:'How often the merger may leave failing tests out of one checkpoint until the next.',c:num(2)}];
+function fTests(o){o=o||{};return modal(head()+band('Builder')+tabs('tests')+`<div class="body">${rail(TESTS_RAIL,'Test commands')}<div class="content">
+${sec('Test commands','How the journal finds and runs the tests for changed files. Set both, or neither.',[{label:'Affected tests command',help:'Prints the tests for the changed files, one per line.',c:txt('scripts/affected-tests','Not set'),src:'Set for this project'},{label:'Project test command',help:'Runs the tests it is given.',c:txt('pytest -q','Not set'),src:'Set for this project'}])}
+${sec('A worker\'s own runs','Limits on the tests a worker runs itself before it commits.',[{label:'Test limit per worker command',help:'A worker command running more tests than this is refused or stopped. 0 means no limit.',c:num(o.blank?' ':25,'tests',o.blank),src:o.blank?'Changed':'Default',changed:o.blank,err:o.blank?'A number is missing. Type 0 for no limit.':''},{label:'A worker\'s test runs between two commits',help:'Test commands a worker may run itself between two commits before it asks the main agent.',c:num(3)},{label:'Seconds a helper waits for a test run',help:'Seconds a helper waits for a test or build before it gets the output number. At most 100.',c:num(60,'s')}])}
+${sec('Telling the main agent','When failures are passed on for the main agent to judge.',TELL)}
+</div></div>`+(o.stale?foot('These settings changed since you opened them. Cancel to read them again.',{bad:1,off:1}):foot('No changes.',{off:1})))}
+
+// ADVANCED
+function fAdvanced(){const kinds=[['Main agent','No cap','Set for this environment'],['Workers','200k','Set for this environment'],['Merger','Default cap','Default'],['Designer','Default cap','Default'],['Read-only helpers','Default cap','Default']];
+const krows=kinds.map(k=>`<div class="krow"><span>${k[0]}</span><span>${sel(k[1])}</span><small>${k[2]}</small></div>`).join('');
+return modal(head()+band('Builder')+tabs('advanced')+`<div class="body">${rail(['Context size','Prompt cache','Silent agents','Quiet helpers'],'Context size')}<div class="content">
+${sec('Context size','When an agent\'s context grows past its cap, the journal compacts or clears it between turns.',[{label:'Cap agents\' context',help:'Off, no agent is compacted for its size.',c:sw(true),src:'Set for this environment'},{label:'At the cap',help:'Compact the context, or clear it and give back the open tasks and memories.',c:seg(['Compact','Clear'],'Compact')},{label:'Default cap',help:'The cap for every kind of agent below that says Default cap.',c:sel('400k')}])}
+<div style="margin-top:10px"><div class="lab" style="margin-bottom:6px">Cap per kind of agent</div><div class="kinds"><div class="krow kh"><span>Kind of agent</span><span>Cap</span><span>Where it is set</span></div>${krows}</div><p class="sh" style="margin-top:8px">2 helper types have their own cap: Researcher 150k, Debugger no cap. Change those on the type's own screen under Helpers.</p></div>
+${sec('','',[{label:'Let it finish its task first',help:'An agent past its cap first finishes the task in hand, and is compacted when it ends.',c:sw(true)},{label:'Compact anyway at',help:'Past this size an agent is compacted even with a task in hand.',c:sel('600k')},{label:'Growth before compacting again',help:'After a compaction that left the context over the cap, it must grow by this percent first.',c:num(10,'%')}])}
+${sec('Prompt cache','',[{label:'Prompt cache lifetime',help:'Minutes after an agent\'s last reply that its prompt cache counts as gone. At 0 this check is off.',c:num(55,'min')}])}
+</div></div>`+foot('No changes.',{off:1}))}
+
+// FIND
+function fFind(){const tell=TELL.map((r,i)=>i===2?Object.assign({cls:'flash'},r):r);return modal(head()+band('Builder','merger')+tabs('tests')+`<div class="pop"><div class="ph2">5 settings match "merger". Enter opens the first; arrows move.</div>
+<div class="hit on"><b><mark>Merger</mark> takes in workers</b><small>Work › Workers</small></div>
+<div class="hit"><b>Deferrals of one checkpoint test</b><small>Tests › Telling the main agent · how often the merger may leave failing tests out</small></div>
+<div class="hit"><b><mark>Merger</mark> wait minutes</b><small>Helpers › Merger</small></div>
+<div class="hit"><b>Answer time for a worker's question</b><small>Helpers › Merger · minutes the merger has to answer</small></div>
+<div class="hit"><b><mark>Merger</mark> commands</b><small>Helpers › Merger</small></div></div>
+<div class="body">${rail(TESTS_RAIL,'Telling the main agent')}<div class="content">${sec('Telling the main agent','When failures are passed on for the main agent to judge.',tell)}</div></div>`+foot('No changes.',{off:1}))}
+
+const P=document.getElementById('page');
+P.innerHTML=`<h1>Agent settings, redesigned</h1>
+<p class="lead">Task 9159. The Agent settings modal, opened from the settings button beside Auto on the home page. It stays a modal: 1120 wide (now 1080) and 820 tall (now at most 640), a fixed height so it does not jump between tabs, shrinking with the window and becoming a full sheet under 600 wide.</p>
+<p class="lead">What changes: every setting is shown once; four tabs in the shared tabs component with its border below; a section list on the left of the long tabs; one Save and Cancel for the whole modal; Find a setting across all tabs; helper types as rows that open their own screen, where their limits, their context cap and their own settings live; the context cap per kind of agent in Advanced; presets in the top band with their own page that says plainly what a preset is.</p>
+<div class="chapter"><h2>1. Work: what the main agent does</h2><p>The eight work switches and the two approval switches, in four sections. A switch that only matters while another is on sits indented under it, and hides while its parent is off. The preset band and Find a setting sit above the tabs, so they show on every tab.</p>${stage('dark',fWork())}</div>
+<div class="chapter"><h2>2. After a change: Custom, and one Save for the modal</h2><p>Turning Auto off leaves a mix that matches neither preset, so the band shows Custom by itself. The changed row has a dot and says Changed. The foot names every change on every tab; Save saves them together, Cancel drops them. Light theme.</p>${stage('light',fWorkChanged())}</div>
+<div class="chapter"><h2>3. The preset page</h2><p>"What is a preset?" in the band opens this page inside the modal. It says in plain words that a preset is a set of eight switches and nothing else, shows both presets next to the person's own settings, and highlights where they differ. Fill in Builder or Orchestrator only fills the form; Back returns to the tab the person came from.</p>${stage('dark',fPreset())}</div>
+<div class="chapter"><h2>4. Helpers: every helper type in one table</h2><p>The table sits flush against the tabs and the modal's sides, with inner padding for the text. Each row shows how many run and are kept against their limits, and the context cap that holds for that type and where it comes from. A full type turns amber and the tab shows a count. No Edit button: a click on a row opens the type's own screen. The Read-only helpers line holds the limits for every profile.</p>${stage('dark',fHelpers())}</div>
+<div class="chapter"><h2>5. A helper type's own screen: Workers</h2><p>Slides in over the table, with a path back. Left, everything that holds for this type only: how many, its context cap (follow the cap for its kind, its own, or none), and the worker settings that were spread over Advanced and other groups. Right, the agents of the type, with Open and Retire. The Merger screen has the same shape and holds the merger's wait, its question settings and its commands.</p>${stage('dark',fWorker())}</div>
+<div class="chapter"><h2>6. A read-only helper profile: Researcher</h2><p>A value that comes from the line for every profile says Every profile; changing it here makes it this profile's own value. Here the context cap is overridden to 150k. Light theme.</p>${stage('light',fResearcher())}</div>
+<div class="chapter"><h2>7. Tests: everything about tests in one place</h2><p>The test commands, the limits on a worker's own runs, and when failures reach the main agent.</p>${stage('dark',fTests())}</div>
+<div class="chapter"><h2>8. Advanced: the context cap per kind of agent (task 9158)</h2><p>The cap is a switch, an action and a default size, then one row per kind of agent: each follows the default, has its own size, or has no cap. Below the table a line names the helper types that override it, which are changed on their own screens. Then prompt cache, silent agents and quiet helpers, reached from the section list.</p>${stage('dark',fAdvanced())}</div>
+<div class="chapter"><h2>9. Find a setting</h2><p>Typing in Find a setting, or pressing /, lists matching settings from every tab and every helper type screen, each with where it lives. Picking one opens that tab or screen and marks the row for a moment.</p>${stage('dark',fFind())}</div>
+<div class="chapter"><h2>10. Seen by an agent</h2><p>A viewer that may only read sees the lock note under the band, every value, and no Save or Cancel.</p>${stage('dark',fReadOnly())}</div>
+<div class="chapter"><h2>11. When something goes wrong</h2><p>A blank number shows its line under the row and Save stays off. Settings changed elsewhere since the modal opened: the foot says so and only Cancel works. A refused save shows the journal's reason in the foot, and the form keeps the person's changes. Counts that could not be read show "The counts could not be read" with Try again in place of the Helpers table.</p>${stage('dark',fTests({blank:1,stale:1}))}</div>`;
+</script>
+</body>
+</html>

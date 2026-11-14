@@ -1,0 +1,30 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "fileMatches": "(^|/)(src/core/modules/reviews|samples/reviews)/"
+            },
+            {
+                "any": [
+                    {
+                        "nameMatches": "^suites\\.coding\\.modules\\.workers(\\.|$)"
+                    },
+                    {
+                        "descendant": {
+                            "nameMatches": "^suites\\.coding\\.modules\\.workers(\\.|$)"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "sin": {
+        "name": "reviews-imports-workers",
+        "description": "The reviews module imports from the workers module, so reviews cannot be installed or understood without it.",
+        "rule": "A review names its subject by model name and id, as subject_model and subject_id; the workers module reads the review events with its own listeners.",
+        "skill": "reviews-architecture"
+    }
+}

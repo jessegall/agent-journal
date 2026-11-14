@@ -1,0 +1,40 @@
+/* Round fourteen (messages 121209, 121267, 121273, 121276). Loaded last.
+   1. The chat never shows a scroll bar, as in the app: src/viewer/src/tokens.css 146-152 hides every scroll bar.
+   2. The attribute band in the agent inspector and in an open card is one line of facts, left-aligned, that scrolls sideways and never wraps.
+      No rounded container. The program fact is as muted as the others.
+   3. A dropdown floats above everything (FloatMenu in round-fourteen.jsx), so the band's sideways scroll never clips it.
+   4. An action that cannot run now is greyed in its menu, its reason in the tooltip.
+   5. The layout control on Home is the app's 24 px icon button. */
+
+/* ---------- 1. no scroll bar in the chat ---------- */
+.r13-chat .history, .now-history { scrollbar-width: none; }
+.r13-chat .history::-webkit-scrollbar, .now-history::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+/* ---------- 2. the attribute band: one line that scrolls sideways ---------- */
+.insp-bar, .insp-bar .r8-who, .r8-band { display: block; width: auto; min-width: 0; text-align: left; border-radius: 0 !important; box-shadow: none; }
+.insp-bar .now-info.card, .r8-band .now-info.card {
+  display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; justify-content: flex-start !important; align-items: center !important;
+  min-width: 0; gap: 14px; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: none;
+  border-radius: 0 !important; box-shadow: none; text-align: left; }
+.insp-bar .now-info.card::-webkit-scrollbar, .r8-band .now-info.card::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.insp-bar .now-info.card > *, .r8-band .now-info.card > * { flex: none !important; width: auto !important; }
+/* the spacer that pushes the end slot right on Home has no job here */
+.insp-bar .now-info.card > .grow, .r8-band .now-info.card > .grow { display: none; }
+/* the band starts on the name's text edge; 4 px of room each side keeps a fact's hover from being cut by the scroll box */
+.insp-bar .r8-who .now-info.card { margin: 0 -4px; padding: 2px 4px 0; border: 0; }
+.insp-bar .r8-who .r8-started { margin-top: 4px; }
+/* the program fact: the band's own muted colour and weight, like every other fact */
+.now-info.card .now-fact.lead { color: inherit; font-weight: inherit; }
+.now-info.card button.now-fact.lead:hover, .now-info.card .now-fact.lead.on { color: var(--text); }
+
+/* ---------- 3. a floating dropdown ---------- */
+.r14-anchor { position: relative; display: inline-flex; flex: none; }
+.menu.r14-float { position: fixed; right: auto; z-index: 300; min-width: 0; max-width: none; max-height: min(70vh, 520px); overflow-y: auto; }
+.r14-hrow { grid-template-columns: 56px 1fr auto; font-size: 11.5px; }
+
+/* ---------- 4. an action that cannot run now ---------- */
+.menu-item.r14-off, .menu-item.r14-off:hover { background: none; color: var(--text-4); cursor: default; }
+.menu-item.r14-off .ico { opacity: .6; }
+
+/* ---------- 5. the Presets icon button ---------- */
+.now-info .r14-layout { width: 24px; height: 24px; }

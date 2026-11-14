@@ -1,0 +1,145 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/(core|engine|suites|server|install)/"
+            },
+            {
+                "any": [
+                    {
+                        "nameIn": [
+                            "read_text",
+                            "read_bytes"
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "name": "open"
+                            },
+                            {
+                                "any": [
+                                    {
+                                        "of": "child:func",
+                                        "is": "identifier"
+                                    },
+                                    {
+                                        "of": "receiver",
+                                        "typeLike": "*Path"
+                                    },
+                                    {
+                                        "any": [
+                                            {
+                                                "all": [
+                                                    {
+                                                        "of": "child:func",
+                                                        "is": "identifier"
+                                                    },
+                                                    {
+                                                        "argument": {
+                                                            "at": 1,
+                                                            "textMatches": "^[rb]+$"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "all": [
+                                                    {
+                                                        "of": "child:func",
+                                                        "is": "member-access"
+                                                    },
+                                                    {
+                                                        "argument": {
+                                                            "at": 0,
+                                                            "textMatches": "^[rb]+$"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "child": {
+                                                    "field": "keywords",
+                                                    "all": [
+                                                        {
+                                                            "name": "mode"
+                                                        },
+                                                        {
+                                                            "child": {
+                                                                "field": "value",
+                                                                "textMatches": "^[rb]+$"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "descendant": {
+                                            "name": "O_RDONLY"
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "not": {
+                                    "rule": "FileWritesDetector"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "name": "load"
+                            },
+                            {
+                                "of": "receiver",
+                                "name": "json"
+                            },
+                            {
+                                "argument": {
+                                    "at": 0,
+                                    "typeLike": "*Path"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/engine/file/file_access\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)samples/query_rules/"
+            },
+            {
+                "fileMatches": "(^|/)(${file_reads_process_output_uses_bounded_ranges})$"
+            },
+            {
+                "fileMatches": "(^|/)(${file_reads_transcripts_seek_large_logs})$"
+            },
+            {
+                "fileMatches": "(^|/)(${file_reads_conflicts_stream_lines})$"
+            },
+            {
+                "fileMatches": "(^|/)(${file_reads_shell_handoff_streams_child_output})$"
+            },
+            {
+                "fileMatches": "(^|/)(${file_reads_release_archives_stream_entries})$"
+            }
+        ]
+    },
+    "sin": {
+        "description": "A native file read bypasses FileAccess and repeats work outside its cache and request guard.",
+        "name": "file-reads",
+        "rule": "Read files through FileAccess; only the named streaming-read exceptions may open files directly.",
+        "skill": "file-access"
+    }
+}

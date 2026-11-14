@@ -1,0 +1,31 @@
+from typing import ClassVar
+
+from engine.enums.actor_type import ActorType
+from engine.event.deleted import Deleted
+from engine.event.event_subscriber import E
+from engine.command.context import Context
+from engine.guard.guard import Guard
+from engine.errors.refusal import Refusal
+from engine.command.errors.user_approval_refusal import UserApprovalRefusal
+
+
+class PersonRowGuard(Guard[E]):
+    """Refuses a viewer row of a user's own, a layout, a user's preset or a window permission, written by
+    anyone but the user it is for; each subclass names its model and its refusal."""
+
+    refusal: ClassVar[Refusal]
+    question: ClassVar[str] = "Allow this change?"
+    is_safety = True
+
+    def person_id(self, event: E) -> int:
+        raise NotImplementedError(f"{type(self).__name__} names no user")
+
+    def check(self, event: E, context: Context) -> None:
+        person_id = self.person_id(event)
+        if isinstance(event, Deleted) and context.actor.type in (ActorType.CORE, ActorType.MODULE):
+            return
+        actor = context.actor
+        if actor.type is ActorType.AGENT:
+            raise UserApprovalRefusal(self.question, required_person_id=person_id, command=context.command)
+        if actor.type is not ActorType.USER or actor.id != person_id:
+            raise self.refusal

@@ -1,0 +1,63 @@
+from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
+from engine.query.conditions.among import Among
+from engine.cli.row_numbers import RowNumbers
+from engine.cli.agent_number import AGENT_MODEL_NAME
+from engine.enums.agent_role import AgentRole
+from engine.driver.agent_hook import AgentHook
+from engine.driver.driver_rule import DriverRule
+from engine.enums.hook_event_name import HookEventName
+from engine.driver.path_mentions import PathMentions
+from engine.driver.part import Part
+from engine.driver.rule_answer import RuleAnswer
+from engine.query.queries import Queries
+from core.modules.agents.models.agent import Agent
+from core.modules.tasks.models.task import Task
+from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.support.worker_nudges import WORKER_REUSE
+from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from suites.coding.modules.workers.support.dispatch_arguments import DISPATCH_ARGUMENTS
+
+HELD_WORK_STATES = (WorktreeState.CUT, WorktreeState.DELIVERED)
+
+REUSE_REASON = "every open worktree is checked for a worker that knows the files of the new tasks"
+
+NEW_WORKER_FLAG = "--fresh"
+
+
+class WorkerReuseRule(DriverRule):
+    """A dispatch whose tasks' briefs name a file an ended worker changed in the worktree it still has is refused,
+    naming the line that sends it the job; --fresh passes when the job needs a new worker."""
+
+    name = "workers.worker-reuse"
+    hook = HookEventName.PRE_TOOL_USE
+    drivers = ["*"]
+    roles = [AgentRole.MAIN]
+    single_action_refusal = "A dispatch for work that an ended worker still holds in its worktree is refused"
+
+    def __init__(self, queries: Queries, git: WorktreeGit, numbers: RowNumbers) -> None:
+        self.numbers = numbers
+        self.queries, self.git = queries, git
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        shell = hook.event.tool.shell if hook.event.tool is not None else None
+        for part in shell.parts if shell is not None else ():
+            if part.arguments[:2] != DISPATCH_ARGUMENTS or NEW_WORKER_FLAG in part.arguments:
+                continue
+            worker_id = self.worker_with_files(part)
+            if worker_id is not None:
+                return RuleAnswer.refused(WORKER_REUSE.nudge(worker=self.numbers.number(AGENT_MODEL_NAME, worker_id)))
+        return RuleAnswer.allowed()
+
+    def worker_with_files(self, part: Part) -> int | None:
+        task_ids = [int(argument) for argument in part.arguments[2:] if argument.isdigit()]
+        paths = PathMentions.found(" ".join(task.brief for task in self.queries.query(Task).find_many(task_ids)))
+        if not paths:
+            return None
+        # only a worktree that still holds its work, cut or delivered, can hold the files; a merged or removed one does not
+        worktrees = list(self.queries.query(Worktree).matching(Among("state", HELD_WORK_STATES)).every_row(REUSE_REASON))
+        workers = {worker.id: worker for worker in self.queries.query(Agent).find_many([worktree.session_agent_id for worktree in worktrees])}
+        for worktree in worktrees:
+            is_ended = workers[worktree.session_agent_id].ended_at is not None
+            if is_ended and PathMentions.overlap(paths, frozenset(self.git.changed_files(worktree))):
+                return worktree.session_agent_id
+        return None

@@ -1,0 +1,29 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "function",
+        "where": [
+            {
+                "topLevel": true
+            },
+            {
+                "fileMatches": "^(\\.commandments/custom/samples/layout/)?src/engine/[^/]+\\.py$"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)__init__\\.py$"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "base-loose-function",
+        "description": "A function sits loose directly in the engine folder, so it belongs to no folder.",
+        "rule": "Move it into the folder of its area under the engine folder. Every class, function and value sits in a folder named for its sort: errors, enums, models, support or the folder of its area.",
+        "skill": "plain-code-words"
+    }
+}

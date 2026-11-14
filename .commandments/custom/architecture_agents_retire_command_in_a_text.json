@@ -1,0 +1,32 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textLike": "*journal agent retire*"
+            }
+        ],
+        "reject": [
+            {
+                "of": "enclosingType",
+                "nameIn": [
+                    "RetireAgentHandler",
+                    "RetireAgentSubcommand",
+                    "RetiredDeleteGuard",
+                    "RetiredRowGuard"
+                ]
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "retire-command-in-a-text",
+        "description": "A refusal or a line tells an agent to run journal agent retire, though only a person retires an agent.",
+        "rule": "Name the idle agent to send the job to, or say to ask the person: TypeLimits.kept_limit_suggestion writes that text for every kept limit.",
+        "skill": "drivers-architecture"
+    }
+}

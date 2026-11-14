@@ -1,0 +1,43 @@
+from argparse import ArgumentParser, Namespace
+from typing import ClassVar, Generic, TypeIs, TypeVar
+from engine.caller.caller import Caller
+from engine.scope.scopes import WholeScopes
+from engine.subcommand.output import Output
+from engine.command.command import Command
+from engine.subcommand.read_subcommand import ReadSubcommand
+from engine.subcommand.render_value import render_value
+
+
+SUCCESS_CODE = 0
+C = TypeVar("C", bound=Command[object], covariant=True)
+R = TypeVar("R", covariant=True)
+class Subcommand(Generic[C, R]):
+    """One `journal <model> <subcommand>` that changes something: its arguments, the command they make, and
+    how the result is printed. It holds no rule; the command's guards do. A subcommand that sets background is
+    run in the background at once when an agent types it. One that sets outward reaches past the journal, so
+    a read-only agent may not run it. An answer that waits on what the commit listeners started is printed by
+    after_listeners, which also answers the line's exit code."""
+
+    disabled_scopes: ClassVar[WholeScopes] = ()
+    allows_pipes: ClassVar[bool] = False
+
+    cli_name: str
+    name: str
+    help: str = ""
+    background: bool = False
+    outward: bool = False
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        raise NotImplementedError
+
+    def command(self, arguments: Namespace, caller: Caller) -> C:
+        raise NotImplementedError
+
+    def write_output(self, value: object, output: Output) -> None:
+        render_value(value, output)
+
+    # Prints what waits on the commit listeners and answers the exit code of the line.
+    def after_listeners(self, value: object, output: Output) -> int:
+        return SUCCESS_CODE
+def is_subcommand_class(class_type: type) -> TypeIs[type[Subcommand[Command[object], object]] | type[ReadSubcommand[object]]]:
+    return issubclass(class_type, (Subcommand, ReadSubcommand))

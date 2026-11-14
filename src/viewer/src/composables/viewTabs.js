@@ -1,0 +1,32 @@
+import {onUnmounted} from "vue";
+
+const CHANNEL = "journal-views";
+
+export function openViewTab(view, id, environment) {
+    return window.open(`${location.origin}/?view=${view}&float=${id}&environment=${encodeURIComponent(environment)}`, `journal-view-${id}`);
+}
+
+export function listenViewTabs(handlers) {
+    const channel = new BroadcastChannel(CHANNEL);
+    channel.onmessage = (e) => e.data && handlers[e.data.type] && handlers[e.data.type](e.data.id);
+    return {recall: (id) => channel.postMessage({type: "recall", id})};
+}
+
+export function useViewTab(id) {
+    const channel = new BroadcastChannel(CHANNEL);
+    const tell = (type) => channel.postMessage({type, id});
+    channel.onmessage = (e) => e.data && e.data.type === "recall" && e.data.id === id && window.close();
+    const closed = () => tell("closed");
+    window.addEventListener("pagehide", closed);
+    onUnmounted(() => {
+        window.removeEventListener("pagehide", closed);
+        channel.close();
+    });
+    return {
+        dock: () => {
+            window.removeEventListener("pagehide", closed);
+            tell("dock");
+            window.close();
+        },
+    };
+}

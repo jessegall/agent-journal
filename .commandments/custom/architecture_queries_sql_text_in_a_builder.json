@@ -1,0 +1,47 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "any": [
+                    {
+                        "textMatches": "(\\b\\w+\\s*(=|!=|<>|<=|>=|<|>)\\s*\\?|\\bIS (NOT )?NULL\\b|\\sIN \\(|\\sLIKE\\s|\\bORDER BY\\b|\\bGROUP BY\\b|\\bLIMIT\\s+(\\?|\\d)|\\bJOIN\\s+\\w|\\bEXISTS\\s*\\(|^\\s*(SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|WITH)\\s)"
+                    },
+                    {
+                        "of": "parent",
+                        "all": [
+                            {
+                                "is": "call"
+                            },
+                            {
+                                "name": "Statement"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/engine/(database|query)/"
+            },
+            {
+                "fileMatches": "(^|/)migrations/"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/(agents/conditions/current_session_rows|documents/conditions/(first_link_counterpart|link_target_counts|work_context_messages|work_context_seeds|link_endpoint_columns|work_context_reference_columns)|drivers/conditions/(agent_family|foreign_hook)|plans/conditions/(checkpoint_limit|earliest_unfinished_phase)|processes/queries/conditions/(reader_sample_queries|watch_progress_due)|tasks/conditions/dependency_chain|messages/conditions/message_text_segment)\\.py$"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "sql-text-in-a-builder",
+        "description": "SQL is written by hand instead of built with the query builder's methods, so its tables, columns and scope go unchecked.",
+        "rule": "Build the read with the query builder's methods: where for = ?, where_in for IN (, where_exists for EXISTS(, join for JOIN, group_by for GROUP BY, order_by for ORDER BY, limit for LIMIT; a condition composes Select, Equal and SubqueryMatch.",
+        "skill": "sql-in-the-database-layer"
+    }
+}

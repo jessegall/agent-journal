@@ -1,0 +1,17 @@
+...
+helloworld> configure (lib + exe)
+Configuring helloworld-0.1.0.0...
+helloworld> build (lib + exe) with ghc-9.10.3
+Preprocessing library for helloworld-0.1.0.0..
+Building library for helloworld-0.1.0.0..
+[1 of 2] Compiling Lib
+[2 of 2] Compiling Paths_helloworld
+Preprocessing executable 'helloworld-exe' for helloworld-0.1.0.0..
+Building executable 'helloworld-exe' for helloworld-0.1.0.0..
+[1 of 2] Compiling Main
+[2 of 2] Compiling Paths_helloworld
+[3 of 3] Linking .stack-work/dist/x86_64-linux-tinfo6/ghc-9.10.3/build/helloworld-exe/helloworld-exe
+helloworld> copy/register
+Installing library in .../helloworld/.stack-work/install/x86_64-linux-tinfo6/a2caceceda039eb4f791856f85a68f9582d4daf3d0527344693ff3d1fcd92ba4/9.6.6/lib/x86_64-linux-ghc-9.10.3/helloworld-0.1.0.0-KFyX8zLxDvzLZURq3JaCVX
+Installing executable helloworld-exe in .../helloworld/.stack-work/install/x86_64-linux-tinfo6/a2caceceda039eb4f791856f85a68f9582d4daf3d0527344693ff3d1fcd92ba4/9.6.6/bin
+Registering library for helloworld-0.1.0.0..

@@ -1,0 +1,1 @@
+architecture_core_second_class_in_a_file: samples/layout

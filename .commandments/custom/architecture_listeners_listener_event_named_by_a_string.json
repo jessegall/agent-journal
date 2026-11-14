@@ -1,0 +1,68 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "type-declaration"
+                        },
+                        {
+                            "any": [
+                                {
+                                    "extendsAny": "SaveListener"
+                                },
+                                {
+                                    "extendsAny": "DeletionListener"
+                                },
+                                {
+                                    "extendsAny": "CommitListener"
+                                },
+                                {
+                                    "extendsAny": "Guard"
+                                },
+                                {
+                                    "extendsAny": "EventSubscriber"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "of": "parent",
+                "all": [
+                    {
+                        "is": "assignment"
+                    },
+                    {
+                        "descendant": {
+                            "all": [
+                                {
+                                    "is": "identifier"
+                                },
+                                {
+                                    "name": "event"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "listener-event-named-by-a-string",
+        "description": "A listener or guard names its event by a string, so a misspelt event passes until sync.",
+        "rule": "Declare the event as the type parameter of the class, with moves for a Moved event.",
+        "skill": "plain-code-words"
+    }
+}

@@ -1,0 +1,16 @@
+2024-09-26T14:12:25.6612240Z Lockfile is up to date, resolution step is skipped
+2024-09-26T14:12:25.7940854Z Progress: resolved 1, reused 0, downloaded 0, added 0
+2024-09-26T14:12:26.0300676Z Packages: +1086
+2024-09-26T14:12:26.7953600Z Progress: resolved 1086, reused 0, downloaded 9, added 0
+2024-09-26T14:12:27.7956344Z Progress: resolved 1086, reused 0, downloaded 71, added 58
+2024-09-26T14:12:28.7969990Z Progress: resolved 1086, reused 0, downloaded 206, added 204
+2024-09-26T14:12:29.7991399Z Progress: resolved 1086, reused 0, downloaded 307, added 293
+2024-09-26T14:12:30.8001382Z Progress: resolved 1086, reused 0, downloaded 419, added 409
+2024-09-26T14:12:31.8004826Z Progress: resolved 1086, reused 0, downloaded 538, added 539
+2024-09-26T14:12:32.8008210Z Progress: resolved 1086, reused 0, downloaded 758, added 758
+2024-09-26T14:12:33.8007898Z Progress: resolved 1086, reused 0, downloaded 901, added 898
+2024-09-26T14:12:34.8013260Z Progress: resolved 1086, reused 0, downloaded 1001, added 995
+2024-09-26T14:12:35.8075141Z Progress: resolved 1086, reused 0, downloaded 1047, added 1038
+2024-09-26T14:12:36.8083945Z Progress: resolved 1086, reused 0, downloaded 1083, added 1085
+2024-09-26T14:13:42.8748095Z  ERR_PNPM_TARBALL_EXTRACT  Failed to add tarball from "https://registry.npmjs.org/regexp.prototype.flags/-/regexp.prototype.flags-1.5.2.tgz" to store: object null is not iterable (cannot read property Symbol(Symbol.iterator))
+2024-09-26T14:13:42.9108627Z ##[error]Process completed with exit code 1.

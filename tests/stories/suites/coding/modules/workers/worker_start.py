@@ -1,0 +1,25 @@
+import pytest
+
+from engine.actor.actor import Actor
+from engine.enums.actor_type import ActorType
+from engine.journal.journal_home import LAUNCHER_SOCKET
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, repository_environment, worker_session
+from core.modules.agents.testing.fake_launcher import FakeLauncher
+
+
+@pytest.mark.parametrize("program,model,skills_folder", [("claude", "sonnet", ".claude/skills"), ("codex", "gpt-6.1-terra", ".agents/skills")])
+def test_a_dispatch_with_the_launcher_running_hands_it_the_worker_to_start_in_its_worktree(new_story, program, model, skills_folder):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = repository_environment(story)
+    launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET))
+    worker_id = story.new_row_id(f"worker dispatch --test-command python=pytest --program {program} --model {model} 1", actor=story.agent)
+    story.run_listeners()
+    launcher.expect_started(worker_id, worker_session(story, Actor(worker_id, ActorType.AGENT)), repository.worktree_folder(worker_id))
+    command = launcher.requests[0]["command"]
+    brief = " ".join(command)
+    for skill in ("journal", "journal-tasks", "journal-shell", "journal-worker"):
+        expected = f"load this first with the Skill tool: {skill}" if program == "claude" else f"read this first: {repository.worktree_folder(worker_id) / skills_folder / skill / 'SKILL.md'}"
+        story.expect_rows(expected in brief)
+    story.expect_rows("journal-etiquette" not in brief, "Load these skills before your first write" in brief, "journal overview" in brief,
+                      "only your new tests or the tests your change affects" in brief, "no Monitor" in brief)

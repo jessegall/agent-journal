@@ -1,0 +1,93 @@
+import secrets
+import threading
+
+from server.viewer.share_route import COOKIE_SEPARATOR
+from server.viewer.phone_sessions import PhoneSessions
+from server.viewer.session_file import SessionFile
+from server.enums.session_type import SessionType
+from server.viewer.share_sessions import ShareSessions
+from server.errors.share_session_error import ShareSessionError
+from server.errors.unknown_login_key_error import UnknownLoginKeyError
+from server.viewer.viewer_session import ViewerSession
+
+KEY_BYTES = 24
+
+
+class ViewerLogin:
+    """The viewer's logins: a one-time key opened once, and the session token it leaves in a cookie, which a
+    restart keeps, each naming who the viewer acts for: a user, the main agent, a user's phone, or one
+    share. The cookie's name carries this journal's own suffix, so two journals on one machine keep their
+    logins side by side in one browser. A phone's token and a share link's are asked of their modules, not
+    held here, so they outlive a restart and end with the unpairing or the revoking; a link is never spent."""
+
+    def __init__(self, phones: PhoneSessions, shares: ShareSessions, kept: SessionFile | None = None) -> None:
+        self.phones, self.shares, self.kept = phones, shares, kept
+        self.lock = threading.Lock()
+        self.keys: dict[str, ViewerSession] = {}
+        self.sessions: dict[str, ViewerSession] = self.kept_sessions()
+
+    def kept_sessions(self) -> dict[str, ViewerSession]:
+        return self.kept.load() if self.kept else {}
+
+    def cookie_name(self, base: str) -> str:
+        return f"{base}_{self.kept.cookie_suffix}" if self.kept is not None else base
+
+    def reload_sessions(self) -> None:
+        with self.lock:
+            self.sessions = self.kept_sessions()
+
+    def new_key(self, person_id: int, session_type: SessionType = SessionType.PERSON) -> str:
+        return self.session_key(ViewerSession(session_type, person_id=person_id))
+
+    def new_share_key(self, share_id: int) -> str:
+        return self.session_key(ViewerSession(SessionType.SHARE, share_id=share_id))
+
+    def session_key(self, session: ViewerSession) -> str:
+        key = secrets.token_urlsafe(KEY_BYTES)
+        with self.lock:
+            self.keys[key] = session
+        return key
+
+    def has_session(self, token: str) -> bool:
+        with self.lock:
+            if token in self.sessions:
+                return True
+        return bool(token) and (self.phones.person_id(token) is not None or self.share_session(token) is not None)
+
+    def session_token(self, key: str) -> str:
+        token = secrets.token_urlsafe(KEY_BYTES)
+        with self.lock:
+            if key not in self.keys:
+                raise UnknownLoginKeyError("this login key is spent or unknown: ask journal viewer for a new one")
+            self.sessions[token] = self.keys.pop(key)
+            self.keep()
+        return token
+
+    def keep(self) -> None:
+        if self.kept is not None:
+            self.kept.save(self.sessions)
+
+    def session(self, token: str) -> ViewerSession:
+        with self.lock:
+            if token in self.sessions:
+                return self.sessions[token]
+        person_id = self.phones.person_id(token)
+        if person_id is not None:
+            return ViewerSession(SessionType.PHONE, person_id=person_id)
+        shared = self.share_session(token)
+        if shared is None:
+            raise UnknownLoginKeyError("this session is unknown: open the address journal viewer prints to log in")
+        return shared
+
+    def share_session(self, cookie: str) -> ViewerSession | None:
+        token, _, key = cookie.partition(COOKIE_SEPARATOR)
+        link = self.shares.link(token) if token else None
+        if link is None or not self.shares.is_open(link) or self.shares.is_locked(link, token, key):
+            return None
+        return ViewerSession(SessionType.SHARE, person_id=link.creator_id, share_id=link.id, ends_at=link.expires_at, shared=link.shared, comments=link.comments)
+
+    def person_id(self, token: str) -> int:
+        session = self.session(token)
+        if session.person_id is None:
+            raise ShareSessionError("a share link opens only what was shared")
+        return session.person_id

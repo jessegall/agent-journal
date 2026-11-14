@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "typescript",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textMatches": "(^|/)(phone|share)[^/\"']*\\.html$"
+            },
+            {
+                "file": "src/viewer/**"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "second-shell-entry",
+        "description": "The viewer names a phone or share html entry, so a face becomes a second page with a build of its own.",
+        "rule": "The viewer has one html entry, index.html; the phone and the share are faces of the shell that /api/session picks, never files of their own.",
+        "skill": "plain-code-words"
+    }
+}

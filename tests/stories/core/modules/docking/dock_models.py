@@ -1,0 +1,83 @@
+import pytest
+
+from engine.database.database import Database
+from engine.database.statement import Statement
+from core.modules.docking.migrations.m002_docks_of_existing_environments import ExistingEnvironmentDocksMigration
+from tests.stories.core.modules.docking.support.dock_samples import SAMPLE
+from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_output
+
+
+def dock_count(story) -> int:
+    return story.container.get(Database).rows(Statement("SELECT count(*) FROM docks"))[0][0]
+
+
+def test_an_item_goes_through_undock_and_dock(task_dock):
+    story, dock_id, item_id = task_dock
+    story.expect_text(f"dock-item undock {item_id}", "state: undocked")
+    story.expect_text(f"dock-item dock {item_id}", "state: docked")
+
+
+def test_a_second_dock_for_one_environment_is_refused(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    story.run_listeners()
+    story.expect_refusal("dock make --environment main", "exists already")
+
+
+def test_deleting_a_dock_deletes_its_items(task_dock):
+    story, dock_id, item_id = task_dock
+    story.expect_success(f"dock delete {dock_id}")
+    story.expect_refusal(f"dock-item show {item_id}", "no dock-item")
+
+
+def test_docking_a_task_changes_no_task_row(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    task_id = story.new_row_id('task make "Fix it" --environment main', actor=story.user)
+    starting_text = story.run(f"task show {task_id}").output_text
+    story.run_listeners()
+    dock_id = 1
+    story.new_row_id(f'dock-item make {dock_id} docksample.task task {task_id} --title "Fix it"')
+    expect_output(story, f"task show {task_id}", starting_text)
+
+
+def test_the_environment_made_before_the_module_has_a_dock_when_the_listener_runs(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    story.run_listeners()
+    expect_dock_count(story, 1)
+
+
+def test_add_keep_and_remove_run_from_the_command_line(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    task_id = story.new_row_id('task make "Fix it" --environment main', actor=story.user)
+    item_id = story.new_row_id(f"dock add docksample.task task {task_id} --environment main", actor=story.user)
+    story.expect_text(f"dock keep {item_id}", "kept: True")
+    story.expect_text(f"dock remove {item_id}", "state: undocked")
+
+
+def test_the_migration_makes_the_dock_of_every_environment_that_has_none(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    story.run("environment make elsewhere /work/elsewhere")
+    database = story.container.get(Database)
+    database.update(Statement("DELETE FROM docks"))
+    for sql in ExistingEnvironmentDocksMigration.statements:
+        database.update(Statement(sql))
+    expect_database_2(database, "SELECT count(*) FROM docks", 2)
+
+
+@pytest.fixture
+def task_dock(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    story.run_listeners()
+    dock_id = 1
+    item_id = story.new_row_id(f'dock-item make {dock_id} docksample.task task 1 --title "Task 1"')
+    return story, dock_id, item_id
+
+
+def expect_dock_count(story, expected) -> None:
+    actual = dock_count(story)
+    assert actual == expected, actual
+
+
+def expect_database_2(database, text, expected) -> None:
+    actual = database.rows(Statement(text))[0][0]
+    assert actual == expected, actual

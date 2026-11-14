@@ -1,0 +1,85 @@
+import {contextChangeRows} from "../src/domain/compaction.js";
+import {createApp, h} from "vue";
+import {afterEach, expect, test, vi} from "vitest";
+import InformationBar from "../src/shell/InformationBar.vue";
+import {compactionLine} from "../src/domain/compaction.js";
+import {settle} from "./support/windowContext.js";
+
+vi.stubGlobal("ResizeObserver", class {
+    observe() {}
+
+    disconnect() {}
+});
+
+afterEach(() => (document.body.innerHTML = ""));
+
+const AT = "2026-11-06T21:03:11.000000+00:00";
+const EXACT = new Date(AT).toLocaleString("en-GB", {dateStyle: "medium", timeStyle: "medium"});
+const GROUPS = [{key: "context", label: "Context window", choices: [{value: "compact", label: "Compact context"}, {value: "clear", label: "Clear context"}]}];
+
+async function menu(last_compaction, extra = {}) {
+    const usage = {agents: [{id: 7, model: "sonnet", effort: "low", context_percent: 95, last_compaction, ...extra}], windows: []};
+    const run = async (line) => (line[1] === "controls" ? {ok: true, value: {groups: GROUPS}} : {ok: true, value: {rows: []}});
+    const element = document.createElement("div");
+    document.body.append(element);
+    createApp({render: () => h(InformationBar, {agent: {id: 7, ended_at: null, program: "claude", session: "s"}, run, usage, controlGroups: GROUPS})}).mount(element);
+    await settle();
+    element.querySelector('[data-fact="context"]').click();
+    await settle();
+    return document;
+}
+
+test("the context menu shows how full the context is as a bar and the exact time of the last compaction", async () => {
+    const page = await menu({started_at: AT, start_percent: 92, end_percent: 18});
+    expect(page.querySelector("[data-context-menu-meter] .context-used").textContent).toBe("95%");
+    expect(page.querySelector("[data-context-menu-meter] .gauge span").style.width).toBe("95%");
+    expect(page.querySelector("[data-context-menu-compaction]").textContent).toBe(`Last compacted ${EXACT}`);
+    expect(page.querySelector("[data-context-menu-compaction]").nextElementSibling).toBe(page.querySelector("[data-context-menu-meter]"));
+    expect(page.body.textContent).toContain("Compact context");
+});
+
+test("the context menu shows the tokens out of the limit and a Capped badge while a limit caps the agent", async () => {
+    const page = await menu(null, {context_tokens: 248000, context_limit_tokens: 400000});
+    expect(page.querySelector("[data-context-menu-cap]").textContent.replace(/\s+/g, " ").trim()).toBe("248k of 400k Capped");
+});
+
+test("the context menu shows the tokens out of the model's window and no badge when no limit caps the agent", async () => {
+    const page = await menu(null, {context_tokens: 126000, context_limit_tokens: null, context_window_tokens: 200000});
+    expect(page.querySelector("[data-context-menu-cap]").textContent.replace(/\s+/g, " ").trim()).toBe("126k of 200k");
+    expect(page.querySelector("[data-context-menu-cap] .badge")).toBeNull();
+    expect(page.querySelector("[data-context-menu-meter] .context-used").textContent).toBe("95%");
+});
+
+test("the context menu says none yet for a session never compacted", async () => {
+    const page = await menu(null);
+    expect(page.querySelector("[data-context-menu-compaction]").textContent).toBe("Not compacted yet");
+});
+
+test("a compaction shows the time alone, whatever percents it has", () => {
+    expect(compactionLine({started_at: AT, start_percent: 92, end_percent: null})).toBe(`Last compacted ${EXACT}`);
+    expect(compactionLine({started_at: AT, start_percent: null, end_percent: null})).toBe(`Last compacted ${EXACT}`);
+});
+
+test("while a compaction is asked and not ended the context menu says so with its time and offers no second one", async () => {
+    const page = await menu(null, {context_change: {change: "compact", is_open: true, requested_at: AT, state: "requested", reason: "person"}});
+    expect(page.querySelector("[data-context-menu-open-change]").textContent).toContain("Compaction asked at");
+    expect(page.querySelector('[data-agent-choice="compact"]')).toBeNull();
+});
+
+test("the agent inspector's rows name who asked for the newest compaction, its state and the sizes around it", () => {
+    const rows = contextChangeRows({change: "compact", is_open: false, requested_at: AT, state: "unreduced", reason: "stop_limit", request_tokens: 410000, tokens_after: 405000});
+    expect(rows.map((row) => row[0])).toEqual(["Last context change", "Asked by", "Asked", "Size at the request", "Size after"]);
+    expect(rows[0][1]).toBe("Compaction: Done, context not smaller");
+    expect(rows[1][1]).toBe("The journal, at the context size");
+    expect(contextChangeRows(null)).toEqual([]);
+});
+
+test("an agent whose context was compacted and has no new size yet shows its context as unknown", async () => {
+    const usage = {agents: [{id: 7, model: "sonnet", context_percent: null, context_unknown: true}], windows: []};
+    const element = document.createElement("div");
+    document.body.append(element);
+    createApp({render: () => h(InformationBar, {agent: {id: 7, ended_at: null, program: "claude", session: "s"}, usage, controlGroups: GROUPS})}).mount(element);
+    await settle();
+    expect(element.querySelector('[data-fact="context-unknown"]').textContent).toContain("Context: unknown");
+    expect(element.querySelector('[data-fact="context"]')).toBeNull();
+});

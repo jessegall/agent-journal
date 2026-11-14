@@ -1,0 +1,14 @@
+from dataclasses import dataclass
+
+from engine.command.command import Command
+from core.modules.plugins.models.plugin_setting import PluginSetting
+
+
+@dataclass(frozen=True)
+class ConfigurePlugin(Command[PluginSetting]):
+    """The user sets one of a plugin's declared settings."""
+
+    name: str
+    key: str
+    value: str
+    environment_id: int | None = None

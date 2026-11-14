@@ -1,0 +1,44 @@
+from engine.query.conditions.greater import Greater
+from engine.database.database import Database
+from engine.model.tables import Tables
+from engine.query.conditions.is_null import IsNull
+from engine.query.conditions.less import Less
+from engine.query.query import Query
+from engine.time.timestamp import Timestamp
+from datetime import timedelta
+from suites.coding.modules.checks.models.check import Check
+from suites.coding.modules.checks.conditions.interval_passed import IntervalPassed
+from suites.coding.modules.checks.queries.conditions.task_wait_command_failure import TaskWaitCommandFailure
+
+ACTED_CHECKS_REASON = "the check tick acts on every check that is due, broken or failing unreported"
+
+
+CHECKS_REASON = "The checks of a project are a catalogue a user or an agent makes one at a time, and a round runs every one of them."
+
+
+class CheckQuery(Query[Check]):
+    """Reads checks: the ones not removed, those that run, those due to run and the failing ones
+    the agent is due to be told about, which the database picks and the rule unreported_rows
+    loads the rest of."""
+
+    def __init__(self, database: Database, tables: Tables) -> None:
+        super().__init__(database, tables, Check)
+
+    def kept(self) -> list[Check]:
+        return list(self.every_row(CHECKS_REASON))
+
+    def running(self) -> list[Check]:
+        return [check for check in self.kept() if check.is_running]
+
+    def broken_task_waits(self) -> list[Check]:
+        return list(self.matching(Greater("task_wait_id", 0)).filter(last_passed=False).matching(TaskWaitCommandFailure()).every_row(ACTED_CHECKS_REASON))
+
+    def due(self, present: Timestamp) -> list[Check]:
+        return list(self.filter(stopped=False).matching(IntervalPassed(present.text)).every_row(ACTED_CHECKS_REASON))
+
+    def unreported(self, present: Timestamp, repeat_minutes: int) -> list[Check]:
+        failing = self.matching(IsNull("task_wait_id")).filter(stopped=False, last_passed=False)
+        unreported_rows = failing.matching(IsNull("reported_at")).every_row(ACTED_CHECKS_REASON)
+        cutoff = Timestamp(present.value - timedelta(minutes=repeat_minutes))
+        repeat_rows = failing.matching(Less("reported_at", cutoff.text)).every_row(ACTED_CHECKS_REASON)
+        return sorted([*unreported_rows, *repeat_rows], key=lambda check: check.id)

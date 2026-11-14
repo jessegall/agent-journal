@@ -1,0 +1,18 @@
+from engine.driver.agent_hook import AgentHook
+from engine.driver.rule_answer import RuleAnswer
+from core.modules.tasks.rules.task_stop_rule import TaskStopRule
+
+
+class AutoModeTaskStopRule(TaskStopRule):
+    """In auto mode a stop with a started task in hand is refused even while a wait is open, which silences
+    the ordinary rules: the agent blocks, completes or cancels the task instead. A paused agent may stop."""
+
+    name = "tasks.carry-on-at-stop-in-auto-mode"
+    overlay_proof = True
+    is_pause_skipped = True
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        assigner = self.assigners.assigner()
+        if assigner is None or not assigner.is_automatic():
+            return RuleAnswer.allowed("auto mode is off")
+        return super().answer(hook)

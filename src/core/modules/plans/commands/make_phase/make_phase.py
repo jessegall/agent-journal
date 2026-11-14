@@ -1,0 +1,14 @@
+from dataclasses import dataclass
+from engine.command.command import Command
+from core.modules.plans.models.phase import Phase
+
+
+@dataclass(frozen=True)
+class MakePhase(Command[Phase]):
+    """Adds a phase at the end of a plan."""
+
+    plan_id: int
+    title: str
+    goal: str = ""
+    checkpoint: bool = False
+    test_command: str = ""

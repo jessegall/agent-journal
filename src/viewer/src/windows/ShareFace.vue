@@ -1,0 +1,198 @@
+<script setup>
+import {computed, onMounted, onUnmounted, ref, shallowRef, watch} from "vue";
+import Icon from "../kit/Icon.vue";
+import Notice from "../kit/Notice.vue";
+import {render} from "../text/index.js";
+import ShareComments from "./ShareComments.vue";
+import ShareStrip from "./ShareStrip.vue";
+import ShareTimeline from "./ShareTimeline.vue";
+import WindowHost from "./WindowHost.vue";
+
+const WIDE_SCREEN = 760;
+const LOOKS = {plan: {term: "plan", icon: "plan"}, doc: {term: "document", icon: "file"}, report: {term: "report", icon: "file"}};
+
+const props = defineProps({
+    session: {type: Object, default: null},
+    read: {type: Function, required: true},
+    subscriptions: {type: Object, required: true},
+    entry: {type: Object, default: null},
+    load: {type: Function, default: (url) => import(/* @vite-ignore */ url)},
+});
+const component = shallowRef(null);
+const phases = ref([]);
+const facts = ref([]);
+const failed = ref(false);
+const reconnecting = ref(false);
+const share = computed(() => props.session?.share ?? null);
+const look = computed(() => LOOKS[share.value?.row_model] ?? null);
+const screenWidth = ref(window.innerWidth);
+const arrangement = computed(() => (screenWidth.value >= WIDE_SCREEN ? "beside" : "stacked"));
+const measure = () => (screenWidth.value = window.innerWidth);
+onMounted(() => window.addEventListener("resize", measure));
+onUnmounted(() => window.removeEventListener("resize", measure));
+const ends = computed(() => (share.value?.ends_at ? new Date(share.value.ends_at).toLocaleDateString(undefined, {day: "numeric", month: "long", year: "numeric"}) : ""));
+const gone = computed(() => failed.value || !share.value || !look.value);
+const options = computed(() => ({open: `${share.value.row_model}:${share.value.row_id}`}));
+const isText = computed(() => share.value?.row_model !== "plan");
+const text = ref(null);
+const readProgress = ref(-1);
+
+function followReading(event) {
+    const text = event.currentTarget;
+    const hidden = text.scrollHeight - text.clientHeight;
+    readProgress.value = hidden > 0 ? text.scrollTop / hidden : -1;
+}
+const renderedText = computed(() => (text.value ? render(text.value.body, {env: "", rowNames: false}) : ""));
+
+const counted = (count, word) => `${count} ${word}${count === 1 ? "" : "s"}`;
+
+async function fetchText() {
+    const answer = await props.read(share.value.window.name, [share.value.row_model, "show", String(share.value.row_id)], share.value.environment);
+    failed.value = !answer.ok && answer.failure !== "unreachable";
+    reconnecting.value = !answer.ok && answer.failure === "unreachable";
+    text.value = answer.ok ? answer.value : null;
+}
+
+async function fetchFacts() {
+    if (isText.value) return fetchText();
+    const id = String(share.value.row_id);
+    const [progress, listed] = await Promise.all([
+        props.read(share.value.window.name, ["plan", "progress", id], share.value.environment),
+        props.read(share.value.window.name, ["phase", "list", "--plan", id, "--oldest"], share.value.environment),
+    ]);
+    if (!progress.ok || !listed.ok) {
+        const unreachable = [progress, listed].some((answer) => answer.failure === "unreachable");
+        failed.value = !unreachable;
+        reconnecting.value = unreachable;
+        return;
+    }
+    reconnecting.value = false;
+    phases.value = listed.value.rows;
+    facts.value = [counted(listed.value.total, "phase"), counted(progress.value.task_count, "task")];
+}
+
+watch(
+    () => props.entry?.entry_url,
+    async (url) => {
+        if (url && !isText.value && !props.entry.unavailable_reason) component.value = (await props.load(url)).default;
+    },
+    {immediate: true},
+);
+watch(share, (shown) => shown && look.value && fetchFacts(), {immediate: true});
+</script>
+
+<template>
+    <div class="share-face" :data-face="'share'">
+        <template v-if="gone">
+            <main class="gone">
+                <Icon name="lock" :size="18" />
+                <h1>This link doesn't open anything</h1>
+                <p>It may have ended, or the address is not complete.</p>
+            </main>
+        </template>
+        <template v-else>
+            <template v-if="reconnecting">
+                <Notice role="status">Reconnecting…</Notice>
+            </template>
+            <ShareStrip :icon="look.icon" :term="look.term" :facts="facts" :ends="ends" :read="readProgress" />
+            <template v-if="isText">
+                <main class="share-text" data-share-text @scroll.passive="followReading">
+                    <template v-if="text">
+                        <h1>{{ text.title }}</h1>
+                        <p class="share-abstract">{{ text.abstract }}</p>
+                        <div class="md" v-html="renderedText" />
+                    </template>
+                </main>
+            </template>
+            <template v-else>
+            <div class="share-body" data-share-body :data-arrangement="arrangement">
+                <div class="share-part" data-share-part="plan">
+                    <WindowHost :name="share.window.name" :component="component" :subscriptions="subscriptions" :environment="share.environment" :options="options" :shared="{model: share.row_model, id: share.row_id}" read-only />
+                </div>
+                <ShareTimeline :phases="phases" />
+            </div>
+            </template>
+            <template v-if="share.comments">
+                <ShareComments />
+            </template>
+            <footer class="share-footer">Shared from an agent journal</footer>
+        </template>
+    </div>
+</template>
+
+<style scoped>
+.share-text {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 24px max(16px, calc((100% - 760px) / 2));
+}
+
+.share-text h1 {
+    margin: 0 0 6px;
+    font-size: 22px;
+}
+
+.share-abstract {
+    margin: 0 0 16px;
+    color: var(--text-2);
+}
+
+.share-face {
+    --type: var(--progress);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: var(--bg);
+}
+
+.share-body {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.share-body[data-arrangement="beside"] {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    grid-template-rows: minmax(0, 1fr);
+}
+
+.share-part {
+    min-height: 0;
+    min-width: 0;
+    overflow-y: auto;
+}
+
+.share-footer {
+    flex: none;
+    padding: 8px 32px 16px;
+    color: var(--text-4);
+    font-size: 12px;
+    text-align: center;
+}
+
+.gone {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 24px;
+    color: var(--text-3);
+    text-align: center;
+}
+
+.gone h1 {
+    margin: 6px 0 0;
+    color: var(--text);
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.gone p {
+    margin: 0;
+}
+</style>

@@ -1,0 +1,20 @@
+from argparse import ArgumentParser, Namespace
+
+from engine.caller.caller import Caller
+from engine.subcommand.subcommand import Subcommand
+from core.modules.reviews.commands.add_reviewer.add_reviewer import AddReviewer
+from core.modules.reviews.models.reviewer import Reviewer
+
+
+class AddReviewerSubcommand(Subcommand[AddReviewer, Reviewer]):
+    """`journal reviewer add`: starts a reviewer, when reviewers are on and fewer than the limit are out."""
+
+    cli_name = "reviewer"
+    name = "add"
+    outward = True
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        return None
+
+    def command(self, arguments: Namespace, caller: Caller) -> AddReviewer:
+        return AddReviewer()

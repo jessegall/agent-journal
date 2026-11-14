@@ -1,0 +1,46 @@
+from engine.command.bus import Bus
+from engine.command.context import Context
+from engine.command.handler import Handler
+from engine.driver.nudger import Nudger
+from engine.enums.actor_type import ActorType
+from engine.errors.refusal import Refusal
+from engine.query.queries import Queries
+from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
+from core.modules.drivers.models.agent_block import AgentBlock
+from core.modules.processes.commands.release_block.release_block import ReleaseBlock
+from core.modules.processes.support.cadence.run_silences import CHECKED_MARK
+from core.modules.processes.support.blocked_runs import BlockedRuns
+from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.process_nudges import BLOCK_LIFTED, FREEZE_LIFTED
+from core.modules.processes.support.reader_block_keys import ReaderBlockKeys
+
+SOURCE = "processes.hold-lifted"
+
+
+class ReleaseBlockHandler(Handler[ReleaseBlock, int]):
+    """Lifts the reading holds on an agent for the user who pressed the agent card's button: the run it is held
+    on counts as read, each block of a reader request is closed, and the agent is told once for each."""
+
+    command = ReleaseBlock
+
+    def __init__(self, queries: Queries, blocked_runs: BlockedRuns, folder: OutputFolder, bus: Bus, nudger: Nudger) -> None:
+        self.queries, self.held_runs, self.folder, self.bus, self.nudger = queries, blocked_runs, folder, bus, nudger
+
+    def handle(self, command: ReleaseBlock, context: Context) -> int:
+        if not context.actor.is_person():
+            raise Refusal("only a user lifts a hold, on the agent's card", "take one of the exits the hold lists")
+        lifted = 0
+        blocked = self.held_runs.found(command.agent_id, context.timestamp)
+        if blocked is not None:
+            self.folder.write_read_mark(blocked.process.id, CHECKED_MARK, context.timestamp.text)
+            self.nudger.send(command.agent_id, FREEZE_LIFTED, SOURCE, context, output=blocked.process.id)
+            lifted += 1
+        blocks = self.queries.query(AgentBlock).filter(session_agent_id=command.agent_id, closed_at=None).get()
+        for block in tuple(blocks):
+            request_id = ReaderBlockKeys.request_id(block.nudge_key)
+            if request_id is None:
+                continue
+            self.bus.dispatch(CloseAgentBlock(block.id), context)
+            self.nudger.send(command.agent_id, BLOCK_LIFTED, SOURCE, context, request=request_id)
+            lifted += 1
+        return lifted

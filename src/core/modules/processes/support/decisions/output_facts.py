@@ -1,0 +1,73 @@
+import re
+from dataclasses import dataclass
+
+from engine.enums.command_category import CommandCategory
+from core.modules.processes.models.enums.cadence_state import CadenceState
+from core.modules.processes.models.enums.unreadable_reason import UnreadableReason
+from core.modules.processes.support.reader_judge import ReaderJudge
+
+SAMPLE_BYTES = 64 * 1024
+BINARY_SHARE_LIMIT_FRACTION = 0.10
+UNBROKEN_LINE_BYTES = 8 * 1024
+CARRIAGE_RETURN_LIMIT_FRACTION = 0.5
+PROMPT_TAIL = re.compile(rb"[:?>] ?$")
+PROMPT_TAIL_BYTES = 200
+
+
+@dataclass(frozen=True)
+class OutputFacts:
+    """What one part of a run printed, measured once for judging: its size, its lines, how much of its first
+    64 KB is text, whether it ends on a prompt, and whether the run was rejected, crashed at its start or was
+    cut short. The thresholds come from report 1325; an unbroken line counts only after the last newline. A
+    prompt alone is no reason: the case adds the cadence to it."""
+
+    byte_count: int
+    line_count: int
+    longest_line: int
+    trailing_line_bytes: int
+    carriage_return_share: float
+    binary_share: float
+    has_null_byte: bool
+    ends_with_prompt: bool
+    ended_watched: bool
+    rejected: bool
+    start_crashed: bool
+    truncated: bool
+
+    @classmethod
+    def measured(cls, sample: bytes, byte_count: int, exit_code: int | None, category: CommandCategory) -> "OutputFacts":
+        sample = sample[:SAMPLE_BYTES]
+        text = sample.decode("utf-8", errors="replace")
+        size = len(sample) or 1
+        valid_bytes = len(sample.decode("utf-8", errors="ignore").encode("utf-8"))
+        return cls(byte_count=byte_count, line_count=sample.count(b"\n"), longest_line=max(len(line) for line in sample.split(b"\n")),
+                   trailing_line_bytes=len(sample) - sample.rfind(b"\n") - 1, carriage_return_share=sample.count(b"\r") / size,
+                   binary_share=(len(sample) - valid_bytes) / size, has_null_byte=b"\0" in sample,
+                   ends_with_prompt=bool(sample) and not sample.endswith(b"\n") and bool(PROMPT_TAIL.search(sample[-PROMPT_TAIL_BYTES:])),
+                   ended_watched=category.is_watched and exit_code is not None, rejected=ReaderJudge.is_rejected(exit_code, text),
+                   start_crashed=ReaderJudge.is_crashed_start(category, text), truncated=ReaderJudge.is_killed(exit_code, text))
+
+    @property
+    def unreadable_reason(self) -> UnreadableReason | None:
+        if self.byte_count == 0:
+            return UnreadableReason.EMPTY if self.ended_watched else None
+        if self.has_null_byte or self.binary_share > BINARY_SHARE_LIMIT_FRACTION:
+            return UnreadableReason.BINARY
+        if self.trailing_line_bytes > UNBROKEN_LINE_BYTES or self.carriage_return_share > CARRIAGE_RETURN_LIMIT_FRACTION:
+            return UnreadableReason.SINGLE_LINE
+        return None
+
+    # Why no reader can read the output of a running run, from its measures and how it prints: a prompt counts only once
+    # the run stopped growing on it.
+    @staticmethod
+    def measured_reason(output: "OutputFacts | None", cadence_state: CadenceState) -> UnreadableReason | None:
+        if output is None or output.unreadable_reason is not None:
+            return None if output is None else output.unreadable_reason
+        return UnreadableReason.INTERACTIVE if output.ends_with_prompt and cadence_state.has_no_growth else None
+
+    # Why no reader can read the output of an ended run, from its measures: a run that ended on a prompt waited at it.
+    @staticmethod
+    def end_reason(output: "OutputFacts | None") -> UnreadableReason | None:
+        if output is None or output.unreadable_reason is not None:
+            return None if output is None else output.unreadable_reason
+        return UnreadableReason.INTERACTIVE if output.ends_with_prompt else None

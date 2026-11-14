@@ -1,0 +1,16 @@
+--- FAIL: TestAdd (0.00s)
+    main_test.go:7: Expected 1 + 1 to equal 2
+Running Suite: Ginkgo Suite - /Users/user/workspace/ginkgo
+=============================================================
+Random Seed: 1700457476
+
+Will run 1 of 1 specs
+•
+
+Ran 1 of 1 Specs in 0.000 seconds
+SUCCESS! -- 1 Passed | 0 Failed | 0 Pending | 0 Skipped
+FAIL
+
+Ginkgo ran 1 suite in 1.540507723s
+
+Test Suite Failed

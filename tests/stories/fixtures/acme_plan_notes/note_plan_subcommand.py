@@ -1,0 +1,17 @@
+from argparse import ArgumentParser, Namespace
+
+from engine.caller.caller import Caller
+from engine.subcommand.subcommand import Subcommand
+
+from .note_plan import NotePlan
+
+
+class NotePlanSubcommand(Subcommand[NotePlan, str]):
+    cli_name = "plan-notes"
+    name = "add"
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("plan_id", type=int)
+
+    def command(self, arguments: Namespace, caller: Caller) -> NotePlan:
+        return NotePlan(arguments.plan_id)

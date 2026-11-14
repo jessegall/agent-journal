@@ -1,0 +1,30 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "assignment",
+        "where": [
+            {
+                "descendant": {
+                    "name": "disabled_scopes"
+                }
+            },
+            {
+                "inside": {
+                    "is": "function"
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "disabled-scopes-set-in-code",
+        "description": "Code sets disabled_scopes while it runs, so which crossings a class makes can no longer be read from its declaration.",
+        "rule": "A listener, handler, rule or read names its crossings once as a class attribute: disabled_scopes = [ActorScope], or [ActorScope.when(...)] for some events.",
+        "skill": "plain-code-words"
+    }
+}

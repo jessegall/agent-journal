@@ -1,0 +1,34 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textMatches": "^(pyright|mypy)$"
+            },
+            {
+                "inside": {
+                    "all": [
+                        {"is": "call"},
+                        {"nameMatches": "^(run|Popen|call|check_call|check_output)$"}
+                    ]
+                }
+            },
+            {
+                "fileMatches": "(^|/)tests/"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)tests/unit/test_type_safety\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "type-check-in-a-test",
+        "description": "A test runs a type checker over the source, which takes longer than most of the suite.",
+        "rule": "The type check runs once, in tests/unit/test_type_safety.py, as the job -m type_check.",
+        "skill": "plain-code-words"
+    }
+}

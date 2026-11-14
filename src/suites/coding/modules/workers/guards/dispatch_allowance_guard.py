@@ -1,0 +1,20 @@
+from engine.event.created import Created
+from engine.command.context import Context
+from engine.guard.guard import Guard
+from engine.errors.refusal import Refusal
+from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
+from suites.coding.support.main_caller import MainCaller
+
+
+class DispatchAllowanceGuard(Guard[Created[Worktree]]):
+    """A main agent starts no worker or worker worktree while it may not send workers."""
+
+    name = "workers.main-sends-no-worker"
+
+    def __init__(self, caller: MainCaller, options: CodingMainOptions) -> None:
+        self.caller, self.options = caller, options
+
+    def check(self, event: Created[Worktree], context: Context) -> None:
+        if self.caller.is_main(context) and not self.options.options().sends_workers:
+            raise Refusal("the main agent sends no workers here", "a user turns on journal.suites.coding.workers.main-dispatches-workers")

@@ -1,0 +1,21 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {"nameIn": ["stop", "request_stop"]},
+            {"of": "receiver", "typeLike": "*LauncherLink"}
+        ],
+        "reject": [
+            {"of": "enclosingType", "nameIn": ["AgentProgram", "LocalLauncherTransport"]},
+            {"testCode": true}
+        ]
+    },
+    "sin": {
+        "name": "launcher-stop-outside-agent-program",
+        "description": "Code asks the launcher to stop a program itself, so whether a program must stop is decided in one more place, and the recorded process and the processes under it are left running when the launcher does not answer.",
+        "rule": "End the agent's row, and EndedAgentProgramListener stops the program when another ended it. Code that must stop a program itself calls AgentProgram.",
+        "skill": "drivers-architecture"
+    }
+}

@@ -1,0 +1,72 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "any": [
+                    {
+                        "child": {
+                            "all": [
+                                {
+                                    "field": "bases"
+                                },
+                                {
+                                    "nameIn": [
+                                        "Model",
+                                        "ViewModel"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "body": {
+                    "descendant": {
+                        "name": "agent_id"
+                    }
+                }
+            },
+            {
+                "not": {
+                    "child": {
+                        "all": [
+                            {
+                                "field": "bases"
+                            },
+                            {
+                                "name": "AgentScoped"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "not": {
+                    "body": {
+                        "descendant": {
+                            "name": "shared_rows"
+                        }
+                    }
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/messages/(support/work_sources|listeners/deleted_agent_work_source_listener|models/message_work_source)\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "model-without-agent-scope",
+        "description": "A model holds an agent id without declaring AgentScoped or shared_rows, so whether an agent sees another's rows is decided nowhere.",
+        "rule": "Declare AgentScoped on the model, or shared_rows when every agent may read its rows.",
+        "skill": "plain-code-words"
+    }
+}

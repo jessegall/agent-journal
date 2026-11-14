@@ -1,0 +1,78 @@
+from engine.file.file_access import FileAccess
+import json
+import importlib
+import sys
+
+from engine.database.database import Database
+from engine.database.migration import Migration
+from engine.database.listener_cursor_table import ListenerCursorTable
+from engine.database.schema import Schema
+from engine.database.table_statements import TableStatements
+from engine.journal.journal_home import JournalHome
+from engine.model.tables import Tables
+from engine.dotted_path.dotted_path import DottedPath
+from engine.module.module import Module
+from engine.module.module_check import ModuleCheck
+from engine.module.errors.module_error import ModuleError
+from engine.module.module_finder import ModuleFinder
+from engine.module.module_order import ModuleOrder
+from engine.module.module_sync import ModuleSync
+
+
+
+class ModuleRemoval:
+    """Takes an installed plugin out of the journal: refused while another module depends on it, or while its
+    tables hold rows unless it ships a migration that removes them, before anything changes; its listener
+    cursors, migration records and metadata keys go with it, then the rest is synced."""
+
+    def __init__(self, database: Database, home: JournalHome, finder: ModuleFinder, check: ModuleCheck, tables: Tables, sync: ModuleSync,
+                 cursors: ListenerCursorTable, schema: Schema, order: ModuleOrder) -> None:
+        self.database, self.home, self.finder, self.check, self.tables, self.sync = database, home, finder, check, tables, sync
+        self.cursors, self.schema, self.order = cursors, schema, order
+
+    def remove(self, name: str) -> None:
+        listed = self.finder.plugin_paths()
+        module_paths = [path for path in listed if self.module(path).name == name]
+        if not module_paths:
+            raise ModuleError(f"{name} is no installed plugin; the core's default modules cannot be removed")
+        module = self.module(module_paths[0])
+        removal = self.removal_migration(module)
+        if removal is None:
+            self.refuse_rows(module)
+        remaining_modules = tuple(candidate for candidate in self.finder.modules() if candidate is not module)
+        self.order.ordered(remaining_modules)
+        with self.database.transaction():
+            if removal is not None:
+                removal.run(self.database)
+            for listener in module.listeners:
+                self.cursors.remove(listener.name)
+            self.schema.remove_migration_records(module.name)
+            for model in self.check.models(remaining_modules):
+                self.database.update(TableStatements(self.tables.table(model)).metadata_removal(module.name))
+        FileAccess.write(self.home.module_list, json.dumps([path for path in listed if path != module_paths[0]]))
+        self.sync.run()
+        self.remove_folder(module_paths[0])
+
+    def remove_folder(self, module_path: str) -> None:
+        package = module_path.partition(":")[0].partition(".")[0]
+        folder = self.home.modules_folder / package
+        if not FileAccess.is_dir(folder):
+            return
+        FileAccess.rmtree(folder)
+        for name in tuple(sys.modules):
+            if name == package or name.startswith(package + "."):
+                del sys.modules[name]
+        importlib.invalidate_caches()
+
+    def module(self, path: str) -> type[Module]:
+        return self.finder.checked(DottedPath(path))
+
+    def removal_migration(self, module: type[Module]) -> Migration | None:
+        return module.removal() if module.removal else None
+
+    def refuse_rows(self, module: type[Module]) -> None:
+        for model in self.check.models([module]):
+            table = self.tables.table(model)
+            count = self.database.rows(TableStatements(table).count())[0][0]
+            if count:
+                raise ModuleError(f"{module.name} still has {count} rows in {table.name}: delete them first, or give the module a removal migration")

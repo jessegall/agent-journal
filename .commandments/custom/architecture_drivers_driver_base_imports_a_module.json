@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "fileMatches": "(^|/)engine/driver/"
+            },
+            {
+                "any": [
+                    {
+                        "nameMatches": "^(core\\.modules|suites)(\\.|$)"
+                    },
+                    {
+                        "descendant": {
+                            "nameMatches": "^(core\\.modules|suites)(\\.|$)"
+                        }
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "driver-base-imports-a-module",
+        "description": "A file of engine/driver imports from core/modules or suites, so the base every module builds on depends on one of them.",
+        "rule": "What the base needs from a module is an interface in the base that the module binds, as HookHistory and HookRoute are.",
+        "skill": "drivers-architecture"
+    }
+}

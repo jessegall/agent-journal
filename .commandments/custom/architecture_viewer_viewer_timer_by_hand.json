@@ -1,0 +1,30 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "typescript",
+    "find": {
+        "select": "call",
+        "where": [
+            {"any": [
+                {"name": "setInterval"},
+                {"all": [
+                    {"name": "setTimeout"},
+                    {"descendant": {"kind": "AwaitExpression"}}
+                ]}
+            ]}
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)(src/viewer/src/composables/now\\.js|src/viewer/kit/useNow\\.js|src/viewer/kit/usePoll\\.js|src/viewer/kit/frameBridgeClient\\.js|src/viewer/src/platform/busyField\\.js|src/viewer/src/state/updating\\.js|src/viewer/src/windows/FrameContent\\.vue|src/core/modules/plugins/web/src/PluginServices\\.vue|src/core/modules/agents/web/src/AgentRows\\.vue|src/core/modules/skills/web/src/SkillTriggerEditor\\.vue)$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "viewer-timer-by-hand",
+        "description": "A viewer file starts its own timer to read or to tick, with setInterval or with a setTimeout that awaits a read and schedules itself again, so what an event or the one clock could do becomes another request or another clock.",
+        "rule": "Follow an event with context.follow, read the shared clock with useNow or useSharedNow, or read on an interval with usePoll. A timer is added to this rule's list only for what no event announces. usePoll is the one poll built on setTimeout, and is left out.",
+        "skill": "plain-code-words"
+    }
+}

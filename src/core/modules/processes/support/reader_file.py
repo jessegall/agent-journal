@@ -1,0 +1,81 @@
+from engine.file.file_access import FileAccess
+from dataclasses import dataclass
+from pathlib import Path
+
+from core.modules.processes.models.enums.reader_type import ReaderType
+from core.modules.processes.models.reader import Reader
+
+PATTERN_SUFFIX, SCRIPT_SUFFIX = ".pattern", ".sh"
+NOTE_MARK = "#"
+TITLE_PREFIX = "title: "
+SETTING_NAMES = {"progress: ": "progress_pattern", "title: ": "title", "label: ": "subject", "commands: ": "commands", "topic: ": "topic_pattern", "finished: ": "finished_pattern",
+                 "failed: ": "failed_pattern", "summary: ": "summary_pattern"}
+
+
+@dataclass(frozen=True)
+class ReaderFile:
+    """A reader written as a file, as version 4 kept them and plugins ship them: a .pattern file holds its
+    title line, its pattern line and its settings, one per line; a .sh script holds its settings in # lines
+    and is the reader itself. Every file declares title: ; a file that opens on a comment instead is
+    rewritten once, when it is loaded, with that comment as its title."""
+
+    name: str
+    type: ReaderType
+    lines_pattern: str
+    script: str
+    settings: dict[str, str]
+
+    @classmethod
+    def parsed(cls, path: Path) -> "ReaderFile":
+        lines = cls.titled(path, FileAccess.read(path).splitlines())
+        if path.suffix == SCRIPT_SUFFIX:
+            notes = [line.removeprefix(NOTE_MARK).strip() for line in lines if cls.is_note(line)]
+            return cls(path.stem, ReaderType.SCRIPT, "", str(path), cls.read_settings(notes))
+        return cls(path.stem, ReaderType.PATTERN, lines[1] if len(lines) > 1 else "", "", cls.read_settings([*lines[:1], *lines[2:]]))
+
+    @staticmethod
+    def is_note(line: str) -> bool:
+        return line.startswith(NOTE_MARK) and not line.startswith("#!")
+
+    @classmethod
+    def script_title_place(cls, lines: list[str]) -> int | None:
+        return next((index for index, line in enumerate(lines) if cls.is_note(line)), None)
+
+    @staticmethod
+    def pattern_title_place(lines: list[str]) -> int | None:
+        return 0 if lines and lines[0].startswith(NOTE_MARK) else None
+
+    @classmethod
+    def titled(cls, path: Path, lines: list[str]) -> list[str]:
+        is_script = path.suffix == SCRIPT_SUFFIX
+        declared = [line.removeprefix(NOTE_MARK).strip() if is_script else line for line in lines]
+        if any(line.startswith(TITLE_PREFIX) for line in declared):
+            return lines
+        place = cls.script_title_place(lines) if is_script else cls.pattern_title_place(lines)
+        if place is None:
+            return lines
+        comment = lines[place].removeprefix(NOTE_MARK).strip()
+        if not comment or any(comment.startswith(prefix) for prefix in SETTING_NAMES):
+            return lines
+        titled = [*lines[:place], f"{NOTE_MARK} {TITLE_PREFIX}{comment}" if is_script else f"{TITLE_PREFIX}{comment}", *lines[place + 1:]]
+        FileAccess.write(path, "\n".join(titled) + "\n")
+        return titled
+
+    @staticmethod
+    def read_settings(lines: list[str]) -> dict[str, str]:
+        return {field: line.removeprefix(prefix) for line in lines for prefix, field in SETTING_NAMES.items() if line.startswith(prefix)}
+
+    @staticmethod
+    def paths(folder: Path) -> list[Path]:
+        return sorted(path for path in FileAccess.glob(folder, "*") if path.suffix in (PATTERN_SUFFIX, SCRIPT_SUFFIX)) if FileAccess.is_dir(folder) else []
+
+    @staticmethod
+    def found(folder: Path) -> list["ReaderFile"]:
+        return [ReaderFile.parsed(path) for path in ReaderFile.paths(folder)]
+
+    def reader(self, creator_id: int, plugin_name: str) -> Reader:
+        return Reader(creator_id=creator_id, name=self.name, type=self.type, lines_pattern=self.lines_pattern, script=self.script, plugin_name=plugin_name,
+                      commands=self.settings.get("commands", ""), progress_pattern=self.settings.get("progress_pattern", ""),
+                      finished_pattern=self.settings.get("finished_pattern", ""), failed_pattern=self.settings.get("failed_pattern", ""),
+                      summary_pattern=self.settings.get("summary_pattern", ""), topic_pattern=self.settings.get("topic_pattern", ""), title=self.settings.get("title", ""),
+                      subject=self.settings.get("subject", ""))

@@ -1,0 +1,52 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "typescript",
+    "find": {
+        "select": "member-access",
+        "where": [
+            {
+                "any": [
+                    {
+                        "name": "userAgent"
+                    },
+                    {
+                        "all": [
+                            {
+                                "name": "pathname"
+                            },
+                            {
+                                "descendant": {
+                                    "all": [
+                                        {
+                                            "is": "identifier"
+                                        },
+                                        {
+                                            "name": "location"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "file": "src/viewer/src/**"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/viewer/src/main\\.js$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "face-chosen-by-browser-or-path",
+        "description": "A face is chosen from the browser's user agent or the address path, so the same person gets another face on another browser or link.",
+        "rule": "A face is chosen from /api/session and the screen width only, never from a user agent string or a url path; only main.js reads the path, to tell the pairing page from the viewer.",
+        "skill": "plain-code-words"
+    }
+}

@@ -1,0 +1,10 @@
+from dataclasses import dataclass
+
+from engine.command.move_command import MoveCommand
+from core.modules.reviews.models.lifecycles.reviewer_lifecycle import ReviewerLifecycle
+from core.modules.reviews.models.reviewer import Reviewer
+
+
+@dataclass(frozen=True)
+class StartReviewer(MoveCommand[Reviewer]):
+    move = ReviewerLifecycle.start

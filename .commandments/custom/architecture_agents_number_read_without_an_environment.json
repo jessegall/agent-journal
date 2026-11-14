@@ -1,0 +1,37 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "branch",
+        "where": [
+            {
+                "of": "enclosingType",
+                "nameLike": "?*RowNumbers"
+            },
+            {
+                "of": "condition",
+                "descendant": {
+                    "name": "environment_id"
+                }
+            },
+            {
+                "not": {
+                    "descendant": {
+                        "is": "throw"
+                    }
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "number-read-without-an-environment",
+        "description": "A read of an agent's number takes another path when no environment is set, so a number is read as a row id or against the wrong environment.",
+        "rule": "An agent's number is always read against an environment set beforehand: with none, raise, as AgentRowNumbers.environment_agent does.",
+        "skill": "drivers-architecture"
+    }
+}

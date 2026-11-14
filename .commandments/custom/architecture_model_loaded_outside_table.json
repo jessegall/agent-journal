@@ -1,0 +1,22 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {"name": "loaded"},
+            {"of": "child:func", "resolves": "engine.model.table.loaded"}
+        ],
+        "reject": [
+            {"fileMatches": "(^|/)engine/(model/table\\.py$|database/)"},
+            {"fileMatches": "(^|/)engine/listener/event_builder\\.py$"},
+            {"testCode": true}
+        ]
+    },
+    "sin": {
+        "name": "model-loaded-outside-table",
+        "description": "A caller decodes a stored model value without the table's added-state handling.",
+        "rule": "Restore model values through Table, which knows whether the column is a state and supports added states. The named event_builder exception waits for the already completed task 6600 to merge into this checkout; remove it at the final judge.",
+        "skill": "plain-code-words"
+    }
+}

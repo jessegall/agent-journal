@@ -1,0 +1,27 @@
+from argparse import ArgumentParser, Namespace
+
+from engine.actor.actor import Actor
+from engine.enums.actor_type import ActorType
+from engine.caller.caller import Caller
+from engine.subcommand.subcommand import Subcommand
+from tests.unit.engine.command.test_commands import MakeItem
+from tests.unit.engine.model.test_model import Item
+
+CALLER = Caller(Actor(7, ActorType.AGENT), environment_id=2)
+
+
+class ItemMakeSubcommand(Subcommand[MakeItem, Item]):
+    cli_name = "item"
+    name = "make"
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("title")
+
+    def command(self, arguments: Namespace, caller: Caller) -> MakeItem:
+        return MakeItem(title=arguments.title)
+
+
+def test_a_subcommand_reads_its_arguments_into_a_command():
+    subcommand, parser = ItemMakeSubcommand(), ArgumentParser()
+    subcommand.arguments(parser)
+    assert subcommand.command(parser.parse_args(["Dune"]), CALLER) == MakeItem(title="Dune")

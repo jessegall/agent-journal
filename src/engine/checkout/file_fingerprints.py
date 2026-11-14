@@ -1,0 +1,45 @@
+import hashlib
+import json
+from collections.abc import Sequence
+from pathlib import Path
+
+from engine.file.file_access import FileAccess
+from engine.journal.journal_home import JournalHome
+
+FINGERPRINT_FILE = "file-fingerprints.json"
+BIGGEST_FILE_BYTES = 1_000_000
+
+
+class FileFingerprints:
+    """One shared way for any part of the journal to ask which files are new or changed since its own last
+    pass: each named pass keeps a fingerprint of the content of every file it has finished with, in a file
+    under the journal's folder, so the memory survives a restart. A pass remembers a file only when it says
+    it is done with it."""
+
+    def __init__(self, home: JournalHome) -> None:
+        self.file = home.folder / FINGERPRINT_FILE
+
+    def changed(self, pass_name: str, files: Sequence[Path]) -> list[Path]:
+        stored = self.pass_fingerprints(pass_name)
+        return [file for file in files if stored.get(str(file)) != self.fingerprint(file)]
+
+    def record_finished(self, pass_name: str, files: Sequence[Path]) -> None:
+        if not files:
+            return
+        all_passes = self.stored()
+        stored = all_passes.setdefault(pass_name, {})
+        for file in files:
+            stored[str(file)] = self.fingerprint(file)
+        FileAccess.write(self.file, json.dumps(all_passes))
+
+    def pass_fingerprints(self, pass_name: str) -> dict[str, str]:
+        return self.stored().get(pass_name, {})
+
+    def stored(self) -> dict[str, dict[str, str]]:
+        return json.loads(FileAccess.read(self.file)) if FileAccess.exists(self.file) else {}
+
+    @staticmethod
+    def fingerprint(file: Path) -> str:
+        if not FileAccess.is_file(file) or FileAccess.stat(file).st_size > BIGGEST_FILE_BYTES:
+            return ""
+        return hashlib.sha256(FileAccess.binary(file)).hexdigest()

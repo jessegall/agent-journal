@@ -1,0 +1,23 @@
+from typing import Self
+
+from engine.database.database import Database
+from engine.model.tables import Tables
+from engine.query.conditions.among import Among
+from engine.query.query import Query
+from core.modules.reviews.models.enums.reviewer_state import ReviewerState
+from core.modules.reviews.models.reviewer import Reviewer
+
+ACTIVE = (ReviewerState.IDLE, ReviewerState.REVIEWING)
+
+
+class ReviewerQuery(Query[Reviewer]):
+    """Reads reviewers, with the filters the reviews module and its guards use by name."""
+
+    def __init__(self, database: Database, tables: Tables) -> None:
+        super().__init__(database, tables, Reviewer)
+
+    def active(self) -> Self:
+        return self.matching(Among("state", ACTIVE))
+
+    def idle(self) -> Self:
+        return self.filter(state=ReviewerState.IDLE)

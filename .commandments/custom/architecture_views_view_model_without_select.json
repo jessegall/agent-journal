@@ -1,0 +1,20 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {"extendsAny": "ViewModel"},
+            {"not": {"descendant": {"all": [{"is": "identifier"}, {"name": "select"}, {"is": "assignment", "of": "parent"}]}}}
+        ],
+        "reject": [
+            {"testCode": true}
+        ]
+    },
+    "sin": {
+        "name": "view-model-without-select",
+        "description": "A view model declares no select, so its view is named in one place and defined in another, and sync cannot check its columns.",
+        "rule": "A view model names its view, its key and its SELECT; the SELECT text lives in the module's views.py and the view model points to it.",
+        "skill": "views-architecture"
+    }
+}

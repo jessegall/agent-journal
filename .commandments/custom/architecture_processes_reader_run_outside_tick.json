@@ -1,0 +1,28 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": [
+                    "ReadNewOutput"
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/processes/ticks/output_reading\\.py$|(^|/)src/server/tick_work\\.py$|(^|/)src/core/modules/processes/commands/end_process/end_process_handler\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "reader-run-outside-tick",
+        "description": "A running output's reader is run from somewhere other than the engine tick, so reader data has a second source and a read path can do work.",
+        "rule": "Only the engine tick runs a reader on a running output; a run's end has its one last read. Everything else reads the fields the tick wrote.",
+        "skill": "processes-architecture"
+    }
+}

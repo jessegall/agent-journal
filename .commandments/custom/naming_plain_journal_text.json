@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "of": "closest:call",
+                "nameIn": [
+                    "Refusal",
+                    "UsageError",
+                    "add_argument",
+                    "ArgumentParser"
+                ]
+            },
+            {
+                "textMatches": "(?i)\\b(says|said|names|carries|carried|holds|kept|owed|picks|told|given)\\b"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "textMatches": "^--[a-z-]+$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "plain-journal-text",
+        "description": "A refusal, a usage error or a command's help is written in the journal's voice: a thing says, names, carries, holds, keeps or picks, or a person is told or given.",
+        "rule": "Write every text the agent or a person reads in plain words that say literally what happens: the journal shows, a field contains, a reader selects the lines, you are informed or sent. A flag name such as --kept is a term of the command, not a sentence, and is left out.",
+        "skill": "plain-code-words"
+    }
+}

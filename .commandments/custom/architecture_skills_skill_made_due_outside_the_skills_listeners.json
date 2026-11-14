@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": ["RequireSkill", "LoadSkill", "ResetSkills", "AgentSkill"]
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/core/modules/skills/(listeners|commands|models)/"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "skill-made-due-outside-the-skills-listeners",
+        "description": "A rule, a handler of another module or other code makes a skill due or loaded, or builds an AgentSkill, instead of the skills commands run from one of the skills module's listeners.",
+        "rule": "Make a skill due or loaded from a commit listener of the skills module, which runs RequireSkill, LoadSkill or ResetSkills; a rule only reads and refuses.",
+        "skill": "plain-code-words"
+    }
+}

@@ -1,0 +1,27 @@
+/* the UI kit page */
+.kit-ex { padding: 16px; border: 1px solid var(--border); border-radius: var(--r-lg); background: var(--raised); margin: 0 0 16px; display: flex; flex-direction: column; gap: 12px; }
+.kit-ex.row-ex { flex-direction: row; flex-wrap: wrap; align-items: center; }
+.kit-cap { color: var(--text-4); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; margin: 0 0 6px; }
+.kit-rules { margin: 0 0 20px; padding-left: 18px; line-height: 1.65; font-size: 13px; }
+.kit-rules li { margin-bottom: 4px; text-wrap: pretty; }
+.kit-rules code, .kit-table code { font: 11.5px var(--mono); padding: 1px 5px; border-radius: 4px; background: var(--chip); }
+/* references inside a rule are examples of words, not rows: they read as text */
+.kit-rules .ref-link, .kit-table .ref-link { color: inherit; pointer-events: none; }
+.kit-dd { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0 0 20px; }
+.kit-dd > div { border: 1px solid var(--border); border-radius: var(--r-lg); padding: 12px; background: var(--bg-2); min-width: 0; }
+.kit-dd .do { border-color: color-mix(in srgb, var(--good) 45%, var(--border)); }
+.kit-dd .dont { border-color: color-mix(in srgb, var(--danger) 45%, var(--border)); }
+.kit-dd b { display: block; font-size: 11px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 8px; }
+.kit-dd .do b { color: var(--good); } .kit-dd .dont b { color: var(--danger); }
+/* the Don't examples show the mistake the rules otherwise prevent */
+.kit-dd .dont .btn > .ico:first-child { display: inline-grid; }
+.kit-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin: 0 0 20px; }
+.kit-table th, .kit-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.kit-table th { color: var(--text-3); font-weight: 500; font-size: 11.5px; }
+.kit-scale { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.kit-scale span { display: flex; flex-direction: column; align-items: center; gap: 6px; font: 11px var(--mono); color: var(--text-3); }
+.kit-scale i { display: block; background: var(--accent-dim); border: 1px solid var(--accent); border-radius: 3px; }
+.kit-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.kit-icons span { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px; border: 1px solid var(--border); border-radius: var(--r); font: 10.5px var(--mono); color: var(--text-3); }
+.kit-box { border: 1px dashed var(--border-3); border-radius: 6px; display: grid; place-items: center; color: var(--text-4); font: 10px var(--mono); }
+.kit-mini { display: grid; gap: 4px; height: 84px; width: 140px; padding: 4px; border: 1px solid var(--border-2); border-radius: 8px; background: var(--bg); }

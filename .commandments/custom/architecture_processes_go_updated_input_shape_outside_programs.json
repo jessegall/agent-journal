@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "go",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textMatches": "^run_in_background$"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "file": "**/journal-hook/programs/**"
+            }
+        ]
+    },
+    "sin": {
+        "name": "go-updated-input-shape-outside-programs",
+        "description": "Go code outside the programs package writes a field one agent program asks of a rewritten tool input, so the hook decides in two places what a program is given.",
+        "rule": "Hold what each program's rewritten input carries in its row of the program table, and let answer.go copy it.",
+        "skill": "processes-architecture"
+    }
+}

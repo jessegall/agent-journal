@@ -1,0 +1,34 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "kind:BinOp",
+        "where": [
+            {
+                "operator": "+"
+            },
+            {
+                "of": "child:left",
+                "nameMatches": "(reads|tries|attempts|uses)"
+            },
+            {
+                "of": "child:right",
+                "value": 1
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "file": "**/drivers/support/countdowns.py"
+            }
+        ]
+    },
+    "sin": {
+        "name": "count-raised-by-hand",
+        "description": "Code raises a count of reads, tries or uses by one itself, a countdown of its own beside the one the journal has.",
+        "rule": "Count with Countdowns.tick and a CountDown declaration: the count is kept in a row for the actor, and it can be silent, reset, or ended on a condition.",
+        "skill": "plain-code-words"
+    }
+}

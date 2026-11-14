@@ -1,0 +1,10 @@
+src/core/modules/cold
+src/core/modules/dockish
+src/core/modules/example
+src/core/modules/notes
+src/core/modules/sample
+src/core/modules/sample_notes
+src/core/modules/sample_program
+src/core/modules/shell_sample
+src/core/modules/warm
+src/suites/sample

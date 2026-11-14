@@ -1,0 +1,59 @@
+from argparse import ArgumentParser
+from dataclasses import MISSING, Field, field
+from enum import StrEnum
+from types import new_class
+from typing import Any
+from engine.command.handlers.make_handler import CREATOR_COLUMN
+from engine.database.constraint_refusals import ENVIRONMENT_COLUMN
+from engine.model.model import Model
+from engine.model.table import Table
+from engine.time.timestamp import Timestamp
+
+
+FOREIGN_KEY_SUFFIX = "_id"
+
+
+STATE_COLUMN = "state"
+
+
+HANDLER_COLUMNS = (CREATOR_COLUMN, ENVIRONMENT_COLUMN)
+EDITED_ROW_COLUMN = "row_id"
+
+
+def generic_base(base: object) -> type:
+    return new_class(f"{base}Base", tuple([base]))
+
+
+def editable_columns(table: Table[Model]) -> tuple[str, ...]:
+    return tuple(column for column in (*argument_columns(table), *flag_columns(table)) if column not in (STATE_COLUMN, EDITED_ROW_COLUMN))
+
+
+def argument_columns(table: Table[Model]) -> tuple[str, ...]:
+    return tuple(column for column in table.required_fields if column not in HANDLER_COLUMNS and table.types[column] is not bool)
+
+
+def switch_columns(table: Table[Model]) -> tuple[str, ...]:
+    return tuple(column for column in table.required_fields if column not in HANDLER_COLUMNS and table.types[column] is bool)
+
+
+def flag_columns(table: Table[Model]) -> tuple[str, ...]:
+    return (*(column for column in table.optional_fields if column not in HANDLER_COLUMNS), *switch_columns(table))
+
+
+def copied_default(model_field: Field[Any]) -> Field[Any]:
+    if model_field.default is not MISSING:
+        return field(default=model_field.default)
+    return field(default_factory=model_field.default_factory)
+
+
+def parser_argument(parser: ArgumentParser, flag: str, value_type: type[object]) -> None:
+    if value_type is bool:
+        parser.add_argument(flag, action="store_true", default=None)
+    elif value_type is tuple:
+        parser.add_argument(flag, nargs="+", action="extend")
+    elif issubclass(value_type, StrEnum):
+        parser.add_argument(flag, type=value_type, choices=tuple(value_type.__members__.values()))
+    elif value_type is Timestamp:
+        parser.add_argument(flag, type=Timestamp.parsed)
+    else:
+        parser.add_argument(flag, type=value_type)

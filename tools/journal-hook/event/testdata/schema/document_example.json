@@ -1,0 +1,81 @@
+{
+  "version": 3,
+  "program": "claude",
+  "event": "pre_tool_use",
+  "session": "4ddd741e-fab8-4b31-91f9-469ef0cf1c0c",
+  "firing": "7731-1793395000123",
+  "fired_at_ms": 1793395000123,
+  "actor": "agent",
+  "environment": "development",
+  "child_agent": "",
+  "accepts_lines": false,
+  "launch": "",
+  "tool": {
+    "name": "Bash",
+    "category": "shell",
+    "shell": {
+      "line": "git status && grep -n foo src/app.py | head -5",
+      "parts": [
+        {
+          "text": "git status",
+          "program": "git",
+          "subcommand": "status",
+          "arguments": [
+            "status"
+          ],
+          "classification": {
+            "category": "version control",
+            "effects": [
+              "reads_files"
+            ],"uncertain": false
+          },
+          "joined_by": "&&"
+        },
+        {
+          "text": "grep -n foo src/app.py",
+          "program": "grep",
+          "arguments": [
+            "-n",
+            "foo",
+            "src/app.py"
+          ],
+          "classification": {
+            "category": "search",
+            "effects": [
+              "reads_files"
+            ],"uncertain": false
+          },
+          "read_paths": [
+            "src/app.py"
+          ],
+          "piped_into": 2
+        },
+        {
+          "text": "head -5",
+          "program": "head",
+          "arguments": [
+            "-5"
+          ],
+          "classification": {
+            "category": "read",
+            "effects": [],"uncertain": false
+          }
+        }
+      ],
+      "redirects": [],
+      "is_journal_only": false,
+      "parse_error": ""
+    },
+    "files": [],
+    "diff": null
+  },
+  "prompt": null,
+  "raw": {
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "git status && grep -n foo src/app.py | head -5"
+    }
+  },
+  "foreign": []
+}

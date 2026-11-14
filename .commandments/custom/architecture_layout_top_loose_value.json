@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "assignment",
+        "where": [
+            {
+                "topLevel": true
+            },
+            {
+                "fileMatches": "^(\\.commandments/custom/samples/layout/)?src/(core|server|install|tunnels)/[^/]+\\.py$"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)(__init__|[a-z_]+_(module|suite))\\.py$"
+            },
+            {
+                "testCode": true
+            },
+            {
+                "file": "src/install/working_tree_install.py"
+            },
+            {
+                "file": "src/server/server.py"
+            }
+        ]
+    },
+    "sin": {
+        "name": "top-loose-value",
+        "description": "A value sits loose directly in a top folder of src, so it belongs to no folder.",
+        "rule": "Move it into the folder of its area under a top folder of src. Every class, function and value sits in a folder named for its sort: errors, enums, models, support or the folder of its area.",
+        "skill": "plain-code-words"
+    }
+}

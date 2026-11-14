@@ -1,0 +1,36 @@
+from engine.enums.command_category import CommandCategory
+from engine.enums.setting_scope import SettingScope
+from engine.setting.ruled_settings import ruled_settings
+from engine.enums.setting_type import SettingType
+from engine.setting.setting_value import SettingValue
+from engine.setting.list_rule import ListRule
+
+
+MODULE_KEY = "journal.suites.coding"
+STARTS_HELPERS_SETTING = f"{MODULE_KEY}.main-starts-read-only-helpers"
+AUTO_MODE_SETTING = f"{MODULE_KEY}.auto-mode"
+WRITES_CODE_SETTING = f"{MODULE_KEY}.main-writes-code"
+COMMAND_TYPES = f"{MODULE_KEY}.worker-command-types"
+KEEP_RUNNING_SETTING = f"{MODULE_KEY}.continue-while-delegatable"
+DESIGNER_ENABLED_SETTING = f"{MODULE_KEY}.designer-enabled"
+CODING_SETTING_VALUES = [
+    SettingValue("auto-mode", "Auto mode", "The journal hands the main agent its tasks, and it keeps going while tasks are left", SettingType.FLAG,
+                 default=True, scope=SettingScope.ENVIRONMENT, person_set=True, screen="work", section="Taking on work"),
+    SettingValue("main-writes-code", "Main agent writes code", "The main agent may change project files itself; off sends every change to a worker",
+                 SettingType.FLAG, default=True, scope=SettingScope.ENVIRONMENT, person_set=True, screen="work", section="Taking on work"),
+    SettingValue("main-starts-read-only-helpers", "Use read-only helpers", "Whether the main agent may start read-only helpers.",
+                 SettingType.FLAG, default=True, scope=SettingScope.PROJECT, person_set=True, screen="work", section="Other helpers"),
+    SettingValue("continue-while-delegatable", "Keep going while work can be delegated", "The main agent works on while open tasks are left: it sends them to free worker places, or takes one itself.",
+                 SettingType.FLAG, default=False, person_set=True, screen="work", section="Workers"),
+    SettingValue("designer-enabled", "Use a designer", "Whether the main agent may start a designer, which writes a design document and changes no code.",
+                 SettingType.FLAG, default=False, person_set=True, screen="work", section="Other helpers"),
+    SettingValue("plain-code-words", "Plain code words", "Every agent loads the skill on naming code in plain words at its start and after a compaction.",
+                 SettingType.FLAG, default=True, scope=SettingScope.PROJECT, person_set=True, screen="work", section="Other helpers"),
+    SettingValue("worker-command-types", "Worker command types", "The types of shell command a worker may run.", SettingType.LIST,
+                 default=(CommandCategory.READ.value, CommandCategory.SEARCH.value, CommandCategory.EDIT.value, CommandCategory.CHECK.value, CommandCategory.TEST_RUN.value,
+                          CommandCategory.BUILD.value), person_set=True),
+]
+PLAIN_NAMES_SETTING = f"{MODULE_KEY}.plain-code-words"
+CODING_SETTING_RULES = {COMMAND_TYPES: ListRule(choices=tuple(category.value for category in CommandCategory))}
+CODING_SETTINGS = ruled_settings(MODULE_KEY, CODING_SETTING_VALUES, CODING_SETTING_RULES)
+WORKER_TEST_LIMIT = "journal.suites.coding.workers.worker-run-most-tests"

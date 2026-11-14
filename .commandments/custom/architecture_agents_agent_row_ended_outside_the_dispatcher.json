@@ -1,0 +1,36 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {"any": [
+                {"all": [
+                    {"child": {"all": [{"kind": "keyword"}, {"nameIn": ["ended_at", "pid"]}]}},
+                    {"any": [
+                        {"of": "receiver", "typeLike": "*Agent"},
+                        {"argument": {"at": 0, "typeLike": "*Agent"}},
+                        {"constructs": "Agent"}
+                    ]}
+                ]},
+                {"all": [
+                    {"name": "ended"},
+                    {"of": "receiver", "typeLike": "*Agent"}
+                ]}
+            ]}
+        ],
+        "reject": [
+            {"of": "enclosingType", "nameIn": ["AgentDispatcher", "Agent"]},
+            {"file": "src/core/modules/agents/commands/end_replaced_main/end_replaced_main_handler.py"},
+            {"file": "src/core/modules/agents/commands/record_agent_process/record_agent_process_handler.py"},
+            {"file": "src/core/modules/agents/commands/start_agent/start_agent_handler.py"},
+            {"testCode": true}
+        ]
+    },
+    "sin": {
+        "name": "agent-row-ended-outside-the-dispatcher",
+        "description": "Code outside the dispatcher writes the ended_at or pid field of an agent's row, so the row can say ended while its program runs, or open while no program runs, and nothing compares the two.",
+        "rule": "End, open or bind an agent's row through AgentDispatcher: end_row, end_session, open_row, record_process or move_program. The files this rule still allows record a launch themselves, or end the row of a replaced main session inside a hook, where the dispatcher cannot be imported.",
+        "skill": "drivers-architecture"
+    }
+}

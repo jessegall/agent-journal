@@ -1,0 +1,25 @@
+from argparse import ArgumentParser, Namespace
+
+from engine.caller.caller import Caller
+from engine.subcommand.output import Output
+from engine.subcommand.subcommand import Subcommand
+from suites.coding.modules.checks.commands.stop_check.stop_check import StopCheck
+from suites.coding.modules.checks.models.check import Check
+
+
+class StopCheckSubcommand(Subcommand[StopCheck, Check]):
+    """`journal check stop <n>`: the check runs no more until a user starts it again."""
+
+    cli_name = "check"
+    name = "stop"
+    outward = True
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("id", type=int)
+
+    def command(self, arguments: Namespace, caller: Caller) -> StopCheck:
+        return StopCheck(arguments.id)
+
+    def write_output(self, value: object, output: Output) -> None:
+        if isinstance(value, Check):
+            output.line(f"check {value.id} stopped: it runs no more")

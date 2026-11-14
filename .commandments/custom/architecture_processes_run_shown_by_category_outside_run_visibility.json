@@ -1,0 +1,46 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "member-access",
+        "where": [
+            {
+                "nameIn": [
+                    "is_watched",
+                    "is_visible"
+                ]
+            },
+            {
+                "not": {
+                    "declaredBy": "*Visibility"
+                }
+            },
+            {
+                "fileMatches": "(^|/)core/modules/(processes|docking)/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)core/modules/processes/(support/part_visibility|support/run_visibility|queries/conditions/long_run_candidate|models/process_part)\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)core/modules/processes/support/(reading/|reader_demands\\.py$|reader_selection\\.py$|silent_start_runs\\.py$|silent_runs\\.py$|block_conditions/output_monitored\\.py$)"
+            },
+            {
+                "fileMatches": "(^|/)core/modules/processes/commands/request_reader/"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/processes/support/decisions/output_facts\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "run-shown-by-category-outside-run-visibility",
+        "description": "Code outside the visibility classes decides which runs show a card, a mark or a dock item.",
+        "rule": "RunVisibility and PartVisibility own it; ask visible_part.",
+        "skill": "processes-architecture"
+    }
+}

@@ -1,0 +1,37 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "any": [
+                    {
+                        "all": [
+                            {"name": "time"},
+                            {"of": "receiver", "nameMatches": "^time$"}
+                        ]
+                    },
+                    {
+                        "all": [
+                            {"nameIn": ["now", "utcnow", "today"]},
+                            {"of": "receiver", "nameMatches": "^(datetime|date)$"}
+                        ]
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {"testCode": true},
+            {"fileMatches": "(^|/)src/engine/time/clock\\.py$"},
+            {"fileMatches": "(^|/)src/(engine/testing|core/modules/[^/]+/testing)/"},
+            {"fileMatches": "(^|/)src/install/version_four/restore_version_four\\.py$"}
+        ]
+    },
+    "sin": {
+        "name": "wall-clock-outside-clock",
+        "description": "Code reads the system clock itself, with time.time or datetime.now, so no story can move it.",
+        "rule": "Take Clock and read clock.timestamp() for a point in time, or clock.epoch_seconds() to compare with a file's modified time; a story moves the clock. Clock itself, the story tooling and the installer's version four restore, which runs with no journal, are left out, by file.",
+        "skill": "plain-code-words"
+    }
+}

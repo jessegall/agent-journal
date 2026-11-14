@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "typescript",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "literal"
+                        },
+                        {
+                            "textMatches": "core/(modules|suites)/"
+                        }
+                    ]
+                }
+            },
+            {
+                "file": "src/viewer/src/**"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "shell-imports-window-code",
+        "description": "The shell imports a module's window code, so the window is built into the shell and no longer loads on its own.",
+        "rule": "The shell loads a module's window from the entry URL /api/windows gives, through PageWindow or FrameWindow; it never imports a module's code.",
+        "skill": "plain-code-words"
+    }
+}

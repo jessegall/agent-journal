@@ -1,0 +1,202 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "of": "closest:call",
+                "nameIn": [
+                    "Refusal",
+                    "NudgeDeclaration"
+                ]
+            },
+            {
+                "any": [
+                    {
+                        "textMatches": "(?is)\\ba main agent\\b.*(?:\\ba helper\\b|\\ba worker\\b|\\bthe merger\\b)|\\ba helper\\b.*(?:\\ba main agent\\b|\\ba worker\\b|\\bthe merger\\b)|\\ba worker\\b.*(?:\\ba main agent\\b|\\ba helper\\b|\\bthe merger\\b)|\\bthe merger\\b.*(?:\\ba main agent\\b|\\ba helper\\b|\\ba worker\\b)"
+                    },
+                    {
+                        "all": [
+                            {
+                                "textMatches": "(?i)\\ba main agent\\b"
+                            },
+                            {
+                                "next": {
+                                    "next": {
+                                        "textMatches": "(?i)\\ba helper\\b"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "textMatches": "(?i)\\ba main agent\\b"
+                            },
+                            {
+                                "next": {
+                                    "next": {
+                                        "textMatches": "(?i)\\ba worker\\b"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "textMatches": "(?i)\\ba main agent\\b"
+                            },
+                            {
+                                "next": {
+                                    "next": {
+                                        "textMatches": "(?i)\\bthe merger\\b"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "textMatches": "(?i)\\ba helper\\b"
+                            },
+                            {
+                                "next": {
+                                    "next": {
+                                        "textMatches": "(?i)\\ba main agent\\b"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "textMatches": "(?i)\\ba helper\\b"
+                            },
+                            {
+                                "next": {
+                                    "next": {
+                                        "textMatches": "(?i)\\ba worker\\b"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "textMatches": "(?i)\\ba helper\\b"
+                            },
+                            {
+                                "next": {
+                                    "next": {
+                                        "textMatches": "(?i)\\bthe merger\\b"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "textMatches": "(?i)\\ba worker\\b"
+                            },
+                            {
+                                "next": {
+                                    "next": {
+                                        "textMatches": "(?i)\\ba main agent\\b"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "textMatches": "(?i)\\ba worker\\b"
+                            },
+                            {
+                                "next": {
+                                    "next": {
+                                        "textMatches": "(?i)\\ba helper\\b"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "textMatches": "(?i)\\ba worker\\b"
+                            },
+                            {
+                                "next": {
+                                    "next": {
+                                        "textMatches": "(?i)\\bthe merger\\b"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "textMatches": "(?i)\\bthe merger\\b"
+                            },
+                            {
+                                "next": {
+                                    "next": {
+                                        "textMatches": "(?i)\\ba main agent\\b"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "textMatches": "(?i)\\bthe merger\\b"
+                            },
+                            {
+                                "next": {
+                                    "next": {
+                                        "textMatches": "(?i)\\ba helper\\b"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "textMatches": "(?i)\\bthe merger\\b"
+                            },
+                            {
+                                "next": {
+                                    "next": {
+                                        "textMatches": "(?i)\\ba worker\\b"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "text-names-two-roles",
+        "description": "A refusal or a nudge names two roles as its readers, such as a main agent and a helper, so each reader gets words meant for the other.",
+        "rule": "Declare one text for each role, or choose the text by the role of the asking agent; a text for one role never holds a clause for another.",
+        "skill": "drivers-architecture"
+    }
+}

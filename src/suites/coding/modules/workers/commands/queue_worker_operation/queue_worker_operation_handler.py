@@ -1,0 +1,63 @@
+from dataclasses import replace
+from engine.actor.actor import Actor
+from engine.command.bus import Bus
+from engine.command.context import Context
+from suites.coding.modules.workers.support.model_complexity_policy import ModelComplexityPolicy
+from engine.command.handler import Handler
+from engine.enums.command_category import CommandCategory
+from engine.listener.rows.event_rows import EventRows
+from engine.repository.repository import Repository
+from engine.scope.actor_scope import ActorScope
+from core.modules.agents.models.agent import Agent
+from core.modules.environments.support.environment_rows import EnvironmentRows
+from core.modules.messages.support.work_sources import WorkSources
+from core.modules.processes.commands.start_process.start_process import StartProcess
+from suites.coding.modules.workers.commands.queue_worker_operation.queue_worker_operation import QueueWorkerOperation
+from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
+from core.modules.tasks.models.enums.task_state import TaskState
+from suites.coding.modules.workers.models.worker_operation import WorkerOperation
+from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
+from suites.coding.modules.workers.support.kept_worker_tasks import KeptWorkerTasks
+from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery
+
+
+class QueueWorkerOperationHandler(Handler[QueueWorkerOperation, WorkerOperation]):
+    """Reserves one worker and starts its command through the existing process queue; an update is accepted while
+    another command of the worker runs and waits for it when it runs. The open and blocked tasks of a
+    send are assigned to the worker here, once its operation is saved, so its unit names them while the send
+    waits for the worker and no second send is queued for the worker the assignment finds idle."""
+
+    command = QueueWorkerOperation
+    disabled_scopes = [ActorScope]
+
+    def __init__(self, operations: WorkerOperationQuery, bus: Bus, repository: Repository,
+                 rows: EventRows, environments: EnvironmentRows, sources: WorkSources, kept_tasks: KeptWorkerTasks, complexity: ModelComplexityPolicy) -> None:
+        self.kept_tasks, self.complexity = kept_tasks, complexity
+        self.operations, self.bus, self.repository = operations, bus, repository
+        self.rows, self.environments = rows, environments
+        self.sources = sources
+
+    def handle(self, command: QueueWorkerOperation, context: Context) -> WorkerOperation:
+        if command.name is not WorkerOperationName.UPDATE:
+            self.operations.check_available(command.worker_id)
+        self.bus.handler(command.command).check_rows(command.command, context.actor)
+        worker = self.rows.required(Agent, command.worker_id)
+        if isinstance(command.command, SendWorker) and command.command.plan_id is None and command.command.phase_id is None:
+            self.complexity.check(worker.program, worker.program_model, self.kept_tasks.read_tasks(command.command.task_ids), context)
+        source = self.sources.source_copy(replace(context, environment_id=worker.environment_id))
+        folder = self.environments.find(worker.environment_id).folder
+        line = f"journal worker-operation run {worker.id}"
+        process = self.bus.dispatch(StartProcess.single_part(worker.id, line, folder, CommandCategory.BACKGROUND_JOB, 3600), replace(context, actor=Actor.core()))
+        operation = self.repository.save(WorkerOperation(worker_id=worker.id, creator_id=context.actor.id,
+                                    actor_type=context.actor.type, process_id=process.id, line=command.line, name=command.name,
+                                    source_message_id=source.message_id, source_version=source.version,
+                                    source_unavailable=source.unavailable, selecting_actor_id=source.selecting_actor_id,
+                                    source_origin=source.origin,
+                                    plugin_script=command.plugin_script), context)
+        if isinstance(command.command, SendWorker):
+            self.assign_sent_tasks(worker, command.command, context)
+        return operation
+
+    def assign_sent_tasks(self, worker: Agent, deliver: SendWorker, context: Context) -> None:
+        delivered = [task for task in self.kept_tasks.read_tasks(deliver.task_ids) if task.state in (TaskState.OPEN, TaskState.BLOCKED)]
+        self.kept_tasks.delegate(worker, delivered, context)

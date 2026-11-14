@@ -1,0 +1,25 @@
+from collections.abc import Mapping
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class HookSample:
+    """One prepared hook object a story sends, as the Go program writes it, with fields a story may set anew.
+    """
+
+    body: Mapping[str, object]
+
+    @property
+    def firing(self) -> object:
+        return self.body["firing"]
+
+    @property
+    def action(self) -> str:
+        tool = self.body["tool"]
+        return f"{self.body['event']} {tool['name'] if isinstance(tool, Mapping) else ''}".strip()
+
+    def with_raw(self, raw: Mapping[str, object]) -> "HookSample":
+        return self.with_fields(raw=raw)
+
+    def with_fields(self, **fields: object) -> "HookSample":
+        return HookSample({**self.body, **fields})

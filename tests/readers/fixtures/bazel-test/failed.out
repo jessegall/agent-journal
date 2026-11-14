@@ -1,0 +1,10 @@
+INFO: Analyzed 2 targets (1 packages loaded, 4 targets configured).
+INFO: Found 2 test targets...
+INFO: Elapsed time: 0,396s, Critical Path: 0,30s
+INFO: 2 processes: 2 darwin-sandbox.
+INFO: Build completed, 1 test FAILED, 2 total actions
+//:passes                                                       (cached) PASSED in 0.5s
+//:fails                                                                 FAILED in 0.3s
+
+Executed 1 out of 2 tests: 1 test passes and 1 fails locally.
+INFO: Build completed, 1 test FAILED, 2 total actions

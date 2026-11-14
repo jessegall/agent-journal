@@ -1,0 +1,45 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "^(\\.commandments/custom/samples/layout/)?src/.+\\.py$"
+            },
+            {
+                "any": [
+                    {
+                        "typeKind": "enum"
+                    },
+                    {
+                        "extendsAny": "Enum"
+                    },
+                    {
+                        "extendsAny": "StrEnum"
+                    },
+                    {
+                        "extendsAny": "IntEnum"
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)enums/[^/]+\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)(dist|node_modules|vendor)/"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "enum-outside-enums",
+        "description": "An enum sits outside an enums folder.",
+        "rule": "Move the enum to the enums folder beside it, directly in that folder.",
+        "skill": "plain-code-words"
+    }
+}

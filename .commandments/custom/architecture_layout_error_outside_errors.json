@@ -1,0 +1,41 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "^(\\.commandments/custom/samples/layout/)?src/(.+/)?[^/]*(error|refusal)\\.py$"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)errors/[^/]+\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)(dist|node_modules|vendor)/"
+            },
+            {
+                "testCode": true
+            },
+            {
+                "file": "src/core/modules/drivers/commands/skip_refusal/skip_refusal.py"
+            },
+            {
+                "file": "src/server/door/door_refusal.py"
+            },
+            {
+                "file": "src/suites/coding/modules/workers/commands/record_worker_refusal/record_worker_refusal.py"
+            },
+            {
+                "file": "src/engine/log/recorded_refusal.py"
+            }
+        ]
+    },
+    "sin": {
+        "name": "error-outside-errors",
+        "description": "An error or refusal file sits outside an errors folder.",
+        "rule": "Move x_error.py to the errors folder beside it, directly in that folder.",
+        "skill": "plain-code-words"
+    }
+}

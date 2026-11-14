@@ -1,0 +1,60 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "sin": {
+        "name": "command-in-a-nudge",
+        "description": "A nudge's text tells the agent which journal command to run.",
+        "rule": "Name the row, its number and what happened, nothing more. The agent knows the commands from its skills, so a nudge never repeats one. A refusal is left out: a hold names the command that is its way out, so the agent is never stuck.",
+        "skill": "plain-code-words"
+    },
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "of": "child:func",
+                "resolvesLike": "engine.driver.nudge_declaration.NudgeDeclaration"
+            },
+            {
+                "any": [
+                    {
+                        "argument": {
+                            "at": 2,
+                            "textMatches": "\\bjournal (${journal_command_nouns})\\b"
+                        }
+                    },
+                    {
+                        "descendant": {
+                            "all": [
+                                {
+                                    "is": "literal"
+                                },
+                                {
+                                    "inside": {
+                                        "nameIn": [
+                                            "text",
+                                            "plural_text"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "textMatches": "\\bjournal (${journal_command_nouns})\\b"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "argument": {
+                    "at": 1,
+                    "name": "REFUSAL"
+                }
+            }
+        ]
+    }
+}

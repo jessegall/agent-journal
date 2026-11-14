@@ -1,0 +1,30 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "import",
+        "where": [
+            {"nameMatches": "^core\\.modules\\.(agents\\.support\\.(launcher_link|launcher_service|agent_program)|agents\\.commands\\.record_agent_process\\.record_agent_process|agents\\.commands\\.record_agent_launch_failure\\.record_agent_launch_failure|helpers\\.commands\\.record_program_exit\\.record_program_exit)$"}
+        ],
+        "reject": [
+            {"fileMatches": "(^|/)src/core/modules/agents/(support|testing)/"},
+            {"fileMatches": "(^|/)src/core/modules/(agents/commands/record_agent_process|agents/commands/record_agent_launch_failure|drivers/commands/record_agent_launch_failure|helpers/commands/record_program_exit)/"},
+            {"file": "src/core/modules/agents/commands/launch_agent/launch_agent_handler.py"},
+            {"file": "src/core/modules/agents/commands/stop_agent/stop_agent_handler.py"},
+            {"file": "src/core/modules/agents/listeners/ended_agent_program_listener.py"},
+            {"file": "src/core/modules/drivers/bindings/agent_hook_route.py"},
+            {"file": "src/core/modules/helpers/listeners/helper_program_listener.py"},
+            {"file": "src/core/modules/helpers/rules/unstarted_helper_rule.py"},
+            {"file": "src/suites/coding/modules/workers/support/worker_folder_runs.py"},
+            {"file": "src/suites/coding/modules/workers/support/worker_resume.py"},
+            {"file": "src/suites/coding/modules/workers/support/worker_sessions.py"},
+            {"testCode": true}
+        ]
+    },
+    "sin": {
+        "name": "launcher-reached-outside-the-dispatcher",
+        "description": "A file outside the dispatcher's folder imports the launcher link, the launcher service or the class that stops a program, or a command that records a launch, a launch failure or a program exit, so one more place starts, stops or records an agent's program and the row and the program can disagree again.",
+        "rule": "Ask AgentDispatcher to start, stop or end an agent, and AgentStanding to read whether its program or a launcher runs. Only src/core/modules/agents/support/ reaches the launcher; the files this rule still allows are named in it and the list only shrinks.",
+        "skill": "drivers-architecture"
+    }
+}

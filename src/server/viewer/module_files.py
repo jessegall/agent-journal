@@ -1,0 +1,41 @@
+from engine.database.write_turns import WriteTurns
+import mimetypes
+
+from engine.database.database import Database
+from engine.file.file_access import FileAccess
+from engine.module.journal_container import synced_container
+from engine.journal.journal_home import JournalHome
+from engine.module.module_finder import ModuleFinder
+from engine.registry.registry import Registry
+from engine.enums.window_loading import WindowLoading
+from server.errors.missing_module_file_error import MissingModuleFileError
+from server.viewer.module_file import ModuleFile
+
+UNKNOWN_TYPE = "application/octet-stream"
+SUFFIX_CONTENT_TYPES = {".webmanifest": "application/manifest+json"}
+
+
+class ModuleFiles:
+    """Answers GET /modules/<module>/<path>: a file from that module's web/dist and nothing outside it, with
+    its exact content type, marked when it is a frame window's entry."""
+
+    def __init__(self, home: JournalHome, turns: WriteTurns | None = None) -> None:
+        self.home, self.turns = home, turns
+
+    def file(self, module_name: str, path: str) -> ModuleFile:
+        modules = [module for module in ModuleFinder(self.home).modules() if module.name == module_name]
+        if not modules:
+            raise MissingModuleFileError(f"no installed module is named {module_name}")
+        folder = modules[0].web_folder()
+        target = (folder / path).resolve()
+        if not target.is_relative_to(folder) or not FileAccess.is_file(target):
+            raise MissingModuleFileError(f"{module_name} has no file {path} in its web/dist")
+        return ModuleFile(FileAccess.binary(target), SUFFIX_CONTENT_TYPES.get(target.suffix) or mimetypes.guess_type(target.name)[0] or UNKNOWN_TYPE, self.is_frame_entry(module_name, path))
+
+    def is_frame_entry(self, module_name: str, path: str) -> bool:
+        container = synced_container(self.home, self.turns)
+        try:
+            windows = container.get(Registry).windows
+        finally:
+            container.get(Database).close()
+        return any(window.module == module_name and window.entry == path and window.loading == WindowLoading.FRAME.value for window in windows)

@@ -1,0 +1,5 @@
+*** [.pio\build\uno\src\main.cpp.o] Error 1
+*** [.pio\build\uno\libFrameworkArduinoVariant.a] Error 1
+*** [.pio\build\uno\FrameworkArduino\CDC.cpp.o] Error 1
+*** [.pio\build\uno\FrameworkArduino\HardwareSerial.cpp.o] Error 1
+==================================== [FAILED] Took 1.27 seconds ====================================

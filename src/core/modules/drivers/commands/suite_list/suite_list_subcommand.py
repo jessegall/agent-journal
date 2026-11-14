@@ -1,0 +1,27 @@
+from argparse import ArgumentParser, Namespace
+
+from engine.caller.caller import Caller
+from engine.registry.registry import Registry
+from engine.subcommand.output import Output
+from engine.subcommand.read_subcommand import ReadSubcommand
+from engine.types.type_guards import is_tuple
+
+
+class SuiteListSubcommand(ReadSubcommand[tuple[str, ...]]):
+    """`journal suite list`: the installed top suites, one per line, for the launcher's boot menu."""
+
+    cli_name = "suite"
+    name = "list"
+
+    def __init__(self, registry: Registry) -> None:
+        self.registry = registry
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        return None
+
+    def read(self, arguments: Namespace, caller: Caller) -> tuple[str, ...]:
+        return tuple(sorted(suite.name for suite in self.registry.top_suites()))
+
+    def write_output(self, value: object, output: Output) -> None:
+        for name in value if is_tuple(value) else ():
+            output.line(str(name))

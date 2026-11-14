@@ -1,34 +1,33 @@
 ---
 name: ViewerRequestFunnel
-description: Load it before the viewer asks the server for anything, or before writing a poll, so every request goes through the one transport and every poll through the static poll table.
-summary: Only src/web/src/api/transport.js calls fetch; a read is declared once in the API client under a key, one request per key is in flight, and a poll is an entry of the static poll table whose data is read from it.
+description: Load it before writing a request in the viewer or a window: a fetch, an EventSource, a WebSocket, an XMLHttpRequest or a sendBeacon, so every request leaves through the one transport file.
+summary: Every request of the viewer leaves through src/viewer/src/api/transport.js; a window reads and runs through its window context, and only the transport file calls fetch, EventSource or the like.
 tier: mandatory
-languages: [typescript]
+languages: [typescript, vue]
 ---
 
 # The viewer's request funnel
 
-The viewer reaches the journal server through one funnel: the transport, `src/web/src/api/transport.js`. It is the
-only code that calls `fetch`, opens an `EventSource` or an `XMLHttpRequest`, or sends a beacon. Everything else asks
-the API client (`src/web/src/api/client.js`), which declares every read and write once.
+Every request of the viewer leaves through `src/viewer/src/api/transport.js`. That file knows, for every window,
+what is in flight, its line, its start and whether it is a read or a write. It joins the same read of the same
+window, runs at most one more after an event, lets four reads out at once so a write and the event stream always
+find a connection, and counts lines by noun and verb.
 
-Every read has a key that names what it reads, never its query: `messages.page`, `messages.older`,
-`messages.changes`. A `since`, a `before` or a `limit` never makes a second key. One request per key is in flight: a
-read for a key already in flight is not sent, and its caller takes the answer of the one in flight. So a burst of
-refreshes is one request, and a slow answer can never pile up a queue behind it.
+A request made anywhere else is invisible to all of that: it can run twice at once, hold a connection and stall the
+page, and no test or inspector can see it.
 
-Every poller is one entry of the static table in `src/web/src/sync/pollers.js`, declared once at load and never at
-runtime: its key (two dot-separated segments or more, area first: `status.bar`, `agents.index`, `agent.transcript`), what
-it reads from the params its users hand it, and how often. A poller is started, paused and asked for by its key written
-out (`usePoll("agent.terminal", {params, take})`); what varies between its runs, an agent, a row, a cursor, goes in its
-params, and a poller that runs per agent or row names in `by` the part of its params that tells its runs apart. A round
-is never sent while the last is in flight. `pausePoller` settles once nothing of it is in flight; an on-demand poller
-(`demand: true`) reads once when asked, pausing the poller it names in `pauses` for the length of its read.
+## When it fires
 
-A file the build carries beside the page (a figure's model, its wardrobe), and the phone app's and the share page's own
-addresses, go through `transport.raw`.
+- **`request-outside-the-funnel`** - a direct `fetch`, `window.fetch`, `new EventSource`, `new WebSocket`,
+  `new XMLHttpRequest` or `navigator.sendBeacon` outside the transport file.
 
-## Fix
+## What to write instead
 
-Move the request into the client as a declared read or write, and call that. A file the build carries goes through
-`transport.raw`. Never call `fetch` beside the transport, not even for a "quick" check.
+- A window reads with `context.read(line)` and runs with `context.run(line)`. A line the server calls a read is
+  joined, whichever of the two carried it.
+- Code outside a window that needs a line uses `lineResult(window, line, environment)`.
+- Any other address goes through `transport.raw(url, init, {window, line})`, a file's bytes through
+  `transport.bytes(url)` and events through `followEvents`, which shares one stream across the browser's tabs.
+- `transport.inFlight(window)` and `transport.sentCounts(window)` say what a window has in flight and what it has sent.
+
+The phone's service worker runs in a scope of its own that cannot load the transport file, so the rule leaves it alone.

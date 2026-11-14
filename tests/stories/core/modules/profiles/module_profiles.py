@@ -1,0 +1,89 @@
+from engine.enums.occupant import Occupant
+import json
+
+import pytest
+
+from engine.database.database import Database
+from engine.registry.registry import Registry
+from core.modules.profiles.support.profile_files import ProfileFiles
+from tests.stories.core.support.fixtures import UserJoined
+from suites.coding.support.shipped_profiles import CODE_REVIEWER_PROFILE
+from suites.coding.support.shipped_profiles import DEBUGGER_PROFILE
+from suites.coding.support.shipped_profiles import PLANNER_PROFILE
+from suites.coding.support.shipped_profiles import PLAN_REVIEWER_PROFILE
+from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
+from suites.coding.support.shipped_profiles import WORKER_MEDIOR_PROFILE
+from suites.coding.support.shipped_profiles import WORKER_PROFILE
+from suites.coding.support.shipped_profiles import WORKER_SENIOR_PROFILE
+
+MODULES = "tests.stories.core.modules.profiles.support.profile_modules"
+
+
+@pytest.mark.parametrize(("module", "message"), [
+    ("DuplicateProfile", f"both register the profile {RESEARCHER_PROFILE.name}"),
+    ("UnknownType", "missing-type is no agent type: no installed module registers it"),
+    ("WritingProfile", "profile module-reader asks for writing, and a Read-only helper only reads"),
+    ("MissingDescription", "profile module-reader has no description"),
+    ("MissingBody", "profile module-reader has no body"),
+    ("InvalidName", "bad name cannot name a profile"),
+    ("MissingDefault", "default profile missing-profile is not registered"),
+    ("WrongDefaultType", "default profile module-reader has type helper, not clerk"),
+    ("LegacyProfiles", "register profiles on the module, not the suite"),
+    ("MissingBase", "profile module-reader names the base no-such-base, which no module registers"),
+    ("LoopingBases", "the bases of profile module-reader lead back to it: module-reader -> module-writer -> module-reader"),
+])
+def test_sync_refuses_invalid_profile_declarations_without_changing_the_registry(new_story, module, message):
+    story = new_story()
+    story.expect_sync_refusal(f"{MODULES}:{module}", message)
+
+
+def test_a_module_that_is_no_suite_registers_a_profile_and_keeps_its_origin(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_sync_success(f"{MODULES}:ProfileModule")
+    story.container.get(ProfileFiles).publish()
+    rows = json.loads(story.run("profile list --json").output_text)["rows"]
+    profile = next(row for row in rows if row["name"] == "module-reader")
+    story.expect_rows(profile["agent_type"] == "helper", profile["module"] == "sample.profiles", profile["shipped"])
+    registered = Registry.read(story.container.get(Database)).profile("module-reader")
+    story.expect_rows(registered.module == "sample.profiles", registered.profile.body == "Read the files.")
+
+
+def test_shipped_profiles_have_registered_types_and_the_plan_reviewer_is_each_launch(new_story):
+    story = new_story()
+    registry = Registry.read(story.container.get(Database))
+    for name in (f"{RESEARCHER_PROFILE.name}", f"{PLANNER_PROFILE.name}", f"{DEBUGGER_PROFILE.name}", f"{PLAN_REVIEWER_PROFILE.name}", f"{CODE_REVIEWER_PROFILE.name}"):
+        story.expect_rows(registry.profile(name).profile.agent_type == "helper")
+    for name in (f"{WORKER_SENIOR_PROFILE.name}", f"{WORKER_MEDIOR_PROFILE.name}", f"{WORKER_PROFILE.name}"):
+        story.expect_rows(registry.profile(name).profile.agent_type == "worker")
+    story.expect_rows(registry.profile(f"{PLAN_REVIEWER_PROFILE.name}").profile.occupant is Occupant.LAUNCH_ROTATION,
+                      registry.helper_type_book().find("worker").default_profile == f"{WORKER_MEDIOR_PROFILE.name}",
+                      registry.profile(f"{WORKER_PROFILE.name}").profile.is_base)
+
+
+def test_the_shipped_code_reviewer_reads_the_diff_itself_and_files_critical_tasks(new_story):
+    story = new_story()
+    reviewer = Registry.read(story.container.get(Database)).profile(f"{CODE_REVIEWER_PROFILE.name}").profile
+    story.expect_rows(reviewer.agent_type == "helper", "git diff <range>" in reviewer.body, "--priority critical" in reviewer.body, "journal task overview <n>" in reviewer.body)
+
+
+def test_the_planner_profile_says_a_plan_is_written_thoroughly(new_story):
+    story = new_story()
+    planner = Registry.read(story.container.get(Database)).profile(f"{PLANNER_PROFILE.name}").profile.body
+    story.expect_rows("one task per step a user could check" in planner, "plans.one-task-phase" in planner, "you may run journal plan edit" in planner,
+                      "skill journal-planning" in planner, "skill journal-plan-review-applying" in planner)
+
+
+def test_a_third_party_module_brings_a_type_a_driver_and_a_profile(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_sync_success(f"{MODULES}:ClerkModuleJoining")
+    story.expect_text("profile list", "sample-clerk", "clerk")
+
+
+def test_a_change_to_the_base_reaches_a_profile_built_on_it_with_its_own_lines_added_after(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_sync_success(f"{MODULES}:BasedProfiles")
+    based = Registry.read(story.container.get(Database)).profile("sample-based").profile
+    story.expect_rows(based.body == "Read the files.\n\nAnswer in one line.", based.model == "opus", based.skills == tuple(["journal"]), based.base == "sample-base")
+    story.expect_sync_success(f"{MODULES}:ChangedBase")
+    based = Registry.read(story.container.get(Database)).profile("sample-based").profile
+    story.expect_rows(based.body == "Read the files twice.\n\nAnswer in one line.")

@@ -1,0 +1,6 @@
+[
+  {"role": "main", "number": 1, "title": "Main agent", "label": "main agent"},
+  {"role": "worker", "number": 848, "title": "Worker 848", "label": "worker 848"},
+  {"role": "helper", "number": 820, "title": "Helper 820", "label": "helper 820"},
+  {"role": "helper", "number": 5, "title": "Helper 5", "label": "helper 5"}
+]

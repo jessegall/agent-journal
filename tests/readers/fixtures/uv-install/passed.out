@@ -1,0 +1,5 @@
+Using CPython 3.14.7 interpreter at: /Users/user/projects/agent-journal/.venv/bin/python
+Resolved 1 package in 120ms
+Prepared 1 package in 14ms
+Installed 1 package in 1ms
+ + six==1.17.0

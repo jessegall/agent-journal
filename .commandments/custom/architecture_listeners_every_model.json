@@ -1,0 +1,29 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {"extendsAny": "CommitListener"},
+            {"of": "child:bases", "all": [
+                {"of": "child:slice", "all": [
+                    {"kind": "Subscript"},
+                    {"of": "child:value", "nameIn": ["Touched", "Changed"]},
+                    {"of": "child:slice", "name": "Model"}
+                ]}
+            ]}
+        ],
+        "reject": [
+            {"testCode": true},
+            {"fileMatches": "/sequence_(end|row_trigger)_listener\\.py$"},
+            {"fileMatches": "/core/modules/docking/listeners/dock_item_leave_listener\\.py$"},
+            {"fileMatches": "/core/modules/skills/listeners/skill_event_listener\\.py$"}
+        ]
+    },
+    "sin": {
+        "name": "listener-hears-every-model",
+        "description": "A commit listener hears every model change.",
+        "rule": "Declare the specific row or domain event the listener needs. Four listeners stay because their model set is open: the sequence end and row trigger listeners cover row types declared by installed sequence steps and triggers, DockItemLeaveListener hears the end of any row a dock item can point at, and SkillEventListener hears any event a skill names in its file.",
+        "skill": "plain-code-words"
+    }
+}

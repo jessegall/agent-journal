@@ -1,0 +1,20 @@
+from argparse import ArgumentParser, Namespace
+from engine.caller.caller import Caller
+from engine.subcommand.read_subcommand import ReadSubcommand
+from engine.log.refusal_log import RefusalLog
+from engine.log.recorded_refusal import RecordedRefusal
+
+
+class RefusalShowSubcommand(ReadSubcommand[RecordedRefusal]):
+    """`journal refusal show <id>`: one recorded refusal."""
+
+    cli_name, name = "refusal", "show"
+
+    def __init__(self, refusals: RefusalLog) -> None:
+        self.refusals = refusals
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("id", type=int)
+
+    def read(self, arguments: Namespace, caller: Caller) -> RecordedRefusal:
+        return self.refusals.refusal(arguments.id)

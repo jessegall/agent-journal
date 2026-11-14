@@ -1,0 +1,59 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "any": [
+                    {
+                        "name": "getLogger"
+                    },
+                    {
+                        "all": [
+                            {
+                                "nameIn": [
+                                    "open",
+                                    "writer"
+                                ]
+                            },
+                            {
+                                "argument": {
+                                    "at": -1,
+                                    "text": "a"
+                                }
+                            },
+                            {
+                                "any": [
+                                    {
+                                        "of": "receiver",
+                                        "nameMatches": "(^|_)log$"
+                                    },
+                                    {
+                                        "argument": {
+                                            "nameMatches": "(^|_)log$"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "file": "src/server/handover/successor_start.py"
+            }
+        ]
+    },
+    "sin": {
+        "name": "log-outside-system-log-writer",
+        "description": "A line of the system log is written around SystemLogWriter: a logging.getLogger call, or an append to a log file.",
+        "rule": "Write through SystemLogWriter.write, so each line holds its time, level and source and shows on the System logs page.",
+        "skill": "file-access"
+    }
+}

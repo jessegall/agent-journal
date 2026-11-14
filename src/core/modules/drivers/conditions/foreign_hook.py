@@ -1,0 +1,17 @@
+from dataclasses import dataclass
+
+from engine.database.statement import Statement
+from engine.module.driver_entries import DRIVERS_MODULE
+
+HAS_FOREIGN_RUNS = f"""json_array_length(metadata, '$."{DRIVERS_MODULE}".foreign') > 0"""
+
+
+@dataclass(frozen=True)
+class ForeignHook:
+    """Matches hook calls that recorded a run of the requested project hook."""
+
+    hook_id: str
+
+    def statement(self) -> Statement:
+        return Statement(f"{HAS_FOREIGN_RUNS} AND EXISTS (SELECT 1 FROM json_each(metadata, ?) AS foreign_run WHERE json_extract(foreign_run.value, '$.id') = ?)",
+                         [f'$."{DRIVERS_MODULE}".foreign', self.hook_id])

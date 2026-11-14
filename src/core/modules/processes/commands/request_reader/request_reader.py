@@ -1,0 +1,11 @@
+from dataclasses import dataclass
+
+from engine.command.command import Command
+from core.modules.processes.models.reader_request import ReaderRequest
+
+
+@dataclass(frozen=True)
+class RequestReader(Command[ReaderRequest]):
+    """A user asks the agent that ran a run, whose box is empty, to draw a reader for it."""
+
+    process_id: int

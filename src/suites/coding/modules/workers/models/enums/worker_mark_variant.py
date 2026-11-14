@@ -1,0 +1,30 @@
+from enum import StrEnum
+
+
+class WorkerMarkVariant(StrEnum):
+    """What a worker's mark says: its tests are queued, all passed or some failed; or a move, a job or a plan
+    handed to the worker, or a stop of it."""
+
+    QUEUED = "queued"
+    PASSED = "passed"
+    FAILED = "failed"
+    STARTED = "started"
+    NEXT_TASK = "next task"
+    NEXT_JOB = "next job"
+    ASSIGNED = "assigned"
+    HANDED_PLAN = "handed plan"
+    DELIVERED = "delivered"
+    MERGED = "merged"
+    PASS = "left to main"
+    RELEASED = "released"
+    ENDED_EARLY = "ended early"
+    HELP_REQUEST = "help request"
+    TEST_REQUEST = "test request"
+    TEST_ALLOWED = "test allowed"
+    MERGER_QUESTION = "merger question"
+    JOURNAL_QUESTION = "journal question"
+
+    ROUTE = "route"
+    SPLIT = "split"
+    TASK_ROUTE = "task route"
+    ROUTE_SKIPPED = "route skipped"

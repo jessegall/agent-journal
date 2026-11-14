@@ -1,0 +1,129 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "kind:Module",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/(core/modules|engine)/"
+            },
+            {
+                "descendant": {
+                    "any": [
+                        {
+                            "nameMatches": "(?i:worktree|pytest|graphify|code_?review)|(^|_)(git|test_runs?)(_|$)|(^|[a-z])(Git|TestRuns?)([A-Z]|$)"
+                        },
+                        {
+                            "all": [
+                                {
+                                    "is": "literal"
+                                },
+                                {
+                                    "textMatches": "(?i)\\b(worktrees?|git|pytest|graphify|code reviews?|test runs?)\\b"
+                                }
+                            ]
+                        },
+                        {
+                            "commentMatches": "(?i)\\b(worktrees?|git|pytest|graphify|code reviews?|test runs?)\\b"
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/core/modules/[^/]+/migrations/"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/tools/"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/drivers/queries/hook_call_query\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/driver/tool\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/driver/search_category\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/processes/"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/enums/command_category\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/driver/part\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/driver/shell_line\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/text/run_target\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/aliases/seeders/aliases_seeder\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/git/"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/provider/hook_manager\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/provider/provider\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/codex/providers/codex_provider\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/file/conflict_files\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/instruction/instruction_imports\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/checkout/checkout\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/enums/checkout_type\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/enums/window_icon\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/plugins/"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/developer/support/private_data_pass\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/secrets/support/secret_programs\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/voices/"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/testing/"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/journal/journal\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/database/repeated_work\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/engine/module/code_fingerprint\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/pins/support/project_repositories\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "description": "A core or engine file names a word of the coding suite: worktree, test run, pytest, code review, graphify or git.",
+        "name": "core-names-no-coding-word",
+        "rule": "Core and the engine say a thing in their own words, such as a checkout, a separate copy or a command type; the coding suite owns its own words. The files the detector leaves out are named in the skill core-names-no-suite with the reason each may name them.",
+        "skill": "core-names-no-suite"
+    }
+}

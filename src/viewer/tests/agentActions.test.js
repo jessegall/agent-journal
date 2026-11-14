@@ -1,0 +1,170 @@
+import {h, reactive} from "vue";
+import {afterEach, expect, test, vi} from "vitest";
+import AgentActions from "../../core/modules/agents/web/src/AgentActions.vue";
+import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
+import {context, mounted, page, pickButton, settle, typeInto} from "./support/agentWindowContext.js";
+
+const helper = {id: 42, number: 5, role: "helper", state: "idle", ended_at: "2026-11-01T10:00:00Z", job_command: ["helper", "send"], job_task_flag: "", resume_reason: null};
+afterEach(() => { document.body.innerHTML = ""; });
+async function actions(row = helper, run = vi.fn(async () => ({ok: true})), answers = {}) {
+    const held = {...context(answers), run};
+    const element = await mounted({render: () => h(AgentActions, {row})}, held);
+    document.body.append(element);
+    return {element, held, run};
+}
+
+test("a working agent does not offer card actions", async () => {
+    const {element} = await actions({...helper, state: "running", ended_at: null});
+    expect(element.querySelector("[data-agent-send-job]")).toBeNull();
+    expect(element.querySelector("[data-agent-retire]")).toBeNull();
+    expect(element.querySelector("[data-agent-send-message]")).toBeNull();
+});
+
+test("an idle helper takes another job on the same agent", async () => {
+    const {element, run} = await actions();
+    expect(element.querySelector("[data-agent-send-message]")).toBeNull();
+    await pickButton(element, "Send a job");
+    typeInto(element.querySelector("[data-agent-job-text]"), "Read src/tax.py");
+    await settle();
+    await pickButton(element, "Send the job");
+    expect(run).toHaveBeenCalledExactlyOnceWith(["helper", "send", "5", "Read src/tax.py"]);
+});
+
+test("a type declaring task jobs sends the selected open task", async () => {
+    const {element, run} = await actions({...helper, role: "writer", job_command: ["writer", "send"], job_task_flag: "--task"}, undefined, {"task list": page([{id: 9, title: "Fix tax", state: "open"}])});
+    await pickButton(element, "Send a job");
+    expect(element.querySelector("[data-agent-job-text]")).toBeNull();
+    expect(element.querySelector("[data-agent-submit-job]").disabled).toBe(true);
+    const select = element.querySelector("[data-agent-job-task]");
+    select.value = "9";
+    select.dispatchEvent(new Event("change"));
+    await settle();
+    await pickButton(element, "Send the job");
+    expect(run).toHaveBeenCalledExactlyOnceWith(["writer", "send", "5", "--task", "9"]);
+});
+
+test("retirement requires a separate permanent confirmation and a reason", async () => {
+    const {element, run} = await actions();
+    await pickButton(element, "Retire");
+    expect(run).not.toHaveBeenCalled();
+    expect(element.textContent).toContain("Retirement is permanent. This agent cannot be resumed. Its record, its memories and its number stay.");
+    expect(element.querySelector("[data-agent-confirm-retire]").disabled).toBe(true);
+    typeInto(element.querySelector("[data-agent-retire-reason]"), "Its question is answered");
+    await settle();
+    await pickButton(element, "Cancel");
+    expect(run).not.toHaveBeenCalled();
+    await pickButton(element, "Retire");
+    typeInto(element.querySelector("[data-agent-retire-reason]"), "Its question is answered");
+    await settle();
+    await pickButton(element, "Retire permanently");
+    expect(run).toHaveBeenCalledExactlyOnceWith(["agent", "retire", "5", "--reason", "Its question is answered"]);
+    expect(run.mock.calls.flat(2)).not.toContain("delete");
+});
+
+test("the task picker reads later pages without losing its selection", async () => {
+    const first = {ok: true, value: {rows: [{id: 9, title: "First", state: "open"}], page: 1, size: 1, total: 2}};
+    const second = {ok: true, value: {rows: [{id: 10, title: "Later", state: "open"}], page: 2, size: 1, total: 2}};
+    const {element} = await actions({...helper, job_task_flag: "--task"}, undefined, {"task list --state open --limit 100 --page 1": first, "task list --state open --limit 100 --page 2": second});
+    await pickButton(element, "Send a job");
+    const select = element.querySelector("[data-agent-job-task]");
+    select.value = "9";
+    select.dispatchEvent(new Event("change"));
+    await pickButton(element, "More tasks");
+    expect(select.value).toBe("9");
+    expect([...select.options].map((item) => item.value)).toEqual(["", "9", "10"]);
+    expect(element.querySelector("[data-agent-more-tasks]")).toBeNull();
+});
+
+test("a refused retirement keeps its reason and shows the command refusal", async () => {
+    const {element} = await actions(helper, vi.fn(async () => ({ok: false, error: "The agent still holds work"})));
+    await pickButton(element, "Retire");
+    typeInto(element.querySelector("[data-agent-retire-reason]"), "Its question is answered");
+    await settle();
+    await pickButton(element, "Retire permanently");
+    expect(element.querySelector('[role="alert"]').textContent).toBe("The agent still holds work");
+    expect(element.querySelector("[data-agent-retire-reason]").value).toBe("Its question is answered");
+});
+
+test("a pending job cannot be sent twice or retired", async () => {
+    let finish;
+    const {element, run} = await actions(helper, vi.fn(() => new Promise((resolve) => { finish = resolve; })));
+    await pickButton(element, "Send a job");
+    typeInto(element.querySelector("[data-agent-job-text]"), "Read tax");
+    await settle();
+    element.querySelector("[data-agent-submit-job]").click();
+    await settle();
+    expect(element.querySelector("[data-agent-retire]").disabled).toBe(true);
+    element.querySelector("[data-agent-submit-job]").click();
+    expect(run).toHaveBeenCalledTimes(1);
+    finish({ok: true});
+    await settle();
+});
+
+test("an unavailable session can be retired but cannot be sent a job", async () => {
+    const {element} = await actions({...helper, resume_reason: "The session is gone"});
+    expect(element.querySelector("[data-agent-send-job]").disabled).toBe(true);
+    expect(element.querySelector("[data-agent-retire]").disabled).toBe(false);
+});
+
+test("a retired card keeps the same tabs as any card and has no composer", async () => {
+    const row = reactive({...helper, retired_at: null, access: "writing", program: "claude"});
+    const held = {...context({"agent transcript": page([])}), tabs: [{key: "tasks", label: "Tasks"}, {key: "transcript", label: "Transcript"}, {key: "terminal", label: "Terminal"}]};
+    const element = await mounted({render: () => h(AgentCard, {row, facts: {tasks: []}, open: true})}, held);
+    expect(element.querySelector('[data-agent-tab-body="tasks"]')).not.toBeNull();
+    row.state = "retired";
+    row.retired_at = "2026-11-02T10:00:00Z";
+    await settle();
+    expect([...element.querySelectorAll("[data-tab]")].map((tab) => tab.dataset.tab)).toEqual(["tasks", "transcript", "terminal"]);
+    expect(element.querySelector("[data-agent-retire], [data-agent-send-job], [data-agent-driver]")).toBeNull();
+    expect(element.querySelector("textarea")).toBeNull();
+});
+
+test("a stopped agent offers a driver change that runs with its number, the program and the model", async () => {
+    const {element, run} = await actions({...helper, program: "claude"});
+    await pickButton(element, "Change driver");
+    expect(element.textContent).toContain("Starts the next session on this program; the agent keeps its number and memories.");
+    expect(element.querySelector("[data-agent-driver-program]").value).toBe("claude");
+    expect(element.querySelector("[data-agent-confirm-driver]").disabled).toBe(true);
+    typeInto(element.querySelector("[data-agent-driver-program]"), "codex");
+    typeInto(element.querySelector("[data-agent-driver-model]"), "gpt-6.1-sol");
+    await settle();
+    await pickButton(element, "Change the driver");
+    expect(run).toHaveBeenCalledExactlyOnceWith(["agent", "driver", "5", "--program", "codex", "--model", "gpt-6.1-sol"]);
+});
+
+test("a running agent and a retired one offer no driver change", async () => {
+    const running = await actions({...helper, state: "running", ended_at: null});
+    expect(running.element.querySelector("[data-agent-driver]")).toBeNull();
+    const retired = await actions({...helper, state: "retired", retired_at: "2026-11-02T10:00:00Z"});
+    expect(retired.element.querySelector("[data-agent-driver]")).toBeNull();
+});
+
+test("a refused driver change shows the refusal of the command and keeps the form", async () => {
+    const {element} = await actions({...helper, program: "claude"}, vi.fn(async () => ({ok: false, error: "journal-researcher does not allow gpt-6.1-sol"})));
+    await pickButton(element, "Change driver");
+    typeInto(element.querySelector("[data-agent-driver-model]"), "gpt-6.1-sol");
+    await settle();
+    await pickButton(element, "Change the driver");
+    expect(element.querySelector("[role=alert]").textContent).toBe("journal-researcher does not allow gpt-6.1-sol");
+    expect(element.querySelector("[data-agent-driver-form]")).not.toBeNull();
+});
+
+test("the session history of an agent is read by its number and lists each session with how it ended", async () => {
+    const rows = [{session: "s-2", program: "codex", model: "gpt-6.1-sol", started_at: null, ended_at: null, end_reason: null}, {session: "s-1", program: "claude", model: "sonnet", started_at: "2026-11-01T09:00:00Z", ended_at: "2026-11-01T10:00:00Z", end_reason: "driver_changed"}];
+    const {element, run} = await actions(helper, vi.fn(async () => ({ok: true, value: {rows}})));
+    await pickButton(element, "Session history");
+    expect(run).toHaveBeenCalledExactlyOnceWith(["agent", "sessions", "5"]);
+    expect([...element.querySelectorAll("[data-agent-session-state]")].map((state) => state.textContent)).toEqual(["Not started", "Ended: driver changed"]);
+});
+
+test("a retired card offers its session history and no other button", async () => {
+    const {element} = await actions({...helper, state: "retired", retired_at: "2026-11-02T10:00:00Z"});
+    expect([...element.querySelectorAll("button")].map((button) => button.textContent.trim())).toEqual(["Session history"]);
+});
+
+test("the main agent's card has no retire and no change driver button", async () => {
+    const {element} = await actions({...helper, role: "main", number: 1, job_command: []});
+    expect(element.querySelector("[data-agent-retire]")).toBeNull();
+    expect(element.querySelector("[data-agent-driver]")).toBeNull();
+    expect(element.querySelector("[data-agent-history]")).not.toBeNull();
+});

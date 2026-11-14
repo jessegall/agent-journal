@@ -1,0 +1,56 @@
+import json
+
+import pytest
+
+from engine.database.database import Database
+from engine.database.statement import Statement
+from engine.journal.journal_home import JournalHome
+from engine.module.errors.module_error import ModuleError
+from engine.module.module_removal import ModuleRemoval
+from tests.unit.engine.module.test_module_sync import ITEM_COUNT, ITEMS, synced
+
+REMOVABLE_ITEMS = "tests.unit.engine.samples.sync_sample:RemovableItemsModule"
+ITEM = Statement("INSERT INTO items (title, state, version, created_at, updated_at) VALUES ('Dune', 'open', 1, '2026', '2026')")
+TABLES = Statement("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'items'")
+
+
+def test_a_module_whose_tables_hold_rows_is_refused(tmp_path):
+    container = synced(JournalHome(tmp_path), ITEMS)
+    container.get(Database).insert(ITEM)
+    with pytest.raises(ModuleError, match="items still has 1 rows in items"):
+        container.get(ModuleRemoval).remove("items")
+
+
+def test_a_module_with_a_removal_migration_is_removed_with_its_rows(tmp_path):
+    home = JournalHome(tmp_path)
+    container = synced(home, REMOVABLE_ITEMS)
+    database = container.get(Database)
+    database.insert(ITEM)
+    container.get(ModuleRemoval).remove("items")
+    assert database.rows(TABLES) == []
+    assert database.rows(Statement("SELECT * FROM migrations WHERE module = 'items'")) == []
+    assert json.loads(home.module_list.read_text()) == []
+
+
+def test_a_removed_module_takes_its_listener_cursors_with_it(tmp_path):
+    container = synced(JournalHome(tmp_path), ITEMS, ITEM_COUNT)
+    container.get(ModuleRemoval).remove("item-count")
+    assert container.get(Database).rows(Statement("SELECT * FROM listener_cursors WHERE listener = 'items.paused-count'")) == []
+
+
+def test_a_default_or_unknown_module_cannot_be_removed(tmp_path):
+    container = synced(JournalHome(tmp_path), ITEMS)
+    with pytest.raises(ModuleError, match="no installed plugin"):
+        container.get(ModuleRemoval).remove("tasks")
+
+
+def test_a_module_another_depends_on_is_refused_and_nothing_changes(tmp_path):
+    home = JournalHome(tmp_path)
+    container = synced(home, REMOVABLE_ITEMS, ITEM_COUNT)
+    database = container.get(Database)
+    listed = home.module_list.read_text()
+    with pytest.raises(ModuleError, match="module item-count depends on items"):
+        container.get(ModuleRemoval).remove("items")
+    assert database.rows(TABLES) != []
+    assert database.rows(Statement("SELECT * FROM migrations WHERE module = 'items'")) != []
+    assert home.module_list.read_text() == listed

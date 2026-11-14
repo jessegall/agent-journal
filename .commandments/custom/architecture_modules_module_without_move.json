@@ -1,0 +1,43 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "extendsAny": "Module"
+            },
+            {
+                "fileMatches": "(^|/)src/(core/modules/[^/]+|suites/[^/]+(/modules/[^/]+)?)/[a-z_]+_module\\.py$"
+            },
+            {
+                "not": {
+                    "descendant": {
+                        "all": [
+                            {
+                                "is": "assignment"
+                            },
+                            {
+                                "nameIn": [
+                                    "moves",
+                                    "move_reason"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "module-without-move",
+        "description": "A module neither carries its version 4 tables with a move nor says why it has none, so an upgrade can leave rows behind unseen.",
+        "rule": "Declare moves = [XMove] for a module that owns version 4 tables, or move_reason = \"<why>\" for one that owns none.",
+        "skill": "plain-code-words"
+    }
+}

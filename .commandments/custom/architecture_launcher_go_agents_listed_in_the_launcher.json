@@ -1,0 +1,21 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "go",
+    "find": {
+        "select": "call",
+        "where": [
+            {"fileMatches": "(^|/)tools/journal/"},
+            {"descendant": {"all": [{"is": "literal"}, {"textMatches": "^\"?agent\"?$"}]}},
+            {"descendant": {"all": [{"is": "literal"}, {"textMatches": "^\"?list\"?$"}]}}
+        ],
+        "reject": [
+            {"testCode": true}
+        ]
+    },
+    "sin": {
+        "name": "go-agents-listed-in-the-launcher",
+        "description": "The Go launcher lists the journal's agents to work something out from the rows.",
+        "rule": "Ask the journal the question itself, in one command that answers it, instead of reading every agent row and filtering them in Go.",
+        "skill": "plain-code-words"
+    }
+}

@@ -1,0 +1,42 @@
+from collections.abc import Sequence
+
+from engine.enums.hook_event_name import HookEventName
+from engine.query.conditions.greater import Greater
+from engine.query.conditions.minimum import Minimum
+from engine.database.kept_rows import KeptRows
+from engine.query.queries import Queries
+from core.modules.drivers.models.hook_call import HookCall
+from core.modules.memories.models.enums.mark_state import MarkState
+from core.modules.memories.models.memory_mark import MemoryMark
+from core.modules.settings.bindings.support.context_share import PERCENT_FULL
+
+
+
+class MarkTracker:
+    """An agent's context marks: the one open now, and the next mark its context passed that it has not
+    reached since its last compaction."""
+
+    def __init__(self, queries: Queries, kept: KeptRows) -> None:
+        self.queries, self.kept = queries, kept
+
+    def open_marks(self, agent_id: int) -> list[MemoryMark]:
+        marks = self.queries.query(MemoryMark).filter(session_agent_id=agent_id, state=MarkState.OPEN)
+        return list(self.kept.read(marks, lambda: tuple(marks.get()), name="memories.open_marks"))
+
+    @staticmethod
+    def spaced(marks: Sequence[int], maximum_tokens: int, spacing_tokens: int) -> tuple[int, ...]:
+        kept: list[int] = []
+        for mark in sorted(marks, reverse=True):
+            if not kept or (kept[-1] - mark) * maximum_tokens / PERCENT_FULL >= spacing_tokens:
+                kept.append(mark)
+        return tuple(reversed(kept))
+
+    def next_reached(self, agent_id: int, percent: int, marks: Sequence[int]) -> int | None:
+        passed = [mark for mark in marks if mark <= percent]
+        if not passed:
+            return None
+        compaction = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.COMPACT).descending("id").first()
+        compaction_text = compaction.created_at.text if compaction is not None and compaction.created_at is not None else ""
+        highest = max(passed)
+        reached = self.queries.query(MemoryMark).filter(session_agent_id=agent_id).matching(Greater("opened_at", compaction_text)).matching(Minimum("percent", highest))
+        return None if reached.exists() else highest

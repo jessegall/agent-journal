@@ -1,0 +1,28 @@
+from typing import TextIO
+
+from engine.cli.console import REFUSED_CODE, SUCCESS_CODE
+from engine.subcommand.output import Output
+from engine.model.tables import Tables
+from engine.database.errors.schema_mismatch_error import SchemaMismatchError
+from engine.module.errors.module_error import ModuleError
+from engine.module.module_sync import ModuleSync
+
+SYNC_ARGV = ["module", "sync"]
+
+
+class ModuleSyncLine:
+    """Runs `journal module sync`, the one command line that works while the registry is stale or missing, and
+    prints what the sync found and changed, or why it refused."""
+
+    def __init__(self, sync: ModuleSync, tables: Tables) -> None:
+        self.sync, self.tables = sync, tables
+
+    def run(self, argv: list[str], stream: TextIO) -> int:
+        output = Output(self.tables, "--json" in argv, stream)
+        try:
+            report = self.sync.run()
+        except (ModuleError, SchemaMismatchError) as error:
+            output.error(str(error))
+            return REFUSED_CODE
+        output.line(report.text)
+        return SUCCESS_CODE

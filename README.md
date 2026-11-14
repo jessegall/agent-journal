@@ -1,96 +1,108 @@
 # agent-journal
 
-The journal is a driver for coding agents, with a viewer in your browser. It runs Claude Code or Codex for you,
-keeps it on track, and shows you everything it does.
+The journal drives coding agents (Claude Code and Codex) and shows you what they do in a viewer in your browser. It
+hears every move an agent makes, keeps the project's state in a `.journal` folder beside your code, and tells the
+agent what to do next at the moments it would get wrong, so the next session picks up where the last one stopped.
 
-An agent on its own forgets what it was doing, wanders off the task, stops halfway, and buries what you need to know
-in a wall of text. The journal sits beside it and fixes that. It hears every move the agent makes, tells it what to
-do next at the moments it would get wrong, and keeps the project's state in a .journal folder beside your code, so the next
-session picks up where the last one left off.
+## What it holds
 
-## What you get
-
-- **Tasks and plans.** The agent declares what it works on, logs where it stands, and finishes it. A plan is phases
-  of tasks you approve. Finishing one task starts the next, and with auto mode on the agent works the list until you stop it.
-- **A chat with your agent.** Leave a message in the viewer, or from your phone, and the agent answers it. When it
-  needs a decision, it asks a question with choices for you to pick. Drop text or files in a dump, and the agent sorts
-  them into tasks, documents and plans.
-- **Memory that survives.** Facts, rules and reminders are handed to the agent at every start and after every
-  compaction, so it does not relearn your project each session.
-- **Conduct you can read.** How the journal treats the agent is a stack of states on its row, shown on the Home page
-  with its trail: when it reminds, what it says, what it holds back, each line with the state that said it.
-- **Work modes.** As the builder the agent writes the code itself; as the orchestrator it plans, hands every task to a
-  worker and reviews what comes back; solo, it does everything alone. You switch modes with the plan bar's buttons,
-  and the agent is reminded when it drifts from its mode.
-- **Workers and subagents.** The agent hands jobs to workers and subagents, each named, each on the model that fits the job, and
-  each coding worker in its own git worktree. A worker proves each point of its task, and its work is merged only once
-  each proof is checked.
-- **Worktree launches.** `journal claude --worktree <name>` gives a launch its own git worktree and branch beside the
-  others, all on one journal; a bare `--worktree` makes up a fresh name. Nothing removes a worktree but you, with
-  `journal worktree remove <name>`, and a relaunch reopens the same folder and branch.
-- **Every command kept.** Long commands move to the background, and each output is numbered, so the agent reads
-  the part it needs instead of running the command again. A reader picks the lines worth seeing from an output, such
-  as a test run's failures, and shows its progress on a card in the chat.
-- **Checks, documents, reports and plugins.** Scripts that pass or fail, knowledge that lasts, write-ups of what
-  was checked, and plugins such as Code Commandments that judge the code as it is written.
-- **Secrets the agent never sees.** You fill in keys and logins in the viewer; the agent hands a secret to the program
-  that needs it, and the value is masked in what the program prints.
-- **A library for your team.** A small server holds the sequences, templates, profiles, readers, skills, documents and
-  plan outlines your people publish; each journal imports them and updates them. See [The library](docs/library.md).
-- **Share links.** Open one document, report or plan to someone outside the team with a read-only link, once you
-  accept it in the chat; they can read it and leave comments.
+- **Tasks and plans.** An agent works on declared tasks and logs where it stands. A plan is phases of tasks.
+- **Chat, questions and dumps.** You leave messages in the viewer or on a paired phone. An agent asks a question with
+  choices when it needs a decision. A dump is notes and files you pour in for the agent to file as rows.
+- **Memory.** Facts, rules and reminders reach the agent at every start and after every compaction.
+- **Workers and reviews.** The main agent hands tasks to workers, each in its own git worktree; a worker proves each point of
+  its task and its work is merged only once each proof is checked.
+- **Processes.** Long shell lines move to the background; every output is numbered so the agent reads the part it needs.
+- **Documents, reports, sequences and templates**, **phones** and **share links**, and **plugins**.
+- **A team library.** A small server, `journal-shared`, holds documents, sequences and checks a team shares. Each journal
+  gets what it wants and keeps it in step.
 
 ## Install
 
-In a terminal, from the root of your project:
+From the root of your project, with Python 3.14 or newer and the release's `install.sh`:
 
-    curl -fsSL https://raw.githubusercontent.com/jessegall/agent-journal/main/install.sh | sh
+    sh install.sh
+
+This makes `.journal/version-5.db` and copies the code into `.journal/src`. The journal starts Claude Code and Codex on
+settings of its own, `.journal/programs/claude/settings.json` and the Codex folder `.journal/programs/codex`, which hold
+its hooks and are written again at every start; your own `~/.claude` and `~/.codex` settings are backed up in
+`.journal/backups/program-settings` and left as they are. It starts nothing. Run the same line again and it
+says it is installed and changes nothing. A project that holds a version 4 journal is left as it is and told to
+upgrade (see below).
 
 Then start your agent under the journal:
 
-    journal claude
+    journal launch claude
 
-or `journal codex`. The viewer opens in your browser. That is all.
+or `journal launch codex`. A launch with `journal launch claude --worktree <name>` works in its own git worktree and
+branch; `journal worktree list` names them and `journal worktree remove <name>` removes one you are done with. To see the
+viewer, run:
 
-It needs Python 3.14 and git; where either is missing, the installer offers to install it for you. Running the same line again upgrades the journal. If you switch on
-auto-update in the viewer's settings, a new release installs itself.
+    journal viewer
 
-### Upgrading from version 3
+It prints the link to the viewer of the environment you run it in.
 
-Run the install line above from a plain terminal in the project, not from inside an agent session. It stops the
-version 3 journal, keeps it whole in `.journal/version-3`, installs version 4, and the viewer offers to bring
-everything across: to-dos become tasks, and plans, documents and the rest come across as they are. From version 3.3.7
-on, `journal upgrade --to 4 --yes` does the same, and first checks that Python 3.14 and git are installed.
+## Upgrade from version 4
 
-### Hosting a library server
+Version 4's `.journal/journal.db` is moved into version 5; nothing of it is deleted. Close your agent sessions first,
+then, from the project's root:
 
-On a machine you reach over ssh with a key, from your project:
+    sh install.sh upgrade --dry-run
 
-    journal remote install root@203.0.113.5
+prints, for every module, how many rows would move and what would stay behind, and changes nothing. When the counts
+look right:
 
-It installs Docker where it is missing, starts the library server there, and prints the address your team connects
-to. Run it in your own terminal, since it may ask for the project's name.
+    sh install.sh upgrade --yes
 
-### Windows
+copies the version 4 database to `.journal/version-4/<version>/journal.db` and checks the copy, moves the rows, moves
+version 4's own files into `.journal/version-4/`, and switches the hooks of Claude Code and Codex to version 5 (the old
+settings files are kept in `.journal/version-4/hooks`). Without `--yes` it prints the counts and asks once. The
+upgrade is refused while a journal server answers (stop it with `journal server stop`), and a failed run can be
+run again: it finishes from the module that failed.
 
-Run Claude Code and the journal inside WSL 2, the way Anthropic documents Claude Code on Windows: open your WSL distribution's
-terminal, install there with the command above, and work from there. Keep the project on the Linux file system, such as
-`~/projects/your-project`, not under `/mnt/c`: the journal watches files and runs many small commands, and both are slow across the
-Windows drives. Native Windows, without WSL, is not supported yet.
+The way back:
 
-## How it works
+    sh install.sh restore
 
-`journal claude` starts a small supervisor that runs your agent in a terminal and keeps the journal's server running
-beside it. The agent's hooks post every move to the server, which answers from the stack of states on the agent's
-row: a reminder, a line, or a hold. Your messages from the viewer are typed into the agent's terminal. Everything
-is kept in `.journal/journal.db`, a SQLite database beside your code.
+asks once (`--yes` goes on without asking), puts the backup back as version 4's `journal.db`, version 4's hooks and code beside it, and sets the version 5
+database aside as `version-5.<date>.db`. It checks the backup first and refuses one that fails its integrity check.
 
-- [The rules](docs/the-rules.md): every state and every line the journal says, and which class says it, generated
-  from the source.
-- [The cycle](docs/the-cycle.md): how the journal speaks to the agent, hook by hook.
-- [Plugins](docs/plugins.md): how to write a plugin that hears the journal's events and answers them.
-- [The library](docs/library.md): hosting a library server, connecting to it, publishing and importing.
+[The upgrade guide](docs/upgrade-from-version-4.md) says what moves, what waits for its module and how plugins come along.
 
-## License
+## The team library
 
-The journal is free to use for any noncommercial purpose under the [PolyForm Noncommercial License 1.0.0](LICENSE.md): personal use, study, research, hobby projects, and use by charities, schools and public bodies. Commercial use needs a separate license from the author.
+[Running the server](docs/team-library-admin.md) is for the person who sets it up: the program, users, tokens, backups
+and HTTPS. [Using it from a journal](docs/team-library.md) is for everyone else: connecting, Get, statuses and conflicts.
+
+## Modules
+
+[Writing a module](docs/writing-a-module.md) covers templates, buttons, slots, suites, installation
+and removal, with the tested Acme packages as examples.
+
+## Commands
+
+Every line is `journal <thing> <verb>`; `journal <thing> --help` lists its verbs.
+
+- Work: `task`, `plan`, `phase`, `question`, `message`, `dump`, `memory`, `doc`, `report`, `sequence`, `template`.
+- Agents: `agent`, `worker`, `proof`, `review`, `process`, `output`, `check`.
+- Setup: `environment`, `setting`, `plugin`, `phone`, `share`, `skill`.
+- The team library: `library`, `library-user`.
+- The journal itself: `server stop`, `viewer`, `launch`, `worktree`.
+
+## Tests
+
+    .venv/bin/python3 -m pytest -n 8
+
+The installer tests each run a real install and are slow, so they are their own run, made before a release:
+
+    .venv/bin/python3 -m pytest tests/install -n 8
+
+## Licence
+
+Copyright (c) 2026 Jesse Gall (https://github.com/jessegall/agent-journal)
+
+agent-journal is free software under the [GNU Affero General Public License, version 3](LICENSE.md). You may use,
+change and pass it on. If you pass it on, or let others use a changed version over a network, you offer them the
+source of that version under the same licence. It comes with no warranty.
+
+A commercial licence without these conditions is available from the copyright holder.

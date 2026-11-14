@@ -1,0 +1,51 @@
+from engine.file.file_access import FileAccess
+import hashlib
+import os
+import shutil
+import subprocess
+from engine.enums.process_type import ProcessType
+from engine.errors.run_time_limit_error import RunTimeLimitError
+from engine.process.door.execution_request import ExecutionRequest
+from engine.process.door.process_executor import ProcessExecutor
+from pathlib import Path
+
+from engine.journal.journal_home import JournalHome
+from engine.errors.refusal import Refusal
+from core.modules.plugins.support.plugin_releases import PluginReleases
+
+CLONE_LIMIT_SECONDS = 120
+STAGING_FOLDER = "plugin-staging"
+EXCLUDED_NAMES = shutil.ignore_patterns(".git")
+
+
+class PluginStaging:
+    """Where a plugin's source is read from: a folder as it is, a repository cloned at its newest release into
+    a folder of its own until the plugin is installed."""
+
+    def __init__(self, home: JournalHome, releases: PluginReleases, executor: ProcessExecutor) -> None:
+        self.home, self.releases, self.executor = home, releases, executor
+
+    def folder(self, source: str) -> Path:
+        if FileAccess.is_dir(Path(source)):
+            return Path(source)
+        return self.home.folder / STAGING_FOLDER / hashlib.sha256(source.encode()).hexdigest()
+
+    def fetched(self, source: str) -> Path:
+        folder = self.folder(source)
+        if FileAccess.is_dir(Path(source)):
+            return folder
+        self.cleared(source)
+        tag = self.releases.newest_tag(source)
+        branch = ["--branch", tag] if tag else []
+        command = ["git", "clone", "--quiet", "--depth", "1", *branch, self.releases.address(source), str(folder)]
+        try:
+            finished = self.executor.execute(ExecutionRequest(command, Path.cwd(), ProcessType.MERGE, CLONE_LIMIT_SECONDS, variables={**os.environ, "GIT_TERMINAL_PROMPT": "0"}))
+        except RunTimeLimitError as timeout:
+            raise Refusal(f"{source} took longer than {CLONE_LIMIT_SECONDS} seconds to clone", "try again") from timeout
+        if not finished.succeeded:
+            raise Refusal(f"{source} could not be cloned", finished.stderr.strip())
+        return folder
+
+    def cleared(self, source: str) -> None:
+        if not FileAccess.is_dir(Path(source)):
+            FileAccess.rmtree(self.folder(source), ignore_errors=True)

@@ -1,0 +1,14 @@
+Run options: --seed 1
+
+# Running:
+
+F
+
+Finished in 0.000186s, 5376.3435 runs/s, 5376.3435 assertions/s.
+
+  1) Failure:
+CartTest#test_total [cart_test.rb:5]:
+Expected: 3
+  Actual: 2
+
+1 runs, 1 assertions, 1 failures, 0 errors, 0 skips

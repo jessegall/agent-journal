@@ -1,0 +1,57 @@
+src/core/modules/agents holds more than 12 entries
+src/core/modules/agents/support holds more than 12 entries
+src/core/modules/developer/support holds more than 12 entries
+src/core/modules/documents holds more than 12 entries
+src/core/modules/documents/commands/support holds more than 12 entries
+src/core/modules/documents/support holds more than 12 entries
+src/core/modules/drivers/commands/support holds more than 12 entries
+src/core/modules/drivers/support holds more than 12 entries
+src/core/modules/helpers holds more than 12 entries
+src/core/modules/helpers/support holds more than 12 entries
+src/core/modules/library/support holds more than 12 entries
+src/core/modules/memories holds more than 12 entries
+src/core/modules/messages holds more than 12 entries
+src/core/modules/messages/support holds more than 12 entries
+src/core/modules/plans holds more than 12 entries
+src/core/modules/plans/support holds more than 12 entries
+src/core/modules/plugins holds more than 12 entries
+src/core/modules/plugins/support holds more than 12 entries
+src/core/modules/processes holds more than 12 entries
+src/core/modules/processes/support holds more than 12 entries
+src/core/modules/sequences holds more than 12 entries
+src/core/modules/settings/support holds more than 12 entries
+src/core/modules/skills/support holds more than 12 entries
+src/core/modules/tasks holds more than 12 entries
+src/core/modules/tasks/support holds more than 12 entries
+src/core/modules/usage/support holds more than 12 entries
+src/engine/cli holds more than 12 entries
+src/engine/command holds more than 12 entries
+src/engine/database holds more than 12 entries
+src/engine/driver holds more than 12 entries
+src/engine/event holds more than 12 entries
+src/engine/model holds more than 12 entries
+src/engine/module holds more than 12 entries
+src/engine/provider holds more than 12 entries
+src/engine/registry holds more than 12 entries
+src/engine/setting holds more than 12 entries
+src/engine/subcommand holds more than 12 entries
+src/engine/testing/stories holds more than 12 entries
+src/suites/coding holds more than 12 entries
+src/suites/coding/modules/workers holds more than 12 entries
+src/suites/coding/modules/workers/support holds more than 12 entries
+src/suites/coding/support holds more than 12 entries
+src/core/modules/agents/commands/remove_instruction_import/support/instruction_import_question.py sits more than 3 levels below its layer
+src/core/modules/aliases/commands/set_alias_silence/support/alias_silence.py sits more than 3 levels below its layer
+src/core/modules/drivers/commands/wake_interrupted_agent/support/interrupted_agents.py sits more than 3 levels below its layer
+src/core/modules/helpers/commands/cold_sessions/support/cold_session.py sits more than 3 levels below its layer
+src/core/modules/messages/commands/unread_reports/support/unread_reports.py sits more than 3 levels below its layer
+src/core/modules/plugins/commands/plugin_path/support/checkout_path.py sits more than 3 levels below its layer
+src/core/modules/processes/commands/read_output/support/output_texts.py sits more than 3 levels below its layer
+src/core/modules/processes/commands/read_output/support/repeat_reads.py sits more than 3 levels below its layer
+src/core/modules/skills/commands/load_skill/support/kept_skills.py sits more than 3 levels below its layer
+src/suites/coding/drivers/worker/rules/worker_command_type_rule.py sits more than 3 levels below its layer
+src/suites/coding/drivers/worker/rules/worker_full_test_run_rule.py sits more than 3 levels below its layer
+src/suites/coding/drivers/worker/rules/worker_git_rule.py sits more than 3 levels below its layer
+src/suites/coding/drivers/worker/rules/worker_task_start_rule.py sits more than 3 levels below its layer
+src/suites/coding/modules/workers/commands/send_worker/support/inactive_worker_send.py sits more than 3 levels below its layer
+src/suites/coding/modules/workers/commands/send_worker/support/worker_queued_start.py sits more than 3 levels below its layer

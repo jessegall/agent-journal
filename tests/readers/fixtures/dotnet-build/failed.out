@@ -1,0 +1,11 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+/work/project/Program.cs(1,13): error CS0103: The name 'missing' does not exist in the current context [/work/project/Cart.csproj]
+
+Build FAILED.
+
+/work/project/Program.cs(1,13): error CS0103: The name 'missing' does not exist in the current context [/work/project/Cart.csproj]
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:00.41

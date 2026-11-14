@@ -1,0 +1,94 @@
+package programs
+
+import (
+	"fmt"
+	"regexp"
+	"strings"
+
+	"github.com/jessegall/agent-journal/tools/journal-hook/event"
+	"github.com/jessegall/agent-journal/tools/journal-hook/shell"
+)
+
+// The flags a shell is handed a line with, as Codex names its shell: bash -lc '<line>'.
+var scriptFlags = map[string]bool{"-c": true, "-lc": true}
+
+// A file a patch adds, changes, deletes or moves to, as version 4's PatchPaths reads it.
+var patchHeader = regexp.MustCompile(`(?m)^\*\*\* (?:Add File|Update File|Delete File|Move to): (.+?)\s*$`)
+
+func codexEvent(name string, body []byte, program Program, context Context) (event.HookEvent, bool, error) {
+	read, skip, err := readBody(body, program)
+	if skip || err != nil {
+		return event.HookEvent{}, true, err
+	}
+	prepared, skip, err := preparedFrom(name, program, body, read, context)
+	if skip || err != nil || !isToolEvent(prepared.Event) {
+		return prepared, skip, err
+	}
+	prepared.Tool = codexTool(read.ToolName, read.ToolInput, program, context)
+	prepared.Tool.Diff = codexDiff(prepared.Event, read, prepared.Tool)
+	prepared.Tool.DiffRows = codexRows(prepared.Event, read, prepared.Tool)
+	return prepared, false, nil
+}
+
+func codexTool(name string, input toolInput, program Program, context Context) *event.Tool {
+	tool := &event.Tool{Name: name, Category: toolCategory(program, name), Files: []string{}}
+	switch tool.Category {
+	case "shell":
+		var command any = pythonText(input.values, "command")
+		if items, present := input.values["command"].([]any); present {
+			command = items
+		}
+		line := context.Classifier.Line(codexShellLine(command, context.RunScript))
+		tool.Shell = &line
+	case "edit":
+		tool.Files = patchPaths(input.texts)
+	case "write", "read":
+		if path := firstText(input.values, "path", "file_path"); path != "" {
+			tool.Files = []string{path}
+		}
+	}
+	return tool
+}
+
+// codexShellLine is version 4's Codex.shell_line: the line a list of words hands a shell with -c or -lc, else the words
+// joined as a line; a line the journal rewrote to go through its runner is read back to the line it runs.
+func codexShellLine(command any, runScript string) string {
+	if items, present := command.([]any); present {
+		texts := make([]string, len(items))
+		for index, word := range items {
+			texts[index] = fmt.Sprint(word)
+		}
+		if len(texts) == 3 && scriptFlags[texts[1]] {
+			return texts[2]
+		}
+		return shell.Join(texts)
+	}
+	line := fmt.Sprint(command)
+	tokens := shell.Tokens(line)
+	if len(tokens) == 4 && tokens[0] == "sh" && tokens[1] == runScript && tokens[2] == "--command" {
+		return codexShellLine(tokens[3], runScript)
+	}
+	return line
+}
+
+// patchPaths reads every file header of the patch from all the text the tool was given, each file once, in order.
+func patchPaths(texts []string) []string {
+	paths, visited := []string{}, map[string]bool{}
+	for _, header := range patchHeader.FindAllStringSubmatch(strings.Join(texts, "\n"), -1) {
+		if visited[header[1]] {
+			continue
+		}
+		visited[header[1]] = true
+		paths = append(paths, header[1])
+	}
+	return paths
+}
+
+func firstText(input map[string]any, keys ...string) string {
+	for _, key := range keys {
+		if text, present := input[key].(string); present && text != "" {
+			return text
+		}
+	}
+	return ""
+}

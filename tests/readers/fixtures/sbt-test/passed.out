@@ -1,0 +1,4 @@
+MyTests:
+  + sum of two integers 0.006s
+[info] Passed: Total 1, Failed 0, Errors 0, Passed 1
+[success] Total time: 0 s, completed Nov 11, 2022 12:54:08 PM

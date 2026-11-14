@@ -1,0 +1,44 @@
+import json
+import shlex
+
+from tests.stories.core.support.coding_fixtures import UserBuilder
+from tests.stories.support.story_checks import expect_absent_value, expect_value_5
+from core.modules.drivers.support.driver_settings import SUITE_SETTING
+
+FIXTURE_KEYS = [f"{SUITE_SETTING}"]
+OPTIONAL_GROUP = "journal.core.developer.tools"
+
+
+def rows(story) -> list[dict]:
+    return json.loads(story.run("setting tree --json --environment main", actor=story.user).output_text)["rows"]
+
+
+def saved_text(row: dict) -> str:
+    match row["type"]:
+        case "list":
+            return json.dumps(row["default"])
+        case "number list":
+            return ",".join(str(item) for item in row["default"])
+        case "flag":
+            return "on" if row["default"] else "off"
+        case _:
+            return str(row["default"])
+
+
+def test_every_setting_shows_its_default_and_keeps_it_when_saved_unchanged(new_story):
+    story = new_story(fixture=UserBuilder)
+    story.expect_success(f"setting switch {OPTIONAL_GROUP} on --project", actor=story.user)
+    problems = []
+    for row in rows(story):
+        if row["secret"] or row["default"] is None or row["type"] in ("group", "any") or row["key"] in FIXTURE_KEYS:
+            continue
+        if row["value"] != row["default"]:
+            problems.append(f"{row['key']} shows {row['value']!r}, its default is {row['default']!r}")
+            continue
+        outcome = story.run(f"setting set {row['key']} {shlex.quote(saved_text(row))} --environment main", actor=story.user)
+        if outcome.code != 0:
+            continue
+        saved = next(listed for listed in rows(story) if listed["key"] == row["key"])
+        if saved["value"] != row["default"]:
+            problems.append(f"{row['key']} saved unchanged became {saved['value']!r}, its default is {row['default']!r}")
+    expect_absent_value(problems)

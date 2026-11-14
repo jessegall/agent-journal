@@ -1,0 +1,82 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "any": [
+                    {
+                        "constructs": "core.modules.*.models.*"
+                    },
+                    {
+                        "constructs": "suites.*.models.*"
+                    },
+                    {
+                        "child": {
+                            "all": [
+                                {
+                                    "is": "identifier"
+                                },
+                                {
+                                    "any": [
+                                        {
+                                            "resolvesLike": "core.modules.*.models.*"
+                                        },
+                                        {
+                                            "resolvesLike": "suites.*.models.*"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "child": {
+                    "all": [
+                        {
+                            "kind": "keyword"
+                        },
+                        {
+                            "nameIn": [
+                                "environment_id",
+                                "agent_id"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "file": "**/migrations/**"
+            },
+            {
+                "file": "**/upgrade/**"
+            },
+            {
+                "file": "**/settings/support/setting_store.py"
+            },
+            {
+                "file": "**/record_journal_exception/record_journal_exception_handler.py"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/plugins/commands/(add_plugin_output/add_plugin_output_handler|configure_plugin/configure_plugin_handler|deliver_plugin_event/deliver_plugin_event_handler|queue_plugin_run/queue_plugin_run_handler)\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/messages/(support/work_sources|listeners/deleted_agent_work_source_listener|models/message_work_source)\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "scope-id-set-on-a-new-row",
+        "description": "A new row names its environment or agent by hand, though the scope set at the door fills both.",
+        "rule": "Leave the field out: Scopes.applied fills it from the scope of the request or hook.",
+        "skill": "plain-code-words"
+    }
+}

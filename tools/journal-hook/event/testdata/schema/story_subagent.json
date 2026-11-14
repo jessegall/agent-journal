@@ -1,0 +1,28 @@
+{
+  "version": 3,
+  "program": "claude",
+  "event": "pre_tool_use",
+  "session": "s-1",
+  "firing": "story-1",
+  "fired_at_ms": 1,
+  "actor": "agent",
+  "environment": "main",
+  "child_agent": "",
+  "tool": {
+    "name": "Agent",
+    "category": "agent",
+    "files": [],
+    "diff": null
+  },
+  "prompt": null,
+  "raw": {
+    "tool_input": {
+      "model": "haiku",
+      "description": "Read the cart",
+      "prompt": "Find where totals are counted"
+    }
+  },
+  "accepts_lines": true,
+  "launch": "",
+  "foreign": []
+}

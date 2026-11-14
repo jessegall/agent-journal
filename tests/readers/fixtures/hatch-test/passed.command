@@ -1,0 +1,1 @@
+hatch run test:run

@@ -1,0 +1,64 @@
+from dataclasses import dataclass
+
+import pytest
+
+from engine.event.event_pattern import EventPattern
+from engine.command.delete_command import DeleteCommand
+from engine.command.edit_command import EditCommand
+from engine.command.handlers.delete_handler import DeleteHandler
+from engine.command.handlers.edit_handler import EditHandler
+from engine.command.handlers.make_handler import MakeHandler
+from engine.database.database import Database
+from engine.database.statement import Statement
+from engine.guard.lifecycle_guard import LifecycleGuard
+from engine.guard.errors.guard_refusal import GuardRefusal
+from engine.dotted_path.dotted_path import DottedPath
+from engine.registry.guard_entry import GuardEntry
+from engine.registry.registry import Registry
+from engine.repository.repository import Repository
+from tests.unit.engine.samples.sample_container import context, sample_container
+from tests.unit.engine.command.test_commands import MakeItem
+from tests.unit.engine.model.test_lifecycle import ItemLifecycle, ItemState
+from tests.unit.engine.model.test_model import Item
+
+
+@dataclass(frozen=True)
+class ItemRetitle(EditCommand[Item]):
+    title: str | None = None
+
+
+@dataclass(frozen=True)
+class DeleteItem(DeleteCommand):
+    deleted_model = Item
+
+
+@pytest.fixture
+def container(tmp_path):
+    lifecycle = GuardEntry(LifecycleGuard.name, EventPattern("*"), DottedPath.class_path(LifecycleGuard), 1, "")
+    return sample_container(tmp_path, Registry("abc", {}, {}, {}, [lifecycle], ()))
+
+
+def test_a_make_command_builds_and_saves_a_new_row(container):
+    item = container.get(MakeHandler).handle(MakeItem(title="Dune"), context(MakeItem(title="Dune")))
+    assert (item.id, item.title, item.state) == (1, "Dune", ItemState.OPEN)
+
+
+def test_an_edit_changes_only_the_fields_it_gives(container):
+    container.get(MakeHandler).handle(MakeItem(title="Dune"), context(MakeItem(title="Dune")))
+    edited = container.get(EditHandler).handle(ItemRetitle(row_id=1, title="Dune Messiah"), context(ItemRetitle(row_id=1)))
+    assert (edited.title, edited.state, edited.version) == ("Dune Messiah", ItemState.OPEN, 2)
+    unchanged = container.get(EditHandler).handle(ItemRetitle(row_id=1), context(ItemRetitle(row_id=1)))
+    assert unchanged.version == 2
+
+
+def test_an_edit_in_a_state_that_allows_none_is_refused(container):
+    item = container.get(MakeHandler).handle(MakeItem(title="Dune"), context(MakeItem(title="Dune")))
+    container.get(Repository).save(item.moved(ItemLifecycle.close), context(MakeItem(title="Dune")))
+    with pytest.raises(GuardRefusal, match="cannot be edited"):
+        container.get(EditHandler).handle(ItemRetitle(row_id=1, title="Emma"), context(ItemRetitle(row_id=1)))
+
+
+def test_a_delete_command_deletes_the_row(container):
+    container.get(MakeHandler).handle(MakeItem(title="Dune"), context(MakeItem(title="Dune")))
+    container.get(DeleteHandler).handle(DeleteItem(row_id=1), context(DeleteItem(row_id=1)))
+    assert container.get(Database).rows(Statement("SELECT count(*) FROM items"))[0][0] == 0

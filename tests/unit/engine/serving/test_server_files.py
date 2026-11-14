@@ -1,0 +1,122 @@
+import os
+import shutil
+import tempfile
+from pathlib import Path
+import socket
+import stat
+import subprocess
+import sys
+import threading
+
+import pytest
+
+from engine.journal.journal_home import JournalHome
+from engine.serving.server_files import ServerFiles, socket_path
+from engine.errors.server_files_error import ServerFilesError
+
+TIMEOUT_SECONDS = 10
+LOCK_SCRIPT = ("import fcntl, sys; f = open(sys.argv[1], 'a')\n"
+               "try:\n    fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB); print('taken')\nexcept BlockingIOError:\n    print('held')")
+
+
+def subprocess_lock_state(path):
+    return subprocess.run([sys.executable, "-c", LOCK_SCRIPT, str(path)], capture_output=True, text=True, timeout=TIMEOUT_SECONDS).stdout.strip()
+
+
+def test_a_second_process_cannot_take_the_lock_while_the_server_holds_it(tmp_path):
+    files = ServerFiles(JournalHome(tmp_path))
+    assert files.acquire_lock()
+    assert subprocess_lock_state(files.lock) == "held"
+    files.release_lock()
+    assert subprocess_lock_state(files.lock) == "taken"
+
+
+def test_a_second_take_in_the_same_journal_is_refused_while_the_first_holds_it(tmp_path):
+    first, second = ServerFiles(JournalHome(tmp_path)), ServerFiles(JournalHome(tmp_path))
+    assert first.acquire_lock() and not second.acquire_lock()
+    first.release_lock()
+
+
+def test_only_the_lock_holder_removes_a_leftover_socket_and_the_socket_is_owner_only():
+    short_folder = Path(tempfile.mkdtemp(dir="/tmp"))
+    files = ServerFiles(JournalHome(short_folder))
+    files.socket.write_text("left over")
+    try:
+        files.clear_leftover_socket()
+        raised = False
+    except ServerFilesError:
+        raised = True
+    assert raised and files.socket.exists()
+    files.acquire_lock()
+    files.clear_leftover_socket()
+    listener = socket.socket(socket.AF_UNIX)
+    listener.bind(str(files.socket))
+    files.restrict_socket()
+    assert stat.S_IMODE(os.stat(files.socket).st_mode) == 0o600
+    listener.close()
+    files.release_lock()
+    shutil.rmtree(short_folder)
+
+
+def test_a_stop_removes_the_socket_and_pid_file_only_while_the_pid_file_names_this_server(tmp_path):
+    files = ServerFiles(JournalHome(tmp_path))
+    files.socket.write_text("")
+    files.pid_file.write_text("1")
+    files.remove_server_files()
+    assert files.socket.exists() and files.pid_file.exists()
+    files.write_pid()
+    files.remove_server_files()
+    assert not files.socket.exists() and not files.pid_file.exists()
+
+
+def test_a_journal_folder_too_deep_for_a_socket_path_gets_a_short_one_named_for_it(tmp_path):
+    deep_home = JournalHome(tmp_path / ("deep-folder-" * 10))
+    shallow_home = JournalHome(Path("/tmp/j"))
+    assert len(str(socket_path(deep_home))) < 100 and socket_path(deep_home) == socket_path(JournalHome(tmp_path / ("deep-folder-" * 10)))
+    assert socket_path(shallow_home) == Path("/tmp/j/server.sock").resolve()
+
+
+def test_acquire_waiting_waits_for_a_lock_another_process_releases_within_the_limit(tmp_path):
+    first, second = ServerFiles(JournalHome(tmp_path)), ServerFiles(JournalHome(tmp_path))
+    assert first.acquire_lock()
+    releaser = threading.Timer(0.3, first.release_lock)
+    releaser.start()
+    assert second.acquire_waiting(5)
+    releaser.join()
+    second.release_lock()
+
+
+def test_acquire_waiting_gives_up_at_its_limit_while_the_lock_is_held(tmp_path):
+    first, second = ServerFiles(JournalHome(tmp_path)), ServerFiles(JournalHome(tmp_path))
+    assert first.acquire_lock()
+    assert not second.acquire_waiting(0.3)
+    first.release_lock()
+
+
+def test_locked_releases_the_lock_when_its_block_ends_and_refuses_when_it_cannot_take_it(tmp_path):
+    files, second_files = ServerFiles(JournalHome(tmp_path)), ServerFiles(JournalHome(tmp_path))
+    with files.locked(1):
+        assert subprocess_lock_state(files.lock) == "held"
+        with pytest.raises(ServerFilesError, match="was not free in 0.2 seconds"):
+            with second_files.locked(0.2):
+                pytest.fail("the lock was taken twice")
+    assert subprocess_lock_state(files.lock) == "taken"
+
+
+def test_rotating_the_log_points_the_output_the_starter_opened_at_the_new_file(tmp_path):
+    files = ServerFiles(JournalHome(tmp_path))
+    files.log.parent.mkdir(parents=True)
+    files.log.write_text("x" * 20)
+    script = ("import sys; from pathlib import Path; from engine.journal.journal_home import JournalHome; from engine.serving.server_files import ServerFiles\n"
+              "ServerFiles(JournalHome(Path(sys.argv[1]))).rotate_log(10); sys.stderr.write('after\\n')")
+    with files.log.open("a") as output:
+        subprocess.run([sys.executable, "-c", script, str(tmp_path)], stderr=output, env={**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[4] / "src")}, timeout=TIMEOUT_SECONDS, check=True)
+    assert files.log.read_text() == "after\n" and files.log.with_name("server.log.1").read_text() == "x" * 20
+
+
+def test_a_log_within_its_limit_is_kept_where_it_is(tmp_path):
+    files = ServerFiles(JournalHome(tmp_path))
+    files.log.parent.mkdir(parents=True)
+    files.log.write_text("short")
+    files.rotate_log(10)
+    assert files.log.read_text() == "short" and not files.log.with_name("server.log.1").exists()

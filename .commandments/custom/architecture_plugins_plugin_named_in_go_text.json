@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "go",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textMatches": "(?i)commandments|journal sins"
+            },
+            {
+                "fileMatches": "(^|/)(src|tools)/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "file": "**/tests/**"
+            },
+            {
+                "file": "**/testdata/**"
+            },
+            {
+                "file": "**/*_test.go"
+            }
+        ]
+    },
+    "sin": {
+        "name": "plugin-named-in-go-text",
+        "description": "Shipped Go text names one particular plugin, so the journal knows about that plugin.",
+        "rule": "The journal knows only plugins. Name a plugin's own things in that plugin's declarations, or say it generically; what this project asks of one lives in .commandments/custom.",
+        "skill": "plain-code-words"
+    }
+}

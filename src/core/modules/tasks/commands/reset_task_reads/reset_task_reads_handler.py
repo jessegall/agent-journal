@@ -1,0 +1,21 @@
+from engine.command.context import Context
+from engine.command.handler import Handler
+from engine.query.queries import Queries
+from engine.repository.repository import Repository
+from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads
+from core.modules.tasks.models.task_read import TaskRead
+
+TASK_READS_REASON = "a reset forgets every task brief the agent has read"
+
+
+class ResetTaskReadsHandler(Handler[ResetTaskReads, None]):
+    """Removes the reads of the agent."""
+
+    command = ResetTaskReads
+
+    def __init__(self, queries: Queries, repository: Repository) -> None:
+        self.queries, self.repository = queries, repository
+
+    def handle(self, command: ResetTaskReads, context: Context) -> None:
+        rows = tuple(self.queries.query(TaskRead).filter(session_agent_id=command.agent_id).every_row(TASK_READS_REASON))
+        self.repository.delete_many_stored(rows, context)

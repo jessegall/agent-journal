@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textMatches": "version-4\\.bak|src/journal/|src/web/"
+            },
+            {
+                "fileMatches": "(^|/)src/(install|server/hook)/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "version-four-path",
+        "description": "An install or hook file names a path of version 4's code, which version 5 does not have.",
+        "rule": "Name only paths of version 5: the install and hook files never reach into version 4's tree; what an upgrade reads of version 4 is its database.",
+        "skill": "plain-code-words"
+    }
+}

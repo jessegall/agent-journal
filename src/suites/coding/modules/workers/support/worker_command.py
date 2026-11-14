@@ -1,0 +1,85 @@
+from engine.file.file_access import FileAccess
+from suites.coding.modules.workers.support.work_units import WorkUnits
+from suites.coding.support.worker_test_rule import WORKER_TEST_RULE
+from pathlib import Path
+
+from engine.helper_type.helper_type_book import HelperTypeBook
+from engine.provider.launch_command import LaunchCommand
+from engine.provider.providers import Providers
+from engine.provider.resumed_session import ResumedSession
+from engine.provider.session_start import SessionStart
+from core.modules.agents.models.agent import Agent
+from core.modules.environments.models.environment import Environment
+from core.modules.helpers.support.helper_command import HelperCommand
+from core.modules.profiles.support.profile_files import ProfileFiles
+from core.modules.tasks.models.task import Task
+from core.modules.mcp.support.server_configs import ServerConfigs
+from suites.coding.modules.workers.support.library_folders import LibraryFolders
+from suites.coding.modules.workers.models.worktree import Worktree
+from engine.errors.refusal import Refusal
+from core.modules.agents.support.agent_label import AgentLabel
+from core.modules.agents.support.new_session_line import NewSessionLine
+from core.modules.skills.support.start_skills import StartSkills
+
+WORKER_SKILLS = ("journal-tasks", "journal-shell", "journal-worker")
+WORK_STEPS = ("Read journal worker status first: it says where you are and what to do now. Prove each point of a task you have started with "
+              "journal proof make <point> --task <task> \"<file:line, and the test>\", naming the tests that cover your changes in its --test command; "
+              "you may prove any started task at any time and nothing is judged then. Start another of your tasks with journal task start <task> or "
+              "journal worker next. When points are proved, run journal worker commit --differences \"<what differs, or none>\": the journal judges and commits "
+              "every started task whose points are all proved. A commit is never a merge: commit as often as you like. A task sent to you alone asks for "
+              "its merge by its last commit. A unit of more tasks is one piece of work: work all of it, then ask for its merge with journal worker ask-merge "
+              "\"<what the merge holds>\". In a plan the tests of each checkpoint run in the background on your commit; go on, and fix first what comes back. "
+              "Do not report back until the unit is merged or you are stuck.")
+
+
+class WorkerCommand:
+    """Builds fresh and resumed worker launch commands through their providers."""
+
+    def __init__(self, providers: Providers, servers: ServerConfigs, libraries: LibraryFolders, helpers: HelperCommand, profiles: ProfileFiles, types: HelperTypeBook, session_lines: NewSessionLine,
+                 units: WorkUnits, start_skills: StartSkills) -> None:
+        self.session_lines, self.units, self.start_skills = session_lines, units, start_skills
+        self.providers, self.servers, self.libraries, self.helpers = providers, servers, libraries, helpers
+        self.profiles, self.types = profiles, types
+
+    def command(self, worker: Agent, worktree: Worktree, environment: Environment, task: Task) -> LaunchCommand:
+        return self.restarted(worker, worktree, environment, task, "")
+
+    def restarted(self, worker: Agent, worktree: Worktree, environment: Environment, task: Task, job: str) -> LaunchCommand:
+        provider = self.providers.provider(worker.program)
+        skills = Path(worktree.folder) / provider.skills_folder
+        names = dict.fromkeys([*self.start_skills.session_start(), *WORKER_SKILLS])
+        reads = "\n".join(provider.skill_instruction(name, skills / name / "SKILL.md") for name in names)
+        profile = self.profiles.effective(worker.profile or self.types.find(worker.role).default_profile)
+        session_line = self.session_lines.line(worker)
+        identity = f"You are {AgentLabel.labelled(worker).text}." if session_line is None else f"You are {AgentLabel.labelled(worker).text}.\n{session_line}"
+        brief = (f"{identity}\n{profile.body}\n\n{self.task_line(worker, task)}\n{task.brief}\n{job}\n"
+                 f"Load these skills before your first write:\n{reads}\n"
+                 f"Run journal overview, then journal task overview {worktree.task_id} before changing project files. Load the architectural skills required by the files you change in {skills}.\n"
+                 f"{WORKER_TEST_RULE}\n"
+                 f"Decide what you can yourself. A question goes in your report to the main agent, never to the user.\n{WORK_STEPS}")
+        return self.launched(worker, worktree, environment, SessionStart(worker.session), brief)
+
+    def resumed(self, worker: Agent, worktree: Worktree, environment: Environment, job: str) -> LaunchCommand:
+        return self.launched(worker, worktree, environment, ResumedSession(worker.session),
+                             f"{self.unit_prefix(worker)}{job}\nRead journal task overview {worktree.task_id} before changing project files.\n{WORK_STEPS}")
+
+    def compacting(self, worker: Agent, worktree: Worktree, environment: Environment, line: str) -> LaunchCommand:
+        return self.launched(worker, worktree, environment, ResumedSession(worker.session), f"{self.unit_prefix(worker)}{line}")
+
+    def task_line(self, worker: Agent, task: Task) -> str:
+        name_line = self.units.unit(worker.id).name_line
+        return f"{name_line} Your first task is {task.id}, {task.title}." if name_line else f"Your task is {task.id}, {task.title}."
+
+    def unit_prefix(self, worker: Agent) -> str:
+        name_line = self.units.unit(worker.id).name_line
+        return f"{name_line}\n" if name_line else ""
+
+    def launched(self, worker: Agent, worktree: Worktree, environment: Environment, session: SessionStart, brief: str) -> LaunchCommand:
+        if not worker.program_model.strip():
+            raise Refusal(f"{AgentLabel.labelled(worker).text} has no recorded model", "dispatch a worker with --model <model>")
+        # writing the program's server file into a removed worktree would make its folder again
+        if worktree.removed_at is not None or not FileAccess.is_dir(worktree.folder):
+            raise Refusal(f"the worktree {worktree.folder} of {AgentLabel.labelled(worker).text} is removed", "dispatch the work again, which cuts a new worktree")
+        files = self.servers.write_folder(Path(worktree.folder))
+        self.libraries.exclude(worktree.folder, [str(path) for path in files])
+        return self.helpers.launched(worker, session, brief)

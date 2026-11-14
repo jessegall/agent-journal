@@ -1,0 +1,101 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "identifier",
+        "where": [
+            {
+                "nameMatches": "(?i)(^|_)(${poetic}|${poetic_values})(_|$)"
+            }
+        ],
+        "reject": [
+            {
+                "nameIn": [
+                    "commit_before_merge",
+                    "runs_once",
+                    "NO_WORKER_WAITING",
+                    "plugin_moments"
+                ]
+            },
+            {
+                "name": "named_reader_id"
+            },
+            {
+                "all": [
+                    {
+                        "name": "streak"
+                    },
+                    {
+                        "fileMatches": "(^|/)src/core/modules/drivers/models/refusal_skip\\.py$"
+                    }
+                ]
+            },
+            {
+                "of": "parent",
+                "all": [
+                    {
+                        "is": "call"
+                    },
+                    {
+                        "of": "child:func",
+                        "nameMatches": "^(print|save|delete|remove|add|create|push|pull|show|write|load|fetch|tell|ask|make|do|go|take|put|give|send|open|run|exec|next|iter|map|filter|sorted|reversed|any|all|len|str|int|float|bool|list|dict|set|tuple|range|enumerate|zip|min|max|sum|type|getattr|setattr|hasattr|isinstance|repr|round|abs|format|input|id|hash|vars|dir|super|property|staticmethod|classmethod)$"
+                    }
+                ]
+            },
+            {
+                "nameMatches": "^(object|glob|tmp_path|delegated_to|do_[A-Z]+)$"
+            },
+            {
+                "nameMatches": "^(tmp_path|tmp_path_factory|capsys|monkeypatch|request)$"
+            },
+            {
+                "resolvesLike": "typing.*"
+            },
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "type-declaration"
+                        },
+                        {
+                            "extendsAny": "Lifecycle"
+                        }
+                    ]
+                }
+            },
+            {
+                "all": [
+                    {
+                        "nameIn": [
+                            "why",
+                            "kind",
+                            "words"
+                        ]
+                    },
+                    {
+                        "fileMatches": "(^|/)src/(engine/(cli/console|command/request_user_approval)|engine/errors/user_approval_refusal|core/modules/(approvals/(commands/request_user_approval/request_user_approval_handler|models/(approval_request|standing_approval))|aliases/models/command_type))\\.py$"
+                    }
+                ]
+            },
+            {
+                "all": [
+                    {
+                        "nameMatches": "^[a-z][0-9]+_"
+                    },
+                    {
+                        "file": "tests/stories/**"
+                    }
+                ]
+            },
+            {
+                "name": "tmp_path"
+            }
+        ]
+    },
+    "sin": {
+        "name": "poetic-variable-name",
+        "description": "A variable, an attribute or an argument is named by a word that does not say what it is: said, whisper, tale, magic, made, thing, stuff, got, done.",
+        "rule": "Name it for what it holds, in an ordinary word: nudge, line, values.",
+        "skill": "plain-code-words"
+    }
+}

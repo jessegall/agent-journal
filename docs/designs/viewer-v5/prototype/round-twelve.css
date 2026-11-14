@@ -1,0 +1,5 @@
+/* Round twelve: an action that opens something is the open icon, with a tooltip naming what opens. */
+.r12-open { display: inline-grid; place-items: center; flex: none; width: 22px; height: 22px; padding: 0; border: 0; border-radius: var(--r-sm); background: none; color: var(--text-3); }
+.r12-open:hover, .r12-open:focus-visible { background: var(--hover); color: var(--accent-text); outline: 0; }
+.r12-count { gap: 5px; }
+.q9-out-head .r12-open { width: 20px; height: 20px; }

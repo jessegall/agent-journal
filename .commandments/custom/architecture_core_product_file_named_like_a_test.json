@@ -1,0 +1,23 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "kind:Module",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/(.*/)?test_[^/]*\\.py$"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/engine/testing/"
+            }
+        ]
+    },
+    "sin": {
+        "name": "product-file-named-like-a-test",
+        "description": "A source file outside the test kit starts with test_, so a reader and pytest take it for a test.",
+        "rule": "Name a source file for the thing it holds, never test_ first: a guard of test environments is environment_grant_guard.py, not test_grant_guard.py.",
+        "skill": "plain-code-words"
+    }
+}

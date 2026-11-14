@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "constructs": "WaitGraph"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/plans/support/unblockers/plan_unblockers\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "wait-graph-built-outside-plan-unblockers",
+        "description": "The graph of open waits between tasks is built in a second place, so the waits are read more than once and can be followed in two ways.",
+        "rule": "Ask PlanUnblockers for what a plan waits on; it reads the open waits once.",
+        "skill": "plain-code-words"
+    }
+}

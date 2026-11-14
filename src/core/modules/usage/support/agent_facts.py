@@ -1,0 +1,50 @@
+from collections.abc import Mapping
+from dataclasses import asdict, dataclass
+
+from core.modules.usage.support.plan_window import PlanWindow
+from core.modules.usage.support.session_cost import SessionCost
+
+
+@dataclass(frozen=True)
+class AgentFacts:
+    """What an agent's card says beyond its row: its model and effort, context in use, what its session cost
+    so far (none when its program reports no cost), the task it works on, the tasks given to it or held by
+    it, whether it waits, is blocked or is at its program's usage limit until its plan allowance starts
+    again, the plan allowance windows its program reports to it, and the profile, given name and
+    instruction its dispatch gave it. session_costs holds what each session of its history cost, with its
+    program, and the sum of those that reported a cost is the agent's total."""
+
+    agent_id: int
+    model: str
+    context_percent: int | None
+    cost_dollars: float | None
+    task_id: int | None
+    task_title: str
+    tasks: tuple[Mapping[str, object], ...] = ()
+    state: str = ""
+    profile: str = ""
+    given_name: str = ""
+    instruction: str = ""
+    effort: str = ""
+    job_enabled: bool = False
+    job_returned: str = ""
+    last_activity: str = ""
+    helper_job: str = ""
+    helper_job_title: str = ""
+    profile_title: str = ""
+    blocked_reason: str = ""
+    work_status: str | None = None
+    is_sandbox_off: bool = False
+    windows: tuple[PlanWindow, ...] = ()
+    usage_limit_ends_at: str | None = None
+    helper_job_program: str = ""
+    occupant_launch: str = ""
+    is_helper_job_open: bool = False
+    is_context_unknown: bool = False
+    session_costs: tuple[SessionCost, ...] = ()
+    unit_name: str = ""
+
+    def json(self) -> Mapping[str, object]:
+        return {"id": self.agent_id, "model": self.model, "effort": self.effort, "context_percent": self.context_percent, "cost_dollars": self.cost_dollars, "task_id": self.task_id, "task_title": self.task_title,
+                "job_enabled": self.job_enabled, "tasks": self.tasks, "state": self.state, "profile": self.profile, "profile_title": self.profile_title, "given_name": self.given_name, "instruction": self.instruction, "job_returned": self.job_returned, "last_activity": self.last_activity, "helper_job": self.helper_job, "helper_job_title": self.helper_job_title, "helper_job_program": self.helper_job_program, "occupant_launch": self.occupant_launch, "helper_job_open": self.is_helper_job_open, "context_unknown": self.is_context_unknown, "blocked_reason": self.blocked_reason, "work_status": self.work_status, "unit_name": self.unit_name, "sandbox_off": self.is_sandbox_off, "windows": [asdict(window) for window in self.windows], "usage_limit_ends_at": self.usage_limit_ends_at,
+                "session_costs": [session_cost.json() for session_cost in self.session_costs], "total_cost_dollars": sum(session_cost.dollars for session_cost in self.session_costs if session_cost.dollars is not None)}

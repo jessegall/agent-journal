@@ -1,0 +1,80 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "^(\\.commandments/custom/samples/layout/)?src/.+\\.py$"
+            },
+            {
+                "any": [
+                    {
+                        "all": [
+                            {
+                                "fileMatches": "(^|/)errors/[^/]+\\.py$"
+                            },
+                            {
+                                "not": {
+                                    "any": [
+                                        {
+                                            "extendsAny": "Exception"
+                                        },
+                                        {
+                                            "extendsAny": "*Error"
+                                        },
+                                        {
+                                            "extendsAny": "*Exception"
+                                        },
+                                        {
+                                            "extendsAny": "*Refusal"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "fileMatches": "(^|/)enums/[^/]+\\.py$"
+                            },
+                            {
+                                "not": {
+                                    "any": [
+                                        {
+                                            "typeKind": "enum"
+                                        },
+                                        {
+                                            "extendsAny": "Enum"
+                                        },
+                                        {
+                                            "extendsAny": "StrEnum"
+                                        },
+                                        {
+                                            "extendsAny": "IntEnum"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)(dist|node_modules|vendor)/"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "wrong-sort-in-kind-folder",
+        "description": "An errors folder holds a class that is no error, or an enums folder a class that is no enum.",
+        "rule": "An errors folder holds errors and refusals, an enums folder holds enums; move any other class to the folder of its sort.",
+        "skill": "plain-code-words"
+    }
+}

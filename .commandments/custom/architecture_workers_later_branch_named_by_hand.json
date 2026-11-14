@@ -1,0 +1,23 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textLike": "*-cut-*"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "later-branch-named-by-hand",
+        "description": "The branch of a worker's later worktree is named by hand with the old cut suffix, so one worker's branches are named two ways.",
+        "rule": "Ask WorkerBranchNames for the branch of a worktree by its position among the worker's worktrees.",
+        "skill": "drivers-architecture"
+    }
+}

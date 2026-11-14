@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "member-access",
+        "where": [
+            {
+                "name": "is_early"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/plans/models/checkpoint_reach\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "checkpoint-reach-flag-read",
+        "description": "Code reads the is_early flag of a checkpoint reach, which stays only for the plugin contract.",
+        "rule": "Read reach.source, a CheckpointReachSource, and ask reach.source.opens_phases().",
+        "skill": "views-architecture"
+    }
+}

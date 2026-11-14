@@ -1,0 +1,30 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "member-access",
+        "where": [
+            {
+                "name": "DRIVER_CHANGED"
+            }
+        ],
+        "reject": [
+            {
+                "of": "enclosingType",
+                "nameIn": [
+                    "ChangeAgentDriverHandler",
+                    "EndReason"
+                ]
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "driver-changed-outside-the-driver-command",
+        "description": "Code closes a session as a driver change itself, so an agent's program or model changes past the checks of the driver command.",
+        "rule": "Run ChangeAgentDriver: its handler checks who asks, that the agent is stopped and that its profile allows the model, then replaces the session.",
+        "skill": "drivers-architecture"
+    }
+}

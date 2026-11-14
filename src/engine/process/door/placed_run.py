@@ -1,0 +1,29 @@
+from dataclasses import dataclass
+
+from engine.errors.long_child_error import LongChildError
+from engine.execution.current_execution import CurrentExecution
+from engine.process.door.execution import Execution
+from engine.process.door.execution_request import ExecutionRequest
+
+
+@dataclass(frozen=True)
+class PlacedRun:
+    """A run admitted by the queue: its request, its process row, if one was made, whether it holds a place, the
+    agent it works for, its environment and whether its row still waits to be started. A run of a main agent names
+    no agent id, as its rows store none, and says it works for the main agent instead."""
+
+    request: ExecutionRequest
+    process_id: int | None
+    has_place: bool
+    agent_id: int | None = None
+    environment_id: int | None = None
+    is_main_agent: bool = False
+    is_waiting: bool = False
+
+    # a row that still waits sits in the long lane, which a hook may never wait on
+    def refuse_hook_wait(self) -> None:
+        if self.is_waiting and CurrentExecution.read().is_hook:
+            raise LongChildError(self.request.process_type.value, self.request.text)
+
+    def failed(self, exit_code: int, reason: str) -> Execution:
+        return Execution.failed(self.process_id, exit_code, reason)
