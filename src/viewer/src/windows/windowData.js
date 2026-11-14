@@ -4,7 +4,9 @@ const WINDOW_ROUTE = "/api/window";
 
 // one read of a window's data: its name and the keys it wants in the headers, its state in the query, through the one funnel
 export function windowData(window, environment, only, state, signal) {
-    const query = new URLSearchParams({environment, ...state});
+    // a state value left empty is not set: the server refuses an empty tab, as the agent settings sent on every tab but one
+    const setState = Object.fromEntries(Object.entries(state).filter(([, value]) => value !== "" && value !== null && value !== undefined));
+    const query = new URLSearchParams({environment, ...setState});
     const url = `${WINDOW_ROUTE}?${query}`;
     const headers = {"x-journal-window": window, ...(only.length ? {"x-journal-data-only": only.join(",")} : {})};
     const read = (stop) => transport.whenFree(async () => {

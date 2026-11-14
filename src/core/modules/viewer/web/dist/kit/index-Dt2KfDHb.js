@@ -1768,12 +1768,12 @@ class rf {
 }
 const $i = new rf(), uf = "/api/window";
 function cf(e, t, n, a, s) {
-  const o = new URLSearchParams({ environment: t, ...a }), l = `${uf}?${o}`, i = { "x-journal-window": e, ...n.length ? { "x-journal-data-only": n.join(",") } : {} }, u = (c) => Oe.whenFree(async () => {
-    const d = await Oe.sent(l, { signal: c, headers: i }, [{ window: e, line: l, kind: ut }]);
-    if (!d.ok) throw new Error((await d.json()).error);
-    return d.json();
+  const o = Object.fromEntries(Object.entries(a).filter(([, d]) => d !== "" && d !== null && d !== void 0)), l = new URLSearchParams({ environment: t, ...o }), i = `${uf}?${l}`, u = { "x-journal-window": e, ...n.length ? { "x-journal-data-only": n.join(",") } : {} }, c = (d) => Oe.whenFree(async () => {
+    const m = await Oe.sent(i, { signal: d, headers: u }, [{ window: e, line: i, kind: ut }]);
+    if (!m.ok) throw new Error((await m.json()).error);
+    return m.json();
   });
-  return Oe.joined(`${e} ${n.join(",")} ${o}`, u, s);
+  return Oe.joined(`${e} ${n.join(",")} ${l}`, c, s);
 }
 const xi = /* @__PURE__ */ new Map();
 class df {
@@ -16570,7 +16570,7 @@ const EC = {
       ])
     ]));
   }
-}, gI = /* @__PURE__ */ z(cA, [["__scopeId", "data-v-b494c444"]]), yI = zu(() => import("./VoiceFigure-dYm9GMG7.js").then((e) => e.V)), bI = "1.2.0", kI = "3.5";
+}, gI = /* @__PURE__ */ z(cA, [["__scopeId", "data-v-b494c444"]]), yI = zu(() => import("./VoiceFigure-CXOELJu-.js").then((e) => e.V)), bI = "1.2.0", kI = "3.5";
 export {
   Dm as $,
   Ie as A,
