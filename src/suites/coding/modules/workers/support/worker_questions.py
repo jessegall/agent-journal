@@ -23,7 +23,7 @@ from core.modules.waits.models.wait import Wait
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 from suites.coding.modules.workers.models.merger_line import CLOCK_FORMAT, MergerLine
 from suites.coding.modules.workers.support.ask_deadline import AskDeadline
-from suites.coding.modules.workers.support.worker_settings import QUESTION_ANSWER_MINUTES, QUESTION_FORWARD_MINUTES
+from core.modules.asks.support.ask_settings import ASK_ANSWER_MINUTES, ASK_PASS_ON_MINUTES, ASK_VISITS_LIMIT
 
 OPEN_LINES_REASON = "the merger answers every open question of every worker"
 
@@ -62,8 +62,8 @@ class WorkerQuestions:
         return line
 
     def timed(self, line: MergerLine, wait_id: int, task_id: int | None, timestamp: Timestamp) -> MergerLine:
-        due_at = Timestamp(timestamp.value + timedelta(minutes=self.settings.number(QUESTION_ANSWER_MINUTES)))
-        forward_at = Timestamp(timestamp.value + timedelta(minutes=self.settings.number(QUESTION_FORWARD_MINUTES)))
+        due_at = Timestamp(timestamp.value + timedelta(minutes=self.settings.number(ASK_ANSWER_MINUTES)))
+        forward_at = Timestamp(timestamp.value + timedelta(minutes=self.settings.number(ASK_PASS_ON_MINUTES)))
         return replace(line, wait_id=wait_id, task_id=task_id, due_at=due_at, forward_at=forward_at)
 
     def close(self, line: MergerLine, outcome: AskOutcome, text: str, context: Context) -> None:

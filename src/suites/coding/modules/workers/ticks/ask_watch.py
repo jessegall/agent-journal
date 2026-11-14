@@ -8,7 +8,7 @@ from suites.coding.modules.workers.commands.forward_worker_questions.forward_wor
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.ask_deadline import AskDeadline
 from suites.coding.modules.workers.support.worker_questions import WorkerQuestions
-from suites.coding.modules.workers.support.worker_settings import QUESTION_VISITS_LIMIT
+from core.modules.asks.support.ask_settings import ASK_ANSWER_MINUTES, ASK_PASS_ON_MINUTES, ASK_VISITS_LIMIT
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 
 
@@ -25,7 +25,7 @@ class AskWatch:
             if line.worker_id in forwarded_workers:
                 continue
             with container.get(Scopes).row_scope(line):
-                deadline = AskDeadline.parsed(line, container.get(SettingValues).number(QUESTION_VISITS_LIMIT))
+                deadline = AskDeadline.parsed(line, container.get(SettingValues).number(ASK_VISITS_LIMIT))
                 is_worker_removed = container.get(WorktreeQuery).worker_worktree(line.worker_id) is None
                 if is_worker_removed or deadline.is_forward_due(timestamp):
                     forwarded_workers.add(line.worker_id)

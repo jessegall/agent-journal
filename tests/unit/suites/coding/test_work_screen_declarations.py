@@ -79,4 +79,4 @@ def test_the_workers_screen_holds_its_settings_and_no_merger_setting():
 
 def test_the_merger_screen_holds_the_waits_questions_and_commands_of_the_merger():
     merger = sorted(value.key for value in DECLARED if value.screen == "helper-type.merger")
-    assert merger == sorted(["merger-wait-minutes", "ask-answer-minutes", "ask-pass-on-minutes", "ask-visits-limit", "most-merger-messages-per-group", "merger-commands"])
+    assert merger == sorted(["merger-wait-minutes", "most-merger-messages-per-group", "merger-commands"])

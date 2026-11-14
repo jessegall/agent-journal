@@ -24,8 +24,7 @@ from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from tests.stories.suites.coding.modules.workers.worker_ask import asking, asking_with_merger_running, merger_disabled_worker  # noqa: F401
 from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
-from suites.coding.modules.workers.support.worker_settings import QUESTION_ANSWER_MINUTES, QUESTION_FORWARD_MINUTES
-from suites.coding.modules.workers.support.worker_settings import QUESTION_VISITS_LIMIT
+from core.modules.asks.support.ask_settings import ASK_ANSWER_MINUTES, ASK_PASS_ON_MINUTES, ASK_VISITS_LIMIT
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
 TEST_ROWS_REASON = "the test reads every row it checks"
@@ -33,8 +32,8 @@ TEST_ROWS_REASON = "the test reads every row it checks"
 QUESTION = "The sandbox has no compiler"
 SECOND_QUESTION = "The fixture file is empty"
 ANSWER = "Use the compiler in tools/bin"
-ANSWER_MINUTES = f"{QUESTION_ANSWER_MINUTES}"
-VISITS_LIMIT = f"{QUESTION_VISITS_LIMIT}"
+ANSWER_MINUTES = f"{ASK_ANSWER_MINUTES}"
+VISITS_LIMIT = f"{ASK_VISITS_LIMIT}"
 HELP_REQUEST_LINE = 'wait stuck "the build tool is missing"'
 READ_OF_A_FILE = HookSamples.tool_use("Read", ToolType.READ, ["cart.py"], None)
 
@@ -64,8 +63,8 @@ def test_an_ask_is_one_line_with_its_wait_task_and_due_time_and_the_same_ask_aga
     asking.story.expect_rows(len(questions(asking.story)) == 1, line.worker_id == asking.worker.id, line.topic is AskTopic.TOOL, line.facts_json is not None,
                              line.wait_id == wait.id, line.task_id == 1, line.outcome is None, line.visit_count == 0, detail=str(line))
     asking.story.expect_rows(f"the merger has your question; an answer is due by {line.due_at.value.strftime(CLOCK_FORMAT)}, after that the main agent gets it" in outcome.output_text,
-                             AskTopic.TOOL.waiting_work() in outcome.output_text, line.due_at.value - line.created_at.value == timedelta(minutes=asking.story.number_default(QUESTION_ANSWER_MINUTES)),
-                             line.forward_at.value - line.created_at.value == timedelta(minutes=asking.story.number_default(QUESTION_FORWARD_MINUTES)), detail=outcome.output_text)
+                             AskTopic.TOOL.waiting_work() in outcome.output_text, line.due_at.value - line.created_at.value == timedelta(minutes=asking.story.number_default(ASK_ANSWER_MINUTES)),
+                             line.forward_at.value - line.created_at.value == timedelta(minutes=asking.story.number_default(ASK_PASS_ON_MINUTES)), detail=outcome.output_text)
     due_at = line.due_at
     asking.story.advance(timedelta(minutes=3))
     asking.story.expect_success(f"setting set {ANSWER_MINUTES} 25 --project", actor=asking.story.user or asking.story.agent)
@@ -168,7 +167,7 @@ def test_a_help_request_is_a_question_like_any_other_with_its_wait_and_its_due_t
     case.story.run_listeners()
     line = questions(case.story)[0]
     case.story.expect_rows(line.topic is AskTopic.GENERAL, line.wait_id == waits_of(case.story, case.worker)[0].id, line.outcome is None,
-                           line.due_at.value - line.created_at.value == timedelta(minutes=case.story.number_default(QUESTION_ANSWER_MINUTES)), detail=str(line))
+                           line.due_at.value - line.created_at.value == timedelta(minutes=case.story.number_default(ASK_ANSWER_MINUTES)), detail=str(line))
     case.story.expect_success(f'merger answer {line.id} "{ANSWER}"', actor=case.merger)
     case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.ANSWERED, ANSWER in case.worker_messages(), detail=case.worker_messages())
 

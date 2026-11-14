@@ -6,7 +6,7 @@ from engine.command.bus import Bus
 from engine.setting.setting_values import SettingValues
 from suites.coding.modules.workers.commands.forward_worker_questions.forward_worker_questions import ForwardWorkerQuestions
 from suites.coding.modules.workers.support.worker_questions import WorkerQuestions
-from suites.coding.modules.workers.support.worker_settings import QUESTION_VISITS_LIMIT
+from core.modules.asks.support.ask_settings import ASK_ANSWER_MINUTES, ASK_PASS_ON_MINUTES, ASK_VISITS_LIMIT
 
 
 class ReturnUnhandledMergerLinesHandler(Handler[ReturnUnhandledMergerLines, None]):
@@ -20,5 +20,5 @@ class ReturnUnhandledMergerLinesHandler(Handler[ReturnUnhandledMergerLines, None
 
     def handle(self, command: ReturnUnhandledMergerLines, context: Context) -> None:
         self.visits.return_unhandled_lines(context)
-        for worker_id in self.questions.due_workers(self.settings.number(QUESTION_VISITS_LIMIT), context.timestamp):
+        for worker_id in self.questions.due_workers(self.settings.number(ASK_VISITS_LIMIT), context.timestamp):
             self.bus.dispatch(ForwardWorkerQuestions(worker_id), context)
