@@ -1,5 +1,4 @@
 import os
-import time
 
 from engine.command.bus import Bus
 from core.modules.claude_code.providers import claude_code_provider
@@ -40,7 +39,7 @@ def test_an_ended_sessions_folder_goes(new_story, monkeypatch, tmp_path):
 def test_an_unknown_sessions_folder_stays_a_week(new_story, monkeypatch, tmp_path):
     story = new_story(fixture=BuilderStarted)
     folders = session_folders(story, monkeypatch, tmp_path, "recent", "old")
-    month_old = time.time() - 30 * 24 * 3600
+    month_old = story.clock.epoch_seconds() - 30 * 24 * 3600
     os.utime(folders["old"], (month_old, month_old))
     prune(story)
     expect_exists_recent_folders(folders)
