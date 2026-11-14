@@ -353,8 +353,6 @@ tests/stories/core/modules/waits/marks.py
 tests/stories/core/process_door.py
 tests/stories/core/process_door_rules.py
 tests/stories/core/test_source_walks.py
-tests/stories/engine/chat/mark_buttons.py
-tests/stories/engine/chat/mark_registry.py
 tests/stories/engine/chat/mark_removal.py
 tests/stories/engine/command/lock_choices.py
 tests/stories/engine/database/large_journal_reads.py
@@ -362,7 +360,6 @@ tests/stories/engine/driver/rule_history_races.py
 tests/stories/engine/errors/errors_moved.py
 tests/stories/engine/event_pruning.py
 tests/stories/engine/file/file_access.py
-tests/stories/engine/hosting/hosted_file.py
 tests/stories/engine/hosting/hosted_story.py
 tests/stories/engine/listener/listener_visits.py
 tests/stories/engine/listener/round_gives_way.py
@@ -382,9 +379,6 @@ tests/stories/engine/template_database.py
 tests/stories/engine/testing/stories/run_code_text.py
 tests/stories/engine/testing/stories/working_journals.py
 tests/stories/engine/tunnel/tunnel_choice.py
-tests/stories/engine/viewer/button_icons.py
-tests/stories/engine/viewer/inspector_check.py
-tests/stories/engine/viewer/inspector_declaration.py
 tests/stories/server/library_client.py
 tests/stories/server/viewer_hook_events.py
 tests/stories/suites/coding/agent_settings_window.py

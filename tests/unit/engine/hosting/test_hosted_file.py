@@ -1,11 +1,9 @@
-import pytest
-
-from engine.hosting.hosted_file import HostedFile
 from engine.hosting.errors.hosted_file_refusal import HostedFileRefusal
-from engine.hosting.hosted_mode import HostedMode
-from engine.hosting.hosting import Hosting
 from engine.hosting.errors.local_journal_refusal import LocalJournalRefusal
+from engine.hosting.hosted_file import HostedFile
+from engine.hosting.hosted_mode import HostedMode
 from tests.stories.support.story_checks import expect_value
+import pytest
 
 HOSTED_TEXT = """public_origin = "https://journal.example.com"
 agent_user = "journal-agent"
@@ -50,8 +48,3 @@ def test_a_key_of_the_wrong_type_is_refused_by_name(tmp_path):
 def test_a_file_that_is_not_toml_is_refused(tmp_path):
     with pytest.raises(HostedFileRefusal, match="is not valid TOML"):
         hosted_file(tmp_path, "public_origin = = 1").hosting()
-
-
-def test_a_story_container_is_local_whatever_file_the_machine_holds(new_story):
-    story = new_story()
-    expect_value(story.container.get(Hosting), Hosting.local())

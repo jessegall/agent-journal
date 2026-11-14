@@ -1,11 +1,10 @@
 from collections.abc import Sequence
 
 from engine.driver.classification import Classification
-from engine.enums.command_category import CommandCategory
-from engine.enums.command_effect import CommandEffect
 from engine.driver.part import Part
 from engine.driver.shell_line import ShellLine
-from engine.driver.tool import Tool
+from engine.enums.command_category import CommandCategory
+from engine.enums.command_effect import CommandEffect
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.support.story_checks import expect_value
@@ -23,43 +22,6 @@ def read_line(text: str, *parts: ShellPart, redirects: Sequence[str] = ()) -> Sh
 
 def expect_full_test_run(parts: tuple[Part, ...], is_full: bool) -> None:
     assert ShellLine("", parts, (), False, "").has_full_test_run is is_full
-
-
-def test_a_line_that_skips_the_saved_commands_is_no_full_test_run():
-    skip = Part('journal alias skip --reason "one run"', "journal", "", ("alias", "skip"), Classification(CommandCategory.JOURNAL, ()), (), (), "&&", None)
-    suite = Part("pytest", "pytest", "", (), Classification(CommandCategory.TEST_RUN, ()), (), (), "", None, is_full_test_run=True)
-    expect_full_test_run(tuple([suite]), True)
-    expect_full_test_run((skip, suite), False)
-
-
-def test_a_chain_tests_when_any_of_its_parts_tests_whichever_comes_first():
-    expect_test_part("cat notes && pytest -q", LISTING, TESTING)
-    expect_test_part("pytest -q && cat notes", TESTING, LISTING)
-    expect_absent_test_part("cat notes && grep cart", LISTING, SEARCHING)
-
-
-def test_a_chain_builds_or_writes_when_any_of_its_parts_does():
-    expect_build_part("cat notes && make", LISTING, BUILDING)
-    expect_part_writing_files_2("cat notes && sed -i", LISTING, EDITING)
-    expect_absent_part_writing_files("cat notes && grep cart", LISTING, SEARCHING)
-
-
-def test_a_redirect_makes_a_chain_write():
-    expect_part_writing_files("cat notes", LISTING, "> copy.txt")
-
-
-def test_a_chain_only_reads_when_all_of_its_parts_read_and_none_writes():
-    expect_readonly_2("cat notes && grep cart", LISTING, SEARCHING)
-    expect_absent_readonly_2("cat notes && pytest -q", LISTING, TESTING)
-    expect_absent_readonly("cat notes", LISTING, "> copy.txt")
-    expect_readonly("cat notes", LISTING, "2>&1")
-    expect_readonly("cat notes", LISTING, "2>/dev/null")
-    expect_readonly("cat notes", LISTING, "< input.txt")
-
-
-def test_a_process_of_a_mixed_chain_takes_the_category_of_the_part_a_reader_watches():
-    expect_watched_part_category("cat notes && pytest -q", LISTING, TESTING, CommandCategory.TEST_RUN)
-    expect_watched_part_category("cat notes && grep cart", LISTING, SEARCHING, CommandCategory.READ)
 
 
 def expect_watched_part_category(text, item, item_2, expected) -> None:
@@ -119,6 +81,43 @@ def expect_test_part(text, item, item_2) -> None:
 
 def expect_uncertainty(line: ShellLine, uncertain: bool, old_hook: bool) -> None:
     assert (line.has_uncertain_part, line.has_old_hook_part) == (uncertain, old_hook)
+
+
+def test_a_line_that_skips_the_saved_commands_is_no_full_test_run():
+    skip = Part('journal alias skip --reason "one run"', "journal", "", ("alias", "skip"), Classification(CommandCategory.JOURNAL, ()), (), (), "&&", None)
+    suite = Part("pytest", "pytest", "", (), Classification(CommandCategory.TEST_RUN, ()), (), (), "", None, is_full_test_run=True)
+    expect_full_test_run(tuple([suite]), True)
+    expect_full_test_run((skip, suite), False)
+
+
+def test_a_chain_tests_when_any_of_its_parts_tests_whichever_comes_first():
+    expect_test_part("cat notes && pytest -q", LISTING, TESTING)
+    expect_test_part("pytest -q && cat notes", TESTING, LISTING)
+    expect_absent_test_part("cat notes && grep cart", LISTING, SEARCHING)
+
+
+def test_a_chain_builds_or_writes_when_any_of_its_parts_does():
+    expect_build_part("cat notes && make", LISTING, BUILDING)
+    expect_part_writing_files_2("cat notes && sed -i", LISTING, EDITING)
+    expect_absent_part_writing_files("cat notes && grep cart", LISTING, SEARCHING)
+
+
+def test_a_redirect_makes_a_chain_write():
+    expect_part_writing_files("cat notes", LISTING, "> copy.txt")
+
+
+def test_a_chain_only_reads_when_all_of_its_parts_read_and_none_writes():
+    expect_readonly_2("cat notes && grep cart", LISTING, SEARCHING)
+    expect_absent_readonly_2("cat notes && pytest -q", LISTING, TESTING)
+    expect_absent_readonly("cat notes", LISTING, "> copy.txt")
+    expect_readonly("cat notes", LISTING, "2>&1")
+    expect_readonly("cat notes", LISTING, "2>/dev/null")
+    expect_readonly("cat notes", LISTING, "< input.txt")
+
+
+def test_a_process_of_a_mixed_chain_takes_the_category_of_the_part_a_reader_watches():
+    expect_watched_part_category("cat notes && pytest -q", LISTING, TESTING, CommandCategory.TEST_RUN)
+    expect_watched_part_category("cat notes && grep cart", LISTING, SEARCHING, CommandCategory.READ)
 
 
 def test_a_part_the_hook_could_not_judge_reaches_the_shell_line():

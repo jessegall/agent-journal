@@ -608,7 +608,6 @@ tests/stories/core/support/seeds/project_seeds.py
 tests/stories/core/support/signoffs_samples.py
 tests/stories/core/test_source_walks.py
 tests/stories/engine/chat/mark_buttons.py
-tests/stories/engine/chat/mark_registry.py
 tests/stories/engine/chat/mark_removal.py
 tests/stories/engine/chat/support/legacy_buttons_module.py
 tests/stories/engine/chat/support/mark_faults.py
@@ -617,17 +616,13 @@ tests/stories/engine/command/support/lock_commands.py
 tests/stories/engine/database/large_journal_reads.py
 tests/stories/engine/driver/driver_guards.py
 tests/stories/engine/driver/first_hooks.py
-tests/stories/engine/driver/read_only_tools.py
 tests/stories/engine/driver/rule_faults.py
 tests/stories/engine/driver/rule_history_races.py
-tests/stories/engine/driver/shell_line_parts.py
 tests/stories/engine/driver/support/hook_agents.py
 tests/stories/engine/driver/support/samples.py
 tests/stories/engine/errors/errors_moved.py
 tests/stories/engine/event_pruning.py
 tests/stories/engine/file/file_access.py
-tests/stories/engine/hosting/hosted_file.py
-tests/stories/engine/hosting/hosted_start_check.py
 tests/stories/engine/hosting/hosted_story.py
 tests/stories/engine/hosting/support/fake_host.py
 tests/stories/engine/listener/listener_visits.py
@@ -670,7 +665,6 @@ tests/stories/engine/upgrade/support/move_samples.py
 tests/stories/engine/viewer/button_icons.py
 tests/stories/engine/viewer/button_warnings.py
 tests/stories/engine/viewer/inspector_check.py
-tests/stories/engine/viewer/inspector_declaration.py
 tests/stories/engine/viewer/inspector_listing.py
 tests/stories/engine/viewer/support/button_icon_modules.py
 tests/stories/engine/viewer/support/button_label_faults.py

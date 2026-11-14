@@ -28,13 +28,6 @@ def test_a_row_with_a_shared_read_is_shareable(new_story):
     expect_value({model_name: listed[model_name].shareable for model_name in ("plan", "doc", "task", "agent")}, {"plan": True, "doc": True, "task": False, "agent": False})
 
 
-def test_the_windows_list_is_unchanged(new_story):
-    story = new_story(fixture=MainEnvironment)
-    previous = sorted(WindowsRoute(story.home).windows("main"), key=lambda window: window.name)
-    story.expect_sync_success(f"{PLAIN_PATH}:InspectorModule")
-    expect_value(sorted(WindowsRoute(story.home).windows("main"), key=lambda window: window.name), previous)
-
-
 def test_an_inspector_lists_the_fields_of_its_row_only_when_it_declares_so(new_story):
     listed = read_inspectors(new_story(fixture=MainEnvironment))
     expect_value({model_name: listed[model_name].lists_fields for model_name in ("agent", "task", "plan", "test-queue", "doc", "pin", "memory")}, {

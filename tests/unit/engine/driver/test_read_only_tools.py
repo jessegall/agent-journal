@@ -1,11 +1,10 @@
-import json
 from pathlib import Path
+import json
 
-import pytest
-
-from engine.provider.provider import Provider
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from core.modules.codex.providers.codex_provider import CodexProvider
+from engine.provider.provider import Provider
+import pytest
 
 RECORDED = Path("tools/journal-hook/testdata/recorded")
 

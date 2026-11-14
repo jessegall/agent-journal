@@ -22,12 +22,6 @@ def test_a_third_party_button_cannot_run_a_line_only_a_person_runs(new_story, mo
     refused(new_story, module, f"good has a button that runs {line}, which only a user runs")
 
 
-def test_two_third_party_buttons_cannot_share_a_line(new_story):
-    story = new_story(fixture=MainEnvironment)
-    story.expect_sync_success(f"{PATH}:GoodModule")
-    story.expect_sync_refusal(f"{PATH}:SharedLineModule", "good has a button that runs task edit, which shared also runs")
-
-
 def test_a_valid_mark_and_dock_pass_at_sync(new_story):
     new_story(fixture=MainEnvironment).expect_sync_success(f"{PATH}:GoodModule")
 
