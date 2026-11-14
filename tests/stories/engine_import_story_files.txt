@@ -679,7 +679,6 @@ tests/stories/suites/coding/main_file_permissions.py
 tests/stories/suites/coding/modules/checks/checks.py
 tests/stories/suites/coding/modules/checks/library_checks.py
 tests/stories/suites/coding/modules/checks/task_wait_checks.py
-tests/stories/suites/coding/modules/workers/activity_reads.py
 tests/stories/suites/coding/modules/workers/agent_actions.py
 tests/stories/suites/coding/modules/workers/agents_retired_by_a_person_alone.py
 tests/stories/suites/coding/modules/workers/allowed_models.py

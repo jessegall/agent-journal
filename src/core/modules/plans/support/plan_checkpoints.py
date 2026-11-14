@@ -5,7 +5,6 @@ from engine.query.query import Query
 from core.modules.plans.conditions.plan_tasks_condition import PlanTasksCondition
 from core.modules.plans.models.phase_task import PhaseTask
 from core.modules.tasks.models.task import Task
-from engine.setting.setting_values import SettingValues
 from engine.repository.repository import Repository
 from core.modules.plans.models.checkpoint_pass import CheckpointPass
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
@@ -16,7 +15,6 @@ from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.support.checkpoint_branch_moves import CheckpointBranchMoves
 from core.modules.plans.support.checkpoint_windows import CheckpointWindows
 from core.modules.plans.support.early_run import EarlyRun
-from core.modules.plans.support.plan_settings import PERSON_WAIT_SETTING
 
 REACHES_REASON = "the checkpoint status shows the newest reach of every phase, read from every reach of the plan"
 
@@ -30,11 +28,12 @@ class PlanCheckpoints:
     completed again, and gets a new reach. The core runs no test: a suite ends the run of a reach. The last
     phase of a plan is always a checkpoint, so a plan is over once that one has passed. A window whose run on
     an agent's commit passed with the same tasks passes at the merge with no new run, unless it is the plan's
-    last window and the branch moved after that commit. When the setting to wait for the user is on, a
-    window whose run passed gets no pass until a user approves it."""
+    last window and the branch moved after that commit. A window whose checkpoint was made with a person check
+    gets no pass after its run passed until a user approves it; any other passes with its run, and a run that
+    passed before and still waits is passed at the next record."""
 
-    def __init__(self, queries: Queries, repository: Repository, moves: CheckpointBranchMoves, kept: KeptRows, settings: SettingValues) -> None:
-        self.queries, self.repository, self.moves, self.kept, self.settings = queries, repository, moves, kept, settings
+    def __init__(self, queries: Queries, repository: Repository, moves: CheckpointBranchMoves, kept: KeptRows) -> None:
+        self.queries, self.repository, self.moves, self.kept = queries, repository, moves, kept
 
     def windows(self, plan_id: int) -> CheckpointWindows:
         return self.kept.read_spanning(self.window_sources(plan_id), lambda: self.loaded_windows(plan_id), name="plans.checkpoint_windows")
@@ -70,7 +69,7 @@ class PlanCheckpoints:
         reaches = self.reaches(plan_id)
         running_phase_ids = self.running_phase_ids(reaches)
         run_tasks = {reach.phase_id: reach.tasks() for reach in reaches if reach.source.opens_phases() and reach.state is not CheckpointState.FAILED}
-        passed = self.passed_phase_ids(plan_id)
+        passed = self.release_unchecked(plan_id, windows, reaches, self.passed_phase_ids(plan_id), context)
         last_id = windows.checkpoint_phases()[-1].id
         for checkpoint in windows.checkpoint_phases():
             if not windows.is_reached(checkpoint) or checkpoint.id in running_phase_ids:
@@ -85,6 +84,14 @@ class PlanCheckpoints:
                 self.repository.save(CheckpointPass(creator_id=context.actor.id, plan_id=plan_id, phase_id=checkpoint.id, passed_at=context.timestamp), context)
             if completed and not passes_only and run_tasks.get(checkpoint.id) != completed:
                 self.repository.save(CheckpointReach.started(context.actor.id, plan_id, checkpoint.id, completed), context)
+
+    # a checkpoint whose run passed and that no person was set to check gets its pass, as one whose run passed after this change does
+    def release_unchecked(self, plan_id: int, windows: CheckpointWindows, reaches: tuple[CheckpointReach, ...], passed: frozenset[int], context: Context) -> frozenset[int]:
+        unchecked = frozenset(phase.id for phase in windows.phases if not phase.person_check)
+        released = self.waiting_ids(reaches, passed) & unchecked
+        for phase_id in released:
+            self.saved_pass(plan_id, phase_id, context)
+        return passed | released
 
     @staticmethod
     def agent_commit_pass(reaches: tuple[CheckpointReach, ...], phase_id: int, completed: tuple[int, ...]) -> CheckpointReach | None:
@@ -114,13 +121,17 @@ class PlanCheckpoints:
         return frozenset(reach.phase_id for reach in reaches if reach.state is CheckpointState.RUNNING)
 
     def save_pass(self, plan_id: int, phase_id: int, context: Context) -> bool:
-        if self.settings.flag(PERSON_WAIT_SETTING):
+        if self.queries.query(Phase).find(phase_id).person_check:
             return False
         return self.saved_pass(plan_id, phase_id, context)
 
+    @staticmethod
+    def waiting_ids(reaches: tuple[CheckpointReach, ...], passed: frozenset[int]) -> frozenset[int]:
+        return frozenset(reach.phase_id for reach in reaches if reach.source.opens_phases() and reach.state is CheckpointState.PASSED and reach.phase_id not in passed)
+
     def waiting_phase_ids(self, plan_id: int) -> frozenset[int]:
-        passed = self.passed_phase_ids(plan_id)
-        return frozenset(reach.phase_id for reach in self.reaches(plan_id) if reach.source.opens_phases() and reach.state is CheckpointState.PASSED and reach.phase_id not in passed)
+        person_checked = frozenset(self.queries.query(Phase).filter(plan_id=plan_id, person_check=True).pluck("id", int))
+        return self.waiting_ids(self.reaches(plan_id), self.passed_phase_ids(plan_id)) & person_checked
 
     def approve(self, plan_id: int, phase_id: int, context: Context) -> bool:
         return phase_id in self.waiting_phase_ids(plan_id) and self.saved_pass(plan_id, phase_id, context)

@@ -22,11 +22,11 @@ def test_a_second_dispatch_shows_only_its_worktree_totals_and_keeps_its_pace_on_
     worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet 2 3")
     story.expect_success('actor make user "Ada"')
     with server_story(story) as server:
-        expect_browser(server, "workerProgress.browser.mjs", [str(worker.id), story.clock.timestamp().text, "0 of 2 tasks", "", "new"])
+        expect_browser(server, "workerProgress.browser.mjs", [str(worker.id), story.clock.timestamp().text, "0 of 2", "", "new"])
         story.advance(timedelta(minutes=30))
         story.expect_success('task close 2 --outcome "Tax added"', actor=worker)
         story.expect_success("task start 3", actor=worker)
         story.expect_success(f"agent end {worker.id}")
         session = worker_session(story, worker)
         story.expect_success(f"agent start {session} claude worker --environment main --process-started-at {story.clock.timestamp().text}")
-        expect_browser(server, "workerProgress.browser.mjs", [str(worker.id), story.clock.timestamp().text, "1 of 2 tasks", "2 per hour", "resumed"])
+        expect_browser(server, "workerProgress.browser.mjs", [str(worker.id), story.clock.timestamp().text, "1 of 2", "2/hour", "resumed"])

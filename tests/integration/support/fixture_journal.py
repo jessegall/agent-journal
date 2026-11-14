@@ -110,6 +110,13 @@ class FixtureJournal(KitRows):
     def step(self, name: str, *arguments: object) -> object:
         return self.journal.step(name, *arguments)
 
+    def tick(self, session: str) -> HookReply:
+        return self.hook(session, HookSamples.tick())
+
+    def expect_no_text(self, line: str, *texts: str, actor: Actor | None = None) -> None:
+        answer = self.run(line, actor)
+        assert all(text not in answer.output_text for text in texts), (line, answer)
+
     def row(self, model: type, row_id: int):
         return self.container.get(Queries).query(model).find(row_id)
 

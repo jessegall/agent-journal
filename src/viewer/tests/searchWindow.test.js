@@ -26,6 +26,12 @@ test("typing terms shows the hits with their excerpt and the total", async () =>
     expect(element.querySelector("[data-total]").textContent).toBe("2 results match all these words: cart total");
 });
 
+test("a task result shows its state beside it and a document, which has none, shows nothing", async () => {
+    const {element} = await search({hits: [{cli_name: "task", id: 7, excerpt: "Round the cart total", state: "cancelled"}, {cli_name: "doc", id: 2, excerpt: "How the cart counts money"}], total: 2});
+    const rows = [...element.querySelectorAll("[data-reader-row]")];
+    expect(rows.map((row) => row.querySelector("[data-search-state]")?.textContent ?? "")).toEqual(["Cancelled", ""]);
+});
+
 const OPEN = /open=([a-z]+:\d+)/;
 const opened = () => decodeURIComponent(location.hash).match(OPEN)?.[1] ?? "";
 

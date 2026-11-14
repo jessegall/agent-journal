@@ -4,7 +4,6 @@ from engine.event.moved import Moved
 from engine.listener.rows.event_rows import EventRows
 from engine.listener.save_listener import SaveListener
 from engine.scope.actor_scope import ActorScope
-from engine.setting.setting_values import SettingValues
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
 from core.modules.plans.models.lifecycles.checkpoint_lifecycle import CheckpointLifecycle
 from core.modules.plans.models.phase import Phase
@@ -22,15 +21,15 @@ class CheckpointPassListener(SaveListener[Moved[CheckpointReach]]):
     """A reach whose tests passed opens the phases after its checkpoint: the pass is saved with it,
     each task of the run gets a log line, the main agent is told once for the checkpoint, and tasks
     completed in the window since the run started get a run of their own. An early run opens no
-    phase and tells nobody. When the setting to wait for the user is on, the pass is not saved and
+    phase and tells nobody. A checkpoint made with a person check gets no pass here and
     the main agent is told that a user must approve."""
 
     name = "plans.checkpoint-pass"
     moves = tuple([CheckpointLifecycle.passed])
     disabled_scopes = [ActorScope]
 
-    def __init__(self, bus: Bus, checkpoints: PlanCheckpoints, main_agents: PlanMainAgents, rows: EventRows, settings: SettingValues) -> None:
-        self.bus, self.checkpoints, self.main_agents, self.rows, self.settings = bus, checkpoints, main_agents, rows, settings
+    def __init__(self, bus: Bus, checkpoints: PlanCheckpoints, main_agents: PlanMainAgents, rows: EventRows) -> None:
+        self.bus, self.checkpoints, self.main_agents, self.rows = bus, checkpoints, main_agents, rows
 
     def handle(self, event: Moved[CheckpointReach], context: Context) -> None:
         reach = event.row

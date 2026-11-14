@@ -30,9 +30,10 @@ try {
 
     const items = page.locator("[data-reader-row]");
     await items.first().waitFor();
-    assert.ok((await items.count()) >= 2);
+    const before = await items.count();
+    assert.ok(before >= 2);
     await page.getByPlaceholder("Search the library").fill(searchWord);
-    await page.waitForFunction((count) => document.querySelectorAll("[data-reader-row]").length < count, await items.count());
+    await page.waitForFunction((count) => document.querySelectorAll("[data-reader-row]").length < count, before);
     assert.equal(await page.locator("[data-reader-row]").count(), 1);
 
     await items.first().click();

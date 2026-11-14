@@ -13,9 +13,11 @@ try {
     const card = page.locator(`[data-agent-open="${worker}"]`);
     await card.waitFor();
     await page.locator(".window-cover").waitFor({state: "detached"});
-    if (pace) await card.locator("[data-agent-list-pace]").waitFor();
-    if (pace) assert.equal((await card.locator("[data-agent-list-pace]").textContent()).trim(), pace);
-    else assert.equal(await card.locator("[data-agent-list-pace]").count(), 0);
+    await card.locator("[data-agent-count]").waitFor();
+    assert.ok((await card.locator("[data-agent-count]").textContent()).trim().startsWith(count), `the count says ${count}`);
+    if (pace) await card.locator("[data-agent-rate]").waitFor();
+    if (pace) assert.equal((await card.locator("[data-agent-rate]").textContent()).trim(), pace);
+    else assert.equal(await card.locator("[data-agent-rate]").count(), 0);
     await card.click();
     await card.locator("[data-agent-command]").waitFor();
     assert.equal(await card.locator("[data-agent-job], [data-agent-tasks], [data-agent-blocked-tasks]").count(), 0);

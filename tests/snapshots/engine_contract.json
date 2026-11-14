@@ -4236,7 +4236,8 @@
       "bases": [],
       "fields": [],
       "methods": [
-        "folders(self, project_root: Path) -> tuple[Path, ...]"
+        "folders(self, project_root: Path) -> tuple[Path, ...]",
+        "writable_folders(self) -> tuple[Path, ...]"
       ]
     },
     "file.rotated_file.RotatedFile": {
@@ -4437,6 +4438,7 @@
         "job_task_flag: ClassVar[str]",
         "line: ClassVar[str]",
         "command_types_setting: ClassVar[str]",
+        "refusal_hint: ClassVar[str]",
         "behaviours: ClassVar[HelperBehaviours]",
         "commands: ClassVar[CommandAllowList]",
         "journal_runs: ClassVar[tuple[str, ...]]"
@@ -4492,7 +4494,8 @@
         "job_task_flag: str",
         "line: str",
         "commands: CommandAllowList",
-        "command_types_setting: str"
+        "command_types_setting: str",
+        "refusal_hint: str"
       ],
       "methods": [
         "declared(cls, module: str, declaration: type[HelperType]) -> 'HelperTypeEntry'",
