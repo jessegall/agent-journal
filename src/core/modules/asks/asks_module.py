@@ -12,6 +12,9 @@ from core.modules.asks.commands.approve_ask_stack.approve_ask_stack_handler impo
 from core.modules.asks.commands.approve_ask_stack.approve_ask_stack_subcommand import ApproveAskStackSubcommand
 from core.modules.asks.commands.end_replaced_ask_stacks.end_replaced_ask_stacks_handler import EndReplacedAskStacksHandler
 from core.modules.asks.guards.agent_stack_guard import AgentStackGuard
+from core.modules.asks.guards.question_times_guard import QuestionTimesGuard
+from core.modules.asks.migrations.m003_ask_setting_keys import AskSettingKeysMigration
+from core.modules.asks.support.ask_settings import ASK_SETTINGS
 from core.modules.asks.listeners.ask_stack_listener import AskStackListener
 from core.modules.asks.support.helper_ask_facts import HelperAskFacts
 
@@ -25,12 +28,13 @@ class AsksModule(Module):
 
     name = "journal.core.asks"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.tasks"]
+    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.settings", "journal.core.tasks"]
     models = [ModelDeclaration(Ask, query=AskQuery, excluded_subcommands=BUILT), ModelDeclaration(AskStep, excluded_subcommands=BUILT), ModelDeclaration(AskStack, excluded_subcommands=BUILT)]
-    migrations = [AsksTablesMigration, AskStacksTableMigration]
+    migrations = [AsksTablesMigration, AskStacksTableMigration, AskSettingKeysMigration]
+    settings = ASK_SETTINGS
     ask_topics = [AskTopic("general", "go on with anything the task still holds, or stop")]
     bindings = {AskFacts: HelperAskFacts}
-    guards = [AgentStackGuard]
+    guards = [AgentStackGuard, QuestionTimesGuard]
     handlers = [ApproveAskStackHandler, EndReplacedAskStacksHandler]
     subcommands = [ApproveAskStackSubcommand]
     listeners = [AskStackListener]
