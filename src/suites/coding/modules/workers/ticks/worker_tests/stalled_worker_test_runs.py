@@ -1,6 +1,7 @@
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.container.container import Container
+from engine.database.kept_rows import KeptRows
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.setting.setting_values import SettingValues
@@ -55,8 +56,8 @@ class StalledWorkerTestRuns:
     # that has tests, and the reach is ended when the run has none to make.
     @staticmethod
     def start_reaches_with_no_tests(container: Container) -> None:
-        queries = container.get(Queries)
-        for reach in tuple(queries.query(CheckpointReach).filter(state=CheckpointState.RUNNING).every_row(RUNNING_REACHES_REASON)):
+        running = container.get(Queries).query(CheckpointReach).filter(state=CheckpointState.RUNNING)
+        for reach in container.get(KeptRows).read(running, lambda: tuple(running.every_row(RUNNING_REACHES_REASON)), name="workers.running_reaches"):
             container.get(Bus).run(StartCheckpointRun(reach.plan_id), Actor.core(), environment_id=reach.environment_id)
 
     @staticmethod
