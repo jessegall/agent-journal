@@ -6,6 +6,7 @@ import tempfile
 from collections import OrderedDict
 from collections.abc import Callable, Generator, Iterable, Iterator
 from contextlib import contextmanager
+from functools import lru_cache
 from pathlib import Path
 from threading import RLock
 from typing import IO, Any, ClassVar
@@ -18,6 +19,15 @@ from engine.file.versions.file_changes import FileChanges
 FILE_READ_EVENT = "journal.file.read"
 FILE_CHANGE_EVENT = "journal.file.write"
 CACHE_SIZE_FILES = 256
+RESOLVED_PATH_COUNT = 8192
+
+
+
+# the resolved form of a path, kept: resolving reads each folder of the path from disk, and a version is asked for
+# every skill and plugin file on every request; a symbolic link that changes after its first resolve is not seen
+@lru_cache(maxsize=RESOLVED_PATH_COUNT)
+def resolved_path(file: str) -> Path:
+    return Path(file).resolve()
 
 
 class FileAccess:
@@ -68,7 +78,7 @@ class FileAccess:
 
     @classmethod
     def version(cls, file: Path | str) -> FileVersion:
-        path = Path(file).resolve()
+        path = resolved_path(str(file))
         with cls.lock:
             status = path.stat()
             changes = cls.versions.get(path)

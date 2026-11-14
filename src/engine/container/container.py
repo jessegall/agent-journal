@@ -1,5 +1,5 @@
 import sys
-import traceback
+from types import FrameType
 from inspect import Parameter, signature
 from typing import TypeVar, get_type_hints
 
@@ -91,8 +91,18 @@ class Container:
             self.record_build(class_type)
         return class_type(**{name: self.get(hint) for name, hint in needed_values(class_type)})
 
+    # the callers that asked for a build, read from the frames alone: formatting a stack reads source lines from
+    # disk, which every build of every request would pay for
+    @staticmethod
+    def build_place(frame: FrameType | None) -> str:
+        places: list[str] = []
+        while frame is not None and len(places) < BUILD_PLACE_FRAMES:
+            places.append(f"{frame.f_code.co_filename}:{frame.f_lineno} in {frame.f_code.co_name}")
+            frame = frame.f_back
+        return "\n".join(places)
+
     def record_build(self, class_type: type) -> None:
-        place = "".join(traceback.format_stack(limit=BUILD_PLACE_FRAMES)[:-2])
+        place = self.build_place(sys._getframe(2))
         if self.is_sealed:
             raise LateResolveError(class_type, place)
         if class_type in self.build_places:
