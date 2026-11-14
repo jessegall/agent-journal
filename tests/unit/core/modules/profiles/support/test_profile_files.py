@@ -109,8 +109,9 @@ def test_remove_deletes_an_own_profile_and_refuses_a_module_profile(tmp_path):
     profiles.save(AgentProfile("critic", agent_type="helper"))
     profiles.remove("critic")
     assert not (tmp_path / PROFILE_FOLDER / "critic.md").exists()
-    with pytest.raises(Refusal, match="profile reset"):
+    with pytest.raises(Refusal, match="comes with a module") as refused:
         profiles.remove("module-reader")
+    assert "profile reset" in refused.value.suggestion
 
 
 @pytest.mark.parametrize("text", ["<<<<<<< ours\n=======\n>>>>>>> theirs", "---\nname critic\n---\nRead.", "---\nname: critic\nmodel: opus\n---\nRead."])

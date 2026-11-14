@@ -56,7 +56,7 @@ tests/unit/core/modules/processes/test_reader_offset.py
 tests/unit/core/modules/processes/test_remove_reader_request_marks.py
 tests/unit/core/modules/processes/test_test_reader_progress_migration.py
 tests/unit/core/modules/processes/test_vitest_listing_counts_migration.py
-tests/unit/core/modules/profiles/test_profile_files.py
+tests/unit/core/modules/profiles/support/test_profile_files.py
 tests/unit/core/modules/reviews/test_review_assignments_migration.py
 tests/unit/core/modules/search/support/test_search_outcomes.py
 tests/unit/core/modules/tasks/migrations/test_task_holder_any_actor_migration.py
@@ -134,7 +134,6 @@ tests/unit/engine/query/test_query_speed.py
 tests/unit/engine/query/test_query_walk.py
 tests/unit/engine/query/test_query_where.py
 tests/unit/engine/query/test_select.py
-tests/unit/engine/query/test_unscoped_reads.py
 tests/unit/engine/registry/test_registry.py
 tests/unit/engine/repository/test_repository.py
 tests/unit/engine/repository/test_repository_delete.py
@@ -142,6 +141,7 @@ tests/unit/engine/samples/sample_container.py
 tests/unit/engine/samples/scope_samples.py
 tests/unit/engine/samples/sync_sample.py
 tests/unit/engine/scope/test_scopes.py
+tests/unit/engine/scope/test_unscoped_reads.py
 tests/unit/engine/serving/test_server_files.py
 tests/unit/engine/serving/test_update_steps.py
 tests/unit/engine/testing/seeds/test_seeder.py

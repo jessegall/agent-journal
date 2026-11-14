@@ -14,7 +14,7 @@ from engine.skill.skill_digest import SkillDigest
 from engine.skill.skill_contents import FRONT_MATTER_MARK
 
 PLUGIN_KEY = "plugin"
-KEPT_SECONDS = 60
+CATALOGUE_CHECK_SECONDS = 60
 
 
 class SkillCatalogue:
@@ -48,7 +48,7 @@ class SkillCatalogue:
 
     def plugin_skills(self) -> list[SkillEntry]:
         folders = tuple(self.home.project_folder / program_folder for program_folder in reversed(self.providers.skill_folders()))
-        period = int(self.clock.timestamp().value.timestamp() // KEPT_SECONDS)
+        period = int(self.clock.timestamp().value.timestamp() // CATALOGUE_CHECK_SECONDS)
         return list(SkillCatalogue.kept_plugin_skills(folders, tuple(self.folder_version(folder) for folder in folders), period))
 
     @staticmethod

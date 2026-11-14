@@ -20,7 +20,7 @@ from engine.time.polled_wait import PolledWait
 from core.modules.environments.models.environment import Environment
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.support.base_commit import NAME_SEPARATOR, BaseCommit
-from suites.coding.modules.workers.support.contract_clashes import ContractClashes
+from suites.coding.modules.workers.support.contract_clashes import GIT_LIMIT_SECONDS, ContractClashes
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_update import WorktreeUpdate
 from engine.enums.file_status import FileStatus
@@ -33,7 +33,6 @@ from suites.coding.modules.workers.support.worker_folder_runs import WorkerFolde
 from suites.coding.modules.workers.support.merge_builds import MergeBuilds
 from suites.coding.support.worktree_checkouts import WORKTREES_FOLDER
 
-GIT_LIMIT_SECONDS = 60
 # another git of the worktree, such as the merge of the same worktree, holds its index for a while
 INDEX_LOCK_WAIT = PolledWait(limit_seconds=30, pause_seconds=0.5)
 INDEX_LOCK_TEXT = "index.lock"
