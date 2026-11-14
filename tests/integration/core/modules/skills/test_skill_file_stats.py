@@ -33,8 +33,8 @@ class SkillFileCounts:
 
 
 @pytest.fixture
-def started_story(new_story):
-    story = environment(new_story)
+def started_story(played):
+    story = environment(played)
     start(story)
     without_start_skills(story)
     return story

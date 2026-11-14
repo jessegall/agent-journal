@@ -15,8 +15,8 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.modules.developer.support.performance_fixture import DevelopmentToolsEnabled
 
 
-def developer_story(new_story):
-    return new_story(fixture=DevelopmentToolsEnabled)
+def developer_story(played):
+    return played(DevelopmentToolsEnabled)
 
 
 def warning_count(story):
@@ -64,8 +64,8 @@ def check_replacement_measurements(story):
     warn_after_ready(story)
 
 
-def test_performance_stays_quiet_through_start_restart_install_reload_and_tests_then_reports_points(new_story):
-    story = install_runner(developer_story(new_story))
+def test_performance_stays_quiet_through_start_restart_install_reload_and_tests_then_reports_points(played):
+    story = install_runner(developer_story(played))
     check_startup_measurements(story)
     check_restart_measurements(story)
     check_replacement_measurements(story)

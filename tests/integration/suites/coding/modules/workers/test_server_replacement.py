@@ -55,8 +55,8 @@ def pending_item(story, ticks, wanted: str) -> None:
                 changes.wait(min(POLL_SECONDS, max(0, deadline - time.monotonic())))
 
 
-def test_a_queued_proof_is_started_by_the_new_server_and_counts(new_story, monkeypatch):
-    story = new_story(fixture=OpenTaskOrchestrator)
+def test_a_queued_proof_is_started_by_the_new_server_and_counts(played, monkeypatch):
+    story = played(OpenTaskOrchestrator)
     installed_runner(story)
     story.advance(datetime.now(timezone.utc) - story.clock.timestamp().value)
     monkeypatch.setenv("JOURNAL_HOME", str(story.home.folder.resolve()))

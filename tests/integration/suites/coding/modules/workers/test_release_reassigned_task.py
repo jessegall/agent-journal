@@ -7,8 +7,8 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from engine.testing.expectations.expect_row import expect_row
 
 
-def test_releasing_the_first_worker_leaves_the_second_workers_started_task_unchanged(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
+def test_releasing_the_first_worker_leaves_the_second_workers_started_task_unchanged(played):
+    story = played(OpenTaskOrchestrator)
     repository = repository_environment(story)
     first_worker = dispatched_worker(story)
     story.expect_success('task release 1 --reason "another worker will take it"', actor=first_worker)

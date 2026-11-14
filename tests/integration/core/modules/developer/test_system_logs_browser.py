@@ -7,8 +7,8 @@ from tests.stories.server.support.server_client import server_story
 from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 
-def test_system_logs_page_in_a_real_browser(new_story):
-    story = new_story(fixture=HookRecordingEnabled)
+def test_system_logs_page_in_a_real_browser(played):
+    story = played(HookRecordingEnabled)
     story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     with server_story(story) as server:
         path = story.home.system_log

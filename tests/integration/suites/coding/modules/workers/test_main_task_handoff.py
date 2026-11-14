@@ -27,8 +27,8 @@ def refused(handoff, worktree, patch) -> bool:
 
 
 @pytest.mark.real_git
-def test_s53_assigned_main_task_goes_to_new_worker(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
+def test_s53_assigned_main_task_goes_to_new_worker(played):
+    story = played(OpenTaskOrchestrator)
     repository, worker = worker_with_main_progress(story)
     handoff = story.container.get(MainTaskHandoff)
     patch = handoff.saved(str(repository.folder), 1, tuple(["cart.py"]))
@@ -40,8 +40,8 @@ def test_s53_assigned_main_task_goes_to_new_worker(new_story):
 
 
 @pytest.mark.real_git
-def test_s53_failed_handoff_preserves_main_and_unrelated_edits(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
+def test_s53_failed_handoff_preserves_main_and_unrelated_edits(played):
+    story = played(OpenTaskOrchestrator)
     repository, worker = worker_with_main_progress(story)
     handoff = story.container.get(MainTaskHandoff)
     patch = handoff.saved(str(repository.folder), 1, tuple(["cart.py"]))

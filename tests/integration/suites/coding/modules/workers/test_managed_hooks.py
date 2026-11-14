@@ -8,8 +8,8 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import C
 from tests.stories.support.story_checks import expect_answers, expect_program_hooks
 
 
-def test_a_new_worktree_strips_committed_hooks_and_keeps_the_shared_store_unchanged(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
+def test_a_new_worktree_strips_committed_hooks_and_keeps_the_shared_store_unchanged(played):
+    story = played(OpenTaskOrchestrator)
     repository = repository_environment(story)
     name = ".claude/settings.json"
     settings = {"permissions": {"allow": ["Bash(ls)"]}, "hooks": {

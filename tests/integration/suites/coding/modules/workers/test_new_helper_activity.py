@@ -10,8 +10,8 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
 
-def test_the_inactive_helper_rule_run_right_after_a_dispatch_does_not_name_the_new_worker(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
+def test_the_inactive_helper_rule_run_right_after_a_dispatch_does_not_name_the_new_worker(played):
+    story = played(OpenTaskOrchestrator)
     repository_environment(story)
     story.advance(timedelta(minutes=31))
     event = HookEvent.parsed(HookSamples.tick().with_fields(session="s-1", firing="check", fired_at_ms=0).body)
