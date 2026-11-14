@@ -39,7 +39,7 @@ from core.modules.drivers.models.hook_call import DISPLAYED_MESSAGE_ID, DISPLAYE
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from engine.driver.nudger import Nudger
 from engine.driver.search_category import SearchCategory
-from core.modules.drivers.support.suite_choice import SuiteChoice
+from core.modules.drivers.support.actor_loader import ActorLoader
 from engine.module.driver_entries import DRIVERS_MODULE
 from core.modules.agents.support.agent_label import AgentLabel
 
@@ -57,22 +57,20 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     command = RecordHookCall
     runs_once = True
 
-    def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository, choice: SuiteChoice,
-                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare, compaction_end: CompactionEndPercent, hook_calls: HookCallQuery) -> None:
-        self.home, self.share, self.compaction_end, self.hook_calls = home, share, compaction_end, hook_calls
+    def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository,
+                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare, compaction_end: CompactionEndPercent, hook_calls: HookCallQuery, loader: ActorLoader) -> None:
+        self.home, self.share, self.compaction_end, self.hook_calls, self.loader = home, share, compaction_end, hook_calls, loader
         self.event_rows = event_rows
         self.system_log = system_log
         self.required_commands = required_commands
         self.agents = agents
         self.nudges, self.nudger = nudges, nudger
         self.bus, self.database, self.queries, self.repository = bus, database, queries, repository
-        self.choice, self.history, self.timing, self.providers = choice, history, timing, providers
+        self.history, self.timing, self.providers = history, timing, providers
 
     def handle(self, command: RecordHookCall, context: Context) -> HookReply:
         agent = self.agents.find(command.agent_id)
-        suite, driver = self.choice.suite(), self.choice.driver(agent.role)
-        hook = AgentHook(command.event, agent.id, agent.environment_id, agent.role, driver.name if driver is not None else "", context.timestamp,
-                         suite=suite.name if suite is not None else "", access=agent.access)
+        hook = AgentHook.of_actor(command.event, self.loader.loaded(agent), context.timestamp)
         answers = command.answers
         self.history.record(agent.id, answers, context)
         self.timing.stamp("history_recorded")
@@ -102,7 +100,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         call = self.repository.save(HookCall(session_agent_id=agent.id, creator_id=context.actor.id, hook=command.event.event,
                                              firing=command.event.firing, tool=tool.name if tool is not None else "", summary=self.summary(command, displayed_text),
                                              writes_files=tool is not None and tool.is_writing_files(), lines_added=tool.lines_added if tool is not None else 0,
-                                             lines_removed=tool.lines_removed if tool is not None else 0, suite=suite.name if suite is not None else "",
+                                             lines_removed=tool.lines_removed if tool is not None else 0, suite=hook.suite,
                                              driver=hook.driver, answer=HookAnswer.REFUSED if answers.refusal else HookAnswer.ALLOWED, refusal=answers.refusal,
                                              lines="\n".join(nudge.text for nudge in lines), updated_input=json.dumps(dict(answers.updated_input)),
                                              metadata=Metadata({DRIVERS_MODULE: metadata})), context)
