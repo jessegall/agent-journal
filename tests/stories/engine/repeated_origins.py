@@ -41,8 +41,8 @@ def test_a_file_read_twice_is_refused_with_the_file_and_the_place_that_read_it(n
     path = tmp_path / "notes.md"
     path.write_text("First draft")
     with pytest.raises(RepeatedCallsError) as raised, story.repeated_work.request():
-        FileAccess.shared().read(path)
-        FileAccess.shared().read(path)
+        FileAccess.read(path)
+        FileAccess.read(path)
     refusal_text = str(raised.value)
     first_read, repeated_read = refusal_text.split("first read: ")[1].split("\nrepeated read:\n")
     expect_value(refusal_text.splitlines()[0], f"one request read file twice: {path.resolve()}")
@@ -54,6 +54,6 @@ def test_a_file_read_twice_by_an_allowed_reader_is_not_refused(new_story, tmp_pa
     story = new_story()
     path = tmp_path / "manifest.md"
     path.write_text("First draft")
-    reader = compile("FileAccess.shared().read(path)\nFileAccess.shared().read(path)\n", f"/source/{ALLOWED_READER}", "exec")
+    reader = compile("FileAccess.read(path)\nFileAccess.read(path)\n", f"/source/{ALLOWED_READER}", "exec")
     with story.repeated_work.request():
         exec(reader, {"FileAccess": FileAccess, "path": path})

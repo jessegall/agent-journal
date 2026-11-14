@@ -15,7 +15,7 @@ class OverviewModule(Module):
     name = "journal.core.overview"
     seed_reason = "it keeps no rows"
     move_reason = "version 4 kept no rows for its overview that version 5 needs"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.settings", "journal.core.drivers"]
     nudges = OVERVIEW_NUDGES
     driver_rules = [OverviewFirstRule, OverviewCompactionRule]

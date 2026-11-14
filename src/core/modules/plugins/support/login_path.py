@@ -23,21 +23,21 @@ class LoginPath:
         self.file = home.folder / "runtime" / "login-path"
 
     def value(self) -> str:
-        return self.kept(self.file, FileAccess.shared().version(self.file)) if self.file.is_file() else os.pathsep.join(FALLBACK_FOLDERS)
+        return self.kept(self.file, FileAccess.version(self.file)) if FileAccess.is_file(self.file) else os.pathsep.join(FALLBACK_FOLDERS)
 
     @staticmethod
     @lru_cache(maxsize=8)
     def kept(file: Path, version: FileVersion) -> str:
-        return FileAccess.shared().read(file)
+        return FileAccess.read(file)
 
     def read_shell(self) -> None:
         path = self.shell_path()
         if path and path != self.value():
-            self.file.parent.mkdir(parents=True, exist_ok=True)
-            FileAccess.shared().write(self.file, path)
+            FileAccess.mkdir(self.file.parent, parents=True, exist_ok=True)
+            FileAccess.write(self.file, path)
 
     def fill_missing(self) -> None:
-        if not self.file.is_file():
+        if not FileAccess.is_file(self.file):
             self.read_shell()
 
     @staticmethod

@@ -20,7 +20,8 @@ CHANGED_TASKS_REASON = "every changed task may reach a checkpoint of its plan"
 
 class CheckpointReachListener(CommitListener[Moved[Task]]):
     """A task of a started plan that is closed or cancelled may complete the window of a checkpoint: the
-    checkpoints of its plan are looked at once for the closed tasks of one commit."""
+    checkpoints of its plan are looked at once for the closed tasks of one commit; the runner prepares the events of each
+    environment in turn, so each preparation adds to the places the earlier ones found."""
 
     name = "plans.checkpoint-reach"
     moves = (TaskLifecycle.close, TaskLifecycle.cancel)
@@ -34,11 +35,12 @@ class CheckpointReachListener(CommitListener[Moved[Task]]):
     def prepare(self, events: Sequence[LoggedEvent]) -> None:
         places = tuple(self.queries.query(PlanTask).matching(Among("task_id", [event.row_id for event in events])).every_row(CHANGED_TASKS_REASON))
         plans = {plan.id: plan for plan in self.queries.query(Plan).find_many(sorted({place.plan_id for place in places}))}
-        self.places = {place.task_id: place for place in places if plans[place.plan_id].state is PlanState.STARTED}
-        self.recorded_plan_ids = set[int]()
+        if not self.places:
+            self.recorded_plan_ids = set[int]()
+        self.places.update({place.task_id: place for place in places if plans[place.plan_id].state is PlanState.STARTED})
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
-        place = self.places.get(event.row.id)
+        place = self.places.pop(event.row.id, None)
         if place is None or place.plan_id in self.recorded_plan_ids:
             return
         self.recorded_plan_ids.add(place.plan_id)

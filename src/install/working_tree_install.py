@@ -27,7 +27,7 @@ class WorkingTreeInstall(CodeHandover):
 
     def run(self, source: Path) -> float:
         BuiltBundles(source).require_current()
-        RunDrain(self.home).wait()
+        RunDrain(self.home).drain()
         try:
             return super().run(source)
         finally:

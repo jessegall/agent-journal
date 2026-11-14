@@ -14,6 +14,8 @@ from engine.database.statement import Statement
 from engine.journal.journal_home import JournalHome
 from engine.model.tables import Tables
 from engine.registry.registry import Registry
+from engine.setting.setting_source import SettingSource
+from tests.unit.engine.samples.sample_settings import SampleSettings
 from engine.time.timestamp import Timestamp
 
 TIMESTAMP = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
@@ -33,6 +35,7 @@ def sample_container(folder: Path, registry: Registry) -> Container:
     container.bind(JournalHome, home)
     container.bind(Database, database)
     container.bind(Registry, registry)
+    container.bind(SettingSource, SampleSettings())
     return container
 
 

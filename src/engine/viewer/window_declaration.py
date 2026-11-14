@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from collections.abc import Mapping, Sequence
 from dataclasses import field, dataclass
 from pathlib import Path
@@ -65,7 +66,7 @@ class WindowDeclaration:
 
     def problems(self, module_name: str, web_folder: Path, provided: RegistryLines) -> list[str]:
         problems = DeclarationNames.prefix_problems(f"the window {self.name}", self.name, module_name)
-        if self.loading is not WindowLoading.DOCUMENT and not (web_folder / self.entry).exists():
+        if self.loading is not WindowLoading.DOCUMENT and not FileAccess.exists(web_folder / self.entry):
             problems.append(f"{self.name} loads {self.entry}, which is not in its module's web/dist")
         problems += [f"{self.name} reads {line}, which is no read subcommand" for line in self.reads if line not in provided.reads]
         problems += [f"{self.name} runs {line}, which is no command" for line in self.runs if line not in provided.runs]

@@ -52,7 +52,7 @@ class ServerFiles:
 
     def acquire_lock(self) -> bool:
         opened = ExitStack()
-        lock_file = opened.enter_context(FileAccess.shared().writer(self.lock, "a"))
+        lock_file = opened.enter_context(FileAccess.writer(self.lock, "a"))
         try:
             fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
@@ -84,18 +84,18 @@ class ServerFiles:
     def clear_leftover_socket(self) -> None:
         if self.lock_file is None:
             raise ServerFilesError("only the server that holds the lock removes a leftover socket")
-        self.socket.unlink(missing_ok=True)
+        FileAccess.unlink(self.socket, missing_ok=True)
 
     def restrict_socket(self) -> None:
-        os.chmod(self.socket, SOCKET_FILE_MODE)
+        FileAccess.chmod(self.socket, SOCKET_FILE_MODE)
 
     def write_pid(self) -> None:
-        FileAccess.shared().write(self.pid_file, str(os.getpid()))
+        FileAccess.write(self.pid_file, str(os.getpid()))
 
     def remove_server_files(self) -> None:
-        if self.pid_file.exists() and FileAccess.shared().read(self.pid_file).strip() == str(os.getpid()):
-            self.socket.unlink(missing_ok=True)
-            self.pid_file.unlink(missing_ok=True)
+        if FileAccess.exists(self.pid_file) and FileAccess.read(self.pid_file).strip() == str(os.getpid()):
+            FileAccess.unlink(self.socket, missing_ok=True)
+            FileAccess.unlink(self.pid_file, missing_ok=True)
 
     # Moves a log past its limit aside as server.log.1, and points the output the starter opened on the
     # old file at the new one; only the server that holds the lock calls it.
@@ -106,14 +106,14 @@ class ServerFiles:
         self.system_log.write(level, text, LogSource.SERVER)
 
     def write_tunnel_pid(self, pid: int) -> None:
-        FileAccess.shared().write(self.tunnel_pid_file, str(pid))
+        FileAccess.write(self.tunnel_pid_file, str(pid))
 
     def tunnel_pid(self) -> int | None:
-        text = FileAccess.shared().read(self.tunnel_pid_file).strip() if self.tunnel_pid_file.is_file() else ""
+        text = FileAccess.read(self.tunnel_pid_file).strip() if FileAccess.is_file(self.tunnel_pid_file) else ""
         return int(text) if text.isdigit() else None
 
     def clear_tunnel_pid(self) -> None:
-        self.tunnel_pid_file.unlink(missing_ok=True)
+        FileAccess.unlink(self.tunnel_pid_file, missing_ok=True)
 
     def phase(self) -> ServerPhase:
         if self.is_recent(self.maintenance) or self.is_recent(self.restart_mark):
@@ -124,7 +124,7 @@ class ServerFiles:
 
     def is_recent(self, mark: Path) -> bool:
         try:
-            return self.clock.epoch_seconds() - mark.stat().st_mtime < MARK_RECENT_SECONDS
+            return self.clock.epoch_seconds() - FileAccess.stat(mark).st_mtime < MARK_RECENT_SECONDS
         except FileNotFoundError:
             return False
 
@@ -132,31 +132,31 @@ class ServerFiles:
         self.blocked_sessions().append(session)
 
     def blocked_sessions(self) -> AppendLog:
-        return AppendLog(self.held_sessions_file, self.held_sessions_file.with_suffix(".released"), FileAccess.shared())
+        return AppendLog(self.held_sessions_file, self.held_sessions_file.with_suffix(".released"), FileAccess())
 
     def mark_maintenance(self) -> None:
-        FileAccess.shared().write(self.maintenance, str(os.getpid()))
+        FileAccess.write(self.maintenance, str(os.getpid()))
 
     def clear_maintenance(self) -> None:
-        self.maintenance.unlink(missing_ok=True)
+        FileAccess.unlink(self.maintenance, missing_ok=True)
 
     def mark_restart(self) -> None:
-        FileAccess.shared().write(self.restart_mark, str(os.getpid()))
+        FileAccess.write(self.restart_mark, str(os.getpid()))
 
     def clear_restart(self) -> None:
-        self.restart_mark.unlink(missing_ok=True)
-        self.start_mark.unlink(missing_ok=True)
+        FileAccess.unlink(self.restart_mark, missing_ok=True)
+        FileAccess.unlink(self.start_mark, missing_ok=True)
 
     def mark_run_lock(self) -> None:
-        FileAccess.shared().write(self.run_lock, str(os.getpid()))
+        FileAccess.write(self.run_lock, str(os.getpid()))
 
     def clear_run_lock(self) -> None:
-        self.run_lock.unlink(missing_ok=True)
+        FileAccess.unlink(self.run_lock, missing_ok=True)
 
     def clear_dead_run_lock(self) -> None:
-        if not self.run_lock.is_file():
+        if not FileAccess.is_file(self.run_lock):
             return
-        text = FileAccess.shared().read(self.run_lock).strip()
+        text = FileAccess.read(self.run_lock).strip()
         if not (text.isdigit() and ServerRestartState.is_running(text)):
             self.clear_run_lock()
 

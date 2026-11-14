@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import hashlib
 from dataclasses import dataclass
 from pathlib import Path
@@ -25,6 +26,10 @@ class JournalHome:
     @property
     def database(self) -> Path:
         return self.folder / "version-5.db"
+
+    @property
+    def database_files(self) -> list[Path]:
+        return [self.database, *(self.database.with_name(f"{self.database.name}{suffix}") for suffix in ("-wal", "-shm"))]
 
     @property
     def panic_file(self) -> Path:
@@ -91,6 +96,10 @@ class JournalHome:
         return self.folder / "server-restarting"
 
     @property
+    def booting_mark(self) -> Path:
+        return self.folder / ".booting"
+
+    @property
     def run_lock(self) -> Path:
         return self.folder / "run-lock"
 
@@ -127,7 +136,7 @@ class JournalHome:
 
     def status_file(self, session: str) -> Path:
         running = self.status_folder / f"{session}.json"
-        return running if running.is_file() else self.status_folder / ENDED_STATUS_FOLDER / f"{session}.json"
+        return running if FileAccess.is_file(running) else self.status_folder / ENDED_STATUS_FOLDER / f"{session}.json"
 
     @property
     def program_table(self) -> Path:

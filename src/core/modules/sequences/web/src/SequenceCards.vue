@@ -1,62 +1,61 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, Dialog, RowCards, removed, useWindow} from "@journal/window-kit";
+import {Btn, ListReaderLayout, PageHeader, Skeleton, useWindow} from "@journal/window-kit";
+import AbandonRun from "./AbandonRun.vue";
+import AddTrigger from "./AddTrigger.vue";
+import EditSteps from "./EditSteps.vue";
 import NewSequence from "./NewSequence.vue";
-import SequenceRuns from "./SequenceRuns.vue";
-import SequenceSteps from "./SequenceSteps.vue";
-import SequenceTriggers from "./SequenceTriggers.vue";
-import {startWords} from "./sequenceTriggers.js";
+import SequenceReader from "./SequenceReader.vue";
+import {sequenceItems} from "./sequenceItems.js";
+import {rowLine, runsOf} from "./sequenceWords.js";
 
+// the sequences as a list and a reader: each row is the number, the title and how many steps it has and what starts it, and while it runs a quiet Running badge.
+// A sequence started in the viewer is run by the main agent. A dialog is open for one thing at a time: a new sequence, its steps, a trigger or a run to give up.
+const LIST_WIDTH = 460;
 const view = useWindow();
-const {rows, data, failure, loaded, act} = view.props.board;
+const {rows, data, failure, loaded, act, actionFailure} = view.props.board;
 const runs = computed(() => data.value?.runs ?? []);
-const drafting = ref(false);
-const openedId = ref(null);
-const deleting = ref(false);
-const refusal = ref("");
-const footOf = (row) => `${row.steps.length} steps · ${runningCount(row) ? `${runningCount(row)} running now` : startWords(JSON.parse(row.triggers || "[]"))[0]}`;
-const opened = computed(() => rows.value.find((row) => row.id === openedId.value) || null);
-const openedRuns = computed(() => runs.value.filter((run) => run.sequence_id === openedId.value));
-const runningCount = (row) => runs.value.filter((run) => run.sequence_id === row.id).length;
-
-function open(row) {
-    refusal.value = "";
-    deleting.value = false;
-    openedId.value = row.id;
-}
-
-async function remove() {
-    if (!deleting.value) return void (deleting.value = true);
-    const answer = await act(["sequence", "delete", String(openedId.value)], removed(openedId.value));
-    refusal.value = answer.ok ? "" : answer.error;
-    if (answer.ok) openedId.value = null;
-}
+const items = computed(() => rows.value.map((row) => ({id: row.id, title: `${row.id} ${row.title}`, desc: rowLine(row, runs.value), row, running: runsOf(row, runs.value).length > 0})));
+const chosen = ref(null);
+const dialog = ref(null);
+const ask = (kind, sequence, run = null) => (dialog.value = {kind, sequence, run});
+const menuOf = (sequence, open = null) => sequenceItems(sequence, runs.value, {act, ask, open});
+const place = (item) => ({head: `Sequence ${item.id}`, items: menuOf(item.row, () => (chosen.value = item.id))});
 </script>
 
 <template>
-    <RowCards term="sequence" icon="list" :rows="rows" :failure="failure" :loaded="loaded" :head="(row) => `Sequence ${row.id}`" :title="(row) => row.title" :foot="footOf" @new="drafting = true" @open="open">
-        <template v-if="drafting">
-            <NewSequence @close="drafting = false" />
+    <ListReaderLayout v-model:chosen="chosen" :items="items" :list-width="LIST_WIDTH" :place="place" empty-title="No sequences yet" pick-line="Choose a sequence" data-sequences>
+        <template #top>
+            <PageHeader title="Sequences" :count="rows.length">
+                <template #primary><Btn small variant="primary" data-sequence-new @click="ask('new')">New sequence</Btn></template>
+            </PageHeader>
+            <template v-if="failure || actionFailure">
+                <p class="failure" role="alert" data-sequences-failure>{{ failure || actionFailure }}</p>
+            </template>
+            <template v-if="dialog?.kind === 'new'"><NewSequence @close="dialog = null" /></template>
+            <template v-else-if="dialog?.kind === 'copy'"><NewSequence :title="`${dialog.sequence.title} copy`" :steps="[...dialog.sequence.steps]" @close="dialog = null" /></template>
+            <template v-else-if="dialog?.kind === 'steps'"><EditSteps :sequence="dialog.sequence" @close="dialog = null" /></template>
+            <template v-else-if="dialog?.kind === 'trigger'"><AddTrigger :sequence="dialog.sequence" @close="dialog = null" /></template>
+            <template v-else-if="dialog?.kind === 'abandon'"><AbandonRun :run="dialog.run" @close="dialog = null" /></template>
         </template>
-        <template v-if="opened">
-            <Dialog padded :title="opened.title" tall @close="openedId = null">
-                <SequenceTriggers :sequence="opened" />
-                <SequenceSteps :sequence="opened" :runs="openedRuns" />
-                <SequenceRuns :runs="openedRuns" />
-                <template #foot>
-                    <span class="note" role="status">{{ refusal }}</span>
-                    <Btn variant="danger" data-sequence-delete @click="remove">{{ deleting ? "Delete it for good" : "Delete" }}</Btn>
-                    <Btn data-sequence-done @click="openedId = null">Done</Btn>
-                </template>
-            </Dialog>
+        <template #empty>
+            <template v-if="!loaded"><Skeleton shape="rows" /></template>
+            <template v-else>A sequence is steps an agent works through in order.</template>
         </template>
-    </RowCards>
+        <template #meta="{item}">
+            <template v-if="item.running"><span class="badge-quiet" data-sequence-running>Running</span></template>
+        </template>
+        <template #reader="{item}">
+            <SequenceReader :sequence="item.row" :runs="runs" :items="menuOf(item.row)" @abandon="ask('abandon', item.row, $event)" />
+        </template>
+    </ListReaderLayout>
 </template>
 
 <style scoped>
-.note {
-    flex: 1;
-    color: var(--text-3);
+.failure {
+    margin: 0;
+    padding: 6px var(--inset);
+    color: var(--bad, var(--text-2));
     font-size: 12px;
 }
 </style>

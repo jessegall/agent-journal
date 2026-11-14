@@ -43,7 +43,7 @@ class RefreshPluginConfigHandler(Handler[RefreshPluginConfig, Plugin]):
             if problems:
                 raise Refusal(f"the {plugin.name} config does not fit its schema: {'; '.join(problems)}", "change the values at those places")
             self.write(file, given_text)
-        if given_text is None and not file.is_file():
+        if given_text is None and not FileAccess.is_file(file):
             return plugin
         text = given_text if given_text is not None else self.read(file)
         digest = SkillDigest.digest(text)
@@ -61,13 +61,13 @@ class RefreshPluginConfigHandler(Handler[RefreshPluginConfig, Plugin]):
 
     @staticmethod
     def read(file: Path) -> str:
-        return FileAccess.shared().read(file) if file.is_file() else "null"
+        return FileAccess.read(file) if FileAccess.is_file(file) else "null"
 
     @staticmethod
     def given_text(command: RefreshPluginConfig, file: Path) -> str | None:
         if not command.changes:
             return command.document_text
-        document: object = json.loads(FileAccess.shared().read(file)) if file.is_file() else {}
+        document: object = json.loads(FileAccess.read(file)) if FileAccess.is_file(file) else {}
         for pointer, value in command.changes:
             document = JsonPointer.with_value(document, pointer, value)
         return json.dumps(document, indent=2) + "\n"
@@ -79,7 +79,7 @@ class RefreshPluginConfigHandler(Handler[RefreshPluginConfig, Plugin]):
         return manifest.config
 
     def schema(self, config: ManifestConfig) -> JsonSchema:
-        schema = json.loads(FileAccess.shared().read(self.home.project_folder / config.schema))
+        schema = json.loads(FileAccess.read(self.home.project_folder / config.schema))
         if not is_string_mapping(schema):
             raise Refusal(f"the schema {config.schema} is not a JSON object", "fix the plugin's schema file")
         return JsonSchema(schema)
@@ -95,5 +95,5 @@ class RefreshPluginConfigHandler(Handler[RefreshPluginConfig, Plugin]):
     @staticmethod
     def write(file: Path, text: str) -> None:
         staging_file = file.with_name(f".{file.name}.writing")
-        FileAccess.shared().write(staging_file, text)
-        os.replace(staging_file, file)
+        FileAccess.write(staging_file, text)
+        FileAccess.replace(staging_file, file)

@@ -306,7 +306,7 @@ class EditLockOverlay(Overlay):
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def open_rows(self, agent_id: int) -> Sequence[OpenRow]:
+    def open_agent_rows(self, agent_id: int) -> Sequence[OpenRow]:
         return [OpenRow("edit_lock", lock.id, lock.updated_at) for lock in self.queries.query(EditLock).filter(agent_id=agent_id, state=EditLockState.OPEN).every_row(TEST_ROWS_REASON)]
 
 
@@ -359,7 +359,7 @@ SAMPLE_SETTINGS = [SettingValue(key, key.replace("-", " ").capitalize(), "Whethe
 
 class SamplesModule(Module):
     name = "samples"
-    requires_core = ">=5.0,<6"
+    requires_engine = ">=5.0,<6"
     settings = SAMPLE_SETTINGS
     dependencies = ["journal.core.agents", "journal.core.drivers"]
     models = [ModelDeclaration(EditLock, commands=[EditLockEnd, EditLockReopen])]

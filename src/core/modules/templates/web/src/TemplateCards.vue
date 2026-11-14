@@ -1,116 +1,71 @@
 <script setup>
-import {Icon, Skeleton, TimeAgo, useOpenRow, useWindow, ListTools, useListTools} from "@journal/window-kit";
+import {computed, ref} from "vue";
+import {Btn, FilterBar, ListReaderLayout, PageHeader, Skeleton, TimeAgo, applyFilter, defaultFilter, optionsOf, useWindow} from "@journal/window-kit";
+import SendTemplate from "./SendTemplate.vue";
+import TemplateForm from "./TemplateForm.vue";
+import TemplateReader from "./TemplateReader.vue";
+import {KIND_WORDS, isOwn} from "./templateForms.js";
 
+// the templates as a list and a reader: a row is the number and the title, its description under it and how long ago it was made, with no word for its kind (the title says it).
+// Use opens Send it on a row, and Edit is offered only for a template a user made, never for one a module published
+const LIST_WIDTH = 460;
 const view = useWindow();
 const {rows, failure, loaded} = view.props.templates;
-const tools = useListTools(rows, {title: (row) => row.title});
-const {opened, toggle} = useOpenRow();
+const fields = computed(() => [{key: "applies", label: "Applies to", options: optionsOf(rows.value, (row) => row.targets, (kind) => KIND_WORDS[kind] ?? kind), get: (row) => row.targets}]);
+const filter = ref(defaultFilter(fields.value));
+const words = ref("");
+const shown = computed(() => applyFilter(rows.value, fields.value, filter.value, words.value, ["title", "brief", "purpose"]));
+const items = computed(() => shown.value.map((row) => ({id: row.id, title: `${row.id} ${row.title}`, desc: row.brief, row})));
+const chosen = ref(null);
+const dialog = ref(null);
+const ask = (kind, template = null) => (dialog.value = {kind, template});
+const place = (item) => ({
+    head: `Template ${item.id}`,
+    items: [
+        {label: "Use", group: "open", run: () => ask("send", item.row)},
+        ...(isOwn(item.row) ? [{label: "Edit", group: "own", run: () => ask("edit", item.row)}] : []),
+    ],
+});
 </script>
 
 <template>
-    <div class="cards">
-        <template v-if="!loaded">
-            <Skeleton shape="cards" />
+    <ListReaderLayout v-model:chosen="chosen" :items="items" :list-width="LIST_WIDTH" :place="place" empty-title="No templates yet" pick-line="Choose a template" data-templates>
+        <template #top>
+            <PageHeader title="Templates" :count="rows.length">
+                <template #primary><Btn small variant="primary" data-template-new @click="ask('new')">New template</Btn></template>
+            </PageHeader>
+            <FilterBar v-model="filter" v-model:words="words" :fields="fields" :rows="rows" :shown="shown.length" placeholder="Search templates" />
+            <template v-if="failure">
+                <p class="failure" role="alert" data-templates-failure>{{ failure }}</p>
+            </template>
+            <template v-if="dialog?.kind === 'new'"><TemplateForm @close="dialog = null" /></template>
+            <template v-else-if="dialog?.kind === 'edit'"><TemplateForm :template="dialog.template" @close="dialog = null" /></template>
+            <template v-else-if="dialog?.kind === 'send'"><SendTemplate :template="dialog.template" @close="dialog = null" /></template>
         </template>
-        <template v-else-if="failure">
-            <p class="cards-note">{{ failure }}</p>
+        <template #empty>
+            <template v-if="!loaded"><Skeleton shape="rows" /></template>
+            <template v-else>A template is a shape for a task, a plan or a review.</template>
         </template>
-        <template v-else-if="loaded && !rows.length">
-            <p class="cards-note">No templates yet</p>
+        <template #meta="{item}">
+            <TimeAgo class="age" :at="item.row.created_at" />
         </template>
-        <ListTools :tools="tools" />
-        <template v-for="row in tools.shown.value" :key="row.id">
-            <button type="button" :class="['card', {open: opened === row.id}]" :data-row="row.id" @click="toggle(row)">
-                <span class="card-head"><Icon name="board" class="card-icon" /> Template {{ row.id }}<TimeAgo class="card-age" :at="row.created_at" /></span>
-                <span class="card-title">{{ row.title }}</span>
-                <span class="card-origin">{{ row.module ? `Module: ${row.module}` : "Written by a user" }}</span>
-                <span class="card-brief">{{ row.brief }}</span>
-                <template v-if="opened === row.id">
-                    <ul class="card-steps">
-                        <template v-for="part in row.parts" :key="part">
-                            <li>{{ part }}</li>
-                        </template>
-                        <template v-for="command in row.commands" :key="command">
-                            <li>Runs at each phase end: <code>{{ command }}</code></li>
-                        </template>
-                    </ul>
-                </template>
-                <span class="card-foot">For {{ row.targets.length ? row.targets.join(", ") : "any item" }}{{ row.purpose ? ` · ${row.purpose}` : "" }}</span>
-            </button>
+        <template #reader="{item}">
+            <TemplateReader :template="item.row" @send="ask('send', item.row)" @edit="ask('edit', item.row)" />
         </template>
-    </div>
+    </ListReaderLayout>
 </template>
 
 <style scoped>
-.cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 12px;
-    align-content: start;
-    padding: 16px 20px;
-}
-
-.card {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-height: 130px;
-    padding: 14px 16px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--surface);
-    color: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-.card:hover,
-.card.open {
-    border-color: var(--border-strong, var(--border));
-}
-
-.card-head {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    color: var(--text-2);
-    font-size: 13px;
-}
-
-.card-icon {
-    width: 14px;
-    height: 14px;
-}
-
-.card-title {
-    font-weight: 600;
-}
-
-.card-origin,
-.card-brief {
-    color: var(--text-2);
-    font-size: 13px;
-}
-
-.card-steps {
-    margin: 0;
-    padding-left: 18px;
-    color: var(--text-2);
-    font-size: 13px;
-    line-height: 1.6;
-}
-
-.card-foot {
-    margin-top: auto;
+.age {
     color: var(--text-3);
     font-size: 12px;
+    white-space: nowrap;
 }
 
-.cards-note {
+.failure {
     margin: 0;
-    color: var(--text-2);
-}
-.card-age {
-    margin-left: auto;
+    padding: 6px var(--inset);
+    color: var(--bad, var(--text-2));
+    font-size: 12px;
 }
 </style>

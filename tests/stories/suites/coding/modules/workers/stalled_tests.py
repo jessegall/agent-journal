@@ -9,10 +9,12 @@ from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
 from suites.coding.modules.workers.ticks.unlaunched_worker_test_runs import UnlaunchedWorkerTestRuns
 from suites.coding.modules.workers.workers_module import WorkersModule
+from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
-from tests.stories.suites.coding.modules.workers.test_queue import PROOF, recording_launch
+from tests.stories.suites.coding.modules.workers.test_queue import PROOF, recording_launch, stalled_tick
+from tests.stories.core.support.agent_labels import agent_number
 
 RUNNING = "the tests of task 1 are running"
 
@@ -39,16 +41,33 @@ def test_a_queued_test_a_server_update_left_behind_is_started_by_the_tick(two_ta
     story.expect_text("proof show 1", "state: running", actor=story.agent)
 
 
-def test_a_proof_run_past_the_limit_is_ended_marked_stuck_and_the_worker_and_the_main_agent_are_told(two_tasks):
+# The worker committed task 1, so the test of its proof runs.
+@pytest.fixture
+def running_proof(two_tasks):
     story, worker, _ = two_tasks
     story.expect_success(COMMIT, actor=worker)
     story.run_listeners()
     story.expect_text("proof show 1", "state: running", actor=story.agent)
+    return two_tasks
+
+
+def test_a_proof_run_past_the_limit_is_ended_marked_stuck_and_the_worker_and_the_main_agent_are_told(running_proof):
+    story, worker, _ = running_proof
     story.advance(timedelta(minutes=31))
     StalledWorkerTestRuns()(story.container)
     story.expect_text("proof show 1", "state: short", "stuck: the run went past 30 minutes", actor=story.agent)
     story.expect_text(f"agent-line list --agent {worker.id}", "Your tests failed")
     story.expect_rows(any("went past 30 minutes and was ended as stuck" in line.text for line in story.story_rows(MergerLine)), detail=str([line.text for line in story.story_rows(MergerLine)]))
+
+
+def test_a_running_proof_of_a_removed_worktree_is_left_alone_by_the_tick(two_tasks):
+    story, worker, _ = two_tasks
+    story.expect_success(COMMIT, actor=worker)
+    story.run_listeners()
+    story.expect_success(f'worker release {agent_number(story, worker.id)} "not needed" --abandon "the story drops the work"', actor=story.agent)
+    story.advance(timedelta(minutes=31))
+    story.run_tick_handler("stalled worker tests")
+    story.expect_absent("proof show 1", "stuck", actor=story.agent)
 
 
 def test_a_proof_with_a_test_the_main_agent_checked_needs_no_run_and_the_worker_goes_on(two_tasks):
@@ -104,3 +123,12 @@ def test_385_386_the_two_ticks_of_waiting_test_runs_are_named_for_test_runs(new_
     story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_rows({StalledWorkerTestRuns.__name__, UnlaunchedWorkerTestRuns.__name__} <= minute_tick_names())
     story.expect_rows(not {"StalledWorkerTests", "UnlaunchedWorkerTests"} & minute_tick_names())
+
+
+def test_a_worktree_released_with_its_test_running_ends_that_test_and_the_tick_goes_on(running_proof):
+    story, worker, _ = running_proof
+    story.expect_success(f'worker release {agent_number(story, worker.id)} "the cart moved on" --abandon "the cart is done another way"', actor=story.agent)
+    story.run_listeners()
+    story.expect_text("proof show 1", "state: short", "was abandoned or removed while this test waited or ran", actor=story.agent)
+    stalled_tick(story)
+    story.expect_text("proof show 1", "state: short", actor=story.agent)

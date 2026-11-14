@@ -16,6 +16,6 @@ const choose = (event) => emit("update:modelValue", props.choices.find((choice) 
 </template>
 
 <style scoped>
-.setting-choice { height: 28px; padding: 0 10px; border: 1px solid var(--border-2); border-radius: 7px; background: var(--bg); color: var(--text); font: inherit; font-size: 12px; }
+.setting-choice { height: 28px; padding: 0 10px; border: 1px solid var(--border-2); border-radius: 7px; background-color: var(--bg); color: var(--text); font: inherit; font-size: 12px; }
 .setting-choice:focus-visible { border-color: var(--accent); outline: 0; }
 </style>

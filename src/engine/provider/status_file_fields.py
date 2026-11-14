@@ -17,5 +17,5 @@ class StatusFileFields:
     @staticmethod
     @lru_cache(maxsize=STATUS_CACHE_SIZE)
     def read(path: Path, version: FileVersion) -> Mapping[str, object]:
-        fields: object = json.loads(FileAccess.shared().read(path) or "{}")
+        fields: object = json.loads(FileAccess.read(path) or "{}")
         return fields if is_text_mapping(fields) else {}

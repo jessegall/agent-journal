@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 DATABASE = "journal.db"
@@ -12,4 +13,4 @@ class VersionFour:
         self.journal = journal
 
     def exists(self) -> bool:
-        return (self.journal / DATABASE).exists() or (self.journal / CODE_FOLDER).is_dir()
+        return FileAccess.exists(self.journal / DATABASE) or FileAccess.is_dir(self.journal / CODE_FOLDER)

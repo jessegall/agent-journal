@@ -29,7 +29,7 @@ class TranscriptionsModule(Module):
 
     name = "journal.core.transcriptions"
     move_reason = "version 4 had no transcriptions"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.documents", "journal.core.mcp"]
     skills = [SkillDeclaration("journal-transcriptions", "Turn a transcript into summaries, notes, documents, tasks or plans linked back to it; read it when a transcription arrives or is edited",
                                keywords=("transcription", "transcriptions", "transcript"), commands=["transcription"], types=["main"])]

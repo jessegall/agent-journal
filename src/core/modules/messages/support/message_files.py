@@ -27,13 +27,13 @@ class MessageFiles:
         folder = self.home.message_files(message.id)
         path = folder / name
         root = self.home.message_files(0).parent.resolve()
-        if folder.resolve() != root / str(message.id) or path.resolve().parent != folder.resolve() or not path.is_file():
+        if folder.resolve() != root / str(message.id) or path.resolve().parent != folder.resolve() or not FileAccess.is_file(path):
             raise Refusal("this message attachment is unavailable")
-        return FileAccess.shared().binary(path)
+        return FileAccess.binary(path)
 
     def check(self, pending: tuple[str, ...]) -> tuple[str, ...]:
         for file in pending:
-            if not PENDING_PATTERN.match(file) or not self.pending_path(file).is_file():
+            if not PENDING_PATTERN.match(file) or not FileAccess.is_file(self.pending_path(file)):
                 raise Refusal(f"no uploaded file {file}", "upload it again")
         names = tuple(file.split("/", 1)[1] for file in pending)
         if len(set(names)) != len(names):
@@ -42,7 +42,7 @@ class MessageFiles:
 
     def attach(self, message_id: int, pending: tuple[str, ...]) -> None:
         folder = self.home.message_files(message_id)
-        folder.mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(folder, parents=True, exist_ok=True)
         for file in pending:
-            shutil.move(str(self.pending_path(file)), str(folder / file.split("/", 1)[1]))
-            self.pending_path(file).parent.rmdir()
+            FileAccess.move(str(self.pending_path(file)), str(folder / file.split("/", 1)[1]))
+            FileAccess.rmdir(self.pending_path(file).parent)

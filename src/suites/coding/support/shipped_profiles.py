@@ -5,7 +5,7 @@ from core.modules.helpers.types.reader_commands import ReaderCommands
 from suites.coding.support.profile_commands import READ_COMMANDS, DOCUMENT_COMMANDS, REPORT_COMMANDS, PLAN_COMMANDS, PLAN_REVIEW_COMMANDS, WORKER_COMMANDS
 
 HELPER_SKILLS = ("journal", "journal-messages", "journal-memory", "journal-shell", "journal-tasks", "journal-helpers", "journal-documents")
-PLANNER_SKILLS = (*HELPER_SKILLS, "journal-plans", "journal-planning", "journal-plan-review-applying", "journal-sequences")
+PLANNER_SKILLS = (*HELPER_SKILLS, "journal-plans", "journal-planning", "journal-plan-review-applying", "journal-task-cleanup", "journal-sequences")
 DESIGN_SKILLS = (*HELPER_SKILLS, "journal-functional-design", "journal-user-stories", "journal-sequences")
 PLAN_REVIEW_SKILLS = (*HELPER_SKILLS, "journal-plans", "journal-planning")
 MERGER_SKILLS = (*HELPER_SKILLS, "journal-dispatching-workers", "journal-merger")

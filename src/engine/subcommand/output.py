@@ -11,17 +11,18 @@ from engine.model.table import stored
 from engine.model.tables import Tables
 from engine.row.page import Page
 from engine.errors.refusal import Refusal
-from engine.types.type_guards import is_frozenset, is_mapping, is_tuple
+from engine.types.type_guards import is_frozenset, is_list, is_mapping, is_tuple
 
 LIST_HIDDEN_COLUMNS = ("version", "metadata", "created_at", "updated_at", "creator_id", "environment_id")
 
 
 class Output:
     """Prints what a command gives back: plain lines for a user, or one JSON value with --json. A row a
-    write gave back prints as the confirmation of what that write touched."""
+    write gave back prints as the confirmation of what that write touched; a terminal reader may be shown colour
+    codes."""
 
-    def __init__(self, tables: Tables, json_output: bool, stream: TextIO) -> None:
-        self.tables, self.json_output, self.stream = tables, json_output, stream
+    def __init__(self, tables: Tables, json_output: bool, stream: TextIO, is_terminal: bool = False) -> None:
+        self.tables, self.json_output, self.stream, self.is_terminal = tables, json_output, stream, is_terminal
         self.confirmation = ""
 
     # the reader of a streamed answer that hung up, such as a terminal stopped with Ctrl+C
@@ -78,7 +79,7 @@ class Output:
             return sorted(str(item) for item in value)
         if is_mapping(value):
             return {str(key): self.json_value(item) for key, item in value.items()}
-        if is_tuple(value):
+        if is_tuple(value) or is_list(value):
             return [self.json_value(item) for item in value]
         return stored(value)
 

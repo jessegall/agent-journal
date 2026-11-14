@@ -1,0 +1,84 @@
+/* Rounds sixteen and seventeen, the windows: Questions, Reminders, card pages, Teams. Every colour is a viewer token. */
+
+/* ---------- the agent chip: never capped, never cut ---------- */
+.r16-agent { display: inline-flex; align-items: center; gap: 4px; flex: none; height: 18px; padding: 0 6px; border-radius: 4px; background: var(--chip);
+  color: var(--text-2); font-size: 11px; font-weight: 500; line-height: 18px; white-space: nowrap; }
+.r16-agent .ico { flex: none; color: var(--text-3); }
+.r16-quiet { color: var(--text-4); font-size: 11.5px; white-space: nowrap; }
+
+/* ---------- 1. the Questions window ---------- */
+.q16-list { display: flex; flex-direction: column; height: 100%; min-height: 0; overflow-y: auto; }
+/* one inset: the bar's chevron and the card's edge start at the same x */
+.q16-list .r16-bar { padding-left: var(--inset); }
+.q16-list .r16-chev { margin-left: -2px; }
+.q16-cards { display: flex; flex-direction: column; gap: 10px; padding: 12px var(--inset) 14px; }
+.q16-card { display: flex; flex-direction: column; gap: 9px; padding: 11px 12px 12px; border: 1px solid var(--border); border-radius: var(--r); background: var(--bg-2); }
+/* a done card is quiet by its colours, so its text keeps a readable contrast */
+.q16-card.done { gap: 6px; padding: 9px 12px; background: none; }
+.q16-card.done .q16-text { color: var(--text-2); font-size: 12.5px; font-weight: 400; }
+.q16-card.done .q16-answer { color: var(--text-3); }
+.q16-head { display: flex; align-items: center; gap: 7px; min-width: 0; height: 22px; }
+.q16-n { flex: none; padding: 0; border: 0; background: none; color: var(--text-3); font: inherit; font-size: 11.5px; font-variant-numeric: tabular-nums; cursor: pointer; }
+.q16-n:hover { color: var(--text); text-decoration: underline; }
+.q16-ref { flex: none; padding: 0; border: 0; background: none; color: var(--accent-text); font: inherit; font-size: 11.5px; cursor: pointer; }
+.q16-ref:hover { text-decoration: underline; }
+/* the time always ends at the card's right edge; More stands before it */
+.q16-time { flex: none; margin-left: 2px; color: var(--text-3); font-size: 11.5px; font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+.q16-more { width: 22px; height: 22px; margin: 0; }
+.q16-text { margin: 0; color: var(--text); font-size: 13.5px; font-weight: 500; line-height: 1.45; }
+.q16-context { margin: 0; color: var(--text-3); font-size: 12.5px; line-height: 1.5; }
+/* options are plain rows inside the card: no box in a box */
+.q16-options { display: flex; flex-direction: column; gap: 0; margin: 0 -8px; }
+.q16-option { display: flex; align-items: center; gap: 9px; width: 100%; min-height: 30px; padding: 5px 8px; border: 0; border-radius: var(--r-sm);
+  background: none; color: var(--text); font: inherit; font-size: 12.5px; text-align: left; cursor: pointer; transition: background .12s; }
+.q16-option:hover { background: var(--hover); }
+.q16-option:focus-visible { outline: 0; box-shadow: inset 0 0 0 1px var(--accent); }
+.q16-option[aria-checked="true"] { background: var(--sel); }
+.q16-ring { flex: none; width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--text-3); }
+.q16-option[aria-checked="true"] .q16-ring { box-shadow: inset 0 0 0 1.5px var(--accent), inset 0 0 0 4px var(--bg), inset 0 0 0 6px var(--accent); }
+.q16-otext { flex: 0 1 auto; min-width: 0; }
+/* the recommended option carries a mark right after its words */
+.q16-rec { display: inline-flex; flex: none; color: var(--accent-text); }
+.q16-form { display: flex; align-items: center; gap: 6px; }
+.q16-input { flex: 1; min-width: 0; height: 28px; }
+.q16-form .btn.primary:disabled { opacity: .7; }
+.q16-answer { display: flex; align-items: flex-start; gap: 6px; margin: 0; color: var(--text-2); font-size: 12.5px; }
+.q16-answer .ico { flex: none; margin-top: 2px; color: var(--good); }
+.q16-card[data-state="closed"] .q16-answer .ico { color: var(--text-4); }
+
+/* ---------- 2. Reminders (121393): every row one height ----------
+   line one: number, the title in at most two lines ending in an ellipsis, the next time at the right edge;
+   line two: the repeat rule and the hold mark, whole and never cut, the agent chip at its right end.
+   The row's own spans join one grid (display: contents), so the right column lines up on every row. */
+.r16-rem { display: contents; }
+.r16-rem .lrow.r6 { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: 36px 18px; grid-template-areas: "num title when" ". rule who";
+  column-gap: 10px; row-gap: 4px; align-items: start; height: auto; padding: 9px var(--inset) 9px var(--inset); }
+.r16-rem .lrow.r6 .r6-main, .r16-rem .lrow.r6 .r6-meta { display: contents; }
+.r16-rem .lrow.r6 .r7-n { grid-area: num; line-height: 18px; }
+.r16-rem .lrow.r6 .t { grid-area: title; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; min-width: 0; max-height: 36px; overflow: hidden;
+  line-height: 18px; white-space: normal; text-overflow: ellipsis; overflow-wrap: anywhere; }
+.r16-rem .lrow.r6 .d { grid-area: rule; display: flex; align-items: center; gap: 8px; min-width: 0; margin: 0; overflow: visible; color: var(--text-3); font-size: 12px; line-height: 18px; white-space: nowrap; }
+.r16-rem .lrow.r6 .r16-next { grid-area: when; justify-self: end; line-height: 18px; }
+.r16-rem .lrow.r6 .r16-agent { grid-area: who; justify-self: end; }
+.r16-next { color: var(--text-2); font-size: 11.5px; font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+.r16-rule { flex: none; }
+.r16-holds { display: inline-flex; align-items: center; gap: 3px; flex: none; color: var(--warn); font-size: 11.5px; }
+
+/* ---------- 3. cards: one set of lines in one place on every card; sized to content; the grid fills the width ---------- */
+.r16-cards .cg { max-width: none; }
+.r16-cards .cg, .r16-cards .cg-grid { overflow: visible; }
+.r16-cards .cg-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important; align-items: start; padding-top: 4px; }
+.r16-card { gap: 6px; }
+.r16-card-head { align-items: flex-start; gap: 8px; }
+.r16-card-state { display: flex; align-items: center; gap: 6px; min-height: 18px; margin-top: 2px; color: var(--text-3); font-size: 12px; line-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.r16-card-state .sep { color: var(--text-4); }
+.r16-card-line { margin: 0; overflow: hidden; color: var(--text-3); font-size: 12px; line-height: 18px; white-space: nowrap; text-overflow: ellipsis; }
+.r16-card-line .mono { font-size: 11.5px; }
+.r16-fault { padding: 6px 10px; font-size: 12px; }
+.r16-corner { display: inline-flex; flex: none; margin-left: 8px; }
+/* the foot: its one waiting action starts on the card's text edge, Actions ends on its right edge */
+.r16-card-foot { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+/* a request or a proposal on a card: one plain line, not a box in the card */
+.r16-card .r16-ask { display: flex; align-items: center; gap: 8px; min-width: 0; margin: 0; color: var(--text-2); font-size: 12px; line-height: 18px; }
+.r16-card .r16-ask > .r16-why { flex: 1; min-width: 0; overflow: hidden; color: var(--text-3); text-overflow: ellipsis; white-space: nowrap; }
+.r16-card .r16-ask .mono { color: var(--text); }

@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import hashlib
 import os
 import shutil
@@ -25,16 +26,18 @@ class PluginStaging:
         self.home, self.releases, self.executor = home, releases, executor
 
     def folder(self, source: str) -> Path:
-        if Path(source).is_dir():
+        if FileAccess.is_dir(Path(source)):
             return Path(source)
         return self.home.folder / STAGING_FOLDER / hashlib.sha256(source.encode()).hexdigest()
 
     def fetched(self, source: str) -> Path:
+        if FileAccess.is_dir(Path(source)):
+            return self.folder(source)
+        return self.fetched_tag(source, self.releases.newest_tag(source))
+
+    def fetched_tag(self, source: str, tag: str | None) -> Path:
         folder = self.folder(source)
-        if Path(source).is_dir():
-            return folder
         self.cleared(source)
-        tag = self.releases.newest_tag(source)
         branch = ["--branch", tag] if tag else []
         command = ["git", "clone", "--quiet", "--depth", "1", *branch, self.releases.address(source), str(folder)]
         try:
@@ -46,5 +49,5 @@ class PluginStaging:
         return folder
 
     def cleared(self, source: str) -> None:
-        if not Path(source).is_dir():
-            shutil.rmtree(self.folder(source), ignore_errors=True)
+        if not FileAccess.is_dir(Path(source)):
+            FileAccess.rmtree(self.folder(source), ignore_errors=True)

@@ -45,9 +45,9 @@ async function onPeople(status = {}, extra = {}) {
 const tabNames = (element) => [...element.querySelectorAll("[data-teams-tabs] button")].map((button) => button.textContent.replace(/\s+\d+$/, "").trim());
 
 test("an admin sees the People tab and a role that may not administer sees none", async () => {
-    expect(tabNames(await mounted(TeamsPage, window()))).toEqual(["Library", "On this journal", "Users"]);
-    expect(tabNames(await mounted(TeamsPage, window({role: "edit"})))).toEqual(["Library", "On this journal"]);
-    expect(tabNames(await mounted(TeamsPage, window({role: "read"})))).toEqual(["Library", "On this journal"]);
+    expect(tabNames(await mounted(TeamsPage, window()))).toEqual(["Library", "Shared from here", "Users"]);
+    expect(tabNames(await mounted(TeamsPage, window({role: "edit"})))).toEqual(["Library", "Shared from here"]);
+    expect(tabNames(await mounted(TeamsPage, window({role: "read"})))).toEqual(["Library", "Shared from here"]);
 });
 
 test("the People tab lists the users with their roles and marks a removed user", async () => {

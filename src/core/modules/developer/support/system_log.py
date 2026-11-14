@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from itertools import chain
 
 from engine.journal.journal_home import JournalHome
@@ -21,7 +22,7 @@ class SystemLog:
         number, size = max(1, number), min(200, max(1, size))
         offset = (number - 1) * size
         log = self.home.system_log
-        readers = [LogFileLines(path) for path in (log, log.with_name(log.name + ".1")) if path.is_file()]
+        readers = [LogFileLines(path) for path in (log, log.with_name(log.name + ".1")) if FileAccess.is_file(path)]
         matching: list[LogLine] = []
         for line in chain.from_iterable(reader.newest_first() for reader in readers):
             if filters.matches(line):

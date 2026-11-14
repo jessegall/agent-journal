@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import os
 from pathlib import Path
 
@@ -8,17 +9,17 @@ class FolderStat:
     @staticmethod
     def modified_time(folder: Path) -> float:
         try:
-            return folder.stat().st_mtime
+            return FileAccess.stat(folder).st_mtime
         except FileNotFoundError:
             return 0.0
 
     @staticmethod
     def bytes(folder: Path) -> int:
         total = 0
-        for parent, _, names in os.walk(folder):
+        for parent, _, names in FileAccess.walk_folders(folder):
             for name in names:
                 try:
-                    total += os.lstat(os.path.join(parent, name)).st_size
+                    total += FileAccess.lstat(os.path.join(parent, name)).st_size
                 except FileNotFoundError:
                     continue
         return total

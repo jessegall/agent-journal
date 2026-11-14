@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"os"
+	"strings"
 	"testing"
 )
 
@@ -48,5 +50,20 @@ func TestTheRequestCarriesTheCurrentProcessSeparatelyFromTheRunnerMarker(t *test
 	request := NewCliRequest([]string{"worker-operation", "run", "3"}, lookup, "/work")
 	if request.Variables["JOURNAL_PROCESS"] != "12" || request.Variables["JOURNAL_RUNNER_PROCESS"] != "7" {
 		t.Fatalf("the current process and runner marker were not preserved: %v", request.Variables)
+	}
+}
+
+func TestARequestWritingToAFileThatIsNoTerminalSaysSo(t *testing.T) {
+	file, err := os.CreateTemp(t.TempDir(), "answer")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+	if NewCliRequest(nil, func(string) (string, bool) { return "", false }, "").WritingTo(file).Terminal {
+		t.Fatal("a plain file was taken for a terminal")
+	}
+	body, _ := NewCliRequest(nil, func(string) (string, bool) { return "", false }, "").WritingTo(&strings.Builder{}).Body()
+	if strings.Contains(string(body), "terminal") {
+		t.Fatalf("body %s names a terminal", body)
 	}
 }

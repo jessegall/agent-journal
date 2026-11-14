@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import os
 import subprocess
 import sys
@@ -25,13 +26,13 @@ class InstallJournal:
         self.home = JournalHome(project / ".journal")
 
     def run(self) -> int:
-        if VersionFour(self.home.folder).exists() and not self.home.database.exists():
+        if VersionFour(self.home.folder).exists() and not FileAccess.exists(self.home.database):
             print(ANSWER, file=sys.stderr)
             return REFUSED
-        if self.home.database.exists() and self.entry_point().exists():
+        if FileAccess.exists(self.home.database) and FileAccess.exists(self.entry_point()):
             print(f"version 5 is already installed in {self.home.folder}; nothing changed")
             return INSTALLED
-        self.home.folder.mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(self.home.folder, parents=True, exist_ok=True)
         try:
             CodeReplacement(self.home).run([self.copy_code, self.sync])
         except Refusal as refusal:

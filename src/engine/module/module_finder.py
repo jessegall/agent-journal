@@ -12,7 +12,7 @@ from engine.module.module import Module
 from engine.module.errors.module_error import ModuleError
 from engine.module.suite_list import SuiteList
 from engine.module.version_requirement import VersionRequirement
-from engine.version.version import CORE_VERSION
+from engine.version.version import ENGINE_VERSION
 from engine.types.type_guards import is_list, is_tuple
 
 DEFAULT_MODULE_LISTS = [DottedPath("core.modules:DEFAULT_MODULES"), DottedPath("suites:DEFAULT_SUITES"), DottedPath("tunnels:DEFAULT_TUNNELS")]
@@ -62,12 +62,12 @@ class ModuleFinder:
                 and item.__module__ == module.__module__ and module in item.modules]
 
     def plugin_paths(self) -> tuple[str, ...]:
-        if not self.home.module_list.exists():
+        if not FileAccess.exists(self.home.module_list):
             return ()
-        version = FileAccess.shared().version(self.home.module_list)
+        version = FileAccess.version(self.home.module_list)
         if version in self.plugin_lists:
             return self.plugin_lists[version]
-        listed: object = json.loads(FileAccess.shared().read(self.home.module_list))
+        listed: object = json.loads(FileAccess.read(self.home.module_list))
         if not is_list(listed):
             raise ModuleError(f"{self.home.module_list} must list module paths, such as [\"reviews.module:ReviewsModule\"]")
         paths: list[str] = []
@@ -99,6 +99,6 @@ class ModuleFinder:
     def module(self, value: object, source: str) -> type[Module]:
         if not isinstance(value, type) or not issubclass(value, Module):
             raise ModuleError(f"{source} names {value!r}, which is no module")
-        if not VersionRequirement(value.requires_core).allows(CORE_VERSION):
-            raise ModuleError(f"module {value.name} needs core {value.requires_core}, and this core is {'.'.join(map(str, CORE_VERSION))}")
+        if not VersionRequirement(value.requires_engine).allows(ENGINE_VERSION):
+            raise ModuleError(f"module {value.name} needs engine {value.requires_engine}, and this engine is {'.'.join(map(str, ENGINE_VERSION))}: install a version of the module built for this engine")
         return value

@@ -43,7 +43,7 @@ and `--summary <pattern>` too. The other requirements depend on the command:
   command chain is judged separately.
 
 `--count` captures the total in one number group. Without a group it counts matching lines. An optional
-Your suite can use `--count-command <line>` to count tests before a queued run gets a spot. `{part}` is
+Your suite can use `--count-command <line>` to count tests before a run waiting in its lane starts. `{part}` is
 replaced with that part's command, not the whole chain; alias environment variables are not included, so
 put any variables the listing needs in its command.
 

@@ -9,7 +9,7 @@ from engine.model.model import Model
 from engine.time.timestamp import MINUTE_SECONDS, Timestamp
 from engine.time.duration import Duration
 from core.modules.processes.models.enums.process_state import ProcessState
-from core.modules.processes.models.enums.queue_priority import QueuePriority
+from engine.enums.execution_priority import ExecutionPriority
 from core.modules.processes.models.lifecycles.process_lifecycle import OPEN, ProcessLifecycle
 
 FINISHED_PROGRESS = 100
@@ -55,7 +55,10 @@ class Process(EnvironmentScoped, Model):
     timeout_seconds: int | None = None
     expired_at: Timestamp | None = None
     sandbox_level: SandboxLevel = SandboxLevel.NONE
-    priority: QueuePriority = QueuePriority.NORMAL
+    priority: ExecutionPriority = ExecutionPriority.NORMAL
+    execution_class: str = ""
+    first_priority: ExecutionPriority = ExecutionPriority.AGENT
+    raised_at: Timestamp | None = None
 
     def ending_phrase(self) -> str:
         if self.expired_at is not None:
@@ -100,6 +103,11 @@ class Process(EnvironmentScoped, Model):
     @property
     def is_journal_merge(self) -> bool:
         return self.run_name == ProcessType.MERGE.value
+
+    # A merge hook the journal started after a merge: not a line any agent ran.
+    @property
+    def is_merge_hook(self) -> bool:
+        return self.run_name == ProcessType.MERGE_HOOK.value
 
     def finish(self, timestamp: Timestamp, actor: Actor, exit_code: int) -> "Process":
         return self.moved(ProcessLifecycle.finish, exit_code=exit_code, ended_at=timestamp, queued_at=None, slot_assigned=False, progress=FINISHED_PROGRESS)

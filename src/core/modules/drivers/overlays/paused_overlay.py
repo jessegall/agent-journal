@@ -7,8 +7,9 @@ from core.modules.drivers.rules.paused_agent_rule import PausedAgentRule
 
 
 class PausedOverlay(Overlay):
-    """A paused agent, or a helper of one: its tools are refused and every ordinary rule is silent, so it
-    may stop, is given no new work and is told nothing until it is resumed."""
+    """A paused agent, or any agent it started, a worker or a helper, and theirs in turn: its tools are refused
+    and every ordinary rule is silent, so it may stop, is given no new work and is told nothing until it is
+    resumed."""
 
     name = "drivers.paused"
     exclusive = True
@@ -19,7 +20,6 @@ class PausedOverlay(Overlay):
     def __init__(self, agents: AgentRows) -> None:
         self.agents = agents
 
-    def open_rows(self, agent_id: int) -> Sequence[OpenRow]:
-        agent = self.agents.find(agent_id)
-        holder = self.agents.find(agent.parent_id) if self.agents.has_read_access(agent) and agent.parent_id is not None else agent
+    def open_agent_rows(self, agent_id: int) -> Sequence[OpenRow]:
+        holder = self.agents.pause_holder(agent_id)
         return [OpenRow("agent", holder.id, holder.paused_at)] if holder.paused_at is not None else []

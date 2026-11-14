@@ -73,7 +73,7 @@ class Console:
         self.environment_names, self.resolver, self.aliases, self.handoff, self.events, self.scopes = environment_names, resolver, aliases, handoff, events, scopes
 
     def run(self, argv: list[str], caller: Caller, stream: TextIO, request: CallerRequest = CallerRequest()) -> int:
-        output = Output(self.tables, "--json" in argv, stream)
+        output = Output(self.tables, "--json" in argv, stream, request.is_terminal)
         try:
             argv = self.read_limit_bypass.applied(argv, caller)
             self.registry.require_current(self.fingerprint.text(self.finder.modules()))

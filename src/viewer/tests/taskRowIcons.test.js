@@ -54,6 +54,16 @@ test("the agent column shows the agent icon, solid when it holds the task and da
     expect(element.querySelector('[data-row="3"] [data-task-icons] .cell.empty')).not.toBeNull();
 });
 
+test("a task a rule gave names the rule after the agent in its tooltip, and a click opens the rule", async () => {
+    location.hash = "";
+    const element = await drawn([task({id: 1, assigned_actor_id: 12, assigned_name: "Joan Clarke", assignment_reason: "by rule 4: complexity is at least 4", assignment_ref: "assign_rules:4"})]);
+    const given = cell(element, 1, "data-task-agent");
+    expect(tipOf(await hovered(given))[0]).toBe("Worker 12 by rule 4: complexity is at least 4");
+    given.click();
+    await settle();
+    expect(decodeURIComponent(location.hash)).toContain("assign_rules:4");
+});
+
 test("the complexity column shows five rising bars filled to the score, amber from 4, with the score's meaning in its tooltip", async () => {
     const element = await drawn([task({id: 1, complexity: 3}), task({id: 2, complexity: 5}), task({id: 3, complexity: 0})]);
     const three = cell(element, 1, "data-task-complexity");

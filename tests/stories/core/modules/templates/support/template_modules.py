@@ -8,13 +8,13 @@ REVIEW = TemplateDeclaration(title="Security review", brief="Review the plan for
 
 class ReviewModule(Module):
     name = "acme.review"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.plans", "journal.core.templates"]
     templates = [REVIEW]
 
 
 class DuplicateTitleModule(Module):
     name = "acme.other"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["acme.review"]
     templates = [REVIEW]

@@ -16,8 +16,8 @@ class MarkMotionFile:
 
     def add_all(self, recordings: str) -> None:
         lines = [*self.text().splitlines(), *(json.dumps(recording) for recording in json.loads(recordings))][-RECORDINGS_KEPT:]
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(self.path, "\n".join(lines) + "\n")
+        FileAccess.mkdir(self.path.parent, parents=True, exist_ok=True)
+        FileAccess.write(self.path, "\n".join(lines) + "\n")
 
     def text(self) -> str:
-        return FileAccess.shared().read(self.path) if self.path.exists() else ""
+        return FileAccess.read(self.path) if FileAccess.exists(self.path) else ""

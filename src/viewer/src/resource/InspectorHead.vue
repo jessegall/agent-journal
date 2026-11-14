@@ -56,7 +56,8 @@ const closing = computed(() => (props.backed ? "Close all rows" : "Close"));
 
 <style scoped>
 .inspector-head {
-    padding: 10px 12px 14px 16px;
+    flex: none;
+    padding: 10px var(--s3) 12px var(--inset);
     border-bottom: 1px solid var(--border);
 }
 
@@ -64,8 +65,8 @@ const closing = computed(() => (props.backed ? "Close all rows" : "Close"));
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 6px;
+    gap: 6px;
+    min-height: 28px;
 }
 
 .inspector-label {

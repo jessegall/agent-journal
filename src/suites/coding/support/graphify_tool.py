@@ -1,4 +1,15 @@
-import os
+from core.modules.processes.models.enums.process_state import RUNNING_STATES
+from core.modules.processes.models.process import Process
+from engine.query.conditions.among import Among
+from engine.query.queries import Queries
+from core.modules.processes.support.queued_process_start import QueuedProcessStart
+from core.modules.processes.support.queued_process_launch import QueuedProcessLaunch
+from core.modules.processes.support.foreground_run import ForegroundRun
+from core.modules.processes.commands.start_process.start_process import StartProcess
+from core.modules.agents.support.agent_rows import AgentRows
+from engine.command.bus import Bus
+from engine.actor.actor import Actor
+from engine.file.file_access import FileAccess
 import shlex
 import shutil
 import subprocess
@@ -15,7 +26,6 @@ from engine.errors.refusal import Refusal
 from engine.setting.setting_values import SettingValues
 from suites.coding.support.graph_files import FAILED_FILE, OUTPUT_FOLDER, REBUILD_LOCK_FILE, RUNNING_FILE, GraphFiles
 from suites.coding.support.graphify_settings import GRAPHIFY_CLUSTER_MINUTES, GRAPHIFY_COMMAND, GRAPHIFY_GROUP, GRAPHIFY_INSTALL_COMMAND, GRAPHIFY_REFRESH_MINUTES, GRAPHIFY_SETTINGS
-from suites.coding.support.project_graph_claim import ProjectGraphClaim
 from engine.journal.journal_home import JournalHome
 from core.modules.tools.support.tool_definition import ToolDefinition
 from core.modules.tools.support.tool_runner import ToolRunner
@@ -23,10 +33,10 @@ from core.modules.tools.support.tool_status import ToolStatus
 from suites.coding.support.worktree_checkouts import WorktreeCheckouts
 
 INSTALL_LIMIT_SECONDS = 600
-CLAIM_VARIABLE = "JOURNAL_GRAPH_CLAIM"
+UPDATE_LIMIT_SECONDS = 3600
 # Runs Graphify's incremental update, which re-extracts code with no LLM, with or without grouping the code into
 # communities as its first argument says, then stamps the commit it ran for and, after a grouping, when it grouped;
-# the claim is released whatever happens, and a failure is recorded for its commit so a tick does not start it again.
+# the running mark is removed whatever happens, and a failure is recorded for its commit so a tick does not start it again.
 REFRESH_SCRIPT = (
     'grouping="$1"; commit="$2"; shift 2; '
     'if [ "$grouping" = cluster ]; then set -- "$@" update .; else set -- "$@" update . --no-cluster; fi; '
@@ -34,7 +44,7 @@ REFRESH_SCRIPT = (
     'printf "%s %s\\n" "$commit" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > graphify-out/.journal-refresh; rm -f graphify-out/.journal-failed; '
     'if [ "$grouping" = cluster ]; then touch graphify-out/.journal-clustered; fi; '
     'else printf "%s\\n" "$commit" > graphify-out/.journal-failed; fi; '
-    'rm -f graphify-out/.journal-running "$JOURNAL_GRAPH_CLAIM"'
+    'rm -f graphify-out/.journal-running'
 )
 CLUSTER = "cluster"
 UNCLUSTERED = "no-cluster"
@@ -47,12 +57,14 @@ GRAPHIFY = ToolDefinition("graphify", "Graphify", "Keeps a graph of the project'
 
 class GraphifyTool(ToolRunner):
     """Graphify as the journal runs it: installed with its install command, and refreshing one folder's graph
-    in the background with its incremental update, one update at a time across the project. A tick updates the
-    main checkout's graph only; a worktree takes that graph by copy."""
+    in the background with its incremental update, a run of the Graphify class that waits in the long lane, so one
+    update runs at a time across the project. A tick updates the main checkout's graph only; a worktree takes that
+    graph by copy."""
 
-    def __init__(self, settings: SettingValues, clock: Clock, home: JournalHome, executor: ProcessExecutor) -> None:
+    def __init__(self, settings: SettingValues, clock: Clock, home: JournalHome, executor: ProcessExecutor, bus: Bus, agents: AgentRows, launch: QueuedProcessLaunch,
+                 queries: Queries) -> None:
         self.settings, self.clock, self.home, self.executor = settings, clock, home, executor
-        self.project_claim = ProjectGraphClaim(home)
+        self.bus, self.agents, self.launch, self.queries = bus, agents, launch, queries
 
     @property
     def definition(self) -> ToolDefinition:
@@ -140,24 +152,25 @@ class GraphifyTool(ToolRunner):
             return status
         return self.stated(folder, status.commit, status.graph_commit, status.refreshed_at, True, True)
 
+    # the update is a process row of the main agent that the runner starts once the long lane grants it
     def started(self, folder: Path, commit: str) -> bool:
+        main_agent = self.agents.main_agent()
         files = GraphFiles(folder)
-        if not self.project_claim.claim(self.clock):
+        if main_agent is None or self.has_open_update() or not files.claim():
             return False
-        if not files.claim():
-            self.project_claim.release()
-            return False
+        line = shlex.join(["sh", "-c", REFRESH_SCRIPT, "sh", self.grouping(folder), commit, *self.command()])
         try:
-            environment = {**os.environ, CLAIM_VARIABLE: str(self.project_claim.path)}
-            process = subprocess.Popen(["sh", "-c", REFRESH_SCRIPT, "sh", self.grouping(folder), commit, *self.command()], cwd=folder, env=environment, stdin=subprocess.DEVNULL,
-                                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
-        except OSError:
+            start = StartProcess.single_part(main_agent.id, line, str(folder), ProcessType.GRAPHIFY.category, UPDATE_LIMIT_SECONDS, part_category=ProcessType.GRAPHIFY.value)
+            process = self.bus.run(start, Actor.core(), environment_id=main_agent.environment_id)
+            files.record_owner(self.launch.start(QueuedProcessStart(process, line, main_agent.session), ForegroundRun.queued_background()))
+        except (OSError, Refusal):
             files.release()
-            self.project_claim.release()
             return False
-        files.record_owner(process.pid)
-        self.project_claim.record_owner(process.pid)
         return True
+
+    # an update that waits for its place or runs is the one update of the project, so no second one waits behind it
+    def has_open_update(self) -> bool:
+        return self.queries.query(Process).filter(run_name=ProcessType.GRAPHIFY.value).matching(Among("state", RUNNING_STATES)).exists()
 
     def copy_output(self, source: Path, target: Path) -> list[str]:
         self.copy_graph(source, target)
@@ -166,15 +179,15 @@ class GraphifyTool(ToolRunner):
     @staticmethod
     def copy_graph(source: Path, target: Path) -> None:
         graph = GraphFiles(source).output
-        if not graph.is_dir():
+        if not FileAccess.is_dir(graph):
             return
         copied = GraphFiles(target).output
-        copied.mkdir(parents=True, exist_ok=True)
-        for file in graph.iterdir():
-            if file.is_file() and file.name not in (RUNNING_FILE, FAILED_FILE, REBUILD_LOCK_FILE):
-                shutil.copy2(file, copied / file.name)
+        FileAccess.mkdir(copied, parents=True, exist_ok=True)
+        for file in FileAccess.iterdir(graph):
+            if FileAccess.is_file(file) and file.name not in (RUNNING_FILE, FAILED_FILE, REBUILD_LOCK_FILE):
+                FileAccess.copy(file, copied / file.name)
 
     @staticmethod
     def checked_folder(folder: Path) -> None:
-        if not folder.is_dir():
+        if not FileAccess.is_dir(folder):
             raise Refusal(f"{folder} is not a folder")

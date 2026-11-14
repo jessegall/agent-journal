@@ -15,7 +15,7 @@ def file_feed_server(new_story):
     story = new_story(fixture=UserBuilder)
     repository = repository_environment(story)
     file = repository.folder / "cart.py"
-    FileAccess.shared().write(file, "TOTAL = 1\n")
+    FileAccess.write(file, "TOTAL = 1\n")
     scanned_edit(story, "s-1", "cart.py", 1, 0, folder=repository.folder)
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
@@ -36,7 +36,7 @@ def test_the_feed_reads_its_selected_agents_edits_and_saved_view_together(file_f
 
 def test_the_whole_file_key_reads_the_current_file_by_edit_id(file_feed_server):
     server, cookie, file = file_feed_server
-    FileAccess.shared().write(file, "TOTAL = 2\n")
+    FileAccess.write(file, "TOTAL = 2\n")
     status, answer = window_data(server, cookie, keys="file.1", window="coding.file-feed")
     server.story.expect_rows(status == 200, set(answer["keys"]) == {"file.1"},
                              answer["keys"]["file.1"]["value"]["text"] == "TOTAL = 2\n")

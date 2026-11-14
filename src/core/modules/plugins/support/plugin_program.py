@@ -1,8 +1,14 @@
+from engine.process.door.placed_run import PlacedRun
+from engine.process.door.execution_request import ExecutionRequest
+from engine.process.door.execution_admission import ExecutionAdmission
+from engine.enums.process_type import ProcessType
+from engine.process.child_process import ChildProcess
 from engine.file.file_access import FileAccess
 from pathlib import Path
 import json
 import hashlib
 import os
+import sys
 import signal
 import subprocess
 from collections.abc import Callable, Mapping
@@ -35,10 +41,15 @@ from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 from core.modules.plugins.errors.plugin_stopped_error import PluginStoppedError
 from core.modules.plugins.support.script_pipes import ScriptPipes
 
+# the time a script without a window of its own is shown with on its ticket
+SCRIPT_TICKET_LIMIT_MS = 60_000
+
 PASSED_VARIABLES = ("HOME", "LANG", "LC_ALL", "TMPDIR", "USER")
 SETTINGS_FILE = ".journal-settings.json"
 STOP_LIMIT_SECONDS = 1
 
+
+PROJECT_MARK_CHARACTERS = 12
 
 class PluginProgram:
     """Runs a plugin event through its service or a time-limited process."""
@@ -52,7 +63,6 @@ class PluginProgram:
 
     def run(self, call: PluginCall, limit_ms: int | None, wait_callback: Callable[[], None] | None = None) -> PluginAnswer:
         manifest = call.manifest
-        folder = self.folders.code(manifest.name)
         self.write_settings(manifest.name, call.settings, call.environment)
         checkout, facts = self.checkout_facts(call)
         line = self.script_line(call, limit_ms, checkout, facts)
@@ -72,7 +82,14 @@ class PluginProgram:
             raise PluginStoppedError(ScriptStop.SERVER)
         return self.program_answer(call, program, line, limit_ms, wait_callback, checkout)
 
+    # the script takes its ticket like any execution: a waited child of the hook or event that runs it
     def program_answer(self, call: PluginCall, program: str, line: str, limit_ms: int | None, wait_callback: Callable[[], None] | None, checkout: Checkout | None) -> PluginAnswer:
+        folder = self.folders.code(call.manifest.name)
+        request = ExecutionRequest([str(folder / program)], folder, ProcessType.PLUGIN, (limit_ms or SCRIPT_TICKET_LIMIT_MS) / 1000)
+        with ExecutionAdmission(self.home).admitted(PlacedRun(request, None, False)):
+            return self.admitted_answer(call, program, line, limit_ms, wait_callback, checkout)
+
+    def admitted_answer(self, call: PluginCall, program: str, line: str, limit_ms: int | None, wait_callback: Callable[[], None] | None, checkout: Checkout | None) -> PluginAnswer:
         manifest = call.manifest
         folder = self.folders.code(manifest.name)
         try:
@@ -153,7 +170,7 @@ class PluginProgram:
             return
         finally:
             try:
-                process.communicate(timeout=STOP_LIMIT_SECONDS)
+                ChildProcess(process).communicate(limit_seconds=STOP_LIMIT_SECONDS)
             except (subprocess.TimeoutExpired, ValueError):
                 for pipe in (process.stdin, process.stdout):
                     if pipe is not None:
@@ -167,14 +184,21 @@ class PluginProgram:
 
     def write_settings(self, plugin_name: str, settings: Mapping[str, object], environment: str = "") -> None:
         file, text = self.settings_path(plugin_name, environment), json.dumps(dict(settings))
-        if self.written_settings.get(file) == text and file.is_file():
+        if self.written_settings.get(file) == text and FileAccess.is_file(file):
             return
-        file.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(file, text)
+        FileAccess.mkdir(file.parent, parents=True, exist_ok=True)
+        FileAccess.write(file, text)
         self.written_settings[file] = text
 
     def environment(self, plugin_name: str, environment: str) -> dict[str, str]:
         passed = {variable: os.environ[variable] for variable in PASSED_VARIABLES if variable in os.environ}
         code, data, journal = self.folders.code(plugin_name).resolve(), self.folders.data(plugin_name).resolve(), self.home.folder.resolve()
         return {**passed, "PATH": f"{journal / 'bin'}:{LoginPath(self.home).value()}", "JOURNAL_ROOT": str(journal.parent), "JOURNAL_ENV": environment, "JOURNAL_PLUGIN": plugin_name,
-                "JOURNAL_PLUGIN_DIR": str(code), "JOURNAL_PLUGIN_DATA": str(data), PLUGIN_TOKEN_VARIABLE: self.scripts.token(plugin_name), "JOURNAL_SETTINGS": str(self.settings_path(plugin_name, environment))}
+                "JOURNAL_PLUGIN_DIR": str(code), "JOURNAL_PLUGIN_DATA": str(data), "JOURNAL_PLUGIN_CACHE": str(self.cache_folder(plugin_name)), "JOURNAL_PYTHON": sys.executable,
+                PLUGIN_TOKEN_VARIABLE: self.scripts.token(plugin_name), "JOURNAL_SETTINGS": str(self.settings_path(plugin_name, environment))}
+
+    # a folder of the user's own cache, which a worker's sandbox lets it write, for what a plugin can build again (a
+    # type checker's cache); its data folder lies in the main checkout, which the sandbox never lets a worker write
+    def cache_folder(self, plugin_name: str) -> Path:
+        project = hashlib.sha256(str(self.home.folder.resolve()).encode()).hexdigest()[:PROJECT_MARK_CHARACTERS]
+        return Path.home() / ".cache" / "agent-journal" / "plugins" / project / plugin_name

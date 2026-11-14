@@ -53,7 +53,7 @@ class ViewerModule(Module):
 
     name = "journal.core.viewer"
     seed_reason = "a user's layouts and presets are made by using the viewer"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     settings = VIEWER_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings", "journal.core.drivers"]
     models = [ModelDeclaration(ViewerLayout, excluded_subcommands=["make", "edit"]), ModelDeclaration(PersonPreset, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(WindowPermission, excluded_subcommands=["edit"])]

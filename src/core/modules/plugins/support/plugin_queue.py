@@ -31,11 +31,11 @@ class PluginQueue:
         self.folder = data_folder / "queue"
 
     def reserved_names(self) -> list[str]:
-        return [path.name for path in self.folder.glob(f"*{RESERVED_SUFFIX}")] if self.folder.is_dir() else []
+        return [path.name for path in FileAccess.glob(self.folder, f"*{RESERVED_SUFFIX}")] if FileAccess.is_dir(self.folder) else []
 
     def reserve(self, environment: str, agent_id: int, firing: str, committed_names: Collection[str], clock: Clock) -> PluginQueueRead:
         read = PluginQueueRead([], [])
-        if not self.folder.is_dir():
+        if not FileAccess.is_dir(self.folder):
             return read
         self.restore_reservations(committed_names, clock)
         for path in self.queued_paths():
@@ -49,31 +49,31 @@ class PluginQueue:
         with self.lock_file(path) as source:
             if source is None:
                 return
-            text = FileAccess.shared().read(path)
+            text = FileAccess.read(path)
             try:
                 fields: object = json.loads(text or "null")
             except json.JSONDecodeError:
-                path.rename(path.with_suffix(UNREADABLE_SUFFIX))
+                FileAccess.rename(path, path.with_suffix(UNREADABLE_SUFFIX))
                 read.unreadable.append(path.name)
                 return
             if is_mapping(fields) and (("env" in fields and fields["env"] != environment) or ("agent" in fields and fields["agent"] != agent_id)):
                 return
             reserved_file = self.folder / f"{path.name}.{re.sub(FIRING_UNSAFE, '-', firing)}{RESERVED_SUFFIX}"
             try:
-                path.rename(reserved_file)
+                FileAccess.rename(path, reserved_file)
             except FileNotFoundError:
                 return
             read.answers.append((reserved_file.name, PluginAnswer.parsed(text)))
 
     def restore_reservations(self, committed_names: Collection[str], clock: Clock) -> None:
-        for path in self.folder.glob(f"*{RESERVED_SUFFIX}"):
+        for path in FileAccess.glob(self.folder, f"*{RESERVED_SUFFIX}"):
             with self.lock_file(path) as source:
                 if source is None or path.name in committed_names:
                     continue
                 if clock.epoch_seconds() - os.fstat(source.fileno()).st_mtime <= RESERVATION_LIMIT_SECONDS:
                     continue
                 try:
-                    path.rename(self.folder / path.name.rsplit(".", 2)[0])
+                    FileAccess.rename(path, self.folder / path.name.rsplit(".", 2)[0])
                 except FileNotFoundError:
                     continue
 
@@ -82,7 +82,7 @@ class PluginQueue:
             with self.lock_file(path) as source:
                 if source is None:
                     continue
-                claim = self.card_answer(path, FileAccess.shared().read(path))
+                claim = self.card_answer(path, FileAccess.read(path))
                 if claim is None:
                     continue
                 try:
@@ -91,13 +91,13 @@ class PluginQueue:
                     self.restore_claim(claim.path)
 
     def queued_paths(self) -> list[Path]:
-        if not self.folder.is_dir():
+        if not FileAccess.is_dir(self.folder):
             return []
         self.restore_claims()
         modified: dict[Path, int] = {}
-        for path in self.folder.glob("*.json"):
+        for path in FileAccess.glob(self.folder, "*.json"):
             try:
-                modified[path] = path.stat().st_mtime_ns
+                modified[path] = FileAccess.stat(path).st_mtime_ns
             except FileNotFoundError:
                 continue
         return sorted(modified, key=modified.__getitem__)
@@ -106,7 +106,7 @@ class PluginQueue:
         try:
             fields: object = json.loads(text or "null")
         except json.JSONDecodeError:
-            path.rename(path.with_suffix(UNREADABLE_SUFFIX))
+            FileAccess.rename(path, path.with_suffix(UNREADABLE_SUFFIX))
             return None
         if not is_mapping(fields) or not all(key in fields for key in ("agent", "cards")):
             return None
@@ -115,20 +115,20 @@ class PluginQueue:
         try:
             agent_id = int(str(fields["agent"]))
         except ValueError:
-            path.rename(path.with_suffix(UNREADABLE_SUFFIX))
+            FileAccess.rename(path, path.with_suffix(UNREADABLE_SUFFIX))
             return None
         line_fields = {key: value for key, value in fields.items() if key not in CARD_FIELDS}
         remaining = None if set(line_fields) <= ENVELOPE_FIELDS else json.dumps(line_fields)
         answer = PluginCardAnswer(agent_id, json.dumps({key: value for key, value in fields.items() if key in CARD_FIELDS}))
         claimed_file = path.with_suffix(CLAIMED_SUFFIX)
         try:
-            path.rename(claimed_file)
+            FileAccess.rename(path, claimed_file)
         except FileNotFoundError:
             return None
         return PluginCardClaim(claimed_file, answer, remaining)
 
     def restore_claims(self) -> None:
-        for path in self.folder.glob(f"*{CLAIMED_SUFFIX}"):
+        for path in FileAccess.glob(self.folder, f"*{CLAIMED_SUFFIX}"):
             with self.lock_file(path) as source:
                 if source is None:
                     continue
@@ -136,10 +136,10 @@ class PluginQueue:
 
     def restore_claim(self, path: Path) -> None:
         original = path.with_suffix(".json")
-        if original.exists():
+        if FileAccess.exists(original):
             return
         try:
-            path.rename(original)
+            FileAccess.rename(path, original)
         except FileNotFoundError:
             return
 
@@ -147,7 +147,7 @@ class PluginQueue:
     def lock_file(self, path: Path) -> Generator[IO[str] | None]:
         stack = ExitStack()
         try:
-            source = stack.enter_context(FileAccess.shared().writer(path, "r+"))
+            source = stack.enter_context(FileAccess.writer(path, "r+"))
         except FileNotFoundError:
             yield None
             return
@@ -160,10 +160,10 @@ class PluginQueue:
             yield source
 
     def remove(self, name: str) -> None:
-        (self.folder / name).unlink(missing_ok=True)
+        FileAccess.unlink(self.folder / name, missing_ok=True)
 
     def add(self, environment: str, agent_id: int, text: str, name: str) -> None:
-        self.folder.mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(self.folder, parents=True, exist_ok=True)
         draft = self.folder / f"{name}.tmp"
-        FileAccess.shared().write(draft, json.dumps({"v": 1, "env": environment, "agent": agent_id, "tell": text}))
-        draft.rename(self.folder / f"{name}.json")
+        FileAccess.write(draft, json.dumps({"v": 1, "env": environment, "agent": agent_id, "tell": text}))
+        FileAccess.rename(draft, self.folder / f"{name}.json")

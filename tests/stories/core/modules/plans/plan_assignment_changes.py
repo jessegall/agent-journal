@@ -84,3 +84,14 @@ def test_a_started_task_held_by_another_actor_is_skipped_by_a_parents_cascade_no
     summary = assigned(plan, "plan 1", worker_id(plan, 3))
     plan.expect_rows(row_actors(plan, "task").get(3) == worker_id(plan, 2), "kept 1 task" in summary, all(row_actors(plan, "task").get(task_id) == worker_id(plan, 3) for task_id in phase_task_ids(2)),
                      detail=summary)
+
+
+def test_plan_assign_keeps_tasks_given_to_others_and_says_so_and_with_override_moves_every_task(plan):
+    assigned(plan, "task 1", worker_id(plan, 1))
+    assigned(plan, "task 2", worker_id(plan, 2))
+    target = agent_number(plan, plan.agent.id)
+    plan.expect_text(f"plan assign 1 --to {target} --environment main", "kept 2 tasks", actor=plan.agent)
+    plan.expect_rows(row_actors(plan, "task").get(1) == worker_id(plan, 1), row_actors(plan, "task").get(2) == worker_id(plan, 2), detail=str(row_actors(plan, "task")))
+    plan.expect_success(f"plan assign 1 --to {target} --override --environment main", actor=plan.agent)
+    tasks = row_actors(plan, "task")
+    plan.expect_rows(set(tasks.values()) == {plan.agent.id}, set(tasks) == {*phase_task_ids(1), *phase_task_ids(2)}, detail=str(tasks))

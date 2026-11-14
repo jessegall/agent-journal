@@ -23,7 +23,7 @@ class ScribeDriver(Driver):
 
 class ScribeModule(Module):
     name = "sample.scribe"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.agents"]
     drivers = [ScribeDriver]
 
@@ -43,7 +43,7 @@ class UnlabelledScribe(HelperType):
 
 class UnlabelledScribeModule(Module):
     name = "sample.unlabelled-scribe"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.agents"]
 
 
@@ -62,7 +62,7 @@ class CopyScribe(Helper):
 
 class CopyScribeModule(Module):
     name = "sample.copy-scribe"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.agents"]
 
 
@@ -78,6 +78,6 @@ class RetiringModule(Module):
     """A module whose helper type is retired when the project stops loading it."""
 
     name = "sample.retiring"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.agents"]
     helper_types = [Scribe]

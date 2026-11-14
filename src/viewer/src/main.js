@@ -8,8 +8,10 @@ import EnvironmentPage from "./pages/EnvironmentPage.vue";
 import AgentPage from "./pages/AgentPage.vue";
 import HomePage from "./pages/HomePage.vue";
 import WindowShell from "./windows/WindowShell.vue";
+import ContextMenuHost from "./shell/ContextMenuHost.vue";
 import PairPage from "./pages/PairPage.vue";
 import SharePage from "./pages/SharePage.vue";
+import {vContext} from "../kit/vContext.js";
 import {browserCopy} from "./windows/paneLayout.js";
 import {readSession} from "./windows/startup.js";
 import {shownPage} from "./shownPage.js";
@@ -34,8 +36,10 @@ const start = (answer) => {
             ? createApp(SharePage, {session: answer.type === "share" ? answer : null})
             : createApp({render: () => h(PAGES[shownPage.value.page], {...shownPage.value.props, key: shownPage.value.page})});
     app.directive("tip", tip);
+    app.directive("context", vContext);
     app.mount("#app");
     createApp(ServerCover).mount(document.body.appendChild(document.createElement("div")));
+    createApp(ContextMenuHost).mount(document.body.appendChild(document.createElement("div")));
 };
 
 // the cookie says which face this is: a share link's visitor gets the share page (so does a page the server marks as a gone link), anyone else the viewer;
@@ -45,6 +49,7 @@ const PERSON = "person";
 const opensAtOnce = browserCopy.read(SESSION_TYPE_KEY) === PERSON && location.pathname !== PAIRING_PATH && !document.querySelector(ENDED_LINK_MARK);
 if (opensAtOnce) start({type: PERSON});
 readSession().catch(() => ({})).then((answer) => {
+    globalThis.AJSplash?.ready();
     if (answer.type) browserCopy.write(SESSION_TYPE_KEY, answer.type);
     if (!opensAtOnce) start(answer);
     else if (answer.type && answer.type !== PERSON) location.reload();

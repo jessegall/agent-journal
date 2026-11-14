@@ -1,4 +1,4 @@
-import shutil
+from engine.file.file_access import FileAccess
 
 from engine.actor.actor import Actor
 from engine.process.plugin_script_processes import PluginScriptProcesses
@@ -32,8 +32,8 @@ class RemovePluginHandler(Handler[RemovePlugin, str]):
         self.repository.delete(plugin, context)
         self.readers.remove(plugin.name, context)
         self.skill_removal.remove(plugin.name)
-        shutil.rmtree(self.folders.code(plugin.name), ignore_errors=True)
+        FileAccess.rmtree(self.folders.code(plugin.name), ignore_errors=True)
         if command.purge:
-            shutil.rmtree(self.folders.data(plugin.name), ignore_errors=True)
+            FileAccess.rmtree(self.folders.data(plugin.name), ignore_errors=True)
             return f"removed {plugin.name} and its data"
         return f"removed {plugin.name}; its data folder stays in .journal/plugin-data/{plugin.name}"

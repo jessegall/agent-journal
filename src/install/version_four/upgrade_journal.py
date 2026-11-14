@@ -1,6 +1,6 @@
+from engine.file.file_access import FileAccess
 import os
 import sys
-import tempfile
 from collections.abc import Callable
 from pathlib import Path
 
@@ -55,8 +55,8 @@ class UpgradeJournal:
 
     def run(self, dry_run: bool = False, confirmed: bool = False) -> UpgradeOutcome:
         files = VersionFourFiles(self.home.folder)
-        version_four = self.home.folder / DATABASE if (self.home.folder / DATABASE).is_file() else files.database()
-        if not version_four.is_file():
+        version_four = self.home.folder / DATABASE if FileAccess.is_file(self.home.folder / DATABASE) else files.database()
+        if not FileAccess.is_file(version_four):
             return UpgradeOutcome(1, f"no version 4 journal: {DATABASE} is not in {self.home.folder}")
         if self.has_answer():
             return UpgradeOutcome(1, f"a journal server answers in {self.home.folder}: stop it with journal server stop, then run the upgrade again")
@@ -85,7 +85,7 @@ class UpgradeJournal:
         return outcome
 
     def should_save(self, outcome: UpgradeOutcome, dry_run: bool) -> bool:
-        return self.ran and not dry_run and outcome.text != FINISHED_LINE and self.home.folder.is_dir()
+        return self.ran and not dry_run and outcome.text != FINISHED_LINE and FileAccess.is_dir(self.home.folder)
 
     def has_answer(self) -> bool:
         connection = UnixConnection(str(ServerFiles(self.home).socket), 5, "journal")
@@ -109,10 +109,10 @@ class UpgradeJournal:
             InstallJournal(self.home.folder.parent, self.source).sync()
 
     def preview(self, version_four: Path, lines: list[str]) -> None:
-        if self.home.database.exists():
+        if FileAccess.exists(self.home.database):
             self.dry_run(self.home, version_four, lines)
             return
-        with tempfile.TemporaryDirectory() as folder:
+        with FileAccess.temporary_folder() as folder:
             home = JournalHome(Path(folder))
             sync_modules(home)
             self.dry_run(home, version_four, lines)
@@ -133,7 +133,7 @@ class UpgradeJournal:
         container = synced_container(self.home)
         try:
             finished = self.is_finished(container.get(Database), container.get(Registry))
-            if finished and (self.home.folder / DATABASE).is_file():
+            if finished and FileAccess.is_file(self.home.folder / DATABASE):
                 raise StrayVersionFourError(f"a version 4 journal.db is in {self.home.folder} again after the upgrade finished: another machine or session still ran "
                                             f"version 4 on this project. Its rows are not moved and the backup is kept as it is; stop version 4 there and move that "
                                             f"journal.db aside, or run journal upgrade --restore to go back to version 4. Nothing was changed")

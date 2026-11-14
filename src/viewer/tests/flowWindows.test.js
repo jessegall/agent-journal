@@ -5,6 +5,7 @@ import CheckCards from "../../suites/coding/modules/checks/web/src/CheckCards.vu
 import {mounted} from "./mountedWindow.js";
 import {mounted as mountedWindow, page} from "./support/windowContext.js";
 import {triggerWindowContext} from "./support/triggerWindowContext.js";
+import {choose} from "./support/cardMenu.js";
 
 const mountedTrigger = (rows) => mountedWindow(TriggerCards, triggerWindowContext({"trigger list": page(rows)}));
 
@@ -36,12 +37,12 @@ test("a check card shows its title, verdict and how often it runs, and its comma
     const element = mounted(CheckCards, [{id: 1, title: "Lint", status: "failed", interval_minutes: 15, command: "echo two problems; false", last_output: "two problems"}]);
     await settled();
     const card = element.querySelector('[data-row="1"]');
-    expect(card.textContent).toContain("Check 1");
-    expect(card.textContent).toContain("failed · Every 15 minutes");
+    expect(card.textContent).toContain("Lint");
+    expect(card.querySelector("[data-card-state]").textContent).toBe("Not run");
+    expect(card.querySelector("[data-check-rhythm]").textContent).toBe("Every 15 minutes");
     expect(card.textContent).toContain("echo two problems; false");
     expect(card.querySelector("pre")).toBeNull();
-    card.click();
-    await settled();
+    await choose(card, "Open");
     expect(document.body.querySelector("[data-check-output]").textContent).toBe("two problems");
 });
 

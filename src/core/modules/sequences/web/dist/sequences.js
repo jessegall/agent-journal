@@ -1,531 +1,514 @@
-if (!document.getElementById("window-styles-d0156e6a43a6")) { const style = document.createElement("style"); style.id = "window-styles-d0156e6a43a6"; style.textContent = ".step-cards[data-v-e37eba39]{display:flex;flex-direction:column;gap:8px;margin:0 0 8px;padding:0;list-style:none}.step-card[data-v-e37eba39]{display:flex;gap:8px;align-items:flex-start}.step-number[data-v-e37eba39]{flex:none;width:18px;padding-top:8px;color:var(--text-3);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}.step-moves[data-v-e37eba39]{display:flex;flex:none;gap:2px}textarea[data-v-e37eba39]{flex:1;box-sizing:border-box;min-width:0;padding:6px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;resize:vertical}.new-sequence[data-v-2768e828]{display:flex;flex-direction:column;gap:14px}.field[data-v-2768e828]{display:flex;flex-direction:column;gap:6px}.label[data-v-2768e828],.note[data-v-2768e828]{color:var(--text-3);font-size:12px}.note[data-v-2768e828]{flex:1}input[data-v-2768e828]{box-sizing:border-box;width:100%;padding:7px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:14px;font-weight:600}.runs[data-v-7b0ad51f]{margin-top:20px}.runs-title[data-v-7b0ad51f]{margin:0 0 8px;color:var(--text-3);font-size:12px;font-weight:600}.run[data-v-7b0ad51f]{margin-bottom:10px;padding:12px 14px;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--border-2));border-radius:9px;background:var(--raised)}.run-head[data-v-7b0ad51f]{display:flex;justify-content:space-between;color:var(--text-2);font-size:12.5px}.run-count[data-v-7b0ad51f]{color:var(--text-3);font-size:11.5px}.run-steps[data-v-7b0ad51f]{display:flex;flex-direction:column;gap:4px;margin:10px 0 0;padding-left:20px;color:var(--text-3);font-size:12.5px}.run-steps .done[data-v-7b0ad51f]{text-decoration:line-through}.run-steps .current[data-v-7b0ad51f]{color:var(--text);font-weight:500}.stop-guard[data-v-b8f8d176]{display:block;color:var(--text-3);font-size:12px}.guard[data-v-b8f8d176]{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0;font-size:12.5px}.guard-commands[data-v-b8f8d176]{flex:1;min-width:160px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}.steps-head[data-v-b8f8d176]{display:flex;gap:8px;align-items:center;margin-bottom:14px}.steps-title[data-v-b8f8d176]{color:var(--text-3);font-size:12px;font-weight:600}.steps-count[data-v-b8f8d176]{flex:1;color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums}.track[data-v-b8f8d176]{margin:0;padding:0;list-style:none}.stop[data-v-b8f8d176]{--node: 24px;position:relative;display:flex;gap:14px;padding-bottom:18px}.stop[data-v-b8f8d176]:before{content:\"\";position:absolute;top:var(--node);bottom:0;left:calc(var(--node) / 2 - .5px);width:1px;background:var(--border-2)}.stop.end[data-v-b8f8d176]{align-items:center;padding-bottom:0}.stop.end[data-v-b8f8d176]:before{display:none}.node[data-v-b8f8d176]{display:inline-grid;flex:none;place-items:center;box-sizing:border-box;width:var(--node);height:var(--node);border:1px solid var(--border-2);border-radius:50%;background:var(--bg);color:var(--text-2);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums}.stop.start .node[data-v-b8f8d176]{border-color:color-mix(in srgb,var(--accent) 55%,transparent);background:color-mix(in srgb,var(--accent) 14%,var(--bg));color:var(--accent-text)}.stop.now .node[data-v-b8f8d176]{border-color:var(--accent);background:var(--accent);color:#fff}.stop.end .node[data-v-b8f8d176]{--node: 12px;margin:0 6px;background:var(--border-2)}.stop-body[data-v-b8f8d176]{display:flex;flex-direction:column;gap:4px;min-width:0;padding-top:2px}.stop-title[data-v-b8f8d176]{color:var(--accent-text);font-size:12px;font-weight:600}.stop-text[data-v-b8f8d176]{color:var(--text-2)}.now-label[data-v-b8f8d176]{align-self:flex-start;padding:0 7px;border-radius:99px;background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent-text);font-size:10.5px;font-weight:500;line-height:17px}.end-label[data-v-b8f8d176],.editor-note[data-v-b8f8d176]{color:var(--text-3);font-size:12px}.editor-foot[data-v-b8f8d176]{display:flex;gap:8px;align-items:center;margin-top:12px}.sequence-triggers[data-v-2da9d503]{margin-bottom:14px}.head[data-v-2da9d503]{display:flex;gap:8px;align-items:center;margin-bottom:6px}.title[data-v-2da9d503],.label[data-v-2da9d503],.note[data-v-2da9d503]{color:var(--text-3);font-size:12px}.line[data-v-2da9d503]{margin:0 0 2px;font-size:13px}.card[data-v-2da9d503]{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:8px;padding:10px;border:1px solid var(--border);border-radius:8px}.card input[data-v-2da9d503]{width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:13px}.foot[data-v-2da9d503]{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.note[data-v-d7db7b4a]{flex:1;color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
-import { openBlock as r, createElementBlock as v, Fragment as T, createElementVNode as a, renderList as W, toDisplayString as S, createVNode as i, unref as o, withCtx as g, createTextVNode as C, ref as A, computed as I, createBlock as D, withDirectives as P, vModelText as j, normalizeClass as F, createCommentVNode as V, vModelCheckbox as L } from "vue";
-import { Btn as h, Icon as E, useWindow as x, Dialog as M, TextDisplay as H, Segmented as K, RowCards as Q, removed as X } from "@journal/window-kit";
-const B = (e, p) => {
-  const u = e.__vccOpts || e;
-  for (const [l, k] of p)
-    u[l] = k;
-  return u;
-}, Z = { class: "step-cards" }, ee = { class: "step-number" }, te = ["value", "aria-label", "onInput"], se = { class: "step-moves" }, ae = {
-  __name: "StepCards",
-  props: { steps: { type: Array, required: !0 } },
-  emits: ["steps"],
-  setup(e, { emit: p }) {
-    const u = e, l = p;
-    function k(q, c) {
-      l("steps", u.steps.map((n, t) => t === q ? c : n));
-    }
-    function $(q, c) {
-      const n = [...u.steps], [t] = n.splice(q, 1);
-      n.splice(q + c, 0, t), l("steps", n);
-    }
-    const _ = (q) => l("steps", u.steps.filter((c, n) => n !== q));
-    return (q, c) => (r(), v(T, null, [
-      a("ol", Z, [
-        (r(!0), v(T, null, W(e.steps, (n, t) => (r(), v("li", {
-          key: t,
-          class: "step-card"
-        }, [
-          a("span", ee, S(t + 1), 1),
-          a("textarea", {
-            value: n,
-            rows: "2",
-            "aria-label": `Step ${t + 1}`,
-            placeholder: "What the agent does in this step",
-            "data-step-text": "",
-            onInput: (d) => k(t, d.target.value)
-          }, null, 40, te),
-          a("div", se, [
-            i(o(h), {
-              small: "",
-              disabled: t === 0,
-              "aria-label": `Move step ${t + 1} up`,
-              "data-step-up": "",
-              onClick: (d) => $(t, -1)
-            }, {
-              default: g(() => [
-                i(o(E), {
-                  name: "up",
-                  size: 12
-                })
-              ]),
-              _: 1
-            }, 8, ["disabled", "aria-label", "onClick"]),
-            i(o(h), {
-              small: "",
-              disabled: t === e.steps.length - 1,
-              "aria-label": `Move step ${t + 1} down`,
-              "data-step-down": "",
-              onClick: (d) => $(t, 1)
-            }, {
-              default: g(() => [
-                i(o(E), {
-                  name: "down",
-                  size: 12
-                })
-              ]),
-              _: 1
-            }, 8, ["disabled", "aria-label", "onClick"]),
-            i(o(h), {
-              small: "",
-              disabled: e.steps.length === 1,
-              "aria-label": `Remove step ${t + 1}`,
-              "data-step-remove": "",
-              onClick: (d) => _(t)
-            }, {
-              default: g(() => [
-                i(o(E), {
-                  name: "trash",
-                  size: 12
-                })
-              ]),
-              _: 1
-            }, 8, ["disabled", "aria-label", "onClick"])
-          ])
-        ]))), 128))
-      ]),
-      i(o(h), {
-        small: "",
-        bordered: "",
-        "data-step-add": "",
-        onClick: c[0] || (c[0] = (n) => l("steps", [...e.steps, ""]))
-      }, {
-        default: g(() => [...c[1] || (c[1] = [
-          C("Add a step", -1)
-        ])]),
-        _: 1
-      })
-    ], 64));
-  }
-}, G = /* @__PURE__ */ B(ae, [["__scopeId", "data-v-e37eba39"]]), le = { class: "new-sequence" }, ne = { class: "field" }, oe = { class: "field" }, re = {
-  class: "note",
-  role: "status"
-}, ue = {
-  __name: "NewSequence",
-  emits: ["close"],
-  setup(e, { emit: p }) {
-    const u = p, l = x(), k = A(""), $ = A([""]), _ = A(""), q = I(() => k.value.trim() ? $.value.some((n) => !n.trim()) ? "Add instructions for each step." : "" : "Give the sequence a title.");
-    async function c() {
-      const n = await l.run(["sequence", "make", k.value.trim(), "--steps", $.value.map((t) => t.trim()).join(" | ")]);
-      _.value = n.ok ? "" : n.error, n.ok && u("close");
-    }
-    return (n, t) => (r(), D(o(M), {
-      padded: "",
-      title: "New sequence",
-      onClose: t[3] || (t[3] = (d) => u("close"))
-    }, {
-      foot: g(() => [
-        a("span", re, S(_.value || q.value), 1),
-        i(o(h), {
-          onClick: t[2] || (t[2] = (d) => u("close"))
-        }, {
-          default: g(() => [...t[6] || (t[6] = [
-            C("Cancel", -1)
-          ])]),
-          _: 1
-        }),
-        i(o(h), {
-          variant: "primary",
-          disabled: !!q.value,
-          "data-sequence-create": "",
-          onClick: c
-        }, {
-          default: g(() => [...t[7] || (t[7] = [
-            C("Create sequence", -1)
-          ])]),
-          _: 1
-        }, 8, ["disabled"])
-      ]),
-      default: g(() => [
-        a("div", le, [
-          a("label", ne, [
-            t[4] || (t[4] = a("span", { class: "label" }, "Title", -1)),
-            P(a("input", {
-              "onUpdate:modelValue": t[0] || (t[0] = (d) => k.value = d),
-              placeholder: "Releasing a version",
-              "data-sequence-title": ""
-            }, null, 512), [
-              [j, k.value]
-            ])
-          ]),
-          a("div", oe, [
-            t[5] || (t[5] = a("span", { class: "label" }, "Steps, in order", -1)),
-            i(G, {
-              steps: $.value,
-              onSteps: t[1] || (t[1] = (d) => $.value = d)
-            }, null, 8, ["steps"])
-          ])
-        ])
-      ]),
-      _: 1
-    }));
-  }
-}, de = /* @__PURE__ */ B(ue, [["__scopeId", "data-v-2768e828"]]), ie = {
-  key: 0,
-  class: "runs",
-  "data-sequence-runs": ""
-}, pe = { class: "run-head" }, ce = { class: "run-count" }, me = { class: "run-steps" }, ve = {
-  __name: "SequenceRuns",
-  props: { runs: { type: Array, required: !0 } },
-  setup(e) {
-    return (p, u) => e.runs.length ? (r(), v("section", ie, [
-      u[0] || (u[0] = a("h3", { class: "runs-title" }, "Running now", -1)),
-      (r(!0), v(T, null, W(e.runs, (l) => (r(), v("div", {
-        key: l.id,
-        class: "run"
-      }, [
-        a("div", pe, [
-          a("span", null, "Agent " + S(l.session_agent_id), 1),
-          a("span", ce, S(l.step_started ? `Step ${l.step_number} of ${JSON.parse(l.steps).length}` : `Step ${l.step_number} of ${JSON.parse(l.steps).length}, not started yet`), 1)
-        ]),
-        a("ol", me, [
-          (r(!0), v(T, null, W(JSON.parse(l.steps), (k, $) => (r(), v("li", {
-            key: $,
-            class: F({ done: $ + 1 < l.step_number, current: $ + 1 === l.step_number })
-          }, S(k), 3))), 128))
-        ])
-      ]))), 128))
-    ])) : V("", !0);
-  }
-}, fe = /* @__PURE__ */ B(ve, [["__scopeId", "data-v-7b0ad51f"]]), _e = { class: "sequence-steps" }, ge = { class: "steps-head" }, be = { class: "steps-count" }, ye = {
-  key: 0,
-  class: "track"
-}, ke = { class: "node" }, $e = { class: "stop-body" }, qe = {
-  class: "stop-guard",
-  "data-step-guard": ""
-}, we = {
-  key: 0,
-  class: "now-label"
-}, he = { class: "stop-guard" }, Se = { class: "guard-allow" }, Ce = ["onUpdate:modelValue", "data-guard-edits"], Oe = ["onUpdate:modelValue"], Ne = { class: "editor-foot" }, Te = {
-  class: "editor-note",
-  role: "status"
-}, Ae = {
-  __name: "SequenceSteps",
-  props: { sequence: { type: Object, required: !0 }, runs: { type: Array, required: !0 } },
-  setup(e) {
-    const p = e, u = x(), l = A(null), k = A(""), $ = I(() => new Set(p.runs.map((f) => f.step_number))), _ = I(() => {
-      var f;
-      return (f = l.value) != null && f.some((s) => !s.trim()) ? "Add instructions for each step." : "";
-    }), q = I(() => JSON.parse(p.sequence.step_guards || "[]")), c = A([]), n = (f) => q.value[f] ?? { file_edits_allowed: !0, allowed_commands: [] }, t = (f) => [n(f).file_edits_allowed ? "File edits allowed" : "File edits wait", ...n(f).allowed_commands].join(", ");
-    function d() {
-      l.value = [...p.sequence.steps], c.value = p.sequence.steps.map((f, s) => ({ step: s, file_edits_allowed: n(s).file_edits_allowed, commands: n(s).allowed_commands.join(", ") }));
-    }
-    function b(f) {
-      l.value = f, c.value = f.map((s, y) => c.value[y] ?? { step: y, file_edits_allowed: !0, commands: "" });
-    }
-    async function w() {
-      const f = c.value.map((y) => ({ file_edits_allowed: y.file_edits_allowed, allowed_commands: y.commands.split(",").map((O) => O.trim()).filter(Boolean) })), s = await u.run(["sequence", "edit", String(p.sequence.id), "--steps", ...l.value.map((y) => y.trim()), "--step-guards", JSON.stringify(f)]);
-      k.value = s.ok ? "" : s.error, s.ok && (l.value = null);
-    }
-    return (f, s) => (r(), v("section", _e, [
-      a("header", ge, [
-        s[2] || (s[2] = a("span", { class: "steps-title" }, "Steps", -1)),
-        a("span", be, S((l.value || e.sequence.steps).length), 1),
-        l.value ? V("", !0) : (r(), D(o(h), {
-          key: 0,
-          small: "",
-          "data-sequence-edit": "",
-          onClick: d
-        }, {
-          default: g(() => [
-            i(o(E), {
-              name: "pencil",
-              size: 12
-            }),
-            s[1] || (s[1] = C(" Edit steps", -1))
-          ]),
-          _: 1
-        }))
-      ]),
-      l.value ? (r(), v(T, { key: 1 }, [
-        i(G, {
-          steps: l.value,
-          onSteps: b
-        }, null, 8, ["steps"]),
-        (r(!0), v(T, null, W(c.value, (y, O) => (r(), v("div", {
-          key: y.step,
-          class: "guard",
-          "data-step-guard-edit": ""
-        }, [
-          a("span", he, "Step " + S(O + 1), 1),
-          a("label", Se, [
-            P(a("input", {
-              "onUpdate:modelValue": (m) => y.file_edits_allowed = m,
-              type: "checkbox",
-              "data-guard-edits": O
-            }, null, 8, Ce), [
-              [L, y.file_edits_allowed]
-            ]),
-            s[4] || (s[4] = C(" File edits allowed", -1))
-          ]),
-          P(a("input", {
-            "onUpdate:modelValue": (m) => y.commands = m,
-            class: "guard-commands",
-            placeholder: "Commands still allowed, separated by commas",
-            "aria-label": "Commands still allowed"
-          }, null, 8, Oe), [
-            [j, y.commands]
-          ])
-        ]))), 128)),
-        a("div", Ne, [
-          i(o(h), {
-            variant: "primary",
-            small: "",
-            disabled: !!_.value,
-            "data-sequence-save": "",
-            onClick: w
-          }, {
-            default: g(() => [...s[5] || (s[5] = [
-              C("Save steps", -1)
-            ])]),
-            _: 1
-          }, 8, ["disabled"]),
-          i(o(h), {
-            small: "",
-            onClick: s[0] || (s[0] = (y) => l.value = null)
-          }, {
-            default: g(() => [...s[6] || (s[6] = [
-              C("Cancel", -1)
-            ])]),
-            _: 1
-          }),
-          a("span", Te, S(k.value || _.value), 1)
-        ])
-      ], 64)) : (r(), v("ol", ye, [
-        (r(!0), v(T, null, W(e.sequence.steps, (y, O) => (r(), v("li", {
-          key: O,
-          class: F(["stop", { now: $.value.has(O + 1) }])
-        }, [
-          a("span", ke, S(O + 1), 1),
-          a("div", $e, [
-            i(o(H), {
-              class: "stop-text",
-              text: y
-            }, null, 8, ["text"]),
-            a("span", qe, S(t(O)), 1),
-            $.value.has(O + 1) ? (r(), v("span", we, "In progress")) : V("", !0)
-          ])
-        ], 2))), 128)),
-        s[3] || (s[3] = a("li", { class: "stop end" }, [
-          a("span", { class: "node" }),
-          a("span", { class: "end-label" }, "Done")
-        ], -1))
-      ]))
-    ]));
-  }
-}, Ie = /* @__PURE__ */ B(Ae, [["__scopeId", "data-v-b8f8d176"]]), U = [
+if (!document.getElementById("window-styles-4c0fa66e68ca")) { const style = document.createElement("style"); style.id = "window-styles-4c0fa66e68ca"; style.textContent = ".run[data-v-d89d02e5]{display:flex;align-items:center;gap:var(--s3);padding:8px 0;border-bottom:1px solid var(--border-inner);font-size:12.5px}.run-number[data-v-d89d02e5]{flex:none;width:30px;color:var(--text-3);font-variant-numeric:tabular-nums}.bar[data-v-d89d02e5]{flex:1;min-width:40px;height:4px;overflow:hidden;border-radius:2px;background:var(--border-2)}.bar i[data-v-d89d02e5]{display:block;height:100%;background:var(--accent)}.run-words[data-v-d89d02e5]{flex:none;color:var(--text-3);font-size:12px;white-space:nowrap}.abandon[data-v-d89d02e5]{flex:none;border:0;background:none;color:var(--text-2);font:inherit;font-size:12px;cursor:pointer}.none[data-v-d89d02e5]{margin:0;color:var(--text-3);font-size:12.5px}.progress[data-v-f42e011f]{display:flex;align-items:center;gap:var(--s3);margin:4px 0 14px}.bar[data-v-f42e011f]{flex:1;height:4px;overflow:hidden;border-radius:2px;background:var(--border-2)}.bar i[data-v-f42e011f]{display:block;height:100%;background:var(--accent)}.progress-words[data-v-f42e011f]{color:var(--text-3);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}.steps[data-v-f42e011f]{margin:0;padding:0;list-style:none}.step[data-v-f42e011f]{display:flex;align-items:flex-start;gap:var(--s3);padding:8px 0;border-bottom:1px solid var(--border-inner)}.step-number[data-v-f42e011f]{flex:none;width:18px;color:var(--text-3);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}.step-body[data-v-f42e011f]{flex:1;min-width:0}.step-text[data-v-f42e011f]{color:var(--text-2)}.step-guard[data-v-f42e011f]{display:block;color:var(--text-3);font-size:12px}.sequence-triggers[data-v-2da9d503]{margin-bottom:14px}.head[data-v-2da9d503]{display:flex;gap:8px;align-items:center;margin-bottom:6px}.title[data-v-2da9d503],.label[data-v-2da9d503],.note[data-v-2da9d503]{color:var(--text-3);font-size:12px}.line[data-v-2da9d503]{margin:0 0 2px;font-size:13px}.card[data-v-2da9d503]{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:8px;padding:10px;border:1px solid var(--border);border-radius:8px}.card input[data-v-2da9d503]{width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:13px}.foot[data-v-2da9d503]{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.failure[data-v-186ad116]{margin:0;padding:6px var(--inset);color:var(--bad, var(--text-2));font-size:12px}\n"; document.head.appendChild(style); }
+import { openBlock as r, createBlock as h, unref as s, withCtx as b, createVNode as _, createElementBlock as m, createCommentVNode as A, Fragment as O, renderList as W, createElementVNode as y, toDisplayString as f, normalizeStyle as z, computed as w, ref as L, createTextVNode as C, withDirectives as re, vModelText as oe } from "vue";
+import { useWindow as R, CreateDialog as D, TextList as ue, AgentBadge as H, TextDisplay as ie, Btn as T, Icon as de, Segmented as ce, Reader as pe, SwitchCase as me, ActionsMenu as ge, deleteItem as ve, removed as be, ListReaderLayout as _e, Skeleton as ye, PageHeader as qe } from "@journal/window-kit";
+const N = [
   { value: "row", label: "A record is made", fields: [{ name: "event", label: "Record and event", placeholder: "plan.create" }] },
   { value: "phrase", label: "You ask for it", fields: [{ name: "text", label: "Words you write", placeholder: "an update please" }] },
   { value: "command", label: "A command runs", fields: [{ name: "pattern", label: "Pattern on the command line", placeholder: "^git push" }] },
   { value: "file", label: "A file is edited", fields: [{ name: "pattern", label: "Files, as a path glob", placeholder: "src/*.py" }] },
   { value: "file-text", label: "An edit adds text", fields: [{ name: "pattern", label: "Files, as a path glob", placeholder: "src/*.py" }, { name: "text", label: "Text in the new content", placeholder: "TODO" }] },
   { value: "tool", label: "A tool is used", fields: [{ name: "tool", label: "Tool name", placeholder: "Edit" }, { name: "pattern", label: "Pattern on its input, if any", placeholder: "migrations/" }] }
-], J = (e) => U.find((p) => p.value === e) ?? U[0], We = {
+], P = (e) => N.find((t) => t.value === e) ?? N[0], he = {
   row: (e) => `When ${e.event} happens`,
   phrase: (e) => `When you ask “${e.text}”`,
   command: (e) => `When a command matching “${e.pattern}” runs`,
   file: (e) => `When a file matching “${e.pattern}” is edited`,
   "file-text": (e) => `When an edit to “${e.pattern}” adds “${e.text}”`,
   tool: (e) => `When ${e.tool} is used${e.pattern ? ` with “${e.pattern}” in its input` : ""}`
-}, Re = (e) => We[e.trigger_type](e), Y = (e) => e.length ? e.map(Re) : ["Only when you or the agent start it"], z = () => ({ trigger_type: "phrase", event: "", text: "", pattern: "", tool: "" });
-function De(e) {
-  const p = J(e.trigger_type).fields.map((u) => [u.name, (e[u.name] || "").trim()]);
-  return { trigger_type: e.trigger_type, ...Object.fromEntries(p.filter(([, u]) => u)) };
+}, fe = (e) => he[e.trigger_type](e), K = (e) => e.length ? e.map(fe) : ["Only when you or the agent start it"], M = () => ({ trigger_type: "phrase", event: "", text: "", pattern: "", tool: "" });
+function Q(e) {
+  const t = P(e.trigger_type).fields.map((n) => [n.name, (e[n.name] || "").trim()]);
+  return { trigger_type: e.trigger_type, ...Object.fromEntries(t.filter(([, n]) => n)) };
 }
-const Ve = { tool: ["pattern"] };
-function Be(e) {
-  const p = e.find((u) => J(u.trigger_type).fields.some((l) => !(Ve[u.trigger_type] ?? []).includes(l.name) && !(u[l.name] || "").trim()));
-  return p ? `${J(p.trigger_type).label}: complete every field.` : "";
+const ke = { tool: ["pattern"] };
+function X(e) {
+  const t = e.find((n) => P(n.trigger_type).fields.some((i) => !(ke[n.trigger_type] ?? []).includes(i.name) && !(n[i.name] || "").trim()));
+  return t ? `${P(t.trigger_type).label}: complete every field.` : "";
 }
-const Ee = {
+const $e = "Add instructions for each step.", Z = (e) => ({ key: "steps", label: "Steps, in order", kind: "slot", required: !0, value: e }), ee = (e) => e.steps.some((t) => !t.trim()) ? { steps: $e } : {}, Se = (e) => /\s/.test(e) ? JSON.stringify(e) : e, F = (e) => `journal ${e.map(Se).join(" ")}`, we = (e = "", t = [""]) => [{ key: "title", label: "Title", required: !0, placeholder: "Releasing a version", value: e }, Z(t)], Oe = (e) => e.title.trim() ? ee(e) : { title: "Give the sequence a title." }, Ae = (e) => ["sequence", "make", e.title.trim(), "--steps", e.steps.map((t) => t.trim()).join(" | ")], Ce = (e) => F(["sequence", "make", e.title.trim() || "…", "--steps", e.steps.map((t) => t.trim()).join(" | ") || "…"]), xe = (e) => JSON.parse(e.step_guards || "[]"), Te = { file_edits_allowed: !0, allowed_commands: [] }, Ne = (e, t) => ["sequence", "edit", String(e.id), "--steps", ...t.steps.map((n) => n.trim()), "--step-guards", JSON.stringify(t.steps.map((n, i) => xe(e)[i] ?? Te))], Re = (e) => () => F(["sequence", "edit", String(e.id), "--steps", "…"]), te = (e, t) => `${e.value}:${t}`, Ie = { tool: ["pattern"] }, We = [
+  { key: "kind", label: "Starts when", kind: "select", options: N.map((e) => [e.value, e.label]) },
+  ...N.flatMap((e) => e.fields.map((t) => ({ key: te(e, t.name), label: t.label, placeholder: t.placeholder, required: !(Ie[e.value] ?? []).includes(t.name), when: (n) => n.kind === e.value })))
+], ne = (e) => ({ ...M(), trigger_type: e.kind, ...Object.fromEntries(N.find((t) => t.value === e.kind).fields.map((t) => [t.name, e[te({ value: e.kind }, t.name)] ?? ""])) }), je = (e) => X([ne(e)]) ? { [Object.keys(e).find((n) => n.startsWith(`${e.kind}:`))]: "Complete every field." } : {}, Ee = (e, t) => ["sequence", "edit", String(e.id), "--triggers", JSON.stringify([...JSON.parse(e.triggers || "[]"), Q(ne(t))])], Le = (e) => () => F(["sequence", "edit", String(e.id), "--triggers", "…"]), Pe = [{ key: "why", label: "Why", required: !0, placeholder: "The plan changed" }], De = (e) => ["sequence", "abandon", "--why", e.why.trim(), "--sure"], Fe = (e) => F(["sequence", "abandon", "--why", e.why.trim() || "…", "--sure"]), Je = {
+  __name: "AbandonRun",
+  props: { run: { type: Object, required: !0 } },
+  emits: ["close"],
+  setup(e, { emit: t }) {
+    const n = t, i = R();
+    return (o, c) => (r(), h(s(D), {
+      title: `Abandon run ${e.run.id}`,
+      submit: "Abandon the run",
+      fields: s(Pe),
+      command: s(Fe),
+      run: (a) => s(i).run(s(De)(a)),
+      onClose: c[0] || (c[0] = (a) => n("close"))
+    }, null, 8, ["title", "fields", "command", "run"]));
+  }
+}, Be = {
+  __name: "AddTrigger",
+  props: { sequence: { type: Object, required: !0 } },
+  emits: ["close"],
+  setup(e, { emit: t }) {
+    const n = e, i = t, o = R(), c = (a) => o.run(Ee(n.sequence, a));
+    return (a, g) => (r(), h(s(D), {
+      title: "Add trigger",
+      submit: "Add the trigger",
+      fields: s(We),
+      command: s(Le)(e.sequence),
+      check: s(je),
+      run: c,
+      onClose: g[0] || (g[0] = (l) => i("close"))
+    }, null, 8, ["fields", "command", "check"]));
+  }
+}, se = {
+  __name: "StepCards",
+  props: { steps: { type: Array, required: !0 } },
+  emits: ["steps"],
+  setup(e, { emit: t }) {
+    const n = t;
+    return (i, o) => (r(), h(s(ue), {
+      items: e.steps,
+      kind: "step",
+      noun: "Step",
+      placeholder: "What the agent does in this step",
+      "add-label": "Add a step",
+      onItems: o[0] || (o[0] = (c) => n("steps", c))
+    }, null, 8, ["items"]));
+  }
+}, Me = {
+  __name: "EditSteps",
+  props: { sequence: { type: Object, required: !0 } },
+  emits: ["close"],
+  setup(e, { emit: t }) {
+    const n = e, i = t, o = R(), c = (a) => o.run(Ne(n.sequence, a));
+    return (a, g) => (r(), h(s(D), {
+      title: `Edit ${e.sequence.title}`,
+      submit: "Save the steps",
+      fields: [s(Z)([...e.sequence.steps])],
+      command: s(Re)(e.sequence),
+      check: s(ee),
+      run: c,
+      onClose: g[0] || (g[0] = (l) => i("close"))
+    }, {
+      steps: b(({ value: l, set: q }) => [
+        _(se, {
+          steps: l,
+          onSteps: q
+        }, null, 8, ["steps", "onSteps"])
+      ]),
+      _: 1
+    }, 8, ["title", "fields", "command", "check"]));
+  }
+}, Y = {
+  __name: "NewSequence",
+  props: { title: { type: String, default: "" }, steps: { type: Array, default: () => [""] } },
+  emits: ["close"],
+  setup(e, { emit: t }) {
+    const n = e, i = t, o = R(), c = (a) => o.run(Ae(a));
+    return (a, g) => (r(), h(s(D), {
+      title: "New sequence",
+      submit: "Make the sequence",
+      fields: s(we)(n.title, n.steps),
+      command: s(Ce),
+      check: s(Oe),
+      run: c,
+      onClose: g[0] || (g[0] = (l) => i("close"))
+    }, {
+      steps: b(({ value: l, set: q }) => [
+        _(se, {
+          steps: l,
+          onSteps: q
+        }, null, 8, ["steps", "onSteps"])
+      ]),
+      _: 1
+    }, 8, ["fields", "command", "check"]));
+  }
+}, Ve = (e) => JSON.parse(e.steps), J = (e, t) => t.filter((n) => n.sequence_id === e.id), ae = (e) => JSON.parse(e.triggers || "[]"), x = (e) => ({ done: e.step_number - 1, total: Ve(e).length }), le = (e, t) => e.id === Math.max(...t.filter((n) => n.session_agent_id === e.session_agent_id).map((n) => n.id));
+function Ge(e, t) {
+  const n = J(e, t).length;
+  return `${e.steps.length} steps · ${n ? `${n} running now` : K(ae(e))[0]}`;
+}
+const B = (e, t) => {
+  const n = e.__vccOpts || e;
+  for (const [i, o] of t)
+    n[i] = o;
+  return n;
+}, Ue = {
+  class: "sequence-runs",
+  "data-sequence-runs": ""
+}, Ye = {
+  key: 0,
+  class: "none",
+  "data-runs-none": ""
+}, ze = { class: "run-number" }, He = ["aria-valuenow", "aria-valuemax"], Ke = { class: "run-words" }, Qe = ["onClick"], Xe = {
+  __name: "SequenceRuns",
+  props: { runs: { type: Array, required: !0 }, all: { type: Array, required: !0 } },
+  emits: ["abandon"],
+  setup(e, { emit: t }) {
+    const n = t, i = (o) => `Step ${o.step_number} of ${x(o).total}${o.step_started ? "" : ", not started yet"}`;
+    return (o, c) => (r(), m("section", Ue, [
+      e.runs.length ? A("", !0) : (r(), m("p", Ye, "No run is going now")),
+      (r(!0), m(O, null, W(e.runs, (a) => (r(), m("div", {
+        key: a.id,
+        class: "run",
+        "data-run": ""
+      }, [
+        y("span", ze, f(a.id), 1),
+        _(s(H), {
+          name: `Agent ${a.session_agent_id}`
+        }, null, 8, ["name"]),
+        y("span", {
+          class: "bar",
+          role: "progressbar",
+          "aria-valuenow": s(x)(a).done,
+          "aria-valuemin": "0",
+          "aria-valuemax": s(x)(a).total
+        }, [
+          y("i", {
+            style: z({ width: `${s(x)(a).done / s(x)(a).total * 100}%` })
+          }, null, 4)
+        ], 8, He),
+        y("span", Ke, f(i(a)), 1),
+        s(le)(a, e.all) ? (r(), m("button", {
+          key: 0,
+          type: "button",
+          class: "abandon",
+          "data-run-abandon": "",
+          onClick: (g) => n("abandon", a)
+        }, "Abandon", 8, Qe)) : A("", !0)
+      ]))), 128))
+    ]));
+  }
+}, Ze = /* @__PURE__ */ B(Xe, [["__scopeId", "data-v-d89d02e5"]]), et = {
+  class: "sequence-steps",
+  "data-sequence-steps": ""
+}, tt = {
+  key: 0,
+  class: "progress",
+  "data-step-progress": ""
+}, nt = ["aria-valuenow", "aria-valuemax"], st = { class: "progress-words" }, at = { class: "steps" }, lt = { class: "step-number" }, rt = { class: "step-body" }, ot = {
+  class: "step-guard",
+  "data-step-guard": ""
+}, ut = {
+  key: 0,
+  class: "badge-quiet",
+  "data-step-state": ""
+}, it = {
+  __name: "SequenceSteps",
+  props: { sequence: { type: Object, required: !0 }, runs: { type: Array, required: !0 } },
+  setup(e) {
+    const t = e, n = w(() => JSON.parse(t.sequence.step_guards || "[]")), i = (l) => n.value[l] ?? { file_edits_allowed: !0, allowed_commands: [] }, o = (l) => [i(l).file_edits_allowed ? "File edits allowed" : "File edits wait", ...i(l).allowed_commands].join(", "), c = w(() => t.runs.length ? x(t.runs.reduce((l, q) => q.step_number > l.step_number ? q : l)) : null), a = w(() => t.runs.length ? Math.min(...t.runs.map((l) => l.step_number)) : 0), g = (l) => t.runs.some((q) => q.step_number === l + 1) ? "In progress" : t.runs.length && l + 1 < a.value ? "Done" : "";
+    return (l, q) => (r(), m("section", et, [
+      c.value ? (r(), m("div", tt, [
+        y("span", {
+          class: "bar",
+          role: "progressbar",
+          "aria-valuenow": c.value.done,
+          "aria-valuemin": "0",
+          "aria-valuemax": c.value.total
+        }, [
+          y("i", {
+            style: z({ width: `${c.value.done / c.value.total * 100}%` })
+          }, null, 4)
+        ], 8, nt),
+        y("span", st, f(c.value.done) + " of " + f(c.value.total) + " done", 1)
+      ])) : A("", !0),
+      y("ol", at, [
+        (r(!0), m(O, null, W(e.sequence.steps, ($, u) => (r(), m("li", {
+          key: u,
+          class: "step",
+          "data-step": ""
+        }, [
+          y("span", lt, f(u + 1), 1),
+          y("div", rt, [
+            _(s(ie), {
+              class: "step-text",
+              text: $
+            }, null, 8, ["text"]),
+            y("span", ot, f(o(u)), 1)
+          ]),
+          g(u) ? (r(), m("span", ut, f(g(u)), 1)) : A("", !0)
+        ]))), 128))
+      ])
+    ]));
+  }
+}, dt = /* @__PURE__ */ B(it, [["__scopeId", "data-v-f42e011f"]]), ct = {
   class: "sequence-triggers",
   "data-sequence-triggers": ""
-}, Pe = { class: "head" }, Je = { class: "label" }, xe = ["onUpdate:modelValue", "placeholder", "aria-label", "data-trigger-field"], Ue = { class: "foot" }, je = {
+}, pt = { class: "head" }, mt = { class: "label" }, gt = ["onUpdate:modelValue", "placeholder", "aria-label", "data-trigger-field"], vt = { class: "foot" }, bt = {
   class: "note",
   role: "status"
-}, ze = {
+}, _t = {
   __name: "SequenceTriggers",
   props: { sequence: { type: Object, required: !0 } },
   setup(e) {
-    const p = e, u = x(), l = U.map((d) => ({ key: d.value, label: d.label })), k = I(() => JSON.parse(p.sequence.triggers || "[]")), $ = I(() => Y(k.value)), _ = A(null), q = A(""), c = I(() => _.value ? Be(_.value) : ""), n = () => _.value = k.value.map((d) => ({ ...z(), ...d }));
-    async function t() {
-      const d = await u.run(["sequence", "edit", String(p.sequence.id), "--triggers", JSON.stringify(_.value.map(De))]);
-      q.value = d.ok ? "" : d.error, d.ok && (_.value = null);
+    const t = e, n = R(), i = N.map((u) => ({ key: u.value, label: u.label })), o = w(() => JSON.parse(t.sequence.triggers || "[]")), c = w(() => K(o.value)), a = L(null), g = L(""), l = w(() => a.value ? X(a.value) : ""), q = () => a.value = o.value.map((u) => ({ ...M(), ...u }));
+    async function $() {
+      const u = await n.run(["sequence", "edit", String(t.sequence.id), "--triggers", JSON.stringify(a.value.map(Q))]);
+      g.value = u.ok ? "" : u.error, u.ok && (a.value = null);
     }
-    return (d, b) => (r(), v("section", Ee, [
-      a("header", Pe, [
-        b[3] || (b[3] = a("span", { class: "title" }, "Starts", -1)),
-        _.value ? V("", !0) : (r(), D(o(h), {
+    return (u, v) => (r(), m("section", ct, [
+      y("header", pt, [
+        v[3] || (v[3] = y("span", { class: "title" }, "Starts", -1)),
+        a.value ? A("", !0) : (r(), h(s(T), {
           key: 0,
           small: "",
           "data-sequence-triggers-edit": "",
-          onClick: n
+          onClick: q
         }, {
-          default: g(() => [
-            i(o(E), {
+          default: b(() => [
+            _(s(de), {
               name: "pencil",
               size: 12
             }),
-            b[2] || (b[2] = C(" Edit", -1))
+            v[2] || (v[2] = C(" Edit", -1))
           ]),
           _: 1
         }))
       ]),
-      _.value ? (r(), v(T, { key: 1 }, [
-        (r(!0), v(T, null, W(_.value, (w, f) => (r(), v("div", {
-          key: f,
+      a.value ? (r(), m(O, { key: 1 }, [
+        (r(!0), m(O, null, W(a.value, (k, j) => (r(), m("div", {
+          key: j,
           class: "card",
           "data-sequence-trigger-card": ""
         }, [
-          i(o(K), {
-            options: o(l),
-            value: w.trigger_type,
-            onPick: (s) => w.trigger_type = s
+          _(s(ce), {
+            options: s(i),
+            value: k.trigger_type,
+            onPick: (d) => k.trigger_type = d
           }, null, 8, ["options", "value", "onPick"]),
-          (r(!0), v(T, null, W(o(J)(w.trigger_type).fields, (s) => (r(), v(T, {
-            key: s.name
+          (r(!0), m(O, null, W(s(P)(k.trigger_type).fields, (d) => (r(), m(O, {
+            key: d.name
           }, [
-            a("label", Je, S(s.label), 1),
-            P(a("input", {
-              "onUpdate:modelValue": (y) => w[s.name] = y,
-              placeholder: s.placeholder,
-              "aria-label": s.label,
-              "data-trigger-field": s.name
-            }, null, 8, xe), [
-              [j, w[s.name]]
+            y("label", mt, f(d.label), 1),
+            re(y("input", {
+              "onUpdate:modelValue": (p) => k[d.name] = p,
+              placeholder: d.placeholder,
+              "aria-label": d.label,
+              "data-trigger-field": d.name
+            }, null, 8, gt), [
+              [oe, k[d.name]]
             ])
           ], 64))), 128)),
-          i(o(h), {
+          _(s(T), {
             small: "",
             "data-sequence-trigger-remove": "",
-            onClick: (s) => _.value.splice(f, 1)
+            onClick: (d) => a.value.splice(j, 1)
           }, {
-            default: g(() => [...b[4] || (b[4] = [
+            default: b(() => [...v[4] || (v[4] = [
               C("Remove", -1)
             ])]),
             _: 1
           }, 8, ["onClick"])
         ]))), 128)),
-        a("div", Ue, [
-          i(o(h), {
+        y("div", vt, [
+          _(s(T), {
             small: "",
             "data-sequence-trigger-add": "",
-            onClick: b[0] || (b[0] = (w) => _.value.push(o(z)()))
+            onClick: v[0] || (v[0] = (k) => a.value.push(s(M)()))
           }, {
-            default: g(() => [...b[5] || (b[5] = [
+            default: b(() => [...v[5] || (v[5] = [
               C("Add a trigger", -1)
             ])]),
             _: 1
           }),
-          i(o(h), {
+          _(s(T), {
             small: "",
             variant: "primary",
-            disabled: !!c.value,
+            disabled: !!l.value,
             "data-sequence-triggers-save": "",
-            onClick: t
+            onClick: $
           }, {
-            default: g(() => [...b[6] || (b[6] = [
+            default: b(() => [...v[6] || (v[6] = [
               C("Save", -1)
             ])]),
             _: 1
           }, 8, ["disabled"]),
-          i(o(h), {
+          _(s(T), {
             small: "",
-            onClick: b[1] || (b[1] = (w) => _.value = null)
+            onClick: v[1] || (v[1] = (k) => a.value = null)
           }, {
-            default: g(() => [...b[7] || (b[7] = [
+            default: b(() => [...v[7] || (v[7] = [
               C("Cancel", -1)
             ])]),
             _: 1
           }),
-          a("span", je, S(q.value || c.value), 1)
+          y("span", bt, f(g.value || l.value), 1)
         ])
-      ], 64)) : (r(!0), v(T, { key: 0 }, W($.value, (w) => (r(), v("p", {
-        key: w,
+      ], 64)) : (r(!0), m(O, { key: 0 }, W(c.value, (k) => (r(), m("p", {
+        key: k,
         class: "line",
         "data-sequence-trigger": ""
-      }, S(w), 1))), 128))
+      }, f(k), 1))), 128))
     ]));
   }
-}, Fe = /* @__PURE__ */ B(ze, [["__scopeId", "data-v-2da9d503"]]), Me = {
-  class: "note",
-  role: "status"
-}, Ge = {
-  __name: "SequenceCards",
-  setup(e) {
-    const p = x(), { rows: u, data: l, failure: k, loaded: $, act: _ } = p.props.board, q = I(() => {
-      var m;
-      return ((m = l.value) == null ? void 0 : m.runs) ?? [];
-    }), c = A(!1), n = A(null), t = A(!1), d = A(""), b = (m) => `${m.steps.length} steps · ${s(m) ? `${s(m)} running now` : Y(JSON.parse(m.triggers || "[]"))[0]}`, w = I(() => u.value.find((m) => m.id === n.value) || null), f = I(() => q.value.filter((m) => m.sequence_id === n.value)), s = (m) => q.value.filter((N) => N.sequence_id === m.id).length;
-    function y(m) {
-      d.value = "", t.value = !1, n.value = m.id;
-    }
-    async function O() {
-      if (!t.value) return void (t.value = !0);
-      const m = await _(["sequence", "delete", String(n.value)], X(n.value));
-      d.value = m.ok ? "" : m.error, m.ok && (n.value = null);
-    }
-    return (m, N) => (r(), D(o(Q), {
-      term: "sequence",
-      icon: "list",
-      rows: o(u),
-      failure: o(k),
-      loaded: o($),
-      head: (R) => `Sequence ${R.id}`,
-      title: (R) => R.title,
-      foot: b,
-      onNew: N[3] || (N[3] = (R) => c.value = !0),
-      onOpen: y
+}, yt = /* @__PURE__ */ B(_t, [["__scopeId", "data-v-2da9d503"]]), qt = {
+  class: "run-head",
+  "data-run-head": ""
+}, ht = {
+  __name: "SequenceReader",
+  props: { sequence: { type: Object, required: !0 }, runs: { type: Array, required: !0 }, items: { type: Array, required: !0 } },
+  emits: ["abandon"],
+  setup(e, { emit: t }) {
+    const n = e, i = t, o = w(() => J(n.sequence, n.runs)), c = w(() => [
+      { key: "steps", label: "Steps", count: n.sequence.steps.length },
+      { key: "runs", label: "Runs", count: o.value.length },
+      { key: "triggers", label: "Triggers", count: ae(n.sequence).length }
+    ]), a = w(() => o.value[0] ?? null);
+    return (g, l) => (r(), h(s(pe), {
+      title: e.sequence.title,
+      number: String(e.sequence.id),
+      tabs: c.value,
+      "data-sequence-reader": ""
     }, {
-      default: g(() => [
-        c.value ? (r(), D(de, {
-          key: 0,
-          onClose: N[0] || (N[0] = (R) => c.value = !1)
-        })) : V("", !0),
-        w.value ? (r(), D(o(M), {
-          key: 1,
-          padded: "",
-          title: w.value.title,
-          tall: "",
-          onClose: N[2] || (N[2] = (R) => n.value = null)
-        }, {
-          foot: g(() => [
-            a("span", Me, S(d.value), 1),
-            i(o(h), {
-              variant: "danger",
-              "data-sequence-delete": "",
-              onClick: O
-            }, {
-              default: g(() => [
-                C(S(t.value ? "Delete it for good" : "Delete"), 1)
-              ]),
-              _: 1
-            }),
-            i(o(h), {
-              "data-sequence-done": "",
-              onClick: N[1] || (N[1] = (R) => n.value = null)
-            }, {
-              default: g(() => [...N[4] || (N[4] = [
-                C("Done", -1)
-              ])]),
-              _: 1
-            })
+      agent: b(() => [
+        a.value ? (r(), m(O, { key: 0 }, [
+          y("span", qt, "Run " + f(a.value.id) + " · step " + f(a.value.step_number) + " of " + f(s(x)(a.value).total), 1),
+          _(s(H), {
+            name: `Agent ${a.value.session_agent_id}`
+          }, null, 8, ["name"])
+        ], 64)) : A("", !0)
+      ]),
+      actions: b(() => [
+        _(s(ge), {
+          items: e.items,
+          head: `Sequence ${e.sequence.id}`
+        }, null, 8, ["items", "head"])
+      ]),
+      default: b(({ tab: q }) => [
+        _(s(me), { value: q }, {
+          steps: b(() => [
+            _(dt, {
+              sequence: e.sequence,
+              runs: o.value
+            }, null, 8, ["sequence", "runs"])
           ]),
-          default: g(() => [
-            i(Fe, { sequence: w.value }, null, 8, ["sequence"]),
-            i(Ie, {
-              sequence: w.value,
-              runs: f.value
-            }, null, 8, ["sequence", "runs"]),
-            i(fe, { runs: f.value }, null, 8, ["runs"])
+          runs: b(() => [
+            _(Ze, {
+              runs: o.value,
+              all: e.runs,
+              onAbandon: l[0] || (l[0] = ($) => i("abandon", $))
+            }, null, 8, ["runs", "all"])
+          ]),
+          triggers: b(() => [
+            _(yt, { sequence: e.sequence }, null, 8, ["sequence"])
           ]),
           _: 1
-        }, 8, ["title"])) : V("", !0)
+        }, 8, ["value"])
       ]),
       _: 1
-    }, 8, ["rows", "failure", "loaded", "head", "title"]));
+    }, 8, ["title", "number", "tabs"]));
   }
-}, He = /* @__PURE__ */ B(Ge, [["__scopeId", "data-v-d7db7b4a"]]);
+};
+function ft(e, t, { act: n, ask: i, open: o = null }) {
+  const c = J(e, t), a = c.filter((l) => le(l, t)), g = (l) => async ({ say: q }) => {
+    const $ = await l.line();
+    q($.ok ? l.done : $.error);
+  };
+  return [
+    ...o ? [{ label: "Open", group: "open", run: o }] : [],
+    { label: "Start", group: "own", disabled: c.length > 0, reason: "Running", run: g({ line: () => n(["sequence", "run", String(e.id)]), done: `Sequence ${e.id} started` }) },
+    ...a.map((l) => ({ label: `Abandon run ${l.id}`, group: "own", run: () => i("abandon", e, l) })),
+    { label: "Edit steps", group: "own", run: () => i("steps", e) },
+    { label: "Add trigger", group: "own", run: () => i("trigger", e) },
+    { label: "Duplicate", group: "own", run: () => i("copy", e) },
+    ve({ name: `sequence ${e.id}`, remove: () => n(["sequence", "delete", String(e.id)], be(e.id)) })
+  ];
+}
+const kt = {
+  key: 0,
+  class: "failure",
+  role: "alert",
+  "data-sequences-failure": ""
+}, $t = {
+  key: 0,
+  class: "badge-quiet",
+  "data-sequence-running": ""
+}, St = 460, wt = {
+  __name: "SequenceCards",
+  setup(e) {
+    const t = R(), { rows: n, data: i, failure: o, loaded: c, act: a, actionFailure: g } = t.props.board, l = w(() => {
+      var d;
+      return ((d = i.value) == null ? void 0 : d.runs) ?? [];
+    }), q = w(() => n.value.map((d) => ({ id: d.id, title: `${d.id} ${d.title}`, desc: Ge(d, l.value), row: d, running: J(d, l.value).length > 0 }))), $ = L(null), u = L(null), v = (d, p, S = null) => u.value = { kind: d, sequence: p, run: S }, k = (d, p = null) => ft(d, l.value, { act: a, ask: v, open: p }), j = (d) => ({ head: `Sequence ${d.id}`, items: k(d.row, () => $.value = d.id) });
+    return (d, p) => (r(), h(s(_e), {
+      chosen: $.value,
+      "onUpdate:chosen": p[6] || (p[6] = (S) => $.value = S),
+      items: q.value,
+      "list-width": St,
+      place: j,
+      "empty-title": "No sequences yet",
+      "pick-line": "Choose a sequence",
+      "data-sequences": ""
+    }, {
+      top: b(() => {
+        var S, E, V, G, U;
+        return [
+          _(s(qe), {
+            title: "Sequences",
+            count: s(n).length
+          }, {
+            primary: b(() => [
+              _(s(T), {
+                small: "",
+                variant: "primary",
+                "data-sequence-new": "",
+                onClick: p[0] || (p[0] = (I) => v("new"))
+              }, {
+                default: b(() => [...p[7] || (p[7] = [
+                  C("New sequence", -1)
+                ])]),
+                _: 1
+              })
+            ]),
+            _: 1
+          }, 8, ["count"]),
+          s(o) || s(g) ? (r(), m("p", kt, f(s(o) || s(g)), 1)) : A("", !0),
+          ((S = u.value) == null ? void 0 : S.kind) === "new" ? (r(), h(Y, {
+            key: 1,
+            onClose: p[1] || (p[1] = (I) => u.value = null)
+          })) : ((E = u.value) == null ? void 0 : E.kind) === "copy" ? (r(), h(Y, {
+            key: 2,
+            title: `${u.value.sequence.title} copy`,
+            steps: [...u.value.sequence.steps],
+            onClose: p[2] || (p[2] = (I) => u.value = null)
+          }, null, 8, ["title", "steps"])) : ((V = u.value) == null ? void 0 : V.kind) === "steps" ? (r(), h(Me, {
+            key: 3,
+            sequence: u.value.sequence,
+            onClose: p[3] || (p[3] = (I) => u.value = null)
+          }, null, 8, ["sequence"])) : ((G = u.value) == null ? void 0 : G.kind) === "trigger" ? (r(), h(Be, {
+            key: 4,
+            sequence: u.value.sequence,
+            onClose: p[4] || (p[4] = (I) => u.value = null)
+          }, null, 8, ["sequence"])) : ((U = u.value) == null ? void 0 : U.kind) === "abandon" ? (r(), h(Je, {
+            key: 5,
+            run: u.value.run,
+            onClose: p[5] || (p[5] = (I) => u.value = null)
+          }, null, 8, ["run"])) : A("", !0)
+        ];
+      }),
+      empty: b(() => [
+        s(c) ? (r(), m(O, { key: 1 }, [
+          C("A sequence is steps an agent works through in order.")
+        ], 64)) : (r(), h(s(ye), {
+          key: 0,
+          shape: "rows"
+        }))
+      ]),
+      meta: b(({ item: S }) => [
+        S.running ? (r(), m("span", $t, "Running")) : A("", !0)
+      ]),
+      reader: b(({ item: S }) => [
+        _(ht, {
+          sequence: S.row,
+          runs: l.value,
+          items: k(S.row),
+          onAbandon: (E) => v("abandon", S.row, E)
+        }, null, 8, ["sequence", "runs", "items", "onAbandon"])
+      ]),
+      _: 1
+    }, 8, ["chosen", "items"]));
+  }
+}, Ct = /* @__PURE__ */ B(wt, [["__scopeId", "data-v-186ad116"]]);
 export {
-  He as default
+  Ct as default
 };

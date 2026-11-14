@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
@@ -44,6 +45,6 @@ class Tools:
 
     # Copies into a new checkout what each tool that is on needs of its output, and names the folders written.
     def worktree_outputs(self, source: str, folder: str) -> list[str]:
-        if not Path(folder).is_dir():
+        if not FileAccess.is_dir(Path(folder)):
             return []
         return [name for tool in self.catalogue.all() if self.hooks.enabled(tool) for name in self.catalogue.runner(tool.name).copy_output(Path(source), Path(folder))]

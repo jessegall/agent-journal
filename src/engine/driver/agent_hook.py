@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from engine.driver.hook_event import HookEvent
 from engine.enums.hook_event_name import HookEventName
 from engine.enums.agent_role import AgentRole
+from engine.driver.loaded_actor import LoadedActor
 from engine.driver.open_row import OpenRow
 from engine.time.timestamp import Timestamp
 
@@ -22,6 +23,10 @@ class AgentHook:
     suite: str = ""
     control_return: bool = False
     access: str = ""
+
+    @classmethod
+    def of_actor(cls, event: HookEvent, actor: LoadedActor, timestamp: Timestamp) -> "AgentHook":
+        return cls(event, actor.agent_id, actor.environment_id, actor.role, actor.driver, timestamp, suite=actor.suite, access=actor.access)
 
     @property
     def hook_name(self) -> str:

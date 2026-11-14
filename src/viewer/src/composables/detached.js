@@ -24,8 +24,7 @@ export function useDetached(store, catalogue, environment) {
         },
     });
 
-    function detach(pane) {
-        const view = layout().panes[pane].active;
+    function detach(pane, view = layout().panes[pane].active) {
         const entry = catalogue.window(view);
         const w = clamp(entry?.float_width || SIZE.w, MIN_W, window.innerWidth - 2 * EDGE);
         const h = clamp(entry?.float_height || SIZE.h, MIN_H, window.innerHeight - 2 * EDGE);

@@ -1,9 +1,15 @@
 from collections.abc import Mapping, Sequence
 
+from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_priority import ExecutionPriority
+from engine.execution.classes.execution_class import UNLIMITED, ExecutionClass
 from core.modules.plugins.models.enums.run_scope import RunScope
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.process_type_admission import ProcessTypeAdmission
 from core.modules.plugins.support.plugin_run_rule import PluginRunRule
+
+
+PLUGIN_KIND_COST = 4
 
 
 class PluginRunAdmission(ProcessTypeAdmission):
@@ -33,3 +39,9 @@ class PluginRunAdmission(ProcessTypeAdmission):
             self.free_megabytes -= rule.declared.memory_mb
         if (process.plugin, process.run_name) in self.machine_counts:
             self.machine_counts[(process.plugin, process.run_name)] += 1
+
+    # a plugin's kind runs in the long lane at normal, as many at once as its manifest's setting allows
+    def kind_classes(self) -> dict[tuple[str, str], ExecutionClass]:
+        return {(plugin, category): ExecutionClass(f"{plugin} {category}", ExecutionLane.LONG, PLUGIN_KIND_COST, ExecutionPriority.NORMAL,
+                                                   rule.limit if rule.limit is not None else UNLIMITED, plugin=plugin)
+                for (plugin, category, _), rule in self.rules.items()}

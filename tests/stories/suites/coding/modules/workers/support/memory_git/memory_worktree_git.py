@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from suites.coding.modules.workers.support.merge_builds import MergeBuilds
 import shutil
 import subprocess
@@ -37,11 +38,20 @@ class MemoryWorktreeGit(WorktreeGit):
     def commit_checkout(self, worktree: Worktree, commit: str) -> str:
         return worktree.folder
 
+    def merged_checkout(self, worktree: Worktree) -> str:
+        return worktree.folder
+
     def is_test_checkout_current(self, worktree: Worktree) -> bool:
         return True
 
     def is_ancestor(self, folder: str, ancestor: str, commit: str) -> bool:
         return True
+
+    def hold_branch(self, worktree: Worktree) -> None:
+        return None
+
+    def base_changes_on_own_files(self, folder: str, base_branch: str, commit: str) -> tuple[str, ...]:
+        return ()
 
     def base_checkout(self, environment: Environment, name: str) -> str:
         return environment.folder
@@ -64,6 +74,13 @@ class MemoryWorktreeGit(WorktreeGit):
 
     def uncommitted_names(self, folder: str | Path) -> tuple[str, ...]:
         return TreeChanges(self.committed_tree(folder), self.working_tree(folder)).names()
+
+    def undo_path(self, folder: str, path: str) -> None:
+        committed = self.committed_tree(folder)
+        if path in committed:
+            FileAccess.write(Path(folder) / path, committed[path])
+            return
+        FileAccess.unlink(Path(folder) / path, missing_ok=True)
 
     def tip(self, folder: str, branch: str) -> str:
         if not self.history.has_branch(branch):
@@ -328,6 +345,9 @@ class MemoryWorktreeGit(WorktreeGit):
         names = {change.relative for change in tracked}
         untracked = tuple(WorktreeFileChange(name, FileStatus.ADDED) for name in sorted(working) if name not in committed and name not in names)
         return (*tracked, *untracked)
+
+    def committed_files(self, worktree: Worktree) -> tuple[str, ...]:
+        return tuple(change.relative for change in TreeChanges(self.history.commits[worktree.base_commit].tree, self.committed_tree(worktree.folder)).tracked_changes())
 
     def has_commit(self, folder: str, commit: str) -> bool:
         return self.history.resolves(commit)

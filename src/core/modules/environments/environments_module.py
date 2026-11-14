@@ -16,7 +16,7 @@ class EnvironmentsModule(Module):
     """Adds environments, the checkouts where work happens, and lets --environment name one."""
 
     name = "journal.core.environments"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors"]
     models = [ModelDeclaration(Environment, query=EnvironmentQuery, excluded_subcommands=["list"])]
     subcommands = [EnvironmentListSubcommand]

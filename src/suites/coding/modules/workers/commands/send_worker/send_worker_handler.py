@@ -94,11 +94,12 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
         self.check_job(command, worker)
         self.check_session(worker)
         if command.task_ids:
-            self.kept_tasks.check_tasks(command.task_ids, actor.id)
+            self.kept_tasks.check_tasks(command.task_ids, actor.id, worker.id)
         if self.worktrees.newest_worktree(worker.id) is None:
             raise Refusal(f"{AgentLabel.labelled(worker).text} has no worktree", "journal worker dispatch <task> starts a new one")
 
     def prepare(self, command: SendWorker, actor: Actor) -> None:
+        self.conflicts, self.is_gone, self.task_ids = (), False, ()
         worker = self.rows.required(Agent, command.worker_id)
         self.check_job(command, worker)
         self.check_session(worker)
@@ -120,7 +121,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
         if worktree is None:
             return
         if worktree.libraries_dropped_at is not None:
-            self.libraries.restore(self.environments.find(worker.environment_id).folder, worktree.folder, json.loads(worktree.library_copies))
+            self.libraries.restore(self.environments.find(worker.environment_id).folder, worktree.folder, json.loads(worktree.library_links), json.loads(worktree.library_copies))
             self.bus.run(RecordWorktreeLibraries(worktree.id, False), actor, environment_id=worker.environment_id)
         task = self.rows.required(Task, worktree.task_id)
         if not self.git.conflict_files(worktree):

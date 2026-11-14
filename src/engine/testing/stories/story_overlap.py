@@ -35,10 +35,13 @@ class StoryOverlap:
         for name, subjects in checks.items():
             self.story_checks[name] |= set(subjects)
 
-    def report_lines(self) -> list[str]:
+    # a story that reaches nothing the others do not is judged only against the whole suite: a run of a few files
+    # would name every story whose other half it left out
+    def report_lines(self, is_full_run: bool) -> list[str]:
         paths = self.paths()
         reached = {name: step_keys | {f"checks {subject}" for subject in self.story_checks[name]} for name, step_keys in paths.items()}
-        return [*self.shared_openings(), *self.overlapping_pairs(paths), *self.redundant_stories(reached)]
+        redundant = self.redundant_stories(reached) if is_full_run else []
+        return [*self.shared_openings(), *self.overlapping_pairs(paths), *redundant]
 
     def shared_openings(self) -> list[str]:
         lines: list[str] = []

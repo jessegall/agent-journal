@@ -75,7 +75,7 @@ class CodeHandover:
         raise Refusal(f"code version {tag} was not taken over: status {status}", f"the running server keeps serving: read {self.files.log}")
 
     def server_pid(self) -> str:
-        return FileAccess.shared().read(self.files.pid_file).strip() if self.files.pid_file.is_file() else ""
+        return FileAccess.read(self.files.pid_file).strip() if FileAccess.is_file(self.files.pid_file) else ""
 
     def takeover_status(self, tag: str) -> int:
         connection = UnixConnection(str(self.files.socket), PROOF_LIMIT_SECONDS + TAKEOVER_LIMIT_SECONDS, "journal")

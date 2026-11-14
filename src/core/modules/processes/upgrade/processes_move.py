@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import sqlite3
 from functools import partial
 from pathlib import Path
@@ -61,7 +62,7 @@ class ProcessesMove(VersionFourMove):
             rows.set_state("processes", process_id, step.value)
         output_id = rows.insert("outputs", {"process_id": process_id, "creator_id": creator_id, "folder": row["folder"] or "", "created_at": created, "updated_at": ended,
                                             "read_at": ended if row["is_read"] else None})
-        kept = bool(row["folder"]) and Path(row["folder"]).is_dir()
+        kept = bool(row["folder"]) and FileAccess.is_dir(Path(row["folder"]))
         for step in StateWalk(OutputLifecycle).path(OutputState.KEPT if kept else OutputState.PRUNED) or []:
             rows.set_state("outputs", output_id, step.value)
         return process_id

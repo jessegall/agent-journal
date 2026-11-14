@@ -12,8 +12,11 @@ const AUTO = "journal.suites.coding.auto-mode";
 const DISPATCHES = "journal.suites.coding.workers.main-dispatches-workers";
 const SCREEN_KEYS = {work: "work-screen", tests: "tests-screen", advanced: "advanced-screen", "helper-types": "helper-types-screen"};
 const view = useWindow();
-const tab = ref("work");
-const tabs = [{key: "work", label: "Work"}, {key: "agents", label: "Helpers", count_field: "full"}, {key: "tests", label: "Tests"}, {key: "advanced", label: "Advanced"}];
+const ALL_TABS = [{key: "work", label: "Work"}, {key: "agents", label: "Helpers", count_field: "full"}, {key: "assign", label: "Assign"}, {key: "tests", label: "Tests"}, {key: "advanced", label: "Advanced"}];
+// the Settings page draws each section of the agent settings with this window, naming the tabs the section holds; on its own the window has all of them
+const named = view.option("sections").value;
+const tabs = named ? ALL_TABS.filter((entry) => named.includes(entry.key)) : ALL_TABS;
+const tab = ref(tabs[0].key);
 const active = computed(() => tabs.find((entry) => entry.key === tab.value));
 
 const loaded = () => Object.values(SCREEN_KEYS).map((key) => view.props[key].data.value);
@@ -83,12 +86,12 @@ function pick(entry) {
                     <div class="head">
                         <span class="env" data-settings-environment>{{ view.environment }}</span>
                     </div>
-                    <template v-if="presets.length">
+                    <template v-if="presets.length && tabs.some((entry) => entry.key === 'work')">
                         <SettingPresetBand :presets="presets" :current="current" :disabled="view.readOnly" @pick="fill" @open-page="page = 'presets'">
                             <FindBox :index="index" @pick="openFound" />
                         </SettingPresetBand>
                     </template>
-                    <div class="settings-bar"><InnerTabs :tabs="tabs" :active="active" :answer="tabAnswer" @choose="pick" /></div>
+                    <div v-if="tabs.length > 1" class="settings-bar"><InnerTabs :tabs="tabs" :active="active" :answer="tabAnswer" @choose="pick" /></div>
                     <template v-if="view.readOnly">
                         <p class="note lock" role="note" data-settings-lock>Only a user can change these settings. You can read every value, and ask a user for a change.</p>
                     </template>

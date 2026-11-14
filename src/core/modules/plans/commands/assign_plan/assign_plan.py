@@ -2,11 +2,11 @@ from dataclasses import dataclass
 
 from engine.command.command import Command
 from core.modules.tasks.support.task_waits_updated_together import TaskWaitsUpdatedTogether
-from core.modules.plans.models.plan import Plan
+from core.modules.assignments.support.cascade import Cascade
 
 
 @dataclass(frozen=True)
-class AssignPlan(Command[Plan], TaskWaitsUpdatedTogether):
+class AssignPlan(Command[Cascade], TaskWaitsUpdatedTogether):
     """Gives a plan or one of its phases to the agent named, and with it the tasks that have no assignee yet, or
     with override every task; with no agent named the plan goes to the main agent and its tasks stay as they
     are."""

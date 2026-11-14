@@ -4,23 +4,21 @@ from dataclasses import replace
 from engine.database.kept_rows import KeptRows
 from engine.enums.model_tier import ModelTier
 from engine.provider.providers import Providers
-from engine.query.conditions.among import Among
 from engine.query.conditions.minimum import Minimum
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.models.task_tag import TaskTag
+from core.modules.tasks.support.task_tags import TaskTags
 from suites.coding.modules.workers.models.worker_route import WorkerRoute
 from suites.coding.modules.workers.support.route_tasks import RouteTasks
 
-ROUTE_TAGS_REASON = "a route is matched on every tag of the tasks it is asked about"
 
 
 class WorkerRoutes:
     """Reads ordered routes and combines the first matches of a batch."""
 
-    def __init__(self, queries: Queries, providers: Providers, kept: KeptRows) -> None:
-        self.queries, self.providers, self.kept = queries, providers, kept
+    def __init__(self, queries: Queries, providers: Providers, kept: KeptRows, tags: TaskTags) -> None:
+        self.queries, self.providers, self.kept, self.tags = queries, providers, kept, tags
 
     def listed(self) -> tuple[WorkerRoute, ...]:
         routes = self.queries.query(WorkerRoute).matching(Minimum("position", 1)).ordered("position")
@@ -29,14 +27,8 @@ class WorkerRoutes:
     def task_matches(self, tasks: Sequence[Task]) -> RouteTasks:
         programs = {provider.name for provider in self.providers.all()}
         routes = tuple(route for route in self.listed() if not route.program or route.program in programs)
-        task_tags: dict[int, list[str]] = {task.id: [] for task in tasks}
-        if routes:
-            task_ids = tuple(task_tags)
-            route_tags = self.queries.query(TaskTag).matching(Among("task_id", task_ids))
-            tags = self.kept.read(route_tags, lambda: tuple(route_tags.every_row(ROUTE_TAGS_REASON)), name="workers.route_tags")
-            for tag in tags:
-                task_tags[tag.task_id].append(tag.word)
-        return RouteTasks(routes, task_tags)
+        task_ids = [task.id for task in tasks]
+        return RouteTasks(routes, self.tags.words(task_ids) if routes else {task_id: [] for task_id in task_ids})
 
     def first_match(self, task: Task) -> WorkerRoute | None:
         return self.task_matches([task]).first_match(task)

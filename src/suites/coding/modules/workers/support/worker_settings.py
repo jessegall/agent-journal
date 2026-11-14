@@ -8,6 +8,8 @@ from engine.setting.list_rule import ListRule
 from engine.setting.number_rule import NumberRule
 from suites.coding.support.coding_settings import WORKER_KEPT_LIMIT, WORKER_RUN_LIMIT, WORKER_TEST_LIMIT
 
+from core.modules.asks.support.ask_settings import ASK_ANSWER_MINUTES, ASK_PASS_ON_MINUTES, ASK_VISITS_LIMIT
+
 MODULE_KEY = "journal.suites.coding.workers"
 DISPATCHES_WORKERS_SETTING = f"{MODULE_KEY}.main-dispatches-workers"
 LIBRARY_LINKS = f"{MODULE_KEY}.library-links"
@@ -21,14 +23,13 @@ MERGE_BUILT_PATHS = f"{MODULE_KEY}.merge-built-paths"
 MERGE_BUILD_COMMAND = f"{MODULE_KEY}.merge-build-command"
 MERGE_HOOKS_NAME = "merge-hooks"
 MERGE_HOOKS = f"{MODULE_KEY}.{MERGE_HOOKS_NAME}"
+OVERSIGHT_PROFILES_NAME = "oversight-profiles"
+OVERSIGHT_PROFILES = f"{MODULE_KEY}.{OVERSIGHT_PROFILES_NAME}"
 WORKER_INSTRUCTION_FILES_SETTING = f"{MODULE_KEY}.worker-instruction-files"
 DEFAULT_WORKER_COUNT = 2
 SILENT_AGENT_MINUTES = f"{MODULE_KEY}.silent-agent-minutes"
 IDLE_WORKER_MINUTES = f"{MODULE_KEY}.idle-worker-minutes"
 IDLE_WORKER_REPEAT_MINUTES = f"{MODULE_KEY}.idle-worker-repeat-minutes"
-QUESTION_ANSWER_MINUTES = f"{MODULE_KEY}.ask-answer-minutes"
-QUESTION_FORWARD_MINUTES = f"{MODULE_KEY}.ask-pass-on-minutes"
-QUESTION_VISITS_LIMIT = f"{MODULE_KEY}.ask-visits-limit"
 MERGER_GROUP_MESSAGE_LIMIT = f"{MODULE_KEY}.most-merger-messages-per-group"
 PHASE_TEST_DEFERRAL_LIMIT = f"{MODULE_KEY}.most-phase-test-deferrals"
 MOST_OPEN_TASKS = f"{MODULE_KEY}.most-open-tasks"
@@ -68,11 +69,8 @@ CHECK_HISTORY_DAYS = f"{MODULE_KEY}.check-history-days"
 WORKTREE_UPDATES_SECTION = "Keeping worktrees up to date"
 WORKER_SETTING_VALUES = [
     SettingValue("idle-worker-minutes", "Worker idle warning", "Minutes without activity before a worker with work left is reported.", SettingType.NUMBER, default=15, person_set=True, required_settings=[MERGER_ENABLED], screen="helper-type.workers", section="How a worker works"),
-    SettingValue("ask-answer-minutes", "Answer time for a worker's question", "Minutes the merger has to answer a worker's question before it is woken for it again.", SettingType.NUMBER, default=10, person_set=True, required_settings=[MERGER_ENABLED], screen="helper-type.merger", section="Questions"),
-    SettingValue("ask-pass-on-minutes", "Minutes before a question is passed on", "Minutes after which a worker's question that nobody answered goes to the main agent.", SettingType.NUMBER, default=30, person_set=True, required_settings=[MERGER_ENABLED], screen="helper-type.merger", section="Questions"),
-    SettingValue("ask-visits-limit", "Merger readings of a question", "How many times the merger reads a worker's question without answering before it goes to the main agent.", SettingType.NUMBER, default=2, person_set=True, required_settings=[MERGER_ENABLED], screen="helper-type.merger", section="Questions"),
     SettingValue("most-phase-test-deferrals", "Deferrals of one checkpoint test", "How often a merger may leave failing test paths out of the test of one checkpoint until the next checkpoint.", SettingType.NUMBER, default=2, person_set=True, required_settings=[MERGER_ENABLED], screen="tests", section="Telling the main agent"),
-    SettingValue("most-merger-messages-per-group", "Questions and advice between two commits", "Questions a worker asks and advice the merger gives it between two of its commits. A further question is passed on.", SettingType.NUMBER, default=5, person_set=True, required_settings=[MERGER_ENABLED], screen="helper-type.merger", section="Questions"),
+    SettingValue("most-merger-messages-per-group", "Questions and advice between two commits", "Questions a worker asks and advice it is given between two of its commits. A further question goes on to the next level.", SettingType.NUMBER, default=5, person_set=True, required_settings=[MERGER_ENABLED], screen="helper-type.merger", section="Questions"),
     SettingValue("silent-recovery-attempts", "Wake-up lines for a silent agent", "How many wake-up lines a silent agent gets before it is reported as not answering.", SettingType.NUMBER, default=3, person_set=True, screen="advanced", section="Silent agents"),
     SettingValue("worker-resume-limit", "Go-on lines for a stopped worker", "How often a stopped worker with tasks left is told to go on, with no task moved, before it is reported.", SettingType.NUMBER, default=3, person_set=True, screen="advanced", section="Silent agents"),
     SettingValue("idle-worker-repeat-minutes", "Worker idle warning repeat", "Minutes between warnings about a worker with work left.", SettingType.NUMBER, default=5, person_set=True, screen="advanced", section="Quiet helpers"),
@@ -118,7 +116,7 @@ WORKER_SETTING_VALUES = [
     SettingValue("preset-test-commands", "Preset test commands", "Test commands each worker gets, as name=command; a name replaces the one found in the project's manifests.",
                  SettingType.LIST, default=(), person_set=True),
     SettingValue(WORKTREE_COMMANDS_NAME, "Worktree commands", "Commands run in each new worker worktree before the worker starts.",
-                 SettingType.LIST, default=()),
+                 SettingType.LIST, default=(), person_set=True),
     SettingValue(MERGE_COMMANDS_NAME, "Merge commands", "Commands run in the main checkout after each worker merge, such as a push. The task closes only when they all succeed.",
                  SettingType.LIST, default=(), person_set=True),
     SettingValue("merge-built-paths", "Built files a merge rebuilds", "Globs of files a build makes. A merge never stops on a clash in them; it builds them again from the merged sources.",
@@ -127,6 +125,8 @@ WORKER_SETTING_VALUES = [
                  SettingType.TEXT, default="npm --prefix src/viewer run build", person_set=True, screen="helper-type.workers", section="Merging"),
     SettingValue(MERGE_HOOKS_NAME, "Commands after a merge, per profile", "Entries of profile: command, run in the main checkout after a worker of that profile is merged.",
                  SettingType.LIST, default=(), person_set=True, screen=HELPER_TYPES_SCREEN, section="When merged"),
+    SettingValue(OVERSIGHT_PROFILES_NAME, "Profiles that oversee workers", "Helper profiles whose agents may read any worker's logs and the merges waiting, without marking them read.",
+                 SettingType.LIST, default=(), person_set=True),
 ]
 WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         WORKER_KEPT_LIMIT: NumberRule(0),
@@ -135,9 +135,9 @@ WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         WORKER_IDLE_HOURS: NumberRule(0, integer=False, exclusive=True),
                         IDLE_WORKER_MINUTES: NumberRule(1),
                         IDLE_WORKER_REPEAT_MINUTES: NumberRule(1),
-                        QUESTION_ANSWER_MINUTES: NumberRule(1),
-                        QUESTION_FORWARD_MINUTES: NumberRule(1),
-                        QUESTION_VISITS_LIMIT: NumberRule(1),
+                        ASK_ANSWER_MINUTES: NumberRule(1),
+                        ASK_PASS_ON_MINUTES: NumberRule(1),
+                        ASK_VISITS_LIMIT: NumberRule(1),
                         MERGER_GROUP_MESSAGE_LIMIT: NumberRule(1),
                         PHASE_TEST_DEFERRAL_LIMIT: NumberRule(1),
                         MOST_OPEN_TASKS: NumberRule(1),
@@ -163,7 +163,7 @@ WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         CHECK_HISTORY_DAYS: NumberRule(1),
                         MERGER_COMMANDS: ListRule(),
                         PROTECTED_FOLDERS: ListRule(),
-                        MERGE_COMMANDS: ListRule(), MERGE_HOOKS: ListRule()}
+                        MERGE_COMMANDS: ListRule(), MERGE_HOOKS: ListRule(), OVERSIGHT_PROFILES: ListRule()}
 WORKER_SETTINGS = ruled_settings(MODULE_KEY, WORKER_SETTING_VALUES, WORKER_SETTING_RULES)
 TEST_COMMAND_PAIR = CommandPairRule(AFFECTED_TESTS_COMMAND, PROJECT_TEST_COMMAND)
 TEST_LIMIT_SECONDS = 3600

@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from pathlib import Path
 from dataclasses import dataclass
 
@@ -17,4 +18,4 @@ class ManifestService:
     answers: bool
 
     def is_listed(self, pid_file: Path) -> bool:
-        return not self.condition or pid_file.is_file()
+        return not self.condition or FileAccess.is_file(pid_file)

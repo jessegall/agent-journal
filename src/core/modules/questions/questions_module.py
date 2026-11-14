@@ -50,7 +50,7 @@ class QuestionsModule(Module):
 
     name = "journal.core.questions"
     nudges = QUESTION_NUDGES
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     block_conditions = [QuestionAnswered, QuestionsClosed]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages", "journal.core.waits", "journal.core.chat", "journal.core.documents", "journal.core.tasks", "journal.core.plans", "journal.core.docking"]
     models = [ModelDeclaration(Question, query=QuestionQuery, commands=(AnswerQuestion, CloseQuestion), excluded_subcommands=["make", "list", "show"])]

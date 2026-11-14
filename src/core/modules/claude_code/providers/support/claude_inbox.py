@@ -34,18 +34,18 @@ class ClaudeInbox:
         return True
 
     def entry(self, session: str) -> ClaudeSessionEntry | None:
-        for path in sorted(self.registry.glob("*.json")) if self.registry.is_dir() else ():
-            fields: object = json.loads(FileAccess.shared().read(path) or "{}")
+        for path in sorted(FileAccess.glob(self.registry, "*.json")) if FileAccess.is_dir(self.registry) else ():
+            fields: object = json.loads(FileAccess.read(path) or "{}")
             if is_mapping(fields) and fields.get("sessionId") == session:
                 socket_path = fields.get("messagingSocketPath")
                 return ClaudeSessionEntry(path.stem, socket_path if isinstance(socket_path, str) else "")
         return None
 
     def auth_rows(self, pid: str) -> list[dict[str, str]]:
-        key = next(self.registry.glob(f"{pid}.*.key"), None)
+        key = next(FileAccess.glob(self.registry, f"{pid}.*.key"), None)
         if key is None:
             return []
-        fields: object = json.loads(FileAccess.shared().read(key))
+        fields: object = json.loads(FileAccess.read(key))
         token = fields.get("peerToken") if is_mapping(fields) else None
         return [{"type": "auth", "token": token}] if isinstance(token, str) else []
 

@@ -1,194 +1,167 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
-import {SearchBar, Segmented, Skeleton, WindowRoom, matchesSearch, patchedWhere, useWindow} from "@journal/window-kit";
+import {HostedWindow, Skeleton, Switch, WindowRoom, matchesSearch, useWindow} from "@journal/window-kit";
+import {ChangeFoot} from "@journal/setting-components";
 import CommandSettings from "./CommandSettings.vue";
 import SettingNode from "./SettingNode.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
+import LeaveDialog from "./LeaveDialog.vue";
+import SettingsLayout from "./SettingsLayout.vue";
+import {GROUPS, SECTIONS, sectionOf} from "./settingSections.js";
 
-const CHANGED_SOURCES = new Set(["environment", "project"]);
-const TYPING = "input,textarea,select,[contenteditable]";
+// the settings of the journal in the design's sections: the declared settings of each module sit in the section the design gives it, the agent settings are drawn by their own window,
+// and a search over every declared row replaces the section while words are typed
 const context = useWindow();
-const {rows, failure, loaded, act} = context.props.settings;
-context.state.tab = "settings";
-const TABS = [
-    {key: "settings", label: "Settings"},
-    {key: "environments", label: "Environments"},
-];
-const tab = computed({get: () => context.state.tab, set: (value) => (context.state.tab = value)});
+const {rows, failure, loaded, load} = context.props.settings;
 const query = ref("");
-const filter = ref("all");
-const field = ref(null);
-const listed = computed(() => rows.value.filter((row) => !row.key.endsWith(".*")));
-const isChanged = (row) => row.type !== "group" && CHANGED_SOURCES.has(row.source);
-const isOff = (row) => row.value === false;
-const FILTERS = {all: () => true, changed: isChanged, off: isOff};
-const filters = computed(() => [
-    {key: "all", label: "All"},
-    {key: "changed", label: "Changed", title: "Settings you changed from their default", count: listed.value.filter(isChanged).length},
-    {key: "off", label: "Off", count: listed.value.filter(isOff).length},
-]);
-// a search keeps each setting whose title, description or key has the words, and the groups above it
+// the environments are read when their section opens, as the key is tied to a tab
+context.state.tab = "settings";
+// a change is a draft until Save: each is held by the key of its setting with the line that makes it, and the row shows the new value meanwhile
+const draft = ref({});
+const refusals = ref({});
+const saving = ref(false);
+const wordsOf = (value) => (typeof value === "boolean" ? (value ? "on" : "off") : String(value));
+const listed = computed(() => rows.value.filter((row) => !row.key.endsWith(".*")).map((row) => (row.key in draft.value ? {...row, value: draft.value[row.key].value, shown: wordsOf(draft.value[row.key].value)} : row)));
+const changes = computed(() => Object.entries(draft.value).map(([key, held]) => ({key, title: rows.value.find((row) => row.key === key)?.title ?? key, to: held.secret ? "changed" : wordsOf(held.value)})));
+const readOnly = context.face === "phone";
+const groups = computed(() => GROUPS.map((group) => ({...group, sections: group.sections.map((key) => ({key, ...SECTIONS[key]})).filter((section) => !section.modules || topsOf(section.key).length)})).filter((group) => group.sections.length));
+const topsOf = (key) => listed.value.filter((row) => row.parent === null && sectionOf(row.module) === key);
+const current = ref("look");
+const open = computed(() => (groups.value.flatMap((group) => group.sections).some((section) => section.key === current.value) ? current.value : groups.value[0].sections[0].key));
+function pick(key) {
+    current.value = key;
+    query.value = "";
+    context.state.tab = key === "environments" ? "environments" : "settings";
+}
+const section = computed(() => SECTIONS[open.value]);
+
+// a search keeps each declared setting whose title, description or key has the words, and the groups above it
 const shown = computed(() => {
     const wanted = query.value.trim().toLowerCase();
-    if (!wanted && filter.value === "all") return listed.value;
-    const hits = listed.value.filter((row) => FILTERS[filter.value](row) && matchesSearch(row, wanted, context.search?.fields));
+    if (!wanted) return listed.value;
+    const hits = listed.value.filter((row) => matchesSearch(row, wanted, context.search?.fields));
     const keys = new Set(hits.map((row) => row.key));
     for (const row of hits) {
         for (let up = listed.value.find((other) => other.key === row.parent); up; up = listed.value.find((other) => other.key === up.parent)) keys.add(up.key);
     }
     return listed.value.filter((row) => keys.has(row.key));
 });
-const tops = computed(() => shown.value.filter((row) => row.parent === null));
-const modules = computed(() => [...new Set(tops.value.map((row) => row.module))]);
-const readOnly = context.face === "phone";
+const found = computed(() => groups.value.flatMap((group) => group.sections).map((entry) => ({...entry, tops: shown.value.filter((row) => row.parent === null && sectionOf(row.module) === entry.key)})).filter((entry) => entry.tops.length));
 
-function heading(module) {
-    const parts = module.split(".");
-    const name = parts[parts.length - 1].replace(/[-_]/g, " ");
-    return name.slice(0, 1).toUpperCase() + name.slice(1);
+// a setting joins the draft; a change back to what the server holds leaves it
+function saved(words, change) {
+    const key = words[2];
+    const held = rows.value.find((row) => row.key === key);
+    const next = {...draft.value};
+    if (change && held && wordsOf(change.value) === wordsOf(held.value)) delete next[key];
+    else next[key] = {words, value: change?.value, secret: !change};
+    draft.value = next;
+    return Promise.resolve({ok: true});
 }
 
-const chosen = ref("");
-const current = computed(() => (chosen.value === "commands" || modules.value.includes(chosen.value) ? chosen.value : (modules.value[0] ?? "")));
+// Save sends every change; the ones the server accepts leave the draft, and each one it refuses stays with its refusal
+async function save() {
+    saving.value = true;
+    const kept = {};
+    const failed = {};
+    for (const [key, held] of Object.entries(draft.value)) {
+        const answer = await context.run(held.words);
+        if (!answer.ok) {
+            kept[key] = held;
+            failed[key] = answer.error;
+        }
+    }
+    draft.value = kept;
+    refusals.value = failed;
+    await load();
+    saving.value = false;
+}
+const cancel = () => {
+    draft.value = {};
+    refusals.value = {};
+};
 
-function slashFocus(event) {
-    if (event.key !== "/" || event.target.closest?.(TYPING)) return;
+// the Developer pages switch is the developer tools setting: on, the journal offers the developer pages and the sidebar shows their group
+const toolsRow = computed(() => listed.value.find((row) => row.key.endsWith(".developer.tools")));
+const toolsRows = computed(() => (toolsRow.value ? listed.value.filter((row) => row.parent === toolsRow.value.key) : []));
+const switchTools = (on) => saved(["setting", "switch", toolsRow.value.key, on ? "on" : "off", "--project"], {key: toolsRow.value.key, value: on});
+
+// leaving the page with changes that are not saved asks first: a click on a link outside the page waits for the answer
+const root = ref(null);
+const leaving = ref(null);
+function guard(event) {
+    const link = event.target.closest?.("a[href]");
+    if (!changes.value.length || !link || root.value?.contains(link) || link.dataset.leaveAsked) return;
     event.preventDefault();
-    field.value?.focus();
+    event.stopPropagation();
+    leaving.value = link;
 }
+function leave() {
+    const link = leaving.value;
+    leaving.value = null;
+    cancel();
+    link.dataset.leaveAsked = "true";
+    link.click();
+}
+const warn = (event) => changes.value.length && event.preventDefault();
 onMounted(() => {
-    globalThis.addEventListener("keydown", slashFocus);
+    document.addEventListener("click", guard, true);
+    window.addEventListener("beforeunload", warn);
 });
 onUnmounted(() => {
-    globalThis.removeEventListener("keydown", slashFocus);
+    document.removeEventListener("click", guard, true);
+    window.removeEventListener("beforeunload", warn);
 });
-
-// a setting shows its new value at once, and is put back with the refusal when the server refuses it
-function saved(words, change) {
-    return act(words, change && patchedWhere((row) => row.key === change.key, {value: change.value}));
-}
 </script>
 
 <template>
     <WindowRoom>
-        <div class="settings">
-            <Segmented :options="TABS" :value="tab" data-settings-tabs @pick="tab = $event" />
-            <template v-if="tab === 'environments'">
-                <SettingsEnvironments />
+        <div ref="root" class="settings-page" data-settings-page>
+        <SettingsLayout v-model:query="query" :groups="groups" :current="open" @pick="pick">
+            <template v-if="!loaded"><Skeleton shape="text" /></template>
+            <template v-else-if="failure"><p class="settings-failure" data-settings-failure>{{ failure }}</p></template>
+            <template v-else-if="query.trim()">
+                <template v-if="!found.length"><p class="settings-empty" data-settings-none>No setting matches.</p></template>
+                <template v-for="entry in found" :key="entry.key">
+                    <section class="settings-section" :data-found-section="entry.key">
+                        <h3 class="settings-heading">{{ entry.label }}</h3>
+                        <template v-for="row in entry.tops" :key="row.key"><SettingNode :row="row" :rows="shown" :read-only="readOnly" :save="saved" :refusals="refusals" /></template>
+                    </section>
+                </template>
             </template>
             <template v-else>
-            <SearchBar ref="field" v-model="query" class="settings-bar">
-                <Segmented :options="filters" :value="filter" data-settings-filter @pick="filter = $event" />
-                <span class="settings-saved">Changes are saved as you make them</span>
-            </SearchBar>
-            <template v-if="!loaded">
-                <Skeleton shape="text" />
-            </template>
-            <template v-else-if="failure">
-                <p class="settings-failure">{{ failure }}</p>
-            </template>
-            <template v-else-if="loaded && !rows.length">
-                <p class="settings-empty">No settings available.</p>
-            </template>
-            <div class="settings-body">
-                <nav class="settings-nav" aria-label="Modules">
-                    <button type="button" :class="['settings-nav-item', {current: current === 'commands'}]" data-jump="commands" @click="chosen = 'commands'">Command classification</button>
-                    <template v-for="module in modules" :key="module">
-                        <button type="button" :class="['settings-nav-item', {current: module === current}]" :data-jump="module" @click="chosen = module">{{ heading(module) }}</button>
+                <section class="settings-section" :data-section-body="open">
+                    <h3 class="settings-heading">{{ section.label }}</h3>
+                    <template v-if="section.body === 'commands'"><CommandSettings /></template>
+                    <template v-else-if="section.body === 'environments'"><SettingsEnvironments /></template>
+                    <template v-else>
+                        <template v-if="section.window"><HostedWindow :key="open" :name="section.window" :options="{sections: section.tabs}" /></template>
+                        <template v-if="open === 'developer' && toolsRow">
+                            <label class="settings-developer" data-developer-pages><span>Developer pages</span><Switch :on="toolsRow.value !== false" title="Developer pages" :disabled="readOnly" data-developer-switch @change="switchTools" /></label>
+                            <template v-for="row in toolsRows" :key="row.key"><SettingNode :row="row" :rows="listed" :read-only="readOnly" :save="saved" :refusals="refusals" /></template>
+                        </template>
+                        <template v-for="row in topsOf(open).filter((top) => !(open === 'developer' && top.key === toolsRow?.key))" :key="row.key"><SettingNode :row="row" :rows="listed" :read-only="readOnly" :save="saved" :refusals="refusals" /></template>
                     </template>
-                </nav>
-                <div class="settings-sections" data-settings-sections>
-                    <template v-if="current === 'commands'"><CommandSettings /></template>
-                    <template v-for="module in modules.filter((name) => name === current)" :key="module">
-                        <section class="settings-module" :data-module="module">
-                            <h3 class="settings-module-heading">{{ heading(module) }}</h3>
-                            <template v-for="row in tops.filter((top) => top.module === module)" :key="row.key">
-                                <SettingNode :row="row" :rows="shown" :read-only="readOnly" :save="saved" />
-                            </template>
-                        </section>
-                    </template>
-                </div>
-            </div>
+                </section>
             </template>
+        </SettingsLayout>
+        <template v-if="!readOnly"><ChangeFoot :changes="changes" :can-save="changes.length > 0 && !saving" :pending="saving" :environment="context.environment" @save="save" @cancel="cancel" /></template>
+        <template v-if="leaving"><LeaveDialog :count="changes.length" @stay="leaving = null" @leave="leave" /></template>
         </div>
     </WindowRoom>
 </template>
 
 <style scoped>
-.settings-nav-item.current {
-    background: var(--hover);
-    color: var(--text);
-}
-
-.settings {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.settings-bar {
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.settings-saved {
-    color: var(--text-3);
-    font-size: 12px;
-}
-
-.settings-body {
-    display: flex;
-    gap: 28px;
-    align-items: flex-start;
-}
-
-.settings-nav {
-    display: flex;
-    flex: none;
-    flex-direction: column;
-    gap: 2px;
-    width: 150px;
-    position: sticky;
-    top: 0;
-}
-
-.settings-nav-item {
-    padding: 5px 10px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--text-2);
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-.settings-nav-item:hover {
-    background: var(--hover);
-    color: var(--text);
-}
-
-.settings-sections {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 32px;
-    min-width: 0;
-}
-
-.settings-module {
+.settings-section {
     display: flex;
     flex-direction: column;
     gap: 18px;
 }
 
-.settings-module-heading {
+.settings-heading {
     margin: 0;
-    font-size: 11px;
+    font-size: 15px;
     font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--text-3);
 }
 
 .settings-failure,

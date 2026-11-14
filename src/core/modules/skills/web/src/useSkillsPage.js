@@ -6,17 +6,16 @@ export function useSkillsPage() {
     const {rows: catalogue} = view.props.catalogue;
     const {rows: loaded} = view.props.loaded;
     const {rows: triggers} = view.props.triggers;
+    const {rows: profiles} = view.props.profiles;
     const requirements = computed(() => view.props.requirements.data.value ?? {session_start: [], after_compaction: [], main_agent: [], environment_overrides: false});
     const mainAgent = computed(() => view.props["main-agent"].data.value?.id ?? null);
     const answered = computed(() => view.props.catalogue.loaded.value && view.props.requirements.loaded.value && view.props.triggers.loaded.value);
     const commandFailure = ref("");
-    const failure = computed(() => commandFailure.value || ["catalogue", "requirements", "triggers", "loaded"].map((name) => view.props[name].failure.value).find(Boolean) || "");
+    const failure = computed(() => commandFailure.value || ["catalogue", "requirements", "triggers", "profiles", "loaded"].map((name) => view.props[name].failure.value).find(Boolean) || "");
     const busy = ref([]);
     const opened = ref("");
     const text = ref(null);
     const openFailure = ref("");
-    view.state.tab = "skills";
-    const tab = computed({get: () => view.state.tab, set: (value) => (view.state.tab = value)});
     const draft = ref(null);
     const marked = view.option("row");
     let opening = 0;
@@ -31,7 +30,7 @@ export function useSkillsPage() {
     const selectedTriggers = computed(() => triggers.value.filter((trigger) => trigger.skill === opened.value));
 
     async function load() {
-        await view.reload({only: ["main-agent", "catalogue", "requirements", "triggers", ...(mainAgent.value ? ["loaded"] : [])]});
+        await view.reload({only: ["main-agent", "catalogue", "requirements", "triggers", "profiles", ...(mainAgent.value ? ["loaded"] : [])]});
     }
 
     watch(mainAgent, async (agent) => {
@@ -80,11 +79,15 @@ export function useSkillsPage() {
         await run(held?.state === "loaded" ? ["agent-skill", "reset", String(held.id)] : ["skill", "require", String(mainAgent.value), opened.value]);
     }
 
-    const followHistory = () => open(new URLSearchParams(location.search).get("skill") || "", false);
+    // an address that names a skill (a link from the chat) opens it; the list's own choice is in the row of the address
+    const followHistory = () => {
+        const folder = new URLSearchParams(location.search).get("skill");
+        if (folder) open(folder, false);
+    };
     window.addEventListener("popstate", followHistory);
     onUnmounted(() => window.removeEventListener("popstate", followHistory));
     view.follow(["agent_skill.*"], coalesced(() => {if (mainAgent.value) view.reload("loaded");}, READ_RATES.openPanel));
     if (marked.value) view.readKey(`agent-skill.${marked.value.skillId ?? marked.value.id}`).then((answer) => answer.ok ? open(answer.value.skill, false) : (openFailure.value = answer.error));
     else followHistory();
-    return {skills, selected, selectedTriggers, triggers, requirements, mainAgent, answered, failure, busy, opened, text, openFailure, tab, draft, marked, load, open, run, requireSkill, readNow};
+    return {skills, selected, selectedTriggers, triggers, requirements, mainAgent, answered, failure, busy, opened, text, openFailure, profiles, draft, marked, load, open, run, requireSkill, readNow};
 }

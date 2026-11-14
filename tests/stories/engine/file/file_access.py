@@ -93,7 +93,7 @@ def test_different_paths_to_the_same_file_count_as_a_repeat(document_file):
 def test_an_atomic_replacement_allows_reading_the_changed_target_in_the_same_request(document_file):
     story, path, arguments = document_file
     temporary = path.with_name("replacement.md")
-    files = FileAccess.shared()
+    files = FileAccess()
     files.write(temporary, "After replacement")
     with story.repeated_work.request():
         expect_value(TextBody.given(arguments), "First draft")
@@ -103,7 +103,7 @@ def test_an_atomic_replacement_allows_reading_the_changed_target_in_the_same_req
 
 def test_a_write_invalidates_parsed_values_when_the_modified_time_is_unchanged(new_story):
     story = new_story()
-    files = FileAccess.shared()
+    files = FileAccess()
     path = story.home.module_list
     files.write(path, '["alpha.module:Alpha"]')
     finder = story.container.get(ModuleFinder)
@@ -120,7 +120,7 @@ def test_a_file_a_program_changed_between_two_reads_is_read_twice_without_a_find
     changing = tmp_path / "config"
     changing.write_text("first")
     with story.repeated_work.request():
-        FileAccess.shared().read(changing)
+        FileAccess.read(changing)
         os.utime(changing, ns=(1, 1))
-        FileAccess.shared().read(changing)
+        FileAccess.read(changing)
 

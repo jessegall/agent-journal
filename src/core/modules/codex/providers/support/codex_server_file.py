@@ -25,21 +25,21 @@ class CodexServerFile(ProgramServerFile):
         super().__init__(folder / FILE)
 
     def names(self) -> set[str]:
-        return set(tomllib.loads(FileAccess.shared().read(self.path)).get("mcp_servers", {})) if self.path.is_file() else set()
+        return set(tomllib.loads(FileAccess.read(self.path)).get("mcp_servers", {})) if FileAccess.is_file(self.path) else set()
 
     def write(self, servers: Sequence[ToolServer], dropped: Sequence[str]) -> None:
         self.write_file(self.path, servers)
 
     @staticmethod
     def write_file(path: Path, servers: Sequence[ToolServer]) -> None:
-        text = FileAccess.shared().read(path) if path.is_file() else ""
+        text = FileAccess.read(path) if FileAccess.is_file(path) else ""
         leading_text, _, block_text = text.partition(BEGIN)
         trailing_text = block_text.partition(END)[2]
         block = "\n".join([BEGIN, *(CodexServerFile.table(server) for server in servers), END]) if servers else ""
         names = {server.name for server in servers}
         kept = (CodexServerFile.without_tables(leading_text, names), block, CodexServerFile.without_tables(trailing_text, names))
-        path.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(path, "\n".join(part.strip("\n") for part in kept if part.strip()) + "\n")
+        FileAccess.mkdir(path.parent, parents=True, exist_ok=True)
+        FileAccess.write(path, "\n".join(part.strip("\n") for part in kept if part.strip()) + "\n")
 
     @staticmethod
     def without_tables(text: str, names: set[str]) -> str:

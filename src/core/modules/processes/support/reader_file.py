@@ -27,7 +27,7 @@ class ReaderFile:
 
     @classmethod
     def parsed(cls, path: Path) -> "ReaderFile":
-        lines = cls.titled(path, FileAccess.shared().read(path).splitlines())
+        lines = cls.titled(path, FileAccess.read(path).splitlines())
         if path.suffix == SCRIPT_SUFFIX:
             notes = [line.removeprefix(NOTE_MARK).strip() for line in lines if cls.is_note(line)]
             return cls(path.stem, ReaderType.SCRIPT, "", str(path), cls.read_settings(notes))
@@ -58,7 +58,7 @@ class ReaderFile:
         if not comment or any(comment.startswith(prefix) for prefix in SETTING_NAMES):
             return lines
         titled = [*lines[:place], f"{NOTE_MARK} {TITLE_PREFIX}{comment}" if is_script else f"{TITLE_PREFIX}{comment}", *lines[place + 1:]]
-        FileAccess.shared().write(path, "\n".join(titled) + "\n")
+        FileAccess.write(path, "\n".join(titled) + "\n")
         return titled
 
     @staticmethod
@@ -67,7 +67,7 @@ class ReaderFile:
 
     @staticmethod
     def paths(folder: Path) -> list[Path]:
-        return sorted(path for path in folder.glob("*") if path.suffix in (PATTERN_SUFFIX, SCRIPT_SUFFIX)) if folder.is_dir() else []
+        return sorted(path for path in FileAccess.glob(folder, "*") if path.suffix in (PATTERN_SUFFIX, SCRIPT_SUFFIX)) if FileAccess.is_dir(folder) else []
 
     @staticmethod
     def found(folder: Path) -> list["ReaderFile"]:

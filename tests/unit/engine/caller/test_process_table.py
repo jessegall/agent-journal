@@ -43,3 +43,12 @@ def test_the_chain_stops_at_its_limit_and_at_a_loop():
 def test_the_machines_table_holds_this_process_and_its_parent():
     steps = ProcessChain(ProcessTable()).steps(os.getpid())
     assert [step.pid for step in steps[:2]] == [os.getpid(), os.getppid()]
+
+
+def test_a_sandbox_that_refuses_ps_gives_no_processes(monkeypatch):
+    def refused(*arguments, **options):
+        raise PermissionError("Operation not permitted: 'ps'")
+
+    monkeypatch.setattr("engine.caller.process_table.sys.platform", "darwin")
+    monkeypatch.setattr("engine.caller.process_table.subprocess.run", refused)
+    assert ProcessTable().rows() == []

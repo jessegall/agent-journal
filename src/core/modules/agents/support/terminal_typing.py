@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from engine.journal.journal_home import LAUNCHER_SOCKET, JournalHome
 from engine.errors.refusal import Refusal
 from engine.driver.program_lockdown import ProgramLockdown
@@ -28,7 +29,7 @@ class TerminalTyping:
         self.send_line(agent.terminal_id, line)
 
     def send_line(self, terminal_id: int, line: str) -> None:
-        if not self.home.socket(LAUNCHER_SOCKET).exists():
+        if not FileAccess.exists(self.home.socket(LAUNCHER_SOCKET)):
             raise Refusal(LAUNCHER_MISSING, "start the agent with journal launch")
         if self.link.request_launcher({"agent_id": terminal_id, "typed": line}, len(TERMINAL_ANSWER)) != TERMINAL_ANSWER:
             raise Refusal(TYPING_FAILED, TYPING_SUGGESTION)

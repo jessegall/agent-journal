@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from core.modules.environments.support.environment_rows import EnvironmentRows
@@ -79,4 +80,4 @@ class WorkerCheckouts(AgentProjectCheckouts):
 
     def worktree_checkout(self, worktree: Worktree, agent: Agent) -> Checkout:
         folder = Path(worktree.folder)
-        return Checkout.copy_checkout(folder, Path(self.environment(agent).folder), worktree.branch, worktree.base_branch, worktree.base_commit, worktree.removed_at is None and folder.is_dir())
+        return Checkout.copy_checkout(folder, Path(self.environment(agent).folder), worktree.branch, worktree.base_branch, worktree.base_commit, worktree.removed_at is None and FileAccess.is_dir(folder))

@@ -10,8 +10,8 @@ class KeptFileText:
         self.kept: dict[Path, tuple[tuple[int, int], str]] = {}
 
     def read(self, path: Path) -> str:
-        status = path.stat()
+        status = FileAccess.stat(path)
         mark = (status.st_mtime_ns, status.st_size)
         if path not in self.kept or self.kept[path][0] != mark:
-            self.kept[path] = (mark, FileAccess.shared().read(path))
+            self.kept[path] = (mark, FileAccess.read(path))
         return self.kept[path][1]

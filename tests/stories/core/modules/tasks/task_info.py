@@ -23,7 +23,7 @@ def test_task_info_in_json_names_each_field_and_holds_no_brief(new_story):
     task = story.new_row_id('task make "Fix the cart" --environment main --brief "Hidden brief" --complexity 2', actor=story.agent)
     answer = json.loads(story.run(f"task info {task} --json", actor=story.agent).output_text)
     expect_value(bool(answer["title"] == "Fix the cart" and answer["complexity"] == 2 and answer["comments"] == 0 and answer["assigned_actor_id"] is None), True)
-    expect_value(set(answer), {"id", "title", "state", "priority", "complexity", "tags", "comments", "assigned_actor_id", "waits"})
+    expect_value(set(answer), {"id", "title", "state", "priority", "complexity", "tags", "comments", "assigned_actor_id", "assignment_reason", "waits"})
 
 
 def test_task_info_says_a_task_has_no_score_yet(new_story):

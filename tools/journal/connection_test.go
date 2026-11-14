@@ -3,12 +3,14 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"net"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"syscall"
 	"testing"
 	"time"
@@ -117,15 +119,37 @@ func TestAMaintenanceMarkMeansNoServerIsStartedWhileTheLockIsFree(t *testing.T) 
 	if err := os.WriteFile(filepath.Join(home, MaintenanceMark), []byte(strconv.Itoa(os.Getpid())), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	starts := 0
 	deadline := StartLimit
 	StartLimit = 300 * time.Millisecond
 	t.Cleanup(func() { StartLimit = deadline })
+	var markGone atomic.Bool
+	go func() {
+		time.Sleep(2 * StartLimit)
+		markGone.Store(true)
+		_ = os.Remove(filepath.Join(home, MaintenanceMark))
+	}()
+	startedDuringMark := false
 	_, _, err := Connect(home, func(string) (*os.Process, error) {
-		starts++
+		startedDuringMark = startedDuringMark || !markGone.Load()
 		return &os.Process{Pid: os.Getpid()}, nil
 	})
-	if err != ErrNoServer || starts != 0 {
+	if !errors.Is(err, ErrNoServer) || startedDuringMark || !markGone.Load() {
+		t.Fatalf("started during the mark %v, mark gone %v, err %v", startedDuringMark, markGone.Load(), err)
+	}
+}
+
+func TestAClientThatMayNotStartTheServerWaitsAndSaysWhyItCouldNot(t *testing.T) {
+	home := shortHome(t)
+	deadline := StartLimit
+	StartLimit = 200 * time.Millisecond
+	t.Cleanup(func() { StartLimit = deadline })
+	refused := errors.New("operation not permitted")
+	starts := 0
+	_, _, err := Connect(home, func(string) (*os.Process, error) {
+		starts++
+		return nil, refused
+	})
+	if !errors.Is(err, ErrNoServer) || !errors.Is(err, refused) || starts != 1 {
 		t.Fatalf("starts %d, err %v", starts, err)
 	}
 }

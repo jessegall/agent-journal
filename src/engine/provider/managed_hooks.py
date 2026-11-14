@@ -24,7 +24,7 @@ class ManagedHooks:
         self.path = home.managed_hooks_file
 
     def all(self) -> list[ManagedHook]:
-        if not self.path.is_file():
+        if not FileAccess.is_file(self.path):
             return []
         with self._locked():
             return self._read()
@@ -59,7 +59,7 @@ class ManagedHooks:
             return changed
 
     def drop_stamped(self, stamp: str) -> list[ManagedHook]:
-        if not stamp.strip() or not self.path.is_file():
+        if not stamp.strip() or not FileAccess.is_file(self.path):
             return []
         with self._locked():
             hooks = self._read()
@@ -90,29 +90,29 @@ class ManagedHooks:
 
     @contextmanager
     def _locked(self) -> Generator[None]:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(self.path.parent, parents=True, exist_ok=True)
         with FileLock.locked(self.path.with_suffix(".lock")):
             yield
 
     def _read(self) -> list[ManagedHook]:
-        if not self.path.is_file():
+        if not FileAccess.is_file(self.path):
             return []
-        return list(self.loaded_hooks(FileAccess.shared().version(self.path)))
+        return list(self.loaded_hooks(FileAccess.version(self.path)))
 
     @lru_cache(maxsize=128)
     def loaded_hooks(self, version: FileVersion) -> tuple[ManagedHook, ...]:
-        stored = json.loads(FileAccess.shared().read(self.path))
+        stored = json.loads(FileAccess.read(self.path))
         return tuple(replace(ManagedHook(**{key: value for key, value in hook.items() if key != "clash"}), state=ManagedState(hook["state"]),
                              effects=tuple(HookEffect(value) for value in hook.get("clash", [])),
                              sources=tuple(HookSource(**source) for source in hook.get("sources", []))) for hook in stored["hooks"])
 
     def _write(self, hooks: Sequence[ManagedHook]) -> None:
-        with FileAccess.shared().temporary_writer(self.path.parent) as writing:
+        with FileAccess.temporary_writer(self.path.parent) as writing:
             try:
                 json.dump({"version": 1, "hooks": [{"clash" if key == "effects" else key: value for key, value in asdict(hook).items()} for hook in hooks]}, writing, indent=2)
                 writing.write("\n")
                 writing.flush()
                 os.fsync(writing.fileno())
-                FileAccess.shared().replace(writing.name, self.path)
+                FileAccess.replace(writing.name, self.path)
             finally:
-                Path(writing.name).unlink(missing_ok=True)
+                FileAccess.unlink(Path(writing.name), missing_ok=True)

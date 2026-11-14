@@ -1,3 +1,4 @@
+from core.modules.documents.step_conditions.report_commented import ReportCommented
 from core.modules.agents.support.agent_report_reads import AgentReportReads
 from core.modules.documents.support.row_agent_report_reads import RowAgentReportReads
 from core.modules.documents.migrations.m008_message_link_paths import MessageLinkPathsMigration
@@ -113,7 +114,7 @@ class DocumentsModule(Module):
     time, a document's revisions, and links between rows."""
 
     name = "journal.core.documents"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.messages", "journal.core.tasks", "journal.core.plans", "journal.core.docking", "journal.core.agents", "journal.core.drivers", "journal.core.processes", "journal.core.chat"]
     skills = [SkillDeclaration("journal-documents", "Write lasting knowledge as documents and what was checked as reports; read it before the first doc or report command of a session", keywords=("document", "documents", "report"), commands=("doc", "report"))]
     nudges = [DOCUMENT_OPEN, DOCUMENT_STOP_REFUSAL]
@@ -131,13 +132,14 @@ class DocumentsModule(Module):
                                  keys=[WindowKey("library", "document library", arguments=["type", "state", "before"])]),
                WindowDeclaration("documents.page", "Document reader", "document-page.js", WindowLoading.COMPONENT, skeleton=DOCUMENTS_DOCUMENTS_SKELETON, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.DOCUMENT,
                                  reads=["document library", "doc show", "report show", "doc inspect", "report inspect", "doc comments", "report comments", "doc revisions", "doc revision", "question list", "link list"],
-                                 runs=["doc make", "report make", "doc comment", "report comment", "doc close", "doc edit", "report edit"], events=["doc.*", "report.*", "question.*"], shared_reads=["doc show id", "report show id"],
+                                 runs=["doc make", "report make", "doc comment", "report comment", "doc close", "doc edit", "report edit", "report close"], events=["doc.*", "report.*", "question.*"], shared_reads=["doc show id", "report show id"],
                                  keys=[WindowKey("library", "document library", arguments=["type", "state", "before"])]),
                WindowDeclaration("documents.document-body", "Text", "document-body.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.DOCUMENT, skeleton=[SkeletonPart.line()],
                                  reads=["doc inspect", "report inspect", "doc comments", "report comments", "doc revisions", "doc revision", "question list"],
                                  runs=["doc comment", "report comment", "doc close", "doc edit", "report edit"], events=["doc.*", "report.*", "question.*"])]
     inspectors = [DOC_INSPECTOR, REPORT_INSPECTOR]
     views = [DocumentRow]
+    step_conditions = [ReportCommented]
     handlers = [ApprovePlanHandler, OpenDocHandler, RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler, RemoveLinkHandler, ReadPlanContextHandler]
     listeners = [CloseEndedDocumentListener, PlanDocumentLinkListener, ReplyLinkListener, WorkSourceLinkListener, DocMentionListener, ReportMentionListener, PlanMentionListener, TaskMentionListener, MessageMentionListener, PhaseMentionListener, TaskLogMentionListener, DeletedRowLinkListener, NewDocDockListener, NewReportDockListener, TextReadMarkListener, LinkCorrectionResetListener]
     marks = TEXT_MARKS

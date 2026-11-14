@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import os
 import subprocess
 
@@ -15,7 +16,7 @@ class LauncherReplacement:
 
     def run(self) -> None:
         binary = self.home.folder / "bin" / "journal"
-        if not binary.is_file() or not self.home.socket("launcher").exists():
+        if not FileAccess.is_file(binary) or not FileAccess.exists(self.home.socket("launcher")):
             return
         try:
             answer = subprocess.run([str(binary), "launcher-replace"], env={**os.environ, "JOURNAL_HOME": str(self.home.folder)},

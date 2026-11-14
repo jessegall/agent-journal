@@ -25,17 +25,17 @@ class FullRunRecords:
 
     @staticmethod
     def read(file: Path = RECORD_FILE) -> "FullRunRecords":
-        if not file.is_file():
+        if not FileAccess.is_file(file):
             return FullRunRecords([])
-        lines = FileAccess.shared().read(file).splitlines()
+        lines = FileAccess.read(file).splitlines()
         return FullRunRecords([FullRunRecord(**json.loads(line)) for line in lines if line.strip()])
 
     @staticmethod
     def add(record: FullRunRecord, file: Path = RECORD_FILE) -> None:
-        if not file.parent.is_dir():
+        if not FileAccess.is_dir(file.parent):
             return
         kept = FullRunRecords.read(file).records[-(KEPT_RUNS - 1):]
-        FileAccess.shared().write(file, "".join(json.dumps(asdict(kept_record)) + "\n" for kept_record in [*kept, record]))
+        FileAccess.write(file, "".join(json.dumps(asdict(kept_record)) + "\n" for kept_record in [*kept, record]))
 
     def growth(self) -> str:
         if len(self.records) < 2:

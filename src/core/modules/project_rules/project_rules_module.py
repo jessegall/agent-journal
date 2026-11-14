@@ -25,7 +25,7 @@ class ProjectRulesModule(Module):
 
     name = "journal.core.project-rules"
     seed_reason = "the demo shows no rules yet"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.docking", "journal.core.memories", "journal.core.reminders", "journal.core.settings", "journal.core.viewer"]
     models = [ModelDeclaration(ProjectRule, excluded_subcommands=["make"])]
     migrations = [RulesTableMigration, MemoryRulesMigration, PlainMemoriesMigration]
@@ -40,4 +40,4 @@ class ProjectRulesModule(Module):
     driver_rules = [StartRulesRule]
     windows = [WindowDeclaration("project-rules.rules", "Rules", "rules.js", WindowLoading.COMPONENT, skeleton=PROJECT_RULES_RULES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.RULE, reads=["rule list"],
                                  keys=[WindowKey("rules", "rule list", events=["rule.*"], arguments=["limit", "before-id", "after-id"], page_size=50)],
-                                 runs=["rule approve", "rule deny", "rule remove"], events=["rule.*"])]
+                                 runs=["rule approve", "rule deny", "rule edit", "rule remove"], events=["rule.*"])]

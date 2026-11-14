@@ -6,10 +6,10 @@ const control = (element, key) => element.querySelector(`[data-setting="${key}"]
 const tabs = (element) => [...element.querySelectorAll("[role=tab]")].map((tab) => tab.childNodes[0].textContent.trim());
 const note = (element) => element.querySelector("[data-settings-note]").textContent;
 
-test("the shell has the four tabs under the environment and draws the work screen first", async () => {
+test("the shell has the five tabs under the environment and draws the work screen first", async () => {
     const {element} = await mount();
     expect(element.querySelector("[data-settings-environment]").textContent).toBe("main");
-    expect(tabs(element)).toEqual(["Work", "Helpers", "Tests", "Advanced"]);
+    expect(tabs(element)).toEqual(["Work", "Helpers", "Assign", "Tests", "Advanced"]);
     expect(control(element, AUTO)).not.toBeNull();
     expect(element.querySelector("[data-agent-settings-work]")).not.toBeNull();
 });

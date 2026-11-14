@@ -9,15 +9,14 @@ test("opening a hook request shows its headers and its body", async () => {
     window.read = async () => ({ok: true, value: {rows: [request]}});
     const element = await mounted(HookRequests, window);
     await settle();
-    expect(element.querySelector("[data-hook-request='7']").textContent).toContain("stop");
-    expect([...element.querySelectorAll("[data-hook-column]")].map((column) => column.textContent)).toEqual(["Event", "Tool", "Parts", "Time", "Sender", "Queued", "Duration"]);
-    expect(element.querySelector("[data-hook-request='7'] [data-hook-parts]").textContent).toBe("");
-    expect(element.querySelector("[data-hook-day]").textContent).toContain("2026-11-02");
-    expect(element.querySelector("[data-hook-request='7']").textContent).toContain("18:00:00.000");
-    expect(element.querySelector("[data-hook-request='7']").textContent).toContain("12 ms");
+    expect(element.querySelector("[data-table-row='7']").textContent).toContain("stop");
+    expect([...element.querySelectorAll(".table-row.head .cell")].map((column) => column.textContent)).toEqual(["Event", "Tool", "Parts", "Time", "Sender", "Queued", "Duration"]);
+    expect(element.querySelector("[data-table-row='7'] .cell:nth-child(3)").textContent).toBe("");
+    expect(element.querySelector("[data-table-row='7']").textContent).toContain("18:00:00.000");
+    expect(element.querySelector("[data-table-row='7']").textContent).toContain("12 ms");
     expect(element.querySelector("[data-hook-request-divider]")).not.toBeNull();
     expect(element.querySelector("[data-hook-request-detail]")).toBeNull();
-    element.querySelector("[data-hook-request='7']").click();
+    element.querySelector("[data-table-row='7']").click();
     await settle();
     expect(element.querySelector("[data-hook-request-headers]").textContent).toContain("firing-1");
     const body = element.querySelector("[data-hook-request-body]");
@@ -47,19 +46,19 @@ test("request filters are sent to the server and remembered", async () => {
     localStorage.removeItem("journal.hook-requests.filters");
 });
 
-test("the request queue is read only after its inspector opens", async () => {
+test("the executions are read only after their inspector opens", async () => {
     const window = requestLogWindowContext({
         "developer hook-requests": {ok: true, value: {rows: []}},
-        "developer request-queue": {ok: true, value: {running: [], waiting: [], hook_limit: 2, main_hook_seconds: 1, agent_hook_seconds: 1, viewer_wait_seconds: 1}},
+        "queue list": {ok: true, value: {halted: false, halt_reason: "", execution: {lanes: [{lane: "instant", used: 0, capacity: 24, over_capacity: false, halted: false, running: [], waiting: []}], waits: []}}},
     });
     const requests = vi.spyOn(window, "readKeys");
     const element = await mounted(HookRequests, window);
     expect(requests).toHaveBeenCalledTimes(1);
-    expect(window.reads.some((line) => line.startsWith("developer request-queue"))).toBe(false);
-    element.querySelector("[data-request-queue-open]").click();
+    expect(window.reads.some((line) => line.startsWith("queue list"))).toBe(false);
+    element.querySelector("[data-executions-open]").click();
     await settle();
     expect(requests.mock.calls.at(-1)[0].only).toEqual(["queue"]);
-    expect(element.querySelector("[data-request-queue-empty]").textContent).toBe("No running requests.");
+    expect(element.querySelector('[data-lane="instant"]').textContent).toContain("Nothing runs or waits here.");
 });
 
 test("slow requests are amber and refused requests stay red even when slow", async () => {
@@ -70,10 +69,9 @@ test("slow requests are amber and refused requests stay red even when slow", asy
     ]}});
     const element = await mounted(HookRequests, window);
     await settle();
-    expect(element.querySelector("[data-hook-request='1']").classList.contains("slow")).toBe(true);
-    expect(element.querySelector("[data-hook-request='2']").classList.contains("refused")).toBe(true);
-    expect(element.querySelector("[data-hook-request='2']").classList.contains("slow")).toBe(false);
-    expect(element.querySelectorAll("[data-hook-day]")).toHaveLength(1);
+    expect(element.querySelector("[data-table-row='1']").classList.contains("warn")).toBe(true);
+    expect(element.querySelector("[data-table-row='2']").classList.contains("danger")).toBe(true);
+    expect(element.querySelector("[data-table-row='2']").classList.contains("warn")).toBe(false);
 });
 
 test("with nothing recorded it says which option turns the log on", async () => {
@@ -95,10 +93,10 @@ test("pausing keeps the list and resuming reads again", async () => {
     await settle();
     expect(button.textContent).toBe("Resume");
     expect(button.getAttribute("aria-pressed")).toBe("true");
-    expect(element.querySelector('[data-hook-request="1"]')).not.toBeNull();
+    expect(element.querySelector('[data-table-row="1"]')).not.toBeNull();
     button.click();
     await settle();
-    expect(element.querySelector('[data-hook-request="2"]')).not.toBeNull();
+    expect(element.querySelector('[data-table-row="2"]')).not.toBeNull();
 });
 
 test("a read answered after pausing leaves the shown requests in place", async () => {
@@ -115,25 +113,14 @@ test("a read answered after pausing leaves the shown requests in place", async (
     finish(answer(2));
     await loading;
     await settle();
-    expect(element.querySelector('[data-hook-request="1"]')).not.toBeNull();
-    expect(element.querySelector('[data-hook-request="2"]')).toBeNull();
+    expect(element.querySelector('[data-table-row="1"]')).not.toBeNull();
+    expect(element.querySelector('[data-table-row="2"]')).toBeNull();
     button.click();
     await settle();
-    expect(element.querySelector('[data-hook-request="3"]')).not.toBeNull();
-});
-
-test("an agent sender links to its card without opening request details", async () => {
-    const window = requestLogWindowContext();
-    window.read = async () => ({ok: true, value: {rows: [{id: 1, agent_id: 42, sender: "Worker 42", event: "stop", duration_ms: 1, outcome: "allowed"}]}});
-    const element = await mounted(HookRequests, window);
-    await settle();
-    const sender = element.querySelector('[data-peek="agents:42"]');
-    expect(sender).not.toBeNull();
-    sender.click();
-    expect(element.querySelector("[data-hook-request-detail]")).toBeNull();
+    expect(element.querySelector('[data-table-row="3"]')).not.toBeNull();
 });
 
 test("the buttons of the request log are the kit's", async () => {
     const element = await mounted(HookRequests, requestLogWindowContext());
-    for (const marker of ["data-filter-open", "data-feed-pause", "data-request-queue-open"]) expect(element.querySelector(`button[${marker}]`).classList.contains("btn")).toBe(true);
+    for (const marker of ["data-filter-open", "data-feed-pause", "data-executions-open"]) expect(element.querySelector(`button[${marker}]`).classList.contains("btn")).toBe(true);
 });

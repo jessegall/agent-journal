@@ -26,12 +26,12 @@ class FileRoute:
     def upload(self, name: str, data: bytes) -> str:
         pending = f"{secrets.token_hex(TOKEN_BYTES)}/{self.safe_name(name)}"
         path = self.home.pending_files / pending
-        path.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write_binary(path, data)
+        FileAccess.mkdir(path.parent, parents=True, exist_ok=True)
+        FileAccess.write_binary(path, data)
         return pending
 
     def download(self, message_id: int, name: str) -> FileAnswer | None:
         path = self.home.message_files(message_id) / self.safe_name(name)
-        if not path.is_file():
+        if not FileAccess.is_file(path):
             return None
-        return FileAnswer(FileAccess.shared().binary(path), mimetypes.guess_type(path.name)[0] or UNKNOWN_TYPE)
+        return FileAnswer(FileAccess.binary(path), mimetypes.guess_type(path.name)[0] or UNKNOWN_TYPE)

@@ -27,26 +27,26 @@ class PrivateFolder:
 
     def file(self, suffix: str) -> Path | None:
         path = self.home.folder / PROJECT_ID_FILE
-        return self.folder / f"{self.project_id()}{suffix}" if path.is_file() else None
+        return self.folder / f"{self.project_id()}{suffix}" if FileAccess.is_file(path) else None
 
     def made_file(self, suffix: str) -> Path:
         path = self.home.folder / PROJECT_ID_FILE
-        if not path.is_file():
-            FileAccess.shared().write(path, os.urandom(16).hex())
+        if not FileAccess.is_file(path):
+            FileAccess.write(path, os.urandom(16).hex())
             self.project_ids.clear()
         return self.made_folder() / f"{self.project_id()}{suffix}"
 
     def project_id(self) -> str:
         path = self.home.folder / PROJECT_ID_FILE
-        version = FileAccess.shared().version(path)
+        version = FileAccess.version(path)
         if version not in self.project_ids:
-            self.project_ids = {version: FileAccess.shared().read(path).strip()}
+            self.project_ids = {version: FileAccess.read(path).strip()}
         return self.project_ids[version]
 
     def made_folder(self) -> Path:
-        self.folder.mkdir(parents=True, exist_ok=True)
-        self.folder.chmod(FOLDER_MODE)
+        FileAccess.mkdir(self.folder, parents=True, exist_ok=True)
+        FileAccess.chmod(self.folder, FOLDER_MODE)
         ignore = self.folder / ".gitignore"
-        if not ignore.is_file():
-            FileAccess.shared().write(ignore, "*\n")
+        if not FileAccess.is_file(ignore):
+            FileAccess.write(ignore, "*\n")
         return self.folder

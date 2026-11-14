@@ -1,3 +1,5 @@
+from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
+from engine.query.conditions.among import Among
 from engine.cli.row_numbers import RowNumbers
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.enums.agent_role import AgentRole
@@ -14,6 +16,8 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_nudges import WORKER_REUSE
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.dispatch_arguments import DISPATCH_ARGUMENTS
+
+HELD_WORK_STATES = (WorktreeState.CUT, WorktreeState.DELIVERED)
 
 REUSE_REASON = "every open worktree is checked for a worker that knows the files of the new tasks"
 
@@ -49,7 +53,8 @@ class WorkerReuseRule(DriverRule):
         paths = PathMentions.found(" ".join(task.brief for task in self.queries.query(Task).find_many(task_ids)))
         if not paths:
             return None
-        worktrees = list(self.queries.query(Worktree).every_row(REUSE_REASON))
+        # only a worktree that still holds its work, cut or delivered, can hold the files; a merged or removed one does not
+        worktrees = list(self.queries.query(Worktree).matching(Among("state", HELD_WORK_STATES)).every_row(REUSE_REASON))
         workers = {worker.id: worker for worker in self.queries.query(Agent).find_many([worktree.session_agent_id for worktree in worktrees])}
         for worktree in worktrees:
             is_ended = workers[worktree.session_agent_id].ended_at is not None

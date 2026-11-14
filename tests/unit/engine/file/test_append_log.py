@@ -3,7 +3,7 @@ from engine.file.file_access import FileAccess
 
 
 def log_in(folder) -> AppendLog:
-    return AppendLog(folder / "lines.log", folder / "lines.taken", FileAccess.shared())
+    return AppendLog(folder / "lines.log", folder / "lines.taken", FileAccess())
 
 
 def test_appended_lines_are_taken_only_on_the_round_after_they_were_moved_aside(tmp_path):

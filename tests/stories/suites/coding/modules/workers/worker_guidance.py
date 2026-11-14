@@ -4,7 +4,7 @@ import pytest
 from engine.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import FIRST_PROOF, checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.held_tasks import worker_with_tasks, prove_task, unplanned_worker_with_tasks
@@ -148,5 +148,6 @@ def test_a_clash_settled_and_delivered_is_no_longer_a_clash(clashed):
     story, worker, repository = clashed
     story.expect_rows("Point: conflict" in story.run("worker status", actor=worker).output_text)
     repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
+    story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.expect_rows("Point: conflict" not in story.run("worker status", actor=worker).output_text)

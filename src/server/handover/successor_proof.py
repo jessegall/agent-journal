@@ -1,6 +1,6 @@
+from engine.file.file_access import FileAccess
 import shutil
 import sqlite3
-import tempfile
 from pathlib import Path
 
 from engine.time.clock import Clock
@@ -23,11 +23,11 @@ class SuccessorProof:
         self.home = home
 
     def run(self) -> None:
-        with tempfile.TemporaryDirectory() as folder:
+        with FileAccess.temporary_folder() as folder:
             sync_modules(self.with_listed_modules(JournalHome(Path(folder))))
         if self.has_pending_migrations():
             ServerBackup(self.home, Clock()).write_copy()
-            with tempfile.TemporaryDirectory(dir=self.home.folder) as folder:
+            with FileAccess.temporary_folder(folder=self.home.folder) as folder:
                 sync_modules(self.copied_home(Path(folder)))
 
     def has_pending_migrations(self) -> bool:
@@ -45,13 +45,13 @@ class SuccessorProof:
         finally:
             target.close()
             source.close()
-        if (self.home.folder / PLUGINS_FOLDER).is_dir():
-            (folder / PLUGINS_FOLDER).symlink_to(self.home.folder / PLUGINS_FOLDER, target_is_directory=True)
+        if FileAccess.is_dir(self.home.folder / PLUGINS_FOLDER):
+            FileAccess.symlink_to(folder / PLUGINS_FOLDER, self.home.folder / PLUGINS_FOLDER, target_is_directory=True)
         return self.with_listed_modules(copy)
 
     def with_listed_modules(self, copy: JournalHome) -> JournalHome:
-        if self.home.module_list.exists():
-            shutil.copyfile(self.home.module_list, copy.module_list)
-        if self.home.modules_folder.is_dir():
-            copy.modules_folder.symlink_to(self.home.modules_folder, target_is_directory=True)
+        if FileAccess.exists(self.home.module_list):
+            FileAccess.copyfile(self.home.module_list, copy.module_list)
+        if FileAccess.is_dir(self.home.modules_folder):
+            FileAccess.symlink_to(copy.modules_folder, self.home.modules_folder, target_is_directory=True)
         return copy

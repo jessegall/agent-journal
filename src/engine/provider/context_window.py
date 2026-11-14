@@ -18,9 +18,9 @@ class ContextWindow:
 
     @classmethod
     def read_status_file(cls, path: Path) -> "ContextWindow":
-        if not path.is_file():
+        if not FileAccess.is_file(path):
             return cls(None, None)
-        version = FileAccess.shared().version(path)
+        version = FileAccess.version(path)
         return cls.parsed(StatusFileFields.read(path, version), version.modified_timestamp())
 
     @classmethod

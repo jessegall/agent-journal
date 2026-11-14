@@ -21,6 +21,6 @@ class HookWaitFileListener(CommitListener[Changed[Setting]]):
         if event.row.key != HOOK_WAIT_SECONDS:
             return
         if isinstance(event, Deleted):
-            self.home.hook_wait_file.unlink(missing_ok=True)
+            FileAccess.unlink(self.home.hook_wait_file, missing_ok=True)
             return
-        FileAccess.shared().write(self.home.hook_wait_file, f"{event.row.value}\n")
+        FileAccess.write(self.home.hook_wait_file, f"{event.row.value}\n")

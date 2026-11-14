@@ -61,7 +61,7 @@ class ReviewsModule(Module):
 
     name = "journal.core.reviews"
     move_reason = "version 4 kept plan reviews in plan_reviews, which the plans module moves"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     settings = REVIEW_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings", "journal.core.chat", "journal.core.plans", "journal.core.drivers", "journal.core.assignments"]
     models = [ModelDeclaration(Review, query=ReviewQuery, commands=(AssignReview, AbandonReview)), ModelDeclaration(ReviewPoint), ModelDeclaration(ReviewStep, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(Reviewer, query=ReviewerQuery, commands=(StartReviewer, EndReviewer), excluded_subcommands=["make", "edit", "delete"])]

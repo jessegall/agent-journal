@@ -1,0 +1,24 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {"name": "admitted"},
+            {"of": "child:func", "all": [
+                {"of": "child:value", "nameIn": ["queue", "executions"]}
+            ]},
+            {"fileMatches": "(^|/)src/"}
+        ],
+        "reject": [
+            {"testCode": true},
+            {"fileMatches": "(^|/)src/server/execution/"}
+        ]
+    },
+    "sin": {
+        "name": "queue-turn-outside-execution",
+        "description": "A file takes a place in the instant lane itself, so its ticket, its priority and what it applies while it runs are decided outside the one place that decides them.",
+        "rule": "Take a place through a ticket class in src/server/execution, such as HookTickets, CommandTickets or ViewerTickets, and add one there for a new kind of request.",
+        "skill": "processes-architecture"
+    }
+}

@@ -27,7 +27,7 @@ SESSION = "s-notes"
 def person(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    story.container.bind(SkillRequirement, SkillRequirement())
+    story.replace(SkillRequirement, SkillRequirement())
     story.run("skill write")
     return story
 

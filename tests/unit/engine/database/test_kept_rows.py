@@ -313,3 +313,14 @@ def test_a_joined_read_refreshes_when_a_joined_row_changes(database):
     database.update(Statement("UPDATE places SET version = 2, updated_at = '2027' WHERE id = 1"))
     kept.read(placed, lambda: loads.append(2), name="notes.placed")
     assert loads == [1, 2]
+
+
+def test_a_known_write_does_not_change_a_kept_value_that_another_connection_changed_since(database, tmp_path):
+    kept = KeptRows(database)
+    assert kept.read(notes(database), lambda: texts(database), name="notes.texts") == tuple(["Saved"])
+    script = Database.opened(JournalHome(tmp_path))
+    script.update(Statement("UPDATE notes SET version = 2, text = 'Foreign' WHERE id = 1"))
+    script.close()
+    database.insert(Statement("INSERT INTO notes VALUES (2, 1, '2026', 'Own')"))
+    kept.update(notes(database), lambda values: (*values, "Own"), name="notes.texts")
+    assert kept.read(notes(database), lambda: texts(database), name="notes.texts") == ("Foreign", "Own")

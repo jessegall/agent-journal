@@ -6,7 +6,7 @@ from functools import cache
 from pathlib import Path
 
 from engine.file.code_copy import IGNORED
-from engine.version.version import CORE_VERSION
+from engine.version.version import ENGINE_VERSION
 
 
 class SourceHash:
@@ -15,7 +15,7 @@ class SourceHash:
     @staticmethod
     @cache
     def text(folders: tuple[Path, ...]) -> str:
-        digest = hashlib.sha256(".".join(map(str, CORE_VERSION)).encode())
+        digest = hashlib.sha256(".".join(map(str, ENGINE_VERSION)).encode())
         sources = sorted((root.name, SourceHash.folder_hash(root)) for root in set(folders))
         for name, content in sources:
             digest.update(name.encode() + b"\0")
@@ -26,7 +26,7 @@ class SourceHash:
     @cache
     def folder_hash(root: Path) -> bytes:
         digest = hashlib.sha256()
-        for folder, directories, files in os.walk(root):
+        for folder, directories, files in FileAccess.walk_folders(root):
             directories[:] = sorted(name for name in directories if not any(fnmatch.fnmatch(name, pattern) for pattern in IGNORED))
             for name in sorted(name for name in files if not any(fnmatch.fnmatch(name, pattern) for pattern in IGNORED)):
                 path = Path(folder) / name
@@ -41,6 +41,6 @@ class SourceHash:
     @cache
     def file_hash(path: Path) -> bytes | None:
         try:
-            return hashlib.sha256(FileAccess.shared().binary(path)).digest()
+            return hashlib.sha256(FileAccess.binary(path)).digest()
         except FileNotFoundError:
             return None

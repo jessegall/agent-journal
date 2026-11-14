@@ -1,0 +1,13 @@
+/* Colours: only the viewer's own tokens (src/viewer/src/tokens.css). No colour is invented here; this file wins over styles.css.
+   Progress is the existing --progress blue; the meter and the accent use the existing purple-blue. Calm, never bright. */
+:root { --progress: #5b8def; --read-tick: #5aa9f5; --tone-good: #63b37c; --tone-warn: #d8a94a; --tone-work: #82b1f5; --tone-paused: #93a0e8; }
+.progress i { background: var(--progress); }
+.meter i { background: var(--accent-text); }
+/* code: keywords in the accent text colour, strings in the add green, names in the work blue, numbers in the warn amber, comments faint */
+.tk-k { color: var(--accent-text); }
+.tk-s { color: var(--add-fg); }
+.tk-f { color: var(--tone-work); }
+.tk-n { color: var(--tone-warn); }
+.tk-c { color: var(--text-4); font-style: italic; }
+/* git marks: changed amber, new green, deleted red, moved the paused lilac, not tracked faint */
+.gs.M { color: var(--tone-warn); } .gs.A { color: var(--tone-good); } .gs.D { color: var(--danger); } .gs.R { color: var(--tone-paused); } .gs.U { color: var(--text-4); }

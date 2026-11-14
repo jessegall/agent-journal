@@ -17,7 +17,6 @@ from engine.caller.caller_request import CallerRequest
 from engine.errors.refusal import Refusal
 from engine.types.type_guards import is_mapping
 from server.work.client_disconnected import client_disconnected
-from server.hook.queue_request import QueueRequest
 from engine.caller.caller_request import SESSION_VARIABLE
 from server.viewer.viewer_key_route import ViewerKeyRoute
 from server.endpoints.cli_endpoint import CliEndpoint
@@ -34,6 +33,7 @@ from server.request.journal_server import JournalServer
 from server.work.listeners.listener_wake import ListenerWake
 from server.door.socket_peer import socket_peer
 from server.handover.successor_start import SuccessorStart
+from contextlib import nullcontext
 
 EXIT_CODE_TRAILER = "Journal-Exit-Code"
 CODE_VERSION_HEADER = "Journal-Code-Version"
@@ -55,7 +55,9 @@ class RequestHandler(BaseHTTPRequestHandler):
     status: int = 0
     exit_code: int | None = None
 
+    # the timeout holds only while the handler waits to read the next request, so a running request is never cut
     def setup(self) -> None:
+        self.timeout = self.journal_server().context.idle_connection_seconds
         super().setup()
         self.timing = Timing.started("server_accepted", PerformanceState(self.journal_server().context.home))
         self.peer = socket_peer(self.connection)
@@ -103,12 +105,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def answered_safely(self, answer: Callable[[], None]) -> None:
         try:
-            route = self.path.partition("?")[0]
-            if route in ("/hook", "/cli"):
-                answer()
-                return
-            with self.journal_server().context.hook_database.queue.observing(QueueRequest.started("Client", f"{self.command} {self.path}")):
-                answer()
+            answer()
         except Exception as error:
             if client_disconnected(error):
                 self.close_connection = True
@@ -181,7 +178,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             return
         context = self.journal_server().context
         try:
-            viewer_key = ViewerKeyRoute(context.home, context.viewer.login).key(request)
+            viewer_key = ViewerKeyRoute(context.home, context.viewer.login, context.hook_database.turns).key(request)
             self.answer_json(200, {"key": viewer_key.key, "environment": viewer_key.environment})
         except Refusal as refusal:
             self.answer_json(403, {"error": refusal.reason})
@@ -215,13 +212,15 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_header("Trailer", EXIT_CODE_TRAILER)
         self.end_headers()
         try:
-            queued = QueueRequest.started("CLI", " ".join(request.argv), request.caller.variables.get(SESSION_VARIABLE, ""), "cli")
-            queue = context.hook_database.queue
-            turn = queue.observing(queued) if context.viewer.routes.priorities.is_unqueued(request.argv) else queue.cli_turn(queued)
+            session = request.caller.variables.get(SESSION_VARIABLE, "")
+            turn = nullcontext() if context.viewer.routes.priorities.is_unqueued(request.argv) else context.hook_database.command_tickets.admitted(session, " ".join(request.argv))
             with turn:
                 queued_ms = (perf_counter() - started_at) * 1000
-                code = CliEndpoint(context.home, ListenerWake(context.listener_thread), context.reported_findings, queue, context.request_trace.completed, context.hook_database.turns).answer(request, ChunkStream(self.send_chunk, self.has_caller_disconnected))
+                code = CliEndpoint(context.home, ListenerWake(context.listener_wakes), context.reported_findings, context.request_trace.completed, context.hook_database.turns).answer(request, ChunkStream(self.send_chunk, self.has_caller_disconnected))
         except Exception as error:
+            if client_disconnected(error):
+                self.close_connection = True
+                return
             self.journal_server().context.files.log_line("".join(traceback.format_exception(error)), LogLevel.ERROR)
             self.send_chunk(f"{type(error).__name__}: {error}\n".encode())
             code = ERROR_CODE

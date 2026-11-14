@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from engine.provider.program_hooks import ProgramHooks
@@ -42,10 +43,10 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
         for provider in self.providers.all():
             for file in provider.worktree_hook_files:
                 source = Path(command.source) / file
-                if not source.is_file():
+                if not FileAccess.is_file(source):
                     continue
                 target = Path(command.folder) / file
-                target.parent.mkdir(parents=True, exist_ok=True)
+                FileAccess.mkdir(target.parent, parents=True, exist_ok=True)
                 ProgramHooks.store(target, ProgramHooks.read(source))
                 self.libraries.exclude(command.folder, [str(file)])
 
@@ -53,7 +54,7 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
         self.environment_names.environment_id(command.environment)
         links = (*self.settings.texts(LIBRARY_LINKS), *command.library_links)
         copies = (*self.settings.texts(LIBRARY_COPIES), *command.library_copies)
-        links = (*links, *(name for name in self.git.dependency_folders(command.source) if name not in (*links, *copies) and not (Path(command.folder) / name).exists()))
+        links = (*links, *(name for name in self.git.dependency_folders(command.source) if name not in (*links, *copies) and not FileAccess.exists(Path(command.folder) / name)))
         self.timing.stamp("prepare_dependency_folders")
         self.libraries.check(command.source, (*links, *copies))
         self.libraries.place(command.source, command.folder, links, copies)

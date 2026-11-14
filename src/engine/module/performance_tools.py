@@ -1,3 +1,4 @@
+from functools import cached_property
 from engine.container.container import Container
 from engine.database.performance_costs import PerformanceCosts
 from engine.database.points import Points
@@ -11,11 +12,16 @@ class PerformanceTools:
     """Captures database costs and runs registered tools only outside lifecycle work and tests."""
 
     def __init__(self, finder: ModuleFinder, container: Container, home: JournalHome) -> None:
-        self.registered = {tool for module in finder.modules() for tool in module.performance_tools}
+        self.finder = finder
         self.container = container
         self.marker = home.system_log.parent / TESTS_RUNNING_FILE
         self.state = container.get(PerformanceState)
         self.costs = container.get(PerformanceCosts)
+
+    # found on the first run, so building the tools reads no module file
+    @cached_property
+    def registered(self) -> frozenset[type[PerformanceTool]]:
+        return frozenset(tool for module in self.finder.modules() for tool in module.performance_tools)
 
     def run(self, tool: type[PerformanceTool], *values: object) -> object:
         if tool not in self.registered:

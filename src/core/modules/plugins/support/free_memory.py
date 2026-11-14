@@ -41,7 +41,7 @@ class FreeMemory:
 
     @staticmethod
     def linux_megabytes() -> int | None:
-        matched = re.search(r"^MemAvailable:\s+(\d+) kB", FileAccess.shared().current(MEMINFO), re.M)
+        matched = re.search(r"^MemAvailable:\s+(\d+) kB", FileAccess.current(MEMINFO), re.M)
         return int(matched.group(1)) // MEGABYTE_KILOBYTES if matched else None
 
     def mac_megabytes(self) -> int | None:

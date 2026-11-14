@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, RowList, TextDisplay, WindowRoom, useWindow} from "@journal/window-kit";
+import {Btn, ListReaderLayout, PageHeader, Reader, TextDisplay, copying, useWindow} from "@journal/window-kit";
 
 const view = useWindow();
 const releases = view.props.releases;
@@ -44,119 +44,95 @@ async function readNotes(page) {
 }
 
 const reload = () => globalThis.location.reload();
+
+// the release notes and the releases installed here are the list; a note reads as its text and an installed release says when it was installed
+const chosen = ref(null);
+const items = computed(() => [
+    ...notes.value.map((note) => ({id: note.tag, title: note.tag, desc: new Date(note.published_at).toLocaleDateString(), group: "Release notes", note})),
+    ...releases.rows.value.map((row) => ({id: `installed-${row.id}`, title: row.tag || row.checksum.slice(0, 12), desc: new Date(row.created_at).toLocaleString(), group: "Installed here", installed: row})),
+]);
+watch(() => items.value.length, () => {
+    if (chosen.value === null && items.value.length) chosen.value = items.value[0].id;
+}, {flush: "post"});
+// an update is only read: its menu has Open and Copy name, never Duplicate or Delete
+const place = (item) => ({
+    head: item.title,
+    items: [
+        {label: "Open", group: "open", disabled: item.id === chosen.value, reason: "Already open", run: () => (chosen.value = item.id)},
+        {label: "Copy name", group: "copy", run: ({say}) => copying(item.title, item.title, say)},
+    ],
+});
+
 </script>
 
 <template>
-    <WindowRoom>
-        <template v-if="installing">
-            <div class="cover" role="status" data-update-cover>Updating the journal. This takes a short while.</div>
-        </template>
-        <template v-if="installed">
-            <div class="arrived" role="status" data-update-arrived>
-                <span class="line">The update is installed. Reload the page to see it.</span>
-                <Btn small variant="primary" data-update-reload @click="reload">Reload</Btn>
-            </div>
-        </template>
-        <template v-if="checkFailure || installFailure">
-            <p class="failure">{{ checkFailure || installFailure }}</p>
-        </template>
-        <div class="standing">
-            <span class="line">{{ checkLine }}</span>
-            <button type="button" @click="check">Check again</button>
-            <template v-if="standing && !standing.is_current">
-                <Btn small variant="primary" data-update-install @click="install">{{ standing.installation?.step === "failed" ? "Retry update" : standing.tag ? `Update to ${standing.tag}` : "Update to the latest" }}</Btn>
+    <ListReaderLayout v-model:chosen="chosen" :items="items" :list-width="320" :place="place" empty-title="No releases yet" pick-line="No release chosen" data-updates>
+        <template #top>
+            <PageHeader title="Updates" />
+            <template v-if="installing">
+                <div class="cover" role="status" data-update-cover>Updating the journal. This takes a short while.</div>
             </template>
-            <template v-else-if="standing">
-                <button type="button" data-update-force @click="install">Install it again</button>
-            </template>
-        </div>
-        <h3 class="heading">Installed releases</h3>
-        <div class="releases">
-            <RowList :rows="releases.rows.value" :failure="releases.failure.value" :loaded="releases.loaded.value" empty="No installation history yet" hint="Installed releases appear here with their installation dates.">
-                <template #default="{row}">
-                    <div class="release" :data-row="row.id">
-                        <span class="title">{{ row.tag || row.checksum.slice(0, 12) }}</span>
-                        <span class="detail">{{ new Date(row.created_at).toLocaleString() }}</span>
-                    </div>
-                </template>
-            </RowList>
-        </div>
-        <h3 class="heading">What changed</h3>
-        <template v-if="notesFailure">
-            <p class="detail" data-update-notes-failure>{{ notesFailure }}</p>
-        </template>
-        <template v-for="note in notes" :key="note.tag">
-            <article class="note" data-update-note>
-                <div class="release">
-                    <span class="title">{{ note.tag }}</span>
-                    <span class="detail">{{ new Date(note.published_at).toLocaleDateString() }}</span>
+            <template v-if="installed">
+                <div class="arrived" role="status" data-update-arrived>
+                    <span class="line">The update is installed. Reload the page to see it.</span>
+                    <Btn small variant="primary" data-update-reload @click="reload">Reload</Btn>
                 </div>
-                <TextDisplay :text="note.text" />
-            </article>
+            </template>
+            <template v-if="checkFailure || installFailure">
+                <p class="failure">{{ checkFailure || installFailure }}</p>
+            </template>
+            <div class="standing">
+                <span class="line">{{ checkLine }}</span>
+                <button type="button" @click="check">Check again</button>
+                <template v-if="standing && !standing.is_current">
+                    <Btn small variant="primary" data-update-install @click="install">{{ standing.installation?.step === "failed" ? "Retry update" : standing.tag ? `Update to ${standing.tag}` : "Update to the latest" }}</Btn>
+                </template>
+                <template v-else-if="standing">
+                    <button type="button" data-update-force @click="install">Install it again</button>
+                </template>
+            </div>
+            <template v-if="notesFailure">
+                <p class="detail" data-update-notes-failure>{{ notesFailure }}</p>
+            </template>
+            <template v-if="!lastPage">
+                <div class="standing"><button type="button" data-update-older @click="readNotes(notesPage + 1)">Show older releases</button></div>
+            </template>
         </template>
-        <template v-if="!lastPage">
-            <button type="button" data-update-older @click="readNotes(notesPage + 1)">Show older releases</button>
+        <template #empty>{{ releases.loaded.value ? "Installed releases appear here with their installation dates." : "" }}</template>
+        <template #reader="{item}">
+            <Reader :title="item.title" :number="item.note ? 'Release notes' : 'Installed here'" :facts="item.note ? [{name: 'published', label: 'Published', value: new Date(item.note.published_at).toLocaleDateString()}] : [{name: 'installed', label: 'Installed', value: new Date(item.installed.created_at).toLocaleString()}]" data-update-note>
+                <TextDisplay v-if="item.note" :text="item.note.text" />
+                <p v-else class="detail">This release was installed on this journal.</p>
+            </Reader>
         </template>
-    </WindowRoom>
+    </ListReaderLayout>
 </template>
 
 <style scoped>
-.releases {
-    position: relative;
-    min-height: 100px;
-}
-
 .failure {
-    margin: 0 0 8px;
+    margin: 0;
+    padding: 4px var(--inset);
     color: var(--bad, var(--text-2));
     font-size: 12px;
 }
 
-.cover {
-    margin-bottom: 8px;
-    padding: 10px 12px;
-    border: 1px solid var(--border-2);
-    border-radius: 10px;
-    font-size: 13px;
-}
-
-.arrived {
+.cover,
+.arrived,
+.standing {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 8px;
+    padding: 6px var(--inset);
     font-size: 13px;
 }
 
-.note {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-bottom: 12px;
-    font-size: 13px;
-}
-
-.standing,
-.release {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    font-size: 13px;
-}
-
-.line,
-.title {
+.line {
     flex: 1;
 }
 
-.heading {
-    margin: 12px 0 6px;
-    color: var(--text-3);
-    font-size: 12px;
-    font-weight: 600;
-}
-
 .detail {
+    margin: 0;
+    padding: 4px var(--inset);
     color: var(--text-3);
     font-size: 12px;
 }

@@ -11,7 +11,7 @@ const COMMAND = `${GROUP}.command`;
 const WAIT = `${GROUP}.wait-for-person`;
 
 // the nodes as setting-screen show work answers them for the four checkpoint settings
-const node = (key, kind, component, title, value, extra = {}) => ({key, kind, component, section: "Checkpoints", parent: null, title, description: `About ${title}.`, value, default: value, source: "default", choices: [], rule: "", requires: [], read_only: true, ...extra});
+const node = (key, nodeType, component, title, value, extra = {}) => ({key, node_type: nodeType, component, section: "Checkpoints", parent: null, title, description: `About ${title}.`, value, default: value, source: "default", choices: [], rule: "", requires: [], is_readonly: true, ...extra});
 const NODES = [
     node(REVIEW, "flag", "toggle", "Quick review at a checkpoint", false),
     node(MODEL, "choice", "choice", "Review model", "sonnet", {choices: ["sonnet", "equal"], requires: [REVIEW]}),

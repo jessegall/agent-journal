@@ -16,7 +16,7 @@ class QueuedWorker(StoryFixture):
     parent = UserBuilder
 
     def steps(self, story) -> None:
-        story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --environment main", actor=story.user)
+        story.expect_success(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} 4 --environment main", actor=story.user)
         story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=story.user)
         story.expect_success(f"setting set {ProcessSetting.READERS_FORCED.key} false --environment main", actor=story.user)
         story.agent = Actor(story.new_row_id("agent start queued-tester claude worker --environment main"), ActorType.AGENT)

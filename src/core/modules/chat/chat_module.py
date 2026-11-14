@@ -31,7 +31,7 @@ class ChatModule(Module):
     name = "journal.core.chat"
     seed_reason = "its marks come from the rows of the other modules"
     move_reason = "version 4 kept its chat as messages, which the messages module moves"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings"]
     settings = CHAT_SETTINGS
     models = [ModelDeclaration(ChatMark, query=ChatMarkQuery), ModelDeclaration(JournalException, excluded_subcommands=["make", "edit", "delete"])]

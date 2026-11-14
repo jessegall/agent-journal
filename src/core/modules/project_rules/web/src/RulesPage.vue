@@ -1,78 +1,71 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, RowList, useWindow, WindowRoom} from "@journal/window-kit";
+import {Btn, FilterBar, ListReaderLayout, PageHeader, Skeleton, TimeAgo, applyFilter, defaultFilter, removed, useWindow} from "@journal/window-kit";
+import RuleEdit from "./RuleEdit.vue";
+import RuleReader from "./RuleReader.vue";
+import {ruleFilters, ruleItems, ruleMenu} from "./ruleWords.js";
 
-const PROPOSED = "proposed";
-const STATE_ORDER = [PROPOSED, "active"];
-
-// the rules of the project: what holds for every agent, and what agents proposed, which waits on a user
-const context = useWindow();
-const {rows, failure, loaded, more, load, older} = context.props.rules;
-const shown = computed(() => STATE_ORDER.flatMap((state) => rows.value.filter((row) => row.state === state)));
-const refusal = ref("");
-
-async function move(verb, rule) {
-    const answer = await context.run(["rule", verb, String(rule.id)]);
-    refusal.value = answer.ok ? "" : answer.error;
+// the rules of the project as a list and a reader: grouped by state with the rules waiting for a user first, the time at the right edge, and the filter on the waiting and active rules to start.
+// A rule waiting for a user is approved or declined; an active one is edited or removed
+const LIST_WIDTH = 460;
+const view = useWindow();
+const {rows, failure, loaded, more, load, older, act, actionFailure} = view.props.rules;
+const filter = ref(defaultFilter(ruleFilters));
+const words = ref("");
+const shown = computed(() => applyFilter(rows.value, ruleFilters, filter.value, words.value, ["text"]));
+const items = computed(() => ruleItems(shown.value));
+const chosen = ref(null);
+const editing = ref(null);
+const menuOf = (rule, open = null) => ruleMenu(rule, {run: async (line) => {
+    const answer = await view.run(line);
     if (answer.ok) load();
-}
+    return answer;
+}, remove: () => act(["rule", "remove", String(rule.id)], removed(rule.id)), ask: () => (editing.value = rule), open});
+const place = (item) => ({head: `Rule ${item.id}`, items: menuOf(item.row, () => (chosen.value = item.id))});
+const approve = async (rule) => {
+    const answer = await view.run(["rule", "approve", String(rule.id)]);
+    if (answer.ok) load();
+};
 </script>
 
 <template>
-    <WindowRoom>
-        <div class="rules-page">
-            <template v-if="refusal">
-                <p class="rules-refusal" role="alert" data-rule-refusal>{{ refusal }}</p>
-            </template>
-            <RowList :rows="shown" :failure="failure" :loaded="loaded" :more="more" :older="older" empty="No rules yet" hint="Rules you add or approve hold for every agent.">
-                <template #default="{row}">
-                    <div class="rule" :data-rule="row.id" :data-rule-state="row.state">
-                        <span class="rule-text">{{ row.text }}</span>
-                        <template v-if="row.state === PROPOSED">
-                            <span class="rule-state">State: proposed</span>
-                            <Btn small variant="primary" @click="move('approve', row)">Approve</Btn>
-                            <Btn small bordered @click="move('deny', row)">Deny</Btn>
-                        </template>
-                        <template v-else>
-                            <Btn small bordered @click="move('remove', row)">Remove</Btn>
-                        </template>
-                    </div>
-                </template>
-            </RowList>
-        </div>
-    </WindowRoom>
+    <ListReaderLayout v-model:chosen="chosen" :items="items" :list-width="LIST_WIDTH" :place="place" empty-title="No rules yet" pick-line="Choose a rule" data-rules>
+        <template #top>
+            <PageHeader title="Rules" :count="rows.length" />
+            <FilterBar v-model="filter" v-model:words="words" :fields="ruleFilters" :rows="rows" :shown="shown.length" placeholder="Search rules" />
+            <template v-if="failure || actionFailure"><p class="failure" role="alert" data-rules-failure>{{ failure || actionFailure }}</p></template>
+            <template v-if="more"><p class="more" data-rules-more>Older rules are not shown <Btn small bordered data-row-list-more @click="older()">Show older rules</Btn></p></template>
+            <template v-if="editing"><RuleEdit :rule="editing" @close="editing = null" /></template>
+        </template>
+        <template #empty>
+            <template v-if="!loaded"><Skeleton shape="rows" /></template>
+            <template v-else>Rules you add or approve hold for every agent.</template>
+        </template>
+        <template #meta="{item}">
+            <TimeAgo class="age" :at="item.row.created_at" />
+        </template>
+        <template #reader="{item}">
+            <RuleReader :rule="item.row" :items="menuOf(item.row)" @approve="approve(item.row)" />
+        </template>
+    </ListReaderLayout>
 </template>
 
 <style scoped>
-.rules-page {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.rules-refusal {
-    margin: 0;
-    color: var(--danger);
-    font-size: 12.5px;
-}
-
-.rule {
-    display: flex;
-    flex: 1;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-    min-width: 0;
-    padding: 4px 0;
-}
-
-.rule-text {
-    flex: 1 1 240px;
-    min-width: 0;
-}
-
-.rule-state {
-    color: var(--warn);
+.age {
+    color: var(--text-3);
     font-size: 12px;
+    white-space: nowrap;
+}
+
+.more,
+.failure {
+    margin: 0;
+    padding: 6px var(--inset);
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.failure {
+    color: var(--bad, var(--text-2));
 }
 </style>

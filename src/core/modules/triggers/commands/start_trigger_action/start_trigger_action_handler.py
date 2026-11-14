@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import shlex
 from pathlib import Path
 from engine.command.bus import Bus
@@ -23,7 +24,7 @@ class StartTriggerActionHandler(Handler[StartTriggerAction, Process]):
         folder = self.home.project_folder
         if command.action.folder is not None:
             folder = (folder / Path(command.action.folder).expanduser()).resolve()
-        if not folder.is_dir():
+        if not FileAccess.is_dir(folder):
             raise Refusal(f"the command folder does not exist: {folder}", "choose an existing folder")
         line = shlex.join(command.action.program_arguments())
         process = self.bus.dispatch(StartProcess.single_part(command.agent_id, line, str(folder), CommandCategory.UNKNOWN, 0), context)

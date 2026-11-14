@@ -24,7 +24,7 @@ class StoryFixture:
     def __init_subclass__(cls, **options: object) -> None:
         super().__init_subclass__(**options)
         source = inspect.getsourcefile(cls)
-        cls.source_text = FileAccess.shared().read(Path(source)) if source else ""
+        cls.source_text = FileAccess.read(Path(source)) if source else ""
 
     def steps(self, story: Story) -> None:
         raise NotImplementedError(f"{type(self).__name__} has no steps")

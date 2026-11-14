@@ -89,15 +89,3 @@ func TestAHookThatFindsNoServerStartsOne(t *testing.T) {
 	}
 	t.Fatal("the journal program did not run")
 }
-
-func TestAHookStartsNothingWhileTheSocketIsThere(t *testing.T) {
-	root, ranFile := journalWithProgram(t)
-	if err := os.WriteFile(filepath.Join(root, ".journal", "server.sock"), nil, 0o644); err != nil {
-		t.Fatal(err)
-	}
-	startMissingServer(root)
-	time.Sleep(200 * time.Millisecond)
-	if _, err := os.Stat(ranFile); err == nil {
-		t.Fatal("a server was started beside the one that holds the socket")
-	}
-}

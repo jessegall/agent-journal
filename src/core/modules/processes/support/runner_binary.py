@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
@@ -16,4 +17,4 @@ class RunnerBinary:
         return self.home.folder.resolve() / "bin" / RUNNER
 
     def is_installed(self) -> bool:
-        return self.path.is_file()
+        return FileAccess.is_file(self.path)

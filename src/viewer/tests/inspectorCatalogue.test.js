@@ -26,9 +26,9 @@ test("an unknown width draws small", () => {
     expect(inspectorWidth(undefined)).toBe("min(480px, 100vw)");
 });
 
-test("the four widths are 480, 640, 960 and 1130", () => {
-    expect(INSPECTOR_WIDTHS).toEqual({small: 480, medium: 640, large: 960, wide: 1130});
-    expect(["small", "medium", "large", "wide"].map(inspectorWidth)).toEqual(["min(480px, 100vw)", "min(640px, 100vw)", "min(960px, 100vw)", "min(1130px, 100vw)"]);
+test("the four widths are 480, 640, 960 and 1120, the widest at most 92% of the window", () => {
+    expect(INSPECTOR_WIDTHS).toEqual({small: 480, medium: 640, large: 960, wide: 1120});
+    expect(["small", "medium", "large", "wide"].map(inspectorWidth)).toEqual(["min(480px, 100vw)", "min(640px, 100vw)", "min(960px, 100vw)", "min(1120px, 92vw)"]);
 });
 
 test("a template fills row fields and blanks a missing one", () => {

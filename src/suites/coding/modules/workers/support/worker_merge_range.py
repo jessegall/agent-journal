@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.support.worktree_git import SHORT_ID_CHARACTERS
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from engine.query.queries import Queries
@@ -19,6 +20,13 @@ class WorkerMergeRange:
     @staticmethod
     def is_task_number(target: str) -> bool:
         return target.isdigit() and len(target) <= TASK_NUMBER_MOST_DIGITS
+
+    # the branch's tip, which holds an update's merge of the base on top of the last task commit
+    def branch_tip(self, worktree: Worktree) -> str:
+        return self.git.tip(worktree.folder, worktree.branch)[:SHORT_ID_CHARACTERS]
+
+    def base_changes_on_own_files(self, worktree: Worktree, commit: str) -> tuple[str, ...]:
+        return self.git.base_changes_on_own_files(worktree.folder, worktree.base_branch, commit)
 
     def task_commit(self, worktree: Worktree, task_id: int) -> str | None:
         commits = self.git.task_commits(worktree, task_id)

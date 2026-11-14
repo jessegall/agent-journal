@@ -1,12 +1,13 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, DiffCard, FormField, InnerTabs, Notice, SidePanel, TabBody, TextArea, TextInput} from "@journal/window-kit";
+import {Btn, DiffCard, FormField, InnerTabs, Notice, TabBody, TextArea, TextInput} from "@journal/window-kit";
 import ProfileAboutTab from "./ProfileAboutTab.vue";
 import ProfileModelTab from "./ProfileModelTab.vue";
 import ProfileSkillToggles from "./ProfileSkillToggles.vue";
 
 const props = defineProps({profile: {type: Object, required: true}, used: {type: String, default: ""}, types: {type: Array, default: () => []}, programs: {type: Array, required: true}, notice: {type: String, default: ""}, failure: {type: String, default: ""}});
 const emit = defineEmits(["close", "save", "reset"]);
+// a reader, not a side panel: the profile is chosen in the list beside it; the sections slot is where later parts, such as triggers and stacks, are added under the tabs
 
 const WRITING = "writing";
 const NAME_PATTERN = /^[a-z0-9_-]+$/i;
@@ -50,8 +51,10 @@ const problems = computed(() => [props.profile.problem, ...props.profile.notes].
 </script>
 
 <template>
-    <SidePanel width="wide" foot-below :title="profile.title || profile.name || 'New profile'" :abstract="profile.name ? used : 'Instructions, type and model for an agent'" @close="emit('close')">
-        <template #meta>
+    <article class="profile-reader" data-profile-reader>
+        <header class="profile-head" data-profile-head>
+            <h2 class="profile-title">{{ profile.title || profile.name || "New profile" }}</h2>
+            <p class="profile-abstract">{{ profile.name ? used : "Instructions, type and model for an agent" }}</p>
             <template v-if="profile.name">
                 <div class="profile-panel-meta" data-profile-meta>
                     <span class="profile-panel-name">{{ profile.name }}</span>
@@ -60,7 +63,7 @@ const problems = computed(() => [props.profile.problem, ...props.profile.notes].
                     <template v-if="profile.problem"><span class="profile-panel-tag">Problem</span></template>
                 </div>
             </template>
-        </template>
+        </header>
         <slot />
         <div class="profile-panel" data-profile-panel>
             <template v-if="failure">
@@ -106,8 +109,9 @@ const problems = computed(() => [props.profile.problem, ...props.profile.notes].
                 </template>
             </div>
             </TabBody>
+            <div class="profile-sections" data-profile-sections><slot name="sections" :profile="profile" /></div>
         </div>
-        <template #foot>
+        <footer class="profile-foot" data-inspector-actions>
             <Btn variant="ghost" small data-profile-cancel @click="emit('close')">Cancel</Btn>
             <template v-if="profile.changed.length || profile.problem">
                 <Btn variant="ghost" small data-profile-reset @click="emit('reset', profile)">Use the journal's version</Btn>
@@ -117,11 +121,42 @@ const problems = computed(() => [props.profile.problem, ...props.profile.notes].
                 <span class="profile-panel-unsaved" data-profile-unsaved>Unsaved changes</span>
             </template>
             <Btn variant="primary" small :disabled="!canSave" data-profile-save @click="emit('save', profile, draft)">Save</Btn>
-        </template>
-    </SidePanel>
+        </footer>
+    </article>
 </template>
 
 <style scoped>
+.profile-reader {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+    padding: 18px var(--inset) 0;
+}
+
+.profile-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.profile-abstract {
+    margin: 2px 0 0;
+    color: var(--text-3);
+    font-size: 12.5px;
+}
+
+.profile-foot {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+}
+
 .profile-panel,
 .profile-panel-tab {
     display: flex;

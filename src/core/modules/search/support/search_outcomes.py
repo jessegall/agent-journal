@@ -21,15 +21,15 @@ class SearchOutcomes:
 
     def keep(self, agent_id: int, terms: Sequence[str], models: Sequence[str], search_outcome: SearchResult) -> None:
         file = self.file(agent_id)
-        file.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(file, json.dumps({**search_outcome.stored(), "kept_at": self.clock.timestamp().text, "terms": list(terms), "models": list(models)}))
+        FileAccess.mkdir(file.parent, parents=True, exist_ok=True)
+        FileAccess.write(file, json.dumps({**search_outcome.stored(), "kept_at": self.clock.timestamp().text, "terms": list(terms), "models": list(models)}))
 
     def read_once(self, agent_id: int, terms: Sequence[str], models: Sequence[str]) -> SearchResult | None:
         file = self.file(agent_id)
-        if not file.is_file():
+        if not FileAccess.is_file(file):
             return None
-        kept = json.loads(FileAccess.shared().read(file))
-        file.unlink(missing_ok=True)
+        kept = json.loads(FileAccess.read(file))
+        FileAccess.unlink(file, missing_ok=True)
         if kept["terms"] != list(terms) or kept["models"] != list(models) or Timestamp.parsed(kept["kept_at"]).elapsed_seconds(self.clock.timestamp()) > KEPT_SECONDS:
             return None
         try:

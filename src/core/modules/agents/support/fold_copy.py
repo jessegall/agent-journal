@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from engine.database.database import Database
@@ -17,16 +18,16 @@ class FoldCopy:
     @staticmethod
     def folder(home: JournalHome) -> Path:
         folder = home.folder / COPY_FOLDER
-        folder.mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(folder, parents=True, exist_ok=True)
         return folder
 
     @classmethod
     def prepare_attempt(cls, database: Database, home: JournalHome) -> Path:
         target = cls.folder(home) / ATTEMPT_COPY
         unfinished = target.with_name(target.name + UNFINISHED_SUFFIX)
-        unfinished.unlink(missing_ok=True)
+        FileAccess.unlink(unfinished, missing_ok=True)
         database.write_backup(unfinished)
-        unfinished.replace(target)
+        FileAccess.replace(unfinished, target)
         return target
 
     @classmethod

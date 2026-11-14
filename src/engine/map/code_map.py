@@ -34,7 +34,7 @@ class CodeMap:
         unknown = sorted(set(self.folder_names(self.source)) - set(TOP_FOLDERS))
         if unknown:
             raise MissingSummaryError(f"src/{unknown[0]}", "add its line to TOP_FOLDERS in src/engine/map/code_map.py")
-        tops = [name for name in TOP_FOLDERS if (self.source / name).is_dir()]
+        tops = [name for name in TOP_FOLDERS if FileAccess.is_dir(self.source / name)]
         return [line for name in tops for line in (f"{name}{LEVEL_INDENT}{TOP_FOLDERS[name]}", *self.second_level_lines(name))]
 
     def second_level_lines(self, top: str) -> list[str]:
@@ -52,7 +52,7 @@ class CodeMap:
     def marker_values(self, area: str) -> tuple[str, str]:
         marker = self.source / "engine" / area / f"{area}_area.py"
         folder = f"src/engine/{area}"
-        if not marker.is_file():
+        if not FileAccess.is_file(marker):
             raise MissingSummaryError(folder, f"write {folder}/{area}_area.py with a class that sets summary and use")
         values = self.class_values(self.classes(marker))
         summary, use = values.get("summary"), values.get("use")
@@ -66,7 +66,7 @@ class CodeMap:
 
     def classes(self, file: Path) -> list[ast.ClassDef]:
         folder = file.parent.relative_to(self.source.parent).as_posix()
-        if not file.is_file():
+        if not FileAccess.is_file(file):
             raise MissingSummaryError(folder, f"write {file.name} with a class whose docstring says what the folder is for")
         try:
             return [node for node in ast.parse(self.files.read(file)).body if isinstance(node, ast.ClassDef)]
@@ -109,13 +109,13 @@ class CodeMap:
         return f" Needs: {', '.join(str(module_name) for module_name in module_names)}." if module_names else ""
 
     def folder_names(self, folder: Path) -> list[str]:
-        if not folder.is_dir():
+        if not FileAccess.is_dir(folder):
             return []
-        return sorted(path.name for path in folder.iterdir() if path.is_dir() and path.name not in SKIPPED_FOLDERS and not self.has_cache_files_alone(path))
+        return sorted(path.name for path in FileAccess.iterdir(folder) if FileAccess.is_dir(path) and path.name not in SKIPPED_FOLDERS and not self.has_cache_files_alone(path))
 
     # A folder left with nothing but caches after its files moved is no part of the code, as version control keeps no
     # such folder.
     @staticmethod
     def has_cache_files_alone(folder: Path) -> bool:
-        entries = [child.name for child in folder.iterdir()]
+        entries = [child.name for child in FileAccess.iterdir(folder)]
         return bool(entries) and all(name in SKIPPED_FOLDERS for name in entries)

@@ -39,6 +39,7 @@ from suites.coding.commands.prune_file_edits.prune_file_edits_handler import Pru
 from suites.coding.migrations.m001_file_edits import FileEditsTableMigration
 from suites.coding.migrations.m002_file_edit_rows import FileEditRowsMigration
 from suites.coding.commands.project_file_find.project_file_find_subcommand import ProjectFileFindSubcommand
+from suites.coding.commands.project_file_grep.project_file_grep_subcommand import ProjectFileGrepSubcommand
 from suites.coding.commands.git_overview_branches.git_overview_branches_subcommand import GitOverviewBranchesSubcommand
 from suites.coding.commands.git_overview_commits.git_overview_commits_subcommand import GitOverviewCommitsSubcommand
 from suites.coding.commands.git_overview_current.git_overview_current_subcommand import GitOverviewCurrentSubcommand
@@ -51,7 +52,7 @@ from suites.coding.rules.waiting_items_rule import WaitingItemsRule
 from suites.coding.drivers.helper.helper_driver import HelperDriver
 from suites.coding.drivers.worker.worker_driver import WorkerDriver
 from suites.coding.drivers.main.main_driver import MainDriver
-from suites.coding.support.coding_settings import CODING_SETTINGS, PLAIN_CODE_WORDS
+from suites.coding.support.coding_settings import CODING_SETTINGS, PLAIN_NAMES_SETTING
 from suites.coding.listeners.full_test_run_listener import FullTestRunListener
 from suites.coding.rules.failed_full_run_rule import FailedFullRunRule
 from suites.coding.rules.graphify_search_rule import GraphifySearchRule
@@ -63,6 +64,7 @@ from suites.coding.bindings.coding_tool_runners import CodingToolRunners
 from suites.coding.migrations.m010_graphify_setting_keys import GraphifySettingKeysMigration
 from suites.coding.migrations.m011_worker_profile_names import WorkerProfileNamesMigration
 from suites.coding.migrations.m012_file_edit_old_path import FileEditOldPathMigration
+from suites.coding.migrations.m013_file_edit_old_path_name import FileEditOldPathNameMigration
 from core.modules.tools.support.tool_runners import ToolRunners
 from suites.coding.support.full_run_nudges import TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN
 from suites.coding.support.skeletons import CODING_GIT_SKELETON, CODING_FILES_SKELETON, CODING_WORK_MODE_SKELETON, CODING_AGENT_SETTINGS_SKELETON, CODING_FILE_FEED_SKELETON, CODING_FILE_EDITS_SKELETON, CODING_TERMINAL_SKELETON
@@ -83,19 +85,19 @@ class CodingModule(Module):
     templates = CODING_TEMPLATES
     nudges = [*CODING_NUDGES, TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN, *TOOL_NUDGES]
     seeders = [CodingSeeder]
-    window_extensions = [*(WindowExtension(name, reads=["file-edit list"], runs=["agent type"], events=["file_edit.create"],
+    window_extensions = [*(WindowExtension(name, reads=["file-edit list", "hook-call feed"], runs=["agent type"], events=["file_edit.create"],
                                           keys=[WindowKey("agent-edits.*", "file-edit list --agent {id}", arguments=["limit", "before-id", "after-id"], page_size=50),
                                                 WindowKey("terminal-calls.*", "hook-call feed --session-agent-id {id}", arguments=["limit", "before-id", "after-id"], page_size=200)],
                                           tabs=[WindowTab("file-feed", "File feed", "file-edit list", component="/modules/journal.suites.coding/agent-file-edits.js"),
                                                 WindowTab("terminal", "Terminal", "hook-call feed", component="/modules/journal.suites.coding/terminal.js")]) for name in ("agents.agents", "agents.helpers")),
                          WindowExtension("viewer.shell", reads=["git-overview current"], keys=[WindowKey("branch", "git-overview current", reload_seconds=30)]),
                          WindowExtension("plugins.plugins", links={"files": "coding.files"})]
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     settings = [*CODING_SETTINGS, *GRAPHIFY_SETTING_VALUES]
     moves = [FileEditsMove, ViewerLayoutsMove, CodingSettingsMove]
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.assignments", "journal.core.plans", "journal.core.settings", "journal.core.setting-requests", "journal.core.viewer", "journal.core.plugins", "journal.core.processes", "journal.core.messages", "journal.core.questions", "journal.core.helpers", "journal.core.tools"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.assignments", "journal.core.assign_rules", "journal.core.plans", "journal.core.settings", "journal.core.setting-requests", "journal.core.viewer", "journal.core.plugins", "journal.core.processes", "journal.core.messages", "journal.core.questions", "journal.core.helpers", "journal.core.tools"]
     drivers = [MainDriver, HelperDriver, WorkerDriver]
-    skills = [SkillDeclaration("journal-plain-code-words", "Name every variable, method, class and file in plain words, by a ladder; read it at the start of every session", keywords=("naming", "rename"), required_setting=PLAIN_CODE_WORDS),
+    skills = [SkillDeclaration("journal-plain-code-words", "Use plain words for every variable, method, class and file, by a ladder; read it before you name anything", keywords=("naming", "rename"), required_setting=PLAIN_NAMES_SETTING),
               SkillDeclaration("journal-graphify", "Find code through the project's knowledge graph with graphify query, explain and path, using names from the code instead of questions; read it before you search the code while Graphify is on", keywords=["graphify"], required_setting=GRAPHIFY.settings_key),
               SkillDeclaration("journal-plan-dispatch", "Send a functional designer and then a planner to make the plan; read it when the user asks for a plan", keywords=("plan", "roadmap"), types=["main"]),
               SkillDeclaration("journal-functional-design", "Write a functional design of user stories, code examples and the phases in order; read it before you write one"),
@@ -103,17 +105,17 @@ class CodingModule(Module):
               SkillDeclaration("journal-work-modes", "Work as the main agent of the coding suite from its work controls; read it when auto mode, the presets, read-only helpers or the worker limit come up", keywords=("builder", "orchestrator", "auto mode", "work mode"), types=["main"]),
               SkillDeclaration("journal-test-draining", "Work off the failed tests of a full run from one file, biggest cause first, with no full rerun until it is empty; read it when a full run has failures", keywords=("failed tests", "full run"))]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
-    migrations = [FileEditOldPathMigration, WorkerProfileNamesMigration, HelperRequestKeysMigration, HelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration, PruneFileEditsMigration, GraphifySettingKeysMigration]
+    migrations = [FileEditOldPathMigration, FileEditOldPathNameMigration, WorkerProfileNamesMigration, HelperRequestKeysMigration, HelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration, PruneFileEditsMigration, GraphifySettingKeysMigration]
     handlers = [RecordFileEditHandler, RecordFileChangesHandler, PruneFileEditsHandler]
     driver_rules = [WaitingItemsRule, IntroductionRule, FailedFullRunRule, GraphifySearchRule]
     listeners = [FullTestRunListener, GraphifyHookRemovalListener]
     bindings = {ToolRunners: CodingToolRunners, ProjectCheckouts: WorktreeCheckouts}
-    subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand, FileEditFileSubcommand, RecordFileChangesSubcommand]
+    subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileGrepSubcommand, ProjectFileShowSubcommand, FileEditFileSubcommand, RecordFileChangesSubcommand]
     windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, skeleton=CODING_GIT_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"],
                                  keys=[WindowKey("branches", "git-overview branches", arguments=["skip", "limit"]),
                                        WindowKey("commits", "git-overview commits", arguments=["skip", "limit"]),
                                        WindowKey("pulls", "git-overview pulls")]),
-               WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, skeleton=CODING_FILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file show"], search=WindowReadSearch("project-file find", "Find a file in the project"),
+               WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, skeleton=CODING_FILES_SKELETON, place=WindowPlace.PANE_PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file grep", "project-file show", "file-edit list"], search=WindowReadSearch("project-file find", "Find a file in the project"),
                                  keys=[WindowKey("entries", "project-file list {folder}"),
                                        WindowKey("matches", "project-file find {words}", loading=KeyLoading.REQUESTED),
                                        WindowKey("file", "project-file show {path}", loading=KeyLoading.REQUESTED)]),
@@ -130,8 +132,10 @@ class CodingModule(Module):
                                        WindowKey("type-screen", "setting-screen show helper-type", arguments=["type"], loading=KeyLoading.REQUESTED, events=["setting.*"]),
                                        WindowKey("count-agents", "agent cards --show all --reusable", arguments=["role", "profile", "page"], loading=KeyLoading.REQUESTED, events=["agent.*"])]),
                WindowDeclaration("coding.agent-settings", "Agent settings", "agent-settings.js", WindowLoading.COMPONENT, skeleton=CODING_AGENT_SETTINGS_SKELETON, icon=WindowIcon.WINDOW,
-                                 reads=["work-settings show", "setting-screen show", "setting-screen index", "agent limits", "agent cards", "setting show"], runs=["work-settings apply", "work-settings preset", "setting-screen apply", "setting set", "agent profile-limits", "agent retire"],
-                                 events=["setting.*", "agent.*"],
+                                 reads=["work-settings show", "setting-screen show", "setting-screen index", "agent limits", "agent cards", "setting show", "assign-rule board", "assign-rule try", "assign-rule recent", "worker-route list"],
+                                 runs=["work-settings apply", "work-settings preset", "setting-screen apply", "setting set", "agent profile-limits", "agent retire", "assign-rule make", "assign-rule edit", "assign-rule move",
+                                       "assign-rule enable", "assign-rule disable", "assign-rule delete", "assign-rule apply", "assign-rule reassign", "assign-rule give-back"],
+                                 events=["setting.*", "agent.*", "assign_rule.*", "assign_rule_condition.*", "worker_route.*"],
                                  keys=[WindowKey("work", "work-settings show", events=["setting.*"]),
                                        WindowKey("work-screen", "setting-screen show work", events=["setting.*"]),
                                        WindowKey("tests-screen", "setting-screen show tests", events=["setting.*"]),
@@ -140,7 +144,8 @@ class CodingModule(Module):
                                        WindowKey("find", "setting-screen index", events=["setting.*"]),
                                        WindowKey("limits", "agent limits", loading=KeyLoading.REQUESTED, events=["agent.*", "setting.*"]),
                                        WindowKey("type-screen", "setting-screen show helper-type", arguments=["type"], loading=KeyLoading.REQUESTED, events=["setting.*"]),
-                                       WindowKey("count-agents", "agent cards --show all --reusable", arguments=["role", "profile", "page"], loading=KeyLoading.REQUESTED, events=["agent.*"])]),
+                                       WindowKey("count-agents", "agent cards --show all --reusable", arguments=["role", "profile", "page"], loading=KeyLoading.REQUESTED, events=["agent.*"]),
+                                       WindowKey("assign", "assign-rule board", loading=KeyLoading.REQUESTED, events=["assign_rule.*", "assign_rule_condition.*", "agent.*", "worker_route.*"])]),
                WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, skeleton=CODING_FILE_FEED_SKELETON, search=WindowSearch(FileEditSearcher, "Filter files"), icon=WindowIcon.FILE, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM, reads=[*FILE_EDIT_READS, "file-edit file", "window setting"],
                                  events=["file_edit.create"],
                                  keys=[WindowKey("edits", "file-edit list", events=["file_edit.create"], arguments=["agent", "limit", "before-id", "after-id"], page_size=50),

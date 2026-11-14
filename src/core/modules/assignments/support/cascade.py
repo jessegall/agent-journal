@@ -19,6 +19,9 @@ class Cascade:
     def with_kept(self, model_name: str, row_id: int, reason: KeptReason) -> "Cascade":
         return replace(self, kept_rows=(*self.kept_rows, KeptRow(model_name, row_id, reason)))
 
+    def json(self) -> dict[str, object]:
+        return {"assigned": self.counts(), "kept": [{"model": row.model_name, "id": row.row_id, "reason": row.reason.value} for row in self.kept_rows]}
+
     def counts(self) -> dict[str, int]:
         return dict(Counter(self.assigned_models))
 

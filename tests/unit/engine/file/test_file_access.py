@@ -1,5 +1,6 @@
 import os
 import stat
+from collections import OrderedDict
 from pathlib import Path
 from unittest.mock import patch
 
@@ -7,6 +8,12 @@ import pytest
 
 import engine.file.file_access as file_module
 from engine.file.file_access import FileAccess
+
+
+# FileAccess keeps one cache for the whole process, so each test starts from an empty one
+@pytest.fixture(autouse=True)
+def empty_cache(monkeypatch):
+    monkeypatch.setattr(FileAccess, "contents", OrderedDict())
 
 
 def test_text_reads_keep_encoding_errors_and_universal_newlines(tmp_path):

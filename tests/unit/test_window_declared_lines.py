@@ -8,6 +8,7 @@ import pytest
 from engine.journal.journal_home import JournalHome
 from engine.module.module import Module
 from engine.module.module_finder import ModuleFinder
+from engine.module.window_extensions import WindowExtensions
 from engine.viewer.window_declaration import WindowDeclaration
 
 ENTRY = re.compile(r'"([\w.-]+)":\s*here\("\./([^"]+)"\)')
@@ -76,3 +77,19 @@ def test_a_line_left_out_of_a_declaration_is_named():
     window, entry = next(pair for pair in WINDOWS if pair[0].name == WORK_MODE)
     old = replace(window, runs=tuple(line for line in window.runs if line != "agent retire"))
     assert undeclared(old, entry) == ["agent retire"]
+
+
+MODULES = ModuleFinder(JournalHome(Path("/nonexistent-journal"))).default_modules()
+EXTENDED = [window for module in MODULES for window in map(WindowExtensions(MODULES).extend, module.windows)]
+
+
+@pytest.mark.parametrize("window", EXTENDED, ids=[window.name for window in EXTENDED])
+def test_the_command_of_every_key_of_a_window_is_one_of_its_reads(window):
+    assert [key.name for key in window.keys if " ".join(key.read.split()[:2]) not in window.reads] == []
+
+
+def test_the_coding_extension_of_the_agents_window_lists_the_read_of_its_terminal_key():
+    from suites.coding.coding_module import CodingModule
+
+    extension = next(extension for extension in CodingModule.window_extensions if extension.window == "agents.agents")
+    assert {" ".join(key.read.split()[:2]) for key in extension.keys} <= set(extension.reads)

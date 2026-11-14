@@ -3,13 +3,13 @@ from core.modules.skills.support.start_skills import JOURNAL_SKILLS, StartSkills
 
 DEFAULT_SKILLS = list(JOURNAL_SKILLS)
 from tests.stories.core.modules.skills.due import DUE
-from tests.stories.core.support.coding_fixtures import CodingEnvironment
+from tests.stories.core.support.coding_fixtures import CodingEnvironmentWithoutPlainWords
 from core.modules.skills.support.start_skills import AFTER_COMPACTION_KEY
 from core.modules.skills.support.start_skills import SESSION_START_KEY
 
 
 def skills(new_story) -> tuple:
-    story = new_story(DUE, fixture=CodingEnvironment)
+    story = new_story(DUE, fixture=CodingEnvironmentWithoutPlainWords)
     return story, story.container.get(StartSkills)
 
 

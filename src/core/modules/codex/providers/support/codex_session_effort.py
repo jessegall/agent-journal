@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from os import SEEK_END
 from pathlib import Path
 
@@ -13,9 +14,9 @@ class CodexSessionEffort:
         self.path, self.field = path, field
 
     def read(self) -> str:
-        if not self.path.is_file():
+        if not FileAccess.is_file(self.path):
             return ""
-        with self.path.open("rb") as transcript:
+        with FileAccess.reader(self.path, "rb") as transcript:
             position = transcript.seek(0, SEEK_END)
             remainder = b""
             incomplete = True

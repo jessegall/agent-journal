@@ -200,3 +200,22 @@ def test_two_worktrees_rebasing_at_once_each_keep_their_own_files(new_story):
     story.expect_rows((worker_folder / "notes.py").exists(), not (worker_folder / "sibling.py").exists())
     story.expect_rows((sibling_folder / "sibling.py").exists(), not (sibling_folder / "notes.py").exists())
     repository.expect_no_stash()
+
+
+def worktree_of(story, worker) -> Worktree:
+    return next(row for row in story.story_rows(Worktree) if row.session_agent_id == worker.id)
+
+
+def test_a_commit_on_a_head_a_cut_rebase_left_detached_lands_on_the_branch(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = repository_environment(story, real_git=True)
+    worker = dispatched_worker(story)
+    folder = repository.worktree_folder(worker.id)
+    worktree = worktree_of(story, worker)
+    repository.git("checkout", "--quiet", "--detach", folder=folder)
+    git_folder = story.container.get(WorktreeGit).git_folder(str(folder))
+    (git_folder / "rebase-merge").mkdir()
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.container.get(WorktreeGit).commit(worktree, "The cart", "Task: 1")
+    branch = repository.git("symbolic-ref", "--short", "HEAD", folder=folder).stdout.strip()
+    story.expect_rows(branch == worktree.branch, not (git_folder / "rebase-merge").exists(), repository.tip(worktree.branch) == repository.git("rev-parse", "HEAD", folder=folder).stdout.strip(), detail=branch)

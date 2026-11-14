@@ -34,7 +34,7 @@ class StatusFiles:
 
     def status(self, session: str) -> SessionStatus:
         path = self.folder / f"{session}.json"
-        return self.reported(path if path.is_file() else self.ended_folder / f"{session}.json")
+        return self.reported(path if FileAccess.is_file(path) else self.ended_folder / f"{session}.json")
 
     def newest_status(self, sessions: Sequence[str], checked_at: Timestamp) -> SessionStatus:
         modified = self.modified_times(self.folder / f"{session}.json" for session in sessions)
@@ -44,7 +44,7 @@ class StatusFiles:
         return self.status(newest.stem)
 
     def plan_windows(self, statuses: Mapping[str, SessionStatus]) -> tuple[PlanWindow, ...]:
-        modified_at = self.modified_times(path for path in self.folder.glob("*.json") if path != self.plan_file) if self.folder.is_dir() else {}
+        modified_at = self.modified_times(path for path in FileAccess.glob(self.folder, "*.json") if path != self.plan_file) if FileAccess.is_dir(self.folder) else {}
         files = sorted(modified_at, key=modified_at.__getitem__, reverse=True)
         return next((windows for path in files or [self.plan_file] if (windows := self.file_status(path, statuses).windows)), ())
 
@@ -54,7 +54,7 @@ class StatusFiles:
         modified_at: dict[Path, float] = {}
         for path in paths:
             try:
-                modified_at[path] = path.stat().st_mtime
+                modified_at[path] = FileAccess.stat(path).st_mtime
             except FileNotFoundError:
                 continue
         return modified_at
@@ -64,29 +64,29 @@ class StatusFiles:
 
     def retire(self, session: str) -> None:
         path = self.folder / f"{session}.json"
-        if not path.is_file():
+        if not FileAccess.is_file(path):
             return
         if self.has_newest_windows(path):
-            shutil.copy2(path, self.plan_file)
-        self.ended_folder.mkdir(exist_ok=True)
+            FileAccess.copy(path, self.plan_file)
+        FileAccess.mkdir(self.ended_folder, exist_ok=True)
         self.prune_ended()
-        path.replace(self.ended_folder / path.name)
+        FileAccess.replace(path, self.ended_folder / path.name)
 
     def prune_ended(self) -> None:
         oldest = self.clock.epoch_seconds() - ENDED_KEPT_SECONDS
-        for path in self.ended_folder.glob("*.json"):
-            if path.stat().st_mtime < oldest:
-                path.unlink(missing_ok=True)
+        for path in FileAccess.glob(self.ended_folder, "*.json"):
+            if FileAccess.stat(path).st_mtime < oldest:
+                FileAccess.unlink(path, missing_ok=True)
 
     def has_newest_windows(self, path: Path) -> bool:
         if not self.reported(path).windows:
             return False
-        return not self.plan_file.exists() or path.stat().st_mtime >= self.plan_file.stat().st_mtime
+        return not FileAccess.exists(self.plan_file) or FileAccess.stat(path).st_mtime >= FileAccess.stat(self.plan_file).st_mtime
 
     @staticmethod
     def reported(path: Path) -> SessionStatus:
         try:
-            version = FileAccess.shared().version(path)
+            version = FileAccess.version(path)
             return StatusFiles.kept_status(path, version)
         except (FileNotFoundError, json.JSONDecodeError):
             return SessionStatus()

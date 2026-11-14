@@ -1,6 +1,6 @@
+from engine.file.file_access import FileAccess
 import getpass
 import os
-import shutil
 import tempfile
 import time
 from pathlib import Path
@@ -33,31 +33,31 @@ class TempFolders:
         self.remove_dead_runs()
         self.remove_old()
         run = self.user_folder / f"{RUNNING_PREFIX}{time.strftime('%Y%m%dT%H%M%S')}-{os.getpid()}"
-        run.mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(run, parents=True, exist_ok=True)
         return run
 
     def finish(self, run: Path, passed: bool) -> None:
         if passed:
-            shutil.rmtree(run, ignore_errors=True)
+            FileAccess.rmtree(run, ignore_errors=True)
         else:
-            run.rename(run.with_name(FAILED_PREFIX + run.name.removeprefix(RUNNING_PREFIX)))
+            FileAccess.rename(run, run.with_name(FAILED_PREFIX + run.name.removeprefix(RUNNING_PREFIX)))
         self.remove_old()
 
     def remove_dead_runs(self) -> None:
         for folder in self.folders(RUNNING_PREFIX):
             process = folder.name.rsplit("-", 1)[-1]
             if process.isdigit() and not ProcessIds.text_exists(process):
-                shutil.rmtree(folder, ignore_errors=True)
+                FileAccess.rmtree(folder, ignore_errors=True)
 
     def remove_old(self) -> None:
         limit = time.time() - RUNNING_FOLDER_SECONDS
         failed = sorted(self.folders(FAILED_PREFIX), key=lambda folder: folder.name, reverse=True)
         stale = [folder for prefix in (RUNNING_PREFIX, PYTEST_PREFIX) for folder in self.folders(prefix) if FolderStat.modified_time(folder) < limit]
         for folder in failed[KEPT_FAILED_RUNS:] + stale:
-            shutil.rmtree(folder, ignore_errors=True)
+            FileAccess.rmtree(folder, ignore_errors=True)
 
     def folders(self, prefix: str) -> list[Path]:
-        return [folder for folder in self.user_folder.glob(prefix + "*") if folder.is_dir()]
+        return [folder for folder in FileAccess.glob(self.user_folder, prefix + "*") if FileAccess.is_dir(folder)]
 
     def size(self) -> int:
         return FolderStat.bytes(self.user_folder)

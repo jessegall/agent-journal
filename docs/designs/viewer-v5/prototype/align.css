@@ -1,0 +1,42 @@
+/* Alignment: an icon beside text stands in one fixed column, so the text after it starts on one line.
+   A list has an icon on every row or on none. A mark that cannot stand in the column (a count, a badge, a hint, a git mark) goes to the right. */
+.ico { line-height: 0; }
+.slot { display: inline-grid; place-items: center; flex: none; width: 16px; height: 16px; }
+.chev { display: inline-grid; place-items: center; flex: none; width: 12px; height: 12px; color: var(--text-4); }
+
+/* a button is words or an icon, never both: a words button drops an icon it was given */
+.btn:not(.icon) > .ico:first-child { display: none; }
+
+/* group titles start where the icons start */
+.sl-nav .side-group-title { padding: 0 10px; }
+.side-group-title { padding: 0 8px; }
+
+/* tree: every row reserves the chevron slot, so file and folder icons share one column */
+.tree-row { gap: 6px; }
+
+/* rows of a list: dot, reference, title, then the right-hand marks */
+.trow .ref { flex: none; width: 36px; font: 11px var(--mono); color: var(--text-4); }
+.trow .end { flex: none; margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.link-row { display: grid; grid-template-columns: 16px 96px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.link-row .ref { font: 11.5px var(--mono); color: var(--accent-text); background: none; border: 0; padding: 0; text-align: left; cursor: pointer; }
+.link-row .ref:hover { color: var(--text); }
+
+/* a button that opens a menu ends with its chevron; it never starts with an icon */
+.menu-btn { display: inline-flex; align-items: center; gap: 6px; }
+.menu-btn > .ico:last-child { display: inline-grid; color: var(--text-4); }
+
+/* buttons in one row share one height: 24 px in headers and bars, 28 px in forms and feet */
+.insp-band .btn, .reader-head .btn, .tabs .btn, .ptabs .btn, .ide-bar .btn, .phead .btn { height: 24px; }
+.insp-band .btn.icon, .reader-head .btn.icon, .ptabs .btn.icon, .ide-bar .btn.icon { width: 24px; }
+
+/* code: number column 52 px, comment column 18 px, then the text; a thread under a line starts where the text starts */
+.ln { position: relative; }
+.ln .no { cursor: pointer; }
+.ln .cm { flex: none; width: 18px; display: grid; place-items: center; }
+.ln .cm i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-text); }
+.ln .add { opacity: 0; width: 16px; height: 16px; border-radius: 4px; border: 0; background: var(--accent); color: #fff; display: grid; place-items: center; padding: 0; }
+.ln:hover .add { opacity: 1; }
+.ln.sel { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.ln.sel .no { color: var(--accent-text); }
+.ln.noted { box-shadow: inset 2px 0 0 var(--accent); }
+.thread { margin: 4px 16px 8px 70px; max-width: 560px; white-space: normal; font-family: var(--font); }

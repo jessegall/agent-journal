@@ -17,12 +17,19 @@ def started_holder(story, task_id: int) -> str:
     return story.run(f"task show {task_id}", actor=story.agent).output_text
 
 
-@pytest.mark.parametrize("move", ['task cancel 1 --reason "not needed"', 'task block 1 --reason "waits for the price list"', 'task release 1 --reason "later"'])
-def test_cancelling_blocking_or_releasing_the_task_in_hand_starts_the_next_too(new_story, move):
+def test_cancelling_the_task_in_hand_starts_the_next_too(new_story):
+    story = new_story(fixture=PrioritizedTasks)
+    story.expect_success('task cancel 1 --reason "not needed"', actor=story.agent)
+    story.run_listeners()
+    expect_started_holder(story, 3, "state: started")
+
+
+@pytest.mark.parametrize("move", ['task block 1 --reason "waits for the price list"', 'task release 1 --reason "later"'])
+def test_blocking_or_releasing_the_last_task_in_hand_starts_no_other(new_story, move):
     story = new_story(fixture=PrioritizedTasks)
     story.expect_success(move, actor=story.agent)
     story.run_listeners()
-    expect_started_holder(story, 3, "state: started")
+    story.expect_no_text("task list --state started", "state: started", actor=story.agent)
 
 
 def test_closing_a_task_with_another_in_hand_starts_a_critical_open_task_but_no_other(new_story):
@@ -54,8 +61,8 @@ def test_with_auto_mode_off_no_task_follows_the_one_that_left_the_hands(new_stor
     expect_started_holder(story, 3, "state: open")
 
 
-def test_a_person_closing_a_task_gives_nothing_to_anyone_when_no_agent_held_it(next_task_after_release):
-    story = next_task_after_release
+def test_a_person_closing_a_task_gives_nothing_to_anyone_when_no_agent_held_it(next_task_after_cancel):
+    story = next_task_after_cancel
     expect_started_holder(story, 3, "state: started")
     story.run('task make "An open one" --environment main', actor=story.agent)
     story.run('task close 4 --outcome "not needed"', actor=story.user)
@@ -78,7 +85,7 @@ def test_a_released_task_is_not_given_back_at_once(new_story):
     story.run('task release 1 --reason "later"', actor=story.agent)
     story.run_listeners()
     expect_started_holder(story, 1, "state: open")
-    expect_started_holder(story, 2, "state: started")
+    expect_started_holder(story, 2, "state: open")
 
 
 def test_a_task_queued_for_a_worker_is_not_started_for_the_main_agent(new_story):
@@ -89,7 +96,7 @@ def test_a_task_queued_for_a_worker_is_not_started_for_the_main_agent(new_story)
     story.run('task make "Fix the totals" --environment main --priority high', actor=story.agent)
     worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet 2")
     story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task 3", actor=story.agent)
-    story.expect_success('task release 1 --reason "later"', actor=story.agent)
+    story.expect_success('task cancel 1 --reason "later"', actor=story.agent)
     story.run_listeners()
     expect_started_holder(story, 3, "state: open")
     story.expect_text("task info 3", f"assigned to: agent {worker.id}", actor=story.agent)
@@ -112,9 +119,9 @@ def closed_last_task(new_story):
 
 
 @pytest.fixture
-def next_task_after_release(new_story):
+def next_task_after_cancel(new_story):
     story = new_story(fixture=PrioritizedTasks)
-    story.run('task release 1 --reason "later"', actor=story.agent)
+    story.run('task cancel 1 --reason "later"', actor=story.agent)
     story.run_listeners()
     return story
 

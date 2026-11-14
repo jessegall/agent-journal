@@ -32,5 +32,5 @@ class KeptListener(OldListener):
 
 class ListenerChangesModule(Module):
     name = "listener-changes"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     listeners = [OldListener, KeptListener]

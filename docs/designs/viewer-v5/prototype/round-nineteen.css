@@ -1,0 +1,37 @@
+/* Round nineteen (user 121777): an agent card's plan bar in three shades of the progress blue, with a count beside it.
+   Completed full, testing lighter, started faint, open and blocked uncoloured (the track). */
+.r19-plan { display: inline-flex; align-items: center; gap: 6px; flex: none; }
+.r19-bar { display: flex; width: 72px; height: 4px; border-radius: 2px; overflow: hidden; background: var(--border-2); }
+.r19-bar i { display: block; height: 100%; }
+.r19-bar .completed { background: var(--progress); }
+.r19-bar .testing { background: color-mix(in srgb, var(--progress) 60%, transparent); }
+.r19-bar .started { background: color-mix(in srgb, var(--progress) 28%, transparent); }
+.r19-count { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.r19-count b { font-weight: 500; color: var(--text-2); }
+
+/* Round nineteen (user 121810): an empty section of the process queue is exactly one command row high, so nothing jumps
+   when a command arrives or leaves. A row is .q9-line's 30 px and .q9-run's 1 px line under it; boxes are border-box. */
+.q9-section .q9-empty { display: flex; align-items: center; height: 31px; padding: 0 var(--inset); line-height: 1; }
+
+/* Round nineteen (user 121802): the journal's context menu everywhere (round-nineteen-menus.jsx; the menu itself is round-eighteen.css's .r18-menu).
+   Round twenty (question 138): what was right-clicked gets no ring and no highlight; the menu alone shows what it is for (its head names it).
+   .aj-target is still set on it while the menu is open, only so a tab keeps its cross in view. */
+.aj-flash { animation: ajflash 1.2s ease; }
+@keyframes ajflash { 0%, 40% { background: var(--accent-dim); } 100% { background: transparent; } }
+#aj-menus .r18-menu { z-index: 2147483100; }
+#aj-menus .r18-toast { z-index: 2147483100; }
+
+/* IDE tabs: every tab keeps a 16 px slot for its cross; it shows on the open tab, the hovered, the focused and the menu's tab */
+.now-ptab.aj-tab { gap: 6px; }
+.now-ptab .aj-x, .etabs .etab .x { display: inline-grid; place-items: center; flex: none; width: 16px; height: 16px; margin: 0 -4px 0 0; border-radius: 4px; color: var(--text-4); visibility: hidden; opacity: 1; transition: none; }
+.now-ptab.on .aj-x, .now-ptab:hover .aj-x, .now-ptab:focus-visible .aj-x, .now-ptab.aj-target .aj-x,
+.etabs .etab.on .x, .etabs .etab:hover .x, .etabs .etab:focus-visible .x, .etabs .etab.aj-target .x { visibility: visible; }
+.now-ptab .aj-x:hover, .etabs .etab .x:hover { background: var(--chip); color: var(--text); }
+
+/* Round nineteen (users 121867, 121875): one files browser in three places. In a home pane and in the inspector it fills its box.
+   The inspector's width is the stack's "wide" (inspectors.jsx widthPx: up to 1120 px, 92% of the window). */
+.aj-files-window { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; height: 100%; }
+.aj-files-window > .page { flex: 1; min-height: 0; height: auto; }
+.aj-files-window .ide { flex: 1; min-height: 0; border-top: 0; }
+.aj-feed-open { display: inline-grid; place-items: center; flex: none; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 4px; background: none; color: var(--text-4); }
+.aj-feed-open:hover, .aj-feed-open:focus-visible { background: var(--hover); color: var(--text); }

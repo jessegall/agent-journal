@@ -35,10 +35,10 @@ class TemplatesModule(Module):
     name = "journal.core.templates"
     templates = [TemplateDeclaration(title="General critique", targets=tuple(["plan"]), purpose="critique",
                                      brief="Read it as a whole and say what you would change, and why.")]
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.drivers", "journal.core.messages", "journal.core.documents", "journal.core.plans", "journal.core.agents", "journal.core.skills"]
     skills = [SkillDeclaration("journal-templates", "Find and use a template for a task, a plan or a review; read it before the first template command of a session", keywords=("template", "templates"), commands=["template"])]
-    models = [ModelDeclaration(Template, query=TemplateQuery, excluded_subcommands=["make", "edit", "show", "list"])]
+    models = [ModelDeclaration(Template, query=TemplateQuery, excluded_subcommands=["make", "show", "list"])]
     migrations = [TemplatesTableMigration, TemplateModuleColumnMigration]
     moves = [TemplatesMove]
     handlers = [MakeTemplateHandler, SaveStandardTemplatesHandler, SendTemplateHandler]
@@ -48,4 +48,4 @@ class TemplatesModule(Module):
     seeders = [TemplatesSeeder]
     window_extensions = [WindowExtension("messages.chat", reads=["template list"])]
     windows = [WindowDeclaration("templates.templates", "Templates", "templates.js", WindowLoading.COMPONENT, skeleton=TEMPLATES_TEMPLATES_SKELETON, search=WindowSearch(TemplateSearcher, "Search the templates"), group="project", place=WindowPlace.PAGE, icon=WindowIcon.FILED,
-                                 reads=["template list", "template show"], events=["template.*"], keys=[WindowKey("templates", "template list", events=["template.*"])])]
+                                 reads=["template list", "template show"], runs=["template make", "template edit", "template send"], events=["template.*"], keys=[WindowKey("templates", "template list", events=["template.*"])])]

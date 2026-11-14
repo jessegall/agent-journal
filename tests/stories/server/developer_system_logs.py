@@ -1,5 +1,4 @@
 import json
-import sqlite3
 
 import pytest
 
@@ -24,8 +23,8 @@ def logs_server(new_story):
     with server_story(new_story(fixture=HookRecordingEnabled)) as server:
         path = server.story.home.system_log
         path.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(path.with_name("server.log.1"), "2026-01-01T10:00:00+00:00 info server older server line\n")
-        FileAccess.shared().write(path, "2026-01-01T11:00:00+00:00 warning server server warning\nserver output\n")
+        FileAccess.write(path.with_name("server.log.1"), "2026-01-01T10:00:00+00:00 info server older server line\n")
+        FileAccess.write(path, "2026-01-01T11:00:00+00:00 warning server server warning\nserver output\n")
         server.story.container.get(ErrorLog).reported(["sample"], RuntimeError("sample failure"))
         server.story.container.get(SystemLogWriter).write(LogLevel.INFORMATION, "stop allowed: no open task")
         yield server
@@ -67,14 +66,14 @@ def test_system_logs_read_an_empty_home_without_creating_files(logs_server):
 
 def test_system_logs_keep_unstructured_lines_and_invalid_bytes(logs_server):
     path = logs_server.story.home.system_log
-    FileAccess.shared().write_binary(path, b"raw server output\n2026-99-99T11:00:00+00:00 invalid date\ninvalid byte: \xff\n")
+    FileAccess.write_binary(path, b"raw server output\n2026-99-99T11:00:00+00:00 invalid date\ninvalid byte: \xff\n")
     lines = read_logs(logs_server, "--source", "server")["rows"]
     logs_server.story.expect_rows([line["text"] for line in lines[:3]] == ["invalid byte: \ufffd", "2026-99-99T11:00:00+00:00 invalid date", "raw server output"])
 
 
 def test_each_writer_shows_on_the_page_with_its_source_and_level(logs_server, monkeypatch):
-    def refused_connection():
-        raise sqlite3.OperationalError("database is locked")
+    def refused_append(entries):
+        raise PermissionError("journal folder is read-only")
     def refused_copy():
         raise PermissionError("read-only profile folder")
     story = logs_server.story
@@ -84,27 +83,27 @@ def test_each_writer_shows_on_the_page_with_its_source_and_level(logs_server, mo
     ServerFiles(story.home).log_line("sample server line")
     request_trace = RequestTrace(story.home, story.clock)
     request_trace.configuration = RequestTraceSettings(True, 10)
-    monkeypatch.setattr(request_trace, "connected", refused_connection)
+    monkeypatch.setattr(request_trace.trace_file, "append", refused_append)
     request_trace.record(["task", "list"], "cli", 1.0, 0.0, 0)
     request_trace.complete_reads(1, ())
     move = story.container.get(ProfileFolderMove)
     monkeypatch.setattr(move, "run", refused_copy)
     move.publish()
-    FileAccess.shared().write(story.home.bypass_log, "1700000000 hook claude\n2026-11-06T10:00:00Z the server did not answer, so process 7 ran as it is: ls\n")
+    FileAccess.write(story.home.bypass_log, "1700000000 hook claude\n2026-11-06T10:00:00Z the server did not answer, so process 7 ran as it is: ls\n")
     story.hook("s-1", FINISHED)
     story.run_listeners()
     lines = read_logs(logs_server, "--limit", "200")["rows"]
     shown = {text: next((line["source"], line["level"]) for line in lines if text in line["text"]) for text in (
         "RuntimeError: sample failure", "journal sample", "stop allowed: no open task", "sample server line",
-        "request recording failed: database is locked", "read receipt recording failed: database is locked",
+        "request recording failed: journal folder is read-only", "read receipt recording failed: journal folder is read-only",
         "Profiles left unchanged", "1700000000 hook claude", "process 7 ran as it is: ls", " ms on a ")}
     story.expect_rows(shown == {
         "RuntimeError: sample failure": ("journal", "error"),
         "journal sample": ("journal", "error"),
         "stop allowed: no open task": ("journal", "info"),
         "sample server line": ("server", "info"),
-        "request recording failed: database is locked": ("server", "warning"),
-        "read receipt recording failed: database is locked": ("server", "warning"),
+        "request recording failed: journal folder is read-only": ("server", "warning"),
+        "read receipt recording failed: journal folder is read-only": ("server", "warning"),
         "Profiles left unchanged": ("journal", "warning"),
         "1700000000 hook claude": ("bypass", "warning"),
         "process 7 ran as it is: ls": ("bypass", "warning"),

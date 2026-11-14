@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from engine.cli.agent_number import AgentNumber
 from engine.command.command import Command
 from suites.coding.modules.workers.commands.support.worker_command_request import WorkerCommandRequest
@@ -66,7 +67,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
             if task_ids:
                 worker = self.agents.find(arguments.worker_id)
                 self.check_test_commands(worker, commands, caller)
-                self.policy.check_tasks(self.tasks.check_tasks(task_ids, caller.actor.id),
+                self.policy.check_tasks(self.tasks.check_tasks(task_ids, caller.actor.id, worker.id),
                                         WorkerRouteRequest(worker.program, caller.actor.type, self.flags.skipped_guards(arguments)))
         job = arguments.job or arguments.job_flag
         command = SendWorker(arguments.worker_id, job, task_ids, tuple(arguments.library_link), tuple(arguments.library_copy), not arguments.no_sandbox, commands, arguments.plan, arguments.phase)
@@ -105,6 +106,6 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
         program_state = self.resume.program_state(worker)
         if not program_state.is_ready:
             return f"{AgentLabel.labelled(worker).text} waits on {worker.program}: {program_state.wait_line}; the job starts when it is back"
-        if not self.home.socket(LAUNCHER_SOCKET).exists():
+        if not FileAccess.exists(self.home.socket(LAUNCHER_SOCKET)):
             return f"{AgentLabel.labelled(worker).text} is not running and has the job waiting; an ended worker needs the launcher to start again"
         return f"{AgentLabel.labelled(worker).text} was not running: the job waits until it starts, and you are told if it does not"

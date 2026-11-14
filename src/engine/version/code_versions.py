@@ -2,7 +2,6 @@ from engine.file.file_access import FileAccess
 import fnmatch
 import hashlib
 import os
-import shutil
 from pathlib import Path
 
 from engine.time.clock import Clock
@@ -38,12 +37,12 @@ class CodeVersions:
 
     def tag(self, source: Path) -> str:
         digest = hashlib.sha256()
-        for folder, folders, files in os.walk(source):
+        for folder, folders, files in FileAccess.walk_folders(source):
             folders[:] = sorted(name for name in folders if not self.is_ignored(name))
             for name in sorted(name for name in files if not self.is_ignored(name)):
                 path = Path(folder) / name
                 digest.update(str(path.relative_to(source)).encode())
-                digest.update(FileAccess.shared().binary(path))
+                digest.update(FileAccess.binary(path))
         return digest.hexdigest()[:TAG_CHARACTERS]
 
     def is_ignored(self, name: str) -> bool:
@@ -51,49 +50,49 @@ class CodeVersions:
 
     def add(self, source: Path, clock: Clock) -> str:
         tag = self.tag(source)
-        if not self.version(tag).is_dir():
+        if not FileAccess.is_dir(self.version(tag)):
             partial = self.version(tag + PARTIAL_VERSION)
-            shutil.rmtree(partial, ignore_errors=True)
-            self.folder.mkdir(parents=True, exist_ok=True)
+            FileAccess.rmtree(partial, ignore_errors=True)
+            FileAccess.mkdir(self.folder, parents=True, exist_ok=True)
             self.remove_stale_partials(clock)
             CodeCopy(source, self.home).write(partial)
-            partial.rename(self.version(tag))
+            FileAccess.rename(partial, self.version(tag))
         return tag
 
     def remove_stale_partials(self, clock: Clock) -> None:
-        for partial in self.folder.glob(f"*{PARTIAL_VERSION}"):
-            if clock.epoch_seconds() - partial.stat().st_mtime > STALE_PARTIAL_SECONDS:
-                shutil.rmtree(partial, ignore_errors=True)
+        for partial in FileAccess.glob(self.folder, f"*{PARTIAL_VERSION}"):
+            if clock.epoch_seconds() - FileAccess.stat(partial).st_mtime > STALE_PARTIAL_SECONDS:
+                FileAccess.rmtree(partial, ignore_errors=True)
 
     def switch(self, tag: str) -> None:
-        if not self.version(tag).is_dir():
+        if not FileAccess.is_dir(self.version(tag)):
             raise CodeVersionMissingError(tag)
-        self.new_link.unlink(missing_ok=True)
-        self.new_link.symlink_to(self.version(tag).relative_to(self.home.folder))
+        FileAccess.unlink(self.new_link, missing_ok=True)
+        FileAccess.symlink_to(self.new_link, self.version(tag).relative_to(self.home.folder))
         running = self.running_version()
         if running not in ("", tag):
-            FileAccess.shared().write(self.previous_file, running)
-        os.replace(self.new_link, self.link)
+            FileAccess.write(self.previous_file, running)
+        FileAccess.replace(self.new_link, self.link)
         self.prune()
 
     def running_version(self) -> str:
-        if self.link.is_symlink():
+        if FileAccess.is_symlink(self.link):
             return self.link.resolve().name
-        if not self.link.is_dir():
+        if not FileAccess.is_dir(self.link):
             return ""
-        shutil.rmtree(self.version(FIRST_VERSION), ignore_errors=True)
-        self.folder.mkdir(parents=True, exist_ok=True)
-        self.link.rename(self.version(FIRST_VERSION))
+        FileAccess.rmtree(self.version(FIRST_VERSION), ignore_errors=True)
+        FileAccess.mkdir(self.folder, parents=True, exist_ok=True)
+        FileAccess.rename(self.link, self.version(FIRST_VERSION))
         return FIRST_VERSION
 
     def prune(self) -> None:
-        kept = {self.link.resolve().name, FileAccess.shared().read(self.previous_file) if self.previous_file.is_file() else ""}
-        for version in self.folder.iterdir():
-            if version.is_dir() and version.suffix != PARTIAL_VERSION and version.name not in kept:
-                shutil.rmtree(version)
+        kept = {self.link.resolve().name, FileAccess.read(self.previous_file) if FileAccess.is_file(self.previous_file) else ""}
+        for version in FileAccess.iterdir(self.folder):
+            if FileAccess.is_dir(version) and version.suffix != PARTIAL_VERSION and version.name not in kept:
+                FileAccess.rmtree(version)
 
     def install(self, source: Path, clock: Clock) -> None:
-        if self.link.is_symlink():
+        if FileAccess.is_symlink(self.link):
             self.switch(self.add(source, clock))
         else:
             CodeCopy(source, self.home).make()

@@ -1,3 +1,4 @@
+from engine.process.child_process import ChildProcess
 import os
 import subprocess
 from pathlib import Path
@@ -54,7 +55,7 @@ class PluginCommandRunner:
                                    text=True, start_new_session=True)
         self.scripts.start(running, plugin, RUN_KEY, EventForm.COMMIT, started_at)
         try:
-            output, _ = running.communicate()
+            output, _ = ChildProcess(running).communicate()
             stopped = self.scripts.stop_reason(running) is not ScriptStop.STOP_FAILED
         finally:
             self.scripts.finish(running)
@@ -84,6 +85,6 @@ class PluginCommandRunner:
     def foreground_run(self, checkout: Checkout, is_readonly: bool, plugin: str) -> ForegroundRun:
         folder: Path | None = checkout.root if checkout.checkout_type.is_separate_copy and not is_readonly else None
         reads = self.reads.folders(checkout.project_root) if checkout.checkout_type.is_separate_copy else ()
-        writes = (self.folders.data(plugin).resolve(),) if plugin else ()
+        writes = tuple([self.folders.data(plugin).resolve()]) if plugin else ()
         return ForegroundRun(RUN_LIMIT_SECONDS, False, queued=True, queue_wait_seconds=RUN_LIMIT_SECONDS, shell_sandbox=is_readonly or folder is not None, folder=folder,
-                             read_folders=reads, write_folders=writes)
+                             read_folders=reads, writable_folders=writes)

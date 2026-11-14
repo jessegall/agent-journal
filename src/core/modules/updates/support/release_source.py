@@ -60,7 +60,7 @@ class ReleaseSource:
 
     def kept(self, address: str) -> dict[str, object] | None:
         try:
-            saved = json.loads(FileAccess.shared().read(self.home.newest_release_file))
+            saved = json.loads(FileAccess.read(self.home.newest_release_file))
             age = (self.clock.timestamp().value - Timestamp.parsed(str(saved["at"])).value).total_seconds()
         except (OSError, ValueError, KeyError):
             return None
@@ -68,14 +68,14 @@ class ReleaseSource:
         return saved if saved.get("address") == address and 0 <= age < limit else None
 
     def keep(self, values: dict[str, object]) -> None:
-        self.home.newest_release_file.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(self.home.newest_release_file, json.dumps({**values, "at": self.clock.timestamp().text}))
+        FileAccess.mkdir(self.home.newest_release_file.parent, parents=True, exist_ok=True)
+        FileAccess.write(self.home.newest_release_file, json.dumps({**values, "at": self.clock.timestamp().text}))
 
     def unpacked(self, release: PublishedRelease, folder: Path) -> Path:
         archive, _ = self.fetched(f"{release.address}/{ARCHIVE}")
         if hashlib.sha256(archive).hexdigest() != release.checksum:
             raise Refusal(f"the checksum of {ARCHIVE} does not match the release's, so nothing was installed", "check the release address, then try again")
-        with FileAccess.shared().temporary_writer(Path(tempfile.gettempdir()), mode="w+b", suffix=".tar.gz") as download:
+        with FileAccess.temporary_writer(Path(tempfile.gettempdir()), mode="w+b", suffix=".tar.gz") as download:
             download.write(archive)
             download.flush()
             with tarfile.open(download.name, "r:gz") as unpacking:

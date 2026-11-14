@@ -1,3 +1,4 @@
+from engine.time.clock import Clock
 import threading
 
 from server.work.listeners.listener_thread import STOP_LIMIT_SECONDS
@@ -43,4 +44,4 @@ class ViewerEndpoint(TrackedRequests):
         self.shutdown()
         self.drain(STOP_LIMIT_SECONDS)
         self.server_close()
-        self.thread.join(STOP_LIMIT_SECONDS)
+        Clock().join(self.thread, STOP_LIMIT_SECONDS)

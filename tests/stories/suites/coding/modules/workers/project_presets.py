@@ -25,7 +25,7 @@ def project(new_story):
 
 def saved(folder, path, text):
     (folder / path).parent.mkdir(parents=True, exist_ok=True)
-    FileAccess.shared().write(folder / path, text)
+    FileAccess.write(folder / path, text)
 
 
 def test_both_manifests_are_found_a_library_folder_is_not_read_and_a_changed_manifest_counts_at_the_next_read(project):

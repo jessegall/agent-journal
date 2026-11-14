@@ -34,10 +34,10 @@ class PluginDashboardSubcommand(ReadSubcommand[PluginDashboard]):
         if board is None:
             raise Refusal(f"{plugin.name} declares no dashboard", "journal plugin dashboards lists the ones declared")
         saved = self.folders.data(plugin.name) / DASHBOARD_FOLDER / f"{board.name}.json"
-        if not saved.is_file():
+        if not FileAccess.is_file(saved):
             return PluginDashboard({"missing": f"{plugin.name} has written nothing on its dashboard yet."})
         try:
-            dashboard: object = json.loads(FileAccess.shared().read(saved))
+            dashboard: object = json.loads(FileAccess.read(saved))
         except json.JSONDecodeError:
             return PluginDashboard({"broken": f"{saved.name} is not valid JSON."})
         if not is_mapping(dashboard) or not all(key in dashboard for key in ("start", "pages")):

@@ -139,3 +139,14 @@ def test_a_stash_that_does_not_apply_is_kept_and_named(tmp_path):
         git().update(worktree)
     stashes = own(worktree).git("stash", "list", "--format=%H").stdout.split()
     assert stashes and f"apply them with git stash apply {stashes[0]}" in refused.value.text
+
+
+def test_a_kept_clashed_stash_is_in_the_stack_once_with_its_name(tmp_path):
+    repository, worktree = cut_worktree(tmp_path)
+    (Path(worktree.folder) / "cart.py").write_text("TOTAL = 9\n")
+    own(worktree).git("stash", "push", "--include-untracked")
+    stash = own(worktree).tip("stash@{0}")
+    git().keep_clashed_stash(worktree, stash)
+    entries = own(worktree).git("stash", "list", "--format=%H %gs").stdout.splitlines()
+    assert [entry.split()[0] for entry in entries] == [stash]
+    assert worktree.branch in entries[0]

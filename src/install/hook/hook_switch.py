@@ -22,26 +22,26 @@ class HookSwitch:
         self.saved = root / ".journal" / BACKUP_FOLDER / SAVED_FOLDER
 
     def switch(self) -> list[str]:
-        (self.root / VERSION_FOUR_SWITCH).unlink(missing_ok=True)
-        present = [name for name in SETTINGS_FILES if (self.root / name).is_file()]
+        FileAccess.unlink(self.root / VERSION_FOUR_SWITCH, missing_ok=True)
+        present = [name for name in SETTINGS_FILES if FileAccess.is_file(self.root / name)]
         if not present:
             return []
         for name in present:
             kept = self.saved / name
-            if not kept.exists():
-                kept.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(self.root / name, kept)
+            if not FileAccess.exists(kept):
+                FileAccess.mkdir(kept.parent, parents=True, exist_ok=True)
+                FileAccess.copy(self.root / name, kept)
         runner = self.runner()
         HookWriter(self.root).write(runner)
         return [f"Claude Code and Codex start on the journal's own settings in .journal/programs, whose hooks call {runner}; the old files are in {self.saved}"]
 
     def restore(self) -> list[str]:
-        (self.root / VERSION_FOUR_SWITCH).parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().update_timestamp(self.root / VERSION_FOUR_SWITCH)
-        restored = [name for name in SETTINGS_FILES if (self.saved / name).is_file()]
+        FileAccess.mkdir((self.root / VERSION_FOUR_SWITCH).parent, parents=True, exist_ok=True)
+        FileAccess.update_timestamp(self.root / VERSION_FOUR_SWITCH)
+        restored = [name for name in SETTINGS_FILES if FileAccess.is_file(self.saved / name)]
         for name in SETTINGS_FILES:
             path = self.root / name
-            if not path.is_file() and name not in restored:
+            if not FileAccess.is_file(path) and name not in restored:
                 continue
             current = self.settings(path)
             hooks = ProgramHooks.partitioned(current.get("hooks")).native
@@ -54,11 +54,11 @@ class HookSwitch:
 
     def runner(self) -> str:
         binary = self.root / BINARY
-        if binary.is_file() and self.starts(binary):
+        if FileAccess.is_file(binary) and self.starts(binary):
             return f'"{binary}"'
         hook = self.root / ".journal" / "hooks" / "hook.sh"
-        hook.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy(Path(__file__).parent / "hook.sh", hook)
+        FileAccess.mkdir(hook.parent, parents=True, exist_ok=True)
+        FileAccess.copy(Path(__file__).parent / "hook.sh", hook)
         return f'sh "{hook}"'
 
     def starts(self, binary: Path) -> bool:

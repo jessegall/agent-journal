@@ -26,6 +26,8 @@ from engine.log.system_log_writer import SystemLogWriter
 from engine.guard.guard_switches import GuardSwitches
 from engine.registry.driver_rule_entry import DriverRuleEntry
 from engine.registry.registry import Registry
+from engine.driver.state_board import StateBoard
+from engine.driver.state_boards import StateBoards
 from engine.scope.scopes import Scopes
 
 
@@ -38,8 +40,8 @@ class DriverRules:
     rule that raises is recorded and passed by."""
 
     def __init__(self, registry: Registry, container: Container, switches: GuardSwitches, layers: Layers, history: HookHistory, errors: ErrorLog,
-                 allowances: EssentialAllowances, scopes: Scopes, skips: RefusalSkips, system_log: SystemLogWriter, timings: RuleTimings) -> None:
-        self.system_log, self.timings = system_log, timings
+                 allowances: EssentialAllowances, scopes: Scopes, skips: RefusalSkips, system_log: SystemLogWriter, timings: RuleTimings, boards: StateBoards) -> None:
+        self.system_log, self.timings, self.boards = system_log, timings, boards
         self.registry, self.container, self.switches, self.layers, self.history, self.errors = registry, container, switches, layers, history, errors
         self.allowances, self.scopes, self.skips = allowances, scopes, skips
 
@@ -68,16 +70,28 @@ class DriverRules:
                 elif walk.record(entry, layer.row.ref, self.outcome(entry, layer_hook)):
                     return self.complete_checks(walk, hook, calls)
             walk.leave_layer(layer, layer.overlay.path.checked_class(Overlay))
+        board = self.boards.for_hook(hook)
         for entry in added:
             if not self.switches.enabled(entry.name):
                 continue
             if walk.silences(entry.path.checked_class(DriverRule)):
                 walk.record_silenced(entry, "")
+                continue
+            gate = self.closed_gate(entry, board)
+            if gate:
+                walk.record_gated(entry, gate)
             elif walk.record(entry, "", self.outcome(entry, hook)):
-                return self.complete_checks(walk, hook, calls)
-        return self.complete_checks(walk, hook, calls)
+                return self.complete_checks(walk, hook, calls, board)
+        return self.complete_checks(walk, hook, calls, board)
 
-    def complete_checks(self, walk: Walk, hook: AgentHook, calls: list[RuleCall]) -> RuleAnswers:
+    # the name of the agent state that gates the rule when that state is switched on and closed for this hook
+    def closed_gate(self, entry: DriverRuleEntry, board: StateBoard) -> str:
+        gate = self.registry.rule_gate(entry.name)
+        if gate is None or not self.switches.enabled(gate.name) or board.is_open(gate):
+            return ""
+        return gate.name
+
+    def complete_checks(self, walk: Walk, hook: AgentHook, calls: list[RuleCall], board: StateBoard | None = None) -> RuleAnswers:
         answers = walk.answers()
         if not hook.is_main_stop:
             return answers
@@ -92,6 +106,10 @@ class DriverRules:
             if not self.switches.enabled(entry.name):
                 checks.append(StopCheck(entry.name, "disabled", "the rule is switched off", False,
                                         layer if layer else None))
+                continue
+            gate = self.closed_gate(entry, board) if board is not None and not layer else ""
+            if gate:
+                checks.append(StopCheck(entry.name, "allowed", f"{gate} is not open", False))
                 continue
             outcome = self.outcome(entry, call.hook)
             checks.append(RuleRecord(entry.name, layer, outcome.outcome, outcome.answer, applied=False, reason=outcome.line).stop_check)
@@ -131,6 +149,8 @@ class DriverRules:
             control_return = rule.history and self.history.control_return(RuleHistoryKey(hook.agent_id, entry.name, hook.layer_ref))
             with self.scopes.read_scope(rule.disabled_scopes, hook.agent_id, hook.environment_id):
                 answer = self.skippable(rule.answer(replace(hook, control_return=control_return)).role_variant(hook.role), entry, hook)
+                if answer.refusal and rule.skip_window is not None and self.skips.is_skipped(hook.agent_id, rule.skip_name or entry.name, rule.skip_window, hook.timestamp):
+                    answer = RuleAnswer.allowed(f"the agent skipped {entry.name}, which stays silent for it for a while")
         except Exception as error:
             self.errors.reported(["driver rule", entry.name], error, hook.environment_id)
             return RuleOutcome.raised(f"the journal's rule {entry.name} failed and was passed by: {type(error).__name__}")

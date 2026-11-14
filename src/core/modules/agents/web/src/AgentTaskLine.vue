@@ -1,13 +1,16 @@
 <script setup>
 import {computed} from "vue";
 import {HoverTip, TaskBar, peekRef} from "@journal/window-kit";
+import PlanBar from "./PlanBar.vue";
 import {shortJobTitle, taskLine} from "./agentTaskLine.js";
 
 // the bottom line of an agent's row: "Plan" and its number for an agent working on a plan, else "Task" and its number with its title in a tooltip, or "Tasks" and the number of each task it has started when there are several, how many of its tasks are done at the far right
-// with the rest in a tooltip; a worker whose unit is merged keeps the count and bar at zero for its next batch; and the thin bar of its tasks done and in testing; a helper has a job, named by the title its sender gave it or else the first words of the job, whose question is its tooltip, followed by the program the job runs on and whether it began a new conversation or resumed one
-const props = defineProps({tasks: {type: Array, default: () => []}, inHand: {type: Object, default: null}, job: {type: String, default: ""}, jobTitle: {type: String, default: ""}, jobLaunch: {type: String, default: ""}, perHour: {type: Number, default: 0}, countsEmpty: {type: Boolean, default: false}});
+// with the rest in a tooltip; an agent whose tasks were all handed in keeps the count and bar at zero for its next batch; and the thin bar of its tasks done and in testing; a helper has a job, named by the title its sender gave it or else the first words of the job, whose question is its tooltip, followed by the program the job runs on and whether it began a new conversation or resumed one
+const props = defineProps({tasks: {type: Array, default: () => []}, inHand: {type: Object, default: null}, job: {type: String, default: ""}, jobTitle: {type: String, default: ""}, jobLaunch: {type: String, default: ""}, perHour: {type: Number, default: 0}, countsEmpty: {type: Boolean, default: false}, planCounts: {type: Object, default: () => ({})}});
 const MOST_LISTED = 3;
 const line = computed(() => (props.inHand ? taskLine({tasks: props.tasks, inHand: props.inHand, perHour: props.perHour}) : null));
+// an agent on a plan shows the plan's bar and count, the same on every agent of that plan; one with no plan keeps the count and bar of its own tasks
+const plan = computed(() => (line.value?.plan ? props.planCounts[line.value.plan] ?? null : null));
 </script>
 
 <template>
@@ -32,11 +35,12 @@ const line = computed(() => (props.inHand ? taskLine({tasks: props.tasks, inHand
                 <HoverTip as="button" class="task" data-agent-task :data-peek="`tasks:${line.number}`" :aria-label="`Task ${line.number}: ${line.title}`" @click.stop="peekRef(`tasks:${line.number}`)">Task {{ line.number }}<template #tip><b>{{ line.title }}</b><span>{{ line.taskTip }}</span></template></HoverTip>
             </template>
             <template v-if="line.rate"><span class="rate" data-agent-rate>{{ line.rate }}</span></template>
-            <HoverTip class="count" tabindex="0" place="right" data-agent-count>{{ line.count }}<template #tip><b>{{ line.countTip }}</b><template v-if="line.paceTip">
+            <PlanBar v-if="plan" :plan="line.plan" :counts="plan" />
+            <HoverTip v-else class="count" tabindex="0" place="right" data-agent-count>{{ line.count }}<template #tip><b>{{ line.countTip }}</b><template v-if="line.paceTip">
   <span>{{ line.paceTip }}</span>
 </template></template></HoverTip>
         </span>
-        <TaskBar class="bar" data-agent-bar aria-hidden="true" :total="line.bar.total" :done="line.bar.done" :testing="line.bar.testing" :started="line.bar.started" />
+        <TaskBar v-if="!plan" class="bar" data-agent-bar aria-hidden="true" :total="line.bar.total" :done="line.bar.done" :testing="line.bar.testing" :started="line.bar.started" />
     </template>
     <template v-else-if="countsEmpty">
         <span class="task-line" data-agent-task-line><span class="task" data-agent-no-task>No task</span><span class="count" data-agent-count>0 of 0</span></span>
@@ -53,7 +57,8 @@ const line = computed(() => (props.inHand ? taskLine({tasks: props.tasks, inHand
 .plan::before { content: "·"; margin-right: 6px; }
 .count { position: relative; flex: none; margin-left: auto; color: var(--text-2); font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; cursor: default; }
 .rate { flex: none; margin-left: auto; color: var(--text-4); font-size: 11px; font-variant-numeric: tabular-nums; }
-.rate + .count { margin-left: 0; }
+.rate + .count,
+.rate + .plan-bar { margin-left: 0; }
 .listed { display: block; }
 .bar { margin-top: 5px; }
 </style>

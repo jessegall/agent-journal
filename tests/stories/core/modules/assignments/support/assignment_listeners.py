@@ -63,7 +63,7 @@ class DepotListenersModule(Module):
     """A sample module that hears crates being assigned and unassigned, and guards assignments to one user."""
 
     name = "acme.depot-listeners"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.assignments", "journal.core.actors", "acme.depot"]
     listeners = [CrateAssigned, CrateUnassigned]
     guards = [GraceGuard]

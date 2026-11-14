@@ -38,7 +38,7 @@ def small_tree(root: Path) -> Path:
 
 
 def code_map(source: Path) -> CodeMap:
-    return CodeMap(source, FileAccess.shared())
+    return CodeMap(source, FileAccess())
 
 
 def test_the_map_of_a_fixed_small_tree_is_the_same_text_on_every_run(tmp_path):

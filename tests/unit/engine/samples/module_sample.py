@@ -7,7 +7,7 @@ from tests.unit.engine.model.test_model import Item
 
 class ItemsModule(Module):
     name = "items"
-    requires_core = ">=5.0,<6"
+    requires_engine = ">=5.0,<6"
     models = [ModelDeclaration(Item)]
     guards = [ShelfGuard]
     listeners = [ShelfCounter]

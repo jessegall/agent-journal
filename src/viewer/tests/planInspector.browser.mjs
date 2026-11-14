@@ -7,7 +7,7 @@ const login = await browser.newContext();
 
 async function open(page, table, id) {
     await page.evaluate((ref) => { location.hash = `#?open=${ref}`; }, `${table}:${id}`);
-    const panel = page.locator(table === "plans" ? "[data-plan-inspector]" : "[data-task-inspector]");
+    const panel = page.locator(`[data-resource-panel][aria-label="${table.slice(0, -1)} ${id}"]`);
     await panel.locator("[data-resource-title]").waitFor();
     await page.locator("[data-resource-panel]:not(.opening)").waitFor();
     await page.locator("[data-resource-panel]").evaluate((element) => Promise.all(element.getAnimations({subtree: true}).map((animation) => animation.finished.catch(() => null))));
@@ -16,19 +16,14 @@ async function open(page, table, id) {
 
 async function layout(panel) {
     return panel.evaluate((element) => {
-        const top = element.querySelector(".top");
-        const summary = element.querySelector(".summary");
+        const head = element.querySelector("[data-inspector-head]");
         const title = element.querySelector("[data-resource-title]");
-        const tabs = element.querySelector(".tabs");
         return {
-            topHeight: top.getBoundingClientRect().height,
-            topPadding: getComputedStyle(top).padding,
-            summaryPadding: getComputedStyle(summary).padding,
+            headPadding: getComputedStyle(head).padding,
+            headBorder: getComputedStyle(head).borderBottomWidth,
             titleSize: getComputedStyle(title).fontSize,
             titleWeight: getComputedStyle(title).fontWeight,
             titleLine: getComputedStyle(title).lineHeight,
-            tabsPadding: getComputedStyle(tabs).padding,
-            tabsBorder: getComputedStyle(tabs).borderBottomWidth,
             commentPadding: getComputedStyle(element.querySelector(".comment-bar")).padding,
         };
     });
@@ -66,31 +61,29 @@ async function check(width, height) {
     assert.ok(await plan.evaluate((element) => element.scrollWidth <= element.clientWidth));
     await screenshots(page, "plan", width);
 
-    await plan.getByRole("radio", {name: "Comments", exact: true}).click();
-    await plan.locator("[data-comment-side]").waitFor();
+    // a wide panel draws the comments as a rail beside the body, a narrower one as a tab
+    const comments = plan.getByRole("radio", {name: "Comments", exact: true});
+    if (await comments.count()) await comments.click();
     await plan.locator(".comment-bar-open").click();
     const comment = `Checked at ${width}px`;
     await plan.locator("textarea").fill(comment);
     await plan.getByRole("button", {name: "Send", exact: true}).click();
+    await plan.locator("[data-comment-side]").waitFor();
     await plan.locator("[data-comment]").filter({hasText: comment}).waitFor();
     await page.screenshot({path: `${shots}-comments-${width}.png`});
-    await plan.getByRole("button", {name: "Close the comments", exact: true}).click();
-    await plan.locator("[data-resource-phase]").waitFor();
-    await plan.locator(".comment-bar .count").click();
-    await plan.locator("[data-comment-side]").waitFor();
     await plan.getByRole("radio", {name: "Timeline", exact: true}).click();
     await plan.locator("[data-plan-event]").first().waitFor();
     assert.equal(await plan.locator("[data-plan-event].completed .ring.done").count(), 1);
     assert.equal(await plan.locator("[data-plan-event].cancelled .ring.done").count(), 1);
     await plan.getByRole("radio", {name: "Details", exact: true}).click();
     await plan.locator(".task[data-row]").first().click();
-    await page.locator("[data-task-inspector] [data-resource-title]").waitFor();
+    await page.locator('[data-resource-panel][aria-label="task 1"] [data-resource-title]').waitFor();
     await page.close();
 }
 
 async function checkActions(panel) {
     const actions = panel.locator("[data-inspector-actions]").first();
-    await actions.locator("[data-move]").first().waitFor();
+    await actions.locator("button").first().waitFor();
     const position = await actions.evaluate((element) => ({top: element.getBoundingClientRect().top, headerBottom: element.previousElementSibling.getBoundingClientRect().bottom, alignment: getComputedStyle(element).justifyContent}));
     assert.ok(Math.abs(position.top - position.headerBottom) <= 1);
     assert.equal(position.alignment, "flex-end");

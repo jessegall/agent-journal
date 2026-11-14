@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import os
 import shutil
 import subprocess
@@ -49,8 +50,8 @@ class TunlerClient:
             return
         self.stop_leftover(command)
         self.stop()
-        self.log.parent.mkdir(parents=True, exist_ok=True)
-        with self.log.open("wb") as log:
+        FileAccess.mkdir(self.log.parent, parents=True, exist_ok=True)
+        with FileAccess.writer(self.log, "wb") as log:
             self.process = ChildProcess(subprocess.Popen([command, str(port), f"--domain={subdomain}"], stdout=log, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL))
         self.files.write_tunnel_pid(self.process.pid)
 
@@ -86,7 +87,7 @@ class TunlerClient:
         return pid is not None and PROGRAM_NAME in LeftoverProcess.command_line(pid)
 
     def log_lines(self) -> list[str]:
-        return self.log.read_text(errors="replace").splitlines() if self.log.is_file() else []
+        return FileAccess.read(self.log, errors="replace").splitlines() if FileAccess.is_file(self.log) else []
 
     def login(self, host: str, username: str, password: str, master: str | None) -> TunlerLogin:
         answer = self.answer(COMMAND_LIMIT_SECONDS, self.login_environment(password, master), "login", username, f"--host={host}")
@@ -145,4 +146,4 @@ class TunlerClient:
 
     @staticmethod
     def command() -> str | None:
-        return shutil.which(PROGRAM_NAME) or next((str(path) for path in TUNLER_PATHS if path.is_file()), None)
+        return shutil.which(PROGRAM_NAME) or next((str(path) for path in TUNLER_PATHS if FileAccess.is_file(path)), None)

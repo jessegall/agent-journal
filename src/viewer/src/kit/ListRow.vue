@@ -24,7 +24,10 @@ defineProps({
                 </div>
             </template>
         </div>
-        <template v-if="text">
+        <template v-if="$slots.text">
+            <div class="list-row-line"><slot name="text" /></div>
+        </template>
+        <template v-else-if="text">
             <span class="list-row-text">{{ text }}</span>
         </template>
     </div>
@@ -96,6 +99,13 @@ defineProps({
 .list-row-end {
     flex: none;
     margin-left: auto;
+}
+
+.list-row-line {
+    display: flex;
+    align-items: center;
+    gap: var(--s2);
+    min-width: 0;
 }
 
 .list-row-text {

@@ -1,3 +1,4 @@
+from engine.database.database_busy import DatabaseBusy
 import sqlite3
 import traceback
 from engine.serving.server_files import ServerFiles
@@ -10,6 +11,7 @@ from engine.database.request_watch import RequestWatch
 from engine.enums.log_level import LogLevel
 from engine.enums.process_type import ProcessType
 from engine.file.file_access import FileAccess
+from engine.file.file_tally import FileCalls, FileTally
 from engine.process.door.request_records import REFUSED_HOOK_EXIT_CODE
 from core.modules.processes.support.request_log import RequestLog
 from core.modules.processes.support.request_log_entry import RequestLogEntry
@@ -31,12 +33,12 @@ from engine.performance.route_cost_tool import RouteCostTool
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from engine.enums.hook_answer import HookAnswer
 from server.hook.hook_delivery_retries import HookDeliveryRetries
+from server.execution.session_starters import SessionStarters
 from server.hook.hook_sender import HookSender
 from server.hook.raw_hook_body import RawHookBody, is_raw_body
 from server.hook.hook_headers import HookHeaders
-from server.errors.hook_database_busy_error import HookDatabaseBusyError
-from server.enums.queue_priority import QueuePriority
-from server.hook.queue_request import QueueRequest
+from server.errors.lane_busy_error import LaneBusyError
+from engine.enums.execution_priority import ExecutionPriority
 from server.context.server_context import ServerContext
 
 
@@ -46,6 +48,11 @@ UNCHECKED_TOOL = "the journal could not check this, so it is held: {reason}. A w
 
 
 SERVER_UPDATING = "the journal is updating: your line is held; try it again once the journal says it started"
+
+
+HOOK_FILE_CALL_LIMIT = 200
+
+TOP_ORIGINS = 3
 
 
 class HookEndpoint:
@@ -63,23 +70,23 @@ class HookEndpoint:
 
     def answer(self, data: object, program: str, headers: Mapping[str, str]) -> HookReply:
         started_at = perf_counter()
-        sender = HookSender.parsed(data, self.context.hook_limit_seconds, self.context.agent_hook_limit_seconds, self.context.stop_limit_seconds)
+        sender = HookSender.parsed(data, self.context.hook_limit_seconds, self.context.agent_hook_limit_seconds, self.context.stop_limit_seconds,
+                                   role_of=SessionStarters.shared(self.context.home).role)
         files = ServerFiles(self.context.home)
         if not files.phase().runs_programs:
             files.block_session(sender.session)
             self.kept_row(sender, program)
             return self.locked(sender)
         try:
-            request = QueueRequest.started(sender.name, sender.event_name, sender.session)
-            with self.context.hook_database.used(sender.priority, sender.limit_seconds, sender.owner, request) as database:
+            with self.context.hook_database.used(sender.priority, sender.limit_seconds, sender.owner, sender.event_name) as database:
                 self.timing.stamp("hook_locked")
                 queued_ms = (perf_counter() - started_at) * 1000
                 return self.routed_answer(data, program, headers, database, started_at, sender, queued_ms)
-        except (HookDatabaseBusyError, OldHookRunnerError) as error:
+        except (LaneBusyError, OldHookRunnerError) as error:
             return self.unchecked(sender, error)
         finally:
             self.timing.stamp("hook_answered")
-            self.context.listener_thread.wake()
+            self.context.listener_wakes.wake()
 
     def answer_lost(self, reply: HookReply) -> None:
         if reply.hook_call_id is None:
@@ -87,13 +94,13 @@ class HookEndpoint:
         retries = HookDeliveryRetries(self.context.home)
         retries.keep(reply.hook_call_id)
         try:
-            with self.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, self.context.hook_limit_seconds) as database:
+            with self.context.hook_database.used(ExecutionPriority.IMMEDIATE, self.context.hook_limit_seconds) as database:
                 database.set_busy_timeout(self.context.hook_limit_seconds)
                 retries.retry(synced_database_container(self.context.home, database))
-        except HookDatabaseBusyError as error:
+        except LaneBusyError as error:
             self.context.files.log_line(f"delivery reset for hook call {reply.hook_call_id} will retry at the next hook: {error}", LogLevel.WARNING)
         except sqlite3.OperationalError as error:
-            if error.sqlite_errorcode != sqlite3.SQLITE_BUSY:
+            if not DatabaseBusy.is_busy(error):
                 raise
             self.context.files.log_line(f"delivery reset for hook call {reply.hook_call_id} will retry at the next hook: {error}", LogLevel.WARNING)
 
@@ -121,6 +128,16 @@ class HookEndpoint:
         event = self.event(data, program, headers, container.get(Providers))
         tools = container.get(PerformanceTools)
         start_points = tools.begin()
+        with FileTally.counting() as file_calls:
+            try:
+                return self.routed_reply(event, database, container, deadline, sender)
+            finally:
+                self.log_file_calls(event, file_calls)
+                cost = tools.cost(start_points)
+                if cost is not None:
+                    tools.run(RouteCostTool, "/hook", cost)
+
+    def routed_reply(self, event: HookEvent, database: Database, container: Container, deadline: float, sender: HookSender) -> HookReply:
         try:
             database.set_busy_timeout(LEAST_BUSY_SECONDS)
             HookDeliveryRetries(self.context.home).retry(container)
@@ -129,15 +146,19 @@ class HookEndpoint:
             self.timing.stamp("route_ready")
             return route.answer(event)
         except sqlite3.OperationalError as error:
-            if error.sqlite_errorcode == sqlite3.SQLITE_BUSY:
+            if DatabaseBusy.is_busy(error):
                 return self.unchecked(sender, error)
             return self.failure(sender, error)
         except Exception as error:
             return self.failure(sender, error)
-        finally:
-            cost = tools.cost(start_points)
-            if cost is not None:
-                tools.run(RouteCostTool, "/hook", cost)
+
+    # a hook that touches more files than a hook may is logged with its counts, as its database points are
+    def log_file_calls(self, event: HookEvent, file_calls: FileCalls) -> None:
+        if file_calls.total <= HOOK_FILE_CALL_LIMIT:
+            return
+        counts = ", ".join(f"{count} {kind}" for kind, count in file_calls.kinds.most_common())
+        origins = ", ".join(f"{count} at {origin}" for origin, count in file_calls.origins.most_common(TOP_ORIGINS))
+        self.context.files.log_line(f"hook {event.event.value} made {file_calls.total} file system calls ({counts}; most {origins}), over the {HOOK_FILE_CALL_LIMIT} a hook may make", LogLevel.WARNING)
 
     def event(self, data: object, program: str, headers: Mapping[str, str], providers: Providers) -> HookEvent:
         if is_raw_body(data):
@@ -159,7 +180,7 @@ class HookEndpoint:
 
     def kept_row(self, sender: HookSender, program: str) -> None:
         line = " ".join(word for word in (program, sender.event_name) if word)
-        RequestLog(self.context.home, FileAccess.shared()).append(RequestLogEntry(None, None, ProcessType.HOOK, line, REFUSED_HOOK_EXIT_CODE, self.context.clock.timestamp().text, sender.session))
+        RequestLog(self.context.home, FileAccess()).append(RequestLogEntry(None, None, ProcessType.HOOK, line, REFUSED_HOOK_EXIT_CODE, self.context.clock.timestamp().text, sender.session))
 
     @staticmethod
     def locked(sender: HookSender) -> HookReply:

@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from engine.database.database import Database
+from engine.container.round_state import RoundState
 from engine.database.kept_rows import KeptRows
 from engine.database.statement import Statement
 from engine.row.row_owner import MAIN_AGENT, RowOwner
@@ -20,7 +21,7 @@ ENVIRONMENT_SIGNATURE = Statement("SELECT id, version, updated_at FROM environme
 NEWEST_MAIN_AGENT_ID = Statement("SELECT id FROM agents WHERE environment_id = ? AND role = 'main' ORDER BY id DESC LIMIT 1")
 
 
-class ActorTable:
+class ActorTable(RoundState):
     """The actors the core itself makes: its own, on the first sync, and one for each module."""
 
     def __init__(self, database: Database) -> None:
@@ -28,6 +29,10 @@ class ActorTable:
         self.kept = KeptRows(database)
         self.agent_answers: dict[int, bool] = {}
         self.row_owners: dict[int, RowOwner | None] = {}
+
+    def reset(self) -> None:
+        self.agent_answers = {}
+        self.row_owners = {}
 
     def core_actor(self, timestamp: str) -> None:
         self.database.update(Statement(CORE_ACTOR.sql, (CORE_ACTOR_ID, ActorType.CORE.value, timestamp, timestamp)))
@@ -50,6 +55,12 @@ class ActorTable:
     def agent_actor_id(self, session: str) -> int | None:
         rows = self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.AGENT.value, session))) or self.database.rows(Statement(SESSION_HOLDER_ID.sql, tuple([session])))
         return int(rows[0]["id"]) if rows else None
+
+    # the role of the agent a session belongs to, none for a session no agent row has yet
+    def session_role(self, session: str) -> str | None:
+        actor_id = self.agent_actor_id(session)
+        rows = self.database.rows(Statement(AGENT_OWNER.sql, [actor_id])) if actor_id is not None else []
+        return str(rows[0]["role"]) if rows else None
 
     def is_agent(self, actor_id: int) -> bool:
         if actor_id not in self.agent_answers:

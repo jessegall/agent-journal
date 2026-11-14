@@ -1,85 +1,164 @@
-import {contextChangeRows} from "../src/domain/compaction.js";
 import {createApp, h} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
-import InformationBar from "../src/shell/InformationBar.vue";
-import {compactionLine} from "../src/domain/compaction.js";
+import ContextMenu from "../src/kit/ContextMenu.vue";
+import {useContextMenu} from "../src/composables/contextMenu.js";
 import {settle} from "./support/windowContext.js";
 
-vi.stubGlobal("ResizeObserver", class {
-    observe() {}
-
-    disconnect() {}
+afterEach(() => {
+    document.body.innerHTML = "";
+    vi.restoreAllMocks();
 });
 
-afterEach(() => (document.body.innerHTML = ""));
+const ran = [];
+const items = () => [
+    {label: "Delete", danger: true, run: () => ran.push("delete")},
+    {label: "Rename", run: () => ran.push("rename")},
+    {label: "Copy path", group: "copy", keys: "⌘C", run: () => ran.push("copy")},
+    {label: "Open", group: "open", run: () => ran.push("open")},
+    {label: "Close others", group: "open", disabled: true, reason: "only tab"},
+    {label: "Reveal", group: "copy", run: () => ran.push("reveal")},
+    {label: "Move to", children: [{label: "Left pane", run: () => ran.push("left")}, {label: "Right pane", run: () => ran.push("right")}]},
+];
 
-const AT = "2026-11-06T21:03:11.000000+00:00";
-const EXACT = new Date(AT).toLocaleString("en-GB", {dateStyle: "medium", timeStyle: "medium"});
-const GROUPS = [{key: "context", label: "Context window", choices: [{value: "compact", label: "Compact context"}, {value: "clear", label: "Clear context"}]}];
-
-async function menu(last_compaction, extra = {}) {
-    const usage = {agents: [{id: 7, model: "sonnet", effort: "low", context_percent: 95, last_compaction, ...extra}], windows: []};
-    const run = async (line) => (line[1] === "controls" ? {ok: true, value: {groups: GROUPS}} : {ok: true, value: {rows: []}});
+// a tab bar with a menu: the tab that is open must stay open when another is right clicked
+function mountBar(list = items()) {
     const element = document.createElement("div");
     document.body.append(element);
-    createApp({render: () => h(InformationBar, {agent: {id: 7, ended_at: null, program: "claude", session: "s"}, run, usage, controlGroups: GROUPS})}).mount(element);
-    await settle();
-    element.querySelector('[data-fact="context"]').click();
-    await settle();
-    return document;
+    const app = createApp({
+        setup() {
+            const {menu, open, openFromKey, close} = useContextMenu();
+            return () => h("div", [
+                h("button", {role: "tab", "aria-selected": "true", "data-tab": "one"}, "One"),
+                h("button", {role: "tab", "aria-selected": "false", "data-tab": "two", onContextmenu: (event) => open(event, "Two", list), onKeydown: (event) => openFromKey(event, "Two", list)}, "Two"),
+                menu.value ? h(ContextMenu, {...menu.value, onClose: close}) : null,
+            ]);
+        },
+    });
+    app.mount(element);
+    return element;
 }
 
-test("the context menu shows how full the context is as a bar and the exact time of the last compaction", async () => {
-    const page = await menu({started_at: AT, start_percent: 92, end_percent: 18});
-    expect(page.querySelector("[data-context-menu-meter] .context-used").textContent).toBe("95%");
-    expect(page.querySelector("[data-context-menu-meter] .gauge span").style.width).toBe("95%");
-    expect(page.querySelector("[data-context-menu-compaction]").textContent).toBe(`Last compacted ${EXACT}`);
-    expect(page.querySelector("[data-context-menu-compaction]").nextElementSibling).toBe(page.querySelector("[data-context-menu-meter]"));
-    expect(page.body.textContent).toContain("Compact context");
-});
+const menuOf = () => document.body.querySelector("[data-context-menu]");
+const labels = () => [...menuOf().querySelectorAll(".context-label")].map((label) => label.textContent);
+const press = (key, extra = {}) => document.activeElement.dispatchEvent(new KeyboardEvent("keydown", {key, bubbles: true, cancelable: true, ...extra}));
+const focused = () => document.activeElement.textContent.trim();
 
-test("the context menu shows the tokens out of the limit and a Capped badge while a limit caps the agent", async () => {
-    const page = await menu(null, {context_tokens: 248000, context_limit_tokens: 400000});
-    expect(page.querySelector("[data-context-menu-cap]").textContent.replace(/\s+/g, " ").trim()).toBe("248k of 400k Capped");
-});
-
-test("the context menu shows the tokens out of the model's window and no badge when no limit caps the agent", async () => {
-    const page = await menu(null, {context_tokens: 126000, context_limit_tokens: null, context_window_tokens: 200000});
-    expect(page.querySelector("[data-context-menu-cap]").textContent.replace(/\s+/g, " ").trim()).toBe("126k of 200k");
-    expect(page.querySelector("[data-context-menu-cap] .badge")).toBeNull();
-    expect(page.querySelector("[data-context-menu-meter] .context-used").textContent).toBe("95%");
-});
-
-test("the context menu says none yet for a session never compacted", async () => {
-    const page = await menu(null);
-    expect(page.querySelector("[data-context-menu-compaction]").textContent).toBe("Not compacted yet");
-});
-
-test("a compaction shows the time alone, whatever percents it has", () => {
-    expect(compactionLine({started_at: AT, start_percent: 92, end_percent: null})).toBe(`Last compacted ${EXACT}`);
-    expect(compactionLine({started_at: AT, start_percent: null, end_percent: null})).toBe(`Last compacted ${EXACT}`);
-});
-
-test("while a compaction is asked and not ended the context menu says so with its time and offers no second one", async () => {
-    const page = await menu(null, {context_change: {change: "compact", is_open: true, requested_at: AT, state: "requested", reason: "person"}});
-    expect(page.querySelector("[data-context-menu-open-change]").textContent).toContain("Compaction asked at");
-    expect(page.querySelector('[data-agent-choice="compact"]')).toBeNull();
-});
-
-test("the agent inspector's rows name who asked for the newest compaction, its state and the sizes around it", () => {
-    const rows = contextChangeRows({change: "compact", is_open: false, requested_at: AT, state: "unreduced", reason: "stop_limit", request_tokens: 410000, tokens_after: 405000});
-    expect(rows.map((row) => row[0])).toEqual(["Last context change", "Asked by", "Asked", "Size at the request", "Size after"]);
-    expect(rows[0][1]).toBe("Compaction: Done, context not smaller");
-    expect(rows[1][1]).toBe("The journal, at the context size");
-    expect(contextChangeRows(null)).toEqual([]);
-});
-
-test("an agent whose context was compacted and has no new size yet shows its context as unknown", async () => {
-    const usage = {agents: [{id: 7, model: "sonnet", context_percent: null, context_unknown: true}], windows: []};
-    const element = document.createElement("div");
-    document.body.append(element);
-    createApp({render: () => h(InformationBar, {agent: {id: 7, ended_at: null, program: "claude", session: "s"}, usage, controlGroups: GROUPS})}).mount(element);
+async function openAt(element, x, y) {
+    element.querySelector('[data-tab="two"]').dispatchEvent(new MouseEvent("contextmenu", {bubbles: true, cancelable: true, clientX: x, clientY: y}));
     await settle();
-    expect(element.querySelector('[data-fact="context-unknown"]').textContent).toContain("Context: unknown");
-    expect(element.querySelector('[data-fact="context"]')).toBeNull();
+}
+
+test("test_opens_at_pointer: a right click opens the menu at the pointer, with the heading, and the browser's menu is cancelled", async () => {
+    const element = mountBar();
+    const event = new MouseEvent("contextmenu", {bubbles: true, cancelable: true, clientX: 120, clientY: 80});
+    element.querySelector('[data-tab="two"]').dispatchEvent(event);
+    await settle();
+    expect(event.defaultPrevented).toBe(true);
+    expect(menuOf().style.left).toBe("120px");
+    expect(menuOf().style.top).toBe("80px");
+    expect(menuOf().querySelector("[data-context-head]").textContent).toBe("Two");
+    expect(menuOf().getAttribute("role")).toBe("menu");
+});
+
+test("test_shift_f10_opens_under_focus: Shift+F10 and the Menu key open the menu under the focused element, and Escape gives focus back", async () => {
+    const element = mountBar();
+    const tab = element.querySelector('[data-tab="two"]');
+    tab.focus();
+    tab.dispatchEvent(new KeyboardEvent("keydown", {key: "F10", shiftKey: true, bubbles: true, cancelable: true}));
+    await settle();
+    expect(menuOf()).not.toBeNull();
+    expect(menuOf().style.left).toBe("8px");
+    press("Escape");
+    await settle();
+    expect(menuOf()).toBeNull();
+    tab.dispatchEvent(new KeyboardEvent("keydown", {key: "ContextMenu", bubbles: true, cancelable: true}));
+    await settle();
+    expect(menuOf()).not.toBeNull();
+});
+
+test("test_group_order: open and close, copy and reveal, own actions, then delete in red last, with a separator between groups", async () => {
+    await openAt(mountBar(), 10, 10);
+    expect(labels()).toEqual(["Open", "Close others", "Copy path", "Reveal", "Rename", "Move to", "Delete"]);
+    expect(menuOf().querySelectorAll("[data-context-separator]").length).toBe(3);
+    const children = [...menuOf().children].filter((child) => !child.matches("[data-context-head]"));
+    expect(children[children.length - 1].classList.contains("context-danger")).toBe(true);
+    expect(children[children.length - 2].matches("[data-context-separator]")).toBe(true);
+});
+
+test("test_keys_move_and_choose: arrows, Home, End, a letter, Right and Left move through the items, Enter chooses after the menu closes", async () => {
+    ran.length = 0;
+    const element = mountBar();
+    await openAt(element, 10, 10);
+    expect(focused()).toBe("Open");
+    press("ArrowDown");
+    expect(focused()).toBe("Copy path⌘C");
+    press("End");
+    expect(focused()).toBe("Delete");
+    press("ArrowDown");
+    expect(focused()).toBe("Open");
+    press("ArrowUp");
+    expect(focused()).toBe("Delete");
+    press("Home");
+    expect(focused()).toBe("Open");
+    press("r");
+    expect(focused()).toBe("Reveal");
+    press("m");
+    expect(focused()).toBe("Move to›");
+    press("ArrowRight");
+    await settle();
+    expect(document.body.querySelectorAll("[data-context-menu]").length).toBe(2);
+    expect(focused()).toBe("Left pane");
+    press("ArrowLeft");
+    await settle();
+    expect(document.body.querySelectorAll("[data-context-menu]").length).toBe(1);
+    expect(focused()).toBe("Move to›");
+    press("ArrowRight");
+    await settle();
+    press("ArrowDown");
+    press("Enter");
+    await settle();
+    expect(menuOf()).toBeNull();
+    expect(ran).toEqual(["right"]);
+    await openAt(element, 10, 10);
+    press(" ");
+    await settle();
+    expect(ran).toEqual(["right", "open"]);
+});
+
+test("test_disabled_item_shows_reason: a disabled item stays in the menu with its short reason at the right, and cannot be chosen or focused", async () => {
+    await openAt(mountBar(), 10, 10);
+    const item = [...menuOf().querySelectorAll("[data-menu-item]")].find((button) => button.textContent.includes("Close others"));
+    expect(item.disabled).toBe(true);
+    expect(item.querySelector("[data-context-reason]").textContent).toBe("only tab");
+    press("ArrowDown");
+    expect(focused()).not.toContain("Close others");
+});
+
+test("test_flips_at_edge: a menu near the right or bottom edge opens leftward or upward from the pointer", async () => {
+    vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(function width() {
+        return this.matches("[data-context-menu]") ? 200 : 0;
+    });
+    vi.spyOn(HTMLElement.prototype, "scrollHeight", "get").mockImplementation(function height() {
+        return this.matches("[data-context-menu]") ? 300 : 0;
+    });
+    const element = mountBar();
+    await openAt(element, window.innerWidth - 20, window.innerHeight - 20);
+    expect(menuOf().style.left).toBe(`${window.innerWidth - 20 - 200}px`);
+    expect(menuOf().style.bottom).toBe("20px");
+    expect(menuOf().style.top).toBe("");
+});
+
+test("test_focus_returns: closing the menu focuses the element it belongs to, which wears the ring only while open, and the open tab stays open", async () => {
+    const element = mountBar();
+    const tab = element.querySelector('[data-tab="two"]');
+    await openAt(element, 10, 10);
+    expect(tab.classList.contains("menu-target")).toBe(true);
+    expect(element.querySelector('[data-tab="one"]').getAttribute("aria-selected")).toBe("true");
+    expect(tab.getAttribute("aria-selected")).toBe("false");
+    document.body.dispatchEvent(new Event("pointerdown", {bubbles: true}));
+    await settle();
+    expect(menuOf()).toBeNull();
+    expect(tab.classList.contains("menu-target")).toBe(false);
+    expect(document.activeElement).toBe(tab);
+    expect(element.querySelector('[data-tab="one"]').getAttribute("aria-selected")).toBe("true");
 });

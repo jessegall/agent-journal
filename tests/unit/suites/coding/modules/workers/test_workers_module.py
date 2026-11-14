@@ -4,7 +4,8 @@ from suites.coding.modules.workers.commands.answer_worker_ask.answer_worker_ask_
 from suites.coding.modules.workers.commands.answer_worker_ask.answer_worker_ask_subcommand import AnswerWorkerAskSubcommand
 from suites.coding.modules.workers.migrations.m063_merger_line_ledger import MergerLineLedgerMigration
 from suites.coding.modules.workers.commands.forward_worker_questions.forward_worker_questions_handler import ForwardWorkerQuestionsHandler
-from suites.coding.modules.workers.guards.question_times_guard import QuestionTimesGuard
+from core.modules.asks.asks_module import AsksModule
+from core.modules.asks.guards.question_times_guard import QuestionTimesGuard
 from suites.coding.modules.workers.ticks.ask_watch import AskWatch
 from suites.coding.modules.workers.workers_module import WorkersModule
 
@@ -22,5 +23,5 @@ def test_the_merger_answers_a_question_through_a_registered_command():
 
 def test_unanswered_questions_are_watched_and_forwarded_by_registered_parts():
     assert ForwardWorkerQuestionsHandler in WorkersModule.handlers
-    assert QuestionTimesGuard in WorkersModule.guards
+    assert QuestionTimesGuard in AsksModule.guards
     assert any(isinstance(tick.handler, AskWatch) for tick in WorkersModule.tick_handlers)

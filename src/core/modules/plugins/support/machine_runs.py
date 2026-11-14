@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 from engine.file.file_access import FileAccess
+from engine.file.file_lock import FileLock
 from engine.journal.journal_home import JOURNAL_FOLDER, JournalHome
 from engine.process.process_ids import ProcessIds
 from engine.time.clock import Clock
@@ -19,7 +20,7 @@ class MachineRuns:
     """The runs of a plugin's kind that hold a place anywhere on this machine: one file for each, in the user's
     own journal folder or the folder JOURNAL_MACHINE_FOLDER names, holding the path of the pid file its runner
     writes. A run counts while that runner lives, or for a minute after its place was given while its runner
-    starts; a file of a run that counts no more is removed."""
+    starts; a file of a run that counts no more is removed. Counting and claiming a place go together under one lock."""
 
     def __init__(self, home: JournalHome, outputs: OutputFolder, clock: Clock) -> None:
         self.home, self.outputs, self.clock = home, outputs, clock
@@ -33,28 +34,41 @@ class MachineRuns:
         project = hashlib.sha256(str(self.home.folder.resolve()).encode()).hexdigest()[:PROJECT_MARK_CHARACTERS]
         return self.category_folder(process.plugin, process.run_name) / f"{project}-{process.id}"
 
-    def claim(self, process: Process) -> None:
+    # Counts the runs that hold a place and takes one for this run under one lock on the kind, so two projects claiming
+    # at once cannot both pass the limit; false, with nothing taken, when the limit is reached.
+    def claim(self, process: Process, limit: int | None) -> bool:
         path = self.run_file(process)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(path, str(self.outputs.pid_path(process.id)))
+        FileAccess.mkdir(path.parent, parents=True, exist_ok=True)
+        with FileLock.locked(path.parent.with_name(f"{path.parent.name}.lock")):
+            if limit is not None and self.count(process.plugin, process.run_name) >= limit:
+                return False
+            FileAccess.write(path, str(self.outputs.pid_path(process.id)))
+        return True
 
     def release(self, process: Process) -> None:
-        self.run_file(process).unlink(missing_ok=True)
+        FileAccess.unlink(self.run_file(process), missing_ok=True)
 
     def count(self, plugin: str, category: str) -> int:
         folder = self.category_folder(plugin, category)
-        if not folder.is_dir():
+        if not FileAccess.is_dir(folder):
             return 0
         counted = 0
-        for path in folder.iterdir():
+        for path in FileAccess.iterdir(folder):
             if self.is_blocked(path):
                 counted += 1
             else:
-                path.unlink(missing_ok=True)
+                FileAccess.unlink(path, missing_ok=True)
         return counted
 
+    # a run file another project's release removes while this one counts holds no place
     def is_blocked(self, run_file: Path) -> bool:
-        pid_file = Path(FileAccess.shared().read(run_file).strip())
-        if pid_file.is_file():
-            return ProcessIds.text_exists(FileAccess.shared().read(pid_file).strip())
-        return self.clock.epoch_seconds() - run_file.stat().st_mtime < START_GRACE_SECONDS
+        try:
+            return self.holds_place(run_file)
+        except FileNotFoundError:
+            return False
+
+    def holds_place(self, run_file: Path) -> bool:
+        pid_file = Path(FileAccess.read(run_file).strip())
+        if FileAccess.is_file(pid_file):
+            return ProcessIds.text_exists(FileAccess.read(pid_file).strip())
+        return self.clock.epoch_seconds() - FileAccess.stat(run_file).st_mtime < START_GRACE_SECONDS

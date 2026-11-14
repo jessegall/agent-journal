@@ -1,6 +1,6 @@
 import sqlite3
 
-from suites.coding.modules.workers.migrations.m081_helper_role_keys import HelperRoleKeysMigration
+from suites.coding.modules.workers.migrations.m084_helper_role_keys import HelperRoleKeysMigration
 
 ROWS = [(1, "verifier", ""), (2, "reviewer", ""), (3, "helper", "journal-merger"), (4, "helper", "journal-researcher"),
         (5, "worker", "journal-worker-medior"), (6, "main", "")]

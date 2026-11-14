@@ -69,12 +69,12 @@ class Wait(Overlay):
     name = "waits.wait"
     rules = [StopThrough]
 
-    def open_rows(self, agent_id: int) -> Sequence[OpenRow]:
+    def open_agent_rows(self, agent_id: int) -> Sequence[OpenRow]:
         return []
 
 
 def module(name: str, dependencies: Sequence[str] = (), suites: Sequence[type[Suite]] = (), **lists: object) -> type[Module]:
-    made = type(name.capitalize(), tuple([Module]), {"name": name, "requires_core": ">=5,<6", "dependencies": dependencies, **lists})
+    made = type(name.capitalize(), tuple([Module]), {"name": name, "requires_engine": ">=5,<6", "dependencies": dependencies, **lists})
     made.sample_suites = [type(suite.__name__, tuple([suite]), {"modules": [made]}) for suite in suites]
     return made
 

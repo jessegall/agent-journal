@@ -12,40 +12,46 @@ from core.modules.processes.models.output import Output
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.grown_outputs import GrownOutputs
+from core.modules.processes.support.run_slots import RunSlots
 from core.modules.processes.support.prepared_read import PreparedRead
 from core.modules.processes.support.reader_step import ReaderStep
 
-RUNNING_REASON = "the tick reads the new output of every running run"
-
 WARNING_REPEAT_TICKS = 5
+POINTS_PER_GROWN_RUN = 5
 
 
 class OutputReading:
     """Every second each running output that grew goes through its reader, which writes its lines to their
-    file and what it found on the output row; repeated costly reads are reported every fifth tick."""
+    file and what it found on the output row; repeated costly reads are reported every fifth tick. Each grown run
+    needs its process and output rows, so the limit grows by their cost per run read."""
 
     def __init__(self) -> None:
         self.last_warned_points = 0
         self.ticks_since_warning = 0
 
     def __call__(self, container: Container) -> bool:
+        # the kept read of running runs costs no query while nothing changes, so an idle journal reads nothing here
+        if not container.get(RunSlots).running():
+            return False
         tools = container.get(PerformanceTools)
         started = tools.begin()
-        has_read = self.read(container)
+        read_count = self.read(container)
         cost = tools.cost(started)
         if cost is not None:
-            self.warn_if_slow(container, cost)
-        return has_read
+            self.warn_if_slow(container, cost, TICK_LIMIT_POINTS + POINTS_PER_GROWN_RUN * read_count)
+        return read_count > 0
 
-    def read(self, container: Container) -> bool:
+    def read(self, container: Container) -> int:
         new_output = container.get(GrownOutputs)
-        processes = tuple(container.get(ProcessQuery).running().every_row(RUNNING_REASON))
-        outputs = container.get(OutputQuery).process_outputs(tuple(process.id for process in processes)) if processes else ()
-        process_outputs = {output.process_id: output for output in outputs}
+        grown_ids = tuple(process_id for process_id, offset in container.get(OutputQuery).running_reader_offsets().items() if new_output.has_grown(process_id, offset))
+        if not grown_ids:
+            return 0
+        processes = container.get(ProcessQuery).find_many(grown_ids)
+        process_outputs = {output.process_id: output for output in container.get(OutputQuery).process_outputs(grown_ids)}
         updated = [(process, process_outputs[process.id]) for process in processes if process.id in process_outputs and new_output.has_new_output(process_outputs[process.id])]
         for process, output in updated:
             self.read_run(container, process, output)
-        return bool(updated)
+        return len(updated)
 
     @staticmethod
     def read_run(container: Container, process: Process, output: Output) -> None:
@@ -57,9 +63,9 @@ class OutputReading:
             except StaleRowError:
                 container.get(Bus).run(ReadNewOutput(process.id), Actor.core(), environment_id=process.environment_id)
 
-    def warn_if_slow(self, container: Container, cost: Points) -> None:
+    def warn_if_slow(self, container: Container, cost: Points, limit_points: int) -> None:
         points = cost.total
-        if points <= TICK_LIMIT_POINTS:
+        if points <= limit_points:
             self.last_warned_points = 0
             self.ticks_since_warning = 0
             return

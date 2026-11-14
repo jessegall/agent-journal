@@ -14,17 +14,17 @@ class JsonSettings:
 
     @staticmethod
     def read(path: Path) -> dict[str, object]:
-        if not path.is_file():
+        if not FileAccess.is_file(path):
             return {}
-        return deepcopy(JsonSettings.loaded(path, FileAccess.shared().version(path)))
+        return deepcopy(JsonSettings.loaded(path, FileAccess.version(path)))
 
     @staticmethod
     @lru_cache(maxsize=128)
     def loaded(path: Path, version: FileVersion) -> dict[str, object]:
-        loaded: object = json.loads(FileAccess.shared().read(path) or "{}")
+        loaded: object = json.loads(FileAccess.read(path) or "{}")
         return {str(key): value for key, value in loaded.items()} if is_mapping(loaded) else {}
 
     @staticmethod
     def write(path: Path, settings: Mapping[str, object]) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(path, json.dumps(dict(settings), indent=2) + "\n")
+        FileAccess.mkdir(path.parent, parents=True, exist_ok=True)
+        FileAccess.write(path, json.dumps(dict(settings), indent=2) + "\n")

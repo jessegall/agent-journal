@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import gc
 import os
 from engine.file.file_clone import FileClone
@@ -27,7 +28,7 @@ class WorkingJournal(StoryJournal):
         self.file_state = self.current_file_state()
 
     def current_file_state(self) -> tuple[int, int]:
-        status = self.file.stat()
+        status = FileAccess.stat(self.file)
         return status.st_mtime_ns, status.st_size
 
     def reserve(self) -> None:
@@ -39,9 +40,9 @@ class WorkingJournal(StoryJournal):
     def discard_writes(self) -> None:
         is_abandoned = self.has_open_connection()
         for ending in LOG_ENDINGS:
-            Path(f"{self.file}{ending}").unlink(missing_ok=True)
+            FileAccess.unlink(Path(f"{self.file}{ending}"), missing_ok=True)
         if is_abandoned:
-            self.file.unlink()
+            FileAccess.unlink(self.file)
         if is_abandoned or self.current_file_state() != self.file_state:
             self.restored()
         self.is_taken = False
@@ -53,6 +54,6 @@ class WorkingJournal(StoryJournal):
         return self.is_file_open()
 
     def is_file_open(self) -> bool:
-        file_status = self.file.stat()
-        descriptors = [name for name in os.listdir(DESCRIPTOR_FOLDER) if os.path.exists(f"{DESCRIPTOR_FOLDER}/{name}")]
+        file_status = FileAccess.stat(self.file)
+        descriptors = [path.name for path in FileAccess.iterdir(DESCRIPTOR_FOLDER) if FileAccess.exists(path)]
         return any(os.path.samestat(os.fstat(int(name)), file_status) for name in descriptors)

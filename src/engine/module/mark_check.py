@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from collections.abc import Sequence
 
 from engine.viewer.declaration_names import DeclarationNames
@@ -37,7 +38,7 @@ class MarkCheck:
             problems += mark.problems()
             problems += DeclarationNames.icon_problems(f"the mark {name}", mark.mark_icon, mark.family.icon)
             problems += self.buttons.problems(f"the mark {name}", (*mark.buttons, *mark.group_buttons), runs)
-            if mark.body and not (module.web_folder() / mark.body).exists():
+            if mark.body and not FileAccess.exists(module.web_folder() / mark.body):
                 problems.append(f"the mark {name} loads {mark.body}, which is not in its module's web/dist")
             if mark.click is MarkClick.OPEN_ROW and not (module.models or module.dependencies):
                 problems.append(f"the mark {name} opens a row, and {module.name} declares and depends on no row model")

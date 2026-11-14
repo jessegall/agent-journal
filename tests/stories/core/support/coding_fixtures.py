@@ -9,7 +9,7 @@ from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.fixtures import MainEnvironment, expect_person, person_joined
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
-from suites.coding.support.coding_settings import KEEP_RUNNING_SETTING
+from suites.coding.support.coding_settings import KEEP_RUNNING_SETTING, PLAIN_NAMES_SETTING
 
 
 class CodingEnvironment(StoryFixture):
@@ -28,6 +28,31 @@ class BuilderStarted(StoryFixture):
     """Session s-1 sent its first hook, which started story.agent under the main driver."""
 
     parent = CodingEnvironment
+
+    def steps(self, story: Story) -> None:
+        story.agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
+
+    def expect(self, story: Story) -> None:
+        story.expect_success("agent show 1", "session: s-1", "role: main", actor=story.agent)
+
+
+class CodingEnvironmentWithoutPlainWords(StoryFixture):
+    """Environment main runs the coding suite with the plain code words skill not required at a start, so a story about
+    other skills sees only the skills it names."""
+
+    parent = CodingEnvironment
+
+    def steps(self, story: Story) -> None:
+        story.run(f"setting set {PLAIN_NAMES_SETTING} false --project")
+
+    def expect(self, story: Story) -> None:
+        story.expect_text(f"setting show {PLAIN_NAMES_SETTING}", "value: off")
+
+
+class BuilderStartedWithoutPlainWords(StoryFixture):
+    """Session s-1 sent its first hook, which started story.agent, with the plain code words skill not required."""
+
+    parent = CodingEnvironmentWithoutPlainWords
 
     def steps(self, story: Story) -> None:
         story.agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))

@@ -1,4 +1,4 @@
-import tempfile
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from engine.time.clock import Clock
@@ -29,7 +29,7 @@ class InstallReleaseHandler(Handler[InstallRelease, ReleaseInstall]):
 
     def handle(self, command: InstallRelease, context: Context) -> ReleaseInstall:
         release = self.source.newest(online=True)
-        with tempfile.TemporaryDirectory() as folder:
+        with FileAccess.temporary_folder() as folder:
             tag = CodeVersions(self.home).add(self.source.unpacked(release, Path(folder)), self.clock)
         install = self.repository.save(ReleaseInstall(creator_id=context.actor.id, checksum=release.checksum,
                                                       tag=release.tag, code_version=tag), context)

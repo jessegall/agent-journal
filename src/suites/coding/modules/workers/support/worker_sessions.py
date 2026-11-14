@@ -33,8 +33,8 @@ class WorkerSessions:
     def lock(self, session: str) -> Generator[bool]:
         name = hashlib.sha256(session.encode()).hexdigest()
         path = self.home.folder / "runtime" / "session-locks" / name
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with FileAccess.shared().writer(path, "a") as opened:
+        FileAccess.mkdir(path.parent, parents=True, exist_ok=True)
+        with FileAccess.writer(path, "a") as opened:
             try:
                 fcntl.flock(opened, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError:

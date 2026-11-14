@@ -1,0 +1,24 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {"name": "admitted"},
+            {"inside": {"all": [
+                {"kind": "With"},
+                {"child": {"field": "items", "descendant": {"name": "transaction"}}}
+            ]}},
+            {"fileMatches": "(^|/)src/"}
+        ],
+        "reject": [
+            {"testCode": true}
+        ]
+    },
+    "sin": {
+        "name": "transaction-before-admitted",
+        "description": "A place in a lane is asked for while a transaction is open, so the wait for the place holds the database and every other writer waits behind it.",
+        "rule": "Take the place first and open the transaction inside it: `with tickets.admitted(...):` and then `with database.transaction():`.",
+        "skill": "processes-architecture"
+    }
+}

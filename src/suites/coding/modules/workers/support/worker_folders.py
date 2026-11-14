@@ -1,4 +1,5 @@
 from suites.coding.modules.workers.types.worker import Worker
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from core.modules.agents.models.agent import Agent
@@ -30,7 +31,7 @@ class WorkerFolders(AgentFolders):
             parent = parents.get(agent.parent_id) if agent.parent_id is not None else None
             available = parent is None or parent.role != Worker.key or parent.id in active
             worktree = latest.get(agent.id)
-            if self.start_folder(agent).is_dir():
+            if FileAccess.is_dir(self.start_folder(agent)):
                 folder = self.start_folder(agent)
             elif worktree is not None:
                 folder = Path(worktree.folder)

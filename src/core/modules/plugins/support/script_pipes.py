@@ -1,10 +1,13 @@
+from engine.time.clock import Clock
 import os
 import subprocess
-import threading
 import math
+import threading
 import time
 from collections.abc import Callable
 from typing import IO
+
+from engine.execution.current_execution import CurrentExecution
 
 from core.modules.plugins.errors.plugin_fault_error import PluginFaultError
 from core.modules.plugins.errors.plugin_late_error import PluginLateError
@@ -28,8 +31,8 @@ class ScriptPipes:
         self.next_line_at = 0.0
 
     def answer(self, line: str, limit_ms: int | None, wait_callback: Callable[[], None] | None) -> str:
-        readers = [threading.Thread(target=self.read_answer, daemon=True), threading.Thread(target=self.read_errors, daemon=True)]
-        for thread in (threading.Thread(target=self.write_line, args=[line], daemon=True), *readers):
+        readers = [CurrentExecution.thread(self.read_answer), CurrentExecution.thread(self.read_errors)]
+        for thread in (CurrentExecution.thread(self.write_line, (line,)), *readers):
             thread.start()
         self.wait_end(limit_ms, wait_callback)
         self.join(readers)
@@ -82,7 +85,7 @@ class ScriptPipes:
     def join(threads: list[threading.Thread]) -> None:
         deadline = time.monotonic() + OUTPUT_JOIN_SECONDS
         for thread in threads:
-            thread.join(max(0.0, deadline - time.monotonic()))
+            Clock().join(thread, max(0.0, deadline - time.monotonic()))
 
     def write_line(self, line: str) -> None:
         stdin = self.process.stdin

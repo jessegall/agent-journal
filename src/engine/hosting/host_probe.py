@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import os
 import platform
 import pwd
@@ -12,7 +13,7 @@ class HostProbe:
         return platform.system()
 
     def has_path(self, path: Path) -> bool:
-        return path.exists()
+        return FileAccess.exists(path)
 
     def journal_user_name(self) -> str:
         return pwd.getpwuid(os.getuid()).pw_name
@@ -21,7 +22,7 @@ class HostProbe:
         return pwd.getpwnam(user).pw_uid
 
     def owner_id(self, path: Path) -> int:
-        return path.stat().st_uid
+        return FileAccess.stat(path).st_uid
 
     def mode_bits(self, path: Path) -> int:
-        return stat.S_IMODE(path.stat().st_mode)
+        return stat.S_IMODE(FileAccess.stat(path).st_mode)

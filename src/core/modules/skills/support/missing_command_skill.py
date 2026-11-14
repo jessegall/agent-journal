@@ -19,5 +19,6 @@ class MissingCommandSkill:
         covered = set(commands)
         loaded = self.loaded.names(agent_id)
         agent_type = self.profile_skills.agent_type(agent_id)
+        refused = self.profile_skills.refused(agent_id)
         return next((skill.folder for skill in self.catalogue.skills() if covered.intersection(skill.commands) and skill.folder not in loaded
-                     and (not skill.types or agent_type in skill.types) and not self.profile_skills.refuses(agent_id, skill.folder)), None)
+                     and (not skill.types or agent_type in skill.types) and not refused(skill.folder)), None)

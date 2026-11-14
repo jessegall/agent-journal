@@ -57,16 +57,21 @@ func Connect(home string, start ServerStarter) (*http.Client, *os.Process, error
 	client := socket.Client(socket.Path(home))
 	deadline := time.Now().Add(StartLimit)
 	var started *os.Process
+	var startErr error
 	for {
 		if Healthy(client) {
 			return client, started, nil
 		}
-		if started == nil && !InMaintenance(home) && LockIsFree(filepath.Join(home, "server.lock")) {
-			process, err := start(home)
-			if err != nil {
-				return nil, nil, err
-			}
-			started = process
+		// while a change of the code holds the server down, the client waits for the new one instead of running its
+		// line itself, which a sandboxed agent cannot do
+		if InMaintenance(home) {
+			deadline = time.Now().Add(StartLimit)
+		} else if started == nil && startErr == nil && LockIsFree(filepath.Join(home, "server.lock")) {
+			// a client that may not start the server, such as one in a sandbox, waits for another to start it
+			started, startErr = start(home)
+		}
+		if time.Now().After(deadline) && startErr != nil {
+			return nil, started, errors.Join(ErrNoServer, startErr)
 		}
 		if time.Now().After(deadline) {
 			return nil, started, ErrNoServer

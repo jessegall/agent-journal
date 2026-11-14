@@ -56,9 +56,12 @@ class UnansweredMessageRule(DriverRule):
                                                                                                   MessagesAnswered([message.id for message in unanswered]), Interval(ToolUseSpan(UNANSWERED_TOOL_USES)),
                                                                                                   UNANSWERED_COUNTDOWN.nudge("{left}", messages=message_numbers))
 
+    # nothing read in the current session leaves nothing unanswered, which one look settles on most tool calls
     def unanswered(self, agent_id: int) -> tuple[Message, ...]:
-        newest_agent_message = self.messages.addressed(agent_id).filter(type=MessageType.AGENT, creator_id=agent_id).newest().first()
         agent_start = self.queries.query(Agent).find(agent_id).creation_timestamp().text
+        if not self.read_after(agent_id, (*PERSON_MESSAGE_TYPES, MessageType.AGENT), agent_start).exists():
+            return ()
+        newest_agent_message = self.messages.addressed(agent_id).filter(type=MessageType.AGENT, creator_id=agent_id).newest().first()
         wait_start = max(agent_start, newest_agent_message.creation_timestamp().text) if newest_agent_message is not None else agent_start
         read_people = self.read_after(agent_id, PERSON_MESSAGE_TYPES, wait_start).order_by("read_at").take(OLDEST_PERSON_MESSAGES)
         read_agents = self.read_after(agent_id, tuple([MessageType.AGENT]), agent_start).matching(ActiveAgentRows("creator_id")).matching(Excluding(Equal("creator_id", agent_id))).newest().take(NEWEST_AGENT_MESSAGES)

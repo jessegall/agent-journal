@@ -26,13 +26,13 @@ class HostedFile:
         return HostedFile().hosting()
 
     def hosting(self) -> Hosting:
-        if not self.path.is_file():
+        if not FileAccess.is_file(self.path):
             return Hosting.local()
         return Hosting.hosted(self.mode(self.table()))
 
     def table(self) -> dict[str, Any]:
         try:
-            return tomllib.loads(FileAccess.shared().read(self.path))
+            return tomllib.loads(FileAccess.read(self.path))
         except tomllib.TOMLDecodeError as error:
             raise HostedFileRefusal.malformed(self.path, error) from error
 

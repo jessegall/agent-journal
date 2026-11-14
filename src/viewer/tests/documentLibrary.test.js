@@ -16,7 +16,7 @@ const DOCS = [
 ];
 const BODY = {id: 1, title: "Cart rules", abstract: "How the cart counts money", body: "## Totals\n- in cents"};
 
-function mounted(reader = false) {
+function mounted() {
     const reads = [];
     const read = async (words) => {
         const line = Array.isArray(words) ? words.join(" ") : words;
@@ -27,7 +27,7 @@ function mounted(reader = false) {
     };
     const context = {...documentWindowContext({}), read, run: async () => ({ok: true}), follow: () => {}, face: "person"};
     const element = document.createElement("div");
-    createApp({setup: () => () => h(DocumentLibrary, {reader}), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
+    createApp({setup: () => () => h(DocumentLibrary), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
     return {element, reads};
 }
 
@@ -46,27 +46,9 @@ test("the library is read once, a page of one type", async () => {
     expect(reads).toEqual(["document library --type doc --state open"]);
 });
 
-test("on the page a chosen document is read beside the list, by the mouse or by the arrow keys", async () => {
-    const {element, reads} = mounted(true);
-    await settled();
-    const reader = element.querySelector("[data-library-reader]");
-    expect(reader.textContent).toContain("Choose a document to read it here");
-    element.querySelector('[data-row="1"]').click();
-    await settled();
-    await settled();
-    expect(reads).toContain("doc inspect 1");
-    expect(reader.textContent).not.toContain("Choose a document");
-    const list = element.querySelector("[data-library-list]");
-    list.dispatchEvent(new KeyboardEvent("keydown", {key: "ArrowDown"}));
-    await settled();
-    await settled();
-    expect(reads).toContain("doc inspect 2");
-});
-
 test("in the window a row opens that document's inspector in place and nothing is read beside the list", async () => {
     const {element, reads} = mounted();
     await settled();
-    expect(element.querySelector("[data-library-reader]")).toBeNull();
     const row = element.querySelector('[data-row="2"]');
     expect(row.tagName).toBe("BUTTON");
     row.click();

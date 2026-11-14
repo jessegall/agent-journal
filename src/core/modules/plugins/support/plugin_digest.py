@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import hashlib
 from pathlib import Path
 
@@ -13,6 +14,6 @@ class PluginDigest:
         parts: list[str] = []
         for name in manifest.files:
             path = folder / name
-            stat = path.stat() if path.exists() else None
+            stat = FileAccess.stat(path) if FileAccess.exists(path) else None
             parts.append(f"{name}:{stat.st_size}:{stat.st_mtime_ns}" if stat else f"{name}:missing")
         return hashlib.sha256("\n".join(parts).encode()).hexdigest()

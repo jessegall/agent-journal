@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import os
 import re
 import subprocess
@@ -26,10 +27,14 @@ class PluginReleases:
         self.executor = executor
 
     def latest(self, name: str, installed: str, source: str) -> PluginLatest:
-        newest = PluginManifest.read(Path(source)).version if Path(source).is_dir() else self.newest_tag(source)
+        newest = PluginManifest.read(Path(source)).version if FileAccess.is_dir(Path(source)) else self.newest_tag(source)
         return PluginLatest(name, installed, newest, newest is not None and VersionNumbers.parsed(newest) > VersionNumbers.parsed(installed))
 
     def newest_tag(self, source: str) -> str | None:
+        return next(iter(self.release_tags(source)), None)
+
+    # the release tags of a repository, the newest first
+    def release_tags(self, source: str) -> list[str]:
         try:
             finished = self.executor.execute(ExecutionRequest(["git", "ls-remote", "--tags", self.address(source)], Path.cwd(), ProcessType.QUICK, GIT_LIMIT_SECONDS,
                                                               variables={**os.environ, "GIT_TERMINAL_PROMPT": "0"}))
@@ -37,8 +42,8 @@ class PluginReleases:
             raise Refusal(f"{source} did not answer within {GIT_LIMIT_SECONDS} seconds", "try again once the network is back") from timeout
         if not finished.succeeded:
             raise Refusal(f"the releases of {source} could not be read", finished.stderr.strip())
-        tags = [match.group(1) for match in map(RELEASE_TAG.search, finished.stdout.splitlines()) if match]
-        return max(tags, key=VersionNumbers.parsed, default=None)
+        tags = {match.group(1) for match in map(RELEASE_TAG.search, finished.stdout.splitlines()) if match}
+        return sorted(tags, key=VersionNumbers.parsed, reverse=True)
 
     @staticmethod
     def address(source: str) -> str:

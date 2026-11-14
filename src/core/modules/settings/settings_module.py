@@ -50,7 +50,7 @@ class SettingsModule(Module):
 
     name = "journal.core.settings"
     seed_reason = "its rows are the settings the other modules declare"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     file_events = ["managed-hook.changed", "managed-hook.scanned", "managed-hook.restored"]
     settings = SETTINGS_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments"]

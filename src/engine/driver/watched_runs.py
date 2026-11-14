@@ -4,3 +4,6 @@ class WatchedRuns:
 
     def is_watching(self, agent_id: int) -> bool:
         return False
+
+    def has_run(self, agent_id: int) -> bool:
+        return False

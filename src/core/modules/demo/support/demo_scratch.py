@@ -1,8 +1,8 @@
+from engine.file.file_access import FileAccess
 import json
 import os
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
 from engine.file.code_copy import CodeCopy
@@ -30,12 +30,12 @@ class DemoScratch:
 
     def __init__(self, parent: Path | None = None, owner_pid: int | None = None) -> None:
         self.owner_pid = owner_pid
-        self.folder = Path(tempfile.mkdtemp(prefix="journal-demo-", dir=parent))
+        self.folder = FileAccess.make_temporary_folder(prefix="journal-demo-", folder=parent)
         self.home = JournalHome(self.folder / ".journal")
         self.code = CodeCopy(SOURCE, self.home)
 
     def start(self, module_folder: Path | None = None) -> DemoSession:
-        self.home.folder.mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(self.home.folder, parents=True, exist_ok=True)
         if self.owner_pid is not None:
             DemoOwner(self.home.folder).keep(self.owner_pid)
         self.code.make()

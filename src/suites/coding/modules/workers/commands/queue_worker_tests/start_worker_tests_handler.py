@@ -77,6 +77,6 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
         self.repository.save_change(proof, proof.moved(ProofLifecycle.run, process_id=process.id), context)
 
     def start_picker(self, first_answer: AffectedTest, worktree: Worktree, context: Context) -> None:
-        start = StartProcess.single_part(worktree.session_agent_id, first_answer.picker_command, self.git.test_checkout(worktree), CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
+        start = StartProcess.single_part(worktree.session_agent_id, first_answer.picker_command, self.git.merged_checkout(worktree), CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
         process = self.bus.dispatch(replace(start, owner_agent_id=worktree.session_agent_id, task_id=first_answer.task_id), context)
         self.repository.update(first_answer, context, state=AffectedTestState.PICKING, process_id=process.id)

@@ -36,6 +36,11 @@ def running_worker_run(new_story, monkeypatch) -> StoryWorker:
     return worker
 
 
+def own_test_run(worker: StoryWorker) -> int:
+    """The run of the checkpoint's own test, whose failure is laid on the window's last task."""
+    return next(process.id for process in worker.started_processes() if process.line == BUILD_TEST)
+
+
 def fixed_task(worker: StoryWorker, task_id: int) -> None:
     """The worker fixes the task its run failed: it changes the task's file and shows its proof again."""
     worker.repository.changed(worker.worker.id, f"task_{task_id}_fix.txt", "fixed\n")
@@ -52,7 +57,7 @@ def test_31_a_pass_says_nothing_to_anyone(running_worker_run):
 
 def test_32_39_a_run_stopped_by_the_time_limit_fails_and_comes_back_as_work_to_fix(running_worker_run):
     worker = running_worker_run
-    worker.end_tests(124, 0, 0, 0)
+    worker.end_test(own_test_run(worker), 124)
     worker.end_all_tests()
     worker.story.expect_rows(worker_reaches(worker)[0]["state"] == "failed", detail=str(worker_reaches(worker)))
     worker.story.expect_text("task show 3", "state: started", actor=worker.story.agent)
@@ -73,7 +78,7 @@ def test_28_29_30_34_a_run_holds_its_window_the_worker_goes_on_and_a_failure_in_
 @pytest.mark.real_git
 def test_33_35_a_second_run_follows_the_failed_one_and_runs_only_what_failed(running_worker_run):
     worker = running_worker_run
-    worker.end_tests(1, 0, 0, 0)
+    worker.end_test(own_test_run(worker), 1)
     worker.end_all_tests()
     started_count = len(worker.started)
     fixed_task(worker, 3)
@@ -110,9 +115,9 @@ def unstartable_checkout(git, worktree, commit):
     raise Refusal("git worktree failed", "no such commit")
 
 
-def test_40_the_checkpoint_gate_stays_for_everyone_else(running_worker_run):
+def test_40_a_task_after_the_checkpoint_is_still_refused_to_everyone_else_as_held_by_the_worker_that_has_the_plan(running_worker_run):
     worker = running_worker_run
-    worker.story.expect_refusal('worker dispatch --test-command python=pytest --model sonnet --fresh "second" 4', "comes after checkpoint phase 1", actor=worker.story.agent)
+    worker.story.expect_refusal('worker dispatch --test-command python=pytest --model sonnet --fresh "second" 4', "task 4 is held by worker", actor=worker.story.agent)
 
 
 def test_41_a_shared_window_keeps_the_branch_run(new_story, monkeypatch):
@@ -163,3 +168,17 @@ def test_44_the_early_run_stays(new_story, monkeypatch):
     worker.story.expect_success("plan check 1 --environment main", actor=worker.story.agent)
     sources = [row["source"] for row in rows(worker, REACHES)]
     worker.story.expect_rows("early" in sources, detail=str(sources))
+
+
+@pytest.mark.real_git
+def test_a_commit_that_ends_another_phase_runs_again_the_checkpoint_whose_run_failed(running_worker_run):
+    worker = running_worker_run
+    worker.end_test(own_test_run(worker), 1)
+    worker.end_all_tests()
+    worker.story.expect_success("task test 3", actor=worker.worker)
+    worker.story.expect_success("task start 4", actor=worker.worker)
+    prove_task(worker, 4, 1, SECOND_TEST_LINE)
+    worker.story.run(COMMIT, actor=worker.worker)
+    worker.story.run_listeners()
+    build_runs = [row["state"] for row in worker_reaches(worker) if row["phase_id"] == 1]
+    worker.story.expect_rows(build_runs == ["failed", "running"], detail=str(worker_reaches(worker)))

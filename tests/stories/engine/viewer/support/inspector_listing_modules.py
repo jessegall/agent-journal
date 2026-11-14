@@ -11,7 +11,7 @@ PATH = "tests.stories.engine.viewer.support.inspector_listing_modules"
 
 class DeclaringModule(Module):
     name = "declaring"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = DEPENDENCIES
     windows = [window("declaring.chain", WindowPlace.SECTION)]
     inspectors = [InspectorDeclaration(Reminder, label="Reminder {id}", description="{text}", width=InspectorWidth.LARGE, comments=True,

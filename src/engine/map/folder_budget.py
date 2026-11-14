@@ -25,7 +25,7 @@ class FolderBudget:
 
     @staticmethod
     def allowed_lines() -> list[str]:
-        return [line for line in FileAccess.shared().read(ALLOW_LIST_FILE).splitlines() if line]
+        return [line for line in FileAccess.read(ALLOW_LIST_FILE).splitlines() if line]
 
     def failures(self) -> list[str]:
         lines = [*self.wide_folders(), *self.deep_files()]
@@ -33,12 +33,12 @@ class FolderBudget:
         return [*(line for line in lines if line not in self.allow_list), *stale]
 
     def wide_folders(self) -> list[str]:
-        folders = [self.source, *(folder for folder in sorted(self.source.rglob("*")) if folder.is_dir() and self.is_judged(folder))]
+        folders = [self.source, *(folder for folder in sorted(FileAccess.rglob(self.source, "*")) if FileAccess.is_dir(folder) and self.is_judged(folder))]
         return [f"{self.relative(folder)} holds more than {WIDTH_LIMIT_ENTRIES} entries" for folder in folders
                 if folder.name not in STANDARD_FOLDERS and folder != self.source / "engine" and len(self.entries(folder)) > WIDTH_LIMIT_ENTRIES]
 
     def deep_files(self) -> list[str]:
-        files = [path for path in sorted(self.source.rglob("*.py")) if self.is_judged(path) and path.name != "__init__.py"]
+        files = [path for path in sorted(FileAccess.rglob(self.source, "*.py")) if self.is_judged(path) and path.name != "__init__.py"]
         return [f"{self.relative(path)} sits more than {DEPTH_LIMIT_LEVELS} levels below its layer" for path in files if self.layer_depth(path) > DEPTH_LIMIT_LEVELS]
 
     def layer_depth(self, path: Path) -> int:
@@ -48,7 +48,7 @@ class FolderBudget:
         return len(parts) - LAYER_ROOT_PARTS.get(parts[0], 1)
 
     def entries(self, folder: Path) -> list[Path]:
-        return [path for path in folder.iterdir() if path.name not in SKIPPED_FOLDERS and path.name != "__init__.py" and (path.is_dir() or path.suffix == ".py")]
+        return [path for path in FileAccess.iterdir(folder) if path.name not in SKIPPED_FOLDERS and path.name != "__init__.py" and (FileAccess.is_dir(path) or path.suffix == ".py")]
 
     def is_judged(self, path: Path) -> bool:
         return not SKIPPED_FOLDERS.intersection(path.relative_to(self.source).parts)

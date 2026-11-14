@@ -184,10 +184,10 @@ def test_visible_helper_report_uses_its_session_author(linked_scenario):
 def test_shipped_instructions_teach_source_lifetime_and_context(linked_scenario):
     linked_scenario.story.expect_success("skill write")
     path = linked_scenario.story.home.project_folder / ".agents" / "skills" / "journal-messages" / "SKILL.md"
-    text = FileAccess.shared().read(path)
+    text = FileAccess.read(path)
     feature("work-from" in text and "clear-work-source" in text and "work-source" in text, "published message instructions omit persistent source commands")
     for skill in ("journal-tasks", "journal-plans", "journal-helpers", "journal-worker"):
-        published = FileAccess.shared().read(path.parent.parent / skill / "SKILL.md")
+        published = FileAccess.read(path.parent.parent / skill / "SKILL.md")
         feature("context" in published, f"published {skill} omits context instructions")
     for command in ("message work-from", "message work-source", "message clear-work-source", "link remove", "task context", "plan context"):
         linked_scenario.command(f"{command} --help")

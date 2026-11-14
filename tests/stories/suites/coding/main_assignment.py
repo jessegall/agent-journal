@@ -62,11 +62,11 @@ def test_s01_the_main_driver_hands_the_open_task_to_a_stopping_main_agent_when_a
     story.expect_hook_refusal("s-1", HookSamples.stop(), expected_nudge(TASK_ASSIGNMENT))
 
 
-def test_s02_s10_keep_going_holds_a_stop_while_a_task_can_go_to_a_worker_and_hands_it_over_once_no_worker_can_start(new_story):
+def test_s02_s10_keep_going_does_not_hold_a_stop_for_a_free_worker_place_and_hands_the_task_over_once_no_worker_can_start(new_story):
     story = main_story(new_story)
     story.expect_success(f"setting set {AUTO} off --environment main")
     story.expect_success(f"setting set {CONTINUE_SETTING} on --environment main")
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "Open tasks wait")
+    story.expect_hook_allowed("s-1", HookSamples.stop())
     story.expect_success(f"setting set {WORKER_LIMIT} 0 --environment main")
     story.expect_hook_refusal("s-1", HookSamples.stop(), expected_nudge(TASK_ASSIGNMENT))
 
@@ -76,29 +76,27 @@ def waking_lines(story) -> list[str]:
     return [line.text for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, source=WAKE_SOURCE).every_row(TEST_ROWS_REASON)]
 
 
-def test_s08_the_main_driver_holds_a_stop_once_for_a_free_worker_place_when_keep_going_is_off_and_never_wakes_it(new_story):
+def test_s08_the_main_driver_lets_a_stop_through_with_a_free_worker_place_and_open_task_when_keep_going_is_off_and_never_wakes_it(new_story):
     story = new_story(fixture=KeepGoingOffMain)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker")
+    story.expect_hook_allowed("s-1", HookSamples.stop())
     story.expect_hook_allowed("s-1", HookSamples.stop())
     expect_value(waking_lines(story), [])
 
 
-def test_turning_keep_going_on_wakes_the_idle_main_agent_once_for_a_free_place_and_again_to_take_the_task_itself(new_story):
+def test_turning_keep_going_on_wakes_the_idle_main_agent_only_to_take_the_task_itself_never_for_a_free_place(new_story):
     story = new_story(fixture=KeepGoingOffMain)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker")
+    story.expect_hook_allowed("s-1", HookSamples.stop())
     story.expect_success(f"setting set {CONTINUE_SETTING} on --environment main")
     story.advance(timedelta(seconds=IDLE_LIMIT_SECONDS + 1))
     first, repeated = waking_lines(story), waking_lines(story)
     story.expect_success(f"setting set {WORKER_LIMIT} 0 --environment main")
     last = waking_lines(story)
-    story.expect_rows(len(first) == 1, "can go to a worker" in first[0], repeated == first, len(last) == 2, expected_nudge(TASK_ASSIGNMENT).matches_text(last[-1]), detail=str(last))
+    story.expect_rows(first == [], repeated == [], len(last) == 1, expected_nudge(TASK_ASSIGNMENT).matches_text(last[-1]), detail=str(last))
 
 
-def test_the_free_place_notice_comes_back_when_another_task_can_go_to_a_worker(new_story):
+def test_a_second_open_task_brings_no_free_place_line_either(new_story):
     story = new_story(fixture=KeepGoingOffMain)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker")
     story.expect_success('task make "Another task" --brief "A second task that a worker can take"', actor=story.agent)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker")
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
 

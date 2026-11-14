@@ -37,7 +37,7 @@ class PluginServicesSubcommand(ReadSubcommand[RowList]):
 
     def row(self, plugin_name: str, service: ManifestService, health: PluginHealth | None) -> PluginServicesSubcommandRowRecord:
         pid_file = self.sockets.pid(plugin_name, service.name)
-        pid = int(FileAccess.shared().read(pid_file)) if pid_file.is_file() else None
+        pid = int(FileAccess.read(pid_file)) if FileAccess.is_file(pid_file) else None
         running = pid is not None and self.is_running(pid) and (health is None or PluginServices.is_healthy(self.sockets.health(plugin_name, service.name), health))
         return {"id": f"{plugin_name} {service.name}", "plugin": plugin_name, "service": service.name, "restart": service.restart.value, "running": running, "pid": pid if running else None}
 

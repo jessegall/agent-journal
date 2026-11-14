@@ -83,7 +83,7 @@ class HelpersModule(Module):
     name = "journal.core.helpers"
     seed_reason = "demo programs have no outages"
     move_reason = "version 4 had no helpers"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     migrations = [HelperJobProfileIndexMigration, HelperGrantEnvironmentIndexMigration, HelperGrantsMigration, OpenHelperJobsIndexMigration, RetireOldHelpersMigration, HelperCapKeyMigration, ProviderOutagesMigration, HelperJobCountsIndexMigration, UsageLimitsMigration, HelperSettingKeysMigration]
     models = [ModelDeclaration(HelperGrant, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(ProviderOutage), ModelDeclaration(UsageLimit, excluded_subcommands=["make"])]
     dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers", "journal.core.usage", "journal.core.chat", "journal.core.skills", "journal.core.settings", "journal.core.processes", "journal.core.environments", "journal.core.tasks", "journal.core.assignments"]

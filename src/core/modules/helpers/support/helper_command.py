@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from engine.provider.helper_launch import HelperLaunch
@@ -37,7 +38,7 @@ class HelperCommand:
 
     def restarted(self, helper: Agent, job: str) -> LaunchCommand:
         self.start_folders.prepare(helper)
-        if self.folders.start_folder(helper).is_dir():
+        if FileAccess.is_dir(self.folders.start_folder(helper)):
             self.programs.checked(helper.program, self.folders.folder(helper))
         profile = self.profiles.effective(helper.profile)
         opening = (f"You are {AgentLabel.labelled(helper).text}.", self.session_lines.line(helper), profile.body, job, REPORT_STEP)
@@ -45,7 +46,7 @@ class HelperCommand:
 
     def resumed(self, helper: Agent, job: str) -> LaunchCommand:
         self.sync.prepare(helper.program)
-        if self.folders.start_folder(helper).is_dir():
+        if FileAccess.is_dir(self.folders.start_folder(helper)):
             self.start_folders.prepare(helper)
         return self.launched(helper, ResumedSession(helper.session), BLANK_LINE.join((job, REPORT_STEP)))
 

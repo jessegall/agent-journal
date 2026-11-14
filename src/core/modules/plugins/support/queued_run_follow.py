@@ -17,10 +17,10 @@ INTERRUPTED_EXIT_CODE = 130
 
 
 class QueuedRunFollow:
-    """Keeps the caller of a queued run until it ends: while it waits it says how many runs are ahead of it each
-    time that number changes, then prints the run's lines as they come, and answers its exit code. A caller that
-    hangs up, such as a terminal stopped with Ctrl+C, takes its run with it: a waiting run leaves the queue and a
-    running one is stopped with its whole tree."""
+    """Keeps the caller of a queued run until it ends: while it waits it says how many runs are ahead of it
+    each time that number changes, then prints the run's lines as they come, and answers its exit code. A
+    caller that hangs up, such as a terminal stopped with Ctrl+C, takes its run with it: a waiting run leaves
+    the queue and a running one is stopped with its whole tree."""
 
     def __init__(self, folder: OutputFolder, queries: Queries, clock: Clock, bus: Bus, actors: ModuleActors) -> None:
         self.folder, self.queries, self.clock, self.bus, self.actors = folder, queries, clock, bus, actors
@@ -34,12 +34,12 @@ class QueuedRunFollow:
                 stated = queue_position
             has_ended = process.ended_at is not None
             page = self.folder.page_after(process_id, offset, has_ended)
-            for line in page.lines:
+            for line in page.shown_lines(output):
                 output.line(line)
             offset = page.last_byte
             if has_ended and offset >= page.total:
                 return process.exit_code if process.exit_code is not None else STOPPED_EXIT_CODE
-            if not has_ended and output.is_reader_gone():
+            if not has_ended and output.has_reader_disconnected():
                 self.bus.run(StopProcess(process_id), self.actors.actor(MODULE_NAME), environment_id=process.environment_id)
                 return INTERRUPTED_EXIT_CODE
             self.clock.sleep(END_POLL_SECONDS)

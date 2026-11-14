@@ -10,8 +10,8 @@ from engine.module.module_order import ModuleOrder
 from engine.module.version_requirement import VersionRequirement
 
 
-def module(name: str, dependencies: tuple[str, ...] = (), requires_core: str = ">=5.0,<6") -> type[Module]:
-    return type(name.title() + "Module", tuple([Module]), {"name": name, "dependencies": dependencies, "requires_core": requires_core})
+def module(name: str, dependencies: tuple[str, ...] = (), requires_engine: str = ">=5.0,<6") -> type[Module]:
+    return type(name.title() + "Module", tuple([Module]), {"name": name, "dependencies": dependencies, "requires_engine": requires_engine})
 
 
 def test_every_module_comes_after_the_modules_it_depends_on():
@@ -39,7 +39,7 @@ def test_core_versions_are_checked_against_the_bounds_a_module_gives():
 
 class FutureCoreModule(Module):
     name = "items"
-    requires_core = ">=6"
+    requires_engine = ">=6"
 
 
 def test_the_finder_loads_the_listed_plugins_and_refuses_one_for_another_core(tmp_path):
@@ -47,7 +47,7 @@ def test_the_finder_loads_the_listed_plugins_and_refuses_one_for_another_core(tm
     home.module_list.write_text(json.dumps(["tests.unit.engine.samples.module_sample:ItemsModule"]))
     assert [module.name for module in ModuleFinder(home).modules()][-1] == "items"
     home.module_list.write_text(json.dumps(["tests.unit.engine.module.test_module_order:FutureCoreModule"]))
-    with pytest.raises(ModuleError, match="needs core >=6"):
+    with pytest.raises(ModuleError, match="needs engine >=6"):
         ModuleFinder(home).modules()
     home.module_list.write_text(json.dumps([3]))
     with pytest.raises(ModuleError, match="no module path"):

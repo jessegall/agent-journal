@@ -83,6 +83,7 @@ const easing = "cubic-bezier(0.2, 0.9, 0.25, 1)";
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const changing = ref(false);
 let scrollTop = 0;
+const motionName = (element) => [...element.attributes].map((attribute) => attribute.name).find((name) => name.startsWith("data-agent-") && name !== "data-agent-motion") ?? "";
 async function open(row) {
     if (changing.value) return;
     changing.value = true;
@@ -94,14 +95,18 @@ async function open(row) {
     }
     const bands = [...card.querySelectorAll(".agent-head, .agent-line")];
     const elements = [...bands, ...card.querySelectorAll("[data-agent-motion]")];
+    const names = elements.map(motionName);
     const before = elements.map((element) => element.getBoundingClientRect());
     openedRow.value = row;
     openId.value = row.id;
     view.reload(`card.${row.id}`);
     await nextTick();
     if (!reduced()) {
-        const after = elements.map((element) => element.getBoundingClientRect());
-        elements.forEach((element, index) => {
+        // the open card draws its title and name again inside the head, so each is found again by its attribute
+        const moved = elements.map((element, index) => (element.isConnected ? element : names[index] ? card.querySelector(`[${names[index]}]`) : null));
+        const after = moved.map((element) => element?.getBoundingClientRect());
+        moved.forEach((element, index) => {
+            if (!element) return;
             const parent = bands.findIndex((band) => band !== element && band.contains(element));
             const x = before[index].left - after[index].left - (parent < 0 ? 0 : before[parent].left - after[parent].left);
             const y = before[index].top - after[index].top - (parent < 0 ? 0 : before[parent].top - after[parent].top);
@@ -215,11 +220,13 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 .agents.focused :deep(.row-list) {
     flex: 1;
     min-height: 0;
+    min-width: 0;
 }
 
 .agents.focused :deep(.row-list-row) {
     flex: 1;
     min-height: 0;
+    min-width: 0;
     align-items: stretch;
 }
 

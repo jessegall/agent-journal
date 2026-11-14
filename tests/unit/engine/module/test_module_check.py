@@ -99,7 +99,7 @@ def model(lifecycle: type[Lifecycle], name: str = "book") -> type[Model]:
 
 
 def module(name: str, models: tuple[ModelDeclaration, ...] = (), guards: tuple[type, ...] = (), handlers: tuple[type, ...] = ()) -> type[Module]:
-    return type(name.title() + "Module", tuple([Module]), {"name": name, "requires_core": ">=5", "models": models, "guards": guards, "handlers": handlers})
+    return type(name.title() + "Module", tuple([Module]), {"name": name, "requires_engine": ">=5", "models": models, "guards": guards, "handlers": handlers})
 
 
 def problems(*modules: type[Module]) -> str:
@@ -121,7 +121,7 @@ def test_each_event_of_a_model_has_a_key_and_metadata_has_none():
 
 
 def test_a_file_event_keeps_its_name_whole_and_is_commit_only():
-    declaring = type("FilesModule", tuple([Module]), {"name": "journal.core.settings", "requires_core": ">=5", "file_events": ["managed-hook.changed"]})
+    declaring = type("FilesModule", tuple([Module]), {"name": "journal.core.settings", "requires_engine": ">=5", "file_events": ["managed-hook.changed"]})
     entry = next(entry for entry in module_check().event_keys([declaring]) if entry.event == "managed-hook.changed")
     assert entry == EventKeyEntry("core.settings.managed-hook.changed", "managed-hook.changed", "journal.core.settings", tuple([EventForm.COMMIT]), "a managed hook was changed")
 

@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import hashlib
 import os
 from collections.abc import Sequence
@@ -8,7 +9,7 @@ from engine.journal.journal import Journal
 from engine.module.folder_listing import FolderListing
 from engine.module.module import Module
 from engine.module.source_hash import SourceHash
-from engine.version.version import CORE_VERSION
+from engine.version.version import ENGINE_VERSION
 
 SOURCE_FOLDER = Path(__file__).resolve().parents[2]
 BUILT_WINDOWS_FOLDER = Path("web") / "dist"
@@ -61,17 +62,17 @@ class CodeFingerprint:
         return (ENGINE_FOLDER, CORE_FOLDER, *(module.folder() for module in modules if not module.folder().is_relative_to(CORE_FOLDER)))
 
     def module_text(self, module: type[Module]) -> str:
-        built_files = sorted(path for path in (module.folder() / BUILT_WINDOWS_FOLDER).rglob("*") if path.is_file())
+        built_files = sorted(path for path in FileAccess.rglob(module.folder() / BUILT_WINDOWS_FOLDER, "*") if FileAccess.is_file(path))
         return self.files_text([*FolderListing.kept([module.folder()]).files(), *built_files])
 
     def folder_text(self, folders: Sequence[Path]) -> str:
         return self.files_text(FolderListing.kept(folders).files())
 
     def files_text(self, files: Sequence[Path]) -> str:
-        digest = hashlib.sha256(".".join(map(str, CORE_VERSION)).encode())
+        digest = hashlib.sha256(".".join(map(str, ENGINE_VERSION)).encode())
         for file in files:
             try:
-                status = file.stat()
+                status = FileAccess.stat(file)
             except FileNotFoundError:
                 continue
             digest.update(f"{file}:{status.st_size}:{status.st_mtime_ns}".encode())

@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from engine.file.kept_bytes import KeptBytes
 import json
 import re
@@ -60,7 +61,7 @@ class CodexTrust:
         return self.state_values(self.read())
 
     def read(self) -> str:
-        if not self.config_file.is_file():
+        if not FileAccess.is_file(self.config_file):
             return ""
         return KeptBytes.read(self.config_file).decode()
 

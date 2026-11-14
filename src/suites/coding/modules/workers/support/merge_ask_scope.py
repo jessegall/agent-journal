@@ -37,6 +37,7 @@ class MergeAskScope:
         if started is not None and not last_task:
             raise Refusal(f"task {started.id} is started", "commit it, or ask up to an earlier task with --up-to and go on")
         part = self.part(worktree, unit, last_task)
+        self.check_base(worktree, part)
         self.check_runs(worktree, part.task_ids)
         if self.steps.round(worker_id).conflict is not None:
             raise Refusal(f"your worktree clashed with {worktree.base_branch}", "settle the conflict markers and commit first")
@@ -49,7 +50,7 @@ class MergeAskScope:
 
     def part(self, worktree: Worktree, unit: WorkUnit, last_task: str) -> MergeAskPart:
         if not last_task:
-            return MergeAskPart(worktree, unit, worktree.commit_short_id, unit.task_ids, True)
+            return MergeAskPart(worktree, unit, self.range.branch_tip(worktree), unit.task_ids, True)
         commit = self.range.task_commit(worktree, int(last_task)) if self.range.is_task_number(last_task) else last_task
         if commit is None:
             committed = self.range.leading_tasks(worktree, worktree.branch)
@@ -58,6 +59,14 @@ class MergeAskScope:
         if not self.range.is_branch_commit(worktree, commit):
             raise Refusal(f"commit {last_task} is not on your branch", "journal worker logs lists your commits")
         return MergeAskPart(worktree, unit, commit, tuple(task.id for task in self.range.leading_tasks(worktree, commit)), False)
+
+    # the base branch changed none of the files the asked work changed, so its checkpoint tests ran on the code the
+    # merge makes for those files; a base that moves on elsewhere never holds the ask up
+    def check_base(self, worktree: Worktree, part: MergeAskPart) -> None:
+        shared = self.range.base_changes_on_own_files(worktree, part.commit_id)
+        if not shared:
+            return
+        raise Refusal(f"{worktree.base_branch} changed {len(shared)} of the files your work changed, such as {shared[0]}", "run journal worker update, commit, let the checkpoint tests run on it, and ask again")
 
     def check_runs(self, worktree: Worktree, task_ids: tuple[int, ...]) -> None:
         blocking = self.runs.blocking_run(worktree.id)

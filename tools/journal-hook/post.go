@@ -142,8 +142,8 @@ func post(outgoing delivery, transport http.RoundTripper, firedTime time.Time) (
 }
 
 // heldThroughRestart posts the hook, and while the server does not answer with 200 and its restart mark is there it
-// asks again, resting between asks; every ask that waits starts the server when its socket is gone, since the server
-// that is stopping may keep its socket past the first ask, and no other client may come.
+// asks again, resting between asks; every ask that waits starts the server when its lock is free, since a server that
+// crashed leaves its socket behind, and no other client may come.
 func heldThroughRestart(outgoing delivery, transport http.RoundTripper) (int, []byte) {
 	began := time.Now()
 	status, answer := posted(outgoing, transport)
@@ -170,11 +170,11 @@ const serverStartMarkName = "server-starting"
 
 var ServerStartPause = 30 * time.Second
 
-// startMissingServer starts the journal's server when its socket is gone, as any journal command does, without
+// startMissingServer starts the journal's server when its lock is free, as any journal command does, without
 // waiting for it: this hook goes on unchecked and the next finds a server, also while the agent runs no command.
 func startMissingServer(root string) {
 	home := filepath.Join(root, ".journal")
-	if _, err := os.Stat(filepath.Join(home, "server.sock")); err == nil {
+	if !serverLockIsFree(filepath.Join(home, "server.lock")) {
 		return
 	}
 	marker := filepath.Join(home, serverStartMarkName)
@@ -291,7 +291,7 @@ func destination(outgoing delivery) (string, http.RoundTripper, bool) {
 		return "", nil, false
 	}
 	address := fmt.Sprintf("http://127.0.0.1:%s/hooks/%s", strings.TrimSpace(string(port)), outgoing.program)
-	return address, &http.Transport{DialContext: (&net.Dialer{Timeout: connectLimit}).DialContext}, true
+	return address, &http.Transport{DialContext: (&net.Dialer{Timeout: connectLimit}).DialContext, DisableKeepAlives: true}, true
 }
 
 // The version a running journal reports, from its version.py: VERSION = "4.69.9".

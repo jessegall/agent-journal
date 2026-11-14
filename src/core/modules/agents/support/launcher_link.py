@@ -1,3 +1,5 @@
+from engine.time.clock import Clock
+from engine.file.file_access import FileAccess
 import json
 import os
 import socket
@@ -33,7 +35,7 @@ class LauncherLink:
 
     @property
     def is_running(self) -> bool:
-        return self.home.socket(LAUNCHER_SOCKET).exists()
+        return FileAccess.exists(self.home.socket(LAUNCHER_SOCKET))
 
     def stop(self, agent_id: int) -> bool:
         return self.request_launcher({"agent_id": agent_id, STOP_FIELD: True}, ANSWER_BYTES) == STOPPED_ANSWER
@@ -51,7 +53,7 @@ class LauncherLink:
 
     def request_launcher(self, request: Mapping[str, object], answer_bytes: int = 0) -> bytes | None:
         path = self.home.socket(LAUNCHER_SOCKET)
-        if not path.exists():
+        if not FileAccess.exists(path):
             return None
         try:
             return self.exchanged(request, answer_bytes)
@@ -62,7 +64,7 @@ class LauncherLink:
 
     def after_refusal(self, request: Mapping[str, object], answer_bytes: int) -> bytes | None:
         for _ in range(REFUSED_TRIES):
-            time.sleep(REFUSED_PAUSE_SECONDS)
+            Clock().sleep(REFUSED_PAUSE_SECONDS)
             try:
                 return self.exchanged(request, answer_bytes)
             except ConnectionRefusedError:
@@ -71,7 +73,7 @@ class LauncherLink:
                 return None
         if self.has_running_owner:
             return None
-        self.home.socket(LAUNCHER_SOCKET).unlink(missing_ok=True)
+        FileAccess.unlink(self.home.socket(LAUNCHER_SOCKET), missing_ok=True)
         return self.exchanged_after_start(request, answer_bytes) if START_FIELD in request and self.service.start() else None
 
     @property
@@ -83,7 +85,7 @@ class LauncherLink:
     def owner_pid(self) -> int | None:
         socket_path = self.home.socket(LAUNCHER_SOCKET)
         try:
-            pid_text = os.readlink(socket_path.with_name(socket_path.name + OWNER_LINK_ENDING))
+            pid_text = str(FileAccess.readlink(socket_path.with_name(socket_path.name + OWNER_LINK_ENDING)))
         except OSError:
             return None
         return int(pid_text) if pid_text.isdigit() else None

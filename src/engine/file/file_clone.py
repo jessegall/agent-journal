@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import ctypes
 import os
 import shutil
@@ -13,6 +14,6 @@ class FileClone:
 
     @staticmethod
     def copy(source: Path, target: Path) -> None:
-        target.unlink(missing_ok=True)
+        FileAccess.unlink(target, missing_ok=True)
         if sys.platform != MAC_PLATFORM or ctypes.CDLL(None, use_errno=True).clonefile(os.fsencode(source), os.fsencode(target), 0) != 0:
-            shutil.copyfile(source, target)
+            FileAccess.copyfile(source, target)

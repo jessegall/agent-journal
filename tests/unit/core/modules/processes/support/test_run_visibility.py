@@ -9,8 +9,8 @@ LISTING = SimpleNamespace(is_visible=False, category=CommandCategory.READ)
 MOVED_AT = "2026-11-11T20:00:00+00:00"
 
 
-def run(creator_id: int = 2, moved_at: str | None = None, plugin: str = "", is_journal_merge: bool = False) -> SimpleNamespace:
-    return SimpleNamespace(id=7, plugin=plugin, creator_id=creator_id, session_agent_id=2, moved_at=moved_at, is_journal_merge=is_journal_merge)
+def run(creator_id: int = 2, moved_at: str | None = None, plugin: str = "", is_journal_merge: bool = False, is_merge_hook: bool = False) -> SimpleNamespace:
+    return SimpleNamespace(id=7, plugin=plugin, creator_id=creator_id, session_agent_id=2, moved_at=moved_at, is_journal_merge=is_journal_merge, is_merge_hook=is_merge_hook)
 
 
 class NoReads:
@@ -41,3 +41,7 @@ def test_a_run_another_agent_created_shows_its_first_part_without_moving():
 
 def test_a_merge_the_journal_ran_itself_shows_no_part_and_reads_no_row():
     assert RunVisibility(NoReads(), NoReads()).visible_part(run(creator_id=1, is_journal_merge=True)) is None
+
+
+def test_a_merge_hook_the_journal_started_has_no_visible_part():
+    assert RunVisibility.select_visible_part(run(creator_id=1, is_merge_hook=True), tuple([PART])) is None

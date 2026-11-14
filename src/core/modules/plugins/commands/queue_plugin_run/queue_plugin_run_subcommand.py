@@ -11,7 +11,7 @@ from core.modules.plugins.commands.queue_plugin_run.queue_plugin_run import Queu
 from core.modules.plugins.support.plugin_call_access import PluginCallAccess
 from core.modules.plugins.support.queued_run_follow import QueuedRunFollow
 from core.modules.plugins.support.queued_run_start import QueuedRunStart
-from core.modules.processes.models.enums.queue_priority import QueuePriority
+from engine.enums.execution_priority import ExecutionPriority
 from core.modules.processes.support.foreground_run import ForegroundRun
 from core.modules.processes.support.queued_process_launch import QueuedProcessLaunch
 from core.modules.processes.support.queued_process_start import QueuedProcessStart
@@ -37,7 +37,7 @@ class QueuePluginRunSubcommand(Subcommand[QueuePluginRun, QueuedRunStart]):
         place.add_argument("--agent", type=int)
         place.add_argument("--checkout", default="")
         parser.add_argument("--timeout", type=int, default=0)
-        parser.add_argument("--priority", choices=[priority.value for priority in QueuePriority], default=QueuePriority.NORMAL.value)
+        parser.add_argument("--priority", choices=[priority.label for priority in ExecutionPriority], default=ExecutionPriority.NORMAL.label)
         parser.add_argument("--detach", action="store_true")
         parser.add_argument("line", nargs="*")
 
@@ -51,7 +51,7 @@ class QueuePluginRunSubcommand(Subcommand[QueuePluginRun, QueuedRunStart]):
             raise UsageError("name the command to run after --")
         timeouts = tuple([f"{arguments.timeout}s"]) if arguments.timeout > 0 else ()
         return QueuePluginRun(arguments.plugin, arguments.kind, self.agent_id(arguments, caller), arguments.checkout, shlex.join(terms), timeouts,
-                              QueuePriority(arguments.priority), arguments.detach)
+                              ExecutionPriority.labelled(arguments.priority), arguments.detach)
 
     def agent_id(self, arguments: Namespace, caller: Caller) -> int:
         if arguments.agent is not None or not arguments.checkout:

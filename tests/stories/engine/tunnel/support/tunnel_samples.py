@@ -33,5 +33,5 @@ class SampleTunnel(Tunnel):
 
 class SampleTunnelModule(Module):
     name = "sampletunnel"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     tunnels = [SampleTunnel]

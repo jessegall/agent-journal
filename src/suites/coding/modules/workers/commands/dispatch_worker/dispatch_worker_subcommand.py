@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from argparse import ArgumentParser, Namespace
 
 from engine.enums.model_tier import ModelTier
@@ -91,4 +92,4 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
 
     def launcher_runs(self) -> bool:
         path = self.home.socket(LAUNCHER_SOCKET)
-        return path.exists() and stat.S_ISSOCK(path.stat().st_mode)
+        return FileAccess.exists(path) and stat.S_ISSOCK(FileAccess.stat(path).st_mode)

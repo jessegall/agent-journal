@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
@@ -29,7 +30,7 @@ class AgentFolders:
         return project.parent / f".{project.name}{START_FOLDERS_SUFFIX}" / str(agent.id)
 
     def folder(self, agent: Agent) -> Path:
-        if self.agents.has_read_access(agent) and self.start_folder(agent).is_dir():
+        if self.agents.has_read_access(agent) and FileAccess.is_dir(self.start_folder(agent)):
             return self.start_folder(agent)
         return self.checkout_folder(agent)
 

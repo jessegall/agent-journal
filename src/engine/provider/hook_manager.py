@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import os
 from dataclasses import replace
 from collections.abc import Mapping, Sequence
@@ -51,7 +52,7 @@ class HookManager:
         for hook in hooks:
             for source in hook.all_sources():
                 path = self.root / source.path
-                if not path.parent.is_dir():
+                if not FileAccess.is_dir(path.parent):
                     continue
                 settings = ProgramHooks.read(path)
                 stored_hooks = settings.get("hooks")

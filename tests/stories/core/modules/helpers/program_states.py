@@ -15,7 +15,7 @@ def ready_program_story(new_story, monkeypatch):
     monkeypatch.setattr('shutil.which', lambda name: name)
     for provider in story.container.get(Providers).all():
         monkeypatch.setattr(provider, 'journal_trust', Mock(return_value=HookTrust.READY))
-    story.container.bind(ProgramStates, story.container.constructed(ProgramStates))
+    story.rebuild(ProgramStates)
     return story
 
 

@@ -27,6 +27,7 @@ from engine.testing.stories.story import Story
 from core.modules.processes.ticks.output_reading import OutputReading
 
 TEST_ROWS_REASON = "the test reads every row it checks"
+DEFAULT_QUEUE_WAIT_SECONDS = 5
 
 BYTES_LONG = 5000
 BYTES_SHORT = 12
@@ -51,14 +52,15 @@ def sample_category(text: str, category: CommandCategory | None) -> CommandCateg
     return CommandCategory.JOURNAL if text.startswith("journal ") else CommandCategory.UNKNOWN
 
 
-def runner_line(story: Story, process_id: int, line: str, limit: int = 15, background: bool = False, session: str = "s-1", read_command: bool = False, has_long_part: bool = False, queue_run: bool = True, sandbox: bool = False, progress_count: str = "", progress_position: int = 0, progress_pattern: str = "", checkout_folder: Path | None = None) -> str:
-    flag = (" --background" if background else "") + (" --only-reads" if read_command else "")
+def runner_line(story: Story, process_id: int, line: str, limit: int = 15, background: bool = False, session: str = "s-1", read_command: bool = False, has_long_part: bool = False, queue_run: bool = True, sandbox: bool = False, progress_count: str = "", progress_position: int = 0, progress_pattern: str = "", checkout_folder: Path | None = None, queue_wait: int | None = None, counted_queue: bool = False) -> str:
+    if queue_wait is None and limit > 0 and has_long_part and not read_command and queue_run:
+        queue_wait = DEFAULT_QUEUE_WAIT_SECONDS
+    flag = (" --background" if background else "") + (" --queue" if queue_wait is not None else "") + (" --only-reads" if read_command else "")
     if sandbox or session == "sub-1":
         flag += " --read-only-shell"
     variables = f" JOURNAL_RUN_MOST_OUTPUT={(100 if has_long_part else 10) << 20}"
-    if limit > 0 and has_long_part and not read_command and queue_run:
-        flag += " --queue"
-        variables += " JOURNAL_RUN_QUEUE_WAIT=5"
+    variables += f" JOURNAL_RUN_QUEUE_WAIT={queue_wait}" if queue_wait is not None else ""
+    variables += " JOURNAL_RUN_COUNTED_QUEUE=1" if counted_queue else ""
     if progress_count:
         variables += f" JOURNAL_RUN_PROGRESS_LISTING={shlex.quote(progress_count)} JOURNAL_RUN_PROGRESS_POSITION={progress_position} JOURNAL_RUN_PROGRESS_PATTERN={shlex.quote(progress_pattern)}"
     environment = story.container.get(Queries).query(Environment).find(1)

@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import subprocess
 import time
 
@@ -17,7 +18,7 @@ class ChatUpdateSteps(UpdateSteps):
 
     def record(self, step: str, detail: str = "") -> None:
         journal = self.home.folder / "bin" / "journal"
-        if not journal.is_file():
+        if not FileAccess.is_file(journal):
             return
         try:
             subprocess.run([str(journal), "update", "step", self.run, step, detail], capture_output=True, timeout=STEP_LIMIT_SECONDS, check=False)

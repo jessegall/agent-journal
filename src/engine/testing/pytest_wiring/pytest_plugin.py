@@ -1,5 +1,5 @@
+from engine.file.file_access import FileAccess
 import os
-import shutil
 from collections.abc import Callable, Generator
 import time
 from pathlib import Path
@@ -109,7 +109,7 @@ def templates() -> Generator[TemplateDatabases]:
     TemplateDatabases.remove_stale_working_folders(time.time())
     databases = TemplateDatabases(run_template_folder())
     yield databases
-    databases.working_folder.cleanup()
+    FileAccess.rmtree(databases.working_folder, True)
 
 
 @pytest.fixture
@@ -131,7 +131,7 @@ def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.Fixt
     created.clear()
     SharedTables.shared.cache_clear()
     if item.stash.get(CALL_PASSED, False):
-        shutil.rmtree(tmp_path, ignore_errors=True)
+        FileAccess.rmtree(tmp_path, ignore_errors=True)
 
 
 @pytest.hookimpl(wrapper=True)
@@ -197,11 +197,13 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
         process_output[STORY_CHECKS_KEY] = {name: sorted(checks) for name, checks in overlap.story_checks.items()}
         process_output[CPU_SECONDS_KEY] = session.config.stash[RUN_CPU].seconds
         return
-    if RunSize(session.config.args, 1).is_full_suite() and not session.config.option.collectonly:
+    option = session.config.option
+    is_full_run = RunSize(session.config.args, 1).is_full_run(option.keyword, option.markexpr, option.deselect or (), bool(getattr(option, "lf", False)))
+    if is_full_run and not option.collectonly:
         record = FullRunRecord(session.testscollected, session.testsfailed, time.monotonic() - session.config.stash[RUN_START], session.config.stash[RUN_CPU].seconds)
         session.config.stash[FULL_RUN] = record
         FullRunRecords.add(record)
-    lines = [*overlap.report_lines(), *fixture_rule_lines(session.config, overlap)]
+    lines = [*overlap.report_lines(is_full_run), *fixture_rule_lines(session.config, overlap)]
     if not lines:
         return
     report = pytest.TestReport(nodeid="stories::overlapping_steps", location=("stories", 0, "overlapping_steps"),

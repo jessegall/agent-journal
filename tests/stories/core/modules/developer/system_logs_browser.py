@@ -13,6 +13,6 @@ def test_system_logs_page_in_a_real_browser(new_story):
     with server_story(story) as server:
         path = story.home.system_log
         path.parent.mkdir(parents=True, exist_ok=True)
-        FileAccess.shared().write(path, "".join(f"2026-01-01T10:00:00+00:00 info server browser server line {number}\n" for number in range(75)))
+        FileAccess.write(path, "".join(f"2026-01-01T10:00:00+00:00 info server browser server line {number}\n" for number in range(75)))
         story.container.get(SystemLogWriter).write(LogLevel.INFORMATION, "browser journal note")
         expect_browser(server, "systemLogs.browser.mjs", [])

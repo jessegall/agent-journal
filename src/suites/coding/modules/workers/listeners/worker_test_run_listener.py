@@ -5,6 +5,7 @@ from engine.listener.commit.commit_listener import CommitListener
 from engine.listener.rows.event_rows import EventRows
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
+from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
 from suites.coding.modules.workers.models.affected_test import AffectedTest
 from suites.coding.modules.workers.models.proof import Proof
@@ -19,13 +20,14 @@ class WorkerTestRunListener(CommitListener[Created[Process]]):
     checkpoint's test by CheckpointTestListener."""
 
     name = "workers.test-run-launch"
+    run_order = -1
 
     def __init__(self, launch: WorkerTestLaunch, rows: EventRows, worktrees: WorktreeQuery, queries: Queries) -> None:
         self.launch, self.rows, self.worktrees, self.queries = launch, rows, worktrees, queries
 
     def handle(self, event: Created[Process], logged: LoggedEvent) -> None:
         process = event.row
-        if process.category is not CommandCategory.TEST_RUN:
+        if process.category is not CommandCategory.TEST_RUN or self.rows.required(Process, process.id).state not in RUNNING_STATES:
             return
         worktree = self.worktrees.worker_worktree(process.session_agent_id)
         if worktree is None or worktree.folder != process.folder or self.has_test_source(process):

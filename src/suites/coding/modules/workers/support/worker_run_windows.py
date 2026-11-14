@@ -4,22 +4,25 @@ from core.modules.plans.support.plan_checkpoints import PlanCheckpoints
 from core.modules.plans.support.task_plans import TaskPlans
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.work_units import WorkUnits
+from suites.coding.modules.workers.support.worktree_runs import WorktreeRuns
 from suites.coding.modules.workers.support.worker_run_window import WorkerRunWindow
 
 
 class WorkerRunWindows:
     """Finds the checkpoint windows a worker's commit completes: each window, among those of the tasks the
-    worktree committed, whose open tasks are all in the worker's unit and all committed. A window with an
-    open task of another actor gives none: its tests run on the branch once it is merged. The windows are read
-    fresh, since the commit that asks moved its tasks to testing in the same request."""
+    worktree committed and those of its checkpoints whose newest run failed, whose open tasks are all in the
+    worker's unit and all committed. A window with an open task of another actor gives none: its tests run on
+    the branch once it is merged. The windows are read fresh, since the commit that asks moved its tasks to
+    testing in the same request."""
 
-    def __init__(self, plans: TaskPlans, checkpoints: PlanCheckpoints, units: WorkUnits) -> None:
-        self.plans, self.checkpoints, self.units = plans, checkpoints, units
+    def __init__(self, plans: TaskPlans, checkpoints: PlanCheckpoints, units: WorkUnits, runs: WorktreeRuns) -> None:
+        self.plans, self.checkpoints, self.units, self.runs = plans, checkpoints, units, runs
 
     def completed_windows(self, worktree: Worktree) -> tuple[WorkerRunWindow, ...]:
         unit_ids = frozenset(self.units.unit(worktree.session_agent_id).task_ids)
-        self.plans.prepare(worktree.commit_tasks())
-        phases = [phase for phase in (self.plans.find_phase(task_id) for task_id in worktree.commit_tasks()) if phase is not None]
+        task_ids = (*worktree.commit_tasks(), *self.runs.failed_task_ids(worktree.id))
+        self.plans.prepare(task_ids)
+        phases = [phase for phase in (self.plans.find_phase(task_id) for task_id in task_ids) if phase is not None]
         plan_windows = {plan_id: self.checkpoints.windows(plan_id) for plan_id in {phase.plan_id for phase in phases}}
         checkpoints = {checkpoint.id: checkpoint for checkpoint in (plan_windows[phase.plan_id].window_checkpoint(phase.id) for phase in phases)}
         windows = (self.window(plan_windows[checkpoint.plan_id], checkpoint, unit_ids) for checkpoint in checkpoints.values())

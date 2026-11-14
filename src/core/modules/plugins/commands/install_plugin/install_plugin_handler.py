@@ -1,5 +1,5 @@
+from engine.file.file_access import FileAccess
 import json
-import shutil
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
@@ -46,11 +46,11 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
         folder = self.folders.code(manifest.name)
         source = self.staging.folder(command.source)
         self.steps.check_requirements(manifest, source)
-        shutil.copytree(source, folder, dirs_exist_ok=True, ignore=EXCLUDED_NAMES)
+        FileAccess.copytree(source, folder, dirs_exist_ok=True, ignore=EXCLUDED_NAMES)
         try:
             self.steps.run_setup(manifest, folder)
         except Refusal:
-            shutil.rmtree(folder, ignore_errors=True)
+            FileAccess.rmtree(folder, ignore_errors=True)
             raise
 
     def handle(self, command: InstallPlugin, context: Context) -> PluginInstall:
@@ -60,7 +60,7 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
             return PluginInstall(manifest, command.source, False)
         self.staging.cleared(command.source)
         folder = self.folders.code(manifest.name)
-        self.folders.data(manifest.name).mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(self.folders.data(manifest.name), parents=True, exist_ok=True)
         self.skill_files.publish(folder, manifest)
         settings = self.steps.installed_settings(manifest, folder)
         plugin = self.repository.save(Plugin(creator_id=context.actor.id, name=manifest.name, title=manifest.title, source=command.source,

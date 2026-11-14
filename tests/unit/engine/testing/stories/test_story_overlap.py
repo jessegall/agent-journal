@@ -13,7 +13,7 @@ def overlap_of(stories: dict[str, tuple[str, list[str]]]) -> list[str]:
     overlap = StoryOverlap()
     for test_id, (start, lines) in stories.items():
         overlap.add(test_id, start, lines, lines)
-    return overlap.report_lines()
+    return overlap.report_lines(True)
 
 
 def command(line: str) -> str:
@@ -173,7 +173,7 @@ def overlap_with_checks(stories: dict[str, tuple[list[str], list[str]]]) -> list
     overlap = StoryOverlap()
     for test_id, (lines, checks) in stories.items():
         overlap.add(test_id, "Started", lines, lines, "", checks)
-    return overlap.report_lines()
+    return overlap.report_lines(True)
 
 
 SHARED_STEPS = [command("task list"), command("plan list"), command("task show"), command("plan show")]
@@ -192,3 +192,11 @@ def test_stories_that_share_their_steps_and_check_the_same_thing_are_told_to_mer
 def test_a_story_that_checks_what_no_other_story_checks_reaches_something_new():
     report = overlap_with_checks({FIRST: (SHARED_STEPS, ["task show N"]), SECOND: ([*SHARED_STEPS, command("doc show")], ["plan show N"])})
     assert not any("reaches nothing" in line and FIRST in line for line in report), report
+
+
+def test_a_run_of_a_few_files_names_no_story_as_reaching_nothing_new():
+    overlap = StoryOverlap()
+    overlap.add("tests/stories/a.py::test_one", "start", ["make task", "close task"], ["make task", "close task"])
+    overlap.add("tests/stories/a.py::test_two", "start", ["make task", "close task", "list tasks"], ["make task", "close task", "list tasks"])
+    assert [line for line in overlap.report_lines(True) if "reaches nothing" in line]
+    assert not [line for line in overlap.report_lines(False) if "reaches nothing" in line]

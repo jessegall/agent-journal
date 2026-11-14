@@ -40,13 +40,14 @@ TEST_ROWS_REASON = "the test reads every row it checks"
 
 
 class TestLimitSetup(StoryFixture):
-    """A worker whose own runs may include at most five tests."""
+    """A worker whose own runs may include at most five tests, and which may fill the long lane alone."""
 
     parent = ForcedReaders
 
     def steps(self, story: Story) -> None:
         story.run(f"setting set {WORKER_TEST_LIMIT} 5 --environment main")
         story.run(f"setting set {ProcessSetting.READERS_FORCED.key} off --environment main")
+        story.expect_success(f"setting set {ProcessSetting.STARTER_CAP_PERCENT.key} 100 --environment main")
 
 
 @pytest.fixture

@@ -16,7 +16,7 @@ MARKER = "class {name}Area(EngineArea):\n    summary = \"{summary}\"\n    use = 
 
 
 def map_lines() -> list[str]:
-    return CodeMap(SOURCE, FileAccess.shared()).lines()
+    return CodeMap(SOURCE, FileAccess()).lines()
 
 
 def top_folder_lines(top: str) -> list[str]:
@@ -67,18 +67,18 @@ def test_446_a_folder_with_no_summary_is_refused_with_the_folder_and_the_instruc
     source = small_tree(tmp_path)
     (source / "engine" / "ledger").mkdir()
     with pytest.raises(MissingSummaryError) as raised:
-        CodeMap(source, FileAccess.shared()).text()
+        CodeMap(source, FileAccess()).text()
     story.expect_rows(raised.value.folder == "src/engine/ledger", "write src/engine/ledger/ledger_area.py" in raised.value.instruction, detail=str(raised.value))
 
 
 def test_447_a_new_folder_shows_as_a_new_line_and_the_pinned_map_is_the_map_of_the_code(new_story, tmp_path):
     story = new_story()
     source = small_tree(tmp_path)
-    first = CodeMap(source, FileAccess.shared()).lines()
+    first = CodeMap(source, FileAccess()).lines()
     marker = source / "engine" / "ledger" / "ledger_area.py"
     marker.parent.mkdir()
     marker.write_text(MARKER.format(name="Ledger", summary="Counts what was spent."))
-    second = CodeMap(source, FileAccess.shared()).lines()
+    second = CodeMap(source, FileAccess()).lines()
     story.expect_rows(sorted(set(second) - set(first)) == ["    ledger  Counts what was spent."], detail=str(second))
     story.expect_rows("\n".join(map_lines()) + "\n" == PINNED_MAP.read_text(), detail=PIN_HINT)
 
@@ -98,7 +98,7 @@ def test_451_a_marker_that_cannot_be_read_fails_with_the_folder_and_writes_no_ha
     broken.write_text("class LedgerArea(:\n")
     pinned = tmp_path / "map.txt"
     with pytest.raises(MissingSummaryError) as raised:
-        pinned.write_text(CodeMap(source, FileAccess.shared()).text())
+        pinned.write_text(CodeMap(source, FileAccess()).text())
     story.expect_rows(raised.value.folder == "src/engine/ledger", not pinned.exists(), detail=str(raised.value))
 
 
@@ -117,7 +117,7 @@ def test_the_map_write_saves_the_map_of_the_checkout_the_journal_runs_for(new_st
     pinned.parent.mkdir(parents=True)
     pinned.write_text("an old map\n")
     story.run("map --write", actor=story.user).expect_code(0)
-    expect_value(pinned.read_text(), CodeMap(checkout / "src", FileAccess.shared()).text())
+    expect_value(pinned.read_text(), CodeMap(checkout / "src", FileAccess()).text())
 
 
 def test_the_map_write_is_refused_in_a_checkout_with_no_snapshots_folder(new_story):
@@ -130,4 +130,4 @@ def test_a_folder_left_with_only_its_cache_after_a_move_is_no_line_of_the_map(ne
     story = new_story()
     source = small_tree(tmp_path)
     (source / "engine" / "ledger" / "__pycache__").mkdir(parents=True)
-    expect_value(CodeMap(source, FileAccess.shared()).lines(), ["engine  " + TOP_FOLDERS["engine"], "  contract", "    clock  Tells the time."])
+    expect_value(CodeMap(source, FileAccess()).lines(), ["engine  " + TOP_FOLDERS["engine"], "  contract", "    clock  Tells the time."])

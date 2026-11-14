@@ -13,4 +13,4 @@ class RecordFileEdit(Command[FileEdit]):
     agent_id: int
     diff: DiffCount
     rows: tuple[Mapping[str, object], ...] = ()
-    moved_from: str = ""
+    old_path: str = ""

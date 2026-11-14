@@ -17,7 +17,7 @@ def project_files_server(new_story):
     story = new_story(fixture=UserBuilder)
     repository = repository_environment(story)
     (repository.folder / "shop files").mkdir()
-    FileAccess.shared().write(repository.folder / "shop files" / "cart totals.py", "TOTAL = 1\n")
+    FileAccess.write(repository.folder / "shop files" / "cart totals.py", "TOTAL = 1\n")
     repository.git("add", "shop files/cart totals.py")
     with server_story(story) as server:
         yield server, server.expect_viewer_login(server.viewer_key("Ada"))

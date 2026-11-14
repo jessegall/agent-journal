@@ -10,12 +10,13 @@ try {
     target.searchParams.set("page", "agents.agents");
     await page.goto(target.href);
     const card = page.locator(`[data-agent-open="${worker}"]`);
-    await card.locator("[data-agent-waiting]").waitFor();
+    const dot = card.locator(".agent-dot");
+    await dot.waitFor();
     await page.locator(".window-cover").waitFor({state: "detached"});
-    const statuses = {tests: "tests running", "proof check": "judging", merge: "judging"};
+    const statuses = {tests: "tests running", "proof check": "judging", merge: "waiting for the merge"};
     const expected = statuses[reason] ? `Status: ${statuses[reason]}` : `Waiting: ${reason}`;
-    assert.equal((await card.locator("[data-agent-waiting]").textContent()).trim(), expected);
-    assert.equal(await card.locator(".agent-dot").getAttribute("data-state"), "waiting");
+    assert.equal((await dot.getAttribute("aria-label")).split(". ")[0], expected);
+    assert.equal(await dot.getAttribute("data-state"), "waiting");
     await card.screenshot({path: `/tmp/journal-worker-wait-461-${reason.split(" ").at(-1)}.png`});
 } finally {
     await browser.close();

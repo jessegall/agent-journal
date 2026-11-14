@@ -23,10 +23,10 @@ class SessionFile:
         return hashlib.sha256(str(self.path.resolve()).encode()).hexdigest()[:12]
 
     def load(self) -> dict[str, ViewerSession]:
-        if not self.path.is_file():
+        if not FileAccess.is_file(self.path):
             return {}
         try:
-            kept: object = json.loads(FileAccess.shared().read(self.path))
+            kept: object = json.loads(FileAccess.read(self.path))
         except ValueError:
             return {}
         if not is_mapping(kept):
@@ -44,5 +44,5 @@ class SessionFile:
     def save(self, sessions: dict[str, ViewerSession]) -> None:
         kept = {token: session.person_id if session.type is SessionType.PERSON else {"agent": session.person_id} for token, session in sessions.items()
                 if session.type in KEPT_TYPES and session.person_id is not None}
-        with FileAccess.shared().private_writer(self.path) as file:
+        with FileAccess.private_writer(self.path) as file:
             file.write(json.dumps(kept))

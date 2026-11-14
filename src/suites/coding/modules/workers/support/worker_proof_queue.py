@@ -75,7 +75,7 @@ class WorkerProofQueue:
         test = self.settings.text(PROJECT_TEST_COMMAND).strip()
         if not picker or not test:
             return 0
-        line = shlex.join([*shlex.split(picker), *self.git.changed_files(worktree)])
+        line = shlex.join([*shlex.split(picker), *self.git.committed_files(worktree)])
         self.repository.save(AffectedTest(worktree_id=worktree.id, task_id=task_id, picker_command=line, test_command=test), context)
         return 1
 

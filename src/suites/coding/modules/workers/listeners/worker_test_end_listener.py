@@ -24,6 +24,7 @@ class WorkerTestEndListener(CommitListener[Moved[Process]]):
     worker that no proof asked for is noted on its task, and an affected-test pick gets its answer."""
 
     name = "workers.test-ends"
+    run_order = -1
     moves = [ProcessLifecycle.finish, ProcessLifecycle.fail, ProcessLifecycle.stop, ProcessLifecycle.orphan]
 
     def __init__(self, bus: Bus, queries: Queries, starts: WorkerTestStarts, proofs: ProofQuery, worktrees: WorktreeQuery) -> None:

@@ -15,7 +15,7 @@ from engine.query.conditions.condition import Condition
 from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.query.select import Select
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.models.enums.task_state import UNSTARTED_STATES, TaskState
 from core.modules.tasks.models.open_dependency import OpenDependency
 from core.modules.tasks.conditions.task_tag_match import TaskTagMatch
 from core.modules.tasks.conditions.takeable_tasks import TakeableTasks
@@ -64,6 +64,10 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
         tasks = self.open_tasks().matching(self.assignee(actor_id)).matching(self.no_open_dependency()).oldest()
         return self.kept.owner_read(tasks, lambda: tuple(tasks.every_row(ASSIGNED_TASKS_REASON)), name="tasks.next_delegated")
 
+    def assigned_blocked(self, actor_id: int) -> tuple[Task, ...]:
+        tasks = self.assignee_tasks(actor_id).filter(state=TaskState.BLOCKED).oldest()
+        return self.kept.owner_read(tasks, lambda: tuple(tasks.every_row(ASSIGNED_TASKS_REASON)), name="tasks.blocked_assigned")
+
     def free(self) -> Self:
         return self.open_tasks().matching(Unassigned(Task))
 
@@ -104,6 +108,9 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
     @staticmethod
     def takeable_condition(agent: Agent) -> Condition:
         return TakeableTasks(agent.id, agent.role == MAIN_ROLE)
+
+    def unstarted(self) -> Self:
+        return self.matching(Among("state", list(UNSTARTED_STATES)))
 
     def open_tasks(self) -> Self:
         return self.filter(state=TaskState.OPEN)

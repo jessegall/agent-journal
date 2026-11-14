@@ -1,6 +1,6 @@
 ---
 name: journal-plain-code-words
-description: Name every variable, method, class and file in plain words, by a ladder; read it at the start of every session
+description: Use plain words for every variable, method, class and file, by a ladder; read it before you name anything
 ---
 
 # Plain code words

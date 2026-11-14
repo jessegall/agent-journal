@@ -11,6 +11,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from server.work.listeners.listener_thread import ListenerThread
+from server.work.listeners.listener_wake_router import ListenerWakeRouter
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.story_line_route import StoryLineRoute
 from tests.stories.server.support.server_client import server_story
@@ -52,7 +53,7 @@ def read_source_ids(queries: Queries, registry: Registry, agent_id: int):
 def viewer_answer(story: Story, window: str, arguments: list[str], environment: str = "main", person_id: int | None = None):
     story.steps.append(f"viewer {window} {environment}: {json.dumps(arguments)}")
     listeners = ListenerThread(story.run_listeners, pytest.fail)
-    route = StoryLineRoute(story.home, listeners, ReportedFindings())
+    route = StoryLineRoute(story.home, ListenerWakeRouter.waking(listeners), ReportedFindings())
     return route.run_line(story.container, window, arguments, story.user.id if person_id is None else person_id, environment, None)
 
 

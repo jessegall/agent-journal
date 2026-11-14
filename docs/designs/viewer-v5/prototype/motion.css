@@ -1,0 +1,45 @@
+/* Motion: four durations and one easing. Nothing moves for a person who asked for reduced motion.
+   --t-hover 120 ms: colour and border changes
+   --t-pop 180 ms: menus, palettes, the comment box opening
+   --t-view 240 ms: a page, a tab body, a reader switching rows
+   --t-panel 340 ms: inspectors and dialogs */
+:root { --t-hover: .12s; --t-pop: .18s; --t-view: .24s; --t-panel: .34s; --ease: cubic-bezier(0.2, 0.9, 0.25, 1); --peek: 28px; }
+
+.btn, .nav, .tab, .ptab, .etab, .menu-item, .lrow, .trow, .tree-row, .fact, .seg button, .card, .count-tile, .cbox-open-btn, .chip { transition: background-color var(--t-hover), color var(--t-hover), border-color var(--t-hover), box-shadow var(--t-hover), transform var(--t-hover); }
+.chev { transition: transform var(--t-pop) var(--ease); }
+.chev.open { transform: rotate(90deg); }
+
+/* the inspector stack: each lower inspector sits one --peek further left, a little smaller and darker; a click on it brings it back */
+.stack-veil { position: fixed; inset: 0; z-index: 40; background: rgb(0 0 0 / .35); }
+.stack-item { position: absolute; top: 0; right: 0; bottom: 0; display: flex; transform-origin: right center; transition: transform var(--t-panel) var(--ease), opacity var(--t-panel) var(--ease), filter var(--t-panel) var(--ease); }
+.stack-item.under { filter: brightness(calc(1 - var(--dim, 0))); }
+.stack-item.leaving { transform: translateX(105%) !important; opacity: 0; pointer-events: none; }
+.stack-peek { position: absolute; inset: 0; z-index: 5; border: 0; background: transparent; cursor: pointer; }
+.stack-peek:hover { background: rgb(255 255 255 / .03); }
+.stack-peek-label { position: absolute; top: 14px; left: 0; width: var(--peek); writing-mode: vertical-rl; transform: rotate(180deg); display: flex; align-items: center; justify-content: flex-end; gap: 6px; color: var(--text-2); font-size: 11px; white-space: nowrap; overflow: hidden; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .menu { animation: pop-in var(--t-pop) var(--ease) both; transform-origin: top right; }
+  .menu.left { transform-origin: top left; }
+  .veil { animation: fade-in var(--t-pop) ease-out both; }
+  .dialog, .palette { animation: rise-in var(--t-panel) var(--ease) both; }
+  .palette { animation-name: rise-in-centred; }
+  .toast { animation: toast-in var(--t-view) var(--ease) both; }
+  .view-in { animation: view-in var(--t-view) var(--ease) both; }
+  .cbox-form { animation: fade-in var(--t-pop) ease-out both; }
+  .stack-veil { animation: fade-in var(--t-panel) ease-out both; }
+  .stack-item > .insp { animation: insp-in var(--t-panel) var(--ease) both; }
+  .count-tile:hover, .card:hover { transform: translateY(-1px); }
+  .ln.hit { animation: hit-flash 1.2s ease-out; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes pop-in { from { opacity: 0; transform: translateY(-4px) scale(.98); } }
+@keyframes rise-in { from { opacity: 0; transform: translateY(10px) scale(.99); } }
+@keyframes rise-in-centred { from { opacity: 0; transform: translate(-50%, 10px); } to { transform: translate(-50%, 0); } }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 8px); } to { transform: translate(-50%, 0); } }
+@keyframes view-in { from { opacity: 0; transform: translateY(4px); } }
+@keyframes insp-in { from { opacity: 0; transform: translateX(48px); } }
+@keyframes hit-flash { from { background: color-mix(in srgb, var(--accent) 40%, transparent); } }

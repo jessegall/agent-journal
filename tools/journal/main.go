@@ -83,7 +83,7 @@ func Run(requestTiming *timing.Timing, argv []string, stdout, stderr io.Writer) 
 	if len(argv) == 2 && argv[0] == "server" && argv[1] == "update" {
 		return ServerUpdate(home, stdout, stderr)
 	}
-	if !ServerSupported || FailedRecently(home) {
+	if !ServerSupported || (FailedRecently(home) && !InMaintenance(home) && !Healthy(socket.Client(socket.Path(home)))) {
 		return DirectRun(home, argv, stdout, stderr)
 	}
 	client, started, err := Connect(home, StartServer)
@@ -91,7 +91,9 @@ func Run(requestTiming *timing.Timing, argv []string, stdout, stderr io.Writer) 
 		if started != nil {
 			started.Kill()
 		}
-		MarkFailed(home)
+		if !InMaintenance(home) {
+			MarkFailed(home)
+		}
 		fmt.Fprintf(stderr, "the journal's server did not start; this line runs directly. %s\n", LastLogLines(home, 3))
 		return DirectRun(home, argv, stdout, stderr)
 	}
@@ -100,7 +102,7 @@ func Run(requestTiming *timing.Timing, argv []string, stdout, stderr io.Writer) 
 		fmt.Fprintln(stderr, "standard input could not be read:", inputErr)
 		return 1
 	}
-	request := NewCliRequest(argv, os.LookupEnv, WorkingFolder())
+	request := NewCliRequest(argv, os.LookupEnv, WorkingFolder()).WritingTo(stdout)
 	if len(argv) == 1 && argv[0] == "viewer" {
 		return ViewerLink(client, request, stdout, stderr)
 	}

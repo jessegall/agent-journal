@@ -1,0 +1,136 @@
+/* Round six: both reviews of the whole design (report 1383, doc 1276). Loaded last.
+   1 no text wraps  2 one grey squarish badge  3 every reference a link, in columns  4 one filter bar  5 readers on one edge
+   6 Files status bar  7 card pages  8 plan focus  9 the profile editor */
+
+/* ---------- 1. no text wraps ---------- */
+.seg button { white-space: nowrap; }
+.toolbar, .fbar, .lr-list-tools .row, .sl-top { flex-wrap: nowrap; }
+.fbar { min-width: 0; overflow: hidden; }
+.fbar > .fchip { flex: none; }
+.card p { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ctl select { width: 100%; }
+/* a row whose control is long text: the label above, the control the full width of the row */
+.srow.stack { grid-template-columns: minmax(0, 1fr); }
+.srow.stack .ctl { justify-content: stretch; }
+.srow.stack .ctl > * { width: 100%; }
+.srow .ro { color: var(--text-2); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- 2. badges: one token, one grey, squarish; only blocked and failed are amber ---------- */
+:root { --badge-h: 20px; --badge-fg: var(--text-2); --badge-dot: var(--text-4); --badge-edge: var(--border-2); --badge-warn: var(--warn); }
+.badge, .badge.open, .badge.started, .badge.in_progress, .badge.paused, .badge.completed, .badge.done, .badge.on, .badge.cancelled, .badge.draft, .badge.ready, .badge.testing, .badge.approved, .badge.answered, .badge.off {
+  height: var(--badge-h); padding: 0 6px; gap: 5px; border: 1px solid var(--badge-edge); border-radius: var(--r-badge); background: none; color: var(--badge-fg); font-size: 11px; }
+.badge::before { width: 6px; height: 6px; border-radius: 50%; background: var(--badge-dot); }
+.badge.blocked, .badge.failed { color: var(--badge-warn); border-color: color-mix(in srgb, var(--warn) 45%, var(--border-2)); }
+.badge.blocked::before, .badge.failed::before { background: var(--badge-warn); }
+.badge.plain::before { display: none; }
+.lrow .badge, .link-row .badge, td .badge { --badge-h: 18px; }
+.sdot, .sdot.open, .sdot.started, .sdot.completed, .sdot.cancelled, .sdot.ready, .sdot.testing, .sdot.approved, .sdot.draft { background: var(--badge-dot); border: 0; }
+.sdot.blocked, .sdot.failed { background: var(--badge-warn); }
+.dot.started, .dot.completed, .dot.cancelled { background: var(--text-4); }
+.pf-src, .pf-src.project { border: 1px solid var(--badge-edge); border-radius: var(--r-badge); color: var(--badge-fg); }
+.pf-src.changed { border-style: dashed; }
+.pf-src.problem { color: var(--badge-warn); border-color: color-mix(in srgb, var(--warn) 45%, var(--border-2)); }
+/* git marks are grey letters; a fault is amber, never red */
+.gs, .gs.M, .gs.A, .gs.D, .gs.R, .gs.U { color: var(--text-3); }
+.notice.bad { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, var(--border)); background: color-mix(in srgb, var(--warn) 8%, transparent); }
+
+/* ---------- 3. a list row: kind and number, the title, the meta, each in its own column ---------- */
+.lrow.r6 { display: grid; grid-template-columns: max-content minmax(0, 1fr) auto; column-gap: 10px; align-items: start; }
+.lr:not(.has-ref) .lrow.r6 { grid-template-columns: minmax(0, 1fr) auto; }
+.lrow.r6 .rc { --rc-kind: 8.5ch; --rc-n: 7ch; padding-top: 1px; font-size: 11.5px; }
+.lrow.r6 .r6-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.lrow.r6 .d { display: block; -webkit-line-clamp: unset; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lrow.r6 .r6-meta { display: inline-flex; align-items: center; gap: 6px; padding-top: 1px; color: var(--text-4); font-size: 11px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.reader-meta { display: flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap; overflow: hidden; color: var(--text-3); font-size: 12px; margin-bottom: 4px; }
+.reader-meta > * { flex: none; }
+.reader-meta .rc { display: inline-flex; gap: 5px; }
+.reader-meta .sep { color: var(--text-4); }
+.reader-meta .tail { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- 4. one filter bar, above the list and the reader, as Output, Tasks and Plans have it ---------- */
+.r6-fbar { border-top: 1px solid var(--border); flex: none; }
+.r6-fbar + .lr { border-top: 1px solid var(--border); }
+
+/* ---------- 5. the reader text starts at the edge of its header ---------- */
+.reader-text { max-width: 760px; margin: 0; padding: var(--s5) var(--inset) var(--s8); }
+.r6-files { display: grid; grid-template-columns: 16px minmax(0, 1fr) 6ch 6ch; column-gap: 10px; align-items: center; }
+.r6-files > * { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.r6-files .num { text-align: right; color: var(--text-3); font-variant-numeric: tabular-nums; font-size: 12px; }
+.r6-files .gs { font-family: var(--mono); font-size: 11.5px; text-align: center; }
+.r6-list > .link-row { display: grid; column-gap: 10px; }
+.r6-steps > .link-row { grid-template-columns: 3ch minmax(0, 1fr) 12ch; }
+.r6-runs > .link-row { grid-template-columns: max-content minmax(0, 1fr) 56px 7ch 12ch; }
+.r6-runs .rc { --rc-kind: 3ch; --rc-n: 5ch; }
+.r6-checks > .link-row { grid-template-columns: minmax(0, 1fr) 12ch 12ch; }
+.r6-trig > .link-row { grid-template-columns: minmax(0, 1fr) 16ch auto; }
+.r6-who > .link-row { grid-template-columns: 16px 22ch minmax(0, 1fr) 12ch; }
+.r6-num { text-align: right; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.r6-bar { display: inline-flex; width: 48px; height: 4px; border-radius: 2px; background: var(--border-2); overflow: hidden; }
+.r6-bar i { display: block; height: 100%; background: var(--text-3); }
+.r6-diff { margin: 0; padding: 10px 0; border: 1px solid var(--border); border-radius: var(--r); background: var(--term); font: 12px/1.6 var(--mono); overflow: auto; }
+.r6-diff div { padding: 0 12px; white-space: pre; }
+.r6-diff .add { background: color-mix(in srgb, var(--text) 6%, transparent); }
+.r6-diff .del { color: var(--text-4); text-decoration: line-through; }
+.r6-diff .hunk { color: var(--text-4); }
+
+/* ---------- 6. Files: only the path shrinks; Language goes first when it is narrow ---------- */
+.statusbar { container-type: inline-size; }
+.statusbar > * { flex: none; }
+.statusbar > .mono:first-child { flex: 1 1 auto; min-width: 0; }
+.statusbar > .grow { display: none; }
+@container (max-width: 620px) { .statusbar > span:nth-last-child(2) { display: none; } }
+.tree-row .r6-cm { display: inline-flex; align-items: center; gap: 2px; flex: none; width: 28px; justify-content: flex-end; color: var(--text-4); font-size: 10.5px; font-variant-numeric: tabular-nums; }
+.tree-row .gs { flex: none; width: 12px; text-align: center; font-family: var(--mono); font-size: 10.5px; }
+/* with the rail open, a comment is its card in the rail and a mark in the gutter, not a second thread under its line */
+.ide-main:has(> .crail) .thread { display: none; }
+
+/* ---------- 7. card pages ---------- */
+.cg-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important; }
+.r6-card-state { display: flex; align-items: center; gap: 6px; min-width: 0; color: var(--text-3); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.r6-mask { font-family: var(--mono); font-size: 12px; color: var(--text-2); }
+.tile-mark.r6 { display: inline-grid; place-items: center; color: var(--text-3); }
+
+/* ---------- 8. plan focus ---------- */
+.now-focus .word { color: var(--text-3); }
+.focus-row { grid-template-columns: 14px auto 5ch minmax(0, 1fr) 10ch 48px 7ch; }
+.focus-row[aria-disabled="true"], .focus-row[aria-disabled="true"]:hover { color: var(--text-4); cursor: default; background: none; }
+.focus-row .st { color: var(--text-3); }
+.focus-row[aria-disabled="true"] .st { color: var(--text-4); }
+.focus-group { padding: 8px 10px 2px; color: var(--text-4); font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; }
+.focus-more { display: flex; gap: 6px; padding: 4px 10px; color: var(--text-4); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pl-make { opacity: 1; border: 0; background: none; color: var(--text-4); }
+.pl-make:hover, .pl-make:focus-visible { background: var(--sel); color: var(--text); }
+.pl-card .pl-open { all: unset; cursor: pointer; display: block; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); font-size: 13px; font-weight: 500; }
+.pl-card .pl-open:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+
+/* ---------- 9. profile editor ---------- */
+.pf-skill, .pf-cols { grid-template-columns: minmax(0, 1fr) 64px 64px 18ch; }
+.pf-skill .every { justify-self: center; color: var(--text-4); font-size: 11px; }
+.pf-tool { display: grid; grid-template-columns: minmax(0, 22ch) minmax(0, 1fr) auto; column-gap: 12px; align-items: center; height: 34px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.pf-tool > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.pf-tool .k { font: 12px var(--mono); color: var(--text); }
+.pf-tool .w { color: var(--text-3); font-size: 12px; }
+.pf-inherit button { border: 0; background: none; padding: 0; margin-left: 6px; color: var(--accent-text); font-size: inherit; }
+.r6-start { display: grid; gap: 12px; padding: 4px 18px 18px; }
+.r6-start label { display: grid; gap: 4px; font-size: 12px; color: var(--text-3); }
+.r6-start textarea, .r6-start select, .r6-start input { width: 100%; padding: 6px 9px; border: 1px solid var(--border-2); border-radius: 7px; background: var(--bg); color: var(--text); }
+.r6-idle { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--r); white-space: nowrap; }
+.r6-reason { margin: 0; color: var(--text-3); font-size: 12px; }
+
+/* ---------- create dialogs ---------- */
+.r6-form { display: grid; gap: 12px; padding: 4px 18px 18px; overflow: auto; }
+.r6-form label { display: grid; gap: 4px; font-size: 12px; color: var(--text-3); }
+.r6-form label .help { color: var(--text-4); font-size: 11.5px; }
+.r6-form input, .r6-form select, .r6-form textarea { width: 100%; height: 30px; padding: 0 9px; border: 1px solid var(--border-2); border-radius: 7px; background: var(--bg); color: var(--text); outline: 0; }
+.r6-form textarea { height: auto; min-height: 110px; padding: 8px 9px; font: 12.5px/1.6 var(--mono); resize: vertical; }
+.r6-form .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.r6-form .err { color: var(--warn); font-size: 11.5px; }
+.r6-form .steps { display: grid; gap: 6px; }
+.r6-form .steps > div { display: grid; grid-template-columns: 3ch minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+
+/* ---------- Settings: the search goes over every row ---------- */
+.r6-hit { display: grid; grid-template-columns: minmax(0, 1fr) 22ch; column-gap: 12px; align-items: center; width: 100%; height: 40px; padding: 0 8px; border: 0; border-bottom: 1px solid var(--border); background: none; text-align: left; color: var(--text-2); white-space: nowrap; }
+.r6-hit:hover { background: var(--hover); color: var(--text); }
+.r6-hit > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.r6-hit .where { color: var(--text-4); font-size: 11.5px; text-align: right; }
+.r6-scope { margin-left: 8px; color: var(--text-4); font-size: 11px; font-weight: 400; }

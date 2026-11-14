@@ -1,3 +1,4 @@
+from engine.database.write_turns import WriteTurns
 from engine.database.database import Database
 from engine.module.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
@@ -13,8 +14,8 @@ class ServerPluginServices:
     login shell's PATH is known so a service finds its tools, their health checked on a timer of its own, and
     all stopped when the server stops for good; a restart leaves them running for the next server."""
 
-    def __init__(self, home: JournalHome) -> None:
-        self.home = home
+    def __init__(self, home: JournalHome, turns: WriteTurns | None = None) -> None:
+        self.home, self.turns = home, turns
         self.processes = ServiceProcesses.shared(home)
         self.processes.serving = True
 
@@ -26,7 +27,7 @@ class ServerPluginServices:
         self.run_job(PluginHealthCheck)
 
     def run_job(self, job: type[PluginServiceRound] | type[PluginHealthCheck]) -> None:
-        container = synced_container(self.home)
+        container = synced_container(self.home, self.turns)
         try:
             container.get(job).run(self.processes)
         finally:

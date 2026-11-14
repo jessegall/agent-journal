@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 import sqlite3
 from pathlib import Path
 from contextlib import contextmanager
@@ -50,12 +51,12 @@ class Database:
 
     @classmethod
     def opened(cls, home: JournalHome, turns: WriteTurns | None = None) -> "Database":
-        home.database.parent.mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(home.database.parent, parents=True, exist_ok=True)
         return cls.configured(sqlite3.connect(home.database, autocommit=True), turns)
 
     @classmethod
     def shared(cls, home: JournalHome, turns: WriteTurns | None = None) -> "Database":
-        home.database.parent.mkdir(parents=True, exist_ok=True)
+        FileAccess.mkdir(home.database.parent, parents=True, exist_ok=True)
         return cls.configured(sqlite3.connect(home.database, autocommit=True, check_same_thread=False), turns)
 
     @classmethod
@@ -103,6 +104,9 @@ class Database:
     @property
     def has_transaction(self) -> bool:
         return self.connection.in_transaction
+
+    def rollback(self) -> None:
+        self.connection.execute("ROLLBACK")
 
     @contextmanager
     def transaction(self):
@@ -224,10 +228,11 @@ class Database:
         rows = self.rows(Statement(f"SELECT state FROM {table} WHERE id = ?", [row_id]))
         return rows[0]["state"] if rows else None
 
-    # a write outside a transaction takes the write turn for its one statement; inside one, the transaction holds it
+    # a write outside a transaction takes the write turn for its one statement; inside one, the transaction holds it.
+    # A PRAGMA takes no turn: it writes no row, and a rebuild sends one around its transaction.
     @contextmanager
-    def statement_turn(self):
-        if self.has_transaction:
+    def statement_turn(self, statement: Statement):
+        if self.has_transaction or statement.is_pragma:
             yield
             return
         with self.turns.write_turn():
@@ -235,7 +240,8 @@ class Database:
 
     def insert(self, statement: Statement) -> int:
         self.repeated_work.count_write(statement.sql)
-        with self.statement_turn():
+        with self.statement_turn(statement):
+            self.turns.count_statement()
             row_id = statement.result(self.connection).lastrowid
         if row_id is None:
             raise sqlite3.InterfaceError(f"the insert gave no row id: {statement.sql}")
@@ -243,7 +249,8 @@ class Database:
 
     def update(self, statement: Statement) -> int:
         self.repeated_work.count_write(statement.sql)
-        with self.statement_turn():
+        with self.statement_turn(statement):
+            self.turns.count_statement()
             return statement.result(self.connection).rowcount
 
     def close(self) -> None:

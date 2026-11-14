@@ -13,7 +13,7 @@ try {
     target.searchParams.set("page", "developer.hook-requests");
     await page.goto(target.href);
     try {
-        await page.waitForSelector('[data-hook-request="70"]', {timeout: 10000});
+        await page.waitForSelector('[data-table-row="70"]', {timeout: 10000});
     } catch (error) {
         process.stderr.write(`${page.url()}\n${(await page.locator("body").innerText()).slice(0, 2500)}\n`);
         await page.screenshot({path: "/tmp/journal-hook-requests-461-failure.png"});
@@ -25,22 +25,20 @@ try {
     await page.screenshot({path: '/tmp/pictures-request-filter/filters.png'});
     await page.keyboard.press('Escape');
     await page.locator('[data-feed-pause]').click();
-    await page.locator("[data-request-queue-open]").click();
-    await page.locator("[data-request-queue]").waitFor();
-    await page.getByText("No waiting requests.").waitFor();
+    await page.locator("[data-executions-open]").click();
+    await page.locator("[data-executions]").waitFor();
+    await page.locator('[data-lane="long"]').waitFor();
     await page.screenshot({path: "/tmp/journal-request-queue-647.png"});
-    await page.getByRole("button", {name: "Close the request queue"}).click();
-    assert.deepEqual(await page.locator("[data-hook-column]").allTextContents(), ["Event", "Tool", "Parts", "Time", "Sender", "Queued", "Duration"]);
-    assert.equal(await page.locator('[data-hook-request="70"] [data-hook-parts]').textContent(), "3");
-    assert.equal(await page.locator('[data-hook-request="70"] [data-hook-parts]').evaluate((cell) => getComputedStyle(cell).paddingRight), "12px");
-    assert.equal(await page.locator('[data-hook-request="69"] [data-hook-parts]').textContent(), "");
+    await page.getByRole("button", {name: "Close the executions"}).click();
+    assert.deepEqual(await page.locator(".table-row.head .cell").allTextContents(), ["Event", "Tool", "Parts", "Time", "Sender", "Queued", "Duration"]);
+    assert.equal(await page.locator('[data-table-row="70"] .cell').nth(2).textContent(), "3");
+    assert.equal(await page.locator('[data-table-row="69"] .cell').nth(2).textContent(), "");
     assert.match(await page.locator('[data-fold="developer"]').textContent(), /Developer/);
     assert.equal(await page.locator('[data-sidebar-window="developer.hook-requests"]').count(), 1);
     assert.equal(await page.locator("[data-hook-request-detail]").count(), 0);
     assert.equal(await page.locator("[data-hook-request-divider]").count(), 1);
-    assert.match(await page.locator('[data-hook-request="70"] time').textContent(), /^\d{2}:\d{2}:\d{2}\.\d{3}$/);
-    assert.match(await page.locator("[data-hook-day]").first().textContent(), /\d{4}-\d{2}-\d{2}.*UTC/);
-    const bounds = await page.locator("[data-hook-request-list]").evaluate((list) => ({
+    assert.match(await page.locator('[data-table-row="70"] .cell').nth(3).textContent(), /^\d{2}:\d{2}:\d{2}\.\d{3}$/);
+    const bounds = await page.locator("[data-hook-request-list] .table-layout-body").evaluate((list) => ({
         scrollHeight: list.scrollHeight, height: list.clientHeight, bottom: list.getBoundingClientRect().bottom,
         pageHeight: document.documentElement.clientHeight, documentHeight: document.documentElement.scrollHeight,
         overflow: getComputedStyle(list).overflowY,
@@ -49,18 +47,18 @@ try {
     assert.equal(bounds.overflow, "auto");
     assert.ok(bounds.bottom <= bounds.pageHeight, "the list must end inside the viewport");
     assert.ok(bounds.documentHeight <= bounds.pageHeight, "the list must not grow the page");
-    assert.equal(await page.locator('[data-hook-request="69"] .duration').evaluate((cell) => getComputedStyle(cell).color), "rgb(197, 139, 53)");
-    assert.equal(await page.locator('[data-hook-request="70"] .duration').evaluate((cell) => getComputedStyle(cell).color), "rgb(215, 107, 107)");
-    await page.locator('[data-hook-request="70"]').click();
+    assert.ok(await page.locator('[data-table-row="69"]').evaluate((row) => row.classList.contains("warn")));
+    assert.ok(await page.locator('[data-table-row="70"]').evaluate((row) => row.classList.contains("danger")));
+    await page.locator('[data-table-row="70"]').click();
     assert.match(await page.locator("[data-hook-request-headers]").textContent(), /request-69/);
     assert.match(await page.locator("[data-hook-request-body]").textContent(), /pre_tool_use/);
-    await page.locator("[data-hook-request-list]").evaluate((list) => { list.scrollTop = list.scrollHeight; });
-    assert.ok(await page.locator("[data-hook-request-list]").evaluate((list) => list.scrollTop > 0));
+    await page.locator("[data-hook-request-list] .table-layout-body").evaluate((list) => { list.scrollTop = list.scrollHeight; });
+    assert.ok(await page.locator("[data-hook-request-list] .table-layout-body").evaluate((list) => list.scrollTop > 0));
     assert.equal(await page.locator("[data-hook-request-detail-area]").evaluate((detail) => detail.scrollTop), 0);
     const divider = await page.locator("[data-hook-request-divider]").boundingBox();
     assert.equal(divider.width, 1);
     assert.ok(divider.height > 500);
-    await page.locator("[data-hook-request-list]").evaluate((list) => { list.scrollTop = 0; });
+    await page.locator("[data-hook-request-list] .table-layout-body").evaluate((list) => { list.scrollTop = 0; });
     await page.screenshot({path: "/tmp/journal-hook-requests-461.png"});
     await page.setViewportSize({width: 700, height: 800});
     const narrow = await page.locator("[data-hook-request-divider]").boundingBox();

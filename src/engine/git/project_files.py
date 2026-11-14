@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from pathlib import Path
 
 from engine.enums.process_type import ProcessType
@@ -19,4 +20,4 @@ class ProjectFiles:
         if not finished.succeeded:
             return []
         names = sorted({name for name in finished.stdout.split("\0") if name})
-        return [self.folder / name for name in names if (self.folder / name).is_file()]
+        return [self.folder / name for name in names if FileAccess.is_file(self.folder / name)]

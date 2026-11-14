@@ -30,6 +30,7 @@ from core.modules.profiles.support.profile_files import ProfileFiles
 from engine.setting.setting_values import SettingValues
 from engine.profile.agent_profile import AgentProfile
 from core.modules.usage.models.agent_card import AgentCard
+from core.modules.plans.models.plan_card import PlanCard
 from core.modules.usage.support.agent_blocked import AgentBlocked
 from core.modules.usage.support.agent_facts import AgentFacts
 from core.modules.usage.support.agent_facts_list import AgentFactsList
@@ -80,8 +81,9 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         session_costs = self.spend.session_costs(agent_id) if agent_id is not None else ()
         unit_names = self.activity.work.unit_names([card.id for card in cards_read])
         merges = self.merged_work(cards_read)
+        plans = self.plan_counts(cards_read)
         return AgentFactsList(tuple(replace(self.facts(card, titles, pending.get(card.id), statuses[card.session], account, sandboxes.get(card.id, True), merges.get(card.id)), session_costs=session_costs,
-                                            unit_name=unit_names.get(card.id, ""))
+                                            unit_name=unit_names.get(card.id, ""), plan_counts={plan_id: plans[plan_id] for plan_id in self.plan_ids(card)})
                                     for card in cards_read))
 
     def sandboxes(self, cards: Sequence[AgentCard], read_rows: Sequence[Agent]) -> dict[int, bool]:
@@ -89,6 +91,16 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         rows = [row for row in read_rows if row.id in separate_folder_ids]
         unread = sorted(separate_folder_ids - {row.id for row in rows})
         return self.sandbox.sandboxed_among([*rows, *(self.queries.query(Agent).find_many(unread) if unread else ())])
+
+    @staticmethod
+    def plan_ids(card: AgentCard) -> set[int]:
+        return {int(str(task["plan_id"])) for task in json.loads(card.tasks) if task["plan_id"]}
+
+    def plan_counts(self, cards: Sequence[AgentCard]) -> Mapping[int, Mapping[str, int]]:
+        """The tasks of each plan any of the cards' tasks belongs to, by state, read once for each plan: the bar of an agent's card shows its plan, not its own tasks."""
+        plan_ids = {plan_id for card in cards for plan_id in self.plan_ids(card)}
+        plans = {plan_id: self.queries.query(PlanCard).find(plan_id) for plan_id in plan_ids}
+        return {plan_id: {"completed": plan.completed_count, "testing": plan.testing_count, "started": plan.started_count, "total": plan.task_count} for plan_id, plan in plans.items()}
 
     def merged_work(self, cards: Sequence[AgentCard]) -> Mapping[int, MergedWork]:
         return self.activity.work.merged_work([card.id for card in cards])
@@ -100,13 +112,19 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         return tuple(task for task in tasks if task["state"] != TaskState.COMPLETED or not merged.includes(int(str(task["id"])), str(task["closed_at"])))
 
     def statuses(self, cards: Sequence[AgentCard]) -> Mapping[str, SessionStatus]:
-        return {card.session: self.files.status(card.session) for card in cards}
+        return {card.session: self.with_program_reports(card, self.files.status(card.session)) for card in cards}
+
+    def with_program_reports(self, card: AgentCard, status: SessionStatus) -> SessionStatus:
+        """Asks the program for the model and effort the status gave none of, right after the file was read, so the one file is read once."""
+        return replace(status, program_model="" if status.model else self.providers.reported_model(card.program, self.home, card.session),
+                       program_effort="" if status.effort else self.providers.session_effort(card.program, self.home, card.session))
 
     def facts(self, card: AgentCard, titles: dict[str, str], work_status: str | None, status: SessionStatus, account: tuple[PlanWindow, ...], sandboxed: bool, merged: MergedWork | None) -> AgentFacts:
-        blocked_reason = AgentBlocked(self.settings.number(BLOCK_CARD_SECONDS)).reason(card, self.clock.timestamp(), self.types.behaviours(card.role))
-        return AgentFacts(card.id, self.model(card, status) or card.program_model or card.job_model, self.context_percent(card, status), status.cost_dollars, card.started_task_id, card.started_task_title,
+        behaviours = self.types.behaviours(card.role)
+        blocked_reason = AgentBlocked(self.settings.number(BLOCK_CARD_SECONDS)).reason(card, self.clock.timestamp(), behaviours)
+        return AgentFacts(card.id, self.model(status) or card.program_model or card.job_model, self.context_percent(card, status), status.cost_dollars, card.started_task_id, card.started_task_title,
                           self.current_round(json.loads(card.tasks), merged), self.waiting_state(card, blocked_reason), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
-                          card.job_instruction, self.effort(card, status), self.types.behaviours(card.role).takes_jobs, card.job_returned, card.last_activity, self.helper_job(card), card.helper_job_title, titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not sandboxed, status.windows or account, card.usage_limit_ends_at.text if card.usage_limit_ends_at is not None else None,
+                          card.job_instruction, self.effort(status), behaviours.takes_jobs, card.job_returned, card.last_activity, self.helper_job(card), card.helper_job_title, titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not sandboxed, status.windows or account, card.usage_limit_ends_at.text if card.usage_limit_ends_at is not None else None,
                           helper_job_program=card.helper_job_program, occupant_launch=self.occupant_launch(card), is_helper_job_open=card.is_helper_job_open, is_context_unknown=self.is_context_unknown(card, status))
 
     @staticmethod
@@ -135,11 +153,13 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
             return self.share.session_usage(card.program, card.session, cap).percent
         return None if status.context.used_percentage is None else self.share.limited_reading(status.context, cap).percent
 
-    def model(self, card: AgentCard, status: SessionStatus) -> str:
-        return status.model or self.providers.reported_model(card.program, self.home, card.session)
+    @staticmethod
+    def model(status: SessionStatus) -> str:
+        return status.model or status.program_model
 
-    def effort(self, card: AgentCard, status: SessionStatus) -> str:
-        return status.effort or self.providers.session_effort(card.program, self.home, card.session)
+    @staticmethod
+    def effort(status: SessionStatus) -> str:
+        return status.effort or status.program_effort
 
     @staticmethod
     def waiting_state(card: AgentCard, blocked_reason: str) -> str:

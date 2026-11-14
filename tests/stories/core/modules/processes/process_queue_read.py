@@ -31,7 +31,7 @@ def test_a_queue_read_costs_the_same_with_many_ended_runs(new_story):
 
 def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an_edited_limit(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
-    story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} 4 --environment main", actor=story.user)
     story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=story.user)
     story.expect_success(f"setting set {ProcessSetting.READERS_FORCED.key} false --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start queue-worker claude worker --environment main"), ActorType.AGENT)
@@ -39,7 +39,7 @@ def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an
     second = start_process(story, "python check_cart.py", category=CommandCategory.TEST_RUN)
     start_process(story, "ls cart", category=CommandCategory.READ)
     page = queue_page(story)
-    story.expect_rows(page["parallel_limit"] == 1, page["total"] == 2,
+    story.expect_rows(page["parallel_limit"] == 4, page["total"] == 2,
                       page["used_slots"] == 1, page["waiting_count"] == 1,
                       [row["id"] for row in page["running"]] == [first.id],
                       [row["id"] for row in page["waiting"]] == [second.id],
@@ -52,10 +52,10 @@ def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an
     story.expect_success(f"setting set {page['suite_limits'][0]['key']} 500 --environment main", actor=story.user)
     story.expect_rows(queue_page(story)["suite_limits"][0]["value"] == 500)
     story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=story.user)
-    story.expect_success(f"setting set {page['limit_setting']} 2 --environment main", actor=story.user)
+    story.expect_success(f"setting set {page['limit_setting']} 8 --environment main", actor=story.user)
     third = start_process(story, "make site", category=CommandCategory.BUILD)
     page = queue_page(story)
-    story.expect_rows(page["parallel_limit"] == 2,
+    story.expect_rows(page["parallel_limit"] == 8,
                       [row["queued_at"] is not None for row in page["rows"]] == [False, False, True])
     end_run(story, first, "built\n")
     page = queue_page(story)

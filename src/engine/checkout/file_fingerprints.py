@@ -30,16 +30,16 @@ class FileFingerprints:
         stored = all_passes.setdefault(pass_name, {})
         for file in files:
             stored[str(file)] = self.fingerprint(file)
-        FileAccess.shared().write(self.file, json.dumps(all_passes))
+        FileAccess.write(self.file, json.dumps(all_passes))
 
     def pass_fingerprints(self, pass_name: str) -> dict[str, str]:
         return self.stored().get(pass_name, {})
 
     def stored(self) -> dict[str, dict[str, str]]:
-        return json.loads(FileAccess.shared().read(self.file)) if self.file.exists() else {}
+        return json.loads(FileAccess.read(self.file)) if FileAccess.exists(self.file) else {}
 
     @staticmethod
     def fingerprint(file: Path) -> str:
-        if not file.is_file() or file.stat().st_size > BIGGEST_FILE_BYTES:
+        if not FileAccess.is_file(file) or FileAccess.stat(file).st_size > BIGGEST_FILE_BYTES:
             return ""
-        return hashlib.sha256(FileAccess.shared().binary(file)).hexdigest()
+        return hashlib.sha256(FileAccess.binary(file)).hexdigest()

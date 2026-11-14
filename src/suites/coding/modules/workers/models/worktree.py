@@ -38,6 +38,7 @@ class Worktree(Removable, EnvironmentScoped, Model):
     tests_passed_at: Timestamp | None = None
     merge_ready_at: Timestamp | None = None
     returned_at: Timestamp | None = None
+    stop_requested_at: Timestamp | None = None
     pass_reason: str = ""
     merged_at: Timestamp | None = None
     removed_at: Timestamp | None = None

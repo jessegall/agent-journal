@@ -1,3 +1,4 @@
+from engine.database.write_turns import WriteTurns
 import io
 import json
 import secrets
@@ -9,7 +10,7 @@ from engine.container.container import Container
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from server.work.request_limits import CLI_LIMIT_SECONDS
-from server.work.listeners.listener_thread import ListenerThread
+from server.work.listeners.listener_wake_router import ListenerWakeRouter
 from server.work.listeners.listener_wake import ListenerWake
 from server.viewer.paired_phone import PairedPhone
 from server.errors.phone_module_error import PhoneModuleError
@@ -23,8 +24,8 @@ class PhoneSessions:
     token's digest in the journal, and finds the user a token's paired phone acts for, so a phone stays
     logged in across restarts of the server and is logged out once it is unpaired."""
 
-    def __init__(self, home: JournalHome, listener_thread: ListenerThread) -> None:
-        self.line_run = LineRun(home, CLI_LIMIT_SECONDS, ListenerWake(listener_thread))
+    def __init__(self, home: JournalHome, wakes: ListenerWakeRouter, turns: WriteTurns | None = None) -> None:
+        self.line_run = LineRun(home, CLI_LIMIT_SECONDS, ListenerWake(wakes), turns=turns)
         self.wrong_codes = WrongCodeLimit()
 
     def paired_token(self, code: str) -> str:

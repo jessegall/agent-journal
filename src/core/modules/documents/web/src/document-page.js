@@ -1,5 +1,4 @@
-import {h} from "vue";
-import DocumentLibrary from "./DocumentLibrary.vue";
+import DocumentsPage from "./DocumentsPage.vue";
 
-// the page: the documents in a sidebar and the chosen one read beside them
-export default {render: () => h(DocumentLibrary, {reader: true})};
+// the page: the documents and the reports in a list and the chosen one read beside it
+export default DocumentsPage;

@@ -27,6 +27,11 @@ class WorktreeRuns:
         passed_ids = {reach.id for reach in self.reaches(links) if reach.state is CheckpointState.PASSED}
         return {link.phase_id: link.commit_id for link in links if link.reach_id in passed_ids}
 
+    def failed_task_ids(self, worktree_id: int) -> tuple[int, ...]:
+        links = {link.reach_id: link for link in self.links(worktree_id)}
+        newest = {reach.phase_id: reach for reach in sorted(self.reaches(tuple(links.values())), key=lambda reach: reach.id)}
+        return tuple(dict.fromkeys(task_id for reach in newest.values() if reach.state is CheckpointState.FAILED for task_id in reach.tasks()))
+
     def has_merge(self, worktree_id: int) -> bool:
         return self.blocking_run(worktree_id) is not None
 
@@ -34,6 +39,11 @@ class WorktreeRuns:
         links = {link.reach_id: link for link in self.links(worktree_id)}
         newest = {reach.phase_id: reach for reach in sorted(self.reaches(tuple(links.values())), key=lambda reach: reach.id)}
         return next(((links[reach.id], reach) for reach in newest.values() if reach.state is not CheckpointState.PASSED), None)
+
+    # the journal's checkpoint tests of the worktree still run, which the worker waits on without a run of its own
+    def has_running_checkpoint(self, worktree_id: int) -> bool:
+        blocking = self.blocking_run(worktree_id)
+        return blocking is not None and blocking[1].state is CheckpointState.RUNNING
 
     def links(self, worktree_id: int) -> tuple[WorktreeReach, ...]:
         reaches = self.queries.query(WorktreeReach).filter(worktree_id=worktree_id)

@@ -25,17 +25,17 @@ class BuiltBundle:
         for root in self.sources:
             for file in self.files(root):
                 digest.update(f"{file.relative_to(root.parent).as_posix()}\0".encode())
-                digest.update(FileAccess.shared().binary(file))
+                digest.update(FileAccess.binary(file))
         return digest.hexdigest()
 
     def is_current(self) -> bool:
-        return self.stamp.is_file() and FileAccess.shared().read(self.stamp).strip() == self.digest()
+        return FileAccess.is_file(self.stamp) and FileAccess.read(self.stamp).strip() == self.digest()
 
     def write_stamp(self) -> None:
-        FileAccess.shared().write(self.stamp, self.digest() + "\n")
+        FileAccess.write(self.stamp, self.digest() + "\n")
 
     @staticmethod
     def files(root: Path) -> list[Path]:
-        if root.is_file():
+        if FileAccess.is_file(root):
             return [root]
-        return sorted(path for path in root.rglob("*") if path.is_file() and not SKIPPED_FOLDERS.intersection(path.relative_to(root).parts))
+        return sorted(path for path in FileAccess.rglob(root, "*") if FileAccess.is_file(path) and not SKIPPED_FOLDERS.intersection(path.relative_to(root).parts))

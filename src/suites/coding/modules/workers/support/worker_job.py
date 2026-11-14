@@ -6,6 +6,7 @@ SILENT_AGENT_SOURCE = "workers.silent-agent"
 ENDED_WORKER_SOURCE = "workers.ended-worker"
 WORKER_JOB_SOURCE = "workers.worker-job"
 WAITING_TASKS_SOURCE = "workers.waiting-tasks"
+OUTSIDE_WAIT_SOURCE = "workers.outside-wait"
 MERGE_CONFLICT_SOURCE = "workers.merge-clash"
 # how many times a worker is told to go on, since a task of it last moved, before its main agent is told it keeps stopping
 SHORT_PROOF_SOURCE = "workers.short-proof"

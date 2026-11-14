@@ -17,7 +17,7 @@ class AccountsModule(Module):
     """The people who can log in to a hosted journal: their logins, sessions and second factors."""
 
     name = "journal.core.accounts"
-    requires_core = ">=5,<6"
+    requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors"]
     models = [ModelDeclaration(PersonLogin, excluded_subcommands=HIDDEN_SUBCOMMANDS),
               ModelDeclaration(PersonSession, excluded_subcommands=HIDDEN_SUBCOMMANDS),
