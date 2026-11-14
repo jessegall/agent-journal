@@ -1,11 +1,13 @@
 import sys
+from pathlib import Path
 from collections import Counter
 from collections.abc import Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 
-ENGINE_FILE_FOLDER = "/src/engine/file/"
+DOOR_FOLDER = str(Path(__file__).resolve().parent) + "/"
+SOURCE_ROOT = str(Path(__file__).resolve().parents[2]) + "/"
 CALLER_DEPTH = 8
 
 
@@ -52,9 +54,9 @@ class FileTally:
     def caller() -> str:
         frame = sys._getframe(2)
         for _ in range(CALLER_DEPTH):
-            if frame is None or ENGINE_FILE_FOLDER not in frame.f_code.co_filename:
+            if frame is None or not frame.f_code.co_filename.startswith(DOOR_FOLDER):
                 break
             frame = frame.f_back
         if frame is None:
             return "unknown"
-        return f"{frame.f_code.co_filename.rsplit('/src/', 1)[-1]}:{frame.f_lineno}"
+        return f"{frame.f_code.co_filename.removeprefix(SOURCE_ROOT)}:{frame.f_lineno}"
