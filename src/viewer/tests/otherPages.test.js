@@ -19,9 +19,9 @@ test("test_search_layout: results are grouped by kind beside a reader with Open,
     document.body.append(element);
     element.querySelector("[data-search-input]").value = "cart";
     element.querySelector("[data-search-input]").dispatchEvent(new Event("input"));
-    element.querySelector("[data-search-go]").click();
+    element.querySelector("[data-search-input]").dispatchEvent(new KeyboardEvent("keydown", {key: "Enter", bubbles: true}));
     await settle();
-    expect([...element.querySelectorAll(".list-reader-group")].map((group) => group.textContent)).toEqual(["Task", "Doc"]);
+    expect([...element.querySelectorAll(".list-reader-group")].map((group) => group.textContent)).toEqual(["Tasks", "Documents"]);
     element.querySelector('[data-row="doc:2"]').click();
     await settle();
     expect(element.querySelector("[data-search-reader]").textContent).toContain("How the cart counts money");
