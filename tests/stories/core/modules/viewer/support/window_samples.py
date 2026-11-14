@@ -3,7 +3,8 @@ from engine.guard.guard import Guard
 from engine.model.model import Model
 from engine.module.module import Module
 from engine.enums.auto_scroll import AutoScroll
-from engine.viewer.layout_preset import LayoutPreset
+from engine.viewer.preset_set import PresetSet
+from engine.viewer.viewer_preset import ViewerPreset
 from engine.viewer.window_tab import WindowTab
 from engine.viewer.layout_shape import split, tabs
 from engine.viewer.window_declaration import WindowDeclaration
@@ -34,13 +35,30 @@ class NotesStartCheck(Guard[Moved[Task]]):
         return
 
 
+class BoardPreset(ViewerPreset):
+    """The notes board alone."""
+
+    key, name, text, shape = "board", "Board", "The notes board alone", tabs("notes.board")
+
+
+class BothPreset(ViewerPreset):
+    """The notes board beside its summary."""
+
+    key, name, text, shape = "both", "Both", "Board and summary", split("row", 0.5, tabs("notes.board"), tabs("notes.summary"))
+
+
+class NotesPresets(PresetSet):
+    """The layouts the notes suite offers for the home page."""
+
+    presets = [BoardPreset, BothPreset]
+
+
 class NotesSuite(Suite):
     """A sample suite that offers the notes board."""
 
     name = "notes"
     windows = ["notes.board", "notes.summary", "notes.planner"]
-    presets = {"home": [LayoutPreset("board", "Board", "The notes board alone", tabs("notes.board")),
-                        LayoutPreset("both", "Both", "Board and summary", split("row", 0.5, tabs("notes.board"), tabs("notes.summary")))]}
+    presets = {"home": NotesPresets}
 
 
 class NotesModule(Module):

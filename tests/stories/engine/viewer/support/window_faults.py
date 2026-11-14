@@ -1,6 +1,7 @@
 from engine.module.suite import Suite
 from engine.module.module import Module
-from engine.viewer.layout_preset import LayoutPreset
+from engine.viewer.preset_set import PresetSet
+from engine.viewer.viewer_preset import ViewerPreset
 from engine.viewer.layout_shape import tabs
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_extension import WindowExtension
@@ -135,11 +136,26 @@ class FlatFloatModule(Module):
     windows = [WindowDeclaration("floats.board", "Board", "board.html", WindowLoading.FRAME, skeleton=[SkeletonPart.line()], float_size=WindowSize(0, 300))]
 
 
+class BoardPreset(ViewerPreset):
+    key, name, text, shape = "board", "Board", "The board", tabs("presets.board")
+
+
+class ForeignChatPreset(ViewerPreset):
+    key, name, text, shape = "chat", "Chat", "The chat", tabs("messages.chat")
+
+
+class BoardAgainPreset(ViewerPreset):
+    key, name, text, shape = "board", "Board again", "The board again", tabs("presets.board")
+
+
+class ForeignPresets(PresetSet):
+    presets = [BoardPreset, ForeignChatPreset, BoardAgainPreset]
+
+
 class ForeignPresetSuite(Suite):
     name = "presets"
     windows = ["presets.board"]
-    presets = {"home": [LayoutPreset("board", "Board", "The board", tabs("presets.board")), LayoutPreset("chat", "Chat", "The chat", tabs("messages.chat")),
-                        LayoutPreset("board", "Board again", "The board again", tabs("presets.board"))]}
+    presets = {"home": ForeignPresets}
 
 
 class ForeignPresetModule(Module):

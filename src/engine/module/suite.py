@@ -1,8 +1,8 @@
 from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, ClassVar
 
-from engine.viewer.layout_preset import LayoutPreset
-from engine.viewer.layout_shape import LayoutShape
+from engine.viewer.preset_set import PresetSet
+from engine.viewer.viewer_layout import ViewerLayout
 from engine.helper_type.helper_type import HelperType
 from engine.module.task_assigner import TaskAssigner
 
@@ -26,7 +26,7 @@ class Suite:
     complete_control: ClassVar[bool] = False
     included_overlays: ClassVar[Sequence[str]] = []
     windows: ClassVar[Sequence[str]] = []
-    layouts: ClassVar[Mapping[str, LayoutShape]] = {}
-    presets: ClassVar[Mapping[str, Sequence[LayoutPreset]]] = {}
+    layouts: ClassVar[Mapping[str, type[ViewerLayout]]] = {}
+    presets: ClassVar[Mapping[str, type[PresetSet]]] = {}
     task_assigner: ClassVar[type[TaskAssigner] | None] = None
     helper_types: ClassVar[Sequence[type[HelperType]]] = []

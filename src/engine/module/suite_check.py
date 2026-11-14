@@ -80,7 +80,8 @@ class SuiteCheck:
         problems: list[str] = []
         for suite in loaded_suites.values():
             offered = {window for name in (suite.name, *suite.requires) if name in loaded_suites for window in loaded_suites[name].windows}
-            for page, presets in suite.presets.items():
+            for page, preset_set in suite.presets.items():
+                presets = preset_set.layout_presets()
                 keys = [preset.key for preset in presets]
                 problems += [f"suite {suite.name} offers two presets keyed {key} for {page}" for key in dict.fromkeys(keys) if keys.count(key) > 1]
                 problems += [f"suite {suite.name}'s preset {preset.key} for {page} shows {window}, which the suite does not offer"
