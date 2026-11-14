@@ -4,7 +4,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 SERVER_STORIES = ROOT / "tests" / "stories" / "server"
 # what is left for task 10187 (viewer_read_counts, viewer_hook_events, library_client); it only goes down, to 0
-SERVER_STORY_LIMIT = 20
+SERVER_STORY_LIMIT = 0
 WHAT_TO_DO = ("the server folder holds no stories (user 124510): a check of the server's machinery is an integration test under tests/integration, "
               "and what an agent or a person sees through the server is a story in its module's folder")
 

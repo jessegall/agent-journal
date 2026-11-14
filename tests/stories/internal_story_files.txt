@@ -69,7 +69,6 @@ tests/stories/core/modules/documents/trail_viewer.py
 tests/stories/core/modules/documents/upgrade.py
 tests/stories/core/modules/documents/work_source_corrections.py
 tests/stories/core/modules/documents/work_sources.py
-tests/stories/core/modules/drivers/agent_pause.py
 tests/stories/core/modules/drivers/agent_state_push_pop.py
 tests/stories/core/modules/drivers/agent_state_shapes.py
 tests/stories/core/modules/drivers/agent_states_lifecycle.py
@@ -94,7 +93,6 @@ tests/stories/core/modules/drivers/open_blocks.py
 tests/stories/core/modules/drivers/overview_reads.py
 tests/stories/core/modules/drivers/panic_file.py
 tests/stories/core/modules/drivers/queued_nudges.py
-tests/stories/core/modules/drivers/refusal_skips.py
 tests/stories/core/modules/drivers/removed_choices.py
 tests/stories/core/modules/drivers/repeated_file_reads.py
 tests/stories/core/modules/drivers/required_commands.py
@@ -111,7 +109,6 @@ tests/stories/core/modules/helpers/helper_start_folders.py
 tests/stories/core/modules/helpers/helper_window.py
 tests/stories/core/modules/helpers/job_marks.py
 tests/stories/core/modules/helpers/kept_agents.py
-tests/stories/core/modules/helpers/lasting_agents_jobs.py
 tests/stories/core/modules/helpers/lifetime_combinations.py
 tests/stories/core/modules/helpers/lifetime_cost.py
 tests/stories/core/modules/helpers/lifetime_reviewers.py
@@ -212,7 +209,6 @@ tests/stories/core/modules/processes/reader_draft.py
 tests/stories/core/modules/processes/reader_partial_ticks.py
 tests/stories/core/modules/processes/reader_samples.py
 tests/stories/core/modules/processes/reader_start.py
-tests/stories/core/modules/processes/readers.py
 tests/stories/core/modules/processes/readers_upgrade.py
 tests/stories/core/modules/processes/request_reader.py
 tests/stories/core/modules/processes/run_owners.py
@@ -322,7 +318,6 @@ tests/stories/suites/coding/main_reservation.py
 tests/stories/suites/coding/modules/checks/checks.py
 tests/stories/suites/coding/modules/checks/library_checks.py
 tests/stories/suites/coding/modules/workers/activity_reads.py
-tests/stories/suites/coding/modules/workers/agent_actions.py
 tests/stories/suites/coding/modules/workers/agents_retired_by_a_person_alone.py
 tests/stories/suites/coding/modules/workers/allowed_models.py
 tests/stories/suites/coding/modules/workers/ask_cards.py

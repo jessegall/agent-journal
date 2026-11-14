@@ -2,7 +2,7 @@ import json
 from collections.abc import Sequence
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import datetime
 from hashlib import sha256
 from pathlib import Path
 import os
@@ -20,7 +20,10 @@ from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import ended_run, moved_run, started_run
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.server.support.server_client import server_story
+from core.modules.settings.support.setting_catalogue import SettingCatalogue
+from core.modules.settings.support.setting_reader import SettingReader
+from tests.integration.support.integration_server import integration_server
+from tests.stories.server.support.server_client import AVATAR_KEY
 from tests.integration.support.server_harness import viewer_answer
 from tests.stories.support.story_checks import expect_greater, expect_value
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING
@@ -73,7 +76,7 @@ class ViewerWorkload:
 
     def manifest(self) -> dict[str, object]:
         definition = asdict(self)
-        source_root = Path(__file__).resolve().parents[3]
+        source_root = Path(__file__).resolve().parents[4]
         source_files = (Path(__file__).resolve(), source_root / "src/viewer/tests/viewerReadCounts.browser.mjs",
                         *(source_root / "src/viewer/src" / name for name in (
                             "api/transport.js", "api/joinedRead.js", "windows/lineBatch.js",
@@ -185,8 +188,8 @@ class PageReadComparison:
 
 
 class WorkloadServer:
-    def __init__(self, server, prior_settings: dict[str, object]):
-        self.server = server
+    def __init__(self, server, story, prior_settings: dict[str, object]):
+        self.server, self.story = server, story
         self.workload = viewer_workload()
         self.cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         self.prior_settings = prior_settings
@@ -220,8 +223,8 @@ class WorkloadServer:
 
     def attributed_evidence(self, funnel: dict[str, object]) -> dict[str, object]:
         # the first round moves the trace file aside, the next writes what it holds
-        self.server.story.run_tick("request trace import")
-        self.server.story.run_tick("request trace import")
+        self.story.journal.run_tick("request trace import")
+        self.story.journal.run_tick("request trace import")
         status, _, text = viewer_answer(self.server.viewer_port(), "/api/request-log-status", self.cookie, "")
         assert status == 200, text
         status = json.loads(text)
@@ -321,8 +324,8 @@ class WorkloadServer:
 
 
 @contextmanager
-def workload_server(new_story, *, listen: bool = False):
-    story = new_story(fixture=ViewerReadDataset)
+def workload_server(played, *, listen: bool = False):
+    story = played(ViewerReadDataset)
     tools_key = "journal.core.developer.tools"
     initial_values = {tools_key: json.loads(story.run(f"setting show {tools_key} --json", actor=story.user).output_text)}
     story.expect_success(f"setting switch {tools_key} on --project", actor=story.user)
@@ -331,11 +334,11 @@ def workload_server(new_story, *, listen: bool = False):
             continue
         initial_values[key] = json.loads(story.run(f"setting show {key} --json", actor=story.user).output_text)
         story.expect_success(f"setting set {key} {json.dumps(value)} --project", actor=story.user)
-    story.advance(datetime.now(timezone.utc) - story.clock.timestamp().value)
     build_workload(story)
     try:
-        with server_story(story, listener_thread_started=listen, real_time=True) as server:
-            yield WorkloadServer(server, initial_values)
+        story.run(f"setting make {AVATAR_KEY} false")
+        with integration_server(story.journal, listener_thread_started=listen) as server:
+            yield WorkloadServer(server, story, initial_values)
     finally:
         for key, setting in initial_values.items():
             if key == tools_key:
@@ -346,20 +349,20 @@ def workload_server(new_story, *, listen: bool = False):
 
 
 @pytest.fixture
-def read_sample(new_story):
-    with workload_server(new_story) as sample:
+def read_sample(played):
+    with workload_server(played) as sample:
         yield sample
 
 
 @pytest.fixture
-def browser_sample(new_story):
-    with workload_server(new_story) as sample:
+def browser_sample(played):
+    with workload_server(played) as sample:
         yield sample
 
 
 @pytest.fixture
-def scheduled_sample(new_story):
-    with workload_server(new_story, listen=True) as sample:
+def scheduled_sample(played):
+    with workload_server(played, listen=True) as sample:
         yield sample
 
 
@@ -412,7 +415,7 @@ def run_workload_browser(sample: WorkloadServer, tmp_path: Path, case: str = "sc
     measurement_file = tmp_path / f"viewer-{case}.json"
     FileAccess.write(manifest, json.dumps(sample.manifest()))
     address = f"http://127.0.0.1:{sample.server.viewer_port()}/?key={sample.server.viewer_key('Ada')}&environment=main"
-    script = Path(__file__).resolve().parents[3] / "src/viewer/tests/viewerReadCounts.browser.mjs"
+    script = Path(__file__).resolve().parents[4] / "src/viewer/tests/viewerReadCounts.browser.mjs"
     completed = subprocess.run(["node", str(script), address, str(manifest), str(measurement_file), case],
                                cwd=script.parent.parent, env=os.environ, capture_output=True, text=True, timeout=180)
     assert completed.returncode == 0, completed.stdout + completed.stderr
@@ -439,21 +442,21 @@ def run_workload_browser(sample: WorkloadServer, tmp_path: Path, case: str = "sc
     return sample_data
 
 
-def run_canonical_viewer_workload(new_story, output_folder: Path) -> tuple[dict[str, object], ...]:
+def run_canonical_viewer_workload(played, output_folder: Path) -> tuple[dict[str, object], ...]:
     output_folder.mkdir(parents=True, exist_ok=True)
     case_samples = []
     for case in ("schedule", "hidden-pane", "hidden-tab", "initially-hidden", "failure-return", "action-event-race"):
-        with workload_server(new_story, listen=case == "schedule") as sample:
+        with workload_server(played, listen=case == "schedule") as sample:
             case_samples.append(run_workload_browser(sample, output_folder, case))
     return tuple(case_samples)
 
 
-def test_workload_records_and_restores_prior_setting_values(new_story):
-    with workload_server(new_story) as sample:
+def test_workload_records_and_restores_prior_setting_values(played):
+    with workload_server(played) as sample:
         previous = sample.prior_settings
-        story = sample.server.story
+        story = sample.story
         expect_value(previous["journal.core.developer.tools"]["value"], False)
-        expect_value(previous[f"{HOOK_REQUEST_LOG_SIZE_SETTING}"]["value"], story.number_default(HOOK_REQUEST_LOG_SIZE_SETTING))
+        expect_value(previous[f"{HOOK_REQUEST_LOG_SIZE_SETTING}"]["value"], SettingReader.default(story.container.get(SettingCatalogue).value(HOOK_REQUEST_LOG_SIZE_SETTING)))
         expect_value(sample.manifest()["settings_before"], previous)
     restored = json.loads(story.run("setting show journal.core.developer.tools --json", actor=story.user).output_text)
     expect_value(restored["value"], False)
@@ -555,7 +558,7 @@ def test_the_workload_reads_scan_no_large_table_whole(read_sample):
 
 
 def test_an_agents_inspector_is_one_answer_on_one_connection(read_sample):
-    agent_id = read_sample.server.story.agent.id
+    agent_id = read_sample.story.agent.id
     measured = read_sample.read([ReadLine("agents.agent-detail", ("usage", "inspector", f"row:{agent_id}", "--environment", "main"))])
     print(json.dumps(measured.report(), sort_keys=True))
     expect_value((len(measured.answers), measured.answers[0]["code"], measured.connections), (1, 0, 1))
@@ -563,7 +566,7 @@ def test_an_agents_inspector_is_one_answer_on_one_connection(read_sample):
 
 
 def test_a_rows_two_people_are_one_answer_on_one_connection(read_sample):
-    agent_id = read_sample.server.story.agent.id
+    agent_id = read_sample.story.agent.id
     measured = read_sample.read([ReadLine("viewer.shell", ("agent", "people", "--creator", str(agent_id), "--owner", str(agent_id)))])
     expect_value((len(measured.answers), measured.answers[0]["code"], measured.connections), (1, 0, 1))
     expect_value((measured.answers[0]["value"]["actor"]["id"], measured.answers[0]["value"]["owner"]["id"]), (agent_id, agent_id))
