@@ -34,9 +34,7 @@ def assignment_marks(story):
     return tuple(story.container.get(Queries).query(ChatMark).filter(variant=WorkerMarkVariant.ASSIGNED).every_row(TEST_ROWS_REASON))
 
 
-@pytest.fixture
-def idle_plan(new_story, monkeypatch):
-    story = new_story(fixture=OpenTaskOrchestrator)
+def merged_worker(story):
     joined_person(story)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
@@ -44,6 +42,13 @@ def idle_plan(new_story, monkeypatch):
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     request_merge(story, worker)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+    return worker
+
+
+@pytest.fixture
+def idle_plan(new_story, monkeypatch):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    worker = merged_worker(story)
     story.expect_success('plan make "Next plan" --environment main', actor=story.user)
     story.expect_success('phase make --plan 1 "Build"', actor=story.user)
     story.expect_success('phase make --plan 1 "Ship"', actor=story.user)
@@ -99,6 +104,25 @@ def test_a_large_plan_dispatch_updates_dependencies_without_repeated_reads(new_s
     story.expect_success("plan approve 1 --environment main", actor=story.user)
     worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet --plan 1")
     tasks = story.container.get(Queries).query(Task).find_many(list(range(1, 15)))
+    story.expect_rows(all(assignee_of(story, task) == worker.id for task in tasks))
+
+
+def test_a_large_plan_sent_to_an_idle_worker_reads_assignments_without_repeats(new_story, monkeypatch):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    worker = merged_worker(story)
+    story.expect_success('plan make "Many tasks" --environment main', actor=story.user)
+    story.expect_success('phase make --plan 1 "Build"', actor=story.user)
+    for number in range(2, 16):
+        task = story.new_row_id(f'task make "Task {number}" --environment main', actor=story.agent)
+        story.expect_success(f"phase place {task} --phase 1", actor=story.agent)
+        if number > 2:
+            story.expect_success(f"task block {task} --on task:2", actor=story.agent)
+    ready_plan(story, actor=story.user)
+    story.expect_success("plan approve 1 --environment main", actor=story.user)
+    monkeypatch.setattr(ClaudeCodeProvider, "session_matches_folder", lambda provider, folder, session: True)
+    stopped(story, worker)
+    story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --plan 1", actor=story.agent)
+    tasks = story.container.get(Queries).query(Task).find_many(list(range(2, 16)))
     story.expect_rows(all(assignee_of(story, task) == worker.id for task in tasks))
 
 

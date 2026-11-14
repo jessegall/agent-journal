@@ -60,12 +60,13 @@ class MergeAskScope:
             raise Refusal(f"commit {last_task} is not on your branch", "journal worker logs lists your commits")
         return MergeAskPart(worktree, unit, commit, tuple(task.id for task in self.range.leading_tasks(worktree, commit)), False)
 
-    # the asked work holds the newest base commit, so its checkpoint tests ran on the code the merge makes; otherwise
-    # a story that passes on the branch can fail only once merged
+    # the base branch changed none of the files the asked work changed, so its checkpoint tests ran on the code the
+    # merge makes for those files; a base that moves on elsewhere never holds the ask up
     def check_base(self, worktree: Worktree, part: MergeAskPart) -> None:
-        if self.range.git.is_ancestor(worktree.folder, worktree.base_branch, part.commit_id):
+        shared = self.range.git.base_changes_on_own_files(worktree.folder, worktree.base_branch, part.commit_id)
+        if not shared:
             return
-        raise Refusal(f"your work lacks the newest commits of {worktree.base_branch}", "run journal worker update, commit, let the checkpoint tests run on it, and ask again")
+        raise Refusal(f"{worktree.base_branch} changed {len(shared)} of the files your work changed, such as {shared[0]}", "run journal worker update, commit, let the checkpoint tests run on it, and ask again")
 
     def check_runs(self, worktree: Worktree, task_ids: tuple[int, ...]) -> None:
         blocking = self.runs.blocking_run(worktree.id)
