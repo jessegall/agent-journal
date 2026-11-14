@@ -22,7 +22,7 @@ def test_legacy_named_events_are_read_from_a_module():
 
 def current_contract(tmp_path) -> dict[str, dict[str, list[str]]]:
     modules = ModuleFinder(JournalHome(tmp_path)).default_modules()
-    models = {declaration.model.model_name: declaration.model for module in modules for declaration in module.models}
+    models = {declaration.model.model_name: declaration.model for module in modules for declaration in module.model_declarations()}
     contract: dict[str, dict[str, list[str]]] = {}
     for entry in ModuleCheck.event_keys(modules):
         model = models.get(entry.event.partition(".")[0])

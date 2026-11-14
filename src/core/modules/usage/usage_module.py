@@ -1,4 +1,4 @@
-from engine.module.model_declaration import ModelDeclaration
+from core.modules.usage.models.declarations.statistic_model_declaration import StatisticModelDeclaration
 from core.modules.usage.models.agent_listing import AgentListing
 from core.modules.usage.models.agent_counts import AgentCounts
 from core.modules.usage.models.agent_filter_options_view import AgentFilterOptionsView
@@ -26,7 +26,6 @@ from core.modules.usage.commands.usage_inspector.usage_inspector_subcommand impo
 from core.modules.usage.listeners.ended_agent_status_listener import EndedAgentStatusListener
 from core.modules.usage.migrations.m001_statistics import StatisticsTableMigration
 from core.modules.usage.models.agent_card import AgentCard
-from core.modules.usage.models.statistic import Statistic
 from core.modules.usage.upgrade.statistics_move import StatisticsMove
 from core.modules.usage.support.skeletons import USAGE_USAGE_SKELETON, USAGE_COST_SKELETON, USAGE_FITNESS_SKELETON, USAGE_MACHINE_SKELETON, USAGE_CONTEXT_SKELETON
 
@@ -42,7 +41,7 @@ class UsageModule(Module):
     seed_reason = "usage is what the agent programs report, which a demo has none of"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.agents", "journal.core.environments", "journal.core.tasks", "journal.core.questions", "journal.core.drivers", "journal.core.messages", "journal.core.waits", "journal.core.plans", "journal.core.processes", "journal.core.settings", "journal.core.actors", "journal.core.schedules", "journal.core.skills", "journal.core.profiles", "journal.core.assignments"]
-    models = [ModelDeclaration(Statistic, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
+    models = [StatisticModelDeclaration]
     migrations = [StatisticsTableMigration]
     views = [AgentCard, AgentListing, AgentFilterOptionsView, AgentCounts]
     listeners = [EndedAgentStatusListener]

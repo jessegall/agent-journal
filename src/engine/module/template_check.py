@@ -24,5 +24,5 @@ class TemplateCheck:
 
     @staticmethod
     def target_names(modules: Sequence[type[Module]]) -> frozenset[str]:
-        return frozenset([*(declaration.model.cli_name for module in modules for declaration in module.models),
+        return frozenset([*(declaration.model.cli_name for module in modules for declaration in module.model_declarations()),
                           *(subcommand_line(command).split()[0] for module in modules for command in module.subcommands)])

@@ -1,7 +1,8 @@
+from core.modules.dumps.models.declarations.dump_model_declaration import DumpModelDeclaration
+from core.modules.dumps.models.declarations.dump_item_model_declaration import DumpItemModelDeclaration
 from core.modules.dumps.docks.dumps_docks import DUMPS_DOCKS
 from core.modules.dumps.skills.declarations.dumps_skills import DUMPS_SKILLS
 from core.modules.dumps.migrations.m003_dump_closed_index import DumpClosedIndexMigration
-from engine.module.model_declaration import BUILT, ModelDeclaration
 from engine.module.module import Module
 from engine.viewer.window_search import WindowSearch
 from core.modules.dumps.support.dump_searcher import DumpSearcher
@@ -28,8 +29,6 @@ from core.modules.dumps.support.dump_nudges import DUMP_NUDGES
 from core.modules.dumps.listeners.dump_dock_listener import DumpDockListener
 from core.modules.dumps.migrations.m001_dumps import DumpsTablesMigration
 from core.modules.dumps.migrations.m002_project_dumps import ProjectDumpsMigration
-from core.modules.dumps.models.dump import Dump
-from core.modules.dumps.models.dump_item import DumpItem
 from core.modules.dumps.upgrade.dumps_move import DumpsMove
 from core.modules.dumps.seeders.dumps_seeder import DumpsSeeder
 from core.modules.dumps.support.skeletons import DUMPS_DUMPS_SKELETON
@@ -42,7 +41,7 @@ class DumpsModule(Module):
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.docking", "journal.core.agents", "journal.core.drivers"]
     skills = DUMPS_SKILLS
-    models = [ModelDeclaration(Dump, excluded_subcommands=BUILT), ModelDeclaration(DumpItem, excluded_subcommands=BUILT)]
+    models = [DumpModelDeclaration, DumpItemModelDeclaration]
     migrations = [DumpClosedIndexMigration, DumpsTablesMigration, ProjectDumpsMigration]
     moves = [DumpsMove]
     handlers = [MakeDumpHandler, MoveDumpItemHandler, NameDumpHandler]

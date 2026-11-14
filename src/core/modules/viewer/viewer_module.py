@@ -1,5 +1,7 @@
+from core.modules.viewer.models.declarations.viewer_layout_model_declaration import ViewerLayoutModelDeclaration
+from core.modules.viewer.models.declarations.person_preset_model_declaration import PersonPresetModelDeclaration
+from core.modules.viewer.models.declarations.window_permission_model_declaration import WindowPermissionModelDeclaration
 from core.modules.viewer.windows.viewer_windows import VIEWER_WINDOWS
-from engine.module.model_declaration import ModelDeclaration
 from core.modules.viewer.migrations.m003_helpers_window_key import HelpersWindowKeyMigration
 from core.modules.viewer.migrations.m004_person_row_indexes import PersonRowIndexesMigration
 from engine.module.module import Module
@@ -13,7 +15,6 @@ from core.modules.viewer.commands.rename_person_preset.rename_person_preset_subc
 from core.modules.viewer.commands.save_person_preset.save_person_preset_handler import SavePersonPresetHandler
 from core.modules.viewer.commands.save_person_preset.save_person_preset_subcommand import SavePersonPresetSubcommand
 from core.modules.viewer.guards.person_preset_owner_guard import PersonPresetOwnerGuard
-from core.modules.viewer.models.person_preset import PersonPreset
 from core.modules.viewer.guards.permission_owner_guard import PermissionOwnerGuard
 from core.modules.viewer.guards.layout_owner_guard import LayoutOwnerGuard
 from core.modules.viewer.listeners.permission_pruner_listener import PermissionPrunerListener
@@ -30,8 +31,6 @@ from core.modules.viewer.commands.window_search.window_search_subcommand import 
 from core.modules.viewer.commands.window_setting.window_setting_subcommand import WindowSettingSubcommand
 from core.modules.viewer.commands.trust_window.trust_window_handler import TrustWindowHandler
 from core.modules.viewer.commands.trust_window.trust_window_subcommand import TrustWindowSubcommand
-from core.modules.viewer.models.viewer_layout import ViewerLayout
-from core.modules.viewer.models.window_permission import WindowPermission
 from core.modules.viewer.commands.support.window_setting_keys import VIEWER_SETTINGS
 
 
@@ -45,7 +44,7 @@ class ViewerModule(Module):
     requires_engine = ">=5,<6"
     settings = VIEWER_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings", "journal.core.drivers"]
-    models = [ModelDeclaration(ViewerLayout, excluded_subcommands=["make", "edit"]), ModelDeclaration(PersonPreset, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(WindowPermission, excluded_subcommands=["edit"])]
+    models = [ViewerLayoutModelDeclaration, PersonPresetModelDeclaration, WindowPermissionModelDeclaration]
     move_reason = "each suite carries the layouts of the application it replaces"
     migrations = [ViewerTablesMigration, PersonPresetsMigration, HelpersWindowKeyMigration, PersonRowIndexesMigration]
     handlers = [SaveViewerLayoutHandler, SavePersonPresetHandler, RenamePersonPresetHandler, RemovePersonPresetHandler, AllowWindowHandler, TrustWindowHandler, PruneWindowPermissionsHandler, SaveWindowSettingHandler]

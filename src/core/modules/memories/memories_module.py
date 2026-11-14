@@ -1,3 +1,6 @@
+from core.modules.memories.models.declarations.memory_model_declaration import MemoryModelDeclaration
+from core.modules.memories.models.declarations.memory_delivery_model_declaration import MemoryDeliveryModelDeclaration
+from core.modules.memories.models.declarations.memory_mark_model_declaration import MemoryMarkModelDeclaration
 from core.modules.memories.docks.memories_docks import MEMORIES_DOCKS
 from core.modules.memories.skills.declarations.memories_skills import MEMORIES_SKILLS
 from core.modules.memories.windows.memories_windows import MEMORIES_WINDOWS
@@ -28,7 +31,6 @@ from core.modules.memories.listeners.memory_removed_mark_listener import MemoryR
 from core.modules.memories.listeners.memory_weighed_mark_listener import MemoryWeighedMarkListener
 from core.modules.memories.listeners.compaction_fader_listener import CompactionFaderListener
 from core.modules.memories.listeners.task_memory_remover_listener import TaskMemoryRemoverListener
-from core.modules.memories.models.memory import Memory
 from core.modules.memories.upgrade.memories_move import MemoriesMove
 from core.modules.memories.commands.fade_memories.fade_memories_handler import FadeMemoriesHandler
 from core.modules.memories.commands.give_memories.give_memories_handler import GiveMemoriesHandler
@@ -44,14 +46,11 @@ from core.modules.memories.commands.memory_faded.memory_faded_subcommand import 
 from core.modules.memories.commands.make_memory.make_memory_handler import MakeMemoryHandler
 from core.modules.memories.commands.make_memory.make_memory_subcommand import MakeMemorySubcommand
 from core.modules.memories.commands.read_memory.read_memory_handler import ReadMemoryHandler
-from core.modules.memories.commands.remove_memory.remove_memory import RemoveMemory
 from core.modules.memories.commands.read_memory.read_memory_subcommand import ReadMemorySubcommand
 from core.modules.memories.commands.weigh_memories.weigh_memories_handler import WeighMemoriesHandler
 from core.modules.memories.commands.weigh_memories.weigh_memories_subcommand import WeighMemoriesSubcommand
-from core.modules.memories.models.memory_delivery import MemoryDelivery
 from core.modules.memories.models.context_memory import ContextMemory
 from core.modules.memories.models.memory_keyword import MemoryKeyword
-from core.modules.memories.models.memory_mark import MemoryMark
 from core.modules.memories.models.keyword_memory import KeywordMemory
 from core.modules.memories.migrations.m001_memories import MemoriesTablesMigration
 from core.modules.memories.migrations.m002_memory_types_drop_agent_writable import MemoryTypesDropAgentWritableMigration
@@ -79,9 +78,7 @@ class MemoriesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.settings", "journal.core.chat", "journal.core.docking",
                     "journal.core.drivers", "journal.core.documents"]
     skills = MEMORIES_SKILLS
-    models = [ModelDeclaration(Memory, commands=[RemoveMemory], excluded_subcommands=["make", "list"]), ModelDeclaration(MemoryKeyword),
-              ModelDeclaration(MemoryDelivery, excluded_subcommands=["make", "edit", "delete"]),
-              ModelDeclaration(MemoryMark, excluded_subcommands=["make", "edit", "delete", "weigh", "skip"])]
+    models = [MemoryModelDeclaration, ModelDeclaration(MemoryKeyword), MemoryDeliveryModelDeclaration, MemoryMarkModelDeclaration]
     migrations = [MemoryHolderIndexMigration, MemoryRemovedIndexMigration, MemorySessionMigration, MemoryOwnerMigration, MemoryScopeIndexMigration, MemoriesTablesMigration, MemoryTypesDropAgentWritableMigration, RemoveFadedMemoriesMigration, MemoryTypesDropFadesMigration]
     moves = [MemoriesMove]
     views = [ActiveMemory, ContextMemory, KeywordMemory, MemoryHolder]

@@ -1,5 +1,5 @@
+from core.modules.project_rules.models.declarations.project_rule_model_declaration import ProjectRuleModelDeclaration
 from core.modules.project_rules.skills.declarations.project_rules_skills import PROJECT_RULES_SKILLS
-from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
@@ -13,7 +13,6 @@ from core.modules.project_rules.migrations.m001_rules import RulesTableMigration
 from core.modules.project_rules.migrations.m002_memory_rules import MemoryRulesMigration
 from core.modules.project_rules.migrations.m003_plain_memories import PlainMemoriesMigration
 from core.modules.project_rules.guards.rule_approval_guard import RuleApprovalGuard
-from core.modules.project_rules.models.project_rule import ProjectRule
 from core.modules.project_rules.rules.start_rules_rule import StartRulesRule
 from core.modules.project_rules.support.rule_nudges import RULE_NUDGES
 from core.modules.project_rules.support.rule_settings import RULE_SETTINGS
@@ -27,7 +26,7 @@ class ProjectRulesModule(Module):
     seed_reason = "the demo shows no rules yet"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.docking", "journal.core.memories", "journal.core.reminders", "journal.core.settings", "journal.core.viewer"]
-    models = [ModelDeclaration(ProjectRule, excluded_subcommands=["make"])]
+    models = [ProjectRuleModelDeclaration]
     migrations = [RulesTableMigration, MemoryRulesMigration, PlainMemoriesMigration]
     moves = [RulesMove]
     handlers = [MakeRuleHandler]

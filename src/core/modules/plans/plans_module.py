@@ -1,3 +1,9 @@
+from core.modules.plans.models.declarations.plan_model_declaration import PlanModelDeclaration
+from core.modules.plans.models.declarations.phase_task_model_declaration import PhaseTaskModelDeclaration
+from core.modules.plans.models.declarations.plan_context_read_model_declaration import PlanContextReadModelDeclaration
+from core.modules.plans.models.declarations.plan_wait_model_declaration import PlanWaitModelDeclaration
+from core.modules.plans.models.declarations.checkpoint_reach_model_declaration import CheckpointReachModelDeclaration
+from core.modules.plans.models.declarations.checkpoint_pass_model_declaration import CheckpointPassModelDeclaration
 from core.modules.plans.docks.plans_docks import PLANS_DOCKS
 from core.modules.plans.skills.declarations.plans_skills import PLANS_SKILLS
 from core.modules.plans.commands.repair_plan_states.repair_plan_states_handler import RepairPlanStatesHandler
@@ -7,24 +13,15 @@ from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from core.modules.plans.migrations.m012_environment_index import PlanContextReadsEnvironmentIndexMigration
 from core.modules.plans.support.plan_settings import PLAN_SETTINGS
-from engine.module.model_declaration import ALL_SUBCOMMANDS
 from core.modules.plans.migrations.m008_plan_context_reads import PlanContextReadsMigration
 from core.modules.plans.migrations.m009_plan_waits import PlanWaitsMigration
-from core.modules.plans.models.plan_wait import PlanWait
 from core.modules.plans.support.plan_button_slots import WAITING_PLAN_SLOTS
 from core.modules.plans.commands.wait_plan.wait_plan_handler import WaitPlanHandler
 from core.modules.plans.commands.wait_plan.wait_plan_subcommand import WaitPlanSubcommand
 from core.modules.plans.listeners.plan_wait_listener import PlanWaitListener
-from core.modules.plans.models.plan_context_read import PlanContextRead
 from core.modules.plans.support.block_conditions.plan_context_read import PlanContextRead as PlanContextReadCondition
 from core.modules.plans.rules.plan_context_rule import PlanContextRule
 from engine.viewer.button_declaration import ButtonCondition, ButtonDeclaration, ButtonMenuItem, TextField
-from core.modules.plans.commands.block_plan.block_plan import BlockPlan
-from core.modules.plans.commands.rework_plan.return_plan import ReturnPlan
-from core.modules.plans.commands.approve_plan.approve_plan import ApprovePlan
-from core.modules.plans.commands.cancel_plan.cancel_plan import CancelPlan
-from core.modules.plans.commands.close_plan.close_plan import ClosePlan
-from core.modules.plans.commands.start_plan.start_plan import StartPlan
 from core.modules.plans.listeners.next_plan_task_starter_listener import NextPlanTaskStarterListener
 from core.modules.plans.listeners.started_task_plan_listener import StartedTaskPlanListener
 from core.modules.plans.guards.one_task_phase_guard import OneTaskPhaseGuard
@@ -71,7 +68,6 @@ from core.modules.plans.commands.plan_progress.plan_progress_subcommand import P
 from core.modules.plans.models.plan_event_row import PlanEventRow
 from core.modules.plans.models.plan_outline_task import PlanOutlineTask
 from core.modules.plans.models.plan_task import PlanTask
-from core.modules.plans.queries.plan_query import PlanQuery
 from core.modules.plans.support.plan_shared_rows import PlanSharedRows
 from engine.module.module import Module
 from engine.viewer.window_declaration import WindowDeclaration
@@ -83,9 +79,7 @@ from engine.enums.window_icon import WindowIcon
 from engine.enums.window_loading import WindowLoading
 from engine.module.model_declaration import ModelDeclaration
 from core.modules.plans.models.phase import Phase
-from core.modules.plans.models.phase_task import PhaseTask
 from core.modules.plans.upgrade.plans_move import PlansMove
-from core.modules.plans.models.plan import Plan
 from core.modules.plans.listeners.plan_move_mark_listener import PlanMoveMarkListener
 from core.modules.plans.listeners.started_plan_dock_listener import StartedPlanDockListener
 from core.modules.plans.listeners.ready_plan_sync_listener import ReadyPlanSyncListener
@@ -107,7 +101,6 @@ from core.modules.tasks.support.block_review_scope import BlockReviewScope
 from core.modules.plans.commands.choose_plan_focus.choose_plan_focus_handler import ChoosePlanFocusHandler
 from core.modules.plans.commands.choose_plan_focus.choose_plan_focus_subcommand import ChoosePlanFocusSubcommand
 
-PLAN_COMMANDS = (ApprovePlan, BlockPlan, CancelPlan, ClosePlan, ReturnPlan, StartPlan)
 
 from core.modules.plans.support.plan_inspector import PLAN_INSPECTOR
 from core.modules.plans.commands.assign_plan.assign_plan_handler import AssignPlanHandler
@@ -116,7 +109,6 @@ from core.modules.plans.commands.assign_plan.assign_plan_subcommand import Assig
 from engine.viewer.skeleton_part import SkeletonPart
 from engine.enums.window_place import WindowPlace
 from core.modules.plans.commands.record_checkpoints.record_checkpoints_handler import RecordCheckpointsHandler
-from core.modules.plans.commands.fail_checkpoint.fail_checkpoint import FailCheckpoint
 from core.modules.plans.commands.approve_checkpoint.approve_checkpoint_handler import ApproveCheckpointHandler
 from core.modules.plans.migrations.m013_checkpoint_reviews import CheckpointReviewsMigration
 from core.modules.plans.migrations.m014_checkpoint_review_report import CheckpointReviewReportMigration
@@ -136,8 +128,6 @@ from core.modules.plans.listeners.checkpoint_reach_listener import CheckpointRea
 from core.modules.plans.listeners.started_plan_checkpoints_listener import StartedPlanCheckpointsListener
 from core.modules.plans.migrations.m010_checkpoints import CheckpointsMigration
 from core.modules.plans.migrations.m011_checkpoint_reach_source import CheckpointReachSourceMigration
-from core.modules.plans.models.checkpoint_pass import CheckpointPass
-from core.modules.plans.models.checkpoint_reach import CheckpointReach
 
 
 class PlansModule(Module):
@@ -150,8 +140,7 @@ class PlansModule(Module):
     bindings = {PlanAuthors: PlanRowAuthors, BlockReviewScope: FocusedBlockReviewScope}
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking", "journal.core.drivers", "journal.core.messages", "journal.core.assignments"]
     skills = PLANS_SKILLS
-    models = [ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]), ModelDeclaration(PlanContextRead, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PlanWait, excluded_subcommands=ALL_SUBCOMMANDS),
-              ModelDeclaration(CheckpointReach, commands=tuple([FailCheckpoint]), excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(CheckpointPass, excluded_subcommands=["make", "edit", "delete"])]
+    models = [PlanModelDeclaration, ModelDeclaration(Phase), PhaseTaskModelDeclaration, PlanContextReadModelDeclaration, PlanWaitModelDeclaration, CheckpointReachModelDeclaration, CheckpointPassModelDeclaration]
     migrations = [PlanAssignmentsMigration, PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration, PlanWaitsMigration, CheckpointsMigration, CheckpointReachSourceMigration, PlanContextReadsEnvironmentIndexMigration, CheckpointReviewsMigration, CheckpointReviewReportMigration, AgentCommitReachesMigration, PlanContextStartEventUnboundMigration, StartedPlansKeepNoWaitReasonMigration]
     tick_handlers = [TickHandler(TickInterval(seconds=PLAN_SWEEP_SECONDS), PlanStateSweep(), "plan state sweep")]
     handlers = [RepairPlanStatesHandler, ApproveCheckpointHandler, CheckPlanHandler, RecordCheckpointsHandler, StartCheckpointRunHandler, WaitPlanHandler, AssignPlanHandler, RecordPlanAgentHandler, ChoosePlanFocusHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]

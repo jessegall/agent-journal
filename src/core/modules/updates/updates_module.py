@@ -1,8 +1,8 @@
-from core.modules.updates.models.release_install import ReleaseInstall
+from core.modules.updates.models.declarations.release_install_model_declaration import ReleaseInstallModelDeclaration
+from core.modules.updates.models.declarations.release_model_declaration import ReleaseModelDeclaration
 from core.modules.updates.migrations.m002_release_installs import ReleaseInstallsMigration
 from core.modules.updates.commands.record_release_install.record_release_install_handler import RecordReleaseInstallHandler
 from core.modules.updates.listeners.release_install_listener import ReleaseInstallListener
-from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
@@ -18,7 +18,6 @@ from core.modules.updates.commands.install_release.install_release_subcommand im
 from core.modules.updates.commands.update_notes.update_notes_subcommand import UpdateNotesSubcommand
 from core.modules.updates.migrations.m001_releases import ReleasesTableMigration
 from core.modules.updates.models.enums.update_setting import UPDATE_SETTINGS
-from core.modules.updates.models.release import Release
 from core.modules.updates.upgrade.updates_move import UpdatesMove
 from core.modules.updates.support.skeletons import UPDATES_UPDATES_SKELETON
 
@@ -33,7 +32,7 @@ class UpdatesModule(Module):
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.chat", "journal.core.settings"]
     settings = UPDATE_SETTINGS
-    models = [ModelDeclaration(ReleaseInstall, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(Release, excluded_subcommands=["make", "edit", "delete"])]
+    models = [ReleaseInstallModelDeclaration, ReleaseModelDeclaration]
     migrations = [ReleasesTableMigration, ReleaseInstallsMigration]
     listeners = [ReleaseInstallListener]
     handlers = [RecordReleaseInstallHandler, InstallReleaseHandler, ShowUpdateStepHandler]

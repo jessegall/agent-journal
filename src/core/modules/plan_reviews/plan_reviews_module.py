@@ -1,3 +1,4 @@
+from core.modules.plan_reviews.models.declarations.checkpoint_review_model_declaration import CheckpointReviewModelDeclaration
 from core.modules.plan_reviews.skills.declarations.plan_reviews_skills import PLAN_REVIEWS_SKILLS
 from engine.module.module import Module
 from core.modules.plans.support.plan_button_slots import WAITING_PLAN_SLOTS
@@ -17,9 +18,7 @@ from core.modules.plan_reviews.commands.start_checkpoint_review.start_checkpoint
 from core.modules.plan_reviews.listeners.checkpoint_review_report_listener import CheckpointReviewReportListener
 from core.modules.plan_reviews.listeners.checkpoint_review_start_listener import CheckpointReviewStartListener
 from core.modules.plan_reviews.migrations.m001_review_setting_keys import ReviewSettingKeysMigration
-from core.modules.plan_reviews.models.checkpoint_review import CheckpointReview
 from core.modules.plan_reviews.support.plan_review_settings import PLAN_REVIEW_SETTINGS
-from engine.module.model_declaration import ModelDeclaration
 
 
 class PlanReviewsModule(Module):
@@ -35,7 +34,7 @@ class PlanReviewsModule(Module):
     added_states = tuple([REVIEW_STATE])
     listeners = [CritiqueReportListener, CheckpointReviewReportListener, CheckpointReviewStartListener]
     handlers = [StartCheckpointReviewHandler]
-    models = [ModelDeclaration(CheckpointReview, excluded_subcommands=["make", "edit", "delete"])]
+    models = [CheckpointReviewModelDeclaration]
     migrations = [ReviewSettingKeysMigration]
     settings = PLAN_REVIEW_SETTINGS
     former_event_keys = {f"core.plans.checkpoint_review.{action}": f"core.plan_reviews.checkpoint_review.{action}" for action in ("created", "updated", "deleted")}

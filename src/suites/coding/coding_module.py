@@ -1,3 +1,4 @@
+from suites.coding.models.declarations.file_edit_model_declaration import FileEditModelDeclaration
 from suites.coding.agent_groups.coding_agent_groups import CODING_AGENT_GROUPS
 from suites.coding.skills.declarations.coding_skills import CODING_SKILLS
 from suites.coding.windows.extensions.coding_window_extensions import CODING_WINDOW_EXTENSIONS
@@ -10,9 +11,7 @@ from suites.coding.migrations.m009_prune_file_edits import PruneFileEditsMigrati
 from suites.coding.support.shipped_profiles import HELPER_PROFILES
 from suites.coding.support.coding_nudges import CODING_NUDGES
 from suites.coding.templates.coding_templates import CODING_TEMPLATES
-from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
-from suites.coding.models.file_edit import FileEdit
 from suites.coding.upgrade.file_edits_move import FileEditsMove
 from suites.coding.upgrade.viewer_layouts_move import ViewerLayoutsMove
 from suites.coding.upgrade.coding_settings_move import CodingSettingsMove
@@ -38,7 +37,6 @@ from suites.coding.rules.waiting_items_rule import WaitingItemsRule
 from suites.coding.drivers.helper.helper_driver import HelperDriver
 from suites.coding.drivers.worker.worker_driver import WorkerDriver
 from suites.coding.drivers.main.main_driver import MainDriver
-from suites.coding.support.coding_settings import PLAIN_NAMES_SETTING
 from suites.coding.settings.coding_setting_values import CodingSettingValues
 from suites.coding.listeners.full_test_run_listener import FullTestRunListener
 from suites.coding.rules.failed_full_run_rule import FailedFullRunRule
@@ -76,7 +74,7 @@ class CodingModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.assignments", "journal.core.assign_rules", "journal.core.plans", "journal.core.settings", "journal.core.setting-requests", "journal.core.viewer", "journal.core.plugins", "journal.core.processes", "journal.core.messages", "journal.core.questions", "journal.core.helpers", "journal.core.tools"]
     drivers = [MainDriver, HelperDriver, WorkerDriver]
     skills = CODING_SKILLS
-    models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
+    models = [FileEditModelDeclaration]
     migrations = [FileEditOldPathMigration, FileEditOldPathNameMigration, WorkerProfileNamesMigration, HelperRequestKeysMigration, HelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration, PruneFileEditsMigration, GraphifySettingKeysMigration]
     handlers = [RecordFileEditHandler, RecordFileChangesHandler, PruneFileEditsHandler]
     driver_rules = [WaitingItemsRule, IntroductionRule, FailedFullRunRule, GraphifySearchRule]

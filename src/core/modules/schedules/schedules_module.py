@@ -1,9 +1,9 @@
+from core.modules.schedules.models.declarations.scheduled_job_model_declaration import ScheduledJobModelDeclaration
 from core.modules.schedules.migrations.m004_schedule_session import ScheduleSessionMigration
 from core.modules.schedules.migrations.m005_environment_index import ScheduledJobsEnvironmentIndexMigration
 from core.modules.schedules.migrations.m002_stop_requested import StopRequestedMigration
 from core.modules.schedules.support.schedule_marks import SCHEDULE_MARKS
 from core.modules.schedules.support.schedule_nudges import SCHEDULE_NUDGES
-from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
@@ -20,7 +20,6 @@ from core.modules.schedules.commands.stop_scheduled_job.stop_scheduled_job_subco
 from core.modules.schedules.listeners.job_run_mark_listener import JobRunMarkListener
 from core.modules.schedules.migrations.m003_job_run_time import JobRunTimeMigration
 from core.modules.schedules.migrations.m001_scheduled_jobs import ScheduledJobsTableMigration
-from core.modules.schedules.models.scheduled_job import ScheduledJob
 from core.modules.schedules.rules.scheduled_job_rule import ScheduledJobRule
 from core.modules.schedules.upgrade.schedules_move import SchedulesMove
 from core.modules.schedules.rules.scheduled_job_run_rule import ScheduledJobRunRule
@@ -38,7 +37,7 @@ class SchedulesModule(Module):
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.environments", "journal.core.drivers", "journal.core.chat"]
     seeders = [SchedulesSeeder]
-    models = [ModelDeclaration(ScheduledJob, excluded_subcommands=["make", "edit", "delete"])]
+    models = [ScheduledJobModelDeclaration]
     migrations = [ScheduleSessionMigration, ScheduledJobsTableMigration, StopRequestedMigration, JobRunTimeMigration, ScheduledJobsEnvironmentIndexMigration]
     handlers = [RecordScheduledJobHandler, RecordScheduledJobRunHandler, EndScheduledJobHandler, StopScheduledJobHandler]
     subcommands = [ScheduledJobStateSubcommand, StopScheduledJobSubcommand]

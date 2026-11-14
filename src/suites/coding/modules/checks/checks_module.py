@@ -1,3 +1,4 @@
+from suites.coding.modules.checks.models.declarations.check_model_declaration import CheckModelDeclaration
 from suites.coding.modules.checks.skills.declarations.checks_skills import CHECKS_SKILLS
 from suites.coding.modules.checks.windows.extensions.shell_checks_extension import ShellChecksExtension
 from suites.coding.modules.checks.windows.checks_windows import CHECKS_WINDOWS
@@ -9,7 +10,6 @@ from suites.coding.modules.checks.migrations.m007_check_task_wait_index import C
 from suites.coding.modules.checks.migrations.m006_open_check_result_index import OpenCheckResultIndexMigration
 from suites.coding.modules.checks.commands.check_runs.check_runs_subcommand import CheckRunsSubcommand
 from suites.coding.modules.checks.support.check_nudges import CHECK_NUDGES
-from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from engine.check.periodic_checks import PeriodicChecks
 from engine.check.step_checks import StepChecks
@@ -41,8 +41,6 @@ from suites.coding.modules.checks.migrations.m003_check_hidden import CheckHidde
 from suites.coding.modules.checks.migrations.m004_check_run_percent import CheckRunPercentMigration
 from suites.coding.modules.checks.migrations.m005_open_task_wait_index import OpenTaskWaitIndexMigration
 from suites.coding.modules.checks.rules.broken_task_wait_rule import BrokenTaskWaitRule
-from suites.coding.modules.checks.models.check import Check
-from suites.coding.modules.checks.queries.check_query import CheckQuery
 from suites.coding.modules.checks.upgrade.checks_move import ChecksMove
 from suites.coding.modules.checks.seeders.checks_seeder import ChecksSeeder
 from suites.coding.modules.checks.rules.failed_check_rule import FailedCheckRule
@@ -50,7 +48,6 @@ from suites.coding.modules.checks.support.block_conditions.check_passed import C
 from suites.coding.modules.checks.support.check_library_share import CheckLibraryShare
 from suites.coding.modules.checks.support.check_inspector import CHECK_INSPECTOR
 
-BUILT = ["make", "edit", "show", "list", "delete"]
 
 
 class ChecksModule(Module):
@@ -65,7 +62,7 @@ class ChecksModule(Module):
     dependencies = ["journal.suites.coding", "journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.viewer"]
     skills = CHECKS_SKILLS
     library_shares = [CheckLibraryShare]
-    models = [ModelDeclaration(Check, query=CheckQuery, excluded_subcommands=BUILT)]
+    models = [CheckModelDeclaration]
     inspectors = [CHECK_INSPECTOR]
     listeners = [TaskWaitCheckListener, TaskWaitPassListener, EndedCheckRunsListener]
     migrations = [ActiveCheckIndexMigration, OpenCheckHiddenIndexMigration, CheckTaskWaitIndexMigration, OpenCheckResultIndexMigration, ChecksTableMigration, CheckTaskWaitMigration, CheckHiddenMigration, CheckRunPercentMigration, OpenTaskWaitIndexMigration]

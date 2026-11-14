@@ -1,9 +1,14 @@
+from core.modules.plugins.models.declarations.queued_run_model_declaration import QueuedRunModelDeclaration
+from core.modules.plugins.models.declarations.plugin_model_declaration import PluginModelDeclaration
+from core.modules.plugins.models.declarations.plugin_setting_model_declaration import PluginSettingModelDeclaration
+from core.modules.plugins.models.declarations.plugin_delivery_model_declaration import PluginDeliveryModelDeclaration
+from core.modules.plugins.models.declarations.plugin_output_model_declaration import PluginOutputModelDeclaration
+from core.modules.plugins.models.declarations.plugin_queue_file_model_declaration import PluginQueueFileModelDeclaration
 from core.modules.plugins.settings.plugins_setting_values import PluginsSettingValues
 from core.modules.plugins.skills.declarations.plugins_skills import PLUGINS_SKILLS
 from core.modules.plugins.support.plugin_installed_names import PluginInstalledNames
 from core.modules.processes.support.installed_plugins import InstalledPlugins
 from core.modules.plugins.migrations.m012_queued_run_names import QueuedRunNamesMigration
-from core.modules.plugins.models.queued_run import QueuedRun
 from core.modules.plugins.migrations.m011_queued_runs import QueuedRunsMigration
 from core.modules.plugins.commands.queue_plugin_run.queue_plugin_run_handler import QueuePluginRunHandler
 from core.modules.plugins.commands.queue_plugin_run.queue_plugin_run_subcommand import QueuePluginRunSubcommand
@@ -48,7 +53,6 @@ from core.modules.plugins.commands.plugin_path.plugin_path_subcommand import Plu
 from core.modules.plugins.commands.plugin_file.plugin_file_subcommand import PluginFileSubcommand
 from core.modules.plugins.support.plugin_nudges import PLUGIN_NUDGES
 from core.modules.plugins.support.plugin_project_reads import PluginProjectReads
-from engine.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from engine.module.module import Module
 from engine.viewer.window_search import WindowSearch
 from core.modules.plugins.support.plugin_searcher import PluginSearcher
@@ -105,14 +109,8 @@ from core.modules.plugins.listeners.stale_managed_hooks_listener import StaleMan
 from core.modules.plugins.migrations.m001_plugins import PluginsTablesMigration
 from core.modules.plugins.migrations.m002_plugin_queue_index import PluginQueueIndexMigration
 from core.modules.plugins.migrations.m009_plain_column_names import PlainColumnNamesMigration
-from core.modules.plugins.models.plugin import Plugin
-from core.modules.plugins.models.plugin_delivery import PluginDelivery
-from core.modules.plugins.models.plugin_output import PluginOutput
-from core.modules.plugins.models.plugin_queue_file import PluginQueueFile
-from core.modules.plugins.models.plugin_setting import PluginSetting
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
-from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.ticks.plugin_card_reading import PluginCardReading
 from core.modules.plugins.rules.plugin_rule import PluginRule
 from core.modules.plugins.rules.plugin_program_rule import PluginProgramRule
@@ -132,9 +130,7 @@ class PluginsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.chat", "journal.core.skills",
                     "journal.core.processes", "journal.core.agents", "journal.core.messages"]
     skills = PLUGINS_SKILLS
-    models = [ModelDeclaration(QueuedRun, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Plugin, query=PluginQuery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PluginSetting, excluded_subcommands=ALL_SUBCOMMANDS),
-              ModelDeclaration(PluginDelivery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(PluginOutput, excluded_subcommands=ALL_SUBCOMMANDS),
-              ModelDeclaration(PluginQueueFile, excluded_subcommands=ALL_SUBCOMMANDS)]
+    models = [QueuedRunModelDeclaration, PluginModelDeclaration, PluginSettingModelDeclaration, PluginDeliveryModelDeclaration, PluginOutputModelDeclaration, PluginQueueFileModelDeclaration]
     moves = [PluginsMove]
     windows = [WindowDeclaration("plugins.plugins", "Plugins", "plugins.js", WindowLoading.COMPONENT, skeleton=PLUGINS_PLUGINS_SKELETON, search=WindowSearch(PluginSearcher, "Search the plugins"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.PLUGIN, reads=["plugin events", "plugin service-log", "plugin record", "plugin list", "plugin settings", "plugin services", "plugin preview", "plugin latest", "plugin dashboard", "plugin dashboards", "plugin descriptions"],
                                  keys=[WindowKey("plugins", "plugin list", events=["plugin.*"]),

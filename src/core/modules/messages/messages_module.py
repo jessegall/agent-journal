@@ -1,3 +1,5 @@
+from core.modules.messages.models.declarations.message_model_declaration import MessageModelDeclaration
+from core.modules.messages.models.declarations.message_work_source_model_declaration import MessageWorkSourceModelDeclaration
 from core.modules.messages.skills.declarations.messages_skills import MESSAGES_SKILLS
 from core.modules.messages.migrations.m023_environment_index import MessageWorkSourcesEnvironmentIndexMigration
 from core.modules.messages.migrations.m020_message_parent_environment import MessageParentEnvironmentMigration
@@ -62,7 +64,6 @@ from core.modules.messages.commands.send_agent_message.send_agent_message_handle
 from core.modules.messages.commands.record_waiting_message_line.record_waiting_message_line_handler import RecordWaitingMessageLineHandler
 from core.modules.messages.listeners.allowed_stop_listener import AllowedStopListener
 from core.modules.messages.listeners.waiting_message_listener import WaitingMessageListener
-from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.listeners.message_rows_listener import MessageRowsListener
 from core.modules.messages.listeners.tagged_image_block_listener import TaggedImageBlockListener
 from core.modules.messages.listeners.report_pin_listener import ReportPinListener
@@ -93,16 +94,12 @@ from engine.viewer.toggle_option import ToggleOption
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.enums.window_icon import WindowIcon
 from engine.enums.window_loading import WindowLoading
-from engine.module.model_declaration import ModelDeclaration
-from core.modules.messages.models.message import Message
 from core.modules.messages.upgrade.messages_move import MessagesMove
 from core.modules.messages.support.message_marks import MESSAGE_MARKS
 from core.modules.messages.seeders.messages_seeder import MessagesSeeder
 from core.modules.messages.support.block_conditions.messages_read import MessagesRead
 from core.modules.messages.support.block_conditions.messages_answered import MessagesAnswered
 from core.modules.messages.support.skeletons import MESSAGES_ATTACHMENTS_SKELETON, MESSAGES_AVATAR_SKELETON, MESSAGES_CHAT_SKELETON
-from engine.module.model_declaration import ALL_SUBCOMMANDS
-from core.modules.messages.models.message_work_source import MessageWorkSource
 from core.modules.messages.listeners.new_session_work_source_listener import NewSessionWorkSourceListener
 from core.modules.messages.migrations.m018_message_work_sources import MessageWorkSourcesMigration
 from core.modules.messages.commands.choose_work_source.choose_work_source_handler import ChooseWorkSourceHandler
@@ -127,7 +124,7 @@ class MessagesModule(Module):
     requires_engine = ">=5,<6"
     block_conditions = [MessagesRead, MessagesAnswered]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.pins", "journal.core.drivers", "journal.core.dumps", "journal.core.settings", "journal.core.schedules", "journal.core.profiles"]
-    models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"]), ModelDeclaration(MessageWorkSource, excluded_subcommands=ALL_SUBCOMMANDS)]
+    models = [MessageModelDeclaration, MessageWorkSourceModelDeclaration]
     bindings = {EnvironmentActivity: MessageEnvironmentActivity}
     moves = [MessagesMove]
     views = [AttachedFile, ChatMessage, MainChatMark]

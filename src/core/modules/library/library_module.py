@@ -1,3 +1,5 @@
+from core.modules.library.models.declarations.library_connection_model_declaration import LibraryConnectionModelDeclaration
+from core.modules.library.models.declarations.library_copy_model_declaration import LibraryCopyModelDeclaration
 from core.modules.library.settings.library_setting_values import LibrarySettingValues
 from core.modules.library.skills.declarations.library_skills import LIBRARY_SKILLS
 from engine.viewer.window_declaration import WindowDeclaration
@@ -9,7 +11,6 @@ from engine.enums.window_place import WindowPlace
 from engine.viewer.window_read_search import WindowReadSearch
 from engine.library.library_lookup import LibraryLookup
 from core.modules.library.support.server_library_lookup import ServerLibraryLookup
-from engine.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from engine.module.module import Module
 from core.modules.library.commands.pair_library.pair_library_handler import PairLibraryHandler
 from core.modules.library.commands.pair_library.pair_library_subcommand import PairLibrarySubcommand
@@ -59,9 +60,6 @@ from core.modules.library.guards.library_address_guard import LibraryAddressGuar
 from core.modules.library.migrations.m001_library import LibraryTablesMigration
 from core.modules.library.migrations.m002_connection_signature_index import ConnectionSignatureIndexMigration
 from core.modules.library.listeners.connection_rows_listener import ConnectionRowsListener
-from core.modules.library.models.library_connection import LibraryConnection
-from core.modules.library.models.library_copy import LibraryCopy
-from core.modules.library.queries.library_connection_query import LibraryConnectionQuery
 from core.modules.library.support.skeletons import LIBRARY_TEAMS_SKELETON
 
 
@@ -74,7 +72,7 @@ class LibraryModule(Module):
     move_reason = "version 4's team rows are not carried over"
     dependencies = ["journal.core.actors", "journal.core.settings", "journal.core.documents", "journal.core.secrets", "journal.core.agents"]
     settings = [LibrarySettingValues]
-    models = [ModelDeclaration(LibraryConnection, query=LibraryConnectionQuery, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(LibraryCopy, excluded_subcommands=ALL_SUBCOMMANDS)]
+    models = [LibraryConnectionModelDeclaration, LibraryCopyModelDeclaration]
     migrations = [LibraryTablesMigration, ConnectionSignatureIndexMigration]
     listeners = [ConnectionRowsListener]
     guards = [LibraryAddressGuard]

@@ -1,7 +1,8 @@
+from core.modules.approvals.models.declarations.approval_request_model_declaration import ApprovalRequestModelDeclaration
+from core.modules.approvals.models.declarations.standing_approval_model_declaration import StandingApprovalModelDeclaration
 from core.modules.approvals.docks.approvals_docks import APPROVALS_DOCKS
 from core.modules.approvals.commands.answer_agent_approval.answer_agent_approval_handler import AnswerAgentApprovalHandler
 from core.modules.approvals.commands.answer_agent_approval.answer_agent_approval_subcommand import AnswerAgentApprovalSubcommand
-from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
@@ -29,7 +30,6 @@ from core.modules.approvals.migrations.m004_standing_approvals import StandingAp
 from core.modules.approvals.migrations.m005_approval_why import ApprovalWhyMigration
 from core.modules.approvals.migrations.m006_plain_column_names import PlainColumnNamesMigration
 from core.modules.approvals.commands.check_approval_works.check_approval_works_handler import CheckApprovalWorksHandler
-from core.modules.approvals.models.standing_approval import StandingApproval
 from core.modules.approvals.guards.standing_approval_guard import StandingApprovalGuard
 from core.modules.approvals.commands.make_standing_approval.make_standing_approval_handler import MakeStandingApprovalHandler
 from engine.viewer.button_menu_item import ButtonMenuItem
@@ -40,7 +40,6 @@ from core.modules.approvals.listeners.standing_approval_mark_listener import Sta
 from core.modules.approvals.support.approval_marks import APPROVAL_MARKS
 from core.modules.approvals.commands.relay_approval.relay_approval_handler import RelayApprovalHandler
 from core.modules.approvals.commands.relay_approval.relay_approval_subcommand import RelayApprovalSubcommand
-from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_dock_type import ApprovalDockType
 
 APPROVAL_SLOT = (f"dock.{ApprovalDockType.REQUEST.value}", "row.approval")
@@ -55,7 +54,7 @@ class ApprovalsModule(Module):
     move_reason = "approval requests are new in version 5"
     seed_reason = "the demo has no pending approval requests"
     dependencies = ["journal.core.agents", "journal.core.actors", "journal.core.environments", "journal.core.docking", "journal.core.viewer", "journal.core.chat", "journal.core.drivers", "journal.core.settings"]
-    models = [ModelDeclaration(ApprovalRequest, excluded_subcommands=["make", "edit", "delete", "begin", "accept", "refuse", "retry", "fail", "close"]), ModelDeclaration(StandingApproval, excluded_subcommands=["make", "edit"])]
+    models = [ApprovalRequestModelDeclaration, StandingApprovalModelDeclaration]
     migrations = [ApprovalFailureMigration, PlainColumnNamesMigration, ApprovalRequestsMigration, ApprovalRecipientsMigration, ApprovalCommandsMigration, StandingApprovalsMigration, ApprovalWhyMigration]
     handlers = [AcceptCoveredApprovalHandler, MakeStandingApprovalHandler, CheckApprovalWorksHandler, RequestUserApprovalHandler, MoveApprovalHandler, AnswerApprovalHandler, CloseUserApprovalHandler, RelayApprovalHandler, AnswerAgentApprovalHandler, RecoverApprovalsHandler]
     tick_handlers = [TickHandler(TickInterval(seconds=30), RecoverApprovalsTick(), "recover approvals", starts_immediately=True)]

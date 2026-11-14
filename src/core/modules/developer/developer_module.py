@@ -1,10 +1,9 @@
+from core.modules.developer.models.declarations.private_data_mark_model_declaration import PrivateDataMarkModelDeclaration
 from core.modules.developer.commands.code_map.code_map_subcommand import CodeMapSubcommand
 from core.modules.developer.migrations.m003_private_data_mark_environment_index import PrivateDataMarkEnvironmentIndexMigration
-from engine.module.model_declaration import ModelDeclaration
 from core.modules.developer.commands.record_private_data_finding.record_private_data_finding_handler import RecordPrivateDataFindingHandler
 from core.modules.developer.listeners.private_data_mark_listener import PrivateDataMarkListener
 from core.modules.developer.migrations.m002_private_data_marks import PrivateDataFlagsMigration
-from core.modules.developer.models.private_data_mark import PrivateDataMark
 from core.modules.developer.support.developer_nudges import DEVELOPER_NUDGES
 from core.modules.developer.listeners.exception_line_listener import ExceptionLineListener
 from core.modules.developer.support.reader_time_tool import ReaderTimeTool
@@ -47,7 +46,7 @@ class DeveloperModule(Module):
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.settings", "journal.core.chat", "journal.core.environments", "journal.core.agents"]
     settings = DEVELOPER_SETTINGS
-    models = [ModelDeclaration(PrivateDataMark, excluded_subcommands=["make", "edit", "delete"])]
+    models = [PrivateDataMarkModelDeclaration]
     migrations = [PrivateDataMarkEnvironmentIndexMigration, HookRequestsMigration, PrivateDataFlagsMigration]
     views = [HookRequest]
     tick_handlers = [TickHandler(TickInterval(seconds=60), PrivateDataTick(), "private data scan"), TickHandler(TickInterval(seconds=5), RequestTraceImport(), "request trace import")]

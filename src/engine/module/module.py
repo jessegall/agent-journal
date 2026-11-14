@@ -62,7 +62,7 @@ class Module:
     requires_engine: ClassVar[str]
     dependencies: ClassVar[list[str]] = []
     step_conditions: ClassVar[list[type[StepCondition]]] = []
-    models: ClassVar[list[ModelDeclaration]] = []
+    models: ClassVar[list[ModelDeclaration | type[ModelDeclaration]]] = []
     migrations: ClassVar[list[type[Migration]]] = []
     views: ClassVar[list[type[ViewModel]]] = []
     handlers: ClassVar[list[HandlerClass]] = []
@@ -146,6 +146,11 @@ class Module:
     @classmethod
     def dock_declarations(cls) -> list[DockDeclaration]:
         return [dock.declared() if isinstance(dock, type) else dock for dock in cls.docks]
+
+    # a model declared as a class gives its declaration; a short inline declaration is its own
+    @classmethod
+    def model_declarations(cls) -> list[ModelDeclaration]:
+        return [model.declared() if isinstance(model, type) else model for model in cls.models]
 
     @classmethod
     def declared_buttons(cls) -> list[ButtonDeclaration]:

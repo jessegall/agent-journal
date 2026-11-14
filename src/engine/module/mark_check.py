@@ -40,7 +40,7 @@ class MarkCheck:
             problems += self.buttons.problems(f"the mark {name}", (*mark.buttons, *mark.group_buttons), runs)
             if mark.body and not FileAccess.exists(module.web_folder() / mark.body):
                 problems.append(f"the mark {name} loads {mark.body}, which is not in its module's web/dist")
-            if mark.click is MarkClick.OPEN_ROW and not (module.models or module.dependencies):
+            if mark.click is MarkClick.OPEN_ROW and not (module.model_declarations() or module.dependencies):
                 problems.append(f"the mark {name} opens a row, and {module.name} declares and depends on no row model")
         return problems
 

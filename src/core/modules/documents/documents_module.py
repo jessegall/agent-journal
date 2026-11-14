@@ -1,3 +1,10 @@
+from core.modules.documents.models.declarations.open_document_model_declaration import OpenDocumentModelDeclaration
+from core.modules.documents.models.declarations.doc_model_declaration import DocModelDeclaration
+from core.modules.documents.models.declarations.report_model_declaration import ReportModelDeclaration
+from core.modules.documents.models.declarations.doc_revision_model_declaration import DocRevisionModelDeclaration
+from core.modules.documents.models.declarations.link_model_declaration import LinkModelDeclaration
+from core.modules.documents.models.declarations.comment_selection_model_declaration import CommentSelectionModelDeclaration
+from core.modules.documents.models.declarations.link_correction_model_declaration import LinkCorrectionModelDeclaration
 from core.modules.documents.docks.documents_docks import DOCUMENTS_DOCKS
 from core.modules.documents.skills.declarations.documents_skills import DOCUMENTS_SKILLS
 from core.modules.documents.windows.documents_windows import DOCUMENTS_WINDOWS
@@ -17,7 +24,6 @@ from engine.ticker.tick_interval import TickInterval
 from core.modules.documents.ticks.close_ended_documents_tick import CloseEndedDocumentsTick
 from core.modules.documents.commands.open_doc.open_doc_handler import OpenDocHandler
 from core.modules.documents.commands.open_doc.open_doc_subcommand import OpenDocSubcommand
-from core.modules.documents.models.open_document import OpenDocument
 from core.modules.documents.migrations.m006_revision_authors import RevisionAuthorsMigration
 from core.modules.documents.rules.open_document_rule import OpenDocumentRule
 from core.modules.documents.rules.open_document_stop_rule import OpenDocumentStopRule
@@ -26,7 +32,6 @@ from core.modules.documents.listeners.close_ended_document_listener import Close
 from core.modules.documents.commands.record_subject_link.record_subject_link_handler import RecordSubjectLinkHandler
 from core.modules.documents.listeners.plan_document_link_listener import PlanDocumentLinkListener
 from core.modules.documents.listeners.reply_link_listener import ReplyLinkListener
-from engine.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from engine.module.module import Module
 from core.modules.documents.support.doc_library_share import DocLibraryShare
 from core.modules.documents.support.document_nudges import DOCUMENT_OPEN, DOCUMENT_STOP_REFUSAL
@@ -68,18 +73,13 @@ from core.modules.documents.migrations.m002_link_source_index import LinkSourceI
 from core.modules.documents.migrations.m003_dock_abstracts import DockAbstractsMigration
 from core.modules.documents.migrations.m004_comment_selections import CommentSelectionsMigration
 from core.modules.documents.migrations.m005_project_documents import ProjectDocumentsMigration
-from core.modules.documents.models.comment_selection import CommentSelection
-from core.modules.documents.models.doc import Doc
-from core.modules.documents.models.doc_revision import DocRevision
 from core.modules.documents.models.document_row import DocumentRow
 from engine.cli.row_links import RowLinks
 from core.modules.documents.listeners.new_doc_dock_listener import NewDocDockListener
 from core.modules.documents.listeners.new_report_dock_listener import NewReportDockListener
-from core.modules.documents.models.link import Link
 from core.modules.documents.support.stored_row_links import StoredRowLinks
 from core.modules.documents.support.text_marks import TEXT_MARKS
 from core.modules.documents.listeners.text_read_mark_listener import TextReadMarkListener
-from core.modules.documents.models.report import Report
 from core.modules.documents.seeders.documents_seeder import DocumentsSeeder
 from core.modules.documents.upgrade.documents_move import DocumentsMove
 from core.modules.documents.upgrade.message_links_move import MessageLinksMove
@@ -88,7 +88,6 @@ from core.modules.documents.listeners.phase_mention_listener import PhaseMention
 from core.modules.documents.listeners.task_log_mention_listener import TaskLogMentionListener
 from core.modules.documents.listeners.deleted_row_link_listener import DeletedRowLinkListener
 from core.modules.documents.listeners.work_source_link_listener import WorkSourceLinkListener
-from core.modules.documents.models.link_correction import LinkCorrection
 from core.modules.documents.migrations.m007_link_corrections import LinkCorrectionsMigration
 from core.modules.documents.commands.remove_link.remove_link_handler import RemoveLinkHandler
 from core.modules.documents.commands.remove_link.remove_link_subcommand import RemoveLinkSubcommand
@@ -110,8 +109,7 @@ class DocumentsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.messages", "journal.core.tasks", "journal.core.plans", "journal.core.docking", "journal.core.agents", "journal.core.drivers", "journal.core.processes", "journal.core.chat"]
     skills = DOCUMENTS_SKILLS
     nudges = [DOCUMENT_OPEN, DOCUMENT_STOP_REFUSAL]
-    models = [ModelDeclaration(OpenDocument, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Doc, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Report, excluded_subcommands=ALL_SUBCOMMANDS),
-              ModelDeclaration(DocRevision, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Link, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(CommentSelection, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(LinkCorrection, excluded_subcommands=ALL_SUBCOMMANDS)]
+    models = [OpenDocumentModelDeclaration, DocModelDeclaration, ReportModelDeclaration, DocRevisionModelDeclaration, LinkModelDeclaration, CommentSelectionModelDeclaration, LinkCorrectionModelDeclaration]
     migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration, CommentSelectionsMigration, ProjectDocumentsMigration, RevisionAuthorsMigration, LinkCorrectionsMigration, MessageLinkPathsMigration]
     driver_rules = [OpenDocumentRule, OpenDocumentStopRule]
     block_conditions = [DocumentClosed]

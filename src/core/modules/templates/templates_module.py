@@ -1,6 +1,6 @@
+from core.modules.templates.models.declarations.template_model_declaration import TemplateModelDeclaration
 from core.modules.templates.templates.templates_templates import TEMPLATES_TEMPLATES
 from core.modules.templates.skills.declarations.templates_skills import TEMPLATES_SKILLS
-from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from engine.viewer.window_search import WindowSearch
 from engine.viewer.window_extension import WindowExtension
@@ -19,8 +19,6 @@ from core.modules.templates.guards.standard_template_guard import StandardTempla
 from core.modules.templates.listeners.standard_templates_listener import StandardTemplatesListener
 from core.modules.templates.migrations.m001_templates import TemplatesTableMigration
 from core.modules.templates.migrations.m002_template_module import TemplateModuleColumnMigration
-from core.modules.templates.models.template import Template
-from core.modules.templates.queries.template_query import TemplateQuery
 from core.modules.templates.commands.send_template.send_template_handler import SendTemplateHandler
 from core.modules.templates.commands.send_template.send_template_subcommand import SendTemplateSubcommand
 from core.modules.templates.seeders.templates_seeder import TemplatesSeeder
@@ -37,7 +35,7 @@ class TemplatesModule(Module):
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.drivers", "journal.core.messages", "journal.core.documents", "journal.core.plans", "journal.core.agents", "journal.core.skills"]
     skills = TEMPLATES_SKILLS
-    models = [ModelDeclaration(Template, query=TemplateQuery, excluded_subcommands=["make", "show", "list"])]
+    models = [TemplateModelDeclaration]
     migrations = [TemplatesTableMigration, TemplateModuleColumnMigration]
     moves = [TemplatesMove]
     handlers = [MakeTemplateHandler, SaveStandardTemplatesHandler, SendTemplateHandler]

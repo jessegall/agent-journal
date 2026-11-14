@@ -143,7 +143,7 @@ class ModuleSync:
             module_fingerprints={module.name: self.fingerprint.module_text(module) for module in modules},
             module_suites={module.name: suites.suite_names(module) for module in modules},
             models={declaration.model.cli_name: ModelEntry(module.name, DottedPath.class_path(declaration.model), tuple(DottedPath.class_path(command).text for command in declaration.commands),
-                                                  declaration.excluded_subcommands) for module in modules for declaration in module.models},
+                                                  declaration.excluded_subcommands) for module in modules for declaration in module.model_declarations()},
             handlers={**DEFAULT_HANDLERS, **{DottedPath.class_path(handler.command).text: DottedPath.class_path(handler) for module in modules for handler in module.handlers}},
             subcommands={subcommand_line(subcommand): DottedPath.class_path(subcommand) for module in modules for subcommand in module.subcommands},
             outward_lines=tuple(sorted(subcommand_line(subcommand) for module in modules for subcommand in module.subcommands if subcommand.outward)),

@@ -1,3 +1,5 @@
+from core.modules.skills.models.declarations.agent_skill_model_declaration import AgentSkillModelDeclaration
+from core.modules.skills.models.declarations.skill_request_model_declaration import SkillRequestModelDeclaration
 from core.modules.skills.skills.declarations.skills_skills import SKILLS_SKILLS
 from core.modules.skills.commands.set_required_skill.set_required_skill_handler import SetRequiredSkillHandler
 from core.modules.skills.rules.loaded_skill_rule import LoadedSkillRule
@@ -7,7 +9,6 @@ from core.modules.skills.migrations.m003_skill_session import SkillSessionMigrat
 from engine.viewer.window_read_search import WindowReadSearch
 from core.modules.skills.listeners.skill_publish_listener import SkillPublishListener
 from core.modules.skills.support.skill_nudges import SKILL_NUDGES
-from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
@@ -16,7 +17,6 @@ from engine.enums.window_icon import WindowIcon
 from engine.enums.window_loading import WindowLoading
 from engine.enums.window_place import WindowPlace
 from core.modules.skills.commands.agent_skill_unread.agent_skill_unread_subcommand import AgentSkillUnreadSubcommand
-from core.modules.skills.commands.load_agent_skill.load_agent_skill import LoadAgentSkill
 from core.modules.skills.commands.load_skill.load_skill_handler import LoadSkillHandler
 from core.modules.skills.commands.request_skill.request_skill_handler import RequestSkillHandler
 from core.modules.skills.commands.require_skill.require_skill_handler import RequireSkillHandler
@@ -39,8 +39,6 @@ from core.modules.skills.listeners.skill_request_save_listener import SkillReque
 from core.modules.skills.listeners.start_skills_listener import StartSkillsListener
 from core.modules.skills.migrations.m001_skills import SkillsTablesMigration
 from core.modules.skills.migrations.m002_skill_requests import SkillRequestsTableMigration
-from core.modules.skills.models.agent_skill import AgentSkill
-from core.modules.skills.models.skill_request import SkillRequest
 from core.modules.skills.rules.command_skill_rule import CommandSkillRule
 from core.modules.skills.rules.profile_skill_first_rule import ProfileSkillFirstRule
 from core.modules.skills.states.skill_block_countdown import SkillBlockCountdown
@@ -83,7 +81,7 @@ class SkillsModule(Module):
     settings = SKILL_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.settings", "journal.core.chat", "journal.core.processes", "journal.core.environments", "journal.core.profiles"]
     skills = SKILLS_SKILLS
-    models = [ModelDeclaration(AgentSkill, commands=[LoadAgentSkill]), ModelDeclaration(SkillRequest, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
+    models = [AgentSkillModelDeclaration, SkillRequestModelDeclaration]
     migrations = [SkillSessionMigration, SkillsTablesMigration, SkillRequestsTableMigration]
     subcommands = [SaveProfileSubcommand, ProfileSkillsSubcommand, SetRequiredSkillSubcommand, SkillRequirementsSubcommand, SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand, AgentSkillUnreadSubcommand, SkillRequiredSubcommand]
     handlers = [SaveProfileHandler, SetRequiredSkillHandler, RequireSkillHandler, LoadSkillHandler, ResetSkillsHandler, RequestSkillHandler]

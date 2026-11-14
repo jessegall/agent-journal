@@ -90,7 +90,7 @@ class WindowCheck:
         reads, runs = set(BOOKKEEPING_SUBCOMMANDS), set[str]()
         book = modules_book(modules)
         for module in modules:
-            for declaration in module.models:
+            for declaration in module.model_declarations():
                 model, excluded = declaration.model, set(declaration.excluded_subcommands)
                 lifecycle = book.lifecycle(model)
                 moves = tuple(move.name for move in lifecycle.moves()) if lifecycle else ()

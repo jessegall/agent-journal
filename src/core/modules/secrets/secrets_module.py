@@ -1,7 +1,7 @@
+from core.modules.secrets.models.declarations.secret_model_declaration import SecretModelDeclaration
 from core.modules.secrets.skills.declarations.secrets_skills import SECRETS_SKILLS
 from core.modules.secrets.migrations.m002_active_secret_index import ActiveSecretIndexMigration
 from core.modules.secrets.support.secret_nudges import SECRET_NUDGES
-from engine.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from engine.module.module import Module
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.enums.window_icon import WindowIcon
@@ -29,8 +29,6 @@ from core.modules.secrets.guards.secret_value_guard import SecretValueGuard
 from core.modules.secrets.listeners.secret_approval_listener import SecretApprovalListener
 from core.modules.secrets.migrations.m001_secrets import SecretsTableMigration
 from core.modules.secrets.migrations.m003_erased_deleted_secrets import ErasedDeletedSecretsMigration
-from core.modules.secrets.models.secret import Secret
-from core.modules.secrets.queries.secret_query import SecretQuery
 from core.modules.secrets.rules.secrets_folder_rule import SecretsFolderRule
 from core.modules.secrets.seeders.secrets_seeder import SecretsSeeder
 from core.modules.secrets.upgrade.secrets_move import SecretsMove
@@ -48,7 +46,7 @@ class SecretsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages"]
     skills = SECRETS_SKILLS
     seeders = [SecretsSeeder]
-    models = [ModelDeclaration(Secret, query=SecretQuery, excluded_subcommands=ALL_SUBCOMMANDS)]
+    models = [SecretModelDeclaration]
     migrations = [ActiveSecretIndexMigration, SecretsTableMigration, ErasedDeletedSecretsMigration]
     moves = [SecretsMove]
     handlers = [MakeSecretHandler, EditSecretHandler, FillSecretHandler, ProposeProgramHandler, AllowProgramHandler, DeleteSecretHandler]

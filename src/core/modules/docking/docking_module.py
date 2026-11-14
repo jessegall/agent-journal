@@ -1,3 +1,4 @@
+from core.modules.docking.models.declarations.dock_item_model_declaration import DockItemModelDeclaration
 from core.modules.docking.migrations.m008_dock_item_session import DockItemSessionMigration
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
@@ -21,7 +22,6 @@ from core.modules.docking.guards.dock_type_guard import DockTypeGuard
 from core.modules.docking.guards.one_item_per_row_guard import OneItemPerRowGuard
 from core.modules.docking.guards.type_capacity_guard import TypeCapacityGuard
 from core.modules.docking.guards.user_dock_guard import UserDockGuard
-from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.docking.commands.schedule_dock_item_leave.schedule_dock_item_leave_handler import ScheduleDockItemLeaveHandler
 from core.modules.docking.listeners.dock_item_leave_listener import DockItemLeaveListener
 from core.modules.docking.listeners.pending_dock_items_listener import PendingDockItemsListener
@@ -35,7 +35,6 @@ from core.modules.docking.migrations.m006_dock_item_due_index import DockItemDue
 from core.modules.docking.migrations.m007_pending_dock_items_index import PendingDockItemsIndexMigration
 from core.modules.docking.migrations.m009_dock_item_state_index import DockItemStateIndexMigration
 from core.modules.docking.models.dock import Dock
-from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.support.dock_limits import DOCKING_SETTINGS
 from core.modules.docking.seeders.docking_seeder import DockingSeeder
 from core.modules.docking.ticks.dock_item_leaves import DockItemLeaves
@@ -49,7 +48,7 @@ class DockingModule(Module):
     requires_engine = ">=5,<6"
     settings = DOCKING_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.settings"]
-    models = [ModelDeclaration(Dock), ModelDeclaration(DockItem, query=DockItemQuery)]
+    models = [ModelDeclaration(Dock), DockItemModelDeclaration]
     migrations = [DockItemSessionMigration, DocksTableMigration, ExistingEnvironmentDocksMigration, DockItemLabelsMigration, DockItemIndexesMigration, DockItemAgentsMigration, DockItemDueIndexMigration, PendingDockItemsIndexMigration, DockItemStateIndexMigration]
     handlers = [MakeDockHandler, AddDockItemHandler, KeepDockItemHandler, ReleaseDockItemHandler, RemoveDockItemHandler, ScheduleDockItemLeaveHandler]
     subcommands = [DockItemReadSubcommand, AddDockItemSubcommand, KeepDockItemSubcommand, ReleaseDockItemSubcommand, RemoveDockItemSubcommand, MainDockItemsSubcommand]

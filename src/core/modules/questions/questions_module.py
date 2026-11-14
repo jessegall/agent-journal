@@ -1,3 +1,4 @@
+from core.modules.questions.models.declarations.question_model_declaration import QuestionModelDeclaration
 from core.modules.questions.docks.questions_docks import QUESTIONS_DOCKS
 from core.modules.questions.windows.questions_windows import QUESTIONS_WINDOWS
 from core.modules.questions.migrations.m005_question_session import QuestionSessionMigration
@@ -5,17 +6,13 @@ from core.modules.questions.migrations.m007_question_context import QuestionCont
 from core.modules.questions.migrations.m006_question_environment_state_index import QuestionEnvironmentStateIndexMigration
 from core.modules.questions.migrations.m003_question_agent_state_index import QuestionAgentStateIndexMigration
 from core.modules.questions.support.question_nudges import QUESTION_NUDGES
-from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
-from core.modules.questions.commands.answer_question.answer_question import AnswerQuestion
 from core.modules.questions.commands.answer_question.answer_question_handler import AnswerQuestionHandler
-from core.modules.questions.commands.close_question.close_question import CloseQuestion
 from core.modules.questions.commands.ask_question.ask_question_handler import AskQuestionHandler
 from core.modules.questions.commands.ask_question.ask_question_subcommand import AskQuestionSubcommand
 from core.modules.questions.commands.question_list.question_list_subcommand import QuestionListSubcommand
 from core.modules.questions.commands.question_show.question_show_subcommand import QuestionShowSubcommand
 from core.modules.questions.support.question_marks import QUESTION_MARKS
-from core.modules.questions.queries.question_query import QuestionQuery
 from core.modules.questions.rules.own_question_tool_rule import OwnQuestionToolRule
 from core.modules.questions.guards.question_asker_guard import QuestionAskerGuard
 from core.modules.questions.guards.actor_options_guard import ActorOptionsGuard
@@ -28,7 +25,6 @@ from core.modules.questions.listeners.question_edited_mark_listener import Quest
 from core.modules.questions.migrations.m001_questions import QuestionsTablesMigration
 from core.modules.questions.migrations.m002_answer_message import AnswerMessageMigration
 from core.modules.questions.migrations.m004_question_place import QuestionPlaceMigration
-from core.modules.questions.models.question import Question
 from core.modules.questions.seeders.questions_seeder import QuestionsSeeder
 from core.modules.questions.upgrade.questions_move import QuestionsMove
 from core.modules.questions.upgrade.question_links_move import QuestionLinksMove
@@ -45,7 +41,7 @@ class QuestionsModule(Module):
     requires_engine = ">=5,<6"
     block_conditions = [QuestionAnswered, QuestionsClosed]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages", "journal.core.waits", "journal.core.chat", "journal.core.documents", "journal.core.tasks", "journal.core.plans", "journal.core.docking"]
-    models = [ModelDeclaration(Question, query=QuestionQuery, commands=(AnswerQuestion, CloseQuestion), excluded_subcommands=["make", "list", "show"])]
+    models = [QuestionModelDeclaration]
     migrations = [QuestionEnvironmentStateIndexMigration, QuestionSessionMigration, QuestionAgentStateIndexMigration, QuestionsTablesMigration, AnswerMessageMigration, QuestionPlaceMigration, QuestionContextMigration]
     moves = [QuestionsMove, QuestionLinksMove]
     subcommands = [AskQuestionSubcommand, QuestionListSubcommand, QuestionShowSubcommand]

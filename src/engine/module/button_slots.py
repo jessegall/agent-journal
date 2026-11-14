@@ -17,7 +17,7 @@ class ButtonSlots:
     @staticmethod
     def names(module: type[Module]) -> tuple[str, ...]:
         return (*(f"dock.{dock.type.value}" for dock in module.dock_declarations()),
-                *(f"row.{declaration.model.cli_name}" for declaration in module.models),
+                *(f"row.{declaration.model.cli_name}" for declaration in module.model_declarations()),
                 *(f"row.{inspector.model_name}" for inspector in module.inspectors if inspector.labelled), *module.button_slots)
 
     def problems(self) -> tuple[str, ...]:

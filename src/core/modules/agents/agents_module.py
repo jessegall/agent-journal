@@ -1,3 +1,8 @@
+from core.modules.agents.models.declarations.agent_model_declaration import AgentModelDeclaration
+from core.modules.agents.models.declarations.menu_answer_model_declaration import MenuAnswerModelDeclaration
+from core.modules.agents.models.declarations.agent_fold_model_declaration import AgentFoldModelDeclaration
+from core.modules.agents.models.declarations.agent_fold_row_model_declaration import AgentFoldRowModelDeclaration
+from core.modules.agents.models.declarations.agent_session_model_declaration import AgentSessionModelDeclaration
 from core.modules.agents.migrations.m021_menu_answer_agent_index import MenuAnswerAgentIndexMigration
 from engine.agent.agent_role_reader import AgentRoleReader
 from core.modules.agents.guards.agent_chat_guard import AgentChatGuard
@@ -55,17 +60,11 @@ from core.modules.agents.migrations.m004_menu_answers import MenuAnswersMigratio
 from core.modules.agents.migrations.m006_agent_end_name import AgentEndNameMigration
 from core.modules.agents.migrations.m005_agent_identity import AgentIdentityMigration
 from core.modules.agents.migrations.m007_agent_role_index import AgentRoleIndexMigration
-from core.modules.agents.models.agent import Agent
-from core.modules.agents.queries.agent_query import AgentQuery
-from core.modules.agents.models.menu_answer import MenuAnswer
-from core.modules.agents.models.agent_session import AgentSession
 from core.modules.agents.listeners.session_end_listener import SessionEndListener
 from core.modules.agents.listeners.session_launch_listener import SessionLaunchListener
 from core.modules.agents.migrations.m023_agent_sessions import AgentSessionsMigration
 from core.modules.agents.migrations.m027_agent_folds import AgentFoldsMigration
 from core.modules.agents.migrations.m028_fold_main_agents import FoldMainAgentsMigration
-from core.modules.agents.models.agent_fold import AgentFold
-from core.modules.agents.models.agent_fold_row import AgentFoldRow
 from core.modules.agents.migrations.m024_main_agent_parent import MainAgentParentMigration
 from core.modules.agents.support.local_launcher_transport import LocalLauncherTransport
 from core.modules.agents.support.program_transport import ProgramTransport
@@ -133,7 +132,6 @@ from core.modules.agents.commands.remove_instruction_import.remove_instruction_i
 from core.modules.agents.commands.warn_instruction_imports.warn_instruction_imports_handler import WarnInstructionImportsHandler
 from core.modules.agents.listeners.boot_instruction_imports_listener import BootInstructionImportsListener
 from engine.viewer.window_key import WindowKey
-from engine.module.model_declaration import ModelDeclaration
 from core.modules.agents.seeders.agents_seeder import AgentsSeeder
 from core.modules.agents.support.skeletons import AGENTS_AGENTS_SKELETON, AGENTS_HELPERS_SKELETON, AGENTS_TRANSCRIPT_SKELETON
 
@@ -158,8 +156,7 @@ class AgentsModule(Module):
     name = "journal.core.agents"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
-    models = [ModelDeclaration(Agent, query=AgentQuery, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentFold, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentFoldRow, excluded_subcommands=["make", "edit", "delete", "list"]),
-              ModelDeclaration(AgentSession, excluded_subcommands=["make", "edit", "delete"])]
+    models = [AgentModelDeclaration, MenuAnswerModelDeclaration, AgentFoldModelDeclaration, AgentFoldRowModelDeclaration, AgentSessionModelDeclaration]
     moves = [AgentsMove]
     migrations = [FoldMainAgentsMigration, AgentFoldsMigration, AgentAnnouncedColumnMigration, AgentLaunchFailureColumnMigration, MainAgentParentMigration, AgentSessionsMigration, AgentNumberMigration, MenuAnswerAgentIndexMigration, AgentHaltColumnMigration, AgentLaunchColumnMigration, PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageCapMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
     nudges = [AGENT_START_FAILED, *REPORT_NUDGES, PROGRAM_SETTINGS_BAN]

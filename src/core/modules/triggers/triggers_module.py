@@ -1,3 +1,5 @@
+from core.modules.triggers.models.declarations.trigger_model_declaration import TriggerModelDeclaration
+from core.modules.triggers.models.declarations.trigger_action_run_model_declaration import TriggerActionRunModelDeclaration
 from core.modules.triggers.commands.try_trigger.try_trigger_subcommand import TryTriggerSubcommand
 from core.modules.triggers.migrations.m005_trigger_skill import TriggerSkillMigration
 from core.modules.triggers.migrations.m006_trigger_approval_index import TriggerApprovalIndexMigration
@@ -10,7 +12,6 @@ from core.modules.triggers.migrations.m003_trigger_enabling import TriggerEnabli
 from core.modules.triggers.support.trigger_marks import TRIGGER_MARKS
 from core.modules.triggers.support.trigger_settings import TRIGGER_SETTINGS
 from core.modules.triggers.support.trigger_nudges import TRIGGER_NUDGES
-from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
@@ -29,21 +30,17 @@ from core.modules.triggers.migrations.m002_trigger_details import TriggerDetails
 from core.modules.triggers.commands.strike_trigger.strike_trigger_subcommand import StrikeTriggerSubcommand
 from core.modules.triggers.commands.trigger_list.trigger_list_subcommand import TriggerListSubcommand
 from core.modules.triggers.migrations.m001_triggers import TriggersTableMigration
-from core.modules.triggers.models.trigger import Trigger
-from core.modules.triggers.queries.trigger_query import TriggerQuery
 from core.modules.triggers.upgrade.triggers_move import TriggersMove
 from core.modules.triggers.seeders.triggers_seeder import TriggersSeeder
 from core.modules.triggers.rules.phrase_trigger_rule import PhraseTriggerRule
 from core.modules.triggers.rules.scheduled_trigger_rule import ScheduledTriggerRule
 from core.modules.triggers.support.skeletons import TRIGGERS_TRIGGERS_SKELETON
-from core.modules.triggers.models.trigger_action_run import TriggerActionRun
 from core.modules.triggers.migrations.m004_trigger_action_runs import TriggerActionRunsMigration
 from core.modules.triggers.commands.start_trigger_action.start_trigger_action_handler import StartTriggerActionHandler
 from core.modules.triggers.commands.deliver_trigger_output.deliver_trigger_output_handler import DeliverTriggerOutputHandler
 from core.modules.triggers.listeners.trigger_output_listener import TriggerOutputListener
 from core.modules.triggers.listeners.trigger_process_removal_listener import TriggerProcessRemovalListener
 
-BUILT = ["make", "list", "delete"]
 
 
 class TriggersModule(Module):
@@ -57,7 +54,7 @@ class TriggersModule(Module):
     guards = [AgentTriggerGuard]
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.chat", "journal.core.drivers", "journal.core.settings", "journal.core.processes", "journal.core.skills"]
-    models = [ModelDeclaration(Trigger, query=TriggerQuery, excluded_subcommands=BUILT), ModelDeclaration(TriggerActionRun, excluded_subcommands=["make", "edit", "list", "show", "delete"])]
+    models = [TriggerModelDeclaration, TriggerActionRunModelDeclaration]
     migrations = [TriggersTableMigration, TriggerDetailsMigration, TriggerEnablingMigration, TriggerActionRunsMigration, TriggerSkillMigration, TriggerApprovalIndexMigration]
     handlers = [EnableTriggerHandler, MakeTriggerHandler, ScheduleTriggerHandler, StrikeTriggerHandler, FireTriggerHandler, PauseTriggerHandler, StartTriggerActionHandler, DeliverTriggerOutputHandler]
     listeners = [TriggerActionsListener, TriggerWaitingMarkListener, TriggerOutputListener, TriggerProcessRemovalListener, TriggerApprovalListener]

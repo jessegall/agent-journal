@@ -1,3 +1,4 @@
+from core.modules.aliases.models.declarations.alias_model_declaration import AliasModelDeclaration
 from core.modules.aliases.migrations.m007_alias_category_index import AliasCategoryIndexMigration
 from engine.cli.shell_aliases import ShellAliases
 from core.modules.aliases.migrations.m003_alias_agent_access import AliasAgentAccessMigration
@@ -20,14 +21,12 @@ from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from core.modules.aliases.migrations.m001_aliases import AliasesTableMigration
 from core.modules.aliases.migrations.m002_alias_category import AliasCategoryMigration
-from core.modules.aliases.models.alias import Alias
 from core.modules.aliases.models.command_type import CommandType
 from core.modules.aliases.migrations.m004_command_kinds import CommandPrefixesMigration
 from core.modules.aliases.migrations.m005_alias_silence import AliasSilenceMigration
 from core.modules.aliases.migrations.m006_command_types import CommandTypesMigration
 from core.modules.aliases.models.saved_command import SavedCommand
 from core.modules.aliases.commands.support.alias_saved_subcommand import AliasSavedSubcommand
-from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.seeders.aliases_seeder import AliasesSeeder
 from core.modules.aliases.support.alias_shell_aliases import AliasShellAliases
 from core.modules.aliases.upgrade.aliases_move import AliasesMove
@@ -45,7 +44,7 @@ class AliasesModule(Module):
     name = "journal.core.aliases"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.processes", "journal.core.plugins", "journal.core.drivers"]
-    models = [ModelDeclaration(Alias, query=AliasQuery, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(CommandType)]
+    models = [AliasModelDeclaration, ModelDeclaration(CommandType)]
     views = [SavedCommand]
     migrations = [AliasCategoryIndexMigration, AliasesTableMigration, AliasCategoryMigration, AliasAgentAccessMigration, CommandPrefixesMigration, AliasSilenceMigration, CommandTypesMigration]
     moves = [AliasesMove]

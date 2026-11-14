@@ -1,6 +1,7 @@
+from core.modules.phone.models.declarations.phone_model_declaration import PhoneModelDeclaration
+from core.modules.phone.models.declarations.phone_code_model_declaration import PhoneCodeModelDeclaration
 from core.modules.phone.settings.phone_setting_values import PhoneSettingValues
 from core.modules.phone.migrations.m004_phone_notice_index import PhoneNoticeIndexMigration
-from engine.module.model_declaration import ModelDeclaration
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from core.modules.phone.ticks.phone_notices import PhoneNotices
@@ -16,10 +17,7 @@ from core.modules.phone.commands.pair_phone.pair_phone_subcommand import PairPho
 from core.modules.phone.commands.phone_session.phone_session_subcommand import PhoneSessionSubcommand
 from core.modules.phone.commands.redeem_phone_code.redeem_phone_code_handler import RedeemPhoneCodeHandler
 from core.modules.phone.commands.redeem_phone_code.redeem_phone_code_subcommand import RedeemPhoneCodeSubcommand
-from core.modules.phone.commands.unpair_phone.unpair_phone import UnpairPhone
 from core.modules.phone.migrations.m001_phones import PhonesTablesMigration
-from core.modules.phone.models.phone_code import PhoneCode
-from core.modules.phone.models.phone import Phone
 from core.modules.phone.guards.phone_row_guard import PhoneRowGuard
 from core.modules.phone.guards.phone_code_row_guard import PhoneCodeRowGuard
 from core.modules.phone.upgrade.phone_move import PhoneMove
@@ -47,8 +45,7 @@ class PhoneModule(Module):
     name = "journal.core.phone"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.settings", "journal.core.tunnel", "journal.core.questions", "journal.core.plans", "journal.core.agents"]
-    models = [ModelDeclaration(Phone, commands=[UnpairPhone], excluded_subcommands=["make", "edit"]),
-              ModelDeclaration(PhoneCode, excluded_subcommands=["make", "list", "show", "edit", "delete"])]
+    models = [PhoneModelDeclaration, PhoneCodeModelDeclaration]
     guards = [PhoneRowGuard, PhoneCodeRowGuard]
     migrations = [PhoneNoticeIndexMigration, PhonesTablesMigration, PhoneSubscriptionMigration, PhoneNoticeWaitingMigration]
     subcommands = [PairPhoneSubcommand, RedeemPhoneCodeSubcommand, PhoneSessionSubcommand, EnsurePushKeysSubcommand, SubscribePhoneSubcommand]

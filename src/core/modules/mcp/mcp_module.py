@@ -1,4 +1,4 @@
-from engine.module.model_declaration import ModelDeclaration
+from core.modules.mcp.models.declarations.mcp_server_model_declaration import McpServerModelDeclaration
 from engine.module.module import Module
 from engine.viewer.window_search import WindowSearch
 from core.modules.mcp.support.server_searcher import ServerSearcher
@@ -19,8 +19,6 @@ from core.modules.mcp.commands.remove_server.remove_server_handler import Remove
 from core.modules.mcp.commands.add_server.add_server_handler import AddServerHandler
 from core.modules.mcp.commands.add_server.add_server_subcommand import AddServerSubcommand
 from core.modules.mcp.migrations.m001_mcp_servers import McpServersTableMigration
-from core.modules.mcp.models.mcp_server import McpServer
-from core.modules.mcp.queries.mcp_server_query import McpServerQuery
 from core.modules.mcp.upgrade.mcp_servers_move import McpServersMove
 from core.modules.mcp.seeders.mcp_seeder import McpSeeder
 from core.modules.mcp.support.skeletons import MCP_INTEGRATIONS_SKELETON
@@ -35,7 +33,7 @@ class McpModule(Module):
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.secrets"]
     seeders = [McpSeeder]
-    models = [ModelDeclaration(McpServer, query=McpServerQuery, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
+    models = [McpServerModelDeclaration]
     migrations = [McpServersTableMigration]
     moves = [McpServersMove]
     handlers = [AddServerHandler, InstallServerHandler, GiveServerKeyHandler, RemoveServerHandler]
