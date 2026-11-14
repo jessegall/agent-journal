@@ -113,5 +113,17 @@ TRANSCRIPT_HANDLING = Sequence(
         "Tell the user in the chat what you made from the transcript, then close your task with journal task close <task> --outcome \"<the rows you made>\".",
     ),
 )
-STANDARD_SEQUENCES = (PLAN_BUILDING, PLAN_REVIEW_APPLYING, UPDATE_WRITING, INSTRUCTION_FILES_CHECK, DOCUMENT_SORTING, TRANSCRIPT_HANDLING, FUNCTIONAL_DESIGN)
+REPORT_HANDLING = Sequence(
+    creator_id=CORE_ACTOR_ID,
+    title="Handling a helper's report",
+    triggers=row_trigger("report.create", main_agent="yes"),
+    step_guards=guards(FILE_EDITS_BLOCKED, FILE_EDITS_OPEN, {**FILE_EDITS_BLOCKED, "conditions": ["documents.report-commented"]}),
+    steps=(
+        "Read the report: Open the report a helper filed with `journal report show <report n>` and read the sections it needs you to act on",
+        "Act on it: Do what the report calls for: fix what it found, file tasks for what you put off, answer the helper, or decide that nothing follows and why",
+        "Comment what came of it: Comment on the report what you did with it with `journal report comment <report n> \"<what came of it>\"`, so the report keeps a log of what followed",
+    ),
+)
+
+STANDARD_SEQUENCES = (PLAN_BUILDING, REPORT_HANDLING, PLAN_REVIEW_APPLYING, UPDATE_WRITING, INSTRUCTION_FILES_CHECK, DOCUMENT_SORTING, TRANSCRIPT_HANDLING, FUNCTIONAL_DESIGN)
 STANDARD_SEQUENCE_FIELDS = ("steps", "triggers", "step_guards")
