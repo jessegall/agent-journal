@@ -8,6 +8,7 @@ from engine.module.suite import Suite
 from engine.profile.agent_profile import AgentProfile
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.subcommand.subcommand import Subcommand
+from core.modules.helpers.types.helper import Helper
 
 
 class ShelfShow(ReadSubcommand[object]):
@@ -24,6 +25,7 @@ class ShelvesModule(Module):
     """A module that adds a read line and a change line no helper type lists."""
 
     name = "sample.shelves"
+    requires_core = ">=5,<6"
     dependencies = ["journal.core.agents"]
     subcommands = [ShelfShow, ShelfStock]
 
@@ -32,6 +34,7 @@ class WideProfileModule(Module):
     """A module whose helper profile names a line its type does not list."""
 
     name = "sample.wide-profile"
+    requires_core = ">=5,<6"
     dependencies = ["journal.core.agents"]
     profiles = [AgentProfile("sample-wide", "Widens its type", agent_type="helper", commands=CommandAllowList(lines=tuple(["setting set"])))]
 
@@ -53,6 +56,7 @@ class ListlessClerk(HelperType):
 
 class ClerkModule(Module):
     name = "sample.clerk"
+    requires_core = ">=5,<6"
     dependencies = ["journal.core.agents"]
 
 
@@ -68,7 +72,7 @@ class ListlessClerkSuite(Suite):
     helper_types = [ListlessClerk]
 
 
-class ShowingClerk(HelperType):
+class ShowingClerk(Helper):
     key = "clerk"
     label = "Clerk"
     access = Access.READ
@@ -80,6 +84,12 @@ class ListingClerk(ShowingClerk):
     commands = CommandAllowList(lines=tuple(["task list"]))
 
 
+class ListingClerkModule(Module):
+    name = "sample.listing-clerk"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.core.agents"]
+
+
 class ShowingClerkSuite(Suite):
     name = "showing-clerk"
     modules = [ClerkModule]
@@ -88,5 +98,5 @@ class ShowingClerkSuite(Suite):
 
 class ListingClerkSuite(Suite):
     name = "listing-clerk"
-    modules = [ClerkModule]
+    modules = [ListingClerkModule]
     helper_types = [ListingClerk]

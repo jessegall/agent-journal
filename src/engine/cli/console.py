@@ -159,13 +159,13 @@ class Console:
         except SystemExit as exit_request:
             output.stream.write(captured_output.getvalue())
             return SUCCESS_CODE if exit_request.code == 0 else USAGE_CODE
+        self.line_check.check(caller, self.journal_line(subcommand))
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         self.scopes.check_environment(caller.actor, environment_id)
         environment_id = self.scopes.line_environment_id(caller.actor, environment_id)
         self.agent_numbers.replace_numbers(arguments, environment_id)
         caller = replace(caller, environment_id=environment_id)
         self.request_records.note_caller(caller.actor, environment_id)
-        self.line_check.check(caller, self.journal_line(subcommand))
         try:
             return self.parsed_run(argv, subcommand, arguments, caller, output)
         except Refusal as refusal:
@@ -228,13 +228,13 @@ class Console:
                 arguments = parser.parse_args(argv[2:])
         except SystemExit:
             raise UsageError(f"journal {' '.join(argv)} does not parse: {captured_output.getvalue().strip()}") from None
+        self.line_check.check(caller, self.journal_line(subcommand))
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         self.scopes.check_environment(caller.actor, environment_id)
         environment_id = self.scopes.line_environment_id(caller.actor, environment_id)
         self.agent_numbers.replace_numbers(arguments, environment_id)
         if not isinstance(subcommand, Subcommand):
             raise Refusal(f"journal {' '.join(argv[:2])} only reads, so it has no place in a transaction")
-        self.line_check.check(caller, self.journal_line(subcommand))
         return subcommand.command(arguments, replace(caller, environment_id=environment_id)), environment_id
 
     @staticmethod

@@ -1,7 +1,7 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.helpers.support.journal_hook_lines import journal_hook_line
-from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, profile_agent
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, profile_agent, start_helper
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.fixtures import MainEnvironment
 
@@ -10,7 +10,7 @@ HELPER_REFUSAL = "A read-only helper may not run"
 
 
 def started_profile(story, profile: str) -> Actor:
-    story.expect_success(f'helper start {profile} --brief "Read src/cart.py" --environment main', actor=story.agent)
+    start_helper(story, f'helper start {profile} --brief "Read src/cart.py" --environment main')
     return Actor(profile_agent(story, profile).id, ActorType.AGENT)
 
 

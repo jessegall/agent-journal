@@ -26,7 +26,7 @@ CODING_SETTING_VALUES = [
                  SettingType.FLAG, default=False, person_set=True, screen="work", section="Other helpers"),
     SettingValue("plain-code-words", "Plain code words", "Every agent loads the skill on naming code in plain words at its start and after a compaction.",
                  SettingType.FLAG, default=True, scope=SettingScope.PROJECT, person_set=True, screen="work", section="Other helpers"),
-    SettingValue("worker-command-types", "Worker command types", "The types of shell command a worker may run; journal commands are judged by the worker's command list, so journal here changes nothing.", SettingType.LIST,
+    SettingValue("worker-command-types", "Worker command types", "Shell command types a worker may run; its command list judges journal lines, so journal here changes nothing.", SettingType.LIST,
                  default=(CommandCategory.READ.value, CommandCategory.SEARCH.value, CommandCategory.EDIT.value, CommandCategory.CHECK.value, CommandCategory.TEST_RUN.value,
                           CommandCategory.BUILD.value), person_set=True),
 ]

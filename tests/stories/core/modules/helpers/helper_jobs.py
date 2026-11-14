@@ -27,10 +27,10 @@ class StartedHelper(StoryFixture):
     parent = UserBuilder
 
     def steps(self, story):
-        start_through_launcher(story, START)
+        start_helper(story, START)
 
 
-def start_through_launcher(story, line: str) -> None:
+def start_helper(story, line: str) -> None:
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.run(line, actor=story.agent)
     story.run_listeners()

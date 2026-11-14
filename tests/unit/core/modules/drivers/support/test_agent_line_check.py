@@ -18,10 +18,11 @@ TYPES = HelperTypeBook(tuple([HelperTypeEntry.declared("journal.core.helpers", H
 TASK_EDIT = JournalLine("task edit", frozenset([JournalLineClass.CHANGES]))
 SETTING_SET = JournalLine("setting set", frozenset([JournalLineClass.CHANGES, JournalLineClass.OUTWARD]))
 TASK_READ = JournalLine("task show", frozenset([JournalLineClass.READS]))
+PROFILE_FILES = SimpleNamespace(registered=lambda name: None)
 
 
 def line_check(role: str) -> AgentLineCheck:
-    return AgentLineCheck(SimpleNamespace(find_unscoped=lambda agent_id: SimpleNamespace(id=agent_id, role=role)), TypeCommandCheck(TYPES))
+    return AgentLineCheck(SimpleNamespace(find_unscoped=lambda agent_id: SimpleNamespace(id=agent_id, role=role, profile="")), TypeCommandCheck(TYPES, PROFILE_FILES))
 
 
 def agent_caller() -> Caller:

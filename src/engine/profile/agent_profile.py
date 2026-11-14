@@ -74,5 +74,6 @@ class AgentProfile:
         sequences = {name: tuple(current[name]) for name in SEQUENCE_FIELDS if name in current}
         access = Access(fields["access"]) if fields["access"] is not None else None
         tier = ModelTier.automatic(fields["tier"]) if fields.get("tier") is not None else None
-        values: dict[str, Any] = {**current, **sequences, "occupant": occupant, "access": access, "tier": tier}
+        commands = CommandAllowList.restored(fields["commands"]) if fields.get("commands") is not None else None
+        values: dict[str, Any] = {**current, **sequences, "occupant": occupant, "access": access, "tier": tier, "commands": commands}
         return cls(**values)

@@ -1,9 +1,12 @@
+import json
 from dataclasses import asdict
 
 import pytest
 
 from engine.profile.agent_profile import AgentProfile
 from engine.enums.occupant import Occupant
+from engine.helper_type.command_allow_list import CommandAllowList
+from engine.helper_type.enums.journal_line_class import JournalLineClass
 
 
 def stored_fields(**changed: object) -> dict:
@@ -29,3 +32,10 @@ def test_a_stored_reuse_word_is_refused():
 def test_a_profile_with_neither_field_is_when_cold():
     profile = AgentProfile.parsed(stored_fields())
     assert profile.occupant is Occupant.COLD_ROTATION
+
+
+def test_a_stored_command_list_restores_as_its_class():
+    commands = CommandAllowList(groups=tuple(["task"]), lines=tuple(["plan make"]), classes=tuple([JournalLineClass.READS]))
+    stored = json.loads(json.dumps(asdict(AgentProfile("notes-reader", commands=commands))))
+    del stored["occupant"]
+    assert AgentProfile.parsed(stored).commands == commands
