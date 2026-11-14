@@ -13,7 +13,7 @@ const DISPATCHES = "journal.suites.coding.workers.main-dispatches-workers";
 const SCREEN_KEYS = {work: "work-screen", tests: "tests-screen", advanced: "advanced-screen", "helper-types": "helper-types-screen"};
 const view = useWindow();
 const tab = ref("work");
-const tabs = [{key: "work", label: "Work"}, {key: "agents", label: "Helpers", count_field: "full"}, {key: "tests", label: "Tests"}, {key: "advanced", label: "Advanced"}];
+const tabs = [{key: "work", label: "Work"}, {key: "agents", label: "Helpers", count_field: "full"}, {key: "assign", label: "Assign"}, {key: "tests", label: "Tests"}, {key: "advanced", label: "Advanced"}];
 const active = computed(() => tabs.find((entry) => entry.key === tab.value));
 
 const loaded = () => Object.values(SCREEN_KEYS).map((key) => view.props[key].data.value);

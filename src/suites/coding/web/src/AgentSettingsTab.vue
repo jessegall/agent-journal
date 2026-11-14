@@ -1,10 +1,11 @@
 <script setup>
 import {SwitchCase, TabBody} from "@journal/window-kit";
 import AgentSettingsAgents from "./AgentSettingsAgents.vue";
+import AgentSettingsAssign from "./AgentSettingsAssign.vue";
 import AgentSettingsScreen from "./AgentSettingsScreen.vue";
 
 // the tab the agent settings show: the long tabs are drawn from the screens the settings declare, the helpers tab
-// from its own table
+// from its own table and the assign tab from the rules
 defineProps({tab: {type: String, required: true}, active: {type: Object, required: true}, draft: {type: Object, required: true}, isLoaded: Boolean, nodes: {type: Function, required: true}, readOnly: Boolean, found: {type: String, default: ""}, nothingStarts: Boolean, advancedExtras: {type: Object, required: true}});
 </script>
 
@@ -25,6 +26,9 @@ defineProps({tab: {type: String, required: true}, active: {type: Object, require
                 </template>
                 <template #agents>
                     <AgentSettingsAgents :draft="draft" />
+                </template>
+                <template #assign>
+                    <AgentSettingsAssign :draft="draft" :read-only="readOnly" />
                 </template>
                 <template #tests>
                     <template v-if="isLoaded">

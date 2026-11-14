@@ -9,6 +9,7 @@ from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.ticks.stalled_worker_test_runs import StalledWorkerTestRuns
 from suites.coding.modules.workers.ticks.unlaunched_worker_test_runs import UnlaunchedWorkerTestRuns
 from suites.coding.modules.workers.workers_module import WorkersModule
+from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
@@ -57,6 +58,16 @@ def test_a_proof_run_past_the_limit_is_ended_marked_stuck_and_the_worker_and_the
     story.expect_text("proof show 1", "state: short", "stuck: the run went past 30 minutes", actor=story.agent)
     story.expect_text(f"agent-line list --agent {worker.id}", "Your tests failed")
     story.expect_rows(any("went past 30 minutes and was ended as stuck" in line.text for line in story.story_rows(MergerLine)), detail=str([line.text for line in story.story_rows(MergerLine)]))
+
+
+def test_a_running_proof_of_a_removed_worktree_is_left_alone_by_the_tick(two_tasks):
+    story, worker, _ = two_tasks
+    story.expect_success(COMMIT, actor=worker)
+    story.run_listeners()
+    story.expect_success(f'worker release {agent_number(story, worker.id)} "not needed" --abandon "the story drops the work"', actor=story.agent)
+    story.advance(timedelta(minutes=31))
+    story.run_tick_handler("stalled worker tests")
+    story.expect_absent("proof show 1", "stuck", actor=story.agent)
 
 
 def test_a_proof_with_a_test_the_main_agent_checked_needs_no_run_and_the_worker_goes_on(two_tasks):

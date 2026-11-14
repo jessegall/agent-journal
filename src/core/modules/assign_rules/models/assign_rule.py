@@ -4,6 +4,8 @@ from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.positioned import Positioned
 from core.modules.assign_rules.models.enums.rule_target import RuleTarget
 
+ENVIRONMENT_COLUMN = "environment_id"
+
 
 @dataclass(frozen=True, kw_only=True)
 class AssignRule(EnvironmentScoped, Positioned):
@@ -17,7 +19,17 @@ class AssignRule(EnvironmentScoped, Positioned):
     environment_id: int = 0
     enabled: bool = True
     target: RuleTarget
-    agent_id: int | None = None
+    target_agent_id: int | None = None
     program: str = ""
     program_model: str = ""
     queue_limit: int = 0
+
+    @property
+    def target_name(self) -> str:
+        match self.target:
+            case RuleTarget.AGENT:
+                return f"agent {self.target_agent_id}"
+            case RuleTarget.MODEL:
+                return f"{self.program} {self.program_model}"
+            case _:
+                return "the main agent"

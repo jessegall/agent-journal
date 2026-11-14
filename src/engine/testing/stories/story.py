@@ -1,4 +1,5 @@
 from engine.enums.actor_type import ActorType
+from engine.module.module_finder import ModuleFinder
 from engine.environment.environment_names import EnvironmentNames
 from engine.file.file_access import FileAccess
 import io
@@ -257,6 +258,12 @@ class Story:
         with self.repeated_work.request():
             self.container.get(CommitListenerRunner).run()
 
+    def run_tick_handler(self, label: str) -> None:
+        handler = next(handler for module in ModuleFinder(self.home).modules() for handler in module.tick_handlers if handler.label == label)
+        self.steps.append(f"tick handler {label}")
+        with self.repeated_work.request():
+            handler.handler(self.container)
+
     def tick(self, session: str) -> HookReply:
         return self.hook(session, HookSamples.tick())
 
@@ -473,9 +480,9 @@ class Story:
                 self.container.bind(class_type, replacement)
         return code, stream.getvalue()
 
-    def expect_rows(self, *checks: object, detail: str = "") -> None:
+    def expect_rows(self, *checks: object, detail: object | None = None) -> None:
         self.checked("rows")
-        self.expected(all(checks), detail or f"a row check failed: {checks}")
+        self.expected(all(checks), f"a row check failed: {checks}" if detail is None else str(detail))
 
 
 def story_container(home: JournalHome, clock: ManualClock, process_table: "FixedProcessTable", journal: StoryJournal = COMMITTING_JOURNAL) -> Container:

@@ -1,5 +1,5 @@
 from core.modules.skills.commands.set_required_skill.set_required_skill_handler import SetRequiredSkillHandler
-from core.modules.skills.rules.skill_already_loaded_rule import SkillAlreadyLoadedRule
+from core.modules.skills.rules.loaded_skill_rule import LoadedSkillRule
 from core.modules.skills.commands.set_required_skill.set_required_skill_subcommand import SetRequiredSkillSubcommand
 from core.modules.skills.commands.skill_requirements.skill_requirements_subcommand import SkillRequirementsSubcommand
 from core.modules.skills.migrations.m003_skill_session import SkillSessionMigration
@@ -88,7 +88,7 @@ class SkillsModule(Module):
     handlers = [SaveProfileHandler, SetRequiredSkillHandler, RequireSkillHandler, LoadSkillHandler, ResetSkillsHandler, RequestSkillHandler]
     listeners = [SkillPublishListener, SkillReadListener, SkillPartReadListener, CommandSkillListener, KeptSkillsListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener, SkillRequestSaveListener]
     marks = SKILL_MARKS
-    driver_rules = [SkillAlreadyLoadedRule, SkillReadFirstRule, ProfileSkillFirstRule, UnreadSkillStopRule, CommandSkillRule]
+    driver_rules = [LoadedSkillRule, SkillReadFirstRule, ProfileSkillFirstRule, UnreadSkillStopRule, CommandSkillRule]
     windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, skeleton=SKILLS_SKILLS_SKELETON, group="project", place=WindowPlace.PAGE, icon=WindowIcon.SKILL, search=WindowReadSearch("skill list", "Find a skill", ("folder", "description")),
                                  reads=SKILLS_READS, runs=SKILLS_RUNS, events=SKILLS_EVENTS,
                                  keys=SKILLS_KEYS),

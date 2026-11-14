@@ -31,7 +31,7 @@ class FileEdit(Prunable, EnvironmentScoped, Model):
     removed: int
     rows: str = "[]"
     edit_type: str = "edit"
-    moved_from: str = ""
+    old_path: str = ""
 
     @classmethod
     def prunable(cls, query: Query[Self], table: str) -> Query[Self]:

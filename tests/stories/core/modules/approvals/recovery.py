@@ -1,3 +1,4 @@
+import json
 import pytest
 
 from engine.query.queries import Queries
@@ -75,7 +76,7 @@ def test_an_action_that_raises_ends_the_request_failed_and_the_agent_asks_again(
     story.expect_rows(failed.state is ApprovalState.FAILED, failed.failure == "action stopped")
     monkeypatch.setattr(AnswerApprovalHandler, "run_action", run_action)
     story.expect_refusal("phone pair --reason needed", "A user was asked in the dock", actor=story.agent)
-    asked_again = story.container.get(Queries).query(ApprovalRequest).filter(state=ApprovalState.OPEN).first()
-    story.expect_rows(asked_again is not None, asked_again.id != request.id)
-    phone_viewer.value("messages.chat", ["approval", "accept", str(asked_again.id)])
-    story.expect_rows(story.row(ApprovalRequest, asked_again.id).state is ApprovalState.ACCEPTED)
+    open_ids = [row["id"] for row in json.loads(story.run("approval list --state open --json --environment main").output_text)["rows"]]
+    story.expect_rows(len(open_ids) == 1, request.id not in open_ids, detail=str(open_ids))
+    phone_viewer.value("messages.chat", ["approval", "accept", str(open_ids[0])])
+    story.expect_rows(story.row(ApprovalRequest, open_ids[0]).state is ApprovalState.ACCEPTED)

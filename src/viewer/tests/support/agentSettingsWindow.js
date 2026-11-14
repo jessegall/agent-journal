@@ -27,6 +27,7 @@ const KEYS = {
     limits: {line: "agent limits", loading: "requested", events: ["agent.*", "setting.*"]},
     "type-screen": {line: "setting-screen show helper-type", loading: "requested", arguments: ["type"], events: ["setting.*"]},
     "count-agents": {line: "agent cards --show all --reusable", arguments: ["role", "profile", "page"], loading: "requested", events: ["agent.*"]},
+    assign: {line: "assign-rule board", loading: "requested", events: ["assign_rule.*", "assign_rule_condition.*", "agent.*", "worker_route.*"]},
 };
 const RULE = JSON.stringify({rule: "number", minimum: 0, integer: true, maximum: null, exclusive: false});
 
@@ -78,6 +79,28 @@ export const WORK = () => ({
     switches: [{key: AUTO, title: "Auto mode"}, {key: SENDS, title: "Main agent sends workers"}, {key: WRITES, title: "Main agent writes code"}],
 });
 
+// the Assign tab's read: the main agent, a worker, its program and model, and two rules of the main agent
+const operator = (name, label, needsValue = true) => ({operator: name, label, needs_value: needsValue});
+export const BOARD = () => ({
+    revision: "r1",
+    targets: [
+        {key: "main", target: "main", label: "Main agent", description: "", agent_id: null, program: "", program_model: "", running: false, open_tasks: 0},
+        {key: "agent:42", target: "agent", label: "worker 5", description: "Program: claude sonnet", agent_id: 42, program: "claude", program_model: "sonnet", running: true, open_tasks: 2},
+        {key: "model:claude:sonnet", target: "model", label: "claude sonnet", description: "Program: claude sonnet", agent_id: null, program: "claude", program_model: "sonnet", running: false, open_tasks: 0},
+    ],
+    rules: [
+        {id: 7, position: 1, enabled: true, target: "main", target_key: "main", target_name: "the main agent", queue_limit: 0, conditions: [], summary: "complexity is at least 4", warning: "",
+            activity: {given_last_day: 3, has_matched: true, last_skip: "rule 7 skipped: worker 5 holds 3 of 3", text: "Tasks given in the last day: 3"}},
+        {id: 8, position: 2, enabled: false, target: "main", target_key: "main", target_name: "the main agent", queue_limit: 0, conditions: [], summary: "all of: tag has backend; text has the word migration", warning: "its agent is retired",
+            activity: {given_last_day: 0, has_matched: false, last_skip: "", text: "Never matched a task"}},
+    ],
+    fields: [
+        {field: "complexity", operators: [operator("minimum", "is at least"), operator("maximum", "is at most"), operator("unset", "is not set", false)]},
+        {field: "text", operators: [operator("has_word", "has the word"), operator("lacks_word", "does not have the word")]},
+        {field: "any", operators: [operator("any", "task", false)]},
+    ],
+});
+
 // Find a setting as the index read answers: a setting of each long tab and one of a helper type screen
 export const INDEX = () => [
     {key: AUTO, title: "Auto mode", description: "The journal hands the main agent its next task.", path: "Work > A section", screen: "work", section: "A section"},
@@ -89,10 +112,11 @@ const mounted = [];
 afterEach(() => mounted.splice(0).forEach(({app, element}) => { app.unmount(); element.remove(); }));
 
 // the settings window with everything it reads answered; the counts can be made unreadable for the two reads that open the window and its Helpers tab
-export async function mountAgentSettings({readOnly = false, unreadable = false, agents = AGENTS()} = {}) {
+export async function mountAgentSettings({readOnly = false, unreadable = false, agents = AGENTS(), writesCode = true, runAnswer = {ok: true}} = {}) {
     const runs = [];
     const reads = [];
     const answers = SCREENS();
+    answers.work.nodes = answers.work.nodes.map((entry) => (entry.key === WRITES ? {...entry, value: writesCode, default: writesCode} : entry));
     const types = TYPE_SCREENS();
     let failures = unreadable ? 2 : 0;
     const context = {
@@ -109,10 +133,13 @@ export async function mountAgentSettings({readOnly = false, unreadable = false, 
                 if (failures > 0) return (failures -= 1, {ok: false, failure: "refused", error: "no answer"});
                 return {ok: true, value: {rows: LIMITS()}};
             }
+            if (line.startsWith("assign-rule board")) return {ok: true, value: BOARD()};
+            if (line.startsWith("assign-rule recent")) return {ok: true, value: {tried: 20, matched: 20, text: "The rule would have taken all 20 of the last 20 tasks"}};
+            if (line.startsWith("assign-rule try")) return {ok: true, value: {task_id: 12, matches: false, conditions: [{label: "complexity is at least 4", matched: false}]}};
             if (line.startsWith("agent cards")) return {ok: true, value: {rows: agents, page: 1, size: 25, total: agents.length}};
             return {ok: true, value: {rows: []}};
         },
-        run: async (line) => (runs.push(line), {ok: true}),
+        run: async (line) => (runs.push(line), runAnswer),
         follow: () => {},
         open: () => {},
         option: () => ({value: null}),

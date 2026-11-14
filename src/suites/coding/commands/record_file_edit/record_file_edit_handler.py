@@ -29,13 +29,13 @@ class RecordFileEditHandler(Handler[RecordFileEdit, FileEdit]):
         return str(Path(path).relative_to(folder)) if Path(path).is_relative_to(folder) else path
 
     def edit_type(self, command: RecordFileEdit) -> str:
-        if command.moved_from:
+        if command.old_path:
             return MOVED
         return EDITED if command.diff.existed else NEW_FILE
 
     def handle(self, command: RecordFileEdit, context: Context) -> FileEdit:
         environment_id = context.required_environment_id()
-        moved_from = self.relative_path(command.moved_from, environment_id) if command.moved_from else ""
+        old_path = self.relative_path(command.old_path, environment_id) if command.old_path else ""
         return self.repository.save(FileEdit(session_agent_id=command.agent_id, creator_id=context.actor.id,
                                              path=self.relative_path(command.diff.path, environment_id), added=command.diff.lines_added, removed=command.diff.lines_removed, rows=json.dumps(command.rows),
-                                             edit_type=self.edit_type(command), moved_from=moved_from), context)
+                                             edit_type=self.edit_type(command), old_path=old_path), context)

@@ -49,7 +49,7 @@ def test_a_scan_that_found_a_file_moved_keeps_one_edit_that_names_its_old_path(n
     report.write_text(json.dumps({"folder": str(repository.folder), "changes": [
         {"diff": {"path": "cart/total.py", "existed": False, "lines_added": 0, "lines_removed": 0}, "rows": [], "moved_from": "cart.py"}]}))
     story.expect_success(f"file-edit record-changes {report} --session s-1")
-    story.expect_success("file-edit show 1", "path: cart/total.py", "edit_type: moved", "moved_from: cart.py")
+    story.expect_success("file-edit show 1", "path: cart/total.py", "edit_type: moved", "old_path: cart.py")
     story.expect_refusal("file-edit show 2", "no")
 
 

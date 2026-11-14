@@ -51,7 +51,7 @@ from suites.coding.rules.waiting_items_rule import WaitingItemsRule
 from suites.coding.drivers.helper.helper_driver import HelperDriver
 from suites.coding.drivers.worker.worker_driver import WorkerDriver
 from suites.coding.drivers.main.main_driver import MainDriver
-from suites.coding.support.coding_settings import CODING_SETTINGS, PLAIN_CODE_WORDS
+from suites.coding.support.coding_settings import CODING_SETTINGS, PLAIN_NAMES_SETTING
 from suites.coding.listeners.full_test_run_listener import FullTestRunListener
 from suites.coding.rules.failed_full_run_rule import FailedFullRunRule
 from suites.coding.rules.graphify_search_rule import GraphifySearchRule
@@ -63,6 +63,7 @@ from suites.coding.bindings.coding_tool_runners import CodingToolRunners
 from suites.coding.migrations.m010_graphify_setting_keys import GraphifySettingKeysMigration
 from suites.coding.migrations.m011_worker_profile_names import WorkerProfileNamesMigration
 from suites.coding.migrations.m012_file_edit_old_path import FileEditOldPathMigration
+from suites.coding.migrations.m013_file_edit_old_path_name import FileEditOldPathNameMigration
 from core.modules.tools.support.tool_runners import ToolRunners
 from suites.coding.support.full_run_nudges import TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN
 from suites.coding.support.skeletons import CODING_GIT_SKELETON, CODING_FILES_SKELETON, CODING_WORK_MODE_SKELETON, CODING_AGENT_SETTINGS_SKELETON, CODING_FILE_FEED_SKELETON, CODING_FILE_EDITS_SKELETON, CODING_TERMINAL_SKELETON
@@ -96,7 +97,7 @@ class CodingModule(Module):
     moves = [FileEditsMove, ViewerLayoutsMove, CodingSettingsMove]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.assignments", "journal.core.plans", "journal.core.settings", "journal.core.setting-requests", "journal.core.viewer", "journal.core.plugins", "journal.core.processes", "journal.core.messages", "journal.core.questions", "journal.core.helpers", "journal.core.tools"]
     drivers = [MainDriver, HelperDriver, WorkerDriver]
-    skills = [SkillDeclaration("journal-plain-code-words", "Name every variable, method, class and file in plain words, by a ladder; read it at the start of every session", keywords=("naming", "rename"), required_setting=PLAIN_CODE_WORDS),
+    skills = [SkillDeclaration("journal-plain-code-words", "Name every variable, method, class and file in plain words, by a ladder; read it at the start of every session", keywords=("naming", "rename"), required_setting=PLAIN_NAMES_SETTING),
               SkillDeclaration("journal-graphify", "Find code through the project's knowledge graph with graphify query, explain and path, using names from the code instead of questions; read it before you search the code while Graphify is on", keywords=["graphify"], required_setting=GRAPHIFY.settings_key),
               SkillDeclaration("journal-plan-dispatch", "Send a functional designer and then a planner to make the plan; read it when the user asks for a plan", keywords=("plan", "roadmap"), types=["main"]),
               SkillDeclaration("journal-functional-design", "Write a functional design of user stories, code examples and the phases in order; read it before you write one"),
@@ -104,7 +105,7 @@ class CodingModule(Module):
               SkillDeclaration("journal-work-modes", "Work as the main agent of the coding suite from its work controls; read it when auto mode, the presets, read-only helpers or the worker limit come up", keywords=("builder", "orchestrator", "auto mode", "work mode"), types=["main"]),
               SkillDeclaration("journal-test-draining", "Work off the failed tests of a full run from one file, biggest cause first, with no full rerun until it is empty; read it when a full run has failures", keywords=("failed tests", "full run"))]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
-    migrations = [FileEditOldPathMigration, WorkerProfileNamesMigration, HelperRequestKeysMigration, HelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration, PruneFileEditsMigration, GraphifySettingKeysMigration]
+    migrations = [FileEditOldPathMigration, FileEditOldPathNameMigration, WorkerProfileNamesMigration, HelperRequestKeysMigration, HelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration, PruneFileEditsMigration, GraphifySettingKeysMigration]
     handlers = [RecordFileEditHandler, RecordFileChangesHandler, PruneFileEditsHandler]
     driver_rules = [WaitingItemsRule, IntroductionRule, FailedFullRunRule, GraphifySearchRule]
     listeners = [FullTestRunListener, GraphifyHookRemovalListener]
@@ -131,8 +132,10 @@ class CodingModule(Module):
                                        WindowKey("type-screen", "setting-screen show helper-type", arguments=["type"], loading=KeyLoading.REQUESTED, events=["setting.*"]),
                                        WindowKey("count-agents", "agent cards --show all --reusable", arguments=["role", "profile", "page"], loading=KeyLoading.REQUESTED, events=["agent.*"])]),
                WindowDeclaration("coding.agent-settings", "Agent settings", "agent-settings.js", WindowLoading.COMPONENT, skeleton=CODING_AGENT_SETTINGS_SKELETON, icon=WindowIcon.WINDOW,
-                                 reads=["work-settings show", "setting-screen show", "setting-screen index", "agent limits", "agent cards", "setting show"], runs=["work-settings apply", "work-settings preset", "setting-screen apply", "setting set", "agent profile-limits", "agent retire"],
-                                 events=["setting.*", "agent.*"],
+                                 reads=["work-settings show", "setting-screen show", "setting-screen index", "agent limits", "agent cards", "setting show", "assign-rule board", "assign-rule try", "assign-rule recent", "worker-route list"],
+                                 runs=["work-settings apply", "work-settings preset", "setting-screen apply", "setting set", "agent profile-limits", "agent retire", "assign-rule make", "assign-rule edit", "assign-rule move",
+                                       "assign-rule enable", "assign-rule disable", "assign-rule delete", "assign-rule apply", "assign-rule reassign", "assign-rule give-back"],
+                                 events=["setting.*", "agent.*", "assign_rule.*", "assign_rule_condition.*", "worker_route.*"],
                                  keys=[WindowKey("work", "work-settings show", events=["setting.*"]),
                                        WindowKey("work-screen", "setting-screen show work", events=["setting.*"]),
                                        WindowKey("tests-screen", "setting-screen show tests", events=["setting.*"]),
@@ -141,7 +144,8 @@ class CodingModule(Module):
                                        WindowKey("find", "setting-screen index", events=["setting.*"]),
                                        WindowKey("limits", "agent limits", loading=KeyLoading.REQUESTED, events=["agent.*", "setting.*"]),
                                        WindowKey("type-screen", "setting-screen show helper-type", arguments=["type"], loading=KeyLoading.REQUESTED, events=["setting.*"]),
-                                       WindowKey("count-agents", "agent cards --show all --reusable", arguments=["role", "profile", "page"], loading=KeyLoading.REQUESTED, events=["agent.*"])]),
+                                       WindowKey("count-agents", "agent cards --show all --reusable", arguments=["role", "profile", "page"], loading=KeyLoading.REQUESTED, events=["agent.*"]),
+                                       WindowKey("assign", "assign-rule board", loading=KeyLoading.REQUESTED, events=["assign_rule.*", "assign_rule_condition.*", "agent.*", "worker_route.*"])]),
                WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, skeleton=CODING_FILE_FEED_SKELETON, search=WindowSearch(FileEditSearcher, "Filter files"), icon=WindowIcon.FILE, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM, reads=[*FILE_EDIT_READS, "file-edit file", "window setting"],
                                  events=["file_edit.create"],
                                  keys=[WindowKey("edits", "file-edit list", events=["file_edit.create"], arguments=["agent", "limit", "before-id", "after-id"], page_size=50),
