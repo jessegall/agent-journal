@@ -93,6 +93,8 @@ class RepeatedWork(PointTally):
         self.reads: Counter[Statement] = Counter()
         self.read_origins: dict[Statement, list[tuple[CodeType, int]]] = {}
         self.read_texts: Counter[str] = Counter()
+        # every read SQL of the request, the pages of a walk too, for what a test counts; it judges nothing
+        self.request_read_texts: Counter[str] = Counter()
         self.commands: Counter[str] = Counter()
         self.findings: list[RepeatedFinding] = []
         self.checked_plans: set[Statement] = set()
@@ -106,6 +108,7 @@ class RepeatedWork(PointTally):
     @contextmanager
     def request(self) -> Generator[None]:
         self.reads, self.read_texts, self.commands, self.findings = Counter(), Counter(), Counter(), []
+        self.request_read_texts = Counter()
         self.read_origins.clear()
         self.checked_plans.clear()
         self.allowed_scans.clear()
@@ -133,6 +136,7 @@ class RepeatedWork(PointTally):
         if self.is_allowed_read():
             return
         self.reset_stale_reads()
+        self.request_read_texts[statement.sql] += 1
         self.reads[statement] += 1
         # each page of a walk reads the same SQL after another row, so only a page read twice counts as a repeat
         if not statement.is_walk_page:
