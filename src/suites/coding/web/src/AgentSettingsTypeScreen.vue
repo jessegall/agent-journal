@@ -25,7 +25,7 @@ watch(screen, (value) => { if (value) props.draft.load([value]); });
 onMounted(read);
 
 // the entry of this profile in the list of profile limits, as its running and kept numbers
-const entries = computed(() => (props.draft.value(PROFILE_LIMITS) ?? []).map((text) => text.split(":")));
+const entries = computed(() => props.draft.list(PROFILE_LIMITS).map((text) => text.split(":")));
 const entry = computed(() => entries.value.find((parts) => parts[0] === props.row.profile));
 const every = computed(() => ({running: Number(props.draft.value(READ_ONLY_RUN)), kept: Number(props.draft.value(READ_ONLY_KEPT))}));
 const own = (field) => (entry.value ? Number(entry.value[field === "running" ? 1 : 2]) : null);
@@ -42,24 +42,24 @@ function change(field, value) {
 // the context cap of the type: its own entry in the list of caps of profiles, else the size of its kind of agent
 const NO_CAP = "none";
 const capProfile = computed(() => (props.row.group ? "" : props.row.profile || props.row.defaultProfile || ""));
-const ownCap = computed(() => valueOf(props.draft.value(CONTEXT_PROFILES), capProfile.value));
+const ownCap = computed(() => valueOf(props.draft.list(CONTEXT_PROFILES), capProfile.value));
 const capMode = computed(() => (ownCap.value === undefined ? "kind" : ownCap.value === NO_CAP ? "none" : "own"));
 const kindCap = computed(() => {
-    const kind = valueOf(props.draft.value(CONTEXT_KINDS), props.row.role);
+    const kind = valueOf(props.draft.list(CONTEXT_KINDS), props.row.role);
     if (kind === NO_CAP) return null;
     return Number(kind ?? props.draft.value(CONTEXT_TOKENS));
 });
 
 function chooseCap({mode, size}) {
-    const others = (props.draft.value(CONTEXT_PROFILES) ?? []).filter((text) => text.slice(0, text.lastIndexOf(":")).trim() !== capProfile.value);
+    const others = props.draft.list(CONTEXT_PROFILES).filter((text) => text.slice(0, text.lastIndexOf(":")).trim() !== capProfile.value);
     props.draft.set(CONTEXT_PROFILES, mode === "kind" ? others : [...others, `${capProfile.value}:${mode === "none" ? NO_CAP : size}`]);
 }
 
 // the commands run after a worker of this profile is merged: its entries profile: command in the list of merge hooks
 const WORKER_ROLE = "worker";
 const hookProfile = computed(() => (props.row.role === WORKER_ROLE ? capProfile.value : ""));
-const ownHooks = computed(() => profileHooks(props.draft.value(MERGE_HOOKS), hookProfile.value));
-const changeHooks = (commands) => props.draft.set(MERGE_HOOKS, changedHooks(props.draft.value(MERGE_HOOKS), hookProfile.value, commands));
+const ownHooks = computed(() => profileHooks(props.draft.list(MERGE_HOOKS), hookProfile.value));
+const changeHooks = (commands) => props.draft.set(MERGE_HOOKS, changedHooks(props.draft.list(MERGE_HOOKS), hookProfile.value, commands));
 
 const openAgent = (agent) => view.open("agents.agents", agent.id);
 </script>

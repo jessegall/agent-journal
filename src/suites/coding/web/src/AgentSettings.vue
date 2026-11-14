@@ -40,7 +40,7 @@ onMounted(() => view.reload("limits"));
 // the context caps by kind of agent: a row for each kind, the sizes to choose from, the size for every agent, and the types that have a cap of their own
 const KIND_ROWS = [{key: "main", name: "Main agent"}, {key: "worker", name: "Workers"}, {key: "helper", name: "Read-only helpers"}];
 const titleOf = (profile) => helperTable.value.find((entry) => entry.profile === profile)?.name ?? profile;
-const ownCaps = computed(() => (draft.value(CONTEXT_PROFILES) ?? []).map(entryOf).map(({name, value}) => ({name: titleOf(name), value: value === "none" ? "no cap" : `${Number(value) / 1000}k`})));
+const ownCaps = computed(() => draft.list(CONTEXT_PROFILES).map(entryOf).map(({name, value}) => ({name: titleOf(name), value: value === "none" ? "no cap" : `${Number(value) / 1000}k`})));
 const advancedExtras = computed(() => ({"keyed-cap-table": {rows: KIND_ROWS, sizes: CAP_SIZES, defaultCap: Number(draft.value(CONTEXT_TOKENS)) || CAP_SIZES[0], ownCaps: ownCaps.value}}));
 
 const nodesOf = (name) => view.props[SCREEN_KEYS[name]].data.value?.nodes ?? [];

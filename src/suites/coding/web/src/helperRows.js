@@ -33,14 +33,14 @@ export const valueOf = (entries, name) => (entries ?? []).map(entryOf).find((ent
 const worded = (value) => (value === NO_CAP ? "No cap" : sizeWord(Number(value)));
 
 // the context cap of an agent type or a profile and where it comes from: the entry of the profile, else the entry of
-// its kind of agent, else the size set for every agent, as the journal works them out; value reads what the form holds
-function capOf(value, role, profile) {
-    if (value(CONTEXT_ON) !== true) return {text: "Off", where: "Context limit is off", own: false};
-    const own = profile ? valueOf(value(CONTEXT_PROFILES), profile) : undefined;
+// its kind of agent, else the size set for every agent, as the journal works them out, from what the draft holds
+function capOf(draft, role, profile) {
+    if (draft.value(CONTEXT_ON) !== true) return {text: "Off", where: "Context limit is off", own: false};
+    const own = profile ? valueOf(draft.list(CONTEXT_PROFILES), profile) : undefined;
     if (own !== undefined) return {text: worded(own), where: "Own value", own: true};
-    const kind = valueOf(value(CONTEXT_KINDS), role);
+    const kind = valueOf(draft.list(CONTEXT_KINDS), role);
     if (kind !== undefined) return {text: worded(kind), where: "Set for its type", own: false};
-    return {text: sizeWord(Number(value(CONTEXT_TOKENS))), where: "Set for every agent", own: false};
+    return {text: sizeWord(Number(draft.value(CONTEXT_TOKENS))), where: "Set for every agent", own: false};
 }
 
 const unlimited = (limit) => (limit > 0 ? limit : null);
@@ -55,11 +55,11 @@ function rowOf(key, name, line, counts, cap, extra = {}) {
 
 // the rows of the helper type table in the order of the design: the types that have no profiles, the merger and the
 // designer, then the line for the limits every read-only profile shares and a row for each profile under it
-function helperRows(limits, value) {
-    const types = limits.filter((row) => !row.per_profile).map((row) => rowOf(row.key, row.label, row.line, row, capOf(value, row.key, ""), {screen: SCREEN_OF_TYPE[row.key] ?? "read-only", role: row.key, profile: "", defaultProfile: row.default_profile}));
+function helperRows(limits, draft) {
+    const types = limits.filter((row) => !row.per_profile).map((row) => rowOf(row.key, row.label, row.line, row, capOf(draft, row.key, ""), {screen: SCREEN_OF_TYPE[row.key] ?? "read-only", role: row.key, profile: "", defaultProfile: row.default_profile}));
     const helper = limits.find((row) => row.per_profile);
     if (!helper) return types;
-    const named = (profile) => rowOf(`${helper.key}:${profile.profile}`, profile.title, profile.line, profile, capOf(value, helper.key, profile.profile), {screen: profile.group === MERGER_GROUP ? MERGER_GROUP : "read-only", role: helper.key, profile: profile.profile});
+    const named = (profile) => rowOf(`${helper.key}:${profile.profile}`, profile.title, profile.line, profile, capOf(draft, helper.key, profile.profile), {screen: profile.group === MERGER_GROUP ? MERGER_GROUP : "read-only", role: helper.key, profile: profile.profile});
     const special = helper.profiles.filter((profile) => profile.group === MERGER_GROUP || profile.group === DESIGNER_GROUP).map(named);
     const rest = helper.profiles.filter((profile) => profile.group !== MERGER_GROUP && profile.group !== DESIGNER_GROUP).map((profile) => ({...named(profile), indent: true}));
     const line = {key: helper.key, name: "Read-only helpers", group: true, screen: "read-only", role: helper.key, profile: "", line: `${helper.running} running, ${helper.kept} kept. Every profile runs up to ${helper.run_limit} and keeps ${helper.kept_limit ? `up to ${helper.kept_limit}` : "any number"} unless the profile sets other limits.`};
@@ -73,7 +73,7 @@ export const fullCount = (rows) => rows.filter((row) => !row.group && (isFull(ro
 // the rows of the table for the window in hand, the counts as the journal last read them and the caps as the form holds them
 export function useHelperRows(view, draft) {
     const limits = computed(() => view.props.limits.rows.value ?? []);
-    const rows = computed(() => helperRows(limits.value, draft.value));
+    const rows = computed(() => helperRows(limits.value, draft));
     const unreadable = computed(() => Boolean(view.props.limits.failure.value));
     return {rows, unreadable, reread: () => view.reload("limits")};
 }

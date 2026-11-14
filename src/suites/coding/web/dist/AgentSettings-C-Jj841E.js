@@ -1,6 +1,6 @@
 import { openBlock as n, createElementBlock as c, createElementVNode as u, Fragment as M, renderList as D, createBlock as L, unref as l, createVNode as C, withModifiers as _e, withCtx as B, createTextVNode as X, ref as E, computed as y, onMounted as ne, toDisplayString as k, createCommentVNode as _, normalizeClass as Q, watch as ce, withDirectives as oe, vModelSelect as xe, vModelText as pe, nextTick as Ne, renderSlot as Ee, onBeforeUnmount as Ie } from "vue";
 import { TextInput as Be, Btn as ee, useWindow as J, useNow as je, agentTitle as Pe, age as Le, agentNumber as qe, TabBody as Fe, SwitchCase as $e, WindowRoom as Me, InnerTabs as Ve } from "@journal/window-kit";
-import { SettingPresetCard as fe, SettingPresetCompareTable as Ue, SettingEmptyState as We, isFull as ge, SettingBackPath as De, SettingPerTypeOverrideRow as me, SettingsScreen as Se, SettingRow as ye, SettingEntryList as He, SettingThreeWayCap as Ke, SettingBanner as Ge, SettingHelperTypeTable as ze, sectionsOf as Ye, SettingSectionList as Xe, useSettingsDraft as Je, currentPreset as Ze, SettingPresetBand as Qe, FindBox as et, ChangeFoot as tt } from "@journal/setting-components";
+import { SettingPresetCard as ge, SettingPresetCompareTable as Ue, SettingEmptyState as We, isFull as fe, SettingBackPath as De, SettingPerTypeOverrideRow as me, SettingsScreen as Se, SettingRow as ye, SettingEntryList as He, SettingThreeWayCap as Ke, SettingBanner as Ge, SettingHelperTypeTable as ze, sectionsOf as Ye, SettingSectionList as Xe, useSettingsDraft as Je, currentPreset as Ze, SettingPresetBand as Qe, FindBox as et, ChangeFoot as tt } from "@journal/setting-components";
 import { _ as H } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const nt = {
   class: "page",
@@ -24,14 +24,14 @@ const nt = {
       u("div", st, [
         p[2] || (p[2] = u("p", { class: "lead" }, "A preset is a set of eight switches and nothing more. It is not a type of agent: the main agent is the same program under every preset, and a preset only fills in the switches below. Nothing is saved until you press Save.", -1)),
         u("div", ot, [
-          (n(!0), c(M, null, D(t.presets, (v) => (n(), L(l(fe), {
+          (n(!0), c(M, null, D(t.presets, (v) => (n(), L(l(ge), {
             key: v.key,
             name: v.name,
             line: v.line,
             "can-fill": !t.readOnly,
             onFill: ($) => e("fill", v.key)
           }, null, 8, ["name", "line", "can-fill", "onFill"]))), 128)),
-          C(l(fe), {
+          C(l(ge), {
             name: "Custom",
             line: lt
           })
@@ -89,7 +89,7 @@ const nt = {
 }, ct = /* @__PURE__ */ H(dt, [["__scopeId", "data-v-92de7dd6"]]), vt = {
   class: "type-agents",
   "data-type-agents": ""
-}, pt = { class: "models" }, ft = ["data-count-agent"], gt = { class: "person-text" }, mt = {
+}, pt = { class: "models" }, gt = ["data-count-agent"], ft = { class: "person-text" }, mt = {
   key: 2,
   role: "alert",
   class: "bad"
@@ -102,29 +102,29 @@ const nt = {
   emits: ["open-agent", "retired"],
   setup(t, { emit: r }) {
     const e = t, a = r, p = J(), v = je(), $ = E([]), A = E(0), d = E(!1), R = E(!1), h = E(""), T = E(""), w = E(null), I = E(""), U = y(() => $.value.filter((S) => {
-      var g;
-      return S.state !== "retired" && S.role === e.role && (!e.profile || (((g = S.facts) == null ? void 0 : g.profile) || S.profile) === e.profile);
-    }).sort((S, g) => (S.state !== "running") - (g.state !== "running") || String(S.ended_at || S.created_at).localeCompare(String(g.ended_at || g.created_at)))), W = y(() => {
-      var g;
+      var f;
+      return S.state !== "retired" && S.role === e.role && (!e.profile || (((f = S.facts) == null ? void 0 : f.profile) || S.profile) === e.profile);
+    }).sort((S, f) => (S.state !== "running") - (f.state !== "running") || String(S.ended_at || S.created_at).localeCompare(String(f.ended_at || f.created_at)))), W = y(() => {
+      var f;
       const S = /* @__PURE__ */ new Map();
       for (const b of U.value) {
-        const j = ((g = b.facts) == null ? void 0 : g.model) || b.program_model;
+        const j = ((f = b.facts) == null ? void 0 : f.model) || b.program_model;
         j && S.set(j, (S.get(j) || 0) + 1);
       }
       return [...S].map(([b, j]) => `${j} ${b}`).join(", ");
     });
     async function q(S = 1) {
       p.state["count-agents.role"] = e.role, e.profile ? p.state["count-agents.profile"] = e.profile : delete p.state["count-agents.profile"], p.state["count-agents.page"] = String(S), await p.reload("count-agents");
-      const g = p.props["count-agents"];
-      $.value = S === 1 ? [...g.rows.value] : [...$.value, ...g.rows.value], A.value = S, d.value = g.more.value;
+      const f = p.props["count-agents"];
+      $.value = S === 1 ? [...f.rows.value] : [...$.value, ...f.rows.value], A.value = S, d.value = f.more.value;
     }
     async function G(S) {
       if (!I.value.trim() || R.value) return;
       R.value = !0;
-      const g = await p.run(["agent", "retire", String(S.number), "--reason", I.value.trim()]);
-      h.value = g.ok ? "" : "The agent could not be retired. Try again.", g.ok && (w.value = null, I.value = "", T.value = "Agent retired permanently.", a("retired"), await q()), R.value = !1;
+      const f = await p.run(["agent", "retire", String(S.number), "--reason", I.value.trim()]);
+      h.value = f.ok ? "" : "The agent could not be retired. Try again.", f.ok && (w.value = null, I.value = "", T.value = "Agent retired permanently.", a("retired"), await q()), R.value = !1;
     }
-    return ne(() => q()), (S, g) => (n(), c("section", vt, [
+    return ne(() => q()), (S, f) => (n(), c("section", vt, [
       u("p", pt, k(W.value), 1),
       U.value.length ? _("", !0) : (n(), L(l(We), {
         key: 0,
@@ -141,7 +141,7 @@ const nt = {
           u("span", {
             class: Q(["dot", { running: b.state === "running" }])
           }, null, 2),
-          u("div", gt, [
+          u("div", ft, [
             u("strong", null, k(l(Pe)(b).text), 1),
             X(" " + k(b.state === "running" ? "Running" : "Idle") + ", " + k(l(Le)(b.state === "running" ? b.process_started_at || b.created_at : b.ended_at, l(v))) + " ", 1),
             u("small", null, k([b.program, (j = b.facts) == null ? void 0 : j.model, (F = b.facts) == null ? void 0 : F.effort, l(qe)(b)].filter(Boolean).join(", ")), 1),
@@ -151,7 +151,7 @@ const nt = {
             small: "",
             onClick: (N) => a("open-agent", b)
           }, {
-            default: B(() => [...g[3] || (g[3] = [
+            default: B(() => [...f[3] || (f[3] = [
               X("Open", -1)
             ])]),
             _: 1
@@ -163,7 +163,7 @@ const nt = {
               w.value = b.id, I.value = "";
             }
           }, {
-            default: B(() => [...g[4] || (g[4] = [
+            default: B(() => [...f[4] || (f[4] = [
               X("Retire", -1)
             ])]),
             _: 1
@@ -171,19 +171,19 @@ const nt = {
           w.value === b.id ? (n(), L(ct, {
             key: 1,
             reason: I.value,
-            "onUpdate:reason": g[0] || (g[0] = (N) => I.value = N),
+            "onUpdate:reason": f[0] || (f[0] = (N) => I.value = N),
             pending: R.value,
             onSubmit: (N) => G(b),
-            onCancel: g[1] || (g[1] = (N) => w.value = null)
+            onCancel: f[1] || (f[1] = (N) => w.value = null)
           }, null, 8, ["reason", "pending", "onSubmit"])) : _("", !0)
-        ], 8, ft);
+        ], 8, gt);
       }), 128)),
       d.value ? (n(), L(l(ee), {
         key: 1,
         small: "",
-        onClick: g[2] || (g[2] = (b) => q(A.value + 1))
+        onClick: f[2] || (f[2] = (b) => q(A.value + 1))
       }, {
-        default: B(() => [...g[5] || (g[5] = [
+        default: B(() => [...f[5] || (f[5] = [
           X("Show more", -1)
         ])]),
         _: 1
@@ -205,11 +205,11 @@ const nt = {
   return (e = (t ?? []).map(Ae).find((a) => a.name === r)) == null ? void 0 : e.value;
 }, ke = (t) => t === $t ? "No cap" : Ce(Number(t));
 function he(t, r, e) {
-  if (t(bt) !== !0) return { text: "Off", where: "Context limit is off", own: !1 };
-  const a = e ? se(t(te), e) : void 0;
+  if (t.value(bt) !== !0) return { text: "Off", where: "Context limit is off", own: !1 };
+  const a = e ? se(t.list(te), e) : void 0;
   if (a !== void 0) return { text: ke(a), where: "Own value", own: !0 };
-  const p = se(t(Oe), r);
-  return p !== void 0 ? { text: ke(p), where: "Set for its type", own: !1 } : { text: Ce(Number(t(ve))), where: "Set for every agent", own: !1 };
+  const p = se(t.list(Oe), r);
+  return p !== void 0 ? { text: ke(p), where: "Set for its type", own: !1 } : { text: Ce(Number(t.value(ve))), where: "Set for every agent", own: !1 };
 }
 const Ct = (t) => t > 0 ? t : null, At = { worker: "workers" }, ae = "merger", be = "designer";
 function we(t, r, e, a, p, v = {}) {
@@ -221,9 +221,9 @@ function Tt(t, r) {
   const p = (d) => we(`${a.key}:${d.profile}`, d.title, d.line, d, he(r, a.key, d.profile), { screen: d.group === ae ? ae : "read-only", role: a.key, profile: d.profile }), v = a.profiles.filter((d) => d.group === ae || d.group === be).map(p), $ = a.profiles.filter((d) => d.group !== ae && d.group !== be).map((d) => ({ ...p(d), indent: !0 })), A = { key: a.key, name: "Read-only helpers", group: !0, screen: "read-only", role: a.key, profile: "", line: `${a.running} running, ${a.kept} kept. Every profile runs up to ${a.run_limit} and keeps ${a.kept_limit ? `up to ${a.kept_limit}` : "any number"} unless the profile sets other limits.` };
   return [...e, ...v, A, ...$];
 }
-const de = Array.from({ length: 10 }, (t, r) => (r + 1) * 1e5), Rt = (t) => t.filter((r) => !r.group && (ge(r.running, r.runLimit) || ge(r.kept, r.keptLimit ?? 0))).length;
+const de = Array.from({ length: 10 }, (t, r) => (r + 1) * 1e5), Rt = (t) => t.filter((r) => !r.group && (fe(r.running, r.runLimit) || fe(r.kept, r.keptLimit ?? 0))).length;
 function Re(t, r) {
-  const e = y(() => t.props.limits.rows.value ?? []), a = y(() => Tt(e.value, r.value)), p = y(() => !!t.props.limits.failure.value);
+  const e = y(() => t.props.limits.rows.value ?? []), a = y(() => Tt(e.value, r)), p = y(() => !!t.props.limits.failure.value);
   return { rows: a, unreadable: p, reread: () => t.reload("limits") };
 }
 const xt = {
@@ -247,7 +247,7 @@ const xt = {
     ce(v, (m) => {
       m && e.draft.load([m]);
     }), ne(d);
-    const R = y(() => (e.draft.value(le) ?? []).map((m) => m.split(":"))), h = y(() => R.value.find((m) => m[0] === e.row.profile)), T = y(() => ({ running: Number(e.draft.value(wt)), kept: Number(e.draft.value(_t)) })), w = (m) => h.value ? Number(h.value[m === "running" ? 1 : 2]) : null;
+    const R = y(() => e.draft.list(le).map((m) => m.split(":"))), h = y(() => R.value.find((m) => m[0] === e.row.profile)), T = y(() => ({ running: Number(e.draft.value(wt)), kept: Number(e.draft.value(_t)) })), w = (m) => h.value ? Number(h.value[m === "running" ? 1 : 2]) : null;
     function I(m, O) {
       const N = R.value.filter((o) => o[0] !== e.row.profile).map((o) => o.join(":"));
       if (O === null) return e.draft.set(le, N);
@@ -255,15 +255,15 @@ const xt = {
       const K = m === "running" ? O : w("running") ?? T.value.running, Z = m === "kept" ? O : w("kept") ?? T.value.kept;
       e.draft.set(le, [...N, `${e.row.profile}:${K}:${Z}`]);
     }
-    const U = y(() => e.row.group ? "" : e.row.profile || e.row.defaultProfile || ""), W = y(() => se(e.draft.value(te), U.value)), q = y(() => W.value === void 0 ? "kind" : W.value === ie ? "none" : "own"), G = y(() => {
-      const m = se(e.draft.value(Oe), e.row.role);
+    const U = y(() => e.row.group ? "" : e.row.profile || e.row.defaultProfile || ""), W = y(() => se(e.draft.list(te), U.value)), q = y(() => W.value === void 0 ? "kind" : W.value === ie ? "none" : "own"), G = y(() => {
+      const m = se(e.draft.list(Oe), e.row.role);
       return m === ie ? null : Number(m ?? e.draft.value(ve));
     });
     function S({ mode: m, size: O }) {
-      const N = (e.draft.value(te) ?? []).filter((K) => K.slice(0, K.lastIndexOf(":")).trim() !== U.value);
+      const N = e.draft.list(te).filter((K) => K.slice(0, K.lastIndexOf(":")).trim() !== U.value);
       e.draft.set(te, m === "kind" ? N : [...N, `${U.value}:${m === "none" ? ie : O}`]);
     }
-    const g = y(() => e.row.role === Bt ? U.value : ""), b = y(() => St(e.draft.value(re), g.value)), j = (m) => e.draft.set(re, Ot(e.draft.value(re), g.value, m)), F = (m) => p.open("agents.agents", m.id);
+    const f = y(() => e.row.role === Bt ? U.value : ""), b = y(() => St(e.draft.list(re), f.value)), j = (m) => e.draft.set(re, Ot(e.draft.list(re), f.value, m)), F = (m) => p.open("agents.agents", m.id);
     return (m, O) => (n(), c("div", xt, [
       C(l(De), {
         parent: "Helpers",
@@ -297,7 +297,7 @@ const xt = {
             draft: t.draft,
             "read-only": t.readOnly
           }, null, 8, ["nodes", "draft", "read-only"])),
-          g.value ? (n(), L(l(ye), {
+          f.value ? (n(), L(l(ye), {
             key: 2,
             label: "When merged",
             help: "Commands run in the main checkout after a worker of this profile is merged. One that fails is told to the main agent; the merge stands.",
@@ -345,7 +345,7 @@ const xt = {
       ])
     ]));
   }
-}, Pt = /* @__PURE__ */ H(jt, [["__scopeId", "data-v-3bc929c1"]]), Lt = {
+}, Pt = /* @__PURE__ */ H(jt, [["__scopeId", "data-v-e1a5e7a3"]]), Lt = {
   class: "agents",
   "data-agent-settings-agents": ""
 }, qt = {
@@ -467,7 +467,7 @@ const xt = {
   key: 0,
   class: "warning",
   "data-assign-warning": ""
-}, dn = { class: "actions" }, cn = ["disabled", "onClick"], vn = ["disabled", "onClick"], pn = ["title", "onClick"], fn = ["onClick"], gn = {
+}, dn = { class: "actions" }, cn = ["disabled", "onClick"], vn = ["disabled", "onClick"], pn = ["title", "onClick"], gn = ["onClick"], fn = {
   key: 0,
   class: "empty"
 }, mn = ["value", "onChange"], yn = ["value"], kn = ["onUpdate:modelValue"], hn = ["value"], bn = ["onUpdate:modelValue"], wn = ["disabled", "onClick"], _n = {
@@ -496,20 +496,20 @@ const xt = {
     const A = () => ({ id: ++$, field: "complexity", operator: "minimum", value: "" }), d = E([A()]);
     ne(() => e.reload("assign"));
     const R = y(() => {
-      var o, f;
-      return ((o = a.value) == null ? void 0 : o.targets.find((P) => P.key === p.value)) ?? ((f = a.value) == null ? void 0 : f.targets[0]);
+      var o, g;
+      return ((o = a.value) == null ? void 0 : o.targets.find((P) => P.key === p.value)) ?? ((g = a.value) == null ? void 0 : g.targets[0]);
     }), h = y(() => {
       var o;
-      return (((o = a.value) == null ? void 0 : o.rules) ?? []).filter((f) => {
+      return (((o = a.value) == null ? void 0 : o.rules) ?? []).filter((g) => {
         var P;
-        return f.target_key === ((P = R.value) == null ? void 0 : P.key);
+        return g.target_key === ((P = R.value) == null ? void 0 : P.key);
       });
     }), T = (o) => {
-      var f, P;
-      return ((P = (f = a.value) == null ? void 0 : f.fields.find((i) => i.field === o)) == null ? void 0 : P.operators) ?? [];
+      var g, P;
+      return ((P = (g = a.value) == null ? void 0 : g.fields.find((i) => i.field === o)) == null ? void 0 : P.operators) ?? [];
     }, w = (o) => {
-      var f;
-      return ((f = T(o.field).find((P) => P.operator === o.operator)) == null ? void 0 : f.needs_value) ?? !1;
+      var g;
+      return ((g = T(o.field).find((P) => P.operator === o.operator)) == null ? void 0 : g.needs_value) ?? !1;
     }, I = y(() => {
       var o;
       return ((o = R.value) == null ? void 0 : o.target) === "main" && r.draft.value(Rn) === !1;
@@ -519,18 +519,18 @@ const xt = {
     }
     const W = (o) => [o.field, o.operator, w(o) ? o.value : ""].filter(Boolean).join(" ");
     async function q(o) {
-      const f = await e.run([...o, "--revision", a.value.revision, "--environment", e.environment]);
-      return v.value = f.ok ? "" : f.error, await e.reload("assign"), f.ok;
+      const g = await e.run([...o, "--revision", a.value.revision, "--environment", e.environment]);
+      return v.value = g.ok ? "" : g.error, await e.reload("assign"), g.ok;
     }
-    function G(o, f) {
+    function G(o, g) {
       var P;
-      o.field = f, o.operator = ((P = T(f)[0]) == null ? void 0 : P.operator) ?? "", o.value = "";
+      o.field = g, o.operator = ((P = T(g)[0]) == null ? void 0 : P.operator) ?? "", o.value = "";
     }
     async function S() {
-      const o = ["assign-rule", "make", ...U(R.value), ...d.value.flatMap((f) => ["--condition", W(f)])];
+      const o = ["assign-rule", "make", ...U(R.value), ...d.value.flatMap((g) => ["--condition", W(g)])];
       await q(o) && (d.value = [A()]);
     }
-    const g = (o, f) => q(["assign-rule", "move", String(o.id), "--to", String(o.position + f)]), b = (o) => q(["assign-rule", o.enabled ? "disable" : "enable", String(o.id)]), j = (o) => q(["assign-rule", "delete", String(o.id)]), F = E(""), m = E(null), O = E(""), N = () => d.value.map((o) => `--condition ${JSON.stringify(W(o))}`).join(" ");
+    const f = (o, g) => q(["assign-rule", "move", String(o.id), "--to", String(o.position + g)]), b = (o) => q(["assign-rule", o.enabled ? "disable" : "enable", String(o.id)]), j = (o) => q(["assign-rule", "delete", String(o.id)]), F = E(""), m = E(null), O = E(""), N = () => d.value.map((o) => `--condition ${JSON.stringify(W(o))}`).join(" ");
     async function K() {
       const o = await e.read(`assign-rule try ${Number(F.value)} ${N()} --environment ${e.environment}`);
       v.value = o.ok ? "" : o.error, m.value = o.ok ? o.value : null;
@@ -539,7 +539,7 @@ const xt = {
       const o = await e.read(`assign-rule recent ${N()} --environment ${e.environment}`);
       v.value = o.ok ? "" : o.error, O.value = o.ok ? o.value.text : "";
     }
-    return (o, f) => {
+    return (o, g) => {
       var P;
       return n(), c("section", Jt, [
         a.value ? (n(), c(M, { key: 0 }, [
@@ -562,7 +562,7 @@ const xt = {
             }), 128))
           ]),
           u("div", sn, [
-            f[6] || (f[6] = u("p", { class: "note" }, "The rules are tried in order and the first match wins.", -1)),
+            g[6] || (g[6] = u("p", { class: "note" }, "The rules are tried in order and the first match wins.", -1)),
             (n(!0), c(M, null, D(h.value, (i) => (n(), c("div", {
               key: i.id,
               class: Q(["rule", { off: !i.enabled, warned: i.warning }]),
@@ -580,13 +580,13 @@ const xt = {
                     type: "button",
                     title: "Move the rule up",
                     disabled: i.position === 1,
-                    onClick: (V) => g(i, -1)
+                    onClick: (V) => f(i, -1)
                   }, "↑", 8, cn),
                   u("button", {
                     type: "button",
                     title: "Move the rule down",
                     disabled: i.position === a.value.rules.length,
-                    onClick: (V) => g(i, 1)
+                    onClick: (V) => f(i, 1)
                   }, "↓", 8, vn),
                   u("button", {
                     type: "button",
@@ -597,24 +597,24 @@ const xt = {
                     type: "button",
                     title: "Delete the rule",
                     onClick: (V) => j(i)
-                  }, "Delete", 8, fn)
+                  }, "Delete", 8, gn)
                 ]),
                 C(Xt, {
                   rule: i,
                   revision: a.value.revision,
-                  onChanged: f[0] || (f[0] = (V) => l(e).reload("assign")),
-                  onFailed: f[1] || (f[1] = (V) => v.value = V)
+                  onChanged: g[0] || (g[0] = (V) => l(e).reload("assign")),
+                  onFailed: g[1] || (g[1] = (V) => v.value = V)
                 }, null, 8, ["rule", "revision"])
               ], 64))
             ], 10, on))), 128)),
-            h.value.length ? _("", !0) : (n(), c("p", gn, "No rules give tasks to " + k((P = R.value) == null ? void 0 : P.label) + " yet.", 1)),
+            h.value.length ? _("", !0) : (n(), c("p", fn, "No rules give tasks to " + k((P = R.value) == null ? void 0 : P.label) + " yet.", 1)),
             t.readOnly ? _("", !0) : (n(), c("form", {
               key: 1,
               class: "editor",
               "data-assign-editor": "",
               onSubmit: _e(S, ["prevent"])
             }, [
-              f[4] || (f[4] = u("p", { class: "all" }, "A task must meet all of these conditions:", -1)),
+              g[4] || (g[4] = u("p", { class: "all" }, "A task must meet all of these conditions:", -1)),
               (n(!0), c(M, null, D(d.value, (i, V) => (n(), c("div", {
                 key: i.id,
                 class: "condition"
@@ -657,12 +657,12 @@ const xt = {
               ]))), 128)),
               u("button", {
                 type: "button",
-                onClick: f[2] || (f[2] = (i) => d.value.push(A()))
+                onClick: g[2] || (g[2] = (i) => d.value.push(A()))
               }, "Add a condition"),
               I.value ? (n(), c("p", _n, "The main agent writes no code here, so a rule that gives it a task is skipped.")) : _("", !0),
               u("div", $n, [
                 oe(u("input", {
-                  "onUpdate:modelValue": f[3] || (f[3] = (i) => F.value = i),
+                  "onUpdate:modelValue": g[3] || (g[3] = (i) => F.value = i),
                   type: "number",
                   min: "1",
                   "aria-label": "Task number for the trial",
@@ -691,7 +691,7 @@ const xt = {
                   class: Q(["said", { missed: !i.matched }])
                 }, k(i.label) + ": " + k(i.matched ? "met" : "not met"), 3))), 128))
               ])) : _("", !0),
-              f[5] || (f[5] = u("button", {
+              g[5] || (g[5] = u("button", {
                 type: "submit",
                 class: "save"
               }, "Add the rule", -1))
@@ -837,10 +837,10 @@ const xt = {
     const U = [{ key: "main", name: "Main agent" }, { key: "worker", name: "Workers" }, { key: "helper", name: "Read-only helpers" }], W = (s) => {
       var x;
       return ((x = T.value.find((z) => z.profile === s)) == null ? void 0 : x.name) ?? s;
-    }, q = y(() => (h.value(te) ?? []).map(Ae).map(({ name: s, value: x }) => ({ name: W(s), value: x === "none" ? "no cap" : `${Number(x) / 1e3}k` }))), G = y(() => ({ "keyed-cap-table": { rows: U, sizes: de, defaultCap: Number(h.value(ve)) || de[0], ownCaps: q.value } })), S = (s) => {
+    }, q = y(() => h.list(te).map(Ae).map(({ name: s, value: x }) => ({ name: W(s), value: x === "none" ? "no cap" : `${Number(x) / 1e3}k` }))), G = y(() => ({ "keyed-cap-table": { rows: U, sizes: de, defaultCap: Number(h.value(ve)) || de[0], ownCaps: q.value } })), S = (s) => {
       var x;
       return ((x = e.props[r[s]].data.value) == null ? void 0 : x.nodes) ?? [];
-    }, g = y(() => h.value(Un) === !1 && h.value(Wn) === !1), b = y(() => !e.readOnly), j = E("main"), F = y(() => {
+    }, f = y(() => h.value(Un) === !1 && h.value(Wn) === !1), b = y(() => !e.readOnly), j = E("main"), F = y(() => {
       var s;
       return ((s = e.props.work.data.value) == null ? void 0 : s.presets) ?? [];
     }), m = y(() => {
@@ -850,14 +850,14 @@ const xt = {
       var s;
       return ((s = e.props.find.data.value) == null ? void 0 : s.rows) ?? [];
     }), o = E("");
-    let f = null;
+    let g = null;
     const P = (s) => s.startsWith("helper-type") ? "agents" : s;
     function i(s) {
-      j.value = "main", V({ key: P(s.screen) }), o.value = s.key, clearTimeout(f), f = setTimeout(() => {
+      j.value = "main", V({ key: P(s.screen) }), o.value = s.key, clearTimeout(g), g = setTimeout(() => {
         o.value = "";
       }, Dn);
     }
-    Ie(() => clearTimeout(f));
+    Ie(() => clearTimeout(g));
     function V(s) {
       $.value = s.key, e.state.tab = s.key === "agents" ? "agents" : "";
     }
@@ -902,7 +902,7 @@ const xt = {
                 nodes: S,
                 "read-only": l(e).readOnly,
                 found: o.value,
-                "nothing-starts": g.value,
+                "nothing-starts": f.value,
                 "advanced-extras": G.value
               }, null, 8, ["tab", "active", "draft", "is-ready", "read-only", "found", "nothing-starts", "advanced-extras"])
             ]),
@@ -933,7 +933,7 @@ const xt = {
       _: 1
     }));
   }
-}, Xn = /* @__PURE__ */ H(Hn, [["__scopeId", "data-v-1a389575"]]);
+}, Xn = /* @__PURE__ */ H(Hn, [["__scopeId", "data-v-edbec32a"]]);
 export {
   Xn as A
 };

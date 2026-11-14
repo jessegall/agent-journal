@@ -1,5 +1,5 @@
 import {computed, reactive, ref} from "vue";
-import {listItems, sentList} from "./listText.js";
+import {listItems, sentList, textItems} from "./listText.js";
 import {numberRuleProblem} from "./numberRule.js";
 
 const BLANK_NUMBER = "A number is missing.";
@@ -122,5 +122,16 @@ export function useSettingsDraft({run, reload}) {
         return Array.isArray(node.value) ? [...node.value] : [];
     }
 
-    return {draft, load, fill, value, set: (key, value) => { draft[key] = value; }, isChanged, changes, errors, visible, dirty, stale, canSave, reason, pending, failure, apply, reset: rebase};
+    // a setting read as a list: the draft's entries, or the entries of a text it holds; a value of any other form is
+    // named once in the console with its key, so what wrote it can be found, and reads as no entries
+    function list(key) {
+        const held = value(key);
+        if (Array.isArray(held)) return held;
+        if (held === undefined || held === null || held === "") return [];
+        if (typeof held === "string") return textItems(held);
+        console.error(`the settings draft holds ${key} as ${JSON.stringify(held)}, not as a list`);
+        return [];
+    }
+
+    return {draft, load, fill, value, list, set: (key, value) => { draft[key] = value; }, isChanged, changes, errors, visible, dirty, stale, canSave, reason, pending, failure, apply, reset: rebase};
 }

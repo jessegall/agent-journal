@@ -200,3 +200,16 @@ test("a list setting is handed out as a list even when the draft was given anoth
     expect(named).toHaveBeenCalledWith('the settings draft holds names as "a, b", not as a list');
     named.mockRestore();
 });
+
+test("a list setting reads as a list whatever form the draft holds it in, and a setting on no screen reads as no entries", () => {
+    const {draft} = drafted();
+    expect(draft.list("names")).toEqual(["a", "b"]);
+    expect(draft.list("on-no-screen")).toEqual([]);
+    draft.set("on-no-screen", "journal-planner:150000, journal-designer:none");
+    expect(draft.list("on-no-screen")).toEqual(["journal-planner:150000", "journal-designer:none"]);
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    draft.set("on-no-screen", {odd: true});
+    expect(draft.list("on-no-screen")).toEqual([]);
+    expect(logged).toHaveBeenCalledOnce();
+    logged.mockRestore();
+});

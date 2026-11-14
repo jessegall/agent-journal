@@ -12,8 +12,11 @@ export const itemsOfLines = (text) => text.split("\n").map((item) => item.trim()
 
 export const sentList = (items, isNumbers) => (isNumbers ? items.join(",") : JSON.stringify(items));
 
+// the entries of a list written as text: JSON text or comma text
+export const textItems = (text) => (text.trim().startsWith("[") ? JSON.parse(text) : text.split(",").map((item) => item.trim()).filter(Boolean));
+
 // what the row shows once the text is saved: JSON text, from JSON text or comma text
 export function shownList(text, isNumbers) {
-    const items = text.startsWith("[") ? JSON.parse(text) : text.split(",").map((item) => item.trim()).filter(Boolean);
+    const items = textItems(text);
     return JSON.stringify(isNumbers ? items.map(Number) : items);
 }
