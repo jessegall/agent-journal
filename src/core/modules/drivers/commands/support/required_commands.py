@@ -1,8 +1,10 @@
+import re
 from collections.abc import Sequence
 from dataclasses import replace
 
 from engine.command.bus import Bus
 from engine.command.context import Context
+from engine.driver.block_condition import BlockCondition
 from engine.driver.block_until import BlockUntil
 from engine.driver.conditions.ran_command import RanCommand
 from engine.driver.interval import Interval
@@ -29,4 +31,9 @@ class RequiredCommands:
         subject = " ".join(dict.fromkeys((*parts[2:3], parts[1], *parts[3:4])))
         refusal = REQUIRED_COMMAND_REFUSAL.nudge(subject=subject, block="{block}")
         countdown = REQUIRED_COMMAND_COUNTDOWN.nudge("{left}", subject=subject)
-        return BlockUntil(agent_id, replace(refusal, key=f"{refusal.key}:{nudge.required_command}"), RanCommand(nudge.required_command), Interval(REQUIRED_COMMAND_SPAN), countdown)
+        return BlockUntil(agent_id, replace(refusal, key=f"{refusal.key}:{nudge.required_command}"), RequiredCommands.condition(nudge), Interval(REQUIRED_COMMAND_SPAN), countdown)
+
+    @staticmethod
+    def condition(nudge: Nudge) -> BlockCondition:
+        closed_by = None if nudge.declaration is None else nudge.declaration.closed_by
+        return RanCommand(nudge.required_command) if closed_by is None else closed_by(re.search(r"\d+", nudge.required_command).group())
