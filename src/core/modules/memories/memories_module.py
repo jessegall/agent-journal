@@ -106,11 +106,11 @@ class MemoriesModule(Module):
         WindowKey("working", "memory agents", arguments=["environment", "access", "name", "limit"], switches=["working"], events=["agent.*", "memory.*"], loading=KeyLoading.REQUESTED),
         WindowKey("ended", "memory agents", arguments=["environment", "access", "name", "limit"], switches=["ended"], events=["agent.*", "memory.*"], loading=KeyLoading.REQUESTED),
         WindowKey("selected", "agent show {id}", events=["agent.*"], loading=KeyLoading.REQUESTED),
-    ], runs=["memory make"], events=["memory.*", "agent.*"]),
+    ], runs=["memory make", "memory weigh", "memory remove", "memory restore"], events=["memory.*", "agent.*"]),
                WindowDeclaration("memories.memory-facts", "Keywords", "memory-facts.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.FILED, skeleton=[SkeletonPart.line()],
                                  reads=["memory-keyword list"], runs=["memory-keyword make", "memory-keyword delete"], events=["memory_keyword.*"],
                                  keys=[WindowKey("keywords.*", "memory-keyword list --memory {id}", loading=KeyLoading.REQUESTED)])]
-    window_extensions = [WindowExtension(name, reads=["memory page"], events=["memory.*"], keys=[
+    window_extensions = [WindowExtension(name, reads=["memory page"], runs=["memory weigh", "memory remove", "memory restore"], events=["memory.*"], keys=[
         WindowKey("agent-memories.*", "memory page --agent {id} --state active --order weight --limit 100", tab="memories", events=["memory.*"], loading=KeyLoading.REQUESTED),
         WindowKey("agent-removed-memories.*", "memory page --agent {id} --removed --state removed --order weight --limit 100", tab="memories", events=["memory.*"], loading=KeyLoading.REQUESTED),
     ], tabs=[WindowTab("memories", "Memories", "memory page", count_field="memories", component="/modules/journal.core.memories/agent-memories.js")]) for name in ("agents.agents", "agents.helpers")]

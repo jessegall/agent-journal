@@ -142,5 +142,5 @@ export {default as TableLayout} from "./TableLayout.vue";
 export {default as CreateDialog} from "./CreateDialog.vue";
 export {useToast} from "./useToast.js";
 export {vContext} from "./vContext.js";
-export {copying} from "../src/domain/contextItems.js";
+export {copying, deleteItem, short} from "../src/domain/contextItems.js";
 export {default as EditorTabs} from "./EditorTabs.vue";

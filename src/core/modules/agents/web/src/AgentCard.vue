@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {agentNumber, agentTitle, perHour, seenWords, sinceWords, AgentTip, Btn, Icon, useNow, useWindow} from "@journal/window-kit";
+import {agentNumber, agentTitle, copying, peekRef, perHour, seenWords, sinceWords, AgentTip, Btn, Icon, useNow, useWindow, vContext} from "@journal/window-kit";
 import AgentActions from "./AgentActions.vue";
 import AgentCardDetails from "./AgentCardDetails.vue";
 import AgentStatusDot from "./AgentStatusDot.vue";
@@ -51,12 +51,28 @@ const statusAt = computed(() => {
     const held = dotState.value === "blocked" || dotState.value === "waiting";
     return props.row.ended_at || (held && props.facts?.last_activity) || props.row.process_started_at || props.row.created_at;
 });
+// the menu of a right click on the card: open it, pause it, copy its name, open its task, stop it
+const stopped = computed(() => Boolean(props.row.ended_at) || retired.value);
+const turn = (words, did) => async ({say}) => {
+    const answer = await context.run(["agent", ...words, String(props.row.number)]);
+    say(answer.ok ? `${named.value} ${did}` : answer.error);
+};
+const place = () => ({
+    head: named.value,
+    items: [
+        {label: "Open", group: "open", disabled: props.open, reason: "Already open", run: () => emit("toggle")},
+        {label: props.row.paused_at ? "Resume" : "Pause", group: "open", disabled: stopped.value, reason: "Process stopped", run: turn([props.row.paused_at ? "resume" : "pause"], props.row.paused_at ? "resumed" : "paused")},
+        {label: "Copy name", group: "copy", run: ({say}) => copying(named.value, "the name", say)},
+        {label: "Open its task", group: "copy", disabled: !jobTask.value, reason: "No task", run: () => peekRef(`tasks:${jobTask.value.id}`)},
+        {label: "Stop", danger: true, disabled: stopped.value || props.row.role === "main", reason: stopped.value ? "Process stopped" : "The main agent", run: turn(["stop"], "stopped")},
+    ],
+});
 const statusSince = computed(() => sinceWords(statusAt.value, now.value));
 const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.value));
 </script>
 
 <template>
-    <div :class="['agent-card', {open}]" :data-agent-open="row.id" :aria-expanded="open" :role="open ? undefined : 'button'" :tabindex="open ? undefined : 0" @click="!open && emit('toggle')" @keydown.enter.self.prevent="!open && emit('toggle')" @keydown.space.self.prevent="!open && emit('toggle')">
+    <div v-context="place" :class="['agent-card', {open}]" :data-agent-open="row.id" :aria-expanded="open" :role="open ? undefined : 'button'" :tabindex="open ? undefined : 0" @click="!open && emit('toggle')" @keydown.enter.self.prevent="!open && emit('toggle')" @keydown.space.self.prevent="!open && emit('toggle')">
         <div class="agent-head" data-agent-head>
             <template v-if="open"><button type="button" class="agent-back" title="Back" aria-label="Back" @click.stop="emit('toggle')"><Icon name="chevronRight" facing="left" :size="14" /></button></template>
             <template v-if="open">

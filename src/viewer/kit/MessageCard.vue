@@ -19,6 +19,8 @@ import {FACES, reactionGroups} from "../src/domain/reactionGroups.js";
 import "../src/text/all.js";
 import {useMessageLinkPages} from "../src/composables/messageLinkPages.js";
 import MoreItems from "./MoreItems.vue";
+import {vContext} from "./vContext.js";
+import {copying, short} from "../src/domain/contextItems.js";
 
 // one message of the chat as version 4 drew it: a soft rounded card, the user's tinted and set to the right, the agent's to the left,
 // the text read as markdown (inline code, lists, bold), and the time under the card; a worker's report is its card headed with the worker, which opens it,
@@ -70,6 +72,23 @@ const {links, total, more, loading, failure, sentTo, sentMore, sentLoading, sent
 const picking = ref(false);
 const reactions = computed(() => reactionGroups(props.message.reactions));
 
+// the menu of a right click on the message: reply, react, copy its text or its link, pin it to the top of the chat
+const sent = computed(() => Number.isInteger(props.message.id));
+const linkOf = () => `${location.href.split("#")[0]}#open=messages:${props.message.id}`;
+const place = () => ({
+    head: short(props.message.text ?? "", 40),
+    items: [
+        {label: "Reply", group: "open", disabled: !sent.value, reason: "Not sent yet", run: () => emit("reply", props.message)},
+        {label: "React", group: "open", disabled: !sent.value, reason: "Not sent yet", children: FACES.map((face) => ({label: face, run: () => emit("react", props.message, face)}))},
+        {label: "Copy text", group: "copy", run: ({say}) => copying(props.message.text ?? "", "the message", say)},
+        {label: "Copy link", group: "copy", disabled: !sent.value, reason: "Not sent yet", run: ({say}) => copying(linkOf(), "the link", say)},
+        {label: "Pin to the top of the chat", disabled: !sent.value || !context, reason: "Not sent yet", run: async ({say}) => {
+            const answer = await context.run(["pin", "make", short(props.message.text ?? "", 60) || `Message ${props.message.id}`, "--link", `messages:${props.message.id}`]);
+            say(answer.ok ? "Pinned" : answer.error);
+        }},
+    ],
+});
+
 function pick(face) {
     picking.value = false;
     emit("react", props.message, face);
@@ -78,12 +97,12 @@ function pick(face) {
 
 <template>
     <template v-if="message.peer || message.recipient">
-        <div class="message" data-message-between-agents :data-incoming="message.recipient ? null : ''" :data-ref="`message:${message.id}`">
+        <div v-context="place" class="message" data-message-between-agents :data-incoming="message.recipient ? null : ''" :data-ref="`message:${message.id}`">
             <GrowingCard :title="message.recipient ? `Message sent to ${message.recipient}` : `Message from ${message.peer}`" :text="message.text" :icon="message.recipient ? 'send' : 'reply'" :person="message.recipient || message.peer" :incoming="!message.recipient" commentable @comment="emit('comment', message)" />
         </div>
     </template>
     <template v-else>
-        <article class="message" data-message data-figure-bubble :data-figure-mark="`message:${message.id}`" :data-figure-agent="fromPerson ? null : ''" :data-from="fromPerson ? 'user' : message.type" :data-ref="`message:${message.id}`">
+        <article v-context="place" class="message" data-message data-figure-bubble :data-figure-mark="`message:${message.id}`" :data-figure-agent="fromPerson ? null : ''" :data-from="fromPerson ? 'user' : message.type" :data-ref="`message:${message.id}`">
             <div class="message-body">
                 <div ref="bubble" :class="['message-card', 'md', {comment: commentedRow}]" @click="peekChip">
                     <template v-if="commentedRow">

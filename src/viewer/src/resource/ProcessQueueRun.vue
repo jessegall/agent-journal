@@ -5,6 +5,8 @@ import {useSharedNow} from "../composables/now.js";
 import {useResourceEvents} from "./resourceEvents.js";
 import {peek} from "../route.js";
 import Icon from "../kit/Icon.vue";
+import {copying, short} from "../domain/contextItems.js";
+import {vContext} from "../../kit/vContext.js";
 import {eventAboutRows} from "../../kit/eventRows.js";
 const props = defineProps({run: {type: Object, required: true}, environment: {type: String, required: true}, position: {type: Number, required: true}, read: {type: Function, required: true}, expanded: Boolean});
 const emit = defineEmits(["toggle"]);
@@ -38,11 +40,20 @@ async function open() {
     output.value.scrollTop = output.value.scrollHeight;
     pages.feed.drawn(output.value);
 }
+// the menu of a right click on a process: show or hide its output, copy its command, open its task
+const place = () => ({
+    head: short(props.run.line, 40),
+    items: [
+        {label: props.expanded ? "Hide output" : "Show output", group: "open", run: () => emit("toggle")},
+        {label: "Copy command", group: "copy", run: ({say}) => copying(props.run.line, "the command", say)},
+        {label: "Open its task", group: "copy", disabled: !props.run.task_id, reason: "No task", run: () => peek("tasks", props.run.task_id)},
+    ],
+});
 watch(() => props.expanded, open, {immediate: true});
 useResourceEvents(["output.*"], refresh, (event) => eventAboutRows(event, new Set([props.run.id])));
 </script>
 <template>
-    <div class="run" :data-queue-row="run.section" :data-queue-process="run.id">
+    <div v-context="place" class="run" :data-queue-row="run.section" :data-queue-process="run.id">
         <div class="toggle" role="button" tabindex="0" :aria-expanded="expanded" @click="emit('toggle')" @keydown.enter.prevent="emit('toggle')" @keydown.space.prevent="emit('toggle')">
             <div class="run-line"><span class="leading"><template v-if="run.section === 'waiting'"><span data-queue-position>{{ position }}</span></template><template v-else><span :class="['dot', {passed: run.section === 'recent' && run.state === 'finished', failed: run.section === 'recent' && run.state !== 'finished'}]" :title="run.section === 'recent' ? (run.state === 'finished' ? 'Passed' : 'Failed') : 'Running'" /></template></span>
                 <code class="command">{{ run.line }}</code><span class="time" data-queue-time>{{ duration }}</span><Icon class="chevron" :class="{open: expanded}" name="chevronRight" facing="down" :size="12" />

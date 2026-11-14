@@ -4,7 +4,22 @@
 // and quote, when the place can take a quote, is called with the selected text. A function that answers nothing declines the place, and the next one up is asked.
 // The shell takes the most particular place under the pointer, the one on the element nearest to it. The place sits on the element under a shared key, so the shell
 // and a window built apart find each other's.
+import {copying, short} from "../src/domain/contextItems.js";
+import {peekRef} from "../src/route.js";
+
 export const PLACE = Symbol.for("journal.context-place");
+
+// a reference to a row anywhere (an element with data-peek="tasks:12") is a place without a declaration: open it or copy its words
+const referencePlace = (element) => {
+    const words = (element.title || element.textContent).trim().replace(/\s+/g, " ");
+    return {
+        head: short(words, 40),
+        items: [
+            {label: "Open", group: "open", run: () => peekRef(element.dataset.peek, element.dataset.sub || "")},
+            {label: "Copy reference", group: "copy", run: ({say}) => copying(words.toLowerCase(), "", say)},
+        ],
+    };
+};
 
 export const vContext = {
     mounted(element, binding) {
@@ -21,7 +36,7 @@ export const vContext = {
 // the place nearest to the target, with the element that declares it, or null where nothing is declared
 export function placeUnder(target) {
     for (let element = target; element; element = element.parentElement) {
-        const declared = element[PLACE];
+        const declared = element[PLACE] ?? (element.dataset?.peek ? referencePlace : null);
         const place = typeof declared === "function" ? declared(element) : declared;
         if (place?.items?.length) return {...place, el: element};
     }

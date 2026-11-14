@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
-import {AutoScrollPane, EmptyState, FeedPaginator, Skeleton, eventMayBeChildOf, useWindow} from "@journal/window-kit";
+import {AutoScrollPane, EmptyState, FeedPaginator, Skeleton, copying, eventMayBeChildOf, short, useWindow, vContext} from "@journal/window-kit";
 import TerminalOutput from "./TerminalOutput.vue";
 
 // Commands are listed oldest first and open to their full text; a line typed here goes to the agent's terminal.
@@ -50,6 +50,19 @@ function toggle(row) {
     opened.value = next;
 }
 
+// the menu of a right click on a command: show or hide what it printed, copy it, send it again
+const placeOf = (row) => ({
+    head: short(row.summary, 40),
+    items: [
+        {label: opened.value.has(row.id) ? "Hide output" : "Show output", group: "open", run: () => toggle(row)},
+        {label: "Copy command", group: "copy", run: ({say}) => copying(fullCommands.value[row.id] || row.summary, "the command", say)},
+        {label: "Run again", run: async ({say}) => {
+            const result = await view.run(["agent", "type", String(agent), fullCommands.value[row.id] || row.summary]);
+            say(result.ok ? "Sent" : result.error);
+        }},
+    ],
+});
+
 async function send() {
     const line = typed.value;
     if (!line.trim()) return;
@@ -79,7 +92,7 @@ function focusInput(event) {
         <template v-else>
             <AutoScrollPane :row-count="commands.length" :feed="paginator" pane-class="terminal-body" data-terminal-log>
                 <template v-for="row in commands" :key="row.id">
-                    <div :class="['terminal-row', {refused: row.refusal}]" data-terminal-command :title="row.refusal ? `The journal refused this before it ran: ${row.refusal}` : null">
+                    <div v-context="() => placeOf(row)" :class="['terminal-row', {refused: row.refusal}]" data-terminal-command :title="row.refusal ? `The journal refused this before it ran: ${row.refusal}` : null">
                         <span class="terminal-mark">{{ markOf(row) }}</span>
                         <button type="button" :class="['terminal-text', {open: opened.has(row.id)}]" :aria-expanded="opened.has(row.id)" @click="toggle(row)">{{ opened.has(row.id) ? fullCommands[row.id] || row.summary : row.summary }}</button>
                         <template v-if="row.refusal">
