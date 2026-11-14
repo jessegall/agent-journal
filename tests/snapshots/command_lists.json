@@ -3589,6 +3589,11 @@
   "merger": "allowed",
   "worker": "refused"
  },
+ "suite check": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
  "suite choose": {
   "helper": "refused",
   "merger": "refused",
