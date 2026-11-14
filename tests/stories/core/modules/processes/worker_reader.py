@@ -45,7 +45,7 @@ def test_a_worker_gets_its_reader_request_before_the_main_agent(worker_reader_sa
     story.expect_hook_allowed("s-reader", HookSamples.prompt("continue"), "Reader request 1: agent")
     story.expect_absent_hook_line("s-1", HookSamples.prompt("continue"), "reader request")
     story.tick("s-1")
-    story.expect_rows(not story.container.get(Queries).query(AgentLine).filter(source="processes.reader-request.1").exists())
+    story.expect_rows(not story.row_exists(AgentLine, source="processes.reader-request.1"))
 
 
 def test_a_different_worker_cannot_save_the_request_draft(worker_reader_sample):
@@ -58,7 +58,7 @@ def test_failed_saves_leave_no_reader_or_output_proof(worker_reader_sample):
     story = worker_reader_sample
     story.expect_refusal('reader add broken --commands "custom-build*" --title Building --lines missing --summary missing',
                          "missed", actor=reader_worker(story))
-    story.expect_rows(not story.container.get(Queries).query(Reader).filter(name="broken").exists(),
+    story.expect_rows(not story.row_exists(Reader, name="broken"),
                       story.container.get(ReaderRequestQuery).open().exists())
     story.expect_success('reader add repaired --commands "custom-build*" --title "Custom tests" --lines done --summary done --step PASSED --count "collected ([0-9]+)" --count-command "{part} --list"',
                          "name: repaired", actor=reader_worker(story))
@@ -69,7 +69,7 @@ def test_the_worker_stops_saving_after_three_failures(exhausted_worker_reader):
     story.expect_refusal('reader add fourth --commands "custom-build*" --title "Custom tests" --lines done --summary done --step PASSED --count "collected ([0-9]+)" --count-command "{part} --list" --skip-guard processes.reader-owner',
                          "has no skip", actor=reader_worker(story))
     story.expect_refusal("reader draft 1 --save", "main agent", actor=reader_worker(story))
-    story.expect_rows(not story.container.get(Queries).query(Reader).filter(name="fourth").exists())
+    story.expect_rows(not story.row_exists(Reader, name="fourth"))
     story.expect_hook_allowed("s-1", HookSamples.prompt("help"), "Reader request 1")
 
 

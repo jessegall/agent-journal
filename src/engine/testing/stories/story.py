@@ -207,6 +207,12 @@ class Story:
     def newest_row(self, model: type[M], **values: object) -> M | None:
         return self.container.get(Queries).query(model).filter(**values).newest().first()
 
+    def row_exists(self, model: type[M], **values: object) -> bool:
+        return self.container.get(Queries).query(model).filter(**values).exists()
+
+    def row_count(self, model: type[M], **values: object) -> int:
+        return self.container.get(Queries).query(model).filter(**values).count()
+
     def run_command(self, command: Command[R], actor: Actor, environment_id: int | None = None) -> R:
         return self.container.get(Bus).run(command, actor, environment_id=environment_id)
 

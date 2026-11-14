@@ -152,7 +152,6 @@ tests/stories/core/modules/processes/reader_chain.py
 tests/stories/core/modules/processes/reader_demand.py
 tests/stories/core/modules/processes/reader_draft.py
 tests/stories/core/modules/processes/reader_partial_ticks.py
-tests/stories/core/modules/processes/reader_start.py
 tests/stories/core/modules/processes/readers_upgrade.py
 tests/stories/core/modules/processes/request_reader.py
 tests/stories/core/modules/processes/runner_rewrite.py
@@ -178,7 +177,6 @@ tests/stories/core/modules/secrets/secret_run.py
 tests/stories/core/modules/secrets/secrets.py
 tests/stories/core/modules/sequences/sequences.py
 tests/stories/core/modules/sequences/standard_rows.py
-tests/stories/core/modules/setting_requests/setting_requests.py
 tests/stories/core/modules/settings/managed_hooks.py
 tests/stories/core/modules/settings/project_hooks.py
 tests/stories/core/modules/sharing/share_links.py
@@ -196,7 +194,6 @@ tests/stories/core/modules/tasks/marks.py
 tests/stories/core/modules/tasks/state_sweep.py
 tests/stories/core/modules/tasks/task_brief_first.py
 tests/stories/core/modules/tasks/task_context.py
-tests/stories/core/modules/tasks/task_records.py
 tests/stories/core/modules/templates/sending.py
 tests/stories/core/modules/triggers/action_output.py
 tests/stories/core/modules/updates/updates.py
@@ -324,7 +321,6 @@ tests/stories/suites/coding/modules/workers/resume_task.py
 tests/stories/suites/coding/modules/workers/round.py
 tests/stories/suites/coding/modules/workers/round_task_count.py
 tests/stories/suites/coding/modules/workers/send_timing.py
-tests/stories/suites/coding/modules/workers/send_worker_routes.py
 tests/stories/suites/coding/modules/workers/server_replacement.py
 tests/stories/suites/coding/modules/workers/shared_reads.py
 tests/stories/suites/coding/modules/workers/skill_folders.py

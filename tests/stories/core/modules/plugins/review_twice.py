@@ -4,7 +4,6 @@ import pytest
 
 from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
-from engine.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.process_group import ProcessGroup
 from tests.stories.core.modules.plugins.support.refusing_modules import REFUSING, DeleteProcessRow, SlotsCreateNote, OrphanProcessRow
@@ -35,7 +34,7 @@ def test_s83_a_refusal_after_a_command_deletes_a_process_leaves_its_folder(refus
     with pytest.raises(Refusal):
         bus.run(DeleteProcessRow(process.id, True), story.agent)
     story.run_listeners()
-    story.expect_rows(process_folder(story, process).is_dir(), story.container.get(Queries).query(Process).filter(id=process.id).exists())
+    story.expect_rows(process_folder(story, process).is_dir(), story.row_exists(Process, id=process.id))
     bus.run(DeleteProcessRow(process.id, False), story.agent)
     story.expect_rows(process_folder(story, process).is_dir())
     story.run_listeners()

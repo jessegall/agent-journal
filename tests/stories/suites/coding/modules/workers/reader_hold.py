@@ -162,7 +162,7 @@ def test_readers_forced_off_creates_no_request_block_or_wait(new_story):
     story.run(f"setting set {ProcessSetting.READERS_FORCED.key} off --environment main")
     process = worker_run(story)
     story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists(), story.step("run holds a slot", process.id))
-    story.expect_rows(not story.container.get(Queries).query(AgentBlock).filter(session_agent_id=reader_worker(story).id).exists())
+    story.expect_rows(not story.row_exists(AgentBlock, session_agent_id=reader_worker(story).id))
 
 
 def test_with_no_main_agent_the_worker_is_not_held_and_its_run_goes_on(new_story):
@@ -171,7 +171,7 @@ def test_with_no_main_agent_the_worker_is_not_held_and_its_run_goes_on(new_story
     process = worker_run(story, "alone-build run")
     request = story.container.get(ReaderRequestQuery).open().page(1, 1).rows[0]
     story.expect_rows(request.expires_at == story.clock.timestamp(), story.step("run holds a slot", process.id))
-    story.expect_rows(not story.container.get(Queries).query(AgentBlock).filter(session_agent_id=reader_worker(story).id).exists())
+    story.expect_rows(not story.row_exists(AgentBlock, session_agent_id=reader_worker(story).id))
 
 
 def test_a_stopped_worker_is_started_again_when_its_waiting_run_ends(new_story):
@@ -226,7 +226,7 @@ def test_a_skipped_block_does_not_free_the_worker_and_comes_back(notified_reader
     story.advance(timedelta(minutes=11))
     reply = story.hook("s-1", HookSamples.prompt("continue"))
     expect_reply_line(reply, "Reader request")
-    story.expect_rows(story.container.get(Queries).query(AgentBlock).filter(session_agent_id=story.agent.id, closed_at=None).exists())
+    story.expect_rows(story.row_exists(AgentBlock, session_agent_id=story.agent.id, closed_at=None))
 
 
 def test_with_no_main_agent_the_worker_is_not_held_and_the_next_main_agent_is_told(new_story):
@@ -248,7 +248,7 @@ def test_waive_frees_the_worker_and_starts_its_run_with_no_reader(kept_reader_sa
     story.expect_rows(story.step("run holds a slot", process.id))
     story.expect_rows(story.container.get(OutputQuery).process(process.id).page(1, 1).rows[0].reader_id is None)
     story.run_listeners()
-    story.expect_rows(not story.container.get(Queries).query(ChatMark).filter(key="reader-request:1").exists())
+    story.expect_rows(not story.row_exists(ChatMark, key="reader-request:1"))
 
 
 def test_an_idle_main_agent_gets_the_reader_request_on_tick(requested_reader_story):
@@ -258,7 +258,7 @@ def test_an_idle_main_agent_gets_the_reader_request_on_tick(requested_reader_sto
     lines = tuple(story.story_rows(AgentLine, session_agent_id=story.agent.id, source="processes.reader-request.1"))
     story.expect_rows(len(lines) == 1, lines[0].wakes_agent, "Reader request 1" in lines[0].text)
     story.tick("s-1")
-    story.expect_rows(story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, source="processes.reader-request.1").count() == 1)
+    story.expect_rows(story.row_count(AgentLine, session_agent_id=story.agent.id, source="processes.reader-request.1") == 1)
 
 
 def test_reader_sample_changes_make_no_chat_mark(requested_reader_story):
@@ -268,7 +268,7 @@ def test_reader_sample_changes_make_no_chat_mark(requested_reader_story):
     worker = reader_worker(story)
     story.run_command(EndProcess(request.sample_process_id, 0, 5000, 32), worker, 1)
     story.run_listeners()
-    story.expect_rows(not story.container.get(Queries).query(ChatMark).filter(key="reader-request:1").exists())
+    story.expect_rows(not story.row_exists(ChatMark, key="reader-request:1"))
 
 
 @pytest.mark.parametrize("text", [

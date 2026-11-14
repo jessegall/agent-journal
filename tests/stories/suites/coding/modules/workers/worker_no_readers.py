@@ -4,7 +4,6 @@ import pytest
 
 from engine.enums.command_category import CommandCategory
 from engine.enums.tool_type import ToolType
-from engine.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.rules.read_advice_rule import ReadAdviceRule
@@ -24,7 +23,7 @@ MAIN = "s-1"
 def expect_unblocked(story) -> None:
     worker = reader_worker(story)
     story.expect_rows(not story.container.get(ReaderRequestQuery).open().filter(creator_id=worker.id).exists(),
-                      not story.container.get(Queries).query(AgentBlock).filter(session_agent_id=worker.id, closed_at=None).exists())
+                      not story.row_exists(AgentBlock, session_agent_id=worker.id, closed_at=None))
 
 
 def expect_blocked(story) -> None:

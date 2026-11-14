@@ -15,7 +15,6 @@ from engine.cli.line_run import LineRun
 from engine.enums.actor_type import ActorType
 from engine.database.database import Database
 from engine.file.file_access import FileAccess
-from engine.query.queries import Queries
 from engine.row.row_owner import MAIN_AGENT, RowOwner
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.processes.models.process import Process
@@ -49,22 +48,22 @@ def category_runs(story, category: ProcessType) -> list[RequestRun]:
 
 def test_each_hook_leaves_one_ended_request_row_of_the_hook_kind_and_no_process_row(new_story):
     story = new_story(fixture=BuilderStarted)
-    processes_previous = story.container.get(Queries).query(Process).count()
+    processes_previous = story.row_count(Process)
     story.hook("s-1", HookSamples.sample("stop"))
     logged_rows_saved(story)
     rows = [row for row in category_runs(story, ProcessType.HOOK) if row.line == "claude stop"]
     story.expect_rows(len(rows) == 1, rows[0].exit_code == 0, rows[0].session_agent_id == story.agent.id,
-                      story.container.get(Queries).query(Process).count() == processes_previous, detail=str(rows))
+                      story.row_count(Process) == processes_previous, detail=str(rows))
 
 
 def test_a_quick_run_through_the_door_is_logged_and_the_tick_writes_one_ended_request_row(new_story):
     story = new_story(fixture=BuilderStarted)
-    processes_previous = story.container.get(Queries).query(Process).count()
+    processes_previous = story.row_count(Process)
     execution = door_run(story, ExecutionRequest(["echo", "done"], story.home.project_folder, ProcessType.QUICK, 10))
     unrecorded = category_runs(story, ProcessType.QUICK)
     logged_rows_saved(story)
     rows = category_runs(story, ProcessType.QUICK)
-    story.expect_rows(execution.stdout == "done\n", unrecorded == [], len(rows) == 1, rows[0].exit_code == 0, story.container.get(Queries).query(Process).count() == processes_previous, detail=str(rows))
+    story.expect_rows(execution.stdout == "done\n", unrecorded == [], len(rows) == 1, rows[0].exit_code == 0, story.row_count(Process) == processes_previous, detail=str(rows))
 
 
 def test_a_failing_run_through_the_door_keeps_its_code(new_story):

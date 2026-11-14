@@ -9,7 +9,6 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
 from engine.database.statement import Statement
-from engine.query.queries import Queries
 from engine.scope.scopes import Scopes
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_read import TaskRead
@@ -259,7 +258,7 @@ def test_overview_failure_does_not_record_a_read_or_release_the_gate(started_con
         outcome = story.run("task overview 1", actor=story.agent)
     feature(outcome.code != 0 and "missing_context_column" in outcome.output_text, outcome.output_text)
     with story.container.get(Scopes).read_scope((), story.agent.id, 1):
-        feature(not story.container.get(Queries).query(TaskRead).filter(task_id=1, session_agent_id=story.agent.id).exists(), "failed overview recorded TaskRead")
+        feature(not story.row_exists(TaskRead, task_id=1, session_agent_id=story.agent.id), "failed overview recorded TaskRead")
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), TASK_BRIEF_FIRST.nudge(task=1).text)
     linked_scenario.command("task overview 1")
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
