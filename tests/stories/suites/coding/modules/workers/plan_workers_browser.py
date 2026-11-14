@@ -4,7 +4,7 @@ from engine.enums.actor_type import ActorType
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.phase_steps import planned_story
-from tests.stories.suites.coding.modules.workers.test_queue import recording_launch
+from tests.integration.suites.coding.modules.workers.test_test_queue import recording_launch
 from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
 
 

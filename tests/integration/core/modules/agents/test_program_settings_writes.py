@@ -8,7 +8,7 @@ from pathlib import Path
 from core.modules.agents.ticks.program_settings_watch import ProgramSettingsWatch
 from engine.provider.program_hooks import ProgramHooks
 from engine.provider.program_settings_sync import ProgramSettingsSync
-from tests.stories.core.modules.helpers.start_helper import LauncherRuns
+from tests.integration.core.modules.helpers.test_start_helper import LauncherRuns
 from tests.stories.core.support.fixtures import MainEnvironment
 
 OLD_JOURNAL_BLOCK = {"matcher": "", "hooks": [{"type": "command", "command": "exec sh /p/.journal/src/journal/hooks/hook.sh claude /p"}]}

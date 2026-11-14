@@ -8,8 +8,8 @@ from engine.errors.read_limit_error import ReadLimitError
 from engine.model.tables import Tables
 from engine.query.errors.query_limit_error import QueryLimitError
 from engine.query.query import Query
-from tests.unit.engine.model.test_table import LogEntry
-from tests.unit.engine.query.test_query import FIXED_TIME, entries  # noqa: F401  (the shared fixture)
+from tests.integration.engine.model.test_table import LogEntry
+from tests.integration.engine.query.test_query import FIXED_TIME, entries  # noqa: F401  (the shared fixture)
 
 READ_LIMIT_ROWS = 50
 WALK_HINT = "a read names at most 1000 rows; walk the rows with every_row(reason) if you need them all"

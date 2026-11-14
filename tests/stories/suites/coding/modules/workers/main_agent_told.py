@@ -7,7 +7,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES, SHORT_PROOF_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import PROOF_WAITS
-from tests.stories.core.modules.messages.delivery import KeptTyping
+from tests.integration.core.modules.messages.test_delivery import KeptTyping
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_outcome_with, expect_value_with
 

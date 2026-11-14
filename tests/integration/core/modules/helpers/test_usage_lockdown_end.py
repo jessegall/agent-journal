@@ -9,9 +9,9 @@ from core.modules.drivers.commands.end_silent_helpers.end_silent_helpers import 
 from core.modules.helpers.commands.end_helpers_past_limits.end_helpers_past_limits import EndHelpersPastLimits
 from core.modules.helpers.ticks.usage_limit_marker import UsageLimitMarker
 from engine.testing.stories.story_fixture import StoryFixture
-from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, read_jobs
-from tests.stories.core.modules.helpers.usage_limits import report
-from tests.stories.core.modules.helpers.usage_lockdown import EDIT, LIFT, LIMIT, STOP_LINE, lockdown_story
+from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelper, helper_agent, read_jobs
+from tests.integration.core.modules.helpers.test_usage_limits import report
+from tests.integration.core.modules.helpers.test_usage_lockdown import EDIT, LIFT, LIMIT, STOP_LINE, lockdown_story
 from core.modules.helpers.support.helper_nudges import LOCKDOWN_ENDED
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 

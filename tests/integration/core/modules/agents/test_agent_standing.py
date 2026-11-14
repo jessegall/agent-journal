@@ -7,8 +7,8 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
-from tests.stories.core.modules.helpers.helper_reports import stop_with_report
+from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelper, helper_agent
+from tests.integration.core.modules.helpers.test_helper_reports import stop_with_report
 from tests.stories.core.support.agent_labels import agent_number
 from core.modules.agents.support.report_nudges import PARENT_REPORT
 from engine.testing.expectations.expected_nudge import expected_nudge

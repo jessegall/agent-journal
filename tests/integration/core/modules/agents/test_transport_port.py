@@ -2,7 +2,7 @@ from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.agents.support.program_transport import ProgramTransport
 from tests.stories.core.modules.agents.support.other_machine_transport import DIFFERENT_MACHINE, RemoteMachineTransport
-from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, helper_agent
+from tests.integration.core.modules.helpers.test_helper_jobs import EndedHelper, helper_agent
 from tests.stories.core.support.agent_labels import agent_number
 
 PROGRAM_LINE = "claude -p Read"

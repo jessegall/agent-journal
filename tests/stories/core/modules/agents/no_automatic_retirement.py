@@ -2,8 +2,8 @@ import pytest
 
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.testing.fake_launcher import FakeLauncher
-from tests.stories.core.modules.helpers.cold_sessions import with_job
-from tests.stories.core.modules.helpers.helper_jobs import helper_agent
+from tests.integration.core.modules.helpers.test_cold_sessions import with_job
+from tests.integration.core.modules.helpers.test_helper_jobs import helper_agent
 from tests.stories.core.modules.helpers.lifetime_reviewers import refusal_text
 from tests.stories.core.modules.helpers.support.rotating_helper import ROTATING_BODY, EndedColdRotationHelper, story_with_profile_file
 from core.modules.helpers.support.helper_settings import HELPER_PROFILE_LIMITS

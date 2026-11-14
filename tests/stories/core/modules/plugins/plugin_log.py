@@ -1,4 +1,4 @@
-from tests.stories.core.modules.plugins.hooks import installed_story
+from tests.integration.core.modules.plugins.test_hooks import installed_story
 
 
 def test_a_plugin_line_is_in_the_system_log_at_its_level_under_its_name(new_story):

@@ -9,7 +9,7 @@ from engine.module.module_finder import ModuleFinder
 from core.modules.processes.support.group_cpu_time import GroupCpuTime
 from core.modules.processes.support.output_folder import OutputFolder
 from engine.testing.stories.story_fixture import StoryFixture
-from tests.stories.core.modules.helpers.helper_jobs import helper_agent
+from tests.integration.core.modules.helpers.test_helper_jobs import helper_agent
 from tests.stories.core.modules.processes.support.cadence_probe import (HelperBesideWorker, agent_run, cadence_tick, expect_informed, kept_lines, emitted_current,
                                                                        running_run, informed, tree_of, worker_agent)
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run

@@ -7,10 +7,10 @@ import pytest
 from core.modules.agents.models.agent import Agent
 from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PERCENT, COLD_SESSION_MINUTES
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
-from tests.stories.core.modules.helpers.helper_jobs import resumable_session
+from tests.integration.core.modules.helpers.test_helper_jobs import resumable_session
 from tests.stories.core.modules.usage.support.status_files import full_status
-from tests.stories.suites.coding.modules.workers.gone_workers import RESUMED_PID
-from tests.stories.suites.coding.modules.workers.gone_workers import ended_worker, missing_program, replaced_launcher, running_worker, start_launcher, worker_story
+from tests.integration.suites.coding.modules.workers.test_gone_workers import RESUMED_PID
+from tests.integration.suites.coding.modules.workers.test_gone_workers import ended_worker, missing_program, replaced_launcher, running_worker, start_launcher, worker_story
 
 __all__ = ["ended_worker", "missing_program", "running_worker", "worker_story"]
 

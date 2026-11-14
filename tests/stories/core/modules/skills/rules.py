@@ -4,7 +4,7 @@ from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner
-from tests.stories.core.modules.skills.agent_skills import read_row
+from tests.integration.core.modules.skills.test_agent_skills import read_row
 from tests.stories.engine.driver.support.fixtures import LeadStarted
 from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.modules.skills.due import DUE, JOURNAL_TASK_LIST, environment, expect_countdown, start, drain_countdown, start_countdown

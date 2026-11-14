@@ -7,7 +7,7 @@ from engine.journal.journal_home import LAUNCHER_SOCKET
 from engine.scope.scopes import Scopes
 from suites.coding.modules.workers.support.worker_policy import WorkerPolicy
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.gone_workers import missing_program, running_worker, worker_story
+from tests.integration.suites.coding.modules.workers.test_gone_workers import missing_program, running_worker, worker_story
 
 __all__ = ["missing_program", "running_worker", "worker_story"]
 

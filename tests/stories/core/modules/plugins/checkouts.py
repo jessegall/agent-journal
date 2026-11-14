@@ -7,7 +7,7 @@ import sys
 
 from engine.agent.agent_checkouts import AgentCheckouts
 from engine.checkout.checkout import Checkout
-from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE
+from tests.integration.core.modules.plugins.test_hooks import LISTING_SAMPLE
 from tests.stories.core.modules.plugins.support.notices import expect_plugin_notice
 from tests.stories.core.modules.plugins.support.checkout_stories import (
     CHANGED_ORDER_TEXT, ORDER, ORDER_TEXT, checkout_row, checkout_story, delivery_changes, edit_event, edit_events, read_file, moved_worktree_row, real)

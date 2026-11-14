@@ -14,7 +14,7 @@ from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.engine.driver.support.fixtures import SampleSuiteChoice
 from tests.stories.engine.driver.support.samples import SAMPLES
-from tests.stories.core.modules.messages.delivery import KeptTyping, MessagingSession
+from tests.integration.core.modules.messages.test_delivery import KeptTyping, MessagingSession
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value, expect_value_with, expect_value_without
 from core.modules.overview.support.overview_nudges import OVERVIEW_LINE

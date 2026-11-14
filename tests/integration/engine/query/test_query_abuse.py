@@ -5,9 +5,9 @@ import pytest
 from engine.database.database import READ_LIMIT_ROWS
 from engine.query.errors.query_limit_error import QueryLimitError
 from engine.query.query import MOST_DECLARED_LIMIT_ROWS, Query
-from tests.unit.engine.model.test_table import LogEntry
-from tests.unit.engine.query.test_query import entries  # noqa: F401  (the shared fixture)
-from tests.unit.engine.query.test_query_limits import filled
+from tests.integration.engine.model.test_table import LogEntry
+from tests.integration.engine.query.test_query import entries  # noqa: F401  (the shared fixture)
+from tests.integration.engine.query.test_query_limits import filled
 
 """Book 8 of doc 1255, stories 57 and 61: a read cannot get past the limit by naming a huge one, and no read the
 builder makes needs the read limit switched off."""

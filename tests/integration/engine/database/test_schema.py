@@ -15,7 +15,7 @@ from engine.database.errors.schema_mismatch_error import SchemaMismatchError
 from engine.model.view_model import ViewModel
 from engine.journal.journal_home import JournalHome
 from engine.model.tables import Tables
-from tests.unit.engine.database.test_table_statements import Shelf
+from tests.integration.engine.database.test_table_statements import Shelf
 
 
 class ShelvesTable(Migration):

@@ -40,12 +40,12 @@ from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator, UserBuilder
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, merged_worker_lines, repository_environment, worker_session
-from tests.stories.suites.coding.modules.workers.merge import expect_marks_text
-from tests.stories.suites.coding.modules.workers.test_queue import PROOF, ended, queued_story, recording_launch
+from tests.integration.suites.coding.modules.workers.test_merge import expect_marks_text
+from tests.integration.suites.coding.modules.workers.test_test_queue import PROOF, ended, queued_story, recording_launch
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
 from tests.stories.core.support.agent_labels import agent_label
-from tests.stories.core.modules.helpers.helper_jobs import helper_agent
+from tests.integration.core.modules.helpers.test_helper_jobs import helper_agent
 from tests.stories.suites.coding.modules.workers.quiet_helpers import StartedMerger
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import running_launcher
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED

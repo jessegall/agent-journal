@@ -1,4 +1,4 @@
-from tests.stories.core.modules.plugins.services import served_story
+from tests.integration.core.modules.plugins.test_services import served_story
 from tests.stories.core.support.scanned_edits import scanned_edit
 
 TOTAL_ROWS = [{"line_type": "add", "line": 1, "text": "total = 0"}]

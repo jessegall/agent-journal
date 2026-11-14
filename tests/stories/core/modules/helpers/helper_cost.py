@@ -1,4 +1,4 @@
-from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, StartedHelper, helper_agent
+from tests.integration.core.modules.helpers.test_helper_jobs import EndedHelper, StartedHelper, helper_agent
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 

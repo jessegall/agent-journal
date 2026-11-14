@@ -16,13 +16,13 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.enums.actor_type import ActorType
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
-from tests.stories.core.modules.helpers.usage_limits import report
-from tests.stories.core.modules.helpers.usage_lockdown import LIMIT, with_reported_usage
-from tests.stories.suites.coding.modules.workers.merger import merger_agent
+from tests.integration.core.modules.helpers.test_usage_limits import report
+from tests.integration.core.modules.helpers.test_usage_lockdown import LIMIT, with_reported_usage
+from tests.integration.suites.coding.modules.workers.test_merger import merger_agent
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from tests.stories.suites.coding.modules.workers.test_queue import ended, queued_story
+from tests.integration.suites.coding.modules.workers.test_test_queue import ended, queued_story
 
 TICKS = 10
 

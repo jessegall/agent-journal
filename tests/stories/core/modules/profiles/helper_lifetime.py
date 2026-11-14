@@ -4,7 +4,7 @@ import pytest
 
 from engine.registry.registry import Registry
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from tests.stories.core.modules.profiles.profile_storage import boot, change_version, profile_line, profile_path, profile_row, profile_story, save_profile_file, save_registered
+from tests.integration.core.modules.profiles.test_profile_storage import boot, change_version, profile_line, profile_path, profile_row, profile_story, save_profile_file, save_registered
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 from suites.coding.support.shipped_profiles import PLAN_REVIEWER_PROFILE
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE

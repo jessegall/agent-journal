@@ -8,7 +8,7 @@ from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.drivers.models.agent_line import AgentLine
-from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, resumable_session
+from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelper, helper_agent, resumable_session
 from tests.stories.core.modules.usage.support.status_files import full_status
 from tests.stories.core.support.agent_labels import agent_number
 

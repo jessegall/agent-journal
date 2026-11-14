@@ -4,7 +4,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
-from tests.stories.suites.coding.modules.workers.test_queue import recording_launch
+from tests.integration.suites.coding.modules.workers.test_test_queue import recording_launch
 
 
 def test_a_worker_between_runs_with_work_left_counts_as_a_helper(new_story):

@@ -15,7 +15,7 @@ from engine.query.conditions.less import Less
 from engine.query.queries import Queries
 from engine.query.query import Query
 from engine.query.errors.unknown_column_error import UnknownColumnError
-from tests.unit.engine.model.test_table import LogEntry
+from tests.integration.engine.model.test_table import LogEntry
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 

@@ -1,4 +1,4 @@
-from tests.stories.core.modules.plans.checkpoints import PASSES, REACHES, WindowsPlan, close, rows
+from tests.integration.core.modules.plans.test_checkpoints import PASSES, REACHES, WindowsPlan, close, rows
 
 
 def test_185_a_reached_checkpoint_with_no_test_to_run_says_so_in_the_log_and_passes_at_once(new_story):

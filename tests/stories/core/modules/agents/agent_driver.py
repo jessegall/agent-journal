@@ -2,7 +2,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from tests.stories.core.modules.helpers.helper_jobs import JOB, EndedHelper, StartedHelper, helper_agent
+from tests.integration.core.modules.helpers.test_helper_jobs import JOB, EndedHelper, StartedHelper, helper_agent
 from tests.stories.core.modules.helpers.lifetime_reviewers import launches
 from tests.stories.core.modules.helpers.rotation_mid_job import session_rows
 

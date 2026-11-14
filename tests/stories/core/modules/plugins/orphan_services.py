@@ -10,7 +10,7 @@ from engine.process.leftover_process import LeftoverProcess
 from core.modules.plugins.plugins_module import PluginsModule
 from core.modules.plugins.support.orphan_services import OrphanServices
 from core.modules.plugins.support.plugin_folders import PluginFolders
-from tests.stories.core.modules.plugins.services import served_story
+from tests.integration.core.modules.plugins.test_services import served_story
 from tests.stories.support.story_checks import expect_value
 
 SERVICE_KEY = ("served", "answers")

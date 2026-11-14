@@ -9,7 +9,7 @@ from core.modules.helpers.support.usage_lockdown import UsageLockdown
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from tests.stories.core.modules.helpers.usage_limits import WEEK_SECONDS, report
+from tests.integration.core.modules.helpers.test_usage_limits import WEEK_SECONDS, report
 from tests.integration.support.fixture_journal import FixtureJournal
 
 EDIT = HookSamples.edit("src/cart.py")

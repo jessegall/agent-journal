@@ -1,8 +1,8 @@
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from tests.stories.core.modules.helpers.usage_limits import report
-from tests.stories.core.modules.helpers.usage_lockdown import STOP_LINE, hook_call_count, lockdown_story
+from tests.integration.core.modules.helpers.test_usage_limits import report
+from tests.integration.core.modules.helpers.test_usage_lockdown import STOP_LINE, hook_call_count, lockdown_story
 from core.modules.developer.support.developer_settings import READ_LIMIT_SETTING
 
 SETTING_LINE = HookSamples.shell(f"journal setting set {READ_LIMIT_SETTING} false --project", ShellPart("journal", CommandCategory.EDIT, ["setting", "set"]))

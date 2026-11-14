@@ -1,4 +1,4 @@
-from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, REMOVAL_SAMPLE, installed_story
+from tests.integration.core.modules.plugins.test_hooks import LISTING_SAMPLE, REMOVAL_SAMPLE, installed_story
 from tests.stories.support.plugin_check_counts import PluginCheckCounts
 
 HOOK_COUNT = 10

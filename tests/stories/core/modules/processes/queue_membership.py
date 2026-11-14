@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
 from engine.testing.stories.story_fixture import StoryFixture
-from tests.stories.core.modules.processes.process_queue_read import queue_page
+from tests.integration.core.modules.processes.test_process_queue_read import queue_page
 from tests.stories.core.modules.processes.support.process_samples import end_run, start_process
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_value

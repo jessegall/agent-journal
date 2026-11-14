@@ -20,11 +20,11 @@ from core.modules.processes.models.process import Process
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.important_lines import WORKER_RUN_LINE, proved_worker
-from tests.stories.suites.coding.modules.workers.merger import merger_agent
+from tests.integration.suites.coding.modules.workers.test_merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, start_planned_worker as plan_worker, unplanned_worker as solo_worker
-from tests.stories.suites.coding.modules.workers.test_queue import affected_test_story, ended, queued_story
+from tests.integration.suites.coding.modules.workers.test_test_queue import affected_test_story, ended, queued_story
 from tests.stories.core.support.agent_labels import agent_label
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_FAILURE_LIMIT

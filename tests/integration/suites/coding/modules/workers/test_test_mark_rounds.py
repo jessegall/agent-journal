@@ -8,7 +8,7 @@ from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.chat.models.enums.chat_mark_state import ChatMarkState
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
-from tests.stories.suites.coding.modules.workers.test_queue import ended, recording_launch
+from tests.integration.suites.coding.modules.workers.test_test_queue import ended, recording_launch
 
 
 

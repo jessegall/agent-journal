@@ -15,7 +15,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.merger_cases import merger_case
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.support.story_checks import expect_value_with
-from tests.stories.suites.coding.modules.workers.merger import merger_agent
+from tests.integration.suites.coding.modules.workers.test_merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import running_launcher
 from tests.stories.suites.coding.modules.workers.worker_ask import asking_worker
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED

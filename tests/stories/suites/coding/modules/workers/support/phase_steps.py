@@ -23,7 +23,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.plan_steps import ready_plan
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, dispatched_worker, repository_environment, story_repository, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
-from tests.stories.suites.coding.modules.workers.test_queue import ended, recording_launch
+from tests.integration.suites.coding.modules.workers.test_test_queue import ended, recording_launch
 
 
 TEST_ROWS_REASON = "the test reads every row it checks"

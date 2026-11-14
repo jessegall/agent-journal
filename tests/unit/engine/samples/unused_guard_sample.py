@@ -2,7 +2,7 @@ from engine.guard.guard import Guard
 from engine.model.model import Model
 from engine.event.updated import Updated
 from engine.command.context import Context
-from tests.unit.engine.database.test_table_statements import Shelf
+from tests.integration.engine.database.test_table_statements import Shelf
 
 
 class ShelfGuard(Guard[Updated[Shelf]]):

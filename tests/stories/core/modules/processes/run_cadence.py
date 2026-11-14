@@ -6,12 +6,12 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.chat.support.mark_samples import expect_marks_text
-from tests.stories.core.modules.helpers.helper_jobs import helper_agent
+from tests.integration.core.modules.helpers.test_helper_jobs import helper_agent
 from tests.stories.core.modules.processes.support.cadence_probe import (TICK, HelperBesideWorker, agent_run, cadence_lines, cadence_tick,
                                                                        expect_informed, has_cadence_record, kept_lines, session_run, emitted, running_run, side_run,
                                                                        labelled_tick, ticks, informed, waiting_run, worker_agent)
-from tests.stories.core.modules.processes.background import SavedBuildMoved, SilentVitestRun, expect_streaming_line, expect_without_hint
-from tests.stories.core.modules.processes.hang_watch import HANG_SECONDS, ActiveBuild, expect_looks, started_tree, watch_tick
+from tests.integration.core.modules.processes.test_background import SavedBuildMoved, SilentVitestRun, expect_streaming_line, expect_without_hint
+from tests.integration.core.modules.processes.test_hang_watch import HANG_SECONDS, ActiveBuild, expect_looks, started_tree, watch_tick
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 from core.modules.processes.support.process_nudges import SILENT_RUN

@@ -5,9 +5,9 @@ from suites.coding.modules.workers.commands.commit_worker_work.commit_worker_wor
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.commands.support.worker_task_commit import WorkerTaskCommit
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.hand_in_rebase import StoppedDelivery
+from tests.integration.suites.coding.modules.workers.test_hand_in_rebase import StoppedDelivery
 from tests.stories.suites.coding.modules.workers.phase_unfinished import expect_open_undelegated
-from tests.stories.suites.coding.modules.workers.queued_commands import operation_story
+from tests.integration.suites.coding.modules.workers.test_queued_commands import operation_story
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.held_tasks import proofs, prove_task, unplanned_worker_with_tasks
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker

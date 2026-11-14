@@ -4,7 +4,7 @@ from engine.database.database import Database
 from engine.database.statement import Statement
 from core.modules.processes.support.grown_outputs import GrownOutputs
 from core.modules.processes.support.output_folder import OutputFolder
-from tests.stories.core.modules.processes.output_reader import append
+from tests.integration.core.modules.processes.test_output_reader import append
 from tests.stories.core.modules.processes.support.process_samples import install_runner, start_process, tick
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 

@@ -7,7 +7,7 @@ from engine.provider.providers import Providers
 from engine.testing.stories.story_fixture import StoryFixture
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.helpers.support.program_states import ProgramStates
-from tests.stories.core.modules.helpers.helper_jobs import helper_agent
+from tests.integration.core.modules.helpers.test_helper_jobs import helper_agent
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 ROTATING_BODY = "Read one file and say what it does."

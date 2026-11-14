@@ -2,7 +2,7 @@ from engine.enums.command_category import CommandCategory
 from tests.stories.core.support.agent_labels import agent_number
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from tests.stories.core.modules.processes.hang_watch import MISSING_GROUP, FakeGroupCpuTime, watch_tick
+from tests.integration.core.modules.processes.test_hang_watch import MISSING_GROUP, FakeGroupCpuTime, watch_tick
 from tests.stories.core.modules.processes.support.cadence_probe import (TICK, HelperBesideWorker, agent_run, cadence_lines, cadence_tick, expect_informed,
                                                                        emitted, labelled_tick, ticks, informed, tree_of, worker_agent)
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, started_run

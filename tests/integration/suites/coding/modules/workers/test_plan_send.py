@@ -17,8 +17,8 @@ from suites.coding.modules.workers.models.enums.worker_mark_variant import Worke
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.plan_steps import ready_plan
-from tests.stories.suites.coding.modules.workers.kept_workers import stopped
-from tests.stories.suites.coding.modules.workers.queued_commands import run_operation
+from tests.integration.suites.coding.modules.workers.test_kept_workers import stopped
+from tests.integration.suites.coding.modules.workers.test_queued_commands import run_operation
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 

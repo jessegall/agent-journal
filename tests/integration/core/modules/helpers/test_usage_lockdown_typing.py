@@ -4,8 +4,8 @@ from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.helpers.ticks.usage_limit_marker import UsageLimitMarker
 from core.modules.messages.models.message import Message
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.core.modules.helpers.usage_limits import report
-from tests.stories.core.modules.helpers.usage_lockdown import lockdown_story
+from tests.integration.core.modules.helpers.test_usage_limits import report
+from tests.integration.core.modules.helpers.test_usage_lockdown import lockdown_story
 from tests.stories.core.support.agent_labels import agent_number
 from tests.integration.support.fixture_journal import FixtureJournal
 

@@ -1,7 +1,7 @@
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from tests.stories.core.modules.drivers.agent_states_lifecycle import SkillsDueAgent
+from tests.integration.core.modules.drivers.test_agent_states_lifecycle import SkillsDueAgent
 from tests.stories.core.modules.skills.due import DUE
 from tests.stories.core.support.agent_labels import agent_number
 

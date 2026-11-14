@@ -5,8 +5,8 @@ from engine.driver.open_row import OpenRow
 from engine.dotted_path.dotted_path import DottedPath
 from engine.enums.state_tier import StateTier
 from engine.registry.agent_state_entry import AgentStateEntry
-from tests.unit.engine.driver.test_critical_tier import answered, outcomes
-from tests.unit.engine.driver.test_walk import DRIVER, AddsLine, NewRun, OldWait, at, rule
+from tests.integration.engine.driver.test_critical_tier import answered, outcomes
+from tests.integration.engine.driver.test_walk import DRIVER, AddsLine, NewRun, OldWait, at, rule
 
 
 class LateStack(AgentState):

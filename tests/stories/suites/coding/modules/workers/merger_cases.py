@@ -14,7 +14,7 @@ from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.support.shipped_profiles import HELPER_PROFILES
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.suites.coding.modules.workers.merger import merger_agent
+from tests.integration.suites.coding.modules.workers.test_merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DISPATCH, FIRST_PROOF, delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 from tests.stories.suites.coding.modules.workers.support.judge_plugin import SINFUL_TEXT, judge_plugin_folder

@@ -4,7 +4,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.helper_job import HelperJob
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from tests.stories.core.modules.helpers.helper_jobs import JOB, START, EndedHelper, helper_agent, read_jobs, resumable_session
+from tests.integration.core.modules.helpers.test_helper_jobs import JOB, START, EndedHelper, helper_agent, read_jobs, resumable_session
 from tests.stories.core.modules.helpers.lifetime_reviewers import launches, refusal_text
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
 from core.modules.helpers.support.helper_settings import HELPER_PROFILE_LIMITS

@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE
+from tests.integration.core.modules.plugins.test_hooks import LISTING_SAMPLE
 from tests.stories.core.modules.plugins.support.notices import expect_plugin_notice
 from tests.stories.core.modules.plugins.support.worktree_plugin import worktree_plugin_folder
 from tests.stories.core.modules.processes.support.process_samples import install_runner

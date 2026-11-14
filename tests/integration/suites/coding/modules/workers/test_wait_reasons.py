@@ -10,7 +10,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, dispatched_worker, repository_environment
-from tests.stories.suites.coding.modules.workers.test_queue import ended, recording_launch
+from tests.integration.suites.coding.modules.workers.test_test_queue import ended, recording_launch
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 ENDED_AT = "2026-01-01T00:00:00+00:00"

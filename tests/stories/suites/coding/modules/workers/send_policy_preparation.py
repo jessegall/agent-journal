@@ -1,5 +1,5 @@
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.core.modules.agents.agent_kind_controls import stopped_worker, viewer_options
+from tests.integration.core.modules.agents.test_agent_kind_controls import stopped_worker, viewer_options
 from tests.stories.suites.coding.modules.workers.support.program_split import split_story, split_viewer
 from tests.stories.support.story_checks import expect_value
 

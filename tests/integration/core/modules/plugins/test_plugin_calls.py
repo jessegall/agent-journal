@@ -14,9 +14,9 @@ from engine.testing.examples.shell_part import ShellPart
 from core.modules.processes.support.runner_line import WRITABLE_FOLDERS_VARIABLE
 from engine.process.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.models.plugin_output import PluginOutput
-from tests.stories.core.modules.plugins.event_guard import LOCK_CHECK
+from tests.integration.core.modules.plugins.test_event_guard import LOCK_CHECK
 from tests.stories.core.modules.plugins.support.checkout_stories import ORDER, checkout_story
-from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE
+from tests.integration.core.modules.plugins.test_hooks import LISTING_SAMPLE
 from tests.stories.core.modules.plugins.support.event_stories import event_plugin_story, plugin_row, script_calls
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.modules.plugins.support.runner_binaries import recording_runner_at

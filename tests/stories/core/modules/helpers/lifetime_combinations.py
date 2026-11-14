@@ -4,8 +4,8 @@ import pytest
 
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PERCENT, COLD_SESSION_MINUTES, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
-from tests.stories.core.modules.helpers.cold_sessions import with_job
-from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, resumable_session
+from tests.integration.core.modules.helpers.test_cold_sessions import with_job
+from tests.integration.core.modules.helpers.test_helper_jobs import JOB, helper_agent, resumable_session
 from tests.stories.core.modules.helpers.support.rotating_helper import EndedColdRotationHelper, EndedContinueHelper, EndedEachLaunchHelper, real_program_states, story_with_profile_file
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.agent_labels import agent_number

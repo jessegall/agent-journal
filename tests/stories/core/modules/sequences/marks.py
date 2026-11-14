@@ -5,7 +5,7 @@ from engine.enums.actor_type import ActorType
 from core.modules.agents.models.agent import Agent
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.chat.support.mark_samples import expect_absent_marks_text, expect_marks_text
-from tests.stories.core.modules.sequences.sequences import ReleaseSequence
+from tests.integration.core.modules.sequences.test_sequences import ReleaseSequence
 
 
 class ActiveRelease(StoryFixture):

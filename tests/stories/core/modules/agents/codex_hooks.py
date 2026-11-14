@@ -8,8 +8,8 @@ from engine.provider.program_hooks import ProgramHooks
 from engine.testing.stories.story import Story
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.codex.providers.codex_provider import CodexProvider
-from tests.stories.core.modules.helpers.program_split import helper_split_story
-from tests.stories.core.modules.helpers.start_helper import START, started
+from tests.integration.core.modules.helpers.test_program_split import helper_split_story
+from tests.integration.core.modules.helpers.test_start_helper import START, started
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.program_split import real_program_checks
 

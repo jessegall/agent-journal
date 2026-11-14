@@ -19,7 +19,7 @@ from engine.log.exception_sink import ExceptionSink
 from engine.log.system_log_writer import SystemLogWriter
 from engine.registry.agent_state_entry import AgentStateEntry
 from engine.time.clock import Clock
-from tests.unit.engine.driver.test_walk import DRIVER, Allows, RegainedHistory, Refuses, Switches, at, rule
+from tests.integration.engine.driver.test_walk import DRIVER, Allows, RegainedHistory, Refuses, Switches, at, rule
 from tests.integration.engine.samples.sample_container import empty_registry
 from tests.integration.engine.samples.scope_samples import empty_database_scopes
 

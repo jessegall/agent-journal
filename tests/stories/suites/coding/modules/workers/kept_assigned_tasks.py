@@ -1,7 +1,7 @@
 import json
 
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.status import worker_batch  # noqa: F401  (the shared fixture)
+from tests.integration.suites.coding.modules.workers.test_status import worker_batch  # noqa: F401  (the shared fixture)
 
 """Book 5 of doc 1255, story 39: the tasks assigned to a worker are a kept read of the task query itself, so a new
 assignment shows at once."""

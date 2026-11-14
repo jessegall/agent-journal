@@ -3,7 +3,7 @@ import pytest
 
 from engine.query.queries import Queries
 from core.modules.settings.models.setting import Setting
-from tests.stories.core.modules.usage.agent_rows import StatesAgents
+from tests.integration.core.modules.usage.test_agent_rows import StatesAgents
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.browser_story import expect_browser
 from core.modules.helpers.support.helper_settings import HELPER_PROFILE_LIMITS

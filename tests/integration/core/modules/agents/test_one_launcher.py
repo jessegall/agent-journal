@@ -10,7 +10,7 @@ from engine.process.leftover_process import LeftoverProcess
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.launcher_service import LauncherService
 from core.modules.agents.testing.fake_launcher import FakeLauncher
-from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, helper_agent, resumable_session
+from tests.integration.core.modules.helpers.test_helper_jobs import EndedHelper, JOB, helper_agent, resumable_session
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 

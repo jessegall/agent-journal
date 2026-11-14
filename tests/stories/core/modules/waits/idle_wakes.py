@@ -8,7 +8,7 @@ from core.modules.processes.commands.end_process.end_process import EndProcess
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.core.modules.tasks.task_waits import kept_typing
-from tests.stories.core.modules.approvals.approvals import CHANGE_SETTING
+from tests.integration.core.modules.approvals.test_approvals import CHANGE_SETTING
 from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 
 IDLE_SECONDS = 31

@@ -11,7 +11,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, FIRST_PROOF, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from tests.stories.suites.coding.modules.workers.test_queue import recording_launch
+from tests.integration.suites.coding.modules.workers.test_test_queue import recording_launch
 
 
 pytestmark = pytest.mark.real_git

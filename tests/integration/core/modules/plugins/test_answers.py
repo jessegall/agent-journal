@@ -2,7 +2,7 @@ from engine.database.database import Database
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from tests.stories.core.modules.plugins.hooks import installed_story
+from tests.integration.core.modules.plugins.test_hooks import installed_story
 
 STATUS_SAMPLE = HookSamples.shell("git status", ShellPart("git", CommandCategory.VERSION_CONTROL, ["status"]))
 DIFF_SAMPLE = HookSamples.shell("git diff", ShellPart("git", CommandCategory.VERSION_CONTROL, ["diff"]))

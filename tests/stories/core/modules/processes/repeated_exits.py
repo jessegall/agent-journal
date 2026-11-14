@@ -6,7 +6,7 @@ from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story import Story
 from core.modules.processes.models.process import Process
-from tests.stories.core.modules.processes.hang_watch import HANG_SECONDS
+from tests.integration.core.modules.processes.test_hang_watch import HANG_SECONDS
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from tests.stories.core.modules.processes.support.reading_scenarios import agent_number

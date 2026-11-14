@@ -13,7 +13,7 @@ from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
-from tests.stories.suites.coding.modules.workers.test_queue import ended, queued_story
+from tests.integration.suites.coding.modules.workers.test_test_queue import ended, queued_story
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 OVERSIGHT_SETTING = "journal.suites.coding.workers.oversight-profiles"

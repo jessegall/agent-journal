@@ -11,7 +11,7 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.modules.processes.support.reader_block_fixtures import worker_run
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
-from tests.stories.suites.coding.modules.workers.test_queue import PROOF, recording_launch
+from tests.integration.suites.coding.modules.workers.test_test_queue import PROOF, recording_launch
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 
 

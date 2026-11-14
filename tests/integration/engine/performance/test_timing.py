@@ -13,7 +13,7 @@ from engine.command.make_command import MakeCommand
 from engine.journal.journal_home import JournalHome
 from engine.registry.registry import Registry
 from engine.performance.timing import Timing
-from tests.unit.engine.command.test_bus import handlers
+from tests.integration.engine.command.test_bus import handlers
 from tests.unit.engine.command.test_commands import MakeItem
 from tests.integration.engine.module.test_module_sync_database import ITEMS
 from tests.integration.engine.samples.sample_container import sample_container

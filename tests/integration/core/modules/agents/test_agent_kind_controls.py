@@ -5,9 +5,9 @@ import shlex
 from core.modules.helpers.support.agent_admission import AgentAdmission
 from core.modules.helpers.support.agent_options import AgentOptions
 from core.modules.agents.testing.fake_launcher import FakeLauncher
-from tests.stories.core.modules.helpers.start_helper import START
-from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
-from tests.stories.core.modules.helpers.helper_reports import enforced, helper_report
+from tests.integration.core.modules.helpers.test_start_helper import START
+from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelper, helper_agent
+from tests.integration.core.modules.helpers.test_helper_reports import enforced, helper_report
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH

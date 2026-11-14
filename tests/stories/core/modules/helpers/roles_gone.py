@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from engine.testing.stories.story_fixture import StoryFixture
-from tests.stories.core.modules.helpers.helper_jobs import start_helper
+from tests.integration.core.modules.helpers.test_helper_jobs import start_helper
 from tests.stories.core.modules.reviews.support.review_fixtures import OneReviewerAllowed
 from tests.stories.core.support.coding_fixtures import UserBuilder
 

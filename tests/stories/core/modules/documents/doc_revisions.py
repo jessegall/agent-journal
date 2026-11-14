@@ -2,7 +2,7 @@ import pytest
 
 from datetime import timedelta
 
-from tests.stories.core.modules.documents.docs import doc_story
+from tests.integration.core.modules.documents.test_docs import doc_story
 
 
 def test_each_person_edit_is_a_separate_revision(new_story):

@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from suites.coding.modules.workers.ticks.ask_watch import AskWatch
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.ask_ledger import ask
+from tests.integration.suites.coding.modules.workers.test_ask_ledger import ask
 from tests.stories.suites.coding.modules.workers.ask_pass_on import MERGER_QUESTION_LINE
 from tests.stories.suites.coding.modules.workers.merger_cases import case  # noqa: F401
 

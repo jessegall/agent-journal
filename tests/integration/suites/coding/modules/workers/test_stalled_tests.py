@@ -12,7 +12,7 @@ from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
-from tests.stories.suites.coding.modules.workers.test_queue import PROOF, recording_launch, stalled_tick
+from tests.integration.suites.coding.modules.workers.test_test_queue import PROOF, recording_launch, stalled_tick
 
 RUNNING = "the tests of task 1 are running"
 

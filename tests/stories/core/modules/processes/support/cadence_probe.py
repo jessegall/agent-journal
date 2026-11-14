@@ -23,7 +23,7 @@ from core.modules.processes.support.cadence.cadence_log import CADENCE_FILE, Cad
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.group_cpu_time import GroupCpuTime
 from core.modules.processes.support.output_folder import OutputFolder
-from tests.stories.core.modules.helpers.helper_jobs import StartedHelper
+from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelper
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 

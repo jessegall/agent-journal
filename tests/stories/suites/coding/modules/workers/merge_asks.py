@@ -1,7 +1,7 @@
 import pytest
 
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.checkpoint_runs import BUILD_TEST
+from tests.integration.suites.coding.modules.workers.test_checkpoint_runs import BUILD_TEST
 from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_tasks_singly
 from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PLAN_DISPATCH, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story, unplanned_group_worker, single_task_worker

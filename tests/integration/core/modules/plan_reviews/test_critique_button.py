@@ -4,7 +4,7 @@ from engine.registry.registry import Registry
 from core.modules import DEFAULT_MODULES
 from core.modules.plan_reviews.plan_reviews_module import PlanReviewsModule
 from engine.testing.expectations.expect_row import expect_row
-from tests.stories.core.modules.plan_reviews.review_state import CRITIQUE_COMMAND, ReviewPlan
+from tests.integration.core.modules.plan_reviews.test_review_state import CRITIQUE_COMMAND, ReviewPlan
 from tests.stories.core.support.fixtures import UserJoined
 
 UNMODIFIED = tuple(module for module in DEFAULT_MODULES if module is not PlanReviewsModule)

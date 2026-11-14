@@ -12,8 +12,8 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, checked_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from tests.stories.suites.coding.modules.workers.stuck import MAIN_SESSION, PROCESS_START
-from tests.stories.suites.coding.modules.workers.test_queue import PROOF, ended, queued_story, recording_launch
+from tests.integration.suites.coding.modules.workers.test_stuck import MAIN_SESSION, PROCESS_START
+from tests.integration.suites.coding.modules.workers.test_test_queue import PROOF, ended, queued_story, recording_launch
 
 
 def waiting_task(story, worker):

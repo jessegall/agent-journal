@@ -3,7 +3,7 @@ from datetime import timedelta
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from tests.stories.core.modules.helpers.helper_jobs import helper_agent
+from tests.integration.core.modules.helpers.test_helper_jobs import helper_agent
 from tests.stories.core.modules.processes.support.cadence_probe import HelperBesideWorker, agent_run, worker_agent
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
 

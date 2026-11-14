@@ -1,6 +1,6 @@
 from engine.skill.skill_digest import SkillDigest
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.core.modules.skills.agent_skills import NOTES_FILE, read_row, started
+from tests.integration.core.modules.skills.test_agent_skills import NOTES_FILE, read_row, started
 
 
 def test_a_read_of_a_skill_file_marks_it_loaded_with_the_digest_of_the_catalogue_text(new_story):

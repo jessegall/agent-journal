@@ -15,7 +15,7 @@ from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.worker_settings import SILENT_RECOVERY_ATTEMPTS, STOPPED_WORKER_RUN_MINUTES, WORKER_RESUME_LIMIT
 from suites.coding.modules.workers.ticks.stopped_worker_runs import StoppedWorkerRuns
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON, ended, main_agent_lines, missing_program, running_worker, two_task_worker, worker_story  # noqa: F401
+from tests.integration.suites.coding.modules.workers.test_stopped_with_tasks import MERGER_ON, ended, main_agent_lines, missing_program, running_worker, two_task_worker, worker_story  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting, set_resume_limit
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RESTARTED
 from suites.coding.modules.workers.support.worker_nudges import WORKER_RUN_RUNS_AFTER_STOP

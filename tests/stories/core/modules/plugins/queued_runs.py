@@ -7,11 +7,11 @@ from pathlib import Path
 
 from core.modules.plugins.support.machine_runs import MACHINE_FOLDER_VARIABLE
 from core.modules.processes.models.enums.process_setting import ProcessSetting
-from tests.stories.core.modules.plugins.plugin_calls import worker_with_tools
+from tests.integration.core.modules.plugins.test_plugin_calls import worker_with_tools
 from tests.stories.core.modules.plugins.support.event_stories import script_calls
 from tests.stories.core.modules.plugins.support.plugin_samples import event_plugin_folder
 from tests.stories.core.modules.plugins.support.runner_binaries import recording_runner_at
-from tests.stories.core.modules.processes.output_timeout import timeout_tick
+from tests.integration.core.modules.processes.test_output_timeout import timeout_tick
 
 PLUGIN = "queues"
 ENDED_EVENT = "core.plugins.queued_run.ended"

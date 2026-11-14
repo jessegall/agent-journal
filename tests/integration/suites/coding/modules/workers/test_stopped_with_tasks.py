@@ -8,8 +8,8 @@ from core.modules.drivers.commands.enter_agent_line.enter_agent_line import Ente
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
-from tests.stories.suites.coding.modules.workers.gone_workers import RESUMED_PID, missing_program, running_worker, start_launcher, worker_story
-from tests.stories.suites.coding.modules.workers.queued_commands import worker_command
+from tests.integration.suites.coding.modules.workers.test_gone_workers import RESUMED_PID, missing_program, running_worker, start_launcher, worker_story
+from tests.integration.suites.coding.modules.workers.test_queued_commands import worker_command
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 

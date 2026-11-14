@@ -9,7 +9,7 @@ from suites.coding.modules.workers.commands.make_proof.make_proof import MakePro
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.ticks.worker_tests.stalled_worker_test_runs import StalledWorkerTestRuns
-from tests.stories.suites.coding.modules.workers.checkpoint_runs import CART_COMMAND, commit_tasks, merge, task_proofs, rows, run_lines
+from tests.integration.suites.coding.modules.workers.test_checkpoint_runs import CART_COMMAND, commit_tasks, merge, task_proofs, rows, run_lines
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import apply_work_setting

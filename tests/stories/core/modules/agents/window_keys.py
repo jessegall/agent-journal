@@ -1,8 +1,8 @@
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
-from tests.stories.core.modules.usage.agent_rows import StatesAgents
-from tests.stories.core.modules.helpers.helper_jobs import helper_agent
+from tests.integration.core.modules.usage.test_agent_rows import StatesAgents
+from tests.integration.core.modules.helpers.test_helper_jobs import helper_agent
 from tests.stories.server.support.server_client import server_story
 
 

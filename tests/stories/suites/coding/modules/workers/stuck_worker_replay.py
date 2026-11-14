@@ -3,7 +3,7 @@ from datetime import timedelta
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.ask_ledger import QUESTION, SECOND_QUESTION, ask, questions
+from tests.integration.suites.coding.modules.workers.test_ask_ledger import QUESTION, SECOND_QUESTION, ask, questions
 from tests.stories.suites.coding.modules.workers.ask_pass_on import messages, watch
 from tests.stories.suites.coding.modules.workers.merger_cases import case  # noqa: F401
 

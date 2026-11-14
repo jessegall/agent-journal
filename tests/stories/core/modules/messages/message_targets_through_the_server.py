@@ -13,7 +13,7 @@ from engine.testing.expectations.expect_row import expect_row
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from engine.testing.stories.story_fixture import StoryFixture
-from tests.stories.core.modules.messages.delivery import KeptTyping, READ_MESSAGE_HOOK
+from tests.integration.core.modules.messages.test_delivery import KeptTyping, READ_MESSAGE_HOOK
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.fixtures import MainEnvironment

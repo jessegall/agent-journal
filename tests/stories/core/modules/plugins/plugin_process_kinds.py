@@ -4,7 +4,7 @@ import shlex
 
 from engine.caller.caller import Caller
 from engine.cli.console import Console
-from tests.stories.core.modules.plugins.plugin_calls import worker_with_tools
+from tests.integration.core.modules.plugins.test_plugin_calls import worker_with_tools
 from tests.stories.core.modules.plugins.support.plugin_samples import event_plugin_folder
 from tests.stories.core.modules.plugins.support.runner_binaries import recording_runner_at
 

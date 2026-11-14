@@ -5,7 +5,7 @@ from engine.driver.rule_answer import RuleAnswer
 from core.modules.plans.rules.plan_focus_rule import PlanFocusRule
 from core.modules.plans.states.plan_focus_due import PLAN_START_TABLE, PlanFocusDue
 from core.modules.plans.support.focus.new_focus_places import NewFocusPlaces
-from tests.unit.core.modules.plans.rules.test_plan_focus_rule import AGENT_ID, hook, rule
+from tests.integration.core.modules.plans.rules.test_plan_focus_rule import AGENT_ID, hook, rule
 
 
 def state_of(focus_rule: PlanFocusRule) -> PlanFocusDue:

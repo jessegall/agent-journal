@@ -10,7 +10,7 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.support.decisions.reading_case import ReadingCase
 from core.modules.processes.support.reading.reading_facts import ReadingFacts
-from tests.stories.core.modules.helpers.helper_jobs import helper_agent
+from tests.integration.core.modules.helpers.test_helper_jobs import helper_agent
 
 ENDED = ReadingPhase.END
 STARTED = ReadingPhase.START

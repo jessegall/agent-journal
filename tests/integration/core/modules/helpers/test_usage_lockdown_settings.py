@@ -1,7 +1,7 @@
 from core.modules.helpers.support.helper_settings import PROGRAM_WINDOW_PERCENT
 from core.modules.helpers.support.program_states import ProgramStates
-from tests.stories.core.modules.helpers.usage_limits import report
-from tests.stories.core.modules.helpers.usage_lockdown import EDIT, lockdown_story
+from tests.integration.core.modules.helpers.test_usage_limits import report
+from tests.integration.core.modules.helpers.test_usage_lockdown import EDIT, lockdown_story
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 

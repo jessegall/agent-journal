@@ -1,7 +1,7 @@
 import shlex
 import sys
 
-from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE
+from tests.integration.core.modules.plugins.test_hooks import LISTING_SAMPLE
 from tests.stories.core.modules.plugins.support.checkout_stories import FILE_EDITED, checkout_story, real
 from tests.stories.core.modules.plugins.support.event_stories import plugin_data
 from tests.stories.core.modules.plugins.support.runner_binaries import recording_runner_at

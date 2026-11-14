@@ -15,7 +15,7 @@ from engine.enums.command_category import CommandCategory
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_folder, story_repository
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository, ENVIRONMENT_BRANCH
-from tests.stories.suites.coding.modules.workers.kept_workers import stopped
+from tests.integration.suites.coding.modules.workers.test_kept_workers import stopped
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.suites.coding.modules.workers.support.route_expectations import expect_model_route_refusal, expect_unmatched_route
 

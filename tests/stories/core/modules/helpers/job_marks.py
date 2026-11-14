@@ -1,6 +1,6 @@
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.documents.delegated_sources import scenario  # noqa: F401
-from tests.stories.core.modules.helpers.helper_jobs import JOB, EndedHelper, helper_agent, resumable_session
+from tests.integration.core.modules.helpers.test_helper_jobs import JOB, EndedHelper, helper_agent, resumable_session
 from tests.stories.core.support.agent_labels import agent_label, agent_number
 from suites.coding.support.shipped_profiles import PLANNER_PROFILE
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE

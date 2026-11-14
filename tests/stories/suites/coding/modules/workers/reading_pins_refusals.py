@@ -3,7 +3,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner, emitted_read
 from tests.stories.core.modules.processes.support.reader_block_fixtures import worker_run
-from tests.stories.suites.coding.modules.workers.worker_test_limit import TestLimitSetup
+from tests.integration.suites.coding.modules.workers.test_worker_test_limit import TestLimitSetup
 
 CART_TESTS = HookSamples.shell("pytest tests/cart.py", ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/cart.py"]))
 

@@ -90,7 +90,7 @@ def test_an_upgrade_keeps_agent_access_a_person_granted(new_story):
 
 
 def test_a_manifest_alias_for_agents_is_open_to_a_worker_on_install(new_story):
-    from tests.stories.core.modules.aliases.running import worker_actor
+    from tests.integration.core.modules.aliases.test_running import worker_actor
 
     story, worker = worker_actor(new_story)
     folder = sample_plugin_folder(story.home.folder.parent)

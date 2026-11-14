@@ -3,7 +3,7 @@ import pytest
 from engine.provider.transcript_entries import TranscriptEntries
 from core.modules.drivers.models.hook_call import HookCall
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.core.modules.messages.lost_hooks import TOOL_FINISHED, codex_row, expect_chat_count, run_hook, transcript, prompt_row, entry_timestamp
+from tests.integration.core.modules.messages.test_lost_hooks import TOOL_FINISHED, codex_row, expect_chat_count, run_hook, transcript, prompt_row, entry_timestamp
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 

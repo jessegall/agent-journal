@@ -1,7 +1,7 @@
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_tasks_singly
 from tests.stories.suites.coding.modules.workers.support.phase_steps import start_planned_worker, unplanned_group_worker
-from tests.stories.suites.coding.modules.workers.work_units import plan_card, worker_unit
+from tests.integration.suites.coding.modules.workers.test_work_units import plan_card, worker_unit
 
 """A unit that cannot finish, and a user who changes it mid-way."""
 

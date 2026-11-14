@@ -3,7 +3,7 @@ import pytest
 from engine.testing.examples.hook_samples import HookSamples
 
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
-from tests.stories.suites.coding.modules.workers.ask_ledger import QUESTION, SECOND_QUESTION, questions, waits_of
+from tests.integration.suites.coding.modules.workers.test_ask_ledger import QUESTION, SECOND_QUESTION, questions, waits_of
 from tests.stories.suites.coding.modules.workers.support.held_tasks import unplanned_worker_with_tasks
 from tests.stories.suites.coding.modules.workers.support.phase_steps import StoryWorker
 

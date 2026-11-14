@@ -8,7 +8,7 @@ from suites.coding.modules.workers.bindings.worker_test_listings import WorkerTe
 from tests.stories.core.modules.processes.support.reader_block_fixtures import worker_run
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.integration.support.go_build import GoBuild
-from tests.stories.suites.coding.modules.workers.worker_test_limit import TestLimitSetup
+from tests.integration.suites.coding.modules.workers.test_worker_test_limit import TestLimitSetup
 
 
 @pytest.mark.parametrize("selection,count", [("-run '^TestChosen$'", 1), ("-run=^TestChosen$", 1), ("-run '^TestChosen$|^TestOther$'", 2), ("", 2)])

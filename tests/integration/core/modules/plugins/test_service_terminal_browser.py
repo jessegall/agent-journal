@@ -1,5 +1,5 @@
 from core.modules.plugins.support.plugin_folders import PluginFolders
-from tests.stories.core.modules.plugins.services import server_kept_story
+from tests.integration.core.modules.plugins.test_services import server_kept_story
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED

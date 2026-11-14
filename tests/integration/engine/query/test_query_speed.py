@@ -1,9 +1,9 @@
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.query.query import Query
-from tests.unit.engine.model.test_table import LogEntry
-from tests.unit.engine.query.test_query import entries  # noqa: F401  (the shared fixture)
-from tests.unit.engine.query.test_query_limits import filled, statements_run  # noqa: F401  (the shared fixtures)
+from tests.integration.engine.model.test_table import LogEntry
+from tests.integration.engine.query.test_query import entries  # noqa: F401  (the shared fixture)
+from tests.integration.engine.query.test_query_limits import filled, statements_run  # noqa: F401  (the shared fixtures)
 
 """Book 9 of doc 1255: the builder makes no read slower than the reads it replaced."""
 

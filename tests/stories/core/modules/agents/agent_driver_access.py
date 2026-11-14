@@ -5,7 +5,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.agents.agent_driver import CODEX_MODEL, DRIVER
-from tests.stories.core.modules.helpers.helper_jobs import JOB, EndedHelper, helper_agent
+from tests.integration.core.modules.helpers.test_helper_jobs import JOB, EndedHelper, helper_agent
 from tests.stories.core.modules.helpers.lifetime_reviewers import refusal_text
 from tests.stories.core.modules.usage.support.status_files import full_status
 from tests.stories.core.support.agent_labels import agent_number

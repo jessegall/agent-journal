@@ -12,7 +12,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
 from core.modules.plugins.models.plugin_output import PluginOutput
 from core.modules.plugins.ticks.plugin_card_reading import PluginCardReading
-from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, installed_story
+from tests.integration.core.modules.plugins.test_hooks import LISTING_SAMPLE, installed_story
 from tests.stories.core.modules.plugins.support.notices import expect_plugin_notice
 from tests.stories.support.story_checks import expect_value
 

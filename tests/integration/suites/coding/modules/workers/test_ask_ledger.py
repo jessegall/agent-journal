@@ -15,7 +15,7 @@ from suites.coding.modules.workers.support.worker_questions import CLOCK_FORMAT
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.merger_cases import MergerCase, case  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session
-from tests.stories.suites.coding.modules.workers.merger import merger_agent
+from tests.integration.suites.coding.modules.workers.test_merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, running_launcher
 from suites.coding.modules.workers.ticks.ask_watch import AskWatch
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry

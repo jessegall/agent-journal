@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from engine.errors.refusal import Refusal
-from tests.stories.suites.coding.modules.workers.checkpoint_runs import BUILD_TEST, REACHES, PASSES, checkpoint_worker, commit_tasks, merge, rows, run_lines
+from tests.integration.suites.coding.modules.workers.test_checkpoint_runs import BUILD_TEST, REACHES, PASSES, checkpoint_worker, commit_tasks, merge, rows, run_lines
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PLAN_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story

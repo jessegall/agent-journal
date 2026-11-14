@@ -1,6 +1,6 @@
 import pytest
 
-from tests.stories.core.modules.skills.agent_skills import GOOD
+from tests.integration.core.modules.skills.test_agent_skills import GOOD
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 

@@ -10,7 +10,7 @@ from core.modules.drivers.ticks.end_silent_helpers_tick import EndSilentHelpersT
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
-from tests.stories.core.modules.helpers.helper_jobs import resumable_session, EndedHelper, JOB, StartedHelper, read_jobs, helper_agent
+from tests.integration.core.modules.helpers.test_helper_jobs import resumable_session, EndedHelper, JOB, StartedHelper, read_jobs, helper_agent
 from core.modules.helpers.support.helper_settings import HELPER_MAX_COST
 from core.modules.helpers.ticks.helper_limits_tick import HelperLimitsTick
 from tests.stories.core.modules.helpers.read_only_access import StartedCodexHelper

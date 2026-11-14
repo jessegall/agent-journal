@@ -1,8 +1,8 @@
 import json
 
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
-from tests.stories.core.modules.helpers.helper_reports import LINES, helper_report, stop_with_report
+from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelper, helper_agent
+from tests.integration.core.modules.helpers.test_helper_reports import LINES, helper_report, stop_with_report
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from core.modules.agents.support.report_nudges import PARENT_REPORT

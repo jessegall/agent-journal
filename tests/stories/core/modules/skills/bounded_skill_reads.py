@@ -1,4 +1,4 @@
-from tests.stories.core.modules.skills.agent_skills import due_notes, started
+from tests.integration.core.modules.skills.test_agent_skills import due_notes, started
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.read_limit import limit_reads
 from tests.stories.core.support.seeds.large_read_seeds import AgentSkillSeed

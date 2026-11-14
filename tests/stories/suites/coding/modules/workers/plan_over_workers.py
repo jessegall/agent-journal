@@ -1,7 +1,7 @@
-from tests.stories.suites.coding.modules.workers.checkpoint_runs import BUILD_TEST, REACHES, merge, rows
+from tests.integration.suites.coding.modules.workers.test_checkpoint_runs import BUILD_TEST, REACHES, merge, rows
 from tests.stories.suites.coding.modules.workers.free_commits import commit_tasks_singly
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, StoryWorker, dispatched_story_worker, planned_story
-from tests.stories.suites.coding.modules.workers.work_units import plan_card, worker_unit
+from tests.integration.suites.coding.modules.workers.test_work_units import plan_card, worker_unit
 
 """Book F of doc 1252: a plan over several workers."""
 

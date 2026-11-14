@@ -3,7 +3,7 @@ from pathlib import Path
 from suites.coding.modules.workers.support.worker_command import WORK_STEPS
 from suites.coding.support.profile_commands import WORKER_COMMANDS
 from suites.coding.support.shipped_profiles import WORKER_RULES
-from tests.stories.suites.coding.modules.workers.checkpoint_runs import merge
+from tests.integration.suites.coding.modules.workers.test_checkpoint_runs import merge
 from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE
 from tests.stories.suites.coding.modules.workers.merge_asks import committed_list
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, single_task_worker

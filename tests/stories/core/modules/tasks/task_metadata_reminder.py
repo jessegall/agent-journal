@@ -2,7 +2,7 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from tests.stories.core.modules.helpers.start_helper import started
+from tests.integration.core.modules.helpers.test_start_helper import started
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from suites.coding.support.shipped_profiles import PLANNER_PROFILE
 

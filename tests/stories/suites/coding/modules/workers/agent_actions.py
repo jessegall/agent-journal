@@ -4,7 +4,7 @@ import pytest
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from tests.stories.core.modules.helpers.helper_jobs import resumable_session
+from tests.integration.core.modules.helpers.test_helper_jobs import resumable_session
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment

@@ -4,7 +4,7 @@ import pytest
 
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.phase_steps import EXTERNAL_DISPATCH, PHASE_DISPATCH, start_planned_worker, unplanned_group_worker, unplanned_worker
-from tests.stories.suites.coding.modules.workers.work_units import plan_card, worker_unit
+from tests.integration.suites.coding.modules.workers.test_work_units import plan_card, worker_unit
 from tests.stories.support.story_checks import expect_value, expect_value_4, expect_value_with
 
 """Book A of doc 1252: the unit a worker is given is assigned and seen so."""

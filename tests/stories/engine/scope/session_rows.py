@@ -4,7 +4,7 @@ from core.modules.messages.migrations.m015_main_message_targets import MainMessa
 from core.modules.messages.models.message import Message
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
-from tests.stories.engine.scope.environment_rows import TwoWorkingEnvironments, staging_agent
+from tests.integration.engine.scope.test_environment_rows import TwoWorkingEnvironments, staging_agent
 from tests.stories.core.modules.memories.support.memory_owners import MainAndWorkerMemories, read_agent, started_agent
 from tests.stories.core.support.agent_labels import agent_number
 

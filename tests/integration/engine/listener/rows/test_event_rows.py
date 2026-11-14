@@ -6,8 +6,8 @@ from engine.journal.journal_home import JournalHome
 from engine.listener.rows.event_rows import EventRows
 from engine.model.tables import Tables
 from engine.query.queries import Queries
-from tests.unit.engine.model.test_table import LogEntry
-from tests.unit.engine.query.test_query import entries
+from tests.integration.engine.model.test_table import LogEntry
+from tests.integration.engine.query.test_query import entries
 
 __all__ = ["entries"]
 

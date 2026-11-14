@@ -7,7 +7,7 @@ from core.modules.docking.models.enums.dock_item_state import DockItemState
 from engine.testing.examples.hook_samples import HookSamples
 from server.viewer.line_route import LineRoute
 from tests.stories.core.modules.approvals.support.legacy_setting_requests import UPGRADE
-from tests.stories.core.modules.approvals.recovery import phone_request, phone_viewer
+from tests.integration.core.modules.approvals.test_recovery import phone_request, phone_viewer
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, UserBuilder
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 

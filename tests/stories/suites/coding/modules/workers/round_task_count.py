@@ -3,7 +3,7 @@ import json
 
 
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.checkpoint_runs import merge
+from tests.integration.suites.coding.modules.workers.test_checkpoint_runs import merge
 from tests.stories.suites.coding.modules.workers.free_commits import commit_tasks_singly
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.phase_steps import StoryWorker, unplanned_group_worker

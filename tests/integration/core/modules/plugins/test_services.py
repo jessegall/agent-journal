@@ -33,7 +33,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.plugins.support.event_stories import plugin_row
 from tests.stories.core.support.scanned_edits import scanned_edit
-from tests.stories.core.modules.plugins.hooks import start_counter
+from tests.integration.core.modules.plugins.test_hooks import start_counter
 from tests.stories.core.modules.plugins.support.service_samples import SERVICE, service_plugin_folder
 from core.modules.plugins.models.plugin import Plugin
 from tests.stories.core.modules.processes.support.process_samples import install_runner

@@ -1,4 +1,4 @@
-from tests.stories.suites.coding.modules.workers.test_queue import recording_launch
+from tests.integration.suites.coding.modules.workers.test_test_queue import recording_launch
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 import json
 

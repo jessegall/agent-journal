@@ -5,7 +5,7 @@ from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 from suites.coding.modules.workers.ticks.ask_watch import AskWatch
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.ask_ledger import QUESTION, SECOND_QUESTION, ask, end_unanswered_visit, questions, waits_of
+from tests.integration.suites.coding.modules.workers.test_ask_ledger import QUESTION, SECOND_QUESTION, ask, end_unanswered_visit, questions, waits_of
 from tests.stories.suites.coding.modules.workers.merger_cases import case  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting

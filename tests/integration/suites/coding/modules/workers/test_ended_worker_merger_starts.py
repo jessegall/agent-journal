@@ -6,8 +6,8 @@ from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE
 from tests.stories.suites.coding.modules.workers.merge_asks import committed_list
-from tests.stories.suites.coding.modules.workers.merger import merger_agent
-from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON
+from tests.integration.suites.coding.modules.workers.test_merger import merger_agent
+from tests.integration.suites.coding.modules.workers.test_stopped_with_tasks import MERGER_ON
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import running_launcher
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 

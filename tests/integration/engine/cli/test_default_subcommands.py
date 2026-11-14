@@ -19,7 +19,7 @@ from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.model.model import Model
 from tests.unit.engine.command.test_commands import MakeItem
-from tests.unit.engine.listener.commit.test_commit_listener_runner import container_with
+from tests.integration.engine.listener.commit.test_commit_listener_runner import container_with
 from tests.unit.engine.model.test_lifecycle import ItemLifecycle, ItemState
 from tests.unit.engine.model.test_model import Item
 
@@ -122,7 +122,7 @@ class CloseItem(MoveCommand[Item]):
 
 
 def test_each_move_is_a_subcommand_and_a_typed_command_gives_its_fields_as_flags(container):
-    pause, close = container.get(DefaultSubcommands).moves(Item, ["tests.unit.engine.cli.test_default_subcommands:CloseItem"])
+    pause, close = container.get(DefaultSubcommands).moves(Item, ["tests.integration.engine.cli.test_default_subcommands:CloseItem"])
     assert (pause.name, close.name) == ("pause", "close")
     assert run(container, pause, "1").state == ItemState.PAUSED
     with pytest.raises(SystemExit):

@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 from core.modules.plugins.support.plugin_queue import PluginQueue
 from core.modules.plugins.ticks.plugin_card_reading import PluginCardReading
-from tests.stories.core.modules.plugins.hooks import installed_story
+from tests.integration.core.modules.plugins.test_hooks import installed_story
 
 LATER_NS = 10**18
 

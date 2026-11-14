@@ -10,7 +10,7 @@ from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
 from suites.coding.modules.workers.support.merger_work import MergerWork
-from tests.stories.core.modules.helpers.helper_jobs import resumable_session
+from tests.integration.core.modules.helpers.test_helper_jobs import resumable_session
 from tests.stories.core.modules.helpers.support.rotating_helper import real_program_states
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

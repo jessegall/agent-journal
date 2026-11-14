@@ -6,7 +6,7 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.agents.agent_driver import CODEX_MODEL, DRIVER
 from tests.stories.core.modules.agents.support.numbered_agents import FIRST_STORY_NUMBER
-from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, helper_agent
+from tests.integration.core.modules.helpers.test_helper_jobs import EndedHelper, helper_agent
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 WINDOW = "agents.agents"

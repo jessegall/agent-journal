@@ -26,7 +26,7 @@ from engine.time.timestamp import Timestamp
 from tests.unit.engine.model.test_model import Item
 from tests.unit.engine.model.test_lifecycle import ItemState
 from tests.unit.engine.command.test_commands import MakeItem
-from tests.unit.engine.event.test_event_log import log
+from tests.integration.engine.event.test_event_log import log
 
 STAMP = Timestamp.parsed("2026-11-01T09:00:00+00:00")
 

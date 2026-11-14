@@ -1,6 +1,6 @@
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from tests.stories.core.modules.helpers.helper_jobs import profile_agent, start_helper
+from tests.integration.core.modules.helpers.test_helper_jobs import profile_agent, start_helper
 
 SAMPLES = "tests.stories.core.modules.helpers.support.command_list_samples"
 HELPER_REFUSAL = "A read-only helper may not run"

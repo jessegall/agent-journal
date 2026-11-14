@@ -7,7 +7,7 @@ from suites.coding.modules.workers.commands.queue_worker_tests.start_worker_test
 from suites.coding.modules.workers.listeners.support.worker_test_starts import WorkerTestStarts
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.ticks.worker_tests.stalled_worker_test_runs import STALLED_TESTS_TICK
-from tests.stories.suites.coding.modules.workers.stalled_tests import two_tasks  # noqa: F401
+from tests.integration.suites.coding.modules.workers.test_stalled_tests import two_tasks  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 
 UNSTARTED_TICK = "unstarted worker proofs"

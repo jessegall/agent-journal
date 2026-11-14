@@ -3,7 +3,7 @@ from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault impor
 from core.modules.plugins.models.plugin import Plugin
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, installed_story
+from tests.integration.core.modules.plugins.test_hooks import LISTING_SAMPLE, installed_story
 
 BROKEN_SAMPLE = HookSamples.shell("cat broken", ShellPart("cat", CommandCategory.READ, ["broken"]))
 FAILING_COUNT = 5

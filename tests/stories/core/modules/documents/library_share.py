@@ -3,7 +3,7 @@ from engine.registry.registry import Registry
 from core.modules.documents.commands.edit_text.edit_text import EditText
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.support.doc_library_share import DocLibraryShare
-from tests.stories.core.modules.documents.docs import doc_story
+from tests.integration.core.modules.documents.test_docs import doc_story
 from tests.stories.core.support.fixtures import UserJoined
 
 

@@ -12,7 +12,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_nudges import WORKER_LIBRARIES_LINKED
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.merger import merger_agent
+from tests.integration.suites.coding.modules.workers.test_merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import running_launcher

@@ -46,7 +46,7 @@ def test_the_finder_loads_the_listed_plugins_and_refuses_one_for_another_core(tm
     home = JournalHome(tmp_path)
     home.module_list.write_text(json.dumps(["tests.unit.engine.samples.module_sample:ItemsModule"]))
     assert [module.name for module in ModuleFinder(home).modules()][-1] == "items"
-    home.module_list.write_text(json.dumps(["tests.unit.engine.module.test_module_order:FutureCoreModule"]))
+    home.module_list.write_text(json.dumps(["tests.integration.engine.module.test_module_order:FutureCoreModule"]))
     with pytest.raises(ModuleError, match="needs engine >=6"):
         ModuleFinder(home).modules()
     home.module_list.write_text(json.dumps([3]))

@@ -21,11 +21,11 @@ from tests.stories.core.modules.helpers import lifetime_reviewers
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.cold_workers import stopped_worker, with_job
-from tests.stories.suites.coding.modules.workers.gone_workers import MAIN_SESSION, ended_worker, missing_program, running_worker
+from tests.integration.suites.coding.modules.workers.test_gone_workers import MAIN_SESSION, ended_worker, missing_program, running_worker
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, checked_worker, delivered_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.program_split import outage
-from tests.stories.suites.coding.modules.workers.usage_lockdown_held_starts import launches
+from tests.integration.suites.coding.modules.workers.test_usage_lockdown_held_starts import launches
 from tests.stories.support.program_states import real_program_states
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.support.worker_settings import WORKER_KEPT_LIMIT

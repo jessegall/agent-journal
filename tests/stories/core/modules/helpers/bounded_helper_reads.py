@@ -1,6 +1,6 @@
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from tests.stories.core.modules.drivers.agent_pause import FakeTyping
-from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, helper_agent
+from tests.integration.core.modules.helpers.test_helper_jobs import EndedHelper, helper_agent
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.large_reads import seeded_children, seeded_finished_jobs
 from tests.stories.core.support.read_limit import limit_reads

@@ -3,7 +3,7 @@ from engine.journal.journal_home import LAUNCHER_SOCKET
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.agents.ticks.agent_reconcile import AgentReconcile
-from tests.stories.suites.coding.modules.workers.gone_workers import missing_program, running_worker, worker_story
+from tests.integration.suites.coding.modules.workers.test_gone_workers import missing_program, running_worker, worker_story
 
 __all__ = ["missing_program", "running_worker", "worker_story"]
 

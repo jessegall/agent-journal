@@ -1,4 +1,4 @@
-from tests.stories.core.modules.agents.helper_transcripts import row, read_transcript
+from tests.integration.core.modules.agents.test_helper_transcripts import row, read_transcript
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story

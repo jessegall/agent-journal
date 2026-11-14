@@ -10,9 +10,9 @@ from engine.model.view_model import ViewModel
 from engine.query.errors.query_limit_error import QueryLimitError
 from engine.query.queries import Queries
 from engine.query.query import Query
-from tests.unit.engine.model.test_table import LogEntry
-from tests.unit.engine.query.test_query import FIXED_TIME, entries  # noqa: F401  (the shared fixture)
-from tests.unit.engine.query.test_query_on_view import queries  # noqa: F401  (the shared fixture)
+from tests.integration.engine.model.test_table import LogEntry
+from tests.integration.engine.query.test_query import FIXED_TIME, entries  # noqa: F401  (the shared fixture)
+from tests.integration.engine.query.test_query_on_view import queries  # noqa: F401  (the shared fixture)
 
 WALK_REASON = "the test reads every entry"
 

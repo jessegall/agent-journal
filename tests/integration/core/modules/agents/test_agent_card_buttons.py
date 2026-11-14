@@ -1,7 +1,7 @@
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from tests.stories.core.modules.agents.agent_cards_numbers import WINDOW
-from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
+from tests.integration.core.modules.helpers.test_helper_jobs import StartedHelper, helper_agent
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 RETIREMENT_REASON = "Its reading is done"

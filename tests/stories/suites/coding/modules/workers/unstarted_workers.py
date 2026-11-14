@@ -2,7 +2,7 @@ from suites.coding.modules.workers.types.worker import Worker
 import pytest
 
 from core.modules.agents.models.agent import Agent
-from tests.stories.suites.coding.modules.workers.gone_workers import RESUMED_PID, start_launcher, worker_story
+from tests.integration.suites.coding.modules.workers.test_gone_workers import RESUMED_PID, start_launcher, worker_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH
 from tests.stories.support.story_checks import expect_value
 

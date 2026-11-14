@@ -1,8 +1,8 @@
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from tests.stories.core.modules.helpers.usage_limits import report
-from tests.stories.core.modules.helpers.usage_lockdown import EDIT, STOP_LINE, lockdown_story
+from tests.integration.core.modules.helpers.test_usage_limits import report
+from tests.integration.core.modules.helpers.test_usage_lockdown import EDIT, STOP_LINE, lockdown_story
 
 PANIC_FILE_PATH = "/".join([".journal", "panic"])
 PANIC_FILE_EDIT = HookSamples.shell(f"touch {PANIC_FILE_PATH}", ShellPart("touch", CommandCategory.EDIT, [PANIC_FILE_PATH]))

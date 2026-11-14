@@ -3,7 +3,7 @@ from engine.command.close_user_approval import CloseUserApproval
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
-from tests.stories.core.modules.approvals.approvals import SETTING, pending_setting
+from tests.integration.core.modules.approvals.test_approvals import SETTING, pending_setting
 from server.work.booting_work import BootingWork
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client

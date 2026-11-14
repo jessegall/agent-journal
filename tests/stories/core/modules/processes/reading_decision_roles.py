@@ -1,6 +1,6 @@
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.core.modules.helpers.helper_jobs import helper_agent
+from tests.integration.core.modules.helpers.test_helper_jobs import helper_agent
 from tests.stories.core.modules.processes.support.cadence_probe import HelperBesideWorker, agent_run, kept_lines
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, worker_run

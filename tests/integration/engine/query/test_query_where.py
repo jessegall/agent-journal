@@ -7,8 +7,8 @@ from engine.database.statement import Statement
 from engine.model.model import Model
 from engine.query.errors.unknown_operator_error import UnknownOperatorError
 from engine.query.query import Query
-from tests.unit.engine.model.test_table import LogEntry
-from tests.unit.engine.query.test_query import entries  # noqa: F401  (the shared fixture)
+from tests.integration.engine.model.test_table import LogEntry
+from tests.integration.engine.query.test_query import entries  # noqa: F401  (the shared fixture)
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 

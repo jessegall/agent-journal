@@ -4,8 +4,8 @@ import pytest
 
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
-from tests.stories.core.modules.helpers.cold_sessions import with_job
-from tests.stories.core.modules.helpers.helper_jobs import helper_agent, resumable_session
+from tests.integration.core.modules.helpers.test_cold_sessions import with_job
+from tests.integration.core.modules.helpers.test_helper_jobs import helper_agent, resumable_session
 from tests.stories.core.modules.helpers.lifetime_combinations import launched_job
 from tests.stories.core.modules.helpers.rotation_mid_job import session_rows
 from tests.stories.core.modules.helpers.support.rotating_helper import EndedColdRotationHelper, story_with_profile_file

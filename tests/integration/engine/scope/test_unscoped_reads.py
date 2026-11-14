@@ -5,7 +5,7 @@ from engine.model.tables import Tables
 from engine.query.errors.query_limit_error import QueryLimitError
 from engine.query.query import Query
 from engine.row.row_owner import RowOwner
-from tests.unit.engine.query.test_query_scoping import Shelf, database  # noqa: F401  (the shared fixture)
+from tests.integration.engine.query.test_query_scoping import Shelf, database  # noqa: F401  (the shared fixture)
 
 ALL_ENVIRONMENTS_REASON = "the test reads the shelves of both environments"
 

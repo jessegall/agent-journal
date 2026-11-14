@@ -12,7 +12,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from tests.stories.suites.coding.modules.workers.test_queue import ended, recording_launch
+from tests.integration.suites.coding.modules.workers.test_test_queue import ended, recording_launch
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_PASSED
 from engine.testing.expectations.expected_nudge import expected_nudge
 

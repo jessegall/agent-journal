@@ -7,11 +7,11 @@ from engine.enums.actor_type import ActorType
 from core.modules.messages.models.message import Message
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.checkpoint_failures import end_run, expect_returned, produce_output
-from tests.stories.suites.coding.modules.workers.checkpoint_runs import sole_branch_runs, CART_COMMAND, PASSES, REACHES, commit_tasks, merge, rows, run_lines
-from tests.stories.suites.coding.modules.workers.merger import merger_agent
+from tests.integration.suites.coding.modules.workers.test_checkpoint_failures import end_run, expect_returned, produce_output
+from tests.integration.suites.coding.modules.workers.test_checkpoint_runs import sole_branch_runs, CART_COMMAND, PASSES, REACHES, commit_tasks, merge, rows, run_lines
+from tests.integration.suites.coding.modules.workers.test_merger import merger_agent
 from tests.stories.suites.coding.modules.workers.merger_cases import running_merger
-from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON
+from tests.integration.suites.coding.modules.workers.test_stopped_with_tasks import MERGER_ON
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import running_launcher
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, SECOND_TEST_LINE, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting

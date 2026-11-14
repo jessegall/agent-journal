@@ -1,6 +1,6 @@
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.helper_job import HelperJob
-from tests.stories.core.modules.helpers.kept_agents import helper_form_server
+from tests.integration.core.modules.helpers.test_kept_agents import helper_form_server
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.core.support.agent_labels import agent_number
 

@@ -10,8 +10,8 @@ from engine.query.errors.unknown_column_error import UnknownColumnError
 from engine.query.errors.unknown_operator_error import UnknownOperatorError
 from engine.query.errors.unknown_table_error import UnknownTableError
 from engine.query.query import Query
-from tests.unit.engine.model.test_table import LogEntry
-from tests.unit.engine.query.test_query import entries  # noqa: F401  (the shared fixture)
+from tests.integration.engine.model.test_table import LogEntry
+from tests.integration.engine.query.test_query import entries  # noqa: F401  (the shared fixture)
 
 
 @dataclass(frozen=True, kw_only=True)

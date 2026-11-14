@@ -10,8 +10,8 @@ from core.modules.memories.support.memory_nudges import START_MEMORIES
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, read_jobs, resumable_session
-from tests.stories.core.modules.helpers.program_split import helper_split_story, helper_viewer
+from tests.integration.core.modules.helpers.test_helper_jobs import JOB, helper_agent, read_jobs, resumable_session
+from tests.integration.core.modules.helpers.test_program_split import helper_split_story, helper_viewer
 from tests.stories.suites.coding.modules.workers.support.program_split import set_split
 from tests.stories.core.modules.helpers.support.rotating_helper import ROTATING_BODY, SAVE_ROTATING, START_ROTATING, EndedEachLaunchHelper, installed_program_checks, real_program_states, story_with_profile_file
 from tests.stories.core.support.agent_labels import agent_number

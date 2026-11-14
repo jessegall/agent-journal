@@ -1,9 +1,9 @@
-from tests.stories.suites.coding.modules.workers.work_units import worker_unit
+from tests.integration.suites.coding.modules.workers.test_work_units import worker_unit
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 import pytest
 
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.checkpoint_runs import merge
+from tests.integration.suites.coding.modules.workers.test_checkpoint_runs import merge
 from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_tasks_singly, worktree_state
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, StoryWorker, start_planned_worker, unplanned_group_worker, single_task_worker
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED

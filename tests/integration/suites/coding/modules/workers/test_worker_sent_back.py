@@ -2,9 +2,9 @@ from engine.testing.examples.hook_samples import HookSamples
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.support.worker_nudges import WORKER_UNFINISHED_TASKS
 from tests.stories.core.support.agent_labels import agent_number
-from tests.stories.suites.coding.modules.workers.ask_ledger import ANSWER, HELP_REQUEST_LINE, questions
+from tests.integration.suites.coding.modules.workers.test_ask_ledger import ANSWER, HELP_REQUEST_LINE, questions
 from tests.stories.suites.coding.modules.workers.merger_cases import MergerCase, case  # noqa: F401
-from tests.stories.suites.coding.modules.workers.stopped_with_tasks import MERGER_ON, main_agent_lines, missing_program, running_worker, two_task_worker, worker_story  # noqa: F401
+from tests.integration.suites.coding.modules.workers.test_stopped_with_tasks import MERGER_ON, main_agent_lines, missing_program, running_worker, two_task_worker, worker_story  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import set_resume_limit
 from tests.stories.suites.coding.modules.workers.worker_ask import asking, asking_with_merger_running, merger_disabled_worker  # noqa: F401
