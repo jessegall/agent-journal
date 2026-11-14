@@ -1,64 +1,28 @@
-import pytest
-
 import http.client
 import json
 import re
-from dataclasses import dataclass
-from datetime import datetime, timezone
-from urllib.parse import urlparse
 
-from tests.stories.core.support import story_lines as lines
-from engine.testing.stories.story_fixture import StoryFixture
-from engine.testing.stories.story import Story
-from tests.stories.core.support.fixtures import TasksPlan
-from tests.stories.server.support.server_client import ServerStory, server_story
+import pytest
+
+from tests.integration.support.integration_server import integration_server
 from tests.integration.support.server_harness import viewer_answer
-from tests.stories.support.story_checks import expect_id_cancelled, expect_value_line, expect_value_without
+from tests.integration.support.share_links import opened, plan_and_person, shared_link
 
 SHARE_WINDOW = "sharing.shares"
 PLAN_WINDOW = "plans.plans"
 
 
-class PlanAndPersonFixture(StoryFixture):
-    """Plan 1 with two open tasks, a second plan 2, and a user, Ada, beside the agent."""
-
-    parent = TasksPlan
-
-    def steps(self, story: Story) -> None:
-        story.run(lines.NEW_PLAN)
-        story.run('phase make --plan 2 "Elsewhere" --goal "not shared"')
-
-    def expect(self, story: Story) -> None:
-        story.expect_success("plan show 2", "title: Version 5 core")
+@pytest.fixture
+def plan_server(journal):
+    user = plan_and_person(journal)
+    with integration_server(journal) as server:
+        yield server, user
 
 
-@dataclass(frozen=True)
-class SharedLink:
-    """What `share make` answers: the link's number and the path that carries its token."""
-
-    id: int
-    link: str
-
-    @property
-    def path(self) -> str:
-        return urlparse(self.link).path
-
-
-def shared_link(story: ServerStory) -> tuple[str, SharedLink]:
-    cookie = story.expect_viewer_login(story.viewer_key("Ada"))
-    made = json.loads(story.story.run("share make plans:1 --json", actor=story.story.user).output_text)
-    return cookie, SharedLink(int(made["id"]), str(made["link"]))
-
-
-def revoke(story: ServerStory, share: SharedLink) -> None:
-    story.story.expect_success(f"share revoke {share.id}", "state: revoked", actor=story.story.user)
-
-
-def opened(story: ServerStory, share: SharedLink) -> str:
-    status, headers, body = viewer_answer(story.viewer_port(), share.path, "", "")
-    cookie = headers.get("Set-Cookie", "")
-    assert status == 200 and '<div id="app">' in body and cookie.startswith(story.cookie_name("journal_share") + "=") and "HttpOnly" in cookie and "SameSite=Strict" in cookie, (status, headers, body)
-    return cookie.split(";", 1)[0]
+@pytest.fixture
+def shared_plan_link(plan_server):
+    server, user = plan_server
+    return server, user, shared_link(server, user)
 
 
 def phases(plan: str) -> dict[str, object]:
@@ -70,32 +34,31 @@ def read(plan: str, window: str = PLAN_WINDOW) -> dict[str, object]:
 
 
 def test_the_session_route_tells_the_shell_which_row_the_link_shows_and_when_it_ends(shared_plan_link):
-    story, ((_, share)) = shared_plan_link
+    story, user, (_, share) = shared_plan_link
     visitor = opened(story, share)
     story.expect_viewer_status("/api/session", 200, visitor, text='"share": {"row_model": "plan", "row_id": 1, "window": {')
 
 
-
 def test_a_stale_person_cookie_beside_the_share_cookie_does_not_hide_the_share_session(shared_plan_link):
-    story, ((_, share)) = shared_plan_link
+    story, user, (_, share) = shared_plan_link
     visitor = opened(story, share)
     story.expect_viewer_status("/api/session", 200, f"journal_session=a-session-from-another-journal; {visitor}", text='"type": "share"')
 
+
 def test_the_share_page_loads_every_file_it_names_with_only_the_share_cookie(shared_plan_link):
-    story, ((_, share)) = shared_plan_link
+    story, user, (_, share) = shared_plan_link
     visitor = opened(story, share)
     _, _, page = viewer_answer(story.viewer_port(), share.path, visitor, "")
     names = re.findall(r'(?:src|href)="(/viewer/[^"]+)"|"(?:vue|@journal/window-kit)": "([^"]+)"', page)
     paths = {first or second for first, second in names}
-    expect_value_line(paths, "vendor/vue")
-    expect_value_line(paths, "/assets/")
-    expect_value_line(paths, "window-kit")
+    for part in ("vendor/vue", "/assets/", "window-kit"):
+        assert any(part in path for path in paths), paths
     for path in paths:
         story.expect_viewer_status(path, 200, visitor)
 
 
 def test_the_plans_window_of_a_share_loads_and_reads_the_shared_plan_with_only_the_share_cookie(shared_plan_link):
-    story, ((_, share)) = shared_plan_link
+    story, user, (_, share) = shared_plan_link
     visitor = opened(story, share)
     _, _, session = viewer_answer(story.viewer_port(), "/api/session", visitor, "")
     entry = json.loads(session)["share"]["window"]["entry_url"]
@@ -106,21 +69,20 @@ def test_the_plans_window_of_a_share_loads_and_reads_the_shared_plan_with_only_t
 
 
 def test_a_live_link_page_carries_no_gone_mark(shared_plan_link):
-    story, ((_, share)) = shared_plan_link
+    story, user, (_, share) = shared_plan_link
     _, _, page = viewer_answer(story.viewer_port(), share.path, "", "")
-    expect_value_without(page, "journal-share")
+    assert "journal-share" not in page
 
 
 def test_a_dead_link_page_clears_the_share_cookie_a_visitor_holds(shared_plan_link):
-    story, ((_, share)) = shared_plan_link
+    story, user, (_, share) = shared_plan_link
     visitor = opened(story, share)
     _, headers, _ = viewer_answer(story.viewer_port(), "/viewer/share/not-a-link", visitor, "")
-    expect_headers_with(headers, "Set-Cookie", "", f"{story.cookie_name("journal_share")}=;")
-    expect_cookie_headers_with(headers, "Max-Age=0")
+    assert f"{story.cookie_name('journal_share')}=;" in headers.get("Set-Cookie", "") and "Max-Age=0" in headers["Set-Cookie"], headers
 
 
 def test_a_share_session_reads_the_shared_plan_and_its_phases_as_the_person_who_made_the_link_and_no_other_plan(shared_plan_link):
-    story, ((_, share)) = shared_plan_link
+    story, user, (_, share) = shared_plan_link
     visitor = opened(story, share)
     story.expect_viewer_line(visitor, read("1"), 200, '"code": 0')
     story.expect_viewer_line(visitor, phases("1"), 200, '"code": 0')
@@ -129,14 +91,14 @@ def test_a_share_session_reads_the_shared_plan_and_its_phases_as_the_person_who_
 
 
 def test_a_share_session_reads_the_phases_the_plan_holds_and_no_phase_of_another_plan(shared_plan_link):
-    story, ((_, share)) = shared_plan_link
+    story, user, (_, share) = shared_plan_link
     visitor = opened(story, share)
     story.expect_viewer_line(visitor, {"window": PLAN_WINDOW, "line": ["phase", "show", "1"], "environment": "main"}, 200, '"code": 0')
     story.expect_viewer_line(visitor, {"window": PLAN_WINDOW, "line": ["phase", "show", "4"], "environment": "main"}, 403, "not shared by the link")
 
 
 def test_a_share_session_reads_only_the_lines_its_window_declares(shared_plan_link):
-    story, ((_, share)) = shared_plan_link
+    story, user, (_, share) = shared_plan_link
     visitor = opened(story, share)
     story.expect_viewer_line(visitor, {"window": PLAN_WINDOW, "line": ["task", "list"], "environment": "main"}, 403, "not shared by the link")
     story.expect_viewer_line(visitor, {"window": "tasks.tasks", "line": ["task", "list"], "environment": "main"}, 403, "not shared by the link")
@@ -144,20 +106,20 @@ def test_a_share_session_reads_only_the_lines_its_window_declares(shared_plan_li
 
 
 def test_a_share_session_reads_no_other_environment(shared_plan_link):
-    story, ((_, share)) = shared_plan_link
+    story, user, (_, share) = shared_plan_link
     visitor = opened(story, share)
     story.expect_viewer_line(visitor, {**read("1"), "environment": "other"}, 403, "not shared by the link")
 
 
 def test_a_share_session_runs_no_command_with_or_without_waive(shared_plan_link):
-    story, ((_, share)) = shared_plan_link
+    story, user, (_, share) = shared_plan_link
     visitor = opened(story, share)
     for line in (["plan", "start", "1"], ["plan", "start", "1", "--waive"], ["task", "make", "Sneaky", "--environment", "main"], ["share", "make", "plans:1"]):
         story.expect_viewer_line(visitor, {"window": PLAN_WINDOW, "line": line, "environment": "main"}, 403, "a share link only reads")
 
 
 def test_a_share_session_reads_no_data_route_but_its_own_session_and_stream(shared_plan_link):
-    story, ((_, share)) = shared_plan_link
+    story, user, (_, share) = shared_plan_link
     visitor = opened(story, share)
     for route in ("/api/windows", "/api/waiting", "/api/marks", "/api/docks", "/api/skills", "/api/anything"):
         story.expect_viewer_status(f"{route}?environment=main", 403, visitor, text="opens only the row it shares")
@@ -165,13 +127,13 @@ def test_a_share_session_reads_no_data_route_but_its_own_session_and_stream(shar
 
 
 def test_the_server_picks_the_window_that_shows_the_shared_row_and_ignores_the_name_a_client_sends(shared_plan_link):
-    story, ((_, share)) = shared_plan_link
+    story, user, (_, share) = shared_plan_link
     visitor = opened(story, share)
     story.expect_viewer_status("/api/session", 200, visitor, text='"window": {"name": "plans.plans"')
     story.expect_viewer_line(visitor, {"window": "settings.settings", "line": ["plan", "show", "1"], "environment": "main"}, 200, '"code": 0')
 
 
-def share_events(story: ServerStory, cookie: str, count: int, environment: str) -> list[dict[str, object]]:
+def share_events(story, cookie: str, count: int, environment: str) -> list[dict[str, object]]:
     port = story.viewer_port()
     connection = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
     try:
@@ -189,80 +151,48 @@ def share_events(story: ServerStory, cookie: str, count: int, environment: str) 
 
 
 def test_a_share_session_follows_only_the_events_of_the_rows_it_shows_in_its_own_environment(shared_plan_link):
-    story, ((_, share)) = shared_plan_link
+    story, user, (_, share) = shared_plan_link
     visitor = opened(story, share)
     followed = share_events(story, visitor, 4, "other")
-    expect_table_event_id("plans", 1, "phases", 1, "phases", 2, "phases", 3, followed)
+    assert all((event["row_table"], event["row_id"]) in {("plans", 1), ("phases", 1), ("phases", 2), ("phases", 3)} for event in followed), followed
 
 
 def test_a_share_session_cannot_ask_for_a_login_key(shared_plan_link):
-    story, ((_, share)) = shared_plan_link
+    story, user, (_, share) = shared_plan_link
     visitor = opened(story, share)
     story.expect_viewer_status("/api/viewer-key", 403, visitor)
     story.expect_viewer_line(visitor, {"window": "phone.phones", "line": ["phone", "pair"], "environment": "main"}, 403, "a share link only reads")
 
 
 def test_a_person_lists_and_revokes_their_links(shared_plan_link):
-    story, ((cookie, share)) = shared_plan_link
+    story, user, (cookie, share) = shared_plan_link
     listed = story.viewer_line_value(cookie, {"window": SHARE_WINDOW, "line": ["share", "list"], "environment": "main"})
-    expect_id_cancelled(listed, [share.id])
+    assert [row["id"] for row in listed["rows"]] == [share.id], listed
     story.viewer_line_value(cookie, {"window": SHARE_WINDOW, "line": ["share", "revoke", str(share.id)], "environment": "main"})
-    expect_state_viewer(story, cookie, "window", "line", "environment", SHARE_WINDOW, "share", "list", "main", ["revoked"])
+    listed = story.viewer_line_value(cookie, {"window": SHARE_WINDOW, "line": ["share", "list"], "environment": "main"})
+    assert [row["state"] for row in listed["rows"]] == ["revoked"], listed
 
 
-def test_a_link_stays_open_when_the_server_restarts(new_story):
-    journal = new_story(fixture=PlanAndPersonFixture)
-    journal.advance(datetime.now(timezone.utc) - journal.clock.timestamp().value)
-    with server_story(journal) as story:
-        _, share = shared_link(story)
+def test_a_link_stays_open_when_the_server_restarts(journal):
+    user = plan_and_person(journal)
+    with integration_server(journal) as story:
+        _, share = shared_link(story, user)
         visitor = opened(story, share)
-    with server_story(journal) as story:
+    with integration_server(journal) as story:
         story.expect_viewer_status("/api/session", 200, visitor, text='"type": "share"')
 
 
 def test_a_spent_login_link_opened_with_only_a_share_cookie_is_refused(shared_plan_link):
-    story, ((_, share)) = shared_plan_link
+    story, user, (_, share) = shared_plan_link
     visitor = opened(story, share)
     key = story.viewer_key("Ada")
     story.expect_viewer_login(key)
     story.expect_viewer_status(f"/?key={key}", 401, visitor)
 
 
-@pytest.fixture
-def plan_server(new_story):
-    journal = new_story(fixture=PlanAndPersonFixture)
-    journal.advance(datetime.now(timezone.utc) - journal.clock.timestamp().value)
-    with server_story(journal) as story:
-        yield story
-
-
-@pytest.fixture
-def shared_plan_link(plan_server):
-    return plan_server, shared_link(plan_server)
-
-
-def expect_state_viewer(story, cookie, text, text_2, text_3, item, text_4, text_5, text_6, expected) -> None:
-    actual = [row['state'] for row in story.viewer_line_value(cookie, {text: item, text_2: [text_4, text_5], text_3: text_6})['rows']]
-    assert actual == expected, actual
-
-
-def expect_table_event_id(text, number, text_2, number_2, text_3, number_3, text_4, number_4, followed) -> None:
-    actual = all(((event['row_table'], event['row_id']) in {(text, number), (text_2, number_2), (text_3, number_3), (text_4, number_4)} for event in followed))
-    assert actual, actual
-
-
-def expect_headers_with(headers, text, text_2, expected) -> None:
-    actual = headers.get(text, text_2)
-    assert expected in actual, actual
-
-
-def expect_cookie_headers_with(headers, expected) -> None:
-    actual = headers['Set-Cookie']
-    assert expected in actual, actual
-
-
 def test_a_share_session_reads_window_keys_with_the_rights_of_its_link(shared_plan_link):
-    story, ((_, share)) = shared_plan_link
+    story, user, (_, share) = shared_plan_link
     cookie = opened(story, share)
     status, answer = story.window_data(cookie, keys="pins")
-    story.story.expect_rows(status == 200, answer["keys"]["pins"]["code"] != 0)
+    assert status == 200 and answer["keys"]["pins"]["code"] != 0, answer
+

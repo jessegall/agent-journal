@@ -719,7 +719,6 @@ tests/stories/server/support/client_binary.py
 tests/stories/server/support/launch_terminal.py
 tests/stories/server/support/server_client.py
 tests/stories/server/support/story_line_route.py
-tests/stories/server/support/viewer_events.py
 tests/stories/server/tick_warnings.py
 tests/stories/server/viewer/login_link.py
 tests/stories/server/viewer/request_funnel_routes.py

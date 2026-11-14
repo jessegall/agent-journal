@@ -15,7 +15,7 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.shared_server_binary import SharedServerBinary
 from tests.stories.server.support.stub_server import StubAnswer, StubServer
-from tests.stories.server.viewer.share import SharedLink, opened
+from tests.integration.support.share_links import SharedLink, opened
 
 __all__ = ["private_folder"]
 
