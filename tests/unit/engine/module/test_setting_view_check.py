@@ -11,6 +11,7 @@ PROJECT_FOLDER = Path(__file__).resolve().parents[4]
 # the view files that read a setting key for something other than drawing its row, each with its reason
 ALLOWED = {
     "src/suites/coding/web/src/AgentSettings.vue": "reads the two switches that start the work for the line under the Work tab",
+    "src/suites/coding/web/src/AgentSettingsAssign.vue": "reads the switch that lets the main agent write code, to warn that a rule giving it a task is skipped when the switch is off",
     "src/suites/coding/web/src/WorkMode.vue": "the auto switch of the top bar sets the setting by its key",
     "src/suites/coding/web/src/helperRows.js": "the agent type screen splits the merge hooks list into one list per profile, which no generated field does",
     "src/suites/coding/modules/workers/web/src/WorkerModels.vue": "a window of its own that edits the allowed models list, not a generated screen",

@@ -1,4 +1,5 @@
 import shlex
+import sys
 
 from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE
 from tests.stories.core.modules.plugins.support.checkout_stories import FILE_EDITED, checkout_story, real
@@ -21,3 +22,11 @@ def test_a_shell_line_a_plugin_hook_and_a_plugin_run_of_a_worker_each_see_the_ro
     story.expect_rows(f"JOURNAL_CHECKOUT_ROOT={real(story.worktree)}" in variables, f"JOURNAL_PROJECT_ROOT={real(story.repository.folder)}" in variables, detail=str(variables))
     story.expect_rows(plugin_data(story, "roots.txt").read_text().strip() == roots, detail=plugin_data(story, "roots.txt").read_text())
     story.expect_rows((story.worktree / "roots.txt").read_text().strip() == roots, detail=(story.worktree / "roots.txt").read_text())
+
+
+def test_a_plugin_program_runs_its_python_script_through_the_journals_own_python(new_story):
+    script = '"$JOURNAL_PYTHON" -c "import sys; print(sys.executable)" > "$JOURNAL_PLUGIN_DATA/python.txt"'
+    story = checkout_story(new_story, scripts={"python.sh": script}, program="python.sh", hears=[FILE_EDITED])
+    scanned_edit(story, story.worker_session, "src/order.py", folder=story.worktree)
+    story.run_listeners()
+    story.expect_rows(plugin_data(story, "python.txt").read_text().strip() == sys.executable, detail=plugin_data(story, "python.txt").read_text())

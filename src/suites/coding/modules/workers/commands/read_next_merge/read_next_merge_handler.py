@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.models.worktree import Worktree
 from dataclasses import replace
 
 from engine.command.context import Context
@@ -38,22 +39,20 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
 
     def handle(self, command: ReadNextMerge, context: Context) -> str:
         if context.actor.is_agent() and self.oversight.is_overseer(self.agents.find(context.actor.id)):
-            return self.waiting_text(self.work.unread_lines())
+            return self.waiting_text(self.work.unread_lines(), self.work.next_worktree())
         require_merger(self.agents, context)
         visit = self.repository.save(MergerVisit(), context)
-        lines = self.work.unread_lines()
-        text = self.waiting_text(lines)
+        lines, worktree = self.work.unread_lines(), self.work.next_worktree()
+        text = self.waiting_text(lines, worktree)
         output_id = self.record_lines(lines, text, command, visit, context)
-        worktree = self.work.next_worktree()
         if worktree is not None:
             self.log_read.record(worktree, output_id, context)
         return text
 
     # The lines to the merger and the next worker waiting with its tasks, or that no worker waits.
-    def waiting_text(self, lines: tuple[MergerLine, ...]) -> str:
+    def waiting_text(self, lines: tuple[MergerLine, ...], worktree: Worktree | None) -> str:
         nudges = [Nudge(line.fallback_source, NudgeType.NOTICE, line.text) if line.nudge_json is None else NudgeDeclaration.restore(line.nudge_json) for line in lines]
         messages = "\n".join(f"line: {nudge.text}" for nudge in Nudge.collapsed(nudges))
-        worktree = self.work.next_worktree()
         if worktree is None:
             return messages or NO_WORKER_WAITING
         review = self.log_lines.review(worktree)

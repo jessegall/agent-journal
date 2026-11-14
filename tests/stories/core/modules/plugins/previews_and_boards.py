@@ -190,6 +190,6 @@ def test_a_failed_setup_leaves_the_old_code(new_story):
     request = story.container.get(Queries).query(ApprovalRequest).first()
     with viewer_client(story) as viewer:
         viewer.refusal("messages.chat", ["approval", "accept", str(request.id)], "broken")
-    story.expect_rows(story.container.get(Queries).query(ApprovalRequest).find(request.id).state is ApprovalState.OPEN)
+    story.expect_rows(story.container.get(Queries).query(ApprovalRequest).find(request.id).state is ApprovalState.FAILED)
     story.expect_rows("1.2.0" in (story.home.folder / "plugins" / "standup" / "journal-plugin.json").read_text())
     story.expect_text("plugin list --json", '"release": "1.2.0"', actor=story.user)

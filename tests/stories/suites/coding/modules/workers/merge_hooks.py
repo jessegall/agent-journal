@@ -25,7 +25,7 @@ def test_the_merge_hooks_set_on_a_profile_run_once_after_its_worker_is_merged_an
     with person_viewer(story) as viewer:
         modal = Modal(viewer)
         modal.save({MERGE_HOOKS: json.dumps(hooks)}, HELPER_TYPES)
-        expect_value(json.loads(modal.value(HELPER_TYPES, MERGE_HOOKS)), hooks)
+        expect_value(modal.value(HELPER_TYPES, MERGE_HOOKS), hooks)
     story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     runner = story.container.get(CommitListenerRunner)
     runner.run_ordinary()
