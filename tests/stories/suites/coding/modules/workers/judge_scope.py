@@ -11,7 +11,6 @@ from tests.stories.suites.coding.modules.workers.support.judge_plugin import SIN
 from tests.stories.support.story_checks import expect_value, expect_value_with
 
 
-pytestmark = pytest.mark.real_git
 
 MERGED_TAX = "TAX = 22\n"
 
