@@ -38,13 +38,14 @@ from suites.coding.rules.waiting_items_rule import WaitingItemsRule
 from suites.coding.drivers.helper.helper_driver import HelperDriver
 from suites.coding.drivers.worker.worker_driver import WorkerDriver
 from suites.coding.drivers.main.main_driver import MainDriver
-from suites.coding.support.coding_settings import CODING_SETTINGS, PLAIN_NAMES_SETTING
+from suites.coding.support.coding_settings import PLAIN_NAMES_SETTING
+from suites.coding.settings.coding_setting_values import CodingSettingValues
 from suites.coding.listeners.full_test_run_listener import FullTestRunListener
 from suites.coding.rules.failed_full_run_rule import FailedFullRunRule
 from suites.coding.rules.graphify_search_rule import GraphifySearchRule
 from suites.coding.listeners.graphify_hook_removal_listener import GraphifyHookRemovalListener
 from suites.coding.support.graphify_nudges import TOOL_NUDGES
-from suites.coding.support.graphify_settings import GRAPHIFY_SETTING_VALUES
+from suites.coding.settings.graphify_setting_values import GraphifySettingValues
 from suites.coding.bindings.coding_tool_runners import CodingToolRunners
 from suites.coding.migrations.m010_graphify_setting_keys import GraphifySettingKeysMigration
 from suites.coding.migrations.m011_worker_profile_names import WorkerProfileNamesMigration
@@ -70,7 +71,7 @@ class CodingModule(Module):
     seeders = [CodingSeeder]
     window_extensions = CODING_WINDOW_EXTENSIONS
     requires_engine = ">=5,<6"
-    settings = [*CODING_SETTINGS, *GRAPHIFY_SETTING_VALUES]
+    settings = [CodingSettingValues, GraphifySettingValues]
     moves = [FileEditsMove, ViewerLayoutsMove, CodingSettingsMove]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.assignments", "journal.core.assign_rules", "journal.core.plans", "journal.core.settings", "journal.core.setting-requests", "journal.core.viewer", "journal.core.plugins", "journal.core.processes", "journal.core.messages", "journal.core.questions", "journal.core.helpers", "journal.core.tools"]
     drivers = [MainDriver, HelperDriver, WorkerDriver]

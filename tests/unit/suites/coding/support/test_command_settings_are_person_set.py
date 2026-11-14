@@ -7,8 +7,8 @@ from core.modules.updates.models.enums.update_setting import UPDATE_SETTINGS
 from engine.setting.setting_group import SettingGroup
 from engine.setting.setting_value import SettingValue
 from suites.coding.modules.workers.support.worker_settings import WORKER_SETTING_VALUES
-from suites.coding.support.coding_settings import CODING_SETTING_VALUES
-from suites.coding.support.graphify_settings import GRAPHIFY_SETTING_VALUES
+from suites.coding.settings.coding_setting_values import CodingSettingValues
+from suites.coding.settings.graphify_setting_values import GraphifySettingValues
 
 # Values the journal runs as a command outside an agent's sandbox, or downloads code from.
 COMMAND_SUFFIXES = ("command", "commands", "hooks", "address")
@@ -25,7 +25,7 @@ def flattened_values(declared: Sequence[SettingGroup | SettingValue]) -> Iterato
         yield entry
 
 
-ALL_VALUES = list(flattened_values([*WORKER_SETTING_VALUES, *CODING_SETTING_VALUES, *GRAPHIFY_SETTING_VALUES, *UPDATE_SETTINGS, *PLAN_SETTINGS]))
+ALL_VALUES = list(flattened_values([*WORKER_SETTING_VALUES, *CodingSettingValues.values, *GraphifySettingValues.nodes(), *UPDATE_SETTINGS, *PLAN_SETTINGS]))
 
 
 @pytest.mark.parametrize("key", sorted(CODE_RUNNING_KEYS))

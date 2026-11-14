@@ -18,9 +18,9 @@ class DockCheck:
 
     def problems(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         reads, runs = WindowCheck.lines(modules)
-        problems = list(NameGroups.duplicates([("dock types", [dock.type.value for module in modules for dock in module.docks])]))
+        problems = list(NameGroups.duplicates([("dock types", [dock.type.value for module in modules for dock in module.dock_declarations()])]))
         for module in modules:
-            for dock in module.docks:
+            for dock in module.dock_declarations():
                 name = f"the dock {dock.type.value}"
                 problems += DeclarationNames.prefix_problems(name, dock.type.value, module.name)
                 if dock.most < 1:

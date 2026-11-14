@@ -1,3 +1,4 @@
+from core.modules.plans.docks.plans_docks import PLANS_DOCKS
 from core.modules.plans.skills.declarations.plans_skills import PLANS_SKILLS
 from core.modules.plans.commands.repair_plan_states.repair_plan_states_handler import RepairPlanStatesHandler
 from core.modules.plans.ticks.plan_state_sweep import PlanStateSweep
@@ -93,7 +94,7 @@ from core.modules.plans.rules.plan_order_rule import PlanOrderRule
 from core.modules.plans.states.plan_focus_due import PlanFocusDue
 from core.modules.plans.rules.plan_state_rule import PlanStateRule
 from core.modules.plans.rules.plan_task_line_rule import PlanTaskLineRule
-from core.modules.plans.support.plan_marks import PLAN_DOCKS, PLAN_MARKS
+from core.modules.plans.support.plan_marks import PLAN_MARKS
 from core.modules.plans.support.plan_nudges import PLAN_NUDGES
 from core.modules.plans.seeders.plans_seeder import PlansSeeder
 from core.modules.plans.support.block_conditions.plan_approved import PlanApproved
@@ -166,7 +167,7 @@ class PlansModule(Module):
     nudges = PLAN_NUDGES
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule, PlanContextRule]
     agent_states = [PlanFocusDue]
-    docks = PLAN_DOCKS
+    docks = PLANS_DOCKS
     window_extensions = [WindowExtension("messages.chat", reads=["agent running"])]
     buttons = [ButtonDeclaration("plans.approve", WAITING_PLAN_SLOTS, "Approve", "plan approve {row_id}",
                                  icon="check", primary=True, condition=ButtonCondition("state", tuple(["ready"])),

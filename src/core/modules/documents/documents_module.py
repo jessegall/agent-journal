@@ -1,3 +1,4 @@
+from core.modules.documents.docks.documents_docks import DOCUMENTS_DOCKS
 from core.modules.documents.skills.declarations.documents_skills import DOCUMENTS_SKILLS
 from core.modules.documents.windows.documents_windows import DOCUMENTS_WINDOWS
 from core.modules.documents.step_conditions.report_commented import ReportCommented
@@ -76,7 +77,6 @@ from core.modules.documents.listeners.new_doc_dock_listener import NewDocDockLis
 from core.modules.documents.listeners.new_report_dock_listener import NewReportDockListener
 from core.modules.documents.models.link import Link
 from core.modules.documents.support.stored_row_links import StoredRowLinks
-from core.modules.documents.support.text_docks import TEXT_DOCKS
 from core.modules.documents.support.text_marks import TEXT_MARKS
 from core.modules.documents.listeners.text_read_mark_listener import TextReadMarkListener
 from core.modules.documents.models.report import Report
@@ -126,7 +126,7 @@ class DocumentsModule(Module):
     handlers = [ApprovePlanHandler, OpenDocHandler, RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler, RemoveLinkHandler, ReadPlanContextHandler]
     listeners = [CloseEndedDocumentListener, PlanDocumentLinkListener, ReplyLinkListener, WorkSourceLinkListener, DocMentionListener, ReportMentionListener, PlanMentionListener, TaskMentionListener, MessageMentionListener, PhaseMentionListener, TaskLogMentionListener, DeletedRowLinkListener, NewDocDockListener, NewReportDockListener, TextReadMarkListener, LinkCorrectionResetListener]
     marks = TEXT_MARKS
-    docks = TEXT_DOCKS
+    docks = DOCUMENTS_DOCKS
     bindings = {AgentReportReads: RowAgentReportReads, RowLinks: StoredRowLinks, TaskContextReader: WorkContextReader, TaskCommentReads: RowTaskCommentReads}
     subcommands = [OpenDocSubcommand, CommentMessageSubcommand, CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,
                    DocRevisionsSubcommand, DocRevisionSubcommand, ReportMakeSubcommand, ReportEditSubcommand, ReportShowSubcommand, ReportListSubcommand,

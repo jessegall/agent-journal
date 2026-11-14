@@ -86,7 +86,7 @@ class Module:
     nudges: ClassVar[list[NudgeDeclaration]] = []
     tick_handlers: ClassVar[list[TickHandler]] = []
     ask_topics: ClassVar[list[AskTopic]] = []
-    docks: ClassVar[list[DockDeclaration]] = []
+    docks: ClassVar[list[DockDeclaration | type[DockDeclaration]]] = []
     templates: ClassVar[list[TemplateDeclaration | type[TemplateDeclaration]]] = []
     buttons: ClassVar[list[ButtonDeclaration]] = []
     button_slots: ClassVar[list[str]] = []
@@ -141,6 +141,11 @@ class Module:
     @classmethod
     def setting_nodes(cls) -> list[SettingNode]:
         return [node for entry in cls.settings for node in (entry.nodes() if isinstance(entry, type) else [entry])]
+
+    # a dock written as a class gives its declaration; an inline dock is its own
+    @classmethod
+    def dock_declarations(cls) -> list[DockDeclaration]:
+        return [dock.declared() if isinstance(dock, type) else dock for dock in cls.docks]
 
     @classmethod
     def declared_buttons(cls) -> list[ButtonDeclaration]:

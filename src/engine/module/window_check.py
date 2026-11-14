@@ -83,7 +83,7 @@ class WindowCheck:
     def mark_dock_lines(modules: Sequence[type[Module]], shipped: set[str] | frozenset[str]) -> tuple[ButtonLine, ...]:
         return tuple(ButtonLine(module.name, button.runs, module.name in shipped) for module in modules
                      for button in (*(button for mark in module.marks for button in (*mark.buttons, *mark.group_buttons)),
-                                    *(button for dock in module.docks for button in dock.buttons)))
+                                    *(button for dock in module.dock_declarations() for button in dock.buttons)))
 
     @staticmethod
     def lines(modules: Sequence[type[Module]]) -> tuple[set[str], set[str]]:

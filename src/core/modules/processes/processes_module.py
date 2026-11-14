@@ -1,3 +1,4 @@
+from core.modules.processes.docks.processes_docks import PROCESSES_DOCKS
 from core.modules.processes.skills.declarations.processes_skills import PROCESSES_SKILLS
 from core.modules.processes.commands.list_execution_classes.list_lanes_subcommand import ListLanesSubcommand
 from core.modules.processes.commands.choose_execution_preset.choose_execution_preset_handler import ChooseExecutionPresetHandler
@@ -156,7 +157,7 @@ from core.modules.processes.listeners.process_part_start_mark_listener import Pr
 from core.modules.processes.listeners.process_move_mark_listener import ProcessMoveMarkListener
 from core.modules.processes.commands.process_list.process_list_subcommand import ProcessListSubcommand
 from core.modules.processes.listeners.process_output_mark_listener import ProcessOutputMarkListener
-from core.modules.processes.support.process_marks import PROCESS_DOCKS, PROCESS_MARKS
+from core.modules.processes.support.process_marks import PROCESS_MARKS
 from core.modules.processes.commands.read_new_output.read_new_output_handler import ReadNewOutputHandler
 from core.modules.processes.listeners.ended_agent_runs_listener import EndedAgentRunsListener
 from core.modules.processes.migrations.m010_runs_of_ended_agents import EndedAgentRunsMigration
@@ -332,7 +333,7 @@ class ProcessesModule(Module):
     listeners = [BootedRunsListener, ReaderRunCountResetListener, UnreadableMarkRunCountResetListener, EndDecisionListener, EndedRunLineListener, FullOutputReadListener, StockReadersPublishListener, StartReadersListener, ReaderFailureListener, ReaderBlockListener, ReaderRequestCompleteListener, ProcessFolderRemovalListener, RunSlotListener, ActiveTestsMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, ProcessPruneListener, ProcessRemovalListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, ProcessPartStartMarkListener, ProcessMoveMarkListener, ProcessOutputMarkListener, ProcessOutputListener]
     marks = PROCESS_MARKS
     bindings = {WatchedRuns: MonitoredRuns, WaitTargets: ProcessWaitTargets, RunOwners: ProcessRunOwners, RunPlacement: ProcessRunPlacement, RunPauses: AgentRunPauses, RequestRecords: ProcessRowWrapper, PersonClasses: StoredExecutionClasses}
-    docks = PROCESS_DOCKS
+    docks = PROCESSES_DOCKS
     window_extensions = [*(WindowExtension(name, reads=["queue list", "output page"], events=["output.*"],
                                            tabs=[WindowTab("processes", "Processes", "queue list", component="/modules/journal.core.processes/agent-processes.js")])
                            for name in ("agents.agents", "agents.helpers")),

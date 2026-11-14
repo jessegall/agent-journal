@@ -1,3 +1,4 @@
+from core.modules.dumps.docks.dumps_docks import DUMPS_DOCKS
 from core.modules.dumps.skills.declarations.dumps_skills import DUMPS_SKILLS
 from core.modules.dumps.migrations.m003_dump_closed_index import DumpClosedIndexMigration
 from engine.module.model_declaration import BUILT, ModelDeclaration
@@ -31,7 +32,6 @@ from core.modules.dumps.models.dump import Dump
 from core.modules.dumps.models.dump_item import DumpItem
 from core.modules.dumps.upgrade.dumps_move import DumpsMove
 from core.modules.dumps.seeders.dumps_seeder import DumpsSeeder
-from core.modules.dumps.support.dump_docks import DUMP_DOCKS
 from core.modules.dumps.support.skeletons import DUMPS_DUMPS_SKELETON
 
 
@@ -51,7 +51,7 @@ class DumpsModule(Module):
     nudges = DUMP_NUDGES
     driver_rules = [OpenDumpRule]
     listeners = [DumpArrivalListener, DumpDockListener]
-    docks = DUMP_DOCKS
+    docks = DUMPS_DOCKS
     windows = [WindowDeclaration("dumps.dumps", "Dumps", "dumps.js", WindowLoading.COMPONENT, skeleton=DUMPS_DUMPS_SKELETON, search=WindowSearch(DumpSearcher, "Search the dumps"), place=WindowPlace.PANE, icon=WindowIcon.FILED, reads=["dump board", "dump-item board"],
                                  runs=["dump name"], events=["dump.*", "dump_item.*"],
                                  keys=[WindowKey("dumps", "dump board", arguments=["before"], events=["dump.*", "dump_item.*"])])]

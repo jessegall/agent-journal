@@ -1,3 +1,4 @@
+from suites.coding.settings.coding_setting_values import CodingSettingValues
 import json
 from dataclasses import dataclass
 
@@ -16,9 +17,9 @@ AGENT_TYPES = ("worker", "helper")
 ALL_COMMAND_TYPES = tuple(category.value for category in CommandCategory)
 DEFAULT_COMMAND_TYPES = (CommandCategory.READ.value, CommandCategory.SEARCH.value, CommandCategory.EDIT.value, CommandCategory.CHECK.value, CommandCategory.TEST_RUN.value,
                          CommandCategory.BUILD.value)
-SETTING_LISTS = {"coding": coding.CODING_SETTINGS, "workers": workers.WORKER_SETTINGS, "helpers": helpers.HELPER_SETTINGS}
+SETTING_LISTS = {"coding": CodingSettingValues.nodes(), "workers": workers.WORKER_SETTINGS, "helpers": helpers.HELPER_SETTINGS}
 MODULE_KEYS = {"coding": coding.MODULE_KEY, "workers": workers.MODULE_KEY, "helpers": helpers.MODULE_KEY}
-RULES = {**coding.CODING_SETTING_RULES, **workers.WORKER_SETTING_RULES, **helpers.HELPER_SETTING_RULES}
+RULES = {**CodingSettingValues.rules, **workers.WORKER_SETTING_RULES, **helpers.HELPER_SETTING_RULES}
 MAIN_AUTO_DESCRIPTION = "The journal hands the main agent its tasks, and it keeps going while tasks are left"
 
 

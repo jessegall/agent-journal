@@ -31,7 +31,7 @@ def listed_events(modules: list[type[Module]]) -> dict[str, set[str]]:
 
 def body_stems(module: type[Module]) -> set[str]:
     """A dock or mark body hears every event through ModuleBody, so its follows answer to no window's list."""
-    return {Path(declaration.body).stem.replace("-", "").lower() for declaration in (*module.docks, *module.marks) if declaration.body}
+    return {Path(declaration.body).stem.replace("-", "").lower() for declaration in (*module.dock_declarations(), *module.marks) if declaration.body}
 
 
 def test_a_follow_of_an_event_its_window_does_not_list_is_found():

@@ -1,3 +1,4 @@
+from core.modules.tasks.docks.tasks_docks import TASKS_DOCKS
 from core.modules.tasks.skills.declarations.tasks_skills import TASKS_SKILLS
 from core.modules.tasks.commands.repair_task_states.repair_task_states_handler import RepairTaskStatesHandler
 from core.modules.tasks.ticks.task_state_sweep import SWEEP_SECONDS as TASK_SWEEP_SECONDS, TaskStateSweep
@@ -135,7 +136,7 @@ from core.modules.tasks.models.task_dependency import TaskDependency
 from core.modules.tasks.models.task_log import TaskLog
 from core.modules.tasks.listeners.task_edited_mark_listener import TaskEditedMarkListener
 from core.modules.tasks.listeners.task_move_mark_listener import TaskMoveMarkListener
-from core.modules.tasks.support.task_marks import TASK_DOCKS, TASK_MARKS
+from core.modules.tasks.support.task_marks import TASK_MARKS
 from core.modules.tasks.seeders.tasks_seeder import TasksSeeder
 from core.modules.tasks.support.block_conditions.task_started import TaskStarted
 from core.modules.tasks.support.block_conditions.task_closed import TaskClosed
@@ -174,7 +175,7 @@ class TasksModule(Module):
     listeners = [StartAssignmentListener, TaskTagRemoverListener, TaskDependencyWaitListener, WaitingTaskListener, TaskRowsListener, TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener, StoppedAgentTasksListener]
     marks = TASK_MARKS
     former_event_keys = {"core.tasks.task.drop_hold": "core.tasks.task.release_holder"}
-    docks = TASK_DOCKS
+    docks = TASKS_DOCKS
     driver_rules = [TaskFiledRule, TaskStartRule, TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, AutoModeTaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
     windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.COMPONENT, skeleton=TASKS_TASKS_SKELETON, search=WindowSearch(TaskSearcher, "Search the tasks"), icon=WindowIcon.TASK, reads=["task board", "task tags", "task graph", "task list", "task show", "task inspect", "task comments", "link list", "plan place", "plan places", "plan board", "plan outline", "task-log list"],
                                options=[ChoiceOption("rows", "Tasks per page", [("5", "5"), ("10", "10"), ("25", "25"), ("50", "50")], "10")],

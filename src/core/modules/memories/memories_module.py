@@ -1,3 +1,4 @@
+from core.modules.memories.docks.memories_docks import MEMORIES_DOCKS
 from core.modules.memories.skills.declarations.memories_skills import MEMORIES_SKILLS
 from core.modules.memories.windows.memories_windows import MEMORIES_WINDOWS
 from core.modules.memories.commands.memory_agents.memory_agents_subcommand import MemoryAgentsSubcommand
@@ -57,7 +58,7 @@ from core.modules.memories.migrations.m002_memory_types_drop_agent_writable impo
 from core.modules.memories.migrations.m003_remove_faded_memories import RemoveFadedMemoriesMigration
 from core.modules.memories.migrations.m004_memory_types_drop_fades import MemoryTypesDropFadesMigration
 from core.modules.memories.models.active_memory import ActiveMemory
-from core.modules.memories.support.memory_marks import MEMORY_DOCKS, MEMORY_MARKS
+from core.modules.memories.support.memory_marks import MEMORY_MARKS
 from core.modules.memories.support.memory_settings import MEMORY_SETTINGS
 from core.modules.memories.seeders.memories_seeder import MemoriesSeeder
 from core.modules.memories.support.block_conditions.memories_weighed import MemoriesWeighed
@@ -92,7 +93,7 @@ class MemoriesModule(Module):
                  MemoryRemovedMarkListener, MemoryFadedMarkListener, MemoryGivenMarkListener, CompactionMarkListener]
     subcommands = [MemoryListSubcommand, MemoryAgentsSubcommand, MemoryCountsSubcommand, MemoryPageSubcommand, MakeMemorySubcommand, WeighMemoriesSubcommand, ReadMemorySubcommand, MemoryContextSubcommand, MemoryFadedSubcommand, SkipMemoryMarkSubcommand]
     marks = MEMORY_MARKS
-    docks = MEMORY_DOCKS
+    docks = MEMORIES_DOCKS
     windows = MEMORIES_WINDOWS
     window_extensions = [WindowExtension(name, reads=["memory page"], runs=["memory weigh", "memory edit", "memory remove", "memory restore"], events=["memory.*"], keys=[
         WindowKey("agent-memories.*", "memory page --agent {id} --state active --order weight --limit 100", tab="memories", events=["memory.*"], loading=KeyLoading.REQUESTED),
