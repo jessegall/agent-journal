@@ -1,0 +1,1 @@
+tests/stories/core/modules/waits/marks.py::test_the_impasse_mark_is_declared_as_version_4_showed_it -> unit tests/unit/core/modules/chat/test_version_4_mark_looks.py::test_each_mark_is_declared_as_version_4_showed_it

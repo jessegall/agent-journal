@@ -91,7 +91,6 @@ tests/stories/core/modules/chat/mark_rounds.py
 tests/stories/core/modules/chat/marks.py
 tests/stories/core/modules/chat/support/mark_samples.py
 tests/stories/core/modules/chat/support/round_marks.py
-tests/stories/core/modules/chat/support/v4_looks.py
 tests/stories/core/modules/claude_code/journal_settings_launch.py
 tests/stories/core/modules/codex/journal_codex_home.py
 tests/stories/core/modules/codex/support/first_lines.py

@@ -1,4 +1,3 @@
-from tests.stories.core.modules.chat.support.v4_looks import SUBAGENT, expect_declared_appearance
 import pytest
 
 from engine.command.bus import Bus
@@ -16,5 +15,3 @@ def test_the_agents_module_writes_only_its_own_marks(new_story):
         story.container.get(Bus).run(ShowMark(TaskMarkType.TASK, TaskMarkVariant.STARTED, "task:9", "A mark"), module_actor(story, "journal.core.agents"), environment_id=1)
 
 
-def test_the_helper_mark_is_declared_as_version_4_showed_it(new_story):
-    expect_declared_appearance(new_story(fixture=BuilderStarted), SUBAGENT)

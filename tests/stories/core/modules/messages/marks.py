@@ -1,4 +1,3 @@
-from tests.stories.core.modules.chat.support.v4_looks import FILED, SUMMARY, expect_declared_appearance
 from engine.command.bus import Bus
 from engine.errors.refusal import Refusal
 import pytest
@@ -32,14 +31,6 @@ def test_the_messages_module_writes_only_its_own_marks(new_story):
     with pytest.raises(Refusal, match="only journal.core.tasks writes a mark of tasks.task"):
         story.container.get(Bus).run(ShowMark(TaskMarkType.TASK, TaskMarkVariant.STARTED, "task:1", "A mark"), module_actor(story, "journal.core.messages"), environment_id=1)
     story.container.get(Bus).run(ShowMark(MessageMarkType.SUMMARY, MessageMarkVariant.SUMMARY, "thought:9", "A mark"), module_actor(story, "journal.core.messages"), environment_id=1)
-
-
-def test_the_thought_mark_is_declared_as_version_4_showed_it(new_story):
-    expect_declared_appearance(new_story(fixture=UnansweredMessage), SUMMARY)
-
-
-def test_the_filed_mark_is_declared_as_version_4_showed_it(new_story):
-    expect_declared_appearance(new_story(fixture=UnansweredMessage), FILED)
 
 
 def test_a_message_edited_by_an_agent_shows_a_mark_that_opens_the_message(new_story):

@@ -1,2 +1,3 @@
 tests/stories/core/modules/tasks/upgrade.py::test_a_task_log_line_moves_to_the_task_it_was_written_on -> integration tests/integration/core/modules/tasks/test_upgrade.py::test_a_task_log_line_moves_to_the_task_it_was_written_on
 tests/stories/core/modules/tasks/upgrade.py::test_a_version_4_dependency_moves_and_the_one_that_closes_a_loop_is_dropped_and_counted -> integration tests/integration/core/modules/tasks/test_upgrade.py::test_a_version_4_dependency_moves_and_the_one_that_closes_a_loop_is_dropped_and_counted
+tests/stories/core/modules/tasks/marks.py::test_the_task_mark_is_declared_as_version_4_showed_it -> unit tests/unit/core/modules/chat/test_version_4_mark_looks.py::test_each_mark_is_declared_as_version_4_showed_it

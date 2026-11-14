@@ -2,7 +2,6 @@ from engine.testing.stories.story_fixture import StoryFixture
 
 from engine.database.database import Database
 from engine.registry.registry import Registry
-from tests.stories.core.modules.chat.support.v4_looks import TASK, expect_declared_appearance
 import pytest
 
 from engine.command.bus import Bus
@@ -50,10 +49,6 @@ def test_the_tasks_module_writes_only_its_own_marks(new_story):
     story = new_story(fixture=OpenTaskBuilder)
     with pytest.raises(Refusal, match="only journal.core.messages writes a mark of messages.thought"):
         story.container.get(Bus).run(ShowMark(MessageMarkType.SUMMARY, MessageMarkVariant.SUMMARY, "thought:9", "A mark"), module_actor(story, "journal.core.tasks"), environment_id=1)
-
-
-def test_the_task_mark_is_declared_as_version_4_showed_it(new_story):
-    expect_declared_appearance(new_story(fixture=OpenTaskBuilder), TASK)
 
 
 def test_a_task_is_docked_from_its_inspector_and_no_task_row_changes(new_story):
