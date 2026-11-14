@@ -470,7 +470,6 @@ tests/stories/core/modules/sequences/support/step_blocks.py
 tests/stories/core/modules/sequences/support/upgraded_row_sequences.py
 tests/stories/core/modules/setting_requests/setting_requests.py
 tests/stories/core/modules/setting_requests/setting_requests_through_the_viewer.py
-tests/stories/core/modules/settings/fresh_container_settings.py
 tests/stories/core/modules/settings/kept_settings.py
 tests/stories/core/modules/settings/managed_hooks.py
 tests/stories/core/modules/settings/managed_scans.py

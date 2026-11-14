@@ -276,7 +276,6 @@ tests/stories/core/modules/sequences/marks.py
 tests/stories/core/modules/sequences/sequences.py
 tests/stories/core/modules/sequences/standard_rows.py
 tests/stories/core/modules/setting_requests/setting_requests.py
-tests/stories/core/modules/settings/fresh_container_settings.py
 tests/stories/core/modules/settings/managed_hooks.py
 tests/stories/core/modules/settings/managed_scans.py
 tests/stories/core/modules/settings/project_hooks.py

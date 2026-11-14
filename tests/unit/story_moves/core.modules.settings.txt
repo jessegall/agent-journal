@@ -1,0 +1,1 @@
+tests/stories/core/modules/settings/fresh_container_settings.py::test_a_fresh_container_does_not_load_the_settings_table_again -> integration tests/integration/core/modules/settings/test_fresh_container_settings.py::test_a_fresh_container_does_not_load_the_settings_table_again

@@ -17,7 +17,7 @@ def loaded_setting_rows(home: JournalHome) -> int:
         database.close()
 
 
-def test_a_fresh_container_does_not_load_the_settings_table_again(new_story):
-    home = new_story(fixture=MainEnvironment).container.get(JournalHome)
+def test_a_fresh_container_does_not_load_the_settings_table_again(played):
+    home = played(MainEnvironment).container.get(JournalHome)
     loaded_setting_rows(home)
     expect_value(loaded_setting_rows(home), 0)
