@@ -1,10 +1,10 @@
 import json
 
-from tests.stories.engine.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
+from tests.stories.engine.upgrade.support.fixture_upgrade import expect_upgrade_text
 
 
-def test_a_plan_in_review_moves_as_ready_with_its_phases_checkpoint_and_tasks_in_order(new_story):
-    story = upgraded_story(new_story)
+def test_a_plan_in_review_moves_as_ready_with_its_phases_checkpoint_and_tasks_in_order(upgraded):
+    story = upgraded
     story.expect_success("plan show 3", "title: Cart rework", "state: ready")
     phases = story.run("phase list")
     phases.expect_text("Fix the total")
@@ -14,19 +14,19 @@ def test_a_plan_in_review_moves_as_ready_with_its_phases_checkpoint_and_tasks_in
     story.expect_text("phase-task show 1", "position: 1")
 
 
-def test_a_phase_of_an_upgraded_plan_reads_with_an_empty_test_command(new_story):
-    story = upgraded_story(new_story)
+def test_a_phase_of_an_upgraded_plan_reads_with_an_empty_test_command(upgraded):
+    story = upgraded
     story.expect_success("plan show 3", "title: Cart rework")
     story.expect_rows(json.loads(story.run("phase show 1 --json").output_text)["test_command"] == "")
 
 
-def test_the_plan_reviews_of_version_4_are_dropped_and_counted(new_story):
-    story = upgraded_story(new_story)
+def test_the_plan_reviews_of_version_4_are_dropped_and_counted(upgraded):
+    story = upgraded
     expect_upgrade_text(story, "dropped plan_reviews: 2 rows")
 
 
-def test_a_task_version_4_left_in_two_phases_moves_into_its_last_and_the_older_link_is_counted(new_story):
-    story = upgraded_story(new_story)
+def test_a_task_version_4_left_in_two_phases_moves_into_its_last_and_the_older_link_is_counted(upgraded):
+    story = upgraded
     expect_upgrade_text(story, "dropped in_phase links older than the task's last phase: 1 rows")
     expect_next_with(story, 1, 2, 3, "task_id: 2", "phase_id: 2")
 

@@ -1,0 +1,1 @@
+tests/stories/core/modules/pins/upgrade.py::test_a_version_4_pin_keeps_its_title_link_and_button_and_a_closed_one_stays_closed -> integration tests/integration/core/modules/pins/test_upgrade.py::test_a_version_4_pin_keeps_its_title_link_and_button_and_a_closed_one_stays_closed

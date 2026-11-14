@@ -6,6 +6,7 @@ import pytest
 from engine.journal.journal_home import JournalHome
 from engine.testing.templates.template_databases import TemplateDatabases
 from tests.integration.support.integration_journal import IntegrationJournal
+from tests.integration.support.upgraded_journal import UpgradedJournal
 
 MAIN_ENVIRONMENT_LINE = "environment make main /work/journal"
 
@@ -39,3 +40,9 @@ def journal_with(templates: TemplateDatabases, tmp_path: Path) -> Generator[Call
     yield make
     for journal in opened:
         journal.close()
+
+
+# a journal with no environment whose home held the version 4 fixture database and was upgraded once
+@pytest.fixture
+def upgraded(journal_with) -> UpgradedJournal:
+    return UpgradedJournal.upgraded(journal_with())

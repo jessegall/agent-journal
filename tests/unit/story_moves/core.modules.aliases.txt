@@ -1,0 +1,3 @@
+tests/stories/core/modules/aliases/upgrade.py::test_a_version_4_alias_moves_with_its_line_description_variables_and_flags -> integration tests/integration/core/modules/aliases/test_upgrade.py::test_a_version_4_alias_moves_with_its_line_description_variables_and_flags
+tests/stories/core/modules/aliases/upgrade.py::test_an_alias_whose_reader_did_not_move_moves_with_none_and_is_told -> integration tests/integration/core/modules/aliases/test_upgrade.py::test_an_alias_whose_reader_did_not_move_moves_with_none_and_is_told
+tests/stories/core/modules/aliases/upgrade.py::test_an_alias_of_a_plugin_that_did_not_move_is_skipped_and_told -> integration tests/integration/core/modules/aliases/test_upgrade.py::test_an_alias_of_a_plugin_that_did_not_move_is_skipped_and_told

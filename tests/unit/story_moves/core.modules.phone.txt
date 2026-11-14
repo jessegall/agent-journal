@@ -1,0 +1,1 @@
+tests/stories/core/modules/phone/upgrade.py::test_version_4_phones_are_left_in_the_backup_and_the_report_says_to_pair_them_again -> integration tests/integration/core/modules/phone/test_upgrade.py::test_version_4_phones_are_left_in_the_backup_and_the_report_says_to_pair_them_again

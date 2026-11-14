@@ -491,7 +491,6 @@ tests/stories/core/modules/settings/undeclared_settings.py
 tests/stories/core/modules/settings/upgrade.py
 tests/stories/core/modules/sharing/login_link.py
 tests/stories/core/modules/sharing/share_links.py
-tests/stories/core/modules/sharing/upgrade.py
 tests/stories/core/modules/skills/agent_skills.py
 tests/stories/core/modules/skills/boot_files.py
 tests/stories/core/modules/skills/due.py

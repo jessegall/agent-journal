@@ -1,0 +1,1 @@
+tests/stories/core/modules/suggestions/upgrade.py::test_a_version_4_suggestion_keeps_its_answer_so_it_is_not_offered_again -> integration tests/integration/core/modules/suggestions/test_upgrade.py::test_a_version_4_suggestion_keeps_its_answer_so_it_is_not_offered_again

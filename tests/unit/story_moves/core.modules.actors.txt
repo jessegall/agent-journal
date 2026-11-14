@@ -1,0 +1,3 @@
+tests/stories/core/modules/actors/upgrade.py::test_a_version_4_user_becomes_a_user_actor_named_as_in_version_4 -> integration tests/integration/core/modules/actors/test_upgrade.py::test_a_version_4_user_becomes_a_user_actor_named_as_in_version_4
+tests/stories/core/modules/actors/upgrade.py::test_the_rows_a_user_made_name_the_new_actor_as_their_creator -> integration tests/integration/core/modules/actors/test_upgrade.py::test_the_rows_a_user_made_name_the_new_actor_as_their_creator
+tests/stories/core/modules/actors/upgrade.py::test_what_the_system_did_in_version_4_is_the_cores_in_version_5 -> integration tests/integration/core/modules/actors/test_upgrade.py::test_what_the_system_did_in_version_4_is_the_cores_in_version_5
