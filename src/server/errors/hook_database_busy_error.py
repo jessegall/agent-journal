@@ -1,2 +1,5 @@
-class HookDatabaseBusyError(Exception):
-    """Raised when a hook waits past its limit for the database connection another hook holds."""
+from server.errors.execution_wait_error import ExecutionWaitError
+
+
+class HookDatabaseBusyError(ExecutionWaitError):
+    """A hook, command or viewer request waited past its limit for a place in the instant lane."""

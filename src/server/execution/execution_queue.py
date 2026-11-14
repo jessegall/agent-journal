@@ -32,8 +32,8 @@ class ExecutionQueue:
     leaves the lane on any exit, an exception included, and when its client has gone; a wait past its limit is
     refused, naming what held the lane."""
 
-    def __init__(self, order: ExecutionOrder, clock: Clock) -> None:
-        self.order, self.clock = order, clock
+    def __init__(self, order: ExecutionOrder, clock: Clock, crash_log: Callable[[str], None] = lambda text: None) -> None:
+        self.order, self.clock, self.crash_log = order, clock, crash_log
         self.changed = threading.Condition()
         self.numbers = itertools.count()
         self.waiting: list[QueuedTicket] = []
@@ -54,6 +54,9 @@ class ExecutionQueue:
             self.running.append(queued)
         try:
             yield queued
+        except Exception as error:
+            self.crash_log(f"{self.entry(queued, True).described} ended with {type(error).__name__}: {error}")
+            raise
         finally:
             with self.changed:
                 self.running.remove(queued)
@@ -66,7 +69,7 @@ class ExecutionQueue:
             HELD_WRITE_TURN.refuse_wait(f"the wait for an instant lane place for {queued.ticket.line}")
             waited = self.clock.epoch_seconds() - queued.entered_at
             if wait_limit_seconds is not None and waited >= wait_limit_seconds and not queued.ticket.priority.is_unlimited:
-                raise HookDatabaseBusyError(f"the journal was busy for {waited:.1f} seconds: waiting for {self.holders_text()}")
+                raise HookDatabaseBusyError.waited(waited, self.holders())
             self.changed.wait(LOOK_AGAIN_SECONDS if wait_limit_seconds is None else max(0.0, min(LOOK_AGAIN_SECONDS, wait_limit_seconds - waited)))
 
     # a session's tickets go one at a time and in the order they asked; of the rest the one decision picks
@@ -81,9 +84,8 @@ class ExecutionQueue:
         starting = self.order.starting([waiting.ticket for waiting in eligible], [running.ticket for running in self.running], self.clock.timestamp(), False)
         return any(ticket.run_id == queued.number for ticket in starting)
 
-    def holders_text(self) -> str:
-        holders = [self.entry(running, True).described for running in self.running]
-        return "; ".join(holders) or "nothing running, so the lane is full of waiting tickets"
+    def holders(self) -> list[str]:
+        return [self.entry(running, True).described for running in self.running]
 
     def read(self) -> tuple[InstantEntry, ...]:
         with self.changed:

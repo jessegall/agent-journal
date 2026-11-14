@@ -1,3 +1,6 @@
+from engine.enums.log_source import LogSource
+from engine.enums.log_level import LogLevel
+from engine.log.system_log_writer import SystemLogWriter
 from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import replace
@@ -38,7 +41,8 @@ class HookDatabase:
         self.databases = [Database.shared(home, turns) for _ in range(min(running_hooks_count, RUNNING_HOOKS_COUNT))]
         self.free_databases = list(self.databases)
         self.queue = ServerQueue(running_hooks_count)
-        self.executions = ExecutionQueue(ExecutionOrder(instant_limits(running_hooks_count)), Clock())
+        log = SystemLogWriter(home, Clock())
+        self.executions = ExecutionQueue(ExecutionOrder(instant_limits(running_hooks_count)), Clock(), lambda text: log.write(LogLevel.WARNING, f"an execution failed: {text}", LogSource.SERVER))
 
     @contextmanager
     def used(self, priority: ExecutionPriority, wait_seconds: float, owner: str = "", request: QueueRequest | None = None) -> Generator[Database]:

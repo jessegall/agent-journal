@@ -50,7 +50,7 @@ class WriteTurnQueue(WriteTurns):
                 return
             waited = current_time - new_ask.requested_at
             if waited >= self.wait_limit_seconds and not new_ask.priority.is_unlimited:
-                raise WriteTurnBusyError.blocked(self.holder_text(), waited)
+                raise WriteTurnBusyError.waited(waited, [self.holder_text()])
             # an unlimited ask looks again each second for a holder whose thread died, never a negative time that spins
             limit_delay = HOLDER_CHECK_SECONDS if new_ask.priority.is_unlimited else self.wait_limit_seconds - waited
             self.changed.wait(min(limit_delay, min(waiting.raise_delay(current_time) for waiting in self.waiting)))
