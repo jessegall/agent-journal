@@ -3,6 +3,7 @@ import json
 import shlex
 from dataclasses import dataclass
 
+from core.modules import DEFAULT_MODULES
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
@@ -44,6 +45,11 @@ class IntegrationJournal:
 
     def make_user(self, name: str = "Ada") -> Actor:
         return Actor(self.new_row_id(f'actor make user "{name}"'), ActorType.USER)
+
+    # runs a module's tick handler by its name, as the server's ticker would
+    def run_tick(self, name: str) -> None:
+        handler = next(handler for module in DEFAULT_MODULES for handler in module.tick_handlers if handler.label == name)
+        handler.handler(self.container)
 
     # the module list gains the module and the journal syncs, as an install does; a passed sync reopens the container
     def synced_with(self, module: str) -> LineAnswer:

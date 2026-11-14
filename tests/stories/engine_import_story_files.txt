@@ -712,7 +712,6 @@ tests/stories/server/launch_stop.py
 tests/stories/server/library_client.py
 tests/stories/server/message_targets.py
 tests/stories/server/profile_storage.py
-tests/stories/server/request_queue_coverage.py
 tests/stories/server/server_hooks.py
 tests/stories/server/server_routes.py
 tests/stories/server/server_ticks.py
@@ -954,8 +953,6 @@ tests/stories/support/program_states.py
 tests/stories/support/registry_compare.py
 tests/stories/support/story_checks.py
 tests/stories/tunnels/tunler/account.py
-tests/stories/tunnels/tunler/leftover.py
-tests/stories/tunnels/tunler/program.py
 tests/stories/tunnels/tunler/support/fake_tunler_client.py
 tests/stories/tunnels/tunler/support/real_tunler.py
 tests/stories/tunnels/tunler/support/set_clock.py

@@ -394,7 +394,6 @@ tests/stories/server/library_client.py
 tests/stories/server/message_targets.py
 tests/stories/server/profile_storage.py
 tests/stories/server/quiet_ticks.py
-tests/stories/server/request_queue_coverage.py
 tests/stories/server/server_hooks.py
 tests/stories/server/server_ticks.py
 tests/stories/server/task_overview_writes.py
