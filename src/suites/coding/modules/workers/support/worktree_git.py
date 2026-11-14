@@ -460,10 +460,15 @@ class WorktreeGit:
     def unmerged_files(self, folder: str) -> tuple[str, ...]:
         return tuple(self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.splitlines())
 
+    # the copy is stored before the original entry is dropped, so a stop or a git time limit between the two leaves the
+    # worker's work in the stack twice, never not at all; the copy lands on top, so only older entries are dropped
     def keep_clashed_stash(self, worktree: Worktree, stash: str) -> None:
-        self.drop_stash(worktree, stash)
         with self.stash_stack_lock(worktree):
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "stash", "store", "--message", f"{CLASHED_STASH_MESSAGE}{worktree.branch}", stash)
+            entries = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H %gd").stdout.splitlines()
+            for entry in reversed([line.split() for line in entries[1:]]):
+                if entry[0] == stash:
+                    self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "drop", entry[1])
 
     def drop_stash(self, worktree: Worktree, stash: str) -> None:
         with self.stash_stack_lock(worktree):
