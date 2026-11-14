@@ -153,11 +153,12 @@ def test_a_worker_whose_worktree_was_merged_stays_kept_and_idle_with_its_memorie
     story.expect_rows(worker.retired_at is None, worker.ended_at is not None, story.container.get(WorktreeQuery).worker_worktree(worker.id) is None, len(worker_rows(story)) == 1)
 
 
-def test_a_job_sent_to_a_merged_worker_cuts_a_second_worktree_from_the_current_branch_and_its_status_shows_it(merged_worker):
+def test_a_task_sent_to_a_merged_worker_cuts_a_second_worktree_from_the_current_branch_and_its_status_shows_it(merged_worker):
     story = merged_worker
     worker = story.row(Agent, story.worker.id)
     story.repository.committed("tax.py", UNCOMMITTED_TEXT, "Add the tax rate")
-    lifetime_reviewers.launches(story, f'worker send --wait {worker.number} "{JOB}"')
+    task = story.new_row_id(f'task make "{JOB}" --brief "The work after the merge" --environment main', actor=story.agent)
+    lifetime_reviewers.launches(story, f"worker send --wait {worker.number} --task {task}")
     first, second = worktree_rows(story, worker.id)
     story.expect_rows(second.base_commit == story.repository.tip(ENVIRONMENT_BRANCH), second.base_branch == ENVIRONMENT_BRANCH, second.branch == f"{first.branch}-2",
                       second.folder == first.folder, len(worker_rows(story)) == 1, detail=f"{first.branch} / {second.branch} / {second.base_commit}")

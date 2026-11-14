@@ -20,6 +20,7 @@ from engine.time.polled_wait import PolledWait
 from core.modules.environments.models.environment import Environment
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.support.base_commit import NAME_SEPARATOR, BaseCommit
+from suites.coding.modules.workers.support.contract_clashes import ContractClashes
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_update import WorktreeUpdate
 from engine.enums.file_status import FileStatus
@@ -296,7 +297,8 @@ class WorktreeGit:
         folders = built.folders(conflicts)
         if folders:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rm", "-r", "-f", "--ignore-unmatch", "--", *folders)
-        source_conflicts = built.remainder(self.without_instruction_conflicts(worktree, tuple(conflicts)))
+        settled = ContractClashes(self).settled(worktree.folder, worktree.base_branch, conflicts)
+        source_conflicts = built.remainder(self.without_instruction_conflicts(worktree, settled))
         if not source_conflicts:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "--no-edit")
         return source_conflicts
