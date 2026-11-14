@@ -32,9 +32,11 @@ class CommandAllowList:
     def refused_line(self, lines: Sequence[JournalLine]) -> JournalLine | None:
         return next((line for line in lines if not self.allows(line)), None)
 
+    # a line whose group the joined list names is covered by that group and is not listed beside it
     def joined(self, type_list: "CommandAllowList") -> "CommandAllowList":
-        return CommandAllowList(tuple(dict.fromkeys((*self.categories, *type_list.categories))), tuple(dict.fromkeys((*self.groups, *type_list.groups))),
-                                tuple(dict.fromkeys((*self.lines, *type_list.lines))), tuple(dict.fromkeys((*self.classes, *type_list.classes))))
+        groups = tuple(dict.fromkeys((*self.groups, *type_list.groups)))
+        lines = tuple(line for line in dict.fromkeys((*self.lines, *type_list.lines)) if line.partition(" ")[0] not in groups)
+        return CommandAllowList(tuple(dict.fromkeys((*self.categories, *type_list.categories))), groups, lines, tuple(dict.fromkeys((*self.classes, *type_list.classes))))
 
     def intersection(self, profile: "CommandAllowList") -> "CommandAllowList":
         return CommandAllowList(tuple(category for category in profile.categories if category in self.categories), tuple(group for group in profile.groups if group in self.groups),

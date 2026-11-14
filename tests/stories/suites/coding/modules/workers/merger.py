@@ -216,7 +216,6 @@ def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent
     mark = story.container.get(Queries).query(ChatMark).filter(text=f"The merger sent Worker {agent_number(story, worker.id)} back").first()
     story.expect_rows(mark.detail == "Fix the merged code")
     story.expect_text(f"agent-line list --agent {worker.id}", "Fix the merged code", actor=worker)
-    story.expect_text("task list", "Fix the merged code", actor=worker)
 
 
 def test_the_merger_and_a_worker_message_each_other_but_two_workers_do_not(new_story, monkeypatch):

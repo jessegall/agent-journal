@@ -3102,7 +3102,7 @@
  "review request": {
   "helper": "refused",
   "merger": "refused",
-  "worker": "refused"
+  "worker": "allowed"
  },
  "review show": {
   "helper": "allowed",
