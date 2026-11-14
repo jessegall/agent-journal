@@ -3,6 +3,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from engine.enums.hook_event_name import HookEventName
 from engine.json.json_settings import JsonSettings
 from engine.provider.hook_partition import HookPartition
 from engine.provider.hook_block_partition import HookBlockPartition
@@ -54,9 +55,10 @@ class ProgramHooks:
 
     def entry_timeout(self, event: str, managed: Sequence[ManagedHook]) -> int:
         longest = max((hook.timeout for hook in managed if hook.program == self.program and hook.event == event), default=0)
-        if not longest:
-            return self.timeout_seconds
-        return max(self.timeout_seconds, longest + JOURNAL_WAIT_CEILING_SECONDS + TIMEOUT_PADDING_SECONDS)
+        timeout = max(self.timeout_seconds, longest + JOURNAL_WAIT_CEILING_SECONDS + TIMEOUT_PADDING_SECONDS) if longest else self.timeout_seconds
+        if self.provider and self.provider.hook_events.get(event) is HookEventName.SESSION_END:
+            return min(timeout, self.provider.session_end_limit_seconds)
+        return timeout
 
     def is_complete(self) -> bool:
         stored_hooks = self.settings().get("hooks")

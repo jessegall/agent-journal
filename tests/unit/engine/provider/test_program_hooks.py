@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+from engine.enums.hook_event_name import HookEventName
 from engine.provider.program_hooks import ProgramHooks
 from engine.provider.managed_hook import ManagedHook
 from tests.unit.engine.samples.program_sample import HOOK_FILE, SampleProgram
@@ -66,9 +67,9 @@ def test_events_without_managed_hooks_keep_the_default_timeout(tmp_path):
 def test_a_long_managed_hook_extends_only_its_program_and_event(tmp_path):
     path = tmp_path / "settings.json"
     managed = [
-        ManagedHook.found("sample", "BeforeTool", "Shell", {"command": "slow", "timeout": 600}, "settings.json", False),
-        ManagedHook.found("sample", "BeforeTool", "Shell", {"command": "quick", "timeout": 10}, "settings.json", False),
-        ManagedHook.found("different", "End", "", {"command": "different", "timeout": 600}, "settings.json", False),
+        ManagedHook.found("sample", "BeforeTool", "Shell", {"command": "slow", "timeout": 600}, "settings.json", False, 600),
+        ManagedHook.found("sample", "BeforeTool", "Shell", {"command": "quick", "timeout": 10}, "settings.json", False, 600),
+        ManagedHook.found("different", "End", "", {"command": "different", "timeout": 600}, "settings.json", False, 600),
     ]
     ProgramHooks("sample", path, ["BeforeTool", "End"], 90).write("runner", tmp_path, managed)
     settings = ProgramHooks.read(path)
@@ -147,7 +148,7 @@ def test_journal_blocks_give_one_block_per_event_naming_the_root(tmp_path):
 
 def test_journal_blocks_lengthen_the_timeout_for_a_managed_hook(tmp_path):
     hooks = ProgramHooks("claude", tmp_path / "settings.json", ["PreToolUse", "Stop"], 90)
-    managed = [ManagedHook.found("claude", "PreToolUse", "Bash", {"command": "slow", "timeout": 60}, "settings.json", False)]
+    managed = [ManagedHook.found("claude", "PreToolUse", "Bash", {"command": "slow", "timeout": 60}, "settings.json", False, 600)]
     blocks = hooks.journal_blocks("journal-hook", Path("/p"), managed)
     assert blocks["PreToolUse"][0]["hooks"][0]["timeout"] == hooks.entry_timeout("PreToolUse", managed) == 150
     assert blocks["Stop"][0]["hooks"][0]["timeout"] == 90
@@ -156,3 +157,19 @@ def test_journal_blocks_lengthen_the_timeout_for_a_managed_hook(tmp_path):
 def test_journal_names_the_given_path(tmp_path):
     hooks = ProgramHooks.journal(SampleProgram, tmp_path / "programs" / "sample" / "hooks.json")
     assert (hooks.path, list(hooks.events), hooks.provider) == (tmp_path / "programs" / "sample" / "hooks.json", ["Start", "BeforeTool", "End"], SampleProgram)
+
+
+def test_the_entry_of_a_tool_event_with_a_default_timeout_hook_is_690_seconds(tmp_path):
+    hooks = ProgramHooks.journal(SampleProgram, tmp_path / "hooks.json")
+    managed = [ManagedHook.found("sample", "BeforeTool", "Shell", {"command": "check"}, "settings.json", False, SampleProgram.default_hook_seconds)]
+    assert hooks.entry_timeout("BeforeTool", managed) == 690
+
+
+def test_the_session_end_entry_is_never_longer_than_the_programs_limit(tmp_path, monkeypatch):
+    monkeypatch.setattr(SampleProgram, "hook_events", {**SampleProgram.hook_events, "Finish": HookEventName.SESSION_END})
+    managed = [ManagedHook.found("sample", "Finish", "", {"command": "cleanup"}, "settings.json", False, 600)]
+    for limit in (60, 3):
+        monkeypatch.setattr(SampleProgram, "session_end_limit_seconds", limit)
+        hooks = ProgramHooks.journal(SampleProgram, tmp_path / "hooks.json")
+        assert (hooks.entry_timeout("Finish", managed), hooks.entry_timeout("Finish", [])) == (limit, limit)
+        assert hooks.entry_timeout("BeforeTool", []) == 90

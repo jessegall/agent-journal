@@ -16,6 +16,10 @@ import (
 
 const managedOutputLimit = 1 << 20
 
+// sessionEndAnswerSeconds are the last seconds of a SessionEnd entry the journal keeps to answer after the project's
+// hooks have run.
+const sessionEndAnswerSeconds = 10
+
 type ForeignRun = event.ForeignRun
 
 func decodeRuns(program programs.Program, hookEvent string, runs []ForeignRun) {
@@ -76,12 +80,13 @@ func managedVariables(program, root string) []string {
 	return []string{name + "=" + root}
 }
 
-func runManaged(hooks []ManagedHook, body []byte, program, root string) []ForeignRun {
+func runManaged(hooks []ManagedHook, body []byte, program string, row programs.Program, root string) []ForeignRun {
 	variables := managedVariables(program, root)
 	runs := make([]ForeignRun, len(hooks))
 	var group sync.WaitGroup
 	for index, hook := range hooks {
 		group.Add(1)
+		hook.Timeout = runLimit(hook, row)
 		go func() {
 			defer group.Done()
 			runs[index] = runOne(hook, body, variables...)
@@ -89,6 +94,15 @@ func runManaged(hooks []ManagedHook, body []byte, program, root string) []Foreig
 	}
 	group.Wait()
 	return runs
+}
+
+// runLimit is the seconds a project hook runs under: its own timeout, but on SessionEnd no longer than the program's
+// SessionEnd limit less the seconds the journal keeps to answer, and at least one second.
+func runLimit(hook ManagedHook, row programs.Program) int {
+	if row.Events[hook.Event] != "session_end" {
+		return hook.Timeout
+	}
+	return min(hook.Timeout, max(1, row.SessionEndLimitSeconds-sessionEndAnswerSeconds))
 }
 
 func runOne(hook ManagedHook, body []byte, variables ...string) ForeignRun {

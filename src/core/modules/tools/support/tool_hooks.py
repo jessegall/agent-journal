@@ -28,7 +28,7 @@ class ToolHooks:
 
     def add(self, tool: ToolDefinition) -> None:
         entry = {"type": "command", "command": self.command(tool), "timeout": HOOK_TIMEOUT_SECONDS}
-        self.managed.added([ManagedHook.found(provider.name, event, "", entry, EMPTY_SOURCE, False)
+        self.managed.added([ManagedHook.found(provider.name, event, "", entry, EMPTY_SOURCE, False, provider.default_hook_seconds)
                             for provider in self.providers.all() for event, name in provider.hook_events.items() if name is HookEventName.PROMPT])
 
     def remove(self, tool: ToolDefinition) -> None:

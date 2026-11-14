@@ -21,14 +21,14 @@ def test_labels_follow_the_programs_event_capabilities(event, matcher, expected)
     provider = SimpleNamespace(refusals={HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.STOP: RefusalStyle.BLOCK},
                                rewrites={HookEventName.PRE_TOOL_USE: {"run_in_background": False}},
                                line_events=[HookEventName.PRE_TOOL_USE, HookEventName.SESSION_START])
-    hook = ManagedHook.found("sample", "NativeEvent", matcher, {"command": "check"}, "settings.json", False)
+    hook = ManagedHook.found("sample", "NativeEvent", matcher, {"command": "check"}, "settings.json", False, 600)
     assert HookEffect.detected(hook, provider, event) == expected
 
 
 def test_a_program_with_no_native_rewrite_or_refusal_gets_no_such_labels():
     provider = SimpleNamespace(refusals={HookEventName.STOP: RefusalStyle.BLOCK}, rewrites={},
                                line_events=[HookEventName.PRE_TOOL_USE])
-    hook = ManagedHook.found("sample", "PreToolUse", "Bash", {"command": "check"}, "settings.json", False)
+    hook = ManagedHook.found("sample", "PreToolUse", "Bash", {"command": "check"}, "settings.json", False, 600)
     assert HookEffect.detected(hook, provider, HookEventName.PRE_TOOL_USE) == ["adds_lines"]
 
 
@@ -39,6 +39,6 @@ def test_overlap_uses_the_rule_event_and_declared_tool_categories():
         tools = [ToolType.SHELL]
 
     provider = SimpleNamespace(refusals={}, rewrites={}, line_events=[], tool_categories={"Bash": ToolType.SHELL})
-    hook = ManagedHook.found("sample", "PreToolUse", "Bash", {"command": "check"}, "settings.json", False)
+    hook = ManagedHook.found("sample", "PreToolUse", "Bash", {"command": "check"}, "settings.json", False, 600)
     assert HookEffect.detected(hook, provider, HookEventName.PRE_TOOL_USE, [ShellRule]) == [HookEffect.OVERLAPS]
     assert HookEffect.detected(hook, provider, HookEventName.POST_TOOL_USE, [ShellRule]) == []

@@ -77,3 +77,83 @@ func TestMatchingWithoutAFieldKeepsHookOrder(t *testing.T) {
 		t.Fatalf("matching hooks = %+v", matched)
 	}
 }
+
+// matcherCases is the same table as the Python tests of HookMatcher in tests/unit/engine/provider/test_hook_matcher.py.
+var matcherCases = []struct {
+	matcher, value      string
+	namesOrRegex, regex bool
+}{
+	{"Edit", "Edit", true, true},
+	{"Edit", "MultiEdit", false, true},
+	{"Edit", "NotebookEdit", false, true},
+	{"Edit,Write", "Edit", true, false},
+	{"Edit,Write", "Write", true, false},
+	{"Edit, Write", "Write", true, false},
+	{"Edit|Write", "Edit", true, true},
+	{"Edit|Write", "Write", true, true},
+	{"Edit|Write", "MultiEdit", false, true},
+	{"mcp__.*", "mcp__x__y", true, true},
+	{"(", "Edit", false, false},
+	{"", "Edit", true, true},
+	{"*", "Edit", true, true},
+}
+
+func TestMatcherExactName(t *testing.T) {
+	for _, value := range []string{"Edit", "MultiEdit", "NotebookEdit"} {
+		if matcherMatches(namesOrRegex, "Edit", value) != (value == "Edit") {
+			t.Fatalf("the matcher Edit read as a name gives %t for %s", !(value == "Edit"), value)
+		}
+	}
+}
+
+func TestMatcherList(t *testing.T) {
+	for _, matcher := range []string{"Edit,Write", "Edit|Write", "Edit, Write"} {
+		if !matcherMatches(namesOrRegex, matcher, "Edit") || !matcherMatches(namesOrRegex, matcher, "Write") || matcherMatches(namesOrRegex, matcher, "MultiEdit") {
+			t.Fatalf("the list %q does not match exactly Edit and Write", matcher)
+		}
+	}
+}
+
+func TestMatcherRegex(t *testing.T) {
+	if !matcherMatches(namesOrRegex, "mcp__.*", "mcp__x__y") || matcherMatches(namesOrRegex, "^Edit$", "MultiEdit") {
+		t.Fatal("a matcher with other characters is not read as a regex")
+	}
+}
+
+func TestMatcherInvalidRegexMatchesNothing(t *testing.T) {
+	for _, style := range []string{namesOrRegex, "regex"} {
+		if matcherMatches(style, "(", "Edit") {
+			t.Fatalf("an invalid regex matched under the %s style", style)
+		}
+	}
+}
+
+func TestMatcherRegexStyleKeepsASearch(t *testing.T) {
+	if !matcherMatches("regex", "Edit", "MultiEdit") || matcherMatches("regex", "Edit,Write", "Edit") {
+		t.Fatal("the regex style does not search a plain name as a regex")
+	}
+}
+
+func TestMatcherCasesTable(t *testing.T) {
+	for _, test := range matcherCases {
+		if got := matcherMatches(namesOrRegex, test.matcher, test.value); got != test.namesOrRegex {
+			t.Errorf("names_or_regex %q against %q = %t, want %t", test.matcher, test.value, got, test.namesOrRegex)
+		}
+		if got := matcherMatches("regex", test.matcher, test.value); got != test.regex {
+			t.Errorf("regex %q against %q = %t, want %t", test.matcher, test.value, got, test.regex)
+		}
+	}
+}
+
+func TestMatchingUsesTheProgramsStyle(t *testing.T) {
+	table := programs.Table{Programs: map[string]programs.Program{
+		"claude": {Matchers: map[string]string{"PreToolUse": "tool_name"}, MatcherStyle: namesOrRegex},
+		"codex":  {Matchers: map[string]string{"PreToolUse": "tool_name"}, MatcherStyle: "regex"},
+	}}
+	for program, want := range map[string]int{"claude": 0, "codex": 1} {
+		hook := ManagedHook{ID: "edit", Program: program, Event: "PreToolUse", Matcher: "Edit", State: "on"}
+		if matched := Matching([]ManagedHook{hook}, program, "PreToolUse", []byte(`{"tool_name":"MultiEdit"}`), table); len(matched) != want {
+			t.Fatalf("%s matched %d hooks named Edit on MultiEdit, want %d", program, len(matched), want)
+		}
+	}
+}

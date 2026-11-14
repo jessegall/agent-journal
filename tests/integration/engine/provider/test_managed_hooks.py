@@ -12,7 +12,11 @@ from engine.enums.managed_state import ManagedState
 
 
 def sample_hook(command: str = "check") -> ManagedHook:
-    return ManagedHook.found("sample", "BeforeTool", "Shell", {"command": command, "timeout": 30, "statusMessage": "Checking"}, "settings.json", True)
+    return ManagedHook.found("sample", "BeforeTool", "Shell", {"command": command, "timeout": 30, "statusMessage": "Checking"}, "settings.json", True, 600)
+
+
+def test_a_hook_without_timeout_gets_600_seconds():
+    assert ManagedHook.found("sample", "BeforeTool", "Shell", {"command": "check"}, "settings.json", True, 600).timeout == 600
 
 
 def test_the_same_hook_has_the_same_id_and_keeps_extra_fields():

@@ -71,7 +71,7 @@ class HookManager:
             return []
         tracked = HookFilesGit(folder).tracks(name)
         source = os.path.relpath(folder / name, self.root)
-        hooks = [ManagedHook.found(provider.name, event, matcher, entry, source, tracked) for event, matcher, entry in commands]
+        hooks = [ManagedHook.found(provider.name, event, matcher, entry, source, tracked, provider.default_hook_seconds) for event, matcher, entry in commands]
         return [replace(hook, effects=tuple(HookEffect.detected(hook, provider, event, self.rules))) if (event := provider.hook_events.get(hook.event)) is not None else hook for hook in hooks]
 
     @staticmethod

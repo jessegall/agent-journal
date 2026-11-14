@@ -12,6 +12,9 @@ import (
 	"strings"
 	"syscall"
 	"testing"
+	"time"
+
+	"github.com/jessegall/agent-journal/tools/journal-hook/programs"
 )
 
 func TestManagedHookExitCodesAndStreams(t *testing.T) {
@@ -89,7 +92,7 @@ func TestManagedHooksStartTogetherAndKeepListOrder(t *testing.T) {
 		{ID: "first", Command: fmt.Sprintf("printf ready > '%s'; cat '%s'; printf first", requestPipe, responsePipe), Timeout: 5},
 		{ID: "second", Command: fmt.Sprintf("cat '%s'; printf second > '%s'", requestPipe, responsePipe), Timeout: 5},
 	}
-	runs := runManaged(hooks, nil, "claude", "/checkout")
+	runs := runManaged(hooks, nil, "claude", programs.Program{}, "/checkout")
 	if len(runs) != 2 || runs[0].ID != "first" || runs[1].ID != "second" || runs[0].ExitCode != 0 || runs[1].ExitCode != 0 || runs[0].Stdout != "secondfirst" || runs[1].Stdout != "ready" {
 		t.Fatalf("runs = %+v", runs)
 	}
@@ -107,5 +110,25 @@ func TestManagedHookGetsTheProgramsProjectDirectoryOfTheCheckout(t *testing.T) {
 func TestManagedVariablesOfAProgramWithNone(t *testing.T) {
 	if variables := managedVariables("unknown", "/checkout"); len(variables) != 0 {
 		t.Fatalf("variables = %v", variables)
+	}
+}
+
+func TestSessionEndHookIsStoppedBeforeTheProgramsLimit(t *testing.T) {
+	row := programs.Program{Events: map[string]string{"SessionEnd": "session_end", "PreToolUse": "pre_tool_use"}, SessionEndLimitSeconds: 11}
+	for _, test := range []struct {
+		event         string
+		timeout, want int
+	}{{"SessionEnd", 600, 1}, {"SessionEnd", 0, 0}, {"PreToolUse", 600, 600}} {
+		if limit := runLimit(ManagedHook{Event: test.event, Timeout: test.timeout}, row); limit != test.want {
+			t.Fatalf("%s with %d s runs under %d s, want %d", test.event, test.timeout, limit, test.want)
+		}
+	}
+	if limit := runLimit(ManagedHook{Event: "SessionEnd", Timeout: 600}, programs.Program{Events: row.Events, SessionEndLimitSeconds: 60}); limit != 50 {
+		t.Fatalf("a SessionEnd hook under a 60 s limit runs %d s, want 50", limit)
+	}
+	started := time.Now()
+	runs := runManaged([]ManagedHook{{ID: "slow", Event: "SessionEnd", Command: "sleep 30", Timeout: 600}}, nil, "claude", row, "/checkout")
+	if !runs[0].TimedOut || time.Since(started) > 5*time.Second {
+		t.Fatalf("a SessionEnd hook of 600 s was not stopped at the program's limit: %+v after %s", runs[0], time.Since(started))
 	}
 }

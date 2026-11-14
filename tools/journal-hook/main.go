@@ -113,7 +113,7 @@ func preparedHook(program, root string, body []byte, context programs.Context) (
 	runs := make(chan []ForeignRun, 1)
 	go func() {
 		hooks := LoadManaged(filepath.Join(root, ".journal", "hooks", "managed.json"))
-		runs <- runManaged(Matching(hooks, program, hookName(body), body, context.Programs), body, program, root)
+		runs <- runManaged(Matching(hooks, program, hookName(body), body, context.Programs), body, program, context.Programs.Programs[program], root)
 	}()
 	prepared, skip, err := programs.Prepared(program, body, context)
 	prepared.Foreign = <-runs
