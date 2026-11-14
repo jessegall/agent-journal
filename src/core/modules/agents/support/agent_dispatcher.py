@@ -59,6 +59,8 @@ class AgentDispatcher:
         self.agents, self.sessions, self.environments, self.queries, self.clock, self.system_log = agents, sessions, environments, queries, clock, system_log
 
     def start(self, agent: Agent, command: LaunchCommand) -> Dispatch:
+        import traceback
+        print('STARTSTACK', agent.id, [frame.name for frame in traceback.extract_stack(limit=14)], flush=True)
         return self.launcher.hand(agent, self.environments.find(agent.environment_id), command).dispatch
 
     def stop(self, agent: Agent, reason: StopReason, context: Context) -> Stopped:
