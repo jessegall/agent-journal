@@ -72,7 +72,7 @@ func Answered(stdout, stderr io.Writer, program programs.Program, hookName, even
 		reply = withForeign(reply, foreignReply(program, event, runs))
 	}
 	stdoutText, stderrText, code := ProgramAnswer(program, hookName, event, reply)
-	io.WriteString(stdout, stdoutText)
+	io.WriteString(stdout, withPassthrough(stdoutText, program, hookName, reply, runs))
 	io.WriteString(stderr, stderrText)
 	return code
 }

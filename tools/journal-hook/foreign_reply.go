@@ -33,8 +33,9 @@ func projectHooksOnly(programName, root string, stdin io.Reader, stdout, stderr 
 // foreignAnswered prints the project hooks' answer in the program's own shape, for a hook that reaches no journal.
 func foreignAnswered(stdout, stderr io.Writer, program programs.Program, hookName string, runs []ForeignRun) int {
 	event := program.Events[hookName]
-	stdoutText, stderrText, code := ProgramAnswer(program, hookName, event, foreignReply(program, event, runs))
-	io.WriteString(stdout, stdoutText)
+	reply := foreignReply(program, event, runs)
+	stdoutText, stderrText, code := ProgramAnswer(program, hookName, event, reply)
+	io.WriteString(stdout, withPassthrough(stdoutText, program, hookName, reply, runs))
 	io.WriteString(stderr, stderrText)
 	return code
 }

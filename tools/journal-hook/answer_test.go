@@ -1,6 +1,9 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"net/http"
 	"strings"
 	"testing"
 	"time"
@@ -187,5 +190,96 @@ func TestAHaltStopsCodexAtItsStopAndAfterATool(t *testing.T) {
 		if code != 0 || !strings.Contains(stdout, `"continue":false`) || strings.Contains(stdout, `"decision":"block"`) {
 			t.Fatalf("%s printed %q %d", event, stdout, code)
 		}
+	}
+}
+
+const answeredByTheJournal = `{"refusal":"","lines":[],"hook_call_id":1}`
+
+func passedAnswer(t *testing.T, program, hookName, event, server string, stdouts ...string) map[string]any {
+	t.Helper()
+	runs := make([]ForeignRun, len(stdouts))
+	for index, text := range stdouts {
+		runs[index] = ForeignRun{ID: fmt.Sprintf("hook-%d", index), Stdout: text}
+	}
+	var stdout, stderr strings.Builder
+	Answered(&stdout, &stderr, programs.LoadTable("").Programs[program], hookName, event, http.StatusOK, []byte(server), t.TempDir(), 5*time.Second, runs...)
+	answer := map[string]any{}
+	if stdout.Len() > 0 {
+		if err := json.Unmarshal([]byte(stdout.String()), &answer); err != nil {
+			t.Fatalf("the answer %q is not JSON: %v", stdout.String(), err)
+		}
+	}
+	return answer
+}
+
+func specific(answer map[string]any) map[string]any {
+	inner, _ := answer["hookSpecificOutput"].(map[string]any)
+	return inner
+}
+
+func TestContinueFalseAndStopReasonPassThrough(t *testing.T) {
+	answer := passedAnswer(t, "claude", "PostToolUse", "post_tool_use", answeredByTheJournal, `{"continue":false,"stopReason":"build failed"}`, `{"continue":false,"stopReason":"second"}`)
+	if answer["continue"] != false || answer["stopReason"] != "build failed" {
+		t.Fatalf("answer = %v", answer)
+	}
+	if answer := passedAnswer(t, "claude", "PostToolUse", "post_tool_use", answeredByTheJournal, `{"stopReason":"alone"}`); answer["stopReason"] != nil {
+		t.Fatalf("a stopReason without continue false passed: %v", answer)
+	}
+}
+
+func TestUpdatedToolOutputPassesThroughForClaude(t *testing.T) {
+	answer := passedAnswer(t, "claude", "PostToolUse", "post_tool_use", answeredByTheJournal, `{"hookSpecificOutput":{"hookEventName":"PostToolUse","updatedToolOutput":{"stdout":"[redacted]"}}}`)
+	if output, _ := specific(answer)["updatedToolOutput"].(map[string]any); output["stdout"] != "[redacted]" || specific(answer)["hookEventName"] != "PostToolUse" {
+		t.Fatalf("answer = %v", answer)
+	}
+}
+
+func TestUpdatedToolOutputIsDroppedForCodex(t *testing.T) {
+	answer := passedAnswer(t, "codex", "PostToolUse", "post_tool_use", answeredByTheJournal, `{"hookSpecificOutput":{"updatedToolOutput":{"stdout":"x"}},"continue":false}`)
+	if specific(answer) != nil || answer["continue"] != false {
+		t.Fatalf("codex got %v", answer)
+	}
+}
+
+func TestSuppressOriginalPromptPassesThrough(t *testing.T) {
+	answer := passedAnswer(t, "claude", "UserPromptSubmit", "prompt", answeredByTheJournal, `{"hookSpecificOutput":{"suppressOriginalPrompt":true}}`)
+	if specific(answer)["suppressOriginalPrompt"] != true {
+		t.Fatalf("answer = %v", answer)
+	}
+}
+
+func TestSessionTitlePassesThrough(t *testing.T) {
+	answer := passedAnswer(t, "claude", "SessionStart", "session_start", answeredByTheJournal, `{"hookSpecificOutput":{"sessionTitle":"auth refactor"}}`)
+	if specific(answer)["sessionTitle"] != "auth refactor" {
+		t.Fatalf("answer = %v", answer)
+	}
+}
+
+func TestTerminalSequencePassesThrough(t *testing.T) {
+	answer := passedAnswer(t, "claude", "PostToolUse", "post_tool_use", answeredByTheJournal, `{"terminalSequence":"\u0007"}`)
+	if answer["terminalSequence"] != "\a" {
+		t.Fatalf("answer = %v", answer)
+	}
+}
+
+func TestTheJournalsOwnKeyWinsOverAProjectHooks(t *testing.T) {
+	answer := passedAnswer(t, "claude", "PostToolUse", "post_tool_use", `{"refusal":"","lines":["the journal's line"],"hook_call_id":1}`,
+		`{"hookSpecificOutput":{"additionalContext":"the project's","sessionTitle":"kept"}}`)
+	if specific(answer)["additionalContext"] != "the journal's line" || specific(answer)["sessionTitle"] != "kept" {
+		t.Fatalf("answer = %v", answer)
+	}
+}
+
+func TestARefusalDropsThePassthrough(t *testing.T) {
+	answer := passedAnswer(t, "claude", "PreToolUse", "pre_tool_use", `{"refusal":"not now","lines":[],"hook_call_id":1}`, `{"continue":false,"stopReason":"x","terminalSequence":"\u0007"}`)
+	if answer["continue"] != nil || answer["terminalSequence"] != nil {
+		t.Fatalf("a refused tool passed the project's fields: %v", answer)
+	}
+}
+
+func TestUnknownKeysAreStillDropped(t *testing.T) {
+	answer := passedAnswer(t, "claude", "PostToolUse", "post_tool_use", answeredByTheJournal, `{"somethingElse":1,"hookSpecificOutput":{"notAField":2}}`)
+	if answer["somethingElse"] != nil || specific(answer) != nil {
+		t.Fatalf("answer = %v", answer)
 	}
 }
