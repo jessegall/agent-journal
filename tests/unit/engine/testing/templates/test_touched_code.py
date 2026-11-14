@@ -49,10 +49,10 @@ def test_a_template_keeps_the_files_its_parent_template_ran(tmp_path):
     executed, _, executed_module, _ = sample_checkout(tmp_path)
     parent = tmp_path / "parent"
     parent.mkdir()
-    own = TouchedCode(tmp_path)
-    with own.recording():
+    personal = TouchedCode(tmp_path)
+    with personal.recording():
         executed_module.run()
-    own.write(parent, None)
+    personal.write(parent, None)
     child = tmp_path / "child"
     child.mkdir()
     TouchedCode(tmp_path).write(child, parent)

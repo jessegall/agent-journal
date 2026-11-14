@@ -45,8 +45,8 @@ def test_an_ask_about_a_task_the_worker_gives_back_closes_as_moot_while_the_ask_
     story.expect_success(f'worker ask "{SECOND_QUESTION}" --about tests', actor=two_started.worker)
     story.expect_success('task release 2 --reason "the main agent takes the receipts"', actor=two_started.worker)
     story.run_listeners()
-    returned, own = questions(story)
-    story.expect_rows((returned.task_id, returned.outcome) == (2, AskOutcome.MOOT), (own.task_id, own.outcome) == (1, None), detail=f"{returned} | {own}")
+    returned, personal = questions(story)
+    story.expect_rows((returned.task_id, returned.outcome) == (2, AskOutcome.MOOT), (personal.task_id, personal.outcome) == (1, None), detail=f"{returned} | {personal}")
     story.expect_text("task-log list --task 2", "ended as moot: task 2 is no longer the worker's", actor=story.agent)
 
 

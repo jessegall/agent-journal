@@ -14,8 +14,8 @@ def test_state_types_with_defaults_shows_what_the_coding_suite_gives_each_kind_o
 def test_a_coding_main_agent_has_the_where_you_stand_default_at_the_bottom_of_its_states_and_nothing_is_written(new_story):
     story = new_story(fixture=BuilderStartedWithoutPlainWords)
     shown = story.run(f"driver states {agent_number(story, story.agent.id)}", actor=story.agent).output_text
-    in_place = next(line for line in shown.splitlines() if line.startswith("in_place:"))
-    story.expect_rows("tasks.where-you-stand (agent:" in in_place and "since" in in_place, detail=shown)
+    placed = next(line for line in shown.splitlines() if line.startswith("in_place:"))
+    story.expect_rows("tasks.where-you-stand (agent:" in placed and "since" in placed, detail=shown)
 
 
 def listed_types(story) -> dict[str, dict]:

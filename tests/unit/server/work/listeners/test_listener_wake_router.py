@@ -30,9 +30,9 @@ def routed(saved_names: list[str], *pairs) -> None:
 
 
 def test_a_written_name_wakes_only_the_threads_whose_set_matches():
-    hearing, deaf = SampleThread(), SampleThread()
-    routed(["core.tasks.task.created"], (hearing, SampleSet("core.tasks.task.created")), (deaf, SampleSet("core.plans.plan.created")))
-    assert (hearing.wakes, deaf.wakes) == (1, 0)
+    receiving, deaf = SampleThread(), SampleThread()
+    routed(["core.tasks.task.created"], (receiving, SampleSet("core.tasks.task.created")), (deaf, SampleSet("core.plans.plan.created")))
+    assert (receiving.wakes, deaf.wakes) == (1, 0)
 
 
 def test_no_written_names_wakes_nothing():

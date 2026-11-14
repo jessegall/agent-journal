@@ -45,10 +45,10 @@ def test_each_listener_event_is_its_own_ticket(tmp_path):
 
 def test_fourth_background_tick_waits_even_with_room(tmp_path):
     priorities = ExecutionPriorities(SessionStarters(JournalHome(tmp_path)))
-    now = Clock().timestamp()
-    running = [priorities.tick_ticket(f"handler {number}", now) for number in range(3)]
-    fourth = priorities.tick_ticket("handler 4", now)
-    assert ExecutionOrder(DEFAULT_LANE_LIMITS).starting([fourth], running, now, False) == ()
+    current_time = Clock().timestamp()
+    running = [priorities.tick_ticket(f"handler {number}", current_time) for number in range(3)]
+    fourth = priorities.tick_ticket("handler 4", current_time)
+    assert ExecutionOrder(DEFAULT_LANE_LIMITS).starting([fourth], running, current_time, False) == ()
 
 
 def test_background_tick_raised_to_normal_after_ten_seconds(tmp_path):

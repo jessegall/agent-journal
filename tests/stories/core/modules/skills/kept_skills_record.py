@@ -12,11 +12,11 @@ class Reads:
 
     def __init__(self, monkeypatch) -> None:
         self.count = 0
-        not_kept = SkillReadFirstRule.not_kept
+        discarded = SkillReadFirstRule.not_kept
 
         def counted(rule, hook, names):
             self.count += 1
-            return not_kept(rule, hook, names)
+            return discarded(rule, hook, names)
 
         monkeypatch.setattr(SkillReadFirstRule, "not_kept", counted)
 

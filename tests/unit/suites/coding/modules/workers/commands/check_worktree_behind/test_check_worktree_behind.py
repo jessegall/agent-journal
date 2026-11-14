@@ -57,6 +57,9 @@ class Checks:
     def opens(self, worktree: Worktree, behind: int) -> bool:
         return behind >= 3
 
+    def worktree_checks(self, worktree: Worktree) -> tuple:
+        return ()
+
 
 class Repository:
     def __init__(self) -> None:

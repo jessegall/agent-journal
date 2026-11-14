@@ -83,5 +83,5 @@ class ProjectFiles:
         data = FileAccess.binary(place)
         if b"\0" in data[:8000]:
             raise Refusal(f"{path} is not text", "it can only be opened outside the viewer")
-        letter, moved_from = self.changes().get(path, ("", ""))
-        return ProjectFileText(path, data[:SHOWN_BYTES].decode(errors="replace"), len(data) > SHOWN_BYTES, letter, moved_from)
+        letter, prior_position = self.changes().get(path, ("", ""))
+        return ProjectFileText(path, data[:SHOWN_BYTES].decode(errors="replace"), len(data) > SHOWN_BYTES, letter, prior_position)

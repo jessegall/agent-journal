@@ -123,8 +123,8 @@ class WorktreeGit:
     # the files the base branch changed since the commit left it that the commit changed too
     def base_changes_on_own_files(self, folder: str, base_branch: str, commit: str) -> tuple[str, ...]:
         base_side = self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", f"{commit}...{base_branch}").stdout.split()
-        own_side = set(self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", f"{base_branch}...{commit}").stdout.split())
-        return tuple(name for name in base_side if name in own_side)
+        personal_side = set(self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", f"{base_branch}...{commit}").stdout.split())
+        return tuple(name for name in base_side if name in personal_side)
 
     def is_ancestor(self, folder: str, ancestor: str, commit: str) -> bool:
         return self.git(folder, GIT_LIMIT_SECONDS, "merge-base", "--is-ancestor", ancestor, commit).returncode == 0

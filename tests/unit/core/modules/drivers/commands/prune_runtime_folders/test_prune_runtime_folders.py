@@ -46,14 +46,14 @@ def test_old_scan_states_and_ended_agents_old_terminal_logs_go_while_the_rest_st
     assert sorted(path.name for path in terminals.iterdir()) == [f"{RUNNING_AGENT_ID}.log"]
 
 
-def launch_socket(folder, name: str, answering: bool):
+def launch_socket(folder, name: str, replying: bool):
     import socket
 
     path = folder / name
     listener = socket.socket(socket.AF_UNIX)
     listener.bind(str(path))
     listener.listen(1)
-    if not answering:
+    if not replying:
         listener.close()
     return path, listener
 
@@ -67,8 +67,8 @@ def test_an_old_launch_socket_nobody_answers_on_goes_while_a_live_one_and_a_youn
         home.folder.mkdir()
         dead, _ = launch_socket(home.folder, "l-dead", False)
         recent, _ = launch_socket(home.folder, "l-young", False)
-        alive, listener = launch_socket(home.folder, "l-alive", True)
-        for path in (dead, alive):
+        running, listener = launch_socket(home.folder, "l-alive", True)
+        for path in (dead, running):
             aged(path, clock, 2 * 3600)
         removed = PruneRuntimeFoldersHandler(AgentRows(set()), home, clock).handle(PruneRuntimeFolders(), None)
         listener.close()

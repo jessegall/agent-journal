@@ -36,8 +36,8 @@ class ContractClashes:
         return tuple(path for path in conflicts if path not in CONTRACT_FILES)
 
     def keep_higher_version(self, folder: str, base_branch: str) -> None:
-        ours, theirs = self.version(self.git.file_text(folder, "HEAD", VERSION_FILE)), self.version(self.git.file_text(folder, base_branch, VERSION_FILE))
-        Path(folder, VERSION_FILE).write_text(self.git.file_text(folder, "HEAD" if ours >= theirs else base_branch, VERSION_FILE))
+        mine, theirs = self.version(self.git.file_text(folder, "HEAD", VERSION_FILE)), self.version(self.git.file_text(folder, base_branch, VERSION_FILE))
+        Path(folder, VERSION_FILE).write_text(self.git.file_text(folder, "HEAD" if mine >= theirs else base_branch, VERSION_FILE))
 
     @staticmethod
     def version(text: str) -> tuple[int, ...]:

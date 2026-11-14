@@ -4,9 +4,9 @@ from suites.coding.modules.workers.support.protected_folders import ProtectedFol
 from suites.coding.support.shipped_profiles import WORKER_MEDIOR_PROFILE, WORKER_SENIOR_PROFILE
 
 
-def folders(project: list[str], by_profile: dict[str, tuple[str, ...]]) -> ProtectedFolders:
+def folders(project: list[str], profile_groups: dict[str, tuple[str, ...]]) -> ProtectedFolders:
     settings = SimpleNamespace(project=SimpleNamespace(texts=lambda key: project))
-    profiles = SimpleNamespace(effective=lambda name: SimpleNamespace(protected_folders=by_profile.get(name, ())))
+    profiles = SimpleNamespace(effective=lambda name: SimpleNamespace(protected_folders=profile_groups.get(name, ())))
     return ProtectedFolders(settings, profiles)
 
 

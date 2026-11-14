@@ -47,8 +47,8 @@ class ExecutionStatus:
         return LaneLoad(ExecutionLane.INSTANT.value, len(running), loading.capacity, running=running, waiting=tuple(entry for is_running, entry in entries if not is_running))
 
     def entry(self, ticket: ExecutionTicket, reason: str = "") -> LaneEntry:
-        raised_from = ticket.first_priority.label if ticket.priority != ticket.first_priority else ""
-        return LaneEntry(ticket.line, ticket.execution_class.name, ticket.priority.label, ticket.starter.label, ticket.entered_at.elapsed_seconds(self.clock.timestamp()), reason, raised_from)
+        raised = ticket.first_priority.label if ticket.priority != ticket.first_priority else ""
+        return LaneEntry(ticket.line, ticket.execution_class.name, ticket.priority.label, ticket.starter.label, ticket.entered_at.elapsed_seconds(self.clock.timestamp()), reason, raised)
 
     def reason(self, ticket: ExecutionTicket, lane: ExecutionLane) -> str:
         if ticket.has_open_reader_request:

@@ -46,16 +46,16 @@ def test_a_default_naming_a_state_no_module_registers_is_refused():
     assert str(refused.value) == "suite stray gives the default state samples.unregistered, which no module registers"
 
 
-@pytest.mark.parametrize("kind,value", [(AgentKind.ROLE, "pilot"), (AgentKind.DRIVER, "shop.other"), (AgentKind.HELPER_TYPE, "shop.critic")])
-def test_a_default_for_a_role_driver_or_helper_type_nothing_registers_is_refused(kind, value):
-    suite = type("Stray", tuple([Suite]), {"name": "stray", "default_states": [DefaultState(LoadingState, kind, value)]})
+@pytest.mark.parametrize("category,value", [(AgentKind.ROLE, "pilot"), (AgentKind.DRIVER, "shop.other"), (AgentKind.HELPER_TYPE, "shop.critic")])
+def test_a_default_for_a_role_driver_or_helper_type_nothing_registers_is_refused(category, value):
+    suite = type("Stray", tuple([Suite]), {"name": "stray", "default_states": [DefaultState(LoadingState, category, value)]})
     with pytest.raises(ModuleError) as refused:
         funnel(suite).entries(suite)
-    assert str(refused.value) == f"suite stray gives a default state to the {kind.value} {value}, which nothing registers"
+    assert str(refused.value) == f"suite stray gives a default state to the {category.value} {value}, which nothing registers"
 
 
 def test_a_default_matches_an_agent_by_its_role_driver_or_helper_type():
-    by_role, by_driver, by_type = (DefaultStateEntry("s", AgentKind.ROLE, "helper"), DefaultStateEntry("s", AgentKind.DRIVER, "shop.main"),
+    by_role, by_driver, type_groups = (DefaultStateEntry("s", AgentKind.ROLE, "helper"), DefaultStateEntry("s", AgentKind.DRIVER, "shop.main"),
                                    DefaultStateEntry("s", AgentKind.HELPER_TYPE, "shop.reviewer"))
-    assert [entry.matches("helper", "shop.main", "") for entry in (by_role, by_driver, by_type)] == [True, True, False]
-    assert by_type.matches("helper", "shop.helper", "shop.reviewer")
+    assert [entry.matches("helper", "shop.main", "") for entry in (by_role, by_driver, type_groups)] == [True, True, False]
+    assert type_groups.matches("helper", "shop.helper", "shop.reviewer")

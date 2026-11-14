@@ -188,8 +188,8 @@ def test_an_event_whose_cause_was_pruned_opens_a_scope_with_no_agent(new_story):
     story = new_story(fixture=BuilderHelper)
     story.run(TASK_LINE, actor=story.helper)
     log = story.container.get(EventLog)
-    caused_by_pruned = replace(log.event(log.newest_id()), id=log.newest_id() + 1, actor_id=None, cause_id=log.newest_id() + 1000)
-    expect_no_causing_agent(story, caused_by_pruned)
+    pruned_cause = replace(log.event(log.newest_id()), id=log.newest_id() + 1, actor_id=None, cause_id=log.newest_id() + 1000)
+    expect_no_causing_agent(story, pruned_cause)
 
 
 def expect_no_causing_agent(story, event) -> None:

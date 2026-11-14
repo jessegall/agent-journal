@@ -77,7 +77,7 @@ def test_each_kind_of_name_is_renamed_with_what_depends_on_it(root: Path, capsys
 
 def test_a_banned_name_or_two_renames_of_one_position_write_nothing(root: Path, capsys: pytest.CaptureFixture[str]) -> None:
     assert script.main([f"--root={root}", "Clock.now", "said"]) == 1 and "banned" in capsys.readouterr().out
-    assert script.main([f"--root={root}", "--dry-run", "Clock.now", "time", "Clock.now", "moment"]) == 1 and "same position" in capsys.readouterr().out
+    assert script.main([f"--root={root}", "--dry-run", "Clock.now", "time", "Clock.now", "instant"]) == 1 and "same position" in capsys.readouterr().out
     assert "def now" in (root / "src/core/clock.py").read_text(), "nothing was written"
 
 

@@ -36,9 +36,9 @@ def loose_files(folder: str) -> list[str]:
 def test_339_every_error_file_sits_in_an_errors_folder_and_none_in_support(new_story):
     story = new_story()
     error_files = [path for path in python_files(SOURCE) if path.name.endswith(ERROR_FILE_ENDINGS)]
-    outside = sorted({relative(path) for path in error_files if path.parent.name != "errors"} - FALSE_ERROR_NAMES)
+    external = sorted({relative(path) for path in error_files if path.parent.name != "errors"} - FALSE_ERROR_NAMES)
     library_errors = [path for path in python_files(SOURCE / "core" / "modules" / "library" / "errors") if path.name != "__init__.py"]
-    story.expect_rows(outside == [], len(library_errors) == 8, detail=f"outside {outside}, library {len(library_errors)}")
+    story.expect_rows(external == [], len(library_errors) == 8, detail=f"outside {external}, library {len(library_errors)}")
 
 
 def test_340_the_tops_of_the_server_the_installer_and_the_kit_hold_only_folders(new_story):

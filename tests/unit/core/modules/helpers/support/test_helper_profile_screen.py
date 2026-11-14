@@ -33,9 +33,9 @@ def test_a_profile_with_its_own_limits_shows_them_as_its_own_value():
 
 
 def test_changing_the_value_of_every_profile_leaves_the_own_value_of_a_profile_unchanged():
-    own = tuple([f"{RESEARCHER_PROFILE.name}:1:3"])
-    previous = nodes({HELPER_RUN_LIMIT: 4, HELPER_KEPT_LIMIT: 8, HELPER_PROFILE_LIMITS: own})
-    after = nodes({HELPER_RUN_LIMIT: 9, HELPER_KEPT_LIMIT: 20, HELPER_PROFILE_LIMITS: own})
+    personal = tuple([f"{RESEARCHER_PROFILE.name}:1:3"])
+    previous = nodes({HELPER_RUN_LIMIT: 4, HELPER_KEPT_LIMIT: 8, HELPER_PROFILE_LIMITS: personal})
+    after = nodes({HELPER_RUN_LIMIT: 9, HELPER_KEPT_LIMIT: 20, HELPER_PROFILE_LIMITS: personal})
     assert (previous[HELPER_RUN_LIMIT].value, after[HELPER_RUN_LIMIT].value, after[HELPER_RUN_LIMIT].source) == (1, 1, PROFILE_VALUE_SOURCE)
 
 

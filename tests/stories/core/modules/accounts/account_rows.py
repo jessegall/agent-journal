@@ -25,15 +25,15 @@ REFUSAL = "refused by accounts.account-rows: accounts are written only by the jo
 
 
 def account_rows(story) -> list:
-    now, person_id, creator_id = story.clock.timestamp(), story.user.id, story.user.id
+    current_time, person_id, creator_id = story.clock.timestamp(), story.user.id, story.user.id
     return [PersonLogin(creator_id=creator_id, person_id=person_id, name="owner", password_digest="f00d"),
             PersonSession(creator_id=creator_id, person_id=person_id, token_digest="f00d", device="laptop", address="127.0.0.1",
-                          last_active_at=now, factor_checked_at=now, expires_at=now),
+                          last_active_at=current_time, factor_checked_at=current_time, expires_at=current_time),
             PersonFactor(creator_id=creator_id, person_id=person_id, factor_type=PersonFactorType.PASSKEY, label="laptop", credential="f00d"),
             RecoveryCode(creator_id=creator_id, person_id=person_id, code_digest="f00d"),
-            LoginAttempt(creator_id=creator_id, address_digest="f00d", name="owner", attempted_at=now),
+            LoginAttempt(creator_id=creator_id, address_digest="f00d", name="owner", attempted_at=current_time),
             AuditEntry(creator_id=creator_id, person_id=person_id, event_type="login", address="127.0.0.1", device="laptop", detail=""),
-            SetupCode(creator_id=creator_id, code_digest="f00d", expires_at=now)]
+            SetupCode(creator_id=creator_id, code_digest="f00d", expires_at=current_time)]
 
 
 def context_of(story, actor: Actor, skipped_guards: frozenset[str] = frozenset()) -> Context:

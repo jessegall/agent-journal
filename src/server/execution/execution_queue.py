@@ -78,10 +78,10 @@ class ExecutionQueue:
         if queued.ticket.parent is not None:
             return True
         busy_owners = {running.owner for running in self.running if running.owner}
-        first_of_owner = {}
+        earliest_owner = {}
         for waiting in self.waiting:
-            first_of_owner.setdefault(waiting.owner, waiting)
-        eligible = [waiting for waiting in self.waiting if not waiting.owner or (waiting.owner not in busy_owners and first_of_owner[waiting.owner] is waiting)]
+            earliest_owner.setdefault(waiting.owner, waiting)
+        eligible = [waiting for waiting in self.waiting if not waiting.owner or (waiting.owner not in busy_owners and earliest_owner[waiting.owner] is waiting)]
         if queued not in eligible:
             return False
         starting = self.order.starting([waiting.ticket for waiting in eligible], [running.ticket for running in self.running], self.clock.timestamp(), False)

@@ -111,15 +111,15 @@ def test_both_detectors_flag_their_refused_samples_and_nothing_in_the_accepted_o
 
 def test_552_a_developer_who_imports_the_launcher_link_outside_the_dispatchers_folder_is_refused_by_the_name_of_the_file(tmp_path):
     folder = project(tmp_path)
-    outside = saved(folder, "src/suites/coding/modules/workers/support/terminal_count.py", LAUNCHER_IMPORT)
+    external = saved(folder, "src/suites/coding/modules/workers/support/terminal_count.py", LAUNCHER_IMPORT)
     saved(folder, "src/core/modules/agents/support/launcher_presence.py", LAUNCHER_IMPORT)
     matched = matches(folder, IMPORT_RULE)
-    assert "terminal_count.py:1" in matched and "launcher_presence.py" not in matched and "1 match" in matched, f"{outside}: {matched}"
+    assert "terminal_count.py:1" in matched and "launcher_presence.py" not in matched and "1 match" in matched, f"{external}: {matched}"
 
 
 def test_553_a_developer_who_writes_an_agents_ended_at_outside_the_dispatcher_is_refused_by_the_name_of_the_file(tmp_path):
     folder = project(tmp_path)
-    outside = saved(folder, "src/suites/coding/modules/workers/support/unused_worker_rows.py", ROW_SAVE.format(owner="UnusedWorkerRows"))
+    external = saved(folder, "src/suites/coding/modules/workers/support/unused_worker_rows.py", ROW_SAVE.format(owner="UnusedWorkerRows"))
     saved(folder, "src/core/modules/agents/support/agent_dispatcher.py", ROW_SAVE.format(owner="AgentDispatcher"))
     matched = matches(folder, ROW_RULE)
-    assert "unused_worker_rows.py:7" in matched and "agent_dispatcher.py" not in matched and "1 match" in matched, f"{outside}: {matched}"
+    assert "unused_worker_rows.py:7" in matched and "agent_dispatcher.py" not in matched and "1 match" in matched, f"{external}: {matched}"

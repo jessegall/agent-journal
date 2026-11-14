@@ -1313,6 +1313,7 @@
         "rows(self, statement: Statement) -> list[sqlite3.Row]",
         "check_read_limit(self, statement: Statement, count: int) -> None",
         "report_cut(self, sql: str, limit: int) -> None",
+        "report_unscoped_read(self, table_name: str) -> None",
         "query_plan(self, statement: Statement) -> tuple[str, ...]",
         "is_partial_index(self, name: str) -> bool",
         "defer_checkpoints(self) -> None",
@@ -3600,6 +3601,15 @@
       ],
       "fields": [],
       "methods": []
+    },
+    "errors.unscoped_read_error.UnscopedReadError": {
+      "bases": [
+        "AssertionError"
+      ],
+      "fields": [],
+      "methods": [
+        "read(cls, table_name: str) -> 'UnscopedReadError'"
+      ]
     },
     "errors.wrong_instance_error.WrongInstanceError": {
       "bases": [
@@ -7707,6 +7717,7 @@
       "fields": [],
       "methods": [
         "with_removed(self) -> Self",
+        "every_environment(self, reason: str) -> Self",
         "find(self, row_id: int) -> M",
         "kept_first(self) -> M | None",
         "kept_exists(self) -> bool",
@@ -7754,6 +7765,7 @@
         "with_select(self, select: Select) -> Self",
         "rows(self, select: Select) -> list[M]",
         "scoped(self, select: Select) -> Select",
+        "scope_conditions(self, select: Select) -> Select",
         "session_rows(self, select: Select, owner: RowOwner | None) -> Select",
         "environment_rows(self, select: Select, owner: RowOwner) -> Select",
         "owner_rows(self, select: Select, owner: RowOwner | None) -> Select",
@@ -8764,6 +8776,13 @@
         "passed(self, disabled: DisabledScopes, subject: LoggedEvent | Change[Model]) -> WholeScopes",
         "causing_agent(self, event: LoggedEvent) -> int | None",
         "found_agent(self, event: LoggedEvent) -> int | None"
+      ]
+    },
+    "scope.unscoped_reads.UnscopedReads": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "record(table_name: str) -> None"
       ]
     },
     "seed.demo.Demo": {
@@ -10656,5 +10675,5 @@
       ]
     }
   },
-  "engine_version": "5.3.0"
+  "engine_version": "5.0.0"
 }

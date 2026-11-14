@@ -31,20 +31,20 @@ class TurnThreads:
         self.threads: list[threading.Thread] = []
 
     def ask(self, name: str, priority: ExecutionPriority) -> threading.Event:
-        ask_started = threading.Event()
+        question_started = threading.Event()
 
         def run() -> None:
             with CurrentExecution(priority, name, name).applied():
-                ask_started.set()
+                question_started.set()
                 with self.queue.write_turn():
                     self.order.append(name)
 
         thread = threading.Thread(target=run)
         self.threads.append(thread)
         thread.start()
-        ask_started.wait()
+        question_started.wait()
         self.wait_until_waiting(len(self.threads))
-        return ask_started
+        return question_started
 
     def wait_until_waiting(self, count: int) -> None:
         with self.queue.changed:

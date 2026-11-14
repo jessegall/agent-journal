@@ -35,5 +35,5 @@ class RequiredCommands:
 
     @staticmethod
     def condition(nudge: Nudge) -> BlockCondition:
-        closed_by = None if nudge.declaration is None else nudge.declaration.closed_by
-        return RanCommand(nudge.required_command) if closed_by is None else closed_by(re.search(r"\d+", nudge.required_command).group())
+        closer = None if nudge.declaration is None else nudge.declaration.closed_by
+        return RanCommand(nudge.required_command) if closer is None else closer(re.search(r"\d+", nudge.required_command).group())

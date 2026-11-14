@@ -88,10 +88,10 @@ class Ticks:
         return self.values.pop(0)
 
 
-def board(entries=(), role="main", elapsed=None, errors=None, log=None, hook_name="pre_tool_use", rules_by_state=None) -> StateBoard:
+def board(entries=(), role="main", elapsed=None, errors=None, log=None, hook_name="pre_tool_use", state_rules=None) -> StateBoard:
     registry = SimpleNamespace(agent_state=lambda name: None, suite=lambda name: None, helper_type_book=lambda: HelperTypeBook(),
                                tier_states=lambda driver, tier: [state for state in entries if state.covers(driver)],
-                               state_rules=lambda name, hook: (rules_by_state or {}).get(name, {}).get(hook, []) if rules_by_state is not None else ["heard"])
+                               state_rules=lambda name, hook: (state_rules or {}).get(name, {}).get(hook, []) if state_rules is not None else ["heard"])
     hook = SimpleNamespace(driver="builder", role=role, suite="", hook_name=hook_name, environment_id=5, timestamp=LATE, agent_id=7)
     errors = errors or SimpleNamespace(reported=lambda argv, error, environment_id=None: None)
     return StateBoard(registry, Container(), errors, log or Log(), hook, elapsed or Ticks(*([0.0] * 20)))
@@ -159,15 +159,15 @@ def test_a_failed_opener_is_recorded_as_failed():
 def test_a_flag_free_stack_state_runs_only_on_a_hook_its_rules_hear():
     OPENS.clear()
     stop_only = {"samples.counted": {"stop": ["samples.stop-rule"]}}
-    assert board([entry(CountedState)], rules_by_state=stop_only).stack("builder") == []
+    assert board([entry(CountedState)], state_rules=stop_only).stack("builder") == []
     assert OPENS == []
-    assert [layer.overlay.name for layer in board([entry(CountedState)], hook_name="stop", rules_by_state=stop_only).stack("builder")] == ["samples.counted"]
+    assert [layer.overlay.name for layer in board([entry(CountedState)], hook_name="stop", state_rules=stop_only).stack("builder")] == ["samples.counted"]
 
 
 def test_a_flagged_stack_state_runs_on_every_hook_and_the_order_of_the_layers_run_stays():
     entries = [entry(CountedState, 1), entry(FlaggedState, 2), entry(LateState, 3)]
     received = {"samples.counted": {"pre_tool_use": ["samples.tool-rule"]}, "samples.late": {"stop": ["samples.stop-rule"]}}
-    assert [layer.overlay.name for layer in board(entries, rules_by_state=received).stack("builder")] == ["samples.flagged", "samples.counted"]
+    assert [layer.overlay.name for layer in board(entries, state_rules=received).stack("builder")] == ["samples.flagged", "samples.counted"]
 
 
 class LateParent(LateState):
@@ -222,9 +222,9 @@ class WorkerDefault(AgentRowState):
 
 
 def test_a_default_state_is_open_on_the_agents_row_while_the_agent_carries_it_and_closed_once_removed():
-    carried = board([entry(WorkerDefault)])
-    carried.hook.anchor, carried.hook.defaults = OpenRow("agent", 7, EARLY), ("samples.worker-default",)
-    assert carried.open_rows(entry(WorkerDefault)) == (OpenRow("agent", 7, EARLY),)
+    moved = board([entry(WorkerDefault)])
+    moved.hook.anchor, moved.hook.defaults = OpenRow("agent", 7, EARLY), ("samples.worker-default",)
+    assert moved.open_rows(entry(WorkerDefault)) == (OpenRow("agent", 7, EARLY),)
     removed = board([entry(WorkerDefault)])
     removed.hook.anchor, removed.hook.defaults = OpenRow("agent", 7, EARLY), ()
     assert not removed.is_open(entry(WorkerDefault))

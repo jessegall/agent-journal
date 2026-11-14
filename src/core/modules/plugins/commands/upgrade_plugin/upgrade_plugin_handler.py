@@ -79,8 +79,8 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
             manifest = PluginManifest.read(source)
 
     def earlier_releases(self, installed: str, origin: str, newest: str) -> list[str]:
-        floor, top = VersionNumbers.parsed(installed), VersionNumbers.parsed(newest)
-        return [tag for tag in self.releases.release_tags(origin) if floor < VersionNumbers.parsed(tag) < top]
+        minimum, top = VersionNumbers.parsed(installed), VersionNumbers.parsed(newest)
+        return [tag for tag in self.releases.release_tags(origin) if minimum < VersionNumbers.parsed(tag) < top]
 
     @staticmethod
     def origin(source: str, command: UpgradePlugin) -> str:

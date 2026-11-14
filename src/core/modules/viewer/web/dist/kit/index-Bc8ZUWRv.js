@@ -6100,7 +6100,7 @@ const y0 = {
     });
     Qs(Le, u), fe(() => n.visible, (m) => m && n.subscriptions.shown(n.name)), Ce(u.settle), Be(() => {
       u.cancel(), n.subscriptions.stopAll(n.name);
-    }), Fu((m) => (s.value = m instanceof Error ? m.message : String(m), n.subscriptions.stopAll(n.name), !1));
+    }), Fu((m) => (console.error(`window ${n.name} failed`, m), s.value = m instanceof Error ? m.message : String(m), n.subscriptions.stopAll(n.name), !1));
     const c = () => Sa(n.component), f = () => {
       var m, p;
       return ((p = (m = n.prompts) == null ? void 0 : m.current.value) == null ? void 0 : p.window) === n.name ? n.prompts.current.value : null;
@@ -6141,7 +6141,7 @@ const y0 = {
       }, null, 8, ["name"]))
     ], 8, E0));
   }
-}, mn = /* @__PURE__ */ z(O0, [["__scopeId", "data-v-c4443e2b"]]), br = {
+}, mn = /* @__PURE__ */ z(O0, [["__scopeId", "data-v-ec294108"]]), br = {
   __name: "FrameWindow",
   props: {
     entry: { type: Object, required: !0 },
@@ -16569,7 +16569,7 @@ const EC = {
       ])
     ]));
   }
-}, gI = /* @__PURE__ */ z(cA, [["__scopeId", "data-v-b494c444"]]), yI = zu(() => import("./VoiceFigure-CO8wsexy.js").then((e) => e.V)), bI = "1.2.0", kI = "3.5";
+}, gI = /* @__PURE__ */ z(cA, [["__scopeId", "data-v-b494c444"]]), yI = zu(() => import("./VoiceFigure-Brt0fDJ0.js").then((e) => e.V)), bI = "1.2.0", kI = "3.5";
 export {
   Dm as $,
   Ie as A,

@@ -35,7 +35,7 @@ class ForegroundLimit:
         declared = self.background.declared_category(shell)
         # a line waits in its lane unless its class starts at once, as the main agent's own lines do
         line_class = self.classes.for_categories([command.category for command in part_commands], shell.display_text, self.agents.find(agent_id))
-        in_lane = not line_class.priority.is_unlimited and all(command.category is not CommandCategory.JOURNAL for command in part_commands)
+        lane_slot = not line_class.priority.is_unlimited and all(command.category is not CommandCategory.JOURNAL for command in part_commands)
         if all(not command.category.is_backgroundable for command in part_commands):
             return ForegroundRun(0, self.background.includes(shell), part_commands=part_commands, most_output_bytes=self.output_limit(ProcessSetting.MOST_OUTPUT_MEGABYTES))
         seconds = self.seconds_allowed(agent_id)
@@ -44,7 +44,7 @@ class ForegroundLimit:
         reader_id = reader_ids.pop() if len(reader_ids) == 1 else None
         has_long_part = any(part.classification.category.is_long_running or self.background.is_long_alias(part, shell) for part in shell.parts)
         output_setting = ProcessSetting.MOST_TEST_OUTPUT_MEGABYTES if has_long_part else ProcessSetting.MOST_OUTPUT_MEGABYTES
-        queued = in_lane
+        queued = lane_slot
         # a line that waits for its slot keeps the foreground at least as long as it could run there, so a short build is not moved for its wait
         background, queue_wait = self.background.includes(shell) or is_long, max(self.settings.integer(ProcessSetting.QUEUE_WAIT_SECONDS), seconds)
         wait = self.waits.seconds(agent_id) if queued else None

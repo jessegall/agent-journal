@@ -15,11 +15,11 @@ class ExecutionClassLines:
 
     def entries(self) -> tuple[ClassTableEntry, ...]:
         stored = {row.name: row for row in self.queries.query(ExecutionClassRow).every_row(STORED_CLASSES_REASON)}
-        built_in = [ClassTableEntry(stored[row.execution_class.name].execution_class, "changed") if row.execution_class.name in stored
+        builtin = [ClassTableEntry(stored[row.execution_class.name].execution_class, "changed") if row.execution_class.name in stored
                     else ClassTableEntry(row.execution_class, "built-in") for row in BUILTIN_CLASSES]
-        own = [ClassTableEntry(row.execution_class, "your own") for name, row in stored.items()
+        personal = [ClassTableEntry(row.execution_class, "your own") for name, row in stored.items()
                if not row.is_override and (not row.execution_class.plugin or self.plugins.is_installed(row.execution_class.plugin))]
-        return (*built_in, *own)
+        return (*builtin, *personal)
 
     def lines(self) -> list[str]:
         return [entry.line() for entry in self.entries()]

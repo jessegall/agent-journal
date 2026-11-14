@@ -163,8 +163,8 @@ def test_halted_lane_starts_none_and_counts_no_wait():
 
 
 def test_immediate_ceiling_is_flagged_not_refused():
-    many = [ticket(IMMEDIATE, starter=starter(number)) for number in range(65)]
-    assert ORDER.over_ceiling(many) and started_tickets([ticket(IMMEDIATE)], many) != []
+    several = [ticket(IMMEDIATE, starter=starter(number)) for number in range(65)]
+    assert ORDER.over_ceiling(several) and started_tickets([ticket(IMMEDIATE)], several) != []
 
 
 def test_nothing_waits_forever_under_a_steady_stream():

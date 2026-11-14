@@ -29,9 +29,9 @@ def test_the_state_is_asked_in_place_for_a_prompt_role_and_gates_the_read_first_
 
 
 def test_with_no_due_skill_the_state_is_closed_and_the_rule_answers_allowed_alone():
-    nothing = unread([])
-    assert SkillLoadRequired(nothing).open_rows(HOOK) == []
-    rule = SkillReadFirstRule(nothing, Untouched(), Untouched(), Untouched())
+    none = unread([])
+    assert SkillLoadRequired(none).open_rows(HOOK) == []
+    rule = SkillReadFirstRule(none, Untouched(), Untouched(), Untouched())
     assert rule.answer(HOOK) == RuleAnswer.allowed()
 
 

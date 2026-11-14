@@ -52,6 +52,9 @@ class Checks:
     def every_row(self, reason: str) -> list[WorktreeBehindCheck]:
         return self.rows
 
+    def worktree_checks(self, worktree) -> tuple[WorktreeBehindCheck, ...]:
+        return tuple(self.rows)
+
     def find(self, row_id: int):
         return SimpleNamespace(program="claude", program_model="sonnet")
 

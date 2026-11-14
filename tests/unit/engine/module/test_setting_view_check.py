@@ -46,8 +46,8 @@ def test_a_view_that_names_a_text_that_is_no_declared_key_is_quiet(tmp_path):
 
 def test_the_setting_components_module_and_files_outside_the_views_are_not_judged(tmp_path):
     inside = tmp_path / "src" / "core" / "modules" / "setting_components" / "web" / "src" / "Row.vue"
-    outside = tmp_path / "src" / "core" / "modules" / "x" / "support" / "names.py"
-    for path in (inside, outside):
+    external = tmp_path / "src" / "core" / "modules" / "x" / "support" / "names.py"
+    for path in (inside, external):
         path.parent.mkdir(parents=True)
         path.write_text('"journal.sample.auto"\n')
     assert checked(tmp_path).failures() == []

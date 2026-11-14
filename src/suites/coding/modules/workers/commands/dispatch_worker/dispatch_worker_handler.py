@@ -63,8 +63,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     command = DispatchWorker
 
     def __init__(self, queries: Queries, bus: Bus, settings: SettingValues, git: WorktreeGit, worker_command: WorkerCommand, worktrees: WorktreeQuery,
-                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: HelperTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, admission: AgentAdmission, release: StartedTaskRelease, reservations: MainReservedTasks, presets: WorkerTestPresets, complexity: ModelComplexityPolicy, assigned_worker_tasks: AssignedWorkerTasks, outside_waits: OutsideWaits) -> None:
-        self.assigned_worker_tasks, self.outside_waits = assigned_worker_tasks, outside_waits
+                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: HelperTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, admission: AgentAdmission, release: StartedTaskRelease, reservations: MainReservedTasks, presets: WorkerTestPresets, complexity: ModelComplexityPolicy, assigned_worker_tasks: AssignedWorkerTasks, external_waits: OutsideWaits) -> None:
+        self.assigned_worker_tasks, self.outside_waits = assigned_worker_tasks, external_waits
         self.complexity = complexity
         self.release, self.reservations, self.presets = release, reservations, presets
         self.places, self.copies, self.available_workers, self.admission = places, copies, available_workers, admission

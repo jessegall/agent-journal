@@ -54,8 +54,8 @@ class ExecutionPriorities:
     def journal_run_ticket(self, line: str, entered_at: Timestamp) -> ExecutionTicket:
         return self.ticket(ExecutionSubject(ExecutionSource.JOURNAL_RUN, JOURNAL, line=line), entered_at)
 
-    def release_ticket(self, kind: str, entered_at: Timestamp) -> ExecutionTicket:
-        return self.ticket(ExecutionSubject(ExecutionSource.RELEASE_WORK, JOURNAL, line=kind), entered_at)
+    def release_ticket(self, category: str, entered_at: Timestamp) -> ExecutionTicket:
+        return self.ticket(ExecutionSubject(ExecutionSource.RELEASE_WORK, JOURNAL, line=category), entered_at)
 
     def ticket(self, subject: ExecutionSubject, entered_at: Timestamp) -> ExecutionTicket:
         execution_class = self.classes.match(subject)

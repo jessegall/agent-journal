@@ -17,6 +17,13 @@ CURRENT_TIME = Timestamp(datetime(2026, 11, 12, 9, 0, tzinfo=timezone.utc))
 SETTINGS = {WORKTREE_UPDATES: True, STALE_CHECK_COMMITS: 3, STALE_CHECK_MINUTES: 10, STALE_RECHECK_COMMITS: 3}
 
 
+class LoadingKeptRows:
+    """Kept reads that load each time."""
+
+    def read(self, source, loader, *, name):
+        return loader()
+
+
 class Rows:
     """The rows of one model, filtered by field values as the query does."""
 
@@ -67,7 +74,7 @@ def check(state: BehindCheckState, behind: int = 3) -> WorktreeBehindCheck:
 
 
 def checks(settings: Settings | None = None, **rows: list[object]) -> BehindChecks:
-    return BehindChecks(Queries(**rows), settings or Settings())
+    return BehindChecks(Queries(**rows), settings or Settings(), LoadingKeptRows())
 
 
 def test_a_worktree_three_behind_opens_a_check_and_two_behind_does_not():
@@ -75,9 +82,9 @@ def test_a_worktree_three_behind_opens_a_check_and_two_behind_does_not():
 
 
 def test_zero_commits_to_check_or_the_switch_off_looks_at_no_worktree():
-    off = BehindChecks(Queries(Worktree=[worktree()]), Settings())
+    off = BehindChecks(Queries(Worktree=[worktree()]), Settings(), LoadingKeptRows())
     off.settings.values[STALE_CHECK_COMMITS] = 0
-    toggled = BehindChecks(Queries(Worktree=[worktree()]), Settings())
+    toggled = BehindChecks(Queries(Worktree=[worktree()]), Settings(), LoadingKeptRows())
     toggled.settings.values[WORKTREE_UPDATES] = False
     assert (off.due_worktrees(CURRENT_TIME), toggled.due_worktrees(CURRENT_TIME)) == ((), ())
 

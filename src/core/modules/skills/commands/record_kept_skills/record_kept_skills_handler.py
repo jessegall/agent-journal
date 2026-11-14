@@ -23,7 +23,7 @@ class RecordKeptSkillsHandler(Handler[RecordKeptSkills, Agent]):
     def handle(self, command: RecordKeptSkills, context: Context) -> Agent:
         due = self.unread_skills.names(command.agent_id)
         transcript = HookTranscript(command.program, command.firing, command.transcript_path)
-        for load in self.kept.loads(command.agent_id, transcript, due) if due else ():
-            self.bus.dispatch(load, context)
+        for read in self.kept.loads(command.agent_id, transcript, due) if due else ():
+            self.bus.dispatch(read, context)
         agent = self.agents.find(command.agent_id)
         return self.repository.save_metadata(agent, KeptSkillMark.recorded(agent), context)

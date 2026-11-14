@@ -115,9 +115,9 @@ class DriverEntries:
         gated_twice = next((rule for rule in gated if gated.count(rule) > 1), None)
         if gated_twice is not None:
             raise ModuleError(f"the rule {gated_twice} is gated by two agent states")
-        both = next((rule for rule in gated if rule in module_rules), None)
-        if both is not None:
-            raise ModuleError(f"the rule {both} is both in an agent state and among a module's driver rules")
+        pair = next((rule for rule in gated if rule in module_rules), None)
+        if pair is not None:
+            raise ModuleError(f"the rule {pair} is both in an agent state and among a module's driver rules")
 
     def rules(self, modules: Sequence[type[Module]]) -> tuple[DriverRuleEntry, ...]:
         declared: list[DriverRuleEntry] = []

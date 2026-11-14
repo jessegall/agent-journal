@@ -19,8 +19,8 @@ class WorkerQueuedStart:
     main agent's next batch; a worker left with only tasks that wait on a task nobody works on is named to the
     main agent with that task."""
 
-    def __init__(self, tasks: TaskQuery, bus: Bus, queries: Queries, outside_waits: OutsideWaits, labels: AssigneeLabel, nudger: Nudger) -> None:
-        self.tasks, self.bus, self.queries, self.outside_waits, self.labels, self.nudger = tasks, bus, queries, outside_waits, labels, nudger
+    def __init__(self, tasks: TaskQuery, bus: Bus, queries: Queries, external_waits: OutsideWaits, labels: AssigneeLabel, nudger: Nudger) -> None:
+        self.tasks, self.bus, self.queries, self.outside_waits, self.labels, self.nudger = tasks, bus, queries, external_waits, labels, nudger
 
     def start(self, worker_id: int, context: Context) -> None:
         queued_ids = tuple(task.id for task in self.tasks.assigned_ready(worker_id))

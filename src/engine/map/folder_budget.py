@@ -47,10 +47,10 @@ class FolderBudget:
 
     def layer_depth(self, path: Path) -> int:
         parts = path.relative_to(self.source).parts
-        declared_for_parent = 1 if path.parent.name in DECLARATION_FOLDERS else 0
+        set_parent = 1 if path.parent.name in DECLARATION_FOLDERS else 0
         if parts[0] == "suites":
-            return len(parts) - declared_for_parent - (SUITE_MODULE_ROOT_PARTS if len(parts) > 2 and parts[2] == "modules" else SUITE_ROOT_PARTS)
-        return len(parts) - declared_for_parent - LAYER_ROOT_PARTS.get(parts[0], 1)
+            return len(parts) - set_parent - (SUITE_MODULE_ROOT_PARTS if len(parts) > 2 and parts[2] == "modules" else SUITE_ROOT_PARTS)
+        return len(parts) - set_parent - LAYER_ROOT_PARTS.get(parts[0], 1)
 
     def counted_entries(self, folder: Path) -> list[Path]:
         entries = self.entries(folder)
