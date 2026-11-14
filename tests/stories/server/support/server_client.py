@@ -350,26 +350,26 @@ def local_viewer(login: ViewerLogin, routes: ViewerRoutes) -> ViewerEndpoint:
 
 
 @contextmanager
-def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), real_time: bool = False):
+def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), real_time: bool = False, running_hooks_count: int = STORY_RUNNING_HOOKS_COUNT):
     without_start_skills(story)
     story.run(f"setting make {AVATAR_KEY} false")
-    with started_server(story.home, code_folders, listener_thread_started, viewer_factory, journal_door, SYSTEM_CLOCK if real_time else story.clock) as (socket_path, context):
+    with started_server(story.home, code_folders, listener_thread_started, viewer_factory, journal_door, SYSTEM_CLOCK if real_time else story.clock, running_hooks_count) as (socket_path, context):
         yield ServerStory(story, socket_path, context)
 
 
 @contextmanager
-def started_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), clock: Clock = SYSTEM_CLOCK):
-    with running_server(home, code_folders, listener_thread_started, viewer_factory, journal_door, clock) as (_, socket_path, context):
+def started_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), clock: Clock = SYSTEM_CLOCK, running_hooks_count: int = STORY_RUNNING_HOOKS_COUNT):
+    with running_server(home, code_folders, listener_thread_started, viewer_factory, journal_door, clock, running_hooks_count) as (_, socket_path, context):
         yield socket_path, context
 
 
 @contextmanager
-def running_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), clock: Clock = SYSTEM_CLOCK):
+def running_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), clock: Clock = SYSTEM_CLOCK, running_hooks_count: int = STORY_RUNNING_HOOKS_COUNT):
     with patch.object(ProcessTable, "rows", FixedProcessTable([]).rows):
         files = ServerFiles(home)
         assert files.acquire_lock(), "a server already holds the lock of this journal"
         files.clear_leftover_socket()
-        hook_database = HookDatabase(home, running_hooks_count=STORY_RUNNING_HOOKS_COUNT)
+        hook_database = HookDatabase(home, running_hooks_count=running_hooks_count)
         listener_round = JournalRound(home, "listener thread", ListenerWork(), KeptRoundContainer(home), hook_database.queue)
         listener_thread = ListenerThread(listener_round.run, listener_round.report, stop_callback=listener_round.close)
         wakes = ListenerWakeRouter.waking(listener_thread)
