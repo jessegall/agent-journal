@@ -1,3 +1,4 @@
+from engine.driver.line_delivery import LineDelivery
 from engine.driver.count_down import CountDown
 from engine.driver.interval import Interval
 from engine.driver.seconds import Seconds
@@ -10,7 +11,7 @@ UNREAD_TOOL_USES = 20
 UNREAD_MESSAGE_STOP = NudgeDeclaration("messages.unread_at_stop", NudgeType.REFUSAL, "Message {message} is unread: read it before you stop")
 UNREAD_DISPLAY_REFUSAL = NudgeDeclaration("messages.unread_show", NudgeType.REFUSAL, "Message {message} is unread, so it cannot be shown: read it first")
 NEW_MESSAGE = NudgeDeclaration("messages.new_message", NudgeType.STEERING, "New message {message}: read it", turn_limited=False)
-MESSAGE_REACTION = NudgeDeclaration("messages.reaction", NudgeType.STEERING, "The user reacted to message:{message}: check the reaction", wakes_agent=True, plural_text="the user reacted to messages {message}", id_field="message")
+MESSAGE_REACTION = NudgeDeclaration("messages.reaction", NudgeType.STEERING, "The user reacted to message:{message}: check the reaction", wakes_agent=True, delivery=LineDelivery.WAKE_HOOK, plural_text="the user reacted to messages {message}", id_field="message")
 MESSAGE_UPDATED = NudgeDeclaration("messages.message_updated", NudgeType.NOTICE,
                                    "message:{message} was updated: read it again")
 NEW_MESSAGES = NudgeDeclaration("messages.new_messages", NudgeType.STEERING, "{count} new messages: read them", turn_limited=False)

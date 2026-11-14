@@ -1,3 +1,6 @@
+from dataclasses import replace
+
+from engine.driver.line_delivery import LineDelivery
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.query.queries import Queries
@@ -11,10 +14,13 @@ from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.support.message_targets import MessageTargets
 
 UPDATED_SOURCE = "messages.updated"
+# the line an idle agent gets for an updated message, given to its program's wake hook when one waits
+IDLE_MESSAGE_UPDATED = replace(MESSAGE_UPDATED, delivery=LineDelivery.WAKE_HOOK)
 
 
 class RecordMessageUpdatedLineHandler(Handler[RecordMessageUpdatedLine, None]):
-    """Leaves the line for the main agent: typed when it sits idle, else carried by its next hook."""
+    """Leaves the line for the main agent: when it sits idle, given to its wake hook or else typed, otherwise carried
+    by its next hook."""
 
     command = RecordMessageUpdatedLine
 
@@ -29,5 +35,7 @@ class RecordMessageUpdatedLineHandler(Handler[RecordMessageUpdatedLine, None]):
         agent = self.targets.recipient(message)
         if agent is None:
             return
-        source = IDLE_MESSAGE_SOURCE if self.hook_calls.has_ended_turn(agent.id) else UPDATED_SOURCE
-        self.nudger.send(agent.id, MESSAGE_UPDATED, source, context, message=command.message_id)
+        if self.hook_calls.has_ended_turn(agent.id):
+            self.nudger.send(agent.id, IDLE_MESSAGE_UPDATED, IDLE_MESSAGE_SOURCE, context, message=command.message_id)
+            return
+        self.nudger.send(agent.id, MESSAGE_UPDATED, UPDATED_SOURCE, context, message=command.message_id)
