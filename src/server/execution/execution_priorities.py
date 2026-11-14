@@ -1,3 +1,5 @@
+from engine.enums.execution_priority import ExecutionPriority
+from dataclasses import replace
 from engine.execution.classes.person_classes import PersonClasses
 from engine.enums.execution_source import ExecutionSource
 from engine.enums.starter_type import StarterType
@@ -38,8 +40,10 @@ class ExecutionPriorities:
             return self.release_ticket(line, entered_at)
         return self.ticket(ExecutionSubject(ExecutionSource.COMMAND, self.starters.starter(session), line=line), entered_at)
 
-    def viewer_ticket(self, line: str, window: WindowPriority, entered_at: Timestamp) -> ExecutionTicket:
-        return self.ticket(ExecutionSubject(ExecutionSource.VIEWER_REQUEST, PERSON, line=line, is_first_window=window is WindowPriority.FIRST), entered_at)
+    # a window the person cannot see polls at background, whatever its window's priority
+    def viewer_ticket(self, line: str, window: WindowPriority, entered_at: Timestamp, is_hidden: bool = False) -> ExecutionTicket:
+        ticket = self.ticket(ExecutionSubject(ExecutionSource.VIEWER_REQUEST, PERSON, line=line, is_first_window=window is WindowPriority.FIRST), entered_at)
+        return replace(ticket, first_priority=ExecutionPriority.BACKGROUND, priority=ExecutionPriority.BACKGROUND) if is_hidden else ticket
 
     def tick_ticket(self, handler_name: str, entered_at: Timestamp) -> ExecutionTicket:
         return self.ticket(ExecutionSubject(ExecutionSource.TICK_HANDLER, JOURNAL, line=handler_name), entered_at)

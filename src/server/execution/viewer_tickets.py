@@ -17,8 +17,8 @@ class ViewerTickets:
         self.queue, self.priorities, self.clock, self.wait_limit_seconds = queue, priorities, clock, wait_limit_seconds
 
     @contextmanager
-    def admitted(self, line: str, window: WindowPriority) -> Generator[None]:
-        ticket = self.priorities.viewer_ticket(line, window, self.clock.timestamp())
+    def admitted(self, line: str, window: WindowPriority, is_hidden: bool = False) -> Generator[None]:
+        ticket = self.priorities.viewer_ticket(line, window, self.clock.timestamp(), is_hidden)
         with ExitStack() as held:
             try:
                 ticket = held.enter_context(self.queue.admitted(ticket, wait_limit_seconds=self.wait_limit_seconds)).ticket

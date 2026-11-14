@@ -41,6 +41,8 @@ from server.door.door_refusal import DoorRefusal
 from server.viewer.door_request import DoorRequest
 from server.viewer.viewer_server import ViewerServer
 
+HIDDEN_WINDOW_HEADER = "X-Journal-Window-Hidden"
+
 UNKNOWN_PEER_UID = -1
 CLOSED_DOOR_REASON = "not available on a hosted journal yet"
 COOKIE_NAME = "journal_viewer"
@@ -111,10 +113,10 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         queue = routes.queue
         if route == WINDOW_ROUTE:
             window = self.headers.get(WINDOW_HEADER, "")
-            with queue.viewer_turn(f"GET {self.path}", window, routes.priorities.priority(window)):
+            with queue.viewer_turn(f"GET {self.path}", window, routes.priorities.priority(window), self.is_window_hidden):
                 self.answer_get()
             return
-        turn = queue.viewer_turn(f"GET {self.path}") if route.startswith("/api/") else queue.observing(QueueRequest.started("Viewer", f"GET {self.path}"))
+        turn = queue.viewer_turn(f"GET {self.path}", is_hidden=self.is_window_hidden) if route.startswith("/api/") else queue.observing(QueueRequest.started("Viewer", f"GET {self.path}"))
         with turn:
             self.answer_get()
 
@@ -235,12 +237,17 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
     def answer_server_state(self, viewer: ViewerServer) -> None:
         self.answer(200, asdict(viewer.routes.server_state_route.state()))
 
+    # a viewer that sends no word of its window counts it as shown, as an older viewer in another tab does
+    @property
+    def is_window_hidden(self) -> bool:
+        return self.headers.get(HIDDEN_WINDOW_HEADER) == "1"
+
     def do_POST(self) -> None:
         route = urlsplit(self.path).path
         if route in (LINE_ROUTE, LINES_ROUTE):
             self.answer_post()
             return
-        with self.viewer().routes.queue.viewer_turn(f"POST {self.path}"):
+        with self.viewer().routes.queue.viewer_turn(f"POST {self.path}", is_hidden=self.is_window_hidden):
             self.answer_post()
 
     def answer_post(self) -> None:
@@ -300,7 +307,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         received_at, request_id = self.stamped()
         started_at = perf_counter()
         try:
-            turn = nullcontext() if viewer.routes.priorities.is_unqueued(request.line) else viewer.routes.queue.viewer_turn(" ".join(request.line), request.window, viewer.routes.priorities.priority(request.window))
+            turn = nullcontext() if viewer.routes.priorities.is_unqueued(request.line) else viewer.routes.queue.viewer_turn(" ".join(request.line), request.window, viewer.routes.priorities.priority(request.window), self.is_window_hidden)
             with turn:
                 queued_ms = (perf_counter() - started_at) * 1000
                 timed = viewer.routes.line_route.timed_single_answer(request.window, request.line, viewer.login.person_id(token), request.environment, session.shared)
@@ -375,7 +382,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             answers[index] = viewer.routes.line_route.answers(ViewerLinesRequest([line]), person_id, session.shared)[0]
         if command_lines:
             first_window = min((line.window for _, line in command_lines), key=viewer.routes.priorities.priority)
-            with viewer.routes.queue.viewer_turn("; ".join(" ".join(line.line) for _, line in command_lines), first_window, viewer.routes.priorities.priority(first_window)):
+            with viewer.routes.queue.viewer_turn("; ".join(" ".join(line.line) for _, line in command_lines), first_window, viewer.routes.priorities.priority(first_window), self.is_window_hidden):
                 queued_ms = (perf_counter() - started_at) * 1000
                 command_answers = viewer.routes.line_route.timed_answers(ViewerLinesRequest([line for _, line in command_lines]), person_id, session.shared)
             duration_ms = (perf_counter() - started_at) * 1000

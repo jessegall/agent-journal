@@ -132,7 +132,7 @@ class ServerQueue(RequestQueue):
         return place == min((waiting for waiting in self.waiting_hooks if waiting[2] not in self.running_owners), default=None)
 
     @contextmanager
-    def viewer_turn(self, line: str, window: str = "", priority: WindowPriority = WindowPriority.NORMAL) -> Generator[None]:
+    def viewer_turn(self, line: str, window: str = "", priority: WindowPriority = WindowPriority.NORMAL, is_hidden: bool = False) -> Generator[None]:
         request = QueueRequest.started("Viewer", line, priority=priority.name.lower())
         number = next(self.arrivals)
         with self.changed:
@@ -141,7 +141,7 @@ class ServerQueue(RequestQueue):
             self.note_sent(window)
             self.changed.notify_all()
         try:
-            with self.viewer_tickets.admitted(line, priority) if self.viewer_tickets is not None else self.claimed_viewer_turn(number, priority, line):
+            with self.viewer_tickets.admitted(line, priority, is_hidden) if self.viewer_tickets is not None else self.claimed_viewer_turn(number, priority, line):
                 with self.changed:
                     del self.waiting_viewers[number]
                     self.running_requests[number] = request.entry()
