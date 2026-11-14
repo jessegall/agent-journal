@@ -20,6 +20,8 @@ from engine.testing.runs.full_run_records import FullRunRecords
 from engine.testing.stories.story import Story
 from engine.testing.selection.test_map import TestMap
 from engine.testing.selection.test_map_recorder import TestMapRecorder
+from engine.testing.selection.affected_tests import AffectedTests
+from engine.testing.selection.selection_misses import SelectionMisses
 from engine.testing.templates.touched_code import TouchedCode
 from engine.testing.stories.story_fixture import StoryFixture
 from engine.testing.stories.story_overlap import StoryOverlap
@@ -47,6 +49,8 @@ RECORDS_MAP_KEY = "journal_records_test_map"
 TEST_MAP_KEY = "journal_test_map"
 RECORDER = pytest.StashKey[TestMapRecorder]()
 TEMPLATE_FILES = pytest.StashKey[dict[str, list[str]]]()
+FAILED_TESTS = pytest.StashKey[set[str]]()
+MISSED_TESTS = pytest.StashKey[list[str]]()
 FIXTURE_RULES_OPTION = "story_fixture_rules"
 FIXTURE_RULES_FAIL = "fail"
 SINGLE_RUNNER_LIMIT_OPTION = "one_runner_below"
@@ -103,6 +107,7 @@ def pytest_configure(config: pytest.Config) -> None:
     config.stash[RUN_START] = time.monotonic()
     config.stash[RUN_CPU] = RunCpu()
     config.stash[RUN_DURATIONS] = RunDurations()
+    config.stash[FAILED_TESTS] = set()
     config.addinivalue_line("markers", f"{BUDGET_MARKER}(points, reason): a story that may cost more than the default budget, and why")
     config.stash[STORY_OVERLAP] = StoryOverlap()
     if records_test_map(config):
@@ -181,6 +186,8 @@ def pytest_report_teststatus(report: pytest.TestReport | pytest.CollectReport, c
     if isinstance(report, pytest.CollectReport):
         return
     config.stash[RUN_DURATIONS].add(report.nodeid, report.duration)
+    if report.failed:
+        config.stash[FAILED_TESTS].add(report.nodeid)
 
 
 @pytest.hookimpl(wrapper=True)
@@ -249,16 +256,21 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
             session.config.stash[RECORDER].stop()
             process_output[TEST_MAP_KEY] = {"functions": session.config.stash[RECORDER].tests, "template_files": session.config.stash[TEMPLATE_FILES]}
         return
-    if RECORDER in session.config.stash:
-        session.config.stash[RECORDER].stop()
-        TestMap(session.config.stash[RECORDER].tests, session.config.stash[TEMPLATE_FILES]).with_bodies().write()
     option = session.config.option
     is_full_run = RunSize(session.config.args, 1).is_full_run(option.keyword, option.markexpr, option.deselect or (), bool(getattr(option, "lf", False)))
     if is_full_run and not option.collectonly:
-        record = FullRunRecord(session.testscollected, session.testsfailed, time.monotonic() - session.config.stash[RUN_START], session.config.stash[RUN_CPU].seconds)
+        selection = AffectedTests(TestMap.read())
+        arguments = tuple(selection.arguments(selection.changed_files()))
+        missed = SelectionMisses(arguments).missed(session.config.stash[FAILED_TESTS])
+        session.config.stash[MISSED_TESTS] = missed
+        record = FullRunRecord(session.testscollected, session.testsfailed, time.monotonic() - session.config.stash[RUN_START], session.config.stash[RUN_CPU].seconds,
+                               len(arguments), len(missed))
         session.config.stash[FULL_RUN] = record
         FullRunRecords.add(record)
         session.config.stash[RUN_DURATIONS].write()
+    if RECORDER in session.config.stash:
+        session.config.stash[RECORDER].stop()
+        TestMap(session.config.stash[RECORDER].tests, session.config.stash[TEMPLATE_FILES]).with_bodies().write()
     lines = [*overlap.report_lines(is_full_run), *fixture_rule_lines(session.config, overlap)]
     if not lines:
         return
@@ -282,6 +294,8 @@ def pytest_terminal_summary(terminalreporter: pytest.TerminalReporter, config: p
     full_run = config.stash.get(FULL_RUN, None)
     if full_run is not None:
         terminalreporter.write_line(full_run.summary_line())
+        for test in config.stash.get(MISSED_TESTS, []):
+            terminalreporter.write_line(f"the selector would have missed {test}")
     fixture_summary = config.stash.get(FIXTURE_SUMMARY, None)
     if fixture_summary is not None:
         terminalreporter.write_line(fixture_summary)

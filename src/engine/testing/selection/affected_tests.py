@@ -34,6 +34,10 @@ class AffectedTests:
             selected |= self.reached(name)
         return sorted(selected)
 
+    # the recorded files whose functions differ from the map's, as the change since its full run
+    def changed_files(self) -> list[str]:
+        return sorted(name for name, bodies in self.test_map.bodies.items() if FunctionBodies.file_hashes(self.project / name) != bodies)
+
     def reached(self, name: str) -> set[str]:
         if self.is_test_file(name):
             return {name, *self.tests_running_in(name)}

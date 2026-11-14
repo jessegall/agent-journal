@@ -6,13 +6,16 @@ from datetime import datetime, timezone
 class FullRunRecord:
     """One run of the whole suite: how many tests it ran, how many failed, how long it took on the clock and
     how many processor seconds the test runners spent together, kept as a line in the checkout's journal
-    folder so a check can warn when the time per test grows. A line from before the processor seconds were
-    kept reads with none."""
+    folder so a check can warn when the time per test grows, with how many tests the selector would have chosen
+    for the change since the last map and how many failed tests it would have missed. A line from before a field
+    was kept reads with none."""
 
     tests: int
     failed: int
     seconds: float
     cpu_seconds: float = 0.0
+    selected: int = 0
+    missed: int = 0
     finished_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     @property
@@ -20,4 +23,5 @@ class FullRunRecord:
         return self.seconds / max(self.tests, 1)
 
     def summary_line(self) -> str:
-        return f"full run: {self.seconds:.1f} wall seconds, {self.cpu_seconds:.1f} cpu seconds in the test runners"
+        return (f"full run: {self.seconds:.1f} wall seconds, {self.cpu_seconds:.1f} cpu seconds in the test runners; "
+                f"the selector chose {self.selected} arguments and missed {self.missed} failed tests")
