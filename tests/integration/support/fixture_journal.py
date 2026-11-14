@@ -9,6 +9,8 @@ from engine.driver.hook_reply import HookReply
 from engine.enums.actor_type import ActorType
 from engine.journal.journal_home import JournalHome
 from engine.listener.commit.commit_listener_runner import CommitListenerRunner
+from engine.database.seed_tables import ID_COLUMN
+from engine.query.conditions.minimum import Minimum
 from engine.query.queries import Queries
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.unread_skills import UnreadSkills
@@ -18,7 +20,10 @@ from engine.testing.examples.shell_part import ShellPart
 from engine.testing.examples.hook_sample import HookSample
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.fakes.manual_clock import ManualClock
+from engine.testing.stories.story import Story
 from tests.integration.support.integration_journal import MAIN_ENVIRONMENT, IntegrationJournal
+
+ROWS_REASON = "the test reads every row it checks"
 
 
 @dataclass(frozen=True)
@@ -93,6 +98,22 @@ class FixtureJournal:
     def step(self, name: str, *arguments: object) -> object:
         return self.journal.step(name, *arguments)
 
+    def bind(self, kind: type, instance: object) -> None:
+        self.replace(kind, instance)
+
+    def tick(self, session: str) -> HookReply:
+        return self.hook(session, HookSamples.tick())
+
+    def story_rows(self, model: type, **values: object) -> tuple:
+        return tuple(self.container.get(Queries).query(model).filter(**values).matching(Minimum(ID_COLUMN, 1)).every_row(ROWS_REASON))
+
+    def first_row(self, model: type, **values: object):
+        return self.container.get(Queries).query(model).filter(**values).first()
+
+    def expect_no_text(self, line: str, *texts: str, actor: Actor | None = None) -> None:
+        answer = self.run(line, actor)
+        assert all(text not in answer.output_text for text in texts), (line, answer)
+
     def row(self, model: type, row_id: int):
         return self.container.get(Queries).query(model).find(row_id)
 
@@ -101,7 +122,8 @@ class FixtureJournal:
 
     def expect_success(self, line: str, *texts: str, actor: Actor | None = None) -> FixtureLine:
         answer = self.run(line, actor)
-        assert answer.code == 0 and all(text in answer.output_text for text in texts), (line, answer)
+        shown = Story.with_touched_rows(cast(Story, self), answer) if texts else answer.output_text
+        assert answer.code == 0 and all(text in shown for text in texts), (line, answer)
         return answer
 
     def expect_text(self, line: str, *texts: str, actor: Actor | None = None) -> None:

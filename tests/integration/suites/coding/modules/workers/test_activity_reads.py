@@ -28,8 +28,8 @@ BATCH_READS = 2
 
 
 @pytest.fixture
-def four_tasks(new_story):
-    story = new_story(fixture=MergerOffOrchestrator)
+def four_tasks(played):
+    story = played(MergerOffOrchestrator)
     repository_environment(story)
     story.run(f"setting set {WORKER_RUN_LIMIT} 4 --environment main")
     for number in range(2, 5):
