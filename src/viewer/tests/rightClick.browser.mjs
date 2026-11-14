@@ -8,6 +8,7 @@ try {
     await page.goto(`${address}&page=tasks.tasks`);
     const row = page.locator("[data-sidebar-window]").first();
     await row.waitFor();
+    await page.locator(".ajs-cover").waitFor({state: "detached"});
     const name = await row.getAttribute("data-sidebar-window");
     await row.click({button: "right"});
     const menu = page.locator("[data-context-menu]");
