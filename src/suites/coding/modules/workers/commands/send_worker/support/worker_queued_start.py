@@ -5,9 +5,9 @@ from suites.coding.modules.workers.commands.send_worker.send_worker import SendW
 
 
 class WorkerQueuedStart:
-    """Once a worker's delivered work is merged, sends it every task still assigned to it as one new unit, so a
-    worker never gets its tasks one merge at a time. A worker with nothing assigned stops and waits for the main
-    agent's next batch."""
+    """Once a worker's delivered work is merged, sends it every task still assigned to it as one new unit, so
+    a worker never gets its tasks one merge at a time. A worker with nothing assigned stops and waits for the
+    main agent's next batch."""
 
     def __init__(self, tasks: TaskQuery, bus: Bus) -> None:
         self.tasks, self.bus = tasks, bus

@@ -11,4 +11,4 @@ class FileChange:
 
     diff: DiffCount
     rows: tuple[Mapping[str, object], ...]
-    moved_from: str = ""
+    old_path: str = ""

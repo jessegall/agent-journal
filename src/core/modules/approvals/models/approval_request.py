@@ -2,14 +2,16 @@ from dataclasses import dataclass
 
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
+from engine.model.move import Move
 from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.approvals.models.lifecycles.approval_lifecycle import ApprovalLifecycle
 
 
 @dataclass(frozen=True, kw_only=True)
 class ApprovalRequest(EnvironmentScoped, Model):
-    """An action waiting for a user's decision in an environment's dock; command_json is the command Accept runs as
-    the user, when the approval names one; an accepted action that failed ends failed and keeps why in failure."""
+    """An action waiting for a user's decision in an environment's dock; command_json is the command
+    Accept runs as the user, when the approval names one; an accepted action that failed ends failed and
+    keeps why in failure."""
 
     model_name = "approval"
     cli_name = "approval"
@@ -34,3 +36,6 @@ class ApprovalRequest(EnvironmentScoped, Model):
     command_json: str = ""
     standing_id: int | None = None
     state: ApprovalState = ApprovalState.OPEN
+
+    def move_result(self, move: Move, failure: str | None) -> "ApprovalRequest":
+        return self.moved(move) if failure is None else self.moved(move, failure=failure)

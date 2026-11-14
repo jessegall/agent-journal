@@ -4,7 +4,7 @@ from core.modules.assign_rules.models.enums.condition_field import ConditionFiel
 from core.modules.assign_rules.models.enums.condition_operator import ConditionOperator
 from core.modules.assign_rules.models.enums.creator_type import CreatorType
 from core.modules.assign_rules.models.support.task_facts import TaskFacts
-from core.modules.assign_rules.models.support.task_words import has_phrase
+from core.modules.assign_rules.models.support.task_terms import has_phrase
 from core.modules.tasks.models.support.task_complexity import TaskComplexity
 from core.modules.tasks.models.support.task_priority import TaskPriority
 from core.modules.tasks.support.task_match import has_tags, matches_complexity_range

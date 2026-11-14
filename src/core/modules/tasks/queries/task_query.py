@@ -15,7 +15,7 @@ from engine.query.conditions.condition import Condition
 from engine.query.conditions.subquery_match import SubqueryMatch
 from engine.query.select import Select
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.models.enums.task_state import UNSTARTED_STATES, TaskState
 from core.modules.tasks.models.open_dependency import OpenDependency
 from core.modules.tasks.conditions.task_tag_match import TaskTagMatch
 from core.modules.tasks.conditions.takeable_tasks import TakeableTasks
@@ -104,6 +104,9 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
     @staticmethod
     def takeable_condition(agent: Agent) -> Condition:
         return TakeableTasks(agent.id, agent.role == MAIN_ROLE)
+
+    def unstarted(self) -> Self:
+        return self.matching(Among("state", list(UNSTARTED_STATES)))
 
     def open_tasks(self) -> Self:
         return self.filter(state=TaskState.OPEN)

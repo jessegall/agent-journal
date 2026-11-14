@@ -5,7 +5,7 @@ from core.modules.assign_rules.models.assign_decision import AssignDecision
 
 
 @dataclass(frozen=True)
-class RecordAssignDecision(Command[AssignDecision]):
-    """Judges one task against the assign rules and records the decision."""
+class RecordAssignDecision(Command[tuple[AssignDecision, ...]]):
+    """Judges tasks against the assign rules in one step and records a decision for each."""
 
-    task_id: int
+    task_ids: tuple[int, ...]

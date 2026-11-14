@@ -33,7 +33,7 @@ class RecordFileChangesHandler(Handler[RecordFileChanges, None]):
         scoped = replace(context, environment_id=agent.environment_id)
         with self.scopes.opened(None, agent.environment_id):
             for change in [change for change in report.changes if not self.managed_files.has(agent, change.diff.path)]:
-                self.bus.dispatch(RecordFileEdit(agent.id, change.diff, change.rows, change.moved_from), scoped)
+                self.bus.dispatch(RecordFileEdit(agent.id, change.diff, change.rows, change.old_path), scoped)
                 self.bus.dispatch(DeliverFileEdit(agent.id, change.diff.path, report.folder, change.rows), scoped)
             self.bus.dispatch(PruneFileEdits(), scoped)
 
