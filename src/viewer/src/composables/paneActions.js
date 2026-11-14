@@ -103,9 +103,8 @@ export function usePaneActions({store, area, catalogue, counts, environment}) {
     }
 
     const toggleMenu = (id) => (menu.value = menu.value === id ? null : id);
-    const split = (id, zone) => {
-        const pane = layout().panes[id];
-        store.apply(placed(layout(), pane.active, id, zone, id));
+    const split = (id, zone, view = layout().panes[id].active) => {
+        store.apply(placed(layout(), view, id, zone, id));
         menu.value = null;
     };
     const moveTo = (id, target) => {
@@ -148,8 +147,8 @@ export function usePaneActions({store, area, catalogue, counts, environment}) {
         if (zone) store.apply(placed(layout(), view, id, zone, null));
     }
 
-    const detach = (id) => {
-        detached.detach(id);
+    const detach = (id, view) => {
+        detached.detach(id, view);
         menu.value = null;
     };
 

@@ -10,7 +10,7 @@ test("the numbers show points, sort by cost and reset", async () => {
     window.run = async (line) => (ran.push(line), rows);
     const element = await mounted(HookNumbers, window);
     await settle();
-    expect(element.querySelector("[data-number-row]").textContent).toContain("30");
+    expect(element.querySelector(".table-row:not(.head)").textContent).toContain("30");
     expect(element.textContent).toContain("Average points");
     expect(element.textContent).not.toContain("ms");
     element.querySelector("[data-numbers-sort]").click();

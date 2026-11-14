@@ -45,18 +45,24 @@ test("an empty waiting list shows an empty state", async () => {
     expect(await drawn(Waiting, waitingWindowContext({"wait waiting": page([])}))).toContain("Nothing is waiting");
 });
 
-test("the questions list shows the recommended choice first, with a chip that says so after its words", async () => {
-    const text = await drawn(Questions, questionsWindowContext({"question list": page([QUESTION])}));
-    expect(text).toContain("Which database?");
-    expect(text.indexOf("Recommended")).toBeGreaterThan(text.indexOf("postgres"));
-    expect(text.indexOf("Recommended")).toBeLessThan(text.indexOf("sqlite"));
-    expect(text.indexOf("postgres")).toBeLessThan(text.indexOf("sqlite"));
+test("the questions list shows the recommended choice with a star after its words", async () => {
+    const element = await mounted(Questions, questionsWindowContext({"question list": page([QUESTION])}));
+    document.body.append(element);
+    const postgres = element.querySelector('[data-question-option="postgres"]');
+    expect(element.textContent).toContain("Which database?");
+    expect(postgres.querySelector("[data-question-recommended]")).not.toBeNull();
+    expect(element.querySelector('[data-question-option="sqlite"] [data-question-recommended]')).toBeNull();
+    expect(postgres.compareDocumentPosition(element.querySelector('[data-question-option="sqlite"]')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 });
 
-test("a click on a choice answers the question with it", async () => {
+test("a picked choice answers the question when Answer is pressed", async () => {
     const {windowContext, runs} = recording({"question list": page([QUESTION])});
     const element = await mounted(Questions, windowContext);
+    document.body.append(element);
     element.querySelector('[data-question-option="sqlite"]').click();
+    await nextTick();
+    expect(runs).toEqual([]);
+    element.querySelector("[data-question-answer]").click();
     await nextTick();
     expect(runs).toEqual([["question", "answer", "1", "--answer", "sqlite"]]);
 });
@@ -64,22 +70,16 @@ test("a click on a choice answers the question with it", async () => {
 test("a typed answer answers the question with the text", async () => {
     const {windowContext, runs} = recording({"question list": page([QUESTION])});
     const element = await mounted(Questions, windowContext);
+    document.body.append(element);
     const input = element.querySelector("form input");
     input.value = "MariaDB";
     input.dispatchEvent(new Event("input"));
+    await nextTick();
     element.querySelector("[data-question-answer]").click();
     await nextTick();
     expect(runs).toEqual([["question", "answer", "1", "--answer", "MariaDB"]]);
 });
 
-test("the close button closes the question", async () => {
-    const {windowContext, runs} = recording({"question list": page([QUESTION])});
-    const element = await mounted(Questions, windowContext);
-    element.querySelector("[data-question-close]").click();
-    await nextTick();
-    expect(runs).toEqual([["question", "close", "1"]]);
-});
-
-test("an empty questions list shows an empty state", async () => {
-    expect(await drawn(Questions, questionsWindowContext({"question list": page([])}))).toContain("No open questions");
+test("an empty questions list says None under the Open bar", async () => {
+    expect(await drawn(Questions, questionsWindowContext({"question list": page([])}))).toContain("None");
 });

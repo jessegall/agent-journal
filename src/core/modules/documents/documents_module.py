@@ -132,7 +132,7 @@ class DocumentsModule(Module):
                                  keys=[WindowKey("library", "document library", arguments=["type", "state", "before"])]),
                WindowDeclaration("documents.page", "Document reader", "document-page.js", WindowLoading.COMPONENT, skeleton=DOCUMENTS_DOCUMENTS_SKELETON, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.DOCUMENT,
                                  reads=["document library", "doc show", "report show", "doc inspect", "report inspect", "doc comments", "report comments", "doc revisions", "doc revision", "question list", "link list"],
-                                 runs=["doc make", "report make", "doc comment", "report comment", "doc close", "doc edit", "report edit"], events=["doc.*", "report.*", "question.*"], shared_reads=["doc show id", "report show id"],
+                                 runs=["doc make", "report make", "doc comment", "report comment", "doc close", "doc edit", "report edit", "report close"], events=["doc.*", "report.*", "question.*"], shared_reads=["doc show id", "report show id"],
                                  keys=[WindowKey("library", "document library", arguments=["type", "state", "before"])]),
                WindowDeclaration("documents.document-body", "Text", "document-body.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.DOCUMENT, skeleton=[SkeletonPart.line()],
                                  reads=["doc inspect", "report inspect", "doc comments", "report comments", "doc revisions", "doc revision", "question list"],

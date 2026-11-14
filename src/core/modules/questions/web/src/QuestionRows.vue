@@ -1,43 +1,51 @@
 <script setup>
-import {ListTools, RowList, WindowRoom, useListTools, useWindow} from "@journal/window-kit";
+import {computed} from "vue";
+import {Skeleton, WindowRoom, useWindow} from "@journal/window-kit";
+import QuestionSection from "./QuestionSection.vue";
 import QuestionCard from "./QuestionCard.vue";
+import {isOpen} from "./questionWords.js";
 
+// the Questions window: two bars, Open (no count: the pane tab counts the open questions) and Done (answered and closed, with its count), both starting open
 const view = useWindow();
 view.state.tab = view.shared ? "shared" : "list";
 const key = view.shared ? `question.${view.shared.id}` : "questions";
 const {rows, failure, loaded, load} = view.props[key];
 if (view.shared) view.reload(key);
-const tools = useListTools(rows, {title: (row) => row.text, isOpen: (row) => row.state === "open"});
+const open = computed(() => rows.value.filter(isOpen));
+const done = computed(() => rows.value.filter((row) => !isOpen(row)));
 </script>
 
 <template>
     <WindowRoom padding="0">
-        <div class="questions">
-            <ListTools :tools="tools" />
-            <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No open questions" hint="Unanswered questions from the agent appear here." :searching="tools.filtering.value">
-                <template #default="{row}">
-                    <QuestionCard :row="row" flush @changed="load" />
-                </template>
-            </RowList>
+        <div class="questions" data-questions>
+            <p v-if="failure" class="note failure" role="alert">{{ failure }}</p>
+            <Skeleton v-if="!loaded" shape="rows" />
+            <template v-else>
+                <QuestionSection title="Open">
+                    <template v-for="row in open" :key="row.id"><QuestionCard window :row="row" @changed="load" /></template>
+                    <p v-if="!open.length" class="note" data-questions-none>None</p>
+                </QuestionSection>
+                <QuestionSection v-if="done.length" title="Done" :count="done.length">
+                    <template v-for="row in done" :key="row.id"><QuestionCard window :row="row" /></template>
+                </QuestionSection>
+            </template>
         </div>
     </WindowRoom>
 </template>
 
 <style scoped>
 .questions {
-    background: var(--side);
+    padding-bottom: 12px;
 }
 
-.questions :deep(.row-list) {
-    gap: 16px;
+.note {
+    margin: 0;
+    padding: 0 var(--inset);
+    color: var(--text-3);
+    font-size: 12.5px;
 }
 
-.questions :deep(.row-list-row) {
-    padding: 0;
-    border-radius: 0;
-}
-
-.questions :deep(.row-list-row:hover) {
-    background: none;
+.failure {
+    color: var(--danger);
 }
 </style>

@@ -1,17 +1,30 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, Icon, ListTools, Skeleton, WindowRoom, useListTools, useWindow} from "@journal/window-kit";
+import {ActionsMenu, Btn, CardPage, Skeleton, copying, useWindow} from "@journal/window-kit";
 import CheckDialog from "./CheckDialog.vue";
 import CheckRunBar from "./CheckRunBar.vue";
 
-// a click on a card opens its dialog; a run shows at once and the server's answer settles it, a refusal naming why
+// the checks as cards: its verdict is the state line, the command the line under it, and the one action that waits is Run, or Start for a check that was stopped.
+// A run shows at once and the server's answer settles it, a refusal naming why
 const view = useWindow();
 const {rows, failure, loaded} = view.props.checks;
-const tools = useListTools(rows, {title: (row) => row.title, isOpen: (row) => !row.stopped});
 const openedId = ref(null);
 const opened = computed(() => rows.value.find((row) => row.id === openedId.value) || null);
 const runningIds = ref(new Set());
 const refusal = ref("");
+const verdict = (row) => (row.status === "running" ? "Running" : row.last_passed === true ? "Passing" : row.last_passed === false ? "Failing" : "Not run");
+const items = computed(() => rows.value.map((row) => ({
+    id: row.id,
+    title: row.title,
+    icon: "check",
+    state: verdict(row),
+    line: row.command,
+    fault: row.last_passed === false ? row.last_output : "",
+    status: verdict(row),
+    row,
+})));
+const fields = [{key: "status", label: "State", options: ["Passing", "Failing", "Running", "Not run"].map((word) => [word, word]), get: (item) => item.status}];
+const rhythm = (row) => (row.interval_minutes ? `Every ${row.interval_minutes} minutes` : "Only when run by hand");
 
 async function start(row) {
     refusal.value = "";
@@ -26,125 +39,52 @@ async function run(row) {
     runningIds.value = new Set([...runningIds.value].filter((id) => id !== row.id));
     if (!answer.ok) refusal.value = answer.error;
 }
+
+const menuOf = (item) => [
+    {label: "Open", group: "open", run: () => (openedId.value = item.id)},
+    item.row.stopped ? {label: "Start", group: "own", run: () => start(item.row)} : {label: "Run now", group: "own", run: () => run(item.row)},
+    {label: "Copy command", group: "copy", run: ({say}) => copying(item.row.command, "the command", say)},
+];
+const place = (item) => ({head: item.title, items: menuOf(item)});
 </script>
 
 <template>
-    <WindowRoom>
-        <ListTools :tools="tools" />
-        <div class="cards">
-            <template v-if="!loaded">
-                <Skeleton shape="cards" />
-            </template>
-            <template v-else-if="failure">
-                <p class="cards-note">{{ failure }}</p>
-            </template>
-            <template v-else-if="loaded && !rows.length">
-                <p class="cards-note">No checks yet</p>
-            </template>
-            <template v-if="refusal">
-                <p class="cards-note" data-check-refusal>{{ refusal }}</p>
-            </template>
-            <template v-for="row in tools.shown.value" :key="row.id">
-                <div role="button" tabindex="0" class="card" :data-row="row.id" @click="openedId = row.id" @keydown.enter="openedId = row.id">
-                    <span class="card-head"><Icon name="check" class="card-icon" /> Check {{ row.id }}<span :class="['card-state', {failing: row.last_passed === false, passing: row.last_passed === true}]">{{ row.last_passed === true ? "Passing" : row.last_passed === false ? "Failing" : "Not run" }}</span></span>
-                    <span class="card-title">{{ row.title }}</span>
-                    <code class="card-detail">{{ row.command }}</code>
-                    <template v-if="row.run_percent !== null && row.run_percent !== undefined">
-                        <CheckRunBar :percent="row.run_percent" />
-                    </template>
-                    <template v-if="!row.stopped">
-                        <Btn small bordered class="card-run" data-check-card-run :disabled="runningIds.has(row.id)" @click.stop="run(row)">{{ runningIds.has(row.id) ? "Running" : "Run" }}</Btn>
-                    </template>
-                    <template v-else>
-                        <Btn small bordered class="card-run" data-check-card-start @click.stop="start(row)">Start</Btn>
-                    </template>
-                    <span class="card-foot">{{ row.status }} · {{ row.interval_minutes ? `Every ${row.interval_minutes} minutes` : "Only when run by hand" }}</span>
-                </div>
-            </template>
-        </div>
-        <template v-if="opened">
-            <CheckDialog :row="opened" :running="runningIds.has(opened.id)" @close="openedId = null" @run="run" />
+    <CardPage title="Checks" :items="items" :fields="fields" :place="place" empty-title="No checks yet" data-checks>
+        <template #empty>
+            <Skeleton v-if="!loaded" shape="cards" />
+            <p v-else-if="failure" class="note" role="alert">{{ failure }}</p>
+            <p v-else class="note">A check runs a command and says if it passed.</p>
         </template>
-    </WindowRoom>
+        <template #corner="{item}">
+            <span class="rhythm" data-check-rhythm>{{ rhythm(item.row) }}</span>
+        </template>
+        <template #card="{item}">
+            <template v-if="item.row.run_percent !== null && item.row.run_percent !== undefined"><CheckRunBar :percent="item.row.run_percent" /></template>
+            <template v-if="refusal"><p class="note" role="alert" data-check-refusal>{{ refusal }}</p></template>
+        </template>
+        <template #foot="{item}">
+            <Btn v-if="!item.row.stopped" small bordered data-check-card-run :disabled="runningIds.has(item.id)" @click="run(item.row)">{{ runningIds.has(item.id) ? "Running" : "Run" }}</Btn>
+            <Btn v-else small bordered data-check-card-start @click="start(item.row)">Start</Btn>
+        </template>
+        <template #card-actions="{item}">
+            <ActionsMenu :items="menuOf(item)" :head="item.title" />
+        </template>
+    </CardPage>
+    <template v-if="opened">
+        <CheckDialog :row="opened" :running="runningIds.has(opened.id)" @close="openedId = null" @run="run" />
+    </template>
 </template>
 
 <style scoped>
-.cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 12px;
-    align-content: start;
-    padding: 16px 20px;
-}
-
-.card {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    gap: 8px;
-    min-height: 110px;
-    padding: 14px 16px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--surface);
-    color: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-.card:hover {
-    border-color: var(--border-strong, var(--border));
-}
-
-.card-head {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    color: var(--text-2);
-    font-size: 13px;
-}
-
-.card-icon {
-    width: 14px;
-    height: 14px;
-}
-
-.card-title {
-    font-weight: 600;
-}
-
-.card-run {
-    align-self: flex-start;
-}
-
-.card-detail {
+.note {
     margin: 0;
-    overflow-wrap: anywhere;
-    color: var(--text-2);
-    font-size: 12px;
-    white-space: pre-wrap;
+    color: var(--text-3);
+    font-size: 12.5px;
 }
 
-.card-foot {
-    margin-top: auto;
+.rhythm {
     color: var(--text-3);
     font-size: 12px;
-}
-
-.cards-note {
-    margin: 0;
-    color: var(--text-2);
-}
-.card-state {
-    margin-left: auto;
-    color: var(--text-3);
-}
-
-.card-state.passing {
-    color: var(--accent-text);
-}
-
-.card-state.failing {
-    color: var(--danger);
+    white-space: nowrap;
 }
 </style>

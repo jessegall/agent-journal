@@ -1,9 +1,23 @@
 <script setup>
 import {computed} from "vue";
+import {copying, short} from "../domain/contextItems.js";
+import {vContext} from "../../kit/vContext.js";
 
 const props = defineProps({columns: {type: Array, required: true}, rows: {type: Array, required: true}, empty: {type: String, default: ""}});
 const emit = defineEmits(["open"]);
 const grid = computed(() => ({gridTemplateColumns: `2fr repeat(${Math.max(0, props.columns.length - 1)}, 1fr)`}));
+// the menu of a right click on a row: open it where it opens, copy its first cell (its number) or the whole row
+const place = (row) => {
+    const line = row.cells.join(" ").replace(/\s+/g, " ").trim();
+    return {
+        head: short(line, 40),
+        items: [
+            {label: "Open", group: "open", disabled: !row.open, reason: "Nothing to open", run: () => emit("open", row.open)},
+            {label: "Copy number", group: "copy", run: ({say}) => copying(String(row.cells[0] ?? ""), "", say)},
+            {label: "Copy row", group: "copy", run: ({say}) => copying(line, "the row", say)},
+        ],
+    };
+};
 </script>
 
 <template>
@@ -16,9 +30,11 @@ const grid = computed(() => ({gridTemplateColumns: `2fr repeat(${Math.max(0, pro
         <template v-for="(row, at) in rows" :key="at">
             <component
                 :is="row.open ? 'button' : 'div'"
+                v-context="() => place(row)"
                 :type="row.open ? 'button' : undefined"
-                :class="['table-row', row.tone, {opens: row.open}]"
+                :class="['table-row', row.tone, {opens: row.open, active: row.active}]"
                 :style="grid"
+                :data-table-row="row.mark"
                 @click="row.open && emit('open', row.open)"
             >
                 <template v-for="(cell, column) in row.cells" :key="column">
@@ -67,6 +83,7 @@ const grid = computed(() => ({gridTemplateColumns: `2fr repeat(${Math.max(0, pro
     cursor: pointer;
 }
 
+.table-row.active,
 .table-row.opens:hover {
     background: var(--hover);
 }

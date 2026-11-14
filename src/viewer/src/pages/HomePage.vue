@@ -1,5 +1,7 @@
 <script setup>
 import {onMounted, onUnmounted, ref} from "vue";
+import {usePageToasts} from "../composables/toasts.js";
+import ToastArea from "../kit/ToastArea.vue";
 import PaneStage from "../windows/PaneStage.vue";
 import {followEvents} from "../windows/windowCatalogue.js";
 import {startWindows} from "../windows/startup.js";
@@ -12,6 +14,7 @@ const props = defineProps({
 });
 
 const {catalogue, subscriptions, shellLine, prompts, listeners, stop, face, opened, problem} = startWindows(props);
+const toasts = usePageToasts(shellLine);
 const home = useHomeLayout(props.environment, shellLine, catalogue);
 listeners.push(home.heard);
 // the main agent, whose id the agent windows opened on the home page are given
@@ -29,6 +32,7 @@ opened.then((session) => home.load(sessionPage(session)));
         <template v-if="problem">
             <p class="home-problem" role="alert">The journal cannot show this page: {{ problem }}</p>
         </template>
+        <ToastArea :toasts="toasts" />
         <PaneStage page="home" :face="face" :agent="mainAgent" :store="home.store" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :prompts="prompts" :shell-read="shellLine" />
     </div>
 </template>

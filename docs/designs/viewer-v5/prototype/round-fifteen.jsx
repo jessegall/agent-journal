@@ -1,10 +1,10 @@
-// Round fifteen (message 121280; critiques doc 1283, doc 1284, report 1408). Loaded after round fourteen.
-// Replaces by name: Icon, Menu, FloatMenu, MenuItem, plainLabel, ActionMenu, R14Off, R14AgentActions, AgentInspector, HomeAgentBar,
-// R8Dot, R8Card, R8TaskLine, R13Sandbox, R13Message, QuestionCard, QuestionsWindow. Sets NOW_WINDOWS.chat and NOW_WINDOWS.questions.
+// Round fifteen (message 121280; critiques doc 1283, doc 1284, report 1408), with the round-seventeen corrections. Loaded after round fourteen.
+// Replaces by name: Icon, Menu, FloatMenu, MenuItem, ActionMenu, R14Off, R14AgentActions, HomeAgentBar,
+// R8Dot, R8Card, R8TaskLine, R13Sandbox, R13Message, QuestionCard. Sets NOW_WINDOWS.chat.
 // 1. Current app parts are copies: the icons are kit/Icon.vue's shapes, the tooltip is the app's (kit/tip.js: below, centred, flips above, 9 px gap,
 //    8 px from the window edge) in place of the native title, menus are MenuPanel and MenuItem, the question block is QuestionCard flush.
 // 2. Every dropdown floats and flips (FloatMenu); nothing a scroll box holds can clip it.
-// 3. Words: one table, R15_WORDS for controls and R15_TEXT for other text, short nouns and plain words. A sentence label is a bug.
+// 3. Words are written where they are used: short nouns and plain words. Nothing rewrites a word at run time; a sentence label is a bug.
 
 /* ---------- 1. icons: kit/Icon.vue, copied ---------- */
 const R15_SHAPES = {
@@ -101,51 +101,6 @@ function Icon({name, size = 14, style}) {
   return <span className="ico" style={style}>{shape ? <svg {...svg} dangerouslySetInnerHTML={{__html: shape}} /> : <svg {...svg}><path d={ICONS[name] || ICONS.doc} /></svg>}</span>;
 }
 
-/* ---------- 3. words: one table; a sentence label is a bug ---------- */
-// the program fact's menu keeps the app's own words (InformationBar.vue 118-119)
-delete PLAIN_LABELS["Stop it"];
-delete PLAIN_LABELS["Keep it running"];
-const R15_WORDS = Object.assign(PLAIN_LABELS, {
-  "Copy a share link": "Share link", "Remove the memory": "Remove", "Show the log": "Log", "Keep the secret": "Save", "Run it again": "Rerun", "Make an agent read it now": "Require",
-  "Open the process queue": "Process queue", "Open its files in Files": "Files", "Use the journal version": "Journal version", "Mark as needing no action": "Settle",
-  "Duplicate as a project profile": "Duplicate", "Show the sidebar as": "Sidebar", "Add a trigger": "Trigger", "Send it on row": "Send", "Fill it in": "Fill", "Share with the team": "Share",
-  "Add a server": "Add", "Add the server": "Add", "Install a plugin": "Install", "Share my change": "Share", "Clear the context": "Clear", "Copy the show command": "Copy command",
-  "Copy its number": "Copy number", "Delete the secret": "Delete", "Remove the server": "Remove", "Give it a secret": "Secret", "Which agents must read it": "Readers",
-  "Require it for a profile": "Profile", "Open SKILL.md in Files": "SKILL.md", "Check again": "Check", "Make it read": "Require", "Require it": "Require", "Give it": "Give",
-  "Clear the filters": "Clear", "Clear the search": "Clear", "Send a job": "Send job", "Change driver": "Driver", "Session history": "History", "Lift this hold": "Lift hold",
-});
-// other text a person reads: exact text, or the exact part of a text that a value splits
-const R15_TEXT = {
-  "Search the journal, or jump to a page": "Search", "Waiting on you": "Asks", "Waiting on you: 4": "Asks: 4", "Jesse's phone is connected": "Phone connected", "Running beside main": "Helpers",
-  "Retired during the upgrade: 2": "Retired by upgrade: 2", ". It takes no more actions.": "", "Paused.": "Paused",
-  " Waiting processes get no place until you resume the queue; running ones go on, and reads and edits still start at once.": "",
-  "Waiting processes get no place until you resume the queue; running ones go on, and reads and edits still start at once.": "",
-  "Clear drops all ": "Drops ", "k tokens. The agent starts again from its overview and memories.": "k tokens", "Through an API. Not what your plan charges.": "API price",
-  ", the agent that made it": "", "No: it only tells": "No", "Holds the agent": "Holds", "helpers may use it": "Helpers", "No program may use it yet": "No program",
-  "Newer in the library": "Newer", "Changed here": "Changed", "Not followed": "Unfollowed", "Your change is shared": "Shared", "Plugin installed, off until you turn it on": "Installed, off",
-  "Who it is": "Identity", "When it is used": "Use", "What it is": "Description", "What it keeps in mind": "Text", "What it kept in mind": "Text", "What it tells": "Text",
-  "What it is for": "Purpose", "Its parts": "Parts", "Runs at each phase end": "Phase end", "Deleted: their values are kept": "Deleted", "Where a row opens": "Opens in",
-  "What it says": "Text", "When it is read": "Triggers", "An agent starts this profile by its name, and reads When it is used to decide when.": "",
-  " tasks done": " done", "version-5 · environment 5 ▾": "version-5 · environment 5",
-  "Why does it stop?": "Reason", "Why is it cancelled?": "Reason", "What does it wait on?": "Reason", "Why do you pause it?": "Reason", "What was the outcome?": "Outcome",
-  "Which agents read it at their start": "Readers", "When these words appear": "Words", "Tell the agent…": "Message", "It waits on…": "Reason",
-  "Keeps a summary and frees most of the tokens": "", "Starts again from the overview and memories": "",
-};
-const R15_PLACE = {"Tell the agent…": "Message", "Comment on this file, or pick lines first": "Comment", "Allow a program, such as curl": "Program", "Add a field": "Field",
-  "Filter files": "Filter", "Message the main agent": "Message the agent", "It waits on…": "Reason", "What it is for": "Purpose", "Optional": "Reason"};
-const r15Say = (t) => (typeof t === "string" && R15_TEXT[t] != null ? R15_TEXT[t] : t);
-// a menu line under an item: a command, or at most three plain words
-const r15Desc = (d) => (typeof d !== "string" || /^journal /.test(d) || d.trim().split(/\s+/).length <= 3 ? d : null);
-
-function plainLabel(text, {checkable} = {}) {
-  if (typeof text !== "string") return {word: text};
-  if (R15_WORDS[text] != null) return {word: R15_WORDS[text]};
-  if (!checkable && PLAIN_OPENS[text]) return {icon: "open", word: PLAIN_OPENS[text]};
-  const opens = !checkable && OPEN_VERB.exec(text);
-  if (opens) return {icon: "open", word: cap(opens[2]) || opens[1]};
-  return {word: text};
-}
-
 /* ---------- the app's tooltip (kit/tip.js) in place of every native title ---------- */
 const R15_TIP = {el: null, timer: 0, target: null};
 function r15TipLayer() {
@@ -161,7 +116,7 @@ function r15Tipped(node) {
   const el = node.closest("[title], [data-tip]");
   if (!el) return null;
   if (el.hasAttribute("title")) {
-    const words = r15Say(el.getAttribute("title"));
+    const words = el.getAttribute("title");
     el.removeAttribute("title");
     if (words) el.setAttribute("data-tip", words); else el.removeAttribute("data-tip");
     if (words && !el.hasAttribute("aria-label") && !el.textContent.trim()) el.setAttribute("aria-label", words);
@@ -191,28 +146,6 @@ function r15TipHide() {
   R15_TIP.el?.classList.remove("on");
 }
 
-/* ---------- the word pass: R15_TEXT over text a person reads, R15_PLACE and one Search over placeholders ---------- */
-const R15_KEEP = ".md, .r13-chat, pre, code, textarea, .now-term, .now-feed, .mono, .question-open, .question-context";
-function r15Placeholder(el) {
-  const p = el.getAttribute("placeholder");
-  if (!p || el.closest(".r13-chat, .question")) return;
-  const to = R15_PLACE[p] ?? (/^(Search|Find) /.test(p) ? "Search" : null);
-  if (to && to !== p) el.setAttribute("placeholder", to);
-}
-function r15Words(root) {
-  if (root.nodeType === 3) { r15Text(root); return; }
-  if (root.nodeType !== 1) return;
-  const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  for (let n = walk.nextNode(); n; n = walk.nextNode()) r15Text(n);
-  if (root.matches("[placeholder]")) r15Placeholder(root);
-  root.querySelectorAll("[placeholder]").forEach(r15Placeholder);
-}
-function r15Text(n) {
-  const v = n.nodeValue;
-  const to = R15_TEXT[v] ?? R15_TEXT[v.trim()];
-  if (to === undefined || to === v || n.parentElement?.closest(R15_KEEP)) return;
-  n.nodeValue = to;
-}
 // a band that scrolls sideways fades at its right edge while more lies past it
 function r15Fades() {
   document.querySelectorAll(".insp-bar .now-info.card, .r8-band .now-info.card").forEach((b) => b.classList.toggle("r15-more", b.scrollWidth - b.scrollLeft - b.clientWidth > 2));
@@ -226,14 +159,7 @@ if (!window.__r15) {
   window.addEventListener("scroll", () => { r15TipHide(); r15Fades(); }, true);
   window.addEventListener("resize", r15Fades);
   let queued = false;
-  new MutationObserver((list) => {
-    for (const m of list) {
-      if (m.type === "characterData") r15Text(m.target);
-      else if (m.type === "attributes") r15Placeholder(m.target);
-      else m.addedNodes.forEach(r15Words);
-    }
-    if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; r15Fades(); }); }
-  }).observe(document.body, {childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["placeholder"]});
+  new MutationObserver(() => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; r15Fades(); }); } }).observe(document.body, {childList: true, subtree: true});
 }
 
 /* ---------- 2. every dropdown floats, flips above when there is no room below, and follows its button ---------- */
@@ -285,15 +211,12 @@ function FloatMenu({button, children, align = "left", width}) {
 }
 function Menu({button, children, align = "right", width}) { return <FloatMenu button={button} align={align} width={width}>{children}</FloatMenu>; }
 
-// MenuItem as the app's: icon or none, the word, a line under it only when it is a command or a few words; an action that cannot run is greyed and says why
+// MenuItem as the app's: icon or none, the word, a line under it (a command or a few words); an action that cannot run is greyed and says why
 function MenuItem({icon, check, children, desc, hint, danger, onClick, off}) {
-  const p = plainLabel(children, {checkable: check !== undefined});
-  const slotIcon = p.icon || icon;
-  const slot = check !== undefined ? <span className="slot">{check && <Icon name="tick" size={12} />}</span> : slotIcon && <span className="slot"><Icon name={slotIcon} size={13} /></span>;
-  const line = off ? desc : r15Desc(desc);
+  const slot = check !== undefined ? <span className="slot">{check && <Icon name="tick" size={12} />}</span> : icon && <span className="slot"><Icon name={icon} size={13} /></span>;
   return <button type="button" role={check !== undefined ? "menuitemcheckbox" : "menuitem"} aria-checked={check} aria-disabled={off ? "true" : undefined}
-    className={"menu-item" + (danger ? " danger" : "") + (off ? " off" : "") + (line ? " described" : "")} onClick={off ? (e) => e.preventDefault() : onClick}>
-    {slot}<span className="grow menu-item-text"><span>{p.word}</span>{line && <small className="desc">{r15Say(line)}</small>}</span>{hint != null && <span className="hint">{hint}</span>}
+    className={"menu-item" + (danger ? " danger" : "") + (off ? " off" : "") + (desc ? " described" : "")} onClick={off ? (e) => e.preventDefault() : onClick}>
+    {slot}<span className="grow menu-item-text"><span>{children}</span>{desc && <small className="desc">{desc}</small>}</span>{hint != null && <span className="hint">{hint}</span>}
   </button>;
 }
 function R14Off({icon, label, why}) { return <MenuItem icon={icon} off desc={why}>{label}</MenuItem>; }
@@ -327,20 +250,19 @@ function ActionMenu({actions, label = "Actions", onDone}) {
   const groups = [...new Set(actions.map((a) => a.group))];
   const optionsOf = (f) => f.kind === "agent" ? AGENTS.map((a) => [a.name, `${a.name} · ${a.role}`]) : f.options;
   const picks = (f) => Boolean(optionsOf(f));
-  const word = (a) => plainLabel(a.label).word;
   const reset = () => { setAsking(null); setRefusal(null); };
-  const fire = (a, close) => { const why = a.run?.(value); if (typeof why === "string") { setRefusal({label: a.label, why}); if (!a.field) setAsking(null); return; } setRefusal(null); close(); if (why !== false) onDone?.(a.done || word(a)); };
-  const head = (a) => <div className="row"><Btn icon="back" small title="Back" onClick={reset} /><b className="r15-menu-head">{word(a)}</b></div>;
+  const fire = (a, close) => { const why = a.run?.(value); if (typeof why === "string") { setRefusal({label: a.label, why}); if (!a.field) setAsking(null); return; } setRefusal(null); close(); if (why !== false) onDone?.(a.done || a.label); };
+  const head = (a) => <div className="row"><Btn icon="back" small title="Back" onClick={reset} /><b className="r15-menu-head">{a.label}</b></div>;
   return <FloatMenu align="right" width={260} button={({toggle, open}) => <MenuButton label={label} open={open} onClick={() => { reset(); toggle(); }} />}>
     {(close) => asking?.panel ? <div className="menu-form">{head(asking)}{asking.panel()}</div>
       : asking ? <form className="menu-form" onSubmit={(e) => { e.preventDefault(); fire(asking, close); }}>
         {head(asking)}
-        {picks(asking.field) ? <select aria-label={r15Say(asking.field.label)} value={value} onChange={(e) => setValue(e.target.value)}>{optionsOf(asking.field).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
-          : <textarea autoFocus rows={3} aria-label={r15Say(asking.field.label)} placeholder={r15Say(asking.field.label)} value={value} onChange={(e) => setValue(e.target.value)} />}
+        {picks(asking.field) ? <select aria-label={asking.field.label} value={value} onChange={(e) => setValue(e.target.value)}>{optionsOf(asking.field).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
+          : <textarea autoFocus rows={3} aria-label={asking.field.label} placeholder={asking.field.label} value={value} onChange={(e) => setValue(e.target.value)} />}
         {refusal && <div className="refusal" role="alert"><Icon name="warn" size={12} /><span>{refusal.why}</span></div>}
-        <div className="row" style={{justifyContent: "flex-end"}}><Btn small onClick={reset}>Back</Btn><Btn type="submit" small variant={asking.danger ? "danger" : "primary"} disabled={!picks(asking.field) && !value.trim()}>{asking.confirm || word(asking)}</Btn></div>
+        <div className="row" style={{justifyContent: "flex-end"}}><Btn small onClick={reset}>Back</Btn><Btn type="submit" small variant={asking.danger ? "danger" : "primary"} disabled={!picks(asking.field) && !value.trim()}>{asking.confirm || asking.label}</Btn></div>
       </form>
-      : <>{refusal && <div className="menu-form"><div className="refusal" role="alert"><Icon name="warn" size={12} /><span><b>{word(refusal)}</b>: {refusal.why}</span></div></div>}
+      : <>{refusal && <div className="menu-form"><div className="refusal" role="alert"><Icon name="warn" size={12} /><span><b>{refusal.label}</b>: {refusal.why}</span></div></div>}
         {groups.map((g, gi) => <React.Fragment key={g}>{gi > 0 && <div className="menu-sep" />}<div className="menu-label">{g}</div>
           {actions.filter((a) => a.group === g).map((a) => <MenuItem key={a.label} icon={a.icon} danger={a.danger} off={Boolean(a.off)} desc={a.off || a.desc} hint={a.field || a.panel ? "…" : a.hint}
             onClick={() => { if (a.panel) { setAsking(a); return; } if (a.field) { setValue(picks(a.field) ? (a.field.value ?? optionsOf(a.field)[0][0]) : (a.field.value ?? "")); setRefusal(null); setAsking(a); } else fire(a, close); }}>{a.label}</MenuItem>)}
@@ -359,6 +281,7 @@ function R8Dot({a}) {
   const words = [a.doing, a.since, a.seen].join("\n");
   return <span className="r8-dot" data-state={a.dot} tabIndex={0} aria-label={words} title={words} onClick={(e) => e.stopPropagation()}><i /></span>;
 }
+// the third line of every agent row: plan and task (or a helper's job), then the rate and its bar for a worker; a dash when there is nothing
 function R8TaskLine({a}) {
   const {open} = useOpen();
   const ts = r8TasksOf(a);
@@ -370,34 +293,23 @@ function R8TaskLine({a}) {
   return <span className="r8-task-line">
     {a.plan && <button type="button" className="r8-ref" title={PLANS.find((p) => p.id === a.plan)?.title} onClick={go("plan", a.plan)}>Plan {a.plan}</button>}
     {t && <button type="button" className="r8-ref quiet" title={t.title} onClick={go("task", t.id)}>Task {t.id}</button>}
+    {!a.plan && !t && <span className="r8-faint">—</span>}
     <span className="grow" />
     {a.role !== "main" && <span className="r8-faint" title="Tasks an hour">{a.perHour}/h</span>}
     {a.role !== "main" && ts.length > 0 && <span className="r8-tbar" title={`${done} of ${ts.length} done`}><i style={{width: `${(done / ts.length) * 100}%`}} /><i className="testing" style={{width: `${(testing / ts.length) * 100}%`}} /></span>}
   </span>;
 }
+// the profile word only when the name does not already say it: Worker 4 has none, Main agent says builder, Helper 851 designer
+const r15Role = (a) => (a.title.toLowerCase().includes(String(a.sub).toLowerCase()) ? "" : a.sub);
+// every row is three lines: name (and profile), identity (with the unit when there is one), the task line; the whole row opens, no chevron
 function R8Card({a, index, onOpen}) {
   return <div className={"r8-card" + (a.lingering ? " lingering" : "")} data-state={a.dot} role="button" tabIndex={0} onClick={() => onOpen(a)} onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onOpen(a))}>
     <span className="r8-rail" aria-hidden="true" />
-    <span className="r8-head"><span className="r8-title">{a.title}</span><span className="r8-sub">{a.sub}</span><span className="r8-chev"><Icon name="right" size={11} /></span></span>
-    <span className="r8-line r13-line"><span className="r8-identity">{[a.program, a.model, a.effort].join(" · ")}</span>{a.sandboxOff && <R13Sandbox />}</span>
-    {a.unit && <span className="r8-unit">Unit: {a.unit}</span>}
+    <span className="r8-head"><span className="r8-title">{a.title}</span>{r15Role(a) && <span className="r8-sub">{r15Role(a)}</span>}</span>
+    <span className="r8-line r13-line"><span className="r8-identity">{[a.program, a.model, a.effort, a.unit].filter(Boolean).join(" · ")}</span>{a.sandboxOff && <R13Sandbox />}</span>
     <R8TaskLine a={a} />
     <R8Dot a={a} />
   </div>;
-}
-function AgentInspector({id, onClose, onOpen, onBack}) {
-  const a = r8Agent(id);
-  const toast = useToast();
-  const [paused, setPaused] = useState(false);
-  const state = a.retired ? "retired" : a.ended ? "ended" : paused ? "paused" : a.dot === "waiting" ? "blocked" : "started";
-  const title = <span className="r8-name"><i className="r8-sdot" data-state={paused ? "waiting" : a.dot} />{a.name}{a.sandboxOff && <R13Sandbox />}</span>;
-  const bar = <div className="r8-who">{a.retired ? <span className="r8-faint">Retired {a.retiredAt} by {a.retiredBy}</span> : <InfoBar agentId={a.id} card />}<p className="r8-started">Started by {a.startedBy}{a.job ? <> · {a.jobTitle}</> : null}</p></div>;
-  const tabs = [
-    {key: "overview", label: "Overview", flush: true, render: () => <R8Overview a={a} />},
-    {key: "memories", label: "Memories", count: a.memories, render: () => <AgentMemoriesTab />},
-  ];
-  return <InspectorShell term="agent" id={a.id} kind={`Agent ${a.id} · ${a.number}`} state={state} title={title} bar={bar} width="medium" actions={r15AgentActions(a, paused, setPaused)} tabs={tabs} comments={false}
-    links={r8TasksOf(a).map((t) => ({kind: "Task", term: "task", id: t.id, title: t.title, state: t.state, icon: "task"}))} onClose={onClose} onOpen={onOpen} onBack={onBack} />;
 }
 
 /* ---------- the agent bar: AgentBar.vue (Plan is plain text), one process count with a tooltip that says what it counts ---------- */
@@ -416,7 +328,7 @@ function HomeAgentBar() {
     <span className="grow" />
     <button type="button" className={"btn icon now-pause" + (paused ? " paused" : "")} aria-label={paused ? "Resume" : "Pause"} title={paused ? "Resume" : "Pause"} onClick={() => setPaused(!paused)}><Icon name={paused ? "resume" : "pause"} size={16} /></button>
     <span className="now-divider" />
-    <button type="button" className="now-count" aria-label="Process queue" title={`Process queue: ${running} running, ${waiting} waiting`} onClick={() => q9OpenQueue(open)}><Icon name="term" size={12} />{running + waiting}</button>
+    <button type="button" className="now-count" aria-label="Process queue" title={`Process queue · ${running} running · ${waiting} waiting`} onClick={() => q9OpenQueue(open)}><Icon name="term" size={12} />{running + waiting}</button>
     <FloatMenu align="right" width={280} button={({toggle}) => <button type="button" className="now-count" aria-label="Helpers" title="Helpers" onClick={toggle}><Icon name="agents" size={12} />{helpers.length}</button>}>{(close) => <>
       <div className="menu-label">Helpers</div>
       {helpers.map((a) => <MenuItem key={a.id} icon="agent" desc={a.task ? `Task ${a.task}` : a.role} hint={STATE_WORDS[a.state]} onClick={() => { open("agent", a.id); close(); }}>{a.name}</MenuItem>)}
@@ -434,8 +346,8 @@ function R13Message({r}) {
   return <article className="message" data-from={r.me ? "user" : "agent"}>
     <div className="message-body">
       <div className={"message-card md" + (r.comment ? " comment" : "")}>
-        {r.comment && <button type="button" className="message-comment-head" title={`Open ${r.comment[0]} ${r.comment[1]}`} onClick={() => open(r.comment[0], r.comment[1])}><Icon name="bubble" size={12} /><span>Comment on {r.comment[0]} {r.comment[1]}</span></button>}
-        {r.quote && <div className="message-quote" title="Go to what this answers">{r.quote}</div>}
+        {r.comment && <button type="button" className="message-comment-head" title={`${r.comment[0]} ${r.comment[1]}`} onClick={() => open(r.comment[0], r.comment[1])}><Icon name="bubble" size={12} /><span>Comment · {r.comment[0]} {r.comment[1]}</span></button>}
+        {r.quote && <div className="message-quote">{r.quote}</div>}
         {r.worker && <button type="button" className="message-worker" onClick={() => open("agent", r.worker)}>Worker {r.worker}</button>}
         <R13Text text={r.text} />
         {r.card && <a className="row-card" href="#" onClick={(e) => { e.preventDefault(); open(r.card[0], r.card[1]); }}><span className="row-card-type">{TERM_WORDS[r.card[0]]} {r.card[1]}</span><span className="row-card-title">{r.card[2]}</span></a>}
@@ -481,7 +393,7 @@ function R15Chat() {
 }
 NOW_WINDOWS.chat = R15Chat;
 
-/* ---------- questions: QuestionCard.vue flush and QuestionActions.vue, with the three asked changes (121164) ---------- */
+/* ---------- questions in the chat: QuestionCard.vue flush and QuestionActions.vue, with the three asked changes (121164) ---------- */
 // no state badge; an open question lightly highlighted; an answered one dimmed in colour, still readable
 function QuestionCard({q}) {
   const {open} = useOpen();
@@ -498,24 +410,16 @@ function QuestionCard({q}) {
     {state !== "open" ? <p className="question-closed">{state === "answered" ? <><b className="question-answered">Answered:</b> <span className="question-answer">{answer}</span></> : "Closed"}</p> : <>
       <div className="question-options">{q.options.map((o) => <button key={o} type="button" className={"question-option" + (o === q.recommended ? " recommended" : "")} onClick={() => settle(o)}><i className="question-ring" /><span className="question-option-text">{o}</span>{o === q.recommended && <span className="question-chip">Recommended</span>}</button>)}</div>
       <form className="question-form" onSubmit={(e) => { e.preventDefault(); if (typed.trim()) settle(typed.trim()); }}>
-        <input className="text-input question-input" value={typed} placeholder="Or answer in your own words…" aria-label="Answer" onChange={(e) => setTyped(e.target.value)} />
+        <input className="text-input question-input" value={typed} placeholder="Other" aria-label="Answer" onChange={(e) => setTyped(e.target.value)} />
         <span className="question-buttons">
           <Btn small onClick={() => { setState("closed"); toast(`Question ${q.id} closed`); }}>Close</Btn>
-          <Btn small disabled={elaborated} onClick={() => { setElaborated(true); toast("The agent elaborates"); }}>{elaborated ? "Asked to elaborate" : "Elaborate"}</Btn>
+          <Btn small disabled={elaborated} onClick={() => { setElaborated(true); toast("Elaboration asked"); }}>{elaborated ? "Asked" : "Elaborate"}</Btn>
           <Btn variant="primary" small type="submit">Answer</Btn>
         </span>
       </form>
     </>}
   </section>;
 }
-function QuestionsWindow() {
-  const rows = [...Q11_QUESTIONS.filter((q) => q.state !== "answered"), ...Q11_QUESTIONS.filter((q) => q.state === "answered")];
-  return <div className="r15-questions">
-    {!rows.length && <Empty title="No open questions" />}
-    {rows.map((q) => <QuestionCard key={q.id} q={q} />)}
-  </div>;
-}
-NOW_WINDOWS.questions = QuestionsWindow;
 
 /* ---------- pane tab counts read the rows, as the app's do ---------- */
 NOW_COUNTS.questions = Q11_QUESTIONS.filter((q) => (q.state || "open") === "open").length;
@@ -523,4 +427,4 @@ NOW_COUNTS.tasks = TASKS.filter((t) => !["completed", "cancelled"].includes(t.st
 NOW_COUNTS.plans = PLANS.filter((p) => !["completed", "cancelled"].includes(p.state)).length;
 NOW_COUNTS.agents = R8_AGENTS.filter((a) => !a.ended).length;
 
-Object.assign(window, {R15_SHAPES, R15_ALIAS, R15_WORDS, R15_TEXT, Icon, plainLabel, FloatMenu, Menu, MenuItem, R14Off, ActionMenu, R14AgentActions, R13Sandbox, R8Dot, R8TaskLine, R8Card, AgentInspector, HomeAgentBar, R13Message, R15Chat, QuestionCard, QuestionsWindow});
+Object.assign(window, {R15_SHAPES, R15_ALIAS, Icon, FloatMenu, Menu, MenuItem, R14Off, ActionMenu, R14AgentActions, R13Sandbox, R8Dot, R8TaskLine, R8Card, HomeAgentBar, R13Message, R15Chat, QuestionCard});

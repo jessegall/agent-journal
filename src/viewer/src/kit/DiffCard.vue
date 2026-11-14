@@ -2,6 +2,9 @@
 import {computed, onMounted, onUnmounted, ref} from "vue";
 import TimeAgo from "../../kit/TimeAgo.vue";
 import Icon from "./Icon.vue";
+import {copying} from "../domain/contextItems.js";
+import {href, openFileInspector} from "../route.js";
+import {vContext} from "../../kit/vContext.js";
 
 const props = defineProps({
     path: {type: String, required: true},
@@ -32,6 +35,15 @@ function openWithKey(e) {
     e.stopPropagation();
     emit("open", props.path);
 }
+// the menu of a right click on the card's head: open the file, fold or unfold the card, copy the path
+const place = () => ({
+    head: props.path,
+    items: [
+        {label: "Open file", group: "open", disabled: gone.value, reason: "Deleted", run: () => (location.hash = href.file(props.path))},
+        {label: props.folded ? "Unfold" : "Fold", group: "open", disabled: gone.value, reason: "Deleted", run: () => emit("fold")},
+        {label: "Copy path", group: "copy", run: ({say}) => copying(props.path, "the path", say)},
+    ],
+});
 const BADGES = {new: "created", deleted: "deleted", moved: "moved"};
 const SIGNS = {add: "+", del: "−"};
 
@@ -82,6 +94,7 @@ onUnmounted(() => sized && sized.disconnect());
 <template>
     <section :class="['diff-card', {half, gone, entering, flush, folded, capped}]">
         <header
+            v-context="place"
             class="diff-card-head"
             :title="gone ? null : folded ? 'Show the changes' : 'Collapse this card'"
             @click="!gone && emit('fold')"
@@ -99,6 +112,7 @@ onUnmounted(() => sized && sized.disconnect());
             <span :class="['diff-card-count', 'add', {zero: !added}]">+{{ added }}</span>
             <span :class="['diff-card-count', 'del', {zero: !removed}]">−{{ removed }}</span>
             <TimeAgo class="diff-card-ago" :at="at" />
+            <button type="button" class="diff-card-open" title="Open in the inspector" aria-label="Open in the inspector" data-diff-open @click.stop="openFileInspector(path)"><Icon name="open" :size="13" /></button>
             <template v-if="whole && whole.old !== undefined">
                 <button
                     type="button"
@@ -459,5 +473,20 @@ onUnmounted(() => sized && sized.disconnect());
     from {
         opacity: 0;
     }
+}
+
+.diff-card-open {
+    display: inline-flex;
+    padding: 2px;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    color: var(--text-3);
+    cursor: pointer;
+}
+
+.diff-card-open:hover {
+    background: var(--hover);
+    color: var(--text);
 }
 </style>

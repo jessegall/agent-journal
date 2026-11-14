@@ -18,3 +18,12 @@ def test_the_questions_window_shows_one_block_per_question_at_wide_and_phone_wid
     story.expect_success(f'question answer 3 --answer "{LONG_ANSWER}"')
     with server_story(story) as server:
         expect_browser(server, "questionCards.browser.mjs", ["/tmp/journal-worker-536-question-cards"])
+
+
+def test_a_click_on_the_option_that_is_not_recommended_records_that_option(new_story):
+    story = new_story(fixture=UserBuilder)
+    story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
+    story.expect_success('question ask "Unblock the plans?" --context "A story asks this so the clicked answer can be checked." --options "They stay blocked" "Unblock them now" --recommend "They stay blocked" --environment main', actor=story.agent)
+    with server_story(story) as server:
+        expect_browser(server, "questionPick.browser.mjs", ["Unblock them now"])
+    story.expect_success("question show 1", "state: answered", "answer: Unblock them now")

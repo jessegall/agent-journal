@@ -1,19 +1,27 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, ListTools, RowList, TimeAgo, WindowRoom, ResourceLinks, peekRef, useListTools, useWindow} from "@journal/window-kit";
+import {Btn, FilterBar, ListReaderLayout, PageHeader, Skeleton, applyFilter, copying, defaultFilter, useWindow} from "@journal/window-kit";
+import TranscriptionReader from "./TranscriptionReader.vue";
 
+const LIST_WIDTH = 400;
 const view = useWindow();
 const {rows, failure, loaded, act, actionFailure} = view.props.transcriptions;
 const sources = view.props.sources;
-const tools = useListTools(rows, {title: (row) => `${row.title} ${row.text}`});
+const chosen = ref(null);
 const drafting = ref(false);
 const draft = ref({title: "", text: ""});
-const opened = ref(null);
-const openedText = ref("");
 const notice = ref("");
+const filter = ref(defaultFilter([]));
+const words = ref("");
 
 const canMake = computed(() => draft.value.title.trim() && draft.value.text.trim());
-const preview = (row) => row.text.trim().slice(0, 140);
+const dayOf = (at) => {
+    const day = new Date(at).toDateString();
+    if (day === new Date().toDateString()) return "Today";
+    return day === new Date(Date.now() - 86400000).toDateString() ? "Yesterday" : new Date(at).toLocaleDateString();
+};
+const listed = computed(() => rows.value.map((row) => ({id: row.id, title: row.title, desc: row.text.trim().slice(0, 140), group: dayOf(row.created_at), row})));
+const shown = computed(() => applyFilter(listed.value, [], filter.value, words.value, ["title", "desc"]));
 
 async function make() {
     const result = await act(["transcription", "make", draft.value.title.trim(), "--text", draft.value.text]);
@@ -22,48 +30,39 @@ async function make() {
     drafting.value = false;
 }
 
-function open(row) {
-    opened.value = row;
-    openedText.value = row.text;
-}
-
-const openLinked = (target) => peekRef(`${target.table}:${target.id}`);
-
-function readLinks(line) {
-    const flags = {};
-    for (const name of ["page", "page-size", "kind"]) {
-        const index = line.indexOf(`--${name}`);
-        if (index >= 0) flags[name] = line[index + 1];
-    }
-    return view.readKey(`links.${opened.value.id}`, flags);
-}
-
-async function save() {
-    const result = await act(["transcription", "edit", String(opened.value.id), "--text", openedText.value]);
-    if (result.ok) opened.value = {...opened.value, text: openedText.value};
-}
+const save = (item, text) => act(["transcription", "edit", String(item.id), "--text", text]);
 
 async function fetchFrom(server) {
     const result = await act(["transcription", "fetch", server.name]);
     if (result.ok) notice.value = `The agent was asked to fetch transcriptions from ${server.title}.`;
 }
+
+// a transcription is only read and edited: its menu has Open and two copies, never Duplicate or Delete
+const place = (item) => ({
+    head: item.title,
+    items: [
+        {label: "Open", group: "open", disabled: item.id === chosen.value, reason: "Already open", run: () => (chosen.value = item.id)},
+        {label: "Copy number", group: "copy", run: ({say}) => copying(String(item.id), String(item.id), say)},
+        {label: "Copy text", group: "copy", run: ({say}) => copying(item.row.text, "text", say)},
+    ],
+});
 </script>
 
 <template>
-    <WindowRoom>
-        <div class="transcriptions" data-transcriptions>
-            <div class="bar">
-                <Btn small data-transcription-new @click="drafting = !drafting">New transcription</Btn>
-                <template v-for="server in sources.rows.value" :key="server.name">
-                    <Btn small :data-transcription-fetch="server.name" @click="fetchFrom(server)">Fetch transcriptions from {{ server.title }}</Btn>
+    <ListReaderLayout v-model:chosen="chosen" :items="shown" :list-width="LIST_WIDTH" :place="place" empty-title="No transcriptions yet" pick-line="No transcription chosen" data-transcriptions>
+        <template #top>
+            <PageHeader title="Transcriptions" :count="rows.length">
+                <template #primary><Btn small variant="primary" data-transcription-new @click="drafting = !drafting">New transcription</Btn></template>
+                <template #actions>
+                    <template v-for="server in sources.rows.value" :key="server.name">
+                        <Btn small :data-transcription-fetch="server.name" @click="fetchFrom(server)">Fetch transcriptions from {{ server.title }}</Btn>
+                    </template>
                 </template>
-                <template v-if="notice">
-                    <span class="note" data-transcription-notice>{{ notice }}</span>
-                </template>
-            </div>
-            <template v-if="actionFailure">
-                <p class="failure">{{ actionFailure }}</p>
-            </template>
+            </PageHeader>
+            <FilterBar v-model="filter" v-model:words="words" :fields="[]" :rows="listed" :shown="shown.length" placeholder="Search transcriptions" />
+            <p v-if="notice" class="note" data-transcription-notice>{{ notice }}</p>
+            <p v-if="actionFailure" class="note failed" role="alert">{{ actionFailure }}</p>
+            <p v-if="failure" class="note failed" role="alert">{{ failure }}</p>
             <template v-if="drafting">
                 <form class="form" data-transcription-form @submit.prevent="make">
                     <input v-model="draft.title" placeholder="Title" aria-label="Title">
@@ -71,79 +70,34 @@ async function fetchFrom(server) {
                     <Btn small variant="primary" type="submit" :disabled="!canMake">Save</Btn>
                 </form>
             </template>
-            <ListTools :tools="tools" />
-            <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No transcriptions yet" hint="Transcripts of recordings appear here." :searching="tools.filtering.value">
-                <template #default="{row}">
-                    <button type="button" class="row" :data-transcription="row.id" @click="open(row)">
-                        <span class="title">{{ row.title }}</span>
-                        <span class="note">{{ row.source || "pasted" }} · <TimeAgo :at="row.created_at" /></span>
-                        <span class="note">{{ preview(row) }}</span>
-                    </button>
-                </template>
-            </RowList>
-            <template v-if="opened">
-                <section class="opened" data-transcription-opened>
-                    <h3 class="title">{{ opened.title }}</h3>
-                    <textarea v-model="openedText" rows="14" aria-label="Transcript"></textarea>
-                    <div class="bar">
-                        <Btn small variant="primary" data-transcription-save :disabled="openedText === opened.text" @click="save">Save</Btn>
-                        <Btn small @click="opened = null">Close</Btn>
-                    </div>
-                    <h3 class="note">Linked items</h3>
-                    <ResourceLinks model="transcription" :id="opened.id" :read="readLinks" link-attribute="data-transcription-link" empty="Nothing yet" @open="openLinked" />
-                </section>
-            </template>
-        </div>
-    </WindowRoom>
+        </template>
+        <template #empty>
+            <template v-if="!loaded"><Skeleton shape="rows" /></template>
+            <template v-else>Transcripts of recordings appear here.</template>
+        </template>
+        <template #reader="{item}">
+            <TranscriptionReader :key="item.id" :row="item.row" @save="(text) => save(item, text)" />
+        </template>
+    </ListReaderLayout>
 </template>
 
 <style scoped>
-.transcriptions,
-.form,
-.opened {
+.form {
     display: flex;
     flex-direction: column;
     gap: 8px;
-}
-
-.bar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
+    padding: 0 var(--inset);
 }
 
 .note {
     margin: 0;
+    padding: 4px var(--inset);
     color: var(--text-3);
     font-size: 12px;
-    font-weight: 400;
 }
 
-.failure {
-    margin: 0;
-    color: var(--bad, var(--text-2));
-    font-size: 12px;
-}
-
-.row {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    width: 100%;
-    padding: 8px;
-    border: 0;
-    background: none;
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-.title {
-    margin: 0;
-    font-size: inherit;
-    font-weight: 600;
+.failed {
+    color: var(--danger);
 }
 
 input,

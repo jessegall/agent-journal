@@ -1,19 +1,23 @@
-// The ajournal splash on every open of the viewer (messages 121420 and 121445; spec doc 1278, timing doc 1288).
+// The ajournal splash on every open of the viewer (messages 121420 and 121445; spec doc 1278, timing doc 1288; round 17: doc 1289 §16).
 // A plain script, run before React: the cover shows at once in the theme's background, before anything else draws.
 // 0. Blank: it waits until the tab is in view, then holds an empty screen for 0.5 s.
 // 1. Entrance (about 2.8 s): the dot pops in at the centre, the full ring grows round it, and both stay. The dot pulses: two soft beats
 //    (a double beat, 250 ms apart), and the double beat repeats every second, about 2 s in all. Then the gap opens and the dot moves out to the ring.
 // 2. Loading: the ring spins. At least two full turns, and longer while the first request is still loading.
 //    Demo hold (on in the prototype): the spin lasts at least 4 s, so a viewer feels what loading looks like.
-// 3. End: the spin eases to rest upright, the mark slides left and 'ajournal' comes out. It always plays whole.
-// 4. Reveal: the lockup holds 450 ms, then the cover fades over 280 ms and Home is underneath.
+// 3. End: the spin eases to rest upright, the mark slides left and 'ajournal' comes out.
+// 4. Reveal: the lockup holds 450 ms, then the cover fades over 280 ms and the page is underneath.
+// A click or Escape skips: the cover fades at once (160 ms). The viewer opens on the page it was on; the splash never changes it.
+// Size (round 19, message 121759): the whole sequence is drawn in .ajs-inner, 75% of the size it had, so it takes 25% less of the screen.
+// The word (message 122160, report 1431): its box is 1.4 lines high, so the slide's mask, painted only inside the box, never cuts the j's tail;
+// each letter stays on its own layer and its blur ends at 0, never switched to none; the mask stays on, fully open, once the word is out.
 // Address options: ?theme=light|dark (default: the system's), ?load=<ms>|hand (the first request, default 2500; hand: click or Enter),
 // ?hold=<ms> (the demo hold, default 4000; 0 turns it off), ?splash=off. window.AJSplash.replay() plays it again.
 (function () {
   const VW = 1000, VH = 625, CY = VH / 2;
   const R = 31.6, SW = 16.7, DOT = 8.2;
   const THEMES = {light: {bg: "#FFFFFF", fg: "#0E1014"}, dark: {bg: "#131416", fg: "#FFFFFF"}};
-  const T = {blank: 500, pulseFrom: 760, pulseUntil: 2800, beatGap: 250, beatEvery: 1000, turns: 720, hold: 4000, lockupHold: 450, fade: 280, slow: 9000};
+  const T = {blank: 500, pulseFrom: 760, pulseUntil: 2800, beatGap: 250, beatEvery: 1000, turns: 720, hold: 4000, lockupHold: 450, fade: 280, skip: 160, slow: 9000};
   const NS = "http://www.w3.org/2000/svg";
   const clamp = (t, a = 0, b = 1) => Math.min(b, Math.max(a, t));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -30,11 +34,11 @@
   /* ---------- styles and the font, put in at once ---------- */
   const css = document.createElement("style");
   css.textContent = `
-    .ajs-cover { position: fixed; inset: 0; z-index: 2147483000; display: grid; place-items: center; overflow: hidden; }
-    .ajs-cover.ajs-still { position: absolute; z-index: 2; }
-    .ajs-cover.ajs-hand { cursor: pointer; }
+    .ajs-cover { position: fixed; inset: 0; z-index: 2147483000; display: grid; place-items: center; overflow: hidden; cursor: pointer; }
+    .ajs-cover.ajs-still { position: absolute; z-index: 2; cursor: default; }
+    .ajs-cover.ajs-skip { transition: opacity ${T.skip}ms ease-out; opacity: 0; }
     .ajs-box { position: absolute; inset: 0; container-type: size; display: grid; place-items: center; }
-    .ajs-inner { position: relative; width: min(100%, 160cqh); aspect-ratio: 16 / 10; container-type: inline-size; }
+    .ajs-inner { position: relative; width: min(75%, 120cqh); aspect-ratio: 16 / 10; container-type: inline-size; }
     .ajs-inner svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
     .ajs-word { position: absolute; white-space: nowrap; font-family: 'Space Grotesk', sans-serif; font-weight: 500; letter-spacing: -0.03em; line-height: 1.4; }
     .ajs-word span { display: inline-block; will-change: transform, opacity, filter; }
@@ -106,6 +110,8 @@
       Object.assign(this, {x: L.wordX, baseline: L.base, maskL: null});
     }
     get W() { return M.w * this.F; }
+    // the mask fully open: its soft edge sits left of the word, so every letter shows and the word keeps the same layer
+    get openMask() { return -.08 * this.W; }
     hide(from) { this.letters.forEach((q) => Object.assign(q, {o: 0}, from)); }
     draw() {
       const s = this.el.style;
@@ -186,15 +192,15 @@
     // 2. loading: at least two full turns, at least the demo hold, and until the first request has loaded
     card.stage("loading");
     await rotate(run, (spun) => m.rot >= T.turns && spun >= card.hold && card.ready(), {get: () => m.rot, set: (a) => { m.rot = a; }, speed: ramp(.62, 950), align: 0, decel: 1200, lead: 420});
-    // 3. end: from here nothing stops it
+    // 3. end
     card.stage("ending");
     card.status.style.opacity = 0;
     const x0 = m.x;
     const letters = stagger(run, w, {delay: 200, gap: 36, dur: 820, from: {x: -.5, b: .09}});
-    await run.tween(1050, (t) => { m.x = lerp(x0, L.markX, E.inOut4(t)); w.maskL = (m.x + L.D / 2 + L.gap * .12) - w.x; });
-    await letters; w.maskL = null; run.render();
+    await run.tween(1050, (t) => { m.x = lerp(x0, L.markX, E.inOut4(t)); w.maskL = Math.max(w.openMask, (m.x + L.D / 2 + L.gap * .12) - w.x); });
+    await letters; w.maskL = w.openMask; run.render();
     await run.wait(T.lockupHold);
-    // 4. reveal: the cover fades over Home
+    // 4. reveal: the cover fades over the page
     card.stage("reveal");
     await run.tween(T.fade, (t) => { card.cover.style.opacity = 1 - E.out3(t); });
     card.finish();
@@ -215,6 +221,7 @@
   }
 
   /* ---------- measuring the word, once its font is in ---------- */
+  // the box is measured with the same class as the drawn word, so its line height moves the box, never the baseline
   let M = null, L = null, measuring = null;
   async function measure() {
     try { await Promise.race([document.fonts.load('500 100px "Space Grotesk"'), new Promise((r) => setTimeout(r, 2500))]); } catch (e) {}
@@ -241,17 +248,18 @@
     const el = document.createElement("div");
     el.className = "ajs-cover" + (still ? " ajs-still" : "");
     el.style.background = theme.bg;
-    el.setAttribute("role", "status"); el.setAttribute("aria-label", "Starting the journal");
+    el.setAttribute("role", "status"); el.setAttribute("aria-label", "Starting");
     const box = document.createElement("div"); box.className = "ajs-box";
     const inner = document.createElement("div"); inner.className = "ajs-inner";
     box.appendChild(inner); el.appendChild(box);
-    const status = document.createElement("div"); status.className = "ajs-status"; status.style.color = theme.fg; status.textContent = "Starting the journal…";
+    const status = document.createElement("div"); status.className = "ajs-status"; status.style.color = theme.fg; status.textContent = "Starting…";
     inner.appendChild(status);
     host.appendChild(el);
     return {el, inner, status};
   }
 
   /* ---------- play: the empty cover at once; the animation once the tab is in view and the word is measured ---------- */
+  // a click or Escape skips: the cover fades at once and the run stops; in hand mode a click or Enter is the first request
   function play({theme: name, load = 2500, hand = false, hold = T.hold, appReady = () => true, onStage = () => {}, onEnd = () => {}} = {}) {
     const theme = themeOf(name);
     const host = document.body || document.documentElement;
@@ -261,18 +269,19 @@
       ready() { return appReady() && (hand ? card.readyAt !== null : performance.now() - opened >= load); },
       clock() { if (!card.done && !card.ready() && performance.now() - opened >= T.slow) status.style.opacity = .55; },
       stage(s) { el.dataset.stage = s; onStage(s); },
-      finish() { card.done = true; live.delete(card); if (card.run) card.run.dead = true; el.remove(); onEnd(); },
+      finish() { if (card.done) return; card.done = true; live.delete(card); if (card.run) card.run.dead = true; removeEventListener("keydown", keys, true); el.remove(); onEnd(); },
     };
+    const skip = () => { if (card.done) return; if (card.run) card.run.dead = true; card.stage("reveal"); el.classList.add("ajs-skip"); setTimeout(() => card.finish(), T.skip); };
+    const keys = (e) => { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); skip(); } else if (hand && (e.key === "Enter" || e.key === " ")) { if (card.readyAt === null) card.readyAt = performance.now(); } };
     if (hand) {
       el.classList.add("ajs-hand");
-      const done = () => { if (card.readyAt === null) card.readyAt = performance.now(); };
-      el.addEventListener("click", done);
-      addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") done(); });
-    }
+      el.addEventListener("click", () => { if (card.readyAt === null) card.readyAt = performance.now(); });
+    } else el.addEventListener("click", skip);
+    addEventListener("keydown", keys, true);
     const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (still) el.classList.add("ajs-reduced");
     live.add(card); startClock();
-    Promise.all([measured(), inView()]).then(() => { card.st = new Stage(inner); card.run = new Run(card.st); (still ? reduced : animate)(card); });
+    Promise.all([measured(), inView()]).then(() => { if (card.done) return; card.st = new Stage(inner); card.run = new Run(card.st); (still ? reduced : animate)(card); });
     return card;
   }
 
@@ -293,14 +302,14 @@
       if (stage === "ending") {
         m.x = lerp(500, L.markX, .62); m.rot = 0;
         w.letters.forEach((q, i) => { const k = clamp(1.25 - i * .17); q.o = E.out3(clamp(k * 1.7)); q.x = -.5 * (1 - E.out5(k)); q.b = .09 * (1 - E.out3(clamp(k * 1.4))); });
-        w.maskL = (m.x + L.D / 2 + L.gap * .12) - w.x;
+        w.maskL = Math.max(w.openMask, (m.x + L.D / 2 + L.gap * .12) - w.x);
       } else { m.x = L.markX; el.style.opacity = .42; }
     }
     st.draw(0);
     return el;
   }
 
-  /* ---------- on every open of the viewer: the cover shows at once and Home is the page under it ---------- */
+  /* ---------- on every open of the viewer: the cover shows at once over the page the viewer was on ---------- */
   function settings() {
     const q = new URLSearchParams(location.search);
     const load = q.get("load"), hold = q.get("hold");
@@ -309,8 +318,5 @@
   }
   window.AJSplash = {play, frame, replay: (o) => play({...settings(), ...o}), timing: T};
   const me = document.currentScript;
-  if (me && me.dataset.autoplay !== "false" && new URLSearchParams(location.search).get("splash") !== "off") {
-    try { localStorage.setItem("v5.page", "home"); } catch (e) {}
-    play(settings());
-  }
+  if (me && me.dataset.autoplay !== "false" && new URLSearchParams(location.search).get("splash") !== "off") play(settings());
 })();

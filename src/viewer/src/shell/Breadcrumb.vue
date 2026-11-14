@@ -1,10 +1,19 @@
 <script setup>
+import {copying} from "../domain/contextItems.js";
+import {vContext} from "../../kit/vContext.js";
 // the path at the top of the page as version 4 drew it: the project's swatch, the project, the environment and the page
 defineProps({environment: {type: String, required: true}, project: {type: String, default: ""}, page: {type: String, default: "Home"}});
+const place = (head) => ({
+    head,
+    items: [
+        {label: "Copy link to this page", group: "copy", run: ({say}) => copying(location.href, "the link", say)},
+        {label: "Reload", group: "own", run: () => location.reload()},
+    ],
+});
 </script>
 
 <template>
-    <nav class="breadcrumb" data-breadcrumb aria-label="Where you are">
+    <nav v-context="() => place(page)" class="breadcrumb" data-breadcrumb aria-label="Where you are">
         <span class="crumb-swatch" />
         <a class="crumb crumb-link" data-crumb-project href="./">{{ project }}</a>
         <span class="crumb-sep">/</span>

@@ -186,10 +186,10 @@ test("a line typed in the terminal goes to the agent, and a refusal gives it bac
 
 test("the files window opens the file its address names", async () => {
     window.history.pushState({}, "", "?page=coding.files&file=src/cart.py");
-    const shown = {...projectFilesWindowContext({}), read: async (line) => (line.startsWith("project-file show") ? {ok: true, value: {path: "src/cart.py", text: "TOTAL = 0"}} : page([]))};
+    const shown = {...projectFilesWindowContext({}), read: async (words) => ([].concat(words).join(" ").startsWith("project-file show") ? {ok: true, value: {path: "src/cart.py", text: "TOTAL = 0"}} : page([]))};
     const lines = [];
     const reading = shown.read;
-    shown.read = async (line) => (lines.push(line), reading(line));
+    shown.read = async (line) => (lines.push([].concat(line).join(" ")), reading(line));
     const element = await mounted(ProjectFiles, shown);
     window.history.pushState({}, "", "?");
     await settle();
@@ -201,7 +201,7 @@ test("the files window marks the line its address names and scrolls it into view
     window.history.pushState({}, "", "?page=coding.files&file=src/cart.py&line=2");
     const scrolled = [];
     window.HTMLElement.prototype.scrollIntoView = function () { scrolled.push(this.dataset.fileLine); };
-    const shown = {...projectFilesWindowContext({}), read: async (line) => (line.startsWith("project-file show") ? {ok: true, value: {path: "src/cart.py", text: "TOTAL = 0\nTAX = 1\nFEE = 2"}} : page([]))};
+    const shown = {...projectFilesWindowContext({}), read: async (words) => ([].concat(words).join(" ").startsWith("project-file show") ? {ok: true, value: {path: "src/cart.py", text: "TOTAL = 0\nTAX = 1\nFEE = 2"}} : page([]))};
     const element = await mounted(ProjectFiles, shown);
     window.history.pushState({}, "", "?");
     await settle();

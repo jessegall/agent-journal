@@ -42,3 +42,10 @@ def test_a_path_outside_the_project_a_binary_file_and_a_folder_are_refused(new_s
     story.expect_refusal("project-file list ../.. --environment main", "is outside the project", actor=story.agent)
     story.expect_refusal("project-file show notes.bin --environment main", "is not text", actor=story.agent)
     story.expect_refusal("project-file show shop --environment main", "is no file", actor=story.agent)
+
+
+def test_grep_gives_the_lines_of_the_tracked_files_that_hold_the_words(new_story):
+    story = files_story(new_story)
+    story.expect_text('project-file grep "total" --environment main', "shop/cart.py:1: TOTAL = 1", actor=story.agent)
+    story.expect_text('project-file grep "no such words" --environment main', "nothing found", actor=story.agent)
+    story.expect_refusal('project-file grep "t" --environment main', "at least 2 letters", actor=story.agent)

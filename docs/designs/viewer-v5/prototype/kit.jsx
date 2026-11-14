@@ -60,11 +60,17 @@ function Seg({options, value, onPick}) {
 }
 
 function SearchField({value, onChange, placeholder, kbd, autoFocus, style}) {
-  return <label className="search" style={style}><Icon name="search" size={13} /><input value={value} autoFocus={autoFocus} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} aria-label={placeholder} />{value ? <button className="btn icon" style={{width: 20, height: 20}} onClick={() => onChange("")} title="Clear the search" aria-label="Clear the search"><Icon name="close" size={11} /></button> : kbd && <span className="kbd">{kbd}</span>}</label>;
+  return <label className="search" style={style}><Icon name="search" size={13} /><input value={value} autoFocus={autoFocus} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} aria-label={placeholder} />{value ? <button className="btn icon" style={{width: 20, height: 20}} onClick={() => onChange("")} title="Clear" aria-label="Clear"><Icon name="close" size={11} /></button> : kbd && <span className="kbd">{kbd}</span>}</label>;
 }
 
 const STATE_WORDS = {in_progress: "In progress", started: "Started", open: "Open", blocked: "Blocked", completed: "Completed", cancelled: "Cancelled", draft: "Draft", ready: "Ready", testing: "Testing", paused: "Paused", on: "On", off: "Off", failed: "Failed", done: "Passed", approved: "Approved", answered: "Answered"};
-function Badge({state, children}) { return <span className={"badge " + (state || "plain")}>{children || STATE_WORDS[state] || state}</span>; }
+// the one badge rule: a box only for a state that needs the person (Failed, Blocked, Problem, Update, Paused, a wait on the person);
+// every normal state (Open, Active, In force, Running, Passed, Started, Ready, Approved, Connected, Up to date) is faint text
+const BADGE_ATTENTION = ["failed", "blocked", "problem", "update", "paused", "holding", "waiting", "asks"];
+function Badge({state, children}) {
+  const word = children || STATE_WORDS[state] || state;
+  return BADGE_ATTENTION.includes(state) ? <span className={"badge " + state}>{word}</span> : <span className="badge-quiet">{word}</span>;
+}
 function Switch({on, onChange, title}) { return <button type="button" role="switch" aria-checked={on} title={title} aria-label={title} className={"switch" + (on ? " on" : "")} onClick={() => onChange(!on)} />; }
 function Avatar({name, agent}) { return <span className={"avatar" + (agent ? " agent" : "")}>{name.slice(0, 1).toUpperCase()}</span>; }
 function Empty({title, line, action}) { return <div className="empty"><div><b>{title}</b>{line && <div>{line}</div>}{action && <div style={{marginTop: 12}}>{action}</div>}</div></div>; }
@@ -72,20 +78,21 @@ function Skeleton({lines = 4}) { return <div className="col" style={{gap: 10, pa
 
 /* ---------- links: every reference to a row opens it ----------
    RowLink draws one reference. Linked turns the references in a text ("plan 1131", "task 9597", "worker-4") into links.
-   It is a span with the link role, so it may stand inside a row that is itself a button. */
+   It is a span with the link role, so it may stand inside a row that is itself a button. Under a heading or a column that names the kind,
+   pass bare and the link is the number alone. */
 const OpenContext = createContext({open: () => {}, go: () => {}, openFile: () => {}});
 const useOpen = () => useContext(OpenContext);
 const TERM_WORDS = {plan: "Plan", task: "Task", doc: "Document", report: "Report", output: "Output", message: "Message", agent: "Agent", memory: "Memory", question: "Question", rule: "Rule"};
 const TERM_OF = {plan: "plan", task: "task", doc: "doc", document: "doc", report: "report", output: "output", message: "message", memory: "memory", question: "question", rule: "rule"};
 const agentByName = (name) => AGENTS.find((a) => a.name === name);
-function RowLink({term, id, children, title}) {
+function RowLink({term, id, children, title, bare}) {
   const {open} = useOpen();
   const go = (e) => { e.stopPropagation(); e.preventDefault(); open(term, id); };
-  return <span role="link" tabIndex={0} className="ref-link" title={title || `Open ${TERM_WORDS[term] || term} ${id}`} onClick={go} onKeyDown={(e) => e.key === "Enter" && go(e)}>{children || `${TERM_WORDS[term] || term} ${id}`}</span>;
+  return <span role="link" tabIndex={0} className="ref-link" title={title || `${TERM_WORDS[term] || term} ${id}`} onClick={go} onKeyDown={(e) => e.key === "Enter" && go(e)}>{children || (bare ? String(id) : `${TERM_WORDS[term] || term} ${id}`)}</span>;
 }
 function AgentLink({name}) {
   const a = agentByName(name);
-  return a ? <RowLink term="agent" id={a.id} title={`Open agent ${name}`}>{name}</RowLink> : <span>{name}</span>;
+  return a ? <RowLink term="agent" id={a.id} title={name}>{name}</RowLink> : <span>{name}</span>;
 }
 const REF = /\b(plan|task|doc|document|report|output|message|memory|question|rule)s? (\d+)\b|\b(main|worker-\d+|helper-\d+|reviewer-\d+)\b/gi;
 function Linked({text}) {
@@ -130,14 +137,14 @@ function ActionMenu({actions, label = "Actions", onDone}) {
   const fire = (a, close) => { const why = a.run?.(value); if (why) { setRefusal({label: a.label, why}); if (!a.field) setAsking(null); return; } setRefusal(null); close(); onDone?.(a.done || a.label); };
   return <Menu width={asking || refusal ? 300 : undefined} button={({toggle, open}) => <MenuButton label={label} open={open} onClick={() => { setAsking(null); setRefusal(null); toggle(); }} />}>
     {(close) => asking ? <form className="menu-form" onSubmit={(e) => { e.preventDefault(); fire(asking, close); }}>
-        <div className="row"><Btn icon="back" small title="Back to the actions" onClick={() => { setAsking(null); setRefusal(null); }} /><b style={{fontSize: 12.5, fontWeight: 500}}>{asking.label}</b></div>
+        <div className="row"><Btn icon="back" small title="Back" onClick={() => { setAsking(null); setRefusal(null); }} /><b style={{fontSize: 12.5, fontWeight: 500}}>{asking.label}</b></div>
         <label className="muted" style={{fontSize: 11.5}}>{asking.field.label}</label>
         {asking.field.kind === "agent" ? <select value={value} onChange={(e) => setValue(e.target.value)}>{AGENTS.map((a) => <option key={a.id} value={a.name}>{a.name} · {a.role}</option>)}</select>
           : <textarea autoFocus rows={3} value={value} onChange={(e) => setValue(e.target.value)} placeholder={asking.field.placeholder} />}
         {refusal && <div className="refusal" role="alert"><Icon name="alert" size={12} /><span>{refusal.why}</span></div>}
         <div className="row" style={{justifyContent: "flex-end"}}><Btn small onClick={() => { setAsking(null); setRefusal(null); }}>Back</Btn><Btn type="submit" small variant={asking.danger ? "danger" : "primary"} disabled={asking.field.kind !== "agent" && !value.trim()}>{asking.confirm || asking.label}</Btn></div>
       </form>
-      : <>{refusal && <div className="menu-form"><div className="refusal" role="alert"><Icon name="alert" size={12} /><span><b>{refusal.label}</b> did not go through: {refusal.why}</span></div></div>}
+      : <>{refusal && <div className="menu-form"><div className="refusal" role="alert"><Icon name="alert" size={12} /><span><b>{refusal.label}</b>: {refusal.why}</span></div></div>}
         {groups.map((g, gi) => <React.Fragment key={g}>{gi > 0 && <div className="menu-sep" />}<div className="menu-label">{g}</div>
           {actions.filter((a) => a.group === g).map((a) => <MenuItem key={a.label} icon={a.icon} desc={a.desc} danger={a.danger} hint={a.field ? "…" : a.hint} onClick={() => { if (a.field) { setValue(a.field.kind === "agent" ? AGENTS[1].name : ""); setRefusal(null); setAsking(a); } else fire(a, close); }}>{a.label}</MenuItem>)}
         </React.Fragment>)}</>}
@@ -147,7 +154,8 @@ function ActionMenu({actions, label = "Actions", onDone}) {
 /* ---------- FilterBar: one filter bar for every list with more than one thing to filter on ----------
    fields: [{key, label, options: [[value, label]], get(row) -> value or values}]. value: {key: {not, values: []}}.
    A chip per field: closed it reads its label; set it reads "State: Open, Started" and has its own ×. Its menu takes is or is not and the values,
-   each with how many rows have it. Words search the text of each row. The bar ends with how many rows show, and Clear. */
+   each with how many rows have it. Words search the text of each row. Only while a filter or words are on, the bar ends with "N of M" and Clear:
+   with nothing on, the count would repeat the page's own count. */
 const emptyFilter = () => ({});
 function applyFilter(rows, fields, value, words, textOf) {
   return rows.filter((r) => fields.every((f) => { const v = value[f.key]; if (!v || !v.values.length) return true; const got = [].concat(f.get(r)); const hit = v.values.some((x) => got.includes(x)); return v.not ? !hit : hit; }) && (!words || textOf(r).toLowerCase().includes(words.toLowerCase())));
@@ -171,14 +179,14 @@ function FilterBar({fields, rows, value, onChange, words, onWords, shown, placeh
     <SearchField value={words} onChange={onWords} placeholder={placeholder} style={{width: 200, height: 26}} />
     {fields.map((f) => <FilterChip key={f.key} field={f} rows={rows} value={value[f.key]} onChange={(v) => onChange({...value, [f.key]: v})} />)}
     <span className="grow" />
-    <span className="faint" style={{fontSize: 11.5, whiteSpace: "nowrap"}}>{shown} of {rows.length}</span>
+    {active > 0 && <span className="faint fbar-count">{shown} of {rows.length}</span>}
     {active > 0 && <Btn small variant="ghost" onClick={() => { onChange(emptyFilter()); onWords(""); }}>Clear</Btn>}
     {end}
   </div>;
 }
 
 // CommentBox: the free-floating box, everywhere a row takes comments. Its count is the one way to bring the comments back.
-function CommentBox({count = 0, onSend, onShow, quote, onClearQuote, placeholder = "Leave a comment"}) {
+function CommentBox({count = 0, onSend, onShow, quote, onClearQuote, placeholder = "Comment"}) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [sent, setSent] = useState(false);
@@ -189,20 +197,20 @@ function CommentBox({count = 0, onSend, onShow, quote, onClearQuote, placeholder
   const send = () => { if (!draft.trim()) return; onSend?.(draft.trim(), quote); setDraft(""); setOpen(false); setSent(true); onClearQuote?.(); };
   return <div className="cbox-dock"><div className="cbox">
     {open ? <div className="cbox-form" onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) send(); }}>
-        {quote && <div className="cbox-quote"><b>On</b><span className="grow ellipsis">{quote}</span><button className="btn icon" style={{width: 18, height: 18}} onClick={onClearQuote} title="Comment on the whole" aria-label="Comment on the whole"><Icon name="close" size={10} /></button></div>}
-        <textarea ref={box} value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={quote ? "What about this part?" : "Write a comment. The agent reads it."} aria-label="Comment" />
-        <div className="row"><span className="faint grow" style={{fontSize: 11}}><span className="kbd">⌘</span> <span className="kbd">Enter</span> to send</span><Btn small onClick={() => setOpen(false)}>Cancel</Btn><Btn small variant="primary" disabled={!draft.trim()} onClick={send}>Send</Btn></div>
+        {quote && <div className="cbox-quote"><b>On</b><span className="grow ellipsis">{quote}</span><button className="btn icon" style={{width: 18, height: 18}} onClick={onClearQuote} title="Whole text" aria-label="Whole text"><Icon name="close" size={10} /></button></div>}
+        <textarea ref={box} value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Comment" aria-label="Comment" />
+        <div className="row"><span className="faint grow" style={{fontSize: 11}}><span className="kbd">⌘</span> <span className="kbd">Enter</span></span><Btn small onClick={() => setOpen(false)}>Cancel</Btn><Btn small variant="primary" disabled={!draft.trim()} onClick={send}>Send</Btn></div>
       </div>
       : <div className="cbox-closed">
-        <button type="button" className="cbox-open-btn" onClick={() => setOpen(true)}><span className="cbox-mark"><Icon name={sent ? "tick" : "chat"} size={13} /></span><span>{sent ? "Sent. Leave another" : placeholder}</span>{draft && <span className="faint" style={{fontSize: 11, marginLeft: "auto"}}>Draft kept</span>}</button>
-        {onShow && <Btn small variant="ghost" onClick={onShow}>{count} {count === 1 ? "comment" : "comments"}</Btn>}
+        <button type="button" className="cbox-open-btn" onClick={() => setOpen(true)}><span className="cbox-mark"><Icon name={sent ? "tick" : "chat"} size={13} /></span><span>{placeholder}</span>{draft && <span className="faint" style={{fontSize: 11, marginLeft: "auto"}}>Draft</span>}</button>
+        {onShow && count > 0 && <Btn small variant="ghost" icon="chat" title="Comments" onClick={onShow} />}
       </div>}
   </div></div>;
 }
 
 function CommentCard({c, hot, onShow}) {
   return <div className={"ccard" + (hot ? " hot" : "")} onClick={onShow} style={{cursor: onShow ? "pointer" : "default"}}>
-    <div className="who"><Avatar name={c.by} agent={c.agent} />{c.agent ? <AgentLink name={c.by} /> : <span style={{color: "var(--text-2)"}}>{c.by}</span>}<span>· {c.at}</span>{c.outdated && <Badge state="blocked">Lines changed</Badge>}{c.n && <span style={{marginLeft: "auto"}} className="kbd">{c.n}</span>}</div>
+    <div className="who"><Avatar name={c.by} agent={c.agent} />{c.agent ? <AgentLink name={c.by} /> : <span style={{color: "var(--text-2)"}}>{c.by}</span>}<span>· {c.at}</span>{c.outdated && <span className="badge-quiet">Lines changed</span>}{c.n && <span style={{marginLeft: "auto"}} className="kbd">{c.n}</span>}</div>
     {c.quote && <blockquote>{c.quote}</blockquote>}
     <p><Linked text={c.text} /></p>
     {c.reply && <div className="who" style={{paddingLeft: 8, borderLeft: "1px solid var(--border-2)"}}><Avatar name={c.reply.by} agent /><span><AgentLink name={c.reply.by} />: <Linked text={c.reply.text} /></span></div>}
@@ -210,9 +218,9 @@ function CommentCard({c, hot, onShow}) {
 }
 
 // CommentRail: the comments in the margin. Its × hides it; the comment box's count brings it back. Narrow, it floats over the text.
-function CommentRail({comments, hot, onShow, onClose, floating, empty = "No comments yet. Select text to comment on a part of it."}) {
+function CommentRail({comments, hot, onShow, onClose, floating, empty = "No comments"}) {
   return <aside className={"crail" + (floating ? " float" : "")} aria-label="Comments">
-    <div className="crail-head"><h3>Comments</h3><span className="faint">{comments.length}</span><span className="grow" />{onClose && <Btn icon="close" small title="Hide the comments" onClick={onClose} />}</div>
+    <div className="crail-head"><h3>Comments</h3><span className="faint">{comments.length}</span><span className="grow" />{onClose && <Btn icon="close" small title="Hide" onClick={onClose} />}</div>
     <div className="crail-list">{comments.length ? comments.map((c) => <CommentCard key={c.id} c={c} hot={hot === c.id} onShow={() => onShow?.(c.id)} />) : <p className="muted" style={{margin: 0}}>{empty}</p>}</div>
   </aside>;
 }
@@ -234,4 +242,4 @@ function useToast() { return useContext(ToastContext); }
 function Fields({rows}) { return <dl className="fields">{rows.filter(Boolean).map(([k, v]) => <React.Fragment key={k}><dt>{k}</dt><dd>{v}</dd></React.Fragment>)}</dl>; }
 function Section({title, end, children}) { return <section className="section"><h4 className="section-title"><span className="grow">{title}</span>{end}</h4>{children}</section>; }
 
-Object.assign(window, {ICONS, Icon, Chevron, useLayer, noLayerOpen, typing, Btn, Tabs, Seg, SearchField, Badge, Switch, Avatar, Empty, Skeleton, OpenContext, useOpen, RowLink, AgentLink, Linked, TERM_WORDS, Menu, MenuItem, MenuButton, ActionMenu, FilterBar, FilterChip, applyFilter, emptyFilter, CommentBox, CommentCard, CommentRail, Dialog, ToastContext, useToast, Fields, Section, STATE_WORDS});
+Object.assign(window, {ICONS, Icon, Chevron, useLayer, noLayerOpen, typing, Btn, Tabs, Seg, SearchField, Badge, BADGE_ATTENTION, Switch, Avatar, Empty, Skeleton, OpenContext, useOpen, RowLink, AgentLink, Linked, TERM_WORDS, Menu, MenuItem, MenuButton, ActionMenu, FilterBar, FilterChip, applyFilter, emptyFilter, CommentBox, CommentCard, CommentRail, Dialog, ToastContext, useToast, Fields, Section, STATE_WORDS});

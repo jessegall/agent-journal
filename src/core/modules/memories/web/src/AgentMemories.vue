@@ -1,7 +1,7 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
 import {Btn, EmptyState, FoldGroup, Skeleton, useWindow} from "@journal/window-kit";
-import MemoryRow from "./MemoryRow.vue";
+import AgentMemoryRow from "./AgentMemoryRow.vue";
 
 // the memories of one agent, read through the memory page: the ones in force first, heaviest first, and the removed ones folded under them
 const props = defineProps({agent: {type: Number, required: true}});
@@ -36,13 +36,13 @@ onMounted(read);
             <template v-if="active.rows.value.length">
                 <p class="band" data-agent-memories-active>Active: {{ countOf(active) }}</p>
                 <template v-for="row in active.rows.value" :key="row.id">
-                    <MemoryRow class="row" :row="row" />
+                    <AgentMemoryRow class="row" :row="row" />
                 </template>
             </template>
             <template v-if="removed.rows.value.length">
                 <FoldGroup :label="`Removed: ${countOf(removed)}`" :open="removedOpen" data-agent-memories-removed @toggle="removedOpen = !removedOpen">
                     <template v-for="row in removed.rows.value" :key="row.id">
-                        <MemoryRow class="row" :row="row" />
+                        <AgentMemoryRow class="row" :row="row" />
                     </template>
                 </FoldGroup>
             </template>

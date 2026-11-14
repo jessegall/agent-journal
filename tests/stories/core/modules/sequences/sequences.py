@@ -231,3 +231,12 @@ def test_a_tool_a_helper_or_worker_used_starts_the_sequence_on_that_agent_and_no
     expect_exclusive_run(story, agent_id)
     story.hook(session, post_tool("Edit", "edit", tuple(["migrations/b.py"])))
     expect_exclusive_run(story, agent_id)
+
+
+def test_a_person_running_a_sequence_starts_the_run_of_the_main_agent_and_can_give_it_up(new_story):
+    story = sequence_story(new_story)
+    story.expect_text("sequence run 1", "sequence 1, step 1: Run the suite", actor=story.user)
+    story.run("sequence follow", actor=story.agent)
+    story.expect_text("sequence next", "sequence 1, step 2: Tag the release", actor=story.agent)
+    story.expect_text('sequence abandon --why "The plan changed" --sure', "sequence 1 abandoned", actor=story.user)
+    story.expect_refusal("sequence next", "no sequence is running", actor=story.agent)

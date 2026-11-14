@@ -80,15 +80,6 @@ defineProps({plan: {type: Object, required: true}, read: {type: Function, defaul
     color: var(--text-3);
     font-size: 12px;
 }
-.status.started {
-    color: var(--progress);
-}
-.status.blocked {
-    color: var(--blocking);
-}
-.status.approved {
-    color: var(--created);
-}
 .reason {
     margin-bottom: 18px;
     padding-left: 12px;

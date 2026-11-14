@@ -1,14 +1,14 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, Segmented, SwitchCase, TimeAgo, WindowRoom, useRunLine, useWindow} from "@journal/window-kit";
-import LibraryBrowse from "./LibraryBrowse.vue";
+import {Btn, PageHeader, Segmented, SwitchCase, TimeAgo, WindowRoom, useRunLine, useWindow} from "@journal/window-kit";
 import LibraryConnect from "./LibraryConnect.vue";
-import LibraryCopies from "./LibraryCopies.vue";
 import LibraryPeople from "./LibraryPeople.vue";
+import ShareDialog from "./ShareDialog.vue";
+import TeamLibrary from "./TeamLibrary.vue";
 
 const ROLE_WORDS = {admin: "Admin", edit: "Edit", read: "Read-only"};
 
-// the page of the team's shared server: the connect form until this journal is connected, then the header, the library and the items that follow it
+// the page of the team's shared server: the connect form until this journal is connected, then the header with Sync and Share, the library and what was shared from here, and the users
 const context = useWindow();
 const {data: status, failure} = context.props.status;
 const {data: copies} = context.props.copies;
@@ -17,9 +17,12 @@ const isLinked = computed(() => Boolean(status.value?.is_connected) && !status.v
 const canWrite = computed(() => status.value?.role === "admin" || status.value?.role === "edit");
 const followed = computed(() => copies.value?.rows ?? []);
 const isAdmin = computed(() => status.value?.role === "admin");
+const counts = ref({library: 0, here: 0});
+const sharing = ref(false);
+const shared = ref(null);
 const tabs = computed(() => [
-    {key: "library", label: "Library"},
-    {key: "copies", label: "On this journal", count: followed.value.length},
+    {key: "library", label: "Library", count: counts.value.library},
+    {key: "here", label: "Shared from here", count: counts.value.here},
     ...(isAdmin.value ? [{key: "people", label: "Users"}] : []),
 ]);
 
@@ -33,19 +36,23 @@ const {refusal, run} = useRunLine(load);
 </script>
 
 <template>
-    <WindowRoom>
+    <WindowRoom padding="0">
         <div class="teams" data-teams>
-            <div class="teams-top">
-                <h2 class="teams-title">Teams</h2>
-                <template v-if="isLinked">
-                    <Btn small data-teams-sync @click="run(['library', 'sync'])">Sync now</Btn>
+            <PageHeader title="Teams">
+                <template v-if="isLinked" #primary>
+                    <Btn v-if="canWrite" small variant="primary" data-library-share-submit @click="sharing = true">Share</Btn>
+                    <Btn small data-teams-sync @click="run(['library', 'sync'])">Sync</Btn>
                 </template>
-            </div>
+            </PageHeader>
             <template v-if="failure">
-                <p class="teams-failure" role="alert" data-teams-failure>{{ failure }}</p>
+                <p class="teams-note failure" role="alert" data-teams-failure>{{ failure }}</p>
             </template>
             <template v-if="refusal">
-                <p class="teams-failure" role="alert" data-teams-refusal>{{ refusal }}</p>
+                <p class="teams-note failure" role="alert" data-teams-refusal>{{ refusal }}</p>
+            </template>
+            <template v-if="shared">
+                <p class="teams-note" data-library-shared>{{ shared.line }}</p>
+                <p v-if="shared.warning" class="teams-note failure" role="alert" data-library-warning>{{ shared.warning }}</p>
             </template>
             <template v-if="status?.is_connected">
                 <div class="teams-header" data-teams-header>
@@ -59,7 +66,7 @@ const {refusal, run} = useRunLine(load);
                     </template>
                 </div>
                 <template v-if="status.stopped">
-                    <p class="teams-stopped" role="alert" data-teams-stopped>{{ status.stopped }}</p>
+                    <p class="teams-note failure" role="alert" data-teams-stopped>{{ status.stopped }}</p>
                 </template>
             </template>
             <template v-if="status && !isLinked">
@@ -69,10 +76,10 @@ const {refusal, run} = useRunLine(load);
                 <Segmented :options="tabs" :value="tab" data-teams-tabs @pick="tab = $event" />
                 <SwitchCase :value="tab">
                     <template #library>
-                        <LibraryBrowse :role="status.role" :can-write="canWrite" @changed="load" />
+                        <TeamLibrary :copies="followed" :user-name="status.user_name" :can-write="canWrite" @changed="load" @counted="counts = $event" />
                     </template>
-                    <template #copies>
-                        <LibraryCopies :copies="followed" :role="status.role" :can-write="canWrite" @changed="load" />
+                    <template #here>
+                        <TeamLibrary mine :copies="followed" :user-name="status.user_name" :can-write="canWrite" @changed="load" @counted="counts = $event" />
                     </template>
                     <template #people>
                         <LibraryPeople />
@@ -80,39 +87,36 @@ const {refusal, run} = useRunLine(load);
                 </SwitchCase>
             </template>
         </div>
+        <template v-if="sharing"><ShareDialog @close="sharing = false" @shared="shared = $event; load()" /></template>
     </WindowRoom>
 </template>
 
 <style scoped>
 .teams {
     display: flex;
+    flex: 1;
     flex-direction: column;
-    gap: 10px;
-}
-
-.teams-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.teams-title {
-    margin: 0;
-    font-size: 16px;
+    gap: 6px;
+    min-height: 0;
 }
 
 .teams-header {
     display: flex;
     flex-wrap: wrap;
     gap: 6px 18px;
+    padding: 0 var(--inset);
     color: var(--text-2);
     font-size: 13px;
 }
 
-.teams-failure,
-.teams-stopped {
+.teams-note {
     margin: 0;
-    color: var(--danger);
+    padding: 0 var(--inset);
+    color: var(--text-2);
     font-size: 13px;
+}
+
+.failure {
+    color: var(--danger);
 }
 </style>

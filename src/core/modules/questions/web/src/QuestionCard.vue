@@ -2,11 +2,12 @@
 import {ref} from "vue";
 import {TextInput, TimeAgo, peekRef, useWindow} from "@journal/window-kit";
 import QuestionActions from "./QuestionActions.vue";
+import QuestionWindowCard from "./QuestionWindowCard.vue";
 
 // one question as version 4 asked it: a card with the options under each other, the recommended one tagged, and a box for an answer in the user's own words;
 // an answer shows the moment it is given and goes back if the server refuses it;
-// flush is the questions window's look: one block edge to edge, a darker banner with the dot, the number and the time, the question below it, the options as rows and the answer in a band at the foot
-const props = defineProps({row: {type: Object, required: true}, flush: Boolean});
+// window draws the card the Questions window shows, which is its own component; flush is the old questions window's look: one block edge to edge, a darker banner with the dot, the number and the time, the question below it, the options as rows and the answer in a band at the foot
+const props = defineProps({row: {type: Object, required: true}, flush: Boolean, window: Boolean});
 const emit = defineEmits(["changed"]);
 const context = useWindow();
 const typed = ref("");
@@ -42,7 +43,8 @@ async function elaborate() {
 </script>
 
 <template>
-    <section :class="['question', {flush}]" :data-state="shown().state" data-question-card>
+    <QuestionWindowCard v-if="window" :row="row" @changed="emit('changed')" />
+    <section v-else :class="['question', {flush}]" :data-state="shown().state" data-question-card>
         <header class="question-head">
             <template v-if="flush">
                 <i class="question-dot" data-question-dot />

@@ -231,7 +231,7 @@ test("a held empty queue shows the reason and empty messages", async () => {
         },
     }));
     expect(document.body.querySelector("[data-queue-held]").textContent).toContain("Machine maintenance");
-    expect(document.body.querySelector('[data-queue-empty="waiting"]').textContent).toBe("Nothing waits. A command that starts now gets a place at once.");
+    expect(document.body.querySelector('[data-queue-empty="waiting"]').textContent).toBe("None");
     expect(document.body.textContent).not.toContain("Process queue");
 });
 
@@ -242,7 +242,7 @@ test("a queue held by an update says the update waits for the running commands a
     }));
     const note = document.body.querySelector("[data-queue-update-waits]").textContent;
     expect(note).toContain("An update waits for the running commands to end.");
-    expect(note).toContain("gets its place once the update is done");
+    expect(note).toContain("gets a slot once the update is done");
     expect(document.body.querySelector("[data-queue-held]")).toBeNull();
 });
 

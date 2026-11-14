@@ -1,4 +1,4 @@
-/* Round fifteen (message 121280; critiques doc 1283, doc 1284, report 1408). Loaded last.
+/* Round fifteen (message 121280; critiques doc 1283, doc 1284, report 1408), with the round-seventeen corrections. Loaded before round sixteen.
    Current app parts are copies of src/viewer: tokens.css, kit/Btn.vue, kit/MenuPanel.vue, kit/MenuItem.vue, kit/MenuLabel.vue, panes/PaneTabs.vue,
    messages Chat.vue's composer, questions QuestionCard.vue (flush) and QuestionRows.vue, agents AgentCard.vue. Values are copied, not approximated. */
 
@@ -45,6 +45,8 @@ option { background: var(--raised); color: var(--text); }
 .insp-band .btn.icon, .reader-head .btn.icon, .ptabs .btn.icon, .ide-bar .btn.icon { width: 24px; }
 /* a menu button's chevron is the button's own colour, also on a primary button */
 .menu-btn > .ico:last-child { color: inherit; opacity: .75; }
+/* a text button that opens a card's foot or ends a form starts on the text edge above it: no side padding without a border */
+.card .row > .btn:not(.primary):not(.danger):not(.icon):not(.bordered):first-child, .r16-card-foot > .btn:not(.primary):not(.danger):not(.icon):first-child { margin-left: -9px; }
 
 /* ---------- menus: kit/MenuPanel.vue, MenuItem.vue, MenuLabel.vue ---------- */
 .menu, .menu.r14-float { display: flex; flex-direction: column; gap: 2px; padding: 6px; border: 1px solid var(--border-2); border-radius: 9px; background: var(--raised); box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45); overflow-y: auto; }
@@ -161,17 +163,23 @@ option { background: var(--raised); color: var(--text); }
 .question.flush[data-state="answered"] .question-context, .question.flush[data-state="closed"] .question-context { color: var(--text-3); }
 .question.flush[data-state="answered"] .question-label, .question.flush[data-state="answered"] .question-time { color: var(--text-4); }
 
+/* ---------- the one badge rule (kit.jsx Badge): a box only for a state that needs the person; every normal state is this faint text ---------- */
+.badge-quiet { display: inline-flex; align-items: center; flex: none; color: var(--text-3); font-size: 11.5px; font-weight: 400; white-space: nowrap; }
+
 /* ---------- nothing clipped ---------- */
-/* a line of facts is one line ending in …; a fact that does not fit is cut with an ellipsis, never mid-word without one, never a stray separator */
+/* a line of facts is one line ending in …; a fact that does not fit is cut with an ellipsis, never mid-word without one, never a stray separator.
+   The facts stay inline boxes in a line of text, so the spaces between words are kept (Secret 3, version 1.4.0). */
 .r7-whole, .lrow.r6 .d.r7-whole, .card p.r7-whole { display: block; height: auto; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .r7-whole > * { display: inline; }
 .r7-whole > .sep { margin: 0 6px; }
 /* a card's state line: whole facts, wrapping to a second line rather than over the text under it */
-.r6-card-state.r7-whole { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; height: auto; overflow: hidden; white-space: nowrap; }
-.r6-card-state.r7-whole > * { display: inline-flex; }
+.r6-card-state.r7-whole { white-space: normal; }
 /* the Tasks window search keeps room to type; the filter chips scroll sideways after it */
 .fbar { overflow-x: auto; }
 .fbar > .search { flex: 0 0 auto; min-width: 140px; }
+.fbar-count { font-size: 11.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* one look for a filter chip: solid, set or not (the set chip is filled) */
+.fchip { border-style: solid; border-color: var(--border-2); }
 /* one line under a tab band, not two */
 .tabs + .r6-fbar { border-top: 0; }
 /* file feed: no −0 for a file with no removals */
@@ -183,28 +191,26 @@ option { background: var(--raised); color: var(--text); }
 .nav { height: 28px; }
 .side-foot { padding: 6px 8px; gap: 0; }
 
-/* ---------- the Changes switch: a review aid, kept at the bottom right, away from the sidebar's version row ---------- */
-#r13-changes { left: auto; right: 12px; bottom: 12px; }
+/* ---------- the Changes switch: a review aid of the prototype, in its own strip above the app frame, so it never covers a control ---------- */
+#root { height: calc(100% - 28px); margin-top: 28px; }
+body::before { content: "Prototype"; position: fixed; top: 0; left: 0; right: 0; z-index: 89; height: 28px; padding: 0 12px; border-bottom: 1px solid var(--border);
+  background: var(--side); color: var(--text-4); font: 500 11px/28px var(--font); letter-spacing: .04em; }
+.overlay, .stack-veil, .veil { top: 28px; }
+#r13-changes { position: fixed; top: 2px; right: 8px; bottom: auto; left: auto; height: 24px; padding: 0; border: 0; background: none; box-shadow: none; }
 body.r13-origins :is(.now-info, .now-agent, .r15-questions, .question) { --origin: var(--warn); --origin-word: "Changed"; }
 body.r13-origins .r15-questions { position: relative; outline: 1.5px dashed var(--origin); outline-offset: -2px; }
 body.r13-origins .r15-questions::after { content: var(--origin-word); position: absolute; top: 3px; right: 3px; z-index: 30; padding: 1px 6px; border-radius: 4px; background: var(--origin); color: #111; font: 600 10px/16px var(--font); pointer-events: none; }
 
 /* ---------- not asked for: gone ---------- */
-/* page subtitles and empty-state sentences */
-.phead p { display: none; }
-.empty > div > div:not([style]) { display: none; }
 /* the comment box: full width, on the inset, no glow */
 .cbox { max-width: none; margin: 0; border-color: var(--border-2); box-shadow: none; }
-/* initials and the same icon box on every card; the Journal source badge on every profile; a fault said twice */
+/* initials and the same icon box on every card; the Journal source badge on every profile */
 .card .tile-mark { display: none; }
-.pf-src[data-tip^="Comes with the journal"], .pf-src[title^="Comes with the journal"] { display: none; }
 .pf-src.changed { border-style: solid; }
-.card:has(.notice.bad) .r6-card-state .badge.failed { display: none; }
 /* the kind beside every number where the page holds one kind of row, and in Tasks under a column that already says Plan */
 .lrow.r6 .rc .k, .tk-row .rc .k { display: none; }
 .lrow.r6 .rc, .tk-row .rc { --rc-kind: 0px; column-gap: 0; }
 /* a reader's body does not repeat its title */
-.reader-text > .md > h1:first-child { display: none; }
 .reader-head .mono, .reader-meta .mono { font-family: var(--font); }
 /* plans: the number beside its word; the focus ring only on hover */
 .pl-head .n { text-align: left; }

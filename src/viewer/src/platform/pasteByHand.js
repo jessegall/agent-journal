@@ -2,7 +2,7 @@
 // clipboard: a dictation tool restores the clipboard a moment after its paste, and the browser's own insertion then finds it empty.
 const FIELDS = "input, textarea";
 
-function insert(field, text) {
+export function insert(field, text) {
     field.focus();
     if (typeof document.execCommand === "function" && document.execCommand("insertText", false, text)) return;
     const start = field.selectionStart ?? field.value.length;

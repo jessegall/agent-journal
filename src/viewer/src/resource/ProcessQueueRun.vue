@@ -2,9 +2,12 @@
 import {computed, nextTick, ref, watch} from "vue";
 import {useOutputPages} from "../composables/outputPages.js";
 import {useSharedNow} from "../composables/now.js";
+import {ago, dated} from "../format/time.js";
 import {useResourceEvents} from "./resourceEvents.js";
 import {peek} from "../route.js";
 import Icon from "../kit/Icon.vue";
+import {copying, short} from "../domain/contextItems.js";
+import {vContext} from "../../kit/vContext.js";
 import {eventAboutRows} from "../../kit/eventRows.js";
 const props = defineProps({run: {type: Object, required: true}, environment: {type: String, required: true}, position: {type: Number, required: true}, read: {type: Function, required: true}, expanded: Boolean});
 const emit = defineEmits(["toggle"]);
@@ -22,6 +25,9 @@ const duration = computed(() => {
     if (seconds < 3600) return `${Math.floor(seconds / 60)} m ${seconds % 60} s`;
     return `${Math.floor(seconds / 3600)} h ${String(Math.floor(seconds / 60) % 60).padStart(2, "0")} m`;
 });
+// when a command started, in the words of every other time of the viewer; a waiting command has not started, and an old row with no start shows none
+const startedAgo = computed(() => (props.run.section === "waiting" || !props.run.started_at ? "" : ago(props.run.started_at, now.value * 1000)));
+const durationTitle = computed(() => (props.run.section === "waiting" ? "Waiting for" : props.run.ended_at ? "Ran for" : "Running for"));
 async function refresh() {
     if (!props.expanded) return;
     const box = output.value;
@@ -38,18 +44,27 @@ async function open() {
     output.value.scrollTop = output.value.scrollHeight;
     pages.feed.drawn(output.value);
 }
+// the menu of a right click on a process: show or hide its output, copy its command, open its task
+const place = () => ({
+    head: short(props.run.line, 40),
+    items: [
+        {label: props.expanded ? "Hide output" : "Show output", group: "open", run: () => emit("toggle")},
+        {label: "Copy command", group: "copy", run: ({say}) => copying(props.run.line, "the command", say)},
+        {label: "Open its task", group: "copy", disabled: !props.run.task_id, reason: "No task", run: () => peek("tasks", props.run.task_id)},
+    ],
+});
 watch(() => props.expanded, open, {immediate: true});
 useResourceEvents(["output.*"], refresh, (event) => eventAboutRows(event, new Set([props.run.id])));
 </script>
 <template>
-    <div class="run" :data-queue-row="run.section" :data-queue-process="run.id">
+    <div v-context="place" class="run" :data-queue-row="run.section" :data-queue-process="run.id">
         <div class="toggle" role="button" tabindex="0" :aria-expanded="expanded" @click="emit('toggle')" @keydown.enter.prevent="emit('toggle')" @keydown.space.prevent="emit('toggle')">
             <div class="run-line"><span class="leading"><template v-if="run.section === 'waiting'"><span data-queue-position>{{ position }}</span></template><template v-else><span :class="['dot', {passed: run.section === 'recent' && run.state === 'finished', failed: run.section === 'recent' && run.state !== 'finished'}]" :title="run.section === 'recent' ? (run.state === 'finished' ? 'Passed' : 'Failed') : 'Running'" /></template></span>
                 <code class="command">{{ run.line }}</code><span class="time" data-queue-time>{{ duration }}</span><Icon class="chevron" :class="{open: expanded}" name="chevronRight" facing="down" :size="12" />
             </div>
             <div class="details"><span data-queue-type>{{ type }}</span><template v-if="run.owner_agent_id"><span class="separator">·</span><button type="button" class="link" data-queue-agent @click.stop="peek('agents', run.owner_agent_id)">Agent {{ run.owner_agent_id }}</button></template><template v-else-if="run.is_main"><span class="separator">·</span><span>Main agent</span></template><template v-if="run.task_id"><span class="separator">·</span><button type="button" class="link" data-queue-task @click.stop="peek('tasks', run.task_id)">Task {{ run.task_id }}</button></template><template v-if="run.state === 'failed'"><span class="separator">·</span><span class="failed">Failed, exit {{ run.exit_code }}</span></template></div>
         </div>
-        <div class="drop" :class="{open: expanded}"><div class="drop-inner"><div class="output"><div class="output-heading"><span>Output {{ run.id }}</span><a :href="`?page=processes.output&output=${run.id}&environment=${encodeURIComponent(environment)}`" target="_blank" rel="noopener">Open output window</a></div><pre ref="output" data-queue-output-body @scroll="expanded && pages.loadEarlier($event.target)"><span class="prompt">$ </span>{{ run.line }}<template v-if="lines.length">{{ '\n' + lines.join('\n') }}</template></pre></div></div></div>
+        <div class="drop" :class="{open: expanded}"><div class="drop-inner"><div class="output"><div class="output-heading"><span>Output {{ run.id }}<template v-if="run.task_id"> · Task {{ run.task_id }}</template><template v-if="startedAgo"> · <span class="started" data-queue-started :title="dated(run.started_at)">Started {{ startedAgo }}</span></template><template v-if="duration"> · <span :title="durationTitle" data-queue-duration>{{ duration }}</span></template></span><a :href="`?page=processes.output&output=${run.id}&environment=${encodeURIComponent(environment)}`" target="_blank" rel="noopener">Open output window</a></div><pre ref="output" data-queue-output-body @scroll="expanded && pages.loadEarlier($event.target)"><span class="prompt">$ </span>{{ run.line }}<template v-if="lines.length">{{ '\n' + lines.join('\n') }}</template></pre></div></div></div>
     </div>
 </template>
 <style scoped>

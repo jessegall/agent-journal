@@ -1,5 +1,5 @@
 <script setup>
-import {TaskStatusIcon, peekRef, useWindow} from "@journal/window-kit";
+import {TaskStatusIcon, copying, peekRef, short, useWindow, vContext} from "@journal/window-kit";
 import MarkIcon from "../../../../../viewer/src/kit/MarkIcon.vue";
 import TaskRowIcons from "./TaskRowIcons.vue";
 
@@ -14,10 +14,24 @@ const emit = defineEmits(["select"]);
 const view = useWindow();
 const pick = () => (props.selectable ? emit("select", props.row.id) : peekRef(`tasks:${props.row.id}`));
 const setPriority = (priority) => view.run(["task", "edit", String(props.row.id), "--priority", String(priority)]);
+// the menu of a right click on the task: open it, copy its number or title, cancel it with an Undo that reopens it
+const OPEN_STATES = new Set(["open", "started", "blocked", "testing"]);
+const place = () => ({
+    head: `Task ${props.row.id}`,
+    items: [
+        {label: "Open", group: "open", run: () => peekRef(`tasks:${props.row.id}`)},
+        {label: "Copy number", group: "copy", run: ({say}) => copying(`task ${props.row.id}`, "the number", say)},
+        {label: "Copy title", group: "copy", run: ({say}) => copying(props.row.title, short(props.row.title, 30), say)},
+        {label: "Cancel task", danger: true, disabled: !OPEN_STATES.has(props.row.state), reason: "Already closed", run: async ({say}) => {
+            const answer = await view.run(["task", "cancel", String(props.row.id), "--reason", "Cancelled from the task list"]);
+            say(answer.ok ? `Task ${props.row.id} cancelled` : answer.error, answer.ok ? {line: ["task", "reopen", String(props.row.id)]} : null);
+        }},
+    ],
+});
 </script>
 
 <template>
-    <div :class="['task', {selected: selectable && selected}]" :data-row="row.id" role="button" tabindex="0" @click="pick" @keydown.enter="pick">
+    <div v-context="place" :class="['task', {selected: selectable && selected}]" :data-row="row.id" role="button" tabindex="0" @click="pick" @keydown.enter="pick">
         <TaskStatusIcon :status="row.state" />
         <template v-if="display.number">
             <span class="task-id">{{ row.id }}</span>

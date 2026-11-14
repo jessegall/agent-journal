@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, Dialog, SearchBar, Skeleton, peekRef, tableOfWord, useWindow} from "@journal/window-kit";
+import {Btn, Dialog, ListReaderLayout, Reader, SearchBar, Skeleton, copying, peekRef, tableOfWord, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
 const terms = ref("");
@@ -9,13 +9,19 @@ const answer = ref(null);
 const failure = ref("");
 const searching = ref(false);
 const shown = ref(null);
+const chosen = ref(null);
 // the models a search can be narrowed to: those the last answer held and those already picked
 const models = computed(() => [...new Set([...(answer.value?.hits || []).map((hit) => hit.cli_name), ...picked.value])].sort());
+
+const kindOf = (name) => name.charAt(0).toUpperCase() + name.slice(1);
+// the results are grouped by kind, and under a kind a row says only its number and what matched
+const items = computed(() => (answer.value?.hits || []).map((hit) => ({id: `${hit.cli_name}:${hit.id}`, title: `${hit.cli_name} ${hit.id}`, desc: hit.excerpt, group: kindOf(hit.cli_name), hit})));
 
 async function find() {
     const words = terms.value.trim().split(/\s+/).filter(Boolean);
     if (!words.length) return void (answer.value = null);
     searching.value = true;
+    chosen.value = null;
     context.state["results.terms"] = words.join(" ");
     if (picked.value.size) context.state["results.model"] = [...picked.value].join(",");
     else delete context.state["results.model"];
@@ -40,63 +46,67 @@ function openHit(hit) {
     if (table) peekRef(`${table}:${hit.id}`);
     else shown.value = hit;
 }
+
+// a result is only read: its menu has Open and a copy, never Duplicate or Delete
+const place = (item) => ({
+    head: item.title,
+    items: [
+        {label: "Open", group: "open", run: () => openHit(item.hit)},
+        {label: "Copy reference", group: "copy", run: ({say}) => copying(item.title, item.title, say)},
+    ],
+});
 </script>
 
 <template>
-    <div class="search">
-        <SearchBar v-model="terms" @keydown.enter.prevent="find">
-            <Btn variant="primary" small data-search-go @click="find">Search</Btn>
-        </SearchBar>
-        <template v-if="models.length">
-            <div class="search-chips">
-                <template v-for="model in models" :key="model">
-                    <button type="button" :class="['search-chip', {on: picked.has(model)}]" :data-model="model" @click="toggle(model)">{{ model }}</button>
-                </template>
-            </div>
+    <ListReaderLayout v-model:chosen="chosen" :items="items" :list-width="420" :place="place" :empty-title="answer ? 'No match' : 'Search'" pick-line="No result chosen" data-search>
+        <template #top>
+            <SearchBar v-model="terms" placeholder="Search" @keydown.enter.prevent="find">
+                <Btn variant="primary" small data-search-go @click="find">Search</Btn>
+            </SearchBar>
+            <template v-if="models.length">
+                <div class="search-chips">
+                    <template v-for="model in models" :key="model">
+                        <button type="button" :class="['search-chip', {on: picked.has(model)}]" :data-model="model" @click="toggle(model)">{{ model }}</button>
+                    </template>
+                </div>
+            </template>
+            <template v-if="failure">
+                <p class="search-note">{{ failure }}</p>
+            </template>
+            <template v-else-if="answer && !answer.hits.length">
+                <p class="search-note" data-no-hits>No results match all these words: {{ terms.trim() }}</p>
+            </template>
+            <template v-else-if="answer && answer.closest">
+                <p class="search-note" data-closest>No result holds all these words: {{ terms.trim() }}, these hold most of them, the closest first</p>
+            </template>
+            <template v-else-if="answer">
+                <p class="search-note" data-total>{{ answer.total }} {{ answer.total === 1 ? "result matches" : "results match" }} all these words: {{ terms.trim() }}{{ answer.total > answer.hits.length ? `, the newest ${answer.hits.length} are shown` : "" }}</p>
+            </template>
+            <template v-if="shown">
+                <Dialog padded :title="`${shown.cli_name} ${shown.id}`" small data-hit-dialog @close="shown = null">
+                    <p class="search-text">{{ shown.excerpt }}</p>
+                </Dialog>
+            </template>
         </template>
-        <template v-if="searching">
-            <Skeleton shape="rows" />
+        <template #empty>
+            <template v-if="searching"><Skeleton shape="rows" /></template>
+            <template v-else-if="!answer">Type words and press Enter. A result holds every word.</template>
         </template>
-        <template v-else-if="failure">
-            <p class="search-note">{{ failure }}</p>
+        <template #reader="{item}">
+            <Reader :title="item.title" :number="kindOf(item.hit.cli_name)" :facts="answer.closest ? [{name: 'holds', label: 'Holds', value: item.hit.matched_tokens.join(', ')}] : []" data-search-reader>
+                <template #primary><Btn small variant="primary" data-search-open @click="openHit(item.hit)">Open</Btn></template>
+                <p class="search-text" data-search-text>{{ item.hit.excerpt }}</p>
+            </Reader>
         </template>
-        <template v-else-if="answer && !answer.hits.length">
-            <p class="search-note" data-no-hits>No results match all these words: {{ terms.trim() }}</p>
-        </template>
-        <template v-else-if="answer">
-            <ul class="search-hits">
-                <template v-for="hit in answer.hits" :key="`${hit.cli_name}:${hit.id}`">
-                    <li>
-                        <button type="button" class="search-hit" data-hit @click="openHit(hit)">
-                            <span class="search-hit-name">{{ hit.cli_name }} {{ hit.id }}</span>
-                            <span class="search-hit-excerpt">{{ hit.excerpt }}</span>
-                            <template v-if="answer.closest"><span class="search-hit-words" data-hit-words>holds: {{ hit.matched_tokens.join(", ") }}</span></template>
-                        </button>
-                    </li>
-                </template>
-            </ul>
-            <template v-if="answer.closest"><p class="search-note" data-closest>No result holds all these words: {{ terms.trim() }}, these hold most of them, the closest first</p></template>
-            <template v-else><p class="search-note" data-total>{{ answer.total }} {{ answer.total === 1 ? "result matches" : "results match" }} all these words: {{ terms.trim() }}{{ answer.total > answer.hits.length ? `, the newest ${answer.hits.length} are shown` : "" }}</p></template>
-        </template>
-        <template v-if="shown">
-            <Dialog padded :title="`${shown.cli_name} ${shown.id}`" small data-hit-dialog @close="shown = null">
-                <p class="search-dialog-text">{{ shown.excerpt }}</p>
-            </Dialog>
-        </template>
-    </div>
+    </ListReaderLayout>
 </template>
 
 <style scoped>
-.search {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-}
-
 .search-chips {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+    padding: 0 var(--inset);
 }
 
 .search-chip {
@@ -114,56 +124,15 @@ function openHit(hit) {
     color: #fff;
 }
 
-.search-hits {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.search-hit {
-    display: flex;
-    gap: 12px;
-    width: 100%;
-    padding: 8px 10px;
-    border: 0;
-    border-radius: 7px;
-    background: none;
-    color: var(--text);
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-.search-hit:hover {
-    background: var(--hover);
-}
-
-.search-dialog-text {
+.search-text {
     margin: 0;
     white-space: pre-wrap;
 }
 
-.search-hit-name {
-    flex: none;
-    width: 110px;
-    color: var(--text-3);
-}
-
-.search-hit-excerpt {
-    flex: 1;
-    min-width: 0;
-}
-
-.search-hit-words {
-    color: var(--text-2);
-    font-size: 12px;
-}
-
 .search-note {
     margin: 0;
+    padding: 4px var(--inset);
     color: var(--text-3);
+    font-size: 12px;
 }
 </style>

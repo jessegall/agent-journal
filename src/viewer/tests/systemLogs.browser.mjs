@@ -15,14 +15,14 @@ try {
         await logs.locator(`${field} [data-drop-head]`).click();
         await page.locator(`[data-drop-item="${key}"]`).click();
     };
-    await logs.locator("[data-log-line]").first().waitFor();
-    assert.equal(await logs.locator("[data-log-line]").count(), 50);
+    await logs.locator(".table-row:not(.head):not(.empty)").first().waitFor();
+    assert.equal(await logs.locator(".table-row:not(.head):not(.empty)").count(), 50);
     assert.match(await logs.innerText(), /browser journal note/);
     await logs.locator("[data-log-next]").click();
-    await logs.locator("[data-log-line]").filter({hasText: /browser server line 0$/}).waitFor();
+    await logs.locator(".table-row:not(.head):not(.empty)").filter({hasText: /browser server line 0$/}).waitFor();
     assert.match(await logs.innerText(), /browser server line 0/);
     await pick("[data-log-source]", "journal");
-    await page.waitForFunction(() => document.querySelectorAll("[data-log-line]").length === 1);
+    await page.waitForFunction(() => document.querySelectorAll(".table-row:not(.head):not(.empty)").length === 1);
     assert.match(await logs.innerText(), /browser journal note/);
     await logs.locator("[data-log-pause]").click();
     assert.equal(await logs.locator("[data-log-pause]").innerText(), "Resume");
@@ -32,7 +32,7 @@ try {
     await logs.getByText("No log lines found.").waitFor();
     const image = new URL("../../../.journal/system-logs-browser.png", import.meta.url).pathname;
     await pick("[data-log-level]", "");
-    await logs.locator("[data-log-line]").waitFor();
+    await logs.locator(".table-row:not(.head):not(.empty)").waitFor();
     await page.screenshot({path: image});
     console.log("System logs opened, paged, filtered and paused in Chromium.");
 } finally {

@@ -1,13 +1,15 @@
 <script setup>
 import {computed, inject, ref} from "vue";
 import {WINDOW_CONTEXT} from "./windowContextKey.js";
-import {stateLabel, stateTipRead} from "../src/domain/states.js";
+import {stateLabel, stateLook, stateTipRead} from "../src/domain/states.js";
+import {badgeClass} from "../src/domain/badgeLook.js";
 
 // a row's state as its badge shows it: the words of the state, and, for a state whose module declared a read for it,
 // a tooltip that opens on hover, focus or a press and reads that line only then
 const props = defineProps({type: {type: String, required: true}, state: {type: String, required: true}, rowId: {type: Number, required: true}, read: {type: Function, default: null}});
 const context = inject(WINDOW_CONTEXT, null);
 const tipRead = computed(() => stateTipRead(props.type, props.state));
+const look = computed(() => badgeClass(stateLook(props.type, props.state)));
 const open = ref(false);
 const lines = ref([]);
 const failure = ref("");
@@ -24,7 +26,7 @@ const toggle = () => (open.value ? hide() : show());
 
 <template>
     <template v-if="tipRead">
-      <span class="state-badge" tabindex="0" role="button" :aria-expanded="open" data-state-badge @mouseenter="show" @mouseleave="hide" @focus="show" @blur="hide" @click="toggle" @keydown.escape="hide">
+      <span :class="['state-badge', ...look]" tabindex="0" role="button" :aria-expanded="open" data-state-badge @mouseenter="show" @mouseleave="hide" @focus="show" @blur="hide" @click="toggle" @keydown.escape="hide">
           {{ stateLabel(type, state) }}
           <template v-if="open">
             <span class="state-tip" role="tooltip" data-state-tip>
@@ -39,9 +41,11 @@ const toggle = () => (open.value ? hide() : show());
       </span>
     </template>
     <template v-else>
-      <span>{{ stateLabel(type, state) }}</span>
+      <span :class="look">{{ stateLabel(type, state) }}</span>
     </template>
 </template>
+
+<style scoped src="../src/kit/badgeLook.css"></style>
 
 <style scoped>
 .state-badge {

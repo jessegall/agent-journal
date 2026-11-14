@@ -54,7 +54,7 @@ test("the bar draws the finished tasks, then those in testing, out of all the ta
 
 test("a task in testing never counts as finished and a cancelled task is not given", () => {
     const tasks = [{id: 1, state: "testing"}, {id: 2, state: "testing"}, {id: 3, state: "open"}, {id: 4, state: "cancelled"}];
-    expect(taskLine({tasks, inHand: {id: 1, state: "testing"}, perHour: 0}).bar).toEqual({total: 3, done: 0, testing: 2});
+    expect(taskLine({tasks, inHand: {id: 1, state: "testing"}, perHour: 0}).bar).toEqual({total: 3, done: 0, testing: 2, started: 0});
 });
 
 test("a retired agent with all its tasks done shows a full bar and says All done", async () => {

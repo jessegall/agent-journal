@@ -1,294 +1,59 @@
-if (!document.getElementById("window-styles-51b19fb13648")) { const style = document.createElement("style"); style.id = "window-styles-51b19fb13648"; style.textContent = ".library[data-v-d545fd69]{display:flex;flex-direction:column;gap:10px}.library-row[data-v-d545fd69]{display:flex;align-items:center;gap:10px;padding:6px 0}.library-open[data-v-d545fd69]{display:flex;flex:1;flex-direction:column;gap:2px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.library-title[data-v-d545fd69]{font-weight:600}.library-abstract[data-v-d545fd69],.library-excerpt[data-v-d545fd69],.library-facts[data-v-d545fd69],.library-here[data-v-d545fd69]{color:var(--text-3);font-size:12px}.library-failure[data-v-d545fd69],.library-warning[data-v-d545fd69]{margin:0;color:var(--danger);font-size:13px}.library-fields dt[data-v-d545fd69]{margin-top:8px;color:var(--text-3);font-size:12px}.library-fields dd[data-v-d545fd69]{margin:2px 0 0;white-space:pre-wrap}.library-versions[data-v-d545fd69]{padding:0;list-style:none}.library-versions li[data-v-d545fd69]{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0;font-size:13px}.connect[data-v-b69f5dd5]{display:flex;flex-direction:column;gap:12px;max-width:420px}.connect-lead[data-v-b69f5dd5]{margin:0;color:var(--text-2);font-size:13px}.connect-failure[data-v-b69f5dd5]{margin:0;color:var(--danger);font-size:13px}.compare[data-v-a6494d43]{display:flex;flex-direction:column;gap:10px}.compare-help[data-v-a6494d43]{margin:0;color:var(--text-3);font-size:12px}.copy[data-v-43694882]{display:flex;flex-direction:column;gap:3px;padding:8px 0}.copy-title[data-v-43694882]{font-weight:600}.copy-facts[data-v-43694882],.copy-line[data-v-43694882]{color:var(--text-3);font-size:12px}.copy-buttons[data-v-43694882]{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.copies[data-v-cec02783]{display:flex;flex-direction:column;gap:10px}.copies-share[data-v-cec02783]{display:flex;align-items:flex-end;gap:8px}.copies-list[data-v-cec02783]{margin:0;padding:0;list-style:none}.copies-failure[data-v-cec02783]{margin:0;color:var(--danger);font-size:13px}.copies-empty[data-v-cec02783]{margin:0;color:var(--text-3);font-size:13px}.person[data-v-21161250]{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 0}.person-name[data-v-21161250]{min-width:120px;font-weight:600}.person-facts[data-v-21161250],.person-tokens[data-v-21161250]{color:var(--text-3);font-size:12px}.person-tokens[data-v-21161250]{flex-basis:100%;margin:0;padding:0 0 0 16px;list-style:none}.person-tokens li[data-v-21161250]{display:flex;align-items:center;gap:10px;padding:2px 0}.person-failure[data-v-21161250]{flex-basis:100%;margin:0;color:var(--danger);font-size:13px}.people[data-v-ebd0ab68]{display:flex;flex-direction:column;gap:10px}.people-add[data-v-ebd0ab68]{display:flex;align-items:flex-end;gap:10px}.people-token[data-v-ebd0ab68]{margin:0;font-family:var(--mono);font-size:12px;word-break:break-all}.people-failure[data-v-ebd0ab68]{margin:0;color:var(--danger);font-size:13px}.teams[data-v-57a8733b]{display:flex;flex-direction:column;gap:10px}.teams-top[data-v-57a8733b]{display:flex;align-items:center;justify-content:space-between}.teams-title[data-v-57a8733b]{margin:0;font-size:16px}.teams-header[data-v-57a8733b]{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--text-2);font-size:13px}.teams-failure[data-v-57a8733b],.teams-stopped[data-v-57a8733b]{margin:0;color:var(--danger);font-size:13px}\n"; document.head.appendChild(style); }
-import { ref as T, watch as J, openBlock as a, createElementBlock as n, createVNode as g, unref as e, toDisplayString as v, createCommentVNode as S, createElementVNode as f, withCtx as C, createTextVNode as V, createBlock as A, Fragment as j, renderList as P, withModifiers as F, computed as q } from "vue";
-import { useWindow as N, useRunLine as D, SearchBar as ae, Segmented as G, Btn as O, RowList as Q, TimeAgo as M, SidePanel as X, FormField as U, TextInput as Y, DiffCard as te, WindowRoom as le, SwitchCase as re } from "@journal/window-kit";
-const I = (p, x) => {
-  const h = p.__vccOpts || p;
-  for (const [t, i] of x)
-    h[t] = i;
-  return h;
-}, se = {
-  class: "library",
-  "data-library": ""
-}, ne = {
-  key: 0,
-  class: "library-failure",
-  role: "alert",
-  "data-library-refusal": ""
-}, oe = {
-  key: 1,
-  class: "library-check",
-  "data-library-check": ""
-}, ie = { "data-library-command": "" }, de = ["data-library-item"], ue = ["onClick"], ce = { class: "library-title" }, pe = {
-  key: 0,
-  class: "library-excerpt",
-  "data-library-excerpt": ""
-}, ye = {
-  key: 1,
-  class: "library-abstract"
-}, ve = { class: "library-facts" }, me = {
-  key: 0,
-  class: "library-here",
-  "data-library-here": ""
-}, be = { "data-library-panel": "" }, fe = { class: "library-facts" }, he = {
-  class: "library-fields",
-  "data-library-fields": ""
-}, ke = {
-  class: "library-versions",
-  "data-library-versions": ""
-}, _e = ["data-library-version"], ge = 300, Se = {
-  __name: "LibraryBrowse",
-  props: { role: { type: String, required: !0 }, canWrite: Boolean },
-  emits: ["changed"],
-  setup(p, { emit: x }) {
-    const h = [
-      { key: "", label: "All" },
-      { key: "doc", label: "Documents" },
-      { key: "sequence", label: "Sequences" },
-      { key: "check", label: "Checks" }
-    ], t = { doc: "Document", sequence: "Sequence", check: "Check" }, i = N(), c = T(""), l = T(""), o = T([]), b = T(!1), k = T(""), d = T(null), R = T([]), m = T(null), $ = x, { refusal: w, run: r } = D(async () => {
-      await E(), $("changed");
-    });
-    let u = 0;
-    const L = (_) => `${_.share}:${_.id}`;
-    async function E() {
-      c.value ? i.state["listing.type"] = c.value : delete i.state["listing.type"], l.value.trim() ? i.state["listing.search"] = l.value.trim() : delete i.state["listing.search"], await i.reload("listing");
-      const _ = i.props.listing;
-      k.value = _.failure.value;
-      const s = k.value ? [] : _.data.value.rows;
-      o.value = [...new Map(s.map((y) => [L(y), y])).values()].map((y) => ({ ...y, item_id: y.id, id: L(y) })), b.value = !0;
-    }
-    async function W(_) {
-      i.state["inspection.share"] = _.share, i.state["inspection.id"] = String(_.item_id), await i.reload("inspection");
-      const s = i.props.inspection;
-      w.value = s.failure.value, d.value = w.value ? null : { ...s.data.value.item, title: _.title }, R.value = w.value ? [] : s.data.value.versions;
-    }
-    async function K() {
-      const _ = d.value;
-      await W({ share: _.share, item_id: _.id, title: _.title });
-    }
-    async function Z(_) {
-      (await r(["library", "remove", _.share, String(_.item_id ?? _.id)])).ok && d.value && await K();
-    }
-    async function H(_, s = null) {
-      (await r(["library", "restore", _.share, String(_.id), ...s ? ["--version", String(s)] : []])).ok && await K();
-    }
-    async function ee(_) {
-      i.state["item.share"] = "check", i.state["item.id"] = String(_.item_id), await i.reload("item");
-      const s = i.props.item;
-      w.value = s.failure.value, m.value = s.failure.value ? null : { ..._, command: s.data.value.fields.command };
-    }
-    async function z(_) {
-      var s;
-      if (_.share === "check" && ((s = m.value) == null ? void 0 : s.id) !== _.id) return void await ee(_);
-      m.value = null, await r(["library", "get", _.share, String(_.item_id), ..._.share === "check" ? ["--read"] : []]);
-    }
-    return J(c, E, { immediate: !0 }), J(l, () => {
-      clearTimeout(u), u = setTimeout(E, ge);
-    }), (_, s) => (a(), n("div", se, [
-      g(e(ae), {
-        modelValue: l.value,
-        "onUpdate:modelValue": s[0] || (s[0] = (y) => l.value = y),
-        placeholder: "Search the library",
-        "data-library-search": ""
-      }, null, 8, ["modelValue"]),
-      g(e(G), {
-        options: h,
-        value: c.value,
-        "data-library-type": "",
-        onPick: s[1] || (s[1] = (y) => c.value = y)
-      }, null, 8, ["value"]),
-      e(w) ? (a(), n("p", ne, v(e(w)), 1)) : S("", !0),
-      m.value ? (a(), n("div", oe, [
-        s[8] || (s[8] = f("p", null, "This check runs this command on your computer when someone starts it:", -1)),
-        f("pre", ie, v(m.value.command), 1),
-        g(e(O), {
-          small: "",
-          onClick: s[2] || (s[2] = (y) => m.value = null)
-        }, {
-          default: C(() => [...s[6] || (s[6] = [
-            V("Cancel", -1)
-          ])]),
-          _: 1
-        }),
-        g(e(O), {
-          small: "",
-          variant: "primary",
-          "data-library-confirm": "",
-          onClick: s[3] || (s[3] = (y) => z(m.value))
-        }, {
-          default: C(() => [...s[7] || (s[7] = [
-            V("Get the check, stopped", -1)
-          ])]),
-          _: 1
-        })
-      ])) : S("", !0),
-      g(e(Q), {
-        rows: o.value,
-        failure: k.value,
-        loaded: b.value,
-        searching: !!(l.value.trim() || c.value),
-        empty: "Nothing in the library yet",
-        hint: "Shared documents, sequences and checks appear here."
-      }, {
-        default: C(({ row: y }) => [
-          f("div", {
-            class: "library-row",
-            "data-library-item": y.id
-          }, [
-            f("button", {
-              type: "button",
-              class: "library-open",
-              "data-library-open": "",
-              onClick: (B) => W(y)
-            }, [
-              f("span", ce, v(y.title), 1),
-              y.excerpt ? (a(), n("span", pe, v(y.excerpt), 1)) : (a(), n("span", ye, v(y.abstract), 1)),
-              f("span", ve, [
-                V(v(t[y.share]) + ", Version: " + v(y.version) + ", Changed by: " + v(y.updated_by) + ", ", 1),
-                g(e(M), {
-                  at: y.updated_at
-                }, null, 8, ["at"])
-              ])
-            ], 8, ue),
-            y.copy_id ? (a(), n("span", me, "On this journal")) : (a(), A(e(O), {
-              key: 1,
-              small: "",
-              variant: "primary",
-              "data-library-get": "",
-              onClick: (B) => z(y)
-            }, {
-              default: C(() => [...s[9] || (s[9] = [
-                V("Get", -1)
-              ])]),
-              _: 1
-            }, 8, ["onClick"])),
-            p.role === "admin" ? (a(), A(e(O), {
-              key: 2,
-              small: "",
-              variant: "danger",
-              "data-library-remove": "",
-              onClick: (B) => Z(y)
-            }, {
-              default: C(() => [...s[10] || (s[10] = [
-                V("Remove", -1)
-              ])]),
-              _: 1
-            }, 8, ["onClick"])) : S("", !0)
-          ], 8, de)
-        ]),
-        _: 1
-      }, 8, ["rows", "failure", "loaded", "searching"]),
-      d.value ? (a(), A(e(X), {
-        key: 2,
-        title: d.value.title,
-        onClose: s[5] || (s[5] = (y) => d.value = null)
-      }, {
-        default: C(() => [
-          f("div", be, [
-            d.value.removed_at ? (a(), n(j, { key: 0 }, [
-              s[12] || (s[12] = f("p", {
-                class: "library-removed",
-                "data-library-removed": ""
-              }, "Removed from the library", -1)),
-              p.role === "admin" ? (a(), A(e(O), {
-                key: 0,
-                small: "",
-                variant: "primary",
-                "data-library-restore": "",
-                onClick: s[4] || (s[4] = (y) => H(d.value))
-              }, {
-                default: C(() => [...s[11] || (s[11] = [
-                  V("Restore", -1)
-                ])]),
-                _: 1
-              })) : S("", !0)
-            ], 64)) : S("", !0),
-            f("p", fe, v(t[d.value.share]) + ", Version: " + v(d.value.version) + ", Changed by: " + v(d.value.updated_by), 1),
-            f("dl", he, [
-              (a(!0), n(j, null, P(d.value.fields, (y, B) => (a(), n(j, { key: B }, [
-                f("dt", null, v(B), 1),
-                f("dd", null, v(y), 1)
-              ], 64))), 128))
-            ]),
-            s[14] || (s[14] = f("h3", { class: "library-heading" }, "Versions", -1)),
-            f("ul", ke, [
-              (a(!0), n(j, null, P(R.value, (y) => (a(), n("li", {
-                key: y.version,
-                "data-library-version": y.version
-              }, [
-                f("span", null, [
-                  V("Version: " + v(y.version) + ", Changed by: " + v(y.user) + ", ", 1),
-                  g(e(M), {
-                    at: y.created_at
-                  }, null, 8, ["at"])
-                ]),
-                p.canWrite && y.version !== d.value.version ? (a(), A(e(O), {
-                  key: 0,
-                  small: "",
-                  "data-library-restore-version": "",
-                  onClick: (B) => H(d.value, y.version)
-                }, {
-                  default: C(() => [...s[13] || (s[13] = [
-                    V("Restore this version", -1)
-                  ])]),
-                  _: 1
-                }, 8, ["onClick"])) : S("", !0)
-              ], 8, _e))), 128))
-            ])
-          ])
-        ]),
-        _: 1
-      }, 8, ["title"])) : S("", !0)
-    ]));
-  }
-}, $e = /* @__PURE__ */ I(Se, [["__scopeId", "data-v-d545fd69"]]), Ce = {
+if (!document.getElementById("window-styles-d0308b064eaa")) { const style = document.createElement("style"); style.id = "window-styles-d0308b064eaa"; style.textContent = ".connect[data-v-b69f5dd5]{display:flex;flex-direction:column;gap:12px;max-width:420px}.connect-lead[data-v-b69f5dd5]{margin:0;color:var(--text-2);font-size:13px}.connect-failure[data-v-b69f5dd5]{margin:0;color:var(--danger);font-size:13px}.person[data-v-21161250]{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 0}.person-name[data-v-21161250]{min-width:120px;font-weight:600}.person-facts[data-v-21161250],.person-tokens[data-v-21161250]{color:var(--text-3);font-size:12px}.person-tokens[data-v-21161250]{flex-basis:100%;margin:0;padding:0 0 0 16px;list-style:none}.person-tokens li[data-v-21161250]{display:flex;align-items:center;gap:10px;padding:2px 0}.person-failure[data-v-21161250]{flex-basis:100%;margin:0;color:var(--danger);font-size:13px}.people[data-v-ebd0ab68]{display:flex;flex-direction:column;gap:10px}.people-add[data-v-ebd0ab68]{display:flex;align-items:flex-end;gap:10px}.people-token[data-v-ebd0ab68]{margin:0;font-family:var(--mono);font-size:12px;word-break:break-all}.people-failure[data-v-ebd0ab68]{margin:0;color:var(--danger);font-size:13px}.compare[data-v-a6494d43]{display:flex;flex-direction:column;gap:10px}.compare-help[data-v-a6494d43]{margin:0;color:var(--text-3);font-size:12px}.when[data-v-784917b9],.loss[data-v-784917b9]{margin:8px 0;color:var(--text-3);font-size:12.5px}.versions[data-v-784917b9]{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none;font-size:12.5px}.versions li[data-v-784917b9]{display:flex;align-items:center;justify-content:space-between;gap:8px}.failure[data-v-7663ac1f]{margin:0;padding:6px var(--inset);color:var(--bad, var(--text-2));font-size:12px}.quiet[data-v-7663ac1f]{color:var(--text-4);font-size:12px;white-space:nowrap}.badge-update[data-v-7663ac1f]{padding:1px 7px;border-radius:999px;background:var(--accent-dim);color:var(--accent-text);font-size:11.5px;font-weight:500}.note[data-v-7663ac1f]{margin:0 0 8px;color:var(--text-2);font-size:13px}pre[data-v-7663ac1f]{margin:0;padding:8px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px}.teams[data-v-100944e6]{display:flex;flex:1;flex-direction:column;gap:6px;min-height:0}.teams-header[data-v-100944e6]{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 var(--inset);color:var(--text-2);font-size:13px}.teams-note[data-v-100944e6]{margin:0;padding:0 var(--inset);color:var(--text-2);font-size:13px}.failure[data-v-100944e6]{color:var(--danger)}\n"; document.head.appendChild(style); }
+import { ref as $, openBlock as n, createElementBlock as u, withModifiers as re, createElementVNode as A, createVNode as b, unref as t, withCtx as f, toDisplayString as _, createCommentVNode as w, createTextVNode as q, Fragment as E, renderList as Y, createBlock as D, computed as V, useModel as ue, watch as le, mergeModels as ee, createSlots as de } from "vue";
+import { useWindow as U, FormField as M, TextInput as G, Btn as N, useRunLine as z, Segmented as J, RowList as ce, CreateDialog as me, DiffCard as ve, copying as pe, Reader as ye, TimeAgo as H, ActionsMenu as be, defaultFilter as fe, applyFilter as he, ListReaderLayout as ke, Skeleton as we, FilterBar as ge, Dialog as _e, WindowRoom as $e, PageHeader as Se, SwitchCase as Ce } from "@journal/window-kit";
+const W = (a, h) => {
+  const s = a.__vccOpts || a;
+  for (const [r, i] of h)
+    s[r] = i;
+  return s;
+}, Re = {
   key: 0,
   class: "connect-failure",
   role: "alert",
   "data-library-refusal": ""
-}, we = {
+}, Te = {
   __name: "LibraryConnect",
   props: { address: { type: String, default: "" } },
   emits: ["connected"],
-  setup(p, { emit: x }) {
-    const h = p, t = x, i = N(), c = T(h.address), l = T(""), o = T(""), b = T(!1);
-    async function k() {
-      b.value = !0;
-      const d = await i.run(["library", "connect", ...c.value.trim() ? [c.value.trim()] : [], "--token", l.value.trim()]);
-      b.value = !1, o.value = d.ok ? "" : d.error, d.ok && (l.value = "", t("connected"));
+  setup(a, { emit: h }) {
+    const s = a, r = h, i = U(), e = $(s.address), l = $(""), d = $(""), o = $(!1);
+    async function v() {
+      o.value = !0;
+      const R = await i.run(["library", "connect", ...e.value.trim() ? [e.value.trim()] : [], "--token", l.value.trim()]);
+      o.value = !1, d.value = R.ok ? "" : R.error, R.ok && (l.value = "", r("connected"));
     }
-    return (d, R) => (a(), n("form", {
+    return (R, k) => (n(), u("form", {
       class: "connect",
       "data-library-connect": "",
-      onSubmit: F(k, ["prevent"])
+      onSubmit: re(v, ["prevent"])
     }, [
-      R[3] || (R[3] = f("p", { class: "connect-lead" }, "Connect this journal to your team's shared server to read and share documents, sequences and checks.", -1)),
-      g(e(U), {
+      k[3] || (k[3] = A("p", { class: "connect-lead" }, "Connect this journal to your team's shared server to read and share documents, sequences and checks.", -1)),
+      b(t(M), {
         label: "Address",
         for: "library-address",
         help: "An IP address or a web address, such as 10.0.0.5 or https://library.example.com."
       }, {
-        default: C(() => [
-          g(e(Y), {
+        default: f(() => [
+          b(t(G), {
             id: "library-address",
-            modelValue: c.value,
-            "onUpdate:modelValue": R[0] || (R[0] = (m) => c.value = m),
+            modelValue: e.value,
+            "onUpdate:modelValue": k[0] || (k[0] = (g) => e.value = g),
             placeholder: "library.example.com",
             "data-library-address": ""
           }, null, 8, ["modelValue"])
         ]),
         _: 1
       }),
-      g(e(U), {
+      b(t(M), {
         label: "Token",
         for: "library-token",
         help: "The token an admin of the server gave you. It is stored outside the project."
       }, {
-        default: C(() => [
-          g(e(Y), {
+        default: f(() => [
+          b(t(G), {
             id: "library-token",
             modelValue: l.value,
-            "onUpdate:modelValue": R[1] || (R[1] = (m) => l.value = m),
+            "onUpdate:modelValue": k[1] || (k[1] = (g) => l.value = g),
             type: "password",
             autocomplete: "off",
             placeholder: "jsl_...",
@@ -297,430 +62,194 @@ const I = (p, x) => {
         ]),
         _: 1
       }),
-      o.value ? (a(), n("p", Ce, v(o.value), 1)) : S("", !0),
-      g(e(O), {
+      d.value ? (n(), u("p", Re, _(d.value), 1)) : w("", !0),
+      b(t(N), {
         variant: "primary",
-        busy: b.value,
+        busy: o.value,
         disabled: !l.value.trim(),
         "data-library-submit": "",
-        onClick: k
+        onClick: v
       }, {
-        default: C(() => [...R[2] || (R[2] = [
-          V("Connect", -1)
+        default: f(() => [...k[2] || (k[2] = [
+          q("Connect", -1)
         ])]),
         _: 1
       }, 8, ["busy", "disabled"])
     ], 32));
   }
-}, xe = /* @__PURE__ */ I(we, [["__scopeId", "data-v-b69f5dd5"]]);
-function Re(p, x) {
-  const h = p === "" ? [] : p.split(`
-`), t = x === "" ? [] : x.split(`
-`), i = Array.from({ length: h.length + 1 }, () => new Array(t.length + 1).fill(0));
-  for (let b = h.length - 1; b >= 0; b--)
-    for (let k = t.length - 1; k >= 0; k--)
-      i[b][k] = h[b] === t[k] ? i[b + 1][k + 1] + 1 : Math.max(i[b + 1][k], i[b][k + 1]);
-  const c = [];
-  let l = 0, o = 0;
-  for (; l < h.length || o < t.length; )
-    l < h.length && o < t.length && h[l] === t[o] ? c.push({ line_type: "ctx", line: o + 1, text: t[o++] }) && l++ : o < t.length && (l === h.length || i[l][o + 1] >= i[l + 1][o]) ? c.push({ line_type: "add", line: o + 1, text: t[o++] }) : c.push({ line_type: "del", line: null, text: h[l++] });
-  return { rows: c, added: c.filter((b) => b.line_type === "add").length, removed: c.filter((b) => b.line_type === "del").length };
-}
-const Te = {
-  class: "compare",
-  "data-library-compare": ""
-}, Le = {
-  key: 0,
-  "data-library-same": ""
-}, Ve = {
-  __name: "CopyCompare",
-  props: { here: { type: Object, required: !0 }, library: { type: Object, required: !0 }, at: { type: String, required: !0 } },
-  setup(p) {
-    const x = p, h = q(
-      () => Object.keys({ ...x.here, ...x.library }).map((t) => ({ name: t, ...Re(String(x.here[t] ?? ""), String(x.library[t] ?? "")) })).filter((t) => t.added || t.removed)
-    );
-    return (t, i) => (a(), n("div", Te, [
-      i[0] || (i[0] = f("p", { class: "compare-help" }, "Red lines are only on this journal. Green lines are only in the library.", -1)),
-      h.value.length ? S("", !0) : (a(), n("p", Le, "The two versions have the same text.")),
-      (a(!0), n(j, null, P(h.value, (c) => (a(), A(e(te), {
-        key: c.name,
-        path: c.name,
-        change: "edit",
-        added: c.added,
-        removed: c.removed,
-        at: p.at,
-        rows: c.rows,
-        "data-library-diff": ""
-      }, null, 8, ["path", "added", "removed", "at", "rows"]))), 128))
-    ]));
-  }
-}, Oe = /* @__PURE__ */ I(Ve, [["__scopeId", "data-v-a6494d43"]]), Ae = ["data-library-copy", "data-status"], je = { class: "copy-title" }, Ee = {
-  class: "copy-facts",
-  "data-copy-facts": ""
-}, qe = { class: "copy-buttons" }, Ie = {
-  __name: "LibraryCopyRow",
-  props: { copy: { type: Object, required: !0 }, role: { type: String, required: !0 } },
-  emits: ["choose"],
-  setup(p, { emit: x }) {
-    const h = { doc: "Document", sequence: "Sequence", check: "Check" }, t = {
-      compare: "Compare",
-      read: "Read",
-      mine: "Keep mine",
-      send: "Send",
-      library: "Use the library's version",
-      leave: "Stop following"
-    }, i = {
-      synced: ["leave"],
-      sending: [],
-      unsent: [],
-      paused: [],
-      denied: ["compare", "library"],
-      rejected: ["compare"],
-      conflict: ["compare", "mine", "library"],
-      review: ["read", "library", "leave"],
-      removed: ["leave"],
-      agent: ["compare", "send", "library"]
-    }, c = { admin: "Admin", edit: "Edit", read: "Read-only" }, l = p, o = x, b = q(() => i[l.copy.status].map((d) => ({ key: d, label: t[d] }))), k = q(() => {
-      const d = [];
-      return l.copy.status === "denied" && d.push(`Role: ${c[l.role]}`), l.copy.status === "denied" && l.copy.server_version > l.copy.version && d.push("A newer version is in the library"), l.copy.status === "agent" && d.push("An agent changed this item. A user sends it to the team."), l.copy.status === "removed" && d.push("Your copy stays on this journal."), l.copy.note && d.push(l.copy.note), d;
-    });
-    return (d, R) => (a(), n("li", {
-      class: "copy",
-      "data-library-copy": p.copy.copy_id,
-      "data-status": p.copy.status
-    }, [
-      f("span", je, v(h[p.copy.share]) + " " + v(p.copy.row_id) + ", " + v(p.copy.local_fields.title), 1),
-      f("span", Ee, "Status: " + v(p.copy.label) + ", Version: " + v(p.copy.version), 1),
-      (a(!0), n(j, null, P(k.value, (m) => (a(), n("span", {
-        key: m,
-        class: "copy-line",
-        "data-copy-line": ""
-      }, v(m), 1))), 128)),
-      f("span", qe, [
-        (a(!0), n(j, null, P(b.value, (m) => (a(), A(e(O), {
-          key: m.key,
-          small: "",
-          variant: m.key === "library" ? "primary" : void 0,
-          "data-copy-button": m.key,
-          onClick: ($) => o("choose", p.copy, m.key)
-        }, {
-          default: C(() => [
-            V(v(m.label), 1)
-          ]),
-          _: 2
-        }, 1032, ["variant", "data-copy-button", "onClick"]))), 128))
-      ])
-    ], 8, Ae));
-  }
-}, Pe = /* @__PURE__ */ I(Ie, [["__scopeId", "data-v-43694882"]]), Be = {
-  class: "copies",
-  "data-library-copies": ""
-}, Ne = {
-  class: "copies-shared",
-  "data-library-shared": ""
-}, De = {
-  key: 0,
-  class: "copies-failure",
-  role: "alert",
-  "data-library-warning": ""
-}, We = {
-  key: 2,
-  class: "copies-failure",
-  role: "alert",
-  "data-library-refusal": ""
-}, Ue = {
-  key: 3,
-  class: "copies-empty",
-  "data-library-no-copies": ""
-}, Ye = { class: "copies-list" }, Ge = { "data-library-compare-panel": "" }, Me = {
-  key: 0,
-  class: "copies-failure",
-  "data-library-loss": ""
-}, Fe = {
-  __name: "LibraryCopies",
-  props: { copies: { type: Array, required: !0 }, role: { type: String, required: !0 }, canWrite: Boolean },
-  emits: ["changed"],
-  setup(p, { emit: x }) {
-    const h = x, t = N(), i = ["doc"], c = T(""), l = T(null), o = T(null), { refusal: b, run: k } = D(async () => h("changed"));
-    async function d(r) {
-      if (Object.keys(r.server_fields).length) return r.server_fields;
-      t.state["item.share"] = r.share, t.state["item.id"] = String(r.item_id), await t.reload("item");
-      const u = t.props.item;
-      return b.value = u.failure.value, u.failure.value ? null : u.data.value.fields;
-    }
-    async function R(r, u = !1) {
-      const L = await d(r);
-      o.value = L ? { copy: r, there: L, isTaking: u } : null;
-    }
-    async function m(r) {
-      o.value = null, await k(["library", "resolve", String(r.copy_id), "--keep", "library"]);
-    }
-    const $ = {
-      compare: (r) => R(r),
-      read: (r) => R(r),
-      send: (r) => k(["library", "resolve", String(r.copy_id), "--keep", "mine"]),
-      mine: (r) => k(["library", "resolve", String(r.copy_id), "--keep", "mine"]),
-      library: (r) => i.includes(r.share) ? m(r) : R(r, !0),
-      leave: (r) => k(["library", "leave", String(r.copy_id)])
-    };
-    async function w() {
-      const [r, u, ...L] = c.value.trim().split(/\s+/);
-      if (!r || !/^\d+$/.test(u ?? "") || L.length) return void (b.value = "Write the type and the number, such as doc 63.");
-      const E = await k(["library", "share", r, u]);
-      l.value = E.ok ? E.value : null, E.ok && (c.value = "");
-    }
-    return (r, u) => (a(), n("div", Be, [
-      p.canWrite ? (a(), n("form", {
-        key: 0,
-        class: "copies-share",
-        "data-library-share": "",
-        onSubmit: F(w, ["prevent"])
-      }, [
-        g(e(U), {
-          label: "Share with the team",
-          for: "library-share",
-          help: "The type and the number of the item on this journal, such as doc 63."
-        }, {
-          default: C(() => [
-            g(e(Y), {
-              id: "library-share",
-              modelValue: c.value,
-              "onUpdate:modelValue": u[0] || (u[0] = (L) => c.value = L),
-              placeholder: "doc 63",
-              "data-library-share-field": ""
-            }, null, 8, ["modelValue"])
-          ]),
-          _: 1
-        }),
-        g(e(O), {
-          variant: "primary",
-          disabled: !c.value.trim(),
-          "data-library-share-submit": "",
-          onClick: w
-        }, {
-          default: C(() => [...u[4] || (u[4] = [
-            V("Share", -1)
-          ])]),
-          _: 1
-        }, 8, ["disabled"])
-      ], 32)) : S("", !0),
-      l.value ? (a(), n(j, { key: 1 }, [
-        f("p", Ne, v(l.value.line), 1),
-        l.value.warning ? (a(), n("p", De, v(l.value.warning), 1)) : S("", !0)
-      ], 64)) : S("", !0),
-      e(b) ? (a(), n("p", We, v(e(b)), 1)) : S("", !0),
-      p.copies.length ? S("", !0) : (a(), n("p", Ue, "No item on this journal follows an item of the library. Get one from the Library tab.")),
-      f("ul", Ye, [
-        (a(!0), n(j, null, P(p.copies, (L) => (a(), A(Pe, {
-          key: L.copy_id,
-          copy: L,
-          role: p.role,
-          onChoose: u[1] || (u[1] = (E, W) => $[W](E))
-        }, null, 8, ["copy", "role"]))), 128))
-      ]),
-      o.value ? (a(), A(e(X), {
-        key: 4,
-        title: `Compare: ${o.value.copy.local_fields.title}`,
-        onClose: u[3] || (u[3] = (L) => o.value = null)
-      }, {
-        default: C(() => [
-          f("div", Ge, [
-            i.includes(o.value.copy.share) ? S("", !0) : (a(), n("p", Me, "The text on this journal is lost when you use the library's version: a " + v(o.value.copy.share) + " keeps no earlier versions.", 1)),
-            g(Oe, {
-              here: o.value.copy.local_fields,
-              library: o.value.there,
-              at: (/* @__PURE__ */ new Date()).toISOString()
-            }, null, 8, ["here", "library", "at"]),
-            o.value.isTaking ? (a(), A(e(O), {
-              key: 1,
-              variant: "primary",
-              "data-library-take": "",
-              onClick: u[2] || (u[2] = (L) => m(o.value.copy))
-            }, {
-              default: C(() => [...u[5] || (u[5] = [
-                V("Use the library's version", -1)
-              ])]),
-              _: 1
-            })) : S("", !0)
-          ])
-        ]),
-        _: 1
-      }, 8, ["title"])) : S("", !0)
-    ]));
-  }
-}, Ke = /* @__PURE__ */ I(Fe, [["__scopeId", "data-v-cec02783"]]), He = ["data-people-user"], ze = { class: "person-name" }, Je = {
+}, xe = /* @__PURE__ */ W(Te, [["__scopeId", "data-v-b69f5dd5"]]), Oe = ["data-people-user"], Le = { class: "person-name" }, Ve = {
   key: 0,
   class: "person-facts",
   "data-people-removed": ""
-}, Qe = {
+}, qe = {
   key: 2,
   class: "person-failure",
   role: "alert",
   "data-people-failure": ""
-}, Xe = {
+}, Ae = {
   key: 3,
   class: "person-tokens",
   "data-people-token-list": ""
-}, Ze = ["data-people-token"], ea = {
+}, Ie = ["data-people-token"], je = {
   key: 0,
   "data-people-revoked": ""
-}, aa = {
+}, De = {
   __name: "LibraryPerson",
   props: { user: { type: Object, required: !0 } },
   emits: ["role", "remove"],
-  setup(p, { emit: x }) {
-    const h = [
+  setup(a, { emit: h }) {
+    const s = [
       { key: "admin", label: "Admin" },
       { key: "edit", label: "Edit" },
       { key: "read", label: "Read-only" }
-    ], t = p, i = x, c = N(), l = T(null), o = T("");
-    async function b() {
-      c.state["tokens.user"] = String(t.user.id), await c.reload("tokens");
-      const m = c.props.tokens;
-      o.value = m.failure.value, l.value = m.failure.value ? null : m.data.value.tokens;
+    ], r = a, i = h, e = U(), l = $(null), d = $("");
+    async function o() {
+      e.state["tokens.user"] = String(r.user.id), await e.reload("tokens");
+      const g = e.props.tokens;
+      d.value = g.failure.value, l.value = g.failure.value ? null : g.data.value.tokens;
     }
-    async function k() {
+    async function v() {
       if (l.value) return void (l.value = null);
-      await b();
+      await o();
     }
-    const { refusal: d, run: R } = D(b);
-    return (m, $) => (a(), n("li", {
+    const { refusal: R, run: k } = z(o);
+    return (g, m) => (n(), u("li", {
       class: "person",
-      "data-people-user": p.user.id
+      "data-people-user": a.user.id
     }, [
-      f("span", ze, v(p.user.name), 1),
-      p.user.removed_at ? (a(), n("span", Je, "Removed")) : (a(), n(j, { key: 1 }, [
-        g(e(G), {
-          options: h,
-          value: p.user.role,
+      A("span", Le, _(a.user.name), 1),
+      a.user.removed_at ? (n(), u("span", Ve, "Removed")) : (n(), u(E, { key: 1 }, [
+        b(t(J), {
+          options: s,
+          value: a.user.role,
           "data-people-role": "",
-          onPick: $[0] || ($[0] = (w) => i("role", p.user, w))
+          onPick: m[0] || (m[0] = (x) => i("role", a.user, x))
         }, null, 8, ["value"]),
-        g(e(O), {
+        b(t(N), {
           small: "",
           "data-people-tokens": "",
-          onClick: k
+          onClick: v
         }, {
-          default: C(() => [...$[2] || ($[2] = [
-            V("Tokens", -1)
+          default: f(() => [...m[2] || (m[2] = [
+            q("Tokens", -1)
           ])]),
           _: 1
         }),
-        g(e(O), {
+        b(t(N), {
           small: "",
           variant: "danger",
           "data-people-remove": "",
-          onClick: $[1] || ($[1] = (w) => i("remove", p.user))
+          onClick: m[1] || (m[1] = (x) => i("remove", a.user))
         }, {
-          default: C(() => [...$[3] || ($[3] = [
-            V("Remove user", -1)
+          default: f(() => [...m[3] || (m[3] = [
+            q("Remove user", -1)
           ])]),
           _: 1
         })
       ], 64)),
-      o.value || e(d) ? (a(), n("p", Qe, v(o.value || e(d)), 1)) : S("", !0),
-      l.value ? (a(), n("ul", Xe, [
-        (a(!0), n(j, null, P(l.value, (w) => (a(), n("li", {
-          key: w.id,
-          "data-people-token": w.id
+      d.value || t(R) ? (n(), u("p", qe, _(d.value || t(R)), 1)) : w("", !0),
+      l.value ? (n(), u("ul", Ae, [
+        (n(!0), u(E, null, Y(l.value, (x) => (n(), u("li", {
+          key: x.id,
+          "data-people-token": x.id
         }, [
-          f("span", null, v(w.label || "No label") + ", Last used: " + v(w.last_used_at || "never"), 1),
-          w.revoked_at ? (a(), n("span", ea, "Revoked")) : (a(), A(e(O), {
+          A("span", null, _(x.label || "No label") + ", Last used: " + _(x.last_used_at || "never"), 1),
+          x.revoked_at ? (n(), u("span", je, "Revoked")) : (n(), D(t(N), {
             key: 1,
             small: "",
             variant: "danger",
             "data-people-revoke": "",
-            onClick: (r) => e(R)(["library-user", "revoke", String(w.id)])
+            onClick: (O) => t(k)(["library-user", "revoke", String(x.id)])
           }, {
-            default: C(() => [...$[4] || ($[4] = [
-              V("Revoke", -1)
+            default: f(() => [...m[4] || (m[4] = [
+              q("Revoke", -1)
             ])]),
             _: 1
           }, 8, ["onClick"]))
-        ], 8, Ze))), 128))
-      ])) : S("", !0)
-    ], 8, He));
+        ], 8, Ie))), 128))
+      ])) : w("", !0)
+    ], 8, Oe));
   }
-}, ta = /* @__PURE__ */ I(aa, [["__scopeId", "data-v-21161250"]]), la = {
+}, Ne = /* @__PURE__ */ W(De, [["__scopeId", "data-v-21161250"]]), Ee = {
   class: "people",
   "data-library-people": ""
-}, ra = {
+}, Ue = {
   key: 0,
   class: "people-token",
   "data-people-first-token": ""
-}, sa = {
+}, We = {
   key: 1,
   class: "people-failure",
   role: "alert",
   "data-people-refusal": ""
-}, na = {
+}, Pe = {
   __name: "LibraryPeople",
-  setup(p) {
-    const x = [
+  setup(a) {
+    const h = [
       { key: "admin", label: "Admin" },
       { key: "edit", label: "Edit" },
       { key: "read", label: "Read-only" }
-    ], h = N(), { data: t, failure: i } = h.props.users, c = () => h.reload("users"), { refusal: l, run: o } = D(c), b = T(""), k = T("read"), d = T(null);
-    async function R() {
-      const m = await o(["library-user", "add", b.value.trim(), "--role", k.value]);
-      d.value = m.ok ? m.value : null, m.ok && (b.value = "");
+    ], s = U(), { data: r, failure: i } = s.props.users, e = () => s.reload("users"), { refusal: l, run: d } = z(e), o = $(""), v = $("read"), R = $(null);
+    async function k() {
+      const g = await d(["library-user", "add", o.value.trim(), "--role", v.value]);
+      R.value = g.ok ? g.value : null, g.ok && (o.value = "");
     }
-    return c(), (m, $) => {
-      var w;
-      return a(), n("div", la, [
-        f("form", {
+    return e(), (g, m) => {
+      var x;
+      return n(), u("div", Ee, [
+        A("form", {
           class: "people-add",
           "data-people-add": "",
-          onSubmit: F(R, ["prevent"])
+          onSubmit: re(k, ["prevent"])
         }, [
-          g(e(U), {
+          b(t(M), {
             label: "Add a user",
             for: "people-name",
             help: "Their first token is shown once, below."
           }, {
-            default: C(() => [
-              g(e(Y), {
+            default: f(() => [
+              b(t(G), {
                 id: "people-name",
-                modelValue: b.value,
-                "onUpdate:modelValue": $[0] || ($[0] = (r) => b.value = r),
+                modelValue: o.value,
+                "onUpdate:modelValue": m[0] || (m[0] = (O) => o.value = O),
                 placeholder: "Name",
                 "data-people-name": ""
               }, null, 8, ["modelValue"])
             ]),
             _: 1
           }),
-          g(e(G), {
-            options: x,
-            value: k.value,
+          b(t(J), {
+            options: h,
+            value: v.value,
             "data-people-new-role": "",
-            onPick: $[1] || ($[1] = (r) => k.value = r)
+            onPick: m[1] || (m[1] = (O) => v.value = O)
           }, null, 8, ["value"]),
-          g(e(O), {
+          b(t(N), {
             variant: "primary",
-            disabled: !b.value.trim(),
+            disabled: !o.value.trim(),
             "data-people-submit": "",
-            onClick: R
+            onClick: k
           }, {
-            default: C(() => [...$[4] || ($[4] = [
-              V("Add the user", -1)
+            default: f(() => [...m[4] || (m[4] = [
+              q("Add the user", -1)
             ])]),
             _: 1
           }, 8, ["disabled"])
         ], 32),
-        d.value ? (a(), n("p", ra, v(d.value.user.name) + " has this token, shown once: " + v(d.value.token_text), 1)) : S("", !0),
-        e(l) ? (a(), n("p", sa, v(e(l)), 1)) : S("", !0),
-        g(e(Q), {
-          rows: ((w = e(t)) == null ? void 0 : w.users) ?? [],
-          failure: e(i),
-          loaded: !!e(t) || !!e(i),
+        R.value ? (n(), u("p", Ue, _(R.value.user.name) + " has this token, shown once: " + _(R.value.token_text), 1)) : w("", !0),
+        t(l) ? (n(), u("p", We, _(t(l)), 1)) : w("", !0),
+        b(t(ce), {
+          rows: ((x = t(r)) == null ? void 0 : x.users) ?? [],
+          failure: t(i),
+          loaded: !!t(r) || !!t(i),
           empty: "No users yet",
           hint: "The users of the shared server appear here."
         }, {
-          default: C(({ row: r }) => [
-            g(ta, {
-              user: r,
-              onRole: $[2] || ($[2] = (u, L) => e(o)(["library-user", "role", String(u.id), L])),
-              onRemove: $[3] || ($[3] = (u) => e(o)(["library-user", "remove", String(u.id)]))
+          default: f(({ row: O }) => [
+            b(Ne, {
+              user: O,
+              onRole: m[2] || (m[2] = (T, C) => t(d)(["library-user", "role", String(T.id), C])),
+              onRemove: m[3] || (m[3] = (T) => t(d)(["library-user", "remove", String(T.id)]))
             }, null, 8, ["user"])
           ]),
           _: 1
@@ -728,133 +257,526 @@ const Te = {
       ]);
     };
   }
-}, oa = /* @__PURE__ */ I(na, [["__scopeId", "data-v-ebd0ab68"]]), ia = {
+}, Be = /* @__PURE__ */ W(Pe, [["__scopeId", "data-v-ebd0ab68"]]), Fe = {
+  __name: "ShareDialog",
+  emits: ["close", "shared"],
+  setup(a, { emit: h }) {
+    const s = h, r = U(), i = [
+      { key: "kind", label: "Type", kind: "select", options: [["doc", "Document"], ["sequence", "Sequence"], ["check", "Check"]], required: !0 },
+      { key: "number", label: "Number", required: !0, placeholder: "63" }
+    ], e = (o) => /^\d+$/.test(o.number.trim()) ? {} : { number: "Write the number, such as 63." }, l = (o) => `journal library share ${o.kind} ${o.number.trim() || "…"}`;
+    async function d(o) {
+      const v = await r.run(["library", "share", o.kind, o.number.trim()]);
+      return v.ok && s("shared", v.value), v;
+    }
+    return (o, v) => (n(), D(t(me), {
+      title: "Share",
+      submit: "Share",
+      fields: i,
+      command: l,
+      check: e,
+      run: d,
+      onClose: v[0] || (v[0] = (R) => s("close"))
+    }));
+  }
+};
+function Me(a, h) {
+  const s = a === "" ? [] : a.split(`
+`), r = h === "" ? [] : h.split(`
+`), i = Array.from({ length: s.length + 1 }, () => new Array(r.length + 1).fill(0));
+  for (let o = s.length - 1; o >= 0; o--)
+    for (let v = r.length - 1; v >= 0; v--)
+      i[o][v] = s[o] === r[v] ? i[o + 1][v + 1] + 1 : Math.max(i[o + 1][v], i[o][v + 1]);
+  const e = [];
+  let l = 0, d = 0;
+  for (; l < s.length || d < r.length; )
+    l < s.length && d < r.length && s[l] === r[d] ? e.push({ line_type: "ctx", line: d + 1, text: r[d++] }) && l++ : d < r.length && (l === s.length || i[l][d + 1] >= i[l + 1][d]) ? e.push({ line_type: "add", line: d + 1, text: r[d++] }) : e.push({ line_type: "del", line: null, text: s[l++] });
+  return { rows: e, added: e.filter((o) => o.line_type === "add").length, removed: e.filter((o) => o.line_type === "del").length };
+}
+const Ge = {
+  class: "compare",
+  "data-library-compare": ""
+}, He = {
+  key: 0,
+  "data-library-same": ""
+}, Ke = {
+  __name: "CopyCompare",
+  props: { here: { type: Object, required: !0 }, library: { type: Object, required: !0 }, at: { type: String, required: !0 } },
+  setup(a) {
+    const h = a, s = V(
+      () => Object.keys({ ...h.here, ...h.library }).map((r) => ({ name: r, ...Me(String(h.here[r] ?? ""), String(h.library[r] ?? "")) })).filter((r) => r.added || r.removed)
+    );
+    return (r, i) => (n(), u("div", Ge, [
+      i[0] || (i[0] = A("p", { class: "compare-help" }, "Red lines are only on this journal. Green lines are only in the library.", -1)),
+      s.value.length ? w("", !0) : (n(), u("p", He, "The two versions have the same text.")),
+      (n(!0), u(E, null, Y(s.value, (e) => (n(), D(t(ve), {
+        key: e.name,
+        path: e.name,
+        change: "edit",
+        added: e.added,
+        removed: e.removed,
+        at: a.at,
+        rows: e.rows,
+        "data-library-diff": ""
+      }, null, 8, ["path", "added", "removed", "at", "rows"]))), 128))
+    ]));
+  }
+}, Ye = /* @__PURE__ */ W(Ke, [["__scopeId", "data-v-a6494d43"]]), K = { doc: "Document", sequence: "Sequence", check: "Check" }, ze = { doc: "Documents", sequence: "Sequences", check: "Checks" }, P = { update: "Update", current: "Up to date", unfollowed: "Not followed" }, se = ["doc"], Je = ["unsent", "sending", "agent", "denied", "rejected", "paused"], ne = (a) => a ? a.status === "synced" ? "current" : "update" : "unfollowed", te = (a) => ne(a) !== "update" ? "" : a.status === "removed" ? "Removed from the library" : Je.includes(a.status) ? "Changed here" : "Newer in library", F = [
+  { key: "kind", label: "Type", options: Object.entries(K), get: (a) => a.row.share },
+  { key: "state", label: "State", options: Object.entries(P), get: (a) => a.state }
+];
+function Qe(a, h) {
+  const s = new Map(h.map((e) => [`${e.share}:${e.item_id}`, e])), r = a.map((e) => ({ id: `${e.share}:${e.id}`, title: e.title, share: e.share, item_id: e.id, by: e.updated_by, at: e.updated_at, version: e.version, copy: s.get(`${e.share}:${e.id}`) ?? null })), i = h.filter((e) => !a.some((l) => l.share === e.share && l.id === e.item_id)).map((e) => ({ id: `${e.share}:${e.item_id}`, title: e.local_fields.title, share: e.share, item_id: e.item_id, by: "", at: "", version: e.version, copy: e }));
+  return [...r, ...i].map((e) => {
+    const l = ne(e.copy);
+    return { id: e.id, title: e.title, desc: [te(e.copy), e.by].filter(Boolean).join(" · "), group: ze[e.share], state: l, way: te(e.copy), row: e };
+  });
+}
+const oe = (a) => a.state === "unfollowed" ? "Follow" : a.state === "update" ? a.way === "Changed here" ? "Share" : "Update" : "";
+function Xe(a, { open: h, act: s, canWrite: r, leave: i }) {
+  const e = oe(a);
+  return [
+    ...h ? [{ label: "Open", group: "open", run: h }] : [],
+    ...e ? [{ label: e, group: "open", disabled: !r && e !== "Follow", reason: "Your role may not change the library", run: () => s(e) }] : [],
+    { label: "Copy name", group: "copy", run: ({ say: l }) => pe(a.title, a.title, l) },
+    ...a.row.copy ? [{ label: "Stop following", group: "own", run: i }] : []
+  ];
+}
+const Ze = {
+  key: 0,
+  class: "when",
+  "data-team-when": ""
+}, et = {
+  key: 1,
+  class: "when",
+  "data-team-note": ""
+}, tt = {
+  key: 0,
+  class: "loss",
+  "data-library-loss": ""
+}, at = {
+  key: 0,
+  class: "loss",
+  role: "alert"
+}, rt = {
+  class: "versions",
+  "data-library-versions": ""
+}, lt = ["data-library-version"], st = {
+  __name: "TeamReader",
+  props: /* @__PURE__ */ ee({ item: { type: Object, required: !0 }, items: { type: Array, required: !0 }, canWrite: Boolean }, {
+    tab: { type: String, default: "details" },
+    tabModifiers: {}
+  }),
+  emits: /* @__PURE__ */ ee(["act"], ["update:tab"]),
+  setup(a, { emit: h }) {
+    const s = a, r = h, i = U(), e = ue(a, "tab"), l = V(() => s.item.row.copy), d = V(() => oe(s.item)), o = V(() => !l.value || l.value.version === l.value.server_version), v = V(() => [
+      { name: "kind", label: "Type", value: K[s.item.row.share] },
+      { name: "state", label: "State", value: s.item.way ? `${P[s.item.state]}: ${s.item.way}` : P[s.item.state] },
+      ...o.value ? [{ name: "version", label: "Version", value: String(s.item.row.version) }] : [{ name: "library", label: "Library", value: `version ${l.value.server_version}` }, { name: "here", label: "Here", value: `version ${l.value.version}` }]
+    ]), R = V(() => [{ key: "details", label: "Details" }, ...s.item.state === "update" && l.value ? [{ key: "compare", label: "Compare" }] : [], { key: "versions", label: "Versions" }]), k = $([]), g = $("");
+    async function m() {
+      i.state["inspection.share"] = s.item.row.share, i.state["inspection.id"] = String(s.item.row.item_id), await i.reload("inspection");
+      const T = i.props.inspection;
+      g.value = T.failure.value, k.value = g.value ? [] : T.data.value.versions;
+    }
+    le([() => e.value, () => s.item.id], ([T]) => T === "versions" && m(), { immediate: !0 });
+    const x = async (T) => {
+      const C = await i.run(["library", "restore", s.item.row.share, String(s.item.row.item_id), "--version", String(T)]);
+      C.ok ? m() : g.value = C.error;
+    }, O = V(() => {
+      var T;
+      return ((T = l.value) == null ? void 0 : T.server_fields) ?? {};
+    });
+    return (T, C) => (n(), D(t(ye), {
+      tab: e.value,
+      "onUpdate:tab": C[2] || (C[2] = (S) => e.value = S),
+      title: a.item.title,
+      number: `${t(K)[a.item.row.share]} ${a.item.row.item_id}`,
+      abstract: a.item.row.by ? `Shared by ${a.item.row.by}` : "",
+      tabs: R.value,
+      facts: v.value,
+      "data-team-reader": ""
+    }, {
+      primary: f(() => [
+        d.value ? (n(), D(t(N), {
+          key: 0,
+          small: "",
+          variant: "primary",
+          "data-team-primary": "",
+          onClick: C[0] || (C[0] = (S) => r("act", d.value))
+        }, {
+          default: f(() => [
+            q(_(d.value), 1)
+          ]),
+          _: 1
+        })) : w("", !0)
+      ]),
+      actions: f(() => [
+        b(t(be), {
+          items: a.items,
+          head: a.item.title
+        }, null, 8, ["items", "head"])
+      ]),
+      default: f(({ tab: S }) => {
+        var p;
+        return [
+          S === "details" && a.item.row.at ? (n(), u("p", Ze, [
+            C[3] || (C[3] = q("Changed ", -1)),
+            b(t(H), {
+              at: a.item.row.at
+            }, null, 8, ["at"])
+          ])) : w("", !0),
+          S === "details" && ((p = l.value) != null && p.note) ? (n(), u("p", et, _(l.value.note), 1)) : w("", !0),
+          S === "compare" && l.value ? (n(), u(E, { key: 2 }, [
+            t(se).includes(a.item.row.share) ? w("", !0) : (n(), u("p", tt, "The text on this journal is lost when you use the library's version: a " + _(a.item.row.share) + " keeps no earlier versions.", 1)),
+            b(Ye, {
+              here: l.value.local_fields,
+              library: O.value,
+              at: (/* @__PURE__ */ new Date()).toISOString()
+            }, null, 8, ["here", "library", "at"]),
+            a.item.way !== "Changed here" ? (n(), D(t(N), {
+              key: 1,
+              small: "",
+              variant: "primary",
+              "data-library-take": "",
+              onClick: C[1] || (C[1] = (I) => r("act", "Take"))
+            }, {
+              default: f(() => [...C[4] || (C[4] = [
+                q("Use the library's version", -1)
+              ])]),
+              _: 1
+            })) : w("", !0)
+          ], 64)) : w("", !0),
+          S === "versions" ? (n(), u(E, { key: 3 }, [
+            g.value ? (n(), u("p", at, _(g.value), 1)) : w("", !0),
+            A("ul", rt, [
+              (n(!0), u(E, null, Y(k.value, (I) => (n(), u("li", {
+                key: I.version,
+                "data-library-version": I.version
+              }, [
+                A("span", null, [
+                  q("Version " + _(I.version) + ", changed by " + _(I.user) + ", ", 1),
+                  b(t(H), {
+                    at: I.created_at
+                  }, null, 8, ["at"])
+                ]),
+                a.canWrite && I.version !== a.item.row.version ? (n(), D(t(N), {
+                  key: 0,
+                  small: "",
+                  "data-library-restore-version": "",
+                  onClick: (j) => x(I.version)
+                }, {
+                  default: f(() => [...C[5] || (C[5] = [
+                    q("Restore this version", -1)
+                  ])]),
+                  _: 1
+                }, 8, ["onClick"])) : w("", !0)
+              ], 8, lt))), 128))
+            ])
+          ], 64)) : w("", !0)
+        ];
+      }),
+      _: 1
+    }, 8, ["tab", "title", "number", "abstract", "tabs", "facts"]));
+  }
+}, nt = /* @__PURE__ */ W(st, [["__scopeId", "data-v-784917b9"]]), ot = {
+  key: 0,
+  class: "failure",
+  role: "alert",
+  "data-library-refusal": ""
+}, it = {
+  key: 0,
+  class: "badge-update",
+  "data-team-badge": ""
+}, ut = {
+  key: 1,
+  class: "quiet",
+  "data-team-state": ""
+}, dt = { "data-library-command": "" }, ct = 460, mt = {
+  __name: "TeamLibrary",
+  props: { copies: { type: Array, required: !0 }, mine: Boolean, userName: { type: String, default: "" }, canWrite: Boolean },
+  emits: ["changed", "counted"],
+  setup(a, { emit: h }) {
+    const s = a, r = h, i = U(), e = $(!1), l = $(""), d = $([]), o = $(""), v = $(null), R = $("details"), k = $(null), g = $(fe(F)), m = $("");
+    async function x() {
+      delete i.state["listing.type"], delete i.state["listing.search"], await i.reload("listing");
+      const y = i.props.listing;
+      l.value = y.failure.value, d.value = l.value ? [] : y.data.value.rows, e.value = !0;
+    }
+    x();
+    const O = V(() => Qe(d.value, s.copies)), T = V(() => O.value.filter((y) => y.row.by === s.userName));
+    le([O, T], () => r("counted", { library: O.value.length, here: T.value.length }), { immediate: !0 });
+    const C = V(() => s.mine ? T.value : O.value), S = V(() => he(C.value, F, g.value, m.value, ["title"]));
+    async function p(y) {
+      o.value = "";
+      const c = await i.run(y);
+      return c.ok ? (await x(), r("changed")) : o.value = c.error, c;
+    }
+    async function I(y) {
+      if (y.row.share !== "check") return p(["library", "get", y.row.share, String(y.row.item_id)]);
+      i.state["item.share"] = "check", i.state["item.id"] = String(y.row.item_id), await i.reload("item");
+      const c = i.props.item;
+      o.value = c.failure.value, k.value = c.failure.value ? null : { item: y, command: c.data.value.fields.command };
+    }
+    const j = async () => {
+      const { item: y } = k.value;
+      k.value = null, await p(["library", "get", "check", String(y.row.item_id), "--read"]);
+    }, Q = (y, c) => p(["library", "resolve", String(y.row.copy.copy_id), "--keep", c]);
+    function X(y, c) {
+      if (c === "Follow") return I(y);
+      if (c === "Share") return Q(y, "mine");
+      if (c === "Take" || c === "Update" && se.includes(y.row.share)) return Q(y, "library");
+      R.value = "compare", v.value = y.id;
+    }
+    const Z = (y, c = null) => Xe(y, { open: c, act: (L) => X(y, L), canWrite: s.canWrite, leave: () => p(["library", "leave", String(y.row.copy.copy_id)]) }), ie = (y) => ({ head: y.title, items: Z(y, () => v.value = y.id) });
+    return (y, c) => (n(), u(E, null, [
+      b(t(ke), {
+        chosen: v.value,
+        "onUpdate:chosen": c[3] || (c[3] = (L) => v.value = L),
+        items: S.value,
+        "list-width": ct,
+        place: ie,
+        "empty-title": a.mine ? "Nothing shared from here yet" : "Nothing in the library yet",
+        "pick-line": "Choose an item",
+        "data-library": ""
+      }, {
+        top: f(() => [
+          b(t(ge), {
+            modelValue: g.value,
+            "onUpdate:modelValue": c[0] || (c[0] = (L) => g.value = L),
+            words: m.value,
+            "onUpdate:words": c[1] || (c[1] = (L) => m.value = L),
+            fields: t(F),
+            rows: C.value,
+            shown: S.value.length,
+            placeholder: "Search the library"
+          }, null, 8, ["modelValue", "words", "fields", "rows", "shown"]),
+          l.value || o.value ? (n(), u("p", ot, _(l.value || o.value), 1)) : w("", !0)
+        ]),
+        empty: f(() => [
+          e.value ? (n(), u(E, { key: 1 }, [
+            q("Shared documents, sequences and checks appear here.")
+          ], 64)) : (n(), D(t(we), {
+            key: 0,
+            shape: "rows"
+          }))
+        ]),
+        meta: f(({ item: L }) => [
+          L.state === "update" ? (n(), u("span", it, _(t(P).update), 1)) : (n(), u("span", ut, _(t(P)[L.state]), 1))
+        ]),
+        reader: f(({ item: L }) => [
+          b(nt, {
+            tab: R.value,
+            "onUpdate:tab": c[2] || (c[2] = (B) => R.value = B),
+            item: L,
+            items: Z(L),
+            "can-write": a.canWrite,
+            onAct: (B) => X(L, B)
+          }, null, 8, ["tab", "item", "items", "can-write", "onAct"])
+        ]),
+        _: 1
+      }, 8, ["chosen", "items", "empty-title"]),
+      k.value ? (n(), D(t(_e), {
+        key: 0,
+        padded: "",
+        title: "Get the check",
+        fits: "",
+        onClose: c[5] || (c[5] = (L) => k.value = null)
+      }, {
+        foot: f(() => [
+          b(t(N), {
+            onClick: c[4] || (c[4] = (L) => k.value = null)
+          }, {
+            default: f(() => [...c[6] || (c[6] = [
+              q("Cancel", -1)
+            ])]),
+            _: 1
+          }),
+          b(t(N), {
+            variant: "primary",
+            "data-library-confirm": "",
+            onClick: j
+          }, {
+            default: f(() => [...c[7] || (c[7] = [
+              q("Get the check, stopped", -1)
+            ])]),
+            _: 1
+          })
+        ]),
+        default: f(() => [
+          c[8] || (c[8] = A("p", { class: "note" }, "This check runs this command on your computer when someone starts it:", -1)),
+          A("pre", dt, _(k.value.command), 1)
+        ]),
+        _: 1
+      })) : w("", !0)
+    ], 64));
+  }
+}, ae = /* @__PURE__ */ W(mt, [["__scopeId", "data-v-7663ac1f"]]), vt = {
   class: "teams",
   "data-teams": ""
-}, da = { class: "teams-top" }, ua = {
+}, pt = {
   key: 0,
-  class: "teams-failure",
+  class: "teams-note failure",
   role: "alert",
   "data-teams-failure": ""
-}, ca = {
+}, yt = {
   key: 1,
-  class: "teams-failure",
+  class: "teams-note failure",
   role: "alert",
   "data-teams-refusal": ""
-}, pa = {
+}, bt = {
+  class: "teams-note",
+  "data-library-shared": ""
+}, ft = {
+  key: 0,
+  class: "teams-note failure",
+  role: "alert",
+  "data-library-warning": ""
+}, ht = {
   class: "teams-header",
   "data-teams-header": ""
-}, ya = { "data-teams-server": "" }, va = { "data-teams-role": "" }, ma = {
+}, kt = { "data-teams-server": "" }, wt = { "data-teams-role": "" }, gt = {
   key: 0,
   "data-teams-reached": ""
-}, ba = {
+}, _t = {
   key: 1,
   "data-teams-plain": ""
-}, fa = {
+}, $t = {
   key: 0,
-  class: "teams-stopped",
+  class: "teams-note failure",
   role: "alert",
   "data-teams-stopped": ""
-}, ha = {
+}, St = {
   __name: "TeamsPage",
-  setup(p) {
-    const x = { admin: "Admin", edit: "Edit", read: "Read-only" }, h = N(), { data: t, failure: i } = h.props.status, { data: c } = h.props.copies, l = T("library"), o = q(() => {
-      var r;
-      return !!((r = t.value) != null && r.is_connected) && !t.value.stopped;
-    }), b = q(() => {
-      var r, u;
-      return ((r = t.value) == null ? void 0 : r.role) === "admin" || ((u = t.value) == null ? void 0 : u.role) === "edit";
-    }), k = q(() => {
-      var r;
-      return ((r = c.value) == null ? void 0 : r.rows) ?? [];
-    }), d = q(() => {
-      var r;
-      return ((r = t.value) == null ? void 0 : r.role) === "admin";
-    }), R = q(() => [
-      { key: "library", label: "Library" },
-      { key: "copies", label: "On this journal", count: k.value.length },
-      ...d.value ? [{ key: "people", label: "Users" }] : []
+  setup(a) {
+    const h = { admin: "Admin", edit: "Edit", read: "Read-only" }, s = U(), { data: r, failure: i } = s.props.status, { data: e } = s.props.copies, l = $("library"), d = V(() => {
+      var S;
+      return !!((S = r.value) != null && S.is_connected) && !r.value.stopped;
+    }), o = V(() => {
+      var S, p;
+      return ((S = r.value) == null ? void 0 : S.role) === "admin" || ((p = r.value) == null ? void 0 : p.role) === "edit";
+    }), v = V(() => {
+      var S;
+      return ((S = e.value) == null ? void 0 : S.rows) ?? [];
+    }), R = V(() => {
+      var S;
+      return ((S = r.value) == null ? void 0 : S.role) === "admin";
+    }), k = $({ library: 0, here: 0 }), g = $(!1), m = $(null), x = V(() => [
+      { key: "library", label: "Library", count: k.value.library },
+      { key: "here", label: "Shared from here", count: k.value.here },
+      ...R.value ? [{ key: "people", label: "Users" }] : []
     ]);
-    async function m() {
-      await h.reload(["status", "copies"]);
+    async function O() {
+      await s.reload(["status", "copies"]);
     }
-    const { refusal: $, run: w } = D(m);
-    return (r, u) => (a(), A(e(le), null, {
-      default: C(() => {
-        var L;
+    const { refusal: T, run: C } = z(O);
+    return (S, p) => (n(), D(t($e), { padding: "0" }, {
+      default: f(() => {
+        var I;
         return [
-          f("div", ia, [
-            f("div", da, [
-              u[3] || (u[3] = f("h2", { class: "teams-title" }, "Teams", -1)),
-              o.value ? (a(), A(e(O), {
-                key: 0,
-                small: "",
-                "data-teams-sync": "",
-                onClick: u[0] || (u[0] = (E) => e(w)(["library", "sync"]))
-              }, {
-                default: C(() => [...u[2] || (u[2] = [
-                  V("Sync now", -1)
-                ])]),
-                _: 1
-              })) : S("", !0)
-            ]),
-            e(i) ? (a(), n("p", ua, v(e(i)), 1)) : S("", !0),
-            e($) ? (a(), n("p", ca, v(e($)), 1)) : S("", !0),
-            (L = e(t)) != null && L.is_connected ? (a(), n(j, { key: 2 }, [
-              f("div", pa, [
-                f("span", ya, "Connected: " + v(e(t).server_name), 1),
-                f("span", va, "Role: " + v(x[e(t).role]), 1),
-                e(t).reached_at ? (a(), n("span", ma, [
-                  u[4] || (u[4] = V("Last reached: ", -1)),
-                  g(e(M), {
-                    at: e(t).reached_at
+          A("div", vt, [
+            b(t(Se), { title: "Teams" }, de({ _: 2 }, [
+              d.value ? {
+                name: "primary",
+                fn: f(() => [
+                  o.value ? (n(), D(t(N), {
+                    key: 0,
+                    small: "",
+                    variant: "primary",
+                    "data-library-share-submit": "",
+                    onClick: p[0] || (p[0] = (j) => g.value = !0)
+                  }, {
+                    default: f(() => [...p[7] || (p[7] = [
+                      q("Share", -1)
+                    ])]),
+                    _: 1
+                  })) : w("", !0),
+                  b(t(N), {
+                    small: "",
+                    "data-teams-sync": "",
+                    onClick: p[1] || (p[1] = (j) => t(C)(["library", "sync"]))
+                  }, {
+                    default: f(() => [...p[8] || (p[8] = [
+                      q("Sync", -1)
+                    ])]),
+                    _: 1
+                  })
+                ]),
+                key: "0"
+              } : void 0
+            ]), 1024),
+            t(i) ? (n(), u("p", pt, _(t(i)), 1)) : w("", !0),
+            t(T) ? (n(), u("p", yt, _(t(T)), 1)) : w("", !0),
+            m.value ? (n(), u(E, { key: 2 }, [
+              A("p", bt, _(m.value.line), 1),
+              m.value.warning ? (n(), u("p", ft, _(m.value.warning), 1)) : w("", !0)
+            ], 64)) : w("", !0),
+            (I = t(r)) != null && I.is_connected ? (n(), u(E, { key: 3 }, [
+              A("div", ht, [
+                A("span", kt, "Connected: " + _(t(r).server_name), 1),
+                A("span", wt, "Role: " + _(h[t(r).role]), 1),
+                t(r).reached_at ? (n(), u("span", gt, [
+                  p[9] || (p[9] = q("Last reached: ", -1)),
+                  b(t(H), {
+                    at: t(r).reached_at
                   }, null, 8, ["at"])
-                ])) : S("", !0),
-                e(t).is_encrypted ? S("", !0) : (a(), n("span", ba, "Connection: not encrypted"))
+                ])) : w("", !0),
+                t(r).is_encrypted ? w("", !0) : (n(), u("span", _t, "Connection: not encrypted"))
               ]),
-              e(t).stopped ? (a(), n("p", fa, v(e(t).stopped), 1)) : S("", !0)
-            ], 64)) : S("", !0),
-            e(t) && !o.value ? (a(), A(xe, {
-              key: 3,
-              address: e(t).address,
-              onConnected: m
-            }, null, 8, ["address"])) : S("", !0),
-            o.value ? (a(), n(j, { key: 4 }, [
-              g(e(G), {
-                options: R.value,
+              t(r).stopped ? (n(), u("p", $t, _(t(r).stopped), 1)) : w("", !0)
+            ], 64)) : w("", !0),
+            t(r) && !d.value ? (n(), D(xe, {
+              key: 4,
+              address: t(r).address,
+              onConnected: O
+            }, null, 8, ["address"])) : w("", !0),
+            d.value ? (n(), u(E, { key: 5 }, [
+              b(t(J), {
+                options: x.value,
                 value: l.value,
                 "data-teams-tabs": "",
-                onPick: u[1] || (u[1] = (E) => l.value = E)
+                onPick: p[2] || (p[2] = (j) => l.value = j)
               }, null, 8, ["options", "value"]),
-              g(e(re), { value: l.value }, {
-                library: C(() => [
-                  g($e, {
-                    role: e(t).role,
-                    "can-write": b.value,
-                    onChanged: m
-                  }, null, 8, ["role", "can-write"])
+              b(t(Ce), { value: l.value }, {
+                library: f(() => [
+                  b(ae, {
+                    copies: v.value,
+                    "user-name": t(r).user_name,
+                    "can-write": o.value,
+                    onChanged: O,
+                    onCounted: p[3] || (p[3] = (j) => k.value = j)
+                  }, null, 8, ["copies", "user-name", "can-write"])
                 ]),
-                copies: C(() => [
-                  g(Ke, {
-                    copies: k.value,
-                    role: e(t).role,
-                    "can-write": b.value,
-                    onChanged: m
-                  }, null, 8, ["copies", "role", "can-write"])
+                here: f(() => [
+                  b(ae, {
+                    mine: "",
+                    copies: v.value,
+                    "user-name": t(r).user_name,
+                    "can-write": o.value,
+                    onChanged: O,
+                    onCounted: p[4] || (p[4] = (j) => k.value = j)
+                  }, null, 8, ["copies", "user-name", "can-write"])
                 ]),
-                people: C(() => [
-                  g(oa)
+                people: f(() => [
+                  b(Be)
                 ]),
                 _: 1
               }, 8, ["value"])
-            ], 64)) : S("", !0)
-          ])
+            ], 64)) : w("", !0)
+          ]),
+          g.value ? (n(), D(Fe, {
+            key: 0,
+            onClose: p[5] || (p[5] = (j) => g.value = !1),
+            onShared: p[6] || (p[6] = (j) => {
+              m.value = j, O();
+            })
+          })) : w("", !0)
         ];
       }),
       _: 1
     }));
   }
-}, ga = /* @__PURE__ */ I(ha, [["__scopeId", "data-v-57a8733b"]]);
+}, Tt = /* @__PURE__ */ W(St, [["__scopeId", "data-v-100944e6"]]);
 export {
-  ga as default
+  Tt as default
 };

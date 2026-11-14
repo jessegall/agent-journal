@@ -568,3 +568,17 @@ def test_a_profile_set_to_oversee_reads_worker_logs_and_the_merges_waiting_witho
     story.expect_success("merger next", actor=overseer)
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
     story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", "logs", actor=story.agent)
+
+
+def test_an_overseer_lists_and_shows_the_ask_of_a_worker_as_a_merger_line(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    repository = repository_environment(story)
+    worker = delivered_worker(story, repository)
+    with running_launcher(story):
+        overseer = Actor(story.new_row_id(f'helper start {OVERSEEING_PROFILE} --brief "Oversee the workers" --environment main', actor=story.agent), ActorType.AGENT)
+    story.expect_success("worker ask \"Which reader do I keep\"", actor=worker)
+    story.expect_success(f"setting set {OVERSIGHT_SETTING} '[\"{OVERSEEING_PROFILE}\"]' --project", actor=user)
+    story.expect_text("merger-line list", "Which reader do I keep", actor=overseer)
+    line = story.container.get(Queries).query(MergerLine).filter(worker_id=worker.id).every_row(TEST_ROWS_REASON).__next__()
+    story.expect_text(f"merger-line show {line.id}", "Which reader do I keep", actor=overseer)

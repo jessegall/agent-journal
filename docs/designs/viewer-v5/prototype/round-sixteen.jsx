@@ -1,13 +1,16 @@
-// Round sixteen (messages 121381, 121383 and 121402). Loaded after round fifteen.
+// Rounds sixteen and seventeen (messages 121381, 121383 and 121402; round 17: reports 1411, 1412, doc 1289). Loaded after round fifteen.
 // Replaces by name: InspectorShell, R8Overview, AgentInspector, SecretsPage.
 // 1. No Started by line under the attribute band, and no Started by row in Details: where an agent came from is the Family tree tab.
 // 2. A Family tree tab after Links: the person who started the chain, each parent agent down to this one, and the agents this one started,
 //    each a row that opens its own inspector. Children that started agents of their own fold open. The server sends the whole chain in one read.
+//    A row is its state dot, its name and its profile word when the name does not already say it: the dot is the state, so no state word repeats it.
 // 3. Every section bar of the Overview (Now, Brief, Recent, Skills, Details) is one left-aligned line: chevron, icon, label, count right.
-//    The Helpers bar is gone: the Family tree tab shows the agents it started.
-//    The old bar broke because .r8-bandh span { margin-left: auto } also caught the icon, which Icon draws as a span.
 // 4. Secrets: a deleted secret is erased for good. No Deleted group, no Restore, no Deleted state in the filter;
 //    the delete confirmation says it is erased permanently and cannot be restored.
+// 5. The inspector head shows a state badge only for a state that needs the person (BADGE_ATTENTION): a working agent's dot says enough.
+// 6. The Tasks window lists every task, so its pane tab counts every task (round fifteen counted the open ones only).
+
+NOW_COUNTS.tasks = TASKS.length;
 
 /* ---------- InspectorShell: as home-now.jsx, plus tabs that come after Links ---------- */
 function InspectorShell({term, id, kind, state, title, abstract, bar, width = "medium", primary, actions = [], tabs, after = [], links = [], comments, onClose, onBack, onStep, onOpen}) {
@@ -19,8 +22,9 @@ function InspectorShell({term, id, kind, state, title, abstract, bar, width = "m
   const [quote, setQuote] = useState(null);
   const takesComments = comments !== false;
   const rail = useCommentRail(w);
+  const some = list.length > 0;
   const narrow = w < 600;
-  const share = {group: "Context", label: "Copy a share link", icon: "share", done: "Share link copied"};
+  const share = {group: "Context", label: "Share link", icon: "share", done: "Share link copied"};
   const allActions = narrow ? [...actions.filter((a) => a.group !== "Danger"), share, ...actions.filter((a) => a.group === "Danger")] : actions;
   const allTabs = [...tabs, {key: "links", label: "Links", count: links.length}, ...after];
   const shown = allTabs.find((t) => t.key === tab) || allTabs[0];
@@ -30,7 +34,7 @@ function InspectorShell({term, id, kind, state, title, abstract, bar, width = "m
       <div className="insp-band">
         {onBack && <Btn icon="back" small title="Back" onClick={onBack} />}
         {onStep && <><Btn icon="up" small title="Previous" onClick={() => onStep(-1)} /><Btn icon="down" small title="Next" onClick={() => onStep(1)} /></>}
-        <span className="kind">{kind}{state && <Badge state={state} />}</span>
+        <span className="kind">{kind}{state && BADGE_ATTENTION.includes(state) && <Badge state={state} />}</span>
         <span className="grow" />
         {primary && <Btn small variant="primary" onClick={() => { const why = primary.run?.(); toast(why || primary.done || primary.label); }}>{primary.label}</Btn>}
         {allActions.length > 0 && <ActionMenu actions={allActions} onDone={toast} />}
@@ -49,9 +53,9 @@ function InspectorShell({term, id, kind, state, title, abstract, bar, width = "m
             : shown.flush ? shown.render(ctx) : <div className="insp-body">{shown.render(ctx)}</div>}
         </div>
         {takesComments && <CommentBox count={list.length} onSend={send} quote={quote} onClearQuote={() => setQuote(null)} onShow={rail.toggle} />}
-        {takesComments && rail.floating && <CommentRail floating comments={list} hot={hot} onShow={setHot} onClose={rail.hide} />}
+        {takesComments && some && rail.floating && <CommentRail floating comments={list} hot={hot} onShow={setHot} onClose={rail.hide} />}
       </div>
-      {takesComments && rail.inline && <CommentRail comments={list} hot={hot} onShow={setHot} onClose={rail.hide} />}
+      {takesComments && some && rail.inline && <CommentRail comments={list} hot={hot} onShow={setHot} onClose={rail.hide} />}
     </div>
   </aside>;
 }
@@ -78,15 +82,16 @@ function R8Overview({a}) {
   const plan = PLANS.find((p) => p.id === a.plan);
   const pts = plan ? plan.phases.flatMap((p) => p.tasks).map((id) => TASKS.find((x) => x.id === id)).filter(Boolean) : [];
   const done = pts.filter((x) => x.state === "completed").length;
+  const skills = SKILLS.slice(0, a.skills);
   return <div className="r8-overview">
     <R8Strip a={a} />
     <R16Section icon="play" label="Now">
       <div className="r8-now">
-        {t ? <button type="button" className="r8-link" onClick={() => open("task", t.id)}>Task {t.id}: {t.title}</button> : <span className="r8-faint">{a.ended ? "No task finished" : "No task"}</span>}
+        {t ? <button type="button" className="r8-link" onClick={() => open("task", t.id)}>Task {t.id}: {t.title}</button> : <span className="r8-faint">No task</span>}
         {!a.ended && <span className="r8-doing">{a.command ? <><span className="r8-live-dot" /><span className="mono">{a.command}</span></> : a.wait ? `Waiting: ${a.wait}` : a.dot === "thinking" ? "Thinking" : a.doing}</span>}
         <span className="r8-faint" style={{fontSize: 11.5}}>{a.seen}</span>
       </div>
-      {plan && <div className="r8-plan"><div className="row"><span>Plan {plan.id}, phase {plan.phases.find((p) => p.tasks.includes(a.task))?.n || 1}</span><span className="grow" /><R12Open title={`Plan ${plan.id}`} onClick={() => open("plan", plan.id)} /></div><span className="r8-faint" style={{fontSize: 11.5}}>{done} of {pts.length} done</span><div className="r8-meter wide"><i style={{width: `${pts.length ? (done / pts.length) * 100 : 0}%`}} /></div></div>}
+      {plan && <div className="r8-plan"><div className="row"><span>Plan {plan.id} · phase {plan.phases.find((p) => p.tasks.includes(a.task))?.n || 1}</span><span className="grow" /><R12Open title={`Plan ${plan.id}`} onClick={() => open("plan", plan.id)} /></div>{pts.length > 0 && <><span className="r8-faint" style={{fontSize: 11.5}}>{done} of {pts.length} done</span><div className="r8-meter wide"><i style={{width: `${(done / pts.length) * 100}%`}} /></div></>}</div>}
     </R16Section>
     <R16Section icon="file" label={a.readOnly ? "Instruction" : "Brief"}>
       <div className={"r8-brief" + (whole ? "" : " clamp")}>{a.brief}</div>
@@ -95,11 +100,11 @@ function R8Overview({a}) {
     <R16Section icon="clock" label="Recent" count={R8_MOVES.length}>
       <div className="r8-moves">{R8_MOVES.map(([text, term, id, tone, at]) => term ? <button key={text} type="button" className="r8-move" onClick={() => open(term, id)}><i className={"r8-mdot " + tone} /><span className="ellipsis">{text}</span><span className="r8-faint">{at}</span></button> : <div key={text} className="r8-move"><i className={"r8-mdot " + tone} /><span className="ellipsis">{text}</span><span className="r8-faint">{at}</span></div>)}</div>
     </R16Section>
-    <R16Section icon="book" label="Skills" count={a.skills} startsOpen={false}>
-      {SKILLS.slice(0, 4).map((k) => <div key={k.id} className="r8-move r16-two"><span>{k.title}</span></div>)}
+    <R16Section icon="skill" label="Skills" count={skills.length} startsOpen={false}>
+      <div className="r8-moves">{skills.map((k) => <button key={k.id} type="button" className="r8-move r16-skill" onClick={() => open("skill", k.id)}><span className="ellipsis">{k.title}</span></button>)}</div>
     </R16Section>
-    <R16Section icon="more" label="Details" startsOpen={false}>
-      <div className="r16-fields"><Fields rows={[["Number", String(a.id)], ["Session", <span className="mono">{sessionOf(a.id).session}</span>], ["Program", a.program], ["Type", a.role], ["Started", a.since.replace("Since ", "today ")], ["Process", a.ended ? "none" : "pid 48213"]]} /></div>
+    <R16Section icon="log" label="Details" startsOpen={false}>
+      <div className="r16-fields"><Fields rows={[["Session", <span className="mono">{sessionOf(a.id).session}</span>], ["Started", a.since.replace("Since ", "today ")], ["Process", a.ended ? "—" : "pid 48213"]]} /></div>
     </R16Section>
     {a.ended && <p className="r8-ended">Ended {a.retired ? a.retiredAt : "1 h ago"}</p>}
   </div>;
@@ -116,21 +121,22 @@ function r16Chain(a) {
   return up;
 }
 const r16State = (x) => x.retired ? "retired" : x.ended ? "ended" : x.dot;
-const r16Word = (x) => x.retired ? "Retired" : x.ended ? "Idle" : x.dot === "waiting" ? "Waiting" : "Working";
+// the profile word after the name only when the name does not already say it: worker-4 has none, main says builder, helper-851 designer
+const r16Profile = (x) => (x.name.startsWith(x.sub) ? "" : x.sub);
 
 function R16Node({x, self, depth}) {
   const {open} = useOpen();
   const kids = r16Children(x);
   const [shut, setShut] = useState(depth > 1);
-  const body = <><i className="r8-sdot" data-state={r16State(x)} /><span className="r16-name">{x.name}</span><span className="r16-sub">{x.sub}</span><span className="r16-when">{r16Word(x)}</span></>;
+  const body = <><i className="r8-sdot" data-state={r16State(x)} /><span className="r16-name">{x.name}</span><span className="r16-sub">{r16Profile(x)}</span></>;
   return <li className={x.retired ? "retired" : ""}>
     <div className="r16-line">
-      {kids.length > 0 && !self ? <button type="button" className="r16-twist" aria-expanded={!shut} aria-label={shut ? `Show ${kids.length} started by ${x.name}` : "Hide"} onClick={() => setShut(!shut)}><Icon name="caret" size={11} /></button> : <span className="r16-twist" />}
-      {self ? <div className="r16-node self" aria-current="true">{body}<span className="r16-here">This agent</span></div>
+      {kids.length > 0 && !self ? <button type="button" className="r16-twist" aria-expanded={!shut} aria-label={shut ? `Show ${kids.length}` : "Hide"} onClick={() => setShut(!shut)}><Icon name="caret" size={11} /></button> : <span className="r16-twist" />}
+      {self ? <div className="r16-node self" aria-current="true">{body}</div>
         : <button type="button" className="r16-node" onClick={() => open("agent", x.id)}>{body}{kids.length > 0 && shut && <em className="r16-count">{kids.length}</em>}</button>}
     </div>
     {kids.length > 0 && (self || !shut) && <ul>{kids.map((k) => <R16Node key={k.id} x={k} depth={depth + 1} />)}</ul>}
-    {self && !kids.length && <ul><li><div className="r16-line"><span className="r16-twist" /><span className="r16-none">Started no agents</span></div></li></ul>}
+    {self && !kids.length && <ul><li><div className="r16-line"><span className="r16-twist" /><span className="r16-none">None</span></div></li></ul>}
   </li>;
 }
 
@@ -138,7 +144,7 @@ function R16Node({x, self, depth}) {
 function R16Ancestor({x, children}) {
   const {open} = useOpen();
   return <li className={x.retired ? "retired" : ""}>
-    <div className="r16-line"><span className="r16-twist" /><button type="button" className="r16-node" onClick={() => open("agent", x.id)}><i className="r8-sdot" data-state={r16State(x)} /><span className="r16-name">{x.name}</span><span className="r16-sub">{x.sub}</span><span className="r16-when">{r16Word(x)}</span></button></div>
+    <div className="r16-line"><span className="r16-twist" /><button type="button" className="r16-node" onClick={() => open("agent", x.id)}><i className="r8-sdot" data-state={r16State(x)} /><span className="r16-name">{x.name}</span><span className="r16-sub">{r16Profile(x)}</span></button></div>
     <ul>{children}</ul>
   </li>;
 }
@@ -148,7 +154,7 @@ function R16FamilyTree({a}) {
   const [state, setState] = useState("loading");
   useEffect(() => { const t = setTimeout(() => setState(a.id === 7 ? "failed" : "ready"), 320); return () => clearTimeout(t); }, [a.id]);
   if (state === "loading") return <div className="r16-tree" aria-busy="true">{[0, 1, 2, 3].map((i) => <div key={i} className="r16-skel" style={{marginLeft: Math.min(i, 2) * 17}} />)}</div>;
-  if (state === "failed") return <div className="r16-tree"><div className="notice bad" role="alert"><Icon name="warn" size={13} /><span className="grow">Family tree not read</span><Btn small onClick={() => { setState("loading"); setTimeout(() => setState("ready"), 320); }}>Retry</Btn></div></div>;
+  if (state === "failed") return <div className="r16-tree"><div className="notice bad" role="alert"><Icon name="warn" size={13} /><span className="grow">Not read</span><Btn small onClick={() => { setState("loading"); setTimeout(() => setState("ready"), 320); }}>Retry</Btn></div></div>;
   const up = r16Chain(a);
   const top = up[0] || a;
   const person = R16_PERSON[top.id];
@@ -158,7 +164,7 @@ function R16FamilyTree({a}) {
   return <div className="r16-tree">
     <ul className="r16-root">
       <li>
-        <div className="r16-line"><span className="r16-twist" /><div className="r16-node person"><i className="r16-person"><Icon name="user" size={12} /></i><span className="r16-name">{person || "Unknown"}</span><span className="r16-sub">person</span></div></div>
+        <div className="r16-line"><span className="r16-twist" /><div className="r16-node person"><i className="r16-person"><Icon name="user" size={12} /></i><span className="r16-name">{person || "Unknown"}</span></div></div>
         <ul>{tree}</ul>
       </li>
     </ul>
@@ -171,19 +177,19 @@ function AgentInspector({id, onClose, onOpen, onBack}) {
   const [paused, setPaused] = useState(false);
   const state = a.retired ? "retired" : a.ended ? "ended" : paused ? "paused" : a.dot === "waiting" ? "blocked" : "started";
   const title = <span className="r8-name"><i className="r8-sdot" data-state={paused ? "waiting" : a.dot} />{a.name}{a.sandboxOff && <R13Sandbox />}</span>;
-  const bar = <div className="r8-who">{a.retired ? <span className="r8-faint">Retired {a.retiredAt} by {a.retiredBy}</span> : <InfoBar agentId={a.id} card />}</div>;
+  const bar = <div className="r8-who">{a.retired ? <span className="r8-faint r8-facts"><span>Retired</span><span className="sep">·</span><span>{a.retiredAt}</span><span className="sep">·</span><AgentLink name={a.retiredBy} /></span> : <InfoBar agentId={a.id} card />}</div>;
   const tabs = [
     {key: "overview", label: "Overview", flush: true, render: () => <R8Overview a={a} />},
     {key: "memories", label: "Memories", count: a.memories, render: () => <AgentMemoriesTab />},
   ];
   const after = [{key: "family", label: "Family tree", count: r16Children(a).length, flush: true, render: () => <R16FamilyTree a={a} />}];
-  return <InspectorShell term="agent" id={a.id} kind={`Agent ${a.id} · ${a.number}`} state={state} title={title} bar={bar} width="medium" actions={r15AgentActions(a, paused, setPaused)} tabs={tabs} after={after} comments={false}
+  return <InspectorShell term="agent" id={a.id} kind={`Agent ${a.id}`} state={state} title={title} bar={bar} width="medium" actions={r15AgentActions(a, paused, setPaused)} tabs={tabs} after={after} comments={false}
     links={r8TasksOf(a).map((t) => ({kind: "Task", term: "task", id: t.id, title: t.title, state: t.state, icon: "task"}))} onClose={onClose} onOpen={onOpen} onBack={onBack} />;
 }
 
 /* ---------- Secrets: a deleted secret is erased for good (message 121402) ---------- */
-// no deleted rows exist to show, so the list holds live secrets only, and the State filter has no Deleted
-const R16_SECRET_STATES = [["ready", "Ready"], ["waiting", "Waiting for its value"], ["proposal", "A program waits for you"]];
+// a card: title, kind (and Helpers when helpers may use it); the programs, comma-joined; a request or a proposal as one plain line with its action
+const R16_SECRET_STATES = [["ready", "Ready"], ["waiting", "Needs value"], ["proposal", "Proposal"]];
 const r16SecretState = (x) => (x.waiting ? "waiting" : x.proposed.length ? "proposal" : "ready");
 function SecretsPage() {
   const toast = useToast();
@@ -191,30 +197,30 @@ function SecretsPage() {
   const [open, setOpen] = useState(null);
   const [making, setMaking] = useState(false);
   const [erasing, setErasing] = useState(null);
-  const items = rows.map((x) => ({...x, desc: x.programs.length ? `Programs: ${x.programs.join(", ")}` : "No program"}));
+  const items = rows.map((x) => ({...x, desc: x.programs.join(", ")}));
   const erase = () => { setRows(rows.filter((x) => x.id !== erasing.id)); toast(`${erasing.title} erased`); setErasing(null); };
-  return <><R6CardPage title="Secrets" line="Keys and logins an agent uses through a program, never shown to it" items={items} iconOf={(x) => R7_SECRET_TYPES[x.type][1]} groupOf={() => ""}
+  return <><R6CardPage title="Secrets" items={items} iconOf={(x) => R7_SECRET_TYPES[x.type][1]} groupOf={() => ""}
     fields={[{key: "state", label: "State", options: R16_SECRET_STATES, get: r16SecretState}, {key: "type", label: "Kind", options: Object.entries(R7_SECRET_TYPES).map(([k, [l]]) => [k, l]), get: (x) => x.type}]}
     header={<Btn variant="primary" small onClick={() => setMaking(true)}>New secret</Btn>}
-    renderState={(x) => <><span>Secret {x.id}</span><span className="sep">·</span><span>{R7_SECRET_TYPES[x.type][0]}</span>{x.helpers && <><span className="sep">·</span><span>Helpers</span></>}</>}
-    renderLine={(x) => x.programs.length ? <><span>Programs:</span>{x.programs.map((p) => <span key={p} className="mono">{p}</span>)}</> : <span>No program</span>}
-    renderExtra={(x) => <>{x.waiting && <div className="r7-prop"><span><AgentLink name={x.waiting.by} /> asks for it: {x.waiting.why}</span><Btn small variant="primary" onClick={() => setOpen(x)}>Fill it in</Btn></div>}
-      {x.proposed.map((p) => <div key={p.program} className="r7-prop"><span><AgentLink name={p.by} /> proposes <code className="mono">{p.program}</code></span><Btn small variant="primary" title={`secret allow ${x.id} ${p.program}`} onClick={() => toast(`${p.program} may use ${x.title}`)}>Allow {p.program}</Btn></div>)}</>}
-    foot={(x) => <Btn small onClick={() => setOpen(x)}>Edit</Btn>}
-    actions={(x) => [{group: "Secret", label: "Copy its number", icon: "copy", desc: `secret ${x.id}`, done: "Number copied"},
+    renderState={(x) => <span>{[R7_SECRET_TYPES[x.type][0], x.helpers && "Helpers"].filter(Boolean).join(" · ")}</span>}
+    renderLine={(x) => x.programs.length ? <span className="mono">{x.programs.join(", ")}</span> : <span>No program</span>}
+    renderExtra={(x) => <>{x.waiting && <p className="r16-ask"><R16Agent name={x.waiting.by} /><span className="r16-why" title={x.waiting.why}>{x.waiting.why}</span></p>}
+      {x.proposed.map((p) => <p key={p.program} className="r16-ask"><R16Agent name={p.by} /><span className="r16-why">proposes <span className="mono">{p.program}</span></span></p>)}</>}
+    foot={(x) => x.waiting ? <Btn small variant="primary" onClick={() => setOpen(x)}>Fill</Btn> : x.proposed.length ? x.proposed.map((p) => <Btn key={p.program} small variant="primary" title={`secret allow ${x.id} ${p.program}`} onClick={() => toast(`${p.program} may use ${x.title}`)}>Allow {p.program}</Btn>) : null}
+    actions={(x) => [{group: "Secret", label: "Edit", icon: "edit", run: () => { setOpen(x); return false; }}, {group: "Secret", label: "Copy number", icon: "copy", desc: `secret ${x.id}`, done: "Number copied"},
       {group: "Danger", label: "Delete", icon: "trash", danger: true, desc: `secret delete ${x.id}`, run: () => { setErasing(x); return false; }}]}
-    empty={{title: "No secrets yet", line: "A key or login an agent needs for a program", action: <Btn small variant="primary" onClick={() => setMaking(true)}>New secret</Btn>}} />
+    empty={{title: "No secrets", action: <Btn small variant="primary" onClick={() => setMaking(true)}>New secret</Btn>}} />
     {open && <R7SecretDialog x={open} onClose={() => setOpen(null)} />}
     {erasing && <Dialog narrow title={`Delete ${erasing.title}`} onClose={() => setErasing(null)}
-      foot={<div className="foot"><span className="grow" /><Btn onClick={() => setErasing(null)}>Cancel</Btn><Btn variant="danger" data-secret-confirm onClick={erase}>Delete secret</Btn></div>}>
+      foot={<div className="foot"><span className="grow" /><Btn onClick={() => setErasing(null)}>Cancel</Btn><Btn variant="danger" data-secret-confirm onClick={erase}>Delete</Btn></div>}>
       <div className="dialog-body r16-erase">
         <p className="r16-erase-lead"><Icon name="warn" size={14} /><span>The secret is erased permanently and cannot be restored.</span></p>
-        <p className="r16-erase-line">Its values are wiped, and no agent or program can use it again.{erasing.programs.length > 0 && <> Programs that use it now: {erasing.programs.map((p, i) => <React.Fragment key={p}>{i > 0 && ", "}<code className="mono">{p}</code></React.Fragment>)}.</>}</p>
+        {erasing.programs.length > 0 && <p className="r16-erase-line">Used by {erasing.programs.map((p, i) => <React.Fragment key={p}>{i > 0 && ", "}<code className="mono">{p}</code></React.Fragment>)}</p>}
       </div>
     </Dialog>}
-    {making && <CreateDialog title="New secret" sub="Its values are kept out of every agent's view; an agent uses it through the programs you allow" submit="Save" onClose={() => setMaking(false)} onMade={(v) => toast(`Secret 8 saved: ${v.title}`)}
+    {making && <CreateDialog title="New secret" submit="Save" onClose={() => setMaking(false)} onMade={(v) => toast(`Secret 8 saved: ${v.title}`)}
       command={(v) => `journal secret make "${v.title || "…"}" --type "${v.type}"${v.note ? ' --brief "…"' : ""}, then secret fill 8 … and secret allow 8 ${v.program || "…"}`}
-      fields={[{key: "type", label: "Kind", kind: "select", options: Object.entries(R7_SECRET_TYPES).map(([k, [l]]) => [k, l]), required: true, half: true}, {key: "title", label: "Title", required: true, placeholder: "Sentry token", half: true}, {key: "value", label: "Key", kind: "password", required: true, when: (v) => v.type === "api key"}, {key: "user", label: "Username", required: true, half: true, when: (v) => v.type === "login"}, {key: "password", label: "Password", kind: "password", required: true, half: true, when: (v) => v.type === "login"}, {key: "fields", label: "Fields and their values", kind: "steps", placeholder: "token: …", required: true, when: (v) => v.type === "custom"}, {key: "program", label: "Program", placeholder: "curl"}, {key: "note", label: "Note", placeholder: "For the Sentry API"}]} />}
+      fields={[{key: "type", label: "Kind", kind: "select", options: Object.entries(R7_SECRET_TYPES).map(([k, [l]]) => [k, l]), required: true, half: true}, {key: "title", label: "Title", required: true, placeholder: "Sentry token", half: true}, {key: "value", label: "Key", kind: "password", required: true, when: (v) => v.type === "api key"}, {key: "user", label: "Username", required: true, half: true, when: (v) => v.type === "login"}, {key: "password", label: "Password", kind: "password", required: true, half: true, when: (v) => v.type === "login"}, {key: "fields", label: "Fields", kind: "steps", placeholder: "token: …", required: true, when: (v) => v.type === "custom"}, {key: "program", label: "Program", placeholder: "curl"}, {key: "note", label: "Note", placeholder: "For the Sentry API"}]} />}
   </>;
 }
 

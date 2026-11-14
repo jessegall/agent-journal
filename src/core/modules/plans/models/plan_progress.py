@@ -18,5 +18,6 @@ class PlanProgress(ViewModel):
     task_count: int
     completed_count: int
     testing_count: int
+    started_count: int
     current_phase: int
     complexity: float | None = None

@@ -39,6 +39,7 @@ from suites.coding.commands.prune_file_edits.prune_file_edits_handler import Pru
 from suites.coding.migrations.m001_file_edits import FileEditsTableMigration
 from suites.coding.migrations.m002_file_edit_rows import FileEditRowsMigration
 from suites.coding.commands.project_file_find.project_file_find_subcommand import ProjectFileFindSubcommand
+from suites.coding.commands.project_file_grep.project_file_grep_subcommand import ProjectFileGrepSubcommand
 from suites.coding.commands.git_overview_branches.git_overview_branches_subcommand import GitOverviewBranchesSubcommand
 from suites.coding.commands.git_overview_commits.git_overview_commits_subcommand import GitOverviewCommitsSubcommand
 from suites.coding.commands.git_overview_current.git_overview_current_subcommand import GitOverviewCurrentSubcommand
@@ -85,7 +86,7 @@ class CodingModule(Module):
     templates = CODING_TEMPLATES
     nudges = [*CODING_NUDGES, TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN, *TOOL_NUDGES]
     seeders = [CodingSeeder]
-    window_extensions = [*(WindowExtension(name, reads=["file-edit list"], runs=["agent type"], events=["file_edit.create"],
+    window_extensions = [*(WindowExtension(name, reads=["file-edit list", "hook-call feed"], runs=["agent type"], events=["file_edit.create"],
                                           keys=[WindowKey("agent-edits.*", "file-edit list --agent {id}", arguments=["limit", "before-id", "after-id"], page_size=50),
                                                 WindowKey("terminal-calls.*", "hook-call feed --session-agent-id {id}", arguments=["limit", "before-id", "after-id"], page_size=200)],
                                           tabs=[WindowTab("file-feed", "File feed", "file-edit list", component="/modules/journal.suites.coding/agent-file-edits.js"),
@@ -110,12 +111,12 @@ class CodingModule(Module):
     driver_rules = [WaitingItemsRule, IntroductionRule, FailedFullRunRule, GraphifySearchRule]
     listeners = [FullTestRunListener, GraphifyHookRemovalListener]
     bindings = {ToolRunners: CodingToolRunners, ProjectCheckouts: WorktreeCheckouts}
-    subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand, FileEditFileSubcommand, RecordFileChangesSubcommand]
+    subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileGrepSubcommand, ProjectFileShowSubcommand, FileEditFileSubcommand, RecordFileChangesSubcommand]
     windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, skeleton=CODING_GIT_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"],
                                  keys=[WindowKey("branches", "git-overview branches", arguments=["skip", "limit"]),
                                        WindowKey("commits", "git-overview commits", arguments=["skip", "limit"]),
                                        WindowKey("pulls", "git-overview pulls")]),
-               WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, skeleton=CODING_FILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file show"], search=WindowReadSearch("project-file find", "Find a file in the project"),
+               WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, skeleton=CODING_FILES_SKELETON, place=WindowPlace.PANE_PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file grep", "project-file show", "file-edit list"], search=WindowReadSearch("project-file find", "Find a file in the project"),
                                  keys=[WindowKey("entries", "project-file list {folder}"),
                                        WindowKey("matches", "project-file find {words}", loading=KeyLoading.REQUESTED),
                                        WindowKey("file", "project-file show {path}", loading=KeyLoading.REQUESTED)]),

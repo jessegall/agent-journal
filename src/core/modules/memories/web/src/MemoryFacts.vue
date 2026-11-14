@@ -4,7 +4,9 @@ import {Btn, InspectorPart, TextInput, eventMayBeChildOf, useWindow} from "@jour
 
 // the words that give a memory back to an agent that names them, added and taken off here
 const view = useWindow();
-const row = view.option("row");
+// the memory inspector hands the window its row; the Memories page gives the row it has open
+const props = defineProps({row: {type: Object, default: null}});
+const row = props.row ? computed(() => props.row) : view.option("row");
 const key = computed(() => `keywords.${row.value.id}`);
 const rows = computed(() => view.props[key.value].rows.value);
 const word = ref("");

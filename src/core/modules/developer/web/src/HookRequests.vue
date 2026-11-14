@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, MenuItem, MenuLabel, MenuPanel, WindowRoom, peekRef, toggleFilter, usePoll, useWindow} from "@journal/window-kit";
+import {Btn, MenuItem, MenuLabel, MenuPanel, TableLayout, WindowRoom, toggleFilter, usePoll, useWindow} from "@journal/window-kit";
 import ExecutionsInspector from "./ExecutionsInspector.vue";
 import RequestDetails from "./RequestDetails.vue";
 import {requestOutcomeLabel} from "./labels.js";
@@ -39,9 +39,12 @@ const filterAnchor = ref(null);
 const openedNumber = ref(0);
 const queueOpen = ref(false);
 const opened = computed(() => rows.value.find((row) => row.id === openedNumber.value));
+const choose = (mark) => (openedNumber.value = Number(mark));
 const isRefused = (row) => row.outcome === "refused";
 const isSlow = (row) => !isRefused(row) && row.duration_ms >= 500;
 const durationOf = (row) => `${Math.round(row.duration_ms)} ms`;
+const COLUMNS = ["Event", "Tool", "Parts", "Time", "Sender", "Queued", "Duration"].map((label) => ({key: label.toLowerCase(), label}));
+const lines = computed(() => rows.value.map((row) => ({mark: row.id, event: row.event, tool: row.tool || "—", parts: row.part_count || "", time: row.time, sender: row.sender, queued: `${Math.round(row.queued_ms)} ms`, duration: durationOf(row), tone: isRefused(row) ? "danger" : isSlow(row) ? "warn" : ""})));
 
 function togglePause() {
     toggleFeedPause(paused, load);
@@ -67,39 +70,9 @@ usePoll(() => loaded.value && load(), () => !paused.value && view.visible.value)
                         <template v-if="count"><MenuItem data-filter-clear @click="filters = emptyFilters()">Clear filters</MenuItem></template>
                     </MenuPanel></template>
                 </div>
-                <div class="columns">
-                    <span data-hook-column>Event</span>
-                    <span data-hook-column>Tool</span>
-                    <span class="parts" data-hook-column>Parts</span>
-                    <span data-hook-column>Time</span>
-                    <span data-hook-column>Sender</span>
-                    <span data-hook-column>Queued</span>
-                    <span data-hook-column>Duration</span>
-                </div>
-                <div class="list-scroll" data-hook-request-list>
-                    <template v-if="failure">
-                        <p class="note message" role="alert">{{ failure }}</p>
-                    </template>
-                    <template v-else-if="!rows.length">
-                        <p class="note message">Nothing recorded yet. Record agent calls in the developer settings turns the log on.</p>
-                    </template>
-                    <TransitionGroup name="request-row" tag="div" class="request-rows">
-                    <template v-for="row in rows" :key="row.id">
-                        <template v-if="row.day_start">
-                            <div class="day" data-hook-day>{{ row.day }}<span>UTC</span></div>
-                        </template>
-                        <div role="button" tabindex="0" :class="['row', {open: row.id === openedNumber, slow: isSlow(row), refused: isRefused(row)}]" :data-hook-request="row.id" :aria-pressed="row.id === openedNumber" :title="requestOutcomeLabel(row.outcome)" @click="openedNumber = row.id" @keydown.enter="openedNumber = row.id">
-                            <span class="event">{{ row.event }}</span>
-                            <span class="tool">{{ row.tool || '—' }}</span>
-                            <span class="parts" data-hook-parts>{{ row.part_count || '' }}</span>
-                            <time :datetime="row.received_at">{{ row.time }}</time>
-                            <template v-if="row.agent_id"><button type="button" class="sender" :data-peek="`agents:${row.agent_id}`" @click.stop="peekRef(`agents:${row.agent_id}`)">{{ row.sender }}</button></template><template v-else><span>{{ row.sender }}</span></template>
-                            <span class="queued">{{ Math.round(row.queued_ms) }} ms</span>
-                            <span class="duration">{{ durationOf(row) }}</span>
-                        </div>
-                    </template>
-                    </TransitionGroup>
-                </div>
+                <p v-if="failure" class="note message" role="alert">{{ failure }}</p>
+                <p v-else-if="!rows.length" class="note message">Nothing recorded yet. Record agent calls in the developer settings turns the log on.</p>
+                <TableLayout :columns="COLUMNS" :rows="lines" :pick="choose" :active="openedNumber" empty="" data-hook-request-list />
             </section>
             <div class="divider" data-hook-request-divider role="separator" aria-orientation="vertical" />
             <section class="detail" data-hook-request-detail-area aria-label="Request details">
@@ -128,102 +101,6 @@ usePoll(() => loaded.value && load(), () => !paused.value && view.visible.value)
     flex-direction: column;
     min-height: 0;
     min-width: 0;
-}
-
-.list-scroll {
-    flex: 1;
-    min-height: 0;
-    overflow: auto;
-    overscroll-behavior: contain;
-}
-
-.columns,
-.row {
-    display: grid;
-    grid-template-columns: minmax(80px, 1.4fr) minmax(40px, 0.7fr) 32px 88px minmax(72px, 1fr) 55px 60px;
-    align-items: center;
-    gap: 5px;
-    padding: 10px 10px;
-    font-size: 12px;
-}
-
-.columns {
-    flex: none;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-3);
-}
-
-.columns > :last-child,
-.duration,
-.queued,
-.parts {
-    text-align: right;
-}
-
-.parts {
-    padding-right: 12px;
-    color: var(--text-3);
-    font-variant-numeric: tabular-nums;
-}
-.sender { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
-.sender:hover { color: var(--accent); text-decoration: underline; }
-
-.day {
-    display: flex;
-    justify-content: space-between;
-    padding: 9px 16px;
-    border-bottom: 1px solid var(--border);
-    background: var(--side);
-    color: var(--text-3);
-    font-size: 11px;
-}
-
-.row {
-    width: 100%;
-    border: 0;
-    border-bottom: 1px solid var(--border);
-    background: none;
-    color: inherit;
-    font-family: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-.row:hover,
-.row.open {
-    background: var(--surface-2, var(--border));
-}
-
-.event {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-weight: 500;
-}
-
-.tool {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--text-3);
-}
-
-time,
-.duration,
-.queued {
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-}
-
-.slow .duration,
-.detail-head .slow {
-    color: #c58b35;
-}
-
-.refused .event,
-.refused .duration,
-.detail-head .refused {
-    color: #d76b6b;
 }
 
 .note {
@@ -290,10 +167,4 @@ pre {
         grid-template-rows: minmax(140px, 45%) 1px minmax(0, 1fr);
     }
 }
-.request-rows { display: contents; }
-.request-row-move { transition: transform 320ms cubic-bezier(.2, .9, .25, 1); }
-.request-row-enter-active { transition: opacity 200ms ease-out; }
-.request-row-enter-from { opacity: 0; }
-.request-row-leave-active { display: none; }
-@media (prefers-reduced-motion: reduce) { .request-row-move, .request-row-enter-active { transition: none; } }
 </style>

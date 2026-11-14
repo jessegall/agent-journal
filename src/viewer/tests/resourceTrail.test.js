@@ -113,7 +113,9 @@ test("task 6894: transcription links request bounded counterpart pages", async (
         return page(words[1] === "sources" ? [] : [{id: 4, title: "Meeting", text: "Use cents", created_at: "2026-11-01"}]);
     };
     const element = await mounted(TranscriptionRows, windowContext);
-    element.querySelector("[data-transcription='4']").click();
+    element.querySelector("[data-row='4']").click();
+    await settle();
+    element.querySelector('[data-tab="linked"]').click();
     await settle();
     expect(element.querySelector("[data-transcription-link]").textContent).toContain("doc 3");
     const links = requests.filter((words) => words[0] === "link");

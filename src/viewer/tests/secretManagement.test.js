@@ -1,5 +1,6 @@
 import {afterEach, expect, test, vi} from "vitest";
 import {context as baseContext, mounted, settle, typeInto as type} from "./support/windowContext.js";
+import {itemsOf} from "./support/cardMenu.js";
 
 const KEYS = {secrets: {line: "secret list", events: ["secret.*"]}};
 const context = (answers) => baseContext(answers, null, KEYS);
@@ -31,20 +32,20 @@ const save = async () => {
 
 test("the page shows no input, and a card says what is set in the same rows whatever is configured", async () => {
     const {element} = await drawn([SECRET, {...SECRET, id: 8, brief: "", programs: ["curl", "gh"], helpers: true}]);
-    expect(element.querySelector("input")).toBeNull();
-    expect(element.textContent).not.toContain("Needs a value");
+    expect(element.querySelector("input[type=password], textarea")).toBeNull();
+    expect(element.textContent).not.toContain("Needs credentials");
     expect(element.querySelector('[data-row="3"] [data-secret-programs]').textContent).toBe("Programs: none");
     expect(element.querySelector('[data-row="8"] [data-secret-programs]').textContent).toBe("Programs: curl, gh");
-    expect(element.querySelector('[data-row="8"] .note').textContent).toBe("Note: none");
+    expect(element.querySelector('[data-row="8"] [data-card-line]').textContent).toBe("Note: none");
     expect(element.querySelector('[data-row="3"] [data-secret-helpers-line]').textContent).toBe("Helpers: cannot use it");
 });
 
 test("what waits on the user is one button, apart from the saved secrets, and opens the dialog", async () => {
     const {element, ran} = await drawn([SECRET, ASKED]);
     const ask = element.querySelector('[data-secret-ask="5"]');
-    expect(ask.textContent).toContain("GitHub login");
+    expect(element.querySelector('[data-row="5"]').textContent).toContain("GitHub login");
+    expect(element.querySelector('[data-row="5"] [data-card-state]').textContent).toBe("Needs credentials");
     expect(ask.textContent).toContain("Add credentials");
-    expect(element.querySelector('[data-row="5"]')).toBeNull();
     ask.click();
     await settle();
     expect(document.body.textContent).toContain("The agent requested these credentials");
@@ -56,7 +57,7 @@ test("what waits on the user is one button, apart from the saved secrets, and op
 
 test("nothing waiting shows no button", async () => {
     const {element} = await drawn();
-    expect(element.querySelector("[data-secret-asks]")).toBeNull();
+    expect(element.querySelector("[data-secret-ask]")).toBeNull();
 });
 
 test("Cancel drops what was typed and Save applies all of it at once", async () => {
@@ -125,23 +126,16 @@ test("a program is allowed by name, or from what the agent proposed", async () =
     expect(ran).toEqual([["secret", "allow", "3", "gh"], ["secret", "allow", "3", "curl"]]);
 });
 
-test("deleting asks first and says nothing restores the secret", async () => {
-    vi.stubGlobal("ResizeObserver", class {
-        observe() {}
-        disconnect() {}
-    });
+test("deleting asks once in place, erases the secret for good and offers no Undo", async () => {
     const {element, ran} = await drawn();
-    document.body.append(element);
-    element.querySelector("[data-secret-more] button, button[data-secret-more]").click();
-    await settle();
-    document.body.querySelector("[data-secret-delete]").click();
-    await settle();
-    expect(ran).toEqual([]);
-    expect(document.body.textContent).toContain("erased permanently and cannot be restored");
-    expect(document.body.querySelector("[data-secret-restore]")).toBeNull();
-    document.body.querySelector("[data-secret-confirm]").click();
-    await settle();
+    const spoken = [];
+    const toast = [];
+    const entry = itemsOf(element.querySelector('[data-row="3"]')).find((found) => found.label === "Delete");
+    expect(entry.armedLabel).toBe("Click again: the value is erased for good");
+    await entry.run({say: (...said) => (spoken.push(said[0]), toast.push(said.length))});
     expect(ran).toContainEqual(["secret", "delete", "3"]);
+    expect(spoken).toEqual(["Deleted Shop key. The value is erased."]);
+    expect(toast).toEqual([1]);
 });
 
 test("a new secret is made with its type, title and note, and a custom one asks for its first field", async () => {

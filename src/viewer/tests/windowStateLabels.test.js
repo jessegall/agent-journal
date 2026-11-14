@@ -45,7 +45,7 @@ test("a question dock uses question state labels", async () => {
 
 test("command output uses process state labels", async () => {
     const element = await mounted(Outputs, commandsWindowContext({"process feed": page([{id: 2, state: "checking", line: "check cart"}])}));
-    expect(element.querySelector(".state").textContent).toBe("Checking the result");
+    expect(element.querySelectorAll(".table-row:not(.head) .cell")[4].textContent).toBe("Checking the result");
 });
 
 test("instruction types have readable labels and keep their stored styling value", async () => {

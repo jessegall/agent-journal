@@ -11,6 +11,9 @@ from suites.coding.support.project_git import ProjectGit
 
 SHOWN_BYTES = 200_000
 MATCH_ROW_COUNT = 50
+TEXT_ROW_COUNT = 100
+TEXT_CUT = 300
+LEAST_TEXT_LETTERS = 2
 HIDDEN_NAMES = {".git", "node_modules", "__pycache__", ".venv"}
 
 
@@ -40,13 +43,37 @@ class ProjectFiles:
             raise Refusal(f"{folder} is no folder", "name a folder of the project")
         entries = [entry for entry in FileAccess.iterdir(place) if entry.name not in HIDDEN_NAMES]
         ordered = sorted(entries, key=lambda entry: (not FileAccess.is_dir(entry), entry.name.lower()))
-        return ProjectFileRows([{"id": str(entry.relative_to(root)), "name": entry.name, "folder": FileAccess.is_dir(entry), "size": FileAccess.stat(entry).st_size if FileAccess.is_file(entry) else 0} for entry in ordered])
+        changed = self.changes()
+        return ProjectFileRows([{"id": str(entry.relative_to(root)), "name": entry.name, "folder": FileAccess.is_dir(entry), "size": FileAccess.stat(entry).st_size if FileAccess.is_file(entry) else 0, "git": changed.get(str(entry.relative_to(root)), ("", ""))[0]} for entry in ordered])
+
+    def changes(self) -> dict[str, tuple[str, str]]:
+        """Each changed path with its git letter (M changed, A new, D deleted, R moved, ? not tracked) and, for a moved file, the path it came from; nothing where git cannot say."""
+        status = self.git.output("git", "status", "--porcelain")
+        if status is None:
+            return {}
+        changed = {}
+        for line in status.splitlines():
+            if len(line) <= 3:
+                continue
+            old, arrow, new = line[3:].partition(" -> ")
+            changed[(new if arrow else old).rstrip("/")] = ("?" if line.startswith("??") else line[:2].strip()[0], old if arrow else "")
+        return changed
 
     def found(self, terms: str) -> ProjectFileRows:
         wanted = terms.lower().split()
         tracked = self.git.git_output("ls-files").splitlines()
         matching = [path for path in tracked if all(word in path.lower() for word in wanted)][:MATCH_ROW_COUNT]
         return ProjectFileRows([{"id": path, "name": Path(path).name, "folder": False, "size": 0} for path in matching])
+
+    def grepped(self, terms: str) -> ProjectFileRows:
+        if len(terms.strip()) < LEAST_TEXT_LETTERS:
+            raise Refusal(f"search for at least {LEAST_TEXT_LETTERS} letters", "give two letters or more")
+        found = self.git.output("git", "grep", "-n", "-I", "-i", "-F", "-e", terms.strip())
+        rows = []
+        for line in (found or "").splitlines()[:TEXT_ROW_COUNT]:
+            path, number, text = line.split(":", 2)
+            rows.append({"id": path, "name": Path(path).name, "folder": False, "size": 0, "line": int(number), "text": text.strip()[:TEXT_CUT]})
+        return ProjectFileRows(rows)
 
     def shown(self, path: str) -> ProjectFileText:
         root = self.root()
@@ -56,4 +83,5 @@ class ProjectFiles:
         data = FileAccess.binary(place)
         if b"\0" in data[:8000]:
             raise Refusal(f"{path} is not text", "it can only be opened outside the viewer")
-        return ProjectFileText(path, data[:SHOWN_BYTES].decode(errors="replace"), len(data) > SHOWN_BYTES)
+        letter, moved_from = self.changes().get(path, ("", ""))
+        return ProjectFileText(path, data[:SHOWN_BYTES].decode(errors="replace"), len(data) > SHOWN_BYTES, letter, moved_from)

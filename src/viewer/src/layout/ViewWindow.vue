@@ -13,6 +13,9 @@ import {followEvents} from "../windows/windowCatalogue.js";
 import {startWindows} from "../windows/startup.js";
 import WindowPane from "../windows/WindowPane.vue";
 import ResourcePanel from "../resource/ResourcePanel.vue";
+import ToastArea from "../kit/ToastArea.vue";
+import {usePageToasts} from "../composables/toasts.js";
+import {pageTitle} from "../domain/sidebarNav.js";
 
 const props = defineProps({
     environment: {type: String, required: true},
@@ -25,6 +28,7 @@ const props = defineProps({
 });
 
 const {catalogue, subscriptions, shellLine, prompts, stop, face, journalVersion} = startWindows(props);
+const toasts = usePageToasts(shellLine);
 provide(INSPECTOR_HOST, {catalogue, subscriptions, environment: props.environment, prompts, shellRead: shellLine});
 const {dock} = useViewTab(props.float);
 // the page shown: a click on another page in the sidebar changes only this, so the sidebar, the breadcrumb, the panel, the event stream and the
@@ -60,20 +64,21 @@ onUnmounted(() => {
 });
 watchEffect(() => {
     const entry = catalogue.window(page.value);
-    if (entry) document.title = `${entry.title} · ${props.environment}`;
+    if (entry) document.title = `${pageTitle(page.value, entry.title)} · ${props.environment}`;
 });
 </script>
 
 <template>
     <div :class="['view-window', {standalone}]" :data-face="face" :data-page="standalone ? page : undefined">
         <ButtonAllowance :prompts="prompts" />
+        <ToastArea :toasts="toasts" />
         <template v-if="catalogue.offered.length">
             <template v-if="standalone">
-                <SidebarPages :journal-version="journalVersion" :windows="catalogue.pages.value" :environments="environments" :current="environment" :open="page" :navigate="navigate" />
+                <SidebarPages :journal-version="journalVersion" :windows="catalogue.pages.value" :environments="environments" :current="environment" :open="page" :navigate="navigate" :layout-line="shellLine" />
             </template>
             <div class="view-window-main">
                 <template v-if="standalone">
-                    <Breadcrumb :environment="environment" :page="catalogue.window(page)?.title || page" />
+                    <Breadcrumb :environment="environment" :page="pageTitle(page, catalogue.window(page)?.title || page)" />
                 </template>
                 <template v-else>
                     <div class="view-window-bar">
