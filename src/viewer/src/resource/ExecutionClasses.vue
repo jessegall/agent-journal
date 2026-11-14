@@ -31,18 +31,18 @@ onMounted(load);
 <template>
     <section data-execution-classes>
         <ProcessQueueBand icon="gauge">Execution classes</ProcessQueueBand>
-        <p class="lead">Each run the journal starts belongs to a class, which says its lane, how many slot units it takes and its priority.</p>
+        <p class="lead">Each run the journal starts belongs to a class, which says its lane, how many slots it takes and its priority.</p>
         <template v-if="table">
             <template v-for="setting in table.settings" :key="setting.key">
-                <div class="control"><div><label :for="setting.key">{{ setting.title }}</label><p>{{ setting.description }}</p></div>
-                    <input :id="setting.key" class="number" type="number" min="1" :value="setting.value" :disabled="saving" :data-lane-setting="setting.key" @change="send(['setting', 'set', setting.key, $event.target.value])" />
+                <div class="control"><div><label :id="setting.key">{{ setting.title }}</label><p>{{ setting.description }}</p></div>
+                    <div class="stepper" role="group" :aria-labelledby="setting.key"><button type="button" aria-label="One fewer" :disabled="saving || setting.value <= 1" @click="send(['setting', 'set', setting.key, String(setting.value - 1)])">−</button><output :data-lane-setting="setting.key">{{ setting.value }}</output><button type="button" aria-label="One more" :disabled="saving" @click="send(['setting', 'set', setting.key, String(setting.value + 1)])">+</button></div>
                 </div>
             </template>
             <div class="control presets"><div><label>Size for this machine</label><p>Sets every lane's capacity from the number of processor cores.</p></div>
                 <template v-for="preset in CLASS_PRESETS" :key="preset.name"><button type="button" :disabled="saving" :data-class-preset="preset.name" @click="send(['queue-class', 'preset', preset.name])">{{ preset.title }}</button></template>
             </div>
             <div class="scroll"><table data-class-table>
-                <thead><tr><th scope="col">Class</th><th scope="col">Lane</th><th scope="col">Slot units</th><th scope="col">Priority</th><th scope="col">At once</th><th scope="col"><span class="hidden">Actions</span></th></tr></thead>
+                <thead><tr><th scope="col">Class</th><th scope="col">Lane</th><th scope="col">Slots</th><th scope="col">Priority</th><th scope="col">At once</th><th scope="col"><span class="hidden">Actions</span></th></tr></thead>
                 <tbody><template v-for="entry in table.classes" :key="entry.name"><ExecutionClassRow :entry="entry" :saving="saving" @send="send" /></template></tbody>
             </table></div>
             <ExecutionClassForm :read="read" :saving="saving" @send="send" />
@@ -57,7 +57,10 @@ onMounted(load);
 .control > div:first-child { flex:1; }
 label { font-size:12.5px; font-weight:500; }
 .control p { margin:3px 0 0; color:var(--text-3); font-size:11.5px; line-height:1.4; }
-.number { flex:none; width:72px; height:28px; padding:0 8px; border:1px solid var(--border-2); border-radius:6px; background:none; color:var(--text); font:inherit; }
+.stepper { display:flex; flex:none; height:28px; overflow:hidden; border:1px solid var(--border-2); border-radius:7px; }
+.stepper button { width:30px; border:0; background:none; color:var(--text-2); font-size:15px; cursor:pointer; }
+.stepper button:hover { background:var(--hover); color:var(--text); }
+.stepper output { display:grid; place-items:center; min-width:36px; border-inline:1px solid var(--border); font-size:13px; font-weight:600; font-variant-numeric:tabular-nums; }
 .presets button { flex:none; padding:4px 10px; border:1px solid var(--border-2); border-radius:6px; background:none; color:var(--text-2); font:inherit; font-size:12px; cursor:pointer; }
 .presets button:hover { color:var(--text); }
 button:disabled { opacity:.4; cursor:default; }

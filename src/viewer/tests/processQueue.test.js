@@ -21,10 +21,11 @@ const reader = (queue) => async () => ({ok: true, value: queue});
 let app = null;
 let subscriptions = null;
 
+// an agent's Processes tab lists its running, waiting and finished runs in sections; the queue itself shows them by lane
 async function panel(queue) {
     const element = document.createElement("div");
     document.body.append(element);
-    app = createApp({render: () => h(ProcessQueueBody, {read: reader(queue), agent: 0})});
+    app = createApp({render: () => h(ProcessQueueBody, {read: reader(queue), agent: 41})});
     subscriptions = new WindowSubscriptions();
     app.provide(RESOURCE_SUBSCRIPTIONS, subscriptions);
     app.mount(element);
@@ -64,13 +65,4 @@ test("test_empty_section_one_row: an empty section says None in one row that is 
     expect(empties.map((row) => row.textContent)).toEqual(["None", "None", "None"]);
     const source = readFileSync(resolve(__dirname, "../src/resource/ProcessQueueBody.vue"), "utf8");
     expect(source).toMatch(/\.empty \{[^}]*height: 31px;[^}]*box-sizing: border-box;|\.empty \{[^}]*box-sizing: border-box;[^}]*height: 31px;/);
-});
-
-test("the tiles say Slots in use with their count and Without a slot with the commands that wait", async () => {
-    await panel(SNAPSHOT);
-    expect(document.body.querySelector('[data-queue-tile="used"]').textContent).toBe("Slots in use");
-    expect(document.body.querySelector("[data-queue-spots]").textContent).toBe("2 of 3");
-    expect(document.body.querySelectorAll(".spots .used")).toHaveLength(2);
-    expect(document.body.querySelector('[data-queue-tile="without"]').textContent).toBe("Without a slot");
-    expect(document.body.querySelector("[data-queue-waiting]").textContent).toBe("1");
 });

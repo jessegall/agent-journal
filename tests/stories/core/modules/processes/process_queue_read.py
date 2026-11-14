@@ -70,3 +70,23 @@ def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an
 def expect_running_2(page, expected) -> None:
     actual = page['running']
     assert actual == expected, actual
+
+
+def test_the_lanes_name_each_run_s_slots_kind_and_run_the_halt_of_the_long_lane_and_the_lane_of_a_finished_run(played):
+    story = install_runner(played(UserBuilder))
+    story.expect_success(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} 4 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.READERS_FORCED.key} false --environment main", actor=story.user)
+    story.agent = Actor(story.new_row_id("agent start lanes-worker claude worker --environment main"), ActorType.AGENT)
+    build = start_process(story, "make package", category=CommandCategory.BUILD)
+    test = start_process(story, "python check_cart.py", category=CommandCategory.TEST_RUN)
+    end_run(story, start_process(story, "ls cart", category=CommandCategory.READ), "cart\n")
+    story.expect_success('queue halt "Machine maintenance"', actor=story.user)
+    page = queue_page(story)
+    lanes = {lane["lane"]: lane for lane in page["execution"]["lanes"]}
+    long_lane, short_lane = lanes["long"], lanes["short"]
+    story.expect_rows([(entry["run_id"], entry["slot_cost"], entry["kind"]) for entry in long_lane["running"]] == [(build.id, 4, "build")],
+                      [(entry["run_id"], entry["slot_cost"], entry["kind"], entry["reason"]) for entry in long_lane["waiting"]] == [(test.id, 4, "test run", "the long lane is paused")],
+                      (long_lane["halted"], long_lane["halt_type"], long_lane["halt_reason"]) == (True, "command", "Machine maintenance"),
+                      (short_lane["halted"], short_lane["halt_type"], short_lane["halt_reason"]) == (False, "", ""),
+                      [(row["line"], row["lane"]) for row in page["recent"]] == [("ls cart", "short")])

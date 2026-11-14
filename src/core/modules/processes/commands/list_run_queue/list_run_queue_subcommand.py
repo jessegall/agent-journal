@@ -19,6 +19,11 @@ from core.modules.processes.support.active_queue_runs import ActiveQueueRuns
 from core.modules.processes.support.process_queue_page import ProcessQueuePage
 from core.modules.processes.support.lane_load import ExecutionSnapshot
 from engine.enums.execution_lane import ExecutionLane
+from engine.enums.execution_source import ExecutionSource
+from engine.enums.starter_type import StarterType
+from engine.execution.classes.execution_classes import ExecutionClasses
+from engine.execution.execution_starter import ExecutionStarter
+from engine.execution.execution_subject import ExecutionSubject
 from core.modules.processes.support.queue_inspector_json import QueueInspectorJson
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
 from engine.setting.setting_values import SettingValues
@@ -41,8 +46,8 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
     environment_refusal = "the process queue needs an environment"
 
     def __init__(self, queries: Queries, halt: RunQueueHalt, types: HelperTypeBook, catalogue: SettingCatalogue, values: SettingValues, queue_runs: ActiveQueueRuns,
-                 status: ExecutionStatus) -> None:
-        self.queries, self.halt, self.queue_runs, self.status = queries, halt, queue_runs, status
+                 status: ExecutionStatus, classes: ExecutionClasses) -> None:
+        self.queries, self.halt, self.queue_runs, self.status, self.classes = queries, halt, queue_runs, status, classes
         self.types, self.catalogue, self.values = types, catalogue, values
 
     def suite_limits(self) -> list[dict[str, object]]:
@@ -65,7 +70,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         active = tuple(query.matching(IsNull("ended_at")).every_row(QUEUE_REASON))
         running = [row.inspector_json() for row in active if row.section is QueueSection.RUNNING]
         waiting = [row.inspector_json() for row in active if row.section is QueueSection.WAITING]
-        recent = [row.inspector_json() for row in self.recent_rows(query, max(1, arguments.recent))]
+        recent = [{**row.inspector_json(), "lane": self.lane(row).value} for row in self.recent_rows(query, max(1, arguments.recent))]
         copy = self.status.snapshot()
         long_lane = copy.lane(ExecutionLane.LONG.value)
         inspector: QueueInspectorJson = {
@@ -84,6 +89,14 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
     def lanes(self, copy: ExecutionSnapshot, class_name: str, starter: str) -> tuple[tuple[str, ...], dict[str, object]]:
         wanted = [text for text in (f"({class_name}, " if class_name else "", f", {starter}" if starter else "") if text]
         return tuple(line for line in copy.lines() if not line.startswith("  ") or all(text in line for text in wanted)), copy.json()
+
+    # the lane a run ran in: its stored class's, or for a class nobody declares any more, the lane its line matches now
+    def lane(self, row: ProcessQueueRow) -> ExecutionLane:
+        named = self.classes.named(row.execution_class)
+        if named is not None:
+            return named.lane
+        source = ExecutionSource.PLUGIN_PROGRAM if row.plugin else ExecutionSource.SHELL_LINE
+        return self.classes.match(ExecutionSubject(source, ExecutionStarter(StarterType.JOURNAL), category=row.category, plugin_name=row.plugin, line=row.line)).lane
 
     @staticmethod
     def agent_rows(query: Query[ProcessQueueRow], agent_id: int) -> Query[ProcessQueueRow]:
