@@ -1,14 +1,14 @@
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.container.container import Container
-from engine.database.kept_rows import KeptRows
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.setting.setting_values import SettingValues
 from engine.time.clock import Clock
 from core.modules.plans.commands.start_checkpoint_run.start_checkpoint_run import StartCheckpointRun
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
-from core.modules.plans.models.enums.checkpoint_state import CheckpointState
+from core.modules.plans.models.enums.plan_state import PlanState
+from core.modules.plans.models.plan import Plan
 from core.modules.processes.models.process import Process
 from suites.coding.modules.workers.commands.record_checkpoint_test.record_checkpoint_test import RecordCheckpointTest
 from suites.coding.modules.workers.commands.queue_worker_tests.end_stalled_proof_run import EndStalledProofRun
@@ -24,7 +24,7 @@ from suites.coding.modules.workers.support.worker_settings import HUNG_PROOF_RUN
 
 STALLED_RUNS_REASON = "the run of every proof still shown as running is looked at"
 RUNNING_CHECKPOINT_TESTS_REASON = "every test of a checkpoint run still shown as running is looked at"
-RUNNING_REACHES_REASON = "every checkpoint reach still running is looked at for a run that has no tests"
+STARTED_PLANS_REASON = "every started plan is looked at for a checkpoint run that has no tests"
 CHECKPOINT_RUNS_REASON = "the runs and checkpoints of those tests are read in one query each"
 ENDED_GRACE_SECONDS = 60
 STALLED_TESTS_TICK = "stalled worker tests"
@@ -52,13 +52,12 @@ class StalledWorkerTestRuns:
         # last, so a checkpoint test that cannot be recorded never holds the proofs of other workers back
         self.record_ended_checkpoint_tests(container)
 
-    # A reach that runs with no test behind it, its tests never made, is started again: the start does nothing for a run
-    # that has tests, and the reach is ended when the run has none to make.
+    # A reach that runs with no test behind it, its tests never made, is started again: the run of a started plan starts its
+    # oldest running reach, which does nothing for a run that has tests, and ends the reach when the run has none to make.
     @staticmethod
     def start_reaches_with_no_tests(container: Container) -> None:
-        running = container.get(Queries).query(CheckpointReach).filter(state=CheckpointState.RUNNING)
-        for reach in container.get(KeptRows).read(running, lambda: tuple(running.every_row(RUNNING_REACHES_REASON)), name="workers.running_reaches"):
-            container.get(Bus).run(StartCheckpointRun(reach.plan_id), Actor.core(), environment_id=reach.environment_id)
+        for plan in container.get(Queries).query(Plan).filter(state=PlanState.STARTED).every_row(STARTED_PLANS_REASON):
+            container.get(Bus).run(StartCheckpointRun(plan.id), Actor.core(), environment_id=plan.environment_id)
 
     @staticmethod
     def record_ended(container: Container, running: list[Proof], environments: dict[int, int]) -> None:
