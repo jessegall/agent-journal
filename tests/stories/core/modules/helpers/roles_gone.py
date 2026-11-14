@@ -1,3 +1,4 @@
+from suites.coding.support.shipped_profiles import MERGER_PROFILE
 import json
 from pathlib import Path
 
@@ -7,7 +8,7 @@ from tests.stories.core.modules.reviews.support.review_fixtures import OneReview
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 SOURCE = Path(__file__).resolve().parents[5] / "src"
-MERGER_START = 'helper start journal-merger --brief "Merge the finished workers" --environment main'
+MERGER_START = f'helper start {MERGER_PROFILE.name} --brief "Merge the finished workers" --environment main'
 RETIRED_ENUMS = ("HelperRole", "CodingHelperRole")
 
 
@@ -30,13 +31,13 @@ class MergerStarted(StoryFixture):
         start_helper(story, MERGER_START)
 
     def expect(self, story) -> None:
-        story.expect_text("agent list --environment main", "journal-merger", actor=story.user)
+        story.expect_text("agent list --environment main", MERGER_PROFILE.name, actor=story.user)
 
 
 def test_an_agent_started_for_merging_has_the_merger_key(new_story):
     story = new_story(fixture=MergerStarted)
     mergers = agent_rows(story, "merger")
-    story.expect_rows([row["profile"] for row in mergers] == ["journal-merger"], agent_rows(story, "helper") == [])
+    story.expect_rows([row["profile"] for row in mergers] == [MERGER_PROFILE.name], agent_rows(story, "helper") == [])
 
 
 def test_the_merger_runs_its_commands_and_the_main_agent_does_not(new_story):
@@ -48,7 +49,7 @@ def test_the_merger_runs_its_commands_and_the_main_agent_does_not(new_story):
 
 def test_the_merger_is_shown_in_the_merger_group(new_story):
     story = new_story(fixture=MergerStarted)
-    story.expect_rows(limits_group(story, "merger", "journal-merger") == "merger")
+    story.expect_rows(limits_group(story, "merger", MERGER_PROFILE.name) == "merger")
 
 
 def test_a_reviewer_is_a_helper_with_the_reviewer_profile(new_story):
