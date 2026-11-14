@@ -12,7 +12,7 @@ from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.modules.skills.support.skill_samples import PATH
-from tests.stories.core.support.coding_fixtures import CodingEnvironment
+from tests.stories.core.support.coding_fixtures import CodingEnvironmentWithoutPlainWords
 from tests.stories.support.story_checks import expect_value, expect_value_with, expect_value_without
 from core.modules.skills.support.start_skills import AFTER_COMPACTION_KEY
 from core.modules.skills.support.start_skills import SESSION_START_KEY
@@ -24,7 +24,7 @@ DEFAULTS = ("journal", "journal-memory", "journal-etiquette")
 
 
 def environment(new_story):
-    story = new_story(DUE, fixture=CodingEnvironment)
+    story = new_story(DUE, fixture=CodingEnvironmentWithoutPlainWords)
     story.replace(SkillRequirement, SkillRequirement())
     story.run("skill write")
     return story
