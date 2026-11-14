@@ -77,14 +77,14 @@ def test_an_event_about_no_agent_and_a_plain_listener_are_heard_ungated():
     assert openness.reads == []
 
 
-def test_an_opener_that_raises_lets_the_listener_hear_the_event_and_is_reported_once_a_round():
+def test_an_opener_that_raises_lets_the_listener_run():
     reported: list[list[str]] = []
     made = runner(Openness(), reported)
     assert made.is_heard_in_state(ReviewCounter(), about(9), LOGGED) and made.is_heard_in_state(ReviewCounter(), about(9), LOGGED)
     assert reported == [["agent state", "samples.reviewing", "agent", "9"]]
 
 
-def test_ten_events_about_one_agent_read_its_state_once_a_round_and_a_new_round_reads_it_again():
+def test_ten_events_about_one_agent_in_a_round_read_its_state_once():
     openness = Openness()
     made = runner(openness)
     assert all(made.is_heard_in_state(ReviewCounter(), about(7), LOGGED) for _ in range(10))
