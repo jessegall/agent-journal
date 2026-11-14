@@ -201,12 +201,12 @@ def test_a_failed_run_reads_only_the_worktrees_of_the_workers_of_its_tasks_and_s
     worker, story = running_checkpoint, running_checkpoint.story
     database = story.container.get(Database)
     database.update(Statement(f"WITH RECURSIVE copies(number) AS (SELECT 1 UNION ALL SELECT number + 1 FROM copies WHERE number < {OTHER_WORKTREES}) "
-                              "INSERT INTO worker_worktrees (session_agent_id, environment_id, task_id, creator_id, folder, branch, base_branch, state, merged_task_ids, removed_at) "
-                              "SELECT ?, environment_id, task_id, creator_id, folder || '-old-' || number, branch || '-old-' || number, base_branch, 'new', '1,3', '2026-01-01T00:00:00Z' "
+                              "INSERT INTO worker_worktrees (session_agent_id, environment_id, task_id, creator_id, folder, branch, base_branch, state, merged_task_ids, removed_at, created_at, updated_at) "
+                              "SELECT ?, environment_id, task_id, creator_id, folder || '-old-' || number, branch || '-old-' || number, base_branch, 'new', '1,3', created_at, created_at, updated_at "
                               "FROM worker_worktrees, copies WHERE session_agent_id = ?", [story.agent.id, worker.worker.id]))
     start = database.repeated_work.points()
     with running_launcher(story):
-        end_run(worker, CART_COMMAND)
-    worktree_rows = database.repeated_work.points().minus(start).tables["worker_worktrees"]
-    expect_returned(worker, 1)
-    story.expect_rows(worktree_rows < OTHER_WORKTREES, detail=str(worktree_rows))
+        end_run(worker, TOTALS_COMMAND)
+    cost = database.repeated_work.points().minus(start)
+    expect_returned(worker, 3)
+    story.expect_rows(cost.tables["worker_worktrees"] < OTHER_WORKTREES, detail=str({sql: rows for sql, rows in cost.statements.items() if "worker_worktrees" in sql and rows}))
