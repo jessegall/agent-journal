@@ -6,6 +6,8 @@ import {anchorTo, useOutside} from "../composables/outside.js";
 defineOptions({inheritAttrs: false});
 const props = defineProps({
     anchor: {type: Object, default: null},
+    // a spot on the screen instead of an element: {x, y}, and flipX when it opens leftward from there (a submenu opens beside its item)
+    point: {type: Object, default: null},
     align: {type: String, default: "auto"},
     minWidth: {type: Number, default: 0},
     maxWidth: {type: Number, default: 0},
@@ -24,7 +26,8 @@ const size = computed(() => ({
 }));
 const EDGE = 8;
 const drawn = ref({w: 0, h: 0});
-const edge = ref(props.anchor ? props.anchor.getBoundingClientRect() : null);
+const spot = (at) => ({left: at.x, right: at.flipX ?? at.x, top: at.y, bottom: at.y});
+const edge = ref(props.anchor ? props.anchor.getBoundingClientRect() : props.point ? spot(props.point) : null);
 const viewport = () => ({left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight});
 const onScreen = (r) => ({
     left: Math.max(0, r.left),
@@ -47,6 +50,7 @@ function room(bounds, at) {
 }
 
 function fitting(at) {
+    if (!props.anchor) return viewport();
     const own = windowOf(props.anchor);
     const space = room(own, at);
     const fits = drawn.value.w <= space.across && drawn.value.h <= Math.max(space.below, space.above);
@@ -59,7 +63,8 @@ const place = computed(() => {
     const bounds = fitting(at);
     const space = room(bounds, at);
     const {w, h} = drawn.value;
-    const leftward = props.align === "auto" ? at.left + at.right > bounds.left + bounds.right : props.align === "right";
+    // a spot opens rightward from the pointer and turns leftward only where there is no room
+    const leftward = props.point ? at.left + w > bounds.right - EDGE : props.align === "auto" ? at.left + at.right > bounds.left + bounds.right : props.align === "right";
     const x = clamp(leftward ? at.right - w : at.left, bounds.left + EDGE, Math.max(bounds.left + EDGE, bounds.right - w - EDGE));
     const up = h > space.below && space.above > space.below;
     const vertical = up
@@ -117,8 +122,8 @@ defineExpose({element: panel});
 </script>
 
 <template>
-    <Teleport to="body" :disabled="!anchor">
-        <div ref="panel" v-bind="$attrs" :class="['menu-panel', {anchored: anchor}]" :style="place" @keydown="onKey"><slot /></div>
+    <Teleport to="body" :disabled="!anchor && !point">
+        <div ref="panel" v-bind="$attrs" :class="['menu-panel', {anchored: anchor || point}]" :style="place" @keydown="onKey"><slot /></div>
     </Teleport>
 </template>
 
