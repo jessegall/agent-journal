@@ -1,3 +1,4 @@
+from engine.file.file_access import FileAccess
 from suites.coding.modules.workers.support.merge_builds import MergeBuilds
 import shutil
 import subprocess
@@ -64,6 +65,13 @@ class MemoryWorktreeGit(WorktreeGit):
 
     def uncommitted_names(self, folder: str | Path) -> tuple[str, ...]:
         return TreeChanges(self.committed_tree(folder), self.working_tree(folder)).names()
+
+    def undo_path(self, folder: str, path: str) -> None:
+        committed = self.committed_tree(folder)
+        if path in committed:
+            FileAccess.write(Path(folder) / path, committed[path])
+            return
+        FileAccess.unlink(Path(folder) / path, missing_ok=True)
 
     def tip(self, folder: str, branch: str) -> str:
         if not self.history.has_branch(branch):

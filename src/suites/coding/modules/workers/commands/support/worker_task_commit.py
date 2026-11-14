@@ -33,10 +33,13 @@ class WorkerTaskCommit:
 
     def commit(self, worktree: Worktree, tasks: tuple[Task, ...], actor: Actor, differences: str) -> None:
         profile = self.queries.query(Agent).find(worktree.session_agent_id).profile
-        for path in self.git.uncommitted_files(worktree.folder):
-            folder = self.protected.match(worktree.folder, path, profile)
-            if folder:
-                raise Refusal(f"{folder} is protected", AskTopic.TOOL.hint("undo the change in that folder"))
+        # a change that slipped into a protected folder past the hook, as a script can, is undone here before anything
+        # is committed, and the worker is told to report it
+        undone = [path for path in self.git.uncommitted_files(worktree.folder) if self.protected.match(worktree.folder, path, profile)]
+        for path in undone:
+            self.git.undo_path(worktree.folder, path)
+        if undone:
+            raise Refusal(f"{', '.join(undone)} lie in protected folders, so their changes were undone", "report the change to the main agent with journal worker report, then commit again")
         base_commit = self.git.tip(worktree.folder, worktree.base_branch)
         conflicts = self.git.rebased_commit(worktree, CommitSubject(tasks).text(), f"Journal: worker worker-{worktree.session_agent_id}")
         if conflicts:

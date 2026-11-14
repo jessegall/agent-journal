@@ -1,7 +1,6 @@
 import pytest
 
 from core.modules.plugins.support.plugin_step_check import PluginStepCheck
-from suites.coding.models.enums.ask_topic import AskTopic
 from tests.stories.core.modules.plugins.worker_steps import step_plugin_story
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
@@ -116,7 +115,7 @@ def test_31_a_change_in_a_protected_folder_refuses_the_commit(working):
     story.expect_success(f'setting set {PROTECTED_FOLDERS} \'["cart.py"]\' --project', actor=story.user)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(FIRST_PROOF, actor=worker)
-    expect_refused_with(story, COMMIT, "cart.py is protected", "undo the change in that folder", AskTopic.TOOL.question_line(), actor=worker)
+    expect_refused_with(story, COMMIT, "cart.py lie in protected folders, so their changes were undone", "report the change to the main agent", actor=worker)
     story.expect_text("proof show 1", "state: shown", actor=story.agent)
 
 
