@@ -637,14 +637,11 @@ tests/stories/engine/listener/round_gives_way.py
 tests/stories/engine/map/budgets.py
 tests/stories/engine/map/map_command.py
 tests/stories/engine/module/agent_types.py
-tests/stories/engine/module/folder_modules.py
 tests/stories/engine/module/folder_removal.py
 tests/stories/engine/module/listener_cleanup.py
 tests/stories/engine/module/registry_reads.py
-tests/stories/engine/module/suite_bundles.py
 tests/stories/engine/module/support/agent_type_modules.py
 tests/stories/engine/module/support/folder_sample/module.py
-tests/stories/engine/module/support/layer_project.py
 tests/stories/engine/module/support/listener_changes.py
 tests/stories/engine/module/support/loop_modules.py
 tests/stories/engine/module/support/notes_dependent.py

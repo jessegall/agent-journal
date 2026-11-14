@@ -1,4 +1,4 @@
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from pathlib import Path
 
 import pytest
@@ -23,3 +23,19 @@ def journal(synced_home: JournalHome) -> Generator[IntegrationJournal]:
     opened.run(MAIN_ENVIRONMENT_LINE, environment_id=None)
     yield opened
     opened.close()
+
+
+# makes journals synced with the named modules besides the default ones, each on its own copy of a template, with no
+# environment yet: journal_with("tests.samples:NotesModule")
+@pytest.fixture
+def journal_with(templates: TemplateDatabases, tmp_path: Path) -> Generator[Callable[..., IntegrationJournal]]:
+    opened: list[IntegrationJournal] = []
+
+    def make(*modules: str) -> IntegrationJournal:
+        journal = IntegrationJournal(templates.synced_home(tmp_path / f"journal-{len(opened)}", tuple(modules)))
+        opened.append(journal)
+        return journal
+
+    yield make
+    for journal in opened:
+        journal.close()
