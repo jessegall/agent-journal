@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 
+from engine.database.kept_rows import KeptRows
 from engine.errors.refusal import Refusal
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
@@ -15,11 +16,12 @@ class OutsideWaits:
     """Finds the task outside a unit of tasks that holds the whole unit back: every task of the unit waits on it, directly
     or through other tasks of the unit, and it is open or blocked with no worker, assigned to the main agent or a person."""
 
-    def __init__(self, queries: Queries, assigned_worker_tasks: AssignedWorkerTasks, labels: AssigneeLabel) -> None:
-        self.queries, self.assigned_worker_tasks, self.labels = queries, assigned_worker_tasks, labels
+    def __init__(self, queries: Queries, assigned_worker_tasks: AssignedWorkerTasks, labels: AssigneeLabel, kept: KeptRows) -> None:
+        self.queries, self.assigned_worker_tasks, self.labels, self.kept = queries, assigned_worker_tasks, labels, kept
 
     def check(self, tasks: Sequence[Task]) -> None:
-        blocker = self.blocker(tasks)
+        unit_ids = tuple(sorted(task.id for task in tasks))
+        blocker = self.kept.scoped_current(lambda: self.blocker(tasks), name=f"workers.outside_wait_blocker:{unit_ids}")
         if blocker is not None:
             raise Refusal(f"every task waits on task {blocker.id}, which no worker works on: it is assigned to {self.labels.task_label(blocker)}",
                           f"task {blocker.id} is done by {self.labels.task_label(blocker)}; send the tasks once it is done")

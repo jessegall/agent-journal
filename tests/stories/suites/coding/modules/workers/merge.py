@@ -31,7 +31,7 @@ from datetime import timedelta
 from tests.stories.core.modules.chat.support.mark_samples import expect_marks_text
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, checked_worker, delivered_worker, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, FIRST_PROOF, checked_worker, delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.web_build import BUILT_TEXT, build_repository
 from tests.stories.support.story_checks import expect_requests_launcher
@@ -84,6 +84,7 @@ def test_a_worker_settles_a_clash_and_its_next_merge_goes_through(new_story):
     repository.committed("cart.py", "TOTAL = 2\n", "Another total")
     story.expect_text(f"worker merge --wait {agent_number(story, worker.id)}", "clashed on cart.py", actor=story.agent)
     (repository.worktree_folder(worker.id) / "cart.py").write_text("TOTAL = 3\n")
+    story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.expect_success("worker-worktree show 1", "state: delivered")
     story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
