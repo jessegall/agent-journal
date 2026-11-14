@@ -41,4 +41,4 @@ class Ask(EnvironmentScoped, Model):
         return self.level_index >= len(self.levels())
 
     def levels(self) -> tuple[AskLevel, ...]:
-        return tuple(AskLevel(str(level["profile"]), int(level["answer_minutes"]), int(level["pass_minutes"])) for level in json.loads(self.stack_json))
+        return tuple(AskLevel.parsed(level) for level in json.loads(self.stack_json))
