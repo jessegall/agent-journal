@@ -94,7 +94,7 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
         self.check_job(command, worker)
         self.check_session(worker)
         if command.task_ids:
-            self.kept_tasks.check_tasks(command.task_ids, actor.id)
+            self.kept_tasks.check_tasks(command.task_ids, actor.id, worker.id)
         if self.worktrees.newest_worktree(worker.id) is None:
             raise Refusal(f"{AgentLabel.labelled(worker).text} has no worktree", "journal worker dispatch <task> starts a new one")
 
