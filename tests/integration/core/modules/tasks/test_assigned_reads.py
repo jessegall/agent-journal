@@ -2,11 +2,11 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from core.modules.assignments.support.assignments import Assignments
 from core.modules.tasks.queries.task_query import TaskQuery
 from tests.stories.core.support.coding_fixtures import UserBuilder
+from tests.integration.support.fixture_journal import FixtureJournal
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 
@@ -18,7 +18,7 @@ class TwoWorkersFourTasks(StoryFixture):
 
     parent = UserBuilder
 
-    def steps(self, story: Story) -> None:
+    def steps(self, story: FixtureJournal) -> None:
         story.run("agent start s-2 claude worker --environment main")
         story.run("agent start s-3 claude worker --environment main")
         for number in range(1, TASK_COUNT + 1):
@@ -26,31 +26,31 @@ class TwoWorkersFourTasks(StoryFixture):
 
 
 @pytest.fixture
-def workshop(new_story):
-    return new_story(fixture=TwoWorkersFourTasks)
+def workshop(journal_with):
+    return FixtureJournal.played(journal_with(), TwoWorkersFourTasks)
 
 
-def worker_w(story: Story) -> Actor:
+def worker_w(story: FixtureJournal) -> Actor:
     return Actor(story.user.id + 1, ActorType.AGENT)
 
 
-def worker_v(story: Story) -> Actor:
+def worker_v(story: FixtureJournal) -> Actor:
     return Actor(story.user.id + 2, ActorType.AGENT)
 
 
-def assign(story: Story, task_id: int, actor: Actor) -> None:
+def assign(story: FixtureJournal, task_id: int, actor: Actor) -> None:
     story.expect_success(f"assign task {task_id} --to {actor.id} --environment main", actor=story.user)
 
 
-def assigned_ids(story: Story, actor: Actor) -> list[int]:
+def assigned_ids(story: FixtureJournal, actor: Actor) -> list[int]:
     return [task.id for task in story.container.get(TaskQuery).assigned(actor.id)]
 
 
-def ready_ids(story: Story, actor: Actor) -> list[int]:
+def ready_ids(story: FixtureJournal, actor: Actor) -> list[int]:
     return sorted(task.id for task in story.container.get(TaskQuery).assigned_ready(actor.id))
 
 
-def free_ids(story: Story) -> list[int]:
+def free_ids(story: FixtureJournal) -> list[int]:
     return [task.id for task in story.container.get(TaskQuery).free().every_row(TEST_ROWS_REASON)]
 
 

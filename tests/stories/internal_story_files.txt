@@ -300,7 +300,6 @@ tests/stories/core/modules/skills/skills_page_routes.py
 tests/stories/core/modules/skills/start_settings.py
 tests/stories/core/modules/tasks/added_state.py
 tests/stories/core/modules/tasks/assigned_caches.py
-tests/stories/core/modules/tasks/assigned_reads.py
 tests/stories/core/modules/tasks/block_reviews.py
 tests/stories/core/modules/tasks/marks.py
 tests/stories/core/modules/tasks/state_sweep.py

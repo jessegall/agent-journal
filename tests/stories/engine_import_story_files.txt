@@ -507,7 +507,6 @@ tests/stories/core/modules/skills/support/skill_samples.py
 tests/stories/core/modules/skills/support/skills_page_fixture.py
 tests/stories/core/modules/tasks/added_state.py
 tests/stories/core/modules/tasks/assign_refusals.py
-tests/stories/core/modules/tasks/assigned_reads.py
 tests/stories/core/modules/tasks/block_reviews.py
 tests/stories/core/modules/tasks/board_counts.py
 tests/stories/core/modules/tasks/bounded_task_reads.py
