@@ -12,6 +12,6 @@ def test_a_person_adds_the_avatar_window_to_the_home_page_and_removes_it_again(n
     assert window.title == "Avatar"
     assert {"setting show", "usage tool"} <= set(window.reads)
     story.expect_success(WITH_AVATAR, actor=story.user)
-    story.expect_success("viewer-layout current --suite coding --page home --environment main", "messages.avatar", actor=story.user)
+    story.expect_success("viewer-layout current --suite coding --page home --environment main", 'layout: {"windows": ["messages.chat", "messages.avatar"]}', actor=story.user)
     story.expect_success(WITHOUT_AVATAR, actor=story.user)
-    story.expect_absent("viewer-layout current --suite coding --page home --environment main", "messages.avatar", actor=story.user)
+    story.expect_success("viewer-layout current --suite coding --page home --environment main", 'layout: {"windows": ["messages.chat"]}', actor=story.user)
