@@ -38,5 +38,5 @@ def test_a_plugin_run_takes_a_long_lane_place_and_a_second_run_of_its_kind_waits
     rows = queue(story)
     running = [run for run in rows["running"] if run["plugin"] == PLUGIN]
     waiting = [run for run in rows["waiting"] if run["plugin"] == PLUGIN]
-    story.expect_rows(len(running) == 1, all(run["uses_slot"] for run in running), [run["execution_class"] for run in running] == [f"{PLUGIN} judge"],
+    story.expect_rows(len(running) == 1, [run["execution_class"] for run in running] == [f"{PLUGIN} judge"],
                       sorted(run["category"] for run in waiting) == ["check", "unknown"], detail=json.dumps(rows)[:600])

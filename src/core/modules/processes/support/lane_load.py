@@ -56,6 +56,9 @@ class ExecutionSnapshot:
     lanes: tuple[LaneLoad, ...]
     waits: tuple[PriorityWait, ...]
 
+    def lane(self, lane: str) -> LaneLoad:
+        return next(load for load in self.lanes if load.lane == lane)
+
     def lines(self) -> list[str]:
         waited = [wait for wait in self.waits if wait.count]
         return [*(line for load in self.lanes for line in load.lines()), "waits over the last hour:" if waited else "waits over the last hour: no run started",

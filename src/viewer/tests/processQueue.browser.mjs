@@ -44,7 +44,7 @@ try {
     await page.locator('[data-queue-row="running"]').filter({hasText: "make checks"}).waitFor();
     await page.locator('[data-queue-row="waiting"]').waitFor({state: "detached"});
     await page.screenshot({path: capture.replace(".png", "-events.png"), fullPage: true});
-    await page.getByRole("button", {name: "One more command at once"}).click();
+    await page.getByRole("button", {name: "One slot unit more"}).click();
     await page.waitForFunction(() => document.querySelector("[data-queue-limit]")?.textContent === "2");
     await page.reload();
     await page.locator("[data-queue-controls]").waitFor();

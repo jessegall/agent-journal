@@ -215,7 +215,7 @@ def test_plugin_person_and_lookup_runs_are_never_judged_while_a_started_test_is(
 
 def test_a_workers_queued_run_is_told_nothing_while_its_running_one_is(new_story):
     story = new_story(fixture=HelperBesideWorker)
-    for setting in (f"{ProcessSetting.RUN_BATCH_SIZE.key} 1", f"{WORKER_TEST_LIMIT} 0", f"{ProcessSetting.READERS_FORCED.key} false"):
+    for setting in (f"{ProcessSetting.LANE_CAPACITY_LONG.key} 4", f"{WORKER_TEST_LIMIT} 0", f"{ProcessSetting.READERS_FORCED.key} false"):
         story.expect_success(f"setting set {setting} --environment main", actor=story.user)
     worker = worker_agent(story)
     running = agent_run(story, worker, "pytest tests/api -q", CommandCategory.TEST_RUN)

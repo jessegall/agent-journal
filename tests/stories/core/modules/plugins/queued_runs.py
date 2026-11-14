@@ -31,7 +31,7 @@ def queues_plugin(new_story):
     story.expect_success(f"plugin install {folder} --yes", actor=story.user)
     story.run_listeners()
     recording_runner_at(story.home)
-    story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 5 --project", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} 20 --project", actor=story.user)
     return story
 
 

@@ -137,6 +137,12 @@ def test_starter_cap_holds_while_other_starter_starts():
     assert list(ExecutionOrder(DEFAULT_LANE_LIMITS).starting([capped, other], held, CHECK_TIME, False)) == [other]
 
 
+def test_a_run_that_costs_nothing_passes_a_full_starter_cap():
+    held = [ticket(AGENT, starter=starter(1)) for _ in range(6)]
+    free = ticket(AGENT, slot_cost=0, starter=starter(1))
+    assert list(ExecutionOrder(DEFAULT_LANE_LIMITS).starting([free], held, CHECK_TIME, False)) == [free]
+
+
 def test_class_at_limit_does_not_block_a_build_behind():
     merge_class = ExecutionClass("merge", ExecutionLane.LONG, 1, AGENT, class_limit=1)
     merge = ExecutionTicket(merge_class, AGENT, AGENT, starter(1), "merge", seconds_after_start(0), seconds_after_start(0))

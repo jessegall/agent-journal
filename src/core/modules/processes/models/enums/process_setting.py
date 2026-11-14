@@ -39,8 +39,6 @@ class ProcessSetting(Enum):
     SPARSE_SECONDS = SettingValue("sparse-seconds", "Seconds between lines of a sparse run",
                                   "Average seconds between prints, over the last five, from which a run counts as printing too little.", SettingType.NUMBER, default=30,
                                   rule=NumberRule(1))
-    RUN_BATCH_SIZE =SettingValue("run-batch-size", "Runs at once", "How many queued runs go at once on this machine; the others wait for a spot. Reads and edits never wait.",
-                                  SettingType.NUMBER, default=2)
     LANE_CAPACITY_INSTANT = SettingValue("lane-capacity-instant", "Instant lane capacity", "Slot units of hooks, journal commands and viewer requests that run at once.",
                                          SettingType.NUMBER, default=24, rule=NumberRule(1))
     LANE_CAPACITY_SHORT = SettingValue("lane-capacity-short", "Short lane capacity", "Slot units of short shell lines, such as reads, searches and edits, that run at once.",

@@ -104,7 +104,7 @@ def worker_git_command(worker_command, name):
 def test_worker_commands_return_before_slow_git_and_notify_once(worker_git_command, monkeypatch, name, method, queue_full):
     story, repository, worker, launches = worker_git_command
     if queue_full:
-        story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --environment main")
+        story.expect_success(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} 4 --environment main")
         bus = story.container.get(Bus)
         environment_id = story.row(Agent, worker.id).environment_id
         running_test = bus.run(StartProcess.single_part(worker.id, "pytest held.py", str(repository.folder), CommandCategory.TEST_RUN, 60),

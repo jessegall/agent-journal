@@ -11907,7 +11907,7 @@ const Zx = ["title"], e8 = {
   }
 }, yE = /* @__PURE__ */ z(g8, [["__scopeId", "data-v-021c4dbc"]]), v8 = { "data-queue-controls": "" }, y8 = { class: "counts" }, b8 = { "data-queue-spots": "" }, k8 = {
   class: "spots",
-  "aria-label": "Places in use"
+  "aria-label": "Slot units in use"
 }, w8 = { "data-queue-waiting": "" }, $8 = { key: 0 }, x8 = { class: "control" }, S8 = { class: "stepper" }, M8 = ["disabled"], _8 = {
   "aria-labelledby": "queue-limit-label",
   "data-queue-limit": ""
@@ -11950,7 +11950,7 @@ const Zx = ["title"], e8 = {
             G(v(e.queue.used_slots) + " ", 1),
             m("span", null, "of " + v(e.queue.parallel_limit), 1)
           ]),
-          m("p", null, "Commands running. " + v(e.queue.used_slots >= e.queue.parallel_limit ? "Every place is taken." : `${e.queue.parallel_limit - e.queue.used_slots} ${e.queue.parallel_limit - e.queue.used_slots === 1 ? "place" : "places"} free.`), 1),
+          m("p", null, "Slot units of long runs in use. " + v(e.queue.used_slots >= e.queue.parallel_limit ? "Every unit is taken." : `${e.queue.parallel_limit - e.queue.used_slots} ${e.queue.parallel_limit - e.queue.used_slots === 1 ? "unit" : "units"} free.`), 1),
           m("div", k8, [
             (r(!0), d(q, null, ne(e.queue.parallel_limit, (c) => (r(), d("span", {
               key: c,
@@ -11966,20 +11966,20 @@ const Zx = ["title"], e8 = {
       ]),
       m("div", x8, [
         u[4] || (u[4] = m("div", null, [
-          m("label", { id: "queue-limit-label" }, "Commands at once"),
-          m("p", null, "How many of the workers' commands may run at the same time. The rest wait. Lowering it stops none that are running.")
+          m("label", { id: "queue-limit-label" }, "Long lane capacity"),
+          m("p", null, "Slot units of long runs that may run at the same time; a test or a build costs 4. The rest wait. Lowering it stops none that are running.")
         ], -1)),
         m("div", S8, [
           m("button", {
             type: "button",
-            "aria-label": "One fewer command at once",
+            "aria-label": "One slot unit fewer",
             disabled: s.value || e.queue.parallel_limit <= 1,
             onClick: u[0] || (u[0] = (c) => l(e.queue.limit_setting, e.queue.parallel_limit - 1))
           }, "−", 8, M8),
           m("output", _8, v(e.queue.parallel_limit), 1),
           m("button", {
             type: "button",
-            "aria-label": "One more command at once",
+            "aria-label": "One slot unit more",
             disabled: s.value,
             onClick: u[1] || (u[1] = (c) => l(e.queue.limit_setting, e.queue.parallel_limit + 1))
           }, "+", 8, C8)
@@ -12022,7 +12022,7 @@ const Zx = ["title"], e8 = {
       o.value ? (r(), d("p", I8, v(o.value), 1)) : k("", !0)
     ]));
   }
-}, R8 = /* @__PURE__ */ z(B8, [["__scopeId", "data-v-9ebbefc9"]]), L8 = ["data-queue-row", "data-queue-process"], N8 = ["aria-expanded"], q8 = { class: "run-line" }, D8 = { class: "leading" }, P8 = {
+}, R8 = /* @__PURE__ */ z(B8, [["__scopeId", "data-v-f0a1f7f7"]]), L8 = ["data-queue-row", "data-queue-process"], N8 = ["aria-expanded"], q8 = { class: "run-line" }, D8 = { class: "leading" }, P8 = {
   key: 0,
   "data-queue-position": ""
 }, j8 = ["title"], F8 = { class: "command" }, W8 = {
@@ -12067,8 +12067,8 @@ const Zx = ["title"], e8 = {
           m("span", D8, [
             e.run.section === "waiting" ? (r(), d("span", P8, v(e.position), 1)) : (r(), d("span", {
               key: 1,
-              class: Y(["dot", { ring: e.run.section === "running" && !e.run.uses_slot, passed: e.run.section === "recent" && e.run.state === "finished", failed: e.run.section === "recent" && e.run.state !== "finished" }]),
-              title: e.run.section === "running" && !e.run.uses_slot ? "Running, not counted in the limit" : e.run.section === "recent" ? e.run.state === "finished" ? "Passed" : "Failed" : "Running"
+              class: Y(["dot", { passed: e.run.section === "recent" && e.run.state === "finished", failed: e.run.section === "recent" && e.run.state !== "finished" }]),
+              title: e.run.section === "recent" ? e.run.state === "finished" ? "Passed" : "Failed" : "Running"
             }, null, 10, j8))
           ]),
           m("code", F8, v(e.run.line), 1),
@@ -12141,7 +12141,7 @@ const Zx = ["title"], e8 = {
       ], 2)
     ], 8, L8));
   }
-}, X8 = /* @__PURE__ */ z(Q8, [["__scopeId", "data-v-18099d0b"]]), J8 = {
+}, X8 = /* @__PURE__ */ z(Q8, [["__scopeId", "data-v-26ce3024"]]), J8 = {
   class: "lanes",
   "data-execution-lanes": ""
 }, Z8 = { class: "filters" }, e3 = ["value"], t3 = ["value"], n3 = ["data-lane"], a3 = {
@@ -14577,7 +14577,7 @@ function ME(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const _E = gu(() => import("./VoiceFigure-CEadWtS-.js").then((e) => e.V)), CE = "1.2.0", EE = "3.5";
+const _E = gu(() => import("./VoiceFigure-a0k3VWLl.js").then((e) => e.V)), CE = "1.2.0", EE = "3.5";
 export {
   fh as $,
   Te as A,

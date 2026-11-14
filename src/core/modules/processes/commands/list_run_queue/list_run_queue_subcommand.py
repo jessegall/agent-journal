@@ -17,7 +17,8 @@ from core.modules.processes.models.process_queue_row import ProcessQueueRow
 from core.modules.processes.models.enums.queue_section import QueueSection
 from core.modules.processes.support.active_queue_runs import ActiveQueueRuns
 from core.modules.processes.support.process_queue_page import ProcessQueuePage
-from core.modules.processes.support.process_settings import ProcessSettings
+from core.modules.processes.support.lane_load import ExecutionSnapshot
+from engine.enums.execution_lane import ExecutionLane
 from core.modules.processes.support.queue_inspector_json import QueueInspectorJson
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
 from engine.setting.setting_values import SettingValues
@@ -39,9 +40,9 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
     name = "list"
     environment_refusal = "the process queue needs an environment"
 
-    def __init__(self, queries: Queries, settings: ProcessSettings, halt: RunQueueHalt, suites: SuiteChoice, catalogue: SettingCatalogue, values: SettingValues, queue_runs: ActiveQueueRuns,
+    def __init__(self, queries: Queries, halt: RunQueueHalt, suites: SuiteChoice, catalogue: SettingCatalogue, values: SettingValues, queue_runs: ActiveQueueRuns,
                  status: ExecutionStatus) -> None:
-        self.queries, self.settings, self.halt, self.queue_runs, self.status = queries, settings, halt, queue_runs, status
+        self.queries, self.halt, self.queue_runs, self.status = queries, halt, queue_runs, status
         self.suites, self.catalogue, self.values = suites, catalogue, values
 
     def suite_limits(self) -> list[dict[str, object]]:
@@ -65,22 +66,22 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
         running = [row.inspector_json() for row in active if row.section is QueueSection.RUNNING]
         waiting = [row.inspector_json() for row in active if row.section is QueueSection.WAITING]
         recent = [row.inspector_json() for row in self.recent_rows(query, max(1, arguments.recent))]
+        snapshot = self.status.snapshot()
+        long_lane = snapshot.lane(ExecutionLane.LONG.value)
         inspector: QueueInspectorJson = {
             "environment_id": environment_id,
             "environment_name": self.queries.query(Environment).find(environment_id).name,
-            "parallel_limit": self.settings.integer(ProcessSetting.RUN_BATCH_SIZE),
-            "limit_setting": ProcessSetting.RUN_BATCH_SIZE.key, "suite_limits": self.suite_limits(),
-            "used_slots": sum(bool(row["uses_slot"]) for row in running), "waiting_count": len(waiting),
+            "parallel_limit": long_lane.capacity, "limit_setting": ProcessSetting.LANE_CAPACITY_LONG.key, "suite_limits": self.suite_limits(),
+            "used_slots": long_lane.used, "waiting_count": len(waiting),
             "halted": self.halt.is_halted, "halt_state": "halted" if self.halt.is_halted else "running", "halt_reason": self.halt.reason, "halt_cause": self.halt.halt_type,
             "running": running, "waiting": waiting, "recent": recent, "recent_total": query.filter(section=QueueSection.RECENT).count()}
         queue_runs = tuple(self.queue_runs.query().every_row(QUEUE_REASON))
         number, size = max(1, arguments.page), min(MAX_PAGE_SIZE, max(1, arguments.limit))
-        return ProcessQueuePage(Page(queue_runs[(number - 1) * size:number * size], number, size, len(queue_runs)), inspector, *self.lanes(arguments.class_name, arguments.starter))
+        return ProcessQueuePage(Page(queue_runs[(number - 1) * size:number * size], number, size, len(queue_runs)), inspector, *self.lanes(snapshot, arguments.class_name, arguments.starter))
 
     # the lanes read once, as lines and as JSON; a filter keeps the lane headings and the lines of runs and waits whose
     # class or starter it names
-    def lanes(self, class_name: str, starter: str) -> tuple[tuple[str, ...], dict[str, object]]:
-        snapshot = self.status.snapshot()
+    def lanes(self, snapshot: ExecutionSnapshot, class_name: str, starter: str) -> tuple[tuple[str, ...], dict[str, object]]:
         wanted = [text for text in (f"({class_name}, " if class_name else "", f", {starter}" if starter else "") if text]
         return tuple(line for line in snapshot.lines() if not line.startswith("  ") or all(text in line for text in wanted)), snapshot.json()
 

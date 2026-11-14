@@ -23,7 +23,7 @@ class AdmissionQueue(StoryFixture):
     def steps(self, story):
         story.run("agent start s-reader claude worker --environment main")
         story.run(f"setting set {ProcessSetting.READERS_FORCED.key} off --environment main", actor=story.user)
-        story.run(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --environment main", actor=story.user)
+        story.run(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} 4 --environment main", actor=story.user)
 
 
 def test_main_run_is_granted_through_run_slots_at_once_while_worker_waits(new_story):

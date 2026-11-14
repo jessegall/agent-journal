@@ -30,13 +30,12 @@ const RUN = {
     created_at: "2026-11-03T10:00:00Z",
     started_at: "2026-11-03T10:00:05Z",
     ended_at: null,
-    uses_slot: true,
 };
 const SNAPSHOT = {
     environment_id: 1,
     environment_name: "main",
     parallel_limit: 2,
-    limit_setting: "journal.core.processes.run-batch-size",
+    limit_setting: "journal.core.processes.lane-capacity-long",
     used_slots: 1,
     waiting_count: 2,
     halted: false,
@@ -53,9 +52,9 @@ const SNAPSHOT = {
             line: "make checks",
             category: "check",
             started_at: null,
-            uses_slot: false,
+           
         },
-        {...RUN, id: 72, task_id: 13, owner_agent_id: 23, section: "waiting", line: "make site", started_at: null, uses_slot: false},
+        {...RUN, id: 72, task_id: 13, owner_agent_id: 23, section: "waiting", line: "make site", started_at: null},
     ],
     recent: [
         {
@@ -66,7 +65,7 @@ const SNAPSHOT = {
             state: "finished",
             line: "make previous",
             ended_at: "2026-11-03T10:01:10Z",
-            uses_slot: false,
+           
         },
     ],
 };
@@ -197,11 +196,11 @@ test("the stepper saves its declared setting and refreshes the queue", async () 
         return {ok: true, value: queue};
     });
     await panel(read);
-    document.body.querySelector('[aria-label="One more command at once"]').click();
+    document.body.querySelector('[aria-label="One slot unit more"]').click();
     await settle();
     expect(read).toHaveBeenCalledWith(["setting", "set", SNAPSHOT.limit_setting, "3"]);
     expect(document.body.querySelector("[data-queue-limit]").textContent).toBe("3");
-    document.body.querySelector('[aria-label="One fewer command at once"]').click();
+    document.body.querySelector('[aria-label="One slot unit fewer"]').click();
     await settle();
     expect(document.body.querySelector("[data-queue-limit]").textContent).toBe("2");
 });
@@ -210,8 +209,8 @@ test("the minimum limit disables decrease and a refused setting stays unchanged"
     await panel(async (line) =>
         line[0] === "setting" ? {ok: false, error: "Read only"} : {ok: true, value: {...SNAPSHOT, parallel_limit: 1}}
     );
-    expect(document.body.querySelector('[aria-label="One fewer command at once"]').disabled).toBe(true);
-    document.body.querySelector('[aria-label="One more command at once"]').click();
+    expect(document.body.querySelector('[aria-label="One slot unit fewer"]').disabled).toBe(true);
+    document.body.querySelector('[aria-label="One slot unit more"]').click();
     await settle();
     expect(document.body.querySelector('[role="alert"]').textContent).toBe("Read only");
     expect(document.body.querySelector("[data-queue-limit]").textContent).toBe("1");

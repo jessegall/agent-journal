@@ -49,4 +49,4 @@ class ProcessQueueRow(EnvironmentScoped, ViewModel):
 
     # a running main agent's run always counts against the runs at once, though it never waits for a place
     def inspector_json(self) -> dict[str, object]:
-        return {**self.json(), "output_id": self.id, "uses_slot": self.section is QueueSection.RUNNING and (self.slot_assigned or self.is_main)}
+        return {**self.json(), "output_id": self.id}

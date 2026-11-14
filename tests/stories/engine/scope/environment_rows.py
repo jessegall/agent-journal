@@ -179,16 +179,16 @@ def test_environments_are_listed_from_inside_an_environment(new_story):
 
 def test_a_setting_of_the_whole_project_holds_in_every_environment(new_story):
     story = new_story(fixture=TwoWorkingEnvironments)
-    story.run(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 7 --project", actor=story.user)
-    story.expect_text(f"setting show {ProcessSetting.RUN_BATCH_SIZE.key}", "7", actor=story.agent)
-    story.expect_text(f"setting show {ProcessSetting.RUN_BATCH_SIZE.key}", "7", actor=staging_agent(story))
+    story.run(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} 7 --project", actor=story.user)
+    story.expect_text(f"setting show {ProcessSetting.LANE_CAPACITY_LONG.key}", "7", actor=story.agent)
+    story.expect_text(f"setting show {ProcessSetting.LANE_CAPACITY_LONG.key}", "7", actor=staging_agent(story))
 
 
 def test_a_setting_of_one_environment_holds_only_there(new_story):
     story = new_story(fixture=TwoWorkingEnvironments)
-    story.run(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 7 --environment staging", actor=story.user)
-    story.expect_text(f"setting show {ProcessSetting.RUN_BATCH_SIZE.key}", "7", actor=staging_agent(story))
-    story.expect_no_text(f"setting show {ProcessSetting.RUN_BATCH_SIZE.key}", "value: 7", actor=story.agent)
+    story.run(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} 7 --environment staging", actor=story.user)
+    story.expect_text(f"setting show {ProcessSetting.LANE_CAPACITY_LONG.key}", "7", actor=staging_agent(story))
+    story.expect_no_text(f"setting show {ProcessSetting.LANE_CAPACITY_LONG.key}", "value: 7", actor=story.agent)
 
 
 def test_a_project_rule_of_one_environment_is_read_in_another(new_story):

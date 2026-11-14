@@ -6,14 +6,14 @@ from engine.execution.limits.priority_limit import PriorityLimit
 from engine.time.timestamp import MINUTE_SECONDS
 
 # the only place the default load numbers of doc 1266 are written
-DEFAULT_RUN_BATCH_SIZE = 2
+DEFAULT_LONG_RUNS = 2
 RUN_SLOT_COST = 4
 IMMEDIATE_LIMIT = PriorityLimit(UNLIMITED, 0)
 
 DEFAULT_CAPACITIES = {
     ExecutionLane.INSTANT: 24,
     ExecutionLane.SHORT: 12,
-    ExecutionLane.LONG: DEFAULT_RUN_BATCH_SIZE * RUN_SLOT_COST,
+    ExecutionLane.LONG: DEFAULT_LONG_RUNS * RUN_SLOT_COST,
 }
 
 DEFAULT_PRIORITY_LIMITS = {
