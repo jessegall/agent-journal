@@ -22,7 +22,7 @@ The source is under `src`. A path says its layer, and a layer imports down, neve
 - The table of patterns is `src/engine/module/layer_table.py`; nothing else writes a layer down.
 - `src/engine/module/layer_check.py` reads every import of every file and refuses one that goes up or sideways
   to a module that is not listed, and a loop between modules. It has no list of exceptions.
-- Enforced by `tests/unit/engine/module/test_every_module_is_in_a_layer.py`, the stories in
+- Enforced by `tests/integration/engine/module/test_every_module_is_in_a_layer.py`, the stories in
   `tests/stories/engine/module`, and the detectors
   `architecture_layers_engine_imports_a_module` and `architecture_layers_import_of_core_base`.
 - The core names no suite, not in an import and not in a word: detector `core_names_no_suite`.

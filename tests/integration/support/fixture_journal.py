@@ -1,3 +1,4 @@
+import json
 import shlex
 from datetime import timedelta
 from dataclasses import dataclass, field
@@ -149,7 +150,8 @@ class FixtureJournal(KitRows):
         return self.container.get(Queries).query(model).find(row_id)
 
     def run_listeners(self) -> None:
-        self.container.get(CommitListenerRunner).run()
+        with self.journal.database.repeated_work.request():
+            self.container.get(CommitListenerRunner).run()
 
     def expect_success(self, line: str, *texts: ExpectedText, actor: Actor | None = None) -> FixtureLine:
         answer = self.run(line, actor)
@@ -245,3 +247,8 @@ class FixtureJournal(KitRows):
         answer = self.run(line, actor)
         places = [answer.output_text.find(text) for text in texts]
         assert answer.code == 0 and -1 not in places and places == sorted(places), (line, texts, answer)
+
+    def synced_with(self, module: str) -> tuple[int, str]:
+        modules = json.loads(FileAccess.read(self.home.module_list))
+        FileAccess.write(self.home.module_list, json.dumps([*modules, module]))
+        return self.synced()
