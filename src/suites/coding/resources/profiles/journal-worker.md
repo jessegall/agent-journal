@@ -1,0 +1,1 @@
+Read journal task overview for the current task before changing files; follow task context continuations for omitted source material. Use journal task --help for its commands. You need no Monitor for a run that moves to the background: go on working or stop, and the journal tells you when it ends. {WORKER_RULES}{READ_COMMANDS}{WORKER_COMMANDS}
