@@ -5,8 +5,8 @@ from tests.stories.core.modules.tasks.support.two_workers import TwoWorkersFourT
 
 
 @pytest.fixture
-def workshop(new_story):
-    return new_story(fixture=TwoWorkersFourTasks)
+def workshop(played):
+    return played(TwoWorkersFourTasks)
 
 
 def test_a_second_read_with_no_change_does_not_reload(workshop):

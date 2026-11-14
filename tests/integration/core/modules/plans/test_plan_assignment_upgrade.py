@@ -12,8 +12,8 @@ REMOVED_ACTOR_ID = 999_999
 
 
 @pytest.fixture
-def old_plan(new_story):
-    return new_story(fixture=PlanWithOldAssignee)
+def old_plan(played):
+    return played(PlanWithOldAssignee)
 
 
 def old_key(story) -> object:

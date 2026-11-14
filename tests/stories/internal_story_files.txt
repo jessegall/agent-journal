@@ -183,7 +183,6 @@ tests/stories/core/modules/plans/checkpoints.py
 tests/stories/core/modules/plans/declared_buttons.py
 tests/stories/core/modules/plans/marks.py
 tests/stories/core/modules/plans/outline.py
-tests/stories/core/modules/plans/plan_assignment_upgrade.py
 tests/stories/core/modules/plans/plan_links_browser.py
 tests/stories/core/modules/plans/plan_listeners.py
 tests/stories/core/modules/plans/task_cleanup_skill.py
@@ -288,7 +287,6 @@ tests/stories/core/modules/skills/kept_skills_record.py
 tests/stories/core/modules/skills/marks.py
 tests/stories/core/modules/skills/publish_at_start.py
 tests/stories/core/modules/skills/repeated_reads.py
-tests/stories/core/modules/skills/shipped_skill_shape.py
 tests/stories/core/modules/skills/skill_commands.py
 tests/stories/core/modules/skills/skill_file_stats.py
 tests/stories/core/modules/skills/skill_inspector.py
@@ -297,7 +295,6 @@ tests/stories/core/modules/skills/skills_page_browser.py
 tests/stories/core/modules/skills/skills_page_routes.py
 tests/stories/core/modules/skills/start_settings.py
 tests/stories/core/modules/tasks/added_state.py
-tests/stories/core/modules/tasks/assigned_caches.py
 tests/stories/core/modules/tasks/block_reviews.py
 tests/stories/core/modules/tasks/marks.py
 tests/stories/core/modules/tasks/state_sweep.py
@@ -318,8 +315,6 @@ tests/stories/core/modules/usage/codex_agent_facts.py
 tests/stories/core/modules/usage/codex_effort.py
 tests/stories/core/modules/usage/context_limit_reads.py
 tests/stories/core/modules/usage/read_counts.py
-tests/stories/core/modules/usage/slow_read_plans.py
-tests/stories/core/modules/usage/status_file_reads.py
 tests/stories/core/modules/usage/usage.py
 tests/stories/core/modules/viewer/avatar_window.py
 tests/stories/core/modules/viewer/inspector_sections.py

@@ -278,7 +278,6 @@ tests/stories/core/modules/plans/checkpoints.py
 tests/stories/core/modules/plans/declared_buttons.py
 tests/stories/core/modules/plans/marks.py
 tests/stories/core/modules/plans/outline.py
-tests/stories/core/modules/plans/plan_assignment_upgrade.py
 tests/stories/core/modules/plans/plan_building_sequence.py
 tests/stories/core/modules/plans/plan_context.py
 tests/stories/core/modules/plans/plan_focus_nudges.py
@@ -491,7 +490,6 @@ tests/stories/core/modules/skills/planning_skills.py
 tests/stories/core/modules/skills/program_skill_loading.py
 tests/stories/core/modules/skills/publish_at_start.py
 tests/stories/core/modules/skills/rules.py
-tests/stories/core/modules/skills/shipped_skill_shape.py
 tests/stories/core/modules/skills/skill_commands.py
 tests/stories/core/modules/skills/skill_file_stats.py
 tests/stories/core/modules/skills/skill_inspector.py
@@ -548,8 +546,6 @@ tests/stories/core/modules/usage/context_limit_reads.py
 tests/stories/core/modules/usage/context_reading_age.py
 tests/stories/core/modules/usage/fitness.py
 tests/stories/core/modules/usage/read_counts.py
-tests/stories/core/modules/usage/slow_read_plans.py
-tests/stories/core/modules/usage/status_file_reads.py
 tests/stories/core/modules/usage/usage.py
 tests/stories/core/modules/viewer/avatar_window.py
 tests/stories/core/modules/viewer/inspector_sections.py

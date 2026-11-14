@@ -4,8 +4,8 @@ from engine.provider.context_window import ContextWindow
 from tests.stories.core.support.fixtures import UserJoined
 
 
-def test_a_status_file_is_read_once_however_many_cards_ask_for_its_context(new_story, tmp_path):
-    story = new_story(fixture=UserJoined)
+def test_a_status_file_is_read_once_however_many_cards_ask_for_its_context(played, tmp_path):
+    story = played(UserJoined)
     status = tmp_path / "s-1.json"
     FileAccess.write(status, '{"context_window": {"used_percentage": 42, "total_input_tokens": 1000}}')
     with story.container.get(Database).repeated_work.request():

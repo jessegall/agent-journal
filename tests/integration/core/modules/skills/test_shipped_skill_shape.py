@@ -1,5 +1,4 @@
 import re
-from itertools import combinations
 from pathlib import Path
 
 from engine.database.database import Database
@@ -75,8 +74,8 @@ def reference_faults(path: Path) -> list[str]:
     return faults
 
 
-def test_the_declared_description_is_the_front_matter_description(new_story):
-    story = new_story(fixture=BuilderStarted)
+def test_the_declared_description_is_the_front_matter_description(played):
+    story = played(BuilderStarted)
     declared = {skill.folder: skill.description for skill in Registry.read(story.container.get(Database)).skills}
     saved = {path.parent.name: front_matter_description(path) for path in published_skill_files()}
     expect_absent_value(sorted(f"{folder}: declared as {declared[folder]!r}" for folder in declared.keys() & saved.keys() if declared[folder] != saved[folder]))
