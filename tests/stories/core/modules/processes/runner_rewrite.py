@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_WAIT
 from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.processes.support.stock_reader import STOCK_READERS
 from core.modules.processes.support.output_folder import OutputFolder
@@ -66,7 +67,8 @@ def test_a_helper_s_line_runs_through_the_runner_as_a_run_of_its_own(new_story):
     story = install_runner(new_story(fixture=BuilderHelper))
     story.container.get(ShellSandbox).is_required = True
     story.hook("s-1", SERVER)
-    expect_updated_input_hook(story, "sub-1", SERVER, {"command": runner_line(story, 2, "node serve.js", session="sub-1")})
+    wait = story.number_default(WORKER_RUN_WAIT)
+    expect_updated_input_hook(story, "sub-1", SERVER, {"command": runner_line(story, 2, "node serve.js", limit=wait, session="sub-1", queue_wait=wait, counted_queue=True)})
     story.expect_success("process show 2", "line: node serve.js", "state: running", f"session_agent_id: {story.helper.id}")
     story.expect_success("process part-start 2 --position 1", actor=story.helper)
     story.expect_refusal("process part-end 2 --position 1 --exit-code 0", "only the agent that ran a line reports on it", actor=story.agent)

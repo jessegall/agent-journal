@@ -57,7 +57,7 @@ class RunSlots:
             lane_tickets = lanes[lane]
             is_halted = self.halt.is_halted and lane is ExecutionLane.LONG
             for ticket in order.raised(lane_tickets.waiting, current_time, is_halted):
-                self.keep_raise(processes[ticket.run_id], ticket, context)
+                processes[ticket.run_id] = self.kept_raise(processes[ticket.run_id], ticket, context)
             if order.over_ceiling(lane_tickets.running):
                 self.system_log.write(LogLevel.WARNING, f"{len(lane_tickets.running)} immediate runs share the {lane} lane, past its ceiling of {limits.immediate_ceiling}")
             # a run its kind holds back takes no room in the order, so the runs behind it still start
@@ -72,11 +72,13 @@ class RunSlots:
                 self.remember(saved)
                 categories.admitted(saved)
 
-    def keep_raise(self, process: Process, ticket: ExecutionTicket, context: Context) -> None:
+    # the raised row is the one the rest of the pass starts from
+    def kept_raise(self, process: Process, ticket: ExecutionTicket, context: Context) -> Process:
         if ticket.priority == process.priority:
-            return
+            return process
         saved = self.repository.save_change(process, replace(process, priority=ticket.priority, raised_at=ticket.raised_at), context)
         self.remember(saved)
+        return saved
 
     # a run that waits in no lane, an immediate one or a merge the journal runs itself, has its slot written at once
     def grant_at_once(self, process: Process) -> None:
