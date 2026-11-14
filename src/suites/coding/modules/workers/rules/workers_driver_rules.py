@@ -13,7 +13,6 @@ from suites.coding.modules.workers.rules.merge_checkout_rule import MergeCheckou
 from suites.coding.modules.workers.rules.missing_process_rule import MissingProcessRule
 from suites.coding.modules.workers.rules.open_work_stop_rule import OpenWorkStopRule
 from suites.coding.modules.workers.rules.orphan_worktree_rule import OrphanWorktreeRule
-from suites.coding.modules.workers.rules.phase_test_rule import PhaseTestRule
 from suites.coding.modules.workers.rules.protected_folder_rule import ProtectedFolderRule
 from suites.coding.modules.workers.rules.readonly_helper_allowance_rule import ReadonlyHelperAllowanceRule
 from suites.coding.modules.workers.rules.record_todo_list_rule import RecordTodoListRule
@@ -22,15 +21,8 @@ from suites.coding.modules.workers.rules.stopped_worker_rule import StoppedWorke
 from suites.coding.modules.workers.rules.unmerged_worker_rule import UnmergedWorkerRule
 from suites.coding.modules.workers.rules.unstarted_worker_rule import UnstartedWorkerRule
 from suites.coding.modules.workers.rules.worker_file_rule import WorkerFileRule
-from suites.coding.modules.workers.rules.worker_log_due_rule import WorkerLogDueRule
-from suites.coding.modules.workers.rules.worker_outside_link_rule import WorkerOutsideLinkRule
-from suites.coding.modules.workers.rules.worker_read_rule import WorkerReadRule
-from suites.coding.modules.workers.rules.worker_report_rule import WorkerReportRule
 from suites.coding.modules.workers.rules.worker_reuse_rule import WorkerReuseRule
 from suites.coding.modules.workers.rules.worker_status_first_rule import WorkerStatusFirstRule
-from suites.coding.modules.workers.rules.worker_stop_rule import WorkerStopRule
-from suites.coding.modules.workers.rules.worker_test_count_rule import WorkerTestCountRule
-from suites.coding.modules.workers.rules.worker_test_line_rule import WorkerTestLineRule
 from suites.coding.modules.workers.rules.workers_out_rule import WorkersOutRule
 
-WORKERS_DRIVER_RULES = [CheckoutWriteCodeRule, OpenWorkStopRule, WorkerStopRule, ContextHardStopRule, ContextFullErrorCompactionRule, ContextStopNowRule, CompactionWakeRule, CacheRefreshRule, ProtectedFolderRule, WorkerTestLineRule, PhaseTestRule, ReadonlyHelperAllowanceRule, WorkerReadRule, WorkerStatusFirstRule, MissingProcessRule, WorkerTestCountRule, WorkerReuseRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, DispatchNamesModelRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, UnstartedWorkerRule, StoppedWorkerRule, UnmergedWorkerRule, SmallBatchRule, InactiveWorkerStopRule, OrphanWorktreeRule, WorkerReportRule, WorkerOutsideLinkRule]
+WORKERS_DRIVER_RULES = [CheckoutWriteCodeRule, OpenWorkStopRule, ContextHardStopRule, ContextFullErrorCompactionRule, ContextStopNowRule, CompactionWakeRule, CacheRefreshRule, ProtectedFolderRule, ReadonlyHelperAllowanceRule, WorkerStatusFirstRule, MissingProcessRule, WorkerReuseRule, WorkerFileRule, DeliveredWorkStopRule, DispatchAllowanceRule, DispatchNamesModelRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveHelperRule, UnstartedWorkerRule, StoppedWorkerRule, UnmergedWorkerRule, SmallBatchRule, InactiveWorkerStopRule, OrphanWorktreeRule]

@@ -79,7 +79,7 @@ from core.modules.messages.rules.unread_message_show_rule import UnreadMessageSh
 from core.modules.messages.rules.chat_manners_rule import ChatMannersRule
 from core.modules.messages.rules.chat_opening_rule import ChatOpeningRule
 from core.modules.messages.rules.plain_code_rule import PlainCodeRule
-from core.modules.messages.rules.unanswered_message_rule import UnansweredMessageRule
+from core.modules.messages.states.messages_unanswered import MessagesUnanswered
 from core.modules.messages.rules.unread_message_stop_rule import UnreadMessageStopRule
 from core.modules.messages.states.messages_unread import MessagesUnread
 from core.modules.messages.states.unread_countdown import UnreadCountdown
@@ -122,8 +122,8 @@ class MessagesModule(Module):
     migrations = [MessageHookScanIndexesMigration, MainMessageTargetsMigration, MessageSessionMigration, MessageTargetMigration, VisibleMessageIndexMigration, MessageReplyIndexMigration, MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration, MessageHookIndexesMigration, MessageVisibilityMigration, MessageTypeIndexesMigration, MessageWorkSourcesMigration, WorkSourceSelectionsMigration, MessageParentEnvironmentMigration, MessageAgentTextMigration, MessageWorkSourcesEnvironmentIndexMigration]
     guards = [OneReplyPerMessageGuard, RepeatedMessageGuard, QuestionMessageGuard]
     handlers = [ReportSafeguardsStopHandler, RecordTypedPromptHandler, ResetMessageDeliveriesHandler, RecordParentReportHandler, RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, SendAgentMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler, ChooseWorkSourceHandler, ClearWorkSourceHandler, NoteMessageReadHandler]
-    driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, ToolMessageRule, TranscriptMessageRule, TypedPromptRule, UnansweredMessageRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule, ReplyNoteRule]
-    agent_states = [MessagesUnread, UnreadCountdown]
+    driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, ToolMessageRule, TranscriptMessageRule, TypedPromptRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule, ReplyNoteRule]
+    agent_states = [MessagesUnread, MessagesUnanswered, UnreadCountdown]
     subcommands = [MessageConversationsSubcommand, AgentReportsSubcommand, UnreadReportsSubcommand, AttachmentListSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand, ChooseWorkSourceSubcommand, ClearWorkSourceSubcommand, WorkSourceSubcommand]
     windows = MESSAGES_WINDOWS
     marks = MESSAGE_MARKS
