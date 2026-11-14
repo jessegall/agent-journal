@@ -142,7 +142,6 @@ tests/stories/engine/file/file_access.py
 tests/stories/engine/hosting/hosted_story.py
 tests/stories/engine/module/agent_types.py
 tests/stories/engine/module/listener_cleanup.py
-tests/stories/engine/query_scans.py
 tests/stories/engine/repeated_calls.py
 tests/stories/engine/repeated_origins.py
 tests/stories/engine/scope/actor_scope.py

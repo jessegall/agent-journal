@@ -73,7 +73,7 @@ class TemplateDatabases:
 
     # a journal home copied from a story fixture's template, built once and kept like a story's, with the actors the
     # fixture made: an integration test starts from a fixture's state without replaying its lines
-    def fixture_home(self, folder: Path, fixture: type[StoryFixture], modules: tuple[str, ...] = ()) -> tuple[JournalHome, StoryState]:
+    def fixture_home(self, folder: Path, fixture: type[StoryFixture] | None, modules: tuple[str, ...] = ()) -> tuple[JournalHome, StoryState]:
         template = self.template(modules, fixture)
         return self.copy(template, folder), template.state
 
