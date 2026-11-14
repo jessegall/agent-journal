@@ -10,7 +10,7 @@ def test_a_person_adds_the_avatar_window_to_the_home_page_and_removes_it_again(n
     story = new_story(fixture=UserJoined)
     window = story.container.get(Registry).window(AVATAR)
     assert window.title == "Avatar"
-    assert {key.name for key in window.keys} >= {"voice-profile", "voice-avatar", "voice-avatar-shown", "tool"}
+    assert {"setting show", "usage tool"} <= set(window.reads)
     story.expect_success(WITH_AVATAR, actor=story.user)
     story.expect_success("viewer-layout current --suite coding --page home --environment main", "messages.avatar", actor=story.user)
     story.expect_success(WITHOUT_AVATAR, actor=story.user)
