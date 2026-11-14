@@ -27,4 +27,4 @@ class UpgradePluginSubcommand(Subcommand[UpgradePlugin, PluginUpgrade]):
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PluginUpgrade):
             head = f"{value.name} is now {value.version}; its running services start again within a minute" if value.applied else f"{value.name} {value.installed} to {value.version}: journal plugin upgrade {value.name} --yes"
-            output.write("\n".join([head, *value.changes, *value.diff]), value.json())
+            output.write("\n".join([head, *value.skipped, *value.changes, *value.diff]), value.json())

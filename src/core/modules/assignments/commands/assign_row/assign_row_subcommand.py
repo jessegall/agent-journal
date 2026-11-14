@@ -25,7 +25,7 @@ class AssignRowSubcommand(Subcommand[AssignRow, Cascade]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Cascade):
-            output.write(value.text, {"assigned": value.counts(), "kept": [{"model": row.model_name, "id": row.row_id, "reason": row.reason.value} for row in value.kept_rows]})
+            output.write(value.text, value.json())
 
     def command(self, arguments: Namespace, caller: Caller) -> AssignRow:
         return AssignRow(arguments.subject_model, arguments.subject_id, arguments.actor_id, arguments.cascade, arguments.override, arguments.from_parent)

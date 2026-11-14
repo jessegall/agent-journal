@@ -193,3 +193,17 @@ def test_a_failed_setup_leaves_the_old_code(new_story):
     story.expect_rows(story.container.get(Queries).query(ApprovalRequest).find(request.id).state is ApprovalState.FAILED)
     story.expect_rows("1.2.0" in (story.home.folder / "plugins" / "standup" / "journal-plugin.json").read_text())
     story.expect_text("plugin list --json", '"release": "1.2.0"', actor=story.user)
+
+
+def test_an_upgrade_whose_newest_tag_fails_its_setup_takes_the_newest_earlier_tag_and_says_why(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    folder = tagged_repository(story)
+    story.expect_success(f"plugin install file://{folder} --yes", actor=story.user)
+    tagged_repository(story, version="1.1.0", tag="v1.1.0")
+    (folder / "journal-plugin.json").write_text(json.dumps({"name": "standup", "title": "Standup", "version": "1.2.0", "setup": [{"name": "fetch", "run": "echo 'no release files yet'; false"}]}))
+    config = ["-c", "user.name=Story", "-c", "user.email=story@example.com"]
+    for line in (["add", "-A"], [*config, "commit", "-q", "-m", "1.2.0"], ["tag", "v1.2.0"]):
+        subprocess.run(["git", "-C", str(folder), *line], check=True, capture_output=True, timeout=GIT_LIMIT_SECONDS)
+    story.expect_text("plugin upgrade standup --yes", "standup is now 1.1.0", "skipped 1.2.0: the setup step fetch failed", actor=story.user)
+    story.expect_rows('"1.1.0"' in (story.home.folder / "plugins" / "standup" / "journal-plugin.json").read_text())
