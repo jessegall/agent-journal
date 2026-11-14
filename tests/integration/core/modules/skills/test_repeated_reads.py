@@ -37,7 +37,7 @@ def test_one_request_looks_for_a_missing_command_skill_among_many_skills_and_rea
 def test_one_request_asks_for_the_due_skills_of_an_agent_many_times_and_reads_them_once(played):
     story = environment(played)
     story.run(f'setting make {SESSION_START_KEY} \'["journal-notes"]\'')
-    story.replace(SkillRequirement, SkillRequirement())
+    story.bind(SkillRequirement, SkillRequirement())
     start(story)
     unread = story.container.get(UnreadSkills)
     with story.repeated_work.request():

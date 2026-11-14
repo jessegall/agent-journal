@@ -8,7 +8,7 @@ from tests.stories.core.modules.processes.support.queue_fixtures import QueueAge
 from tests.stories.support.statement_counts import reads_in_last_request
 
 WAITING_RUNS = 12
-PROCESS_READ = "SELECT * FROM processes WHERE id IN"
+PROCESS_READ = "SELECT * FROM processes WHERE state IN"
 VERSION_READ = "SELECT id, version FROM processes"
 
 
