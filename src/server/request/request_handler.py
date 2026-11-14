@@ -33,13 +33,7 @@ from server.request.journal_server import JournalServer
 from server.work.listeners.listener_wake import ListenerWake
 from server.door.socket_peer import socket_peer
 from server.handover.successor_start import SuccessorStart
-from server.execution.execution_priorities import ExecutionPriorities
-from server.context.server_context import ServerContext
-from engine.execution.execution_ticket import ExecutionTicket
-from engine.execution.current_execution import CurrentExecution
-from collections.abc import Generator
-from contextlib import contextmanager, nullcontext
-from server.execution.session_starters import SessionStarters
+from contextlib import nullcontext
 
 EXIT_CODE_TRAILER = "Journal-Exit-Code"
 CODE_VERSION_HEADER = "Journal-Code-Version"
@@ -207,14 +201,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                 return
             raise
 
-    # a command takes its place in the instant lane, its session's one at a time, and its writes wait with its priority
-    @staticmethod
-    @contextmanager
-    def command_turn(context: ServerContext, session: str, ticket: ExecutionTicket) -> Generator[None]:
-        with context.hook_database.executions.admitted(ticket, session) as admitted, \
-                CurrentExecution(admitted.ticket.priority, "command", ticket.line, admitted.ticket).applied():
-            yield
-
     def answer_cli(self, request: CliRequest) -> None:
         started_at = perf_counter()
         queued_ms = 0.0
@@ -227,8 +213,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         try:
             session = request.caller.variables.get(SESSION_VARIABLE, "")
-            ticket = ExecutionPriorities(SessionStarters.shared(context.home)).command_ticket(session, " ".join(request.argv), context.clock.timestamp())
-            turn = nullcontext() if context.viewer.routes.priorities.is_unqueued(request.argv) else self.command_turn(context, session, ticket)
+            turn = nullcontext() if context.viewer.routes.priorities.is_unqueued(request.argv) else context.hook_database.command_tickets.admitted(session, " ".join(request.argv))
             with turn:
                 queued_ms = (perf_counter() - started_at) * 1000
                 code = CliEndpoint(context.home, ListenerWake(context.listener_wakes), context.reported_findings, context.request_trace.completed, context.hook_database.turns).answer(request, ChunkStream(self.send_chunk, self.has_caller_disconnected))

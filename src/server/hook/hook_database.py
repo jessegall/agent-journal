@@ -1,10 +1,3 @@
-from server.execution.session_starters import SessionStarters
-from server.execution.execution_priorities import ExecutionPriorities
-from server.execution.viewer_tickets import ViewerTickets
-from engine.execution.current_execution import HOOK_CLASS, CurrentExecution
-from engine.enums.log_source import LogSource
-from engine.enums.log_level import LogLevel
-from engine.log.system_log_writer import SystemLogWriter
 from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import replace
@@ -13,16 +6,20 @@ from engine.database.database import Database
 from engine.database.write_turns import WriteTurns
 from engine.enums.execution_lane import ExecutionLane
 from engine.enums.execution_priority import ExecutionPriority
-from engine.enums.starter_type import StarterType
-from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS
-from engine.execution.classes.execution_class import ExecutionClass
+from engine.enums.log_level import LogLevel
+from engine.enums.log_source import LogSource
 from engine.execution.execution_order import ExecutionOrder
-from engine.execution.execution_starter import ExecutionStarter
-from engine.execution.execution_ticket import ExecutionTicket
+from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS
 from engine.execution.limits.lane_limits import LaneLimits
 from engine.journal.journal_home import JournalHome
+from engine.log.system_log_writer import SystemLogWriter
 from engine.time.clock import Clock
+from server.execution.command_tickets import CommandTickets
+from server.execution.execution_priorities import ExecutionPriorities
 from server.execution.execution_queue import ExecutionQueue
+from server.execution.hook_tickets import HookTickets
+from server.execution.session_starters import SessionStarters
+from server.execution.viewer_tickets import ViewerTickets
 
 CLOSE_WAIT_SECONDS = 60.0
 VIEWER_WAIT_LIMIT_SECONDS = 1.0
@@ -46,12 +43,13 @@ class HookDatabase:
         self.instant_capacity = instant_capacity
         log = SystemLogWriter(home, Clock())
         self.executions = ExecutionQueue(ExecutionOrder(instant_limits(instant_capacity)), Clock(), lambda text: log.write(LogLevel.WARNING, f"an execution failed: {text}", LogSource.SERVER))
-        self.viewer_tickets = ViewerTickets(self.executions, ExecutionPriorities(SessionStarters.shared(home)), Clock(), VIEWER_WAIT_LIMIT_SECONDS)
+        priorities = ExecutionPriorities(SessionStarters.shared(home))
+        self.viewer_tickets = ViewerTickets(self.executions, priorities, Clock(), VIEWER_WAIT_LIMIT_SECONDS)
+        self.hook_tickets, self.command_tickets = HookTickets(self.executions, Clock()), CommandTickets(self.executions, priorities, Clock())
 
     @contextmanager
     def used(self, priority: ExecutionPriority, wait_seconds: float, owner: str = "", event_name: str = "hook") -> Generator[Database]:
-        with self.executions.admitted(self.hook_ticket(priority, event_name), owner, wait_seconds) as queued, \
-                CurrentExecution(queued.ticket.priority, HOOK_CLASS, queued.ticket.line, queued.ticket).applied():
+        with self.hook_tickets.admitted(priority, wait_seconds, owner, event_name):
             database = self.free_database()
             busy_timeout_seconds = database.busy_timeout_seconds()
             try:
@@ -67,12 +65,6 @@ class HookDatabase:
         database = Database.shared(self.home, self.turns)
         self.databases.append(database)
         return database
-
-    def hook_ticket(self, priority: ExecutionPriority, event_name: str) -> ExecutionTicket:
-        starter = ExecutionStarter(StarterType.MAIN_AGENT if priority.is_unlimited else StarterType.HELPER)
-        entered_at = Clock().timestamp()
-        execution_class = ExecutionClass("main agent hook" if priority.is_unlimited else "agent hook", ExecutionLane.INSTANT, 1, priority)
-        return ExecutionTicket(execution_class, priority, priority, starter, event_name, entered_at, entered_at)
 
     def close(self) -> None:
         self.executions.wait_idle(CLOSE_WAIT_SECONDS)
