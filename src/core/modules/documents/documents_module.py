@@ -1,3 +1,4 @@
+from core.modules.documents.windows.documents_windows import DOCUMENTS_WINDOWS
 from core.modules.documents.step_conditions.report_commented import ReportCommented
 from core.modules.agents.support.agent_report_reads import AgentReportReads
 from core.modules.documents.support.row_agent_report_reads import RowAgentReportReads
@@ -26,15 +27,8 @@ from core.modules.documents.listeners.plan_document_link_listener import PlanDoc
 from core.modules.documents.listeners.reply_link_listener import ReplyLinkListener
 from engine.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
 from engine.module.module import Module
-from engine.viewer.window_search import WindowSearch
 from core.modules.documents.support.doc_library_share import DocLibraryShare
-from core.modules.documents.support.doc_searcher import DocSearcher
 from core.modules.documents.support.document_nudges import DOCUMENT_OPEN, DOCUMENT_STOP_REFUSAL
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_key import WindowKey
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.enums.window_place import WindowPlace
 from core.modules.documents.commands.comment_text.comment_text_handler import CommentTextHandler
 from core.modules.documents.commands.comment_doc.comment_doc_subcommand import CommentDocSubcommand
 from core.modules.documents.commands.report_comment.report_comment_subcommand import ReportCommentSubcommand
@@ -89,9 +83,7 @@ from core.modules.documents.models.report import Report
 from core.modules.documents.seeders.documents_seeder import DocumentsSeeder
 from core.modules.documents.upgrade.documents_move import DocumentsMove
 from core.modules.documents.upgrade.message_links_move import MessageLinksMove
-from core.modules.documents.support.skeletons import DOCUMENTS_DOCUMENTS_SKELETON
 from core.modules.documents.support.text_inspectors import DOC_INSPECTOR, REPORT_INSPECTOR
-from engine.viewer.skeleton_part import SkeletonPart
 from core.modules.documents.listeners.phase_mention_listener import PhaseMentionListener
 from core.modules.documents.listeners.task_log_mention_listener import TaskLogMentionListener
 from core.modules.documents.listeners.deleted_row_link_listener import DeletedRowLinkListener
@@ -127,16 +119,7 @@ class DocumentsModule(Module):
     library_shares = [DocLibraryShare]
     moves = [DocumentsMove, MessageLinksMove]
     seeders = [DocumentsSeeder]
-    windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, skeleton=DOCUMENTS_DOCUMENTS_SKELETON, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.PANE, group="project", icon=WindowIcon.DOCUMENT,
-                                 reads=["document library", "doc list", "report list"], runs=["doc make", "report make"], events=["doc.*", "report.*"],
-                                 keys=[WindowKey("library", "document library", arguments=["type", "state", "before"])]),
-               WindowDeclaration("documents.page", "Document reader", "document-page.js", WindowLoading.COMPONENT, skeleton=DOCUMENTS_DOCUMENTS_SKELETON, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.DOCUMENT,
-                                 reads=["document library", "doc show", "report show", "doc inspect", "report inspect", "doc comments", "report comments", "doc revisions", "doc revision", "question list", "link list"],
-                                 runs=["doc make", "report make", "doc comment", "report comment", "doc close", "doc edit", "report edit", "report close"], events=["doc.*", "report.*", "question.*"], shared_reads=["doc show id", "report show id"],
-                                 keys=[WindowKey("library", "document library", arguments=["type", "state", "before"])]),
-               WindowDeclaration("documents.document-body", "Text", "document-body.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.DOCUMENT, skeleton=[SkeletonPart.line()],
-                                 reads=["doc inspect", "report inspect", "doc comments", "report comments", "doc revisions", "doc revision", "question list"],
-                                 runs=["doc comment", "report comment", "doc close", "doc edit", "report edit"], events=["doc.*", "report.*", "question.*"])]
+    windows = DOCUMENTS_WINDOWS
     inspectors = [DOC_INSPECTOR, REPORT_INSPECTOR]
     views = [DocumentRow]
     step_conditions = [ReportCommented]

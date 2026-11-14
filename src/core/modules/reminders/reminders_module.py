@@ -1,12 +1,8 @@
+from core.modules.reminders.windows.reminders_windows import REMINDERS_WINDOWS
 from core.modules.reminders.migrations.m002_open_reminder_index import OpenReminderIndexMigration
 from core.modules.reminders.migrations.m003_environment_reminder_index import EnvironmentReminderIndexMigration
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_key import WindowKey
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
-from engine.enums.window_place import WindowPlace
 from core.modules.reminders.commands.make_reminder.make_reminder_handler import MakeReminderHandler
 from core.modules.reminders.commands.make_reminder.make_reminder_subcommand import MakeReminderSubcommand
 from core.modules.reminders.commands.record_reminder_fired.record_reminder_fired_handler import RecordReminderFiredHandler
@@ -15,7 +11,6 @@ from core.modules.reminders.migrations.m001_reminders import RemindersTableMigra
 from core.modules.reminders.models.reminder import Reminder
 from core.modules.reminders.rules.due_reminder_rule import DueReminderRule
 from core.modules.reminders.support.reminder_nudges import REMINDER_NUDGES
-from core.modules.reminders.support.skeletons import REMINDERS_REMINDERS_SKELETON
 
 
 class RemindersModule(Module):
@@ -34,6 +29,4 @@ class RemindersModule(Module):
     listeners = [ReminderMadeMarkListener]
     nudges = REMINDER_NUDGES
     driver_rules = [DueReminderRule]
-    windows = [WindowDeclaration("reminders.reminders", "Reminders", "reminders.js", WindowLoading.COMPONENT, skeleton=REMINDERS_REMINDERS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.RULE,
-                                 reads=["reminder list"], keys=[WindowKey("reminders", "reminder list", events=["reminder.*"])],
-                                 runs=["reminder make", "reminder delete"], events=["reminder.*"])]
+    windows = REMINDERS_WINDOWS

@@ -8,6 +8,7 @@ from engine.module.module import Module
 from engine.viewer.window import Window
 from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_key import WindowKey
+from engine.viewer.window_source import WindowSource
 
 
 class ShelvesKey(WindowKey):
@@ -63,3 +64,14 @@ def test_a_key_that_is_not_a_class_is_refused():
 
 def test_a_module_gives_the_declarations_of_its_window_classes_beside_its_inline_ones():
     assert [window.name for window in ShopModule.window_declarations()] == ["shop.shelves", "shop.till"]
+
+
+class FollowingShelvesWindow(ShelvesWindow):
+    name = "shop.following-shelves"
+    events = ["shelf.*", "stock.*"]
+    sources = [WindowSource("orders", "order list", events=["order.*"])]
+
+
+def test_a_window_class_gives_its_events_and_sources_as_the_inline_call_did():
+    declared = FollowingShelvesWindow.declaration()
+    assert declared.events == ["shelf.*", "stock.*"] and declared.sources == [WindowSource("orders", "order list", events=["order.*"])]

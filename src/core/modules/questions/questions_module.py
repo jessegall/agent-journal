@@ -1,3 +1,4 @@
+from core.modules.questions.windows.questions_windows import QUESTIONS_WINDOWS
 from core.modules.questions.migrations.m005_question_session import QuestionSessionMigration
 from core.modules.questions.migrations.m007_question_context import QuestionContextMigration
 from core.modules.questions.migrations.m006_question_environment_state_index import QuestionEnvironmentStateIndexMigration
@@ -23,14 +24,6 @@ from core.modules.questions.listeners.question_answer_line_listener import Quest
 from core.modules.questions.listeners.question_open_mark_listener import QuestionOpenMarkListener
 from core.modules.questions.listeners.question_closed_mark_listener import QuestionClosedMarkListener
 from core.modules.questions.listeners.question_edited_mark_listener import QuestionEditedMarkListener
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.viewer.window_key import WindowKey
-from engine.enums.key_loading import KeyLoading
-from engine.viewer.window_search import WindowSearch
-from core.modules.questions.support.question_searcher import QuestionSearcher
-from engine.enums.window_place import WindowPlace
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
 from core.modules.questions.migrations.m001_questions import QuestionsTablesMigration
 from core.modules.questions.migrations.m002_answer_message import AnswerMessageMigration
 from core.modules.questions.migrations.m004_question_place import QuestionPlaceMigration
@@ -40,9 +33,7 @@ from core.modules.questions.upgrade.questions_move import QuestionsMove
 from core.modules.questions.upgrade.question_links_move import QuestionLinksMove
 from core.modules.questions.support.block_conditions.question_answered import QuestionAnswered
 from core.modules.questions.support.block_conditions.questions_closed import QuestionsClosed
-from engine.viewer.skeleton_part import SkeletonPart
 from core.modules.questions.support.question_inspector import QUESTION_INSPECTOR
-from core.modules.questions.support.skeletons import QUESTIONS_QUESTIONS_SKELETON, QUESTIONS_QUESTION_SKELETON, QUESTIONS_WAITING_SKELETON
 
 
 class QuestionsModule(Module):
@@ -63,18 +54,6 @@ class QuestionsModule(Module):
     marks = QUESTION_MARKS
     listeners = [OpenQuestionsDockListener, QuestionOpenMarkListener, QuestionEditedMarkListener, QuestionAnsweredMarkListener, QuestionClosedMarkListener, QuestionAnswerLineListener]
     docks = QUESTION_DOCKS
-    windows = [WindowDeclaration("questions.questions", "Questions", "questions.js", WindowLoading.COMPONENT, skeleton=QUESTIONS_QUESTIONS_SKELETON, icon=WindowIcon.QUESTION,
-                                 reads=["question list", "question show"],
-                                 keys=[WindowKey("questions", "question list --all", tab="list", events=["question.*"]),
-                                       WindowKey("question.*", "question show {id}", events=["question.*"], loading=KeyLoading.REQUESTED)],
-                                 runs=["question answer", "question close", "message send"], events=["question.*"],
-                                 search=WindowSearch(QuestionSearcher, "Search the questions")),
-               WindowDeclaration("questions.question", "Question", "question-card.js", WindowLoading.COMPONENT, skeleton=QUESTIONS_QUESTION_SKELETON, place=WindowPlace.DROPDOWN, icon=WindowIcon.QUESTION,
-                                 reads=["question show"], keys=[WindowKey("question.*", "question show {id}", events=["question.*"], loading=KeyLoading.REQUESTED)],
-                                 runs=["question answer", "question close", "message send"], events=["question.*"]),
-               WindowDeclaration("questions.waiting", "Waiting", "waiting.js", WindowLoading.COMPONENT, skeleton=QUESTIONS_WAITING_SKELETON, icon=WindowIcon.HALT,
-                                 reads=["wait waiting"], keys=[WindowKey("waits", "wait waiting", events=["wait.*"])], events=["wait.*"]),
-               WindowDeclaration("questions.question-options", "Answers offered", "question-options.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.QUESTION, skeleton=[SkeletonPart.line()],
-                                 reads=["question show"], runs=["question answer"], events=["question.*"])]
+    windows = QUESTIONS_WINDOWS
     inspectors = [QUESTION_INSPECTOR]
     seeders = [QuestionsSeeder]

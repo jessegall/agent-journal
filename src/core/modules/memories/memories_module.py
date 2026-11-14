@@ -1,3 +1,4 @@
+from core.modules.memories.windows.memories_windows import MEMORIES_WINDOWS
 from core.modules.memories.commands.memory_agents.memory_agents_subcommand import MemoryAgentsSubcommand
 from core.modules.memories.commands.memory_list.memory_list_subcommand import MemoryListSubcommand
 from core.modules.memories.migrations.m009_memory_holder_index import MemoryHolderIndexMigration
@@ -9,17 +10,11 @@ from core.modules.memories.migrations.m006_memory_owner import MemoryOwnerMigrat
 from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.memories.support.memory_nudges import MEMORY_NUDGES
 from engine.module.model_declaration import ModelDeclaration
-from engine.viewer.window_declaration import WindowDeclaration
-from engine.enums.window_icon import WindowIcon
-from engine.enums.window_loading import WindowLoading
 from core.modules.memories.commands.memory_counts.memory_counts_subcommand import MemoryCountsSubcommand
 from core.modules.memories.commands.memory_page.memory_page_subcommand import MemoryPageSubcommand
 from engine.viewer.window_key import WindowKey
 from engine.enums.key_loading import KeyLoading
-from engine.enums.window_place import WindowPlace
 from engine.module.module import Module
-from engine.viewer.window_search import WindowSearch
-from core.modules.memories.support.memory_searcher import MemorySearcher
 from core.modules.memories.guards.agent_scope_guard import AgentScopeGuard
 from core.modules.memories.guards.keyword_scope_guard import KeywordScopeGuard
 from core.modules.memories.guards.agent_weight_guard import AgentWeightGuard
@@ -66,9 +61,7 @@ from core.modules.memories.support.memory_marks import MEMORY_DOCKS, MEMORY_MARK
 from core.modules.memories.support.memory_settings import MEMORY_SETTINGS
 from core.modules.memories.seeders.memories_seeder import MemoriesSeeder
 from core.modules.memories.support.block_conditions.memories_weighed import MemoriesWeighed
-from core.modules.memories.support.skeletons import MEMORIES_MEMORIES_SKELETON
 from core.modules.memories.support.memory_inspector import MEMORY_INSPECTOR
-from engine.viewer.skeleton_part import SkeletonPart
 from engine.viewer.window_extension import WindowExtension
 from engine.viewer.window_tab import WindowTab
 
@@ -100,13 +93,7 @@ class MemoriesModule(Module):
     subcommands = [MemoryListSubcommand, MemoryAgentsSubcommand, MemoryCountsSubcommand, MemoryPageSubcommand, MakeMemorySubcommand, WeighMemoriesSubcommand, ReadMemorySubcommand, MemoryContextSubcommand, MemoryFadedSubcommand, SkipMemoryMarkSubcommand]
     marks = MEMORY_MARKS
     docks = MEMORY_DOCKS
-    windows = [WindowDeclaration("memories.memories", "Memories", "memories.js", WindowLoading.COMPONENT, skeleton=MEMORIES_MEMORIES_SKELETON, search=WindowSearch(MemorySearcher, "Search the memories"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILED, reads=["memory list", "memory page", "memory-keyword list"], keys=[
-        WindowKey("memories", "memory page", arguments=["agent", "environment", "state", "search", "order", "limit"], switches=["main-agent", "other-agents", "removed"], events=["memory.*"], loading=KeyLoading.REQUESTED),
-        WindowKey("keywords.*", "memory-keyword list --memory {id}", events=["memory_keyword.*"], loading=KeyLoading.REQUESTED),
-    ], runs=["memory weigh", "memory edit", "memory remove", "memory restore", "memory-keyword make", "memory-keyword delete"], events=["memory.*", "memory_keyword.*"]),
-               WindowDeclaration("memories.memory-facts", "Keywords", "memory-facts.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.FILED, skeleton=[SkeletonPart.line()],
-                                 reads=["memory-keyword list"], runs=["memory-keyword make", "memory-keyword delete"], events=["memory_keyword.*"],
-                                 keys=[WindowKey("keywords.*", "memory-keyword list --memory {id}", loading=KeyLoading.REQUESTED)])]
+    windows = MEMORIES_WINDOWS
     window_extensions = [WindowExtension(name, reads=["memory page"], runs=["memory weigh", "memory edit", "memory remove", "memory restore"], events=["memory.*"], keys=[
         WindowKey("agent-memories.*", "memory page --agent {id} --state active --order weight --limit 100", tab="memories", events=["memory.*"], loading=KeyLoading.REQUESTED),
         WindowKey("agent-removed-memories.*", "memory page --agent {id} --removed --state removed --order weight --limit 100", tab="memories", events=["memory.*"], loading=KeyLoading.REQUESTED),
