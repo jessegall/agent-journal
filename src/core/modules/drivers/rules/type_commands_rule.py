@@ -20,7 +20,7 @@ from core.modules.drivers.support.type_command_check import TypeCommandCheck
 
 
 
-class HelperTypeCommandsRule(DriverRule):
+class TypeCommandsRule(DriverRule):
     """A helper runs only the shell command types and the journal lines its type lists, beside the base list every
     helper has; the main agent runs every command."""
 
