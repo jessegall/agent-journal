@@ -72,6 +72,18 @@ def test_the_regex_style_keeps_a_search_for_a_plain_name():
     assert HookMatcher("Edit", REGEX).matches("MultiEdit")
 
 
+def test_a_claude_matcher_with_a_list_of_names_matches_each_name():
+    assert all(HookMatcher("Edit,Write", NAMES).matches(name) for name in ("Edit", "Write"))
+
+
+def test_a_claude_matcher_with_one_name_does_not_cover_a_longer_tool_name():
+    assert not HookMatcher("Edit", NAMES).matches("MultiEdit")
+
+
+def test_a_codex_matcher_is_a_regex_search():
+    assert HookMatcher("Edit", REGEX).matches("MultiEdit") and HookMatcher("^apply", REGEX).matches("apply_patch")
+
+
 class WriteRule(HookToolRule):
     hook = HookEventName.PRE_TOOL_USE
     tools = (ToolType.NEW_FILE,)
