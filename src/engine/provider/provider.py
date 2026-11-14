@@ -75,6 +75,8 @@ class Provider(ABC):
     person_file_note: ClassVar[str] = ""
     controls: ClassVar[Sequence[ControlGroup]] = ()
     compacts_headless: ClassVar[bool] = False
+    # the instructions the program is given for a compaction summary by its PreCompact hook; empty when it takes none
+    compaction_instructions: ClassVar[str] = ""
     has_windowed_compaction: ClassVar[bool] = False
     # a program that cannot start without its launch variables refuses a launcher that passes none
     needs_launch_variables: ClassVar[bool] = False
