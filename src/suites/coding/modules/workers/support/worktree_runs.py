@@ -35,6 +35,11 @@ class WorktreeRuns:
         newest = {reach.phase_id: reach for reach in sorted(self.reaches(tuple(links.values())), key=lambda reach: reach.id)}
         return next(((links[reach.id], reach) for reach in newest.values() if reach.state is not CheckpointState.PASSED), None)
 
+    # the journal's checkpoint tests of the worktree still run, which the worker waits on without a run of its own
+    def has_running_checkpoint(self, worktree_id: int) -> bool:
+        blocking = self.blocking_run(worktree_id)
+        return blocking is not None and blocking[1].state is CheckpointState.RUNNING
+
     def links(self, worktree_id: int) -> tuple[WorktreeReach, ...]:
         reaches = self.queries.query(WorktreeReach).filter(worktree_id=worktree_id)
         return self.kept.read(reaches, lambda: tuple(reaches.get()), name="workers.worktree_reaches")
