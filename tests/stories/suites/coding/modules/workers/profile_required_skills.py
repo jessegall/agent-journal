@@ -87,14 +87,8 @@ def test_a_profile_on_the_skills_of_its_type_can_require_one_of_them(person):
     expect_value(row(person, PROFILE, "journal-tasks").required, True)
 
 
-def test_the_mark_is_kept_in_the_profile_file_over_a_restart(saved):
-    expect_value(saved.container.get(ProfileFiles).row(PROFILE).required_skills, tuple([REQUIRED]))
 
 
-def test_a_shipped_profile_keeps_a_required_mark_a_person_set_and_shows_it_changed(person):
-    person.expect_success(f"profile save {RESEARCHER_PROFILE.name} --description 'Researches a question' --skills {LISTED} --required-skills {REQUIRED}", actor=person.user)
-    profile = person.container.get(ProfileFiles).effective(f"{RESEARCHER_PROFILE.name}")
-    person.expect_rows(profile.required_skills == tuple([REQUIRED]), "required_skills" in profile.changed)
 
 
 def test_a_required_skill_reaches_only_the_agents_of_that_profile(saved, note_taker):

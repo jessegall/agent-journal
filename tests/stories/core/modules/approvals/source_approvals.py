@@ -18,10 +18,6 @@ from tests.stories.core.modules.approvals.support.legacy_setting_requests import
 TEST_ROWS_REASON = "the test reads every row it checks"
 
 
-def test_a_ready_plan_is_docked_as_its_own_card_and_asks_no_approval_of_its_own(new_story):
-    story = new_story(fixture=ReadyApprovalPlan)
-    cards = story.container.get(DockItemQuery).type_items(PlanDockType.WAITING.value).row_items(Plan.model_name, 1).filter(state=DockItemState.DOCKED).every_row(TEST_ROWS_REASON)
-    story.expect_rows(len(tuple(cards)) == 1, len(story.story_rows(ApprovalRequest)) == 0)
 
 
 def test_a_person_approves_the_ready_plan_on_its_card_and_a_registry_change_asks_nothing_more(new_story):

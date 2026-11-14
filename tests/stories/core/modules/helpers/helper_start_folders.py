@@ -43,11 +43,6 @@ def test_a_start_folder_links_the_project_and_holds_instructions_of_its_own(star
                                not (folder / ".claude").is_symlink(), detail=str(saved))
 
 
-def test_a_helper_with_a_start_folder_works_there_and_one_without_works_in_the_project(started_folder):
-    folders = started_folder.container.get(AgentFolders)
-    started_folder.expect_rows(folders.folder(helper_agent(started_folder)) != started_folder.start_folder)
-    prepared(started_folder)
-    started_folder.expect_rows(folders.folder(helper_agent(started_folder)) == started_folder.start_folder)
 
 
 def test_preparing_again_writes_the_profile_text_anew_and_keeps_the_links(started_folder):

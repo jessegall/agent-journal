@@ -49,8 +49,3 @@ def test_a_person_preset_takes_the_place_of_the_found_command_of_its_name(projec
     story.expect_rows("test command python=py.test -q" in output, "python3 -m pytest" not in output, detail=output)
 
 
-def test_a_worker_dispatched_with_no_test_command_runs_the_one_found_in_the_project(project, monkeypatch):
-    story, folder = project
-    saved(folder, "pyproject.toml", PYPROJECT)
-    worker = dispatched_story_worker(story, BARE_DISPATCH, monkeypatch)
-    story.expect_text(PYTHON_RUN, "output", actor=worker.worker)

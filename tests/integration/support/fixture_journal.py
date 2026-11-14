@@ -10,6 +10,7 @@ from engine.enums.actor_type import ActorType
 from engine.journal.journal_home import JournalHome
 from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from engine.query.queries import Queries
+from engine.testing.stories.kit_rows import KitRows
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.unread_skills import UnreadSkills
 from engine.enums.command_category import CommandCategory
@@ -36,7 +37,7 @@ class FixtureLine:
 
 
 @dataclass
-class FixtureJournal:
+class FixtureJournal(KitRows):
     """An integration journal copied from a story fixture's template, with the agent and user that fixture made, so a
     mechanical story moved to tests/integration starts from the same state. A person's line runs in the main
     environment and an agent's in its own, as in a story."""
@@ -81,6 +82,16 @@ class FixtureJournal:
 
     # what an agent does after its session starts: it reads the overview and reads the file of each skill it must load,
     # through its program's Read tool, so the journal's own blocks and refusals lift as they do for a real agent
+    # a story binds a stand-in for its whole life; a played journal has one container, so binding is replacing in it
+    def bind(self, kind: type, instance: object) -> None:
+        self.replace(kind, instance)
+
+    def expect_sync_success(self, module: str) -> None:
+        self.journal.expect_sync_success(module)
+
+    def expect_sync_refusal(self, module: str, text: str) -> None:
+        self.journal.expect_sync_refusal(module, text)
+
     def reads_what_it_must(self, session: str) -> None:
         self.hook(session, HookSamples.shell("journal overview", ShellPart("journal", CommandCategory.JOURNAL, ["overview"], subcommand="overview")))
         self.run("overview", actor=self.agent)
@@ -101,7 +112,8 @@ class FixtureJournal:
 
     def expect_success(self, line: str, *texts: str, actor: Actor | None = None) -> FixtureLine:
         answer = self.run(line, actor)
-        assert answer.code == 0 and all(text in answer.output_text for text in texts), (line, answer)
+        written = self.with_touched_rows(answer.output_text)
+        assert answer.code == 0 and all(text in written for text in texts), (line, answer)
         return answer
 
     def expect_text(self, line: str, *texts: str, actor: Actor | None = None) -> None:

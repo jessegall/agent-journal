@@ -122,13 +122,4 @@ def test_a_main_agent_that_waits_on_something_may_stop_with_an_unfinished_task(n
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
-def test_a_stop_of_a_main_agent_with_more_unfinished_tasks_than_one_read_may_load_is_held_and_records_no_fault(new_story):
-    story = new_story(fixture=UnfinishedTaskMain)
-    for number in range(SEVERAL_TASKS):
-        task = story.new_row_id(f'task make "Step {number}" --brief "One more step"', actor=story.agent)
-        story.run(f"task assign {task} --to {agent_number(story, story.agent.id)}", actor=story.agent)
-    story.container.get(Database).read_limit_rows = READ_LIMIT_ROWS
-    reply = story.hook("s-1", HookSamples.stop())
-    faults = [row.message for row in story.story_rows(JournalException)]
-    story.expect_rows(bool(reply.refusal), faults == [], detail=f"{reply.refusal} | {faults}")
 

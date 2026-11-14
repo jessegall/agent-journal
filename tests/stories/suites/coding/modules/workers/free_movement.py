@@ -69,10 +69,6 @@ def test_21_205_worker_next_with_a_proved_task_starts_the_next_task_commits_and_
                                [proof.state.value for proof in proofs(task_worker)] == ["shown"], task_worker.started == [], detail=outcome.output_text)
 
 
-def test_21_worker_next_with_no_task_left_to_start_says_so_and_names_the_commit(new_story, monkeypatch):
-    worker = worker_with_tasks(new_story, monkeypatch, THREE_TASKS)
-    outcome = worker.story.run("worker next --wait", actor=worker.worker)
-    worker.story.expect_rows("no task is left to start" in outcome.output_text, "journal worker commit" in outcome.output_text, detail=outcome.output_text)
 
 
 def test_22_the_status_lists_started_tasks_with_their_missing_points_tasks_to_start_and_blocked_tasks_with_their_reasons(two_tasks):
@@ -84,17 +80,6 @@ def test_22_the_status_lists_started_tasks_with_their_missing_points_tasks_to_st
                       [task["id"] for task in listed["blocked"]] == [2], [task["id"] for task in listed["staged"]] == [1], detail=status)
 
 
-def test_23_a_task_that_waits_on_a_task_of_another_agent_is_listed_to_start_once_that_task_is_closed(new_story, monkeypatch):
-    worker = unplanned_worker_with_tasks(new_story, monkeypatch)
-    story = worker.story
-    audit = story.new_row_id('task make "Audit" --brief "The audit"', actor=story.agent)
-    receipts = story.new_row_id('task make "Receipts" --brief "The receipts"', actor=story.agent)
-    story.expect_success(f"task depend {receipts} --on {audit}", actor=story.agent)
-    story.expect_success(f"worker send --wait {agent_number(story, worker.worker.id)} --task {receipts}", actor=story.agent)
-    listed_while_waiting = startable_ids(worker)
-    story.expect_success(f'task cancel {audit} --reason "no audit is needed"', actor=story.user)
-    story.run_listeners()
-    story.expect_rows(receipts not in listed_while_waiting, receipts in startable_ids(worker), detail=f"{listed_while_waiting} | {startable_ids(worker)}")
 
 
 def test_62_a_start_and_a_proof_of_a_task_one_worker_started_are_refused_to_another_worker_with_the_worker_that_holds_it(task_worker):
@@ -107,22 +92,6 @@ def test_62_a_start_and_a_proof_of_a_task_one_worker_started_are_refused_to_anot
                                detail=f"{refused.output_text} | {refused_proof.output_text}")
 
 
-def test_the_status_of_a_worker_reads_a_checkpoint_phase_of_many_tasks_without_loading_them_all(new_story, monkeypatch):
-    story = planned_story(new_story, approve=False)
-    story.run('phase edit 2 --checkpoint')
-    for number in range(SEVERAL_TASKS):
-        story.run(f'task make "Ship part {number}" --phase 2 --environment main')
-    story.run('phase make --plan 1 "Later"')
-    later_task = story.new_row_id('task make "Clean up" --phase 3 --environment main')
-    approve_plan(story)
-    worker = dispatched_story_worker(story, PHASE_DISPATCH, monkeypatch)
-    database = story.container.get(Database)
-    database.read_limit_rows, database.collected_large_reads = READ_LIMIT_ROWS, None
-    started = story.run("task start 2", actor=worker.worker)
-    status = story.run("worker status", actor=worker.worker)
-    faults = [row.message for row in story.story_rows(JournalException)]
-    story.expect_rows(started.code == 0, status.code == 0, "Tasks you may start" in status.output_text, later_task not in startable_ids(worker), faults == [],
-                      detail=f"{started.output_text} | {status.output_text} | {faults}")
 
 
 

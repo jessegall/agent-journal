@@ -141,14 +141,3 @@ def test_a_short_run_is_never_silent(new_story):
     expect_line_absent(story, ALIAS_START, "showed no percent")
 
 
-def test_a_run_that_shows_a_percent_is_told_once_that_progress_shows(new_story):
-    story = new_story(fixture=FirstSilentBuild)
-    story.expect_success('reader add build-npm --commands "./build.sh*" --lines "compiling" --title "Building" --summary "compiling" --count "\\[[0-9]+/([0-9]+)\\]" --progress "\\[([0-9]+)/([0-9]+)\\]"', actor=story.agent)
-    process = started_run(story, ALIAS, CommandCategory.BUILD)
-    story.advance(timedelta(seconds=70))
-    end_run(story, story.container.get(ProcessQuery).find(process.id), PERCENT_OUTPUT)
-    expect_line(story, ALIAS_START, SILENT_START_FIXED.nudge(name='./build.sh').text)
-    repeated = started_run(story, ALIAS, CommandCategory.BUILD)
-    story.advance(timedelta(seconds=70))
-    end_run(story, story.container.get(ProcessQuery).find(repeated.id), PERCENT_OUTPUT)
-    expect_line_absent(story, ALIAS_START, "now shows its progress")

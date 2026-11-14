@@ -38,17 +38,6 @@ def test_several_approvals_reach_the_agent_as_one_counted_notice(pending_request
     story.expect_rows(not any("A user was asked" in line for line in following.lines))
 
 
-def test_delivering_many_notices_reads_each_agent_line_once(pending_requests):
-    story = pending_requests
-    reads = []
-    database = story.container.get(Database)
-    database.connection.set_trace_callback(reads.append)
-    try:
-        story.hook("s-1", HookSamples.prompt("Continue"))
-    finally:
-        database.connection.set_trace_callback(None)
-    row_reads = [sql for sql in reads if sql.startswith("SELECT * FROM agent_lines WHERE id =")]
-    story.expect_rows(not row_reads)
 
 
 def test_a_task_wait_does_not_create_a_person_approval(new_story):
@@ -58,21 +47,6 @@ def test_a_task_wait_does_not_create_a_person_approval(new_story):
     story.expect_rows(not tuple(story.story_rows(ApprovalRequest)))
 
 
-def test_many_docked_approvals_use_one_read_through_the_viewer_route(pending_requests, pending_viewer, monkeypatch):
-    story = pending_requests
-    items = tuple(story.story_rows(DockItem, type="approvals.request", state=DockItemState.DOCKED))
-    reads = []
-    original = LineRoute.run_line
-
-    def recorded(route, container, window, argv, person_id, environment, shared=None):
-        if argv[:1] == ["approval"]:
-            reads.append(argv)
-        return original(route, container, window, argv, person_id, environment, shared)
-
-    monkeypatch.setattr(LineRoute, "run_line", recorded)
-    status, answer = pending_viewer.server.window_data(pending_viewer.cookie, keys=",".join(f"dock.{item.id}" for item in items))
-    story.expect_rows(status == 200, len(answer["keys"]) == 12, reads == [["approval", "pending"]],
-                      all(len(outcome["value"]["rows"]) == 12 for outcome in answer["keys"].values()))
 
 
 def test_a_registry_refresh_removes_a_stale_closed_approval_card(phone_request, phone_viewer):

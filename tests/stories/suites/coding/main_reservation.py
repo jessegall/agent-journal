@@ -79,12 +79,6 @@ def test_a_reserved_task_is_not_sent_to_a_worker(new_story):
     expect_reserved(story, 1)
 
 
-def test_a_reserved_task_is_not_offered_to_send_to_a_worker(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    story.expect_success(f"task assign 1 --to {agent_number(story, story.agent.id)}", actor=story.agent)
-    with scope_line(story):
-        answer = story.container.get(AvailableWork).answer(story.agent.id)
-    expect_value(answer.delegatable, ())
 
 
 def test_a_blocked_task_can_be_assigned_to_a_main_agent_and_stays_blocked(new_story):

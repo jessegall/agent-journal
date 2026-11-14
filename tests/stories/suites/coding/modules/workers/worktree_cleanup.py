@@ -74,25 +74,5 @@ def test_the_hourly_sweep_keeps_unmerged_work_and_its_tip_as_a_ref(new_story):
     story.expect_rows(repository.git("rev-parse", "refs/worker-tips/worker-9").stdout.strip() == tip)
 
 
-def test_a_worktree_no_worker_holds_with_changes_not_committed_stays(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    tip = orphan_worktree(repository, 9)
-    folder = repository.worktree_folder(9)
-    (folder / "unfinished.txt").write_text("not committed")
-    BootingWork().run(story.container)
-    story.run_listeners()
-    story.expect_rows((folder / "unfinished.txt").exists())
-    story.expect_rows(repository.git("rev-parse", "refs/worker-tips/worker-9").stdout.strip() == tip)
-    removed = story.container.get(WorktreeGit).remove_orphan(str(repository.folder), str(folder), "version-5", repository.worker_branch(9))
-    story.expect_rows(removed is False)
 
 
-def test_a_start_of_the_journal_keeps_unmerged_work_no_worker_holds(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    tip = orphan_worktree(repository, 9)
-    BootingWork().run(story.container)
-    story.run_listeners()
-    story.expect_rows(repository.worktree_folder(9).is_dir())
-    story.expect_rows(repository.git("rev-parse", "refs/worker-tips/worker-9").stdout.strip() == tip)

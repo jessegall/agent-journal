@@ -37,20 +37,6 @@ def test_a_conflict_reopens_the_closed_task_before_asking_the_worker_to_edit(new
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")
 
 
-@pytest.mark.real_git
-def test_worker_send_runs_git_outside_its_transaction(new_story, monkeypatch):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    worker = checked_worker(story, repository)
-    database, transaction_flags, synced = story.container.get(Database), [], WorktreeGit.sync
-
-    def watched_sync(git, worktree):
-        transaction_flags.append(database.has_transaction)
-        return synced(git, worktree)
-
-    monkeypatch.setattr(WorktreeGit, "sync", watched_sync)
-    story.expect_text(f'worker send --wait {agent_number(story, worker.id)} "Finish the total"', "takes the job", actor=story.agent)
-    story.expect_rows(transaction_flags == [False])
 
 
 

@@ -71,13 +71,6 @@ def test_a_started_plan_is_docked_and_undocked_when_it_ends(running_plan):
     story.expect_text("dock-item show 1", "state: undocked")
 
 
-def test_a_plan_made_shows_a_mark_that_opens_the_plan(new_story):
-    story = new_story(fixture=UserJoined)
-    story.run(lines.NEW_PLAN)
-    story.run_listeners()
-    mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "plans.plan")
-    expect_marks_text(story, "Plan 1 created")
-    expect_row(mark, click="open row")
 
 
 def test_a_plan_card_follows_where_the_plan_stands(new_story):

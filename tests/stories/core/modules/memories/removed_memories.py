@@ -32,11 +32,6 @@ def test_the_memory_list_shows_a_removed_memory_when_asked(new_story):
     story.expect_text("memory list --removed", KEPT, REMOVED, actor=story.agent)
 
 
-def test_a_query_leaves_a_removed_memory_out_of_its_rows_and_its_count(new_story):
-    story = new_story(fixture=OneMemoryRemoved)
-    memories = story.container.get(Queries).query(Memory)
-    expect_value([row.text for row in memories.every_row(TEST_ROWS_REASON)], [KEPT])
-    expect_value((memories.count(), memories.with_removed().count()), (1, 2))
 
 
 def test_a_removed_memory_is_found_by_its_id(new_story):

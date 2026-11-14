@@ -1,5 +1,6 @@
 from engine.enums.actor_type import ActorType
 from engine.module.module_finder import ModuleFinder
+from engine.testing.stories.kit_rows import KitRows
 from engine.environment.environment_names import EnvironmentNames
 from engine.file.file_access import FileAccess
 import io
@@ -52,8 +53,6 @@ from core.modules.settings.support.setting_reader import SettingReader
 from engine.setting.errors.setting_type_error import SettingTypeError
 from engine.setting.setting_declaration import SettingDefault
 from engine.module.module import Module
-from engine.model.tables import Tables
-from engine.subcommand.output import Output
 from engine.query.queries import Queries
 from engine.log.refusal_log import RefusalLog
 from engine.log.recorded_refusal import RecordedRefusal
@@ -75,8 +74,6 @@ from engine.testing.examples.hook_sample import HookSample
 from engine.testing.examples.hook_samples import SAMPLE_FIRING, HookSamples
 from engine.testing.fakes.manual_clock import ManualClock
 from engine.testing.stories.story_journal import StoryJournal
-from engine.database.seed_tables import ID_COLUMN
-from engine.query.conditions.minimum import Minimum
 from engine.testing.seeds.seed import Seed
 from engine.testing.seeds.seeder import Seeder
 from engine.testing.stories.story_path import StoryPath
@@ -86,7 +83,6 @@ from engine.testing.expectations.line_outcome import LineOutcome
 from engine.testing.expectations.expected_nudge import ExpectedNudge
 from engine.testing.expectations.text_match import ExpectedText, contains_line, contains_text
 
-STORY_ROWS_REASON = "the story kit lists every row of a table for an assertion"
 
 
 M = TypeVar("M", bound=Model)
@@ -94,10 +90,9 @@ R = TypeVar("R")
 S = TypeVar("S")
 
 COMMITTING_JOURNAL = StoryJournal()
-TOUCHED_LINE = re.compile(r"^(?:created|updated): (.+)$", re.MULTILINE)
 
 
-class Story:
+class Story(KitRows):
     """One story on a journal of its template that rolls back at its end, the public entry a plugin's stories
     use: it loads the modules named, runs command lines as text through the same console, container and
     registry as a real run, moves its clock by hand, reads rows and refusals, and checks what came back. It
@@ -197,21 +192,6 @@ class Story:
         seeder = Seeder(self.container.get(Database), self.clock.timestamp().text, self.caller_environment_id(None))
         with seeder.filling():
             return seeder.seed(seed(), count, **fixed)
-
-    def story_rows(self, model: type[M], **values: object) -> tuple[M, ...]:
-        return tuple(self.container.get(Queries).query(model).filter(**values).matching(Minimum(ID_COLUMN, 1)).every_row(STORY_ROWS_REASON))
-
-    def first_row(self, model: type[M], **values: object) -> M | None:
-        return self.container.get(Queries).query(model).filter(**values).first()
-
-    def newest_row(self, model: type[M], **values: object) -> M | None:
-        return self.container.get(Queries).query(model).filter(**values).newest().first()
-
-    def row_exists(self, model: type[M], **values: object) -> bool:
-        return self.container.get(Queries).query(model).filter(**values).exists()
-
-    def row_count(self, model: type[M], **values: object) -> int:
-        return self.container.get(Queries).query(model).filter(**values).count()
 
     def run_command(self, command: Command[R], actor: Actor, environment_id: int | None = None) -> R:
         return self.container.get(Bus).run(command, actor, environment_id=environment_id)
@@ -403,20 +383,9 @@ class Story:
             self.checked(line)
         outcome = self.run(line, actor)
         self.expected(outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}")
-        lines = self.with_touched_rows(outcome).splitlines()
+        lines = self.with_touched_rows(outcome.output_text).splitlines()
         for expected_line in expected_lines:
             self.expected(expected_line in lines, f"{line} printed no line {expected_line!r}:\n{outcome.output_text}")
-
-    def with_touched_rows(self, outcome: LineOutcome) -> str:
-        loaded_classes = (entry.model.loaded() for entry in self.container.get(Registry).models.values())
-        models = {model.model_name: model for model in loaded_classes if issubclass(model, Model)}
-        stream = io.StringIO()
-        output = Output(self.container.get(Tables), False, stream)
-        for match in TOUCHED_LINE.finditer(outcome.output_text):
-            for model_name, row_id in (name.split(":") for name in match[1].split(", ")):
-                for row in self.container.get(Queries).query(models[model_name]).filter(id=int(row_id)).get() if model_name in models else ():
-                    output.row(row)
-        return outcome.output_text + stream.getvalue()
 
     def expect_ordered_lines(self, line: str, *texts: str, actor: Actor | None = None) -> None:
         self.checked(line)
@@ -428,7 +397,7 @@ class Story:
         self.checked(line)
         outcome = self.run(line, actor)
         self.expected(outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}")
-        output_text = self.with_touched_rows(outcome)
+        output_text = self.with_touched_rows(outcome.output_text)
         missing = [text for text in texts if not contains_text(output_text, text)]
         self.expected(not missing, f"{line} printed none of {missing}:\n{outcome.output_text}")
 
@@ -459,7 +428,7 @@ class Story:
         self.checked(line)
         outcome = self.run_requested(line, request)
         self.expected(outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}")
-        lines = self.with_touched_rows(outcome).splitlines()
+        lines = self.with_touched_rows(outcome.output_text).splitlines()
         for expected_line in expected_lines:
             self.expected(expected_line in lines, f"{line} printed no line {expected_line!r}:\n{outcome.output_text}")
 

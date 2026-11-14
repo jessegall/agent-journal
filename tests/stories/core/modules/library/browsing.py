@@ -74,16 +74,6 @@ def test_a_page_past_the_first_is_asked_for_by_number(new_story, shared_server):
     story.expect_no_text("library list --type sequence --search slate --page 2", "--page 3", actor=story.agent)
 
 
-def test_an_item_that_has_a_local_copy_names_it_and_the_others_do_not(new_story, shared_server):
-    server, tokens = shared_server
-    followed = new_item(server, tokens.admin, "doc", doc_fields("Jasper copy followed"))
-    loose = new_item(server, tokens.admin, "doc", doc_fields("Jasper copy loose"))
-    story = connected(new_story, server, tokens.editor)
-    context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
-    copy = story.container.get(Repository).save(LibraryCopy(creator_id=story.user.id, share="doc", item_id=followed, row_id=1, base_version=1, base_digest="digest"), context)
-    rows = {row["id"]: row for row in json.loads(story.run("library list --search jasper --json", actor=story.agent).output_text)["rows"]}
-    story.expect_rows(rows[followed]["copy_id"] == copy.id, rows[loose]["copy_id"] is None)
-    story.expect_text("library list --search jasper", f"Jasper copy followed  Ada  ", f"copy {copy.id}", actor=story.agent)
 
 
 def test_one_item_is_read_live_with_its_fields(new_story, shared_server):

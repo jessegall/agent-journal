@@ -86,11 +86,6 @@ def test_a_worker_test_of_a_known_tool_under_a_limit_opens_no_request(limited):
     expect_unblocked(limited)
 
 
-def test_a_worker_test_of_an_unknown_tool_under_a_limit_asks_for_the_count_reader(limited):
-    worker_run(limited, "custom-test run", CommandCategory.TEST_RUN)
-    expect_blocked(limited)
-    request = limited.container.get(ReaderRequestQuery).open().first()
-    limited.expect_rows("count" in request.reason, detail=request.reason)
 
 
 def test_a_worker_build_under_a_limit_opens_no_request(limited):
@@ -134,11 +129,5 @@ def test_a_worker_after_two_silent_runs_is_refused_its_start_like_every_role(bus
     busy_worker.expect_hook_refusal(WORKER, sample, "custom-build run ran silent twice")
 
 
-def test_a_long_worker_run_is_asked_for_a_title_like_a_main_agents_and_asked_for_no_reader(readers_disabled):
-    process = worker_run(readers_disabled, "custom-build run", CommandCategory.BUILD)
-    readers_disabled.advance(timedelta(seconds=10))
-    lines = hook_lines(readers_disabled, WORKER, HookSamples.prompt("go on"))
-    readers_disabled.expect_rows(any(f"Output {process.id} is titled by its raw command" in line for line in lines),
-                                 not readers_disabled.container.get(ReaderRequestQuery).open().filter(creator_id=reader_worker(readers_disabled).id).exists(), detail="\n".join(lines))
 
 

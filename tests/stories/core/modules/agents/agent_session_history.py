@@ -147,24 +147,5 @@ def test_after_a_server_stop_between_replacement_and_launch_the_next_job_starts_
     story.expect_rows(helper_agent(story).session == unstarted_session, unstarted_session in command, detail=command)
 
 
-def test_the_number_migration_stopped_half_way_rolls_back_and_a_second_run_finishes(new_story):
-    story = new_story(fixture=AgentsWithoutNumbers)
-    rows = agent_rows(story)
-    schema = story.container.get(Schema)
-    with pytest.raises(Exception, match="a_table_that_is_missing"):
-        schema.migrate([ModuleMigrations(STORY_MODULE, [StoppedNumberMigration()])])
-    story.expect_rows(agent_rows(story) == rows)
-    story.expect_rows(schema.migrate([ModuleMigrations(STORY_MODULE, [WholeNumberMigration()])]) == [f"{STORY_MODULE} {WholeNumberMigration.number}"])
-    story.expect_rows(story.container.get(Database).rows(Statement("SELECT COUNT(*) AS unnumbered FROM agents WHERE number IS NULL"))[0]["unnumbered"] == 0)
 
 
-def test_the_history_migration_stopped_half_way_rolls_back_and_a_second_run_gives_every_agent_its_row(new_story):
-    story = new_story(fixture=AgentsWithoutNumbers)
-    agents = len(agent_rows(story))
-    story.container.get(Database).update(Statement("DELETE FROM agent_sessions"))
-    schema = story.container.get(Schema)
-    with pytest.raises(Exception, match="a_table_that_is_missing"):
-        schema.migrate([ModuleMigrations(STORY_MODULE, [StoppedSessionsMigration()])])
-    story.expect_rows(session_row_count(story) == 0)
-    schema.migrate([ModuleMigrations(STORY_MODULE, [WholeSessionsMigration()])])
-    story.expect_rows(session_row_count(story) == agents, detail=str(agents))

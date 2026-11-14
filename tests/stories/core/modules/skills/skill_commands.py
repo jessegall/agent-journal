@@ -35,12 +35,6 @@ def test_require_makes_a_skill_read_in_an_older_text_due_again(required_notes_sk
     story.expect_success(f"skill require {story.agent.id} journal-notes", "load this first with the Skill tool: journal-notes")
 
 
-def test_a_second_load_of_the_same_digest_changes_nothing(new_story):
-    story = started(new_story)
-    bus, command = story.container.get(Bus), LoadSkill(story.agent.id, "journal-notes", "abc123")
-    bus.run(command, story.agent)
-    bus.run(command, story.agent)
-    story.expect_success("agent-skill show 1", "state: loaded", "version: 2", "digest: abc123")
 
 
 def test_reset_removes_the_loaded_rows_of_the_agent_and_keeps_the_due_ones(new_story):

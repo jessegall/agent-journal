@@ -1,0 +1,41 @@
+from pathlib import Path
+
+from engine.provider.managed_hook import ManagedHook
+from engine.provider.managed_hooks import ManagedHooks
+from engine.testing.examples.hook_samples import HookSamples
+from tests.stories.engine.driver.support.hook_agents import hook_agent
+from tests.stories.suites.coding.graphify_searches import graphify_enabled
+from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_value_with
+
+__all__ = ["graphify_enabled"]
+
+SKILL = Path("src/suites/coding/skills/journal-graphify/SKILL.md")
+GUARD_COMMAND = "graphify hook-guard search"
+CHECK_COMMAND = "/Users/someone/.local/bin/graphify hook-check"
+SESSION = "s-graphify"
+
+
+def managed_hook(command: str, hook_id: str) -> ManagedHook:
+    return ManagedHook(hook_id, "claude", "PreToolUse", "Bash|Grep", command, 10, ".claude/settings.json", False)
+
+
+def managed_commands(story) -> list[str]:
+    return [hook.command for hook in story.container.get(ManagedHooks).all()]
+
+
+def started_agent(story):
+    agent = hook_agent(story, story.hook(SESSION, HookSamples.session_start()))
+    story.run_listeners()
+    return agent
+
+
+
+
+def test_a_session_start_also_removes_graphifys_check_hook_that_adds_a_line_to_every_tool_use(graphify_enabled):
+    story = graphify_enabled
+    story.container.get(ManagedHooks).added([managed_hook(CHECK_COMMAND, "check"), managed_hook("other-project-hook", "other")])
+    story.hook(SESSION, HookSamples.session_start())
+    story.run_listeners()
+    commands = managed_commands(story)
+    story.expect_rows(CHECK_COMMAND not in commands, "other-project-hook" in commands, detail=str(commands))

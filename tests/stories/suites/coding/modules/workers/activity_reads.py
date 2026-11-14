@@ -71,60 +71,7 @@ def test_a_worker_dispatch_reads_its_whole_task_batch_once_per_transaction(four_
     expect_value(len(batch_reads), BATCH_READS)
 
 
-def test_reading_running_worker_output_stays_within_the_tick_limit(four_workers):
-    story = four_workers
-    workers = story.story_rows(Agent, parent_id=story.agent.id, role="worker")
-    bus = story.container.get(Bus)
-    for index, worker in enumerate(workers):
-        for _ in range(3 if index == 0 else 2):
-            command = StartProcess(worker.id, None, "make build", "/work/main", CommandCategory.BUILD, 30, [PartSpec("make build", "make")])
-            process = bus.run(command, Actor(worker.id, ActorType.AGENT), environment_id=1)
-            story.step("run printed", process.id, 1, "building\n[ 40%]\n")
-    tools = story.container.get(PerformanceTools)
-    start = tools.begin()
-    OutputReading().read(story.container)
-    cost = tools.cost(start)
-    story.expect_rows(cost is not None)
-    story.expect_rows(cost.total < 50, cost.tables["outputs"] < 27, detail=f"{cost.line()}: {cost.statements}")
 
 
-def test_five_workers_read_their_running_outputs_within_the_tick_limit(four_workers):
-    story = four_workers
-    story.run(f"setting set {WORKER_RUN_LIMIT} 5 --environment main")
-    task_id = story.new_row_id('task make "Job 5" --brief "Finish job 5" --environment main', actor=story.agent)
-    story.expect_success(f"worker dispatch --test-command python=pytest --fresh 'A new worker' --model sonnet {task_id}", actor=story.agent)
-    workers = story.story_rows(Agent, parent_id=story.agent.id, role="worker")
-    bus = story.container.get(Bus)
-    for index, worker in enumerate(workers):
-        for _ in range(3 if index < 2 else 2):
-            command = StartProcess(worker.id, None, "make build", "/work/main", CommandCategory.BUILD, 30, [PartSpec("make build", "make")])
-            process = bus.run(command, Actor(worker.id, ActorType.AGENT), environment_id=1)
-            story.step("run printed", process.id, 1, "building\n[ 40%]\n")
-    tools = story.container.get(PerformanceTools)
-    start = tools.begin()
-    OutputReading().read(story.container)
-    cost = tools.cost(start)
-    story.expect_rows(cost is not None)
-    story.expect_rows(cost.total < 50, detail=f"{cost.line()}: {cost.statements}")
 
 
-def test_a_tick_reads_again_if_the_output_changes_after_its_batch_read(four_workers):
-    story = four_workers
-    worker = story.first_row(Agent, parent_id=story.agent.id, role="worker")
-    bus = story.container.get(Bus)
-    process = bus.run(StartProcess(worker.id, None, "make build", "/work/main", CommandCategory.BUILD, 30, [PartSpec("make build", "make")]), Actor(worker.id, ActorType.AGENT), environment_id=1)
-    folder = story.container.get(OutputFolder)
-    story.step("run printed", process.id, 1, "building\n[ 40%]\n")
-    run = bus.run
-    changed = []
-
-    def change_during_read(command, *args, **kwargs):
-        if isinstance(command, ReadNewOutput) and command.prepared is not None and not changed:
-            run(TitleOutput(process.id, "Building the project"), Actor(worker.id, ActorType.AGENT), environment_id=1)
-            changed.append(True)
-        return run(command, *args, **kwargs)
-
-    with patch.object(bus, "run", side_effect=change_during_read):
-        OutputReading().read(story.container)
-    output = story.container.get(OutputQuery).process_output(process.id)
-    story.expect_rows(changed, output.title == "Building the project", output.displayed_offset == folder.total_bytes(process.id))

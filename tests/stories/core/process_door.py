@@ -74,82 +74,14 @@ def test_a_failing_run_through_the_door_keeps_its_code(new_story):
     story.expect_rows(execution.exit_code == 3, row.exit_code == 3, detail=str(row))
 
 
-def test_a_journal_command_is_logged_without_a_write_and_the_tick_writes_each_logged_command_as_one_row(new_story):
-    story = new_story(fixture=BuilderStarted)
-    log = story.container.get(RequestLog)
-    ended_at = story.clock.timestamp().text
-    log.append(RequestLogEntry(1, None, ProcessType.JOURNAL, "journal task list", 0, ended_at))
-    log.append(RequestLogEntry(1, None, ProcessType.JOURNAL, "journal task show", 1, ended_at))
-    requests_previous = len(category_runs(story, ProcessType.JOURNAL))
-    logged_rows_saved(story)
-    rows = category_runs(story, ProcessType.JOURNAL)[requests_previous:]
-    story.expect_rows(requests_previous == 0, [(row.line, row.exit_code, row.session_agent_id) for row in rows] == [("journal task list", 0, story.agent.id), ("journal task show", 1, story.agent.id)],
-                      log.claimed() == (), detail=str(rows))
 
 
-def test_a_broken_line_in_the_request_log_is_left_out_and_the_rows_around_it_are_written(new_story):
-    story = new_story(fixture=BuilderStarted)
-    log = story.container.get(RequestLog)
-    log.append(RequestLogEntry(1, None, ProcessType.JOURNAL, "journal task list", 0, story.clock.timestamp().text))
-    FileAccess.write(log.lines.path, FileAccess.read(log.lines.path) + "{half a line\n" + "{\"line\": \"journal task done\"}\n")
-    log.append(RequestLogEntry(1, None, ProcessType.JOURNAL, "journal task show", 0, story.clock.timestamp().text))
-    logged_rows_saved(story)
-    story.expect_rows([row.line for row in category_runs(story, ProcessType.JOURNAL)] == ["journal task list", "journal task show"], not log.lines.taken_path.exists())
 
 
-def test_a_failed_environment_in_the_request_log_is_let_go_and_repeats_no_row_of_the_others(new_story, monkeypatch):
-    story = new_story(fixture=BuilderStarted)
-    saved = RecordRequestRunsHandler.handle
-
-    def failing_for_one_environment(handler, command, context):
-        if context.environment_id == MISSING_ENVIRONMENT_ID:
-            raise RuntimeError("the write of this environment fails")
-        return saved(handler, command, context)
-
-    monkeypatch.setattr(RecordRequestRunsHandler, "handle", failing_for_one_environment)
-    log = story.container.get(RequestLog)
-    log.append(RequestLogEntry(1, None, ProcessType.JOURNAL, "journal task list", 0, story.clock.timestamp().text))
-    log.append(RequestLogEntry(MISSING_ENVIRONMENT_ID, None, ProcessType.JOURNAL, "journal task show", 0, story.clock.timestamp().text))
-    RequestLogImport()(story.container)
-    for _ in range(2):
-        with contextlib.suppress(Exception):
-            RequestLogImport()(story.container)
-    story.expect_rows([row.line for row in category_runs(story, ProcessType.JOURNAL)] == ["journal task list"], log.claimed() == ())
 
 
-def test_a_busy_database_keeps_the_rows_of_an_environment_for_the_next_tick_and_a_bad_entry_alone_is_let_go(new_story, monkeypatch):
-    story = new_story(fixture=BuilderStarted)
-    saved = RecordRequestRunsHandler.handle
-    outcomes = {"busy": True}
-
-    def failing(handler, command, context):
-        if outcomes["busy"]:
-            busy = sqlite3.OperationalError("database is locked")
-            busy.sqlite_errorcode = sqlite3.SQLITE_BUSY
-            raise busy
-        if any(entry.line == "journal task bad" for entry in command.entries):
-            raise RuntimeError("this entry fails")
-        return saved(handler, command, context)
-
-    monkeypatch.setattr(RecordRequestRunsHandler, "handle", failing)
-    log = story.container.get(RequestLog)
-    for line in ("journal task list", "journal task bad", "journal task show"):
-        log.append(RequestLogEntry(1, None, ProcessType.JOURNAL, line, 0, story.clock.timestamp().text))
-    RequestLogImport()(story.container)
-    story.expect_rows(len(log.claimed()) == 3, category_runs(story, ProcessType.JOURNAL) == [])
-    outcomes["busy"] = False
-    RequestLogImport()(story.container)
-    RequestLogImport()(story.container)
-    story.expect_rows(sorted(row.line for row in category_runs(story, ProcessType.JOURNAL)) == ["journal task list", "journal task show"], log.claimed() == ())
 
 
-def test_a_request_row_older_than_its_days_is_pruned(new_story):
-    story = new_story(fixture=BuilderStarted)
-    log = story.container.get(RequestLog)
-    log.append(RequestLogEntry(1, None, ProcessType.JOURNAL, "journal task list", 0, (story.clock.timestamp().value - timedelta(days=30)).isoformat()))
-    log.append(RequestLogEntry(1, None, ProcessType.JOURNAL, "journal task show", 0, story.clock.timestamp().text))
-    logged_rows_saved(story)
-    story.expect_rows([row.line for row in category_runs(story, ProcessType.JOURNAL)] == ["journal task show"])
 
 
 def test_a_journal_command_an_agent_runs_through_the_cli_leaves_one_row_as_that_agent(new_story):

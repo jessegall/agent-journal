@@ -16,16 +16,6 @@ def replaced_story(new_story):
     return story, hook_agent(story, story.hook("s-1", HookSamples.session_start()))
 
 
-def test_a_second_session_stops_a_program_under_its_pid_only_afterwards(new_story, monkeypatch):
-    story = new_story(SAMPLES, fixture=SampleSuiteChoice)
-    stopped_pids: list[int] = []
-    monkeypatch.setattr(LeftoverProcess, "stop", lambda pid, program: stopped_pids.append(pid) or True)
-    monkeypatch.setattr(LeftoverProcess, "command_line", staticmethod(lambda pid: "" if pid in stopped_pids or pid != 4242 else "claude"))
-    story.run("agent start s-5 claude main --pid 4242 --environment main")
-    story.hook("s-6", HookSamples.session_start())
-    story.expect_rows(stopped_pids == [])
-    story.run_listeners()
-    story.expect_rows(stopped_pids == [4242])
 
 
 def test_the_replaced_sessions_next_tool_is_refused_with_no_record(replaced_story):

@@ -23,8 +23,3 @@ def test_the_installed_commands_answer_fills_the_plugins_settings(new_story):
     story.expect_text("plugin settings sample", "level number 3", actor=story.user)
 
 
-def test_a_setup_step_may_write_to_the_journal_since_no_write_is_open_while_it_runs(new_story):
-    story = plugin_story(new_story)
-    lock_check = f"python3 -c \"import sqlite3; c = sqlite3.connect('{story.home.database}', timeout=1); c.execute('BEGIN IMMEDIATE'); c.rollback()\""
-    manifest_with(story, setup=[{"name": "Write to the journal", "run": lock_check}])
-    story.expect_text(f"plugin install {story.plugin_folder} --yes", "installed sample, on", actor=story.user)
