@@ -6,7 +6,7 @@ import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
 const windows = [
     {name: "tasks.tasks", module: "journal.core.tasks", title: "Tasks"},
     {name: "plans.plans", module: "journal.core.plans", title: "Plans"},
-    {name: "documents.documents", module: "journal.core.documents", title: "Documents"},
+    {name: "documents.page", module: "journal.core.documents", title: "Document reader"},
 ];
 
 test("the pages of every module stand in one list in the sidebar, and none is a heading of its own", () => {
@@ -19,7 +19,7 @@ test("the pages of every module stand in one list in the sidebar, and none is a 
     expect(groups.filter((name) => ["Tasks", "Plans", "Documents"].includes(name))).toEqual([]);
     expect(groups).not.toContain("Environment");
     // Documents has its place in the design's Work group; the pages the design does not place follow under More
-    expect(items).toEqual(["documents.documents", "tasks.tasks", "plans.plans"]);
+    expect(items).toEqual(["documents.page", "tasks.tasks", "plans.plans"]);
 });
 
 test("changing a setting reloads the windows offered by the server", async () => {

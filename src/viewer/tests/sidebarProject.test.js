@@ -24,11 +24,11 @@ test("the sidebar shows every page: the design's groups, what it does not place 
     expect(element.textContent).toContain("Home");
 });
 
-test("the sidebar lists Hooks, and neither Worker models nor Updates", () => {
+test("the sidebar lists neither Hooks (a section of Settings), nor Worker models, nor Updates", () => {
     const offered = [...windows, {name: "settings.project-hooks", title: "Hooks", group: "project"}, {name: "updates.updates", title: "Updates", group: "footer"}];
     const element = drawn(SidebarPages, {windows: offered, environments: [], current: "main"});
     const titles = [...element.querySelectorAll("[data-sidebar-window]")].map((page) => page.textContent.trim());
-    expect(titles).toContain("Hooks");
+    expect(titles).not.toContain("Hooks");
     expect(titles).not.toContain("Worker models");
     expect(titles).not.toContain("Updates");
 });
