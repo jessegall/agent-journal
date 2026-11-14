@@ -36,16 +36,16 @@ def worktree(worker: StoryWorker) -> dict[str, object]:
 
 
 @pytest.fixture
-def two_of_three_proved(new_story, monkeypatch) -> StoryWorker:
+def two_of_three_proved(new_story) -> StoryWorker:
     """A worker that holds tasks 1, 2 and 3 started, in no plan, and proved tasks 1 and 2 with a test each."""
-    return prove_first_two(unplanned_worker_with_tasks(new_story, monkeypatch, THREE_TASKS))
+    return prove_first_two(unplanned_worker_with_tasks(new_story, THREE_TASKS))
 
 
 @pytest.fixture
-def two_of_three_proved_in_plan(new_story, monkeypatch) -> StoryWorker:
+def two_of_three_proved_in_plan(new_story) -> StoryWorker:
     """A worker of phase Build of a started plan that holds tasks 1, 2 and 3 started and proved tasks 1 and 2
     with a test each."""
-    return prove_first_two(worker_with_tasks(new_story, monkeypatch, THREE_TASKS))
+    return prove_first_two(worker_with_tasks(new_story, THREE_TASKS))
 
 
 @pytest.fixture

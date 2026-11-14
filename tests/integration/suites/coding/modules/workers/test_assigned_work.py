@@ -21,8 +21,8 @@ def delegatable(story) -> tuple[int, ...]:
         return story.container.get(AvailableWork).answer(story.agent.id).delegatable
 
 
-def test_the_main_agent_assigns_a_task_to_a_worker_and_the_workers_next_task_and_status_show_it(played, monkeypatch):
-    worker = single_task_worker(played, monkeypatch)
+def test_the_main_agent_assigns_a_task_to_a_worker_and_the_workers_next_task_and_status_show_it(played):
+    worker = single_task_worker(played)
     story = worker.story
     receipt = story.new_row_id(RECEIPT, actor=story.agent)
     story.expect_rows(startable_ids(story, worker.worker) == [])
@@ -45,8 +45,8 @@ def test_a_workers_next_task_is_the_first_in_plan_order_of_its_assigned_open_tas
     story.expect_text("task show 4", "state: open", actor=story.agent)
 
 
-def test_a_free_task_is_never_offered_to_a_worker(played, monkeypatch):
-    worker = unplanned_worker(played, monkeypatch)
+def test_a_free_task_is_never_offered_to_a_worker(played):
+    worker = unplanned_worker(played)
     story = worker.story
     story.expect_success("task start 2", actor=worker.worker)
     free = story.new_row_id(RECEIPT, actor=story.agent)
@@ -57,8 +57,8 @@ def test_a_free_task_is_never_offered_to_a_worker(played, monkeypatch):
     story.expect_text(f"task info {free}", "assigned to: nobody", actor=story.agent)
 
 
-def test_the_moment_a_task_is_assigned_to_a_worker_status_the_next_task_start_and_the_stop_check_see_it(played, monkeypatch):
-    worker = single_task_worker(played, monkeypatch)
+def test_the_moment_a_task_is_assigned_to_a_worker_status_the_next_task_start_and_the_stop_check_see_it(played):
+    worker = single_task_worker(played)
     story = worker.story
     story.expect_success('task block 1 --reason "waits for a user"', actor=worker.worker)
     story.expect_rows(not worker.stop().refusal, detail=worker.status())
@@ -80,8 +80,8 @@ def test_a_task_assigned_to_worker_a_is_not_offered_to_worker_b_whatever_its_pri
 
 
 
-def test_a_task_anyone_has_is_not_in_available_work(played, monkeypatch):
-    worker = unplanned_worker(played, monkeypatch)
+def test_a_task_anyone_has_is_not_in_available_work(played):
+    worker = unplanned_worker(played)
     story = worker.story
     story.expect_success('task make "Free job" --brief "Do it" --environment main', actor=story.agent)
     story.expect_rows(delegatable(story) == tuple([3]), detail=str(delegatable(story)))

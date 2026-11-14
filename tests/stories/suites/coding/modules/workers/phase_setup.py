@@ -15,14 +15,14 @@ def read_worktree(worker):
     return worker.story.first_row(Worktree, session_agent_id=worker.worker.id)
 
 
-def test_a_worker_dispatched_on_a_plan_holds_its_first_task_and_the_plan_is_started(new_story, monkeypatch):
-    planned_worker = start_planned_worker(new_story, monkeypatch)
+def test_a_worker_dispatched_on_a_plan_holds_its_first_task_and_the_plan_is_started(new_story):
+    planned_worker = start_planned_worker(new_story)
     planned_worker.story.expect_text("task show 1", "state: started", f"holder_id: {planned_worker.worker.id}", actor=planned_worker.story.agent)
     planned_worker.story.expect_text("plan show 1", "state: started", actor=planned_worker.story.agent)
 
 
-def test_a_short_proof_is_a_failure(new_story, monkeypatch):
-    planned_worker = start_planned_worker(new_story, monkeypatch)
+def test_a_short_proof_is_a_failure(new_story):
+    planned_worker = start_planned_worker(new_story)
     steps = read_steps(planned_worker)
     planned_worker.edit_prove()
     expect_value(not steps.has_open_failure(read_worktree(planned_worker)), True)
@@ -30,8 +30,8 @@ def test_a_short_proof_is_a_failure(new_story, monkeypatch):
     expect_value(steps.has_open_failure(read_worktree(planned_worker)), True)
 
 
-def test_a_failed_selected_test_is_a_failure(new_story, monkeypatch):
-    external = unplanned_worker(new_story, monkeypatch)
+def test_a_failed_selected_test_is_a_failure(new_story):
+    external = unplanned_worker(new_story)
     steps = read_steps(external)
     external.story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "python3 pick.py" --environment main')
     external.story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "python3 -m pytest -q" --environment main')

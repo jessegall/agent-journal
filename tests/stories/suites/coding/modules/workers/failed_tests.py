@@ -29,9 +29,9 @@ def expect_proof_states(worker: StoryWorker, state: str, *proof_ids: int) -> Non
 
 
 @pytest.fixture
-def three_started(new_story, monkeypatch) -> StoryWorker:
+def three_started(new_story) -> StoryWorker:
     """A worker that holds tasks 1, 2 and 3 started, in no plan; task 1 has two points."""
-    worker = unplanned_worker_with_tasks(new_story, monkeypatch, THREE_TASKS)
+    worker = unplanned_worker_with_tasks(new_story, THREE_TASKS)
     worker.story.expect_success(TWO_POINT_BRIEF, actor=worker.story.agent)
     return worker
 
@@ -53,10 +53,10 @@ def first_failed(interim_tested) -> StoryWorker:
 
 
 @pytest.fixture
-def two_committed(new_story, monkeypatch) -> StoryWorker:
+def two_committed(new_story) -> StoryWorker:
     """A worker that held tasks 1 and 2, in no plan, proved each with a test and committed both: no task is
     left started and the two tests run."""
-    worker = unplanned_worker_with_tasks(new_story, monkeypatch)
+    worker = unplanned_worker_with_tasks(new_story)
     prove_task(worker, 1, 1, TEST_LINE)
     prove_task(worker, 2, 1, SECOND_TEST_LINE)
     return commit(worker)
@@ -78,8 +78,8 @@ def test_47_48_only_the_failed_proof_is_tested_at_the_commit_after_it_is_shown_a
     first_failed.story.expect_rows(len(first_failed.started) == 4, detail=f"started: {first_failed.started}")
 
 
-def test_50_a_failed_run_of_the_selected_tests_returns_the_tasks_of_the_commit_and_names_the_output(new_story, monkeypatch):
-    worker = unplanned_worker_with_tasks(new_story, monkeypatch)
+def test_50_a_failed_run_of_the_selected_tests_returns_the_tasks_of_the_commit_and_names_the_output(new_story):
+    worker = unplanned_worker_with_tasks(new_story)
     story = worker.story
     story.expect_success(f'setting set {AFFECTED_TESTS_COMMAND} "python3 pick.py" --environment main')
     story.expect_success(f'setting set {PROJECT_TEST_COMMAND} "python3 -m pytest -q" --environment main')

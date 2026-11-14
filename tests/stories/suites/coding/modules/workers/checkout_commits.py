@@ -24,8 +24,8 @@ def checkout_of_tests(worker: StoryWorker) -> Path:
     return folder.parent.with_name(f"{folder.parent.name}-tests") / folder.name
 
 
-def test_a_test_queued_by_a_later_commit_waits_for_the_running_one_and_then_runs_on_the_later_commits_files(new_story, monkeypatch):
-    worker = unplanned_worker_with_tasks(new_story, monkeypatch)
+def test_a_test_queued_by_a_later_commit_waits_for_the_running_one_and_then_runs_on_the_later_commits_files(new_story):
+    worker = unplanned_worker_with_tasks(new_story)
     prove_task(worker, 1, 1, TEST_LINE)
     committed(worker)
     worker.repository.changed(worker.worker.id, LATER_FILE, "made after the first commit\n")

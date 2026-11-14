@@ -14,16 +14,16 @@ SEVERAL_TASKS = 55
 
 
 @pytest.fixture
-def task_worker(played, monkeypatch) -> StoryWorker:
+def task_worker(played) -> StoryWorker:
     """A worker of phase Build that holds task 1 started; tasks 2 and 3 of the phase are open, and task 4 is the
     one task of phase Ship."""
-    return worker_with_tasks(played, monkeypatch, 1)
+    return worker_with_tasks(played, 1)
 
 
 @pytest.fixture
-def two_tasks(played, monkeypatch) -> StoryWorker:
+def two_tasks(played) -> StoryWorker:
     """A worker of phase Build that holds tasks 1 and 2 started; task 3 of the phase is open."""
-    return worker_with_tasks(played, monkeypatch, 2)
+    return worker_with_tasks(played, 2)
 
 
 @pytest.fixture
@@ -48,16 +48,16 @@ def startable_ids(worker: StoryWorker) -> list[int]:
 
 
 
-def test_21_worker_next_with_no_task_left_to_start_says_so_and_names_the_commit(played, monkeypatch):
-    worker = worker_with_tasks(played, monkeypatch, THREE_TASKS)
+def test_21_worker_next_with_no_task_left_to_start_says_so_and_names_the_commit(played):
+    worker = worker_with_tasks(played, THREE_TASKS)
     outcome = worker.story.run("worker next --wait", actor=worker.worker)
     worker.story.expect_rows("no task is left to start" in outcome.output_text, "journal worker commit" in outcome.output_text, detail=outcome.output_text)
 
 
 
 
-def test_23_a_task_that_waits_on_a_task_of_another_agent_is_listed_to_start_once_that_task_is_closed(played, monkeypatch):
-    worker = unplanned_worker_with_tasks(played, monkeypatch)
+def test_23_a_task_that_waits_on_a_task_of_another_agent_is_listed_to_start_once_that_task_is_closed(played):
+    worker = unplanned_worker_with_tasks(played)
     story = worker.story
     audit = story.new_row_id('task make "Audit" --brief "The audit"', actor=story.agent)
     receipts = story.new_row_id('task make "Receipts" --brief "The receipts"', actor=story.agent)

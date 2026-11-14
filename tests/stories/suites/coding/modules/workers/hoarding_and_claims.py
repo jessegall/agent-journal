@@ -24,8 +24,8 @@ def merge_outcome(worker: StoryWorker):
     return worker.story.run(f"worker merge --wait {number}", actor=worker.story.agent)
 
 
-def test_67_a_proof_that_claims_work_is_judged_by_nobody_at_the_hand_in_and_closes_its_task_only_by_a_check_or_a_passed_test(new_story, monkeypatch):
-    worker = unplanned_worker_with_tasks(new_story, monkeypatch)
+def test_67_a_proof_that_claims_work_is_judged_by_nobody_at_the_hand_in_and_closes_its_task_only_by_a_check_or_a_passed_test(new_story):
+    worker = unplanned_worker_with_tasks(new_story)
     worker.story.run('proof make 1 --task 1 "cart.py:1, the total adds the tax, read by hand"', actor=worker.worker)
     expect_proof_states(worker, "shown", 1)
     prove_task(worker, 2, 1, TEST_LINE)
@@ -39,8 +39,8 @@ def test_67_a_proof_that_claims_work_is_judged_by_nobody_at_the_hand_in_and_clos
     expect_task_states(worker, "completed", 1)
 
 
-def test_68_the_same_test_command_handed_in_for_two_points_runs_for_each_proof_and_each_proof_gets_its_own_result(new_story, monkeypatch):
-    worker = unplanned_worker_with_tasks(new_story, monkeypatch)
+def test_68_the_same_test_command_handed_in_for_two_points_runs_for_each_proof_and_each_proof_gets_its_own_result(new_story):
+    worker = unplanned_worker_with_tasks(new_story)
     worker.story.expect_success(TWO_POINT_BRIEF, actor=worker.story.agent)
     prove_task(worker, 1, 1, TEST_LINE)
     prove_task(worker, 1, 2, TEST_LINE)
@@ -53,8 +53,8 @@ def test_68_the_same_test_command_handed_in_for_two_points_runs_for_each_proof_a
     worker.story.expect_rows(test_count == 2, detail=f"tests started: {worker.started}")
 
 
-def test_69_a_worker_that_started_five_tasks_and_did_none_is_named_with_its_tasks_and_a_person_releases_it(new_story, monkeypatch):
-    worker = worker_with_tasks(new_story, monkeypatch, FIVE_TASKS, build_task_count=FIVE_TASKS)
+def test_69_a_worker_that_started_five_tasks_and_did_none_is_named_with_its_tasks_and_a_person_releases_it(new_story):
+    worker = worker_with_tasks(new_story, FIVE_TASKS, build_task_count=FIVE_TASKS)
     story = worker.story
     story.run(MERGER_OFF, actor=story.user)
     worker.program_ended()
@@ -66,8 +66,8 @@ def test_69_a_worker_that_started_five_tasks_and_did_none_is_named_with_its_task
     story.expect_rows(all(f"task:{task_id}" in stopped_lines[0] for task_id in HOARDED_TASK_IDS), detail=stopped_lines[0])
 
 
-def test_70_a_proof_of_an_open_task_given_to_another_worker_is_refused(new_story, monkeypatch):
-    worker = worker_with_tasks(new_story, monkeypatch, 1)
+def test_70_a_proof_of_an_open_task_given_to_another_worker_is_refused(new_story):
+    worker = worker_with_tasks(new_story, 1)
     story = worker.story
     receipts = story.new_row_id('task make "Receipts" --environment main', actor=story.agent)
     audit = story.new_row_id('task make "Audit" --environment main', actor=story.agent)
@@ -77,8 +77,8 @@ def test_70_a_proof_of_an_open_task_given_to_another_worker_is_refused(new_story
     story.expect_rows(refused.code != 0, f"task {audit} is not yours" in refused.output_text, proofs(worker) == (), detail=refused.output_text)
 
 
-def test_72_an_interim_commit_takes_the_files_of_a_task_that_is_not_proved_and_the_merge_waits_for_the_final_commit(new_story, monkeypatch):
-    worker = unplanned_worker_with_tasks(new_story, monkeypatch)
+def test_72_an_interim_commit_takes_the_files_of_a_task_that_is_not_proved_and_the_merge_waits_for_the_final_commit(new_story):
+    worker = unplanned_worker_with_tasks(new_story)
     story = worker.story
     worker.repository.changed(worker.worker.id, "task_2.txt", "half built\n")
     prove_task(worker, 1, 1)

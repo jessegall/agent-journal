@@ -23,15 +23,15 @@ def test_a_commit_of_many_tasks_that_others_wait_on_reads_their_dependencies_tog
     story.expect_success("worker commit --wait --differences none", actor=worker.worker)
 
 
-def test_a_commit_of_the_tasks_of_a_started_plan_reads_the_next_ready_task_of_the_plan_together(new_story, monkeypatch):
-    worker = worker_with_tasks(new_story, monkeypatch, 6, build_task_count=6)
+def test_a_commit_of_the_tasks_of_a_started_plan_reads_the_next_ready_task_of_the_plan_together(new_story):
+    worker = worker_with_tasks(new_story, 6, build_task_count=6)
     for number in BUILD_TASK_IDS:
         prove_task(worker, number, 1)
     worker.story.expect_success("worker commit --wait --differences none", actor=worker.worker)
 
 
-def test_a_commit_with_many_plans_started_reads_the_ready_places_of_all_of_them_at_once(new_story, monkeypatch):
-    worker = worker_with_tasks(new_story, monkeypatch, 2, build_task_count=6)
+def test_a_commit_with_many_plans_started_reads_the_ready_places_of_all_of_them_at_once(new_story):
+    worker = worker_with_tasks(new_story, 2, build_task_count=6)
     story = worker.story
     for plan_id in range(2, STARTED_PLAN_COUNT + 1):
         story.run(f'plan make "Plan {plan_id}" --environment main', actor=story.user)

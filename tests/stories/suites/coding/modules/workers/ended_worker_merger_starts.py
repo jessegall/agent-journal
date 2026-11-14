@@ -25,8 +25,8 @@ def is_with_main_agent(story, worker_id: int) -> bool:
         return story.container.get(Escalations).is_open(worker_id)
 
 
-def test_an_ended_worker_whose_question_the_main_agent_holds_starts_no_merger_for_its_waiting_ask_until_the_main_agent_writes_to_it(new_story, monkeypatch):
-    worker = committed_list(new_story, monkeypatch)
+def test_an_ended_worker_whose_question_the_main_agent_holds_starts_no_merger_for_its_waiting_ask_until_the_main_agent_writes_to_it(new_story):
+    worker = committed_list(new_story)
     story = worker.story
     story.expect_success(MERGER_OFF, actor=story.user)
     story.expect_success(QUESTION, actor=worker.worker)

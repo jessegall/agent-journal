@@ -10,7 +10,7 @@ SETTING = f"{WORKER_PHASE_TEST_RUNS}"
 
 @pytest.fixture
 def worker(new_story, monkeypatch):
-    return start_planned_worker(new_story, monkeypatch)
+    return start_planned_worker(new_story)
 
 
 def expect_counted(worker, remaining):

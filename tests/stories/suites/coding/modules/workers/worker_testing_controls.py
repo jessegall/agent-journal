@@ -41,14 +41,14 @@ def configure(worker, key, value):
         return server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", key, value, "--environment", "main"]})
 
 
-def test_s34_a_zero_allowance_sends_the_first_grouped_test_command_to_the_main_agent_for_approval(new_story, monkeypatch):
-    worker = plan_worker(new_story, monkeypatch)
+def test_s34_a_zero_allowance_sends_the_first_grouped_test_command_to_the_main_agent_for_approval(new_story):
+    worker = plan_worker(new_story)
     configure(worker, RUNS, "0")
     expect_reply_refusal(worker.run_test(), "No test runs left")
 
 
-def test_s34_a_settings_edit_between_commands_keeps_the_commands_already_used(new_story, monkeypatch):
-    worker = plan_worker(new_story, monkeypatch)
+def test_s34_a_settings_edit_between_commands_keeps_the_commands_already_used(new_story):
+    worker = plan_worker(new_story)
     expect_reply_allowed(worker.run_test())
     configure(worker, RUNS, "1")
     expect_reply_refusal(worker.run_test(), "No test runs left")
@@ -56,8 +56,8 @@ def test_s34_a_settings_edit_between_commands_keeps_the_commands_already_used(ne
     expect_reply_allowed(worker.run_test())
 
 
-def test_s36_adding_version_control_to_the_worker_command_types_does_not_allow_a_worker_git(new_story, monkeypatch):
-    worker = plan_worker(new_story, monkeypatch)
+def test_s36_adding_version_control_to_the_worker_command_types_does_not_allow_a_worker_git(new_story):
+    worker = plan_worker(new_story)
     configure(worker, COMMAND_TYPES, json.dumps(["read", "search", "edit", "test run", "build", "version control"]))
     expect_reply_refusal(worker.run_line("git status", ShellPart("git", CommandCategory.VERSION_CONTROL, ["status"])), "a worker runs no git")
 

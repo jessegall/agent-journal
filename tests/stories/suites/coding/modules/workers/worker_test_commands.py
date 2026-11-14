@@ -52,12 +52,12 @@ def runner_starts(worker_with_commands, monkeypatch):
 
 
 @pytest.fixture
-def worker_without_commands(task_story, monkeypatch):
+def worker_without_commands(task_story):
     task_story.run('task make "Tax" --brief "The tax" --environment main', actor=task_story.agent)
-    return person_dispatched_worker(task_story, monkeypatch)
+    return person_dispatched_worker(task_story)
 
 
-def person_dispatched_worker(story, monkeypatch):
+def person_dispatched_worker(story):
     agent = story.agent
     story.agent = story.user
     try:
@@ -141,8 +141,8 @@ def test_an_argument_cannot_change_the_program(worker_with_commands, test_argume
 
 
 @pytest.fixture
-def phase_worker(new_story, monkeypatch):
-    return start_planned_worker(new_story, monkeypatch, PHASE_DISPATCH)
+def phase_worker(new_story):
+    return start_planned_worker(new_story, PHASE_DISPATCH)
 
 
 def worker_test_hook(worker, *test_arguments):

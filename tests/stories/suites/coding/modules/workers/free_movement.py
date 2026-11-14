@@ -14,16 +14,16 @@ SEVERAL_TASKS = 55
 
 
 @pytest.fixture
-def task_worker(new_story, monkeypatch) -> StoryWorker:
+def task_worker(new_story) -> StoryWorker:
     """A worker of phase Build that holds task 1 started; tasks 2 and 3 of the phase are open, and task 4 is the
     one task of phase Ship."""
-    return worker_with_tasks(new_story, monkeypatch, 1)
+    return worker_with_tasks(new_story, 1)
 
 
 @pytest.fixture
-def two_tasks(new_story, monkeypatch) -> StoryWorker:
+def two_tasks(new_story) -> StoryWorker:
     """A worker of phase Build that holds tasks 1 and 2 started; task 3 of the phase is open."""
-    return worker_with_tasks(new_story, monkeypatch, 2)
+    return worker_with_tasks(new_story, 2)
 
 
 @pytest.fixture

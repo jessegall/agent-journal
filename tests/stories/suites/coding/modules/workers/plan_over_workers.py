@@ -8,7 +8,7 @@ from tests.stories.suites.coding.modules.workers.work_units import plan_card, wo
 SECOND_PHASE_DISPATCH = 'worker dispatch --test-command python=pytest --model sonnet --plan 1 --phase 2 --fresh "the release"'
 
 
-def two_workers(new_story, monkeypatch) -> tuple[StoryWorker, StoryWorker]:
+def two_workers(new_story) -> tuple[StoryWorker, StoryWorker]:
     """Plan 1 with no checkpoint before its last phase, with phase Build sent to a first worker and phase Ship to
     a second."""
     first = dispatched_story_worker(planned_story(new_story), PHASE_DISPATCH)
@@ -16,8 +16,8 @@ def two_workers(new_story, monkeypatch) -> tuple[StoryWorker, StoryWorker]:
     return first, second
 
 
-def test_75_a_phase_to_a_second_worker_is_its_unit_and_the_plan_agent_stays_the_first(new_story, monkeypatch):
-    first, second = two_workers(new_story, monkeypatch)
+def test_75_a_phase_to_a_second_worker_is_its_unit_and_the_plan_agent_stays_the_first(new_story):
+    first, second = two_workers(new_story)
     unit = worker_unit(second)
     card = plan_card(first)
     first.story.expect_rows(unit.phase is not None and unit.phase.id == 2, card["assignee"] is None or card["assignee"]["id"] != second.worker.id, detail=f"{unit} / {card}")
@@ -30,8 +30,8 @@ def test_76_a_window_of_one_worker_is_tested_on_its_commit(new_story):
     first.story.expect_rows(sources == ["agent_commit"], detail=str(sources))
 
 
-def test_77_the_holder_of_an_awaited_task_is_told_once(new_story, monkeypatch):
-    first, second = two_workers(new_story, monkeypatch)
+def test_77_the_holder_of_an_awaited_task_is_told_once(new_story):
+    first, second = two_workers(new_story)
     first.story.run("task depend 4 --on 1", actor=first.story.agent)
     commit_tasks_singly(first, tuple([1]))
     lines = [line for line in first.worker_lines() if "waits on your committed task" in line]

@@ -18,14 +18,14 @@ def card_task_ids(worker: StoryWorker) -> list[int]:
     return [task["id"] for task in card["facts"]["tasks"]]
 
 
-def test_a_worker_never_merged_counts_all_its_tasks(new_story, monkeypatch):
-    worker = unplanned_group_worker(new_story, monkeypatch)
+def test_a_worker_never_merged_counts_all_its_tasks(new_story):
+    worker = unplanned_group_worker(new_story)
     commit_tasks_singly(worker, tuple([1]))
     expect_value(card_task_ids(worker), [1, 2, 3])
 
 
-def test_a_worker_starts_again_from_zero_once_its_hand_in_is_merged(new_story, monkeypatch):
-    worker = unplanned_group_worker(new_story, monkeypatch)
+def test_a_worker_starts_again_from_zero_once_its_hand_in_is_merged(new_story):
+    worker = unplanned_group_worker(new_story)
     commit_tasks_singly(worker, (1, 2, 3))
     merge(worker)
     expect_value(card_task_ids(worker), [])
@@ -36,8 +36,8 @@ def test_a_worker_starts_again_from_zero_once_its_hand_in_is_merged(new_story, m
 
 
 @pytest.mark.real_git
-def test_a_part_merge_takes_the_merged_tasks_out_of_the_count_and_keeps_the_rest(new_story, monkeypatch):
-    worker = unplanned_group_worker(new_story, monkeypatch)
+def test_a_part_merge_takes_the_merged_tasks_out_of_the_count_and_keeps_the_rest(new_story):
+    worker = unplanned_group_worker(new_story)
     commit_tasks_singly(worker, (1, 2))
     worker.end_all_tests()
     number = agent_number(worker.story, worker.worker.id)

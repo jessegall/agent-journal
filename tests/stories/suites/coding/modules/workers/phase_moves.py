@@ -12,8 +12,8 @@ PLAN_BLOCK = 'plan block 1 --reason "the supplier is late"'
 
 
 @pytest.fixture
-def planned_worker(new_story, monkeypatch):
-    return start_planned_worker(new_story, monkeypatch)
+def planned_worker(new_story):
+    return start_planned_worker(new_story)
 
 
 @pytest.fixture

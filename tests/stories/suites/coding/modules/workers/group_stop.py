@@ -38,14 +38,14 @@ def expect_refused_with_status(worker) -> None:
 
 
 @pytest.fixture
-def phase_worker(new_story, monkeypatch):
-    return start_planned_worker(new_story, monkeypatch, PHASE_DISPATCH)
+def phase_worker(new_story):
+    return start_planned_worker(new_story, PHASE_DISPATCH)
 
 
 @pytest.fixture
-def three_proved(new_story, monkeypatch):
+def three_proved(new_story):
     """A worker of phase Build that started its three tasks and proved each with a test; nothing is committed."""
-    worker = worker_with_tasks(new_story, monkeypatch, BUILD_TASKS)
+    worker = worker_with_tasks(new_story, BUILD_TASKS)
     for task_id, test_line in ((1, TEST_LINE), (2, SECOND_TEST_LINE), (3, TEST_LINE)):
         prove_task(worker, task_id, 1, test_line)
     return worker
@@ -65,17 +65,17 @@ def crashed_building(phase_worker):
 
 
 @pytest.fixture
-def failed_commit(new_story, monkeypatch):
+def failed_commit(new_story):
     """A worker in no plan committed its task with a test and that test failed."""
-    worker = unplanned_worker(new_story, monkeypatch)
+    worker = unplanned_worker(new_story)
     worker.prove_commit(TEST_LINE)
     worker.story.run_listeners()
     worker.end_tests(1)
     return worker
 
 
-def test_a_worker_whose_two_tasks_are_committed_stops_quietly(new_story, monkeypatch):
-    worker = unplanned_worker_with_tasks(new_story, monkeypatch)
+def test_a_worker_whose_two_tasks_are_committed_stops_quietly(new_story):
+    worker = unplanned_worker_with_tasks(new_story)
     prove_task(worker, 1, 1, TEST_LINE)
     prove_task(worker, 2, 1, SECOND_TEST_LINE)
     worker.story.run(COMMIT, actor=worker.worker)
@@ -84,8 +84,8 @@ def test_a_worker_whose_two_tasks_are_committed_stops_quietly(new_story, monkeyp
     expect_silent_stop(worker)
 
 
-def test_a_single_task_committed_with_its_next_task_not_started_stops_quietly(new_story, monkeypatch):
-    worker = unplanned_worker(new_story, monkeypatch)
+def test_a_single_task_committed_with_its_next_task_not_started_stops_quietly(new_story):
+    worker = unplanned_worker(new_story)
     worker.prove_commit(TEST_LINE)
     worker.story.expect_hook_allowed(worker.session, HookSamples.stop())
     worker.program_ended()
@@ -115,8 +115,8 @@ def test_a_worker_whose_program_crashed_while_building_is_started_again(crashed_
     crashed_building.story.expect_rows(any(expected_nudge(WORKER_RESTARTED).matches_text(line) and "started again" in line for line in crashed_building.main_agent_lines()), len(unfinished_lines(crashed_building)) == 1)
 
 
-def test_a_worker_with_an_open_ask_still_reaches_its_parent_when_it_ends(new_story, monkeypatch):
-    worker = start_planned_worker(new_story, monkeypatch, PHASE_DISPATCH)
+def test_a_worker_with_an_open_ask_still_reaches_its_parent_when_it_ends(new_story):
+    worker = start_planned_worker(new_story, PHASE_DISPATCH)
     worker.story.expect_success(MERGER_OFF, actor=worker.story.user)
     worker.story.expect_success('wait stuck "the plan is unclear"', actor=worker.worker)
     worker.program_ended()

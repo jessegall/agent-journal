@@ -10,7 +10,7 @@ SETTING = f"{WORKER_PHASE_TEST_RUNS}"
 
 @pytest.fixture
 def worker(played, monkeypatch):
-    return start_planned_worker(played, monkeypatch)
+    return start_planned_worker(played)
 
 
 def expect_counted(worker, remaining):
@@ -19,8 +19,8 @@ def expect_counted(worker, remaining):
     expect_reply_line(reply, PHASE_TEST_RUN_ALLOWED.nudge(remaining=remaining).text)
 
 
-def test_another_worker_in_the_same_phase_has_its_own_count(played, monkeypatch):
-    first = start_planned_worker(played, monkeypatch, dispatch="worker dispatch --test-command python=pytest --model sonnet 1")
+def test_another_worker_in_the_same_phase_has_its_own_count(played):
+    first = start_planned_worker(played, dispatch="worker dispatch --test-command python=pytest --model sonnet 1")
     for remaining in (2, 1, 0):
         expect_counted(first, remaining)
     second_worker = first.added_worker("worker dispatch --test-command python=pytest --model sonnet 2")

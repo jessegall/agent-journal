@@ -20,13 +20,13 @@ def proved_phase(worker: StoryWorker, first_test: str = "", last_test: str = "")
 
 
 @pytest.fixture
-def declared_tests(new_story, monkeypatch) -> StoryWorker:
-    return proved_phase(worker_with_tasks(new_story, monkeypatch, BUILD_TASKS), TEST_LINE, SECOND_TEST_LINE)
+def declared_tests(new_story) -> StoryWorker:
+    return proved_phase(worker_with_tasks(new_story, BUILD_TASKS), TEST_LINE, SECOND_TEST_LINE)
 
 
 @pytest.fixture
-def undeclared_tests(new_story, monkeypatch) -> StoryWorker:
-    return proved_phase(worker_with_tasks(new_story, monkeypatch, BUILD_TASKS))
+def undeclared_tests(new_story) -> StoryWorker:
+    return proved_phase(worker_with_tasks(new_story, BUILD_TASKS))
 
 
 @pytest.fixture
@@ -36,13 +36,13 @@ def two_workers(new_story):
     return first, first.added_worker("worker dispatch --test-command python=pytest --model sonnet 2 3")
 
 
-def test_a_worker_cannot_make_a_proof_at_the_point_of_a_phases_own_test(new_story, monkeypatch):
-    worker = start_planned_worker(new_story, monkeypatch)
+def test_a_worker_cannot_make_a_proof_at_the_point_of_a_phases_own_test(new_story):
+    worker = start_planned_worker(new_story)
     worker.story.expect_refusal('proof make 0 --task 1 "cart.py:1, the phase"', "start at 1", actor=worker.worker)
 
 
-def test_the_phases_own_test_runs_in_the_background_on_the_commit_of_its_last_task_in_a_started_plan(new_story, monkeypatch):
-    worker = proved_phase(worker_with_tasks(new_story, monkeypatch, BUILD_TASKS, build_test=PHASE_TEST))
+def test_the_phases_own_test_runs_in_the_background_on_the_commit_of_its_last_task_in_a_started_plan(new_story):
+    worker = proved_phase(worker_with_tasks(new_story, BUILD_TASKS, build_test=PHASE_TEST))
     worker.story.expect_text(COMMIT, "committed tasks 1, 2, 3", actor=worker.worker)
     worker.story.expect_absent("proof list --task 3", PHASE_TEST, actor=worker.story.agent)
     lines = [process.line for process in worker.started_processes()]

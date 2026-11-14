@@ -120,8 +120,8 @@ def copied(new_story):
 
 
 @pytest.fixture
-def spent_case(new_story, monkeypatch):
-    worker = start_planned_worker(new_story, monkeypatch)
+def spent_case(new_story):
+    worker = start_planned_worker(new_story)
     worker.story.expect_success(f"setting set {WORKER_PHASE_TEST_RUNS} 0 --environment main", actor=worker.story.user)
     return MergerCase(worker.story, worker.repository, worker.worker, running_merger(worker.story, worker.worker))
 

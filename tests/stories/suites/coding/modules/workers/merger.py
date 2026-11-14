@@ -324,7 +324,7 @@ def test_the_merger_pass_shows_the_reason_on_the_worker_mark(new_story):
     story.expect_rows(len(marks) == 2, marks[0].detail == reason, marks[1].detail == "Another decision", marks[0].target_id == worker.id)
 
 
-def ended_merger_lines(new_story, monkeypatch, end) -> tuple[object, str]:
+def ended_merger_lines(new_story, end) -> tuple[object, str]:
     story, repository, worker, started = queued_story(new_story)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
@@ -341,13 +341,13 @@ def ended_merger_lines(new_story, monkeypatch, end) -> tuple[object, str]:
 
 
 @pytest.mark.parametrize("exit_code, fault", [(0, False), (137, True)])
-def test_the_merger_whose_program_exits_without_a_report_does_not_notify_the_main_agent(new_story, monkeypatch, exit_code, fault):
-    story, lines = ended_merger_lines(new_story, monkeypatch, lambda story, merger: story.expect_success(f"agent exited {merger.id} {exit_code}", actor=merger))
+def test_the_merger_whose_program_exits_without_a_report_does_not_notify_the_main_agent(new_story, exit_code, fault):
+    story, lines = ended_merger_lines(new_story, lambda story, merger: story.expect_success(f"agent exited {merger.id} {exit_code}", actor=merger))
     story.expect_rows(expected_nudge(HELPER_PROGRAM_FAULT).matches_text(lines) == fault)
 
 
-def test_the_merger_whose_session_ends_without_a_report_does_not_notify_the_main_agent(new_story, monkeypatch):
-    story, lines = ended_merger_lines(new_story, monkeypatch, lambda story, merger: story.end_session(merger))
+def test_the_merger_whose_session_ends_without_a_report_does_not_notify_the_main_agent(new_story):
+    story, lines = ended_merger_lines(new_story, lambda story, merger: story.end_session(merger))
     story.expect_rows(not expected_nudge(HELPER_PROGRAM_FAULT).matches_text(lines))
 
 
