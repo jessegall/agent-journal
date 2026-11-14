@@ -1,20 +1,15 @@
-from tests.stories.server.support.server_fixtures import person_server
+from tests.stories.server.support.server_fixtures import person_server  # noqa: F401
 
-import pytest
 
 import re
 
-from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.server.support.server_client import ServerStory, server_story
+from tests.integration.support.phone_pairing import paired_code
 
-PAIR_LINE = {"window": "phone.phones", "line": ["phone", "pair"], "environment": "main"}
+from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.server.support.server_client import server_story
+
 CODE_SHAPE = re.compile(r"^[A-Z]{4}-[A-Z]{4}$")
 UNKNOWN_CODE_REFUSAL = "this code pairs no phone"
-
-
-def paired_code(story: ServerStory) -> tuple[str, dict[str, object]]:
-    cookie = story.expect_viewer_login(story.viewer_key("Ada"))
-    return cookie, story.viewer_line_value(cookie, PAIR_LINE)
 
 
 def test_a_person_pairs_a_phone_with_a_short_code_and_a_link_that_carries_it(person_server):
