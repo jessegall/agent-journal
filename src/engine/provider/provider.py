@@ -72,6 +72,8 @@ class Provider(ABC):
     controls: ClassVar[Sequence[ControlGroup]] = ()
     compacts_headless: ClassVar[bool] = False
     has_windowed_compaction: ClassVar[bool] = False
+    # a program that cannot start without its launch variables refuses a launcher that passes none
+    needs_launch_variables: ClassVar[bool] = False
     session_variable: ClassVar[str]
     markers: ClassVar[Sequence[str]]
     models: ClassVar[Sequence[ProgramModel]]

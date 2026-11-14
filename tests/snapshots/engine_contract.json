@@ -6825,6 +6825,7 @@
         "controls: ClassVar[Sequence[ControlGroup]]",
         "compacts_headless: ClassVar[bool]",
         "has_windowed_compaction: ClassVar[bool]",
+        "needs_launch_variables: ClassVar[bool]",
         "session_variable: ClassVar[str]",
         "markers: ClassVar[Sequence[str]]",
         "models: ClassVar[Sequence[ProgramModel]]",
@@ -8762,6 +8763,13 @@
         "passed(self, disabled: DisabledScopes, subject: LoggedEvent | Change[Model]) -> WholeScopes",
         "causing_agent(self, event: LoggedEvent) -> int | None",
         "found_agent(self, event: LoggedEvent) -> int | None"
+      ]
+    },
+    "scope.unscoped_reads.UnscopedReads": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "record(model: type[Model]) -> None"
       ]
     },
     "seed.demo.Demo": {

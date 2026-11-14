@@ -64,6 +64,8 @@ class CodexProvider(Provider):
     under that folder's sessions link to the user's, and a session it names itself, which the first hook
     brings; a main session starts with the MCP servers' keys in its environment."""
 
+    needs_launch_variables = True
+
     name = "codex"
     title = "Codex"
     executable = "codex"
