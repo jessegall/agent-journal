@@ -1,0 +1,41 @@
+/* Round seven (report 1385, doc 1277). Loaded last.
+   1 nothing is cut mid-word  2 a number column on pages of one kind  3 the Files tree  4 cards  5 the profile editor */
+
+/* ---------- 1. nothing is cut mid-word ---------- */
+/* titles wrap at words and are always whole: in a list row and in a reader's heading */
+.lrow.r6 .t, .reader-head h2, .reader-head p { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: normal; text-wrap: pretty; }
+.reader-head h2 { text-wrap: balance; }
+/* a line of facts keeps whole facts: one that does not fit drops to a hidden second line, so a fact is shown whole or not at all */
+.r7-whole { display: flex; flex-wrap: wrap; column-gap: 6px; height: 1.45em; overflow: hidden; min-width: 0; white-space: nowrap; }
+.r7-whole > * { flex: none; }
+.r7-whole > .sep { color: var(--text-4); }
+.lrow.r6 .d.r7-whole { display: flex; }
+.r6-card-state { overflow: visible; text-overflow: clip; }
+.r6-card-state.r7-whole { height: 20px; align-items: center; }
+.r6-card-state .badge { flex: none; }
+.card p.r7-whole { display: flex; }
+
+/* ---------- 2. on a page of one kind the row is its number, then the title; kind and number only where kinds mix ---------- */
+.lrow.r6 .r7-n { padding-top: 1px; min-width: 4ch; text-align: right; color: var(--text-3); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.lrow.r6 .r7-n.hash { min-width: 7ch; font-family: var(--mono); text-align: left; }
+
+/* ---------- 3. Files: the comment and git columns take room only on a row that has one; the tree is wider ---------- */
+.ide-main > .tree { width: 280px; flex: none; }
+.tree-row .r6-cm:empty, .tree-row .gs:empty { display: none; }
+.tree-row .r6-cm { width: auto; padding-left: 4px; }
+
+/* ---------- 4. cards and readers ---------- */
+.card.r7-picked { border-color: color-mix(in srgb, var(--accent) 50%, var(--border)); }
+.r7-prop { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid color-mix(in srgb, var(--warn) 40%, var(--border)); border-radius: var(--r); color: var(--text-2); font-size: 12px; }
+.r7-prop > span { min-width: 0; }
+.r7-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.r7-sec { display: grid; gap: 8px; padding: 12px 0; border-top: 1px solid var(--border); }
+.r7-sec:first-child { border-top: 0; }
+.r7-sec > .lab { color: var(--text-4); font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.r7-field { display: grid; gap: 4px; font-size: 12px; color: var(--text-3); }
+.r7-line { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; align-items: center; }
+.r7-field input, .r7-line input, .r7-sec input { width: 100%; height: 30px; padding: 0 9px; border: 1px solid var(--border-2); border-radius: 7px; background: var(--bg); color: var(--text); outline: 0; }
+.r7-term { margin: 0; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--r); background: var(--term); color: var(--text-2); font: 12px/1.6 var(--mono); white-space: pre; overflow: auto; max-height: 260px; }
+
+/* ---------- 5. profile editor: a fixed value is text, not a disabled field ---------- */
+.pf .ctl input[readonly] { border-color: transparent; background: none; padding: 0; color: var(--text-2); font-family: var(--mono); cursor: default; text-align: right; }

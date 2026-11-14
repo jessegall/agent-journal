@@ -17,7 +17,7 @@ class RunDrain:
     def __init__(self, home: JournalHome, limit_seconds: float = RUN_DRAIN_LIMIT_SECONDS, poll_seconds: float = POLL_SECONDS) -> None:
         self.outputs, self.files, self.limit_seconds, self.poll_seconds = OutputFolder(home), ServerFiles(home), limit_seconds, poll_seconds
 
-    def wait(self) -> None:
+    def drain(self) -> None:
         self.files.mark_run_lock()
         PolledWait(self.limit_seconds, self.poll_seconds).poll(lambda: not self.running_folders())
 

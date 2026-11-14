@@ -6,6 +6,7 @@ class AffectedTestState(StrEnum):
 
     QUEUED = "queued"
     PICKING = "picking"
+    LISTING = "listing"
     TESTING = "testing"
     PASSED = "passed"
     FAILED = "failed"

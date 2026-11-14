@@ -38,13 +38,14 @@ func NamedPath(home string, name string) string {
 	return filepath.Join("/tmp", "journal-"+hex.EncodeToString(sum[:])[:16]+".sock")
 }
 
-// Transport sends HTTP requests over the server's Unix socket.
+// Transport sends HTTP requests over the server's Unix socket, each on its own connection: every caller asks once,
+// so a kept connection would only sit idle on the server.
 func Transport(path string) http.RoundTripper {
 	dial := func(limit context.Context, _, _ string) (net.Conn, error) {
 		var dialer net.Dialer
 		return dialer.DialContext(limit, "unix", path)
 	}
-	return &http.Transport{DialContext: dial}
+	return &http.Transport{DialContext: dial, DisableKeepAlives: true}
 }
 
 // Client speaks HTTP over the server's Unix socket.

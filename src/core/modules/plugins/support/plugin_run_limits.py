@@ -27,9 +27,17 @@ class PluginRunLimits(ProcessTypeLimits):
         self.queries, self.folders, self.settings, self.machine, self.memory = queries, folders, settings, machine, memory
 
     def admissions(self, waiting: Sequence[Process]) -> PluginRunAdmission:
+        rules = self.rules(waiting)
+        if not rules:
+            return PluginRunAdmission({}, 0, {})
+        needs_memory = any(rule.declared.memory_mb for rule in rules.values())
+        machine = {(plugin, category): self.machine.count(plugin, category) for (plugin, category, _), rule in rules.items() if rule.declared.scope is RunScope.MACHINE}
+        return PluginRunAdmission(rules, self.memory.megabytes() if needs_memory else 0, machine)
+
+    def rules(self, waiting: Sequence[Process]) -> dict[tuple[str, str, int], PluginRunRule]:
         categories = {(process.plugin, process.run_name, process.environment_id) for process in waiting if process.plugin and process.run_name}
         if not categories:
-            return PluginRunAdmission({}, 0, {})
+            return {}
         plugins = {plugin.name: plugin for plugin in self.queries.query(Plugin).matching(Among("name", sorted({plugin for plugin, _, _ in categories}))).every_row(PLUGINS_REASON)}
         environments = {environment.id: environment.name for environment in self.queries.query(Environment).find_many(sorted({environment for _, _, environment in categories}))}
         manifests = {name: PluginManifest.read(self.folders.code(name)) for name in plugins}
@@ -42,6 +50,4 @@ class PluginRunLimits(ProcessTypeLimits):
                 continue
             limit = values[(plugin, environment)].get(declared.concurrent_setting)
             rules[(plugin, category, environment)] = PluginRunRule(declared, limit if isinstance(limit, int) and limit > 0 else None)
-        needs_memory = any(rule.declared.memory_mb for rule in rules.values())
-        machine = {(plugin, category): self.machine.count(plugin, category) for (plugin, category, _), rule in rules.items() if rule.declared.scope is RunScope.MACHINE}
-        return PluginRunAdmission(rules, self.memory.megabytes() if needs_memory else 0, machine)
+        return rules

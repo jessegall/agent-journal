@@ -1,3 +1,4 @@
+from engine.database.write_turns import WriteTurns
 import io
 import json
 import shlex
@@ -8,7 +9,6 @@ from time import perf_counter
 
 from engine.database.repeated_lines import RepeatedLines
 from engine.database.request_watch import RequestWatch
-from engine.request.request_queue import RequestQueue
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.database.kept_rows import KeptRows
@@ -30,7 +30,7 @@ from engine.registry.errors.stale_registry_error import StaleRegistryError
 from engine.subcommand.subcommand import Subcommand
 from core.modules.viewer.commands.support.window_lines import WindowLines
 from server.work.request_limits import CLI_LIMIT_SECONDS
-from server.work.listeners.listener_thread import ListenerThread
+from server.work.listeners.listener_wake_router import ListenerWakeRouter
 from server.work.listeners.listener_wake import ListenerWake
 from server.viewer.line_answer import LineAnswer
 from server.errors.share_refusal import ShareRefusal
@@ -47,8 +47,9 @@ FLAG_SEPARATOR = "--"
 class LineRoute:
     """Checks and runs viewer lines, sharing one read container for a batch and returning each line's answer."""
 
-    def __init__(self, home: JournalHome, listener_thread: ListenerThread, reported: ReportedFindings, request_queue: RequestQueue | None = None, completion_callback: Callable[[Container, list[str]], None] = ignore_completed) -> None:
-        self.line_run = LineRun(home, CLI_LIMIT_SECONDS, ListenerWake(listener_thread), reported, request_queue, completion_callback)
+    def __init__(self, home: JournalHome, wakes: ListenerWakeRouter, reported: ReportedFindings, completion_callback: Callable[[Container, list[str]], None] = ignore_completed,
+                 turns: WriteTurns | None = None) -> None:
+        self.line_run = LineRun(home, CLI_LIMIT_SECONDS, ListenerWake(wakes), reported, completion_callback, turns)
 
     def answer(self, window: str, argv: list[str], person_id: int, environment: str, shared: SharedRow | None = None) -> LineAnswer:
         return self.timed_single_answer(window, argv, person_id, environment, shared).answer

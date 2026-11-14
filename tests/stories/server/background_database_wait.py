@@ -7,6 +7,7 @@ import pytest
 from engine.database.listener_cursor_table import ListenerCursorTable
 from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from server.work.journal_round import JournalRound
+from server.work.per_round_container import PerRoundContainer
 from server.work.listeners.ordinary_listener_work import OrdinaryListenerWork
 from server.work.round_work import RoundWork
 from tests.stories.core.support.fixtures import UserJoined
@@ -34,7 +35,7 @@ def test_an_ordinary_listener_round_waits_past_five_seconds_for_a_writer(new_sto
     try:
         connection.execute("BEGIN IMMEDIATE")
         with ThreadPoolExecutor(1) as pool:
-            running = pool.submit(JournalRound(story.home, "ordinary listener", work).run)
+            running = pool.submit(JournalRound(story.home, "ordinary listener", work, PerRoundContainer(story.home)).run)
             try:
                 story.expect_rows(work.entered.wait(3))
                 with pytest.raises(TimeoutError):

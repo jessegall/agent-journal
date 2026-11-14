@@ -1,3 +1,4 @@
+from core.modules.developer.support.developer_settings import HOOK_DURATIONS_SETTING
 from engine.testing.stories.story_fixture import StoryFixture
 
 from engine.performance.timing import Timing
@@ -9,6 +10,7 @@ from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
 
 MASTER = "journal.core.developer.tools"
 HOOKS = "journal.core.developer.tools.hooks"
+TERMINAL_NUDGES = f"{HOOKS}.terminal-nudges"
 
 
 def terminal_line(story) -> str:
@@ -55,15 +57,20 @@ def test_each_line_sent_to_the_agent_shows_in_the_terminal_while_the_nudges_sett
     story = new_story(fixture=UserBuilder)
     expect_terminal_hook_without(story, "s-1", "to the agent:")
     story.run(f"setting switch {MASTER} on --project", actor=story.user)
+    story.expect_success(f"setting set {TERMINAL_NUDGES} true --project", actor=story.user)
     story.run('task make "Fix the cart" --environment main', actor=story.user)
     expect_terminal_hook_with(story, "s-1", TASK_ASSIGNMENT.nudge(task=1).text)
 
 
 class HookLogging(StoryFixture):
+    """The developer tools with call costs and nudges in the terminal switched on."""
+
     parent = UserBuilder
 
     def steps(self, story):
         story.run(f'setting switch {MASTER} on --project', actor=story.user)
+        story.expect_success(f'setting set {HOOK_DURATIONS_SETTING} true --project', actor=story.user)
+        story.expect_success(f'setting set {TERMINAL_NUDGES} true --project', actor=story.user)
 
 
 def expect_terminal_line(story, expected) -> None:

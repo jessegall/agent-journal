@@ -23,7 +23,7 @@ class AdmissionQueue(StoryFixture):
     def steps(self, story):
         story.run("agent start s-reader claude worker --environment main")
         story.run(f"setting set {ProcessSetting.READERS_FORCED.key} off --environment main", actor=story.user)
-        story.run(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --environment main", actor=story.user)
+        story.run(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} 4 --environment main", actor=story.user)
 
 
 def test_main_run_is_granted_through_run_slots_at_once_while_worker_waits(new_story):
@@ -96,13 +96,13 @@ def test_reads_and_journal_commands_in_one_line_never_queue(new_story):
     story.expect_rows("--queue" not in str(reply.updated_input), not process.is_queue_run)
 
 
-def test_a_mixed_read_and_build_line_never_queues(new_story):
+def test_a_mixed_read_and_build_line_waits_in_the_lane_of_its_build(new_story):
     story = install_runner(new_story(fixture=AdmissionQueue))
     reply = story.hook("s-1", HookSamples.shell("rg cart src && make package",
                        ShellPart("rg", CommandCategory.SEARCH, ["cart", "src"]),
                        ShellPart("make", CommandCategory.BUILD, ["package"])))
     expect_reply_allowed(reply)
-    story.expect_rows("--queue" not in str(reply.updated_input))
+    story.expect_rows("--queue" in str(reply.updated_input))
 
 
 def test_a_line_of_tests_and_builds_queues_as_a_whole(new_story):
@@ -115,7 +115,7 @@ def test_a_line_of_tests_and_builds_queues_as_a_whole(new_story):
     story.expect_rows("--queue" in str(reply.updated_input), process.is_queue_run)
 
 
-def test_a_saved_build_keeps_the_read_before_it_out_of_the_queue(new_story):
+def test_a_saved_build_waits_with_the_read_before_it_as_one_line(new_story):
     story = install_runner(new_story(fixture=AdmissionQueue))
     story.expect_success('alias add cart-package "make package" --category build --agents', actor=story.agent)
     reply = story.hook("s-1", HookSamples.shell("rg cart src && journal cart-package",
@@ -123,7 +123,7 @@ def test_a_saved_build_keeps_the_read_before_it_out_of_the_queue(new_story):
                        ShellPart("journal", CommandCategory.JOURNAL, ["cart-package"], subcommand="cart-package")))
     expect_reply_allowed(reply)
     process = story.container.get(Queries).query(Process).newest().page(1, 1).rows[0]
-    story.expect_rows("--queue" not in str(reply.updated_input), not process.is_queue_run)
+    story.expect_rows("--queue" in str(reply.updated_input), not process.is_queue_run)
 
 
 def test_stopping_a_waiting_run_clears_its_queue_timestamp(new_story):

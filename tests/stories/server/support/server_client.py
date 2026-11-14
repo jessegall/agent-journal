@@ -1,10 +1,14 @@
+from engine.execution.instant_lane_reading import InstantLaneReading
+import threading
+import sqlite3
+from server.execution.session_starters import SessionStarters
+from engine.time.polled_wait import PolledWait
 from collections.abc import Callable
 from engine.database.reported_findings import ReportedFindings
 import http.client
 import json
 import os
 import shlex
-import subprocess
 import socket
 import time
 from unittest.mock import patch
@@ -29,7 +33,6 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story import Story
 from tests.stories.server.support.story_line_route import StoryLineRoute
 from engine.testing.expectations.line_outcome import LineOutcome
-from core.modules.drivers.models.hook_call import HookCall
 from core.modules.skills.models.agent_skill import AgentSkill
 from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.module_finder import ModuleFinder
@@ -41,9 +44,10 @@ from server.request.journal_server import JournalServer
 from engine.serving.server_limits import DRAIN_LIMIT_SECONDS
 from server.context.server_context import ServerContext
 from server.hook.hook_database import HookDatabase
-from server.enums.queue_priority import QueuePriority
 from server.work.journal_round import JournalRound
+from server.work.kept_round_container import KeptRoundContainer
 from server.work.listeners.listener_thread import ListenerThread
+from server.work.listeners.listener_wake_router import ListenerWakeRouter
 from server.work.listeners.listener_wake import ListenerWake
 from server.work.listeners.listener_work import ListenerWork
 from server.request.request_handler import EXIT_CODE_TRAILER, RequestHandler
@@ -65,8 +69,8 @@ POLL_SECONDS = 0.05
 STORY_HOOK_LIMIT_SECONDS = 0.5
 # Longer than the hook limit, as the twenty seconds of a real stop are longer than its three and a half.
 STORY_STOP_LIMIT_SECONDS = 2.0
-STORY_RUNNING_HOOKS_COUNT = 1
-LOCKED_HOOK_WAIT_SECONDS = 1.0
+STORY_INSTANT_CAPACITY = 1
+HOOK_POLL_SECONDS = 0.01
 
 
 @dataclass(frozen=True)
@@ -89,9 +93,22 @@ class ServerStory:
     def __init__(self, story: Story, socket_path: Path, context: ServerContext) -> None:
         self.story, self.socket_path, self.context = story, socket_path, context
 
-    def expect_locked_hook_answer(self, body: object, text: str, locked_seconds: float = LOCKED_HOOK_WAIT_SECONDS) -> None:
-        with self.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, locked_seconds):
+    # a main agent's hook never waits for a place, so the hook is held by another writer holding the database, for
+    # the whole hook or, with locked seconds, until the writer lets go part-way
+    def expect_locked_hook_answer(self, body: object, text: str, locked_seconds: float | None = None) -> None:
+        if locked_seconds is None:
+            with self.story.busy_database():
+                self.expect_hook_answer("/hook", body, 200, text)
+            return
+        writer = sqlite3.connect(self.story.home.database, timeout=0, autocommit=True, check_same_thread=False)
+        writer.execute("BEGIN IMMEDIATE")
+        release = threading.Timer(locked_seconds, writer.execute, ["ROLLBACK"])
+        release.start()
+        try:
             self.expect_hook_answer("/hook", body, 200, text)
+        finally:
+            release.join(TIMEOUT_SECONDS)
+            writer.close()
 
     def post_hook_disconnect(self, body: dict[str, object]) -> None:
         """Holds the hook in the queue until its client has closed, after the server took the connection, as a
@@ -107,12 +124,11 @@ class ServerStory:
                 finished.set()
 
         with patch.object(HookEndpoint, "answer_lost", drop_record):
-            with self.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, LOCKED_HOOK_WAIT_SECONDS), socket.socket(socket.AF_UNIX) as connection:
+            with self.story.busy_database(), socket.socket(socket.AF_UNIX) as connection:
                 connection.connect(str(self.socket_path))
                 connection.sendall(f"POST /hook HTTP/1.1\r\nHost: journal\r\nContent-Length: {len(data)}\r\nConnection: close\r\n\r\n".encode() + data)
-                queue = self.context.hook_database.queue
-                with queue.changed:
-                    assert queue.changed.wait_for(lambda: bool(queue.waiting_hooks), TIMEOUT_SECONDS)
+                executions = self.context.hook_database.executions
+                assert PolledWait(TIMEOUT_SECONDS, HOOK_POLL_SECONDS).poll(lambda: any(entry.is_running for entry in executions.read())), "the server never took the hook"
             assert finished.wait(TIMEOUT_SECONDS), f"the server never completed the lost hook {body['firing']}"
 
     def expect_hook_line_soon(self, text: str, firing: str) -> None:
@@ -265,7 +281,7 @@ class ServerStory:
 
     def expect_busy_timeout(self, seconds: float) -> None:
         idle_thread = ListenerThread(lambda: None, lambda error: None)
-        assert CliEndpoint(self.story.home, ListenerWake(idle_thread), ReportedFindings()).line_run.busy_timeout_seconds == seconds
+        assert CliEndpoint(self.story.home, ListenerWake(ListenerWakeRouter.waking(idle_thread)), ReportedFindings()).line_run.busy_timeout_seconds == seconds
 
     def expect_stale_answer_released_files(self, line: str, task_listing: LineOutcome) -> None:
         answer = request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "folder": "/"})
@@ -349,36 +365,37 @@ def local_viewer(login: ViewerLogin, routes: ViewerRoutes) -> ViewerEndpoint:
 
 
 @contextmanager
-def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), real_time: bool = False):
+def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), real_time: bool = False, instant_capacity: int = STORY_INSTANT_CAPACITY):
     without_start_skills(story)
     story.run(f"setting make {AVATAR_KEY} false")
-    with started_server(story.home, code_folders, listener_thread_started, viewer_factory, journal_door, SYSTEM_CLOCK if real_time else story.clock) as (socket_path, context):
+    with started_server(story.home, code_folders, listener_thread_started, viewer_factory, journal_door, SYSTEM_CLOCK if real_time else story.clock, instant_capacity) as (socket_path, context):
         yield ServerStory(story, socket_path, context)
 
 
 @contextmanager
-def started_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), clock: Clock = SYSTEM_CLOCK):
-    with running_server(home, code_folders, listener_thread_started, viewer_factory, journal_door, clock) as (_, socket_path, context):
+def started_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), clock: Clock = SYSTEM_CLOCK, instant_capacity: int = STORY_INSTANT_CAPACITY):
+    with running_server(home, code_folders, listener_thread_started, viewer_factory, journal_door, clock, instant_capacity) as (_, socket_path, context):
         yield socket_path, context
 
 
 @contextmanager
-def running_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), clock: Clock = SYSTEM_CLOCK):
+def running_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), clock: Clock = SYSTEM_CLOCK, instant_capacity: int = STORY_INSTANT_CAPACITY):
     with patch.object(ProcessTable, "rows", FixedProcessTable([]).rows):
         files = ServerFiles(home)
         assert files.acquire_lock(), "a server already holds the lock of this journal"
         files.clear_leftover_socket()
-        hook_database = HookDatabase(home, running_hooks_count=STORY_RUNNING_HOOKS_COUNT)
-        listener_round = JournalRound(home, "listener thread", ListenerWork(), queue=hook_database.queue)
-        listener_thread = ListenerThread(listener_round.run, listener_round.report)
-        phones = PhoneSessions(home, listener_thread)
+        hook_database = HookDatabase(home, instant_capacity=instant_capacity)
+        listener_round = JournalRound(home, "listener thread", ListenerWork(), KeptRoundContainer(home))
+        listener_thread = ListenerThread(listener_round.run, listener_round.report, stop_callback=listener_round.close)
+        wakes = ListenerWakeRouter.waking(listener_thread)
+        phones = PhoneSessions(home, wakes)
         login = ViewerLogin(phones, ShareSessions(phones.journal_output, clock))
         reported = ReportedFindings()
-        context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, clock.timestamp(), listener_thread,
-                                hook_database, viewer_factory(login, ViewerRoutes(home, listener_thread, login, reported, hook_database.queue, clock)), ServerTunnel(home), reported, journal_door, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS, STORY_STOP_LIMIT_SECONDS)
+        context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, clock.timestamp(), wakes,
+                                hook_database, viewer_factory(login, ViewerRoutes(home, wakes, login, reported, hook_database.viewer_tickets, clock)), ServerTunnel(home), reported, journal_door, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS, STORY_STOP_LIMIT_SECONDS)
         context.request_trace.refresh(synced_database_container(home, hook_database.databases[0]))
-        context.viewer.routes.line_route = StoryLineRoute(home, listener_thread, reported, completion_callback=context.request_trace.completed)
-        context.viewer.routes.line_route.line_run.request_queue = hook_database.queue
+        InstantLaneReading.shared(home).install(lambda: [entry.reading() for entry in hook_database.executions.read()], hook_database.instant_capacity)
+        context.viewer.routes.line_route = StoryLineRoute(home, wakes, reported, completion_callback=context.request_trace.completed)
         server = JournalServer(str(files.socket), RequestHandler, context)
         if listener_thread_started:
             listener_thread.start()
@@ -396,6 +413,8 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
             server.drain(DRAIN_LIMIT_SECONDS)
             context.request_trace.close()
             context.hook_database.close()
+            SessionStarters.shared(home).close()
+            InstantLaneReading.shared(home).remove()
             files.remove_server_files()
             server.server_close()
             files.release_lock()

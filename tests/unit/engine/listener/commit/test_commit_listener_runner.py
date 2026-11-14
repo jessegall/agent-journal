@@ -21,7 +21,7 @@ from engine.database.listener_cursor_table import ListenerCursorTable
 from engine.database.statement import Statement
 from engine.listener.commit.commit_listener import CommitListener
 import engine.listener.commit.commit_listener_runner as runner_module
-from engine.listener.commit.commit_listener_runner import LISTENER_TIME_LIMIT_SETTING, PLUGIN_RUN_ORDER, CommitListenerRunner
+from engine.listener.commit.commit_listener_runner import LISTENER_TIME_LIMIT_ON_SETTING, LISTENER_TIME_LIMIT_SETTING, PLUGIN_RUN_ORDER, CommitListenerRunner
 from engine.setting.setting_source import SettingSource
 from engine.performance.performance_state import PerformanceState
 from engine.dotted_path.dotted_path import DottedPath
@@ -272,6 +272,15 @@ def test_running_again_with_nothing_new_handles_nothing(tmp_path, runs: int):
     assert HANDLED == []
 
 
+def test_commit_listener_runner_reset_clears_round_state(tmp_path):
+    container = container_with(tmp_path, PausedItemCounter)
+    runner = container.get(CommitListenerRunner)
+    runner.positions, runner.positions_stale = {PausedItemCounter.name: 99}, True
+    runner.reset()
+    assert (runner.positions, runner.positions_stale) == ({}, False)
+    assert runner.known_positions(runner.commit_entries())[PausedItemCounter.name] == cursor(container, PausedItemCounter.name)
+
+
 class FailingPrepareListener(CommitListener[Created[Item]]):
     """Fails while it prepares the rows of its events."""
 
@@ -306,7 +315,7 @@ def test_a_listener_whose_prepare_fails_holds_back_only_itself_and_is_skipped_pa
 
 def test_a_listener_over_the_time_limit_runs_no_more_events_and_keeps_its_cursor(tmp_path, monkeypatch):
     container = container_with(tmp_path, NewItemPause)
-    container.get(SettingSource).values[LISTENER_TIME_LIMIT_SETTING] = 100
+    container.get(SettingSource).values.update({LISTENER_TIME_LIMIT_ON_SETTING: True, LISTENER_TIME_LIMIT_SETTING: 100})
     readings = iter(float(second) for second in range(100))
     monkeypatch.setattr(runner_module, "perf_counter", lambda: next(readings))
     container.get(Bus).run(MakeItem(title="Dune"), AGENT)
@@ -337,7 +346,7 @@ class SlowRoundPause(NewItemPause):
 
 def test_a_listener_of_a_slow_round_is_never_held_by_the_time_limit(tmp_path, monkeypatch):
     container = container_with(tmp_path, SlowRoundPause)
-    container.get(SettingSource).values[LISTENER_TIME_LIMIT_SETTING] = 100
+    container.get(SettingSource).values.update({LISTENER_TIME_LIMIT_ON_SETTING: True, LISTENER_TIME_LIMIT_SETTING: 100})
     readings = iter(float(second) for second in range(100))
     monkeypatch.setattr(runner_module, "perf_counter", lambda: next(readings))
     container.get(Bus).run(MakeItem(title="Dune"), AGENT)
@@ -345,3 +354,14 @@ def test_a_listener_of_a_slow_round_is_never_held_by_the_time_limit(tmp_path, mo
     runner = container.get(CommitListenerRunner)
     runner.run_program_stops()
     assert (HANDLED, runner.held_listeners) == (["pause 1", "pause 2"], set())
+
+
+def test_a_lagging_cursor_asks_each_distinct_name_once(tmp_path, monkeypatch):
+    container = container_with(tmp_path, PausedItemCounter)
+    for number in range(40):
+        container.get(Bus).run(MakeItem(title=f"Book {number}"), AGENT)
+    asked: list[str] = []
+    matches = EventPattern.matches
+    monkeypatch.setattr(EventPattern, "matches", lambda pattern, name: asked.append(name) or matches(pattern, name))
+    container.get(CommitListenerRunner).run()
+    assert len(asked) == len(set(asked))

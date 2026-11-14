@@ -18,6 +18,7 @@ class ProofLifecycle(Lifecycle):
     run = Move("run", [ProofState.QUEUED], ProofState.RUNNING)
     check = Move("check", [ProofState.SHOWN, ProofState.COMMITTED, ProofState.RUNNING], ProofState.CHECKED)
     short = Move("short", [ProofState.SHOWN, ProofState.COMMITTED, ProofState.RUNNING, ProofState.CHECKED], ProofState.SHORT)
+    end_with_worktree = Move("end_with_worktree", [ProofState.QUEUED, ProofState.RUNNING], ProofState.SHORT)
     revise = Move("revise", [ProofState.SHORT], ProofState.SHOWN)
     return_short = Move("return_short", [ProofState.SHORT], ProofState.SHORT)
     return_checked = Move("return_checked", [ProofState.CHECKED], ProofState.CHECKED)

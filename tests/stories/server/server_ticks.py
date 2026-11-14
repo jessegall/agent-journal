@@ -17,8 +17,10 @@ def test_the_agent_ticks_of_the_ticker_reach_each_open_agents_rules_and_a_silenc
     story = new_story(SAMPLES, fixture=LeadLocked)
     agent_ticks = next(handler for handler in Ticker.module_handlers(ModuleFinder(story.home)) if handler.label == "agent ticks")
     ticker = Ticker(story.home, [agent_ticks], lambda: None, lambda: 0.0)
+    ticker.start()
     ticker.tick()
     ticker.join(5.0)
+    ticker.stop(5.0)
     story.expect_text(f"rule-history list --agent {story.agent.id}", "samples.return-line", "silenced")
     story.expect_absent(f"hook-call list --agent {story.agent.id}", "tick")
 
@@ -40,6 +42,7 @@ def test_a_slow_tick_shows_a_warning_mark_and_tells_the_main_agent_when_the_deve
     story.expect_no_text("chat-mark main --environment main --json", "over its limit")
     story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)
     story.expect_success(f"setting set {SLOW_TICKS_SETTING} true --project", actor=story.user)
+    story.expect_success(f"setting set {EXCEPTION_LINES_SETTING} true --project", actor=story.user)
     tools.run(SlowTickTool, 51)
     story.run_listeners()
     story.expect_text("chat-mark main --environment main --json", "A tick of the journal's clock cost 51 points", "tick costly")

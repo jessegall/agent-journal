@@ -9,8 +9,6 @@ class QueueInspectorJson(TypedDict):
     parallel_limit: int
     limit_setting: str
     suite_limits: list[dict[str, object]]
-    count_main_runs: bool
-    main_spots_setting: str
     used_slots: int
     waiting_count: int
     halted: bool

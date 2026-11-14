@@ -1,3 +1,4 @@
+from engine.execution.limits.default_lane_limits import RUN_SLOT_COST
 from datetime import timedelta
 
 from engine.enums.command_category import CommandCategory
@@ -95,7 +96,7 @@ def test_a_run_ending_before_its_timeout_is_not_reported_as_timed_out(new_story)
 
 def test_time_waiting_in_the_queue_does_not_consume_the_timeout(new_story):
     story = new_story(fixture=QueueAgents)
-    story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --environment main", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} {RUN_SLOT_COST} --environment main", actor=story.user)
     active = queued(story, "make active")
     waiting = queued(story, "make waiting")
     story.expect_success(f"output timeout {waiting.id} 10s", actor=story.user)

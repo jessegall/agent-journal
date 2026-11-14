@@ -1,10 +1,11 @@
+from engine.database.write_turns import WriteTurns
 from engine.time.clock import Clock
 from engine.database.reported_findings import ReportedFindings
 from engine.journal.journal_home import JournalHome
-from server.work.listeners.listener_thread import ListenerThread
+from server.work.listeners.listener_wake_router import ListenerWakeRouter
 from server.viewer.buttons_route import ButtonsRoute
 from server.viewer.chat_declarations_route import ChatDeclarationsRoute
-from server.hook.server_queue import ServerQueue
+from server.execution.viewer_tickets import ViewerTickets
 from server.viewer.event_stream import EventStream
 from server.viewer.file_route import FileRoute
 from server.viewer.line_route import LineRoute
@@ -27,17 +28,18 @@ class ViewerRoutes:
     skills, the files the chat carries, the session the cookie opened, a share link's opening,
     what waits on the user, and whether the server is restarting."""
 
-    def __init__(self, home: JournalHome, listener_thread: ListenerThread, login: ViewerLogin, reported: ReportedFindings, queue: ServerQueue, clock: Clock) -> None:
-        self.queue, self.clock = queue, clock
+    def __init__(self, home: JournalHome, wakes: ListenerWakeRouter, login: ViewerLogin, reported: ReportedFindings, viewer_tickets: ViewerTickets, clock: Clock,
+                 turns: WriteTurns | None = None) -> None:
+        self.viewer_tickets, self.clock = viewer_tickets, clock
         self.request_trace = RequestTrace(home, clock)
         self.priorities = self.request_trace.priorities
-        self.line_route, self.event_stream = LineRoute(home, listener_thread, reported, queue, self.request_trace.completed), EventStream(home)
+        self.line_route, self.event_stream = LineRoute(home, wakes, reported, self.request_trace.completed, turns), EventStream(home, turns)
         self.window_data = WindowDataRoute(self.priorities, self.line_route)
-        self.module_files, self.windows_route = ModuleFiles(home), WindowsRoute(home)
-        self.buttons_route = ButtonsRoute(home)
-        self.chat_declarations_route, self.session_route = ChatDeclarationsRoute(home), SessionRoute(login, home)
-        self.waiting_route, self.server_state_route = WaitingRoute(home), ServerStateRoute(home, clock)
-        self.skills_route = SkillsRoute(home)
+        self.module_files, self.windows_route = ModuleFiles(home, turns), WindowsRoute(home, turns)
+        self.buttons_route = ButtonsRoute(home, turns)
+        self.chat_declarations_route, self.session_route = ChatDeclarationsRoute(home, turns), SessionRoute(login, home, turns)
+        self.waiting_route, self.server_state_route = WaitingRoute(home, turns), ServerStateRoute(home, clock)
+        self.skills_route = SkillsRoute(home, turns)
         self.share_route = ShareRoute(login.shares)
         self.notices_route = PushRoute(login, login.phones)
         self.file_route = FileRoute(home)

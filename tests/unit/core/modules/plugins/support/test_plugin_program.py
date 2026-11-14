@@ -45,7 +45,7 @@ def test_a_missing_or_refused_process_group_still_finishes_output(monkeypatch, f
     process = Mock(pid=123)
     monkeypatch.setattr("core.modules.plugins.support.plugin_program.os.killpg", Mock(side_effect=failure))
     PluginProgram.stop(process)
-    process.communicate.assert_called_once_with(timeout=STOP_LIMIT_SECONDS)
+    process.communicate.assert_called_once_with(None, timeout=STOP_LIMIT_SECONDS)
 
 
 @pytest.mark.parametrize("failure", [ProcessLookupError, PermissionError])
@@ -54,7 +54,7 @@ def test_output_cleanup_stays_bounded_after_a_group_signal_fails(monkeypatch, fa
     process.communicate.side_effect = subprocess.TimeoutExpired("plugin", STOP_LIMIT_SECONDS)
     monkeypatch.setattr("core.modules.plugins.support.plugin_program.os.killpg", Mock(side_effect=failure))
     PluginProgram.stop(process)
-    process.communicate.assert_called_once_with(timeout=STOP_LIMIT_SECONDS)
+    process.communicate.assert_called_once_with(None, timeout=STOP_LIMIT_SECONDS)
     process.stdin.close.assert_called_once()
     process.stdout.close.assert_called_once()
 

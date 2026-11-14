@@ -154,7 +154,7 @@ class Registry:
                                     tuple(suite.get("windows", [])), {page: loaded_layout(shape) for page, shape in suite.get("layouts", {}).items()},
                                     {page: tuple(LayoutPreset(preset["key"], preset["name"], preset["text"], loaded_layout(preset["shape"])) for preset in presets)
                                      for page, presets in suite.get("presets", {}).items()},
-                                    AgentPolicy(**{name: tuple(roles) for name, roles in suite.get("agent_policy", {}).items()}), suite.get("task_assigner", ""), suite.get("shipped", False))
+                                    AgentPolicy.restored(suite.get("agent_policy", {})), suite.get("task_assigner", ""), suite.get("shipped", False))
                          for suite in entries.get("suites", [])),
             drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]),
                                       tuple(driver.get("guards", [])))

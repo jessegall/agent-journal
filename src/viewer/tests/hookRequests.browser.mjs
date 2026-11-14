@@ -25,11 +25,11 @@ try {
     await page.screenshot({path: '/tmp/pictures-request-filter/filters.png'});
     await page.keyboard.press('Escape');
     await page.locator('[data-feed-pause]').click();
-    await page.locator("[data-request-queue-open]").click();
-    await page.locator("[data-request-queue]").waitFor();
-    await page.getByText("No waiting requests.").waitFor();
+    await page.locator("[data-executions-open]").click();
+    await page.locator("[data-executions]").waitFor();
+    await page.locator('[data-lane="long"]').waitFor();
     await page.screenshot({path: "/tmp/journal-request-queue-647.png"});
-    await page.getByRole("button", {name: "Close the request queue"}).click();
+    await page.getByRole("button", {name: "Close the executions"}).click();
     assert.deepEqual(await page.locator("[data-hook-column]").allTextContents(), ["Event", "Tool", "Parts", "Time", "Sender", "Queued", "Duration"]);
     assert.equal(await page.locator('[data-hook-request="70"] [data-hook-parts]').textContent(), "3");
     assert.equal(await page.locator('[data-hook-request="70"] [data-hook-parts]').evaluate((cell) => getComputedStyle(cell).paddingRight), "12px");

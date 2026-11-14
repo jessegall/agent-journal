@@ -21,8 +21,9 @@ class PluginSkillFiles:
             return []
         return sorted(path.parent.name for path in FileAccess.glob(folder / manifest.skills_folder, f"*/{SKILL_FILE}"))
 
+    # a root reached again through a linked folder, as a worktree's links to the project's folders are, is written once
     def publish(self, folder: Path, manifest: PluginManifest) -> None:
-        roots = self.projects.roots(self.providers.skill_folders())
+        roots = list(dict.fromkeys(root.resolve() for root in self.projects.roots(self.providers.skill_folders())))
         for name in self.names(folder, manifest):
             text = self.with_plugin_key(SkillContents.read(folder / manifest.skills_folder / name / SKILL_FILE).text, manifest.name)
             for root in roots:

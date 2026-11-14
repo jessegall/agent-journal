@@ -1,3 +1,4 @@
+from engine.database.write_turns import WriteTurns
 from dataclasses import asdict
 
 from engine.database.database import Database
@@ -11,8 +12,8 @@ class ChatDeclarationsRoute:
     declare, each with the URL of its body file carrying its module's fingerprint, so a page reloads a
     body after an install or an upgrade."""
 
-    def __init__(self, home: JournalHome) -> None:
-        self.home = home
+    def __init__(self, home: JournalHome, turns: WriteTurns | None = None) -> None:
+        self.home, self.turns = home, turns
 
     def marks(self) -> list[dict[str, object]]:
         registry = self.registry()
@@ -29,7 +30,7 @@ class ChatDeclarationsRoute:
         return added
 
     def registry(self) -> Registry:
-        container = synced_container(self.home)
+        container = synced_container(self.home, self.turns)
         try:
             return container.get(Registry)
         finally:

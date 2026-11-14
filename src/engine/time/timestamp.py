@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 MINUTE_SECONDS = 60
 MILLISECONDS = 1000
@@ -25,6 +25,9 @@ class Timestamp:
 
     def elapsed_seconds(self, later: "Timestamp") -> float:
         return (later.value - self.value).total_seconds()
+
+    def plus_seconds(self, seconds: float) -> "Timestamp":
+        return Timestamp(self.value + timedelta(seconds=seconds))
 
     def elapsed_minutes(self, later: "Timestamp") -> int:
         return int(self.elapsed_seconds(later) // MINUTE_SECONDS)

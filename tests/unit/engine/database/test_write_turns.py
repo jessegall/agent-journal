@@ -108,3 +108,9 @@ def test_never_waiting_turns_never_block():
     with turns.write_turn(), turns.write_turn():
         pass
     assert turns.depth.count == 0
+
+
+def test_pragma_through_update_never_asks(database, turns):
+    database.update(Statement("PRAGMA foreign_keys = OFF"))
+    database.update(Statement("  pragma foreign_keys = ON"))
+    assert turns.steps == []

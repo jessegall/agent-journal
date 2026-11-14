@@ -1,0 +1,29 @@
+/* Round eleven: question cards. No state badge: an open question is lightly highlighted, an answered one is dimmed. */
+.q11-list { display: flex; flex-direction: column; gap: 10px; height: 100%; overflow-y: auto; padding: 12px var(--inset) 16px; }
+.q11-group { margin-top: 6px; color: var(--text-4); font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.q11-card { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--r-lg); background: var(--bg); transition: opacity .2s, background .2s, border-color .2s; }
+/* open: a light accent wash and edge, nothing more */
+.q11-card[data-state="open"] { background: color-mix(in oklab, var(--accent) 7%, var(--bg)); border-color: color-mix(in oklab, var(--accent) 38%, var(--border)); }
+/* answered: dimmed; it comes back to full strength on hover or focus, so it stays readable */
+.q11-card[data-state="answered"] { opacity: .55; }
+.q11-card[data-state="answered"]:hover, .q11-card[data-state="answered"]:focus-within { opacity: .85; }
+.q11-head { display: flex; align-items: center; gap: 6px; min-width: 0; color: var(--text-3); font-size: 11.5px; white-space: nowrap; }
+.q11-dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.q11-card[data-state="answered"] .q11-dot { background: none; box-shadow: inset 0 0 0 1.5px var(--text-4); }
+.q11-ref { padding: 0; border: 0; background: none; color: var(--text-2); font-size: 11.5px; font-weight: 500; }
+.q11-ref:hover { color: var(--accent-text); }
+.q11-faint { color: var(--text-4); }
+.q11-text { margin: 0; font-size: 13.5px; font-weight: 500; line-height: 1.4; text-wrap: pretty; }
+.q11-context { margin: 0; color: var(--text-3); font-size: 12px; line-height: 1.5; }
+.q11-answered { margin: 0; color: var(--text-2); font-size: 12.5px; }
+.q11-answered span { color: var(--text-3); }
+.q11-options { display: flex; flex-direction: column; gap: 6px; }
+.q11-option { display: flex; align-items: center; gap: 9px; width: 100%; min-height: 32px; padding: 6px 10px; border: 1px solid var(--border-2); border-radius: var(--r); background: var(--bg); color: var(--text); font-size: 12.5px; text-align: left; transition: border-color .15s, background .15s; }
+.q11-option:hover { border-color: var(--accent); background: var(--hover); }
+.q11-ring { flex: none; width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--border-3); }
+.q11-option:hover .q11-ring { box-shadow: inset 0 0 0 1.5px var(--accent), inset 0 0 0 4px var(--bg), inset 0 0 0 6px var(--accent); }
+.q11-option span:nth-child(2) { flex: 1; min-width: 0; }
+.q11-tag { flex: none; color: var(--accent-text); font-size: 11px; }
+.q11-form { display: flex; gap: 6px; }
+.q11-form .qbox { flex: 1; min-width: 0; height: 28px; min-height: 0; }
+@media (prefers-reduced-motion: reduce) { .q11-card, .q11-option { transition: none; } }

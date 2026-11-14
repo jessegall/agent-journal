@@ -28,7 +28,7 @@ def queuing_story(new_story, body: str, event_name: str = "worker_delivering"):
     story.judge = judge_script(story.home.folder.parent, body.format(marks=story.marks))
     story.expect_success(f"plugin install {queuing_plugin_folder(story.home.folder.parent / 'sources', story.judge, event_name)} --yes", actor=story.user)
     recording_runner_at(story.home)
-    story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 3 --project", actor=story.user)
+    story.expect_success(f"setting set {ProcessSetting.LANE_CAPACITY_LONG.key} 12 --project", actor=story.user)
     story.repository = repository_environment(story)
     return story
 

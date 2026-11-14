@@ -34,7 +34,9 @@ class Counting:
 
 def read_ticker(story, *handlers: TickHandler, wake=lambda: None) -> tuple[Ticker, Clock]:
     clock = Clock()
-    return Ticker(story.home, handlers, wake, clock), clock
+    ticker = Ticker(story.home, handlers, wake, clock)
+    ticker.start()
+    return ticker, clock
 
 
 def tick_at(ticker: Ticker, clock: Clock, seconds: float) -> None:
@@ -159,14 +161,11 @@ def test_a_handler_that_fails_is_logged_and_the_others_still_run(new_story):
     expect_row(after, runs=2)
 
 
-def test_a_handler_that_answers_true_wakes_the_listeners_and_one_that_does_not_leaves_them(new_story):
+def test_each_handler_run_hands_its_written_events_to_the_wake_whatever_it_answers(new_story):
     story = new_story(fixture=UserJoined)
     wake_calls = []
     ticker, clock = read_ticker(story, TickHandler(TickInterval(seconds=1), lambda container: False, "idle"), wake=lambda: wake_calls.append(True))
     tick_at(ticker, clock, 1)
-    expect_value(wake_calls, [])
-    ticker.register(TickHandler(TickInterval(seconds=1), lambda container: True, "wrote"))
-    tick_at(ticker, clock, 2)
     expect_value(wake_calls, [True])
 
 

@@ -16,6 +16,7 @@ from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
 from engine.model.tables import Tables
 from engine.database.prune_window import PruneWindow
+from engine.event.written_events import WrittenEvents
 
 HIDDEN = "hidden"
 
@@ -38,50 +39,57 @@ UPGRADE_FINISHED_EVENT = "upgrade.finished"
 class EventLog:
     """Writes every change to the event log, and the sync that changes the registry, and reads them back."""
 
-    def __init__(self, database: Database, tables: Tables) -> None:
+    def __init__(self, database: Database, tables: Tables, written: WrittenEvents) -> None:
+        self.written = written
         self.tables = tables
         self.table = BookkeepingTable(database, "events", "event")
 
     def write(self, change: Change[Model], skipped_guards: frozenset[str]) -> int:
         context, row = change.context, change.row
-        return self.table.insert({
+        return self.inserted({
             "actor_id": context.actor.id, "environment_id": row.environment_id if isinstance(row, EnvironmentScoped | EnvironmentOrProject) else context.environment_id, "row_id": row.id, "name": change.event,
             "row_table": self.tables.table(type(change.row)).name, "command": context.command.label(), "cause_id": context.cause_id,
             "skipped_guards": json.dumps(sorted(skipped_guards)), "data": json.dumps(self.data(change)), "created_at": context.timestamp.text,
         })
 
     def write_registry_sync(self, actor_id: int, fingerprint: str, timestamp: str) -> int:
-        return self.table.insert({
+        return self.inserted({
             "actor_id": actor_id, "environment_id": None, "row_id": REGISTRY_ROW_ID, "name": REGISTRY_SYNC_EVENT, "row_table": REGISTRY_TABLE,
             "command": SYNC_COMMAND, "cause_id": None, "skipped_guards": "[]", "data": json.dumps({"fingerprint": [None, fingerprint]}), "created_at": timestamp,
         })
 
     def write_file_change(self, name: str, path: Path, context: Context) -> int:
-        return self.table.insert({
+        return self.inserted({
             "actor_id": context.actor.id, "environment_id": context.environment_id, "row_id": 0, "name": name, "row_table": "files",
             "command": context.command.label(), "cause_id": context.cause_id, "skipped_guards": json.dumps(sorted(context.skipped_guards)),
             "data": json.dumps({"path": [None, str(path)]}), "created_at": context.timestamp.text,
         })
 
     def write_journal_booting(self, actor_id: int, timestamp: str) -> int:
-        return self.table.insert({
+        return self.inserted({
             "actor_id": actor_id, "environment_id": None, "row_id": JOURNAL_ROW_ID, "name": JOURNAL_BOOTING_EVENT, "row_table": JOURNAL_TABLE,
             "command": BOOT_COMMAND, "cause_id": None, "skipped_guards": "[]", "data": "{}", "created_at": timestamp,
         })
 
     def write_upgrade_moved(self, actor_id: int, module: str, counts: dict[str, dict[str, int]], timestamp: str) -> int:
-        return self.table.insert({
+        return self.inserted({
             "actor_id": actor_id, "environment_id": None, "row_id": 0, "name": UPGRADE_MOVED_EVENT, "row_table": UPGRADE_TABLE,
             "command": UPGRADE_COMMAND, "cause_id": None, "skipped_guards": "[]", "data": json.dumps({"module": [None, module], "counts": [None, counts]}),
             "created_at": timestamp,
         })
 
     def write_upgrade_finished(self, actor_id: int, counts: dict[str, int], report: str, timestamp: str) -> int:
-        return self.table.insert({
+        return self.inserted({
             "actor_id": actor_id, "environment_id": None, "row_id": 0, "name": UPGRADE_FINISHED_EVENT, "row_table": UPGRADE_TABLE,
             "command": UPGRADE_COMMAND, "cause_id": None, "skipped_guards": "[]", "data": json.dumps({"counts": [None, counts], "report": [None, report]}),
             "created_at": timestamp,
         })
+
+    # the name is kept only once the row is in, so a write that fails leaves no name to wake by
+    def inserted(self, values: dict[str, object]) -> int:
+        event_id = self.table.insert(values)
+        self.written.add(str(values["name"]))
+        return event_id
 
     @staticmethod
     def row_values(row: Model) -> dict[str, object]:

@@ -44,7 +44,7 @@ SECOND_PLUGIN_SKILL_SCRIPT = """echo '{"v": 1, "require_skills": ["not-published
 
 def test_the_skills_due_when_a_plugins_answer_requires_a_skill_count_down_from_the_session_start_and_then_hold_the_next_tool(new_story):
     story = installed_story(new_story)
-    story.container.bind(SkillRequirement, SkillRequirement())
+    story.replace(SkillRequirement, SkillRequirement())
     story.hook("s-1", UPLOAD_SAMPLE)
     story.run_listeners()
     for remaining in (2, 1, 0):

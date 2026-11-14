@@ -9,7 +9,5 @@ class WorkerInstructionRefresh:
 
     def __call__(self, container: Container) -> bool:
         files = container.get(WorkerInstructionFiles)
-        worktrees = container.get(WorktreeQuery).open_worktrees()
-        for worktree in worktrees:
-            files.refresh(worktree)
-        return bool(worktrees)
+        # whether a refresh wrote a file, not whether a worktree is open
+        return any([files.refresh(worktree) for worktree in container.get(WorktreeQuery).open_worktrees()])

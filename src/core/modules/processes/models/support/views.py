@@ -19,7 +19,7 @@ from engine.query.select import Select
 from core.modules.assignments.models.support.views import assigned_row_ids
 
 QUEUE_COLUMNS = ("id", "environment_id", "session_agent_id", "line", "category", "state", "exit_code", "created_at", "started_at", "ended_at", "queued_at",
-                 "is_queue_run", "slot_assigned", "plugin")
+                 "is_queue_run", "slot_assigned", "plugin", "execution_class", "priority", "first_priority", "raised_at")
 RUNNING_STATES = ("running", "background")
 MAIN_RUN_CATEGORIES = ("test run", "build")
 MAIN_ROLE = Equal("agents.role", "main")

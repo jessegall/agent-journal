@@ -2,6 +2,7 @@ from engine.actor.actor import Actor
 from engine.event.created import Created
 from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
+from engine.container.round_state import RoundState
 from engine.log.exception_sink import CLOCK_TICK_SOURCE
 from engine.listener.commit.commit_listener import CommitListener
 from engine.scope.actor_scope import ActorScope
@@ -12,7 +13,7 @@ from core.modules.developer.support.developer_settings import EXCEPTION_LINES_SE
 from engine.setting.setting_values import SettingValues
 
 
-class ExceptionLineListener(CommitListener[Created[JournalException]]):
+class ExceptionLineListener(CommitListener[Created[JournalException]], RoundState):
     """Sends exception lines to the main agent, repeating tick warnings as they arrive."""
 
     name = "developer.exception-line"
@@ -21,6 +22,9 @@ class ExceptionLineListener(CommitListener[Created[JournalException]]):
     def __init__(self, settings: SettingValues, agents: AgentRows, bus: Bus) -> None:
         self.settings, self.agents, self.bus = settings, agents, bus
         self.told_messages: set[str] = set()
+
+    def reset(self) -> None:
+        self.told_messages = set()
 
     def handle(self, event: Created[JournalException], logged: LoggedEvent) -> None:
         main_agent = self.agents.main_agent()

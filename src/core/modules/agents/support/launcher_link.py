@@ -1,3 +1,4 @@
+from engine.time.clock import Clock
 from engine.file.file_access import FileAccess
 import json
 import os
@@ -63,7 +64,7 @@ class LauncherLink:
 
     def after_refusal(self, request: Mapping[str, object], answer_bytes: int) -> bytes | None:
         for _ in range(REFUSED_TRIES):
-            time.sleep(REFUSED_PAUSE_SECONDS)
+            Clock().sleep(REFUSED_PAUSE_SECONDS)
             try:
                 return self.exchanged(request, answer_bytes)
             except ConnectionRefusedError:

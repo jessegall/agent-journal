@@ -14,5 +14,18 @@ class ExecutionPriority(IntEnum):
     def is_unlimited(self) -> bool:
         return self is ExecutionPriority.IMMEDIATE
 
+    # the place in a line of waiting executions: the highest priority comes first
+    @property
+    def rank(self) -> int:
+        return -self.value
+
+    @property
+    def label(self) -> str:
+        return self.name.lower()
+
+    @classmethod
+    def labelled(cls, label: str) -> "ExecutionPriority":
+        return cls[label.upper()]
+
     def raised(self) -> "ExecutionPriority":
         return self if self >= ExecutionPriority.RESERVED else ExecutionPriority(self + 1)

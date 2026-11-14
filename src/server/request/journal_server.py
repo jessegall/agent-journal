@@ -16,8 +16,6 @@ class JournalServer(TrackedRequests, UnixStreamServer):
 
     def __init__(self, path: str, handler: type[BaseRequestHandler], context: ServerContext, inherited_socket: socket.socket | None = None) -> None:
         self.context = context
-        context.hook_database.queue.main_hook_seconds = context.hook_limit_seconds
-        context.hook_database.queue.agent_hook_seconds = context.agent_hook_limit_seconds
         self.wake_sender, self.wake_receiver = socket.socketpair()
         self.stopping, self.stopped = threading.Event(), threading.Event()
         self.is_handing_over = False

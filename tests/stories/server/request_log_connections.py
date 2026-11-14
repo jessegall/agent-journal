@@ -1,14 +1,10 @@
-import json
 import sqlite3
-from contextlib import contextmanager
 from threading import Event, Thread
 
 import pytest
 
-from engine.database.database import Database
-from core.modules.developer.support.hook_request_log import HookRequestLog
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
-from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.server.support.server_client import server_story
 from server.viewer.read_attribution import ReadAttribution
 from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_SETTING
 
@@ -17,51 +13,6 @@ from core.modules.developer.support.developer_settings import HOOK_REQUEST_LOG_S
 def logging_server(new_story):
     with server_story(new_story(fixture=HookRecordingEnabled), listener_thread_started=False) as server:
         yield server
-
-
-@pytest.mark.parametrize("enabled", [False, True])
-def test_a_batch_uses_no_logging_connection_when_off_and_one_reused_connection_when_on(new_story, monkeypatch, enabled):
-    story = new_story(fixture=HookRecordingEnabled)
-    story.expect_success(f"setting set {HOOK_REQUEST_LOG_SETTING} {str(enabled).lower()} --project", actor=story.user)
-    with server_story(story, listener_thread_started=False) as server:
-        cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-        log = server.context.request_trace
-        connected, original_save = log.connected, log.save_many
-        connections = []
-        saved, release = Event(), Event()
-
-        @contextmanager
-        def counted():
-            story.expect_rows(release.wait(3), detail="the response waited for request logging")
-            with connected() as container:
-                connections.append(container.get(Database).connection)
-                yield container
-
-        def save_counted(entries):
-            try:
-                original_save(entries)
-            finally:
-                saved.set()
-
-        monkeypatch.setattr(log, "connected", counted)
-        monkeypatch.setattr(log, "save_many", save_counted)
-        body = {"lines": [{"window": "tasks.tasks", "environment": "main", "line": ["task", "list", "--limit", str(number)]} for number in range(1, 11)]}
-        try:
-            status, _, answer = viewer_answer(server.viewer_port(), "/api/lines", cookie, "", body)
-            story.expect_rows(status == 200, all(row["code"] == 0 for row in json.loads(answer)["answers"]))
-        finally:
-            release.set()
-        story.expect_rows(saved.wait(3))
-        story.expect_rows(len(connections) == int(enabled))
-        saved.clear()
-        status, _, _ = viewer_answer(server.viewer_port(), "/api/lines", cookie, "", body)
-        story.expect_rows(status == 200, saved.wait(3))
-        story.expect_rows(len(connections) == 2 * int(enabled))
-        if enabled:
-            story.expect_rows(connections[0] is connections[1])
-        else:
-            story.expect_rows(log.container is None)
-        story.expect_rows(len(story.container.get(HookRequestLog).read()) == 20 * int(enabled))
 
 
 def test_cli_requests_keep_the_same_logger_counts_and_epoch(logging_server, monkeypatch):
@@ -88,7 +39,7 @@ def test_cli_requests_keep_the_same_logger_counts_and_epoch(logging_server, monk
     server.story.expect_rows(log.counts["recorded"] == 2)
 
 
-def test_a_locked_request_log_counts_dropped_rows_without_a_warning(logging_server):
+def test_a_locked_database_drops_no_request_row_and_writes_no_warning(logging_server):
     server = logging_server
     log = server.context.request_trace
     with log.connected():
@@ -102,8 +53,8 @@ def test_a_locked_request_log_counts_dropped_rows_without_a_warning(logging_serv
     finally:
         connection.execute("ROLLBACK")
         connection.close()
-    server.story.expect_rows(log.counts["attempted"] == 1, log.counts["dropped"] == 1,
-                             log.counts["receipt_attempted"] == 1, log.counts["receipt_dropped"] == 1,
+    server.story.expect_rows(log.counts["attempted"] == 1, log.counts["recorded"] == 1, log.counts["dropped"] == 0,
+                             log.counts["receipt_attempted"] == 1, log.counts["receipt_recorded"] == 1, log.counts["receipt_dropped"] == 0,
                              server.story.system_log_text() == previous_log)
 
 
@@ -133,17 +84,15 @@ def test_a_viewer_setting_change_refreshes_recording_before_the_next_request(log
 def test_the_status_never_shows_a_request_that_is_attempted_and_not_yet_recorded(logging_server, monkeypatch):
     server = logging_server
     log = server.context.request_trace
-    connected = log.connected
+    append = log.trace_file.append
     writing, release = Event(), Event()
 
-    @contextmanager
-    def paused_connection():
+    def paused_append(entries):
         writing.set()
         server.story.expect_rows(release.wait(3), detail="the status read was not held until the write ended")
-        with connected() as container:
-            yield container
+        append(entries)
 
-    monkeypatch.setattr(log, "connected", paused_connection)
+    monkeypatch.setattr(log.trace_file, "append", paused_append)
     statuses = []
     writer = Thread(target=log.record, args=(["task", "list"], "cli", 1.0, 0.0, 0))
     reader = Thread(target=lambda: statuses.append(log.status()))

@@ -1,3 +1,5 @@
+from core.modules.plans.models.enums.plan_state import PlanState
+from core.modules.plans.models.plan import Plan
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.driver.hook_history import HookHistory
@@ -44,6 +46,10 @@ class PlanFocusRule(DriverRule):
         agent = self.queries.query(Agent).find(hook.agent_id)
         explicit_id = self.focus.explicit_plan_id(agent)
         if not starts_plan and all(place.plan_id == explicit_id for place in places):
+            return RuleAnswer.allowed()
+        # one count settles most calls: with fewer than two plans to choose between there is no focus to name; a focus
+        # the agent named may add an approved plan to the started ones
+        if self.queries.query(Plan).filter(state=PlanState.STARTED).count() < MULTIPLE_PLAN_COUNT - (explicit_id is not None):
             return RuleAnswer.allowed()
         overview = self.focus.overview(agent)
         work = overview.focus_work

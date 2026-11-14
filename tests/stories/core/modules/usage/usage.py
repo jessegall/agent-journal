@@ -324,10 +324,10 @@ def test_an_ended_sessions_status_file_can_disappear_during_the_read(ended_worke
 
     def file_removing_read(access, file, *args, **kwargs):
         if file == path:
-            path.unlink()
-        return read(access, file, *args, **kwargs)
+            FileAccess.unlink(path)
+        return read(file, *args, **kwargs)
 
-    monkeypatch.setattr(FileAccess, "read", file_removing_read)
+    monkeypatch.setattr(FileAccess, "read", classmethod(file_removing_read))
     story.expect_text("usage agents --closed --environment main --json", '"cost_dollars": null', actor=story.user)
     story.expect_rows(not path.exists())
 

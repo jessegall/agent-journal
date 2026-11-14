@@ -33,7 +33,7 @@ test("no window styles its own select box over the shared one", () => {
 
 // the places that draw a raw select, each of which the shared rule styles
 const PLACES = ["usage/web/src/UsagePanel.vue", "setting_components/web/src/SettingChoiceField.vue", "tasks/web/src/TaskGroups.vue", "agents/web/src/AgentJobForm.vue", "skills/web/src/SkillTriggerEditor.vue", "skills/web/src/SkillRequirements.vue",
-    "profiles/web/src/HelperStartForm.vue", "workers/web/src/WorkerRouteForm.vue"];
+    "profiles/web/src/HelperStartForm.vue", "workers/web/src/WorkerRouteForm.vue", "resource/ExecutionClassRow.vue", "resource/ExecutionClassForm.vue", "resource/ExecutionLanes.vue"];
 
 test("the raw selects of the viewer and the module windows are the ones this change covers", () => {
     const drawn = sources.filter((path) => /<select\b/.test(readFileSync(path, "utf8")));

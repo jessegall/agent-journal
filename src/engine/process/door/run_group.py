@@ -1,3 +1,4 @@
+from engine.process.child_process import ChildProcess
 import os
 import signal
 import subprocess
@@ -25,7 +26,7 @@ class RunGroup:
         with self.lock:
             if self.child.poll() is None:
                 self.kill()
-        self.child.communicate()
+        ChildProcess(self.child).communicate()
 
     def finish(self) -> None:
         with self.lock:
