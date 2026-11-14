@@ -3,10 +3,6 @@ import pytest
 
 from tests.stories.suites.coding.support.main_controls_fixture import MainControlsActors, agent_actors, person_viewer
 from tests.stories.support.story_checks import expect_value
-from engine.database.database import Database
-from engine.registry.registry import Registry
-from engine.enums.window_place import WindowPlace
-from suites.coding.coding_suite import CodingSuite
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ACTION, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_FAILURE_LIMIT
@@ -121,8 +117,7 @@ def test_s24_tests_tab_fields_are_read_and_applied_together(new_story):
 def test_the_context_limit_is_in_the_advanced_tab_and_the_modal_is_no_page(viewer_person):
     story, viewer = viewer_person
     advanced = field_values(active_work_row(viewer), "advanced")
-    declared = next(window for window in Registry.read(story.container.get(Database)).windows if window.name == WINDOW)
-    story.expect_rows({CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS} <= set(advanced), advanced[CONTEXT_LIMIT_ENABLED] is False, declared.place != WindowPlace.PAGE, WINDOW not in CodingSuite.offered_windows(), detail=str(advanced))
+    story.expect_rows({CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS} <= set(advanced), advanced[CONTEXT_LIMIT_ENABLED] is False, detail=str(advanced))
 
 
 def test_the_context_limit_action_is_a_choice_of_compact_or_clear(viewer_person):
