@@ -113,7 +113,6 @@ tests/stories/core/modules/drivers/removed_choices.py
 tests/stories/core/modules/drivers/repeated_file_reads.py
 tests/stories/core/modules/drivers/required_commands.py
 tests/stories/core/modules/drivers/resumed_start.py
-tests/stories/core/modules/drivers/row_pruning.py
 tests/stories/core/modules/drivers/temp_folders.py
 tests/stories/core/modules/helpers/cold_replacement.py
 tests/stories/core/modules/helpers/cold_sessions.py

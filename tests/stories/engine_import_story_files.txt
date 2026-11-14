@@ -175,7 +175,6 @@ tests/stories/core/modules/drivers/required_commands.py
 tests/stories/core/modules/drivers/resumed_start.py
 tests/stories/core/modules/drivers/reusable_rules.py
 tests/stories/core/modules/drivers/rewritten_input.py
-tests/stories/core/modules/drivers/row_pruning.py
 tests/stories/core/modules/drivers/skip_approval.py
 tests/stories/core/modules/drivers/suite_choice.py
 tests/stories/core/modules/drivers/support/access_rules.py
