@@ -352,8 +352,7 @@ def test_the_merger_pass_shows_the_reason_on_the_worker_mark(new_story, monkeypa
     story.expect_rows(len(marks) == 2, marks[0].detail == reason, marks[1].detail == "Another decision", marks[0].target_id == worker.id)
 
 
-@pytest.mark.parametrize("exit_line, fault", [("agent exited {agent} 0", False), ("agent end {agent}", False), ("agent exited {agent} 137", True)])
-def test_the_merger_ending_without_a_report_does_not_notify_the_main_agent(new_story, monkeypatch, exit_line, fault):
+def ended_merger_lines(new_story, monkeypatch, end) -> tuple[object, str]:
     monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
@@ -365,12 +364,22 @@ def test_the_merger_ending_without_a_report_does_not_notify_the_main_agent(new_s
         launcher.server.close()
         story.home.socket("launcher").unlink(missing_ok=True)
     merger = merger_agent(story)
-    story.expect_success(exit_line.format(agent=merger.id), actor=Actor(merger.id, ActorType.AGENT))
+    end(story, Actor(merger.id, ActorType.AGENT))
     story.run_listeners()
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "It ended without a report")
-    lines = story.run(f"agent-line list --agent {story.agent.id}").output_text
-    story.expect_rows((expected_nudge(HELPER_PROGRAM_FAULT).matches_text(lines)) == fault)
     story.expect_rows(story.container.get(HelperJobRows).open_job(merger.id) is None)
+    return story, story.run(f"agent-line list --agent {story.agent.id}").output_text
+
+
+@pytest.mark.parametrize("exit_code, fault", [(0, False), (137, True)])
+def test_the_merger_whose_program_exits_without_a_report_does_not_notify_the_main_agent(new_story, monkeypatch, exit_code, fault):
+    story, lines = ended_merger_lines(new_story, monkeypatch, lambda story, merger: story.expect_success(f"agent exited {merger.id} {exit_code}", actor=merger))
+    story.expect_rows(expected_nudge(HELPER_PROGRAM_FAULT).matches_text(lines) == fault)
+
+
+def test_the_merger_whose_session_ends_without_a_report_does_not_notify_the_main_agent(new_story, monkeypatch):
+    story, lines = ended_merger_lines(new_story, monkeypatch, lambda story, merger: story.end_session(merger))
+    story.expect_rows(not expected_nudge(HELPER_PROGRAM_FAULT).matches_text(lines))
 
 
 def test_a_worker_left_to_the_main_agent_is_not_reported_as_stopped(new_story, monkeypatch):
@@ -540,7 +549,7 @@ def test_a_worker_the_merger_passes_on_is_named_to_the_main_agent_with_its_merge
 
 def test_the_merger_started_by_an_ended_main_session_tells_the_main_agent_that_runs_now(new_story):
     story = new_story(fixture=StartedMerger)
-    merger = Actor(helper_agent(story).id, ActorType.AGENT)
+    merger = Actor(merger_agent(story).id, ActorType.AGENT)
     story.expect_success(f"agent end {story.agent.id}", actor=story.user)
     running_main = Actor(story.new_row_id("agent start s-new-main claude main --environment main"), ActorType.AGENT)
     story.expect_success('merger tell "Worker 4 asks which reader to keep" --tried "Read the brief" --option "The first" --option "The second" --recommend "The first"', actor=merger)
