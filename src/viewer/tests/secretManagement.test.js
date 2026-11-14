@@ -156,7 +156,7 @@ test("a new secret is made with its type, title and note, and a custom one asks 
     expect(ran).toContainEqual(["secret", "make", "Own", "--type", "custom", "--field", "token", "--brief", "For the own server"]);
 });
 
-test("the filter bar has State and Kind chips, and New secret has no icon", async () => {
+test("the filter bar has State and Type chips, and New secret has no icon", async () => {
     const {element} = await drawn([SECRET]);
     const chips = [...element.querySelectorAll("[data-filter-chip]")].map((chip) => chip.dataset.filterChip);
     expect(chips).toEqual(expect.arrayContaining(["status", "kind"]));

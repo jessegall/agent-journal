@@ -1,6 +1,6 @@
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
-import {afterEach, expect, test} from "vitest";
+import {afterEach, expect, test, vi} from "vitest";
 import {context, mounted, settle} from "./support/windowContext.js";
 import {taskWindowContext} from "./support/taskWindowContext.js";
 import {planWindowContext} from "./support/planWindowContext.js";
@@ -46,9 +46,9 @@ test("more tasks are asked for older than the oldest shown, without doubles, and
     expect(element.textContent.match(/Two/g).length).toBe(1);
     expect(element.textContent).toContain("One");
     await heard({event: "task.update"});
-    await new Promise((resolve) => setTimeout(resolve, 70));
+    // the reload runs after the window's event wait, which a loaded machine stretches, so the test waits for it rather than for a fixed time
+    await vi.waitFor(() => expect(reloaded).toBe(true));
     await settle();
-    expect(reloaded).toBe(true);
     expect(element.textContent).not.toContain("Two");
 });
 

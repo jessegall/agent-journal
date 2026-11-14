@@ -20,7 +20,7 @@ export const secretCard = (row) => ({
 
 export const secretFields = [
     {key: "status", label: "State", options: [[READY, READY], [NEEDS, NEEDS]], get: (item) => item.status},
-    {key: "kind", label: "Kind", options: Object.values(LABELS).map((label) => [label, label]), get: (item) => item.kind},
+    {key: "kind", label: "Type", options: Object.values(LABELS).map((label) => [label, label]), get: (item) => item.kind},
 ];
 
 // Replace value opens the secret's dialog, Copy name copies the title (never the value), and Delete asks once in place
