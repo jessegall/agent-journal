@@ -1,6 +1,6 @@
+import pytest
 import json
 
-import pytest
 
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import merge
