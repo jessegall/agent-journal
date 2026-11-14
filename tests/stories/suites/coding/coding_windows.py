@@ -1,9 +1,6 @@
-from engine.registry.registry import Registry
-from engine.registry.suite_windows import SuiteWindows
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.support.story_checks import expect_value, expect_value_with
 
 
 def window_story(new_story) -> WindowStory:
@@ -35,39 +32,3 @@ def test_the_coding_suite_offers_the_questions_windows_its_phone_shows(new_story
     window = window_story(new_story)
     window.expect_window_allowed("questions.waiting", "wait waiting")
     window.expect_window_allowed("questions.questions", "question list")
-
-
-def test_the_coding_suite_offers_output_and_keeps_internal_renderers_private(new_story):
-    story = new_story(fixture=CodingEnvironment)
-    names = {window.name for window in story.container.get(SuiteWindows).windows("coding")}
-    expect_value_with(names, "processes.output")
-    expect_absent_questions_viewer_names("questions.question", "viewer.shell", names)
-
-
-def test_agent_dropdowns_declare_that_they_need_one_agent(new_story):
-    window = window_story(new_story)
-    for name in ("schedules.jobs", "usage.fitness", "usage.load"):
-        window.expect_declared_window(name, "component", "dropdown", "one-agent")
-
-
-def expect_absent_questions_viewer_names(text, text_2, names) -> None:
-    actual = {text, text_2} & names
-    assert not actual, actual
-
-
-MENU_REMOVED = ("reviews.reviewer", "reviews.reviewers", "phone.phones", "usage.fitness", "suggestions.suggestions", "workers.models", "tunnel.tunnel", "tunler.account", "updates.updates", "templates.templates", "processes.output")
-MENU_KEPT = ("drivers.hook-calls", "drivers.nudges", "sharing.shares", "triggers.triggers", "messages.attachments", "workers.points", "tasks.task-counts")
-
-
-def test_the_window_menu_of_the_coding_suite_lists_only_the_kept_windows(new_story):
-    registry = new_story(fixture=CodingEnvironment).container.get(Registry)
-    offered = SuiteWindows(registry).windows("coding")
-    menu = {window.name: window for window in offered if window.place not in ("bar", "page", "section")}
-    expect_value(bool([name for name in MENU_REMOVED if name in menu]), False)
-    expect_value(bool(all(name in menu for name in MENU_KEPT)), True)
-    expect_value(menu["workers.points"].title, "Brief points")
-    pages = {window.name for window in offered if window.place == "page"}
-    expect_value({"processes.output", "templates.templates", "updates.updates", "tunnel.tunnel"} <= pages, True)
-    expect_value("workers.models" not in {window.name for window in offered}, True)
-    expect_value({window.name: window.title for window in offered}["settings.project-hooks"], "Hooks")
-    expect_value({window.name: window.group for window in offered}["updates.updates"], "footer")

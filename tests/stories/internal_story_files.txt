@@ -372,7 +372,6 @@ tests/stories/server/library_client.py
 tests/stories/server/viewer_hook_events.py
 tests/stories/suites/coding/agent_settings_window.py
 tests/stories/suites/coding/chosen_next_task.py
-tests/stories/suites/coding/coding_windows.py
 tests/stories/suites/coding/file_edits.py
 tests/stories/suites/coding/file_edits_prune_links.py
 tests/stories/suites/coding/graphify_skill.py
