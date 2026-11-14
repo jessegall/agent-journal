@@ -137,19 +137,20 @@ def test_a_worker_with_a_run_going_may_stop(new_story):
     story.expect_hook_allowed(worker_session(story, worker), HookSamples.stop())
 
 
-def test_a_worker_past_its_restarts_that_stops_with_a_run_going_leaves_the_main_agent_no_line_until_it_stops_with_none(worker_with_a_run):
+def test_stops_with_a_run_of_its_own_going_use_no_restarts_so_the_stop_after_the_run_starts_the_worker_again(worker_with_a_run):
     story, worker, run, bus = worker_with_a_run
     session = worker_session(story, worker)
-    line = f"worker:{agent_number(story, worker.id)} ended with"
+    worker_label = f"worker:{agent_number(story, worker.id)}"
     for _ in range(story.number_default(WORKER_RESUME_LIMIT) + 2):
         story.end_session(worker)
         story.run_listeners()
         story.hook(session, HookSamples.session_start())
-    story.expect_absent(f"agent-line list --agent {story.agent.id}", line)
+    story.expect_absent(f"agent-line list --agent {worker.id}", "You ended with tasks left")
+    story.expect_absent(f"agent-line list --agent {story.agent.id}", f"{worker_label} ended with")
     bus.run(EndProcess(run.id, 0, 10, 1), worker, environment_id=1)
     story.end_session(worker)
     story.run_listeners()
-    story.expect_text(f"agent-line list --agent {story.agent.id}", line)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"{worker_label} stopped with task:1 left and was started again")
 
 
 def stopped_twice(story, worker, session, uses_tool_after_first_stop: bool) -> None:
@@ -247,3 +248,14 @@ def test_a_worker_that_stopped_with_a_run_going_is_not_told_to_carry_on_and_show
     story.expect_absent("chat-mark list --environment 1", "stopped with")
     story.expect_success(f"agent show {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_success("message list --limit 5", actor=story.agent)
+
+
+def test_a_worker_stopped_with_a_run_of_its_own_going_is_not_resumed_by_the_retry_tick(new_story):
+    story, worker, _, _ = worker_with_background_run(new_story)
+    story.end_session(worker)
+    story.run_listeners()
+    launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET), answer=b"started 4242\n")
+    WorkerResumeRetry()(story.container)
+    launcher.drain_requests()
+    story.expect_rows(launcher.starts == [], detail="a stopped worker waiting on its own run is woken by the run's end, never resumed in between")
+    story.expect_absent(f"agent-line list --agent {worker.id}", "You ended with tasks left")

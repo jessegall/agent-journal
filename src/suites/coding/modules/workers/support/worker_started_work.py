@@ -24,8 +24,8 @@ STOPPED_WORKERS_REASON = "every stopped worker, and every line that resumed it, 
 
 class WorkerStartedWork:
     """The stopped workers that hold started work or an open assigned task they can go on with and have no job
-    waiting, which nothing else resumes: not one whose tests wait, not one a user or another agent stopped,
-    and not one that was told to go on as often as the worker resume limit allows with no task moved since."""
+    waiting, which nothing else resumes: not one whose tests wait or whose own run still goes (its end wakes it),
+    not one a user or another agent stopped, and not one told to go on as often as the resume limit allows."""
 
     def __init__(self, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, bus: Bus, guidance: WorkerGuidance, settings: SettingValues, tasks: TaskQuery) -> None:
         self.guidance, self.settings, self.tasks = guidance, settings, tasks
@@ -48,7 +48,7 @@ class WorkerStartedWork:
         if worker.role != Worker.key or worker.ended_at is None or worker.paused_at is not None or worker.retired_at is not None:
             return ()
         worker_round = self.unfinished.steps.round(worker.id)
-        if worker_round.is_asking or self.has_waiting_job(worker) or self.stop.was_stopped(worker) or self.reached_restart_limit(worker):
+        if worker_round.is_asking or self.has_waiting_job(worker) or self.unfinished.has_own_running_process(worker.id) or self.stop.was_stopped(worker) or self.reached_restart_limit(worker):
             return ()
         return self.unfinished.round_rows(worker_round)
 
