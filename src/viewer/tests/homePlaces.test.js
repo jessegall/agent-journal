@@ -8,7 +8,7 @@ import DataTable from "../src/kit/DataTable.vue";
 import Terminal from "../../suites/coding/web/src/Terminal.vue";
 import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
 import TaskRow from "../../core/modules/tasks/web/src/TaskRow.vue";
-import MemoryRow from "../../core/modules/memories/web/src/MemoryRow.vue";
+import AgentMemoryRow from "../../core/modules/memories/web/src/AgentMemoryRow.vue";
 import {terminalWindowContext} from "./support/terminalWindowContext.js";
 import {context as codingContext} from "./support/codingWindowContext.js";
 import {context as plainContext, appended, mounted, settle} from "./support/windowContext.js";
@@ -171,7 +171,7 @@ test("test_feed_file_items: a file of the feed has Open file, Fold and Copy path
 
 test("an agent's memory has Open, Weigh, Copy text, Edit and Remove with an Undo that restores it, and a removed one has Bring it back", async () => {
     const {runs, window} = recording(plainContext({}));
-    const element = await mounted(MemoryRow, window, {row: {id: 3, text: "Run the tests first", state: "active", weight: 7}});
+    const element = await mounted(AgentMemoryRow, window, {row: {id: 3, text: "Run the tests first", state: "active", weight: 7}});
     document.body.append(element);
     const menu = menuAt(element.querySelector("[data-memory]"));
     expect(menu.labels).toEqual(["Open", "Weigh", "Copy text", "Edit", "Remove"]);
@@ -180,7 +180,7 @@ test("an agent's memory has Open, Weigh, Copy text, Edit and Remove with an Undo
     await settle();
     expect(runs).toEqual(["memory weigh 3 9", "memory remove 3 --reason Removed from the memory list"]);
     expect(spoken.at(-1)).toEqual(["Removed memory 3", {line: ["memory", "restore", "3"]}]);
-    const gone = await mounted(MemoryRow, window, {row: {id: 4, text: "Old", state: "removed", weight: 5}});
+    const gone = await mounted(AgentMemoryRow, window, {row: {id: 4, text: "Old", state: "removed", weight: 5}});
     expect(menuAt(gone.querySelector("[data-memory]")).labels).toEqual(["Open", "Weigh", "Copy text", "Edit", "Bring it back"]);
 });
 
