@@ -13,11 +13,12 @@ from suites.coding.windows.work_mode.keys.auto_key import AutoKey
 from suites.coding.windows.work_mode.keys.limits_key import LimitsKey
 from suites.coding.windows.work_mode.keys.type_screen_key import TypeScreenKey
 from suites.coding.windows.work_mode.keys.count_agents_key import CountAgentsKey
+from suites.coding.windows.agent_settings.keys.assign_key import AssignKey
 
 
 class WorkModeWindow(Window):
-    """The work mode control in the header: the work settings, auto mode, the agents' limits and their
-    settings screens."""
+    """The work mode control in the header: auto mode and the agent settings it opens, with the work settings,
+    the agents' limits, their settings screens and the assign rules."""
 
     name = "coding.work-mode"
     title = "Work mode"
@@ -26,7 +27,9 @@ class WorkModeWindow(Window):
     skeleton = CODING_WORK_MODE_SKELETON
     icon = WindowIcon.WINDOW
     place = WindowPlace.HEADER
-    reads = ["work-settings show", "setting-screen show", "setting-screen index", "setting show", "agent limits", "agent cards"]
-    runs = ["work-settings preset", "work-settings apply", "setting-screen apply", "setting set", "agent profile-limits", "agent retire"]
-    events = ["setting.*", "agent.*"]
-    keys = [WorkKey, WorkScreenKey, TestsScreenKey, AdvancedScreenKey, HelperTypesScreenKey, FindKey, AutoKey, LimitsKey, TypeScreenKey, CountAgentsKey]
+    reads = ["work-settings show", "setting-screen show", "setting-screen index", "setting show", "agent limits", "agent cards", "assign-rule board", "assign-rule try", "assign-rule recent",
+             "worker-route list"]
+    runs = ["work-settings preset", "work-settings apply", "setting-screen apply", "setting set", "agent profile-limits", "agent retire", "assign-rule make", "assign-rule edit",
+            "assign-rule move", "assign-rule enable", "assign-rule disable", "assign-rule delete", "assign-rule apply", "assign-rule reassign", "assign-rule give-back"]
+    events = ["setting.*", "agent.*", "assign_rule.*", "assign_rule_condition.*", "worker_route.*"]
+    keys = [WorkKey, WorkScreenKey, TestsScreenKey, AdvancedScreenKey, HelperTypesScreenKey, FindKey, AutoKey, LimitsKey, TypeScreenKey, CountAgentsKey, AssignKey]
