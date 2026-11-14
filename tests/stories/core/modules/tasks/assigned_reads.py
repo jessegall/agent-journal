@@ -80,7 +80,7 @@ def test_a_task_given_to_anyone_leaves_the_free_tasks_and_an_unassigned_task_lea
     assign(workshop, 2, workshop.user)
     assign(workshop, 3, workshop.agent)
     workshop.expect_rows(free_ids(workshop) == [4], detail=str(free_ids(workshop)))
-    workshop.expect_success("unassign task 2 --environment main", actor=workshop.user)
+    workshop.expect_text("unassign task 2 --environment main", "task 2 unassigned from 1 holder(s)", actor=workshop.user)
     workshop.expect_rows(free_ids(workshop) == [2, 4], detail=str(free_ids(workshop)))
     workshop.expect_success("unassign task 1 --environment main", actor=workshop.user)
     workshop.expect_rows(assigned_ids(workshop, worker_w(workshop)) == [], free_ids(workshop) == [1, 2, 4], detail=str(assigned_ids(workshop, worker_w(workshop))))
