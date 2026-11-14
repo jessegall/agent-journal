@@ -1,12 +1,13 @@
 <script setup>
-import {computed} from "vue";
-import {EditorTabs, Skeleton, useWindow} from "@journal/window-kit";
+import {computed, onMounted, onUnmounted, ref} from "vue";
+import {CommentBox, CommentRail, EditorTabs, Skeleton, useWindow} from "@journal/window-kit";
 import FileTreeNode from "./FileTreeNode.vue";
 import FilesBar from "./FilesBar.vue";
 import FilesPalette from "./FilesPalette.vue";
 import FileReader from "./FileReader.vue";
 import FileStatusBar from "./FileStatusBar.vue";
 import {languageOf} from "./codeTint.js";
+import {rangeText, useFileComments} from "./fileComments.js";
 import {useFilesBrowser} from "./filesBrowser.js";
 
 // the project's files as an editor shows them: the tree on the left, the bar with the path, back and forward and the search over the file, the one search palette.
@@ -18,6 +19,25 @@ const {data: chosen, failure: refusal} = view.props.file;
 const rootRows = computed(() => browser.rowsOf(""));
 // one tab per open file, named by its file name; the full path is the tab's key
 const tabs = computed(() => browser.tabs.value.map((path) => ({key: path, title: path.split("/").pop(), icon: "file", on: path === browser.current.value})));
+// the comments of the file shown: the box under the code, the thread under the last line of each, and the rail beside the code when the window is wide enough
+const RAIL_FROM = 980;
+const comments = useFileComments(view, browser.current, browser.selection);
+const root = ref(null);
+const width = ref(RAIL_FROM);
+let watcher = null;
+onMounted(() => {
+    if (typeof ResizeObserver === "undefined" || !root.value) return;
+    watcher = new ResizeObserver(() => (width.value = root.value.clientWidth));
+    watcher.observe(root.value);
+});
+onUnmounted(() => watcher?.disconnect());
+const railShown = computed(() => comments.available.value && comments.rows.value.length > 0 && comments.railOn.value);
+const quote = computed(() => (browser.selection.value ? `${rangeText(browser.selection.value)} · ${browser.current.value.split("/").pop()}` : ""));
+function showComment(id) {
+    comments.hot.value = id;
+    const comment = comments.rows.value.find((row) => row.id === id);
+    if (comment?.from) browser.line.value = comment.from;
+}
 const lineCount = computed(() => (chosen.value?.text ?? "").split("\n").length);
 
 // an address can name a file to open, and the line to show first, as a plugin's dashboard does
@@ -26,7 +46,7 @@ if (address.get("file")) browser.open(address.get("file"), Number(address.get("l
 </script>
 
 <template>
-    <div class="files" data-files @pointerdown.capture="browser.markUsed" @focusin="browser.markUsed">
+    <div ref="root" class="files" data-files @pointerdown.capture="browser.markUsed" @focusin="browser.markUsed">
         <FilesBar :browser="browser" />
         <div class="files-body">
             <nav class="files-tree" aria-label="Project files" data-files-list>
@@ -51,8 +71,18 @@ if (address.get("file")) browser.open(address.get("file"), Number(address.get("l
                     <p class="files-note" role="alert">{{ refusal }}</p>
                 </template>
                 <template v-else-if="chosen && browser.current.value">
-                    <FileReader :file="chosen" :target="browser.line.value" :selection="browser.selection.value" @pick="browser.pick" />
-                    <FileStatusBar :path="browser.current.value" :git="chosen.git" :agent="browser.editor.value" :lines="lineCount" :language="languageOf(browser.current.value)" />
+                    <div class="files-view">
+                        <div class="files-column">
+                            <FileReader :file="chosen" :target="browser.line.value" :selection="browser.selection.value" :comments="comments.rows.value" :hot="comments.hot.value" @pick="browser.pick" @show="showComment" />
+                            <template v-if="comments.available.value">
+                                <CommentBox :count="comments.rows.value.length" :quote="quote" :sending="comments.sending.value" @send="comments.send" @show="comments.railOn.value = true" @clear-quote="browser.selection.value = null" />
+                            </template>
+                            <FileStatusBar :path="browser.current.value" :git="chosen.git" :agent="browser.editor.value" :lines="lineCount" :language="languageOf(browser.current.value)" />
+                        </div>
+                        <template v-if="railShown">
+                            <CommentRail :comments="comments.shown.value" :hot="comments.hot.value" :floating="width < RAIL_FROM" @show="showComment" @close="comments.railOn.value = false" />
+                        </template>
+                    </div>
                 </template>
                 <template v-else>
                     <p class="files-note">Choose a file to read it here.</p>
@@ -86,6 +116,21 @@ if (address.get("file")) browser.open(address.get("file"), Number(address.get("l
     overflow: auto;
     border-right: 1px solid var(--border);
     background: var(--bg-2);
+}
+
+.files-view {
+    position: relative;
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+.files-column {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
 }
 
 .files-main {

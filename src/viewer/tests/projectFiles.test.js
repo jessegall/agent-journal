@@ -17,6 +17,7 @@ function drawn() {
     window.read = async (words) => {
         const line = Array.isArray(words) ? words.join(" ") : words;
         reads.push(line);
+        if (line.startsWith("file-comment")) return {ok: false, failure: "refused", error: "no such command"};
         if (line.startsWith("project-file show")) return {ok: true, value: {path: "shop/cart.py", text: "one\ntwo", cut: false}};
         return {ok: true, value: {rows: line.includes("shop") ? [row("shop/cart.py")] : [row("shop", true), row("readme.md")]}};
     };

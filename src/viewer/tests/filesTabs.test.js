@@ -24,6 +24,7 @@ async function drawn() {
     window.read = async (words) => {
         const line = Array.isArray(words) ? words.join(" ") : words;
         reads.push(line);
+        if (line.startsWith("file-comment")) return {ok: false, failure: "refused", error: "no such command"};
         if (line.startsWith("project-file show")) return {ok: true, value: {path: line.slice(18), text: `text of ${line.slice(18)}`, cut: false}};
         return {ok: true, value: {rows: line.endsWith(" shop") ? [row("shop/cart.py"), row("shop/tax.py")] : [row("shop", {folder: true})]}};
     };

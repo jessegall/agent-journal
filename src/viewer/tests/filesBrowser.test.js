@@ -19,6 +19,7 @@ async function drawn(rootRows = [row("shop", {folder: true}), row("readme.md", {
     window.read = async (words) => {
         const line = Array.isArray(words) ? words.join(" ") : words;
         reads.push(line);
+        if (line.startsWith("file-comment")) return {ok: false, failure: "refused", error: "no such command"};
         if (line.startsWith("project-file find")) return {ok: true, value: {rows: [row("shop/cart.py"), row("shop/tax.py")]}};
         if (line.startsWith("project-file grep")) return {ok: true, value: {rows: [{...row("shop/cart.py"), line: 3, text: "total = price * count"}, {...row("shop/tax.py"), line: 4, text: "return total + tax"}]}};
         if (line.startsWith("project-file show")) return {ok: true, value: {path: line.slice(18), text: "one\ntwo\nthree\nfour\nfive", cut: false}};

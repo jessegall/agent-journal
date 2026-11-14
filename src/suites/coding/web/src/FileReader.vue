@@ -1,12 +1,16 @@
 <script setup>
 import {computed} from "vue";
+import {CommentCard} from "@journal/window-kit";
 import {tint} from "./codeTint.js";
 
 // a file's text as code: the colour of what it says and a number on each line; a click on a number picks the line and Shift and a click stretches the pick to a range.
 // A file shown cut and a moved file say so above the code.
-const props = defineProps({file: {type: Object, required: true}, target: {type: Number, default: 0}, selection: {type: Object, default: null}});
-const emit = defineEmits(["pick"]);
+const props = defineProps({file: {type: Object, required: true}, target: {type: Number, default: 0}, selection: {type: Object, default: null}, comments: {type: Array, default: () => []}, hot: {type: Number, default: 0}});
+const emit = defineEmits(["pick", "show"]);
 const lines = computed(() => props.file.text.split("\n"));
+// a comment's thread stands under the last line of its range
+const endingAt = (number) => props.comments.filter((comment) => comment.to === number);
+const noted = (number) => props.comments.some((comment) => comment.from != null && number >= comment.from && number <= comment.to);
 const picked = (number) => Boolean(props.selection) && number >= props.selection.from && number <= props.selection.to;
 
 function scrolledTo(element, number) {
@@ -24,10 +28,15 @@ function scrolledTo(element, number) {
         </template>
         <div class="code" data-file-text>
             <template v-for="(line, index) in lines" :key="index">
-                <div :ref="(element) => scrolledTo(element, index + 1)" :class="['files-line', {target: index + 1 === target, picked: picked(index + 1)}]" :data-file-line="index + 1">
+                <div :ref="(element) => scrolledTo(element, index + 1)" :class="['files-line', {target: index + 1 === target, picked: picked(index + 1), noted: noted(index + 1)}]" :data-file-line="index + 1">
                     <span class="files-number" role="button" :aria-label="`Pick line ${index + 1}`" data-line-number @click="emit('pick', index + 1, $event.shiftKey)">{{ index + 1 }}</span>
                     <span class="files-code" v-html="tint(line) || ' '" />
                 </div>
+                <template v-for="comment in endingAt(index + 1)" :key="comment.id">
+                    <div class="files-thread" data-comment-thread>
+                        <CommentCard :comment="{...comment, quote: null}" :hot="hot === comment.id" @show="emit('show', comment.id)" />
+                    </div>
+                </template>
             </template>
         </div>
     </div>
@@ -71,6 +80,16 @@ function scrolledTo(element, number) {
 
 .files-line.target {
     background: var(--hover);
+}
+
+.files-line.noted .files-number {
+    color: var(--accent-text);
+}
+
+.files-thread {
+    max-width: 640px;
+    margin: 4px 16px 8px 56px;
+    white-space: normal;
 }
 
 .files-line.picked {
