@@ -655,7 +655,6 @@ tests/stories/fixtures/acme_suite/acme_suite.py
 tests/stories/fixtures/acme_suite/module.py
 tests/stories/fixtures/third_party.py
 tests/stories/real_programs.py
-tests/stories/server/library_client.py
 tests/stories/server/support/alias_hook.py
 tests/stories/server/support/launch_terminal.py
 tests/stories/server/support/server_client.py
