@@ -3,6 +3,7 @@ from engine.provider.model_efforts import ModelEfforts
 from core.modules.claude_code.support.claude_code_settings import MODEL_EFFORTS
 from engine.provider.program_server_file import ProgramServerFile
 from core.modules.claude_code.providers.support.claude_server_file import ClaudeServerFile
+from core.modules.claude_code.providers.support.managed_hooks import ManagedHooks
 from dataclasses import replace
 from engine.profile.agent_profile import AgentProfile
 from engine.provider.context_window import ContextWindow
@@ -155,14 +156,15 @@ class ClaudeCodeProvider(Provider):
         effort = [] if launch.names_flag("--effort") else ["--effort", launch.effort or self.effort(launch.model)]
         arguments = [self.executable, *self.settings_arguments(launch.root), *model, *effort, *permission, *launch.program_arguments,
                      *launch.session.arguments(self), *launch.prompt_arguments]
-        return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()}, launch.session.session)
+        return LaunchCommand(arguments, launch.folder, self.launch_command_variables(launch.root, launch.variables, self.keys.all()), launch.session.session)
 
     def helper_command(self, launch: HelperLaunch) -> LaunchCommand:
         arguments = [self.executable, *self.settings_arguments(launch.root), "-p", launch.brief, "--model", launch.model, "--effort", self.effort(launch.model), "--dangerously-skip-permissions",
                      "--output-format", "stream-json", "--verbose", *launch.session.arguments(self)]
-        return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()}, launch.session.session)
+        return LaunchCommand(arguments, launch.folder, self.launch_command_variables(launch.root, launch.variables, self.keys.all()), launch.session.session)
 
     def settings_arguments(self, root: Path) -> list[str]:
+        ManagedHooks().refuse_blocked_hooks()
         home = JournalHome(root / JOURNAL_FOLDER)
         return ["--settings", str(home.program_settings_file(self.name)), "--setting-sources", SETTING_SOURCES, "--mcp-config", str(self.server_file(home))]
 

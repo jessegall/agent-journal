@@ -6872,6 +6872,7 @@
         "reported_model(self, home: JournalHome, session: str) -> str",
         "session_temp_folders(self, project: Path) -> Mapping[str, Path]",
         "launch_variables(self, home: JournalHome) -> Mapping[str, str]",
+        "launch_command_variables(self, root: Path, given: Mapping[str, str], keys: Mapping[str, str]) -> dict[str, str]",
         "journal_hook_file(self, home: JournalHome) -> Path",
         "hook_settings(cls, runner: str, root: Path) -> Mapping[str, object]",
         "journal_settings(self, home: JournalHome, runner: str, managed: Sequence['ManagedHook'], folders: Sequence[Path]) -> ProgramSettings",
