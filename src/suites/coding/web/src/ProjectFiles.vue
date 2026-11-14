@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, onUnmounted, ref} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {CommentBox, CommentRail, EditorTabs, Skeleton, useWindow} from "@journal/window-kit";
 import FileTreeNode from "./FileTreeNode.vue";
 import FilesBar from "./FilesBar.vue";
@@ -7,7 +7,8 @@ import FilesPalette from "./FilesPalette.vue";
 import FileReader from "./FileReader.vue";
 import FileStatusBar from "./FileStatusBar.vue";
 import {languageOf} from "./codeTint.js";
-import {rangeText, useFileComments} from "./fileComments.js";
+import {rangeText} from "./fileComments.js";
+import {tabItems} from "./fileMenus.js";
 import {useFilesBrowser} from "./filesBrowser.js";
 
 // the project's files as an editor shows them: the tree on the left, the bar with the path, back and forward and the search over the file, the one search palette.
@@ -21,7 +22,14 @@ const rootRows = computed(() => browser.rowsOf(""));
 const tabs = computed(() => browser.tabs.value.map((path) => ({key: path, title: path.split("/").pop(), icon: "file", on: path === browser.current.value})));
 // the comments of the file shown: the box under the code, the thread under the last line of each, and the rail beside the code when the window is wide enough
 const RAIL_FROM = 980;
-const comments = useFileComments(view, browser.current, browser.selection);
+const comments = browser.comments;
+const box = ref(null);
+// a comment asked for from a menu opens the box, once the file it is about is shown
+watch(() => browser.commentAsked.value, async () => {
+    await nextTick();
+    await nextTick();
+    box.value?.openBox();
+});
 const root = ref(null);
 const width = ref(RAIL_FROM);
 let watcher = null;
@@ -65,7 +73,7 @@ if (address.get("file")) browser.open(address.get("file"), Number(address.get("l
             </nav>
             <div class="files-main">
                 <template v-if="tabs.length">
-                    <EditorTabs :tabs="tabs" data-files-tabs @pick="browser.open($event)" @close="browser.closeTab($event)" />
+                    <EditorTabs :tabs="tabs" :extra="(tab) => tabItems(browser, tab.key)" data-files-tabs @pick="browser.open($event)" @close="browser.closeTab($event)" />
                 </template>
                 <template v-if="refusal && browser.current.value">
                     <p class="files-note" role="alert">{{ refusal }}</p>
@@ -73,9 +81,9 @@ if (address.get("file")) browser.open(address.get("file"), Number(address.get("l
                 <template v-else-if="chosen && browser.current.value">
                     <div class="files-view">
                         <div class="files-column">
-                            <FileReader :file="chosen" :target="browser.line.value" :selection="browser.selection.value" :comments="comments.rows.value" :hot="comments.hot.value" @pick="browser.pick" @show="showComment" />
+                            <FileReader :browser="browser" :path="browser.current.value" :file="chosen" :target="browser.line.value" :selection="browser.selection.value" :comments="comments.rows.value" :hot="comments.hot.value" @pick="browser.pick" @show="showComment" />
                             <template v-if="comments.available.value">
-                                <CommentBox :count="comments.rows.value.length" :quote="quote" :sending="comments.sending.value" @send="comments.send" @show="comments.railOn.value = true" @clear-quote="browser.selection.value = null" />
+                                <CommentBox ref="box" :count="comments.rows.value.length" :quote="quote" :sending="comments.sending.value" @send="comments.send" @show="comments.railOn.value = true" @clear-quote="browser.selection.value = null" />
                             </template>
                             <FileStatusBar :path="browser.current.value" :git="chosen.git" :agent="browser.editor.value" :lines="lineCount" :language="languageOf(browser.current.value)" />
                         </div>

@@ -1,11 +1,17 @@
 <script setup>
 import {computed} from "vue";
-import {Icon} from "@journal/window-kit";
+import {Icon, useWindow, vContext} from "@journal/window-kit";
+import {rowItems} from "./fileMenus.js";
 import {GIT_WORDS} from "./gitWords.js";
 
 // one row of the project tree and, under an open folder, its own rows: a folder shows a chevron and its name, a file its name,
 // the number of comments on it when it has some, and its git letter
 const props = defineProps({row: {type: Object, required: true}, depth: {type: Number, default: 0}, browser: {type: Object, required: true}});
+const view = useWindow();
+// the menu of a right click on the row; Show changes in Git opens the Git page of this environment
+const gitAddress = () => `${location.pathname}?${new URLSearchParams({environment: view.environment, page: "coding.git"})}`;
+const place = () => ({head: props.row.id, items: rowItems(props.browser, props.row, gitAddress)});
+const flashing = computed(() => props.browser.flash.value === props.row.id);
 const isOpen = computed(() => props.browser.opened.value.has(props.row.id));
 const children = computed(() => (isOpen.value ? props.browser.rowsOf(props.row.id) : null));
 const failure = computed(() => (isOpen.value ? props.browser.failureOf(props.row.id) : ""));
@@ -16,7 +22,7 @@ const commentWords = computed(() => `${props.row.comments} comment${props.row.co
 
 <template>
     <template v-if="row.folder">
-        <button type="button" class="tree-row" :style="pad" :aria-expanded="isOpen" :data-folder="row.id" @click="browser.toggle(row.id)">
+        <button v-context="place" type="button" class="tree-row" :style="pad" :aria-expanded="isOpen" :data-folder="row.id" @click="browser.toggle(row.id)">
             <Icon name="chevronRight" :facing="isOpen ? 'down' : 'right'" :size="9" />
             <span class="tree-name">{{ row.name }}</span>
         </button>
@@ -33,7 +39,7 @@ const commentWords = computed(() => `${props.row.comments} comment${props.row.co
         </template>
     </template>
     <template v-else>
-        <button type="button" :class="['tree-row', {on: current}]" :style="pad" :aria-current="current" :title="row.id" :data-file="row.id" @click="browser.open(row.id)">
+        <button v-context="place" type="button" :class="['tree-row', {on: current, flash: flashing}]" :style="pad" :aria-current="current" :title="row.id" :data-file="row.id" @click="browser.open(row.id)">
             <span class="tree-gap" aria-hidden="true" />
             <span class="tree-name">{{ row.name }}</span>
             <template v-if="row.comments">
@@ -64,6 +70,10 @@ const commentWords = computed(() => `${props.row.comments} comment${props.row.co
 
 .tree-row:hover {
     background: var(--hover);
+}
+
+.tree-row.flash {
+    background: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .tree-row.on {

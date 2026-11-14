@@ -1,4 +1,5 @@
 import {computed, onMounted, onUnmounted, reactive, ref, watch} from "vue";
+import {useFileComments} from "./fileComments.js";
 import {useFilesTabs} from "./filesTabs.js";
 
 const TYPING = new Set(["INPUT", "TEXTAREA", "SELECT"]);
@@ -6,6 +7,7 @@ const TYPING = new Set(["INPUT", "TEXTAREA", "SELECT"]);
 const LAYERS = '[role="dialog"][aria-modal="true"], [data-context-menu]';
 const SEARCH_AFTER_MS = 150;
 const LEAST_TEXT_LETTERS = 2;
+const FLASH_MS = 1200;
 // the Files window the person used last gets the page keys, even when the chat was used after it
 let lastUsed = null;
 
@@ -28,6 +30,10 @@ export function useFilesBrowser(view) {
     const selection = kept.selection;
     // the agent that edited the file shown last, when the journal has an edit of it
     const editor = ref(0);
+    // the path of the tree row that flashes after Reveal in Files, and a count that a comment on the file shown was asked for from a menu
+    const comments = useFileComments(view, current, selection);
+    const flash = ref("");
+    const commentAsked = ref(0);
 
     // the rows of a folder, or null while they are being read; the project's own are the window's first key
     const rowsOf = (folder) => (folder ? folders[folder]?.rows ?? null : root.loaded.value ? root.rows.value : null);
@@ -103,6 +109,20 @@ export function useFilesBrowser(view) {
         current.value = "";
     }
 
+    // the tree opens the folders above the file and the file's row flashes
+    async function revealRow(path) {
+        await reveal(path);
+        flash.value = path;
+        setTimeout(() => flash.value === path && (flash.value = ""), FLASH_MS);
+    }
+
+    // a comment on the whole file, or on one line of it, asked for from a menu: the file opens and the comment box with it
+    function commentOn(path, lineNumber = 0) {
+        if (path !== current.value) open(path);
+        selection.value = lineNumber ? {from: lineNumber, to: lineNumber} : null;
+        commentAsked.value += 1;
+    }
+
     // closing the tab of the file shown shows its neighbour, or no file when it was the last
     function closeTab(path) {
         const at = tabs.value.indexOf(path);
@@ -139,8 +159,8 @@ export function useFilesBrowser(view) {
     });
     onUnmounted(() => clearTimeout(timer));
 
-    function openPalette(mode) {
-        query.value = "";
+    function openPalette(mode, words = "") {
+        query.value = words;
         hits.value = [];
         chosen.value = 0;
         palette.value = mode;
@@ -183,5 +203,5 @@ export function useFilesBrowser(view) {
         document.removeEventListener("keydown", pressed);
     });
 
-    return {tabs, closeTab, selection, pick, editor, markUsed, rowsOf, failureOf, opened, toggle, reveal, open, back, forward, leaveFile, current, line, history, palette, query, shownHits, chosen, choose, openChosen, openPalette, readFolder};
+    return {comments, flash, commentAsked, revealRow, commentOn, tabs, closeTab, selection, pick, editor, markUsed, rowsOf, failureOf, opened, toggle, reveal, open, back, forward, leaveFile, current, line, history, palette, query, shownHits, chosen, choose, openChosen, openPalette, readFolder};
 }

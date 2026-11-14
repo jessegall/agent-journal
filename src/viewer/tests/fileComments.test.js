@@ -27,7 +27,7 @@ async function drawn(comments = COMMENTS) {
     const window = projectFilesWindowContext({});
     window.read = async (words) => {
         const line = Array.isArray(words) ? words.join(" ") : words;
-        if (line.startsWith("file-comment")) return comments ? {ok: true, value: {rows: comments}} : {ok: false, failure: "refused", error: "no such command"};
+        if (line.startsWith("file-comment")) return comments ? {ok: true, value: {rows: [...comments]}} : {ok: false, failure: "refused", error: "no such command"};
         if (line.startsWith("project-file show")) return {ok: true, value: {path: "shop/cart.py", text: TEXT, cut: false}};
         if (line.startsWith("file-edit")) return {ok: true, value: {rows: []}};
         return {ok: true, value: {rows: [{id: "shop/cart.py", name: "cart.py", folder: false, size: 0, git: ""}]}};
