@@ -1,3 +1,4 @@
+from engine.driver.line_delivery import LineDelivery
 from engine.query.rows.prunable import Prunable
 from engine.query.conditions.among import Among
 from dataclasses import dataclass
@@ -33,6 +34,7 @@ class AgentLine(Prunable, SessionPrivate, Model):
     text: str
     source: str = ""
     wakes_agent: bool = False
+    delivery: LineDelivery = LineDelivery.TERMINAL_TYPING
     repeats_without_hook: bool = False
     state: AgentLineState = AgentLineState.WAITING
     delivered_at: Timestamp | None = None

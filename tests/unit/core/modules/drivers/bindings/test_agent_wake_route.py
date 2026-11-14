@@ -7,13 +7,14 @@ from core.modules.drivers.commands.enter_agent_line.enter_agent_line import Ente
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.support.wake_delivery import WakeDelivery
 from engine.actor.actor import Actor
+from engine.driver.line_delivery import LineDelivery
 from engine.driver.wake_ask import WakeAsk
 from engine.driver.wake_reply import GIVEN_STATUS, GONE_STATUS, NOTHING_STATUS
 from engine.enums.actor_type import ActorType
 from engine.journal.journal_home import JournalHome
 from engine.time.timestamp import Timestamp
 
-WAKING = SimpleNamespace(id=7, session_agent_id=3, wakes_agent=True, state=AgentLineState.WAITING, nudge=SimpleNamespace(text="new message 12: read it"))
+WAKING = SimpleNamespace(id=7, session_agent_id=3, wakes_agent=True, delivery=LineDelivery.WAKE_HOOK, state=AgentLineState.WAITING, nudge=SimpleNamespace(text="new message 12: read it"))
 
 
 def agent(role: str = "main", launched: bool = False, session: str = "s-1", program: str = "claude"):

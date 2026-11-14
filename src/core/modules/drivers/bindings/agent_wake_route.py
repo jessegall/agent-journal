@@ -1,3 +1,4 @@
+from engine.driver.line_delivery import LineDelivery
 from engine.driver.program_lockdown import ProgramLockdown
 from engine.driver.wake_ask import WakeAsk
 from engine.driver.wake_reply import WakeReply
@@ -36,7 +37,7 @@ class AgentWakeRoute(WakeRoute):
         self.delivery.release_unconfirmed(self.actors.actor(MODULE_KEY))
         waiting = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).every_row(WAKING_LINES_REASON)
         for line in waiting:
-            if line.wakes_agent and self.delivery.deliver(line, self.actors.actor(MODULE_KEY)):
+            if line.delivery is LineDelivery.WAKE_HOOK and self.delivery.deliver(line, self.actors.actor(MODULE_KEY)):
                 break
         if waiter.outcome is WakeOutcome.GIVEN:
             return self.taken(agent.id, ask.token)

@@ -22,6 +22,9 @@ class WakeDelivery:
     def __init__(self, bus: Bus, hook_calls: HookCallQuery, home: JournalHome, clock: Clock) -> None:
         self.bus, self.hook_calls, self.waiters, self.clock = bus, hook_calls, WakeWaiters.shared(home), clock
 
+    def has_waiter(self, agent_id: int) -> bool:
+        return self.waiters.has_waiter(agent_id)
+
     def deliver(self, line: AgentLine, actor: Actor) -> bool:
         agent_id, now = line.session_agent_id, self.clock.timestamp()
         if not self.waiters.has_waiter(agent_id) or self.hook_calls.is_compacting(agent_id, now) or not self.hook_calls.has_ended_turn(agent_id):
