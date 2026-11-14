@@ -1,4 +1,5 @@
 import threading
+from datetime import UTC, datetime
 from pathlib import Path
 
 from engine.enums.process_type import ProcessType
@@ -35,8 +36,10 @@ def test_the_ticker_writes_the_logged_requests_and_a_held_hook_keeps_its_row_und
     story = new_story(fixture=UserJoined)
     main_id = story.container.get(EnvironmentNames).environment_id("main")
     log = RequestLog(story.home, FileAccess())
-    log.append(RequestLogEntry(main_id, None, ProcessType.JOURNAL, "journal task list", 0, "2026-10-31T09:00:00+00:00"))
-    log.append(RequestLogEntry(None, None, ProcessType.HOOK, "claude stop", 2, "2026-10-31T09:00:00+00:00", "s-1"))
+    # the ticker's kept container reads the real clock, so a row dated on the story's clock would be pruned as too old
+    ended_at = datetime.now(UTC).isoformat()
+    log.append(RequestLogEntry(main_id, None, ProcessType.JOURNAL, "journal task list", 0, ended_at))
+    log.append(RequestLogEntry(None, None, ProcessType.HOOK, "claude stop", 2, ended_at, "s-1"))
     handlers = [handler for handler in Ticker.module_handlers(ModuleFinder(story.home)) if handler.label == IMPORT_LABEL]
     clock = TickClock()
     ticker = Ticker(story.home, handlers, lambda: None, clock)
