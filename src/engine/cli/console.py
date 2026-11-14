@@ -186,7 +186,9 @@ class Console:
             self.note_overview(subcommand, arguments, caller)
             return SUCCESS_CODE
         self.commit_listeners.run()
-        command, skipped = subcommand.command(arguments, caller), self.flags.skipped_guards(arguments)
+        with self.scopes.command_scope(subcommand.disabled_scopes, caller.actor, environment_id):
+            command = subcommand.command(arguments, caller)
+        skipped = self.flags.skipped_guards(arguments)
         if arguments.explain:
             output.explanation(self.bus.explain(command, caller.actor, skipped, environment_id))
             return SUCCESS_CODE
