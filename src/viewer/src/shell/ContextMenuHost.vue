@@ -11,7 +11,7 @@ import ToastArea from "../kit/ToastArea.vue";
 // What an item did is said in the toast of the page that shows them, or in this host's own where the page has none.
 const {menu, show, close} = useContextMenu();
 const own = makeToasts(async () => ({ok: false, error: "Nothing to undo here"}));
-const say = (text) => (globalThis[PAGE_TOASTS] ?? own).raise(text);
+const say = (text, undo = null) => (globalThis[PAGE_TOASTS] ?? own).raise(text, undo);
 let stop = () => {};
 onMounted(() => (stop = watchRightClicks({show, say})));
 onUnmounted(() => stop());

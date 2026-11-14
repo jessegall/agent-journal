@@ -5,7 +5,8 @@ import MenuItem from "./MenuItem.vue";
 import MenuPanel from "./MenuPanel.vue";
 
 // the journal's own menu for a right click: a heading, then the items in groups, at a spot on the screen. A page opens it through useContextMenu.
-// item: {label, group (open, copy, own), keys, children: [item], danger, disabled, reason, run}; a disabled item stays, with its short reason at the right.
+// item: {label, group (open, copy, own), keys, children: [item], danger, armedLabel, disabled, reason, run}; a disabled item stays, with its short reason at the right.
+// A danger item asks once in place, its label turning into armedLabel ("Label: click again" by default), and runs on the second click.
 const props = defineProps({
     at: {type: Object, required: true},
     head: {type: String, default: ""},
@@ -18,6 +19,8 @@ const props = defineProps({
 const emit = defineEmits(["close"]);
 const entries = computed(() => menuEntries(props.items));
 const sub = ref(null);
+// the danger item that asked once and waits for its second click
+const armed = ref("");
 const MENU = ".context-menu";
 const buttons = (panel) => [...panel.querySelectorAll("[data-menu-item]:not(:disabled)")];
 const focusAt = (panel, pick) => pick(buttons(panel))?.focus();
@@ -28,6 +31,10 @@ function choose(entry, button) {
     if (entry.children) {
         const box = button.getBoundingClientRect();
         sub.value = {items: entry.children, at: {x: box.right + 2, y: box.top - 4, flipX: box.left - 2}, opener: button};
+        return;
+    }
+    if (entry.danger && armed.value !== entry.key) {
+        armed.value = entry.key;
         return;
     }
     emit("close", true);
@@ -100,8 +107,8 @@ onUnmounted(() => {
         <p v-if="head && !depth" class="context-head" data-context-head>{{ head }}</p>
         <template v-for="entry in entries" :key="entry.key">
             <hr v-if="entry.separator" class="context-separator" role="separator" data-context-separator />
-            <MenuItem v-else role="menuitem" :class="{'context-danger': entry.danger}" :disabled="entry.disabled" :aria-haspopup="entry.children ? 'menu' : undefined" :title="entry.disabled ? entry.reason : undefined" :data-menu-item="entry.key" @click="choose(entry, $event.currentTarget)" @mouseenter="hover(entry, $event.currentTarget)">
-                <span class="context-label">{{ entry.label }}</span>
+            <MenuItem v-else role="menuitem" :class="{'context-danger': entry.danger, 'context-armed': armed === entry.key}" :disabled="entry.disabled" :aria-haspopup="entry.children ? 'menu' : undefined" :title="entry.disabled ? entry.reason : undefined" :data-menu-item="entry.key" @click="choose(entry, $event.currentTarget)" @mouseenter="hover(entry, $event.currentTarget)">
+                <span class="context-label">{{ armed === entry.key ? entry.armedLabel ?? `${entry.label}: click again` : entry.label }}</span>
                 <span v-if="entry.disabled" class="context-note" data-context-reason>{{ entry.reason }}</span>
                 <span v-else-if="entry.children" class="context-note" aria-hidden="true">›</span>
                 <kbd v-else-if="entry.keys" class="context-note">{{ entry.keys }}</kbd>
@@ -142,6 +149,10 @@ onUnmounted(() => {
 .context-danger,
 .context-danger:hover:enabled {
     color: var(--danger);
+}
+
+.context-armed {
+    background: color-mix(in srgb, var(--danger) 16%, transparent);
 }
 
 :global(.menu-target) {

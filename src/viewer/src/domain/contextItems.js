@@ -43,3 +43,21 @@ export const pageItems = () => [
     {label: "Reload", group: "own", run: () => location.reload()},
 ];
 
+
+// The delete item of a row: it asks once in place, then sends the delete and says what it did.
+// word is Delete or Remove, and the toast says it in the past ("Deleted", "Removed"). remove() answers {ok, error}.
+// restore is the journal command that brings the row back (["memory", "restore", "12"]) and gives the toast an Undo for 6 seconds; a model with no such command passes none and gets no Undo.
+// erase is for a value that is gone for good, like a secret's: it says so when it asks and has no Undo.
+export function deleteItem({word = "Delete", name, remove, restore = null, erase = false}) {
+    return {
+        label: word,
+        danger: true,
+        armedLabel: erase ? "Click again: the value is erased for good" : `${word}: click again`,
+        run: async ({say}) => {
+            const answer = await remove();
+            if (!answer.ok) return say(answer.error);
+            if (erase) return say(`Deleted ${name}. The value is erased.`);
+            say(`${word}d ${name}`, restore ? {line: restore} : null);
+        },
+    };
+}

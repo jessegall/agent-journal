@@ -1,4 +1,5 @@
-import {shallowRef} from "vue";
+import {onUnmounted, provide, shallowRef} from "vue";
+import {PAGE_TOASTS, TOAST} from "../../kit/useToast.js";
 
 export const TOAST_HOLD_MS = 6000;
 
@@ -24,4 +25,13 @@ export function makeToasts(run) {
         if (!answer.ok) raise(answer.error);
     };
     return {current, raise, undo, dismiss};
+}
+
+// a page's toasts: its windows raise them with useToast, and the shell's right-click menu says what an item did in the same place
+export function usePageToasts(run) {
+    const toasts = makeToasts(run);
+    provide(TOAST, toasts);
+    globalThis[PAGE_TOASTS] = toasts;
+    onUnmounted(() => globalThis[PAGE_TOASTS] === toasts && delete globalThis[PAGE_TOASTS]);
+    return toasts;
 }

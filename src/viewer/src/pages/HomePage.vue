@@ -1,7 +1,6 @@
 <script setup>
-import {onMounted, onUnmounted, provide, ref} from "vue";
-import {PAGE_TOASTS, TOAST} from "../../kit/useToast.js";
-import {makeToasts} from "../composables/toasts.js";
+import {onMounted, onUnmounted, ref} from "vue";
+import {usePageToasts} from "../composables/toasts.js";
 import ToastArea from "../kit/ToastArea.vue";
 import PaneStage from "../windows/PaneStage.vue";
 import {followEvents} from "../windows/windowCatalogue.js";
@@ -15,9 +14,7 @@ const props = defineProps({
 });
 
 const {catalogue, subscriptions, shellLine, prompts, listeners, stop, face, opened, problem} = startWindows(props);
-const toasts = makeToasts(shellLine);
-provide(TOAST, toasts);
-globalThis[PAGE_TOASTS] = toasts;
+const toasts = usePageToasts(shellLine);
 const home = useHomeLayout(props.environment, shellLine, catalogue);
 listeners.push(home.heard);
 // the main agent, whose id the agent windows opened on the home page are given
@@ -26,10 +23,7 @@ onMounted(async () => {
     const answer = await shellLine(["agent", "main"]);
     if (answer.ok) mainAgent.value = answer.value.id;
 });
-onUnmounted(() => {
-    stop();
-    delete globalThis[PAGE_TOASTS];
-});
+onUnmounted(stop);
 opened.then((session) => home.load(sessionPage(session)));
 </script>
 
