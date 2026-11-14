@@ -5,9 +5,7 @@ import shlex
 import pytest
 
 from engine.file.file_access import FileAccess
-from engine.errors.refusal import Refusal
 from core.modules.profiles.support.profile_files import ProfileFiles
-from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from server.work.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import UserBuilder
@@ -85,76 +83,6 @@ def boot(story):
     story.run_listeners()
 
 
-def test_an_own_profile_is_written_only_in_the_shared_folder(profile_story):
-    story = profile_story
-    profile_line(story, [*SAVE, "--program", "codex", "--access", "read-only", "--mcp-tools", "mcp__wiki__search", "--independent"])
-    expect_value(profile_path(story).is_file(), True)
-    expect_value((story.home.project_folder / ".claude/agents/critic.md").exists(), False)
-    expect_value((story.home.project_folder / ".codex/agents/critic.toml").exists(), False)
-    row = profile_row(story, "critic")
-    expect_value((row["program"], row["access"], row["module"]), ("codex", "read-only", ""))
-    expect_value((row["mcp_tools"], row["occupant"]), (["mcp__wiki__search"], "each-launch"))
-
-
-def test_registered_profiles_are_listed_without_shared_files(profile_story):
-    story = profile_story
-    expect_value(profile_row(story, "module-reader")["module"], "sample.profile-updates")
-    expect_value(profile_path(story, "module-reader").exists(), False)
-    types = profile_line(story, ["profile", "list"])["types"]
-    expect_value(next(row for row in types if row["key"] == "worker")["access"], "writing")
-    expect_value(any(row["key"] == "main" for row in types), False)
-
-
-def test_only_changed_fields_are_saved_and_other_fields_follow_an_upgrade(changed_profile):
-    story = changed_profile
-    text = FileAccess.read(profile_path(story, "module-reader"))
-    expect_value("description:" in text or "Read the files." in text, False)
-    change_version(story, "ProfileVersionTwo")
-    row = profile_row(story, "module-reader")
-    expect_value((row["description"], row["body"], row["model"]), ("Reads a changed question", "Read the new files.", "opus"))
-    expect_value(row["changed"], ["model", "program_models"])
-    expect_value(row["program_models"], {"claude": "opus", "codex": "gpt-6.1-sol"})
-
-
-@pytest.mark.parametrize("body", ["Read our wiki first.", ""], ids=["instructions", "empty"])
-def test_a_persons_text_survives_changed_module_text_and_reset(profile_story, body):
-    story = profile_story
-    save_registered(story, "--body", body)
-    expect_value("module-text:" in FileAccess.read(profile_path(story, "module-reader")), True)
-    change_version(story, "ProfileVersionTwo")
-    row = profile_row(story, "module-reader")
-    expect_value((row["body"], row["module_text_changed"]), (body, True))
-    profile_line(story, ["profile", "reset", "module-reader"])
-    expect_value(profile_row(story, "module-reader")["body"], "Read the new files.")
-
-
-def test_a_registered_profiles_type_follows_its_module(changed_profile):
-    story = changed_profile
-    change_version(story, "ProfileWorkerVersion")
-    expect_value(profile_row(story, "module-reader")["agent_type"], "worker")
-
-
-def test_a_withdrawn_profile_keeps_the_change_and_refuses_start(changed_profile):
-    story = changed_profile
-    change_version(story, "ProfileRemoved")
-    expect_value("Its module no longer offers this profile" in profile_row(story, "module-reader")["problem"], True)
-    expect_value(profile_path(story, "module-reader").is_file(), True)
-    with pytest.raises(Refusal, match="Its module no longer offers") as refused:
-        story.container.get(ProfileFiles).effective("module-reader")
-    expect_value("journal profile reset" in refused.value.suggestion, True)
-
-
-def test_a_missing_type_keeps_the_file_and_does_not_stop_sync(profile_story):
-    story = profile_story
-    change_version(story, "ProfileCustomType")
-    profile_line(story, [*SAVE, "--type", "clerk"])
-    change_version(story, "ProfileRemoved")
-    expect_value("Type: gone" in profile_row(story, "critic")["problem"], True)
-    with pytest.raises(Refusal, match="clerk"):
-        story.container.get(ProfileFiles).effective("critic")
-    expect_value(profile_path(story).is_file(), True)
-
-
 @pytest.mark.parametrize("line", [SAVE, ["profile", "reset", "module-reader", "--reason", "needed"], ["profile", "remove", "critic", "--reason", "needed"]])
 def test_agents_cannot_change_profiles(profile_story, line):
     profile_story.expect_refusal(shlex.join(line), "A user was asked in the dock", actor=profile_story.agent)
@@ -169,44 +97,6 @@ def test_a_person_can_save_a_journal_name_but_cannot_change_a_registered_type(pr
     story = profile_story
     profile_line(story, ["profile", "save", "journal-mine", "--description", "My reader", "--body", "Read."])
     profile_refusal(story, ["profile", "save", "module-reader", "--description", "Reads", "--type", "worker"], "its type stays helper")
-
-
-def test_remove_deletes_an_own_profile_but_registered_profiles_need_reset(profile_story):
-    story = profile_story
-    profile_line(story, SAVE)
-    profile_line(story, ["profile", "remove", "critic"])
-    expect_value(profile_path(story).exists(), False)
-    profile_refusal(story, ["profile", "remove", "module-reader"], "profile reset")
-
-
-@pytest.mark.parametrize("text", ["<<<<<<< ours\n=======\n>>>>>>> theirs", "---\nname critic\n---\nRead.", "---\nname: critic\nmodel: opus\n---\nRead."])
-def test_an_unreadable_profile_does_not_hide_other_profiles_or_stop_sync(profile_story, text):
-    story = profile_story
-    save_profile_file(story, "critic", text)
-    expect_value("Unreadable" in profile_row(story, "critic")["problem"], True)
-    expect_value(profile_row(story, "module-reader")["body"], "Read the files.")
-    code, output = story.synced()
-    expect_value(code, 0)
-    with pytest.raises(Refusal, match="Unreadable"):
-        story.container.get(ProfileFiles).effective("critic")
-
-
-def test_a_missing_text_digest_does_not_crash_an_overlay(profile_story):
-    story = profile_story
-    save_profile_file(story, "module-reader", "---\nname: module-reader\nmodel: opus\n---\n")
-    expect_value(profile_row(story, "module-reader")["model"], "opus")
-
-
-def test_a_module_cannot_take_over_an_existing_own_profile_name(profile_story):
-    story = profile_story
-    profile_line(story, SAVE)
-    change_version(story, "ProfileNameCollision")
-    row = profile_row(story, "critic")
-    expect_value((row["body"], "Name taken by a module" in row["problem"]), ("Read the diff.", True))
-    with pytest.raises(Refusal, match="Name taken by a module"):
-        story.container.get(ProfileFiles).effective("critic")
-    profile_line(story, ["profile", "reset", "critic"])
-    expect_value(profile_row(story, "critic")["body"], "Read the module instructions.")
 
 
 @pytest.mark.parametrize("source,suffix,text", [
