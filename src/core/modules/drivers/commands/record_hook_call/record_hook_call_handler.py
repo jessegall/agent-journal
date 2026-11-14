@@ -94,7 +94,9 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         if command.event.displayed_part and not command.event.is_final_display:
             metadata.update({DISPLAYED_PART: command.event.displayed_part, DISPLAYED_MESSAGE_ID: command.event.displayed_message_id})
         if tool is not None and command.event.event == HookEventName.PRE_TOOL_USE:
-            metadata.update({"journal_commands": list(tool.journal_commands), "program": command.event.program, "transcript_path": command.event.transcript.text})
+            metadata["journal_commands"] = list(tool.journal_commands)
+        if tool is not None and command.event.event in (HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE):
+            metadata.update({"program": command.event.program, "transcript_path": command.event.transcript.text})
         if command.event.is_monitor_tool():
             metadata[MONITOR_DESCRIPTION] = str(command.event.tool_input().get("description", ""))
         call = self.repository.save(HookCall(session_agent_id=agent.id, creator_id=context.actor.id, hook=command.event.event,

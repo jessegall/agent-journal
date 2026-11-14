@@ -92,7 +92,9 @@
         "agent_type: str",
         "profiles: tuple[str, ...]"
       ],
-      "methods": []
+      "methods": [
+        "declared(cls) -> 'AgentGroup'"
+      ]
     },
     "agent.groups.agent_group_book.AgentGroupBook": {
       "bases": [],
@@ -284,7 +286,9 @@
         "draws_head: bool",
         "reads_target: bool"
       ],
-      "methods": []
+      "methods": [
+        "declared(cls) -> 'DockDeclaration'"
+      ]
     },
     "chat.mark_button.MarkButton": {
       "bases": [],
@@ -2049,6 +2053,20 @@
         "line_at(self, remaining: int) -> Nudge | None"
       ]
     },
+    "driver.deferred_rule.DeferredRule": {
+      "bases": [
+        "SingleInstance"
+      ],
+      "fields": [
+        "name: ClassVar[str]",
+        "hook: ClassVar[HookEventName | HookWildcard]",
+        "drivers: ClassVar[Sequence[str]]",
+        "role_group: ClassVar[RoleGroup]"
+      ],
+      "methods": [
+        "after(self, call: HookCallLike) -> Sequence[Command[object]]"
+      ]
+    },
     "driver.diff_count.DiffCount": {
       "bases": [],
       "fields": [
@@ -2199,6 +2217,8 @@
       "fields": [],
       "methods": [
         "id(self) -> int",
+        "session_agent_id(self) -> int",
+        "transcript(self) -> HookTranscript",
         "refusal(self) -> str",
         "lines(self) -> str",
         "updated_input(self) -> str",
@@ -4400,7 +4420,8 @@
         "line: ClassVar[str]",
         "command_types_setting: ClassVar[str]",
         "behaviours: ClassVar[HelperBehaviours]",
-        "commands: ClassVar[CommandAllowList]"
+        "commands: ClassVar[CommandAllowList]",
+        "journal_runs: ClassVar[tuple[str, ...]]"
       ],
       "methods": [
         "bases(cls) -> tuple[str, ...]",
@@ -5431,6 +5452,8 @@
         "drivers(self, modules: Sequence[type[Module]]) -> tuple[DriverEntry, ...]",
         "overlays(self, modules: Sequence[type[Module]]) -> tuple[OverlayEntry, ...]",
         "agent_states(self, modules: Sequence[type[Module]]) -> tuple[AgentStateEntry, ...]",
+        "deferred_rules(self, modules: Sequence[type[Module]]) -> tuple[DeferredRuleEntry, ...]",
+        "check_deferred(state: type[AgentState]) -> None",
         "check_substates(declared: Sequence[tuple[str, type[AgentState], str]]) -> None",
         "with_substates(self, owner: str, state: type[AgentState], parent: str) -> list[tuple[str, type[AgentState], str]]",
         "state_tree(self, states: Sequence[type[AgentState]]) -> list[type[AgentState]]",
@@ -5469,6 +5492,7 @@
         "owner(module: type[Module], suites: SuiteList) -> str",
         "declaration_problems(self, module: type[Module], declaration: type[HelperType], claimed: dict[str, str], owner: str) -> list[str]",
         "list_problems(name: str, commands: CommandAllowList, lines: Mapping[str, Set[JournalLineClass]]) -> Iterator[str]",
+        "run_problems(name: str, commands: CommandAllowList, journal_runs: Sequence[str], lines: Mapping[str, Set[JournalLineClass]]) -> Iterator[str]",
         "inheritance_problems(self, module: str, declaration: type[HelperType], book: HelperTypeBook) -> list[str]"
       ]
     },
@@ -5581,7 +5605,9 @@
         "commands: Sequence[type[MoveCommand[Model]]]",
         "excluded_subcommands: Sequence[str]"
       ],
-      "methods": []
+      "methods": [
+        "declared(cls) -> 'ModelDeclaration'"
+      ]
     },
     "module.module.Module": {
       "bases": [],
@@ -5590,7 +5616,7 @@
         "requires_engine: ClassVar[str]",
         "dependencies: ClassVar[list[str]]",
         "step_conditions: ClassVar[list[type[StepCondition]]]",
-        "models: ClassVar[list[ModelDeclaration]]",
+        "models: ClassVar[list[ModelDeclaration | type[ModelDeclaration]]]",
         "migrations: ClassVar[list[type[Migration]]]",
         "views: ClassVar[list[type[ViewModel]]]",
         "handlers: ClassVar[list[HandlerClass]]",
@@ -5606,29 +5632,29 @@
         "overlays: ClassVar[list[type[Overlay]]]",
         "driver_rules: ClassVar[list[type[DriverRule]]]",
         "agent_states: ClassVar[list[type[AgentState]]]",
-        "windows: ClassVar[list[WindowDeclaration]]",
-        "window_extensions: ClassVar[list[WindowExtension]]",
+        "windows: ClassVar[list[WindowDeclaration | type[Window]]]",
+        "window_extensions: ClassVar[list[WindowExtension | type[WindowExtension]]]",
         "marks: ClassVar[list[MarkDeclaration]]",
         "block_conditions: ClassVar[list[type[BlockCondition]]]",
         "performance_tools: ClassVar[list[type[PerformanceTool]]]",
         "nudges: ClassVar[list[NudgeDeclaration]]",
         "tick_handlers: ClassVar[list[TickHandler]]",
         "ask_topics: ClassVar[list[AskTopic]]",
-        "docks: ClassVar[list[DockDeclaration]]",
-        "templates: ClassVar[list[TemplateDeclaration]]",
+        "docks: ClassVar[list[DockDeclaration | type[DockDeclaration]]]",
+        "templates: ClassVar[list[TemplateDeclaration | type[TemplateDeclaration]]]",
         "buttons: ClassVar[list[ButtonDeclaration]]",
         "button_slots: ClassVar[list[str]]",
         "inspectors: ClassVar[list[InspectorDeclaration]]",
         "added_states: ClassVar[Sequence[StateAddition]]",
         "helper_types: ClassVar[list[type[HelperType]]]",
-        "agent_groups: ClassVar[list[AgentGroup]]",
+        "agent_groups: ClassVar[list[AgentGroup | type[AgentGroup]]]",
         "profiles: ClassVar[list[AgentProfile]]",
         "providers: ClassVar[list[type[Provider]]]",
-        "settings: ClassVar[Sequence[SettingNode]]",
+        "settings: ClassVar[Sequence[SettingNode | type[SettingList]]]",
         "tunnels: ClassVar[list[type[Tunnel]]]",
         "shared_rows: ClassVar[list[type[SharedRows]]]",
         "library_shares: ClassVar[list[type[LibraryShareClass]]]",
-        "skills: ClassVar[list[SkillDeclaration]]",
+        "skills: ClassVar[list[SkillDeclaration | type[SkillDeclaration]]]",
         "seeders: ClassVar[list[type[Seeder]]]",
         "moves: ClassVar[list[type[VersionFourMove]]]",
         "move_reason: ClassVar[str]",
@@ -5636,6 +5662,14 @@
       ],
       "methods": [
         "plugin_event_names(cls) -> list[str]",
+        "window_declarations(cls) -> list[WindowDeclaration]",
+        "extension_declarations(cls) -> list[WindowExtension]",
+        "skill_declarations(cls) -> list[SkillDeclaration]",
+        "group_declarations(cls) -> list[AgentGroup]",
+        "template_declarations(cls) -> list[TemplateDeclaration]",
+        "setting_nodes(cls) -> list[SettingNode]",
+        "dock_declarations(cls) -> list[DockDeclaration]",
+        "model_declarations(cls) -> list[ModelDeclaration]",
         "declared_buttons(cls) -> list[ButtonDeclaration]",
         "folder(cls) -> Path",
         "web_folder(cls) -> Path"
@@ -5857,14 +5891,17 @@
         "requires: ClassVar[Sequence[str]]",
         "complete_control: ClassVar[bool]",
         "included_overlays: ClassVar[Sequence[str]]",
-        "windows: ClassVar[Sequence[str]]",
-        "layouts: ClassVar[Mapping[str, LayoutShape]]",
-        "presets: ClassVar[Mapping[str, Sequence[LayoutPreset]]]",
+        "entrances: ClassVar[Sequence[type[Entrance]]]",
         "task_assigner: ClassVar[type[TaskAssigner] | None]",
         "helper_types: ClassVar[Sequence[type[HelperType]]]",
         "default_states: ClassVar[Sequence[DefaultState]]"
       ],
-      "methods": []
+      "methods": [
+        "offered_windows(cls) -> tuple[str, ...]",
+        "default_layouts(cls) -> dict[str, LayoutShape]",
+        "offered_presets(cls) -> dict[str, tuple[LayoutPreset, ...]]",
+        "entrance_windows(cls) -> dict[str, tuple[str, ...]]"
+      ]
     },
     "module.suite_check.SuiteCheck": {
       "bases": [],
@@ -7866,6 +7903,21 @@
         "matches(self, role: str, driver: str, helper_type: str) -> bool"
       ]
     },
+    "registry.deferred_rule_entry.DeferredRuleEntry": {
+      "bases": [],
+      "fields": [
+        "name: str",
+        "path: DottedPath",
+        "state: str",
+        "hook: str",
+        "drivers: Sequence[str]",
+        "role_group: RoleGroup"
+      ],
+      "methods": [
+        "covers_hook(self, hook_name: str) -> bool",
+        "covers(self, driver: str) -> bool"
+      ]
+    },
     "registry.dock_entry.DockEntry": {
       "bases": [],
       "fields": [
@@ -8192,6 +8244,7 @@
         "bindings: dict[str, DottedPath]",
         "overlays: tuple[OverlayEntry, ...]",
         "agent_states: tuple[AgentStateEntry, ...]",
+        "deferred_rule_entries: tuple[DeferredRuleEntry, ...]",
         "rules: tuple[DriverRuleEntry, ...]",
         "suites: tuple[SuiteEntry, ...]",
         "drivers: tuple[DriverEntry, ...]",
@@ -8238,6 +8291,7 @@
         "hook_rules(self, hook_name: str) -> list[DriverRuleEntry]",
         "gates(self) -> dict[str, AgentStateEntry]",
         "rule_gate(self, rule_name: str) -> AgentStateEntry | None",
+        "deferred_rules(self, state_name: str, hook_name: str) -> list[DeferredRuleEntry]",
         "tier_states(self, driver: str, tier: int) -> list[AgentStateEntry]",
         "default_states(self, suite_name: str, role: str, driver: str, helper_type: str) -> tuple[DefaultStateEntry, ...]",
         "agent_state(self, name: str) -> AgentStateEntry | None",
@@ -8391,6 +8445,7 @@
         "presets: Mapping[str, Sequence[LayoutPreset]]",
         "task_assigner: str",
         "shipped: bool",
+        "entrances: Mapping[str, Sequence[str]]",
         "default_states: Sequence[DefaultStateEntry]"
       ],
       "methods": [
@@ -8889,6 +8944,18 @@
         "problems(self, key: str) -> Iterator[str]"
       ]
     },
+    "setting.setting_list.SettingList": {
+      "bases": [],
+      "fields": [
+        "module_key: ClassVar[str]",
+        "values: ClassVar[Sequence[SettingValue]]",
+        "groups: ClassVar[Sequence[SettingNode]]",
+        "rules: ClassVar[Mapping[str, SettingRule]]"
+      ],
+      "methods": [
+        "nodes(cls) -> list[SettingNode]"
+      ]
+    },
     "setting.setting_node.SettingNode": {
       "bases": [
         "Protocol"
@@ -9008,7 +9075,9 @@
         "types: Sequence[str]",
         "required_setting: str | None"
       ],
-      "methods": []
+      "methods": [
+        "declared(cls) -> 'SkillDeclaration'"
+      ]
     },
     "skill.skill_digest.SkillDigest": {
       "bases": [],
@@ -9154,7 +9223,9 @@
         "parts: tuple[str, ...]",
         "commands: tuple[str, ...]"
       ],
-      "methods": []
+      "methods": [
+        "declared(cls) -> 'TemplateDeclaration'"
+      ]
     },
     "testing.cache.folder_stat.FolderStat": {
       "bases": [],
@@ -10130,6 +10201,18 @@
         "icon_problems(owner: str) -> list[str]"
       ]
     },
+    "viewer.entrance.Entrance": {
+      "bases": [],
+      "fields": [
+        "key: ClassVar[str]",
+        "windows: ClassVar[Sequence[type[Window] | str]]",
+        "layouts: ClassVar[Mapping[str, type[ViewerLayout]]]",
+        "presets: ClassVar[Mapping[str, type[PresetSet]]]"
+      ],
+      "methods": [
+        "window_names(cls) -> tuple[str, ...]"
+      ]
+    },
     "viewer.inspector_component.InspectorComponent": {
       "bases": [],
       "fields": [
@@ -10229,6 +10312,15 @@
         "query(self) -> Query[Model]"
       ]
     },
+    "viewer.preset_set.PresetSet": {
+      "bases": [],
+      "fields": [
+        "presets: ClassVar[Sequence[type[ViewerPreset]]]"
+      ],
+      "methods": [
+        "layout_presets(cls) -> tuple[LayoutPreset, ...]"
+      ]
+    },
     "viewer.registry_lines.RegistryLines": {
       "bases": [],
       "fields": [
@@ -10317,6 +10409,35 @@
       "fields": [],
       "methods": []
     },
+    "viewer.viewer_layout.ViewerLayout": {
+      "bases": [],
+      "fields": [
+        "shape: ClassVar[LayoutShape]"
+      ],
+      "methods": []
+    },
+    "viewer.viewer_preset.ViewerPreset": {
+      "bases": [],
+      "fields": [
+        "key: ClassVar[str]",
+        "name: ClassVar[str]",
+        "text: ClassVar[str]",
+        "shape: ClassVar[LayoutShape]"
+      ],
+      "methods": [
+        "layout_preset(cls) -> LayoutPreset"
+      ]
+    },
+    "viewer.window.Window": {
+      "bases": [
+        "WindowDeclaration"
+      ],
+      "fields": [],
+      "methods": [
+        "declaration(cls) -> WindowDeclaration",
+        "declared_key(cls, key: object) -> WindowKey"
+      ]
+    },
     "viewer.window_declaration.WindowDeclaration": {
       "bases": [],
       "fields": [
@@ -10368,6 +10489,7 @@
         "key_events: Mapping[str, Sequence[str]]"
       ],
       "methods": [
+        "declared(cls) -> 'WindowExtension'",
         "extend(self, declaration: WindowDeclaration) -> WindowDeclaration"
       ]
     },
@@ -10388,6 +10510,8 @@
         "event_column: str"
       ],
       "methods": [
+        "declared(cls) -> 'WindowKey'",
+        "declared_class(owner: str, key: object) -> 'WindowKey'",
         "listed(self) -> Mapping[str, object]",
         "has_ids(self) -> bool",
         "with_id(self, name: str) -> 'WindowKey | None'",
@@ -10488,5 +10612,5 @@
       ]
     }
   },
-  "engine_version": "5.1.0"
+  "engine_version": "5.2.0"
 }

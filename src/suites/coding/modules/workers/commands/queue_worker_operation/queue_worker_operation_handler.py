@@ -18,6 +18,7 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
 from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
 from suites.coding.modules.workers.support.kept_worker_tasks import KeptWorkerTasks
+from suites.coding.modules.workers.support.worker_operation_line import WORKER_OPERATION_RUN
 from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery
 
 
@@ -46,7 +47,7 @@ class QueueWorkerOperationHandler(Handler[QueueWorkerOperation, WorkerOperation]
             self.complexity.check(worker.program, worker.program_model, self.kept_tasks.read_tasks(command.command.task_ids), context)
         source = self.sources.source_copy(replace(context, environment_id=worker.environment_id))
         folder = self.environments.find(worker.environment_id).folder
-        line = f"journal worker-operation run {worker.id}"
+        line = f"journal {WORKER_OPERATION_RUN} {worker.id}"
         process = self.bus.dispatch(StartProcess.single_part(worker.id, line, folder, CommandCategory.BACKGROUND_JOB, 3600), replace(context, actor=Actor.core()))
         operation = self.repository.save(WorkerOperation(worker_id=worker.id, creator_id=context.actor.id,
                                     actor_type=context.actor.type, process_id=process.id, line=command.line, name=command.name,
