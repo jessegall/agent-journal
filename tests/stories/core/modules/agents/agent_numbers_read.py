@@ -24,7 +24,7 @@ def test_agent_show_reads_the_number_in_the_environment_of_the_line(new_story):
 
 def test_worker_send_reaches_the_worker_with_that_number_in_the_senders_environment_only(new_story):
     story = new_story(fixture=ShopWithThreeAgents)
-    story.expect_refusal('worker send 3 "Total the till"', "worker 3 has no worktree", actor=main_of(story, "shop"))
+    story.expect_text('worker send 3 "Total the till"', "worker 3 command accepted", actor=main_of(story, "shop"))
     story.expect_refusal('worker send 3 "Total the till"', absent_refusal(3, "main"), actor=story.agent)
 
 

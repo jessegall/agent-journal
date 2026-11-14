@@ -27,7 +27,7 @@ def test_a_worker_that_runs_task_assign_is_refused_only_a_person_or_the_main_age
 
 def test_a_helper_that_runs_journal_assign_is_refused(free_task):
     helper = Actor(free_task.new_row_id(f"agent start sub-1 claude helper --parent {free_task.agent.id} --environment main"), ActorType.AGENT)
-    free_task.expect_refusal(f"assign task {FREE_TASK} --to {helper.id}", "cannot assign a row", actor=helper)
+    free_task.expect_refusal(f"assign task {FREE_TASK} --to {helper.id}", "A read-only helper may not run assign", actor=helper)
     free_task.expect_rows(FREE_TASK not in task_assignees(free_task), detail=str(task_assignees(free_task)))
 
 
