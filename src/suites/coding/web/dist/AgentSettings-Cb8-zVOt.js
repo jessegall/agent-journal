@@ -410,7 +410,7 @@ const Tt = {
       { verb: "give-back", label: "Give back its tasks", title: "List the waiting tasks the rule gave that would be free again" }
     ];
     async function T(E, x) {
-      const w = ["assign-rule", E, String(e.rule.id), ...x ? ["--confirm"] : [], "--revision", e.revision, "--environment", c.environment], I = await c.run(w);
+      const w = ["assign-rule", E, String(e.rule.id), ...x ? ["--change"] : [], "--revision", e.revision, "--environment", c.environment], I = await c.run(w);
       return I.ok || a("failed", I.error), I;
     }
     async function o(E) {
@@ -449,7 +449,7 @@ const Tt = {
       ])) : _("", !0)
     ], 64));
   }
-}, zt = /* @__PURE__ */ H(Gt, [["__scopeId", "data-v-f13ec31d"]]), Yt = {
+}, zt = /* @__PURE__ */ H(Gt, [["__scopeId", "data-v-a0c23201"]]), Yt = {
   class: "assign",
   "data-agent-settings-assign": ""
 }, Xt = {
