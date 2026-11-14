@@ -13,7 +13,7 @@ class UpdateSetting(Enum):
     """
 
     RELEASE_ADDRESS = SettingValue("release-address", "Release address", "Where the newest release is downloaded from, as install.sh does.",
-                                   SettingType.TEXT, default="https://github.com/jessegall/agent-journal/releases/latest/download", scope=SettingScope.PROJECT)
+                                   SettingType.TEXT, default="https://github.com/jessegall/agent-journal/releases/latest/download", scope=SettingScope.PROJECT, person_set=True)
 
     @property
     def key(self) -> str:

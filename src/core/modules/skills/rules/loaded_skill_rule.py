@@ -16,10 +16,10 @@ class LoadedSkillRule(DriverRule):
     skill whose text changed. The refusal is skipped like any other."""
 
     name = "skills.already-loaded"
-    single_action_refusal = "A load of a skill the agent holds in its context with the same text is refused once, and passes after a compaction"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     role_group = RoleGroup.PROMPT
+    single_action_refusal = "A load of a skill the agent has in its context with the same text is refused"
 
     def __init__(self, rows: AgentSkillRows, catalogue: SkillCatalogue) -> None:
         self.rows, self.catalogue = rows, catalogue

@@ -64,6 +64,10 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
         tasks = self.open_tasks().matching(self.assignee(actor_id)).matching(self.no_open_dependency()).oldest()
         return self.kept.owner_read(tasks, lambda: tuple(tasks.every_row(ASSIGNED_TASKS_REASON)), name="tasks.next_delegated")
 
+    def assigned_blocked(self, actor_id: int) -> tuple[Task, ...]:
+        tasks = self.assignee_tasks(actor_id).filter(state=TaskState.BLOCKED).oldest()
+        return self.kept.owner_read(tasks, lambda: tuple(tasks.every_row(ASSIGNED_TASKS_REASON)), name="tasks.blocked_assigned")
+
     def free(self) -> Self:
         return self.open_tasks().matching(Unassigned(Task))
 

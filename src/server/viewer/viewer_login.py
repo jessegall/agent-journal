@@ -1,6 +1,7 @@
 import secrets
 import threading
 
+from server.viewer.cookie_session import CookieSession
 from server.viewer.share_route import COOKIE_SEPARATOR
 from server.viewer.phone_sessions import PhoneSessions
 from server.viewer.session_file import SessionFile
@@ -49,10 +50,25 @@ class ViewerLogin:
         return key
 
     def has_session(self, token: str) -> bool:
+        return self.token_session(token) is not None
+
+    def cookie_session(self, tokens: list[str]) -> CookieSession | None:
+        for token in tokens:
+            session = self.token_session(token)
+            if session is not None:
+                return CookieSession(token, session)
+        return None
+
+    def token_session(self, token: str) -> ViewerSession | None:
         with self.lock:
             if token in self.sessions:
-                return True
-        return bool(token) and (self.phones.person_id(token) is not None or self.share_session(token) is not None)
+                return self.sessions[token]
+        if not token:
+            return None
+        person_id = self.phones.person_id(token)
+        if person_id is not None:
+            return ViewerSession(SessionType.PHONE, person_id=person_id)
+        return self.share_session(token)
 
     def session_token(self, key: str) -> str:
         token = secrets.token_urlsafe(KEY_BYTES)
@@ -68,16 +84,10 @@ class ViewerLogin:
             self.kept.save(self.sessions)
 
     def session(self, token: str) -> ViewerSession:
-        with self.lock:
-            if token in self.sessions:
-                return self.sessions[token]
-        person_id = self.phones.person_id(token)
-        if person_id is not None:
-            return ViewerSession(SessionType.PHONE, person_id=person_id)
-        shared = self.share_session(token)
-        if shared is None:
+        session = self.token_session(token)
+        if session is None:
             raise UnknownLoginKeyError("this session is unknown: open the address journal viewer prints to log in")
-        return shared
+        return session
 
     def share_session(self, cookie: str) -> ViewerSession | None:
         token, _, key = cookie.partition(COOKIE_SEPARATOR)
@@ -87,7 +97,10 @@ class ViewerLogin:
         return ViewerSession(SessionType.SHARE, person_id=link.creator_id, share_id=link.id, ends_at=link.expires_at, shared=link.shared, comments=link.comments)
 
     def person_id(self, token: str) -> int:
-        session = self.session(token)
+        return self.session_person_id(self.session(token))
+
+    @staticmethod
+    def session_person_id(session: ViewerSession) -> int:
         if session.person_id is None:
             raise ShareSessionError("a share link opens only what was shared")
         return session.person_id

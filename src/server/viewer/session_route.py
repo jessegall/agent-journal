@@ -8,6 +8,7 @@ from server.viewer.share_answer import ShareAnswer
 from server.viewer.shared_row import SharedRow
 from server.viewer.shared_windows import SharedWindows
 from server.viewer.viewer_login import ViewerLogin
+from server.viewer.viewer_session import ViewerSession
 from engine.registry.window_listing import WindowListing
 from engine.setting.setting_values import SettingValues
 from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLETED
@@ -20,8 +21,7 @@ class SessionRoute:
     def __init__(self, login: ViewerLogin, home: JournalHome, turns: WriteTurns | None = None) -> None:
         self.login, self.home, self.turns = login, home, turns
 
-    def answer(self, token: str) -> SessionAnswer:
-        session = self.login.session(token)
+    def answer(self, session: ViewerSession) -> SessionAnswer:
         if session.shared is None:
             return SessionAnswer(session.type, session.person_id, tour_completed=self.tour_completed())
         shared = session.shared

@@ -6,6 +6,8 @@ from engine.driver.nudge_declaration import NudgeDeclaration
 from engine.enums.nudge_type import NudgeType
 from engine.driver.count_down import CountDown
 from core.modules.drivers.models.support.tool_use_span import ToolUseSpan
+from core.modules.processes.support.block_conditions.output_read_since_block import OutputReadSinceBlock
+from core.modules.processes.support.block_conditions.output_titled import OutputTitled
 
 READERS_MISSING_FIELDS = NudgeDeclaration("processes.readers_missing_fields", NudgeType.STEERING, "{count} readers lack required fields: draft one when an agent asks")
 UNREADABLE_EMPTY = NudgeDeclaration("processes.unreadable_empty", NudgeType.STEERING, "Output {output} printed nothing: its exit code is the result, so no reader is needed")
@@ -68,9 +70,9 @@ MOVE_BAN = NudgeDeclaration("processes.do_not_move", NudgeType.REFUSAL, "Do not 
 OUTPUT_RUNNING = NudgeDeclaration("processes.output_running", NudgeType.STEERING, "Output {output}: running")
 SILENT_RUN_BLOCKED = NudgeDeclaration("processes.silent_run_held", NudgeType.REFUSAL,
                                    "Output {output} printed nothing for {seconds}s, CPU time {processor}: {hint}",
-                                   required_command="journal output read {output} --tail 5")
+                                   required_command="journal output read {output} --tail 5", closed_by=OutputReadSinceBlock)
 SLEEP_REFUSED = NudgeDeclaration("processes.sleep_refused", NudgeType.REFUSAL, "No sleeps: you are told when a run ends")
-RUN_NAME = NudgeDeclaration("processes.name_the_run", NudgeType.STEERING, "Output {process} is titled by its raw command: give it a title", required_command="journal output title {process}")
+RUN_NAME = NudgeDeclaration("processes.name_the_run", NudgeType.STEERING, "Output {process} is titled by its raw command: give it a title", required_command="journal output title {process}", closed_by=OutputTitled)
 
 SILENT_RUN_INTERVAL = Seconds(600)
 SILENT_RUN =NudgeDeclaration("processes.silent_run", NudgeType.NOTICE, "Output {output} printed nothing for {seconds}s, so it is not streaming: {hint}",

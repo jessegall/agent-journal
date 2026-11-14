@@ -15,7 +15,7 @@ from engine.enums.tool_type import ToolType
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_marks_text
-from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
+from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from engine.testing.expectations.expect_reply import expect_reply_allowed
 from engine.testing.expectations.expect_row import expect_row
@@ -78,6 +78,12 @@ def test_running_the_command_settles_it_and_writes_run_again(required_command_li
     expect_reply_allowed(story.hook("s-1", journal_line(f'journal output title {process.id} "Deploy staging"')))
     expect_reply_allowed(story.hook("s-1", EDIT_HOOK))
     story.expect_text(f"agent-block show {TITLE_BLOCK}", "closed_at:", actor=story.agent)
+
+
+def test_a_title_block_closes_when_its_run_ends_without_a_title(counted_required_command):
+    story, process, _ = counted_required_command
+    end_run(story, process, "deployed\n")
+    expect_absent_refusal_hook_hooks(spend(story, 2))
 
 
 def test_a_skip_needs_a_reason_settles_it_and_shows_in_the_chat(required_command_limit):

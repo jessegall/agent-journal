@@ -3,7 +3,7 @@ import {useSettingsDraft} from "@journal/setting-components";
 
 const NUMBER_RULE = JSON.stringify({rule: "number", minimum: 0, integer: true, maximum: null, exclusive: false});
 
-const node = (key, kind, value, extra = {}) => ({key, kind, component: kind, section: "S", parent: null, title: key.toUpperCase(), description: "", value, default: value, source: "default", choices: [], rule: "", requires: [], read_only: false, ...extra});
+const node = (key, kind, value, extra = {}) => ({key, node_type: kind, component: kind, section: "S", parent: null, title: key.toUpperCase(), description: "", value, default: value, source: "default", choices: [], rule: "", requires: [], read_only: false, ...extra});
 const screens = (revisions = {work: "w1", tests: "t1"}) => [
     {screen: "work", revision: revisions.work, nodes: [node("auto", "flag", true), node("nested", "number", 3, {parent: "auto", requires: ["auto"], rule: NUMBER_RULE}), node("names", "list", ["a", "b"])]},
     {screen: "tests", revision: revisions.tests, nodes: [node("limit", "number", 3, {rule: NUMBER_RULE}), node("fast", "number list", [1, 2])]},

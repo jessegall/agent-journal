@@ -149,6 +149,8 @@ class DriverRules:
             control_return = rule.history and self.history.control_return(RuleHistoryKey(hook.agent_id, entry.name, hook.layer_ref))
             with self.scopes.read_scope(rule.disabled_scopes, hook.agent_id, hook.environment_id):
                 answer = self.skippable(rule.answer(replace(hook, control_return=control_return)).role_variant(hook.role), entry, hook)
+                if answer.refusal and rule.skip_window is not None and self.skips.is_skipped(hook.agent_id, rule.skip_name or entry.name, rule.skip_window, hook.timestamp):
+                    answer = RuleAnswer.allowed(f"the agent skipped {entry.name}, which stays silent for it for a while")
         except Exception as error:
             self.errors.reported(["driver rule", entry.name], error, hook.environment_id)
             return RuleOutcome.raised(f"the journal's rule {entry.name} failed and was passed by: {type(error).__name__}")

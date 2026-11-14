@@ -24,7 +24,7 @@ RUNNING_STATES = ("running", "background")
 MAIN_RUN_CATEGORIES = ("test run", "build")
 MAIN_ROLE = Equal("agents.role", "main")
 
-PROCESS_ROWS_SELECT = Select("processes").selecting(*(Column(name) for name in ("id", "environment_id", "session_agent_id", "line", "state"))).view_sql()
+PROCESS_ROWS_SELECT = Select("processes").selecting(*(Column(name) for name in ("id", "environment_id", "session_agent_id", "line", "state"))).matching(Equal("plugin", "")).view_sql()
 
 RUN_TASK = ScalarSubselect(
     Select("tasks").selecting(Column("tasks.id"))

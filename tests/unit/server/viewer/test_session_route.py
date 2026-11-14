@@ -17,12 +17,12 @@ class NoTourRoute(SessionRoute):
 def test_a_person_session_answers_its_kind_and_person(tmp_path):
     login = ViewerLogin(NoPhones(), NoShares())
     token = login.session_token(login.new_key(PERSON_ID))
-    reply = NoTourRoute(login, JournalHome(tmp_path / ".journal")).answer(token)
+    reply = NoTourRoute(login, JournalHome(tmp_path / ".journal")).answer(login.session(token))
     assert (reply.type, reply.person_id) == (SessionType.PERSON, PERSON_ID)
 
 
 def test_a_phone_session_answers_the_phone_kind_and_its_person(tmp_path):
     login = ViewerLogin(NoPhones(), NoShares())
     token = login.session_token(login.new_key(PERSON_ID, SessionType.PHONE))
-    reply = NoTourRoute(login, JournalHome(tmp_path / ".journal")).answer(token)
+    reply = NoTourRoute(login, JournalHome(tmp_path / ".journal")).answer(login.session(token))
     assert (reply.type, reply.person_id) == (SessionType.PHONE, PERSON_ID)

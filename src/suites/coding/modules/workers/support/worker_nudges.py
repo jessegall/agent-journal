@@ -11,7 +11,6 @@ WORKER_UNFINISHED_TASKS = NudgeDeclaration("workers.unfinished_tasks", NudgeType
 WORKER_PROGRAM_UNAVAILABLE = NudgeDeclaration("workers.program_out", NudgeType.STEERING, "worker:{worker} stopped", turn_limited=False, wakes_agent=True)
 WORKER_PROGRAM_RESUMED = NudgeDeclaration("workers.program_back", NudgeType.STEERING, "worker:{worker} resumed", turn_limited=False)
 
-APPROVED_PLAN_WAIT = NudgeDeclaration("workers.approved_plan_wait", NudgeType.REFUSAL, "plan:{plan} is approved and a worker slot is free: start a worker, then assign its work")
 
 HELPER_INACTIVE = NudgeDeclaration("workers.helper_inactive", NudgeType.STEERING, "{name}:{agent} used no tool for {minutes} min{queue}: {action}", turn_limited=False, wakes_agent=True)
 MAIN_WORKERS_REFUSED = NudgeDeclaration("workers.main_sends_no_workers", NudgeType.REFUSAL, "The main agent sends no workers here: {then}")

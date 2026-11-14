@@ -1,5 +1,7 @@
 from tests.stories.suites.coding.modules.workers.free_commits import worktree_state
 from tests.stories.core.support.agent_labels import agent_number
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_tasks_singly
 from tests.stories.suites.coding.modules.workers.merge_asks import committed_list, running_plan
 from tests.stories.suites.coding.modules.workers.support.phase_steps import start_planned_worker, unplanned_group_worker
@@ -37,3 +39,13 @@ def test_82_an_ask_that_waits_long_is_shown_as_unmerged_work(new_story, monkeypa
 def test_83_a_worker_idle_at_merge_due_is_told_its_line(new_story, monkeypatch):
     worker = committed_list(new_story, monkeypatch)
     worker.story.expect_rows("journal worker ask-merge" in worker.status_line(), detail=worker.status())
+
+
+def test_a_release_of_a_delivered_worker_with_an_uncommitted_file_is_refused_until_abandon(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = repository_environment(story)
+    worker = delivered_worker(story, repository)
+    number = agent_number(story, worker.id)
+    repository.changed(worker.id, "fix_notes.txt", "edited after the return")
+    story.expect_refusal(f'worker release {number} "not needed"', f"worker {number} has uncommitted files", actor=story.agent)
+    story.expect_success(f'worker release {number} --abandon "the fix is dropped"', actor=story.agent)
