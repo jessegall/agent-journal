@@ -78,7 +78,7 @@ class Module:
     driver_rules: ClassVar[list[type[DriverRule]]] = []
     agent_states: ClassVar[list[type[AgentState]]] = []
     windows: ClassVar[list[WindowDeclaration | type[Window]]] = []
-    window_extensions: ClassVar[list[WindowExtension]] = []
+    window_extensions: ClassVar[list[WindowExtension | type[WindowExtension]]] = []
     marks: ClassVar[list[MarkDeclaration]] = []
     block_conditions: ClassVar[list[type[BlockCondition]]] = []
     performance_tools: ClassVar[list[type[PerformanceTool]]] = []
@@ -115,6 +115,11 @@ class Module:
     @classmethod
     def window_declarations(cls) -> list[WindowDeclaration]:
         return [window.declaration() if isinstance(window, type) and issubclass(window, Window) else window for window in cls.windows]
+
+    # an extension written as a class gives its declaration; an inline extension is its own
+    @classmethod
+    def extension_declarations(cls) -> list[WindowExtension]:
+        return [extension.declared() if isinstance(extension, type) else extension for extension in cls.window_extensions]
 
     @classmethod
     def declared_buttons(cls) -> list[ButtonDeclaration]:

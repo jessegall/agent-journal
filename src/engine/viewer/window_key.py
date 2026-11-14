@@ -1,8 +1,10 @@
 import re
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, fields, replace
+from dataclasses import dataclass, replace
 
 from engine.enums.key_loading import KeyLoading
+from engine.errors.refusal import Refusal
+from engine.viewer.class_fields import class_fields
 
 ID_SUFFIX = ".*"
 ID_TOKEN = "{id}"
@@ -29,7 +31,14 @@ class WindowKey:
     # a key written as a class in its own file sets the fields as class attributes
     @classmethod
     def declared(cls) -> "WindowKey":
-        return WindowKey(**{field.name: getattr(cls, field.name) for field in fields(WindowKey)})
+        return WindowKey(**class_fields(cls, WindowKey))
+
+    # a window or an extension written as a class lists key classes, never a key built inline
+    @staticmethod
+    def declared_class(owner: str, key: object) -> "WindowKey":
+        if not (isinstance(key, type) and issubclass(key, WindowKey)):
+            raise Refusal(f"{owner} lists the key {key!r}, which is no key class", "write the key as a class in its own file and list the class")
+        return key.declared()
 
     def listed(self) -> Mapping[str, object]:
         return {"tab": self.tab, "events": list(self.events), "reload_seconds": self.reload_seconds, "loading": self.loading,

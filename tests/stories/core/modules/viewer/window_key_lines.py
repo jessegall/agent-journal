@@ -45,7 +45,7 @@ def declared() -> tuple[list[tuple[str, WindowKey]], list[tuple[str, str]]]:
         for window in module.window_declarations():
             keys += [(window.name, key) for key in window.keys]
             reads += [(window.name, read) for read in (*window.reads, *(tab.read for tab in window.tabs)) if read]
-        for extension in module.window_extensions:
+        for extension in module.extension_declarations():
             keys += [(extension.window, key) for key in extension.keys]
             reads += [(extension.window, read) for read in extension.reads]
     return keys, reads

@@ -5,6 +5,7 @@ from engine.viewer.window_declaration import WindowDeclaration
 from engine.viewer.window_tab import WindowTab
 from engine.viewer.window_source import WindowSource
 from engine.viewer.window_key import WindowKey
+from engine.viewer.class_fields import class_fields
 
 
 @dataclass(frozen=True)
@@ -20,6 +21,12 @@ class WindowExtension:
     links: Mapping[str, str] = field(default_factory=dict[str, str])
     keys: Sequence[WindowKey] = ()
     key_events: Mapping[str, Sequence[str]] = field(default_factory=dict[str, Sequence[str]])
+
+    # an extension written as a class in its own file sets the fields as class attributes and lists key classes
+    @classmethod
+    def declared(cls) -> "WindowExtension":
+        values = class_fields(cls, WindowExtension)
+        return WindowExtension(**{**values, "keys": tuple(WindowKey.declared_class(f"the extension of {cls.window}", key) for key in cls.keys)})
 
     def extend(self, declaration: WindowDeclaration) -> WindowDeclaration:
         keys = tuple(replace(key, events=(*key.events, *self.key_events.get(key.name, ()))) for key in declaration.keys)

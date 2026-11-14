@@ -41,7 +41,7 @@ class WindowCheck:
         shipped = {module.name for module in self.finder.default_modules()}
         inspector_slots = InspectorSlots(modules)
         for module in modules:
-            for extension in module.window_extensions:
+            for extension in module.extension_declarations():
                 if extension.window not in owners:
                     problems.append(f"module {module.name} extends unknown window {extension.window}")
                     continue

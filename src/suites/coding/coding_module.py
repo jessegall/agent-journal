@@ -1,3 +1,4 @@
+from suites.coding.windows.extensions.coding_window_extensions import CODING_WINDOW_EXTENSIONS
 from suites.coding.migrations.m006_main_starts_helpers_key import MainStartsHelpersKeyMigration
 from suites.coding.migrations.m007_read_only_helpers_key import HelpersKeyMigration
 from suites.coding.migrations.m003_file_edit_session import FileEditSessionMigration
@@ -5,15 +6,12 @@ from suites.coding.migrations.m004_main_agent_settings import MainAgentSettingsM
 from suites.coding.migrations.m005_main_driver import MainDriverMigration
 from suites.coding.migrations.m009_prune_file_edits import PruneFileEditsMigration
 from suites.coding.support.shipped_profiles import HELPER_PROFILES
-from engine.viewer.window_extension import WindowExtension
-from engine.viewer.window_tab import WindowTab
 from suites.coding.support.coding_nudges import CODING_NUDGES
 from suites.coding.support.coding_templates import CODING_TEMPLATES
 from engine.module.model_declaration import ModelDeclaration
 from engine.skill.skill_declaration import SkillDeclaration
 from engine.module.module import Module
 from engine.agent.groups.agent_group import AgentGroup
-from engine.viewer.window_key import WindowKey
 from suites.coding.models.file_edit import FileEdit
 from suites.coding.upgrade.file_edits_move import FileEditsMove
 from suites.coding.upgrade.viewer_layouts_move import ViewerLayoutsMove
@@ -72,13 +70,7 @@ class CodingModule(Module):
     templates = CODING_TEMPLATES
     nudges = [*CODING_NUDGES, TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN, *TOOL_NUDGES]
     seeders = [CodingSeeder]
-    window_extensions = [*(WindowExtension(name, reads=["file-edit list", "hook-call feed"], runs=["agent type"], events=["file_edit.create"],
-                                          keys=[WindowKey("agent-edits.*", "file-edit list --agent {id}", arguments=["limit", "before-id", "after-id"], page_size=50),
-                                                WindowKey("terminal-calls.*", "hook-call feed --session-agent-id {id}", arguments=["limit", "before-id", "after-id"], page_size=200)],
-                                          tabs=[WindowTab("file-feed", "File feed", "file-edit list", component="/modules/journal.suites.coding/agent-file-edits.js"),
-                                                WindowTab("terminal", "Terminal", "hook-call feed", component="/modules/journal.suites.coding/terminal.js")]) for name in ("agents.agents", "agents.helpers")),
-                         WindowExtension("viewer.shell", reads=["git-overview current"], keys=[WindowKey("branch", "git-overview current", reload_seconds=30)]),
-                         WindowExtension("plugins.plugins", links={"files": "coding.files"})]
+    window_extensions = CODING_WINDOW_EXTENSIONS
     requires_engine = ">=5,<6"
     settings = [*CODING_SETTINGS, *GRAPHIFY_SETTING_VALUES]
     moves = [FileEditsMove, ViewerLayoutsMove, CodingSettingsMove]

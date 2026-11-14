@@ -1,3 +1,4 @@
+from suites.coding.modules.checks.windows.extensions.shell_checks_extension import ShellChecksExtension
 from suites.coding.modules.checks.windows.checks_windows import CHECKS_WINDOWS
 from core.modules.tasks.support.task_wait_attempts import TaskWaitAttempts
 from suites.coding.modules.checks.migrations.m009_live_check_index import ActiveCheckIndexMigration
@@ -10,7 +11,6 @@ from suites.coding.modules.checks.support.check_nudges import CHECK_NUDGES
 from engine.skill.skill_declaration import SkillDeclaration
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
-from engine.viewer.window_extension import WindowExtension
 from engine.check.periodic_checks import PeriodicChecks
 from engine.check.step_checks import StepChecks
 from suites.coding.modules.checks.support.passed_checks import PassedChecks
@@ -58,7 +58,7 @@ class ChecksModule(Module):
     fails."""
 
     name = "journal.suites.coding.checks"
-    window_extensions = [WindowExtension("viewer.shell", reads=["check show"], runs=["check run", "check stop"])]
+    window_extensions = [ShellChecksExtension]
     nudges = CHECK_NUDGES
     requires_engine = ">=5,<6"
     block_conditions = [CheckPassed]

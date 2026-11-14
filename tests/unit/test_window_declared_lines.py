@@ -91,5 +91,5 @@ def test_the_command_of_every_key_of_a_window_is_one_of_its_reads(window):
 def test_the_coding_extension_of_the_agents_window_lists_the_read_of_its_terminal_key():
     from suites.coding.coding_module import CodingModule
 
-    extension = next(extension for extension in CodingModule.window_extensions if extension.window == "agents.agents")
+    extension = next(extension for extension in CodingModule.extension_declarations() if extension.window == "agents.agents")
     assert {" ".join(key.read.split()[:2]) for key in extension.keys} <= set(extension.reads)
