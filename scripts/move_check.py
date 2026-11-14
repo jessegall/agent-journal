@@ -1,4 +1,11 @@
-"""Proves that a move of files changed nothing but paths: compares the registry, runs the snapshots and refuses a wave during a merge."""
+"""Proves that a move of files or a conversion of declarations changed nothing but paths: compares the registry, runs the
+snapshots and refuses a wave during a merge.
+
+before FILE writes the registry the sync writes; after FILE [old.module=new.module ...] compares the registry now with it,
+sort by sort and entry by entry, and prints each difference as the sort, the entry's name and the field, such as
+"windows coding.files: title changed", "agent_groups merger: missing" or "layout coding/home: changed". --allow
+sort.field names a field a conversion may drop, such as windows.reads; none is allowed unless named. A story compares
+the same way through tests/stories/support/registry_compare.py."""
 
 import argparse
 import json
@@ -15,6 +22,8 @@ sys.path.insert(0, str(ROOT))
 
 CONTRACT_COMMANDS = ((str(ROOT / ".venv/bin/python3"), "-m", "pytest", "tests/unit/engine/module/test_plugin_event_contract.py", "-q"), ("journal", "sins"))
 SOURCE_DERIVED_KEYS = {"module_fingerprints"}
+NAME_FIELDS = ("name", "key", "folder", "type", "purpose", "model_name", "model")
+NESTED_FIELDS = ("declaration", "profile")
 IMPORT_LINE = re.compile(r"\s*(from|import)\s")
 
 
@@ -44,9 +53,78 @@ def renamed(text: str, moves: Mapping[str, str]) -> str:
     return text
 
 
-def registry_differences(recorded_text: str, current_text: str, moves: Mapping[str, str]) -> list[str]:
+def registry_differences(recorded_text: str, current_text: str, moves: Mapping[str, str], allowed: Sequence[str] = ()) -> list[str]:
     recorded, current = json.loads(renamed(recorded_text, moves)), json.loads(current_text)
-    return [f"registry entry {key} changed" for key in sorted({*recorded, *current} - SOURCE_DERIVED_KEYS) if recorded.get(key) != current.get(key)]
+    return [line for sort in sorted({*recorded, *current} - SOURCE_DERIVED_KEYS) for line in sort_differences(sort, recorded.get(sort), current.get(sort), allowed)]
+
+
+def sort_differences(sort: str, recorded: object, current: object, allowed: Sequence[str]) -> list[str]:
+    if recorded == current:
+        return []
+    if sort == "suites" and isinstance(recorded, list) and isinstance(current, list):
+        return [*entry_differences(sort, without_pages(recorded), without_pages(current), allowed), *page_differences(recorded, current)]
+    if isinstance(recorded, list) and isinstance(current, list) and all(isinstance(entry, dict) for entry in (*recorded, *current)):
+        return entry_differences(sort, named_entries(recorded), named_entries(current), allowed)
+    if isinstance(recorded, dict) and isinstance(current, dict):
+        return entry_differences(sort, recorded, current, allowed)
+    return [f"{sort}: changed"]
+
+
+def entry_differences(sort: str, recorded: Mapping[str, object], current: Mapping[str, object], allowed: Sequence[str]) -> list[str]:
+    lines = []
+    for name in sorted({*recorded, *current}):
+        if name not in current:
+            lines.append(f"{sort} {name}: missing")
+        elif name not in recorded:
+            lines.append(f"{sort} {name}: added")
+        elif recorded[name] != current[name]:
+            lines.extend(field_differences(sort, name, recorded[name], current[name], allowed))
+    return lines
+
+
+def field_differences(sort: str, name: str, recorded: object, current: object, allowed: Sequence[str]) -> list[str]:
+    if not (isinstance(recorded, dict) and isinstance(current, dict)):
+        return [f"{sort} {name}: changed"]
+    fields = flat_fields(recorded), flat_fields(current)
+    return [f"{sort} {name}: {field} changed" for field in sorted({*fields[0], *fields[1]})
+            if fields[0].get(field) != fields[1].get(field) and f"{sort}.{field}" not in allowed]
+
+
+# a declaration or a profile held in one field is compared field by field, as declaration.title
+def flat_fields(entry: Mapping[str, object]) -> dict[str, object]:
+    return {f"{key}.{inner}" if isinstance(value, dict) and key in NESTED_FIELDS else key: inner_value
+            for key, value in entry.items() for inner, inner_value in (value.items() if isinstance(value, dict) and key in NESTED_FIELDS else [(key, value)])}
+
+
+def named_entries(entries: Sequence[Mapping[str, object]]) -> dict[str, object]:
+    named: dict[str, object] = {}
+    for entry in entries:
+        name = entry_name(entry)
+        named[name if name not in named else f"{name}#{sum(1 for key in named if key.split('#')[0] == name) + 1}"] = entry
+    return named
+
+
+def entry_name(entry: Mapping[str, object]) -> str:
+    for holder in (entry, *(entry[key] for key in NESTED_FIELDS if isinstance(entry.get(key), dict))):
+        name = next((holder[field] for field in NAME_FIELDS if isinstance(holder, dict) and isinstance(holder.get(field), str) and holder[field]), None)
+        if name is not None:
+            return str(name)
+    return str(entry.get("module", "entry"))
+
+
+def without_pages(suites: Sequence[Mapping[str, object]]) -> dict[str, object]:
+    return {str(suite["name"]): {key: value for key, value in suite.items() if key not in ("layouts", "presets")} for suite in suites}
+
+
+# a suite's layouts are compared page by page and its presets preset by preset
+def page_differences(recorded: Sequence[Mapping[str, object]], current: Sequence[Mapping[str, object]]) -> list[str]:
+    def layouts(suites: Sequence[Mapping[str, object]]) -> dict[str, object]:
+        return {f"{suite['name']}/{page}": shape for suite in suites for page, shape in dict(suite.get("layouts", {})).items()}
+
+    def presets(suites: Sequence[Mapping[str, object]]) -> dict[str, object]:
+        return {f"{suite['name']}/{page}/{preset['key']}": preset for suite in suites for page, listed in dict(suite.get("presets", {})).items() for preset in listed}
+
+    return [*entry_differences("layout", layouts(recorded), layouts(current), ()), *entry_differences("preset", presets(recorded), presets(current), ())]
 
 
 def non_move_lines(diff_text: str, moved_names: Sequence[str]) -> list[str]:
@@ -92,6 +170,7 @@ def main() -> int:
     after = commands.add_parser("after")
     after.add_argument("file")
     after.add_argument("moves", nargs="*", help="old.module=new.module")
+    after.add_argument("--allow", action="append", default=[], help="sort.field a conversion may drop, such as windows.reads")
     commands.add_parser("snapshots")
     commands.add_parser("wave")
     commit = commands.add_parser("commit")
@@ -102,7 +181,7 @@ def main() -> int:
         Path(arguments.file).write_text(registry_text())
         return 0
     if arguments.command == "after":
-        lines = registry_differences(Path(arguments.file).read_text(), registry_text(), parsed_moves(arguments.moves))
+        lines = registry_differences(Path(arguments.file).read_text(), registry_text(), parsed_moves(arguments.moves), arguments.allow)
     elif arguments.command == "snapshots":
         lines = [f"failed: {line}" for line in failed_commands(CONTRACT_COMMANDS, run_exit_code)]
     elif arguments.command == "wave":
