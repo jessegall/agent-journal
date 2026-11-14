@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.states.worker_log_due import WorkerLogDue
 from suites.coding.modules.workers.migrations.m080_plain_worker_columns import PlainWorkerColumnsMigration
 from suites.coding.modules.workers.migrations.m081_gone_worktree_proofs import GoneWorktreeProofsMigration
 from suites.coding.modules.workers.migrations.m082_stalled_test_indexes import StalledTestIndexesMigration
@@ -501,6 +502,7 @@ class WorkersModule(Module):
     name = "journal.suites.coding.workers"
     profiles = WORKER_PROFILES
     helper_types = [Worker, Merger]
+    agent_states = [WorkerLogDue]
     templates = WORKER_TEMPLATES
     window_extensions = [*(WindowExtension(name, reads=["proof list", "worker waits", "worker progress"], runs=["worker send"],
                                           events=["proof.*", "worker_worktree.*"],

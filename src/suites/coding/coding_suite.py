@@ -1,4 +1,10 @@
 from engine.module.suite import Suite
+from engine.module.default_state import DefaultState
+from engine.enums.agent_kind import AgentKind
+from engine.enums.agent_role import AgentRole
+from core.modules.tasks.states.where_you_stand import WhereYouStand
+from suites.coding.modules.workers.states.worker_log_due import WorkerLogDue
+from suites.coding.modules.workers.types.worker import Worker
 from engine.viewer.layout_preset import LayoutPreset
 from engine.viewer.layout_shape import split, tabs
 from suites.coding.support.next_task import NextTask
@@ -14,11 +20,12 @@ class CodingSuite(Suite):
     """Building software: the main agent works from its work controls and starts workers and the merger,
     while helpers read for it; the viewer shows its chat,
     tasks, plans, agents, questions and their activity and file edits, a phone layout, and version 4's
-    layout presets."""
+    layout presets; the main agent and every worker carry a default state of their own."""
 
     name = CODING_SUITE_NAME
     modules = [CodingModule, WorkersModule, ChecksModule]
     task_assigner = NextTask
+    default_states = [DefaultState(WhereYouStand, AgentKind.ROLE, AgentRole.MAIN), DefaultState(WorkerLogDue, AgentKind.HELPER_TYPE, Worker.key)]
     windows = ["messages.chat", "questions.waiting", "questions.questions", "tasks.tasks", "tasks.task-counts", "plans.plans", "agents.agents", "agents.helpers", "schedules.jobs", "memories.memories", "project-rules.rules", "workers.workers", "agents.transcript", "drivers.hook-calls", "coding.file-feed",
                "coding.file-edits", "coding.files", "coding.git", "workers.worktrees", "messages.attachments", "coding.terminal", "processes.outputs", "processes.output", "search.search", "dumps.dumps", "secrets.secrets", "skills.skills", "mcp.integrations", "profiles.profiles", "transcriptions.transcriptions", "reminders.reminders", "sharing.shares", "library.teams", "tunnel.tunnel", "updates.updates", "developer.numbers", "developer.hook-requests", "developer.system-logs", "drivers.nudges", "workers.points", "workers.todos", "documents.documents", "documents.page", "sequences.sequences", "templates.templates", "plugins.plugins", "settings.settings", "settings.project-hooks", "tools.tools", "triggers.triggers", "checks.checks", "usage.load", "usage.usage", "usage.cost", "usage.context", "coding.work-mode"]
     layouts = {
