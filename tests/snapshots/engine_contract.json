@@ -1776,7 +1776,8 @@
         "parameters: Sequence[object]",
         "scan_reason: str | None",
         "full_table_reason: str | None",
-        "declared_limit_rows: int | None"
+        "declared_limit_rows: int | None",
+        "is_walk_page: bool"
       ],
       "methods": [
         "is_false(self) -> bool",
@@ -4569,7 +4570,8 @@
     "journal.journal_home.JournalHome": {
       "bases": [],
       "fields": [
-        "folder: Path"
+        "folder: Path",
+        "container_setup: Callable[[Container], None] | None"
       ],
       "methods": [
         "project_folder(self) -> Path",
@@ -7082,6 +7084,21 @@
         "sql(self) -> str"
       ]
     },
+    "query.conditions.after_row.AfterRow": {
+      "bases": [],
+      "fields": [
+        "column: str",
+        "descending: bool",
+        "value: object",
+        "key: str",
+        "key_value: object",
+        "key_descending: bool"
+      ],
+      "methods": [
+        "statement(self) -> Statement",
+        "after_empty(self, key_after: str) -> Statement"
+      ]
+    },
     "query.conditions.among.Among": {
       "bases": [],
       "fields": [
@@ -7390,7 +7407,8 @@
       "bases": [],
       "fields": [
         "owner: RowOwner",
-        "is_nullable: bool"
+        "is_nullable: bool",
+        "column: str"
       ],
       "methods": [
         "statement(self) -> Statement",
@@ -7789,12 +7807,14 @@
         "first(self) -> M | None",
         "every_row(self, reason: str) -> Iterator[M]",
         "walked(self, key: str) -> Iterator[M]",
+        "after(self, row: M, order: Order | None, key: str, key_descending: bool) -> Condition",
         "kept_select(self) -> Select",
         "count(self) -> int",
         "counts_after(self, column: str, starts: Sequence[str]) -> list[int]",
         "exists(self) -> bool",
         "with_select(self, select: Select) -> Self",
         "rows(self, select: Select) -> list[M]",
+        "qualified(self, column: str) -> str",
         "scoped(self, select: Select) -> Select",
         "scope_conditions(self, select: Select) -> Select",
         "session_rows(self, select: Select, owner: RowOwner | None) -> Select",
@@ -7872,7 +7892,8 @@
         "expressions: tuple[Expression, ...]",
         "alias: str | None",
         "derived: Expression | None",
-        "unions: tuple[tuple[bool, 'Select'], ...]"
+        "unions: tuple[tuple[bool, 'Select'], ...]",
+        "is_walk_page: bool"
       ],
       "methods": [
         "is_empty(self) -> bool",
@@ -7886,6 +7907,7 @@
         "reading(self, derived: Expression) -> 'Select'",
         "union(self, second_select: 'Select', is_union_all: bool) -> 'Select'",
         "source(self) -> str",
+        "walk_paged(self) -> 'Select'",
         "named(self, rows: int) -> 'Select'",
         "column(self, column: str) -> 'Select'",
         "filtered(self, statement: Statement) -> Statement",
@@ -9552,6 +9574,8 @@
         "run(self, line: str, actor: Actor | None, environment_id: int | None, process_id: int | None) -> LineOutcome",
         "seed(self, seed: type[Seed], count: int) -> tuple[int, ...]",
         "story_rows(self, model: type[M]) -> tuple[M, ...]",
+        "first_row(self, model: type[M]) -> M | None",
+        "newest_row(self, model: type[M]) -> M | None",
         "run_command(self, command: Command[R], actor: Actor, environment_id: int) -> R",
         "end_session(self, agent: Actor) -> None",
         "expect_agent_group(self, helper_type: str, profile: str, group: str) -> None",
@@ -9782,6 +9806,7 @@
         "remove_stale_working_folders(current_time: float) -> None",
         "story(self, folder: Path, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Story",
         "synced_home(self, folder: Path, modules: tuple[str, ...]) -> JournalHome",
+        "fixture_home(self, folder: Path, fixture: type[StoryFixture], modules: tuple[str, ...]) -> tuple[JournalHome, StoryState]",
         "free_journal(self, template: Template) -> WorkingJournal",
         "linked_home(self, template: Template, journal: WorkingJournal, folder: Path) -> JournalHome",
         "template(self, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Template",

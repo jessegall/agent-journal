@@ -26,6 +26,7 @@ class Select:
     alias: str | None = None
     derived: Expression | None = None
     unions: tuple[tuple[bool, "Select"], ...] = ()
+    is_walk_page: bool = False
 
     @property
     def is_empty(self) -> bool:
@@ -69,6 +70,10 @@ class Select:
         matching = table if self.alias is None else f"{table} AS {self.alias}"
         return " ".join((matching, *(join.sql for join in self.joins)))
 
+    # A page of a walk over every row: its SQL comes back once per page, which the repeated-read guard expects.
+    def walk_paged(self) -> "Select":
+        return replace(self, is_walk_page=True)
+
     def named(self, rows: int) -> "Select":
         return replace(self, declared_limit=rows)
 
@@ -93,7 +98,7 @@ class Select:
         for all_rows, different in self.unions:
             statement = statement.joined(different.core_statement(), " UNION ALL " if all_rows else " UNION ")
         statement = statement.joined(Statement(order + page), "")
-        return replace(statement, declared_limit_rows=self.declared_limit or None)
+        return replace(statement, declared_limit_rows=self.declared_limit or None, is_walk_page=self.is_walk_page)
 
     # The SELECT without the selects it adds and without its order and page.
     def core_statement(self) -> Statement:

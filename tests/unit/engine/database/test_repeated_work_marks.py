@@ -44,3 +44,23 @@ def test_the_same_read_twice_with_no_commit_is_a_repeat():
     with pytest.raises(RepeatedCallsError), work.request():
         read(work, database, commit_during_read=False)
         read(work, database, commit_during_read=False)
+
+
+def page(after_id: int, is_walk_page: bool) -> Statement:
+    return Statement("SELECT * FROM agents WHERE id > ? ORDER BY id ASC LIMIT 50", [after_id], is_walk_page=is_walk_page)
+
+
+def test_a_walk_of_600_rows_reads_its_twelve_pages_with_no_repeat_error():
+    database = TaggedDatabase()
+    work = RepeatedWork(database)
+    with work.request():
+        for number in range(12):
+            work.loaded([], page(number * 50, True))
+
+
+def test_the_same_sql_read_twelve_times_outside_a_walk_is_a_repeat():
+    database = TaggedDatabase()
+    work = RepeatedWork(database)
+    with pytest.raises(RepeatedCallsError), work.request():
+        for number in range(12):
+            work.loaded([], page(number * 50, False))

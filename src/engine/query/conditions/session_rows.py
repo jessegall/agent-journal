@@ -11,10 +11,11 @@ class SessionRows:
 
     owner: RowOwner
     is_nullable: bool
+    column: str = "session_agent_id"
 
     def statement(self) -> Statement:
-        statement = self.main_sessions() if self.owner.is_main else Statement("session_agent_id = ?", [self.owner.agent])
-        return Statement(f"(session_agent_id IS NULL OR {statement.sql})", statement.parameters) if self.is_nullable else statement
+        statement = self.main_sessions() if self.owner.is_main else Statement(f"{self.column} = ?", [self.owner.agent])
+        return Statement(f"({self.column} IS NULL OR {statement.sql})", statement.parameters) if self.is_nullable else statement
 
     def main_sessions(self) -> Statement:
-        return Statement("session_agent_id IN (SELECT id FROM agents WHERE role = 'main' AND environment_id = ?)", [self.owner.environment_id])
+        return Statement(f"{self.column} IN (SELECT id FROM agents WHERE role = 'main' AND environment_id = ?)", [self.owner.environment_id])

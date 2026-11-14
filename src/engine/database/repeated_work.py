@@ -134,7 +134,9 @@ class RepeatedWork(PointTally):
             return
         self.reset_stale_reads()
         self.reads[statement] += 1
-        self.read_texts[statement.sql] += 1
+        # each page of a walk reads the same SQL after another row, so only a page read twice counts as a repeat
+        if not statement.is_walk_page:
+            self.read_texts[statement.sql] += 1
         if self.reads[statement] == 1:
             self.read_origins[statement] = self.caller_frames()
         if self.reads[statement] == READ_LIMIT_REPEATS + 1:
