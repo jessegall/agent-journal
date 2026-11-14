@@ -202,7 +202,6 @@ tests/stories/suites/coding/modules/workers/task_waits.py
 tests/stories/suites/coding/modules/workers/test_mark_rounds.py
 tests/stories/suites/coding/modules/workers/test_queue.py
 tests/stories/suites/coding/modules/workers/unmerged_reminder.py
-tests/stories/suites/coding/modules/workers/usage_bars_workers.py
 tests/stories/suites/coding/modules/workers/usage_lockdown_held_starts.py
 tests/stories/suites/coding/modules/workers/wait_reasons.py
 tests/stories/suites/coding/modules/workers/window_extensions.py
