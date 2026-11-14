@@ -37,6 +37,7 @@ class MergeAskScope:
         if started is not None and not last_task:
             raise Refusal(f"task {started.id} is started", "commit it, or ask up to an earlier task with --up-to and go on")
         part = self.part(worktree, unit, last_task)
+        self.check_base(worktree, part)
         self.check_runs(worktree, part.task_ids)
         if self.steps.round(worker_id).conflict is not None:
             raise Refusal(f"your worktree clashed with {worktree.base_branch}", "settle the conflict markers and commit first")
@@ -58,6 +59,13 @@ class MergeAskScope:
         if not self.range.is_branch_commit(worktree, commit):
             raise Refusal(f"commit {last_task} is not on your branch", "journal worker logs lists your commits")
         return MergeAskPart(worktree, unit, commit, tuple(task.id for task in self.range.leading_tasks(worktree, commit)), False)
+
+    # the asked work holds the newest base commit, so its checkpoint tests ran on the code the merge makes; otherwise
+    # a story that passes on the branch can fail only once merged
+    def check_base(self, worktree: Worktree, part: MergeAskPart) -> None:
+        if self.range.git.is_ancestor(worktree.folder, worktree.base_branch, part.commit_id):
+            return
+        raise Refusal(f"your work lacks the newest commits of {worktree.base_branch}", "run journal worker update, commit, let the checkpoint tests run on it, and ask again")
 
     def check_runs(self, worktree: Worktree, task_ids: tuple[int, ...]) -> None:
         blocking = self.runs.blocking_run(worktree.id)
