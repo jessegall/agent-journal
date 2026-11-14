@@ -14,7 +14,7 @@ ERROR_FIELDS = ("error", "error_details", "last_assistant_message")
 FULL_CONTEXT_TEXTS = ("prompt is too long", "context window", "context length")
 # the error value Claude Code gives a prompt that is too long (report 1458); it also comes for a PDF too large, a bad
 # credential and more, so it never decides alone: another value rules a full context out, and the words decide
-CONTEXT_FULL_ERROR_VALUES = ("invalid_request",)
+CONTEXT_FULL_ERROR_VALUES = tuple(["invalid_request"])
 
 
 class ContextFullErrorCompactionRule(DriverRule):

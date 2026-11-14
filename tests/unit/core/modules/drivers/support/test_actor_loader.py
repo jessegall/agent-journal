@@ -55,7 +55,7 @@ def test_a_hook_of_the_actor_has_its_agent_suite_and_driver():
 
 def test_a_worker_carries_the_worker_and_helper_defaults_and_the_main_agent_its_own():
     assert loader().loaded(agent()).defaults == ("coding.worker-default", "coding.helper-default")
-    assert loader().loaded(agent(role="main")).defaults == ("coding.main-default",)
+    assert loader().loaded(agent(role="main")).defaults == tuple(["coding.main-default"])
 
 
 def test_a_default_switched_off_is_removed_from_the_actor():

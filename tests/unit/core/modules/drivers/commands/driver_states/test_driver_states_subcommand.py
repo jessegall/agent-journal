@@ -17,7 +17,7 @@ class SampleState(AgentState):
 
 
 def entry(name: str, tier: StateTier) -> AgentStateEntry:
-    return AgentStateEntry(name, DottedPath.class_path(SampleState), "samples", 1, int(tier), ("*",))
+    return AgentStateEntry(name, DottedPath.class_path(SampleState), "samples", 1, int(tier), tuple(["*"]))
 
 
 class Board:

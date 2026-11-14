@@ -69,5 +69,5 @@ def test_the_first_entrance_gives_a_page_its_default_layout_and_a_later_one_adds
 
 
 def test_the_presets_and_windows_of_each_entrance_are_kept_by_its_key():
-    assert TwoEntrancesSuite.offered_presets() == {"home": (TasksPreset.layout_preset(),)}
+    assert TwoEntrancesSuite.offered_presets() == {"home": tuple([TasksPreset.layout_preset()])}
     assert TwoEntrancesSuite.entrance_windows() == {"first": ("messages.chat", "tasks.tasks"), "second": ("tasks.tasks", "plans.plans")}

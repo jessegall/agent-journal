@@ -32,7 +32,7 @@ class ScriptPipes:
 
     def answer(self, line: str, limit_ms: int | None, wait_callback: Callable[[], None] | None) -> str:
         readers = [CurrentExecution.thread(self.read_answer), CurrentExecution.thread(self.read_errors)]
-        for thread in (CurrentExecution.thread(self.write_line, (line,)), *readers):
+        for thread in (CurrentExecution.thread(self.write_line, tuple([line])), *readers):
             thread.start()
         self.wait_end(limit_ms, wait_callback)
         self.join(readers)

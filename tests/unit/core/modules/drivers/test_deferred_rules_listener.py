@@ -81,7 +81,7 @@ def test_a_rule_that_raises_is_reported_and_passed_by_and_the_other_rules_still_
 
 
 def test_a_rule_switched_off_and_a_closed_state_run_nothing():
-    toggled = Listening([CommandRule], off=("samples.commands",))
+    toggled = Listening([CommandRule], off=tuple(["samples.commands"]))
     toggled.hear()
     closed = Listening([CommandRule], open_state=False)
     closed.hear()

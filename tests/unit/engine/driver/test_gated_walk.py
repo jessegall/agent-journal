@@ -68,11 +68,11 @@ def test_an_open_state_asks_its_rule(tmp_path):
 
 
 def test_a_state_switched_off_asks_its_rule_ungated(tmp_path):
-    assert walked(tmp_path, ClosedState, off=(STATE,)).rules[0].outcome == "refused"
+    assert walked(tmp_path, ClosedState, off=tuple([STATE])).rules[0].outcome == "refused"
 
 
 def test_a_rule_switched_off_stays_off_whatever_its_state(tmp_path):
-    assert walked(tmp_path, OpenState, off=("samples.gated",)).rules == []
+    assert walked(tmp_path, OpenState, off=tuple(["samples.gated"])).rules == []
 
 
 def test_an_opener_that_raises_leaves_the_rule_asked(tmp_path):
@@ -94,7 +94,7 @@ class ParentOpen(OpenState):
 
 def substate_walk(tmp_path, parent_state: type[AgentState]):
     gated = rule("samples.gated", Refuses, 1, DRIVER)
-    parent = AgentStateEntry("test.parent", DottedPath.class_path(parent_state), "samples", 1, int(StateTier.IN_PLACE), ("*",), "", ())
+    parent = AgentStateEntry("test.parent", DottedPath.class_path(parent_state), "samples", 1, int(StateTier.IN_PLACE), tuple(["*"]), "", ())
     child = AgentStateEntry(STATE, DottedPath.class_path(OpenState), "samples", 2, int(StateTier.IN_PLACE), ("*",), "test.parent", ("samples.gated",))
     registry = replace(empty_registry().with_rules(tuple([replace(gated, hook="pre_tool_use")])), agent_states=tuple([parent, child]))
     errors, system_log = ErrorLog(SystemLogWriter(JournalHome(tmp_path), Clock()), ExceptionSink()), SystemLogWriter(JournalHome(tmp_path), Clock())

@@ -63,7 +63,7 @@ class MainOnlyState(CountedState):
     role_group = RoleGroup.PROMPT
 
 
-def entry(state: type[AgentState], position: int = 1, drivers: tuple[str, ...] = ("*",)) -> AgentStateEntry:
+def entry(state: type[AgentState], position: int = 1, drivers: tuple[str, ...] = tuple(["*"])) -> AgentStateEntry:
     return AgentStateEntry(state.name, DottedPath.class_path(state), "samples", position, int(StateTier.STACK), drivers)
 
 
@@ -123,7 +123,7 @@ def test_a_raising_opener_leaves_the_state_open_and_reports_once():
 
 def test_a_state_of_another_driver_never_runs():
     OPENS.clear()
-    assert not board().is_open(entry(CountedState, drivers=("reviewer",)))
+    assert not board().is_open(entry(CountedState, drivers=tuple(["reviewer"])))
     assert OPENS == []
 
 
@@ -197,7 +197,7 @@ class OldSubstate(AgentState):
 
 
 def substate(state: type[AgentState], parent: str, position: int) -> AgentStateEntry:
-    return AgentStateEntry(state.name, DottedPath.class_path(state), "samples", position, int(StateTier.STACK), ("*",), parent)
+    return AgentStateEntry(state.name, DottedPath.class_path(state), "samples", position, int(StateTier.STACK), tuple(["*"]), parent)
 
 
 def test_a_substate_layer_sits_directly_above_its_parent_whatever_their_times():
@@ -223,8 +223,8 @@ class WorkerDefault(AgentRowState):
 
 def test_a_default_state_is_open_on_the_agents_row_while_the_agent_carries_it_and_closed_once_removed():
     moved = board([entry(WorkerDefault)])
-    moved.hook.anchor, moved.hook.defaults = OpenRow("agent", 7, EARLY), ("samples.worker-default",)
-    assert moved.open_rows(entry(WorkerDefault)) == (OpenRow("agent", 7, EARLY),)
+    moved.hook.anchor, moved.hook.defaults = OpenRow("agent", 7, EARLY), tuple(["samples.worker-default"])
+    assert moved.open_rows(entry(WorkerDefault)) == tuple([OpenRow("agent", 7, EARLY)])
     removed = board([entry(WorkerDefault)])
     removed.hook.anchor, removed.hook.defaults = OpenRow("agent", 7, EARLY), ()
     assert not removed.is_open(entry(WorkerDefault))

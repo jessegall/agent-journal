@@ -30,5 +30,5 @@ def test_the_coding_suite_syncs_with_its_two_default_states():
 
 
 def test_a_main_agent_loads_with_where_you_stand_and_a_worker_with_its_log_default():
-    assert loaded("main").defaults == ("tasks.where-you-stand",)
-    assert loaded("worker").defaults == ("workers.worker-log-due",)
+    assert loaded("main").defaults == tuple(["tasks.where-you-stand"])
+    assert loaded("worker").defaults == tuple(["workers.worker-log-due"])

@@ -19,7 +19,7 @@ class CountingState(CountdownState):
 
 
 def entry(state: type[AgentState], tier: StateTier, position: int, rules: tuple[str, ...] = (), parent: str = "") -> AgentStateEntry:
-    return AgentStateEntry(state.name, DottedPath.class_path(state), "samples", position, int(tier), ("coding.main",), parent, rules)
+    return AgentStateEntry(state.name, DottedPath.class_path(state), "samples", position, int(tier), tuple(["coding.main"]), parent, rules)
 
 
 def listing(entries: list[AgentStateEntry]) -> AgentStateListing:
@@ -28,7 +28,7 @@ def listing(entries: list[AgentStateEntry]) -> AgentStateListing:
 
 
 def test_each_state_type_names_its_module_shape_tier_drivers_role_gated_rules_with_their_hooks():
-    rows = listing([entry(GatingState, StateTier.IN_PLACE, 1, ("samples.rule",)), entry(CountingState, StateTier.STACK, 2)]).types()
+    rows = listing([entry(GatingState, StateTier.IN_PLACE, 1, tuple(["samples.rule"])), entry(CountingState, StateTier.STACK, 2)]).types()
     assert [(row.name, row.owner, row.shape, row.tier, row.drivers, row.rules) for row in rows] == [
         ("samples.gating", "samples", "AgentState", "in place", "coding.main", "samples.rule on pre_tool_use"),
         ("samples.counting", "samples", "CountdownState", "stack", "coding.main", "(none)")]
