@@ -45,10 +45,10 @@ try {
     await page.locator('[data-queue-row="waiting"]').waitFor({state: "detached"});
     await page.screenshot({path: capture.replace(".png", "-events.png"), fullPage: true});
     await page.getByRole("button", {name: "One slot unit more"}).click();
-    await page.waitForFunction(() => document.querySelector("[data-queue-limit]")?.textContent === "2");
+    await page.waitForFunction(() => document.querySelector("[data-queue-limit]")?.textContent === "5");
     await page.reload();
     await page.locator("[data-queue-controls]").waitFor();
-    assert.equal(await page.locator("[data-queue-limit]").innerText(), "2");
+    assert.equal(await page.locator("[data-queue-limit]").innerText(), "5");
     await page.setViewportSize({width: 390, height: 844});
     await page.waitForFunction(() => document.querySelector("[data-resource-panel]").getBoundingClientRect().width <= 390, null, {timeout: 5000});
     await page.locator('[data-queue-row="recent"]').first().getByRole("button", {expanded: false}).click();

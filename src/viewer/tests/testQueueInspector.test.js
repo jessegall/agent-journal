@@ -124,7 +124,7 @@ test("queue motion styles include reordering and respect reduced motion", () => 
 test("the process queue reads its counts and ordered lists together", async () => {
     const read = vi.fn(reader);
     await panel(read);
-    expect(read).toHaveBeenCalledExactlyOnceWith(["queue", "list"]);
+    expect(read.mock.calls.filter(([line]) => line[0] === "queue")).toEqual([[["queue", "list"]]]);
     expect(document.body.querySelector("[data-queue-spots]").textContent).toBe("1 of 2");
     expect(document.body.querySelector("[data-queue-waiting]").textContent).toBe("2");
     expect([...document.body.querySelectorAll("[data-queue-heading]")].map((item) => item.textContent)).toEqual([
@@ -258,11 +258,11 @@ test("process events refresh the queue and output events refresh only an open ou
     await panel(read);
     subscriptions.dispatch({event: "task.update", row_id: 11});
     await settle();
-    expect(read).toHaveBeenCalledTimes(1);
+    expect(read.mock.calls.filter(([line]) => line[0] === "queue")).toHaveLength(1);
     queue = {...SNAPSHOT, waiting: [], waiting_count: 0};
     subscriptions.dispatch({event: "process.update", row_id: 71});
     await settle();
-    expect(read).toHaveBeenCalledTimes(2);
+    expect(read.mock.calls.filter(([line]) => line[0] === "queue")).toHaveLength(2);
     await vi.waitFor(() => expect(rowsOf("waiting")).toHaveLength(0));
     const row = rowsOf("running")[0];
     subscriptions.dispatch({event: "output.update", row_id: 70});
@@ -294,7 +294,7 @@ test("the queue window declares the output events it follows, so an open output 
 test("the queue is named Process queue in its window and its inspector, and its window may read the pages of an output it opens", () => {
     const module = readFileSync(resolve(__dirname, "../../core/modules/processes/processes_module.py"), "utf8");
     const inspector = readFileSync(resolve(__dirname, "../../core/modules/processes/support/queue_inspector.py"), "utf8");
-    expect(module).toMatch(/WindowDeclaration\("processes\.queue-body", "Process queue",[\s\S]*?reads=\["queue list", "output page"\]/);
+    expect(module).toMatch(/WindowDeclaration\("processes\.queue-body", "Process queue",[\s\S]*?reads=\["queue list", "output page", "queue-class list", "queue-class preview"\]/);
     expect(inspector).toContain('label="Process queue"');
     expect(`${module}${inspector}`).not.toContain("Test queue");
 });

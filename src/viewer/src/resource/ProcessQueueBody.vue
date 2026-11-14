@@ -6,6 +6,7 @@ import ProcessQueueControls from "./ProcessQueueControls.vue";
 import ProcessQueueRun from "./ProcessQueueRun.vue";
 import ProcessQueueBand from "./ProcessQueueBand.vue";
 import ExecutionLanes from "./ExecutionLanes.vue";
+import ExecutionClasses from "./ExecutionClasses.vue";
 
 const RECENT_PAGE = 20;
 
@@ -63,6 +64,7 @@ onMounted(load);
                     </template>
                 </TransitionGroup>
                 <template v-if="hasOlder"><button type="button" class="older" data-queue-older @click="showOlder">Show older commands</button></template>
+                <template v-if="!agent"><ExecutionClasses :read="read" /></template>
             </template>
             <template v-else-if="!failure"><Skeleton /></template>
         </div>
