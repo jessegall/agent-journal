@@ -8,7 +8,7 @@ from tests.stories.suites.coding.modules.workers.context_limit import SESSION, L
 
 HELPER_SESSION = "s-helper"
 # a background hook ends on its own time, so a story asks for its line a few times
-WAKE_ASKS = 25
+WAKE_ASKS = 40
 
 
 @pytest.fixture
@@ -38,20 +38,15 @@ def test_an_async_hooks_refusal_is_ignored(runs):
     assert answer.returncode == 0 and '"permissionDecision":"deny"' not in answer.stdout, (answer.stdout, answer.stderr)
 
 
-def test_an_asyncrewake_hook_that_exits_two_wakes_the_agent(runs):
-    runs.managed({"PostToolUse": [{"matcher": "Bash", "hooks": [entry("printf 'the build broke' >&2; exit 2", asyncRewake=True)]}]})
+def test_an_asyncrewake_hook_that_exits_two_wakes_the_agent_and_one_that_exits_zero_wakes_nothing(runs):
+    # the hooks end after the agent stopped, as background checks do, so a line comes to an idle agent
+    runs.managed({"PostToolUse": [{"matcher": "Bash", "hooks": [entry("sleep 1; printf 'the build broke' >&2; exit 2", asyncRewake=True),
+                                                                 entry("sleep 1; printf 'all fine' >&2; exit 0", asyncRewake=True)]}]})
     runs.tool("Bash", {"command": "make"}, event="PostToolUse")
     runs.story.hook(SESSION, HookSamples.stop())
     answer = woken_line(runs.story)
-    runs.story.expect_wake_line(answer, "project hook")
     runs.story.expect_wake_line(answer, "the build broke")
-
-
-def test_an_asyncrewake_hook_that_exits_zero_wakes_nothing(runs):
-    runs.managed({"PostToolUse": [{"matcher": "Bash", "hooks": [entry("printf 'all fine' >&2; exit 0", asyncRewake=True)]}]})
-    runs.tool("Bash", {"command": "make"}, event="PostToolUse")
-    runs.story.hook(SESSION, HookSamples.stop())
-    runs.story.expect_no_wake(woken_line(runs.story))
+    runs.story.expect_rows("project hook" in answer.line, "all fine" not in answer.line, detail=str(answer))
 
 
 def test_an_asyncrewake_line_for_a_helper_is_refused_and_nothing_is_typed(runs):
