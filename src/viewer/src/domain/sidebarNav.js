@@ -2,7 +2,7 @@
 // [window name, name in the sidebar and on the top bar]
 export const NAV = [
     {key: "pages", title: "", pages: [["search.search", "Search"]]},
-    {key: "work", title: "Work", pages: [["documents.page", "Documents"], ["coding.files", "Files"], ["coding.git", "Git"], ["checks.checks", "Checks"], ["processes.output", "Output"], ["transcriptions.transcriptions", "Transcriptions"]]},
+    {key: "work", title: "Work", pages: [["documents.page", "Documents"], ["coding.files", "Files"], ["coding.git", "Git"], ["checks.checks", "Checks"], ["processes.outputs", "Output"], ["transcriptions.transcriptions", "Transcriptions"]]},
     {key: "agents", title: "Agents", pages: [["profiles.profiles", "Profiles"], ["skills.skills", "Skills"], ["memories.memories", "Memories"], ["project-rules.rules", "Rules"], ["templates.templates", "Templates"], ["sequences.sequences", "Sequences"], ["reminders.reminders", "Reminders"]]},
     {key: "connect", title: "Connect", pages: [["plugins.plugins", "Plugins"], ["mcp.integrations", "Integrations"], ["secrets.secrets", "Secrets"], ["library.teams", "Teams"]]},
 ];
@@ -10,8 +10,8 @@ const DEVELOPER = [["developer.numbers", "Numbers"], ["developer.hook-requests",
 const FOOT = [["settings.settings", "Settings"]];
 // the change log opens from the version at the foot, not from a row of its own
 const UPDATES = "updates.updates";
-// pages the sidebar does not list: the tunnel, the tunler account, the hooks and the program tools are sections of Settings
-const NOT_LISTED = new Set(["tunnel.tunnel", "tunler.account", "settings.project-hooks", "tools.tools"]);
+// pages the sidebar does not list: the one output a row opens (the Output page lists them all), the tunnel, the tunler account, the hooks and the program tools are sections of Settings
+const NOT_LISTED = new Set(["processes.output", "tunnel.tunnel", "tunler.account", "settings.project-hooks", "tools.tools"]);
 const TITLES = new Map([...NAV.flatMap((group) => group.pages), ...DEVELOPER, ...FOOT, [UPDATES, "Change log"]]);
 
 // the title of a page on the top bar: the design's name for it, else what the window calls itself

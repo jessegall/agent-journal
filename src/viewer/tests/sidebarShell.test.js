@@ -15,6 +15,8 @@ const OFFERED = [
     page("documents.page", "Document reader"),
     page("drivers.nudges", "Nudges"),
     page("tools.tools", "Tools"),
+    page("processes.outputs", "Commands"),
+    page("processes.output", "Output"),
     page("tunnel.tunnel", "Tunnel"),
     page("tunler.account", "Tunler"),
     page("settings.project-hooks", "Hooks"),
@@ -39,7 +41,7 @@ test("test_nav_order: the pages stand in the design's groups and order, and what
     const sections = sidebarSections(OFFERED);
     expect(sections.map((section) => [section.key, section.windows.map((window) => window.name)])).toEqual([
         ["pages", ["search.search"]],
-        ["work", ["documents.page", "coding.git"]],
+        ["work", ["documents.page", "coding.git", "processes.outputs"]],
         ["agents", ["skills.skills", "memories.memories", "project-rules.rules", "templates.templates", "sequences.sequences", "reminders.reminders"]],
         ["connect", ["secrets.secrets"]],
         ["developer", ["developer.numbers", "developer.system-logs"]],
@@ -56,9 +58,9 @@ test("test_nav_order: the pages stand in the design's groups and order, and what
     shown.unmount();
 });
 
-test("the tunnel, the tunler account, the hooks and the program tools are not rows of the sidebar, since Settings holds them", () => {
+test("the one-output page, the tunnel, the tunler account, the hooks and the program tools are not rows of the sidebar, since Settings holds them", () => {
     const listed = sidebarSections(OFFERED).flatMap((section) => section.windows.map((window) => window.name));
-    for (const name of ["tunnel.tunnel", "tunler.account", "settings.project-hooks", "tools.tools"]) expect(listed).not.toContain(name);
+    for (const name of ["processes.output", "tunnel.tunnel", "tunler.account", "settings.project-hooks", "tools.tools"]) expect(listed).not.toContain(name);
 });
 
 test("test_developer_group_hidden_by_default: with no developer page offered the sidebar has no Developer group", () => {
