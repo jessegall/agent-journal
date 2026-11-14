@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
@@ -7,7 +8,6 @@ from engine.event.moved import Moved
 from engine.guard.guard import Guard
 from engine.listener.rows.event_rows import EventRows
 from suites.coding.models.enums.ask_topic import AskTopic
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.modules.workers.support.unpassed_checkpoints import UnpassedCheckpoints
 from suites.coding.modules.workers.support.worker_task_access import WORKER_TASKS_HINT
 
@@ -25,7 +25,7 @@ class WorkerCheckpointGuard(Guard[Moved[Task]]):
 
     def check(self, event: Moved[Task], context: Context) -> None:
         agent = self.rows.find(Agent, context.actor.id)
-        if agent is None or agent.role != CodingHelperRole.WORKER:
+        if agent is None or agent.role != Worker.key:
             return
         place = self.checkpoints.blocking_places([event.row.id], agent.id).get(event.row.id)
         if place is not None:

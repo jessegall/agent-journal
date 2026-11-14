@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -6,7 +7,6 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.protected_folders import ProtectedFolders
 from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.modules.workers.support.worker_nudges import PROTECTED_FOLDER
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class ProtectedFolderRule(DriverRule):
@@ -15,7 +15,7 @@ class ProtectedFolderRule(DriverRule):
     name = "workers.protected-folder"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [CodingHelperRole.WORKER]
+    roles = [Worker.key]
     single_action_refusal = "Stops worker edits to the project's protected folders"
 
     def __init__(self, worktrees: WorktreeQuery, protected: ProtectedFolders, agents: AgentRows) -> None:

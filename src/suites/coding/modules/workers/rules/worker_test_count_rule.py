@@ -1,4 +1,4 @@
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
+from suites.coding.modules.workers.types.worker import Worker
 from engine.driver.agent_hook import AgentHook
 from engine.enums.command_category import CommandCategory
 from engine.driver.driver_rule import DriverRule
@@ -19,7 +19,7 @@ class WorkerTestCountRule(DriverRule):
     priority = RulePriority.COMMAND_COUNT_CHECK
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [CodingHelperRole.WORKER]
+    roles = [Worker.key]
     single_action_refusal = "Refuses a worker's command when its latest counted output exceeds the test limit"
 
     def __init__(self, listings: WorkerTestListings, settings: SettingValues) -> None:

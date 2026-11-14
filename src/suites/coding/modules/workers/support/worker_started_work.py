@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.query.conditions.is_null import IsNull
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
@@ -17,7 +18,6 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_UNFINISHE
 from suites.coding.modules.workers.support.worker_settings import WORKER_RESUME_LIMIT
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 STOPPED_WORKERS_REASON = "every stopped worker, and every line that resumed it, is counted to start it again"
 
@@ -35,7 +35,7 @@ class WorkerStartedWork:
         return [worker for worker in self.stopped_workers() if self.is_abandoned(worker)]
 
     def stopped_workers(self) -> list[Agent]:
-        stopped = self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(HasValue("ended_at")).matching(IsNull("retired_at")).matching(IsNull("paused_at"))
+        stopped = self.queries.query(Agent).filter(role=Worker.key).matching(HasValue("ended_at")).matching(IsNull("retired_at")).matching(IsNull("paused_at"))
         return list(stopped.every_row(STOPPED_WORKERS_REASON))
 
     def stopped_with_tasks(self) -> list[Agent]:
@@ -45,7 +45,7 @@ class WorkerStartedWork:
         return bool(self.abandoned_tasks(worker))
 
     def abandoned_tasks(self, worker: Agent) -> tuple[Task, ...]:
-        if worker.role != CodingHelperRole.WORKER or worker.ended_at is None or worker.paused_at is not None or worker.retired_at is not None:
+        if worker.role != Worker.key or worker.ended_at is None or worker.paused_at is not None or worker.retired_at is not None:
             return ()
         worker_round = self.unfinished.steps.round(worker.id)
         if worker_round.is_asking or self.has_waiting_job(worker) or self.stop.was_stopped(worker) or self.reached_restart_limit(worker):

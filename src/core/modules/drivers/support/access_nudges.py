@@ -10,6 +10,9 @@ SHELL_RESTRICTION = NudgeDeclaration("drivers.no_shell", NudgeType.SAFETY_REFUSA
 PROGRAM_RESTRICTION = NudgeDeclaration("drivers.program_not_allowed", NudgeType.SAFETY_REFUSAL, "This driver cannot run {program}")
 UNJUDGED_LINE = NudgeDeclaration("drivers.unjudged_line", NudgeType.SAFETY_REFUSAL, "This line cannot be judged from its text: read with grep, or say in your report what should be run")
 OLD_HOOK_LINE = NudgeDeclaration("drivers.old_hook_line", NudgeType.SAFETY_REFUSAL, "Your hooks are too old to judge this line: update the journal, then restart the agent")
+HELPER_TYPE_CATEGORY = NudgeDeclaration("drivers.helper_type_category", NudgeType.REFUSAL, "a {helper_type} here runs no {category} command")
+HELPER_TYPE_COMMAND = NudgeDeclaration("drivers.helper_type_command", NudgeType.REFUSAL, "A {helper_type} may not run {line}: it runs the groups {groups} and the lines {lines}; ask your main agent",
+                                       full_text=True)
 OUTWARD_JOURNAL_LINE = NudgeDeclaration("drivers.outward_journal_line", NudgeType.SAFETY_REFUSAL, "This command reaches outside the journal: say in your report what should be run")
 LIMITED_TOOL = NudgeDeclaration("drivers.limited_tool", NudgeType.SAFETY_REFUSAL, "Read-only agents have no {tool}: say in your report what you need")
 UNKNOWN_AGENT = NudgeDeclaration("drivers.unknown_agent", NudgeType.SAFETY_REFUSAL, "No agent exists in the journal for this session, so the tool did not run: report what happened")
@@ -25,5 +28,5 @@ SKIP_NEEDS_APPROVAL = NudgeDeclaration("drivers.skip_waits_for_approval", NudgeT
 SKIP_APPROVED = NudgeDeclaration("drivers.skip_approved", NudgeType.STEERING, "Skip refusal-skip:{refusal} approved: try again", turn_limited=False)
 SKIP_DECLINED = NudgeDeclaration("drivers.skip_declined", NudgeType.STEERING, "Skip refusal-skip:{refusal} declined: do what the refusal asks", turn_limited=False)
 SKIPS_SPENT = NudgeDeclaration("drivers.skips_spent", NudgeType.STEERING, "agent:{agent} skipped {count} refusals in a row and lost the right to skip", turn_limited=False, wakes_agent=True)
-ACCESS_NUDGES = [PANIC_FILE, PRIVATE_CORPUS, SKIPS_SPENT, SKIP_NEEDS_APPROVAL, SKIP_APPROVED, SKIP_DECLINED, NATIVE_SUBAGENT, NATIVE_SUBAGENT_WITHOUT_LAUNCH, ENDED_AGENT, REPLACED_SESSION, UNKNOWN_AGENT, UNJUDGED_LINE, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, TOOL_RESTRICTION, COMMAND_RESTRICTION, READONLY, FILE_ACCESS_RESTRICTION, JOURNAL_RESTRICTION,
+ACCESS_NUDGES = [PANIC_FILE, PRIVATE_CORPUS, SKIPS_SPENT, SKIP_NEEDS_APPROVAL, SKIP_APPROVED, SKIP_DECLINED, NATIVE_SUBAGENT, NATIVE_SUBAGENT_WITHOUT_LAUNCH, ENDED_AGENT, REPLACED_SESSION, UNKNOWN_AGENT, UNJUDGED_LINE, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, HELPER_TYPE_CATEGORY, HELPER_TYPE_COMMAND, LIMITED_TOOL, TOOL_RESTRICTION, COMMAND_RESTRICTION, READONLY, FILE_ACCESS_RESTRICTION, JOURNAL_RESTRICTION,
                  SHELL_RESTRICTION, PROGRAM_RESTRICTION]

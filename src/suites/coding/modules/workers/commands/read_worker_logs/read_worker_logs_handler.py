@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.merger import Merger
 from engine.enums.actor_type import ActorType
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -6,7 +7,6 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from suites.coding.modules.workers.commands.read_worker_logs.read_worker_logs import ReadWorkerLogs
-from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
 from suites.coding.modules.workers.support.oversight import Oversight
 from suites.coding.modules.workers.support.worker_log_lines import WorkerLogLines
 from suites.coding.modules.workers.support.worker_log_read import WorkerLogRead
@@ -45,7 +45,7 @@ class ReadWorkerLogsHandler(Handler[ReadWorkerLogs, str]):
         return text
 
     def is_merger(self, context: Context) -> bool:
-        return context.actor.is_agent() and self.agents.has_profile(context.actor.id, MERGER_PROFILE)
+        return context.actor.is_agent() and self.agents.find(context.actor.id).role == Merger.key
 
     def reviews_logs(self, context: Context) -> bool:
         if not context.actor.is_agent():

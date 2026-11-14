@@ -1,19 +1,23 @@
 from collections.abc import Iterator, Sequence
 
 from engine.agent.groups.agent_group_entry import AgentGroupEntry
+from engine.helper_type.helper_type_entry import HelperTypeEntry
 
 
 class AgentGroupBook:
     """Finds the one group an agent of a type and profile is shown in: the group that names its profile, or else
-    the group of its type that names none."""
+    the group of its type that names none; a type with no group of its own is shown in the group of its base."""
 
     def __init__(self, entries: Sequence[AgentGroupEntry] = ()) -> None:
         self.entries = tuple(entries)
 
-    def group(self, agent_type: str, profile: str) -> AgentGroupEntry | None:
-        type_entries = [entry for entry in self.entries if entry.agent_type == agent_type]
-        profile_entry = next((entry for entry in type_entries if profile in entry.profiles), None)
-        return profile_entry or next((entry for entry in type_entries if not entry.profiles), None)
+    def group(self, helper_type: HelperTypeEntry, profile: str) -> AgentGroupEntry | None:
+        for agent_type in helper_type.type_keys():
+            type_entries = [entry for entry in self.entries if entry.agent_type == agent_type]
+            group = next((entry for entry in type_entries if profile in entry.profiles), None) or next((entry for entry in type_entries if not entry.profiles), None)
+            if group is not None:
+                return group
+        return None
 
     def members(self, key: str) -> tuple[str, ...]:
         return next((entry.profiles for entry in self.entries if entry.key == key), ())

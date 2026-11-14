@@ -1,4 +1,4 @@
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
+from suites.coding.modules.workers.types.worker import Worker
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -18,7 +18,7 @@ class WorkerLogDueRule(DriverRule):
     name = "workers.worker-log-due"
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
-    roles = [CodingHelperRole.WORKER]
+    roles = [Worker.key]
 
     def __init__(self, worktrees: WorktreeQuery, queries: Queries) -> None:
         self.worktrees, self.queries = worktrees, queries

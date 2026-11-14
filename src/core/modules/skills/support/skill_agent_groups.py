@@ -14,10 +14,10 @@ class SkillAgentGroups:
         self.registry, self.profiles, self.skills = registry, profiles, skills
 
     def labels(self) -> Mapping[str, tuple[str, ...]]:
-        book = self.registry.agent_group_book()
+        book, types = self.registry.agent_group_book(), self.registry.helper_type_book()
         folder_labels: defaultdict[str, dict[str, bool]] = defaultdict(dict)
         for profile in self.profiles.listed():
-            group = None if isinstance(profile, ProfileProblem) else book.group(profile.agent_type, profile.name)
+            group = None if isinstance(profile, ProfileProblem) or profile.agent_type not in types.entries else book.group(types.entries[profile.agent_type], profile.name)
             if group is None or isinstance(profile, ProfileProblem):
                 continue
             for folder in self.skills.folders(profile):

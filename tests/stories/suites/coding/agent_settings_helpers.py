@@ -136,4 +136,4 @@ def test_the_counts_read_again_give_the_same_table(helpers):
 
 def test_a_type_with_no_agents_has_none_to_list(helpers):
     _, tab = helpers
-    expect_value(tab.agents("reviewer")["rows"], [])
+    expect_value(tab.agents("merger")["rows"], [])

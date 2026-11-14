@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -6,7 +7,6 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.drivers.commands.wake_compacted_agent.wake_compacted_agent import WakeCompactedAgent
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.context_compactions import ContextCompactions
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.enums.agent_role import AgentRole
 
 WAKE_WAIT_SECONDS = 10
@@ -21,7 +21,7 @@ class CompactionWakeRule(DriverRule):
     name = "workers.compaction-wake"
     hook = HookEventName.TICK
     drivers = ["*"]
-    roles = [AgentRole.MAIN, CodingHelperRole.WORKER]
+    roles = [AgentRole.MAIN, Worker.key]
     disabled_scopes = [ActorScope]
     wakes_agent = True
 

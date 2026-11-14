@@ -1,8 +1,8 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.guard.guard import Guard
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.event.created import Created
 from engine.command.context import Context
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -17,5 +17,5 @@ class DispatchWorkerGuard(Guard[Created[Worktree]]):
         self.queries = queries
 
     def check(self, event: Created[Worktree], context: Context) -> None:
-        if self.queries.query(Agent).filter(id=context.actor.id, role=CodingHelperRole.WORKER).exists():
+        if self.queries.query(Agent).filter(id=context.actor.id, role=Worker.key).exists():
             raise Refusal("a worker dispatches no workers", 'journal worker report "<what the task needs>"')

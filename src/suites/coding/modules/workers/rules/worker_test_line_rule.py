@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.cli.row_numbers import RowNumbers
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.driver.agent_hook import AgentHook
@@ -12,7 +13,6 @@ from core.modules.processes.support.reader_demands import ASKING_FLAGS
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TEST_COMMANDS_MISSING, WORKER_TEST_LINE_REFUSED
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class WorkerTestLineRule(DriverRule):
@@ -22,7 +22,7 @@ class WorkerTestLineRule(DriverRule):
     priority = RulePriority.COMMAND_CATEGORY_CHECK
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [CodingHelperRole.WORKER]
+    roles = [Worker.key]
     single_action_refusal = "A worker runs a test only through its named test commands"
 
     def __init__(self, commands: BackgroundCommands, names: WorkerTestNames, numbers: RowNumbers) -> None:

@@ -3,7 +3,6 @@ import sqlite3
 from collections.abc import Sequence
 from engine.registry.profile_entry import ProfileEntry
 from engine.errors.refusal import Refusal
-from engine.agent.agent_policy import AgentPolicy
 from engine.agent.enums.role_group import RoleGroup
 from engine.agent.groups.agent_group_book import AgentGroupBook
 from engine.helper_type.helper_type_book import HelperTypeBook
@@ -154,11 +153,11 @@ class Registry:
                                         rule.get("exempt", rule.get("unsilenced", False)), rule["essential"], rule.get("history", False), rule.get("claims_essential", False),
                                         RoleGroup(rule.get("role_group", "any")), rule.get("priority", 0))
                         for rule in entries.get("rules", [])),
-            suites=tuple(SuiteEntry(suite["name"], suite["module"], tuple(suite["requires"]), suite["defaults"], suite["complete_control"], tuple(suite["included_overlays"]),
+            suites=tuple(SuiteEntry(suite["name"], suite["module"], tuple(suite["requires"]), suite["complete_control"], tuple(suite["included_overlays"]),
                                     tuple(suite.get("windows", [])), {page: loaded_layout(shape) for page, shape in suite.get("layouts", {}).items()},
                                     {page: tuple(LayoutPreset(preset["key"], preset["name"], preset["text"], loaded_layout(preset["shape"])) for preset in presets)
                                      for page, presets in suite.get("presets", {}).items()},
-                                    AgentPolicy.restored(suite.get("agent_policy", {})), suite.get("task_assigner", ""), suite.get("shipped", False))
+                                    suite.get("task_assigner", ""), suite.get("shipped", False))
                          for suite in entries.get("suites", [])),
             drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]),
                                       tuple(driver.get("guards", [])))
@@ -217,9 +216,9 @@ class Registry:
             "rules": [{"name": rule.name, "path": rule.path.text, "hook": rule.hook, "position": rule.position, "owner": rule.owner, "drivers": list(rule.drivers),
                        "roles": list(rule.roles), "exempt": rule.exempt, "essential": rule.essential, "history": rule.history,
                        "claims_essential": rule.claims_essential, "role_group": rule.role_group.value, "priority": rule.priority} for rule in self.rules],
-            "suites": [{"name": suite.name, "module": suite.module, "requires": list(suite.requires), "defaults": dict(suite.defaults), "complete_control": suite.complete_control,
+            "suites": [{"name": suite.name, "module": suite.module, "requires": list(suite.requires), "complete_control": suite.complete_control,
                         "included_overlays": list(suite.included_overlays), "windows": list(suite.windows),
-                        "agent_policy": asdict(suite.agent_policy), "task_assigner": suite.task_assigner, "shipped": suite.shipped,
+                        "task_assigner": suite.task_assigner, "shipped": suite.shipped,
                         "layouts": {page: stored_layout(shape) for page, shape in suite.layouts.items()},
                         "presets": {page: [{"key": preset.key, "name": preset.name, "text": preset.text, "shape": stored_layout(preset.shape)} for preset in presets]
                                     for page, presets in suite.presets.items()}} for suite in self.suites],
@@ -264,12 +263,10 @@ class Registry:
     def overlay_rules(self, overlay: str, hook_name: str) -> list[DriverRuleEntry]:
         return [rule for rule in self.hook_rules(hook_name) if rule.owner == overlay and not rule.drivers]
 
-    def driver_rules(self, driver: str, role: str, hook_name: str, suite_name: str) -> list[DriverRuleEntry]:
-        suite = self.suite(suite_name)
-        policy = suite.agent_policy if suite is not None else AgentPolicy()
+    def driver_rules(self, driver: str, role: str, hook_name: str) -> list[DriverRuleEntry]:
         helper_types = self.helper_type_book()
         return [rule for rule in self.hook_rules(hook_name) if not rule.essential and not rule.exempt
-                and rule.covers_driver(driver, role) and rule.role_group.has_role(role, policy, helper_types)]
+                and rule.covers_driver(driver, role) and rule.role_group.has_role(role, helper_types)]
 
     def hook_rules(self, hook_name: str) -> list[DriverRuleEntry]:
         return sorted((rule for rule in self.rules if rule.covers_hook(hook_name)), key=lambda rule: rule.position)
@@ -360,7 +357,7 @@ class Registry:
 
     @property
     def alias_permission_names(self) -> tuple[str, ...]:
-        return tuple(dict.fromkeys(("agents", *(f"{role}s" for suite in self.suites for role in suite.agent_policy.restricted_alias_roles))))
+        return tuple(dict.fromkeys(("agents", *(f"{entry.key}s" for entry in self.helper_types if entry.behaviours.has_restricted_aliases))))
 
     def button_lines(self, window: str) -> tuple[ButtonLine, ...]:
         if window == ButtonWindow.MARKS:
@@ -417,4 +414,11 @@ class Registry:
 
     def suite_drivers(self, suite: SuiteEntry) -> list[DriverEntry]:
         return [driver for driver in self.drivers if driver.suite in self.ancestors(suite)]
+
+    def type_driver(self, suite: SuiteEntry, key: str) -> DriverEntry | None:
+        drivers = self.suite_drivers(suite)
+        return next((driver for type_key in self.helper_type_book().type_keys(key) for driver in drivers if driver.role == type_key), None)
+
+    def type_drivers(self, suite: SuiteEntry) -> dict[str, DriverEntry]:
+        return {key: driver for key in sorted(self.helper_type_book().entries) if (driver := self.type_driver(suite, key)) is not None}
 

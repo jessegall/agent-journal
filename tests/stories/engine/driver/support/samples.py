@@ -323,7 +323,6 @@ class SampleSuite(Suite):
     """A sample suite of one lead."""
 
     name = "samples"
-    defaults = {AgentRole.MAIN: LEAD}
 
 
 class Lead(Driver):
@@ -341,7 +340,6 @@ class ControlSuite(Suite):
     """A sample suite in complete control that includes the sample edit lock."""
 
     name = "control"
-    defaults = {AgentRole.MAIN: "control.lead"}
     complete_control = True
     included_overlays = ["samples.edit-lock"]
 

@@ -4,7 +4,6 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.interval import Interval
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.span_queries import SpanQueries
-from engine.enums.helper_role import HelperRole
 from engine.agent.enums.role_group import RoleGroup
 from engine.scope.actor_scope import ActorScope
 from core.modules.agents.commands.record_agent_launch_failure.record_agent_launch_failure import RecordAgentLaunchFailure
@@ -29,7 +28,7 @@ class UnstartedHelperRule(DriverRule):
         self.agents, self.hook_calls, self.settings, self.spans = agents, hook_calls, settings, spans
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        helpers = self.agents.running(HelperRole.HELPER, hook.agent_id)
+        helpers = self.agents.running_with_read_access(hook.agent_id)
         limit = Interval(self.settings.seconds(UNSTARTED_HELPER_SECONDS))
         silent = (helper for helper in helpers if self.is_silent(helper, hook, limit))
         return RuleAnswer.allowed().running(*(RecordAgentLaunchFailure(helper.id) for helper in silent))

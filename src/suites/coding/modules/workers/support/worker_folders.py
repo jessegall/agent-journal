@@ -1,7 +1,7 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.file.file_access import FileAccess
 from pathlib import Path
 
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from core.modules.agents.models.agent import Agent
 from engine.journal.journal_home import JournalHome
 from core.modules.agents.support.agent_folders import AgentFolders
@@ -29,7 +29,7 @@ class WorkerFolders(AgentFolders):
         locations: dict[int, tuple[bool, Path]] = {}
         for agent in agents:
             parent = parents.get(agent.parent_id) if agent.parent_id is not None else None
-            available = parent is None or parent.role != CodingHelperRole.WORKER or parent.id in active
+            available = parent is None or parent.role != Worker.key or parent.id in active
             worktree = latest.get(agent.id)
             if FileAccess.is_dir(self.start_folder(agent)):
                 folder = self.start_folder(agent)
@@ -44,7 +44,7 @@ class WorkerFolders(AgentFolders):
 
     def has_folder(self, agent: Agent) -> bool:
         parent = self.agents.find(agent.parent_id) if agent.parent_id is not None else None
-        return parent is None or parent.role != CodingHelperRole.WORKER or self.worktrees.worker_worktree(parent.id) is not None
+        return parent is None or parent.role != Worker.key or self.worktrees.worker_worktree(parent.id) is not None
 
     def folder(self, agent: Agent) -> Path:
         worktree = self.worktrees.worker_worktree(agent.id)

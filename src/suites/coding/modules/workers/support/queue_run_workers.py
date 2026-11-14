@@ -1,4 +1,4 @@
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
+from suites.coding.modules.workers.types.worker import Worker
 from engine.row.page import Page
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
@@ -16,5 +16,5 @@ class QueueRunWorkers:
         if not page.rows:
             return {}
         agent_ids = tuple({process.session_agent_id for process in page.rows})
-        workers = {worker.id for worker in self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(Among("id", agent_ids)).take(page.size)}
+        workers = {worker.id for worker in self.queries.query(Agent).filter(role=Worker.key).matching(Among("id", agent_ids)).take(page.size)}
         return {process.id: process.session_agent_id for process in page.rows if process.session_agent_id in workers}

@@ -1,15 +1,15 @@
+from core.modules.helpers.types.helper import Helper
+from suites.coding.modules.workers.types.worker import Worker
 import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.command.bus import Bus
 from engine.enums.tool_type import ToolType
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.skills.support.profile_skills import ProfileSkills
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from engine.testing.examples.hook_samples import HookSamples
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.support.story_checks import expect_value
@@ -39,14 +39,14 @@ def saved(person):
 
 
 def started_agent(story, session: str, profile: str, role: str) -> Actor:
-    story.container.get(Bus).run(StartAgent(session, "claude", role, story.agent.id, profile=profile), Actor.core(), environment_id=1)
+    story.run_command(StartAgent(session, "claude", role, story.agent.id, profile=profile), Actor.core(), 1)
     agent = hook_agent(story, story.hook(session, HookSamples.session_start().with_fields(session=session)))
     story.run_listeners()
     return agent
 
 
 def started_helper(story, session: str, profile: str) -> Actor:
-    return started_agent(story, session, profile, CodingHelperRole.HELPER)
+    return started_agent(story, session, profile, Helper.key)
 
 
 @pytest.fixture
@@ -116,7 +116,7 @@ def test_reading_the_required_skill_ends_the_refusal(saved, note_taker):
 
 def test_a_worker_of_the_profile_has_the_required_skill_due(person):
     person.expect_success(f'profile save note-worker --type worker --description "Works on notes" --body "Work." --skills {LISTED} --required-skills {REQUIRED}', actor=person.user)
-    worker = started_agent(person, "s-worker", "note-worker", CodingHelperRole.WORKER)
+    worker = started_agent(person, "s-worker", "note-worker", Worker.key)
     person.expect_text("skill required", REQUIRED, actor=worker)
 
 

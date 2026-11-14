@@ -6,7 +6,6 @@ import json
 from engine.profile.agent_profile import AgentProfile
 from core.modules.profiles.support.profile_files import ProfileFiles
 from engine.enums.agent_role import AgentRole
-from engine.enums.helper_role import HelperRole
 from engine.caller.caller import Caller
 from engine.provider.providers import Providers
 from engine.registry.registry import Registry
@@ -67,12 +66,13 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         arguments.role += [value for value in arguments.roles.split(",") if value]
         arguments.profile += [value for value in arguments.profiles.split(",") if value]
         arguments.program += [value for value in arguments.programs.split(",") if value]
+        registered = list(self.registry.helper_type_book().entries)
         titles = {profile.name: profile.display_title for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
         if arguments.options:
             options = self.queries.query(AgentFilterOptionsView).first()
             if options is None:
                 return AgentFilterOptions((), ())
-            upgrade_retired = self.queries.query(Agent).matching(EndedAgents()).filter(retirement_reason=UPGRADE_RETIREMENT_REASON).count()
+            upgrade_retired = self.queries.query(Agent).matching(EndedAgents(registered)).filter(retirement_reason=UPGRADE_RETIREMENT_REASON).count()
             roles: list[str] = json.loads(options.roles)
             profile_names: list[str] = json.loads(options.profiles)
             return AgentFilterOptions(tuple(sorted(role for role in roles if role != AgentRole.MAIN)), tuple((name, titles.get(name, name)) for name in sorted(profile for profile in profile_names if profile)), upgrade_retired)
@@ -92,9 +92,9 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
             case AgentListState.RUNNING:
                 rows = rows.matching(activity)
             case AgentListState.IDLE:
-                rows = rows.matching(AvailableAgents(activity))
+                rows = rows.matching(AvailableAgents(activity)).matching(Among("role", registered))
             case AgentListState.RETIRED:
-                rows = rows.matching(EndedAgents())
+                rows = rows.matching(EndedAgents(registered))
             case _:
                 pass
         if arguments.search.strip():
@@ -102,11 +102,10 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         page = rows.ordered("created_at", "id").page(arguments.page, arguments.limit)
         selected = self.queries.query(AgentListing).matching(Among("id", tuple(row.id for row in page.rows)))
         running = {row.id for row in selected.matching(activity).every_row(CARD_STATES_REASON)}
-        idle = {row.id for row in selected.matching(AvailableAgents(activity)).every_row(CARD_STATES_REASON)}
+        idle = {row.id for row in selected.matching(AvailableAgents(activity)).matching(Among("role", registered)).every_row(CARD_STATES_REASON)}
         states = {**dict.fromkeys(running, AgentListState.RUNNING), **dict.fromkeys(idle, AgentListState.IDLE)}
         agents = {agent.id: agent for agent in self.queries.query(Agent).find_many(tuple(row.id for row in page.rows))}
         locations = self.folders.resume_locations(tuple(agents[row.id] for row in page.rows if row.id in idle))
-        policy = self.usage.suites.agent_policy()
         pending = activity.pending
         job_commands = {entry.key: entry.job_command for entry in self.registry.helper_types}
         task_flags = {entry.key: entry.job_task_flag for entry in self.registry.helper_types}
@@ -116,13 +115,13 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         merges = self.usage.merged_work(page.rows)
         return Page(tuple(AgentListingState(**vars(row), state=states.get(row.id, AgentListState.RETIRED), standing=agents[row.id].standing.value,
                                            resume_reason=self.resume_reason(agents[row.id], *locations[row.id]) if row.id in idle else None,
-                                           facts=self.usage.facts(row, policy, titles, pending.get(row.id), statuses[row.session], account, sandboxes[row.id], merges.get(row.id)).json(),
+                                           facts=self.usage.facts(row, titles, pending.get(row.id), statuses[row.session], account, sandboxes[row.id], merges.get(row.id)).json(),
                                            job_command=job_commands.get(row.role, ()),
                                            job_task_flag=task_flags.get(row.role, "")) for row in page.rows),
                     page.number, page.size, page.total)
 
     def resume_reason(self, agent: Agent, has_folder: bool, folder: Path) -> str | None:
-        if agent.role == HelperRole.HELPER and not agent.profile:
+        if agent.role in self.registry.helper_type_book().read_access_keys() and not agent.profile:
             return "This helper ran as a program subagent and cannot resume."
         if not has_folder:
             return "The folder this agent worked in is gone."

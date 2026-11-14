@@ -1,7 +1,7 @@
+from suites.coding.modules.workers.types.worker import Worker
 from os.path import join, normpath
 from pathlib import Path
 
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.provider.providers import Providers
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
@@ -20,7 +20,7 @@ class WorkerReadRule(DriverRule):
     name = "workers.worker-read"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [CodingHelperRole.WORKER]
+    roles = [Worker.key]
     single_action_refusal = "A worker reads only its own worktree, the temporary folder and its program's home"
 
     def __init__(self, worktrees: WorktreeQuery, providers: Providers) -> None:

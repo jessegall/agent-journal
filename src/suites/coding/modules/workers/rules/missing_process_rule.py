@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
@@ -5,7 +6,6 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from suites.coding.modules.workers.commands.end_gone_worker.end_gone_worker import EndGoneWorker
 from suites.coding.modules.workers.support.gone_agents import GoneAgents
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.enums.agent_role import AgentRole
 from core.modules.agents.support.agent_rows import AgentRows
 
@@ -17,7 +17,7 @@ class MissingProcessRule(DriverRule):
     name = "drivers.missing-process"
     hook = HookEventName.TICK
     drivers = ["*"]
-    roles = [AgentRole.MAIN, CodingHelperRole.WORKER]
+    roles = [AgentRole.MAIN, Worker.key]
 
     def __init__(self, agents: AgentRows, missing_agents: GoneAgents, types: HelperTypeBook) -> None:
         self.agents, self.missing_agents, self.types = agents, missing_agents, types

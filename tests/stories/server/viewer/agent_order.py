@@ -9,7 +9,7 @@ from tests.stories.server.support.server_client import server_story
 def test_both_agents_windows_keep_age_order_after_state_changes_and_a_new_agent(new_story):
     story = new_story(fixture=UserBuilder)
     agents = []
-    for session, role in (("oldest", "helper"), ("middle", "worker"), ("newest", "reviewer")):
+    for session, role in (("oldest", "helper"), ("middle", "worker"), ("newest", "merger")):
         agents.append(story.new_row_id(f"agent start {session} claude {role} --environment main"))
         story.advance(timedelta(seconds=1))
     story.expect_success(f"agent end {agents[1]}")

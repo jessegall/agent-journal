@@ -1,0 +1,29 @@
+from engine.caller.caller import Caller
+from engine.driver.nudge import Nudge
+from engine.cli.caller_line_check import CallerLineCheck
+from engine.enums.actor_type import ActorType
+from engine.errors.refusal import Refusal
+from engine.helper_type.journal_line import JournalLine
+from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.drivers.support.type_command_check import TypeCommandCheck
+
+
+class AgentLineCheck(CallerLineCheck):
+    """Refuses at the server a journal line the calling agent's type does not list, so a line that never passed the
+    hook is judged by the same list; a person and the main agent run every line."""
+
+    def __init__(self, agents: AgentRows, commands: TypeCommandCheck) -> None:
+        self.agents, self.commands = agents, commands
+
+    def allows(self, caller: Caller, line: JournalLine) -> bool:
+        return self.refusal(caller, line) is None
+
+    def check(self, caller: Caller, line: JournalLine) -> None:
+        refusal = self.refusal(caller, line)
+        if refusal is not None:
+            raise Refusal(refusal.text)
+
+    def refusal(self, caller: Caller, line: JournalLine) -> Nudge | None:
+        if caller.actor.type is not ActorType.AGENT:
+            return None
+        return self.commands.refusal(self.agents.find_unscoped(caller.actor.id), [line])

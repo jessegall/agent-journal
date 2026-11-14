@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from engine.helper_type.helper_type import HelperType
+from core.modules.helpers.types.helper import Helper
 from engine.module.module import Module
 from engine.profile.agent_profile import AgentProfile
 from engine.viewer.window_declaration import WindowDeclaration
@@ -8,6 +8,11 @@ from engine.enums.window_loading import WindowLoading
 from engine.viewer.skeleton_part import SkeletonPart
 
 BASE_PROFILE = AgentProfile("module-reader", "Reads one question", "Read the files.", model="haiku")
+
+
+class UpdatedClerk(Helper):
+    key = "clerk"
+    label = "Clerk"
 
 
 class ProfileVersionOne(Module):
@@ -36,5 +41,5 @@ class ProfileNameCollision(ProfileVersionOne):
 
 
 class ProfileCustomType(ProfileVersionOne):
-    helper_types = [HelperType("clerk", "Clerk", extends="helper")]
+    helper_types = [UpdatedClerk]
     profiles = []

@@ -52,7 +52,7 @@ def test_a_suite_that_joins_another_adds_its_modules_to_it_and_ships_no_suite_to
 
 
 def test_the_helper_types_of_a_suite_are_those_of_the_module_that_ships_it():
-    scout = HelperType("scout", "Scout")
+    scout = type("Scout", tuple([HelperType]), {"key": "scout", "label": "Scout"})
     shop, carts = module("shop"), module("carts")
     suites = SuiteList([suite("shop", shop, carts, helper_types=tuple([scout]))])
     assert suites.helper_types(shop) == [scout] and suites.helper_types(carts) == []

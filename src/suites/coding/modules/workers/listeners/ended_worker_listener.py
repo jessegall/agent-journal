@@ -1,5 +1,5 @@
+from suites.coding.modules.workers.types.worker import Worker
 from core.modules.agents.events.agent_ended import AgentEnded
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.listener.save_listener import SaveListener
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
@@ -50,7 +50,7 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
 
     def handle(self, event: AgentEnded, context: Context) -> None:
         new = event.row
-        if new.role != CodingHelperRole.WORKER or new.parent_id is None:
+        if new.role != Worker.key or new.parent_id is None:
             return
         worker_round = self.unfinished.steps.round(new.id)
         facts = self.stop_facts.read(new, worker_round, context.actor.id)

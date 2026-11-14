@@ -1,10 +1,10 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.command.bus import Bus
 from engine.enums.hook_event_name import HookEventName
 from engine.listener.save_listener import SaveListener
 from engine.query.queries import Queries
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.rules.repeated_stop_release_rule import STOP_REFUSAL_COUNT
@@ -24,7 +24,7 @@ class ReleasedStopListener(SaveListener[StopAllowed]):
 
     def handle(self, event: StopAllowed, context: Context) -> None:
         call = event.row
-        if not self.queries.query(Agent).filter(id=call.session_agent_id, role=CodingHelperRole.WORKER).exists() or not self.tasks.started_tasks(call.session_agent_id):
+        if not self.queries.query(Agent).filter(id=call.session_agent_id, role=Worker.key).exists() or not self.tasks.started_tasks(call.session_agent_id):
             return
         previous_stops = [stop for stop in self.calls.agent(call.session_agent_id).filter(hook=HookEventName.STOP).newest().page(1, STOP_REFUSAL_COUNT + 1).rows if stop.id != call.id]
         if len(previous_stops) >= STOP_REFUSAL_COUNT and all(stop.answer is HookAnswer.REFUSED for stop in previous_stops[:STOP_REFUSAL_COUNT]):

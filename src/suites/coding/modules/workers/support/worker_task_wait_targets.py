@@ -1,5 +1,5 @@
+from suites.coding.modules.workers.types.worker import Worker
 from core.modules.tasks.queries.task_query import TaskQuery
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.command.context import Context
 from engine.database.database import Database
 from engine.query.queries import Queries
@@ -37,7 +37,7 @@ class WorkerTaskWaitTargets(TaskWaitTargets):
         return self.worker_target(self.queries.query(Agent).find(self.agent_row_id(row_id)))
 
     def worker_target(self, worker: Agent) -> str:
-        if worker.role != CodingHelperRole.WORKER:
+        if worker.role != Worker.key:
             raise Refusal(f"{AgentLabel.labelled(worker).text} is not a worker", "name a worker")
         if self.is_finished(worker):
             raise Refusal(f"{AgentLabel.labelled(worker).text} has already finished", "nothing waits on it; carry on with the task")
@@ -45,7 +45,7 @@ class WorkerTaskWaitTargets(TaskWaitTargets):
 
     def helper_target(self, row_id: int) -> str:
         agent = self.queries.query(Agent).find(row_id)
-        return self.worker_target(agent) if agent.role == CodingHelperRole.WORKER else super().helper_target(row_id)
+        return self.worker_target(agent) if agent.role == Worker.key else super().helper_target(row_id)
 
     def is_finished(self, worker: Agent) -> bool:
         if self.has_work(worker):

@@ -1,3 +1,4 @@
+from engine.helper_type.command_allow_list import CommandAllowList
 from engine.enums.access import Access
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver import Driver
@@ -5,11 +6,32 @@ from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.helper_type.helper_type import HelperType
+from core.modules.helpers.types.helper import Helper
 from engine.module.suite import Suite
 from engine.module.module import Module
 from engine.profile.agent_profile import AgentProfile
 from suites.coding.coding_suite import CodingSuite
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
+
+
+class MissingProfileClerk(Helper):
+    key = "clerk"
+    label = "Clerk"
+    default_profile = "missing-profile"
+
+
+class ReaderProfileClerk(HelperType):
+    key = "clerk"
+    label = "Clerk"
+    default_profile = "module-reader"
+    behaviours = Helper.behaviours
+    commands = CommandAllowList()
+
+
+class SampleProfileClerk(Helper):
+    key = "clerk"
+    label = "Clerk"
+    default_profile = "sample-clerk"
 
 
 class ProfileModule(Module):
@@ -44,11 +66,11 @@ class InvalidName(ProfileModule):
 
 
 class MissingDefault(ProfileModule):
-    helper_types = [HelperType("clerk", "Clerk", extends="helper", default_profile="missing-profile")]
+    helper_types = [MissingProfileClerk]
 
 
 class WrongDefaultType(ProfileModule):
-    helper_types = [HelperType("clerk", "Clerk", extends="helper", default_profile="module-reader")]
+    helper_types = [ReaderProfileClerk]
 
 
 class LegacySuite(Suite):
@@ -83,7 +105,7 @@ class ClerkModule(Module):
     name = "sample.clerks"
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.agents", "journal.suites.coding"]
-    helper_types = [HelperType("clerk", "Clerk", extends="helper", default_profile="sample-clerk")]
+    helper_types = [SampleProfileClerk]
     profiles = [AgentProfile("sample-clerk", "Reads contracts", "Read the contracts.", agent_type="clerk", model="sonnet", codex_model="gpt-6.1-terra")]
     drivers = [ClerkDriver]
 

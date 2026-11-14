@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from pathlib import Path
 
 from engine.driver.agent_hook import AgentHook
@@ -6,7 +7,6 @@ from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_nudges import WORKER_FOREIGN_LINK
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 LINK_PROGRAM = "ln"
 
@@ -17,7 +17,7 @@ class WorkerOutsideLinkRule(DriverRule):
     name = "workers.outside-link"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [CodingHelperRole.WORKER]
+    roles = [Worker.key]
     single_action_refusal = "A worker may not link a folder from outside its worktree into it"
 
     def __init__(self, worktrees: WorktreeQuery) -> None:

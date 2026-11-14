@@ -1,5 +1,5 @@
 from engine.command.context import Context
-from engine.enums.helper_role import HelperRole
+from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.errors.refusal import Refusal
 from engine.event.created import Created
 from engine.event.updated import Updated
@@ -17,8 +17,8 @@ class AssignRuleTargetGuard(Guard[Created[AssignRule] | Updated[AssignRule]]):
     name = "assign-rules.target"
     is_safety = True
 
-    def __init__(self, rows: EventRows) -> None:
-        self.rows = rows
+    def __init__(self, rows: EventRows, types: HelperTypeBook) -> None:
+        self.rows, self.types = rows, types
 
     def check(self, event: Created[AssignRule] | Updated[AssignRule], context: Context) -> None:
         rule = event.row
@@ -33,5 +33,5 @@ class AssignRuleTargetGuard(Guard[Created[AssignRule] | Updated[AssignRule]]):
         agent = self.rows.find(Agent, rule.target_agent_id)
         if agent is None or agent.environment_id != rule.environment_id:
             raise Refusal(f"agent {rule.target_agent_id} works in another environment", "give the rule to an agent of the rule's own environment")
-        if agent.role in tuple(HelperRole):
+        if not self.types.behaviours(agent.role).takes_tasks:
             raise Refusal("helpers take no task", "give the rule to the main agent or to an agent that takes tasks")

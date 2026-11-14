@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.merger import Merger
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
@@ -56,7 +57,7 @@ class StartMergerHandler(Handler[StartMerger, None]):
         return self.queries.query(AgentLine).filter(source=MERGER_SOURCE, text=text).matching(Minimum("created_at", command.started_at.text)).first() is not None
 
     def assign_job(self, actor: Actor, context: Context) -> None:
-        kept = self.queries.query(Agent).filter(profile=MERGER_PROFILE).matching(IsNull("retired_at")).newest().first()
+        kept = self.queries.query(Agent).filter(role=Merger.key).matching(IsNull("retired_at")).newest().first()
         if kept is None:
             self.bus.run(StartHelper(MERGER_PROFILE, MERGER_JOB), actor, environment_id=context.environment_id)
             return

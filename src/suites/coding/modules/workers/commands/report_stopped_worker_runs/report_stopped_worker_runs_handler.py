@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.query.conditions.prefix import Prefix
@@ -7,7 +8,6 @@ from engine.setting.setting_values import SettingValues
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.modules.workers.commands.report_stopped_worker_runs.report_stopped_worker_runs import SOURCE_KEY_PREFIX, ReportStoppedWorkerRuns
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 from suites.coding.modules.workers.models.merger_line import MergerLine
@@ -55,6 +55,6 @@ class ReportStoppedWorkerRunsHandler(Handler[ReportStoppedWorkerRuns, None]):
 
     def is_running_after_stop(self, worker: Agent, context: Context, limit_seconds: float) -> bool:
         ended_at = worker.ended_at
-        if worker.role != CodingHelperRole.WORKER or ended_at is None:
+        if worker.role != Worker.key or ended_at is None:
             return False
         return ended_at.elapsed_seconds(context.timestamp) >= limit_seconds and bool(self.unfinished.rows(worker.id))

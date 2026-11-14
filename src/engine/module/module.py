@@ -90,7 +90,7 @@ class Module:
     button_slots: ClassVar[list[str]] = []
     inspectors: ClassVar[list[InspectorDeclaration]] = []
     added_states: ClassVar[Sequence[StateAddition]] = ()
-    helper_types: ClassVar[list[HelperType]] = []
+    helper_types: ClassVar[list[type[HelperType]]] = []
     agent_groups: ClassVar[list[AgentGroup]] = []
     profiles: ClassVar[list[AgentProfile]] = []
     providers: ClassVar[list[type[Provider]]] = []

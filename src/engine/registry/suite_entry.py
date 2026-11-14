@@ -3,25 +3,22 @@ from dataclasses import dataclass
 
 from engine.viewer.layout_preset import LayoutPreset
 from engine.viewer.layout_shape import LayoutShape
-from engine.agent.agent_policy import AgentPolicy
 
 
 @dataclass(frozen=True)
 class SuiteEntry:
-    """A registered suite: its name, the module that ships it, the suites it requires, its default driver per
-    role, whether it takes complete control, the other modules' overlays it includes, its viewer windows, its
-    default layouts and its layout presets per page."""
+    """A registered suite: its name, the module that ships it, the suites it requires, whether it takes complete
+    control, the other modules' overlays it includes, its viewer windows, its default layouts and its layout
+    presets per page."""
 
     name: str
     module: str
     requires: Sequence[str]
-    defaults: Mapping[str, str]
     complete_control: bool
     included_overlays: Sequence[str]
     windows: Sequence[str]
     layouts: Mapping[str, LayoutShape]
     presets: Mapping[str, Sequence[LayoutPreset]]
-    agent_policy: AgentPolicy = AgentPolicy()
     task_assigner: str = ""
     shipped: bool = False
 

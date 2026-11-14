@@ -13,7 +13,7 @@ def window(name: str, unavailable_reason: str = "") -> WindowEntry:
 
 
 def suite(name: str, windows: tuple[str, ...], requires: tuple[str, ...] = (), layouts: dict[str, LayoutShape] | None = None) -> SuiteEntry:
-    return SuiteEntry(name, "notes", requires, {}, False, (), windows, dict(layouts or {}), {})
+    return SuiteEntry(name, "notes", requires, False, (), windows, dict(layouts or {}), {})
 
 
 REGISTRY = Registry("", {}, {}, {}, (), (),

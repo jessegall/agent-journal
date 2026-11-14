@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from core.modules.plans.conditions.plan_tasks_condition import PlanTasksCondition
 from engine.database.kept_rows import KeptRows
 from engine.query.conditions.equal import Equal
@@ -13,7 +14,6 @@ from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.modules.workers.support.work_unit import WorkUnit
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
@@ -34,7 +34,7 @@ class WorkUnits:
 
     def plan_worker(self, plan: Plan) -> Agent | None:
         agent = self.assignments.agent(plan)
-        return agent if agent is not None and agent.role == CodingHelperRole.WORKER and agent.retired_at is None else None
+        return agent if agent is not None and agent.role == Worker.key and agent.retired_at is None else None
 
     def unit(self, worker_id: int) -> WorkUnit:
         worktree = self.worktrees.worker_worktree(worker_id)

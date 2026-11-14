@@ -1,4 +1,4 @@
-from engine.enums.helper_role import HelperRole
+from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.time.duration import Duration
 from engine.errors.duration_error import DurationError
 from engine.driver.agent_hook import AgentHook
@@ -10,7 +10,6 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.driver.shell_line import ShellLine
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.support.alias_nudges import SAVED_COMMAND_CHOICES, SAVED_COMMAND_DIRECT, SAVED_COMMAND_MIXED, SAVED_COMMAND_PIPED, SAVED_COMMAND_SILENT, SAVED_COMMAND_HELPER, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_UNREAD, SAVED_COMMAND_TIMEOUT
-from core.modules.drivers.support.suite_choice import SuiteChoice
 
 ASKING_FLAGS = ("--help", "-h", "--version", "-V")
 SKIPPED_KEYS = (SAVED_COMMAND_UNKNOWN.key, SAVED_COMMAND_HELPER.key, SAVED_COMMAND_MIXED.key, SAVED_COMMAND_SILENT.key)
@@ -24,8 +23,8 @@ class SavedCommandRule(DriverRule):
     drivers = ["*"]
     single_action_refusal = "Requires tests and builds to use saved commands with valid reading and timeout options"
 
-    def __init__(self, aliases: AliasQuery, suites: SuiteChoice) -> None:
-        self.aliases, self.suites = aliases, suites
+    def __init__(self, aliases: AliasQuery, types: HelperTypeBook) -> None:
+        self.aliases, self.types = aliases, types
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
@@ -40,7 +39,7 @@ class SavedCommandRule(DriverRule):
             return RuleAnswer.refused(SAVED_COMMAND_TIMEOUT.nudge())
         if not shell.aliases_loaded:
             return RuleAnswer.allowed()
-        if hook.role not in self.suites.agent_policy().saved_command_roles:
+        if not self.types.behaviours(hook.role).runs_saved_commands:
             return RuleAnswer.allowed()
         refusals = (self.refusal(part, hook.role) for part in shell.parts)
         refusal = next((nudge for nudge in refusals if nudge and not (shell.is_skip_line and nudge.key in SKIPPED_KEYS)), None)
@@ -55,7 +54,7 @@ class SavedCommandRule(DriverRule):
         return bool(long_parts) and len(long_parts) != len(parts)
 
     def part_refusal(self, part: Part, shell: ShellLine, role: str) -> Nudge | None:
-        if not shell.aliases_loaded or role not in self.suites.agent_policy().saved_command_roles:
+        if not shell.aliases_loaded or not self.types.behaviours(role).runs_saved_commands:
             return None
         return self.refusal(part, role)
 
@@ -70,7 +69,7 @@ class SavedCommandRule(DriverRule):
             return SAVED_COMMAND_DIRECT.nudge(name=exact.name)
         if self.aliases.with_category(category).exists():
             return SAVED_COMMAND_CHOICES.nudge(category=category.value)
-        if role == HelperRole.HELPER:
+        if role in self.types.read_access_keys():
             return SAVED_COMMAND_HELPER.nudge(category=category.value)
         return SAVED_COMMAND_UNKNOWN.nudge(command=part.text, category=category.value)
 

@@ -1,10 +1,10 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.scope.actor_scope import ActorScope
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.modules.workers.commands.compact_agent_context.compact_agent_context import CompactAgentContext
 from suites.coding.support.context_limit_check import ContextLimitCheck
 
@@ -19,7 +19,7 @@ class ContextFullErrorCompactionRule(DriverRule):
     name = "workers.context-full-stop"
     hook = HookEventName.STOP_FAILURE
     drivers = ["*"]
-    roles = [AgentRole.MAIN, CodingHelperRole.WORKER]
+    roles = [AgentRole.MAIN, Worker.key]
     disabled_scopes = [ActorScope]
 
     def __init__(self, limit_check: ContextLimitCheck) -> None:

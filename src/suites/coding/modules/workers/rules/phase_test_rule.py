@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from dataclasses import replace
 
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
@@ -20,7 +21,6 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from engine.query.queries import Queries
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class PhaseTestRule(DriverRule):
@@ -32,7 +32,7 @@ class PhaseTestRule(DriverRule):
     priority = RulePriority.COMMAND_PHASE_CHECK
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [CodingHelperRole.WORKER]
+    roles = [Worker.key]
     single_action_refusal = "Allows counted test runs between two commits and handles requests after the allowance is spent"
 
     def __init__(self, queries: Queries, commands: BackgroundCommands, worktrees: WorktreeQuery, window: CommitWindow, steps: WorkerSteps) -> None:

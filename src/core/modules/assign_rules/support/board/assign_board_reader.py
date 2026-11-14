@@ -1,8 +1,7 @@
 from dataclasses import replace
 from datetime import timedelta
 
-from engine.enums.agent_role import AgentRole
-from engine.enums.helper_role import HelperRole
+from engine.helper_type.helper_type_book import MAIN_KEY, HelperTypeBook
 from engine.query.queries import Queries
 from engine.time.clock import Clock
 from engine.time.timestamp import Timestamp
@@ -37,8 +36,8 @@ class AssignBoardReader:
     and the rules with their conditions in plain words, what each did in the last day, and a warning when its
     target cannot take its tasks."""
 
-    def __init__(self, queries: Queries, conditions: RuleConditions, tasks: TaskQuery, decisions: AssignDecisionQuery, clock: Clock, warnings: RuleWarnings) -> None:
-        self.queries, self.conditions, self.tasks = queries, conditions, tasks
+    def __init__(self, queries: Queries, conditions: RuleConditions, tasks: TaskQuery, decisions: AssignDecisionQuery, clock: Clock, warnings: RuleWarnings, types: HelperTypeBook) -> None:
+        self.queries, self.conditions, self.tasks, self.types = queries, conditions, tasks, types
         self.decisions, self.clock, self.warnings = decisions, clock, warnings
 
     def read(self) -> AssignBoard:
@@ -65,9 +64,8 @@ class AssignBoardReader:
             return "its agent is gone"
         return "its agent is retired" if agent.retired_at is not None else ""
 
-    @staticmethod
-    def takes_tasks(agent: Agent) -> bool:
-        return agent.role != AgentRole.MAIN and agent.role not in tuple(HelperRole) and agent.retired_at is None
+    def takes_tasks(self, agent: Agent) -> bool:
+        return agent.role != MAIN_KEY and self.types.behaviours(agent.role).takes_tasks and agent.retired_at is None
 
     def agent_target(self, agent: Agent, waiting: str) -> BoardTarget:
         return BoardTarget(f"agent:{agent.id}", RuleTarget.AGENT, AgentLabel.labelled(agent).text, agent_id=agent.id, program=agent.program, program_model=agent.program_model,

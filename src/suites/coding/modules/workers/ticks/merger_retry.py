@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.merger import Merger
 from engine.actor.actor import Actor
 from engine.container.container import Container
 from engine.driver.program_lockdown import ProgramLockdown
@@ -60,7 +61,7 @@ class MergerRetry:
     def is_merger_idle(container: Container) -> bool:
         if not container.get(SettingValues).flag(MERGER_ENABLED):
             return False
-        merger = container.get(Queries).query(Agent).filter(profile=MERGER_PROFILE).matching(IsNull("retired_at")).newest().first()
+        merger = container.get(Queries).query(Agent).filter(role=Merger.key).matching(IsNull("retired_at")).newest().first()
         if merger is None:
             return not MergerRetry.is_profile_program_locked_down(container)
         if container.get(ProgramLockdown).lockdown(merger.program).is_active:

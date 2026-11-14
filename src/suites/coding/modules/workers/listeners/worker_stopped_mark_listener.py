@@ -1,10 +1,10 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.command.bus import Bus
 from engine.event.logged_event import LoggedEvent
 from engine.listener.rows.event_rows import EventRows
 from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from core.modules.agents.events.agent_ended import AgentEnded
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from suites.coding.modules.workers.listeners.worker_stop_mark_listener import WorkerStopMarkListener
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from suites.coding.modules.workers.support.stop_facts_reader import StopFactsReader
@@ -24,7 +24,7 @@ class WorkerStoppedMarkListener(WorkerStopMarkListener[AgentEnded]):
 
     def handle(self, event: AgentEnded, logged: LoggedEvent) -> None:
         worker = event.row
-        if worker.role != CodingHelperRole.WORKER:
+        if worker.role != Worker.key:
             return
         worker_round = self.unfinished.steps.round(worker.id)
         facts = self.stop_facts.read(worker, worker_round, logged.actor_id)

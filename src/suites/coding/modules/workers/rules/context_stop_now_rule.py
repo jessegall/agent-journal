@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
@@ -8,7 +9,6 @@ from engine.scope.actor_scope import ActorScope
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
 from suites.coding.modules.workers.support.worker_nudges import CONTEXT_STOP_AFTER_TASK, CONTEXT_STOP_IMMEDIATE
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.enums.agent_role import AgentRole
 from suites.coding.support.context_limit_check import ContextLimitCheck
 
@@ -22,7 +22,7 @@ class ContextStopNowRule(DriverRule):
     name = "workers.context-limit-stop-now"
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
-    roles = [AgentRole.MAIN, CodingHelperRole.WORKER]
+    roles = [AgentRole.MAIN, Worker.key]
     disabled_scopes = [ActorScope]
 
     def __init__(self, hook_history: HookHistory, limit_check: ContextLimitCheck, tasks: TaskQuery, compaction: WorkerCompaction) -> None:

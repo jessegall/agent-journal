@@ -1,6 +1,7 @@
+from engine.query.conditions.among import Among
+from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.driver.program_lockdown import ProgramLockdown
 from core.modules.settings.bindings.support.context_share import ContextShare
-from engine.enums.helper_role import HelperRole
 from engine.enums.occupant import Occupant
 from engine.database.kept_rows import KeptRows
 from engine.provider.providers import Providers
@@ -27,8 +28,8 @@ class KeptHelpers:
     nearly full. A helper whose profile replaces its session at each launch is idle on any program,
     model and session, because its next launch picks its own. The lowest number comes first."""
 
-    def __init__(self, queries: Queries, providers: Providers, folders: AgentFolders, kept_rows: KeptRows, states: ProgramStates, share: ContextShare, lockdown: ProgramLockdown) -> None:
-        self.lockdown = lockdown
+    def __init__(self, queries: Queries, providers: Providers, folders: AgentFolders, kept_rows: KeptRows, states: ProgramStates, share: ContextShare, lockdown: ProgramLockdown, types: HelperTypeBook) -> None:
+        self.lockdown, self.types = lockdown, types
         self.queries, self.providers, self.folders, self.kept_rows = queries, providers, folders, kept_rows
         self.states, self.share = states, share
 
@@ -44,7 +45,7 @@ class KeptHelpers:
         return self.queries.query(HelperJob).where_null("ended_at")
 
     def kept(self, profile: str) -> tuple[Agent, ...]:
-        helpers = self.queries.query(Agent).filter(role=HelperRole.HELPER, profile=profile).matching(IsNull("retired_at")).newest()
+        helpers = self.queries.query(Agent).filter(profile=profile).matching(Among("role", self.types.read_access_keys())).matching(IsNull("retired_at")).newest()
         return self.kept_rows.read(helpers, lambda: tuple(helpers.every_row(KEPT_HELPERS_REASON)), name="helpers.kept")
 
     def idle(self, selection: ProfileModel, occupant: Occupant) -> tuple[Agent, ...]:

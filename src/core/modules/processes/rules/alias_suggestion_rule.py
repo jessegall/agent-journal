@@ -1,9 +1,9 @@
+from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.enums.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.query.conditions.prefix import Prefix
-from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.process_nudges import ALIAS_SUGGESTION
 
@@ -21,12 +21,12 @@ class AliasSuggestionRule(DriverRule):
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
 
-    def __init__(self, processes: ProcessQuery, suites: SuiteChoice) -> None:
-        self.processes, self.suites = processes, suites
+    def __init__(self, processes: ProcessQuery, types: HelperTypeBook) -> None:
+        self.processes, self.types = processes, types
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is None or hook.role not in self.suites.agent_policy().saved_command_roles:
+        if shell is None or not self.types.behaviours(hook.role).runs_saved_commands:
             return RuleAnswer.allowed()
         commands = [part.text.split()[:SHAPE_TERMS] for part in shell.parts if part.text.split()[0] not in SKIPPED_TERMS and not part.saved_command]
         if not commands:

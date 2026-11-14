@@ -1,7 +1,6 @@
 from collections.abc import Callable, Sequence
 from time import perf_counter
 
-from engine.agent.agent_policy import AgentPolicy
 from engine.container.container import Container
 from engine.driver.agent_hook import AgentHook
 from engine.driver.agent_state import AgentState, StateTier
@@ -49,11 +48,9 @@ class StateBoard:
         layers = [Layer(entry, row) for entry in self.registry.tier_states(driver, int(StateTier.STACK)) for row in self.open_rows(entry)]
         return sorted(layers, key=lambda layer: (layer.row.opened_at, layer.overlay.position, layer.row.row_id), reverse=True)
 
-    # the role check rules use (Registry.driver_rules): the suite's agent policy, or the default one
+    # the role check rules use (Registry.driver_rules): the facts of the hook agent's helper type
     def applies_to_role(self, state: AgentState) -> bool:
-        suite = self.registry.suite(self.hook.suite)
-        policy = suite.agent_policy if suite is not None else AgentPolicy()
-        return state.role_group.has_role(self.hook.role, policy, self.registry.helper_type_book())
+        return state.role_group.has_role(self.hook.role, self.registry.helper_type_book())
 
     def timed_rows(self, entry: AgentStateEntry, state: AgentState) -> Sequence[OpenRow]:
         started_at = self.elapsed()

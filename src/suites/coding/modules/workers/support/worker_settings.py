@@ -6,7 +6,7 @@ from engine.setting.setting_value import SettingValue
 from core.modules.helpers.support.command_pair_rule import CommandPairRule
 from engine.setting.list_rule import ListRule
 from engine.setting.number_rule import NumberRule
-from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
+from suites.coding.support.coding_settings import WORKER_KEPT_LIMIT, WORKER_RUN_LIMIT, WORKER_TEST_LIMIT
 
 from core.modules.asks.support.ask_settings import ASK_ANSWER_MINUTES, ASK_PASS_ON_MINUTES, ASK_VISITS_LIMIT
 
@@ -25,8 +25,6 @@ MERGE_HOOKS_NAME = "merge-hooks"
 MERGE_HOOKS = f"{MODULE_KEY}.{MERGE_HOOKS_NAME}"
 OVERSIGHT_PROFILES_NAME = "oversight-profiles"
 OVERSIGHT_PROFILES = f"{MODULE_KEY}.{OVERSIGHT_PROFILES_NAME}"
-WORKER_RUN_LIMIT = f"{MODULE_KEY}.worker-run-limit"
-WORKER_KEPT_LIMIT = f"{MODULE_KEY}.worker-kept-limit"
 WORKER_INSTRUCTION_FILES_SETTING = f"{MODULE_KEY}.worker-instruction-files"
 DEFAULT_WORKER_COUNT = 2
 SILENT_AGENT_MINUTES = f"{MODULE_KEY}.silent-agent-minutes"

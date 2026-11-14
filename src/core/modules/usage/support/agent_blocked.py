@@ -1,5 +1,5 @@
 from engine.time.timestamp import Timestamp
-from engine.agent.agent_policy import AgentPolicy
+from engine.helper_type.helper_behaviours import HelperBehaviours
 from core.modules.usage.models.agent_card import AgentCard
 
 TASK_BLOCKED_REASON = "its task is blocked"
@@ -14,8 +14,8 @@ class AgentBlocked:
     def __init__(self, seconds: int) -> None:
         self.seconds = seconds
 
-    def reason(self, card: AgentCard, current_time: Timestamp, policy: AgentPolicy) -> str:
-        if card.role in policy.active_task_unblocked_roles and card.started_task_id:
+    def reason(self, card: AgentCard, current_time: Timestamp, behaviours: HelperBehaviours) -> str:
+        if behaviours.started_task_clears_block and card.started_task_id:
             return ""
         if card.task_blocked:
             return TASK_BLOCKED_REASON

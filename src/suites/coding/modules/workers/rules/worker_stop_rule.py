@@ -1,7 +1,7 @@
+from suites.coding.modules.workers.types.worker import Worker
 from suites.coding.modules.workers.models.enums.worker_step import WorkerStep
 from engine.cli.row_numbers import RowNumbers
 from engine.cli.agent_number import AGENT_MODEL_NAME
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.time.clock import Clock
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from suites.coding.support.coding_nudges import WORKER_TASK_STARTED
@@ -30,7 +30,7 @@ class WorkerStopRule(DriverRule):
     name = "workers.stop-once-delivered"
     hook = HookEventName.STOP
     drivers = ["coding.worker"]
-    roles = [CodingHelperRole.WORKER]
+    roles = [Worker.key]
     single_action_refusal = "A worker may stop with no task, at a point of its round that waits, while a run or a helper of its own"
 
     def __init__(self, tasks: TaskQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock, agents: AgentRows, compaction: WorkerCompaction, guidance: WorkerGuidance, numbers: RowNumbers) -> None:
@@ -57,4 +57,4 @@ class WorkerStopRule(DriverRule):
         return RuleAnswer.refused(WORKER_TASK_STARTED.nudge(line=f"{worker_point.line} {HELP_COMMAND_TEXT}"))
 
     def has_running_helper(self, agent_id: int) -> bool:
-        return bool(self.agents.running(CodingHelperRole.HELPER, agent_id))
+        return bool(self.agents.running_with_read_access(agent_id))

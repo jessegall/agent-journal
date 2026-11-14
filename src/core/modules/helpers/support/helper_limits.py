@@ -1,7 +1,8 @@
+from engine.query.conditions.among import Among
+from engine.helper_type.helper_type_book import HELPER_KEY, HelperTypeBook
 from engine.cli.row_numbers import RowNumbers
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.enums.actor_type import ActorType
-from engine.enums.helper_role import HelperRole
 from engine.command.context import Context
 from engine.caller.caller import Caller
 from engine.provider.providers import Providers
@@ -14,7 +15,6 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.usage.support.agent_type_limits import UNLIMITED_AGENT_COUNT, AgentTypeLimits
 from core.modules.agents.support.type_limits import TypeLimits
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
-from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.helpers.support.agent_admission import AgentAdmission
 from core.modules.helpers.support.allowed_models import AllowedModels
 from core.modules.helpers.support.kept_helpers import KeptHelpers
@@ -31,12 +31,12 @@ class HelperLimits:
     """Who may start a helper, on which model, and how many of a profile run or are kept. A helper with an open job
     holds a run place while its resume is on its way, before its session binds."""
 
-    def __init__(self, queries: Queries, settings: SettingValues, suites: SuiteChoice, models: AllowedModels, providers: Providers, agents: AgentRows, standings: AgentStanding, limits: AgentTypeLimits, kept: KeptHelpers, admission: AgentAdmission, numbers: RowNumbers) -> None:
-        self.numbers = numbers
+    def __init__(self, queries: Queries, settings: SettingValues, models: AllowedModels, providers: Providers, agents: AgentRows, standings: AgentStanding, limits: AgentTypeLimits, kept: KeptHelpers, admission: AgentAdmission, numbers: RowNumbers, types: HelperTypeBook) -> None:
+        self.numbers, self.types = numbers, types
         self.admission = admission
         self.limits, self.kept = limits, kept
         self.standings = standings
-        self.queries, self.settings, self.suites, self.models, self.providers, self.agents = queries, settings, suites, models, providers, agents
+        self.queries, self.settings, self.models, self.providers, self.agents = queries, settings, models, providers, agents
 
     def checked_parent(self, context: Context | Caller) -> Agent:
         if context.actor.type is ActorType.AGENT:
@@ -49,7 +49,7 @@ class HelperLimits:
         return main
 
     def checked_agent(self, agent: Agent) -> Agent:
-        if agent.role not in self.suites.agent_policy().dispatch_roles:
+        if not self.types.behaviours(agent.role).dispatches:
             raise Refusal("a read-only helper starts no helper", "say in your report what should be done next")
         return agent
 
@@ -74,13 +74,13 @@ class HelperLimits:
             raise Refusal(f"{limit} of {profile} exist, which is the limit", TypeLimits.kept_limit_suggestion(self.kept.kept(profile)))
 
     def helper_limits(self, profile: str) -> TypeLimits:
-        limits = self.limits.lookup(HelperRole.HELPER, profile)
+        limits = self.limits.lookup(HELPER_KEY, profile)
         if limits is None:
             raise Refusal("no limits are declared for helpers", "a module declares the helper type with its limit settings")
         return limits
 
     def helpers(self, profile: str) -> Query[Agent]:
-        return self.queries.query(Agent).filter(role=HelperRole.HELPER, profile=profile)
+        return self.queries.query(Agent).filter(profile=profile).matching(Among("role", self.types.read_access_keys()))
 
     def checked_new_session(self, profile: str) -> None:
         self.admission.checked_new("helper", profile)

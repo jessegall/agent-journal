@@ -34,10 +34,10 @@ RUN_STOP_LINE = "output stop"
 
 
 class AccessRule(ReadonlyRule):
-    """An agent with read-only access reads, searches and runs journal commands, on every program and under
-    every overlay; a line no one can judge, and a journal line that reaches past the journal, are refused.
-    A file change inside a folder its profile lets it write is allowed, and so is the one thing a request
-    for leave named, once."""
+    """An agent with read-only access reads, searches and runs the journal lines its type lists, on every
+    program and under every overlay; a line no one can judge, a stop of a run it did not start and an edit of
+    a plan it did not write are refused. A file change inside a folder its profile lets it write is allowed,
+    and so is the one thing a request for leave named, once."""
 
     name = "drivers.access"
     drivers = ["*"]
@@ -70,9 +70,10 @@ class AccessRule(ReadonlyRule):
     def reaches_outward(self, shell: ShellLine, agent_id: int) -> bool:
         if shell.has_part_naming(self.identity_variables()):
             return True
-        outward = [part.arguments for part in shell.parts_running_journal_command() if HELP_FLAG not in part.arguments and not self.is_agent_run_stop(part.arguments, agent_id) and self.is_outward(" ".join(part.arguments[:2]))]
-        edits = [self.plan_edit(arguments) for arguments in outward]
-        return any(edit is None for edit in edits) or (bool(edits) and not self.plan_authors.are_authors(agent_id, [edit for edit in edits if edit is not None]))
+        outward = [part.arguments for part in shell.parts_running_journal_command() if HELP_FLAG not in part.arguments and self.is_outward(" ".join(part.arguments[:2]))]
+        foreign_stops = [arguments for arguments in outward if " ".join(arguments[:2]) == RUN_STOP_LINE and not self.is_agent_run_stop(arguments, agent_id)]
+        edits = [edit for edit in (self.plan_edit(arguments) for arguments in outward) if edit is not None]
+        return bool(foreign_stops) or (bool(edits) and not self.plan_authors.are_authors(agent_id, edits))
 
     def is_agent_run_stop(self, arguments: Sequence[str], agent_id: int) -> bool:
         process_id = next((int(word) for word in arguments[2:] if word.isdigit()), None)

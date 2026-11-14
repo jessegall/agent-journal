@@ -73,6 +73,7 @@ from core.modules.helpers.rules.unstarted_helper_rule import UnstartedHelperRule
 from core.modules.helpers.support.helper_settings import HELPER_SETTINGS
 from core.modules.helpers.listeners.helper_job_source_listener import HelperJobSourceListener
 from core.modules.helpers.listeners.deleted_helper_source_listener import DeletedHelperSourceListener
+from core.modules.helpers.types.helper import Helper
 
 
 class HelpersModule(Module):
@@ -87,6 +88,7 @@ class HelpersModule(Module):
     models = [ModelDeclaration(HelperGrant, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(ProviderOutage), ModelDeclaration(UsageLimit, excluded_subcommands=["make"])]
     dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers", "journal.core.usage", "journal.core.chat", "journal.core.skills", "journal.core.settings", "journal.core.processes", "journal.core.environments", "journal.core.tasks", "journal.core.assignments"]
     marks = PROGRAM_MARKS
+    helper_types = [Helper]
     settings = HELPER_SETTINGS
     guards = [UsageCapGuard, ProviderOutageAccessGuard, OpenJobRetireGuard, ProviderOutageProgramGuard, ProgramSplitGuard]
     handlers = [StartUnstartedJobsHandler, ChangeAgentDriverHandler, RecordJobNewSessionHandler, EndAgentLockdownHandler, GrantHelperHandler, RunGrantedCommandHandler, SetUsageLimitHandler, RefreshHourlyLimitsHandler, MakeProviderOutageHandler, SendProgramFaultHandler, StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler, EndProviderOutagesHandler]

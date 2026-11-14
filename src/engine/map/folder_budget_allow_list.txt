@@ -49,7 +49,6 @@ src/core/modules/plugins/commands/plugin_path/support/checkout_path.py sits more
 src/core/modules/processes/commands/read_output/support/output_texts.py sits more than 3 levels below its layer
 src/core/modules/processes/commands/read_output/support/repeat_reads.py sits more than 3 levels below its layer
 src/core/modules/skills/commands/load_skill/support/kept_skills.py sits more than 3 levels below its layer
-src/suites/coding/drivers/worker/rules/worker_command_type_rule.py sits more than 3 levels below its layer
 src/suites/coding/drivers/worker/rules/worker_full_test_run_rule.py sits more than 3 levels below its layer
 src/suites/coding/drivers/worker/rules/worker_git_rule.py sits more than 3 levels below its layer
 src/suites/coding/drivers/worker/rules/worker_task_start_rule.py sits more than 3 levels below its layer

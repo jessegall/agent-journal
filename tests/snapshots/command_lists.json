@@ -1,0 +1,4572 @@
+{
+ "actor delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "actor edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "actor list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "actor make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "actor show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "affected-test list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "affected-test show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent cards": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent control": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent controls": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent driver": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent end": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent environments": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent exited": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent fold-mains": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent interrupted": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent launch": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent limits": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent main": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent main-sessions": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent menu-answer": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent mix": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent pause": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent people": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent profile-limits": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent programs": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent resume": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent retire": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent running": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent running-main-agents": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent sessions": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent standing": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent start": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent start-program": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent stop": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent stop-program": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent terminal": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent tip": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent transcript": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent type": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent-block list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-block show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-block skip": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent-fold list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-fold show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-fold-row show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-line claim": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent-line delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent-line deliver": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent-line drop": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent-line edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent-line enter": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent-line list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-line make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent-line release": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent-line show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-session list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-session show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-skill delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent-skill edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent-skill list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-skill load": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent-skill make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent-skill reset": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "agent-skill show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-skill unread": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "alias add": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "alias edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "alias list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "alias remove": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "alias saved": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "alias show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "alias skip": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "approval accept": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "approval answer": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "approval list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "approval pending": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "approval recover": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "approval refuse": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "approval relay": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "approval show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "ask list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "ask show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "ask-stack approve": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "ask-stack list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "ask-stack show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "ask-step list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "ask-step show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "assign assign": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assign-decision list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "assign-decision record": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assign-decision show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "assign-rule apply": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assign-rule board": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "assign-rule delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assign-rule disable": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assign-rule edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assign-rule enable": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assign-rule give-back": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assign-rule list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "assign-rule make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assign-rule move": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assign-rule reassign": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assign-rule recent": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "assign-rule show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "assign-rule try": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "assign-rule why": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "assign-rule-condition list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "assign-rule-condition show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "assignment delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "assignment list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "assignment show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "attachment list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "behind-check conflict": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "behind-check end": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "behind-check escalate": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "behind-check leave": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "behind-check mark_updated": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "behind-check note_open_failure": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "behind-check note_ordered_failure": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "behind-check order": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "behind-check pause": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "behind-check remind": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "behind-check remind_clash": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "behind-check show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "chat-mark delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "chat-mark edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "chat-mark end": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "chat-mark list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "chat-mark main": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "chat-mark make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "chat-mark show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "check create": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "check edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "check list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "check make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "check remove": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "check run": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "check runs": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "check show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "check start": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "check stop": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "checkpoint-pass list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "checkpoint-pass show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "checkpoint-reach failed": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "checkpoint-reach list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "checkpoint-reach passed": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "checkpoint-reach show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "checkpoint-review list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "checkpoint-review show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "checkpoint-test list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "checkpoint-test show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "command-run-count list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "command-run-count show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "command-type delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "command-type edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "command-type list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "command-type make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "command-type show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "context-compaction list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "context-compaction show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "context-compaction-notice list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "context-compaction-notice show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "countdown list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "countdown show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "demo seed": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "demo start": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "developer hook-requests": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "developer mark-motions": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "developer numbers": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "developer record-mark-motion": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "developer reset-numbers": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "developer system-logs": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "doc close": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "doc comment": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "doc comments": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "doc edit": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "doc inspect": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "doc list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "doc make": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "doc open": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "doc revision": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "doc revisions": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "doc settle": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "doc show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "dock add": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "dock delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "dock edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "dock keep": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "dock list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "dock make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "dock remove": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "dock show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "dock unkeep": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "dock-item delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "dock-item dock": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "dock-item edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "dock-item list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "dock-item main": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "dock-item make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "dock-item read": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "dock-item show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "dock-item undock": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "document library": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver allow-essential": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "driver choose": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "driver show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "dump board": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "dump failed": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "dump filed": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "dump items": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "dump list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "dump make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "dump name": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "dump note": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "dump show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "dump-item board": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "dump-item list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "dump-item show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "environment cards": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "environment delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "environment edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "environment list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "environment make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "environment menu": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "environment show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "event keys": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "event list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "event prune": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "event show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "execution-class list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "execution-class show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "file-edit delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "file-edit file": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "file-edit list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "file-edit record-changes": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "file-edit show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "git-overview branches": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "git-overview commits": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "git-overview current": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "git-overview pulls": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "helper availability": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "helper cold-sessions": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "helper grant": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "helper lifetimes": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "helper run": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "helper send": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "helper start": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "helper stop": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "helper-grant list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "helper-grant show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "helper-job list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "helper-job show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "helper-profile-screen show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "hook-call feed": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "hook-call list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "hook-call show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "hook-call stops": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "hook-timeout-notice list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "hook-timeout-notice show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "hooks give-back": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "instruction-import remove": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "journal-exception list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "journal-exception show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "journal-exception solve": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "library browse": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "library connect": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "library copies": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "library disconnect": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "library get": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "library inspect": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "library leave": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "library list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "library remove": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "library resolve": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "library restore": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "library share": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "library show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "library status": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "library sync": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "library versions": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "library-user add": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "library-user list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "library-user remove": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "library-user revoke": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "library-user role": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "library-user tokens": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "link list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "link receipts": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "link remove": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "managed-hook give-back": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "managed-hook list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "managed-hook remove": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "managed-hook scan": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "managed-hook set": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "map map": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "mcp add": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "mcp check": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "mcp install": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "mcp key": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "mcp list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "mcp remove": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "mcp suggested": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "memory agents": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "memory context": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "memory counts": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "memory delete": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "memory edit": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "memory faded": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "memory list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "memory make": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "memory page": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "memory read": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "memory remove": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "memory restore": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "memory show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "memory skip": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "memory weigh": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "memory-delivery list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "memory-delivery show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "memory-keyword delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "memory-keyword edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "memory-keyword list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "memory-keyword make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "memory-keyword show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "memory-mark list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "memory-mark show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "menu-answer list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "menu-answer show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merge-ask list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merge-ask show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merge-followup list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merge-followup show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merge-request list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merge-request show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merger advise": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merger answer": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merger behind": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merger defer-test": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merger findings": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merger leave": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merger merge": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merger next": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merger pass": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merger repair": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merger scope": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merger tell": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merger update": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merger-line list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "merger-line show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "message agent-reports": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "message clear-work-source": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "message comment": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "message conversations": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "message delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "message edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "message feed": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "message flowchart": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "message list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "message react": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "message read": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "message reply": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "message reports": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "message send": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "message show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "message tag": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "message unread": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "message work-from": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "message work-source": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "nudge list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "nudge-record list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "nudge-record show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "output ask-reader": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "output confirm": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "output hook-page": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "output list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "output page": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "output peek": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "output read": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "output readable": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "output show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "output status": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "output stop": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "output timeout": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "output title": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "output unreadable": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "output unwatch": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "output watch": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "overview overview": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "overview-read list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "overview-read show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "permission allow": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "permission ask": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "permission decline": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "permission-request list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "permission-request show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "person-preset list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "person-preset remove": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "person-preset rename": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "person-preset save": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "person-preset show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "phase delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "phase edit": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "phase list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "phase make": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "phase move": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "phase place": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "phase show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "phase-task delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "phase-task list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "phase-task show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "phase-test-deferral list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "phase-test-deferral show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "phone delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "phone list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "phone pair": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "phone push-key": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "phone redeem": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "phone session": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "phone show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "phone subscribe": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "phone unpair": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "phone-code spend": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "pin close": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "pin list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "pin make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "pin show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plan approve": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plan approve-checkpoint": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plan assign": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plan block": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plan board": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plan cancel": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plan check": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plan close": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plan comment": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plan comments": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plan context": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "plan delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plan edit": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plan focus": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plan inspect": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plan list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plan make": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plan outline": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plan place": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plan places": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plan progress": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plan ready": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plan review-tip": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plan rework": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plan rounds": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plan show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plan start": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plan timeline": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plan unblock": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plugin card": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plugin changes": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plugin checkout": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plugin config": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plugin configure": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plugin dashboard": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plugin dashboards": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plugin descriptions": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plugin disable": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plugin enable": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plugin events": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plugin file": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plugin install": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plugin latest": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plugin list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plugin log": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plugin path": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plugin preview": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plugin propose": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plugin queue": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plugin queue-cancel": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plugin queue-read": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plugin queue-show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plugin record": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plugin remove": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plugin run": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plugin service": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plugin service-log": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plugin services": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plugin settings": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "plugin try": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "plugin upgrade": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "private-data-mark list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "private-data-mark show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "process background": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "process card": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "process delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "process edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "process end": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "process feed": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "process holds": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "process journal_merge_fail": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "process journal_merge_finish": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "process lift-hold": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "process list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "process orphan": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "process part-end": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "process part-start": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "process sandbox": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "process show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "process-part delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "process-part list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "process-part show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "profile list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "profile remove": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "profile reset": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "profile save": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "profile show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "profile skills": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "program command": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "program manage": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "program trust": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "project-file find": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "project-file grep": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "project-file list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "project-file show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "project-worktree list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "project-worktree remove": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "proof check": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "proof edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "proof end_with_worktree": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "proof list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "proof make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "proof points": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "proof revise": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "proof short": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "proof show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "provider-outage delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "provider-outage edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "provider-outage end": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "provider-outage list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "provider-outage make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "provider-outage show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "question answer": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "question ask": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "question close": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "question delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "question edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "question list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "question show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "queue halt": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "queue inspect": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "queue list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "queue resume": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "queue-class add": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "queue-class lanes": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "queue-class list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "queue-class preset": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "queue-class presets": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "queue-class preview": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "queue-class remove": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "queue-class reset": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "queue-class set": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "queue-class show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "reader add": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "reader default": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "reader draft": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "reader list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "reader readable": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "reader remove": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "reader show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "reader unreadable": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "reader-request list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "reader-request show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "reader-request waive": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "reading-decision list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "reading-decision show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "refusal approve": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "refusal confirm": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "refusal decline": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "refusal list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "refusal restore": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "refusal show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "refusal skip": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "refusal withdraw": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "refusal-skip list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "refusal-skip show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "release list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "release show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "release-install list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "release-install show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "reminder delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "reminder list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "reminder make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "reminder show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "reminder-pass list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "reminder-pass show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "report close": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "report comment": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "report comments": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "report edit": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "report inspect": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "report list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "report make": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "report show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "request-run list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "request-run show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "review abandon": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "review approve": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "review assign": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "review board": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "review delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "review edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "review leave_undecided": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "review list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "review make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "review record": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "review reject": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "review request": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "review show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "review-point delete": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "review-point edit": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "review-point list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "review-point make": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "review-point show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "review-step board": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "review-step list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "review-step show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "reviewer add": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "reviewer end": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "reviewer finish": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "reviewer list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "reviewer retire": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "reviewer show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "reviewer start": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "rule approve": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "rule delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "rule deny": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "rule edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "rule list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "rule make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "rule remove": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "rule show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "rule-history delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "rule-history list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "rule-history show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "scheduled-job list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "scheduled-job running": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "scheduled-job show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "scheduled-job stop": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "search find": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "secret allow": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "secret delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "secret fill": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "secret list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "secret make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "secret propose": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "secret request": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "secret run": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "secret show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "secret store": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "secret update": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "secret-setting delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "secret-setting edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "sequence abandon": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "sequence board": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "sequence delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "sequence edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "sequence follow": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "sequence list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "sequence make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "sequence next": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "sequence run": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "sequence show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "sequence-run list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "setting delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "setting edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "setting list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "setting make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "setting request": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "setting set": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "setting show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "setting switch": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "setting tree": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "setting-request list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "setting-request show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "setting-screen apply": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "setting-screen index": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "setting-screen show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "share accept": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "share comment": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "share comments": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "share delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "share deny": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "share list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "share make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "share opens": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "share revoke": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "share session": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "share show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "share unlock": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "share viewed": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "share-comment list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "share-comment show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "skill list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "skill require": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "skill required": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "skill requirements": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "skill set-required": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "skill show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "skill write": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "standing-approval delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "standing-approval list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "standing-approval show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "statistic list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "suggestion answer": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "suggestion list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "suggestion show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "suite check": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "suite choose": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "suite current": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "suite layout": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "suite list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "suite presets": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "suite show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "task assign": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "task block": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "task board": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "task cancel": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "task close": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "task comment": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "task comments": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "task context": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "task counts": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "task delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "task depend": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "task edit": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "task focus": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "task graph": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "task info": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "task inspect": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "task list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "task log": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "task make": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "task next": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "task overview": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "task release": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "task release_holder": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "task remove-dependency": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "task reopen": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "task retest": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "task show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "task start": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "task tag": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "task tags": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "task test": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "task unblock": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "task untag": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "task waits-on-nothing": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "task-block-renewal list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "task-block-renewal show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "task-dependency delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "task-dependency edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "task-dependency list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "task-dependency make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "task-dependency show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "task-log delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "task-log edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "task-log list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "task-log make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "task-log show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "task-tag list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "task-tag show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "task-wait list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "task-wait show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "template delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "template edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "template list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "template make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "template send": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "template show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "todo-item list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "todo-item show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "tool install": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "tool list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "tool off": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "tool on": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "tool refresh": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "tool tick": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "transcription delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "transcription edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "transcription fetch": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "transcription link": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "transcription list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "transcription make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "transcription show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "transcription sources": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "trigger edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "trigger enable": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "trigger list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "trigger make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "trigger pause": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "trigger schedule": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "trigger show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "trigger strike": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "trigger try": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "tunler domains": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "tunler install": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "tunler login": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "tunler logout": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "tunler release": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "tunler status": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "tunler update": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "tunler version": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "tunnel status": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "unassign unassign": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "unreadable-mark list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "unreadable-mark show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "update check": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "update install": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "update notes": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "update step": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "usage agent": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "usage agents": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "usage bars": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "usage fitness": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "usage inspector": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "usage own-messages": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "usage show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "usage tool": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "usage-limit delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "usage-limit edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "usage-limit list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "usage-limit set": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "usage-limit show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "viewer-layout current": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "viewer-layout delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "viewer-layout list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "viewer-layout save": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "viewer-layout show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "voice address": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "voice choose": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "voice list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "voice show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "wait delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "wait edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "wait end": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "wait list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "wait on": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "wait resume": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "wait show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "wait stuck": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "wait waiting": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "wait-target delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "wait-target list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "wait-target show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "watch delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "watch edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "watch end": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "watch list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "watch make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "watch show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "window allow": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "window permissions": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "window save-setting": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "window search": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "window setting": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "window trust": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "window-permission delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "window-permission list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "window-permission make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "window-permission show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "work-settings apply": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "work-settings preset": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "work-settings show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "worker ask": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "worker ask-merge": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "worker commit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "worker deliver": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "worker dispatch": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "worker injections": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "worker logs": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "worker merge": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "worker models": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "worker next": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "worker presets": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "worker progress": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "worker release": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "worker report": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "worker sandbox": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "worker send": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "worker split": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "worker status": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "worker test": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "allowed"
+ },
+ "worker update": {
+  "helper": "refused",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "worker waits": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "allowed"
+ },
+ "worker-operation list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "worker-operation run": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "worker-operation show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "worker-refusal-count delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "worker-refusal-count edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "worker-refusal-count list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "worker-refusal-count make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "worker-refusal-count show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "worker-route delete": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "worker-route edit": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "worker-route list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "worker-route make": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "worker-route move": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ },
+ "worker-route show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "worker-worktree list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "worker-worktree points": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "worker-worktree show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "worktree prepare": {
+  "helper": "refused",
+  "merger": "refused",
+  "worker": "refused"
+ }
+}

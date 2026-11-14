@@ -348,7 +348,7 @@ def test_a_passed_checkpoint_launches_its_read_only_reviewer_on_the_sonnet_model
     launcher.server.close()
     review = rows(story, REVIEWS)[0]
     story.expect_rows((review["plan_id"], review["phase_id"], review["program"], review["program_model"], review["report"]) == (1, 3, "claude", "sonnet", ""), detail=str(review))
-    story.expect_text(f"agent show {agent_number(story, review['reviewer_id'])}", "role: reviewer", "access: read", "program_model: sonnet", actor=story.user)
+    story.expect_text(f"agent show {agent_number(story, review['reviewer_id'])}", "role: helper", "access: read", "program_model: sonnet", actor=story.user)
     expect_value(len(launcher.starts), 1)
     command = " ".join(launcher.starts[0]["command"])
     story.expect_rows("sonnet" in command, "phase Check of plan 1" in command, detail=command)

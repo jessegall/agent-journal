@@ -32,10 +32,13 @@ from engine.database.points import Points
 from engine.module.performance_tools import PerformanceTools
 from collections.abc import Callable
 from engine.database.database import Database
+from engine.database.schema import Schema
 from engine.driver.hook_event import HookEvent
 from engine.driver.hook_reply import HookReply
 from engine.driver.hook_route import HookRoute
 from engine.command.script_policy import ScriptPolicy
+from engine.command.bus import Bus
+from engine.command.command import Command
 from engine.module.journal_container import synced_container
 from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from engine.hosting.hosting import Hosting
@@ -85,6 +88,7 @@ STORY_ROWS_REASON = "the story kit lists every row of a table for an assertion"
 
 
 M = TypeVar("M", bound=Model)
+R = TypeVar("R")
 S = TypeVar("S")
 
 COMMITTING_JOURNAL = StoryJournal()
@@ -147,6 +151,10 @@ class Story:
     def helper(self, helper: Actor) -> None:
         self.state = replace(self.state, helper=helper)
 
+    @staticmethod
+    def agent_actor(agent_id: int) -> Actor:
+        return Actor(agent_id, ActorType.AGENT)
+
     def close(self) -> None:
         self.container.get(Database).close()
         self.journal.discard_writes()
@@ -189,6 +197,15 @@ class Story:
 
     def story_rows(self, model: type[M], **values: object) -> tuple[M, ...]:
         return tuple(self.container.get(Queries).query(model).filter(**values).matching(Minimum(ID_COLUMN, 1)).every_row(STORY_ROWS_REASON))
+
+    def run_command(self, command: Command[R], actor: Actor, environment_id: int) -> R:
+        return self.container.get(Bus).run(command, actor, environment_id=environment_id)
+
+    def expect_agent_group(self, helper_type: str, profile: str, group: str) -> None:
+        self.checked(f"agent group of {helper_type} {profile}")
+        registry = self.container.get(Registry)
+        group_entry = registry.agent_group_book().group(registry.helper_type_book().find(helper_type), profile)
+        self.expected(group_entry is not None and group_entry.key == group, f"{helper_type} with profile {profile} is in group {group_entry.key if group_entry else 'none'}, not {group}")
 
     def use_fixture_environment(self, name: str | None) -> None:
         self.fixture_environment = name
@@ -462,8 +479,55 @@ class Story:
         providers = [provider for provider in Registry.read(self.container.get(Database)).providers if provider.name == name]
         self.expected([provider.module for provider in providers] == [module], f"agent program {name} is registered as {providers}")
 
+    def expect_helper_type_extends(self, key: str, base: str) -> None:
+        self.checked(f"helper type {key} extends {base}")
+        book = Registry.read(self.container.get(Database)).helper_type_book()
+        self.expected(book.extends(key, base), f"helper type {key} does not extend {base}: {book.find(key)}")
+
+    def expect_unrelated_helper_types(self, key: str, base: str) -> None:
+        self.checked(f"helper type {key} apart from {base}")
+        book = Registry.read(self.container.get(Database)).helper_type_book()
+        self.expected(not book.extends(key, base), f"helper type {key} extends {base}: {book.find(key)}")
+
+    def expect_registered_helper_type(self, key: str, **fields: object) -> None:
+        self.checked(f"registered helper type {key}")
+        stored = self.registered_helper_types()
+        registered = {name: stored[key].get(name) for name in fields} if key in stored else {}
+        self.expected(registered == fields, f"helper type {key} is registered as {stored.get(key)}")
+
+    def expect_helper_type_behaviours(self, key: str, **answers: bool) -> None:
+        self.checked(f"behaviours of helper type {key}")
+        behaviours = self.registered_helper_types().get(key, {}).get("behaviours", {})
+        registered = {name: behaviours.get(name) for name in answers} if isinstance(behaviours, dict) else {}
+        self.expected(registered == answers, f"helper type {key} has the behaviours {behaviours}")
+
+    def expect_helper_type_field_absent(self, key: str, field: str) -> None:
+        self.checked(f"helper type {key} without {field}")
+        stored = self.registered_helper_types()
+        self.expected(key in stored and field not in stored[key], f"helper type {key} is registered as {stored.get(key)}")
+
+    def expect_suite_field_absent(self, name: str, field: str) -> None:
+        self.checked(f"suite {name} without {field}")
+        suites = {entry["name"]: entry for entry in json.loads(Registry.read(self.container.get(Database)).entries_text())["suites"]}
+        self.expected(name in suites and field not in suites[name], f"suite {name} is registered as {suites.get(name)}")
+
+    def registered_helper_types(self) -> dict[str, dict[str, object]]:
+        entries = json.loads(Registry.read(self.container.get(Database)).entries_text())["helper_types"]
+        return {entry["key"]: entry for entry in entries}
+
     def expect_logged_event(self, name: str) -> None:
         self.expected(self.container.get(EventLog).latest_event(name) is not None, f"no {name} event was logged")
+
+    def rerun_migration(self, module: str, number: int) -> None:
+        self.container.get(Schema).remove_migration_record(module, number)
+        code, output_text = self.synced()
+        self.expected(code == 0, f"module sync after forgetting {module} migration {number} gave {code}: {output_text}")
+
+    def expect_sync_without(self, module: str) -> None:
+        modules = json.loads(FileAccess.read(self.home.module_list))
+        FileAccess.write(self.home.module_list, json.dumps([listed for listed in modules if listed != module]))
+        code, output_text = self.synced()
+        self.expected(code == 0, f"module sync without {module} gave {code}: {output_text}")
 
     def synced_with(self, module: str) -> tuple[int, str]:
         modules = json.loads(FileAccess.read(self.home.module_list))

@@ -1,13 +1,13 @@
+from engine.enums.access import Access
 from dataclasses import dataclass
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.enums.helper_role import HelperRole
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import END_CHANGE, Model
 from engine.model.errors.model_error import ModelError
 from engine.time.timestamp import Timestamp
 from engine.agent.agent_name import AgentName
-from engine.agent.agent_policy import AgentPolicy
+from engine.helper_type.helper_behaviours import HelperBehaviours
 from core.modules.agents.models.enums.agent_activity import AgentActivity
 from core.modules.agents.models.enums.standing_state import StandingState
 from engine.agent.agent_name import MAIN_ROLE
@@ -81,7 +81,7 @@ class Agent(EnvironmentScoped, Model):
 
     @property
     def is_kept_helper(self) -> bool:
-        return self.role == HelperRole.HELPER and bool(self.profile) and self.retired_at is None
+        return not self.is_main and self.access == Access.READ and bool(self.profile) and self.retired_at is None
 
     def change_name(self, old_row: Model | None) -> str | None:
         if not isinstance(old_row, Agent):
@@ -100,8 +100,8 @@ class Agent(EnvironmentScoped, Model):
             raise ModelError(f"{self.display_name} has no parent agent")
         return self.parent_id
 
-    def ended(self, timestamp: Timestamp, policy: AgentPolicy) -> "Agent":
-        return self.changed(ended_at=timestamp, paused_at=self.paused_at if self.role in policy.pause_retention_roles else None)
+    def ended(self, timestamp: Timestamp, behaviours: HelperBehaviours) -> "Agent":
+        return self.changed(ended_at=timestamp, paused_at=self.paused_at if behaviours.retains_pause else None)
 
     def is_foreign_helper(self, actor: Actor) -> bool:
         return actor.type is ActorType.AGENT and self.parent_id != actor.id

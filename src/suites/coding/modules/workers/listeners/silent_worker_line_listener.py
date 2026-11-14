@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.worker import Worker
 from engine.actor.actor import Actor
 from engine.event.created import Created
 from engine.event.logged_event import LoggedEvent
@@ -8,7 +9,6 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from suites.coding.modules.workers.support.worker_job import SILENT_AGENT_SOURCE
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 
 
 class SilentWorkerLineListener(CommitListener[Created[AgentLine]]):
@@ -24,5 +24,5 @@ class SilentWorkerLineListener(CommitListener[Created[AgentLine]]):
         if event.row.source != SILENT_AGENT_SOURCE:
             return
         worker = self.queries.query(Agent).find(event.row.session_agent_id)
-        if worker.role == CodingHelperRole.WORKER:
+        if worker.role == Worker.key:
             self.worker_resume.restart(worker, event.row, Actor.core())

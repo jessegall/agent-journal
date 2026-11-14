@@ -32,7 +32,7 @@ def test_an_idle_helper_is_retired_with_its_reason_through_the_agents_window(hel
 def test_an_idle_helper_and_a_retired_agent_open_the_same_view_without_a_row_of_buttons(helper_form_server):
     server, helper = helper_form_server
     story = server.story
-    retired = story.new_row_id("agent start finished-reviewer claude reviewer --environment main")
+    retired = story.new_row_id("agent start finished-reviewer claude merger --environment main")
     story.expect_success(f"agent end {retired}", actor=story.user)
     story.expect_success(f'agent retire {agent_number(story, retired)} --reason "Its question is answered"', actor=story.user)
     expect_browser(server, "agentActions.browser.mjs", [str(helper.id), str(retired), "/tmp/worker-675-agent-actions"])

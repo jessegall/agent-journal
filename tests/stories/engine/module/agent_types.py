@@ -14,12 +14,9 @@ MODULES = "tests.stories.engine.module.support.agent_type_modules"
     ("MissingDependency", "does not depend on journal.core.agents"),
     ("InvalidRoster", "roster does not implement AgentRoster"),
     ("UnknownBase", "extends missing-base, which no module registers"),
-    ("Loop", "extends loop"),
     ("WritingHelper", "writing helper needs its own folder"),
     ("WritingDescendant", "writing helper needs its own folder"),
     ("DriverRole", "missing-driver-role is no registered helper type"),
-    ("DefaultRole", "missing-default-role is no registered helper type"),
-    ("PolicyRole", "missing-policy-role is no registered helper type"),
     ("RuleRole", "missing-rule-role is no registered helper type"),
 ])
 def test_sync_refuses_an_invalid_helper_type_before_writing_the_registry(new_story, module, message):

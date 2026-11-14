@@ -1,12 +1,12 @@
 from enum import StrEnum
 
-from engine.agent.agent_policy import AgentPolicy
+from engine.helper_type.helper_behaviours import HelperBehaviours
 from engine.helper_type.helper_type_book import HelperTypeBook
 
 
 class RoleGroup(StrEnum):
-    """A group of agent roles whose members a suite declares, or, for read-only helpers, whose members the
-    registered helper types say by their access. A rule that names AgentRole.HELPER in its roles covers
+    """A group of agent roles whose members the registered helper types say by one of their behaviours, or, for
+    read-only helpers, by their access. A rule that names AgentRole.HELPER in its roles covers
     every helper of any kind; one that holds only for read-only helpers says so with READ_ONLY_HELPERS."""
 
     ANY = "any"
@@ -17,22 +17,22 @@ class RoleGroup(StrEnum):
     DISPATCH = "dispatch"
     HELPERS = "read-only-helpers"
 
-    def roles(self, policy: AgentPolicy) -> tuple[str, ...]:
+    def covers(self, behaviours: HelperBehaviours) -> bool:
         match self:
             case RoleGroup.TASK:
-                return policy.task_roles
+                return behaviours.takes_tasks
             case RoleGroup.PROMPT:
-                return policy.prompt_roles
+                return behaviours.takes_prompts
             case RoleGroup.MARK:
-                return policy.mark_roles
+                return behaviours.takes_marks
             case RoleGroup.PLUGIN:
-                return policy.plugin_roles
+                return behaviours.runs_plugins
             case RoleGroup.DISPATCH:
-                return policy.dispatch_roles
+                return behaviours.dispatches
             case RoleGroup.ANY | RoleGroup.HELPERS:
-                return ()
+                return False
 
-    def has_role(self, role: str, policy: AgentPolicy, helper_types: HelperTypeBook) -> bool:
+    def has_role(self, role: str, helper_types: HelperTypeBook) -> bool:
         if self is RoleGroup.HELPERS:
             return role in helper_types.read_access_keys()
-        return self is RoleGroup.ANY or role in self.roles(policy)
+        return self is RoleGroup.ANY or self.covers(helper_types.behaviours(role))

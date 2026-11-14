@@ -1,6 +1,24 @@
+from engine.helper_type.command_allow_list import CommandAllowList
+from dataclasses import fields
+
 from engine.module.suite import Suite
+from engine.helper_type.helper_behaviours import HelperBehaviours
 from engine.helper_type.helper_type import HelperType
 from engine.module.module import Module
+
+
+class Scout(HelperType):
+    key = "scout"
+    label = "Scout"
+    behaviours = HelperBehaviours(**{field.name: False for field in fields(HelperBehaviours)})
+    commands = CommandAllowList()
+
+
+class DepotScout(HelperType):
+    key = "scout"
+    label = "Depot scout"
+    behaviours = Scout.behaviours
+    commands = CommandAllowList()
 
 
 class ShopModule(Module):
@@ -26,7 +44,7 @@ class ShopSuite(Suite):
 
     name = "shop"
     modules = [ShopModule, CartsModule]
-    helper_types = [HelperType("scout", "Scout")]
+    helper_types = [Scout]
 
 
 class DepotSuite(Suite):
@@ -41,7 +59,7 @@ class DepotScoutSuite(Suite):
 
     name = "depot"
     modules = [DepotModule]
-    helper_types = [HelperType("scout", "Depot scout")]
+    helper_types = [DepotScout]
 
 
 class YardModule(Module):

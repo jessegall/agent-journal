@@ -42,7 +42,7 @@ def test_agent_rows_keep_creation_order_when_states_and_activity_change(new_stor
     story.advance(timedelta(seconds=1))
     middle = story.new_row_id("agent start middle codex worker --environment main")
     story.advance(timedelta(seconds=1))
-    newest = story.new_row_id("agent start newest claude reviewer --environment main")
+    newest = story.new_row_id("agent start newest claude merger --environment main")
     story.run(f"agent end {middle}")
     story.run(f"agent edit {agent_number(story, oldest)} --paused-at {story.clock.timestamp().text}")
     expect_card_order(story, "all", oldest, middle, newest)
@@ -77,7 +77,7 @@ def test_agent_filters_leave_out_main_agents_and_include_finished_helpers(new_st
     story = new_story(fixture=UserBuilder)
     main = story.new_row_id("agent start main-session claude main --environment main")
     helper = story.new_row_id("agent start helper-session claude helper --environment main")
-    reviewer = story.new_row_id("agent start review-session claude reviewer --environment main")
+    reviewer = story.new_row_id("agent start review-session claude merger --environment main")
     worker = story.new_row_id("agent start worker-session codex worker --environment main")
     running_helper = story.new_row_id("agent start running-helper claude helper --environment main")
     running_worker = story.new_row_id("agent start running-worker codex worker --environment main")
@@ -118,10 +118,10 @@ class StatesAgents(StoryFixture):
         worker = story.new_row_id(f"agent start idle-worker codex worker --parent {story.agent.id} --environment main")
         story.expect_success('worker report "The worker found a repeated calculation."', actor=Actor(worker, ActorType.AGENT))
         story.expect_success(f"agent end {worker}", actor=story.user)
-        retired = story.new_row_id("agent start retired-reviewer claude reviewer --environment main")
+        retired = story.new_row_id("agent start retired-reviewer claude merger --environment main")
         story.expect_success(f"agent end {retired}", actor=story.user)
         story.expect_success(f'agent retire {agent_number(story, retired)} --reason "{UPGRADE_RETIREMENT_REASON}"', actor=story.user)
-        story.expect_success("agent start working-reviewer claude reviewer --environment main")
+        story.expect_success("agent start working-reviewer claude merger --environment main")
 
 
 @pytest.fixture
@@ -164,7 +164,7 @@ def test_agent_tabs_keep_old_agents_details_on_later_pages(agents_window_server)
     story = server.story
     helper = helper_agent(story)
     for number in range(51):
-        agent = story.new_row_id(f"agent start later-{number} claude reviewer --environment main")
+        agent = story.new_row_id(f"agent start later-{number} claude merger --environment main")
         story.expect_success(f"agent end {agent}", actor=story.user)
     answer = server.viewer_line_value(cookie, {"window": "agents.agents", "environment": "main", "line": ["agent", "cards", "--show", "all", "--limit", "1"]})
     row = answer["rows"][0]

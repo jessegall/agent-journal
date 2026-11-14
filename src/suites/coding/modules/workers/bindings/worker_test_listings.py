@@ -1,7 +1,6 @@
 from engine.actor.actor import Actor
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.support.output_folder import OutputFolder
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
 from engine.enums.command_category import CommandCategory
 from engine.query.queries import Queries
 from engine.command.bus import Bus
@@ -13,6 +12,7 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
 from engine.setting.setting_values import SettingValues
+from engine.helper_type.helper_type_book import HelperTypeBook
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 from core.modules.processes.support.run_counts import RunCounts
 from core.modules.processes.support.reader_selection import ReaderSelection
@@ -32,16 +32,16 @@ LISTINGS_REASON = "the count of a test command comes from the newest kept output
 class WorkerTestListings(RunCounts):
     """Builds per-part listings and adds their counts for a queued worker run."""
 
-    def __init__(self, queries: Queries, settings: SettingValues, run: ReaderRun, folder: OutputFolder, outputs: OutputQuery, readers: ReaderRows, visibility: RunVisibility, rows: EventRows, bus: Bus, nudger: Nudger, worker_runs: WorkerOwnRuns) -> None:
+    def __init__(self, queries: Queries, settings: SettingValues, run: ReaderRun, folder: OutputFolder, outputs: OutputQuery, readers: ReaderRows, visibility: RunVisibility, rows: EventRows, bus: Bus, nudger: Nudger, worker_runs: WorkerOwnRuns, types: HelperTypeBook) -> None:
         self.queries, self.settings, self.run, self.folder, self.outputs, self.readers, self.visibility, self.rows = queries, settings, run, folder, outputs, readers, visibility, rows
-        self.bus, self.nudger, self.own_runs = bus, nudger, worker_runs
+        self.bus, self.nudger, self.own_runs, self.types = bus, nudger, worker_runs, types
 
     def parts(self, process: Process) -> tuple[PartTestListing, ...]:
         agent = self.rows.required(Agent, process.session_agent_id)
         return self.output_parts(process, self.outputs.process_output(process.id)) if self.is_counted(process, agent) else ()
 
     def is_counted(self, process: Process, agent: Agent) -> bool:
-        return process.is_queue_run and self.own_runs.is_worker_run(process) and self.settings.number(WORKER_TEST_LIMIT) > 0 and agent.role == CodingHelperRole.WORKER
+        return process.is_queue_run and self.own_runs.is_worker_run(process) and self.settings.number(WORKER_TEST_LIMIT) > 0 and self.types.behaviours(agent.role).queues_runs
 
     def output_parts(self, process: Process, output: Output | None) -> tuple[PartTestListing, ...]:
         readers = self.readers.all()
@@ -57,7 +57,7 @@ class WorkerTestListings(RunCounts):
     def count_missing(self, process: Process, part: ProcessPart) -> bool:
         if part.category is not CommandCategory.TEST_RUN or self.settings.number(WORKER_TEST_LIMIT) <= 0:
             return False
-        if self.rows.required(Agent, process.session_agent_id).role != CodingHelperRole.WORKER:
+        if not self.types.behaviours(self.rows.required(Agent, process.session_agent_id).role).queues_runs:
             return False
         return self.counting_reader(part, None, self.readers.all()) is None
 

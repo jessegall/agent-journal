@@ -1,4 +1,4 @@
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
+from suites.coding.modules.workers.types.worker import Worker
 from engine.listener.save_listener import SaveListener
 from engine.query.queries import Queries
 from engine.scope.actor_scope import ActorScope
@@ -32,5 +32,5 @@ class ReaderSampleReadyListener(SaveListener[Updated[ReaderRequest]]):
         if sample.ended_at is None:
             return
         reader = self.queries.query(Reader).find(request.reader_id)
-        if self.queries.query(Agent).find(sample.session_agent_id).role == CodingHelperRole.WORKER:
+        if self.queries.query(Agent).find(sample.session_agent_id).role == Worker.key:
             self.nudger.send(sample.session_agent_id, READER_SAMPLE_READY, WORKER_JOB_SOURCE, context, output=sample.id, reader=reader.name)

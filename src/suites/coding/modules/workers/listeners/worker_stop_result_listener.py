@@ -1,4 +1,4 @@
-from suites.coding.models.enums.coding_helper_role import CodingHelperRole
+from suites.coding.modules.workers.types.worker import Worker
 from core.modules.drivers.events.stop_denied import StopDenied
 from engine.listener.save_listener import SaveListener
 from engine.query.queries import Queries
@@ -22,7 +22,7 @@ class WorkerStopResultListener(SaveListener[StopAllowed | StopDenied]):
 
     def handle(self, event: StopAllowed | StopDenied, context: Context) -> None:
         call = event.row
-        if self.queries.query(Agent).find(call.session_agent_id).role != CodingHelperRole.WORKER:
+        if self.queries.query(Agent).find(call.session_agent_id).role != Worker.key:
             return
         worktree = self.worktrees.worker_worktree(call.session_agent_id)
         if worktree is None:

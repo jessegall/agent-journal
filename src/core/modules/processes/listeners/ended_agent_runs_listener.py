@@ -1,5 +1,5 @@
+from engine.helper_type.helper_type_book import HelperTypeBook
 from core.modules.agents.events.agent_ended import AgentEnded
-from core.modules.drivers.support.suite_choice import SuiteChoice
 from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.listener.commit.commit_listener import CommitListener
@@ -17,13 +17,13 @@ class EndedAgentRunsListener(CommitListener[AgentEnded]):
 
     name = "processes.ended-agent-runs"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, processes: ProcessQuery, queries: Queries, suites: SuiteChoice) -> None:
+    def __init__(self, bus: Bus, actors: ModuleActors, processes: ProcessQuery, queries: Queries, types: HelperTypeBook) -> None:
         self.bus, self.actors, self.processes, self.queries = bus, actors, processes, queries
-        self.suites = suites
+        self.types = types
 
     def handle(self, event: AgentEnded, logged: LoggedEvent) -> None:
         agent = event.row
-        if agent.role in self.suites.agent_policy().continuing_run_roles:
+        if self.types.behaviours(agent.role).continues_runs:
             return
         for process in tuple(self.processes.agent(logged.row_id).running().every_row(ORPHANED_RUNS_REASON)):
             self.bus.run(OrphanProcess(process.id), self.actors.actor(MODULE_NAME), cause_id=logged.id)

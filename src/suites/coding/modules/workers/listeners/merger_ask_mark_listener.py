@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.types.merger import Merger
 from engine.event.created import Created
 from engine.event.logged_event import LoggedEvent
 from engine.scope.actor_scope import ActorScope
@@ -8,7 +9,6 @@ from suites.coding.modules.workers.models.enums.worker_mark_type import WorkerMa
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from suites.coding.modules.workers.commands.forward_worker_questions.forward_worker_questions_handler import JOURNAL_QUESTION_START
 from suites.coding.modules.workers.support.main_agent_question import QUESTION_START
-from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
 
 
 class MergerAskMarkListener(MarkListener[Created[Message]]):
@@ -28,7 +28,7 @@ class MergerAskMarkListener(MarkListener[Created[Message]]):
             self.show_journal_question(message, logged)
             return
         sender = self.event_rows.required(Agent, message.session_agent_id)
-        if sender.profile == MERGER_PROFILE:
+        if sender.role == Merger.key:
             self.show(logged, WorkerMarkType.WORKER, WorkerMarkVariant.MERGER_QUESTION, "The merger asks the main agent", None, AGENTS_TABLE, sender.id, detail=message.text)
 
     def show_journal_question(self, message: Message, logged: LoggedEvent) -> None:

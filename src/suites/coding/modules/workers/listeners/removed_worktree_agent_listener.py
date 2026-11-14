@@ -1,4 +1,3 @@
-from engine.enums.helper_role import HelperRole
 from engine.command.bus import Bus
 from engine.listener.save_listener import SaveListener
 from engine.listener.rows.event_rows import EventRows
@@ -27,7 +26,7 @@ class RemovedWorktreeAgentListener(SaveListener[Changed[Worktree]]):
         worktree = event.row
         if worktree.state is not WorktreeState.REMOVED:
             return
-        for helper in self.agents.running(HelperRole.HELPER, worktree.session_agent_id):
+        for helper in self.agents.running_with_read_access(worktree.session_agent_id):
             self.bus.dispatch(EndAgent(helper.id), context)
         if self.rows.required(Agent, worktree.session_agent_id).ended_at is None:
             self.bus.dispatch(EndAgent(worktree.session_agent_id), context)

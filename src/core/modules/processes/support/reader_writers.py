@@ -1,8 +1,8 @@
+from engine.helper_type.helper_type_book import HelperTypeBook
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
@@ -13,9 +13,9 @@ from core.modules.processes.support.reader_selection import ReaderSelection
 class ReaderWriters:
     """Allows reader management and saves for an agent's own reader requests."""
 
-    def __init__(self, agents: AgentRows, requests: ReaderRequestQuery, attempts: ReaderSaveAttempts, suites: SuiteChoice) -> None:
+    def __init__(self, agents: AgentRows, requests: ReaderRequestQuery, attempts: ReaderSaveAttempts, types: HelperTypeBook) -> None:
         self.agents = agents
-        self.requests, self.attempts, self.suites = requests, attempts, suites
+        self.requests, self.attempts, self.types = requests, attempts, types
 
     def check_save(self, actor: Actor, reader: Reader) -> ReaderRequest | None:
         if self.allows(actor):
@@ -32,7 +32,7 @@ class ReaderWriters:
         if actor.type is not ActorType.AGENT:
             return ()
         agent = self.agents.find(actor.id)
-        if agent.role not in self.suites.agent_policy().reader_request_roles:
+        if not self.types.behaviours(agent.role).needs_readers:
             return ()
         return self.requests.agent_open_rows(actor.id)
 
